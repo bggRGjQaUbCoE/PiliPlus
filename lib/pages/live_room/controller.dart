@@ -120,6 +120,24 @@ class LiveRoomController extends GetxController {
   }
 
   void liveMsg() {
+    LiveHttp.liveRoomDanmaPrefetch(roomId: roomId).then((v) {
+      if (v['status']) {
+        for (var obj in v['data'] as List) {
+          messages.add({
+            'name': obj['user']['base']['name'],
+            'uid': obj['user']['uid'],
+            'text': obj['text'],
+            'emots': obj['emots'],
+            'uemote': obj['emoticon']['emoticon_unique'] != ""
+                ? obj['emoticon']
+                : null,
+          });
+          WidgetsBinding.instance.addPostFrameCallback(
+            (_) => scrollToBottom(),
+          );
+        }
+      }
+    });
     LiveHttp.liveRoomGetDanmakuToken(roomId: roomId).then((v) {
       if (v['status']) {
         LiveDanmakuInfo info = v['data'];
@@ -134,7 +152,13 @@ class LiveRoomController extends GetxController {
         msgStream?.addEventListener((obj) {
           if (obj['cmd'] == 'DANMU_MSG') {
             // logger.i(' 原始弹幕消息 ======> ${jsonEncode(obj)}');
-            messages.add(obj);
+            messages.add({
+              'name': obj['info'][0][15]['user']['base']['name'],
+              'uid': obj['info'][0][15]['user']['uid'],
+              'text': obj['info'][1],
+              'emots': jsonDecode(obj['info'][0][15]['extra'])['emots'],
+              'uemote': obj['info'][0][13],
+            });
             Map json = jsonDecode(obj['info'][0][15]['extra']);
             if (showDanmaku) {
               controller?.addItems([

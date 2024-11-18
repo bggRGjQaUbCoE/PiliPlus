@@ -111,6 +111,21 @@ class LiveHttp {
     }
   }
 
+  static Future liveRoomDanmaPrefetch({roomId}) async {
+    var res = await Request().get(Api.liveRoomDmPrefetch, data: {
+      'roomid': roomId,
+    });
+    if (res.data['code'] == 0) {
+      return {'status': true, 'data': res.data['data']['room']};
+    } else {
+      return {
+        'status': false,
+        'data': [],
+        'msg': res.data['message'],
+      };
+    }
+  }
+
   static Future liveRoomGetDanmakuToken({roomId}) async {
     var res = await Request().get(Api.liveRoomDmToken, data: {
       'id': roomId,

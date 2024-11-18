@@ -49,7 +49,7 @@ class _LiveRoomChatState extends State<LiveRoomChat> {
                       children: [
                         TextSpan(
                           text:
-                              '${widget.liveRoomController.messages[index]['info'][0][15]['user']['base']['name']}: ',
+                              '${widget.liveRoomController.messages[index]['name']}: ',
                           style: const TextStyle(
                             color: Color(0xFFAAAAAA),
                             fontSize: 14,
@@ -57,9 +57,8 @@ class _LiveRoomChatState extends State<LiveRoomChat> {
                           recognizer: TapGestureRecognizer()
                             ..onTap = () {
                               try {
-                                dynamic uid =
-                                    widget.liveRoomController.messages[index]
-                                        ['info'][0][15]['user']['uid'];
+                                dynamic uid = widget
+                                    .liveRoomController.messages[index]['uid'];
                                 Get.toNamed(
                                   '/member?mid=$uid',
                                   arguments: {
@@ -102,8 +101,8 @@ class _LiveRoomChatState extends State<LiveRoomChat> {
   }
 
   TextSpan _buildMsg(obj) {
-    dynamic emots = jsonDecode(obj['info'][0][15]['extra'])['emots'];
-    dynamic uemote = obj['info'][0][13];
+    dynamic emots = obj['emots'];
+    dynamic uemote = obj['uemote'];
     List list = [
       if (emots != null) emots.keys,
       if (uemote is Map) uemote['emoticon_unique'].replaceFirst('upower_', '')
@@ -117,7 +116,7 @@ class _LiveRoomChatState extends State<LiveRoomChat> {
       }).toList();
       RegExp regExp = RegExp(list.join('|'));
       final List<InlineSpan> spanChildren = <InlineSpan>[];
-      (obj['info'][1] as String).splitMapJoin(
+      (obj['text'] as String).splitMapJoin(
         regExp,
         onMatch: (Match match) {
           String key = match[0]!;
@@ -150,7 +149,7 @@ class _LiveRoomChatState extends State<LiveRoomChat> {
       return TextSpan(children: spanChildren);
     } else {
       return TextSpan(
-        text: obj['info'][1],
+        text: obj['text'],
         style: const TextStyle(
           color: Color(0xFFFFFFFF),
           fontSize: 14,

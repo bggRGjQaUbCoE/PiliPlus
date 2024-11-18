@@ -289,6 +289,11 @@ class Api {
   static const String liveRoomInfoH5 =
       '${HttpString.liveBaseUrl}/xlive/web-room/v1/index/getH5InfoByRoom';
 
+  // 直播间弹幕预获取
+  // roomid roomId
+  static const String liveRoomDmPrefetch =
+      '${HttpString.liveBaseUrl}/xlive/web-room/v1/dM/gethistory';
+
   //直播间弹幕密钥获取接口
   static const String liveRoomDmToken =
       '${HttpString.liveBaseUrl}/xlive/web-room/v1/index/getDanmuInfo';

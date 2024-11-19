@@ -4,6 +4,7 @@ import 'dart:typed_data';
 
 import 'package:PiliPalaX/services/loggeer.dart';
 import 'package:brotli/brotli.dart';
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 
 class PackageHeader {
   int totalSize;
@@ -159,7 +160,7 @@ class LiveMessageStream {
       required this.uid,
       required this.host,
       required this.port});
-  late Socket socket;
+  late WebSocket socket;
   bool heartBeat = true;
   PiliLogger logger = getLogger();
   final String logTag = "LiveStreamService";
@@ -187,10 +188,11 @@ class LiveMessageStream {
     logger.d(marshaledData);
 
     try {
-      socket = await Socket.connect(host, port);
-      logger.d('$logTag ===> TCP连接建立');
+      socket = await WebSocket.connect('wss://${host}:${port}/sub');
+      // socket = await Socket.connect(host, port);
+      // logger.d('$logTag ===> TCP连接建立');
       socket.add(authPackage.marshal());
-      logger.d('$logTag ===> 发送认证包');
+      // logger.d('$logTag ===> 发送认证包');
       await for (var data in socket) {
         PackageHeader? header = PackageHeader.fromBytesData(data);
         if (header != null) {
@@ -222,7 +224,8 @@ class LiveMessageStream {
       }
       socket.close();
     } catch (e) {
-      logger.i('$logTag ===> TCP连接失败: $e');
+      SmartDialog.showToast("弹幕地址链接失败");
+      // logger.i('$logTag ===> TCP连接失败: $e');
     }
   }
 

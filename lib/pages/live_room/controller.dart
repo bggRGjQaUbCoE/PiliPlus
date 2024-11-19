@@ -147,7 +147,7 @@ class LiveRoomController extends GetxController {
           roomId: roomId,
           uid: GStorage.userInfo.get('userInfoCache')?.mid ?? 0,
           host: info.data.hostList[0].host,
-          port: info.data.hostList[0].port,
+          port: info.data.hostList[0].wssPort,
         );
         msgStream?.addEventListener((obj) {
           if (obj['cmd'] == 'DANMU_MSG') {

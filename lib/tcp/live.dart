@@ -151,15 +151,15 @@ class HeartbeatPackage extends AbstractPackage<dynamic> {
 }
 
 class LiveMessageStream {
-  String streamToken, host;
-  int roomId, uid, port;
+  String streamToken;
+  int roomId, uid;
+  List<String> servers;
   List<void Function(dynamic obj)> eventListeners = [];
   LiveMessageStream(
       {required this.streamToken,
       required this.roomId,
       required this.uid,
-      required this.host,
-      required this.port});
+      required this.servers});
   late WebSocket socket;
   bool heartBeat = true;
   PiliLogger logger = getLogger();
@@ -186,10 +186,17 @@ class LiveMessageStream {
 
     final marshaledData = authPackage.marshal();
     logger.d(marshaledData);
-
     try {
-      socket = await WebSocket.connect('wss://${host}:${port}/sub');
-      // socket = await Socket.connect(host, port);
+      Future<WebSocket> getSocket() async {
+        for (final server in servers) {
+          try {
+            return await WebSocket.connect(server);
+          } catch (e) {}
+        }
+        throw Exception("all servers connect failed");
+      }
+
+      socket = await getSocket();
       // logger.d('$logTag ===> TCP连接建立');
       socket.add(authPackage.marshal());
       // logger.d('$logTag ===> 发送认证包');

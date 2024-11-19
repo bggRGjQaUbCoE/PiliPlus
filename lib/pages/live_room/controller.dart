@@ -142,12 +142,15 @@ class LiveRoomController extends GetxController {
       if (v['status']) {
         LiveDanmakuInfo info = v['data'];
         // logger.d("info => $info");
+        List<String> servers = [];
+        for (final host in info.data.hostList) {
+          servers.add('wss://${host.host}:${host.wssPort}/sub');
+        }
         msgStream = LiveMessageStream(
           streamToken: info.data.token,
           roomId: roomId,
           uid: GStorage.userInfo.get('userInfoCache')?.mid ?? 0,
-          host: info.data.hostList[0].host,
-          port: info.data.hostList[0].wssPort,
+          servers: servers,
         );
         msgStream?.addEventListener((obj) {
           if (obj['cmd'] == 'DANMU_MSG') {

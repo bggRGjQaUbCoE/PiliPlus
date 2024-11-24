@@ -8,9 +8,9 @@
     <h1>PiliPalaX</h1>
 <div align="center">
     
-![GitHub repo size](https://img.shields.io/github/repo-size/orz12/pilipala) 
-![GitHub Repo stars](https://img.shields.io/github/stars/orz12/pilipala) 
-![GitHub all releases](https://img.shields.io/github/downloads/orz12/pilipala/total) 
+![GitHub repo size](https://img.shields.io/github/repo-size/bggRGjQaUbCoE/PiliPalaX) 
+![GitHub Repo stars](https://img.shields.io/github/stars/bggRGjQaUbCoE/PiliPalaX) 
+![GitHub all releases](https://img.shields.io/github/downloads/bggRGjQaUbCoE/PiliPalaX/total) 
 </div>
     <p>使用Flutter开发的BiliBili第三方客户端</p>
     

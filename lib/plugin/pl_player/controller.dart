@@ -571,7 +571,12 @@ class PlPlayerController {
         );
     var pp = player.platform as NativePlayer;
     // 解除倍速限制
-    await pp.setProperty("af", "scaletempo2=max-speed=8");
+    if (_videoPlayerController == null) {
+      await pp.setProperty(
+        "af",
+        "scaletempo2=max-speed=8,dynaudnorm=g=5:f=250:r=0.9:p=0.5",
+      );
+    }
     //  音量不一致
     if (Platform.isAndroid) {
       await pp.setProperty("volume-max", "100");

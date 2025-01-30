@@ -360,6 +360,9 @@ class GStorage {
   static bool get showSeekPreview =>
       GStorage.setting.get(SettingBoxKey.showSeekPreview, defaultValue: true);
 
+  static bool get showDmChart =>
+      GStorage.setting.get(SettingBoxKey.showDmChart, defaultValue: false);
+
   static List<double> get dynamicDetailRatio => List<double>.from(setting
       .get(SettingBoxKey.dynamicDetailRatio, defaultValue: [60.0, 40.0]));
 
@@ -589,6 +592,7 @@ class SettingBoxKey {
       showDynDecorate = 'showDynDecorate',
       enableLivePhoto = 'enableLivePhoto',
       showSeekPreview = 'showSeekPreview',
+      showDmChart = 'showDmChart',
 
       // Sponsor Block
       enableSponsorBlock = 'enableSponsorBlock',

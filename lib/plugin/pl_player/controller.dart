@@ -461,6 +461,7 @@ class PlPlayerController {
     List<Map<String, String>>? vttSubtitles,
     int? vttSubtitlesIndex,
     bool? showVP,
+    List? dmTrend,
     bool autoplay = true,
     // 默认不循环
     PlaylistMode looping = PlaylistMode.none,
@@ -493,6 +494,7 @@ class PlPlayerController {
       this.vttSubtitles.value = vttSubtitles ?? <Map<String, String>>[];
       this.vttSubtitlesIndex.value = vttSubtitlesIndex ?? 0;
       this.showVP.value = showVP ?? true;
+      this.dmTrend.value = dmTrend ?? [];
       _autoPlay = autoplay;
       _looping = looping;
       // 初始化视频倍速
@@ -1581,23 +1583,30 @@ class PlPlayerController {
       return;
     }
     _isQueryingVideoShot = true;
-    dynamic res = await Request().get(
-      'https://api.bilibili.com/x/player/videoshot',
-      queryParameters: {
-        // 'aid': IdUtils.bv2av(_bvid),
-        'bvid': _bvid,
-        'cid': _cid,
-        'index': 1,
-      },
-    );
-    if (res.data['code'] == 0) {
-      videoShot = {
-        'status': true,
-        'data': res.data['data'],
-      };
-    } else {
-      videoShot = {'status': false};
+    try {
+      dynamic res = await Request().get(
+        'https://api.bilibili.com/x/player/videoshot',
+        queryParameters: {
+          // 'aid': IdUtils.bv2av(_bvid),
+          'bvid': _bvid,
+          'cid': _cid,
+          'index': 1,
+        },
+      );
+      if (res.data['code'] == 0) {
+        videoShot = {
+          'status': true,
+          'data': res.data['data'],
+        };
+      } else {
+        videoShot = {'status': false};
+      }
+    } catch (e) {
+      debugPrint('getVideoShot: $e');
     }
     _isQueryingVideoShot = false;
   }
+
+  late final RxList dmTrend = [].obs;
+  late final RxBool showDmChart = true.obs;
 }

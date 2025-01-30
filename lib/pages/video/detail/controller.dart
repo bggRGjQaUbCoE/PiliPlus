@@ -1004,6 +1004,7 @@ class VideoDetailController extends GetxController
       vttSubtitles: _vttSubtitles,
       vttSubtitlesIndex: vttSubtitlesIndex,
       showVP: showVP,
+      dmTrend: dmTrend,
       // 硬解
       enableHA: enableHA.value,
       hwdec: hwdec.value,
@@ -1035,6 +1036,10 @@ class VideoDetailController extends GetxController
 
     if (vttSubtitlesIndex == null) {
       _getSubtitle();
+    }
+
+    if (showDmChart && dmTrend == null) {
+      _getDmTrend();
     }
 
     /// 开启自动全屏时，在player初始化完成后立即传入headerControl
@@ -1970,6 +1975,7 @@ class VideoDetailController extends GetxController
     audioUrl = null;
 
     // danmaku
+    dmTrend = null;
     savedDanmaku = null;
 
     // subtitle
@@ -1984,5 +1990,32 @@ class VideoDetailController extends GetxController
     videoLabel.value = '';
     segmentList.clear();
     _segmentProgressList = null;
+  }
+
+  late final showDmChart = GStorage.showDmChart;
+  List? dmTrend;
+
+  void _getDmTrend() async {
+    dmTrend = [];
+    try {
+      dynamic res = await Request().get(
+        'https://bvc.bilivideo.com/pbp/data',
+        queryParameters: {
+          'bvid': bvid,
+          'cid': cid.value,
+        },
+      );
+
+      int stepSec = (res.data['step_sec'] as num?)?.toInt() ?? 0;
+      late List events = (res.data['events']['default'] as List?) ?? [];
+      if (stepSec != 0 && events.isNotEmpty) {
+        dmTrend = events;
+        if (plPlayerController.dmTrend.isEmpty) {
+          plPlayerController.dmTrend.value = events;
+        }
+      }
+    } catch (e) {
+      debugPrint('_getDmTrend: $e');
+    }
   }
 }

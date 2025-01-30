@@ -12,4 +12,5 @@ enum BottomControlType {
   custom,
   viewPoints,
   superResolution,
+  dmChart,
 }

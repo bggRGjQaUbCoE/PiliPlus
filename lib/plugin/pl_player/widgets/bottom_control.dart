@@ -7,7 +7,11 @@ import 'package:flutter/rendering.dart';
 import 'package:get/get.dart';
 import 'package:nil/nil.dart';
 import 'package:PiliPlus/plugin/pl_player/index.dart'
-    show PlPlayerController, buildSeekPreviewWidget;
+    show
+        PlPlayerController,
+        buildSeekPreviewWidget,
+        buildDmChart,
+        buildViewPointWidget;
 import 'package:PiliPlus/utils/feed_back.dart';
 
 import '../../../common/widgets/audio_video_progress_bar.dart';
@@ -53,36 +57,14 @@ class BottomControl extends StatelessWidget implements PreferredSizeWidget {
                     clipBehavior: Clip.none,
                     alignment: Alignment.bottomCenter,
                     children: [
+                      if (controller?.dmTrend.isNotEmpty == true &&
+                          controller?.showDmChart.value == true)
+                        buildDmChart(context, controller!, 4.5),
                       if (controller?.viewPointList.isNotEmpty == true &&
                           controller?.showVP.value == true)
-                        LayoutBuilder(
-                          builder: (context, constraints) {
-                            return Container(
-                              height: 20,
-                              margin: const EdgeInsets.only(bottom: 5.25),
-                              child: Listener(
-                                behavior: HitTestBehavior.translucent,
-                                onPointerDown: (event) {
-                                  try {
-                                    double seg = event.localPosition.dx /
-                                        constraints.maxWidth;
-                                    Segment? item = controller?.viewPointList
-                                        .where((item) {
-                                      return item.start >= seg;
-                                    }).reduce((a, b) =>
-                                            a.start < b.start ? a : b);
-                                    if (item?.from != null) {
-                                      controller?.seekTo(
-                                          Duration(seconds: item!.from!));
-                                    }
-                                    // debugPrint('${item?.title},,${item?.from}');
-                                  } catch (e) {
-                                    debugPrint('$e');
-                                  }
-                                },
-                              ),
-                            );
-                          },
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 5.25),
+                          child: buildViewPointWidget(controller!),
                         ),
                       ProgressBar(
                         progress: Duration(seconds: value),

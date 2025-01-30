@@ -9,6 +9,7 @@ import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_debounce/easy_throttle.dart';
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:flutter_volume_controller/flutter_volume_controller.dart';
@@ -339,7 +340,43 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       /// 空白占位
       BottomControlType.space: const Spacer(),
 
-      /// 分段信息
+      /// 高能进度条
+      BottomControlType.dmChart: Obx(() => plPlayerController.dmTrend.isEmpty
+          ? const SizedBox.shrink()
+          : Container(
+              width: widgetWidth,
+              height: 30,
+              alignment: Alignment.center,
+              child: ComBtn(
+                icon: plPlayerController.showDmChart.value
+                    ? Icon(
+                        Icons.show_chart,
+                        size: 22,
+                        color: Colors.white,
+                      )
+                    : Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          Icon(
+                            Icons.show_chart,
+                            size: 22,
+                            color: Colors.white,
+                          ),
+                          Icon(
+                            Icons.hide_source,
+                            size: 22,
+                            color: Colors.white,
+                          ),
+                        ],
+                      ),
+                fuc: () {
+                  plPlayerController.showDmChart.value =
+                      !plPlayerController.showDmChart.value;
+                },
+              ),
+            )),
+
+      /// 超分辨率
       BottomControlType.superResolution: Get.parameters['type'] == '1' ||
               Get.parameters['type'] == '4'
           ? Container(
@@ -520,8 +557,10 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                     width: 35,
                     height: 30,
                     alignment: Alignment.center,
-                    child: const Icon(
-                      Icons.closed_caption_off_outlined,
+                    child: Icon(
+                      plPlayerController.vttSubtitlesIndex.value == 0
+                          ? Icons.closed_caption_off_outlined
+                          : Icons.closed_caption_off_rounded,
                       size: 22,
                       color: Colors.white,
                       semanticLabel: '字幕',
@@ -586,6 +625,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
           if (anySeason) BottomControlType.pre,
           if (anySeason) BottomControlType.next,
           BottomControlType.space,
+          BottomControlType.dmChart,
           BottomControlType.superResolution,
           BottomControlType.viewPoints,
           if (anySeason) BottomControlType.episode,
@@ -1071,7 +1111,6 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
         ),
 
         /// 进度条 live模式下禁用
-
         Obx(
           () {
             final int value = plPlayerController.sliderPositionSeconds.value;
@@ -1112,37 +1151,12 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                     clipBehavior: Clip.none,
                     alignment: Alignment.bottomCenter,
                     children: [
+                      if (plPlayerController.dmTrend.isNotEmpty &&
+                          plPlayerController.showDmChart.value)
+                        buildDmChart(context, plPlayerController),
                       if (plPlayerController.viewPointList.isNotEmpty &&
                           plPlayerController.showVP.value)
-                        LayoutBuilder(
-                          builder: (context, constraints) {
-                            return SizedBox(
-                              height: 20,
-                              child: Listener(
-                                behavior: HitTestBehavior.translucent,
-                                onPointerDown: (event) {
-                                  try {
-                                    double seg = event.localPosition.dx /
-                                        constraints.maxWidth;
-                                    Segment item = plPlayerController
-                                        .viewPointList
-                                        .where((item) {
-                                      return item.start >= seg;
-                                    }).reduce((a, b) =>
-                                            a.start < b.start ? a : b);
-                                    if (item.from != null) {
-                                      plPlayerController.seekTo(
-                                          Duration(seconds: item.from!));
-                                    }
-                                    // debugPrint('${item.title},,${item.from}');
-                                  } catch (e) {
-                                    debugPrint('$e');
-                                  }
-                                },
-                              ),
-                            );
-                          },
-                        ),
+                        buildViewPointWidget(plPlayerController),
                       ProgressBar(
                         progress: Duration(seconds: value),
                         buffered: Duration(seconds: buffer),
@@ -1503,6 +1517,56 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
   }
 }
 
+Widget buildDmChart(
+  BuildContext context,
+  PlPlayerController plPlayerController, [
+  double offset = 0,
+]) {
+  return IgnorePointer(
+    child: Container(
+      height: 14,
+      margin: EdgeInsets.only(
+        bottom: plPlayerController.viewPointList.isNotEmpty &&
+                plPlayerController.showVP.value
+            ? 20.25 + offset
+            : 4.25 + offset,
+      ),
+      child: LineChart(
+        LineChartData(
+          titlesData: const FlTitlesData(show: false),
+          lineTouchData: const LineTouchData(enabled: false),
+          gridData: const FlGridData(show: false),
+          borderData: FlBorderData(show: false),
+          minX: 0,
+          maxX: plPlayerController.dmTrend.length.toDouble(),
+          minY: 0,
+          maxY: plPlayerController.dmTrend
+              .reduce((a, b) => a > b ? a : b)
+              .toDouble(),
+          lineBarsData: [
+            LineChartBarData(
+              spots: List.generate(
+                plPlayerController.dmTrend.length,
+                (index) => FlSpot(
+                  index.toDouble(),
+                  plPlayerController.dmTrend[index].toDouble(),
+                ),
+              ),
+              isCurved: true,
+              barWidth: 0,
+              dotData: const FlDotData(show: false),
+              belowBarData: BarAreaData(
+                show: true,
+                color: Theme.of(context).colorScheme.primary.withOpacity(0.4),
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
 Widget buildSeekPreviewWidget(PlPlayerController plPlayerController) {
   return Obx(() {
     if (plPlayerController.showPreview.value.not) {
@@ -1604,4 +1668,31 @@ Widget buildSeekPreviewWidget(PlPlayerController plPlayerController) {
           }
         });
   });
+}
+
+Widget buildViewPointWidget(PlPlayerController plPlayerController) {
+  return LayoutBuilder(
+    builder: (context, constraints) {
+      return SizedBox(
+        height: 20,
+        child: Listener(
+          behavior: HitTestBehavior.translucent,
+          onPointerDown: (event) {
+            try {
+              double seg = event.localPosition.dx / constraints.maxWidth;
+              Segment item = plPlayerController.viewPointList.where((item) {
+                return item.start >= seg;
+              }).reduce((a, b) => a.start < b.start ? a : b);
+              if (item.from != null) {
+                plPlayerController.seekTo(Duration(seconds: item.from!));
+              }
+              // debugPrint('${item.title},,${item.from}');
+            } catch (e) {
+              debugPrint('$e');
+            }
+          },
+        ),
+      );
+    },
+  );
 }

@@ -27,7 +27,7 @@ class VideoReplyReplyPanel extends StatefulWidget {
     this.dialog,
     this.firstFloor,
     this.source,
-    this.replyType,
+    required this.replyType,
     this.isDialogue = false,
     this.isTop = false,
     this.onViewImage,
@@ -39,7 +39,7 @@ class VideoReplyReplyPanel extends StatefulWidget {
   final int? dialog;
   final dynamic firstFloor;
   final String? source;
-  final ReplyType? replyType;
+  final ReplyType replyType;
   final bool isDialogue;
   final bool isTop;
   final VoidCallback? onViewImage;
@@ -73,7 +73,7 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
         oid: widget.oid,
         rpid: widget.rpid,
         dialog: widget.dialog,
-        replyType: widget.replyType!,
+        replyType: widget.replyType,
         isDialogue: widget.isDialogue,
       ),
       tag: '${widget.rpid}${widget.dialog}${widget.isDialogue}',
@@ -352,15 +352,36 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
           _videoReplyReplyController.count.value += 1;
           _videoReplyReplyController.loadingState.value =
               LoadingState.success(list);
+          if (_videoReplyReplyController.enableCommAntifraud && mounted) {
+            _videoReplyReplyController.checkReply(
+              context,
+              oid,
+              root,
+              widget.replyType.index,
+              replyInfo.id.toInt(),
+              replyInfo.content.message,
+            );
+          }
         } else {
           List list = _videoReplyReplyController.loadingState.value is Success
               ? (_videoReplyReplyController.loadingState.value as Success)
                   .response
               : <ReplyItemModel>[];
-          list.insert(index + 1, ReplyItemModel.fromJson(res, ''));
+          ReplyItemModel replyInfo = ReplyItemModel.fromJson(res, '');
+          list.insert(index + 1, replyInfo);
           _videoReplyReplyController.count.value += 1;
           _videoReplyReplyController.loadingState.value =
               LoadingState.success(list);
+          if (_videoReplyReplyController.enableCommAntifraud && mounted) {
+            _videoReplyReplyController.checkReply(
+              context,
+              oid,
+              root,
+              widget.replyType.index,
+              replyInfo.rpid ?? 0,
+              replyInfo.content?.message ?? '',
+            );
+          }
         }
       }
     });

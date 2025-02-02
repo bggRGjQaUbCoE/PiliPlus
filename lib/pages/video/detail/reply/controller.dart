@@ -25,7 +25,7 @@ class VideoReplyController extends ReplyController {
           oid: aid!,
           cursor: CursorReq(
             next: cursor?.next ?? $fixnum.Int64(0),
-            mode: mode,
+            mode: mode.value,
           ),
           banWordForReply: banWordForReply,
         )

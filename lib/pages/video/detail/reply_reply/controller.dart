@@ -1,7 +1,7 @@
 import 'package:PiliPlus/grpc/app/main/community/reply/v1/reply.pb.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/video/reply/item.dart';
-import 'package:PiliPlus/pages/common/common_controller.dart';
+import 'package:PiliPlus/pages/common/reply_controller.dart';
 import 'package:PiliPlus/utils/global_data.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:flutter/material.dart';
@@ -10,7 +10,7 @@ import 'package:PiliPlus/http/reply.dart';
 import 'package:PiliPlus/models/common/reply_type.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
-class VideoReplyReplyController extends CommonController
+class VideoReplyReplyController extends ReplyController
     with GetTickerProviderStateMixin {
   VideoReplyReplyController({
     required this.hasRoot,
@@ -32,9 +32,6 @@ class VideoReplyReplyController extends CommonController
   int? rpid;
   ReplyType replyType; // = ReplyType.video;
 
-  CursorReply? cursor;
-  Rx<Mode> mode = Mode.MAIN_LIST_TIME.obs;
-  RxInt count = (-1).obs;
   int? upMid;
 
   dynamic firstFloor;
@@ -44,8 +41,6 @@ class VideoReplyReplyController extends CommonController
   Animation<Color?>? colorAnimation;
 
   late final horizontalPreview = GStorage.horizontalPreview;
-
-  late final banWordForReply = GStorage.banWordForReply;
 
   @override
   void onInit() {
@@ -203,6 +198,7 @@ class VideoReplyReplyController extends CommonController
               banWordForReply: banWordForReply,
             )
           : ReplyHttp.replyReplyList(
+              isLogin: isLogin,
               oid: oid!,
               root: rpid!,
               pageNum: currentPage,
@@ -210,6 +206,7 @@ class VideoReplyReplyController extends CommonController
               banWordForReply: banWordForReply,
             );
 
+  @override
   queryBySort() {
     mode.value = mode.value == Mode.MAIN_LIST_HOT
         ? Mode.MAIN_LIST_TIME

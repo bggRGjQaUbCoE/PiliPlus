@@ -54,7 +54,6 @@ import '../pages/setting/style_setting.dart';
 import '../pages/subscription/index.dart';
 import '../pages/subscription_detail/index.dart';
 import '../pages/video/detail/index.dart';
-import '../pages/video/detail/reply_reply/index.dart';
 import '../pages/whisper/index.dart';
 import '../pages/whisper_detail/index.dart';
 
@@ -99,8 +98,8 @@ class Routes {
     CustomGetPage(name: '/member', page: () => const MemberPageNew()),
     CustomGetPage(name: '/memberSearch', page: () => const MemberSearchPage()),
     // 二级回复
-    CustomGetPage(
-        name: '/replyReply', page: () => const VideoReplyReplyPanel()),
+    // CustomGetPage(
+    //     name: '/replyReply', page: () => const VideoReplyReplyPanel()),
     // 推荐流设置
     CustomGetPage(
         name: '/recommendSetting', page: () => const RecommendSetting()),

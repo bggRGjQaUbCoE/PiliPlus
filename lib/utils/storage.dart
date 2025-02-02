@@ -361,6 +361,9 @@ class GStorage {
   static bool get showDmChart =>
       GStorage.setting.get(SettingBoxKey.showDmChart, defaultValue: false);
 
+  static bool get enableCommAntifraud => GStorage.setting
+      .get(SettingBoxKey.enableCommAntifraud, defaultValue: false);
+
   static List<double> get dynamicDetailRatio => List<double>.from(setting
       .get(SettingBoxKey.dynamicDetailRatio, defaultValue: [60.0, 40.0]));
 
@@ -591,6 +594,7 @@ class SettingBoxKey {
       enableLivePhoto = 'enableLivePhoto',
       showSeekPreview = 'showSeekPreview',
       showDmChart = 'showDmChart',
+      enableCommAntifraud = 'enableCommAntifraud',
 
       // Sponsor Block
       enableSponsorBlock = 'enableSponsorBlock',

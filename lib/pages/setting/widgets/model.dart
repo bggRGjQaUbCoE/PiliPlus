@@ -1939,6 +1939,24 @@ List<SettingsModel> get extraSettings => [
       ),
       SettingsModel(
         settingsType: SettingsType.sw1tch,
+        title: '发评反诈',
+        subtitle: '发送评论后检查评论是否可见',
+        leading: Stack(
+          alignment: Alignment.center,
+          children: [
+            const Icon(Icons.shield),
+            Icon(
+              Icons.reply,
+              size: 16,
+              color: Theme.of(Get.context!).colorScheme.surface,
+            ),
+          ],
+        ),
+        setKey: SettingBoxKey.enableCommAntifraud,
+        defaultVal: false,
+      ),
+      SettingsModel(
+        settingsType: SettingsType.sw1tch,
         enableFeedback: true,
         setKey: SettingBoxKey.feedBackEnable,
         onChanged: (value) {

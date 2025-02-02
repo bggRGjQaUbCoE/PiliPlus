@@ -55,7 +55,7 @@ class HtmlRenderController extends ReplyController {
           oid: oid.value,
           cursor: CursorReq(
             next: cursor?.next ?? $fixnum.Int64(0),
-            mode: mode,
+            mode: mode.value,
           ),
           banWordForReply: banWordForReply,
         )

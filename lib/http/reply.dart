@@ -4,13 +4,11 @@ import 'package:PiliPlus/grpc/app/main/community/reply/v1/reply.pb.dart';
 import 'package:PiliPlus/grpc/grpc_repo.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/utils/extension.dart';
-import 'package:PiliPlus/utils/storage.dart';
 import 'package:dio/dio.dart';
 
 import '../models/video/reply/data.dart';
 import '../models/video/reply/emote.dart';
 import 'api.dart';
-import 'constants.dart';
 import 'init.dart';
 
 class ReplyHttp {
@@ -29,7 +27,7 @@ class ReplyHttp {
         : null;
     var res = !isLogin
         ? await Request().get(
-            '${HttpString.apiBaseUrl}${Api.replyList}/main',
+            '${Api.replyList}/main',
             queryParameters: {
               'oid': oid,
               'type': type,
@@ -40,7 +38,7 @@ class ReplyHttp {
             options: options,
           )
         : await Request().get(
-            '${HttpString.apiBaseUrl}${Api.replyList}',
+            Api.replyList,
             queryParameters: {
               'oid': oid,
               'type': type,
@@ -134,26 +132,27 @@ class ReplyHttp {
   }
 
   static Future<LoadingState> replyReplyList({
+    required bool isLogin,
     required int oid,
     required int root,
     required int pageNum,
     required int type,
-    int sort = 1,
     required String banWordForReply,
+    bool? isCheck,
   }) async {
-    Options? options = GStorage.userInfo.get('userInfoCache') == null
+    Options? options = isLogin.not
         ? Options(
             headers: {HttpHeaders.cookieHeader: "buvid3= ; b_nut= ; sid= "})
         : null;
     var res = await Request().get(
-      '${HttpString.apiBaseUrl}${Api.replyReplyList}',
+      Api.replyReplyList,
       queryParameters: {
         'oid': oid,
         'root': root,
         'pn': pageNum,
         'type': type,
         'sort': 1,
-        'csrf': await Request.getCsrf(),
+        if (isLogin) 'csrf': await Request.getCsrf(),
       },
       options: options,
     );
@@ -168,7 +167,11 @@ class ReplyHttp {
       }
       return LoadingState.success(replyData);
     } else {
-      return LoadingState.error(res.data['message']);
+      return LoadingState.error(
+        isCheck == true
+            ? '${res.data['code']}${res.data['message']}'
+            : res.data['message'],
+      );
     }
   }
 

@@ -1,5 +1,6 @@
 import 'package:PiliPlus/grpc/app/main/community/reply/v1/reply.pb.dart';
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/http/reply.dart';
 import 'package:PiliPlus/models/common/reply_type.dart';
 import 'package:PiliPlus/models/video/reply/data.dart';
 import 'package:PiliPlus/pages/common/common_controller.dart';
@@ -9,12 +10,14 @@ import 'package:PiliPlus/utils/global_data.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:easy_debounce/easy_throttle.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:PiliPlus/models/common/reply_sort_type.dart';
 import 'package:PiliPlus/models/video/reply/item.dart';
 import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:get/get_navigation/src/dialog/dialog_route.dart';
+import 'package:fixnum/fixnum.dart' as $fixnum;
 
 abstract class ReplyController extends CommonController {
   String nextOffset = '';
@@ -27,10 +30,11 @@ abstract class ReplyController extends CommonController {
   late final bool isLogin = GStorage.userInfo.get('userInfoCache') != null;
 
   CursorReply? cursor;
-  late Mode mode = Mode.MAIN_LIST_HOT;
+  late Rx<Mode> mode = Mode.MAIN_LIST_HOT.obs;
   late bool hasUpTop = false;
 
   late final banWordForReply = GStorage.banWordForReply;
+  late final enableCommAntifraud = GStorage.enableCommAntifraud;
 
   @override
   void onInit() {
@@ -43,7 +47,7 @@ abstract class ReplyController extends CommonController {
     }
     sortType.value = ReplySortType.values[defaultReplySortIndex];
     if (sortType.value == ReplySortType.time) {
-      mode = Mode.MAIN_LIST_TIME;
+      mode.value = Mode.MAIN_LIST_TIME;
     }
   }
 
@@ -95,7 +99,7 @@ abstract class ReplyController extends CommonController {
             hasUpTop = true;
           }
         }
-        if (response.response.topReplies != null) {
+        if ((response.response.topReplies as List?)?.isNotEmpty == true) {
           replies.insertAll(0, response.response.topReplies);
           hasUpTop = true;
         }
@@ -117,11 +121,11 @@ abstract class ReplyController extends CommonController {
       switch (sortType.value) {
         case ReplySortType.time:
           sortType.value = ReplySortType.like;
-          mode = Mode.MAIN_LIST_HOT;
+          mode.value = Mode.MAIN_LIST_HOT;
           break;
         case ReplySortType.like:
           sortType.value = ReplySortType.time;
-          mode = Mode.MAIN_LIST_TIME;
+          mode.value = Mode.MAIN_LIST_TIME;
           break;
       }
       nextOffset = '';
@@ -204,21 +208,44 @@ abstract class ReplyController extends CommonController {
             }
             count.value += 1;
             loadingState.value = LoadingState.success(response);
+            if (enableCommAntifraud && context.mounted) {
+              checkReply(
+                context,
+                oid ?? replyItem.oid.toInt(),
+                replyItem?.id.toInt(),
+                replyItem?.type.toInt() ??
+                    replyType?.index ??
+                    ReplyType.video.index,
+                replyInfo.id.toInt(),
+                replyInfo.content.message,
+              );
+            }
           } else {
             ReplyData response = loadingState.value is Success
                 ? (loadingState.value as Success).response
                 : ReplyData();
             response.replies ??= <ReplyItemModel>[];
+            ReplyItemModel replyInfo = ReplyItemModel.fromJson(res, '');
             if (oid != null) {
-              response.replies
-                  ?.insert(hasUpTop ? 1 : 0, ReplyItemModel.fromJson(res, ''));
+              response.replies?.insert(hasUpTop ? 1 : 0, replyInfo);
             } else {
               response.replies?[index].replies ??= <ReplyItemModel>[];
-              response.replies?[index].replies
-                  ?.add(ReplyItemModel.fromJson(res, ''));
+              response.replies?[index].replies?.add(replyInfo);
             }
             count.value += 1;
             loadingState.value = LoadingState.success(response);
+            if (enableCommAntifraud && context.mounted) {
+              checkReply(
+                context,
+                oid ?? replyItem.oid,
+                replyItem?.rpid,
+                replyItem?.type.toInt() ??
+                    replyType?.index ??
+                    ReplyType.video.index,
+                replyInfo.rpid ?? 0,
+                replyInfo.content?.message ?? '',
+              );
+            }
           }
         }
       },
@@ -260,6 +287,198 @@ abstract class ReplyController extends CommonController {
             }).toList();
       count.value -= 1;
       loadingState.value = LoadingState.success(response);
+    }
+  }
+
+  // ref https://github.com/freedom-introvert/biliSendCommAntifraud
+  void checkReply(
+    BuildContext context,
+    dynamic oid,
+    dynamic rpid,
+    int replyType,
+    int replyId,
+    String message,
+  ) async {
+    void checkMount() {
+      if (context.mounted.not) return;
+    }
+
+    void showReplyCheckResult(BuildContext context, String message) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text('评论检查结果'),
+          content: SelectableText(message),
+        ),
+      );
+    }
+
+    await Future.delayed(const Duration(seconds: 5));
+    checkMount();
+    // root reply
+    if (rpid == null) {
+      // no cookie check
+      dynamic res = await ReplyHttp.replyList(
+        isLogin: false,
+        oid: oid,
+        nextOffset: '',
+        type: replyType,
+        sort: ReplySortType.time.index,
+        page: 1,
+        banWordForReply: '',
+      );
+      checkMount();
+      if (res is Error) {
+        SmartDialog.showToast('获取评论主列表时发生错误：${res.errMsg}');
+        return;
+      } else if (res is Success) {
+        ReplyData replies = res.response;
+        int index =
+            replies.replies?.indexWhere((item) => item.rpid == replyId) ?? -1;
+        if (index != -1) {
+          // found
+          if (context.mounted) {
+            showReplyCheckResult(
+              context,
+              '无账号状态下找到了你的评论，评论正常！\n\n你的评论：$message',
+            );
+          }
+        } else {
+          // not found
+          checkMount();
+          // cookie check
+          dynamic res1 = await ReplyHttp.replyReplyList(
+            isLogin: isLogin,
+            oid: oid,
+            root: rpid,
+            pageNum: 1,
+            type: replyType,
+            banWordForReply: '',
+          );
+          checkMount();
+          if (res1 is Error) {
+            // not found
+            if (context.mounted) {
+              showReplyCheckResult(
+                context,
+                '无法找到你的评论。\n\n你的评论：$message',
+              );
+            }
+          } else if (res1 is Success) {
+            // found
+            checkMount();
+            // no cookie check
+            dynamic res2 = await ReplyHttp.replyReplyList(
+              isLogin: false,
+              oid: oid,
+              root: rpid,
+              pageNum: 1,
+              type: replyType,
+              banWordForReply: '',
+              isCheck: true,
+            );
+            checkMount();
+            if (res2 is Error) {
+              // not found
+              if (context.mounted) {
+                showReplyCheckResult(
+                  context,
+                  res2.errMsg.startsWith('12022')
+                      ? '你的评论被shadow ban（仅自己可见）！\n\n你的评论: $message'
+                      : '评论不可见(${res2.errMsg}): $message',
+                );
+              }
+            } else if (res2 is Success) {
+              // found
+              if (context.mounted) {
+                showReplyCheckResult(context, '''
+你评论状态有点可疑，虽然无账号翻找评论区获取不到你的评论，但是无账号可通过
+https://api.bilibili.com/x/v2/reply/reply?oid=$oid&pn=1&ps=20&root=$rpid&type=$replyType
+获取你的评论，疑似评论区被戒严或者这是你的视频。
+
+你的评论：$message''');
+              }
+            }
+          }
+        }
+      }
+    } else {
+      for (int i = 1; true; i++) {
+        checkMount();
+        dynamic res3 = await ReplyHttp.replyReplyList(
+          isLogin: false,
+          oid: oid,
+          root: rpid,
+          pageNum: i,
+          type: replyType,
+          banWordForReply: '',
+          isCheck: true,
+        );
+        if (res3 is Error) {
+          break;
+        } else if (res3 is Success) {
+          ReplyReplyData data = res3.response;
+          if (data.replies.isNullOrEmpty) {
+            break;
+          }
+          int index =
+              data.replies?.indexWhere((item) => item.rpid == replyId) ?? -1;
+          if (index == -1) {
+            // not found
+          } else {
+            // found
+            if (context.mounted) {
+              showReplyCheckResult(
+                context,
+                '无账号状态下找到了你的评论，评论正常！\n\n你的评论：$message',
+              );
+            }
+            return;
+          }
+        }
+      }
+
+      for (int i = 1; true; i++) {
+        checkMount();
+        dynamic res4 = await ReplyHttp.replyReplyList(
+          isLogin: true,
+          oid: oid,
+          root: rpid,
+          pageNum: i,
+          type: replyType,
+          banWordForReply: '',
+          isCheck: true,
+        );
+        if (res4 is Error) {
+          break;
+        } else if (res4 is Success) {
+          ReplyReplyData data = res4.response;
+          if (data.replies.isNullOrEmpty) {
+            break;
+          }
+          int index =
+              data.replies?.indexWhere((item) => item.rpid == replyId) ?? -1;
+          if (index == -1) {
+            // not found
+          } else {
+            // found
+            if (context.mounted) {
+              showReplyCheckResult(
+                context,
+                '你的评论被shadow ban（仅自己可见）！\n\n你的评论: $message',
+              );
+            }
+            return;
+          }
+        }
+      }
+
+      if (context.mounted) {
+        showReplyCheckResult(
+          context,
+          '评论不可见: $message',
+        );
+      }
     }
   }
 }

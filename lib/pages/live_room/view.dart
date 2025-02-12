@@ -313,28 +313,30 @@ class _LiveRoomPageState extends State<LiveRoomPage>
                   },
                 ),
               ),
-              PopScope(
-                canPop: plPlayerController.isFullScreen.value != true,
-                onPopInvokedWithResult: (bool didPop, Object? result) {
-                  if (plPlayerController.isFullScreen.value == true) {
-                    plPlayerController.triggerFullScreen(status: false);
-                    // if (MediaQuery.of(context).orientation ==
-                    //     Orientation.landscape) {
-                    //   verticalScreenForTwoSeconds();
-                    // }
-                  }
-                },
-                child: Listener(
-                  onPointerDown: (_) {
-                    _node.unfocus();
+              Obx(
+                () => PopScope(
+                  canPop: plPlayerController.isFullScreen.value != true,
+                  onPopInvokedWithResult: (bool didPop, Object? result) {
+                    if (plPlayerController.isFullScreen.value == true) {
+                      plPlayerController.triggerFullScreen(status: false);
+                      // if (MediaQuery.of(context).orientation ==
+                      //     Orientation.landscape) {
+                      //   verticalScreenForTwoSeconds();
+                      // }
+                    }
                   },
-                  child: SizedBox(
-                    width: Get.size.width,
-                    height: MediaQuery.of(context).orientation ==
-                            Orientation.landscape
-                        ? Get.size.height
-                        : Get.size.width * 9 / 16,
-                    child: videoPlayerPanel,
+                  child: Listener(
+                    onPointerDown: (_) {
+                      _node.unfocus();
+                    },
+                    child: SizedBox(
+                      width: Get.size.width,
+                      height: MediaQuery.of(context).orientation ==
+                              Orientation.landscape
+                          ? Get.size.height
+                          : Get.size.width * 9 / 16,
+                      child: videoPlayerPanel,
+                    ),
                   ),
                 ),
               ),

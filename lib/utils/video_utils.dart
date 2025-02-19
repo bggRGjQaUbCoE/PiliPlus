@@ -7,12 +7,6 @@ import 'package:flutter/material.dart';
 import '../models/live/room_info.dart';
 
 class VideoUtils {
-  static bool isMCDNorPCDN(String url) {
-    return url.contains("szbdyd.com") ||
-        url.contains(".mcdn.bilivideo") ||
-        RegExp(r'^https?://\d{1,3}\.\d{1,3}').hasMatch(url);
-  }
-
   static String getCdnUrl(dynamic item, [defaultCDNService]) {
     String? backupUrl;
     String? videoUrl;
@@ -41,9 +35,7 @@ class VideoUtils {
     if (defaultCDNService == CDNService.backupUrl.code) {
       return backupUrl.isNullOrEmpty.not ? backupUrl : item.baseUrl ?? "";
     }
-    videoUrl = (backupUrl.isNullOrEmpty || isMCDNorPCDN(backupUrl!))
-        ? item.baseUrl
-        : backupUrl;
+    videoUrl = backupUrl.isNullOrEmpty ? item.baseUrl : backupUrl;
 
     if (videoUrl.isNullOrEmpty) {
       return "";

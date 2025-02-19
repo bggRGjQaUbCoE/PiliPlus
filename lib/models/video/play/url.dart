@@ -129,6 +129,14 @@ class Durl {
   }
 }
 
+final _ipRegExp = RegExp(r'^https?://\d{1,3}\.\d{1,3}');
+
+bool _isMCDNorPCDN(String url) {
+  return url.contains("szbdyd.com") ||
+      url.contains(".mcdn.bilivideo") ||
+      _ipRegExp.hasMatch(url);
+}
+
 class VideoItem {
   VideoItem({
     this.id,
@@ -165,8 +173,10 @@ class VideoItem {
   VideoItem.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     baseUrl = json['baseUrl'];
-    backupUrl =
-        json['backupUrl'] != null ? json['backupUrl'].toList().first : '';
+    var backupUrls = json['backupUrl']?.toList() ?? [];
+    backupUrl = backupUrls.isNotEmpty
+      ? backupUrls.firstWhere((i) => !_isMCDNorPCDN(i), orElse: () => backupUrls.first)
+      : '';
     bandWidth = json['bandWidth'];
     mimeType = json['mime_type'];
     codecs = json['codecs'];
@@ -236,8 +246,10 @@ class AudioItem {
   AudioItem.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     baseUrl = json['baseUrl'];
-    backupUrl =
-        json['backupUrl'] != null ? json['backupUrl'].toList().first : '';
+    var backupUrls = json['backupUrl']?.toList() ?? [];
+    backupUrl = backupUrls.isNotEmpty
+      ? backupUrls.firstWhere((i) => !_isMCDNorPCDN(i), orElse: () => backupUrls.first)
+      : '';
     bandWidth = json['bandWidth'];
     mimeType = json['mime_type'];
     codecs = json['codecs'];

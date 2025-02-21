@@ -1150,7 +1150,7 @@ class _HeaderControlState extends State<HeaderControl> {
                                   arguments: widget.controller)
                             },
                         child: Text(
-                            "屏蔽管理(${widget.controller.danmakuFilterRule.length + (widget.controller.dmRegExp?.pattern.split('|').length ?? 0)})")),
+                            "屏蔽管理(${widget.controller.filterCount})")),
                   ],
                 ),
                 Padding(

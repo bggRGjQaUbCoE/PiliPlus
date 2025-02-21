@@ -256,8 +256,10 @@ class PlPlayerController {
 
   /// 弹幕权重
   int danmakuWeight = 0;
-  List danmakuFilterRule = [];
+  int filterCount = 0;
+  List dmFilterString = [];
   RegExp? dmRegExp;
+  Set dmUid = {};
   // 关联弹幕控制器
   DanmakuController? danmakuController;
   bool showDanmaku = true;
@@ -396,16 +398,23 @@ class PlPlayerController {
     List regex = [];
     List rules = GStorage.localCache
         .get(LocalCacheKey.danmakuFilterRule, defaultValue: []);
-    danmakuFilterRule = rules.where((item) {
-      if (item['type'] != 1) {
-        return true;
-      } else {
-        regex.add(item['filter']);
-        return false;
+    filterCount = rules.length;
+    rules.forEach((item) {
+      switch (item['type']) {
+        case 0:
+          dmFilterString.add(item['filter']);
+          break;
+        case 1:
+          regex.add(item['filter']);
+          break;
+        case 2:
+          dmUid.add(item['filter']);
+          break;
       }
-    }).toList();
+    });
     dmRegExp =
         regex.isNotEmpty ? RegExp(regex.join('|'), caseSensitive: false) : null;
+    debugPrint(dmRegExp?.pattern);
     blockTypes = setting.get(SettingBoxKey.danmakuBlockType, defaultValue: []);
     showArea = setting.get(SettingBoxKey.danmakuShowArea, defaultValue: 0.5);
     // 不透明度

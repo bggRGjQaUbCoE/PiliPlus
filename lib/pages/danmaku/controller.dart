@@ -69,7 +69,7 @@ class PlDanmakuController {
       queryDanmaku(segmentIndex);
     }
     if (plPlayerController.danmakuWeight == 0 &&
-        plPlayerController.danmakuFilterRule.isEmpty) {
+        plPlayerController.filterCount == 0) {
       return dmSegMap[progress ~/ 100];
     } else {
       return dmSegMap[progress ~/ 100]
@@ -81,29 +81,8 @@ class PlDanmakuController {
   }
 
   bool filterDanmaku(DanmakuElem elem) {
-    if (plPlayerController.dmRegExp?.hasMatch(elem.content) == true) {
-      return false;
-    }
-    for (var filter in plPlayerController.danmakuFilterRule) {
-      switch (filter['type']) {
-        case 0:
-          if (elem.content.contains(filter['filter'])) {
-            return false;
-          }
-          break;
-        // case 1:
-        //   if (RegExp(filter['filter'], caseSensitive: false)
-        //       .hasMatch(elem.content)) {
-        //     return false;
-        //   }
-        //   break;
-        case 2:
-          if (elem.idStr == filter['filter']) {
-            return false;
-          }
-          break;
-      }
-    }
-    return true;
+    return !(plPlayerController.dmUid.contains(elem.content) ||
+             plPlayerController.dmFilterString.any((i) => elem.content.contains(i)) ||
+             plPlayerController.dmRegExp?.hasMatch(elem.content) == true);
   }
 }

@@ -259,6 +259,13 @@ List<SettingsModel> get styleSettings => [
         defaultVal: false,
       ),
       SettingsModel(
+        settingsType: SettingsType.sw1tch,
+        title: '动态页展开正在直播UP列表',
+        leading: Icon(Icons.live_tv),
+        setKey: SettingBoxKey.expandDynLivePanel,
+        defaultVal: false,
+      ),
+      SettingsModel(
         settingsType: SettingsType.normal,
         onTap: (setState) async {
           DynamicBadgeMode? result = await showDialog(

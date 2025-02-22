@@ -4,7 +4,6 @@ import 'dart:developer';
 import 'dart:io';
 import 'dart:math' show Random;
 import 'package:PiliPlus/build_config.dart';
-import 'package:PiliPlus/common/constants.dart';
 import 'package:cookie_jar/cookie_jar.dart';
 import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
@@ -99,7 +98,6 @@ class Request {
     dio.options.headers['app-key'] = 'android64';
     dio.options.headers['x-bili-aurora-zone'] = 'sh001';
     dio.options.headers['referer'] = 'https://www.bilibili.com/';
-    dio.options.headers['user-agent'] = Constants.userAgent;
   }
 
   static Future buvidActivate() async {

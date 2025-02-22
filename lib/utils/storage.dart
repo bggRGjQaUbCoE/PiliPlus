@@ -384,6 +384,9 @@ class GStorage {
   static bool get antiGoodsReply =>
       GStorage.setting.get(SettingBoxKey.antiGoodsReply, defaultValue: false);
 
+  static bool get expandDynLivePanel => GStorage.setting
+      .get(SettingBoxKey.expandDynLivePanel, defaultValue: false);
+
   static List<double> get dynamicDetailRatio => List<double>.from(setting
       .get(SettingBoxKey.dynamicDetailRatio, defaultValue: [60.0, 40.0]));
 
@@ -627,6 +630,7 @@ class SettingBoxKey {
       isPureBlackTheme = 'isPureBlackTheme',
       antiGoodsDyn = 'antiGoodsDyn',
       antiGoodsReply = 'antiGoodsReply',
+      expandDynLivePanel = 'expandDynLivePanel',
       springDescription = 'springDescription',
 
       // Sponsor Block

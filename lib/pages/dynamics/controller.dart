@@ -34,7 +34,7 @@ class DynamicsController extends GetxController
   int allFollowedUpsTotal = 0;
 
   late int currentMid = -1;
-  late bool showLiveItems = false;
+  late bool showLiveItems = GStorage.expandDynLivePanel;
 
   @override
   void onInit() {

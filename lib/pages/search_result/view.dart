@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:PiliPlus/models/common/search_type.dart';
 import 'package:PiliPlus/pages/search_panel/index.dart';
 import 'controller.dart';
+import 'package:PiliPlus/common/widgets/spring_physics.dart';
 
 class SearchResultPage extends StatefulWidget {
   const SearchResultPage({super.key});
@@ -119,6 +120,7 @@ class _SearchResultPageState extends State<SearchResultPage>
           ),
           Expanded(
             child: TabBarView(
+              physics: customTabBarViewScrollPhysics,
               controller: _tabController,
               children: SearchType.values
                   .map(

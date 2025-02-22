@@ -14,6 +14,7 @@ import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 import '../../utils/storage.dart';
 import '../../utils/utils.dart';
+import 'package:PiliPlus/common/widgets/spring_physics.dart';
 
 class ListSheetContent extends StatefulWidget {
   const ListSheetContent({
@@ -423,6 +424,7 @@ class _ListSheetContentState extends State<ListSheetContent>
               ? Material(
                   color: Colors.transparent,
                   child: TabBarView(
+                    physics: customTabBarViewScrollPhysics,
                     controller: _ctr,
                     children: List.generate(
                       widget.season.sections.length,

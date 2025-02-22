@@ -11,6 +11,7 @@ import 'package:material_design_icons_flutter/material_design_icons_flutter.dart
 
 import 'controller.dart';
 import 'widgets/up_panel.dart';
+import 'package:PiliPlus/common/widgets/spring_physics.dart';
 
 enum ReplyOption { allow, close, choose }
 
@@ -183,7 +184,7 @@ class _DynamicsPageState extends State<DynamicsPage>
           if (upPanelPosition == UpPanelPosition.leftFixed) upPanelPart(),
           Expanded(
               child: TabBarView(
-            physics: const AlwaysScrollableScrollPhysics(),
+            physics: customTabBarViewScrollPhysics,
             controller: _dynamicsController.tabController,
             children: _dynamicsController.tabsPageList,
           )),

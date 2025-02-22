@@ -50,6 +50,7 @@ import 'package:screen_brightness/screen_brightness.dart';
 
 import '../../../services/shutdown_timer_service.dart';
 import 'widgets/header_control.dart';
+import 'package:PiliPlus/common/widgets/spring_physics.dart';
 
 class VideoDetailPage extends StatefulWidget {
   const VideoDetailPage({super.key});
@@ -621,7 +622,7 @@ class _VideoDetailPageState extends State<VideoDetailPage>
                           ),
                           Expanded(
                             child: TabBarView(
-                              physics: const ClampingScrollPhysics(),
+                              physics: customTabBarViewScrollPhysics,
                               controller: videoDetailController.tabCtr,
                               children: [
                                 videoIntro(),
@@ -672,7 +673,7 @@ class _VideoDetailPageState extends State<VideoDetailPage>
                         buildTabbar(showReply: videoDetailController.showReply),
                         Expanded(
                           child: TabBarView(
-                            physics: const ClampingScrollPhysics(),
+                            physics: customTabBarViewScrollPhysics,
                             controller: videoDetailController.tabCtr,
                             children: [
                               videoIntro(),
@@ -772,6 +773,7 @@ class _VideoDetailPageState extends State<VideoDetailPage>
                           ),
                           Expanded(
                             child: TabBarView(
+                              physics: customTabBarViewScrollPhysics,
                               controller: videoDetailController.tabCtr,
                               children: [
                                 if (videoDetailController.showReply)
@@ -881,7 +883,7 @@ class _VideoDetailPageState extends State<VideoDetailPage>
                         ),
                         Expanded(
                           child: TabBarView(
-                            physics: const ClampingScrollPhysics(),
+                            physics: customTabBarViewScrollPhysics,
                             controller: videoDetailController.tabCtr,
                             children: [
                               if (videoDetailController.videoType ==

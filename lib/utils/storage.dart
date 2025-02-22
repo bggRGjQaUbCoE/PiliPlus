@@ -412,6 +412,12 @@ class GStorage {
     };
   }
 
+  static final _defaultSpring = const ClampingScrollPhysics().spring;
+
+  static final List springDescription = setting
+      .get(SettingBoxKey.springDescription,
+        defaultValue: [_defaultSpring.mass, _defaultSpring.stiffness, _defaultSpring.damping]);
+
   // static Brightness get brightness {
   //   return switch (_themeMode) {
   //     0 => Brightness.light,
@@ -621,6 +627,7 @@ class SettingBoxKey {
       isPureBlackTheme = 'isPureBlackTheme',
       antiGoodsDyn = 'antiGoodsDyn',
       antiGoodsReply = 'antiGoodsReply',
+      springDescription = 'springDescription',
 
       // Sponsor Block
       enableSponsorBlock = 'enableSponsorBlock',

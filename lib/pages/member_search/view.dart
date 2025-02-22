@@ -3,6 +3,7 @@ import 'package:PiliPlus/pages/member_search/search_dynamic.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'controller.dart';
+import 'package:PiliPlus/common/widgets/spring_physics.dart';
 
 class MemberSearchPage extends StatefulWidget {
   const MemberSearchPage({super.key});
@@ -69,6 +70,7 @@ class _MemberSearchPageState extends State<MemberSearchPage> {
                   ),
                   Expanded(
                     child: TabBarView(
+                      physics: customTabBarViewScrollPhysics,
                       controller: _memberSearchCtr.tabController,
                       children: [
                         SearchArchive(ctr: _memberSearchCtr),

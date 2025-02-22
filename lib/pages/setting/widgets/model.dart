@@ -531,6 +531,75 @@ List<SettingsModel> get styleSettings => [
       ),
       SettingsModel(
         settingsType: SettingsType.normal,
+        title: '滑动动画弹簧参数',
+        leading: const Icon(Icons.chrome_reader_mode_outlined),
+        onTap: (setState) {
+          final numberRegExp = RegExp(r'[\d\.]+');
+          List springDescription = GStorage.springDescription.map((i) => i.toString()).toList();
+          showDialog(
+            context: Get.context!,
+            builder: (context) {
+              return AlertDialog(
+                title: const Text('弹簧参数'),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextFormField(
+                      autofocus: true,
+                      initialValue: springDescription[0],
+                      keyboardType: TextInputType.numberWithOptions(),
+                      onChanged: (value) { springDescription[0] = value; },
+                      inputFormatters: [FilteringTextInputFormatter.allow(numberRegExp)],
+                      decoration: InputDecoration(labelText: 'mass'),
+                    ),
+                    TextFormField(
+                      autofocus: true,
+                      initialValue: springDescription[1],
+                      keyboardType: TextInputType.numberWithOptions(),
+                      onChanged: (value) { springDescription[1] = value; },
+                      inputFormatters: [FilteringTextInputFormatter.allow(numberRegExp)],
+                      decoration: InputDecoration(labelText: 'stiffness'),
+                    ),
+                    TextFormField(
+                      autofocus: true,
+                      initialValue: springDescription[2],
+                      keyboardType: TextInputType.numberWithOptions(),
+                      onChanged: (value) { springDescription[2] = value; },
+                      inputFormatters: [FilteringTextInputFormatter.allow(numberRegExp)],
+                      decoration: InputDecoration(labelText: 'damping'),
+                    )
+                  ]
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: Get.back,
+                    child: Text(
+                      '取消',
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.outline,
+                      ),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () async {
+                      Get.back();
+                      await GStorage.setting.put(
+                        SettingBoxKey.springDescription,
+                        List<double>.generate(3, (i) => double.tryParse(springDescription[i]) ?? GStorage.springDescription[i]),
+                      );
+                      SmartDialog.showToast('设置成功，重启生效');
+                      setState();
+                    },
+                    child: const Text('确定'),
+                  )
+                ],
+              );
+            },
+          );
+        },
+      ),
+      SettingsModel(
+        settingsType: SettingsType.normal,
         onTap: (setState) async {
           dynamic result = await Get.toNamed('/fontSizeSetting');
           if (result != null) {

@@ -16,6 +16,7 @@ import 'package:PiliPlus/pages/main/index.dart';
 import '../../utils/grid.dart';
 import 'controller.dart';
 import 'widgets/bangumi_card_v.dart';
+import 'package:PiliPlus/common/widgets/spring_physics.dart';
 
 class BangumiPage extends StatefulWidget {
   const BangumiPage({
@@ -162,6 +163,7 @@ class _BangumiPageState extends State<BangumiPage>
                                           .toList()),
                                   Expanded(
                                     child: TabBarView(
+                                        physics: customTabBarViewScrollPhysics,
                                         children: types
                                             .map((type) =>
                                                 PgcIndexPage(indexType: type))

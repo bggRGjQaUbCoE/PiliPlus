@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../common/widgets/network_img_layer.dart';
 import 'controller.dart';
+import 'package:PiliPlus/common/widgets/spring_physics.dart';
 
 class EmotePanel extends StatefulWidget {
   final Function onChoose;
@@ -36,6 +37,7 @@ class _EmotePanelState extends State<EmotePanel>
               children: [
                 Expanded(
                   child: TabBarView(
+                    physics: customTabBarViewScrollPhysics,
                     controller: _emotePanelController.tabController,
                     children: (loadingState.response as List<Packages>).map(
                       (e) {

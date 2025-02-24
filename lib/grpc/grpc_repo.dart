@@ -31,7 +31,7 @@ class GrpcRepo {
   static const _phone = 'phone';
 
   static final _eId = _isLogin ? Utils.genAuroraEid(_mid!) : '';
-  static final _buvid = LoginUtils.buvid();
+  static final _buvid = LoginUtils.buvid;
   static final _traceId = Utils.genTraceId();
   static final _sessionId = Utils.generateRandomString(8);
 

@@ -765,7 +765,6 @@ class Utils {
 
   static String generateRandomString(int length) {
     const characters = '0123456789abcdefghijklmnopqrstuvwxyz';
-    Random random = Random();
 
     return String.fromCharCodes(Iterable.generate(length,
         (_) => characters.codeUnitAt(random.nextInt(characters.length))));
@@ -777,66 +776,43 @@ class Utils {
     }
 
     // 1. Convert UID to a byte array.
-    List<int> midByte = utf8.encode(uid.toString());
-    List<int> resultByte = List<int>.filled(midByte.length, 0);
+    var midByte = utf8.encode(uid.toString());
 
     // 2. XOR each byte with the corresponding byte from the key.
     const key = 'ad1va46a7lza';
     for (int i = 0; i < midByte.length; i++) {
-      resultByte[i] = midByte[i] ^ key.codeUnitAt(i % key.length);
+      midByte[i] ^= key.codeUnitAt(i % key.length);
     }
 
     // 3. Perform Base64 encoding without padding.
     String base64Encoded =
-        base64.encode(resultByte).replaceAll('=', ''); // Remove padding
+        base64.encode(midByte).replaceAll('=', ''); // Remove padding
 
     // Return the resulting x-bili-aurora-eid.
     return base64Encoded;
   }
 
-  static String genRandomString(int length) {
-    const characters = '0123456789abcdefghijklmnopqrstuvwxyz';
-    Random random = Random();
-    return List.generate(
-            length, (index) => characters[random.nextInt(characters.length)])
-        .join();
-  }
+  // static String genRandomString(int length) {
+  //   const characters = '0123456789abcdefghijklmnopqrstuvwxyz';
+  //   Random random = Random();
+  //   return List.generate(
+  //           length, (index) => characters[random.nextInt(characters.length)])
+  //       .join();
+  // }
 
   static String genTraceId() {
-    // 1. Generate a 32-character random string (random_id).
-    String randomId = genRandomString(32);
+    String randomId = generateRandomString(32);
 
-    // 2. Take the first 24 characters of random_id as random_trace_id.
     StringBuffer randomTraceId = StringBuffer(randomId.substring(0, 24));
 
-    // 3. Initialize an array b_arr with a length of 3, initial values are 0.
-    List<int> bArr = List.filled(3, 0);
-
-    // Get the current timestamp.
-    int ts = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-
-    // Using a loop to traverse b_arr from high to low.
     for (int i = 2; i >= 0; i--) {
-      ts >>= 8; // Right shift ts by 8 bits.
-      bArr[i] = (ts ~/ 128) % 2 == 0
-          ? (ts % 256)
-          : (ts % 256) - 256; // Assign value based on condition.
-    }
-
-    // 4. Convert each element in b_arr to a two-digit hexadecimal string and append to random_trace_id.
-    for (int value in bArr) {
       randomTraceId
-          .write(value.toRadixString(16).padLeft(2, '0')); // Convert to hex.
+          .write(random.nextInt(256).toRadixString(16).padLeft(2, '0'));
     }
 
-    // 5. Append the 31st and 32nd characters of random_id to random_trace_id.
     randomTraceId.write(randomId.substring(30, 32));
 
-    // 6. Finally, concatenate as '{random_trace_id}:{random_trace_id[16..32]}:0:0'.
-    String randomTraceIdFinal =
-        '${randomTraceId.toString()}:${randomTraceId.toString().substring(16, 32)}:0:0';
-
-    return randomTraceIdFinal;
+    return '${randomTraceId.toString()}:${randomTraceId.toString().substring(16, 32)}:0:0';
   }
 
   static void viewBangumi({

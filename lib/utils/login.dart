@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
@@ -14,14 +13,12 @@ import 'package:PiliPlus/pages/dynamics/tab/controller.dart';
 import 'package:PiliPlus/pages/live/controller.dart';
 import 'package:PiliPlus/pages/main/controller.dart';
 import 'package:PiliPlus/utils/storage.dart';
-import 'package:crypto/crypto.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:PiliPlus/pages/dynamics/index.dart';
 import 'package:PiliPlus/pages/home/index.dart';
 import 'package:PiliPlus/pages/media/index.dart';
 import 'package:PiliPlus/pages/mine/index.dart';
-import 'package:uuid/uuid.dart';
 import 'package:webview_cookie_manager/webview_cookie_manager.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart' as web;
 import 'package:PiliPlus/pages/dynamics/controller.dart';
@@ -31,14 +28,16 @@ import 'package:PiliPlus/pages/mine/controller.dart';
 import 'package:PiliPlus/http/user.dart';
 
 class LoginUtils {
-  static Future onLogin(Map<String, dynamic> token_info, cookie_info) async {
+  static final random = Random();
+
+  static Future onLogin(Map<String, dynamic> tokenInfo, jsonCookieInfo) async {
     try {
       GStorage.localCache.put(LocalCacheKey.accessKey, {
-        'mid': token_info['mid'],
-        'value': token_info['access_token'] ?? token_info['value'],
-        'refresh': token_info['refresh_token'] ?? token_info['refresh']
+        'mid': tokenInfo['mid'],
+        'value': tokenInfo['access_token'] ?? tokenInfo['value'],
+        'refresh': tokenInfo['refresh_token'] ?? tokenInfo['refresh']
       });
-      List<dynamic> cookieInfo = cookie_info['cookies'];
+      List<dynamic> cookieInfo = jsonCookieInfo['cookies'];
       List<Cookie> cookies = [];
       String cookieStrings = cookieInfo.map((cookie) {
         String cstr =
@@ -198,30 +197,24 @@ class LoginUtils {
     } catch (_) {}
   }
 
-  static String buvid() {
-    var mac = <String>[];
-    var random = Random();
-
-    for (var i = 0; i < 6; i++) {
-      var min = 0;
-      var max = 0xff;
-      var num = (random.nextInt(max - min + 1) + min).toRadixString(16);
-      mac.add(num);
-    }
-
-    var md5Str = md5.convert(utf8.encode(mac.join(':'))).toString();
-    var md5Arr = md5Str.split('');
-    return 'XY${md5Arr[2]}${md5Arr[12]}${md5Arr[22]}$md5Str';
-  }
-
-  static String getUUID() {
-    return const Uuid().v4().replaceAll('-', '');
-  }
-
   static String generateBuvid() {
-    String uuid = getUUID() + getUUID();
-    return 'XY${uuid.substring(0, 35).toUpperCase()}';
+    var md5Str =
+        Iterable.generate(32, (_) => random.nextInt(256).toRadixString(16))
+            .join()
+            .toUpperCase();
+    return 'XY${md5Str[2]}${md5Str[12]}${md5Str[22]}$md5Str';
   }
+
+  static final buvid = generateBuvid();
+
+  // static String getUUID() {
+  //   return const Uuid().v4().replaceAll('-', '');
+  // }
+
+  // static String generateBuvid() {
+  //   String uuid = getUUID() + getUUID();
+  //   return 'XY${uuid.substring(0, 35).toUpperCase()}';
+  // }
 
   static String genDeviceId() {
     // https://github.com/bilive/bilive_client/blob/2873de0532c54832f5464a4c57325ad9af8b8698/bilive/lib/app_client.ts#L62
@@ -230,7 +223,6 @@ class LoginUtils {
         .replaceAll(RegExp(r'[-:TZ]'), '')
         .substring(0, 14);
 
-    final Random random = Random(); // Random.secure();
     final String randomHex32 =
         List.generate(32, (index) => random.nextInt(16).toRadixString(16))
             .join();
@@ -250,13 +242,5 @@ class LoginUtils {
         .substring(checksumValue.toRadixString(16).length - 2);
 
     return deviceID + check;
-  }
-
-  static String generateRandomString(int length) {
-    const chars =
-        '123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
-    final Random random = Random(); // Random.secure();
-    return List.generate(length, (index) => chars[random.nextInt(chars.length)])
-        .join();
   }
 }

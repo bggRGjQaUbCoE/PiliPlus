@@ -9,10 +9,10 @@ import '../utils/utils.dart';
 import 'index.dart';
 
 class LoginHttp {
-  static String deviceId = LoginUtils.genDeviceId();
-  static String buvid = LoginUtils.buvid();
-  static String host = 'passport.bilibili.com';
-  static Map<String, String> headers = {
+  static final String deviceId = LoginUtils.genDeviceId();
+  static final String buvid = LoginUtils.buvid;
+  static const String host = 'passport.bilibili.com';
+  static final Map<String, String> headers = {
     'Host': host,
     'buvid': buvid,
     'env': 'prod',
@@ -224,7 +224,7 @@ class LoginHttp {
       'device_platform': 'Android14vivo',
       'disable_rcmd': '0',
       'dt': Uri.encodeComponent(Encrypter(RSA(publicKey: publicKey))
-          .encrypt(LoginUtils.generateRandomString(16))
+          .encrypt(Utils.generateRandomString(16))
           .base64),
       'from_pv': 'main.homepage.avatar-nologin.all.click',
       'from_url': Uri.encodeComponent('bilibili://pegasus/promo'),
@@ -304,7 +304,7 @@ class LoginHttp {
       // 'device_tourist_id': '',
       'disable_rcmd': '0',
       'dt': Uri.encodeComponent(Encrypter(RSA(publicKey: publicKey))
-          .encrypt(LoginUtils.generateRandomString(16))
+          .encrypt(Utils.generateRandomString(16))
           .base64),
       'from_pv': 'main.my-information.my-login.0.click',
       'from_url': Uri.encodeComponent('bilibili://user_center/mine'),

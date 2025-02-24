@@ -419,7 +419,7 @@ class Api {
   // https://api.bilibili.com/x/player/online/total?aid=913663681&cid=1203559746&bvid=BV1MM4y1s7NZ&ts=56427838
   static const String onlineTotal = '/x/player/online/total';
 
-  static const String webDanmaku = '/x/v2/dm/web/seg.so';
+  // static const String webDanmaku = '/x/v2/dm/web/seg.so';
 
   // 发送视频弹幕
   //https://github.com/SocialSisterYi/bilibili-API-collect/blob/master/docs/danmaku/action.md

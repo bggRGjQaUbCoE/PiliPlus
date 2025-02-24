@@ -1,4 +1,5 @@
 import 'package:PiliPlus/grpc/dm/v1/dm.pb.dart';
+import 'package:PiliPlus/grpc/grpc_repo.dart';
 import 'package:PiliPlus/utils/extension.dart';
 import 'package:dio/dio.dart';
 import 'index.dart';
@@ -11,20 +12,12 @@ class DanmakuHttp {
     required bool mergeDanmaku,
   }) async {
     // 构建参数对象
-    Map<String, int> params = {
-      'type': 1,
-      'oid': cid,
-      'segment_index': segmentIndex,
-    };
-    var response = await Request().get(
-      Api.webDanmaku,
-      queryParameters: params,
-      options: Options(responseType: ResponseType.bytes),
-    );
-    if (response.statusCode != 200 || response.data == null) {
+    final response =
+        await GrpcRepo.dmSegMobile(cid: cid, segmentIndex: segmentIndex);
+    if (!response['status']) {
       return DmSegMobileReply();
     }
-    DmSegMobileReply data = DmSegMobileReply.fromBuffer(response.data);
+    DmSegMobileReply data = response['data'];
     if (mergeDanmaku) {
       data.elems.unique((item) => item.content);
     }

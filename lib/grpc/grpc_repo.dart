@@ -8,6 +8,7 @@ import 'package:PiliPlus/grpc/app/main/community/reply/v1/reply.pb.dart';
 import 'package:PiliPlus/grpc/app/playeronline/v1/playeronline.pb.dart';
 import 'package:PiliPlus/grpc/app/show/popular/v1/popular.pb.dart';
 import 'package:PiliPlus/grpc/device/device.pb.dart';
+import 'package:PiliPlus/grpc/dm/v1/dm.pb.dart';
 import 'package:PiliPlus/grpc/fawkes/fawkes.pb.dart';
 import 'package:PiliPlus/grpc/locale/locale.pb.dart';
 import 'package:PiliPlus/grpc/metadata/metadata.pb.dart';
@@ -35,6 +36,7 @@ class GrpcUrl {
   static const mainList = '/bilibili.main.community.reply.v1.Reply/MainList';
   static const dynSpace = '/bilibili.app.dynamic.v2.Dynamic/DynSpace';
   static const dynRed = '/bilibili.app.dynamic.v1.Dynamic/DynRed';
+  static const dmSegMobile = '/bilibili.community.service.dm.v1.DM/DmSegMobile';
 }
 
 class GrpcRepo {
@@ -275,5 +277,14 @@ class GrpcRepo {
     return await _request(GrpcUrl.dynRed,
         DynRedReq(tabOffset: [TabOffset(tab: 1)]), DynRedReply.fromBuffer,
         onSuccess: (response) => response.dynRedItem.count.toInt());
+  }
+
+  static Future dmSegMobile(
+      {required int cid, required int segmentIndex, int type = 1}) async {
+    return await _request(
+        GrpcUrl.dmSegMobile,
+        DmSegMobileReq(
+            oid: Int64(cid), segmentIndex: Int64(segmentIndex), type: type),
+        DmSegMobileReply.fromBuffer);
   }
 }

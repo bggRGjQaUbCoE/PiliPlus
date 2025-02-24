@@ -19,7 +19,6 @@ class ApiInterceptor extends Interceptor {
     Api.bangumiInfo,
     Api.liveRoomInfo,
     Api.onlineTotal,
-    Api.webDanmaku,
     Api.dynamicDetail,
     Api.aiConclusion,
     Api.getSeasonDetailApi,

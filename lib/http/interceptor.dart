@@ -44,6 +44,11 @@ class ApiInterceptor extends Interceptor {
       }
     }
 
+    // app端不需要cookie
+    if (options.uri.host == 'app.bilibili.com') {
+      options.headers['cookie'] = '';
+    }
+
     if (options.extra['clearCookie'] == true) {
       onRemoveCookie();
     } else if (MineController.anonymity.value) {

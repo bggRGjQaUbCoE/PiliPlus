@@ -173,7 +173,7 @@ dependencies:
       path: packages/chat_bottom_container
   image_picker: ^1.1.2
   intl: ^0.19.0
-  grpc: ^4.0.1
+  archive: ^4.0.0
   flutter_svg: ^2.0.14
   image_cropper: ^8.0.2
   #解压直播消息

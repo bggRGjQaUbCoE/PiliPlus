@@ -3,7 +3,6 @@ import 'dart:io';
 
 import 'package:PiliPlus/common/widgets/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/tabs.dart';
-import 'package:PiliPlus/grpc/grpc_client.dart';
 import 'package:PiliPlus/pages/mine/controller.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
 import 'package:PiliPlus/utils/utils.dart';
@@ -161,7 +160,7 @@ class _MainAppState extends State<MainApp>
   void dispose() async {
     MainApp.routeObserver.unsubscribe(this);
     WidgetsBinding.instance.removeObserver(this);
-    await GrpcClient.instance.shutdown();
+    // await GrpcClient.instance.shutdown();
     await GStorage.close();
     EventBus().off(EventName.loginEvent);
     PiliScheme.listener?.cancel();

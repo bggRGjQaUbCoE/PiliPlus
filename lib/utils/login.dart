@@ -199,7 +199,7 @@ class LoginUtils {
 
   static String generateBuvid() {
     var md5Str =
-        Iterable.generate(32, (_) => random.nextInt(256).toRadixString(16))
+        Iterable.generate(32, (_) => random.nextInt(16).toRadixString(16))
             .join()
             .toUpperCase();
     return 'XY${md5Str[2]}${md5Str[12]}${md5Str[22]}$md5Str';

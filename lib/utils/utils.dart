@@ -805,9 +805,11 @@ class Utils {
 
     StringBuffer randomTraceId = StringBuffer(randomId.substring(0, 24));
 
+    int ts = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+
     for (int i = 2; i >= 0; i--) {
-      randomTraceId
-          .write(random.nextInt(256).toRadixString(16).padLeft(2, '0'));
+      ts >>= 8;
+      randomTraceId.write((ts & 0xFF).toRadixString(16).padLeft(2, '0'));
     }
 
     randomTraceId.write(randomId.substring(30, 32));

@@ -644,6 +644,7 @@ class SettingBoxKey {
       expandDynLivePanel = 'expandDynLivePanel',
       springDescription = 'springDescription',
       collapsibleVideoPage = 'collapsibleVideoPage',
+      enableHttp2 = 'enableHttp2',
 
       // Sponsor Block
       enableSponsorBlock = 'enableSponsorBlock',

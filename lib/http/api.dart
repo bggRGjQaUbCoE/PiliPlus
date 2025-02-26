@@ -619,7 +619,7 @@ class Api {
 
   /// 申请二维码(TV端)
   static const getTVCode =
-      'https://passport.bilibili.com/x/passport-tv-login/qrcode/auth_code';
+      '${HttpString.passBaseUrl}/x/passport-tv-login/qrcode/auth_code';
 
   ///扫码登录（TV端）
   static const qrcodePoll =
@@ -662,7 +662,7 @@ class Api {
   static const getUnreadDynamic = '/x/web-interface/dynamic/entrance';
 
   /// 用户动态主页
-  static const dynamicSpmPrefix = 'https://space.bilibili.com/1/dynamic';
+  static const dynamicSpmPrefix = '${HttpString.spaceBaseUrl}/1/dynamic';
 
   /// 激活buvid3
   static const activateBuvidApi = '/x/internal/gaia-gateway/ExClimbWuzhi';

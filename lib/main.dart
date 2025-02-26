@@ -54,9 +54,7 @@ void main() async {
       ],
     );
   }
-  if (BuildConfig.isDebug || GStorage.badCertificateCallback) {
-    HttpOverrides.global = _CustomHttpOverrides();
-  }
+  HttpOverrides.global = _CustomHttpOverrides();
   await setupServiceLocator();
   Request();
   await Request.setCookie();
@@ -294,10 +292,18 @@ class MyApp extends StatelessWidget {
 }
 
 class _CustomHttpOverrides extends HttpOverrides {
+  static final badCertificateCallback =
+      BuildConfig.isDebug || GStorage.badCertificateCallback;
+
   @override
   HttpClient createHttpClient(SecurityContext? context) {
-    return super.createHttpClient(context)
-      ..badCertificateCallback =
+    final client = super.createHttpClient(context)
+      ..maxConnectionsPerHost = 32
+      ..idleTimeout = const Duration(seconds: 30);
+    if (badCertificateCallback) {
+      client.badCertificateCallback =
           (X509Certificate cert, String host, int port) => true;
+    }
+    return client;
   }
 }

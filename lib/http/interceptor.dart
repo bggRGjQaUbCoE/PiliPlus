@@ -32,7 +32,7 @@ class ApiInterceptor extends Interceptor {
       options.headers.remove('x-bili-mid');
       options.headers.remove('x-bili-aurora-eid');
       options.headers.remove('x-bili-aurora-zone');
-      options.headers['cookie'] = '';
+      options.headers.remove('cookie');
       options.queryParameters.remove('access_key');
       options.queryParameters.remove('csrf');
       options.queryParameters.remove('csrf_token');
@@ -45,7 +45,7 @@ class ApiInterceptor extends Interceptor {
 
     // app端不需要cookie
     if (options.uri.host == 'app.bilibili.com') {
-      options.headers['cookie'] = '';
+      options.headers.remove('cookie');
     }
 
     if (options.extra['clearCookie'] == true) {
@@ -139,5 +139,5 @@ class ApiInterceptor extends Interceptor {
 }
 
 extension _ConnectivityResultExt on ConnectivityResult {
-  String get title => ['蓝牙', 'Wi-Fi', '局域', '流量', '无', '代理', '其他'][index];
+  String get title => const ['蓝牙', 'Wi-Fi', '局域', '流量', '无', '代理', '其他'][index];
 }

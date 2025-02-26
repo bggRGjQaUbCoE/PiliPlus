@@ -4,10 +4,13 @@ import 'dart:developer';
 import 'dart:io';
 import 'dart:math' show Random;
 import 'package:PiliPlus/build_config.dart';
+import 'package:archive/archive.dart';
+import 'package:brotli/brotli.dart';
 import 'package:cookie_jar/cookie_jar.dart';
 import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
 import 'package:dio_cookie_manager/dio_cookie_manager.dart';
+import 'package:dio_http2_adapter/dio_http2_adapter.dart';
 import 'package:flutter/material.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
 import '../utils/storage.dart';
@@ -18,6 +21,9 @@ import 'interceptor.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart' as web;
 
 class Request {
+  static const gzipDecoder = GZipDecoder();
+  static const brotilDecoder = BrotliDecoder();
+
   static final Request _instance = Request._internal();
   static late CookieManager cookieManager;
   static late final Dio dio;
@@ -52,18 +58,18 @@ class Request {
       );
     }
     final userInfo = GStorage.userInfo.get('userInfoCache');
-    if (userInfo != null && userInfo.mid != null) {
-      final List<Cookie> cookie2 = await cookieManager.cookieJar
+    if (userInfo?.mid != null) {
+      final List<Cookie> tUrlCookies = await cookieManager.cookieJar
           .loadForRequest(Uri.parse(HttpString.tUrl));
-      if (cookie2.isEmpty) {
+      if (tUrlCookies.isEmpty) {
         try {
-          await Request().get(HttpString.tUrl);
+          await dio.head(HttpString.tUrl);
         } catch (e) {
           log("setCookie, ${e.toString()}");
         }
       }
+      setOptionsHeaders(userInfo);
     }
-    setOptionsHeaders(userInfo, userInfo != null && userInfo.mid != null);
 
     try {
       await buvidActivate();
@@ -81,23 +87,15 @@ class Request {
   static Future<String> getCsrf() async {
     List<Cookie> cookies = await cookieManager.cookieJar
         .loadForRequest(Uri.parse(HttpString.apiBaseUrl));
-    String token = '';
-    if (cookies.where((e) => e.name == 'bili_jct').isNotEmpty) {
-      token = cookies.firstWhere((e) => e.name == 'bili_jct').value;
-    }
-    return token;
+    return cookies
+        .firstWhere((e) => e.name == 'bili_jct', orElse: () => Cookie('', ''))
+        .value;
   }
 
-  static setOptionsHeaders(userInfo, bool status) {
-    if (status) {
-      dio.options.headers['x-bili-mid'] = userInfo.mid.toString();
-      dio.options.headers['x-bili-aurora-eid'] =
-          IdUtils.genAuroraEid(userInfo.mid);
-    }
-    dio.options.headers['env'] = 'prod';
-    dio.options.headers['app-key'] = 'android64';
-    dio.options.headers['x-bili-aurora-zone'] = 'sh001';
-    dio.options.headers['referer'] = 'https://www.bilibili.com/';
+  static setOptionsHeaders(userInfo) {
+    dio.options.headers['x-bili-mid'] = userInfo.mid.toString();
+    dio.options.headers['x-bili-aurora-eid'] =
+        IdUtils.genAuroraEid(userInfo.mid);
   }
 
   static Future buvidActivate() async {
@@ -121,7 +119,7 @@ class Request {
 
     await Request().post(Api.activateBuvidApi,
         data: {'payload': jsonData},
-        options: Options(contentType: 'application/json'));
+        options: Options(contentType: Headers.jsonContentType));
   }
 
   /*
@@ -130,15 +128,24 @@ class Request {
   Request._internal() {
     //BaseOptions、Options、RequestOptions 都可以配置参数，优先级别依次递增，且可以根据优先级别覆盖参数
     BaseOptions options = BaseOptions(
-      //请求基地址,可以包含子路径
-      baseUrl: HttpString.apiBaseUrl,
-      //连接服务器超时时间，单位是毫秒.
-      connectTimeout: const Duration(milliseconds: 12000),
-      //响应流上前后两次接受到数据的间隔，单位为毫秒。
-      receiveTimeout: const Duration(milliseconds: 12000),
-      //Http请求头.
-      headers: {},
-    );
+        //请求基地址,可以包含子路径
+        baseUrl: HttpString.apiBaseUrl,
+        //连接服务器超时时间，单位是毫秒.
+        connectTimeout: const Duration(milliseconds: 12000),
+        //响应流上前后两次接受到数据的间隔，单位为毫秒。
+        receiveTimeout: const Duration(milliseconds: 12000),
+        //Http请求头.
+        headers: {
+          'connection': 'keep-alive',
+          'accept-encoding': 'br,gzip',
+          'user-agent': 'Dart/3.6 (dart:io)', // Http2Adapter不会自动添加标头
+          'referer': HttpString.baseUrl,
+          'env': 'prod',
+          'app-key': 'android64',
+          'x-bili-aurora-zone': 'sh001',
+        },
+        responseDecoder: responseDecoder, // Http2Adapter没有自动解压
+        persistentConnection: true);
 
     enableSystemProxy = GStorage.setting
         .get(SettingBoxKey.enableSystemProxy, defaultValue: false) as bool;
@@ -147,33 +154,36 @@ class Request {
     systemProxyPort =
         GStorage.setting.get(SettingBoxKey.systemProxyPort, defaultValue: '');
 
-    dio = Dio(options);
+    final http11Adapter = IOHttpClientAdapter(createHttpClient: () {
+      final client = HttpClient()
+        ..idleTimeout = const Duration(seconds: 30)
+        ..autoUncompress = false; // Http2Adapter没有自动解压, 统一行为
+      // 设置代理
+      if (enableSystemProxy) {
+        client.findProxy = (_) => 'PROXY $systemProxyHost:$systemProxyPort';
+        client.badCertificateCallback =
+            (X509Certificate cert, String host, int port) => true;
+      }
+      return client;
+    });
 
-    /// fix 第三方登录 302重定向 跟iOS代理问题冲突
-    // ..httpClientAdapter = Http2Adapter(
-    //   ConnectionManager(
-    //     idleTimeout: const Duration(milliseconds: 10000),
-    //     onClientCreate: (context, ClientSetting config) =>
-    //         config.onBadCertificate = (_) => true,
-    //   ),
-    // );
-
-    /// 设置代理
-    if (enableSystemProxy) {
-      dio.httpClientAdapter = IOHttpClientAdapter(
-        createHttpClient: () {
-          final HttpClient client = HttpClient();
-          // Config the client.
-          client.findProxy = (Uri uri) {
-            // return 'PROXY host:port';
-            return 'PROXY $systemProxyHost:$systemProxyPort';
-          };
-          client.badCertificateCallback =
-              (X509Certificate cert, String host, int port) => true;
-          return client;
-        },
-      );
-    }
+    dio = Dio(options)
+      ..httpClientAdapter =
+          GStorage.setting.get(SettingBoxKey.enableHttp2, defaultValue: false)
+              ? Http2Adapter(
+                  ConnectionManager(
+                      idleTimeout: const Duration(seconds: 30),
+                      onClientCreate: (_, ClientSetting config) {
+                        config.onBadCertificate = (_) => true;
+                        if (enableSystemProxy) {
+                          config.proxy = Uri(
+                              scheme: 'http',
+                              host: systemProxyHost,
+                              port: int.parse(systemProxyPort));
+                        }
+                      }),
+                  fallbackAdapter: http11Adapter)
+              : http11Adapter;
 
     // 日志拦截器 输出请求、响应内容
     if (BuildConfig.isDebug) {
@@ -186,8 +196,7 @@ class Request {
 
     dio.transformer = BackgroundTransformer();
     dio.options.validateStatus = (int? status) {
-      return status! >= 200 && status < 300 ||
-          HttpString.validateStatusCodes.contains(status);
+      return status! >= 200 && status < 300;
     };
   }
 
@@ -285,19 +294,24 @@ class Request {
   }
 
   static String headerUa({type = 'mob'}) {
-    String headerUa = '';
-    if (type == 'mob') {
-      if (Platform.isIOS) {
-        headerUa =
-            'Mozilla/5.0 (iPhone; CPU iPhone OS 14_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1 Mobile/15E148 Safari/604.1';
-      } else {
-        headerUa =
-            'Mozilla/5.0 (Linux; Android 10; SM-G975F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.101 Mobile Safari/537.36';
-      }
-    } else {
-      headerUa =
-          'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.2 Safari/605.1.15';
+    return type == 'mob'
+        ? Platform.isIOS
+            ? 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1 Mobile/15E148 Safari/604.1'
+            : 'Mozilla/5.0 (Linux; Android 10; SM-G975F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.101 Mobile Safari/537.36'
+        : 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.2 Safari/605.1.15';
+  }
+
+  static String responseDecoder(List<int> responseBytes, RequestOptions options,
+      ResponseBody responseBody) {
+    switch (responseBody.headers['content-encoding']?.firstOrNull) {
+      case 'gzip':
+        return utf8.decode(gzipDecoder.decodeBytes(responseBytes),
+            allowMalformed: true);
+      case 'br':
+        return utf8.decode(brotilDecoder.convert(responseBytes),
+            allowMalformed: true);
+      default:
+        return utf8.decode(responseBytes, allowMalformed: true);
     }
-    return headerUa;
   }
 }

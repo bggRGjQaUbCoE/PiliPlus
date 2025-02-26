@@ -2182,6 +2182,14 @@ List<SettingsModel> get extraSettings => [
         defaultVal: false,
       ),
       SettingsModel(
+        settingsType: SettingsType.sw1tch,
+        title: '启用HTTP/2',
+        subtitle: '测试中',
+        leading: Icon(Icons.swap_horizontal_circle_outlined),
+        setKey: SettingBoxKey.enableHttp2,
+        defaultVal: false,
+      ),
+      SettingsModel(
         settingsType: SettingsType.normal,
         title: '评论展示',
         setKey: SettingBoxKey.replySortType,

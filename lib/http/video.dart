@@ -120,7 +120,6 @@ class VideoHttp {
       Api.recommendListApp,
       queryParameters: data,
       options: Options(headers: {
-        'Host': 'app.bilibili.com',
         'buvid': LoginHttp.buvid,
         'fp_local':
             '1111111111111111111111111111111111111111111111111111111111111111',

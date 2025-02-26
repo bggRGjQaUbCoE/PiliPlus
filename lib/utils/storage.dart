@@ -717,7 +717,7 @@ class LocalCacheKey {
       accessKey = 'accessKey',
 
       //
-      wbiKeys = 'wbiKeys',
+      mixinKey = 'mixinKey',
       timeStamp = 'timeStamp';
 }
 

@@ -182,6 +182,7 @@ dependencies:
   flex_seed_scheme: ^3.4.1
   live_photo_maker: ^0.0.6
   fl_chart: ^0.69.2
+  synchronized: ^3.3.0
 
 dependency_overrides:
   screen_brightness: ^2.0.1

@@ -278,7 +278,7 @@ class MemberHttp {
     dynamic wwebid,
   }) async {
     space(mid: mid);
-    Map params = await WbiSign().makSign({
+    Map params = await WbiSign.makSign({
       'mid': mid,
       'token': token,
       'platform': 'web',
@@ -348,7 +348,7 @@ class MemberHttp {
   }) async {
     String dmImgStr = Utils.base64EncodeRandomString(16, 64);
     String dmCoverImgStr = Utils.base64EncodeRandomString(32, 128);
-    Map params = await WbiSign().makSign({
+    Map params = await WbiSign.makSign({
       'mid': mid,
       'ps': ps,
       'tid': tid,
@@ -393,7 +393,7 @@ class MemberHttp {
   }) async {
     String dmImgStr = Utils.base64EncodeRandomString(16, 64);
     String dmCoverImgStr = Utils.base64EncodeRandomString(32, 128);
-    Map params = await WbiSign().makSign({
+    Map params = await WbiSign.makSign({
       'offset': offset ?? '',
       'host_mid': mid,
       'timezone_offset': '-480',
@@ -595,7 +595,7 @@ class MemberHttp {
 
   // 最近投币
   static Future<LoadingState> getRecentCoinVideo({required int mid}) async {
-    Map params = await WbiSign().makSign({
+    Map params = await WbiSign.makSign({
       'mid': mid,
       'gaia_source': 'main_web',
       'web_location': 333.999,
@@ -621,7 +621,7 @@ class MemberHttp {
 
   // 最近点赞
   static Future<LoadingState> getRecentLikeVideo({required int mid}) async {
-    Map params = await WbiSign().makSign({
+    Map params = await WbiSign.makSign({
       'mid': mid,
       'gaia_source': 'main_web',
       'web_location': 333.999,
@@ -713,7 +713,7 @@ class MemberHttp {
       'name': name,
       'web_location': 333.999,
     };
-    Map params = await WbiSign().makSign(data);
+    Map params = await WbiSign.makSign(data);
     var res = await Request().get(Api.followSearch, queryParameters: {
       ...data,
       'w_rid': params['w_rid'],

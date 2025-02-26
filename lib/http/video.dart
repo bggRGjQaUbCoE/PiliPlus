@@ -235,7 +235,7 @@ class VideoHttp {
       data['try_look'] = 1;
     }
 
-    Map params = await WbiSign().makSign({
+    Map params = await WbiSign.makSign({
       ...data,
       'fourk': 1,
       'voice_balance': 1,
@@ -976,7 +976,7 @@ class VideoHttp {
     int? cid,
     int? upMid,
   }) async {
-    Map params = await WbiSign().makSign({
+    Map params = await WbiSign.makSign({
       'bvid': bvid,
       'cid': cid,
       'up_mid': upMid,

@@ -258,7 +258,7 @@ class MsgHttp {
     String? biz,
   }) async {
     String csrf = await Request.getCsrf();
-    Map<String, dynamic> data = await WbiSign().makSign({
+    Map<String, dynamic> data = await WbiSign.makSign({
       'file_up': await MultipartFile.fromFile(path),
       if (category != null) 'category': category,
       if (biz != null) 'biz': biz,
@@ -285,7 +285,7 @@ class MsgHttp {
     dynamic content,
   ) async {
     String csrf = await Request.getCsrf();
-    Map<String, dynamic> data = await WbiSign().makSign({
+    Map<String, dynamic> data = await WbiSign.makSign({
       'dynamic_id': 0,
       'type': 4,
       'rid': 0,
@@ -311,7 +311,7 @@ class MsgHttp {
     dynamic dynamicId,
   ) async {
     String csrf = await Request.getCsrf();
-    Map<String, dynamic> data = await WbiSign().makSign({
+    Map<String, dynamic> data = await WbiSign.makSign({
       'dynamic_id': dynamicId,
       'csrf_token': csrf,
       'csrf': csrf,
@@ -334,7 +334,7 @@ class MsgHttp {
     dynamic talkerId,
   ) async {
     String csrf = await Request.getCsrf();
-    Map<String, dynamic> data = await WbiSign().makSign({
+    Map<String, dynamic> data = await WbiSign.makSign({
       'talker_id': talkerId,
       'session_type': 1,
       'build': 0,
@@ -387,7 +387,7 @@ class MsgHttp {
     int opType,
   ) async {
     String csrf = await Request.getCsrf();
-    Map<String, dynamic> data = await WbiSign().makSign({
+    Map<String, dynamic> data = await WbiSign.makSign({
       'talker_id': talkerId,
       'session_type': 1,
       'op_type': opType,
@@ -422,7 +422,7 @@ class MsgHttp {
       params['end_ts'] = endTs;
     }
 
-    Map signParams = await WbiSign().makSign(params);
+    Map signParams = await WbiSign.makSign(params);
     var res = await Request().get(Api.sessionList, queryParameters: signParams);
     if (res.data['code'] == 0) {
       try {
@@ -475,7 +475,7 @@ class MsgHttp {
   static Future sessionMsg({
     int? talkerId,
   }) async {
-    Map params = await WbiSign().makSign({
+    Map params = await WbiSign.makSign({
       'talker_id': talkerId,
       'session_type': 1,
       'size': 20,
@@ -508,7 +508,7 @@ class MsgHttp {
     int? ackSeqno,
   }) async {
     String csrf = await Request.getCsrf();
-    Map params = await WbiSign().makSign({
+    Map params = await WbiSign.makSign({
       'talker_id': talkerId,
       'session_type': 1,
       'ack_seqno': ackSeqno,
@@ -559,7 +559,7 @@ class MsgHttp {
       'csrf_token': csrf,
       'csrf': csrf,
     };
-    Map<String, dynamic> params = await WbiSign().makSign(base);
+    Map<String, dynamic> params = await WbiSign.makSign(base);
     var res = await Request().post(Api.sendMsg,
         queryParameters: <String, dynamic>{
           'w_sender_uid': params['msg[sender_uid]'],

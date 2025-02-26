@@ -356,7 +356,7 @@ class UserHttp {
   }
   // // 相互关系查询
   // static Future relationSearch(int mid) async {
-  //   Map params = await WbiSign().makSign({
+  //   Map params = await WbiSign.makSign({
   //     'mid': mid,
   //     'token': '',
   //     'platform': 'web',

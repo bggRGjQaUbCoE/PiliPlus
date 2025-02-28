@@ -45,7 +45,8 @@ class FavDetailController extends MultiSelectController {
       isEnd = true;
     }
     if (currentPage != 1 && loadingState.value is Success) {
-      data.medias?.insertAll(
+      data.medias ??= <FavDetailItemData>[];
+      data.medias!.insertAll(
         0,
         List<FavDetailItemData>.from((loadingState.value as Success).response),
       );

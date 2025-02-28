@@ -1341,9 +1341,11 @@ class VideoDetailController extends GetxController
       childKey.currentState?.showBottomSheet(
         enableDrag: false,
         backgroundColor: Colors.transparent,
-        (context) => ViewPointsPage(
-          child: _postPanel(),
-        ),
+        (context) => GStorage.collapsibleVideoPage
+            ? ViewPointsPage(
+                child: _postPanel(),
+              )
+            : _postPanel(),
       );
     }
   }

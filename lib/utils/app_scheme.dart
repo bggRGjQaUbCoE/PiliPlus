@@ -16,6 +16,7 @@ import 'utils.dart';
 class PiliScheme {
   static late AppLinks appLinks;
   static StreamSubscription? listener;
+  static final uriDigitRegExp = RegExp(r'/(\d+)');
 
   static Future<void> init() async {
     // Register our protocol only on Windows platform
@@ -67,19 +68,19 @@ class PiliScheme {
             return true;
           case 'pgc':
             // bilibili://pgc/season/ep/123456?h5_awaken_params=random
-            String? id = RegExp(r'/(\d+)').firstMatch(path)?.group(1);
+            String? id = uriDigitRegExp.firstMatch(path)?.group(1);
             if (id != null) {
               bool isEp = path.contains('/ep/');
               Utils.viewBangumi(
-                seasonId: isEp ? null : id,
-                epId: isEp ? id : null,
-              );
+                  seasonId: isEp ? null : id,
+                  epId: isEp ? id : null,
+                  progress: uri.queryParameters['start_progress']);
               return true;
             }
             return false;
           case 'space':
             // bilibili://space/12345678?frommodule=XX&h5awaken=random
-            String? mid = RegExp(r'/(\d+)').firstMatch(path)?.group(1);
+            String? mid = uriDigitRegExp.firstMatch(path)?.group(1);
             if (mid != null) {
               Utils.toDupNamed('/member?mid=$mid', off: off);
               return true;
@@ -92,7 +93,7 @@ class PiliScheme {
             if (queryParameters['comment_root_id'] != null) {
               // to check
               // to video reply
-              String? oid = RegExp(r'/(\d+)').firstMatch(path)?.group(1);
+              String? oid = uriDigitRegExp.firstMatch(path)?.group(1);
               int? rpid = int.tryParse(queryParameters['comment_root_id']!);
               if (oid != null && rpid != null) {
                 Get.to(
@@ -132,7 +133,7 @@ class PiliScheme {
 
             // to video
             // bilibili://video/12345678?page=0&h5awaken=random
-            String? aid = RegExp(r'/(\d+)').firstMatch(path)?.group(1);
+            String? aid = uriDigitRegExp.firstMatch(path)?.group(1);
             String? bvid = RegExp(r'/(BV[a-z\d]{10})', caseSensitive: false)
                 .firstMatch(path)
                 ?.group(1);
@@ -163,7 +164,7 @@ class PiliScheme {
             return false;
           case 'live':
             // bilibili://live/12345678?extra_jump_from=1&from=1&is_room_feed=1&h5awaken=random
-            String? roomId = RegExp(r'/(\d+)').firstMatch(path)?.group(1);
+            String? roomId = uriDigitRegExp.firstMatch(path)?.group(1);
             if (roomId != null) {
               Utils.toDupNamed('/liveRoom?roomid=$roomId', off: off);
               return true;
@@ -172,7 +173,7 @@ class PiliScheme {
           case 'bangumi':
             // bilibili://bangumi/season/12345678?h5_awaken_params=random
             if (path.startsWith('/season')) {
-              String? seasonId = RegExp(r'/(\d+)').firstMatch(path)?.group(1);
+              String? seasonId = uriDigitRegExp.firstMatch(path)?.group(1);
               if (seasonId != null) {
                 Utils.viewBangumi(seasonId: seasonId, epId: null);
                 return true;
@@ -195,7 +196,7 @@ class PiliScheme {
             return true;
           case 'article':
             // bilibili://article/40679479?jump_opus=1&jump_opus_type=1&opus_type=article&h5awaken=random
-            String? id = RegExp(r'/(\d+)').firstMatch(path)?.group(1);
+            String? id = uriDigitRegExp.firstMatch(path)?.group(1);
             if (id != null) {
               Utils.toDupNamed(
                 '/htmlRender',
@@ -256,7 +257,7 @@ class PiliScheme {
               final queryParameters = uri.queryParameters;
               final commentRootId = queryParameters['comment_root_id'];
               if (commentRootId != null) {
-                String? oid = RegExp(r'/(\d+)').firstMatch(path)?.group(1);
+                String? oid = uriDigitRegExp.firstMatch(path)?.group(1);
                 int? rpid = int.tryParse(commentRootId);
                 if (oid != null && rpid != null) {
                   Get.to(
@@ -296,7 +297,7 @@ class PiliScheme {
             }
             return false;
           case 'album':
-            String? rid = RegExp(r'/(\d+)').firstMatch(path)?.group(1);
+            String? rid = uriDigitRegExp.firstMatch(path)?.group(1);
             if (rid != null) {
               SmartDialog.showLoading();
               dynamic res = await DynamicsHttp.dynamicDetail(rid: rid, type: 2);
@@ -402,7 +403,7 @@ class PiliScheme {
     }
 
     if (host.contains('live.bilibili.com')) {
-      String? roomId = RegExp(r'/(\d+)').firstMatch(path)?.group(1);
+      String? roomId = uriDigitRegExp.firstMatch(path)?.group(1);
       if (roomId != null) {
         Utils.toDupNamed('/liveRoom?roomid=$roomId', off: off);
         return true;
@@ -412,7 +413,7 @@ class PiliScheme {
     }
 
     if (host.contains('space.bilibili.com')) {
-      String? mid = RegExp(r'/(\d+)').firstMatch(path)?.group(1);
+      String? mid = uriDigitRegExp.firstMatch(path)?.group(1);
       if (mid != null) {
         Utils.toDupNamed('/member?mid=$mid', off: off);
         return true;
@@ -448,15 +449,16 @@ class PiliScheme {
         launchURL();
         return false;
       case 'bangumi':
+        // www.bilibili.com/bangumi/play/ep{eid}?start_progress={offset}&thumb_up_dm_id={dmid}
         debugPrint('番剧');
         String? id = RegExp(r'(ss|ep)\d+').firstMatch(path)?.group(0);
         if (id != null) {
           bool isSeason = id.startsWith('ss');
           id = id.substring(2);
           Utils.viewBangumi(
-            seasonId: isSeason ? id : null,
-            epId: isSeason ? null : id,
-          );
+              seasonId: isSeason ? id : null,
+              epId: isSeason ? null : id,
+              progress: uri.queryParameters['start_progress']);
           return true;
         }
         launchURL();
@@ -498,7 +500,7 @@ class PiliScheme {
         return false;
       case 'space':
         debugPrint('个人空间');
-        String? mid = RegExp(r'/(\d+)').firstMatch(path)?.group(1);
+        String? mid = uriDigitRegExp.firstMatch(path)?.group(1);
         if (mid != null) {
           Utils.toDupNamed(
             '/member?mid=$mid',
@@ -524,7 +526,7 @@ class PiliScheme {
   }
 
   static Future<bool> _onPushDynDetail(path, off) async {
-    String? id = RegExp(r'/(\d+)').firstMatch(path)?.group(1);
+    String? id = uriDigitRegExp.firstMatch(path)?.group(1);
     if (id != null) {
       SmartDialog.showLoading();
       dynamic res = await DynamicsHttp.dynamicDetail(id: id);

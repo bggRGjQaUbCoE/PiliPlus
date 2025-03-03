@@ -468,12 +468,9 @@ class Api {
   static const String msgFeedAt = '/x/msgfeed/at';
   //https://api.bilibili.com/x/msgfeed/like?platform=web&build=0&mobi_app=web
   static const String msgFeedLike = '/x/msgfeed/like';
-  //https://message.bilibili.com/x/sys-msg/query_user_notify?csrf=xxxx&csrf=xxxx&page_size=20&build=0&mobi_app=web
-  static const String msgSysUserNotify =
-      '${HttpString.messageBaseUrl}/x/sys-msg/query_user_notify';
-  //https://message.bilibili.com/x/sys-msg/query_unified_notify?csrf=xxxx&csrf=xxxx&page_size=10&build=0&mobi_app=web
-  static const String msgSysUnifiedNotify =
-      '${HttpString.messageBaseUrl}/x/sys-msg/query_unified_notify';
+  //https://message.bilibili.com/x/sys-msg/query_notify_list?page_size=20&cursor=xxx
+  static const String msgSysNotify =
+      '${HttpString.messageBaseUrl}/x/sys-msg/query_notify_list';
 
   // 系统信息光标更新（已读标记）
   //https://message.bilibili.com/x/sys-msg/update_cursor?csrf=xxxx&csrf=xxxx&cursor=1705288500000000000&has_up=0&build=0&mobi_app=web

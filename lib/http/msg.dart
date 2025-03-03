@@ -16,6 +16,9 @@ class MsgHttp {
     var res = await Request().get(Api.msgFeedReply, queryParameters: {
       'id': cursor == -1 ? null : cursor,
       'reply_time': cursorTime == -1 ? null : cursorTime,
+      'platform': 'android',
+      'mobi_app': 'android',
+      'build': '8350200',
     });
     if (res.data['code'] == 0) {
       return {
@@ -35,6 +38,9 @@ class MsgHttp {
     var res = await Request().get(Api.msgFeedAt, queryParameters: {
       'id': cursor == -1 ? null : cursor,
       'at_time': cursorTime == -1 ? null : cursorTime,
+      'platform': 'android',
+      'mobi_app': 'android',
+      'build': '8350200',
     });
     if (res.data['code'] == 0) {
       return {
@@ -54,6 +60,9 @@ class MsgHttp {
     var res = await Request().get(Api.msgFeedLike, queryParameters: {
       'id': cursor == -1 ? null : cursor,
       'like_time': cursorTime == -1 ? null : cursorTime,
+      'platform': 'android',
+      'mobi_app': 'android',
+      'build': '8350200',
     });
     if (res.data['code'] == 0) {
       return {
@@ -69,31 +78,10 @@ class MsgHttp {
     }
   }
 
-  static Future msgFeedSysUserNotify() async {
-    String csrf = await Request.getCsrf();
-    var res = await Request().get(Api.msgSysUserNotify, queryParameters: {
-      'csrf': csrf,
-      'page_size': 20,
-    });
-    if (res.data['code'] == 0) {
-      return {
-        'status': true,
-        'data': res.data['data'],
-      };
-    } else {
-      return {
-        'status': false,
-        'date': [],
-        'msg': res.data['message'],
-      };
-    }
-  }
-
-  static Future msgFeedSysUnifiedNotify() async {
-    String csrf = await Request.getCsrf();
-    var res = await Request().get(Api.msgSysUnifiedNotify, queryParameters: {
-      'csrf': csrf,
-      'page_size': 10,
+  static Future msgFeedNotify({int cursor = -1, int pageSize = 20}) async {
+    var res = await Request().get(Api.msgSysNotify, queryParameters: {
+      'cursor': cursor == -1 ? null : cursor,
+      'page_size': pageSize,
     });
     if (res.data['code'] == 0) {
       return {

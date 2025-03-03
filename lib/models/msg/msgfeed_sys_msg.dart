@@ -1,27 +1,3 @@
-class MsgFeedSysMsg {
-  List<SystemNotifyList>? systemNotifyList;
-
-  MsgFeedSysMsg({this.systemNotifyList});
-
-  MsgFeedSysMsg.fromJson(Map<String, dynamic> json) {
-    if (json['system_notify_list'] != null) {
-      systemNotifyList = <SystemNotifyList>[];
-      json['system_notify_list'].forEach((v) {
-        systemNotifyList!.add(SystemNotifyList.fromJson(v));
-      });
-    }
-  }
-
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
-    if (systemNotifyList != null) {
-      data['system_notify_list'] =
-          systemNotifyList!.map((v) => v.toJson()).toList();
-    }
-    return data;
-  }
-}
-
 class SystemNotifyList {
   int? id;
   int? cursor;

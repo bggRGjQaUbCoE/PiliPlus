@@ -899,10 +899,8 @@ class Utils {
     return '${randomTraceId.toString()}:${randomTraceId.toString().substring(16, 32)}:0:0';
   }
 
-  static void viewBangumi({
-    dynamic seasonId,
-    dynamic epId,
-  }) async {
+  static void viewBangumi(
+      {dynamic seasonId, dynamic epId, dynamic progress}) async {
     try {
       SmartDialog.showLoading(msg: '资源获取中');
       var result = await SearchHttp.bangumiInfo(seasonId: seasonId, epId: epId);
@@ -934,6 +932,7 @@ class Utils {
                         'pic': item.cover,
                         'heroTag': Utils.makeHeroTag(item.cid),
                         'videoType': SearchType.video,
+                        if (progress != null) 'progress': int.tryParse(progress)
                       },
                       preventDuplicates: false,
                     );
@@ -963,6 +962,7 @@ class Utils {
             'heroTag': Utils.makeHeroTag(episode.cid),
             'videoType': SearchType.media_bangumi,
             'bangumiItem': data,
+            if (progress != null) 'progress': int.tryParse(progress)
           },
           preventDuplicates: false,
         );

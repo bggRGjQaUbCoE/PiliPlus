@@ -329,11 +329,13 @@ class AuthorPanel extends StatelessWidget {
                 Get.back();
                 autoWrapReportDialog(context, ReportOptions.dynamicReport,
                     (reasonType, reasonDesc, banUid) async {
-                  VideoHttp.relationMod(
-                    mid: item.modules.moduleAuthor.mid,
-                    act: 5,
-                    reSrc: 11,
-                  );
+                  if (banUid) {
+                    VideoHttp.relationMod(
+                      mid: item.modules.moduleAuthor.mid,
+                      act: 5,
+                      reSrc: 11,
+                    );
+                  }
                   final res = await Request().post(
                     '/x/dynamic/feed/dynamic_report/add',
                     queryParameters: {

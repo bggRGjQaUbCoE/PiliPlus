@@ -1,5 +1,6 @@
-import 'package:PiliPlus/common/widgets/radio_widget.dart';
+import 'package:PiliPlus/common/widgets/report.dart';
 import 'package:PiliPlus/http/index.dart';
+import 'package:PiliPlus/http/video.dart';
 import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -326,7 +327,30 @@ class AuthorPanel extends StatelessWidget {
               ),
               onTap: () {
                 Get.back();
-                _showReportDynDialog(context);
+                autoWrapReportDialog(context, ReportOptions.dynamicReport,
+                    (reasonType, reasonDesc, banUid) async {
+                  VideoHttp.relationMod(
+                    mid: item.modules.moduleAuthor.mid,
+                    act: 5,
+                    reSrc: 11,
+                  );
+                  final res = await Request().post(
+                    '/x/dynamic/feed/dynamic_report/add',
+                    queryParameters: {
+                      'csrf': await Request.getCsrf(),
+                    },
+                    data: {
+                      "accused_uid": item.modules.moduleAuthor.mid,
+                      "dynamic_id": item.idStr,
+                      "reason_type": reasonType,
+                      "reason_desc": reasonType == 0 ? reasonDesc : null,
+                    },
+                    options: Options(
+                      contentType: Headers.formUrlEncodedContentType,
+                    ),
+                  );
+                  return res.data as Map;
+                });
               },
               minLeadingWidth: 0,
             ),
@@ -384,172 +408,4 @@ class AuthorPanel extends StatelessWidget {
       ),
     );
   }
-
-  void _showReportDynDialog(context) {
-    _ReportReasonType? reasonType;
-    String? reasonDesc;
-    late final key = GlobalKey<FormState>();
-    showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: const Text('举报动态'),
-            titlePadding: const EdgeInsets.only(left: 22, top: 16, right: 22),
-            contentPadding: const EdgeInsets.only(top: 5),
-            actionsPadding:
-                const EdgeInsets.only(left: 16, right: 16, bottom: 10),
-            content: Builder(builder: (context) {
-              return SingleChildScrollView(
-                child: AnimatedSize(
-                  duration: const Duration(milliseconds: 200),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(
-                          left: 22,
-                          right: 22,
-                          bottom: 5,
-                        ),
-                        child: const Text('请选择举报的理由：'),
-                      ),
-                      ...List.generate(
-                        _ReportReasonType.values.length ~/ 2,
-                        (index) => Row(
-                          children: List.generate(2, (index2) {
-                            return Expanded(
-                              child: radioWidget<_ReportReasonType>(
-                                paddingStart: index2 == 0 ? 10 : 0,
-                                value: _ReportReasonType
-                                    .values[index * 2 + index2],
-                                groupValue: reasonType,
-                                title: _ReportReasonType
-                                    .values[index * 2 + index2].title,
-                                onChanged: (value) {
-                                  reasonType = value;
-                                  if (context.mounted) {
-                                    (context as Element?)?.markNeedsBuild();
-                                  }
-                                },
-                              ),
-                            );
-                          }),
-                        ),
-                      ),
-                      if (reasonType == _ReportReasonType.s10) ...[
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 22),
-                          child: const Text('为帮助审核人员更快处理，请补充问题类型和出现位置等详细信息'),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(
-                            left: 22,
-                            top: 5,
-                            right: 22,
-                          ),
-                          child: Form(
-                            key: key,
-                            child: TextFormField(
-                              minLines: 4,
-                              maxLines: 4,
-                              initialValue: reasonDesc,
-                              inputFormatters: [
-                                LengthLimitingTextInputFormatter(60),
-                              ],
-                              decoration: const InputDecoration(
-                                border: OutlineInputBorder(),
-                                contentPadding: EdgeInsets.all(10),
-                              ),
-                              onChanged: (value) => reasonDesc = value,
-                              validator: (value) {
-                                if (value.isNullOrEmpty) {
-                                  return '理由不能为空';
-                                }
-                                return null;
-                              },
-                            ),
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-              );
-            }),
-            actions: [
-              TextButton(
-                onPressed: Get.back,
-                child: Text(
-                  '取消',
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.outline,
-                  ),
-                ),
-              ),
-              TextButton(
-                onPressed: () async {
-                  if (reasonType == null) {
-                    return;
-                  }
-                  if (reasonType == _ReportReasonType.s10 &&
-                      key.currentState?.validate() != true) {
-                    return;
-                  }
-                  try {
-                    SmartDialog.showLoading();
-                    Request()
-                        .post(
-                      'https://api.bilibili.com/x/dynamic/feed/dynamic_report/add',
-                      queryParameters: {
-                        'csrf': await Request.getCsrf(),
-                      },
-                      data: {
-                        "accused_uid": item.modules.moduleAuthor.mid,
-                        "dynamic_id": item.idStr,
-                        "reason_type": reasonType!.code,
-                        "reason_desc": reasonType == _ReportReasonType.s10
-                            ? reasonDesc
-                            : null,
-                      },
-                      options: Options(
-                        contentType: Headers.formUrlEncodedContentType,
-                      ),
-                    )
-                        .then((res) {
-                      SmartDialog.dismiss();
-                      if (res.data['code'] == 0) {
-                        Get.back();
-                        SmartDialog.showToast('举报成功');
-                      } else {
-                        SmartDialog.showToast(res.data['message']);
-                      }
-                    });
-                  } catch (e) {
-                    debugPrint('failed to report dyn: $e');
-                  }
-                },
-                child: const Text('确定'),
-              ),
-            ],
-          );
-        });
-  }
-}
-
-enum _ReportReasonType { s1, s2, s3, s4, s5, s6, s7, s8, s9, s10 }
-
-extension _ReportReasonTypeExt on _ReportReasonType {
-  String get title => [
-        '垃圾广告',
-        '引战',
-        '色情',
-        '人身攻击',
-        '违法信息',
-        '涉政谣言',
-        '涉社会事件谣言',
-        '虚假不实信息',
-        '违法信息外链',
-        '其他',
-      ][index];
-  int get code => [4, 8, 1, 5, 3, 9, 10, 12, 13, 0][index];
 }

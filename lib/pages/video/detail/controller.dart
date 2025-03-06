@@ -140,6 +140,7 @@ class VideoDetailController extends GetxController
   late final double maxVideoHeight =
       max(max(Get.height, Get.width) * 0.65, min(Get.height, Get.width));
   late double videoHeight = minVideoHeight;
+  late double lastVideoHeight = minVideoHeight;
 
   void setVideoHeight() {
     String direction = firstVideo.width != null && firstVideo.height != null
@@ -152,48 +153,54 @@ class VideoDetailController extends GetxController
       return;
     }
     if (scrollCtr.hasClients.not) {
-      videoHeight = direction == 'vertical' ? maxVideoHeight : minVideoHeight;
+      this.videoHeight =
+          direction == 'vertical' ? maxVideoHeight : minVideoHeight;
       this.direction.value = direction;
       return;
     }
-    if (this.direction.value != direction) {
-      this.direction.value = direction;
-      double videoHeight =
-          direction == 'vertical' ? maxVideoHeight : minVideoHeight;
-      if (this.videoHeight != videoHeight) {
-        if (videoHeight > this.videoHeight) {
-          // current minVideoHeight
-          isExpanding = true;
-          animationController.forward(
-              from: (minVideoHeight - scrollCtr.offset) / maxVideoHeight);
-          this.videoHeight = maxVideoHeight;
-        } else {
-          // current maxVideoHeight
-          final currentHeight =
-              (maxVideoHeight - scrollCtr.offset).toPrecision(2);
-          double minVideoHeightPrecise = minVideoHeight.toPrecision(2);
-          if (currentHeight == minVideoHeightPrecise) {
-            isExpanding = true;
-            this.videoHeight = minVideoHeight;
-            animationController.forward(from: 1);
-          } else if (currentHeight < minVideoHeightPrecise) {
-            // expande
-            isExpanding = true;
-            animationController.forward(from: currentHeight / minVideoHeight);
-            this.videoHeight = minVideoHeight;
-          } else {
-            // collapse
-            isCollapsing = true;
-            animationController.forward(
-                from: scrollCtr.offset / (maxVideoHeight - minVideoHeight));
-            this.videoHeight = minVideoHeight;
-          }
-        }
-      }
+    this.direction.value = direction;
+    late double videoHeight;
+    if (firstVideo.width != null && firstVideo.height != null) {
+      videoHeight = clampDouble(
+        min(Get.height, Get.width) * firstVideo.height! / firstVideo.width!,
+        minVideoHeight,
+        maxVideoHeight,
+      );
     } else {
+      videoHeight = direction == 'vertical' ? maxVideoHeight : minVideoHeight;
+    }
+    if (videoHeight.toPrecision(2) == this.videoHeight.toPrecision(2)) {
       if (scrollCtr.offset != 0) {
         isExpanding = true;
         animationController.forward(from: 1 - scrollCtr.offset / videoHeight);
+      }
+    } else if (videoHeight > this.videoHeight) {
+      // expande
+      isExpanding = true;
+      animationController.forward(
+          from: (this.videoHeight - scrollCtr.offset) / videoHeight);
+      this.videoHeight = videoHeight;
+    } else {
+      final currentHeight =
+          (this.videoHeight - scrollCtr.offset).toPrecision(2);
+      double videoHeightPrecise = videoHeight.toPrecision(2);
+      if (currentHeight == videoHeightPrecise) {
+        // expande
+        isExpanding = true;
+        this.videoHeight = videoHeight;
+        animationController.forward(from: 1);
+      } else if (currentHeight < videoHeightPrecise) {
+        // expande
+        isExpanding = true;
+        animationController.forward(from: currentHeight / videoHeight);
+        this.videoHeight = videoHeight;
+      } else {
+        // collapse
+        isCollapsing = true;
+        animationController.forward(
+            from: scrollCtr.offset / (this.videoHeight - videoHeight));
+        lastVideoHeight = this.videoHeight;
+        this.videoHeight = videoHeight;
       }
     }
   }

@@ -579,18 +579,20 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
   void cal() {
     if (videoDetailController.isExpanding) {
       animHeight = clampDouble(
-          videoDetailController.videoHeight *
-              videoDetailController.animationController.value,
-          kToolbarHeight,
-          videoDetailController.videoHeight);
+        videoDetailController.videoHeight *
+            videoDetailController.animationController.value,
+        kToolbarHeight,
+        videoDetailController.videoHeight,
+      );
     } else if (videoDetailController.isCollapsing) {
       animHeight = clampDouble(
-          videoDetailController.maxVideoHeight -
-              (videoDetailController.maxVideoHeight -
-                      videoDetailController.minVideoHeight) *
-                  videoDetailController.animationController.value,
-          videoDetailController.minVideoHeight,
-          videoDetailController.maxVideoHeight);
+        videoDetailController.lastVideoHeight -
+            (videoDetailController.lastVideoHeight -
+                    videoDetailController.videoHeight) *
+                videoDetailController.animationController.value,
+        videoDetailController.videoHeight,
+        videoDetailController.lastVideoHeight,
+      );
     }
   }
 

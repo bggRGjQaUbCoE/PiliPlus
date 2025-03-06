@@ -2,6 +2,7 @@ import 'package:PiliPlus/common/widgets/dialog.dart';
 import 'package:PiliPlus/common/widgets/loading_widget.dart';
 import 'package:PiliPlus/common/widgets/refresh_indicator.dart';
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/http/video.dart';
 import 'package:PiliPlus/models/user/black.dart';
 import 'package:PiliPlus/pages/common/common_controller.dart';
 import 'package:PiliPlus/utils/extension.dart';
@@ -143,14 +144,14 @@ class BlackListController extends CommonController {
       title: '确定将 $name 移出黑名单？',
       onConfirm: () async {
         Get.back();
-        var result = await BlackHttp.removeBlack(fid: mid);
+        var result = await VideoHttp.relationMod(mid: mid, act: 6, reSrc: 11);
         if (result['status']) {
           List list = (loadingState.value as Success).response;
           list.removeWhere((e) => e.mid == mid);
           total.value = total.value - 1;
           loadingState.value =
               LoadingState.success(list.isNotEmpty ? list : <BlackListItem>[]);
-          SmartDialog.showToast(result['msg']);
+          SmartDialog.showToast('操作成功');
         }
       },
     );

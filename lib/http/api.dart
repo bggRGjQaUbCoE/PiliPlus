@@ -408,9 +408,6 @@ class Api {
   // 黑名单
   static const String blackLst = '/x/relation/blacks';
 
-  // 移除黑名单
-  static const String removeBlack = '/x/relation/modify';
-
   // github 获取最新版
   static const String latestApp =
       'https://api.github.com/repos/bggRGjQaUbCoE/PiliPlus/releases';

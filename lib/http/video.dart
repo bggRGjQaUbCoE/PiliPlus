@@ -835,10 +835,23 @@ class VideoHttp {
         'fid': mid,
         'act': act,
         're_src': reSrc,
-        'jsonp': 'jsonp',
+        'gaia_source': 'web_main',
+        'spmid': '333.999.0.0',
+        'extend_content': {
+          "entity": "user",
+          "entity_id": mid,
+          'fp': Request.headerUa(type: 'pc'),
+        },
         'csrf': await Request.getCsrf(),
       },
-      options: Options(contentType: Headers.formUrlEncodedContentType),
+      options: Options(
+        contentType: Headers.formUrlEncodedContentType,
+        headers: {
+          'origin': 'https://space.bilibili.com',
+          'referer': 'https://space.bilibili.com/$mid/dynamic',
+          'user-agent': Request.headerUa(type: 'pc'),
+        },
+      ),
     );
     if (res.data['code'] == 0) {
       return {'status': true};

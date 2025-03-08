@@ -218,8 +218,10 @@ class PiliScheme {
               int type = int.parse(pathSegments[1]);
               int oid = int.parse(pathSegments[2]);
               int rootId = int.parse(pathSegments[3]);
+              int? rpId = uri.queryParameters['anchor'] != null
+                  ? int.tryParse(uri.queryParameters['anchor']!)
+                  : null;
               // int subType = int.parse(value.queryParameters['subType'] ?? '0');
-              // int rpID = int.parse(value.queryParameters['anchor'] ?? '0');
               // int extraIntentId =
               // int.parse(value.queryParameters['extraIntentId'] ?? '0');
               Get.to(
@@ -234,6 +236,9 @@ class PiliScheme {
                           String? enterUri = uri.queryParameters['enterUri'];
                           if (enterUri != null) {
                             routePush(Uri.parse(enterUri));
+                          } else {
+                            routePush(
+                                Uri.parse('bilibili://following/detail/$oid'));
                           }
                         },
                         icon: const Icon(Icons.open_in_new),
@@ -243,6 +248,7 @@ class PiliScheme {
                   body: VideoReplyReplyPanel(
                     oid: oid,
                     rpid: rootId,
+                    id: rpId,
                     source: 'routePush',
                     replyType: ReplyType.values[type],
                     firstFloor: null,

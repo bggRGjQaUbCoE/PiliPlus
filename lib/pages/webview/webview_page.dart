@@ -185,12 +185,7 @@ class _WebviewPageNewState extends State<WebviewPageNew> {
           onTitleChanged: (controller, title) {
             _titleStream.add(title);
           },
-          onCloseWindow: (controller) => Get.back(
-            result:
-                _url.startsWith('https://www.bilibili.com/h5/comment/report')
-                    ? true
-                    : null,
-          ),
+          onCloseWindow: (controller) => Get.back(),
           onLoadStop: (controller, url) {
             if (url.toString().startsWith('https://live.bilibili.com')) {
               _webViewController?.evaluateJavascript(

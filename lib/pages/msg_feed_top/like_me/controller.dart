@@ -3,7 +3,7 @@ import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/pages/common/common_controller.dart';
 import 'package:PiliPlus/http/msg.dart';
 import 'package:PiliPlus/utils/extension.dart';
-import '../../../models/msg/msgfeed_like_me.dart';
+import 'package:PiliPlus/models/msg/msgfeed_like_me.dart';
 
 class LikeMeController extends CommonController {
   int cursor = -1;
@@ -24,23 +24,17 @@ class LikeMeController extends CommonController {
     }
     cursor = data.total?.cursor?.id ?? -1;
     cursorTime = data.total?.cursor?.time ?? -1;
-    List<LikeMeItems> latest = <LikeMeItems>[];
-    List<LikeMeItems> total = <LikeMeItems>[];
-    if (data.latest?.items?.isNotEmpty == true) {
-      latest.addAll(data.latest!.items!);
-    }
-    if (data.total?.items?.isNotEmpty == true) {
-      total.addAll(data.total!.items!);
-    }
+    List<LikeMeItems> latest = data.latest?.items ?? [];
+    List<LikeMeItems> total = data.total?.items ?? [];
     if (currentPage != 1 && loadingState.value is Success) {
-      Pair<List<LikeMeItems>, List<LikeMeItems>> pair =
-          (loadingState.value as Success).response;
-      latest.insertAll(0, pair.first);
-      total.insertAll(0, pair.second);
+      loadingState.value = LoadingState.success((loadingState.value as Success)
+          .response as Pair<List<LikeMeItems>, List<LikeMeItems>>
+        ..first.addAll(latest)
+        ..second.addAll(total));
+    } else {
+      loadingState.value =
+          LoadingState.success(Pair(first: latest, second: total));
     }
-    loadingState.value = LoadingState.success(
-      Pair(first: latest, second: total),
-    );
     return true;
   }
 

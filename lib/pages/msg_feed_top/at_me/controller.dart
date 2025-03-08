@@ -23,10 +23,12 @@ class AtMeController extends CommonController {
     cursor = data.cursor?.id ?? -1;
     cursorTime = data.cursor?.time ?? -1;
     if (currentPage != 1 && loadingState.value is Success) {
-      data.items ??= <AtMeItems>[];
-      data.items!.insert(0, (loadingState.value as Success).response);
+      loadingState.value = LoadingState.success(
+          (loadingState.value as Success).response as List
+            ..addAll(data.items ?? <AtMeItems>[]));
+    } else {
+      loadingState.value = LoadingState.success(data.items);
     }
-    loadingState.value = LoadingState.success(data.items);
     return true;
   }
 

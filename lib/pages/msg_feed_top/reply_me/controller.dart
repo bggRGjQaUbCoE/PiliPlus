@@ -2,8 +2,7 @@ import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/pages/common/common_controller.dart';
 import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/http/msg.dart';
-
-import '../../../models/msg/msgfeed_reply_me.dart';
+import 'package:PiliPlus/models/msg/msgfeed_reply_me.dart';
 
 class ReplyMeController extends CommonController {
   int cursor = -1;
@@ -24,10 +23,12 @@ class ReplyMeController extends CommonController {
     cursor = data.cursor?.id ?? -1;
     cursorTime = data.cursor?.time ?? -1;
     if (currentPage != 1 && loadingState.value is Success) {
-      data.items ??= <ReplyMeItems>[];
-      data.items!.insert(0, (loadingState.value as Success).response);
+      loadingState.value = LoadingState.success(
+          (loadingState.value as Success).response as List
+            ..addAll(data.items ?? <ReplyMeItems>[]));
+    } else {
+      loadingState.value = LoadingState.success(data.items);
     }
-    loadingState.value = LoadingState.success(data.items);
     return true;
   }
 

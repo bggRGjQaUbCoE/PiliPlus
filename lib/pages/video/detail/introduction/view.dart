@@ -889,12 +889,6 @@ class _VideoInfoState extends State<VideoInfo> with TickerProviderStateMixin {
                 text: "点踩",
               ),
             ),
-            // ActionItem(
-            //     icon: const Icon(FontAwesomeIcons.clock),
-            //     onTap: () => videoIntroController.actionShareVideo(),
-            //     selectStatus: false,
-            //     loadingStatus: loadingStatus,
-            //     text: '稍后再看'),
             Obx(
               () => ActionItem(
                 key: _coinKey,
@@ -927,16 +921,16 @@ class _VideoInfoState extends State<VideoInfo> with TickerProviderStateMixin {
                 needAnim: true,
               ),
             ),
-            ActionItem(
-              icon: const Icon(FontAwesomeIcons.comment),
-              onTap: () => videoDetailCtr.tabCtr
-                  .animateTo(videoDetailCtr.tabCtr.index == 1 ? 0 : 1),
-              selectStatus: false,
-              loadingStatus: widget.loadingStatus,
-              semanticsLabel: '评论',
-              text: !widget.loadingStatus
-                  ? Utils.numFormat(videoDetail.stat!.reply!)
-                  : '评论',
+            Obx(
+              () => ActionItem(
+                icon: const Icon(FontAwesomeIcons.clock),
+                selectIcon: const Icon(FontAwesomeIcons.solidClock),
+                onTap: () => handleState(videoIntroController.viewLater),
+                selectStatus: videoIntroController.hasLater.value,
+                loadingStatus: widget.loadingStatus,
+                semanticsLabel: '再看',
+                text: '再看',
+              ),
             ),
             ActionItem(
               icon: const Icon(FontAwesomeIcons.shareFromSquare),

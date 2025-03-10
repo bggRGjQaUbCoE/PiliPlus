@@ -881,13 +881,8 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                                               onSelected: (String type) async {
                                                 switch (type) {
                                                   case 'later':
-                                                    var res = await UserHttp
-                                                        .toViewLater(
-                                                            bvid:
-                                                                videoDetailController
-                                                                    .bvid);
-                                                    SmartDialog.showToast(
-                                                        res['msg']);
+                                                    await videoIntroController
+                                                        .viewLater();
                                                     break;
                                                   case 'report':
                                                     if (videoDetailController
@@ -1449,9 +1444,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                       onSelected: (String type) async {
                         switch (type) {
                           case 'later':
-                            var res = await UserHttp.toViewLater(
-                                bvid: videoDetailController.bvid);
-                            SmartDialog.showToast(res['msg']);
+                            await videoIntroController.viewLater();
                             break;
                           case 'report':
                             if (videoDetailController.userInfo == null) {

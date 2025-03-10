@@ -59,6 +59,8 @@ class VideoIntroController extends GetxController
   RxBool hasCoin = false.obs;
   // 是否收藏
   RxBool hasFav = false.obs;
+  // 是否稍后再看
+  RxBool hasLater = false.obs;
   bool isLogin = false;
   Rx<FavFolderData> favFolderData = FavFolderData().obs;
   List? favIds;
@@ -306,6 +308,14 @@ class VideoIntroController extends GetxController
     } else {
       SmartDialog.showToast(result['msg']);
     }
+  }
+
+  Future viewLater() async {
+    var res = await (hasLater.value
+        ? UserHttp.toViewDel(aids: [IdUtils.bv2av(bvid)])
+        : await UserHttp.toViewLater(bvid: bvid));
+    if (res['status']) hasLater.value = !hasLater.value;
+    SmartDialog.showToast(res['msg']);
   }
 
   void coinVideo(int coin, [bool selectLike = false]) async {

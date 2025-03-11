@@ -630,32 +630,35 @@ class VideoIntroController extends GetxController
       ..cid.value = cid
       ..danmakuCid.value = cid
       ..queryVideoUrl();
-    if (cover is String && cover.isNotEmpty) {
-      videoDetailCtr.videoItem['pic'] = cover;
+
+    if (this.bvid != bvid) {
+      if (cover is String && cover.isNotEmpty) {
+        videoDetailCtr.videoItem['pic'] = cover;
+      }
+
+      // 重新请求相关视频
+      if (videoDetailCtr.showRelatedVideo) {
+        try {
+          Get.find<RelatedController>(tag: heroTag)
+            ..bvid = bvid
+            ..queryData();
+        } catch (_) {}
+      }
+      // 重新请求评论
+      if (videoDetailCtr.showReply) {
+        try {
+          Get.find<VideoReplyController>(tag: heroTag)
+            ..aid = aid
+            ..onReload();
+        } catch (_) {}
+      }
+
+      hasLater.value = false;
+      this.bvid = bvid;
+      queryVideoIntro();
     }
 
-    // 重新请求相关视频
-    if (videoDetailCtr.showRelatedVideo) {
-      try {
-        Get.find<RelatedController>(tag: heroTag)
-          ..bvid = bvid
-          ..queryData();
-      } catch (_) {}
-    }
-
-    // 重新请求评论
-    if (videoDetailCtr.showReply) {
-      try {
-        Get.find<VideoReplyController>(tag: heroTag)
-          ..aid = aid
-          ..onReload();
-      } catch (_) {}
-    }
-
-    hasLater.value = false;
-    this.bvid = bvid;
     lastPlayCid.value = cid;
-    queryVideoIntro();
     queryOnlineTotal();
   }
 

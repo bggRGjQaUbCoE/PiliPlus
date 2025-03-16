@@ -407,7 +407,7 @@ class Utils {
                 child: Builder(
                   builder: (context) => Column(
                     children: List.generate(list.length, (index) {
-                      return radioWidget(
+                      return RadioWidget(
                         padding: const EdgeInsets.only(left: 14),
                         title: list[index].title ?? '',
                         groupValue: checkedId,

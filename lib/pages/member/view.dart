@@ -582,7 +582,7 @@ class _ReportPanelState extends State<ReportPanel> {
           const Text('举报理由（单选，非必选）'),
           ...List.generate(
             5,
-            (index) => radioWidget<int>(
+            (index) => RadioWidget<int>(
               value: index,
               groupValue: _reasonV2,
               onChanged: (value) {

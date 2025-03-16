@@ -6,7 +6,7 @@ import 'package:PiliPlus/utils/storage.dart';
 class RcmdController extends CommonController {
   late bool enableSaveLastData = GStorage.setting
       .get(SettingBoxKey.enableSaveLastData, defaultValue: false);
-  late String defaultRcmdType = 'app';
+  late bool appRcmd = true;
 
   int? lastRefreshAt;
   late bool savedRcmdTip = GStorage.savedRcmdTip;
@@ -14,8 +14,7 @@ class RcmdController extends CommonController {
   @override
   void onInit() {
     super.onInit();
-    defaultRcmdType = GStorage.setting
-        .get(SettingBoxKey.defaultRcmdType, defaultValue: 'app');
+    appRcmd = GStorage.appRcmd;
 
     currentPage = 0;
     queryData();
@@ -23,15 +22,9 @@ class RcmdController extends CommonController {
 
   @override
   Future<LoadingState> customGetData() {
-    return defaultRcmdType == 'app' || defaultRcmdType == 'notLogin'
-        ? VideoHttp.rcmdVideoListApp(
-            loginStatus: defaultRcmdType != 'notLogin',
-            freshIdx: currentPage,
-          )
-        : VideoHttp.rcmdVideoList(
-            freshIdx: currentPage,
-            ps: 20,
-          );
+    return appRcmd
+        ? VideoHttp.rcmdVideoListApp(freshIdx: currentPage)
+        : VideoHttp.rcmdVideoList(freshIdx: currentPage, ps: 20);
   }
 
   @override

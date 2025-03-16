@@ -1,10 +1,9 @@
 import 'dart:convert';
 
 import 'package:PiliPlus/build_config.dart';
-import 'package:PiliPlus/http/constants.dart';
 import 'package:PiliPlus/services/loggeer.dart';
+import 'package:PiliPlus/utils/accounts/account.dart';
 import 'package:PiliPlus/utils/login.dart';
-import 'package:cookie_jar/cookie_jar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -13,7 +12,6 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:PiliPlus/models/github/latest.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/utils.dart';
-import '../../http/init.dart';
 import '../../utils/cache_manage.dart';
 
 class AboutPage extends StatefulWidget {
@@ -250,22 +248,8 @@ Commit Hash: ${BuildConfig.commitHash}''',
                       title: const Text('导出'),
                       onTap: () async {
                         Get.back();
-                        dynamic accessKey = GStorage.localCache
-                            .get(LocalCacheKey.accessKey, defaultValue: {});
-                        dynamic cookies = (await Request.cookieManager.cookieJar
-                                .loadForRequest(Uri.parse(HttpString.baseUrl)))
-                            .map(
-                              (Cookie cookie) => {
-                                'name': cookie.name,
-                                'value': cookie.value,
-                              },
-                            )
-                            .toList();
-                        dynamic res = jsonEncode({
-                          'accessKey': accessKey,
-                          'cookies': cookies,
-                        });
-                        Utils.copyText('$res');
+                        String res = jsonEncode(Accounts.account.toMap());
+                        Utils.copyText(res);
                         // if (context.mounted) {
                         //   showDialog(
                         //     context: context,
@@ -282,9 +266,7 @@ Commit Hash: ${BuildConfig.commitHash}''',
                         Get.back();
                         ClipboardData? data =
                             await Clipboard.getData('text/plain');
-                        if (data == null ||
-                            data.text == null ||
-                            data.text!.isEmpty) {
+                        if (data?.text?.isNotEmpty != true) {
                           SmartDialog.showToast('剪贴板无数据');
                           return;
                         }
@@ -295,7 +277,7 @@ Commit Hash: ${BuildConfig.commitHash}''',
                             return AlertDialog(
                               title: const Text('是否导入以下登录信息？'),
                               content: SingleChildScrollView(
-                                child: Text(data.text!),
+                                child: Text(data!.text!),
                               ),
                               actions: [
                                 TextButton(
@@ -309,14 +291,21 @@ Commit Hash: ${BuildConfig.commitHash}''',
                                   ),
                                 ),
                                 TextButton(
-                                  onPressed: () async {
+                                  onPressed: () {
                                     Get.back();
                                     try {
-                                      dynamic res = jsonDecode(data.text!);
-                                      LoginUtils.onLogin(
-                                        res['accessKey'],
-                                        {'cookies': res['cookies']},
-                                      );
+                                      final res = (jsonDecode(data.text!)
+                                              as Map)
+                                          .map((key, value) => MapEntry(key,
+                                              LoginAccount.fromJson(value)));
+                                      Accounts.account
+                                          .putAll(res)
+                                          .then((_) => Accounts.refresh())
+                                          .then((_) {
+                                        if (Accounts.main.isLogin) {
+                                          return LoginUtils.onLoginMain();
+                                        }
+                                      });
                                     } catch (e) {
                                       SmartDialog.showToast('导入失败：$e');
                                     }
@@ -448,6 +437,7 @@ Commit Hash: ${BuildConfig.commitHash}''',
                             GStorage.localCache.clear(),
                             GStorage.video.clear(),
                             GStorage.historyWord.clear(),
+                            Accounts.clear(),
                           ]);
                           SmartDialog.showToast('重置成功');
                         },

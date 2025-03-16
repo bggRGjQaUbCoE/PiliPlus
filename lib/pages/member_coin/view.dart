@@ -24,7 +24,7 @@ class MemberCoinPage extends StatefulWidget {
 }
 
 class _MemberCoinPageState extends State<MemberCoinPage> {
-  late final _ownerMid = GStorage.ownerMid;
+  late final _ownerMid = Accounts.main.mid;
 
   late final _ctr = Get.put(
     MemberCoinController(mid: widget.mid),

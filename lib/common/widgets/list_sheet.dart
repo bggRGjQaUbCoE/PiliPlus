@@ -131,7 +131,7 @@ class _ListSheetContentState extends CommonSlidePageState<ListSheetContent>
     reverse = _isList
         ? List.generate(widget.season.sections.length, (_) => false)
         : [false];
-    if (GStorage.isLogin && widget.bvid != null && widget.season != null) {
+    if (Accounts.main.isLogin && widget.bvid != null && widget.season != null) {
       _favStream ??= StreamController<int>();
       () async {
         dynamic result = await VideoHttp.videoRelation(bvid: widget.bvid);

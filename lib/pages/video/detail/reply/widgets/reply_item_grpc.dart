@@ -1177,7 +1177,7 @@ class ReplyItemGrpc extends StatelessWidget {
       }
     }
 
-    dynamic ownerMid = GStorage.ownerMid;
+    int ownerMid = Accounts.main.mid;
     Color errorColor = Theme.of(context).colorScheme.error;
 
     return Padding(
@@ -1210,7 +1210,7 @@ class ReplyItemGrpc extends StatelessWidget {
               ),
             ),
           ),
-          if (ownerMid != null) ...[
+          if (ownerMid != 0) ...[
             ListTile(
               onTap: () => menuActionHandler('delete'),
               minLeadingWidth: 0,

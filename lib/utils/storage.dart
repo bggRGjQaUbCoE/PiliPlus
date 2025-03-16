@@ -5,6 +5,7 @@ import 'package:PiliPlus/common/widgets/pair.dart';
 import 'package:PiliPlus/common/widgets/refresh_indicator.dart'
     show kDragContainerExtentPercentage, displacement;
 import 'package:PiliPlus/http/constants.dart';
+import 'package:PiliPlus/http/index.dart';
 import 'package:PiliPlus/models/common/dynamic_badge_mode.dart';
 import 'package:PiliPlus/models/common/sponsor_block/segment_type.dart';
 import 'package:PiliPlus/models/common/sponsor_block/skip_type.dart';
@@ -15,8 +16,14 @@ import 'package:PiliPlus/models/video/play/CDN.dart';
 import 'package:PiliPlus/models/video/play/quality.dart';
 import 'package:PiliPlus/models/video/play/subtitle.dart';
 import 'package:PiliPlus/pages/member/new/controller.dart' show MemberTabType;
+import 'package:PiliPlus/pages/mine/index.dart';
 import 'package:PiliPlus/plugin/pl_player/models/bottom_progress_behavior.dart';
 import 'package:PiliPlus/plugin/pl_player/models/fullscreen_mode.dart';
+import 'package:PiliPlus/utils/accounts/account.dart';
+import 'package:PiliPlus/utils/accounts/account_adapter.dart';
+import 'package:PiliPlus/utils/accounts/cookie_jar_adapter.dart';
+import 'package:PiliPlus/utils/accounts/account_type_adapter.dart';
+import 'package:PiliPlus/utils/login.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:path_provider/path_provider.dart';
@@ -33,9 +40,9 @@ class GStorage {
   static late final Box<dynamic> setting;
   static late final Box<dynamic> video;
 
-  static bool get isLogin => userInfo.get('userInfoCache') != null;
+  // static bool get isLogin => userInfo.get('userInfoCache') != null;
 
-  static get ownerMid => userInfo.get('userInfoCache')?.mid;
+  // static get ownerMid => userInfo.get('userInfoCache')?.mid;
 
   static List<double> get speedList => List<double>.from(
         video.get(
@@ -192,8 +199,8 @@ class GStorage {
   static int get minLikeRatioForRecommend =>
       setting.get(SettingBoxKey.minLikeRatioForRecommend, defaultValue: 0);
 
-  static String get defaultRcmdType =>
-      setting.get(SettingBoxKey.defaultRcmdType, defaultValue: 'app');
+  static bool get appRcmd =>
+      setting.get(SettingBoxKey.appRcmd, defaultValue: true);
 
   static String get defaultSystemProxyHost =>
       setting.get(SettingBoxKey.systemProxyHost, defaultValue: '');
@@ -493,6 +500,9 @@ class GStorage {
     video = await Hive.openBox('video');
     displacement = GStorage.refreshDisplacement;
     kDragContainerExtentPercentage = GStorage.refreshDragPercentage;
+
+    await Accounts.init();
+
     // 设置全局变量
     GlobalData()
       ..imgQuality = defaultPicQa
@@ -521,6 +531,9 @@ class GStorage {
     Hive.registerAdapter(LevelInfoAdapter());
     Hive.registerAdapter(HotSearchModelAdapter());
     Hive.registerAdapter(HotSearchItemAdapter());
+    Hive.registerAdapter(BiliCookieJarAdapter());
+    Hive.registerAdapter(LoginAccountAdapter());
+    Hive.registerAdapter(AccountTypeAdapter());
   }
 
   static Future<void> close() async {
@@ -536,6 +549,7 @@ class GStorage {
     setting.close();
     video.compact();
     video.close();
+    Accounts.close();
   }
 }
 
@@ -587,11 +601,11 @@ class SettingBoxKey {
       continuePlayInBackground = 'continuePlayInBackground',
 
       /// 隐私
-      anonymity = 'anonymity',
+      // anonymity = 'anonymity',
 
       /// 推荐
       enableRcmdDynamic = 'enableRcmdDynamic',
-      defaultRcmdType = 'defaultRcmdType',
+      appRcmd = 'appRcmd',
       enableSaveLastData = 'enableSaveLastData',
       minDurationForRcmd = 'minDurationForRcmd',
       minLikeRatioForRecommend = 'minLikeRatioForRecommend',
@@ -742,8 +756,8 @@ class LocalCacheKey {
       blackMidsList = 'blackMidsList',
       // 弹幕屏蔽规则
       danmakuFilterRule = 'danmakuFilterRule',
-      // access_key
-      accessKey = 'accessKey',
+      // // access_key
+      // accessKey = 'accessKey',
 
       //
       mixinKey = 'mixinKey',
@@ -767,4 +781,83 @@ class VideoBoxKey {
       speedsList = 'speedsList',
       // 画面填充比例
       cacheVideoFit = 'cacheVideoFit';
+}
+
+class Accounts {
+  static late final Box<LoginAccount> account;
+  static final Map<AccountType, Account> accountMode = {};
+  static Account get main => accountMode[AccountType.main]!;
+  // static set main(Account account) => set(AccountType.main, account);
+
+  static Future<void> init() async {
+    account = await Hive.openBox('account',
+        compactionStrategy: (int entries, int deletedEntries) {
+      return deletedEntries > 2;
+    });
+  }
+
+  static Future<void> refresh() async {
+    for (var a in account.values) {
+      for (var t in a.type) {
+        accountMode[t] = a;
+      }
+    }
+    for (var type in AccountType.values) {
+      accountMode[type] ??= AnonymousAccount();
+    }
+    await Future.wait((accountMode.values.toSet()
+          ..retainWhere((i) => !i.activited))
+        .map((i) => Request.buvidActive(i)));
+  }
+
+  static Future<void> clear() async {
+    await account.clear();
+    for (var i in AccountType.values) {
+      accountMode[i] = AnonymousAccount();
+    }
+    if (!AnonymousAccount().activited) {
+      Request.buvidActive(AnonymousAccount());
+    }
+  }
+
+  static Future<void> close() async {
+    account.compact();
+    account.close();
+  }
+
+  static Future<void> set(AccountType key, Account account) async {
+    await (accountMode[key]?..type.remove(key))?.onChange();
+    accountMode[key] = account..type.add(key);
+    await account.onChange();
+    if (!account.activited) await Request.buvidActive(account);
+    switch (key) {
+      case AccountType.main:
+        if (account.isLogin) {
+          await LoginUtils.onLoginMain();
+        } else {
+          await LoginUtils.onLogoutMain();
+        }
+        break;
+      case AccountType.heartbeat:
+        MineController.anonymity.value = !account.isLogin;
+        break;
+      default:
+        break;
+    }
+  }
+
+  static Account get(AccountType key) {
+    return accountMode[key]!;
+  }
+}
+
+enum AccountType {
+  main,
+  heartbeat,
+  recommend,
+  video,
+}
+
+extension AccountTypeExt on AccountType {
+  String get title => const ['主账号', '记录观看', '推荐', '视频取流'][index];
 }

@@ -68,8 +68,7 @@ class VideoCustomActions {
         VideoCustomAction(
             '不感兴趣', 'dislike', Icon(MdiIcons.thumbDownOutline, size: 16),
             () async {
-          String? accessKey = GStorage.localCache
-              .get(LocalCacheKey.accessKey, defaultValue: {})['value'];
+          String? accessKey = Accounts.get(AccountType.recommend).accessKey;
           if (accessKey == null || accessKey == "") {
             SmartDialog.showToast("请退出账号后重新登录");
             return;

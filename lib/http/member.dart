@@ -65,11 +65,7 @@ class MemberHttp {
     required int mid,
     required int page,
   }) async {
-    String? accessKey = GStorage.localCache
-        .get(LocalCacheKey.accessKey, defaultValue: {})['value'];
     Map<String, String> data = {
-      if (accessKey?.isNotEmpty == true) 'access_key': accessKey!,
-      'appkey': Constants.appKey,
       'build': '1462100',
       'c_locale': 'zh_CN',
       'channel': 'yingyongbao',
@@ -79,15 +75,8 @@ class MemberHttp {
       'ps': '10',
       's_locale': 'zh_CN',
       'statistics': Constants.statistics,
-      'ts': (DateTime.now().millisecondsSinceEpoch ~/ 1000).toString(),
       'vmid': mid.toString(),
     };
-    String sign = Utils.appSign(
-      data,
-      Constants.appKey,
-      Constants.appSec,
-    );
-    data['sign'] = sign;
     dynamic res = await Request().get(
       Api.spaceArticle,
       queryParameters: data,
@@ -108,11 +97,7 @@ class MemberHttp {
   static Future<LoadingState> spaceFav({
     required int mid,
   }) async {
-    String? accessKey = GStorage.localCache
-        .get(LocalCacheKey.accessKey, defaultValue: {})['value'];
     Map<String, String> data = {
-      if (accessKey?.isNotEmpty == true) 'access_key': accessKey!,
-      'appkey': Constants.appKey,
       'build': '1462100',
       'c_locale': 'zh_CN',
       'channel': 'yingyongbao',
@@ -120,15 +105,8 @@ class MemberHttp {
       'platform': 'android',
       's_locale': 'zh_CN',
       'statistics': Constants.statistics,
-      'ts': (DateTime.now().millisecondsSinceEpoch ~/ 1000).toString(),
       'up_mid': mid.toString(),
     };
-    String sign = Utils.appSign(
-      data,
-      Constants.appKey,
-      Constants.appSec,
-    );
-    data['sign'] = sign;
     dynamic res = await Request().get(
       Api.spaceFav,
       queryParameters: data,
@@ -176,12 +154,8 @@ class MemberHttp {
     int? seasonId,
     int? seriesId,
   }) async {
-    String? accessKey = GStorage.localCache
-        .get(LocalCacheKey.accessKey, defaultValue: {})['value'];
     Map<String, String> data = {
-      if (accessKey?.isNotEmpty == true) 'access_key': accessKey!,
       if (aid != null) 'aid': aid.toString(),
-      'appkey': Constants.appKey,
       'build': '1462100',
       'c_locale': 'zh_CN',
       'channel': 'yingyongbao',
@@ -197,25 +171,16 @@ class MemberHttp {
       if (order != null) 'order': order,
       if (sort != null) 'sort': sort,
       'statistics': Constants.statistics,
-      'ts': (DateTime.now().millisecondsSinceEpoch ~/ 1000).toString(),
       'vmid': mid.toString(),
     };
-    String sign = Utils.appSign(
-      data,
-      Constants.appKey,
-      Constants.appSec,
-    );
-    data['sign'] = sign;
     dynamic res = await Request().get(
-      type == ContributeType.video
-          ? Api.spaceArchive
-          : type == ContributeType.charging
-              ? Api.spaceChargingArchive
-              : type == ContributeType.season
-                  ? Api.spaceSeason
-                  : type == ContributeType.series
-                      ? Api.spaceSeries
-                      : Api.spaceBangumi,
+      switch (type) {
+        ContributeType.video => Api.spaceArchive,
+        ContributeType.charging => Api.spaceChargingArchive,
+        ContributeType.season => Api.spaceSeason,
+        ContributeType.series => Api.spaceSeries,
+        ContributeType.bangumi => Api.spaceBangumi,
+      },
       queryParameters: data,
       options: Options(
         headers: {
@@ -234,11 +199,7 @@ class MemberHttp {
   static Future<LoadingState> space({
     int? mid,
   }) async {
-    String? accessKey = GStorage.localCache
-        .get(LocalCacheKey.accessKey, defaultValue: {})['value'];
     Map<String, String> data = {
-      if (accessKey?.isNotEmpty == true) 'access_key': accessKey!,
-      'appkey': Constants.appKey,
       'build': '1462100',
       'c_locale': 'zh_CN',
       'channel': 'yingyongbao',
@@ -246,15 +207,8 @@ class MemberHttp {
       'platform': 'android',
       's_locale': 'zh_CN',
       'statistics': Constants.statistics,
-      'ts': (DateTime.now().millisecondsSinceEpoch ~/ 1000).toString(),
       'vmid': mid.toString(),
     };
-    String sign = Utils.appSign(
-      data,
-      Constants.appKey,
-      Constants.appSec,
-    );
-    data['sign'] = sign;
     dynamic res = await Request().get(
       Api.space,
       queryParameters: data,

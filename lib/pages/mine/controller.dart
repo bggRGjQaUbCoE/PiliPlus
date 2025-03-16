@@ -1,3 +1,4 @@
+import 'package:PiliPlus/utils/accounts/account.dart';
 import 'package:PiliPlus/utils/login.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -20,8 +21,9 @@ class MineController extends GetxController {
 
   Rx<ThemeType> themeType = ThemeType.system.obs;
   static Box get setting => GStorage.setting;
-  static RxBool anonymity =
-      (setting.get(SettingBoxKey.anonymity, defaultValue: false) as bool).obs;
+  static RxBool anonymity = (Accounts.account.isNotEmpty &&
+          !Accounts.get(AccountType.heartbeat).isLogin)
+      .obs;
   ThemeType get nextThemeType =>
       ThemeType.values[(themeType.value.index + 1) % ThemeType.values.length];
 
@@ -36,8 +38,8 @@ class MineController extends GetxController {
     }
   }
 
-  onLogin() async {
-    if (!isLogin.value) {
+  onLogin([bool longPress = false]) async {
+    if (!isLogin.value || longPress) {
       Get.toNamed('/loginPage', preventDuplicates: false);
     } else {
       int mid = userInfo.value.mid!;
@@ -58,13 +60,13 @@ class MineController extends GetxController {
         GStorage.userInfo.put('userInfoCache', res['data']);
         isLogin.value = true;
       } else {
-        LoginUtils.onLogout();
+        LoginUtils.onLogoutMain();
         return;
       }
     } else {
       SmartDialog.showToast(res['msg']);
       if (res['msg'] == '账号未登录') {
-        LoginUtils.onLogout();
+        LoginUtils.onLogoutMain();
         return;
       }
     }
@@ -79,8 +81,13 @@ class MineController extends GetxController {
   }
 
   static onChangeAnonymity(BuildContext context) {
+    if (Accounts.account.isEmpty) {
+      SmartDialog.showToast('请先登录');
+      return;
+    }
     anonymity.value = !anonymity.value;
     if (anonymity.value) {
+      Accounts.accountMode[AccountType.heartbeat] = AnonymousAccount();
       SmartDialog.show(
         clickMaskDismiss: false,
         usePenetrate: true,
@@ -122,8 +129,8 @@ class MineController extends GetxController {
                       TextButton(
                           onPressed: () {
                             SmartDialog.dismiss();
-                            setting.put(SettingBoxKey.anonymity, true);
-                            anonymity.value = true;
+                            Accounts.set(
+                                AccountType.heartbeat, AnonymousAccount());
                             SmartDialog.showToast('已设为永久无痕模式');
                           },
                           child: Text(
@@ -136,8 +143,6 @@ class MineController extends GetxController {
                       TextButton(
                         onPressed: () {
                           SmartDialog.dismiss();
-                          setting.put(SettingBoxKey.anonymity, false);
-                          anonymity.value = true;
                           SmartDialog.showToast('已设为临时无痕模式');
                         },
                         child: Text(
@@ -158,7 +163,7 @@ class MineController extends GetxController {
         },
       );
     } else {
-      setting.put(SettingBoxKey.anonymity, false);
+      Accounts.set(AccountType.heartbeat, Accounts.main);
       SmartDialog.show(
         clickMaskDismiss: false,
         usePenetrate: true,

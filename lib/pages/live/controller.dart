@@ -25,7 +25,7 @@ class LiveController extends CommonController {
     return super.onRefresh();
   }
 
-  late RxBool isLogin = GStorage.isLogin.obs;
+  late RxBool isLogin = Accounts.main.isLogin.obs;
   late Rx<LoadingState> followListState = LoadingState.loading().obs;
   late int followPage = 1;
   late bool followEnd = false;

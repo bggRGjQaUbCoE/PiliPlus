@@ -622,6 +622,8 @@ class Api {
   static const qrcodePoll =
       '${HttpString.passBaseUrl}/x/passport-tv-login/qrcode/poll';
 
+  static const logout = '${HttpString.passBaseUrl}/login/exit/v2';
+
   /// 置顶视频
   static const getTopVideoApi = '/x/space/top/arc';
 

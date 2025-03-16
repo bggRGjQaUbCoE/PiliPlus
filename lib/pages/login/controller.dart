@@ -3,9 +3,9 @@ import 'dart:io';
 
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/widgets/icon_button.dart';
+import 'package:PiliPlus/common/widgets/radio_widget.dart';
 import 'package:PiliPlus/http/init.dart';
-import 'package:PiliPlus/utils/extension.dart';
-import 'package:PiliPlus/utils/login.dart';
+import 'package:PiliPlus/utils/accounts/account.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -84,8 +84,8 @@ class LoginPageController extends GetxController
             if (value['status']) {
               t.cancel();
               statusQRCode.value = '扫码成功';
-              await LoginUtils.onLogin(
-                  value['data'], value['data']['cookie_info']);
+              await setAccount(
+                  value['data'], value['data']['cookie_info']['cookies']);
               Get.back();
             } else if (value['code'] == 86038) {
               t.cancel();
@@ -212,31 +212,27 @@ class LoginPageController extends GetxController
     }
     try {
       dynamic result = await Request().get(
-        "https://api.bilibili.com/x/member/web/account",
-        options: Options(
-          headers: {
-            "Cookie": cookieTextController.text,
-          },
-        ),
+        "/x/member/web/account",
+        options: Options(headers: {
+          "cookie": cookieTextController.text,
+        }, extra: {
+          'account': AnonymousAccount()
+        }),
       );
       if (result.data['code'] == 0) {
         try {
-          await LoginUtils.onLogin(
-            {'mid': '${result.data['data']['mid']}'},
-            {
-              'cookies':
-                  cookieTextController.text.split(';').toList().map((item) {
-                List list = item.split('=').toList();
-                return {
-                  'name': list.firstOrNull,
-                  'value': list.getOrNull(1),
-                };
-              }).toList()
-            },
-          );
-          if (GStorage.isLogin) {
-            Get.back();
-          }
+          await LoginAccount(
+                  BiliCookieJar.fromJson(Map.fromEntries(
+                      cookieTextController.text.split(';').map((item) {
+                    final list = item.split('=');
+                    return MapEntry(list.first, list.skip(1).join());
+                  }))),
+                  null,
+                  null)
+              .onChange();
+          if (!Accounts.main.isLogin) await switchAccountDialog(Get.context!);
+          SmartDialog.showToast('登录成功');
+          Get.back();
         } catch (e) {
           SmartDialog.showToast("登录失败: $e");
         }
@@ -434,8 +430,8 @@ class LoginPageController extends GetxController
                     return;
                   }
                   SmartDialog.showToast('正在保存身份信息');
-                  await LoginUtils.onLogin(
-                      data['token_info'], data['cookie_info']);
+                  await setAccount(
+                      data['token_info'], data['cookie_info']['cookies']);
                   Get.back();
                   Get.back();
                 },
@@ -453,7 +449,7 @@ class LoginPageController extends GetxController
         return;
       }
       SmartDialog.showToast('正在保存身份信息');
-      await LoginUtils.onLogin(data['token_info'], data['cookie_info']);
+      await setAccount(data['token_info'], data['cookie_info']['cookies']);
       Get.back();
     } else {
       // handle login result
@@ -516,7 +512,7 @@ class LoginPageController extends GetxController
     if (res['status']) {
       SmartDialog.showToast('登录成功');
       var data = res['data'];
-      await LoginUtils.onLogin(data['token_info'], data['cookie_info']);
+      await setAccount(data['token_info'], data['cookie_info']['cookies']);
       Get.back();
     } else {
       SmartDialog.showToast(res['msg']);
@@ -643,5 +639,83 @@ class LoginPageController extends GetxController
     return geeGt?.isNotEmpty == true &&
         geeChallenge?.isNotEmpty == true &&
         captchaData.token?.isNotEmpty == true;
+  }
+
+  Future<void> setAccount(Map tokenInfo, List cookieInfo) async {
+    await Future.wait([
+      LoginAccount(BiliCookieJar.fromList(cookieInfo),
+              tokenInfo['access_token'], tokenInfo['refresh_token'])
+          .onChange(),
+      AnonymousAccount().logout().then((i) => Request.buvidActive(i))
+    ]);
+    if (Accounts.main.isLogin) {
+      SmartDialog.showToast('登录成功');
+    } else {
+      SmartDialog.showToast('登录成功, 请先设置账号模式');
+      await switchAccountDialog(Get.context!);
+    }
+  }
+
+  static Future switchAccountDialog(BuildContext context) {
+    if (Accounts.account.isEmpty) {
+      return SmartDialog.showToast('请先登录');
+    }
+    final selectAccount = Accounts.accountMode
+        .map((key, value) => MapEntry(key, value.mid.toString()));
+    final options = {'0': '0', for (String i in Accounts.account.keys) i: i};
+    return showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(builder: (context, setState) {
+        return AlertDialog(
+          title: const Text('选择账号mid, 为0时使用匿名'),
+          titlePadding: const EdgeInsets.only(left: 22, top: 16, right: 22),
+          contentPadding: const EdgeInsets.symmetric(vertical: 5),
+          actionsPadding: const EdgeInsets.only(
+            left: 16,
+            right: 16,
+            bottom: 10,
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: AccountType.values
+                  .map(
+                    (e) => WrapRadioOptionsGroup<String>(
+                      groupTitle: e.title,
+                      options: options,
+                      selectedValue: selectAccount[e],
+                      onChanged: (v) => setState(() => selectAccount[e] = v!),
+                    ),
+                  )
+                  .toList(),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: Get.back,
+              child: Text(
+                '取消',
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.outline,
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                for (var i in selectAccount.entries) {
+                  var account =
+                      Accounts.account.get(i.value) ?? AnonymousAccount();
+                  if (account != Accounts.get(i.key)) {
+                    Accounts.set(i.key, account);
+                  }
+                }
+                Get.back();
+              },
+              child: const Text('确定'),
+            ),
+          ],
+        );
+      }),
+    );
   }
 }

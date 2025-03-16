@@ -129,6 +129,7 @@ class _MinePageState extends State<MinePage> {
         GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTap: _mineController.onLogin,
+          onLongPress: () => _mineController.onLogin(true),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [

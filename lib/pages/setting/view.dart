@@ -1,5 +1,6 @@
-import 'package:PiliPlus/build_config.dart';
+import 'package:PiliPlus/http/login.dart';
 import 'package:PiliPlus/pages/about/index.dart';
+import 'package:PiliPlus/pages/login/controller.dart';
 import 'package:PiliPlus/pages/setting/extra_setting.dart';
 import 'package:PiliPlus/pages/setting/play_setting.dart';
 import 'package:PiliPlus/pages/setting/privacy_setting.dart';
@@ -9,12 +10,9 @@ import 'package:PiliPlus/pages/setting/video_setting.dart';
 import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/login.dart';
 import 'package:PiliPlus/utils/storage.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
-
-import '../../http/init.dart';
 
 class _SettingsModel {
   final String name;
@@ -39,7 +37,7 @@ class SettingPage extends StatefulWidget {
 
 class _SettingPageState extends State<SettingPage> {
   late String _type = 'privacySetting';
-  final RxBool _isLogin = GStorage.isLogin.obs;
+  final RxBool _isLogin = Accounts.main.isLogin.obs;
   TextStyle get _titleStyle => Theme.of(context).textTheme.titleMedium!;
   TextStyle get _subTitleStyle => Theme.of(context)
       .textTheme
@@ -170,6 +168,12 @@ class _SettingPageState extends State<SettingPage> {
                     : Text(item.subtitle!, style: _subTitleStyle),
               ),
             ),
+        ListTile(
+          onTap: () => LoginPageController.switchAccountDialog(context),
+          leading: const Icon(Icons.switch_account_outlined),
+          title: const Text('设置账号模式'),
+        ),
+        // TODO: 多账号登出
         _buildLoginItem,
         ListTile(
           tileColor: _getTileColor(_items.last.name),
@@ -204,41 +208,36 @@ class _SettingPageState extends State<SettingPage> {
                               ),
                             ),
                           ),
-                          if (BuildConfig.isDebug)
-                            TextButton(
-                              onPressed: () {
-                                Get.back();
-                                _isLogin.value = false;
-                                LoginUtils.onLogout();
-                              },
-                              child: Text(
-                                '仅登出',
-                                style: TextStyle(
-                                  color: Theme.of(context).colorScheme.error,
-                                ),
+                          TextButton(
+                            onPressed: () {
+                              Get.back();
+                              _isLogin.value = false;
+                              LoginUtils.onLogoutMain();
+                              final account = Accounts.main;
+                              Accounts.accountMode
+                                  .removeWhere((_, a) => a == account);
+                              account.logout().then((_) => Accounts.refresh());
+                            },
+                            child: Text(
+                              '仅登出',
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.error,
                               ),
                             ),
+                          ),
                           TextButton(
                             onPressed: () async {
                               SmartDialog.showLoading();
-                              dynamic res = await Request().post(
-                                'https://passport.bilibili.com/login/exit/v2',
-                                data: {
-                                  'biliCSRF': await Request.getCsrf(),
-                                },
-                                options: Options(
-                                  contentType:
-                                      Headers.formUrlEncodedContentType,
-                                ),
-                              );
-                              if (res.data['code'] == 0) {
-                                await LoginUtils.onLogout();
+                              final res = await LoginHttp.logout(Accounts.main);
+                              if (res['status']) {
+                                await Accounts.main.logout();
+                                await LoginUtils.onLogoutMain();
                                 _isLogin.value = false;
                                 SmartDialog.dismiss();
                                 Get.back();
                               } else {
                                 SmartDialog.dismiss();
-                                SmartDialog.showToast('${res.data['message']}');
+                                SmartDialog.showToast(res['msg'].toString());
                               }
                             },
                             child: const Text('确认'),

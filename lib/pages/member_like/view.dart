@@ -24,7 +24,7 @@ class MemberLikePage extends StatefulWidget {
 }
 
 class _MemberLikePageState extends State<MemberLikePage> {
-  late final _ownerMid = GStorage.ownerMid;
+  late final _ownerMid = Accounts.main.mid;
 
   late final _ctr = Get.put(
     MemberLikeController(mid: widget.mid),

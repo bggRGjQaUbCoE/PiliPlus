@@ -49,7 +49,7 @@ class MainController extends GetxController {
     }
     hideTabBar =
         GStorage.setting.get(SettingBoxKey.hideTabBar, defaultValue: true);
-    isLogin.value = GStorage.isLogin;
+    isLogin.value = Accounts.main.isLogin;
     dynamicBadgeMode = DynamicBadgeMode.values[GStorage.setting.get(
         SettingBoxKey.dynamicBadgeMode,
         defaultValue: DynamicBadgeMode.number.index)];

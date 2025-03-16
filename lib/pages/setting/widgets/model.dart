@@ -3,7 +3,6 @@ import 'dart:math';
 
 import 'package:PiliPlus/common/widgets/refresh_indicator.dart'
     show kDragContainerExtentPercentage, displacement;
-import 'package:PiliPlus/http/interceptor.dart';
 import 'package:PiliPlus/http/reply.dart';
 import 'package:PiliPlus/http/video.dart';
 import 'package:PiliPlus/main.dart';
@@ -11,7 +10,6 @@ import 'package:PiliPlus/models/common/audio_normalization.dart';
 import 'package:PiliPlus/models/common/dynamic_badge_mode.dart';
 import 'package:PiliPlus/models/common/dynamics_type.dart';
 import 'package:PiliPlus/models/common/nav_bar_config.dart';
-import 'package:PiliPlus/models/common/rcmd_type.dart';
 import 'package:PiliPlus/models/common/reply_sort_type.dart';
 import 'package:PiliPlus/models/common/super_resolution_type.dart';
 import 'package:PiliPlus/models/common/theme_type.dart';
@@ -35,6 +33,7 @@ import 'package:PiliPlus/pages/setting/widgets/switch_item.dart';
 import 'package:PiliPlus/plugin/pl_player/models/bottom_progress_behavior.dart';
 import 'package:PiliPlus/plugin/pl_player/models/fullscreen_mode.dart';
 import 'package:PiliPlus/plugin/pl_player/utils/fullscreen.dart';
+import 'package:PiliPlus/utils/accounts/account_manager/account_mgr.dart';
 import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:PiliPlus/utils/global_data.dart';
@@ -1229,35 +1228,19 @@ List<SettingsModel> get videoSettings => [
 
 List<SettingsModel> get recommendSettings => [
       SettingsModel(
-        settingsType: SettingsType.normal,
-        title: '首页推荐类型',
-        leading: const Icon(Icons.model_training_outlined),
-        getSubtitle: () => '当前使用「${GStorage.defaultRcmdType}端」推荐¹',
-        onTap: (setState) async {
-          String? result = await showDialog(
-            context: Get.context!,
-            builder: (context) {
-              return SelectDialog<String>(
-                title: '推荐类型',
-                value: GStorage.defaultRcmdType,
-                values: RcmdType.values.map((e) {
-                  return {'title': e.labels, 'value': e.values};
-                }).toList(),
-              );
-            },
-          );
-          if (result != null) {
-            if (result == 'app') {
-              if (GStorage.isLogin.not) {
-                SmartDialog.showToast('尚未登录，无法收到个性化推荐');
-              }
+          settingsType: SettingsType.sw1tch,
+          title: '首页使用app端推荐',
+          subtitle: '若web端推荐不太符合预期，可尝试切换至app端推荐',
+          leading: const Icon(Icons.model_training_outlined),
+          setKey: SettingBoxKey.appRcmd,
+          defaultVal: true,
+          onChanged: (value) {
+            try {
+              Get.find<RcmdController>().appRcmd = value;
+            } catch (e) {
+              debugPrint('$e');
             }
-            await GStorage.setting.put(SettingBoxKey.defaultRcmdType, result);
-            SmartDialog.showToast('下次启动时生效');
-            setState();
-          }
-        },
-      ),
+          }),
       SettingsModel(
         settingsType: SettingsType.sw1tch,
         title: '推荐动态',
@@ -1430,7 +1413,7 @@ List<SettingsModel> get recommendSettings => [
       SettingsModel(
         settingsType: SettingsType.sw1tch,
         title: '过滤器也应用于相关视频',
-        subtitle: '视频详情页的相关视频也进行过滤²',
+        subtitle: '视频详情页的相关视频也进行过滤¹',
         leading: const Icon(Icons.explore_outlined),
         setKey: SettingBoxKey.applyFilterToRelatedVideos,
         defaultVal: true,
@@ -1442,7 +1425,7 @@ List<SettingsModel> get privacySettings => [
       SettingsModel(
         settingsType: SettingsType.normal,
         onTap: (setState) {
-          if (GStorage.isLogin.not) {
+          if (Accounts.main.isLogin.not) {
             SmartDialog.showToast('登录后查看');
             return;
           }
@@ -1472,7 +1455,8 @@ List<SettingsModel> get privacySettings => [
             builder: (context) {
               return AlertDialog(
                 title: const Text('查看详情'),
-                content: Text(ApiInterceptor.anonymityList.join('\n')),
+                content: Text(AccountManager.apiTypeSet[AccountType.heartbeat]!
+                    .join('\n')),
                 actions: [
                   TextButton(
                     onPressed: () async {
@@ -1501,12 +1485,9 @@ List<SettingsModel> get extraSettings => [
         onTap: () => Get.toNamed('/sponsorBlock'),
         leading: Stack(
           alignment: Alignment.center,
-          children: [
-            const Icon(Icons.shield_outlined),
-            Icon(
-              Icons.play_arrow_rounded,
-              size: 15,
-            ),
+          children: const [
+            Icon(Icons.shield_outlined),
+            Icon(Icons.play_arrow_rounded, size: 15),
           ],
         ),
       ),
@@ -2056,9 +2037,9 @@ List<SettingsModel> get extraSettings => [
         subtitle: '发送评论后检查评论是否可见',
         leading: Stack(
           alignment: Alignment.center,
-          children: [
-            const Icon(Icons.shield_outlined),
-            const Icon(Icons.reply, size: 14),
+          children: const [
+            Icon(Icons.shield_outlined),
+            Icon(Icons.reply, size: 14),
           ],
         ),
         setKey: SettingBoxKey.enableCommAntifraud,
@@ -2081,12 +2062,9 @@ List<SettingsModel> get extraSettings => [
         subtitle: '发布/转发动态后检查动态是否可见',
         leading: Stack(
           alignment: Alignment.center,
-          children: [
-            const Icon(Icons.shield_outlined),
-            Icon(
-              Icons.motion_photos_on,
-              size: 12,
-            ),
+          children: const [
+            Icon(Icons.shield_outlined),
+            Icon(Icons.motion_photos_on, size: 12),
           ],
         ),
         setKey: SettingBoxKey.enableCreateDynAntifraud,
@@ -2097,7 +2075,7 @@ List<SettingsModel> get extraSettings => [
         title: '屏蔽带货动态',
         leading: Stack(
           alignment: Alignment.center,
-          children: [
+          children: const [
             Icon(Icons.shopping_bag_outlined, size: 14),
             Icon(Icons.not_interested),
           ],
@@ -2113,7 +2091,7 @@ List<SettingsModel> get extraSettings => [
         title: '屏蔽带货评论',
         leading: Stack(
           alignment: Alignment.center,
-          children: [
+          children: const [
             Icon(Icons.shopping_bag_outlined, size: 14),
             Icon(Icons.not_interested),
           ],

@@ -312,7 +312,7 @@ class AuthorPanel extends StatelessWidget {
             },
             minLeadingWidth: 0,
           ),
-          if (GStorage.isLogin)
+          if (Accounts.main.isLogin)
             ListTile(
               title: Text(
                 '举报',

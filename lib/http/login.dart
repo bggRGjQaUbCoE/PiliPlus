@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:PiliPlus/utils/accounts/account.dart';
 import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
 import 'package:encrypt/encrypt.dart';
@@ -11,9 +12,7 @@ import 'index.dart';
 class LoginHttp {
   static final String deviceId = LoginUtils.genDeviceId();
   static final String buvid = LoginUtils.buvid;
-  static const String host = 'passport.bilibili.com';
   static final Map<String, String> headers = {
-    'Host': host,
     'buvid': buvid,
     'env': 'prod',
     'app-key': 'android_hd',
@@ -27,21 +26,14 @@ class LoginHttp {
 
   static Future<Map<String, dynamic>> getHDcode() async {
     var params = {
-      'appkey': Constants.appKey,
       // 'local_id': 'Y952A395BB157D305D8A8340FC2AAECECE17',
       'local_id': '0',
-      //精确到秒的时间戳
       'ts': (DateTime.now().millisecondsSinceEpoch ~/ 1000).toString(),
       'platform': 'android',
       'mobi_app': 'android_hd',
     };
-    String sign = Utils.appSign(
-      params,
-      Constants.appKey,
-      Constants.appSec,
-    );
-    var res = await Request()
-        .post(Api.getTVCode, queryParameters: {...params, 'sign': sign});
+    Utils.appSign(params);
+    var res = await Request().post(Api.getTVCode, queryParameters: params);
 
     if (res.data['code'] == 0) {
       return {'status': true, 'data': res.data['data']};
@@ -52,18 +44,12 @@ class LoginHttp {
 
   static Future codePoll(String authCode) async {
     var params = {
-      'appkey': Constants.appKey,
       'auth_code': authCode,
       'local_id': '0',
       'ts': (DateTime.now().millisecondsSinceEpoch ~/ 1000).toString(),
     };
-    String sign = Utils.appSign(
-      params,
-      Constants.appKey,
-      Constants.appSec,
-    );
-    var res = await Request()
-        .post(Api.qrcodePoll, queryParameters: {...params, 'sign': sign});
+    Utils.appSign(params);
+    var res = await Request().post(Api.qrcodePoll, queryParameters: params);
     return {
       'status': res.data['code'] == 0,
       'code': res.data['code'],
@@ -106,7 +92,6 @@ class LoginHttp {
   }) async {
     int timestamp = DateTime.now().millisecondsSinceEpoch;
     var data = {
-      'appkey': Constants.appKey,
       'build': '2001100',
       'buvid': buvid,
       'c_locale': 'zh_CN',
@@ -129,15 +114,11 @@ class LoginHttp {
       'tel': tel,
       'ts': (timestamp ~/ 1000).toString(),
     };
-    String sign = Utils.appSign(
-      data,
-      Constants.appKey,
-      Constants.appSec,
-    );
+    Utils.appSign(data);
 
     var res = await Request().post(
       Api.appSmsCode,
-      data: {...data, 'sign': sign},
+      data: data,
       options: Options(
         contentType: Headers.formUrlEncodedContentType,
         headers: headers,
@@ -211,7 +192,6 @@ class LoginHttp {
         Encrypter(RSA(publicKey: publicKey)).encrypt(salt + password).base64;
 
     Map<String, String> data = {
-      'appkey': Constants.appKey,
       'bili_local_id': deviceId,
       'build': '2001100',
       'buvid': buvid,
@@ -242,15 +222,7 @@ class LoginHttp {
       'ts': (DateTime.now().millisecondsSinceEpoch ~/ 1000).toString(),
       'username': username,
     };
-    String sign = Utils.appSign(
-      data,
-      Constants.appKey,
-      Constants.appSec,
-    );
-    data['sign'] = sign;
-    data.map((key, value) {
-      return MapEntry<String, dynamic>(key, value);
-    });
+    Utils.appSign(data);
     var res = await Request().post(
       Api.loginByPwdApi,
       data: data,
@@ -287,7 +259,6 @@ class LoginHttp {
   }) async {
     dynamic publicKey = RSAKeyParser().parse(key);
     Map<String, String> data = {
-      'appkey': Constants.appKey,
       'bili_local_id': deviceId,
       'build': '2001100',
       'buvid': buvid,
@@ -316,15 +287,7 @@ class LoginHttp {
       'tel': tel,
       'ts': (DateTime.now().millisecondsSinceEpoch ~/ 1000).toString(),
     };
-    String sign = Utils.appSign(
-      data,
-      Constants.appKey,
-      Constants.appSec,
-    );
-    data['sign'] = sign;
-    data.map((key, value) {
-      return MapEntry<String, dynamic>(key, value);
-    });
+    Utils.appSign(data);
     var res = await Request().post(
       Api.logInByAppSms,
       data: data,
@@ -404,12 +367,7 @@ class LoginHttp {
       if (geeValidate != null) 'gee_validate': geeValidate,
       if (recaptchaToken != null) 'recaptcha_token': recaptchaToken,
     };
-    String sign = Utils.appSign(
-      data,
-      Constants.appKey,
-      Constants.appSec,
-    );
-    data['sign'] = sign;
+    Utils.appSign(data);
     var res = await Request().post(
       Api.safeCenterSmsCode,
       data: data,
@@ -449,12 +407,7 @@ class LoginHttp {
       'source': source,
       'captcha_key': captchaKey,
     };
-    String sign = Utils.appSign(
-      data,
-      Constants.appKey,
-      Constants.appSec,
-    );
-    data['sign'] = sign;
+    Utils.appSign(data);
     var res = await Request().post(
       Api.safeCenterSmsVerify,
       data: data,
@@ -500,15 +453,7 @@ class LoginHttp {
       // 'statistics': Constants.statistics,
       'ts': (DateTime.now().millisecondsSinceEpoch ~/ 1000).toString(),
     };
-    String sign = Utils.appSign(
-      data,
-      Constants.appKey,
-      Constants.appSec,
-    );
-    data['sign'] = sign;
-    data.map((key, value) {
-      return MapEntry<String, dynamic>(key, value);
-    });
+    Utils.appSign(data);
     var res = await Request().post(
       Api.oauth2AccessToken,
       data: data,
@@ -528,5 +473,16 @@ class LoginHttp {
         'data': res.data['data']
       };
     }
+  }
+
+  static Future<Map> logout(Account account) async {
+    dynamic res = await Request().post(
+      Api.logout,
+      data: {'biliCSRF': account.csrf},
+      options: Options(
+          contentType: Headers.formUrlEncodedContentType,
+          extra: {'account': account}),
+    );
+    return {'status': res.data['code'] == 0, 'msg': res.data['message']};
   }
 }

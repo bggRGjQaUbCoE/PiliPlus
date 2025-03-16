@@ -18,9 +18,7 @@ import '../models/video_detail_res.dart';
 import '../utils/id_utils.dart';
 import '../utils/recommend_filter.dart';
 import '../utils/storage.dart';
-import '../utils/utils.dart';
 import '../utils/wbi_sign.dart';
-import '../pages/mine/controller.dart';
 import 'api.dart';
 import 'init.dart';
 import 'login.dart';
@@ -71,15 +69,8 @@ class VideoHttp {
   }
 
   // 添加额外的loginState变量模拟未登录状态
-  static Future<LoadingState> rcmdVideoListApp(
-      {bool loginStatus = true, required int freshIdx}) async {
+  static Future<LoadingState> rcmdVideoListApp({required int freshIdx}) async {
     Map<String, String> data = {
-      'access_key': loginStatus
-          ? (GStorage.localCache
-                  .get(LocalCacheKey.accessKey, defaultValue: {})['value'] ??
-              '')
-          : '',
-      'appkey': Constants.appKey,
       'build': '1462100',
       'c_locale': 'zh_CN',
       'channel': 'yingyongbao',
@@ -106,16 +97,8 @@ class VideoHttp {
       's_locale': 'zh_CN',
       'splash_id': '',
       'statistics': Constants.statistics,
-      'ts': (DateTime.now().millisecondsSinceEpoch ~/ 1000).toString(),
       'voice_balance': '0'
     };
-    String sign = Utils.appSign(
-      data,
-      Constants.appKey,
-      Constants.appSec,
-    );
-    data['sign'] = sign;
-
     var res = await Request().get(
       Api.recommendListApp,
       queryParameters: data,
@@ -227,24 +210,22 @@ class VideoHttp {
       'qn': qn ?? 80,
       // 获取所有格式的视频
       'fnval': 4048,
-    };
-
-    // 免登录查看1080p
-    if ((GStorage.userInfo.get('userInfoCache') == null ||
-            MineController.anonymity.value) &&
-        GStorage.setting.get(SettingBoxKey.p1080, defaultValue: true)) {
-      data['try_look'] = 1;
-    }
-
-    Map params = await WbiSign.makSign({
-      ...data,
       'fourk': 1,
       'voice_balance': 1,
       'gaia_source': 'pre-load',
       'web_location': 1550101,
-    });
+    };
 
-    late final usePgcApi = forcePgcApi == true || GStorage.isLogin;
+    // 免登录查看1080p
+    if ((Accounts.get(AccountType.video).isLogin) &&
+        GStorage.setting.get(SettingBoxKey.p1080, defaultValue: true)) {
+      data['try_look'] = 1;
+    }
+
+    Map params = await WbiSign.makSign(data);
+
+    late final usePgcApi =
+        forcePgcApi == true || Accounts.get(AccountType.video).isLogin;
 
     try {
       var res = await Request().get(
@@ -427,13 +408,11 @@ class VideoHttp {
   }) async {
     var res = await Request().post(
       Api.coinVideo,
-      queryParameters: {
+      data: {
         'aid': IdUtils.bv2av(bvid),
         // 'bvid': bvid,
         'multiply': multiply,
         'select_like': selectLike,
-        'access_key': GStorage.localCache
-            .get(LocalCacheKey.accessKey, defaultValue: {})['value'],
         // 'csrf': await Request.getCsrf(),
       },
     );
@@ -509,11 +488,9 @@ class VideoHttp {
 
   // （取消）点赞
   static Future likeVideo({required String bvid, required bool type}) async {
-    var res = await Request().post(Api.likeVideo, queryParameters: {
+    var res = await Request().post(Api.likeVideo, data: {
       'aid': IdUtils.bv2av(bvid),
       'like': type ? 0 : 1,
-      'access_key': GStorage.localCache
-          .get(LocalCacheKey.accessKey, defaultValue: {})['value'],
     }
         // queryParameters: {
         //   'bvid': bvid,
@@ -530,17 +507,15 @@ class VideoHttp {
 
   // （取消）点踩
   static Future dislikeVideo({required String bvid, required bool type}) async {
-    String? accessKey = GStorage.localCache
-        .get(LocalCacheKey.accessKey, defaultValue: {})['value'];
+    String? accessKey = Accounts.main.accessKey;
     if (accessKey == null || accessKey == "") {
       return {'status': false, 'msg': "请退出账号后重新登录"};
     }
     var res = await Request().post(
       Api.dislikeVideo,
-      queryParameters: {
+      data: {
         'aid': IdUtils.bv2av(bvid),
-        'dislike': type ? 0 : 1,
-        'access_key': accessKey,
+        'dislike': type ? '0' : '1',
       },
     );
     if (res.data is! String && res.data['code'] == 0) {
@@ -559,8 +534,8 @@ class VideoHttp {
       required int id,
       int? reasonId,
       int? feedbackId}) async {
-    String? accessKey = GStorage.localCache
-        .get(LocalCacheKey.accessKey, defaultValue: {})['value'];
+    String? accessKey = Accounts.get(AccountType.recommend).accessKey ??
+        Accounts.main.accessKey;
     if (accessKey == null || accessKey == "") {
       return {'status': false, 'msg': "请退出账号后重新登录"};
     }
@@ -571,10 +546,8 @@ class VideoHttp {
       // 'mid': mid,
       if (reasonId != null) 'reason_id': reasonId,
       if (feedbackId != null) 'feedback_id': feedbackId,
-      'build': 1,
+      'build': '1',
       'mobi_app': 'android',
-      'access_key': accessKey,
-      'appkey': Constants.appKey,
     });
     if (res.data['code'] == 0) {
       return {'status': true};
@@ -589,8 +562,8 @@ class VideoHttp {
       required int id,
       int? reasonId,
       int? feedbackId}) async {
-    String? accessKey = GStorage.localCache
-        .get(LocalCacheKey.accessKey, defaultValue: {})['value'];
+    String? accessKey = Accounts.get(AccountType.recommend).accessKey ??
+        Accounts.main.accessKey;
     if (accessKey == null || accessKey == "") {
       return {'status': false, 'msg': "请退出账号后重新登录"};
     }
@@ -601,10 +574,8 @@ class VideoHttp {
       // 'mid': mid,
       if (reasonId != null) 'reason_id': reasonId,
       if (feedbackId != null) 'feedback_id': feedbackId,
-      'build': 1,
+      'build': '1',
       'mobi_app': 'android',
-      'access_key': accessKey,
-      'appkey': Constants.appKey,
     });
     if (res.data['code'] == 0) {
       return {'status': true};

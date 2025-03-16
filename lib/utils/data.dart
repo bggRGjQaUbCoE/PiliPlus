@@ -8,7 +8,7 @@ class Data {
   }
 
   static Future historyStatus() async {
-    if (GStorage.userInfo.get('userInfoCache') == null) {
+    if (!Accounts.main.isLogin) {
       return;
     }
     var res = await UserHttp.historyStatus();

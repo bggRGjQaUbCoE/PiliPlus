@@ -1048,7 +1048,7 @@ class ReplyItem extends StatelessWidget {
                 '/x/v2/reply/report',
                 data: {
                   'add_blacklist': banUid,
-                  'csrf': await Request.getCsrf(),
+                  'csrf': Accounts.main.csrf,
                   'gaia_source': 'main_h5',
                   'oid': item.oid,
                   'platform': 'android',
@@ -1135,7 +1135,7 @@ class ReplyItem extends StatelessWidget {
       }
     }
 
-    dynamic ownerMid = GStorage.ownerMid;
+    int ownerMid = Accounts.main.mid;
     Color errorColor = Theme.of(context).colorScheme.error;
 
     return Padding(
@@ -1168,7 +1168,7 @@ class ReplyItem extends StatelessWidget {
               ),
             ),
           ),
-          if (ownerMid != null) ...[
+          if (ownerMid != 0) ...[
             ListTile(
               onTap: () => menuActionHandler('delete'),
               minLeadingWidth: 0,

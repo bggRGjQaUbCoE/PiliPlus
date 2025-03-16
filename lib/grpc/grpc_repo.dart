@@ -43,16 +43,12 @@ class GrpcRepo {
   static const gzipEncoder = GZipEncoder();
   static const gzipDecoder = GZipDecoder();
 
-  static final bool _isLogin = GStorage.userInfo.get('userInfoCache') != null;
-  static final int? _mid = GStorage.userInfo.get('userInfoCache')?.mid;
-  static final String? _accessKey = GStorage.localCache
-      .get(LocalCacheKey.accessKey, defaultValue: {})['value'];
+  static final String? _accessKey = Accounts.main.accessKey;
   static const _build = 1462100;
   static const _biliChannel = 'bili';
   static const _mobiApp = 'android_hd';
   static const _phone = 'phone';
 
-  static final _eId = _isLogin ? Utils.genAuroraEid(_mid!) : '';
   static final _buvid = LoginUtils.buvid;
   static final _traceId = Utils.genTraceId();
   static final _sessionId = Utils.generateRandomString(8);
@@ -63,11 +59,9 @@ class GrpcRepo {
     'gzip-accept-encoding': 'gzip,identity',
     'user-agent': '${Constants.userAgent} grpc-java-cronet/1.36.1',
     'x-bili-gaia-vtoken': '',
-    'x-bili-aurora-eid': _isLogin ? _eId : '',
-    'x-bili-mid': _isLogin ? _mid.toString() : '0',
     'x-bili-aurora-zone': '',
     'x-bili-trace-id': _traceId,
-    if (_isLogin) 'authorization': 'identify_v1 $_accessKey',
+    if (_accessKey != null) 'authorization': 'identify_v1 $_accessKey',
     'buvid': _buvid,
     'bili-http-engine': 'cronet',
     'te': 'trailers',

@@ -4,7 +4,6 @@ import 'package:PiliPlus/http/constants.dart';
 import 'package:PiliPlus/http/index.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/utils/extension.dart';
-import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dio/dio.dart';
@@ -54,10 +53,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
   _getInfo() async {
     Map<String, String> data = {
-      'access_key': GStorage.localCache
-              .get(LocalCacheKey.accessKey, defaultValue: {})['value'] ??
-          '',
-      'appkey': Constants.appKey,
       'build': '1462100',
       'c_locale': 'zh_CN',
       'channel': 'yingyongbao',
@@ -65,19 +60,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
       'platform': 'android',
       's_locale': 'zh_CN',
       'statistics': Constants.statistics,
-      'ts': (DateTime.now().millisecondsSinceEpoch ~/ 1000).toString(),
     };
-    String sign = Utils.appSign(
-      data,
-      Constants.appKey,
-      Constants.appSec,
-    );
-    data['sign'] = sign;
     Request()
-        .get(
-      '${HttpString.appBaseUrl}/x/v2/account/myinfo',
-      queryParameters: data,
-    )
+        .get('${HttpString.appBaseUrl}/x/v2/account/myinfo',
+            queryParameters: data)
         .then((data) {
       setState(() {
         if (data.data['code'] == 0) {
@@ -329,10 +315,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
     dynamic datum,
   }) async {
     Map<String, String> data = {
-      'access_key': GStorage.localCache
-              .get(LocalCacheKey.accessKey, defaultValue: {})['value'] ??
-          '',
-      'appkey': Constants.appKey,
       'build': '1462100',
       'c_locale': 'zh_CN',
       'channel': 'yingyongbao',
@@ -350,12 +332,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
       else if (type == ProfileType.sex)
         'sex': datum.toString(),
     };
-    String sign = Utils.appSign(
-      data,
-      Constants.appKey,
-      Constants.appSec,
-    );
-    data['sign'] = sign;
     Request()
         .post(
       '/x/member/app/${type.name}/update',

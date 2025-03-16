@@ -1,8 +1,5 @@
-import 'dart:io';
 import 'dart:math';
 
-import 'package:PiliPlus/http/constants.dart';
-import 'package:PiliPlus/http/init.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/dynamics_type.dart';
 import 'package:PiliPlus/models/common/tab_type.dart' hide tabsConfig;
@@ -12,6 +9,7 @@ import 'package:PiliPlus/pages/bangumi/controller.dart';
 import 'package:PiliPlus/pages/dynamics/tab/controller.dart';
 import 'package:PiliPlus/pages/live/controller.dart';
 import 'package:PiliPlus/pages/main/controller.dart';
+import 'package:PiliPlus/utils/accounts/account.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -30,52 +28,31 @@ import 'package:PiliPlus/http/user.dart';
 class LoginUtils {
   static final random = Random();
 
-  static Future onLogin(Map<String, dynamic> tokenInfo, jsonCookieInfo) async {
+  static Future onLoginMain() async {
+    final account = Accounts.main;
     try {
-      GStorage.localCache.put(LocalCacheKey.accessKey, {
-        'mid': tokenInfo['mid'],
-        'value': tokenInfo['access_token'] ?? tokenInfo['value'],
-        'refresh': tokenInfo['refresh_token'] ?? tokenInfo['refresh']
-      });
-      List<dynamic> cookieInfo = jsonCookieInfo['cookies'];
-      List<Cookie> cookies = [];
-      String cookieStrings = cookieInfo.map((cookie) {
-        String cstr =
-            '${cookie['name']}=${cookie['value']};Domain=.bilibili.com;Path=/;';
-        cookies.add(Cookie.fromSetCookieValue(cstr));
-        return cstr;
-      }).join('');
-      List<String> urls = [
-        HttpString.baseUrl,
-        HttpString.apiBaseUrl,
-        HttpString.tUrl
-      ];
-      for (var url in urls) {
-        await Request.cookieManager.cookieJar
-            .saveFromResponse(Uri.parse(url), cookies);
-      }
-      Request.dio.options.headers['cookie'] = cookieStrings;
-      await WebviewCookieManager().setCookies(cookies);
-      for (Cookie item in cookies) {
-        await web.CookieManager().setCookie(
-          url: web.WebUri(item.domain ?? ''),
-          name: item.name,
-          value: item.value,
-          path: item.path ?? '',
-          domain: item.domain,
-          isSecure: item.secure,
-          isHttpOnly: item.httpOnly,
-        );
-      }
+      final cookies = account.cookieJar.toList();
+      final webManager = web.CookieManager();
+      Future.wait([
+        WebviewCookieManager().setCookies(cookies),
+        ...cookies.map((item) => webManager.setCookie(
+              url: web.WebUri(item.domain ?? ''),
+              name: item.name,
+              value: item.value,
+              path: item.path ?? '',
+              domain: item.domain,
+              isSecure: item.secure,
+              isHttpOnly: item.httpOnly,
+            ))
+      ]);
     } catch (e) {
       SmartDialog.showToast('设置登录态失败，$e');
     }
     final result = await UserHttp.userInfo();
-    if (result['status'] && result['data'].isLogin) {
-      SmartDialog.showToast('登录成功，当前采用「'
-          '${GStorage.setting.get(SettingBoxKey.defaultRcmdType, defaultValue: 'app')}'
-          '端」推荐');
-      await GStorage.userInfo.put('userInfoCache', result['data']);
+    final UserInfoData data = result['data'];
+    if (result['status'] && data.isLogin!) {
+      SmartDialog.showToast('main登录成功');
+      await GStorage.userInfo.put('userInfoCache', data);
       try {
         Get.find<MineController>()
           ..isLogin.value = true
@@ -85,14 +62,14 @@ class LoginUtils {
       try {
         Get.find<HomeController>()
           ..isLogin.value = true
-          ..userFace.value = result['data'].face;
+          ..userFace.value = data.face!;
       } catch (_) {}
 
       try {
         Get.find<DynamicsController>()
           ..isLogin.value = true
-          ..ownerMid = result['data'].mid
-          ..face = result['data'].face
+          ..ownerMid = data.mid
+          ..face = data.face
           ..onRefresh();
       } catch (_) {}
 
@@ -105,7 +82,7 @@ class LoginUtils {
 
       try {
         Get.find<MediaController>()
-          ..mid = result['data'].mid
+          ..mid = data.mid
           ..onRefresh();
       } catch (_) {}
 
@@ -128,19 +105,18 @@ class LoginUtils {
       } catch (_) {}
     } else {
       // 获取用户信息失败
+      await Accounts.set(AccountType.main, await account.logout());
       SmartDialog.showNotify(
           msg: '登录失败，请检查cookie是否正确，${result['message']}',
           notifyType: NotifyType.warning);
     }
   }
 
-  static Future onLogout() async {
-    await Request.cookieManager.cookieJar.deleteAll();
-    await web.CookieManager().deleteAllCookies();
-    Request.dio.options.headers['cookie'] = '';
-
-    await GStorage.userInfo.delete('userInfoCache');
-    await GStorage.localCache.delete(LocalCacheKey.accessKey);
+  static Future onLogoutMain() async {
+    await Future.wait([
+      web.CookieManager().deleteAllCookies(),
+      GStorage.userInfo.delete('userInfoCache'),
+    ]);
 
     try {
       Get.find<MainController>().isLogin.value = false;
@@ -151,7 +127,7 @@ class LoginUtils {
         ..userInfo.value = UserInfoData()
         ..userStat.value = UserStat()
         ..isLogin.value = false;
-      MineController.anonymity.value = false;
+      // MineController.anonymity.value = false;
     } catch (_) {}
 
     try {

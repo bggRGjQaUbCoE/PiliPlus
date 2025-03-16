@@ -2,14 +2,13 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:PiliPlus/grpc/app/main/community/reply/v1/reply.pb.dart';
-import 'package:PiliPlus/http/constants.dart';
-import 'package:PiliPlus/http/init.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/reply.dart';
 import 'package:PiliPlus/models/common/reply_type.dart';
 import 'package:PiliPlus/models/video/reply/data.dart';
 import 'package:PiliPlus/pages/common/common_controller.dart';
 import 'package:PiliPlus/pages/video/detail/reply_new/reply_page.dart';
+import 'package:PiliPlus/utils/accounts/account.dart';
 import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/global_data.dart';
 import 'package:PiliPlus/utils/utils.dart';
@@ -374,10 +373,10 @@ abstract class ReplyController extends CommonController {
     // biliSendCommAntifraud
     if (Platform.isAndroid && _biliSendCommAntifraud) {
       try {
-        List<Cookie> cookies = await Request.cookieManager.cookieJar
-            .loadForRequest(Uri.parse(HttpString.apiBaseUrl));
-        final String cookieString = cookies
-            .map((Cookie cookie) => '${cookie.name}=${cookie.value}')
+        final String cookieString = Accounts.main.cookieJar
+            .toJson()
+            .entries
+            .map((i) => '${i.key}=${i.value}')
             .join(';');
         Utils.channel.invokeMethod(
           'biliSendCommAntifraud',

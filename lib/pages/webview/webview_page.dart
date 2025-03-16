@@ -1,16 +1,16 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:PiliPlus/http/constants.dart';
 import 'package:PiliPlus/http/init.dart';
+import 'package:PiliPlus/utils/accounts/account.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
 import 'package:PiliPlus/utils/cache_manage.dart';
+import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
-import 'package:cookie_jar/cookie_jar.dart' as cookie_jar;
 
 enum _WebviewMenuItem {
   refresh,
@@ -127,10 +127,8 @@ class _WebviewPageNewState extends State<WebviewPageNew> {
                   }
                   break;
                 case _WebviewMenuItem.resetCookie:
-                  final List<cookie_jar.Cookie> cookies = await Request
-                      .cookieManager.cookieJar
-                      .loadForRequest(Uri.parse(HttpString.baseUrl));
-                  for (cookie_jar.Cookie item in cookies) {
+                  final cookies = Accounts.main.cookieJar.toList();
+                  for (var item in cookies) {
                     await CookieManager().setCookie(
                       url: WebUri(item.domain ?? ''),
                       name: item.name,

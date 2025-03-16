@@ -4,20 +4,17 @@ import 'dart:developer';
 import 'dart:io';
 import 'dart:math' show Random;
 import 'package:PiliPlus/build_config.dart';
+import 'package:PiliPlus/utils/accounts/account.dart';
+import 'package:PiliPlus/utils/accounts/account_manager/account_mgr.dart';
 import 'package:archive/archive.dart';
 import 'package:brotli/brotli.dart';
-import 'package:cookie_jar/cookie_jar.dart';
 import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
-import 'package:dio_cookie_manager/dio_cookie_manager.dart';
 import 'package:dio_http2_adapter/dio_http2_adapter.dart';
 import 'package:flutter/material.dart';
-import 'package:PiliPlus/utils/id_utils.dart';
 import '../utils/storage.dart';
-import '../utils/utils.dart';
 import 'api.dart';
 import 'constants.dart';
-import 'interceptor.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart' as web;
 
 class Request {
@@ -25,101 +22,69 @@ class Request {
   static const brotilDecoder = BrotliDecoder();
 
   static final Request _instance = Request._internal();
-  static late CookieManager cookieManager;
+  static late AccountManager accountManager;
   static late final Dio dio;
   factory Request() => _instance;
   late bool enableSystemProxy;
   late String systemProxyHost;
   late String systemProxyPort;
+  static final _rand = Random();
   static final RegExp spmPrefixExp =
       RegExp(r'<meta name="spm_prefix" content="([^"]+?)">');
 
   /// 设置cookie
   static setCookie() async {
-    final String cookiePath = await Utils.getCookiePath();
-    final PersistCookieJar cookieJar = PersistCookieJar(
-      ignoreExpires: true,
-      storage: FileStorage(cookiePath),
-    );
-    cookieManager = CookieManager(cookieJar);
-    dio.interceptors.add(cookieManager);
-    dio.interceptors.add(ApiInterceptor());
-    final List<Cookie> cookies = await cookieManager.cookieJar
-        .loadForRequest(Uri.parse(HttpString.baseUrl));
-    for (Cookie item in cookies) {
-      await web.CookieManager().setCookie(
-        url: web.WebUri(item.domain ?? ''),
-        name: item.name,
-        value: item.value,
-        path: item.path ?? '',
-        domain: item.domain,
-        isSecure: item.secure,
-        isHttpOnly: item.httpOnly,
-      );
-    }
-    final userInfo = GStorage.userInfo.get('userInfoCache');
-    if (userInfo?.mid != null) {
-      final List<Cookie> tUrlCookies = await cookieManager.cookieJar
-          .loadForRequest(Uri.parse(HttpString.tUrl));
-      if (tUrlCookies.isEmpty) {
-        try {
-          await dio.head(HttpString.tUrl);
-        } catch (e) {
-          log("setCookie, ${e.toString()}");
-        }
-      }
-      setOptionsHeaders(userInfo);
-    }
-
-    try {
-      await buvidActivate();
-    } catch (e) {
-      log("setCookie, ${e.toString()}");
-    }
-
-    // final String cookieString = cookies
-    //     .map((Cookie cookie) => '${cookie.name}=${cookie.value}')
-    //     .join('; ');
-    // dio.options.headers['cookie'] = cookieString;
+    accountManager = AccountManager();
+    dio.interceptors.add(accountManager);
+    await Accounts.refresh();
+    final List<Cookie> cookies = Accounts.main.cookieJar.toList();
+    final webManager = web.CookieManager();
+    await Future.wait(cookies.map((item) => webManager.setCookie(
+          url: web.WebUri(item.domain ?? ''),
+          name: item.name,
+          value: item.value,
+          path: item.path ?? '',
+          domain: item.domain,
+          isSecure: item.secure,
+          isHttpOnly: item.httpOnly,
+        )));
   }
 
   // 从cookie中获取 csrf token
   static Future<String> getCsrf() async {
-    List<Cookie> cookies = await cookieManager.cookieJar
-        .loadForRequest(Uri.parse(HttpString.apiBaseUrl));
-    return cookies
-        .firstWhere((e) => e.name == 'bili_jct', orElse: () => Cookie('', ''))
-        .value;
+    return Accounts.main.csrf;
   }
 
-  static setOptionsHeaders(userInfo) {
-    dio.options.headers['x-bili-mid'] = userInfo.mid.toString();
-    dio.options.headers['x-bili-aurora-eid'] =
-        IdUtils.genAuroraEid(userInfo.mid);
-  }
+  static Future<void> buvidActive(Account account) async {
+    // 这样线程不安全, 但仍按预期进行
+    if (account.activited) return;
+    account.activited = true;
+    try {
+      final html = await Request().get(Api.dynamicSpmPrefix,
+          options: Options(extra: {'account': account}));
+      final String spmPrefix = spmPrefixExp.firstMatch(html.data)!.group(1)!;
+      final String randPngEnd = base64.encode(
+          List<int>.generate(32, (_) => _rand.nextInt(256)) +
+              List<int>.filled(4, 0) +
+              [73, 69, 78, 68] +
+              List<int>.generate(4, (_) => _rand.nextInt(256)));
 
-  static Future buvidActivate() async {
-    var html = await Request().get(Api.dynamicSpmPrefix);
-    String spmPrefix = spmPrefixExp.firstMatch(html.data)!.group(1)!;
-    Random rand = Random();
-    String randPngEnd = base64.encode(
-        List<int>.generate(32, (_) => rand.nextInt(256)) +
-            List<int>.filled(4, 0) +
-            [73, 69, 78, 68] +
-            List<int>.generate(4, (_) => rand.nextInt(256)));
+      String jsonData = json.encode({
+        '3064': 1,
+        '39c8': '$spmPrefix.fp.risk',
+        '3c43': {
+          'adca': 'Linux',
+          'bfe9': randPngEnd.substring(randPngEnd.length - 50),
+        },
+      });
 
-    String jsonData = json.encode({
-      '3064': 1,
-      '39c8': '$spmPrefix.fp.risk',
-      '3c43': {
-        'adca': 'Linux',
-        'bfe9': randPngEnd.substring(randPngEnd.length - 50),
-      },
-    });
-
-    await Request().post(Api.activateBuvidApi,
-        data: {'payload': jsonData},
-        options: Options(contentType: Headers.jsonContentType));
+      await Request().post(Api.activateBuvidApi,
+          data: {'payload': jsonData},
+          options: Options(contentType: Headers.jsonContentType));
+      ;
+    } catch (e) {
+      log("setCookie, $e");
+    }
   }
 
   /*
@@ -225,7 +190,7 @@ class Request {
     } on DioException catch (e) {
       Response errResponse = Response(
         data: {
-          'message': await ApiInterceptor.dioError(e)
+          'message': await AccountManager.dioError(e)
         }, // 将自定义 Map 数据赋值给 Response 的 data 属性
         statusCode: -1,
         requestOptions: RequestOptions(),
@@ -254,7 +219,7 @@ class Request {
     } on DioException catch (e) {
       Response errResponse = Response(
         data: {
-          'message': await ApiInterceptor.dioError(e)
+          'message': await AccountManager.dioError(e)
         }, // 将自定义 Map 数据赋值给 Response 的 data 属性
         statusCode: -1,
         requestOptions: RequestOptions(),
@@ -279,7 +244,7 @@ class Request {
       return response.data;
     } on DioException catch (e) {
       debugPrint('downloadFile error: $e');
-      return Future.error(ApiInterceptor.dioError(e));
+      return Future.error(AccountManager.dioError(e));
     }
   }
 

@@ -30,7 +30,7 @@ abstract class ReplyController extends CommonController {
 
   late final savedReplies = {};
 
-  late final bool isLogin = GStorage.userInfo.get('userInfoCache') != null;
+  late final bool isLogin = Accounts.main.isLogin;
 
   CursorReply? cursor;
   late Rx<Mode> mode = Mode.MAIN_LIST_HOT.obs;

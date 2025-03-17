@@ -8,7 +8,6 @@ import 'package:PiliPlus/models/common/sponsor_block/skip_type.dart';
 import 'package:PiliPlus/pages/setting/slide_color_picker.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/utils.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -66,7 +65,6 @@ class _SponsorBlockPageState extends State<SponsorBlockPage> {
     Request()
         .get(
       '$_blockServer/api/status/uptime',
-      options: Options(extra: {'clearCookie': true}),
     )
         .then((res) {
       setState(() {

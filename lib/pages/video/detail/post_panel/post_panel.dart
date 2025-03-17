@@ -330,8 +330,7 @@ class _PostPanelState extends CommonCollapseSlidePageState<PostPanel> {
                         TextButton(
                           onPressed: () {
                             Get.back();
-                            Request()
-                                .post(
+                            Request().post(
                               '${GStorage.blockServer}/api/skipSegments',
                               queryParameters: {
                                 'videoID': videoDetailController.bvid,
@@ -355,9 +354,7 @@ class _PostPanelState extends CommonCollapseSlidePageState<PostPanel> {
                                     )
                                     .toList(),
                               },
-                              options: videoDetailController.options,
-                            )
-                                .then(
+                            ).then(
                               (res) {
                                 if (res.statusCode == 200) {
                                   Get.back();

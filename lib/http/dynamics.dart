@@ -1,4 +1,5 @@
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/utils/accounts/account.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:dio/dio.dart';
 
@@ -92,7 +93,7 @@ class DynamicsHttp {
     dynamic id,
     dynamic rid,
     dynamic type,
-    bool? clearCookie,
+    bool clearCookie = false,
   }) async {
     var res = await Request().get(
       Api.dynamicDetail,
@@ -104,7 +105,7 @@ class DynamicsHttp {
         'features': 'itemOpusStyle',
       },
       options:
-          clearCookie == true ? Options(extra: {'clearCookie': true}) : null,
+          clearCookie ? Options(extra: {'account': AnonymousAccount()}) : null,
     );
     if (res.data['code'] == 0) {
       try {

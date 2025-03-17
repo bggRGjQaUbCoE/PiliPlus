@@ -26,7 +26,6 @@ import 'package:PiliPlus/pages/video/detail/widgets/send_danmaku_panel.dart';
 import 'package:PiliPlus/pages/video/detail/widgets/media_list_panel.dart';
 import 'package:PiliPlus/utils/extension.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:dio/dio.dart';
 import 'package:easy_debounce/easy_throttle.dart';
 import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart';
 import 'package:floating/floating.dart';
@@ -493,17 +492,14 @@ class VideoDetailController extends GetxController
   late final List listData = [];
 
   Future _vote(String uuid, int type) async {
-    Request()
-        .post(
+    Request().post(
       '${GStorage.blockServer}/api/voteOnSponsorTime',
       queryParameters: {
         'UUID': uuid,
         'userID': GStorage.blockUserID,
         'type': type,
       },
-      options: options,
-    )
-        .then((res) {
+    ).then((res) {
       SmartDialog.showToast(res.statusCode == 200 ? '投票成功' : '投票失败');
     });
   }
@@ -522,17 +518,14 @@ class VideoDetailController extends GetxController
                       dense: true,
                       onTap: () {
                         Get.back();
-                        Request()
-                            .post(
+                        Request().post(
                           '${GStorage.blockServer}/api/voteOnSponsorTime',
                           queryParameters: {
                             'UUID': segment.UUID,
                             'userID': GStorage.blockUserID,
                             'category': item.name,
                           },
-                          options: options,
-                        )
-                            .then((res) {
+                        ).then((res) {
                           SmartDialog.showToast(
                               '类别更改${res.statusCode == 200 ? '成功' : '失败'}');
                         });
@@ -725,8 +718,6 @@ class VideoDetailController extends GetxController
     );
   }
 
-  Options get options => Options(extra: {'clearCookie': true});
-
   Future _querySponsorBlock() async {
     positionSubscription?.cancel();
     videoLabel.value = '';
@@ -738,7 +729,6 @@ class VideoDetailController extends GetxController
         'videoID': bvid,
         'cid': cid.value,
       },
-      options: options,
     );
     handleSBData(result);
   }
@@ -940,7 +930,6 @@ class VideoDetailController extends GetxController
         Request().post(
           '${GStorage.blockServer}/api/viewedVideoSponsorTime',
           queryParameters: {'UUID': item.UUID},
-          options: options,
         );
       }
     } catch (e) {

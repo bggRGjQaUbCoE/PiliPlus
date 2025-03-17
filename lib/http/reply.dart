@@ -3,6 +3,7 @@ import 'package:PiliPlus/grpc/app/main/community/reply/v1/reply.pb.dart';
 import 'package:PiliPlus/grpc/grpc_repo.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/video/reply/item.dart';
+import 'package:PiliPlus/utils/accounts/account.dart';
 import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:dio/dio.dart';
@@ -13,7 +14,8 @@ import 'api.dart';
 import 'init.dart';
 
 class ReplyHttp {
-  static Options get _options => Options(extra: {'clearCookie': true});
+  static Options get _options =>
+      Options(extra: {'account': AnonymousAccount()});
 
   static RegExp replyRegExp =
       RegExp(GStorage.banWordForReply, caseSensitive: false);

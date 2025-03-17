@@ -87,6 +87,9 @@ class AccountManager extends Interceptor {
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
     final path = options.path;
+
+    if (path.startsWith(GStorage.blockServer)) return handler.next(options);
+
     final Account account = options.extra['account'] ?? _findAccount(path);
 
     if (account.isLogin) options.headers.addAll(account.headers);
@@ -138,7 +141,9 @@ class AccountManager extends Interceptor {
 
   @override
   void onResponse(Response response, ResponseInterceptorHandler handler) {
-    if (response.requestOptions.path.startsWith(HttpString.appBaseUrl)) {
+    final path = response.requestOptions.path;
+    if (path.startsWith(HttpString.appBaseUrl) ||
+        path.startsWith(GStorage.blockServer)) {
       return handler.next(response);
     } else {
       _saveCookies(response).then((_) => handler.next(response)).catchError(

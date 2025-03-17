@@ -25,6 +25,7 @@ import 'package:PiliPlus/pages/dynamics/tab/controller.dart';
 import 'package:PiliPlus/pages/later/controller.dart';
 import 'package:PiliPlus/pages/video/detail/introduction/widgets/fav_panel.dart';
 import 'package:PiliPlus/pages/video/detail/introduction/widgets/group_panel.dart';
+import 'package:PiliPlus/utils/accounts/account.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
 import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/feed_back.dart';
@@ -778,7 +779,7 @@ class Utils {
       dynamic response = await Request().get(
         '${HttpString.spaceBaseUrl}/$mid/dynamic',
         options: Options(
-          extra: {'clearCookie': true},
+          extra: {'account': AnonymousAccount()},
         ),
       );
       dom.Document document = html_parser.parse(response.data);

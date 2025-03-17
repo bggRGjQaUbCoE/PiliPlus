@@ -24,6 +24,7 @@ import 'package:PiliPlus/utils/accounts/account_adapter.dart';
 import 'package:PiliPlus/utils/accounts/cookie_jar_adapter.dart';
 import 'package:PiliPlus/utils/accounts/account_type_adapter.dart';
 import 'package:PiliPlus/utils/login.dart';
+import 'package:cookie_jar/cookie_jar.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:path_provider/path_provider.dart';
@@ -794,6 +795,36 @@ class Accounts {
         compactionStrategy: (int entries, int deletedEntries) {
       return deletedEntries > 2;
     });
+    await _migrate();
+  }
+
+  static Future<void> _migrate() async {
+    final Directory tempDir = await getApplicationSupportDirectory();
+    final String tempPath = "${tempDir.path}/.plpl/";
+    final Directory dir = Directory(tempPath);
+    if (await dir.exists()) {
+      debugPrint('migrating...');
+      final cookieJar =
+          PersistCookieJar(ignoreExpires: true, storage: FileStorage(tempPath));
+      await cookieJar.forceInit();
+      final cookies = DefaultCookieJar(ignoreExpires: true)
+        ..domainCookies.addAll(cookieJar.domainCookies);
+      final localAccessKey =
+          GStorage.localCache.get('accessKey', defaultValue: {});
+
+      final isLogin =
+          cookies.domainCookies['bilibili.com']?['/']?['SESSDATA'] != null;
+
+      await Future.wait([
+        GStorage.localCache.delete('accessKey'),
+        dir.delete(recursive: true),
+        if (isLogin)
+          LoginAccount(cookies, localAccessKey['value'],
+                  localAccessKey['refresh'], AccountType.values.toSet())
+              .onChange()
+      ]);
+      debugPrint('migrated successfully');
+    }
   }
 
   static Future<void> refresh() async {

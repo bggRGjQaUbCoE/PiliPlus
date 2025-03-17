@@ -307,7 +307,7 @@ class VideoHttp {
       data: {
         'platform': 'web',
         'season_id': seasonId,
-        'csrf': await Request.getCsrf(),
+        'csrf': Accounts.main.csrf,
       },
       options: Options(
         contentType: Headers.formUrlEncodedContentType,
@@ -409,11 +409,11 @@ class VideoHttp {
     var res = await Request().post(
       Api.coinVideo,
       data: {
-        'aid': IdUtils.bv2av(bvid),
+        'aid': IdUtils.bv2av(bvid).toString(),
         // 'bvid': bvid,
-        'multiply': multiply,
-        'select_like': selectLike,
-        // 'csrf': await Request.getCsrf(),
+        'multiply': multiply.toString(),
+        'select_like': selectLike.toString(),
+        // 'csrf': Accounts.main.csrf,
       },
     );
     if (res.data['code'] == 0) {
@@ -440,7 +440,7 @@ class VideoHttp {
       Api.triple,
       data: {
         'ep_id': epId,
-        'csrf': await Request.getCsrf(),
+        'csrf': Accounts.main.csrf,
       },
       options: Options(
         contentType: Headers.formUrlEncodedContentType,
@@ -468,7 +468,7 @@ class VideoHttp {
         'ramval': 0,
         'source': 'web_normal',
         'ga': 1,
-        'csrf': await Request.getCsrf(),
+        'csrf': Accounts.main.csrf,
       },
       options: Options(
         contentType: Headers.formUrlEncodedContentType,
@@ -488,16 +488,19 @@ class VideoHttp {
 
   // （取消）点赞
   static Future likeVideo({required String bvid, required bool type}) async {
-    var res = await Request().post(Api.likeVideo, data: {
-      'aid': IdUtils.bv2av(bvid),
-      'like': type ? 0 : 1,
-    }
-        // queryParameters: {
-        //   'bvid': bvid,
-        //   'like': type ? 1 : 2,
-        //   'csrf': await Request.getCsrf(),
-        // },
-        );
+    var res = await Request().post(
+      Api.likeVideo,
+      data: {
+        'aid': IdUtils.bv2av(bvid).toString(),
+        'like': type ? '0' : '1',
+      },
+      options: Options(contentType: Headers.formUrlEncodedContentType),
+      // queryParameters: {
+      //   'bvid': bvid,
+      //   'like': type ? 1 : 2,
+      //   'csrf': Accounts.main.csrf,
+      // },
+    );
     if (res.data['code'] == 0) {
       return {'status': true, 'data': res.data['data']};
     } else {
@@ -507,14 +510,13 @@ class VideoHttp {
 
   // （取消）点踩
   static Future dislikeVideo({required String bvid, required bool type}) async {
-    String? accessKey = Accounts.main.accessKey;
-    if (accessKey == null || accessKey == "") {
+    if (Accounts.main.accessKey.isNullOrEmpty) {
       return {'status': false, 'msg': "请退出账号后重新登录"};
     }
     var res = await Request().post(
       Api.dislikeVideo,
       data: {
-        'aid': IdUtils.bv2av(bvid),
+        'aid': IdUtils.bv2av(bvid).toString(),
         'dislike': type ? '0' : '1',
       },
     );
@@ -534,9 +536,7 @@ class VideoHttp {
       required int id,
       int? reasonId,
       int? feedbackId}) async {
-    String? accessKey = Accounts.get(AccountType.recommend).accessKey ??
-        Accounts.main.accessKey;
-    if (accessKey == null || accessKey == "") {
+    if (Accounts.get(AccountType.recommend).accessKey.isNullOrEmpty) {
       return {'status': false, 'msg': "请退出账号后重新登录"};
     }
     assert((reasonId != null) ^ (feedbackId != null));
@@ -562,9 +562,7 @@ class VideoHttp {
       required int id,
       int? reasonId,
       int? feedbackId}) async {
-    String? accessKey = Accounts.get(AccountType.recommend).accessKey ??
-        Accounts.main.accessKey;
-    if (accessKey == null || accessKey == "") {
+    if (Accounts.get(AccountType.recommend).accessKey.isNullOrEmpty) {
       return {'status': false, 'msg': "请退出账号后重新登录"};
     }
     // assert ((reasonId != null) ^ (feedbackId != null));
@@ -595,7 +593,7 @@ class VideoHttp {
         'resources': ids?.join(','),
         'media_id': delIds,
         'platform': 'web',
-        'csrf': await Request.getCsrf(),
+        'csrf': Accounts.main.csrf,
       },
       options: Options(contentType: Headers.formUrlEncodedContentType),
     );
@@ -620,7 +618,7 @@ class VideoHttp {
         'type': type ?? 2,
         'add_media_ids': addIds ?? '',
         'del_media_ids': delIds ?? '',
-        'csrf': await Request.getCsrf(),
+        'csrf': Accounts.main.csrf,
       },
       options: Options(contentType: Headers.formUrlEncodedContentType),
     );
@@ -643,7 +641,7 @@ class VideoHttp {
   //       'resources': '$epId:24',
   //       'add_media_ids': addIds ?? '',
   //       'del_media_ids': delIds ?? '',
-  //       'csrf': await Request.getCsrf(),
+  //       'csrf': Accounts.main.csrf,
   //     },
   //     options: Options(
   //       headers: {
@@ -680,7 +678,7 @@ class VideoHttp {
         if (mid != null) 'mid': mid,
         'resources': resources.join(','),
         'platform': 'web',
-        'csrf': await Request.getCsrf(),
+        'csrf': Accounts.main.csrf,
       },
       options: Options(contentType: Headers.formUrlEncodedContentType),
     );
@@ -754,7 +752,7 @@ class VideoHttp {
       'message': message,
       if (pictures != null) 'pictures': jsonEncode(pictures),
       if (syncToDynamic == true) 'sync_to_dynamic': 1,
-      'csrf': await Request.getCsrf(),
+      'csrf': Accounts.main.csrf,
     };
     var res = await Request().post(
       Api.replyAdd,
@@ -777,7 +775,7 @@ class VideoHttp {
       'type': type, //type.index
       'oid': oid,
       'rpid': rpid,
-      'csrf': await Request.getCsrf(),
+      'csrf': Accounts.main.csrf,
     });
     log(res.toString());
     if (res.data['code'] == 0) {
@@ -813,7 +811,7 @@ class VideoHttp {
           "entity_id": mid,
           'fp': Request.headerUa(type: 'pc'),
         },
-        'csrf': await Request.getCsrf(),
+        'csrf': Accounts.main.csrf,
       },
       options: Options(
         contentType: Headers.formUrlEncodedContentType,
@@ -849,7 +847,7 @@ class VideoHttp {
       if (epid != null) 'type': 4,
       if (subType != null) 'sub_type': subType,
       'played_time': progress,
-      'csrf': await Request.getCsrf(),
+      'csrf': Accounts.main.csrf,
     });
   }
 
@@ -862,7 +860,7 @@ class VideoHttp {
       'desc': desc,
       'oid': oid,
       'upper_mid': upperMid,
-      'csrf': await Request.getCsrf(),
+      'csrf': Accounts.main.csrf,
     });
   }
 
@@ -870,7 +868,7 @@ class VideoHttp {
   static Future bangumiAdd({int? seasonId}) async {
     var res = await Request().post(Api.bangumiAdd, queryParameters: {
       'season_id': seasonId,
-      'csrf': await Request.getCsrf(),
+      'csrf': Accounts.main.csrf,
     });
     if (res.data['code'] == 0) {
       return {
@@ -891,7 +889,7 @@ class VideoHttp {
   static Future bangumiDel({int? seasonId}) async {
     var res = await Request().post(Api.bangumiDel, queryParameters: {
       'season_id': seasonId,
-      'csrf': await Request.getCsrf(),
+      'csrf': Accounts.main.csrf,
     });
     if (res.data['code'] == 0) {
       return {
@@ -917,7 +915,7 @@ class VideoHttp {
       data: {
         'season_id': seasonId,
         'status': status,
-        'csrf': await Request.getCsrf(),
+        'csrf': Accounts.main.csrf,
       },
       options: Options(
         contentType: Headers.formUrlEncodedContentType,
@@ -1114,7 +1112,7 @@ class VideoHttp {
     var res = await Request().get(
       Api.noteList,
       queryParameters: {
-        'csrf': await Request.getCsrf(),
+        'csrf': Accounts.main.csrf,
         'oid': oid,
         'oid_type': 0,
         'pn': page,

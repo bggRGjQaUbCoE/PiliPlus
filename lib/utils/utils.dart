@@ -1599,7 +1599,9 @@ class Utils {
   static void appSign(Map<String, dynamic> params,
       [String appkey = Constants.appKey, String appsec = Constants.appSec]) {
     params['appkey'] = appkey;
-    var searchParams = Uri(queryParameters: params).query;
+    var searchParams = Uri(
+        queryParameters:
+            params.map((key, value) => MapEntry(key, value.toString()))).query;
     var sortedQueryString = (searchParams.split('&')..sort()).join('&');
 
     params['sign'] = md5

@@ -519,6 +519,7 @@ class VideoHttp {
         'aid': IdUtils.bv2av(bvid).toString(),
         'dislike': type ? '0' : '1',
       },
+      options: Options(contentType: Headers.formUrlEncodedContentType),
     );
     if (res.data is! String && res.data['code'] == 0) {
       return {'status': true};

@@ -4,6 +4,7 @@ import 'package:PiliPlus/http/constants.dart';
 import 'package:PiliPlus/http/index.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/utils/extension.dart';
+import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dio/dio.dart';
@@ -314,7 +315,13 @@ class _EditProfilePageState extends State<EditProfilePage> {
     required ProfileType type,
     dynamic datum,
   }) async {
+    final accessKey = Accounts.main.accessKey;
+    if (accessKey.isNullOrEmpty) {
+      SmartDialog.showToast('请退出账号后重新登录');
+      return;
+    }
     Map<String, String> data = {
+      'access_key': accessKey!,
       'build': '1462100',
       'c_locale': 'zh_CN',
       'channel': 'yingyongbao',
@@ -332,6 +339,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
       else if (type == ProfileType.sex)
         'sex': datum.toString(),
     };
+    Utils.appSign(data);
     Request()
         .post(
       '/x/member/app/${type.name}/update',

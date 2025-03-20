@@ -332,6 +332,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
       else if (type == ProfileType.sex)
         'sex': datum.toString(),
     };
+    Utils.appSign(data);
     Request()
         .post(
       '/x/member/app/${type.name}/update',

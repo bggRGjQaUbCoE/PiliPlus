@@ -1523,8 +1523,8 @@ class _HeaderControlState extends State<HeaderControl> {
                                   Get.toNamed('/danmakuBlock',
                                       arguments: widget.controller)
                                 },
-                            child:
-                                Text("屏蔽管理(${widget.controller.filterCount})")),
+                            child: Text(
+                                "屏蔽管理(${plPlayerController.filters.count})")),
                       ],
                     ),
                     Padding(

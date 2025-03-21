@@ -12,6 +12,8 @@ import 'package:PiliPlus/models/common/sponsor_block/skip_type.dart';
 import 'package:PiliPlus/models/common/tab_type.dart';
 import 'package:PiliPlus/models/common/theme_type.dart';
 import 'package:PiliPlus/models/common/up_panel_position.dart';
+import 'package:PiliPlus/models/user/danmaku_rule.dart';
+import 'package:PiliPlus/models/user/danmaku_rule_adapter.dart';
 import 'package:PiliPlus/models/video/play/CDN.dart';
 import 'package:PiliPlus/models/video/play/quality.dart';
 import 'package:PiliPlus/models/video/play/subtitle.dart';
@@ -426,8 +428,8 @@ class GStorage {
   static List<int> get blackMidsList => List<int>.from(GStorage.localCache
       .get(LocalCacheKey.blackMidsList, defaultValue: <int>[]));
 
-  static List get danmakuFilterRule => GStorage.localCache
-      .get(LocalCacheKey.danmakuFilterRule, defaultValue: []);
+  static RuleFilter get danmakuFilterRule => GStorage.localCache
+      .get(LocalCacheKey.danmakuFilterRules, defaultValue: RuleFilter.empty());
 
   static void setBlackMidsList(blackMidsList) {
     if (blackMidsList is! List<int>) return;
@@ -535,6 +537,7 @@ class GStorage {
     Hive.registerAdapter(BiliCookieJarAdapter());
     Hive.registerAdapter(LoginAccountAdapter());
     Hive.registerAdapter(AccountTypeAdapter());
+    Hive.registerAdapter(RuleFilterAdapter());
   }
 
   static Future<void> close() async {
@@ -756,7 +759,7 @@ class LocalCacheKey {
       // 隐私设置-黑名单管理
       blackMidsList = 'blackMidsList',
       // 弹幕屏蔽规则
-      danmakuFilterRule = 'danmakuFilterRule',
+      danmakuFilterRules = 'danmakuFilterRules',
       // // access_key
       // accessKey = 'accessKey',
 
@@ -817,6 +820,7 @@ class Accounts {
 
       await Future.wait([
         GStorage.localCache.delete('accessKey'),
+        GStorage.localCache.delete('danmakuFilterRule'),
         dir.delete(recursive: true),
         if (isLogin)
           LoginAccount(cookies, localAccessKey['value'],

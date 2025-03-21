@@ -1,3 +1,4 @@
+import 'package:PiliPlus/models/user/danmaku_rule.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -38,38 +39,11 @@ class _DanmakuBlockPageState extends State<DanmakuBlockPage> {
 
   @override
   void dispose() {
-    final regExp = RegExp(r'^/(.*)/$');
-    List<Map<String, dynamic>> simpleRuleList = _danmakuBlockController
-        .ruleTypes.values
-        .expand((element) => element)
-        .map<Map<String, dynamic>>((e) {
-      //当正则表达式前后都有"/"时，去掉，避免RegExp解析错误
-      if (e.type == 1) {
-        String? filter = regExp.firstMatch(e.filter)?.group(1);
-        if (filter != null) {
-          e.filter = filter;
-        }
-      }
-      return e.toMap();
-    }).toList();
-    // debugPrint("simpleRuleList:$simpleRuleList");
-    plPlayerController.filterCount = simpleRuleList.length;
-    for (var item in simpleRuleList) {
-      switch (item['type']) {
-        case 0:
-          plPlayerController.dmFilterString.add(item['filter']);
-          break;
-        case 1:
-          plPlayerController.dmRegExp
-              .add(RegExp(item['filter'], caseSensitive: false));
-          break;
-        case 2:
-          plPlayerController.dmUid.add(item['filter']);
-          break;
-      }
-    }
+    final ruleFilter = RuleFilter.fromRuleTypeEntires(
+        _danmakuBlockController.ruleTypes.entries);
+    plPlayerController.filters = ruleFilter;
     scrollController.dispose();
-    GStorage.localCache.put(LocalCacheKey.danmakuFilterRule, simpleRuleList);
+    GStorage.localCache.put(LocalCacheKey.danmakuFilterRules, ruleFilter);
     super.dispose();
   }
 
@@ -102,19 +76,16 @@ class _DanmakuBlockPageState extends State<DanmakuBlockPage> {
           ]),
           actions: <Widget>[
             TextButton(
+              onPressed: Navigator.of(context).pop,
               child: const Text('取消'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
             ),
             TextButton(
               child: const Text('添加'),
-              onPressed: () async {
+              onPressed: () {
                 String filter = textController.text;
                 if (filter.isNotEmpty) {
-                  await _danmakuBlockController.danmakuFilterAdd(
+                  _danmakuBlockController.danmakuFilterAdd(
                       filter: filter, type: type);
-                  if (!context.mounted) return;
                   Navigator.of(context).pop();
                 } else {
                   SmartDialog.showToast('输入内容不能为空');
@@ -143,7 +114,8 @@ class _DanmakuBlockPageState extends State<DanmakuBlockPage> {
         controller: _danmakuBlockController.tabController,
         children: [
           for (var i = 0; i < ruleLabels.length; i++)
-            Obx(() => tabViewBuilder(i, _danmakuBlockController.ruleTypes[i]!)),
+            Obx(() => tabViewBuilder(
+                i, _danmakuBlockController.ruleTypes[i]!.entries.toList())),
         ],
       ),
       floatingActionButton: FloatingActionButton(
@@ -155,24 +127,21 @@ class _DanmakuBlockPageState extends State<DanmakuBlockPage> {
     );
   }
 
-  Widget tabViewBuilder(int tabIndex, List<SimpleRule> list) {
+  Widget tabViewBuilder(int tabIndex, List<MapEntry<int, String>> list) {
     return ListView.builder(
       controller: scrollController,
       itemCount: list.length,
       padding: const EdgeInsets.only(bottom: 100),
       itemBuilder: (BuildContext context, int listIndex) {
         return ListTile(
-          title: Text(
-            list[listIndex].filter,
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
-          trailing: IconButton(
-              icon: const Icon(Icons.delete),
-              onPressed: () async {
-                await _danmakuBlockController.danmakuFilterDel(
-                    tabIndex, list[listIndex].id);
-              }),
-        );
+            title: Text(
+              list[listIndex].value,
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+            trailing: IconButton(
+                icon: const Icon(Icons.delete),
+                onPressed: () => _danmakuBlockController.danmakuFilterDel(
+                    tabIndex, list[listIndex].key)));
       },
     );
   }
@@ -180,12 +149,7 @@ class _DanmakuBlockPageState extends State<DanmakuBlockPage> {
 
 class DanmakuBlockController extends GetxController
     with GetTickerProviderStateMixin {
-  RxList<Rule> danmakuRules = <Rule>[].obs;
-  RxMap<int, List<SimpleRule>> ruleTypes = {
-    0: <SimpleRule>[],
-    1: <SimpleRule>[],
-    2: <SimpleRule>[],
-  }.obs;
+  final ruleTypes = RxMap<int, Map<int, String>>({0: {}, 1: {}, 2: {}});
   late TabController tabController;
 
   @override
@@ -200,50 +164,44 @@ class DanmakuBlockController extends GetxController
     super.onClose();
   }
 
-  Future queryDanmakuFilter() async {
+  Future<void> queryDanmakuFilter() async {
     SmartDialog.showLoading(msg: '正在同步弹幕屏蔽规则……');
     var result = await DanmakuFilterHttp.danmakuFilter();
     SmartDialog.dismiss();
     if (result['status']) {
       if (result['data']?.rule != null) {
-        danmakuRules.value = result['data']?.rule;
-        danmakuRules.map((e) {
-          SimpleRule simpleRule = SimpleRule(e.id!, e.type!, e.filter!);
-          ruleTypes[e.type!]!.add(simpleRule);
-        }).toList();
+        final List<SimpleRule> filter = result['data']?.rule;
+        for (var rule in filter) {
+          ruleTypes[rule.type]![rule.id] = rule.filter;
+        }
         ruleTypes.refresh();
       }
       SmartDialog.showToast(result['data'].toast);
     } else {
       SmartDialog.showToast(result['msg']);
     }
-    return result;
   }
 
-  Future danmakuFilterDel(int type, int id) async {
+  Future<void> danmakuFilterDel(int type, int id) async {
     SmartDialog.showLoading(msg: '正在删除弹幕屏蔽规则……');
     var result = await DanmakuFilterHttp.danmakuFilterDel(ids: id);
     SmartDialog.dismiss();
     if (result['status']) {
-      danmakuRules.removeWhere((e) => e.id == id);
-      ruleTypes[type]!.removeWhere((e) => e.id == id);
+      ruleTypes[type]!.remove(id);
       ruleTypes.refresh();
-      SmartDialog.showToast(result['msg']);
-    } else {
-      SmartDialog.showToast(result['msg']);
     }
+    SmartDialog.showToast(result['msg']);
   }
 
-  Future danmakuFilterAdd({required String filter, required int type}) async {
+  Future<void> danmakuFilterAdd(
+      {required String filter, required int type}) async {
     SmartDialog.showLoading(msg: '正在添加弹幕屏蔽规则……');
     var result =
         await DanmakuFilterHttp.danmakuFilterAdd(filter: filter, type: type);
     SmartDialog.dismiss();
     if (result['status']) {
-      Rule data = result['data'];
-      danmakuRules.add(data);
-      SimpleRule simpleRule = SimpleRule(data.id!, data.type!, data.filter!);
-      ruleTypes[type]!.add(simpleRule);
+      SimpleRule rule = result['data'];
+      ruleTypes[type]![rule.id] = rule.filter;
       ruleTypes.refresh();
       SmartDialog.showToast('添加成功');
     } else {

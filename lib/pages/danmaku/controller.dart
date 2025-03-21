@@ -69,21 +69,13 @@ class PlDanmakuController {
       queryDanmaku(segmentIndex);
     }
     if (plPlayerController.danmakuWeight == 0 &&
-        plPlayerController.filterCount == 0) {
+        plPlayerController.filters.count == 0) {
       return dmSegMap[progress ~/ 100];
     } else {
       return dmSegMap[progress ~/ 100]
-          ?.where(
-              (element) => element.weight >= plPlayerController.danmakuWeight)
-          .where(filterDanmaku)
-          .toList();
+        ?..retainWhere((element) =>
+            element.weight >= plPlayerController.danmakuWeight &&
+            plPlayerController.filters.retain(element));
     }
-  }
-
-  bool filterDanmaku(DanmakuElem elem) {
-    return !(plPlayerController.dmUid.contains(elem.midHash) ||
-        plPlayerController.dmFilterString
-            .any((i) => elem.content.contains(i)) ||
-        plPlayerController.dmRegExp.any((i) => i.hasMatch(elem.content)));
   }
 }

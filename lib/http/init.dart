@@ -122,7 +122,7 @@ class Request {
 
     final http11Adapter = IOHttpClientAdapter(createHttpClient: () {
       final client = HttpClient()
-        ..idleTimeout = const Duration(seconds: 30)
+        ..idleTimeout = const Duration(seconds: 15)
         ..autoUncompress = false; // Http2Adapter没有自动解压, 统一行为
       // 设置代理
       if (enableSystemProxy) {

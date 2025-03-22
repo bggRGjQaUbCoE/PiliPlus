@@ -236,7 +236,7 @@ class _CustomHttpOverrides extends HttpOverrides {
   HttpClient createHttpClient(SecurityContext? context) {
     final client = super.createHttpClient(context)
       ..maxConnectionsPerHost = 32
-      ..idleTimeout = const Duration(seconds: 30);
+      ..idleTimeout = const Duration(seconds: 15);
     if (badCertificateCallback) {
       client.badCertificateCallback =
           (X509Certificate cert, String host, int port) => true;

@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get_utils/get_utils.dart';
 
-class SlideDialog<T extends num> extends StatefulWidget {
-  final T value;
+class SlideDialog extends StatefulWidget {
+  final double value;
   final String title;
   final double min;
   final double max;
   final int? divisions;
-  final String? suffix;
+  final String suffix;
   final int precise;
 
   const SlideDialog({
@@ -17,21 +17,21 @@ class SlideDialog<T extends num> extends StatefulWidget {
     required this.min,
     required this.max,
     this.divisions,
-    this.suffix,
+    this.suffix = '',
     this.precise = 1,
   });
 
   @override
-  State<SlideDialog<T>> createState() => _SlideDialogState<T>();
+  State<SlideDialog> createState() => _SlideDialogState();
 }
 
-class _SlideDialogState<T extends num> extends State<SlideDialog<T>> {
+class _SlideDialogState extends State<SlideDialog> {
   late double _tempValue;
 
   @override
   void initState() {
     super.initState();
-    _tempValue = widget.value.toDouble();
+    _tempValue = widget.value;
   }
 
   @override
@@ -47,7 +47,8 @@ class _SlideDialogState<T extends num> extends State<SlideDialog<T>> {
           min: widget.min,
           max: widget.max,
           divisions: widget.divisions,
-          label: '$_tempValue${widget.suffix ?? ''}',
+          label:
+              '${_tempValue.toStringAsFixed(widget.precise)}${widget.suffix}',
           onChanged: (double value) {
             setState(() {
               _tempValue = value.toPrecision(widget.precise);
@@ -57,14 +58,14 @@ class _SlideDialogState<T extends num> extends State<SlideDialog<T>> {
       ),
       actions: [
         TextButton(
-          onPressed: () => Navigator.pop(context),
+          onPressed: Navigator.of(context).pop,
           child: Text(
             '取消',
             style: TextStyle(color: Theme.of(context).colorScheme.outline),
           ),
         ),
         TextButton(
-          onPressed: () => Navigator.pop(context, _tempValue as T),
+          onPressed: () => Navigator.pop(context, _tempValue),
           child: const Text('确定'),
         )
       ],

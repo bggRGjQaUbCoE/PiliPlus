@@ -4,6 +4,7 @@ import 'dart:developer';
 import 'dart:io';
 import 'dart:math' show Random;
 import 'package:PiliPlus/build_config.dart';
+import 'package:PiliPlus/http/retry_interceptor.dart';
 import 'package:PiliPlus/utils/accounts/account.dart';
 import 'package:PiliPlus/utils/accounts/account_manager/account_mgr.dart';
 import 'package:archive/archive.dart';
@@ -96,9 +97,9 @@ class Request {
         //请求基地址,可以包含子路径
         baseUrl: HttpString.apiBaseUrl,
         //连接服务器超时时间，单位是毫秒.
-        connectTimeout: const Duration(milliseconds: 12000),
+        connectTimeout: const Duration(milliseconds: 4000),
         //响应流上前后两次接受到数据的间隔，单位为毫秒。
-        receiveTimeout: const Duration(milliseconds: 12000),
+        receiveTimeout: const Duration(milliseconds: 4000),
         //Http请求头.
         headers: {
           'connection': 'keep-alive',
@@ -121,7 +122,7 @@ class Request {
 
     final http11Adapter = IOHttpClientAdapter(createHttpClient: () {
       final client = HttpClient()
-        ..idleTimeout = const Duration(seconds: 30)
+        ..idleTimeout = const Duration(seconds: 15)
         ..autoUncompress = false; // Http2Adapter没有自动解压, 统一行为
       // 设置代理
       if (enableSystemProxy) {
@@ -132,23 +133,39 @@ class Request {
       return client;
     });
 
+    late Uri proxy;
+    if (enableSystemProxy) {
+      proxy = Uri(
+          scheme: 'http',
+          host: systemProxyHost,
+          port: int.parse(systemProxyPort));
+    }
+
     dio = Dio(options)
       ..httpClientAdapter =
           GStorage.setting.get(SettingBoxKey.enableHttp2, defaultValue: false)
               ? Http2Adapter(
                   ConnectionManager(
-                      idleTimeout: const Duration(seconds: 30),
-                      onClientCreate: (_, ClientSetting config) {
-                        config.onBadCertificate = (_) => true;
-                        if (enableSystemProxy) {
-                          config.proxy = Uri(
-                              scheme: 'http',
-                              host: systemProxyHost,
-                              port: int.parse(systemProxyPort));
-                        }
-                      }),
+                      idleTimeout: const Duration(seconds: 15),
+                      onClientCreate: enableSystemProxy
+                          ? (_, config) {
+                              config
+                                ..proxy = proxy
+                                ..onBadCertificate = (_) => true;
+                            }
+                          : GStorage.badCertificateCallback
+                              ? (_, config) {
+                                  config.onBadCertificate = (_) => true;
+                                }
+                              : null),
                   fallbackAdapter: http11Adapter)
               : http11Adapter;
+
+    // 先于其他Interceptor
+    if (GStorage.retryCount > 0) {
+      dio.interceptors
+          .add(RetryInterceptor(GStorage.retryCount, GStorage.retryDelay));
+    }
 
     // 日志拦截器 输出请求、响应内容
     if (BuildConfig.isDebug) {

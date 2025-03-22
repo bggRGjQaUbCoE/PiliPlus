@@ -160,7 +160,7 @@ List<SettingsModel> get styleSettings => [
           double? result = await showDialog(
               context: Get.context!,
               builder: (context) {
-                return SlideDialog<double>(
+                return SlideDialog(
                   title: '小卡最大列宽度（默认240dp）',
                   value: GStorage.smallCardWidth,
                   min: 150.0,
@@ -186,7 +186,7 @@ List<SettingsModel> get styleSettings => [
           double? result = await showDialog(
               context: Get.context!,
               builder: (context) {
-                return SlideDialog<double>(
+                return SlideDialog(
                   title: '中卡最大列宽度（默认280dp）',
                   value: GStorage.mediumCardWidth,
                   min: 150.0,
@@ -449,7 +449,7 @@ List<SettingsModel> get styleSettings => [
           double? result = await showDialog(
             context: Get.context!,
             builder: (context) {
-              return SlideDialog<double>(
+              return SlideDialog(
                 title: 'Toast不透明度',
                 value: GStorage.toastOpacity,
                 min: 0.0,
@@ -691,7 +691,7 @@ void _showQualityDialog({
         ),
         actions: [
           TextButton(
-              onPressed: () => Get.back(),
+              onPressed: Get.back,
               child: Text('取消',
                   style:
                       TextStyle(color: Theme.of(context).colorScheme.outline))),
@@ -1795,7 +1795,7 @@ List<SettingsModel> get extraSettings => [
           double? result = await showDialog(
             context: Get.context!,
             builder: (context) {
-              return SlideDialog<double>(
+              return SlideDialog(
                 title: '刷新滑动距离',
                 min: 0.1,
                 max: 0.5,
@@ -1825,7 +1825,7 @@ List<SettingsModel> get extraSettings => [
           double? result = await showDialog(
             context: Get.context!,
             builder: (context) {
-              return SlideDialog<double>(
+              return SlideDialog(
                 title: '刷新指示器高度',
                 min: 10.0,
                 max: 100.0,
@@ -2214,12 +2214,68 @@ List<SettingsModel> get extraSettings => [
         defaultVal: false,
       ),
       SettingsModel(
-        settingsType: SettingsType.sw1tch,
-        title: '启用HTTP/2',
-        subtitle: '测试中',
-        leading: Icon(Icons.swap_horizontal_circle_outlined),
-        setKey: SettingBoxKey.enableHttp2,
-        defaultVal: false,
+          settingsType: SettingsType.sw1tch,
+          title: '启用HTTP/2',
+          leading: const Icon(Icons.swap_horizontal_circle_outlined),
+          setKey: SettingBoxKey.enableHttp2,
+          defaultVal: false,
+          onChanged: (_) {
+            SmartDialog.showToast('重启生效');
+          }),
+      SettingsModel(
+        settingsType: SettingsType.normal,
+        title: '连接重试次数',
+        subtitle: '为0时禁用',
+        leading: const Icon(Icons.repeat),
+        onTap: (setState) async {
+          final result = await showDialog<double>(
+            context: Get.context!,
+            builder: (context) {
+              return SlideDialog(
+                title: '连接重试次数',
+                min: 0,
+                max: 8,
+                divisions: 8,
+                precise: 0,
+                value: GStorage.retryCount.toDouble(),
+              );
+            },
+          );
+          if (result != null) {
+            await GStorage.setting
+                .put(SettingBoxKey.retryCount, result.toInt());
+            setState();
+            SmartDialog.showToast('重启生效');
+          }
+        },
+      ),
+      SettingsModel(
+        settingsType: SettingsType.normal,
+        title: '连接重试间隔',
+        subtitle: '实际间隔 = 间隔 * 第x次重试',
+        leading: const Icon(Icons.more_time_outlined),
+        onTap: (setState) async {
+          final result = await showDialog<double>(
+            context: Get.context!,
+            builder: (context) {
+              return SlideDialog(
+                title: '连接重试间隔',
+                min: 0,
+                max: 1000,
+                divisions: 10,
+                precise: 0,
+                value: GStorage.retryDelay.toDouble(),
+                suffix: 'ms',
+              );
+            },
+          );
+          if (result != null) {
+            await GStorage.setting
+                .put(SettingBoxKey.retryDelay, result.toInt());
+            setState();
+            SmartDialog.showToast('重启生效');
+          }
+        },
       ),
       SettingsModel(
         settingsType: SettingsType.normal,

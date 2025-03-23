@@ -106,11 +106,11 @@ class SearchHttp {
       try {
         switch (searchType) {
           case SearchType.video:
-            List<int> blackMidsList = GStorage.blackMidsList;
+            Set<int> blackMids = GStorage.blackMids;
             if (res.data['data']['result'] != null) {
               for (var i in res.data['data']['result']) {
                 // 屏蔽推广和拉黑用户
-                i['available'] = !blackMidsList.contains(i['mid']);
+                i['available'] = !blackMids.contains(i['mid']);
               }
             }
             data = SearchVideoModel.fromJson(res.data['data']);

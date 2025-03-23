@@ -26,11 +26,12 @@ class _BlackListPageState extends State<BlackListPage> {
 
   @override
   void dispose() {
-    List list = _blackListController.loadingState.value is Success
-        ? (_blackListController.loadingState.value as Success).response
+    final list = _blackListController.loadingState.value is Success
+        ? ((_blackListController.loadingState.value as Success).response
+                as List)
+            .cast<BlackListItem>()
         : <BlackListItem>[];
-    GStorage.setBlackMidsList(
-        list.isNotEmpty ? list.map((e) => e.mid!).toList() : <int>[]);
+    GStorage.blackMids = list.map((e) => e.mid!).toSet();
     super.dispose();
   }
 

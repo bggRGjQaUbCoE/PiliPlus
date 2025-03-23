@@ -50,12 +50,11 @@ class VideoHttp {
     );
     if (res.data['code'] == 0) {
       List<RecVideoItemModel> list = [];
-      List<int> blackMidsList = GStorage.blackMidsList;
+      Set<int> blackMids = GStorage.blackMids;
       for (var i in res.data['data']['item']) {
         //过滤掉live与ad，以及拉黑用户
         if (i['goto'] == 'av' &&
-            (i['owner'] != null &&
-                !blackMidsList.contains(i['owner']['mid']))) {
+            (i['owner'] != null && !blackMids.contains(i['owner']['mid']))) {
           RecVideoItemModel videoItem = RecVideoItemModel.fromJson(i);
           if (!RecommendFilter.filter(videoItem)) {
             list.add(videoItem);
@@ -120,15 +119,14 @@ class VideoHttp {
     );
     if (res.data['code'] == 0) {
       List<RecVideoItemAppModel> list = [];
-      List<int> blackMidsList = GStorage.blackMidsList;
+      Set<int> blackMids = GStorage.blackMids;
       for (var i in res.data['data']['items']) {
         // 屏蔽推广和拉黑用户
         if (i['card_goto'] != 'ad_av' &&
             i['card_goto'] != 'ad_web_s' &&
             i['ad_info'] == null &&
             (!enableRcmdDynamic ? i['card_goto'] != 'picture' : true) &&
-            (i['args'] != null &&
-                !blackMidsList.contains(i['args']['up_id']))) {
+            (i['args'] != null && !blackMids.contains(i['args']['up_id']))) {
           // if (zoneRegExp.pattern.isNotEmpty &&
           //     i['args']?['rname'] != null &&
           //     zoneRegExp.hasMatch(i['args']['rname'])) {
@@ -155,9 +153,9 @@ class VideoHttp {
     );
     if (res.data['code'] == 0) {
       List<HotVideoItemModel> list = [];
-      List<int> blackMidsList = GStorage.blackMidsList;
+      Set<int> blackMids = GStorage.blackMids;
       for (var i in res.data['data']['list']) {
-        if (!blackMidsList.contains(i['owner']['mid']) &&
+        if (!blackMids.contains(i['owner']['mid']) &&
             !RecommendFilter.filterTitle(i['title']) &&
             !RecommendFilter.filterLikeRatio(
                 i['stat']['like'], i['stat']['view'])) {
@@ -179,9 +177,9 @@ class VideoHttp {
     dynamic res = await GrpcRepo.popular(idx);
     if (res['status']) {
       List<card.Card> list = [];
-      List<int> blackMidsList = GStorage.blackMidsList;
+      Set<int> blackMids = GStorage.blackMids;
       for (card.Card item in res['data']) {
-        if (!blackMidsList.contains(item.smallCoverV5.up.id.toInt())) {
+        if (!blackMids.contains(item.smallCoverV5.up.id.toInt())) {
           list.add(item);
         }
       }
@@ -1085,9 +1083,9 @@ class VideoHttp {
     var res = await Request().get(rankApi);
     if (res.data['code'] == 0) {
       List<HotVideoItemModel> list = [];
-      List<int> blackMidsList = GStorage.blackMidsList;
+      Set<int> blackMids = GStorage.blackMids;
       for (var i in res.data['data']['list']) {
-        if (!blackMidsList.contains(i['owner']['mid']) &&
+        if (!blackMids.contains(i['owner']['mid']) &&
             !RecommendFilter.filterTitle(i['title']) &&
             !RecommendFilter.filterLikeRatio(
                 i['stat']['like'], i['stat']['view'])) {

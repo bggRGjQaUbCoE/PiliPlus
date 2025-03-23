@@ -26,6 +26,7 @@ import 'package:PiliPlus/utils/accounts/account_adapter.dart';
 import 'package:PiliPlus/utils/accounts/cookie_jar_adapter.dart';
 import 'package:PiliPlus/utils/accounts/account_type_adapter.dart';
 import 'package:PiliPlus/utils/login.dart';
+import 'package:PiliPlus/utils/set_int_adapter.dart';
 import 'package:cookie_jar/cookie_jar.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -434,15 +435,18 @@ class GStorage {
   static List<double> get dynamicDetailRatio => List<double>.from(setting
       .get(SettingBoxKey.dynamicDetailRatio, defaultValue: [60.0, 40.0]));
 
-  static List<int> get blackMidsList => List<int>.from(GStorage.localCache
-      .get(LocalCacheKey.blackMidsList, defaultValue: <int>[]));
+  static Set<int> get blackMids =>
+      GStorage.localCache.get(LocalCacheKey.blackMids, defaultValue: <int>{});
+
+  static set blackMids(Set<int> blackMidsSet) {
+    GStorage.localCache.put(LocalCacheKey.blackMids, blackMidsSet);
+  }
 
   static RuleFilter get danmakuFilterRule => GStorage.localCache
       .get(LocalCacheKey.danmakuFilterRules, defaultValue: RuleFilter.empty());
 
-  static void setBlackMidsList(blackMidsList) {
-    if (blackMidsList is! List<int>) return;
-    GStorage.localCache.put(LocalCacheKey.blackMidsList, blackMidsList);
+  static void setBlackMid(int mid) {
+    GStorage.localCache.put(LocalCacheKey.blackMids, blackMids..add(mid));
   }
 
   static MemberTabType get memberTab => MemberTabType
@@ -546,6 +550,7 @@ class GStorage {
     Hive.registerAdapter(BiliCookieJarAdapter());
     Hive.registerAdapter(LoginAccountAdapter());
     Hive.registerAdapter(AccountTypeAdapter());
+    Hive.registerAdapter(SetIntAdapter());
     Hive.registerAdapter(RuleFilterAdapter());
   }
 
@@ -769,7 +774,7 @@ class LocalCacheKey {
   static const String historyPause = 'historyPause',
 
       // 隐私设置-黑名单管理
-      blackMidsList = 'blackMidsList',
+      blackMids = 'blackMids',
       // 弹幕屏蔽规则
       danmakuFilterRules = 'danmakuFilterRules',
       // // access_key
@@ -833,6 +838,7 @@ class Accounts {
       await Future.wait([
         GStorage.localCache.delete('accessKey'),
         GStorage.localCache.delete('danmakuFilterRule'),
+        GStorage.localCache.delete('blackMidsList'),
         dir.delete(recursive: true),
         if (isLogin)
           LoginAccount(cookies, localAccessKey['value'],

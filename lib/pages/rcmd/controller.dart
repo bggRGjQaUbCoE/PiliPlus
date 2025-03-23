@@ -32,10 +32,10 @@ class RcmdController extends CommonController {
     bool shouldSaveLast =
         enableSaveLastData && currentPage == 0 && currentList.isNotEmpty;
     if (shouldSaveLast && currentList.length > 500) {
-      currentList = currentList.sublist(0, 50);
+      currentList.removeRange(50, currentList.length);
     }
     lastRefreshAt = shouldSaveLast && savedRcmdTip ? dataList.length : null;
-    return shouldSaveLast ? dataList + currentList : null;
+    return shouldSaveLast ? (dataList..addAll(currentList)) : null;
   }
 
   @override

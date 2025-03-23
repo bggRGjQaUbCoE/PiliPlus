@@ -262,9 +262,7 @@ class VideoCustomActions {
                         act: 5,
                         reSrc: 11,
                       );
-                      List<int> blackMidsList = GStorage.blackMidsList;
-                      blackMidsList.insert(0, videoItem.owner.mid);
-                      GStorage.setBlackMidsList(blackMidsList);
+                      GStorage.setBlackMid(videoItem.owner.mid);
                       Get.back();
                       SmartDialog.showToast(res['msg'] ?? '成功');
                     },

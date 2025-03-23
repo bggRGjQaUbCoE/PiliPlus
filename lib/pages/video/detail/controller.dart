@@ -96,7 +96,6 @@ class VideoDetailController extends GetxController
   double? brightness;
   // 默认记录历史记录
   bool enableHeart = true;
-  dynamic userInfo;
   Floating? floating;
   late PreferredSizeWidget headerControl;
 
@@ -250,7 +249,6 @@ class VideoDetailController extends GetxController
   @override
   void onInit() {
     super.onInit();
-    userInfo = GStorage.userInfo.get('userInfoCache');
     var keys = Get.arguments.keys.toList();
     if (keys.isNotEmpty) {
       if (keys.contains('videoItem')) {
@@ -284,7 +282,7 @@ class VideoDetailController extends GetxController
         setting.get(SettingBoxKey.autoPlayEnable, defaultValue: false);
     if (autoPlay.value) isShowCover.value = false;
     enableHA.value = setting.get(SettingBoxKey.enableHA, defaultValue: true);
-    if (userInfo == null ||
+    if (!Accounts.get(AccountType.heartbeat).isLogin ||
         GStorage.localCache.get(LocalCacheKey.historyPause) == true) {
       enableHeart = false;
     }

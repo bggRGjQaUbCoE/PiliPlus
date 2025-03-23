@@ -874,9 +874,8 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                                                         .viewLater();
                                                     break;
                                                   case 'report':
-                                                    if (videoDetailController
-                                                            .userInfo ==
-                                                        null) {
+                                                    if (!Accounts
+                                                        .main.isLogin) {
                                                       SmartDialog.showToast(
                                                           '账号未登录');
                                                     } else {
@@ -1418,7 +1417,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                             await videoIntroController.viewLater();
                             break;
                           case 'report':
-                            if (videoDetailController.userInfo == null) {
+                            if (!Accounts.main.isLogin) {
                               SmartDialog.showToast('账号未登录');
                             } else {
                               Get.toNamed('/webview', parameters: {

@@ -92,7 +92,13 @@ class AccountManager extends Interceptor {
 
     final Account account = options.extra['account'] ?? _findAccount(path);
 
-    if (account.isLogin) options.headers.addAll(account.headers);
+    if (account.isLogin) {
+      options.headers.addAll(account.headers);
+    } else if (path == Api.heartBeat) {
+      return handler.reject(
+          DioException.requestCancelled(requestOptions: options, reason: null),
+          false);
+    }
 
     // app端不需要管理cookie
     if (path.startsWith(HttpString.appBaseUrl)) {
@@ -190,8 +196,8 @@ class AccountManager extends Interceptor {
   }
 
   Future<void> _saveCookies(Response response) async {
-    final account = (response.requestOptions.extra['account'] as Account? ??
-        _findAccount(response.requestOptions.path));
+    final Account account = response.requestOptions.extra['account'] ??
+        _findAccount(response.requestOptions.path);
     final setCookies = response.headers[HttpHeaders.setCookieHeader];
     if (setCookies == null || setCookies.isEmpty) {
       return;

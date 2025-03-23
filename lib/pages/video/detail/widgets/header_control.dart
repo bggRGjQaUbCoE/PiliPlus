@@ -545,7 +545,7 @@ class _HeaderControlState extends State<HeaderControl> {
                 ListTile(
                   dense: true,
                   onTap: () {
-                    if (videoDetailCtr.userInfo == null) {
+                    if (!Accounts.main.isLogin) {
                       SmartDialog.showToast('账号未登录');
                       return;
                     }

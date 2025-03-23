@@ -19,23 +19,22 @@ final _setCookieReg = RegExp('(?<=)(,)(?=[^;]+?=)');
 class AccountManager extends Interceptor {
   static final Map<AccountType, Set<String>> apiTypeSet = {
     AccountType.heartbeat: {
-      Api.videoUrl,
       Api.videoIntro,
-      Api.relatedList,
       Api.replyList,
       Api.replyReplyList,
-      Api.searchSuggest,
-      Api.searchByType,
       Api.heartBeat,
       Api.ab2c,
       Api.bangumiInfo,
       Api.liveRoomInfo,
+      Api.liveRoomInfoH5,
       Api.onlineTotal,
       Api.dynamicDetail,
       Api.aiConclusion,
       Api.getSeasonDetailApi,
       Api.liveRoomDmToken,
       Api.liveRoomDmPrefetch,
+      Api.searchByType,
+      Api.memberDynamicSearch
     },
     AccountType.recommend: {
       Api.recommendListWeb,
@@ -43,10 +42,11 @@ class AccountManager extends Interceptor {
       Api.feedDislike,
       Api.feedDislikeCancel,
       Api.hotList,
+      Api.relatedList,
       Api.hotSearchList, // 不同账号搜索结果可能不一样
       Api.searchDefault,
       Api.searchSuggest,
-      Api.searchByType
+      Api.liveList,
     },
     AccountType.video: {Api.videoUrl, Api.bangumiVideoUrl}
   };

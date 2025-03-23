@@ -105,7 +105,7 @@ class LoginUtils {
       } catch (_) {}
     } else {
       // 获取用户信息失败
-      await Accounts.set(AccountType.main, await account.logout());
+      await Accounts.deleteAll({account});
       SmartDialog.showNotify(
           msg: '登录失败，请检查cookie是否正确，${result['message']}',
           notifyType: NotifyType.warning);

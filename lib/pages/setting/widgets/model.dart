@@ -344,15 +344,13 @@ List<SettingsModel> get styleSettings => [
       SettingsModel(
         settingsType: SettingsType.normal,
         onTap: (setState) async {
-          List<MsgUnReadType>? result = await showDialog(
+          final result = await showDialog<Set<MsgUnReadType>>(
             context: Get.context!,
             builder: (context) {
               return MultiSelectDialog<MsgUnReadType>(
                 title: '消息未读类型',
                 initValues: GStorage.msgUnReadTypeV2,
-                values: MsgUnReadType.values.map((e) {
-                  return {'title': e.title, 'value': e};
-                }).toList(),
+                values: {for (var i in MsgUnReadType.values) i: i.title},
               );
             },
           );

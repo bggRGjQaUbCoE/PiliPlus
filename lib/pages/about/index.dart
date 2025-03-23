@@ -13,6 +13,7 @@ import 'package:PiliPlus/models/github/latest.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import '../../utils/cache_manage.dart';
+import '../mine/controller.dart';
 
 class AboutPage extends StatefulWidget {
   const AboutPage({super.key, this.showAppBar});
@@ -302,6 +303,9 @@ Commit Hash: ${BuildConfig.commitHash}''',
                                           .putAll(res)
                                           .then((_) => Accounts.refresh())
                                           .then((_) {
+                                        MineController.anonymity.value =
+                                            !Accounts.get(AccountType.heartbeat)
+                                                .isLogin;
                                         if (Accounts.main.isLogin) {
                                           return LoginUtils.onLoginMain();
                                         }

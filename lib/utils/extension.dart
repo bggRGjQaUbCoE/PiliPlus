@@ -21,9 +21,11 @@ extension ScrollControllerExt on ScrollController {
   }
 }
 
-extension ListExt<T> on List<T>? {
+extension IterableExt<T> on Iterable<T>? {
   bool get isNullOrEmpty => this == null || this!.isEmpty;
+}
 
+extension ListExt<T> on List<T>? {
   T? getOrNull(int index) {
     if (isNullOrEmpty) {
       return null;

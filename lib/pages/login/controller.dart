@@ -646,7 +646,9 @@ class LoginPageController extends GetxController
       LoginAccount(BiliCookieJar.fromList(cookieInfo),
               tokenInfo['access_token'], tokenInfo['refresh_token'])
           .onChange(),
-      AnonymousAccount().logout().then((i) => Request.buvidActive(i))
+      AnonymousAccount()
+          .delete()
+          .then((_) => Request.buvidActive(AnonymousAccount()))
     ]);
     if (Accounts.main.isLogin) {
       SmartDialog.showToast('登录成功');

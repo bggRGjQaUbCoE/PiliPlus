@@ -7,12 +7,14 @@ import 'package:PiliPlus/pages/setting/privacy_setting.dart';
 import 'package:PiliPlus/pages/setting/recommend_setting.dart';
 import 'package:PiliPlus/pages/setting/style_setting.dart';
 import 'package:PiliPlus/pages/setting/video_setting.dart';
+import 'package:PiliPlus/utils/accounts/account.dart';
 import 'package:PiliPlus/utils/extension.dart';
-import 'package:PiliPlus/utils/login.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
+
+import 'widgets/multi_select_dialog.dart';
 
 class _SettingsModel {
   final String name;
@@ -37,7 +39,7 @@ class SettingPage extends StatefulWidget {
 
 class _SettingPageState extends State<SettingPage> {
   late String _type = 'privacySetting';
-  final RxBool _isLogin = Accounts.main.isLogin.obs;
+  final RxBool _noAccount = Accounts.accountMode.isEmpty.obs;
   TextStyle get _titleStyle => Theme.of(context).textTheme.titleMedium!;
   TextStyle get _subTitleStyle => Theme.of(context)
       .textTheme
@@ -173,8 +175,15 @@ class _SettingPageState extends State<SettingPage> {
           leading: const Icon(Icons.switch_account_outlined),
           title: const Text('设置账号模式'),
         ),
-        // TODO: 多账号登出
-        _buildLoginItem,
+        Obx(
+          () => _noAccount.value
+              ? const SizedBox.shrink()
+              : ListTile(
+                  leading: const Icon(Icons.logout_outlined),
+                  onTap: () => _logoutDialog(context),
+                  title: Text('退出登录', style: _titleStyle),
+                ),
+        ),
         ListTile(
           tileColor: _getTileColor(_items.last.name),
           onTap: () => _toPage(_items.last.name),
@@ -186,70 +195,69 @@ class _SettingPageState extends State<SettingPage> {
     );
   }
 
-  Widget get _buildLoginItem => Obx(
-        () => _isLogin.value.not
-            ? const SizedBox.shrink()
-            : ListTile(
-                leading: const Icon(Icons.logout_outlined),
-                onTap: () {
-                  showDialog(
-                    context: context,
-                    builder: (context) {
-                      return AlertDialog(
-                        title: const Text('提示'),
-                        content: const Text('确认要退出登录吗'),
-                        actions: [
-                          TextButton(
-                            onPressed: Get.back,
-                            child: Text(
-                              '点错了',
-                              style: TextStyle(
-                                color: Theme.of(context).colorScheme.outline,
-                              ),
-                            ),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              Get.back();
-                              _isLogin.value = false;
-                              LoginUtils.onLogoutMain();
-                              final account = Accounts.main;
-                              Accounts.accountMode
-                                  .removeWhere((_, a) => a == account);
-                              account.logout().then((_) => Accounts.refresh());
-                            },
-                            child: Text(
-                              '仅登出',
-                              style: TextStyle(
-                                color: Theme.of(context).colorScheme.error,
-                              ),
-                            ),
-                          ),
-                          TextButton(
-                            onPressed: () async {
-                              SmartDialog.showLoading();
-                              final res = await LoginHttp.logout(Accounts.main);
-                              if (res['status']) {
-                                await Accounts.main.logout();
-                                await LoginUtils.onLogoutMain();
-                                _isLogin.value = false;
-                                SmartDialog.dismiss();
-                                Get.back();
-                              } else {
-                                SmartDialog.dismiss();
-                                SmartDialog.showToast(res['msg'].toString());
-                              }
-                            },
-                            child: const Text('确认'),
-                          )
-                        ],
-                      );
-                    },
-                  );
-                },
-                title: Text('退出登录', style: _titleStyle),
+  Future<void> _logoutDialog(BuildContext context) async {
+    final result = await showDialog<Set<LoginAccount>>(
+      context: context,
+      builder: (context) {
+        return MultiSelectDialog<LoginAccount>(
+          title: '选择要登出的账号uid',
+          initValues: Iterable.empty(),
+          values: {for (var i in Accounts.account.values) i: i.mid.toString()},
+        );
+      },
+    );
+    if (!context.mounted || result.isNullOrEmpty) return;
+    Future<void> logout() {
+      _noAccount.value = result!.length == Accounts.account.length;
+      return Accounts.deleteAll(result);
+    }
+
+    await showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: const Text('提示'),
+            content: Text(
+                "确认要退出以下账号登录吗\n\n${result!.map((i) => i.mid.toString()).join('\n')}"),
+            actions: [
+              TextButton(
+                onPressed: Get.back,
+                child: Text(
+                  '点错了',
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.outline,
+                  ),
+                ),
               ),
-      );
+              TextButton(
+                onPressed: () {
+                  Get.back();
+                  logout();
+                },
+                child: Text(
+                  '仅登出',
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+                ),
+              ),
+              TextButton(
+                onPressed: () async {
+                  SmartDialog.showLoading();
+                  final res = await LoginHttp.logout(Accounts.main);
+                  if (res['status']) {
+                    SmartDialog.dismiss();
+                    logout();
+                    Get.back();
+                  } else {
+                    SmartDialog.dismiss();
+                    SmartDialog.showToast(res['msg'].toString());
+                  }
+                },
+                child: const Text('确认'),
+              )
+            ],
+          );
+        });
+  }
 
   Widget get _buildSearchItem => Padding(
         padding: const EdgeInsets.only(left: 16, right: 16, bottom: 5),

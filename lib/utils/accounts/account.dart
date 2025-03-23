@@ -16,7 +16,7 @@ abstract class Account {
 
   bool activited = false;
 
-  Future<AnonymousAccount> logout();
+  Future<void> delete();
   Future<void> onChange();
 
   Map<String, dynamic>? toJson();
@@ -55,10 +55,7 @@ class LoginAccount implements Account {
   bool activited = false;
 
   @override
-  Future<AnonymousAccount> logout() async {
-    await Future.wait([cookieJar.deleteAll(), _box.delete(_midStr)]);
-    return AnonymousAccount();
-  }
+  Future<void> delete() => _box.delete(_midStr);
 
   @override
   Future<void> onChange() => _box.put(_midStr, this);
@@ -121,10 +118,9 @@ class AnonymousAccount implements Account {
   bool activited = false;
 
   @override
-  Future<AnonymousAccount> logout() async {
+  Future<void> delete() async {
     await cookieJar.deleteAll();
     activited = false;
-    return this;
   }
 
   @override

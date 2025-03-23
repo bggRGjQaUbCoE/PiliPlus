@@ -35,7 +35,7 @@ class MainController extends GetxController {
 
   late int homeIndex = -1;
   late DynamicBadgeMode msgBadgeMode = GStorage.msgBadgeMode;
-  late List<MsgUnReadType> msgUnReadTypes = GStorage.msgUnReadTypeV2;
+  late Set<MsgUnReadType> msgUnReadTypes = GStorage.msgUnReadTypeV2.toSet();
   late final RxString msgUnReadCount = ''.obs;
   late int lastCheckUnreadAt = 0;
 
@@ -83,7 +83,7 @@ class MainController extends GetxController {
     try {
       bool shouldCheckPM = msgUnReadTypes.contains(MsgUnReadType.pm);
       bool shouldCheckFeed =
-          ([...msgUnReadTypes]..remove(MsgUnReadType.pm)).isNotEmpty;
+          shouldCheckPM ? msgUnReadTypes.length > 1 : msgUnReadTypes.isNotEmpty;
       List res = await Future.wait([
         if (shouldCheckPM) _queryPMUnread(),
         if (shouldCheckFeed) _queryMsgFeedUnread(),

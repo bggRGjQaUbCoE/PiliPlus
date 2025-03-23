@@ -862,14 +862,23 @@ class Accounts {
     for (var i in AccountType.values) {
       accountMode[i] = AnonymousAccount();
     }
-    if (!AnonymousAccount().activited) {
-      Request.buvidActive(AnonymousAccount());
-    }
+    await AnonymousAccount().delete();
+    Request.buvidActive(AnonymousAccount());
   }
 
   static Future<void> close() async {
     account.compact();
     account.close();
+  }
+
+  static Future<void> deleteAll(Set<Account> accounts) async {
+    var isloginMain = Accounts.main.isLogin;
+    Accounts.accountMode
+        .updateAll((_, a) => accounts.contains(a) ? AnonymousAccount() : a);
+    await Future.wait(accounts.map((i) => i.delete()));
+    if (isloginMain && !Accounts.main.isLogin) {
+      await LoginUtils.onLogoutMain();
+    }
   }
 
   static Future<void> set(AccountType key, Account account) async {
@@ -879,11 +888,9 @@ class Accounts {
     if (!account.activited) await Request.buvidActive(account);
     switch (key) {
       case AccountType.main:
-        if (account.isLogin) {
-          await LoginUtils.onLoginMain();
-        } else {
-          await LoginUtils.onLogoutMain();
-        }
+        await (account.isLogin
+            ? LoginUtils.onLoginMain()
+            : LoginUtils.onLogoutMain());
         break;
       case AccountType.heartbeat:
         MineController.anonymity.value = !account.isLogin;

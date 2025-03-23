@@ -2,16 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class MultiSelectDialog<T> extends StatefulWidget {
-  final List<T> initValues;
+  final Iterable<T> initValues;
   final String title;
-  final List<dynamic> values;
+  final Map<T, String> values;
 
-  const MultiSelectDialog({
-    super.key,
-    required this.initValues,
-    required this.values,
-    required this.title,
-  });
+  const MultiSelectDialog(
+      {super.key,
+      required this.initValues,
+      required this.values,
+      required this.title});
 
   @override
   State<MultiSelectDialog<T>> createState() => _MultiSelectDialogState<T>();
@@ -36,30 +35,24 @@ class _MultiSelectDialogState<T> extends State<MultiSelectDialog<T>> {
         return SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            children: List.generate(
-              widget.values.length,
-              (index) {
-                bool isChecked =
-                    _tempValues.contains(widget.values[index]['value']);
-                return CheckboxListTile(
-                  dense: true,
-                  value: isChecked,
-                  controlAffinity: ListTileControlAffinity.leading,
-                  title: Text(
-                    widget.values[index]['title'],
-                    style: Theme.of(context).textTheme.titleMedium!,
-                  ),
-                  onChanged: (value) {
-                    if (isChecked) {
-                      _tempValues.remove(widget.values[index]['value']);
-                    } else {
-                      _tempValues.add(widget.values[index]['value']);
-                    }
-                    setState(() {});
-                  },
-                );
-              },
-            ),
+            children: widget.values.entries.map((i) {
+              bool isChecked = _tempValues.contains(i.key);
+              return CheckboxListTile(
+                dense: true,
+                value: isChecked,
+                controlAffinity: ListTileControlAffinity.leading,
+                title: Text(
+                  i.value,
+                  style: Theme.of(context).textTheme.titleMedium!,
+                ),
+                onChanged: (value) {
+                  isChecked
+                      ? _tempValues.remove(i.key)
+                      : _tempValues.add(i.key);
+                  setState(() {});
+                },
+              );
+            }).toList(),
           ),
         );
       }),
@@ -75,7 +68,7 @@ class _MultiSelectDialogState<T> extends State<MultiSelectDialog<T>> {
           ),
         ),
         TextButton(
-          onPressed: () => Get.back(result: _tempValues.toList()),
+          onPressed: () => Get.back(result: _tempValues),
           child: const Text('确定'),
         ),
       ],

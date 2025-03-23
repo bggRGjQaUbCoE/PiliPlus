@@ -660,9 +660,14 @@ class LoginPageController extends GetxController
     if (Accounts.account.isEmpty) {
       return SmartDialog.showToast('请先登录');
     }
-    final selectAccount = Accounts.accountMode
-        .map((key, value) => MapEntry(key, value.mid.toString()));
-    final options = {'0': '0', for (String i in Accounts.account.keys) i: i};
+    final selectAccount = Map.of(Accounts.accountMode);
+    final options = {
+      AnonymousAccount(): '0',
+      ...Accounts.account
+          .toMap()
+          .cast<String, Account>()
+          .map((k, v) => MapEntry(v, k))
+    };
     return showDialog(
       context: context,
       builder: (context) => StatefulBuilder(builder: (context, setState) {
@@ -680,7 +685,7 @@ class LoginPageController extends GetxController
               crossAxisAlignment: CrossAxisAlignment.start,
               children: AccountType.values
                   .map(
-                    (e) => WrapRadioOptionsGroup<String>(
+                    (e) => WrapRadioOptionsGroup<Account>(
                       groupTitle: e.title,
                       options: options,
                       selectedValue: selectAccount[e],
@@ -703,10 +708,8 @@ class LoginPageController extends GetxController
             TextButton(
               onPressed: () {
                 for (var i in selectAccount.entries) {
-                  var account =
-                      Accounts.account.get(i.value) ?? AnonymousAccount();
-                  if (account != Accounts.get(i.key)) {
-                    Accounts.set(i.key, account);
+                  if (i.value != Accounts.get(i.key)) {
+                    Accounts.set(i.key, i.value);
                   }
                 }
                 Get.back();

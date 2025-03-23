@@ -87,8 +87,7 @@ class MineController extends GetxController {
     }
     anonymity.value = !anonymity.value;
     if (anonymity.value) {
-      Accounts.accountMode[AccountType.heartbeat] = AnonymousAccount();
-      SmartDialog.show(
+      SmartDialog.show<bool>(
         clickMaskDismiss: false,
         usePenetrate: true,
         displayTime: const Duration(seconds: 2),
@@ -128,9 +127,7 @@ class MineController extends GetxController {
                     children: [
                       TextButton(
                           onPressed: () {
-                            SmartDialog.dismiss();
-                            Accounts.set(
-                                AccountType.heartbeat, AnonymousAccount());
+                            SmartDialog.dismiss(result: true);
                             SmartDialog.showToast('已设为永久无痕模式');
                           },
                           child: Text(
@@ -161,7 +158,11 @@ class MineController extends GetxController {
             // showCloseIcon: true,
           );
         },
-      );
+      ).then((res) {
+        res == true
+            ? Accounts.set(AccountType.heartbeat, AnonymousAccount())
+            : Accounts.accountMode[AccountType.heartbeat] = AnonymousAccount();
+      });
     } else {
       Accounts.set(AccountType.heartbeat, Accounts.main);
       SmartDialog.show(

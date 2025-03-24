@@ -1,6 +1,5 @@
 import 'package:PiliPlus/common/widgets/image_save.dart';
-import 'package:PiliPlus/common/widgets/stat/danmu.dart';
-import 'package:PiliPlus/common/widgets/stat/view.dart';
+import 'package:PiliPlus/common/widgets/stat/stat.dart';
 import 'package:PiliPlus/common/widgets/video_popup_menu.dart';
 import 'package:PiliPlus/common/widgets/video_progress_indicator.dart';
 import 'package:PiliPlus/models/space_archive/item.dart';
@@ -180,19 +179,19 @@ class VideoCardHMemberVideo extends StatelessWidget {
           const SizedBox(height: 3),
           Row(
             children: [
-              statView(
+              StatView(
                 context: context,
                 theme: 'gray',
                 // view: videoItem.season?['view_content'] ??
                 //     videoItem.viewContent,
-                view: videoItem.viewContent,
+                value: videoItem.viewContent!,
               ),
               const SizedBox(width: 8),
-              statDanMu(
+              StatDanMu(
                 context: context,
                 theme: 'gray',
                 // danmu: videoItem.season?['danmaku'] ?? videoItem.danmaku,
-                danmu: videoItem.danmaku,
+                value: videoItem.danmaku!,
               ),
             ],
           ),

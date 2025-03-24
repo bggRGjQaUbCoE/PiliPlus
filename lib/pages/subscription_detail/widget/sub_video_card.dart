@@ -1,8 +1,7 @@
 import 'package:PiliPlus/common/widgets/image_save.dart';
 import 'package:flutter/material.dart';
 import 'package:PiliPlus/common/constants.dart';
-import 'package:PiliPlus/common/widgets/stat/danmu.dart';
-import 'package:PiliPlus/common/widgets/stat/view.dart';
+import 'package:PiliPlus/common/widgets/stat/stat.dart';
 import 'package:PiliPlus/http/search.dart';
 import 'package:PiliPlus/models/common/search_type.dart';
 import 'package:PiliPlus/utils/utils.dart';
@@ -127,16 +126,16 @@ class SubVideoCardH extends StatelessWidget {
                 padding: const EdgeInsets.only(top: 2),
                 child: Row(
                   children: [
-                    statView(
+                    StatView(
                       context: context,
                       theme: 'gray',
-                      view: videoItem.cntInfo?['play'],
+                      value: videoItem.cntInfo?['play'],
                     ),
                     const SizedBox(width: 8),
-                    statDanMu(
+                    StatDanMu(
                       context: context,
                       theme: 'gray',
-                      danmu: videoItem.cntInfo?['danmaku'],
+                      value: videoItem.cntInfo?['danmaku'],
                     ),
                     const Spacer(),
                   ],

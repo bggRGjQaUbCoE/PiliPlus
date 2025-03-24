@@ -12,8 +12,7 @@ import 'package:get/get.dart';
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/network_img_layer.dart';
-import 'package:PiliPlus/common/widgets/stat/danmu.dart';
-import 'package:PiliPlus/common/widgets/stat/view.dart';
+import 'package:PiliPlus/common/widgets/stat/stat.dart';
 import 'package:PiliPlus/models/bangumi/info.dart';
 import 'package:PiliPlus/pages/bangumi/widgets/bangumi_panel.dart';
 import 'package:PiliPlus/pages/video/detail/index.dart';
@@ -322,19 +321,19 @@ class _BangumiInfoState extends State<BangumiInfo>
                                 ),
                                 Row(
                                   children: [
-                                    statView(
+                                    StatView(
                                       context: context,
                                       theme: 'gray',
-                                      view: !widget.isLoading
+                                      value: !widget.isLoading
                                           ? widget.bangumiDetail!.stat!['views']
                                           : bangumiItem!.stat!['views'],
                                       size: 'medium',
                                     ),
                                     const SizedBox(width: 6),
-                                    statDanMu(
+                                    StatDanMu(
                                       context: context,
                                       theme: 'gray',
-                                      danmu: !widget.isLoading
+                                      value: !widget.isLoading
                                           ? widget
                                               .bangumiDetail!.stat!['danmakus']
                                           : bangumiItem!.stat!['danmakus'],

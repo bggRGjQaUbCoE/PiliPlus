@@ -7,8 +7,7 @@ import '../../utils/utils.dart';
 import '../constants.dart';
 import 'badge.dart';
 import 'network_img_layer.dart';
-import 'stat/danmu.dart';
-import 'stat/view.dart';
+import 'stat/stat.dart';
 import 'video_popup_menu.dart';
 
 // 视频卡片 - 水平布局
@@ -265,18 +264,18 @@ class VideoCardH extends StatelessWidget {
           Row(
             children: [
               if (showView) ...[
-                statView(
+                StatView(
                   context: context,
                   theme: 'gray',
-                  view: videoItem.stat.view as int,
+                  value: videoItem.stat.view!,
                 ),
                 const SizedBox(width: 8),
               ],
               if (showDanmaku)
-                statDanMu(
+                StatDanMu(
                   context: context,
                   theme: 'gray',
-                  danmu: videoItem.stat.danmu as int,
+                  value: videoItem.stat.danmu!,
                 ),
               const Spacer(),
               if (source == 'normal') const SizedBox(width: 24),

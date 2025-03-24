@@ -1,8 +1,7 @@
 import 'package:PiliPlus/pages/common/common_collapse_slide_page.dart';
 import 'package:PiliPlus/pages/search/widgets/search_text.dart';
 import 'package:flutter/material.dart';
-import 'package:PiliPlus/common/widgets/stat/danmu.dart';
-import 'package:PiliPlus/common/widgets/stat/view.dart';
+import 'package:PiliPlus/common/widgets/stat/stat.dart';
 import 'package:get/get.dart';
 
 import '../../../../utils/utils.dart';
@@ -79,17 +78,17 @@ class _IntroDetailState extends CommonCollapseSlidePageState<IntroDetail> {
           const SizedBox(height: 4),
           Row(
             children: [
-              statView(
+              StatView(
                 context: context,
                 theme: 'gray',
-                view: widget.bangumiDetail!.stat!['views'],
+                value: widget.bangumiDetail!.stat!['views'],
                 size: 'medium',
               ),
               const SizedBox(width: 6),
-              statDanMu(
+              StatDanMu(
                 context: context,
                 theme: 'gray',
-                danmu: widget.bangumiDetail!.stat!['danmakus'],
+                value: widget.bangumiDetail!.stat!['danmakus'],
                 size: 'medium',
               ),
             ],

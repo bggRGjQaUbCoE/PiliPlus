@@ -17,8 +17,7 @@ import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/pages/mine/controller.dart';
 import 'package:PiliPlus/pages/video/detail/index.dart';
 import 'package:PiliPlus/common/widgets/network_img_layer.dart';
-import 'package:PiliPlus/common/widgets/stat/danmu.dart';
-import 'package:PiliPlus/common/widgets/stat/view.dart';
+import 'package:PiliPlus/common/widgets/stat/stat.dart';
 import 'package:PiliPlus/models/video_detail_res.dart';
 import 'package:PiliPlus/pages/video/detail/introduction/controller.dart';
 import 'package:PiliPlus/utils/feed_back.dart';
@@ -614,20 +613,20 @@ class _VideoInfoState extends State<VideoInfo> with TickerProviderStateMixin {
                     children: [
                       Row(
                         children: <Widget>[
-                          statView(
+                          StatView(
                             context: context,
                             theme: 'gray',
-                            view: !widget.loadingStatus
+                            value: !widget.loadingStatus
                                 ? videoDetail.stat?.view ?? '-'
                                 : videoItem['stat']?.view ?? '-',
                             size: 'medium',
                             textColor: t.colorScheme.outline,
                           ),
                           const SizedBox(width: 10),
-                          statDanMu(
+                          StatDanMu(
                             context: context,
                             theme: 'gray',
-                            danmu: !widget.loadingStatus
+                            value: !widget.loadingStatus
                                 ? videoDetail.stat?.danmu ?? '-'
                                 : videoItem['stat']?.danmu ?? '-',
                             size: 'medium',

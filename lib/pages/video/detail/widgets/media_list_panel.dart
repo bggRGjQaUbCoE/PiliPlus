@@ -1,8 +1,7 @@
 import 'package:PiliPlus/common/widgets/dialog.dart';
 import 'package:PiliPlus/common/widgets/icon_button.dart';
 import 'package:PiliPlus/common/widgets/refresh_indicator.dart';
-import 'package:PiliPlus/common/widgets/stat/danmu.dart';
-import 'package:PiliPlus/common/widgets/stat/view.dart';
+import 'package:PiliPlus/common/widgets/stat/stat.dart';
 import 'package:PiliPlus/pages/common/common_collapse_slide_page.dart';
 import 'package:PiliPlus/pages/common/common_slide_page.dart';
 import 'package:flutter/material.dart';
@@ -232,16 +231,16 @@ class _MediaListPanelState extends CommonSlidePageState<MediaListPanel> {
                                       const SizedBox(height: 2),
                                       Row(
                                         children: [
-                                          statView(
+                                          StatView(
                                             context: context,
                                             theme: 'gray',
-                                            view: item.cntInfo!['play'] as int,
+                                            value: item.cntInfo!['play'] as int,
                                           ),
                                           const SizedBox(width: 8),
-                                          statDanMu(
+                                          StatDanMu(
                                             context: context,
                                             theme: 'gray',
-                                            danmu:
+                                            value:
                                                 item.cntInfo!['danmaku'] as int,
                                           ),
                                         ],

@@ -4,8 +4,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
-import 'package:PiliPlus/common/widgets/stat/danmu.dart';
-import 'package:PiliPlus/common/widgets/stat/view.dart';
+import 'package:PiliPlus/common/widgets/stat/stat.dart';
 import 'package:PiliPlus/utils/utils.dart';
 
 @Deprecated('deprecated')
@@ -55,17 +54,17 @@ class IntroDetail extends StatelessWidget {
                     const SizedBox(height: 6),
                     Row(
                       children: [
-                        statView(
+                        StatView(
                           context: context,
                           theme: 'gray',
-                          view: videoDetail!.stat!.view,
+                          value: videoDetail!.stat!.view,
                           size: 'medium',
                         ),
                         const SizedBox(width: 10),
-                        statDanMu(
+                        StatDanMu(
                           context: context,
                           theme: 'gray',
-                          danmu: videoDetail!.stat!.danmu,
+                          value: videoDetail!.stat!.danmu,
                           size: 'medium',
                         ),
                         const SizedBox(width: 10),

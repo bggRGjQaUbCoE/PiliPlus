@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/network_img_layer.dart';
-import 'package:PiliPlus/common/widgets/stat/view.dart';
+import 'package:PiliPlus/common/widgets/stat/stat.dart';
 import 'package:PiliPlus/http/search.dart';
 import 'package:PiliPlus/models/member/coin.dart';
 import 'package:PiliPlus/utils/utils.dart';
@@ -78,9 +78,9 @@ class MemberCoinsItem extends StatelessWidget {
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      statView(
+                      StatView(
                         context: context,
-                        view: coinItem.view,
+                        value: coinItem.view!,
                         theme: 'gray',
                       ),
                       const Spacer(),

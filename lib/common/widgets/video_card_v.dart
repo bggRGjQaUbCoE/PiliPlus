@@ -5,8 +5,7 @@ import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import '../../models/home/rcmd/result.dart';
 import '../../models/model_rec_video_item.dart';
-import 'stat/danmu.dart';
-import 'stat/view.dart';
+import 'stat/stat.dart';
 import '../../http/dynamics.dart';
 import '../../utils/id_utils.dart';
 import '../../utils/utils.dart';
@@ -260,18 +259,18 @@ class VideoCardV extends StatelessWidget {
   Widget videoStat(context) {
     return Row(
       children: [
-        statView(
+        StatView(
           context: context,
           theme: 'gray',
-          view: videoItem.stat.view,
+          value: videoItem.stat.view!,
           goto: videoItem.goto,
         ),
         const SizedBox(width: 4),
         if (videoItem.goto != 'picture')
-          statDanMu(
+          StatDanMu(
             context: context,
             theme: 'gray',
-            danmu: videoItem.stat.danmu,
+            value: videoItem.stat.danmu!,
           ),
         if (videoItem is RecVideoItemModel) ...<Widget>[
           const Spacer(),

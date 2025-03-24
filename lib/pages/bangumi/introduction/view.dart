@@ -324,19 +324,19 @@ class _BangumiInfoState extends State<BangumiInfo>
                                     StatView(
                                       context: context,
                                       theme: 'gray',
-                                      value: !widget.isLoading
+                                      value: Utils.numFormat(!widget.isLoading
                                           ? widget.bangumiDetail!.stat!['views']
-                                          : bangumiItem!.stat!['views'],
+                                          : bangumiItem!.stat!['views']),
                                       size: 'medium',
                                     ),
                                     const SizedBox(width: 6),
                                     StatDanMu(
                                       context: context,
                                       theme: 'gray',
-                                      value: !widget.isLoading
+                                      value: Utils.numFormat(!widget.isLoading
                                           ? widget
                                               .bangumiDetail!.stat!['danmakus']
-                                          : bangumiItem!.stat!['danmakus'],
+                                          : bangumiItem!.stat!['danmakus']),
                                       size: 'medium',
                                     ),
                                     if (isLandscape) ...[

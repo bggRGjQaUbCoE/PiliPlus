@@ -50,15 +50,16 @@ class SubDetailController extends GetxController {
       );
     }
     if (res['status']) {
-      subInfo.value = res['data'].info;
+      SubDetailModelData data = res['data'];
+      subInfo.value = data.info!;
       if (currentPage == 1 && type == 'init') {
-        subList.value = res['data'].medias;
-        mediaCount = res['data'].info.mediaCount;
+        subList.value = data.list!;
+        mediaCount = data.info!.mediaCount!;
         if (item.type == 11) {
-          playCount.value = res['data'].info.cntInfo!['play'];
+          playCount.value = data.info!.cntInfo!['play'];
         }
       } else if (type == 'onLoad') {
-        subList.addAll(res['data'].medias);
+        subList.addAll(data.list!);
       }
       if (subList.length >= mediaCount) {
         loadingText.value = '没有更多了';

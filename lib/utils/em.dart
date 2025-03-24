@@ -1,31 +1,27 @@
 import 'package:html/parser.dart' show parse;
 
 class Em {
-  static regCate(String origin) {
-    String str = origin;
-    RegExp exp = RegExp('<[^>]*>([^<]*)</[^>]*>');
-    Iterable<Match> matches = exp.allMatches(origin);
-    for (Match match in matches) {
-      str = match.group(1)!;
-    }
-    return str;
+  static final _exp = RegExp('<[^>]*>([^<]*)</[^>]*>');
+
+  static String regCate(String origin) {
+    Iterable<Match> matches = _exp.allMatches(origin);
+    return matches.lastOrNull?.group(1) ?? origin;
   }
 
-  static regTitle(String origin) {
-    RegExp exp = RegExp('<[^>]*>([^<]*)</[^>]*>');
-    List res = [];
+  static List<Map<String, String>> regTitle(String origin) {
+    List<Map<String, String>> res = [];
     origin.splitMapJoin(
-      exp,
+      _exp,
       onMatch: (Match match) {
         String matchStr = match[0]!;
-        Map map = {'type': 'em', 'text': regCate(matchStr)};
+        var map = {'type': 'em', 'text': regCate(matchStr)};
         res.add(map);
-        return regCate(matchStr);
+        return matchStr;
       },
       onNonMatch: (String str) {
         if (str != '') {
           str = parse(str).body?.text ?? str;
-          Map map = {'type': 'text', 'text': str};
+          var map = {'type': 'text', 'text': str};
           res.add(map);
         }
         return str;

@@ -184,7 +184,7 @@ class _AiDetailState extends CommonCollapseSlidePageState<AiDetail> {
                                   children: [
                                     TextSpan(
                                       text:
-                                          Utils.tampToSeektime(item.timestamp!),
+                                          Utils.formatDuration(item.timestamp!),
                                       style: TextStyle(
                                         color: Theme.of(context)
                                             .colorScheme
@@ -198,15 +198,8 @@ class _AiDetailState extends CommonCollapseSlidePageState<AiDetail> {
                                                     tag: Get
                                                         .arguments['heroTag'])
                                                 .plPlayerController
-                                                .seekTo(
-                                                  Duration(
-                                                    seconds: Utils.duration(
-                                                      Utils.tampToSeektime(
-                                                              item.timestamp!)
-                                                          .toString(),
-                                                    ),
-                                                  ),
-                                                );
+                                                .seekTo(Duration(
+                                                    seconds: item.timestamp!));
                                           } catch (_) {}
                                         },
                                     ),

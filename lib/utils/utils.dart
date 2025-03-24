@@ -47,10 +47,16 @@ import 'package:html/dom.dart' as dom;
 import 'package:html/parser.dart' as html_parser;
 import 'package:path/path.dart' as path;
 
+import '../models/home/rcmd/result.dart';
+import '../models/model_rec_video_item.dart';
+import '../models/model_video.dart';
+
 class Utils {
   static final Random random = Random();
 
   static const channel = MethodChannel("PiliPlus");
+
+  static final _numRegExp = RegExp(r'([\d\.]+)([千万亿])?');
 
   static ThemeData getThemeData({
     required ColorScheme colorScheme,
@@ -1149,6 +1155,32 @@ class Utils {
   //   return tempPath;
   // }
 
+  static int getUnit(String? unit) {
+    switch (unit) {
+      case '千':
+        return 1000;
+      case '万':
+        return 10000;
+      case '亿':
+        return 100000000;
+      default:
+        return 1;
+    }
+  }
+
+  static int parseNum(String numberStr) {
+    if (numberStr == '-') return 0;
+    try {
+      final match = _numRegExp.firstMatch(numberStr)!;
+      var number = double.parse(match.group(1)!);
+      number *= getUnit(match.group(2));
+      return number.toInt();
+    } catch (e) {
+      debugPrint('parse failed: "$numberStr" : $e');
+      return 0;
+    }
+  }
+
   static String numFormat(dynamic number) {
     if (number == null) {
       return '00:00';
@@ -1197,63 +1229,49 @@ class Utils {
     return '${int.parse(durationParts[0])}秒';
   }
 
-  static String videoItemSemantics(dynamic videoItem) {
-    String semanticsLabel = "";
-    bool emptyStatCheck(dynamic stat) {
-      return stat == null ||
-          stat == '' ||
-          stat == 0 ||
-          stat == '0' ||
-          stat == '-';
+  static String videoItemSemantics(BaseVideoItemModel videoItem) {
+    StringBuffer semanticsLabel = StringBuffer();
+    bool emptyStatCheck(int? stat) {
+      return stat == null || stat <= 0;
     }
 
-    if (videoItem.runtimeType.toString() == "RecVideoItemAppModel") {
+    if (videoItem is RecVideoItemAppModel) {
       if (videoItem.goto == 'picture') {
-        semanticsLabel += '动态,';
+        semanticsLabel.write('动态,');
       } else if (videoItem.goto == 'bangumi') {
-        semanticsLabel += '番剧,';
+        semanticsLabel.write('番剧,');
       }
     }
-    if (videoItem.title is String) {
-      semanticsLabel += videoItem.title;
-    } else {
-      semanticsLabel +=
-          videoItem.title.map((e) => e['text'] as String).join('');
-    }
+    semanticsLabel.write(videoItem.title);
 
     if (!emptyStatCheck(videoItem.stat.view)) {
-      semanticsLabel += ',${Utils.numFormat(videoItem.stat.view)}';
-      semanticsLabel +=
-          (videoItem.runtimeType.toString() == "RecVideoItemAppModel" &&
-                  videoItem.goto == 'picture')
+      semanticsLabel.write(',${Utils.numFormat(videoItem.stat.view)}');
+      semanticsLabel.write(
+          (videoItem is RecVideoItemAppModel && videoItem.goto == 'picture')
               ? '浏览'
-              : '播放';
+              : '播放');
     }
     if (!emptyStatCheck(videoItem.stat.danmu)) {
-      semanticsLabel += ',${Utils.numFormat(videoItem.stat.danmu)}弹幕';
+      semanticsLabel.write(',${Utils.numFormat(videoItem.stat.danmu)}弹幕');
     }
-    if (videoItem.rcmdReason != null) {
-      semanticsLabel += ',${videoItem.rcmdReason}';
+    if ((videoItem is BaseRecVideoItemModel) && videoItem.rcmdReason != null) {
+      semanticsLabel.write(',${videoItem.rcmdReason}');
     }
-    if (!emptyStatCheck(videoItem.duration) &&
-        (videoItem.duration is! int || videoItem.duration > 0)) {
-      semanticsLabel +=
-          ',时长${Utils.durationReadFormat(Utils.timeFormat(videoItem.duration))}';
+    if (!emptyStatCheck(videoItem.duration) && videoItem.duration > 0) {
+      semanticsLabel.write(
+          ',时长${Utils.durationReadFormat(Utils.timeFormat(videoItem.duration))}');
     }
-    if (videoItem.runtimeType.toString() != "RecVideoItemAppModel" &&
-        videoItem.pubdate != null) {
-      semanticsLabel +=
-          ',${Utils.dateFormat(videoItem.pubdate!, formatType: 'day')}';
+    if (videoItem.pubdate != null) {
+      semanticsLabel
+          .write(',${Utils.dateFormat(videoItem.pubdate!, formatType: 'day')}');
     }
     if (videoItem.owner.name != '') {
-      semanticsLabel += ',Up主：${videoItem.owner.name}';
+      semanticsLabel.write(',Up主：${videoItem.owner.name}');
     }
-    if ((videoItem.runtimeType.toString() == "RecVideoItemAppModel" ||
-            videoItem.runtimeType.toString() == "RecVideoItemModel") &&
-        videoItem.isFollowed == 1) {
-      semanticsLabel += ',已关注';
+    if (videoItem is BaseRecVideoItemModel && videoItem.isFollowed) {
+      semanticsLabel.write(',已关注');
     }
-    return semanticsLabel;
+    return semanticsLabel.toString();
   }
 
   static String timeFormat(dynamic time) {
@@ -1263,14 +1281,7 @@ class Utils {
     if (time == null || time == 0) {
       return '00:00';
     }
-    int hour = time ~/ 3600;
-    int minute = (time % 3600) ~/ 60;
-    int second = time % 60;
-    String paddingStr(int number) {
-      return number.toString().padLeft(2, '0');
-    }
-
-    return '${hour > 0 ? "${paddingStr(hour)}:" : ""}${paddingStr(minute)}:${paddingStr(second)}';
+    return formatDuration(time);
   }
 
   static String shortenChineseDateString(String date) {
@@ -1568,17 +1579,6 @@ class Utils {
     } catch (_) {
       launchURL('https://github.com/bggRGjQaUbCoE/PiliPlus/releases/latest');
     }
-  }
-
-  // 时间戳转时间
-  static tampToSeektime(number) {
-    int hours = number ~/ 60;
-    int minutes = number % 60;
-
-    String formattedHours = hours.toString().padLeft(2, '0');
-    String formattedMinutes = minutes.toString().padLeft(2, '0');
-
-    return '$formattedHours:$formattedMinutes';
   }
 
   static double getSheetHeight(BuildContext context) {

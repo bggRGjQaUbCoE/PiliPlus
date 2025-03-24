@@ -1,60 +1,20 @@
+import 'package:PiliPlus/models/model_rec_video_item.dart';
+import 'package:PiliPlus/models/model_video.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
+import 'package:PiliPlus/utils/utils.dart';
 
-class RecVideoItemAppModel {
-  RecVideoItemAppModel({
-    this.id,
-    this.aid,
-    this.bvid,
-    this.cid,
-    this.pic,
-    this.stat,
-    this.duration,
-    this.title,
-    this.isFollowed,
-    this.owner,
-    this.rcmdReason,
-    this.goto,
-    this.param,
-    this.uri,
-    this.talkBack,
-    this.bangumiView,
-    this.bangumiFollow,
-    this.bangumiBadge,
-    this.cardType,
-    this.adInfo,
-    this.threePoint,
-    this.desc,
-  });
-
+class RecVideoItemAppModel extends BaseRecVideoItemModel {
   int? id;
-  int? aid;
-  String? bvid;
-  int? cid;
-  String? pic;
-  RcmdStat? stat;
-  int? duration;
-  String? title;
-  int? isFollowed;
-  RcmdOwner? owner;
-  String? rcmdReason;
-  String? goto;
-  int? param;
-  String? uri;
   String? talkBack;
-  // 番剧
-  String? bangumiView;
-  String? bangumiFollow;
-  String? bangumiBadge;
 
   String? cardType;
   Map? adInfo;
   ThreePoint? threePoint;
-  String? desc;
 
   RecVideoItemAppModel.fromJson(Map<String, dynamic> json) {
     id = json['player_args'] != null
         ? json['player_args']['aid']
-        : int.parse(json['param'] ?? '-1');
+        : int.tryParse(json['param'] ?? '-1');
     aid = id;
     bvid = json['bvid'] ??
         (json['player_args'] != null
@@ -70,21 +30,22 @@ class RecVideoItemAppModel {
     title = json['title'];
     owner = RcmdOwner.fromJson(json);
     rcmdReason = json['bottom_rcmd_reason'] ?? json['top_rcmd_reason'];
+    if (rcmdReason != null && rcmdReason!.contains('赞')) {
+      // 有时能在推荐原因里获得点赞数
+      (stat as RcmdStat).like = Utils.parseNum(rcmdReason!);
+    }
     // 由于app端api并不会直接返回与owner的关注状态
     // 所以借用推荐原因是否为“已关注”、“新关注”判别关注状态，从而与web端接口等效
-    isFollowed = (rcmdReason == '已关注') || (rcmdReason == '新关注') ? 1 : 0;
+    isFollowed = const {'已关注', '新关注'}.contains(rcmdReason);
     // 如果是，就无需再显示推荐原因，交由view统一处理即可
-    if (isFollowed == 1) {
-      rcmdReason = null;
-    }
+    if (isFollowed) rcmdReason = null;
+
     goto = json['goto'];
     param = int.parse(json['param']);
     uri = json['uri'];
     talkBack = json['talk_back'];
 
     if (json['goto'] == 'bangumi') {
-      bangumiView = json['cover_left_text_1'];
-      bangumiFollow = json['cover_left_text_2'];
       bangumiBadge = json['cover_right_text'];
     }
 
@@ -95,30 +56,37 @@ class RecVideoItemAppModel {
         : null;
     desc = json['desc'];
   }
+
+  // @override
+  // int? get pubdate => null;
 }
 
-class RcmdStat {
-  RcmdStat({
-    this.view,
-    this.like,
-    this.danmu,
-  });
-  String? view;
-  String? like;
-  String? danmu;
+class RcmdStat implements BaseStat {
+  @override
+  int? like;
+
+  @override
+  int? get view => Utils.parseNum(viewStr);
+  @override
+  int? get danmu => Utils.parseNum(danmuStr);
+
+  @override
+  late String viewStr;
+  @override
+  late String danmuStr;
 
   RcmdStat.fromJson(Map<String, dynamic> json) {
-    view = json["cover_left_text_1"];
-    danmu = json['cover_left_text_2'] ?? '-';
+    viewStr = json["cover_left_text_1"];
+    danmuStr = json['cover_left_text_2'];
   }
+
+  @override
+  set danmu(_) {}
+  @override
+  set view(_) {}
 }
 
-class RcmdOwner {
-  RcmdOwner({this.name, this.mid});
-
-  String? name;
-  int? mid;
-
+class RcmdOwner extends BaseOwner {
   RcmdOwner.fromJson(Map<String, dynamic> json) {
     name = json['goto'] == 'av'
         ? json['args']['up_name']
@@ -130,63 +98,26 @@ class RcmdOwner {
 }
 
 class ThreePoint {
-  ThreePoint({
-    this.dislikeReasons,
-    this.feedbacks,
-    this.watchLater,
-  });
-
-  List<DislikeReason>? dislikeReasons;
-  List<FeedbackReason>? feedbacks;
+  List<Reason>? dislikeReasons;
+  List<Reason>? feedbacks;
   int? watchLater;
 
   ThreePoint.fromJson(Map<String, dynamic> json) {
-    if (json['dislike_reasons'] != null) {
-      dislikeReasons = [];
-      json['dislike_reasons'].forEach((v) {
-        dislikeReasons!.add(DislikeReason.fromJson(v));
-      });
-    }
-    if (json['feedbacks'] != null) {
-      feedbacks = [];
-      json['feedbacks'].forEach((v) {
-        feedbacks!.add(FeedbackReason.fromJson(v));
-      });
-    }
+    dislikeReasons = (json['dislike_reasons'] as List?)
+        ?.map((v) => Reason.fromJson(v))
+        .toList();
+    feedbacks =
+        (json['feedbacks'] as List?)?.map((v) => Reason.fromJson(v)).toList();
     watchLater = json['watch_later'];
   }
 }
 
-class DislikeReason {
-  DislikeReason({
-    this.id,
-    this.name,
-    this.toast,
-  });
-
+class Reason {
   int? id;
   String? name;
   String? toast;
 
-  DislikeReason.fromJson(Map<String, dynamic> json) {
-    id = json['id'];
-    name = json['name'];
-    toast = json['toast'];
-  }
-}
-
-class FeedbackReason {
-  FeedbackReason({
-    this.id,
-    this.name,
-    this.toast,
-  });
-
-  int? id;
-  String? name;
-  String? toast;
-
-  FeedbackReason.fromJson(Map<String, dynamic> json) {
+  Reason.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     name = json['name'];
     toast = json['toast'];

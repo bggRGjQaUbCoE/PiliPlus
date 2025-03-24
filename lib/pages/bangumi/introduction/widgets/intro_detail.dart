@@ -1,18 +1,19 @@
+import 'package:PiliPlus/common/widgets/stat/stat.dart';
+import 'package:PiliPlus/models/bangumi/info.dart';
 import 'package:PiliPlus/pages/common/common_collapse_slide_page.dart';
 import 'package:PiliPlus/pages/search/widgets/search_text.dart';
 import 'package:flutter/material.dart';
-import 'package:PiliPlus/common/widgets/stat/stat.dart';
 import 'package:get/get.dart';
 
 import '../../../../utils/utils.dart';
 
 class IntroDetail extends CommonCollapseSlidePage {
-  final dynamic bangumiDetail;
+  final BangumiInfoModel bangumiDetail;
   final dynamic videoTags;
 
   const IntroDetail({
     super.key,
-    this.bangumiDetail,
+    required this.bangumiDetail,
     this.videoTags,
   });
 
@@ -70,7 +71,7 @@ class _IntroDetailState extends CommonCollapseSlidePageState<IntroDetail> {
         ),
         children: [
           SelectableText(
-            widget.bangumiDetail!.title,
+            widget.bangumiDetail.title!,
             style: const TextStyle(
               fontSize: 16,
             ),
@@ -81,14 +82,14 @@ class _IntroDetailState extends CommonCollapseSlidePageState<IntroDetail> {
               StatView(
                 context: context,
                 theme: 'gray',
-                value: widget.bangumiDetail!.stat!['views'],
+                value: Utils.numFormat(widget.bangumiDetail.stat!['views']),
                 size: 'medium',
               ),
               const SizedBox(width: 6),
               StatDanMu(
                 context: context,
                 theme: 'gray',
-                value: widget.bangumiDetail!.stat!['danmakus'],
+                value: Utils.numFormat(widget.bangumiDetail.stat!['danmakus']),
                 size: 'medium',
               ),
             ],
@@ -97,17 +98,17 @@ class _IntroDetailState extends CommonCollapseSlidePageState<IntroDetail> {
           Row(
             children: [
               Text(
-                widget.bangumiDetail!.areas!.first['name'],
+                widget.bangumiDetail.areas!.first['name'],
                 style: smallTitle,
               ),
               const SizedBox(width: 6),
               Text(
-                widget.bangumiDetail!.publish!['pub_time_show'],
+                widget.bangumiDetail.publish!['pub_time_show'],
                 style: smallTitle,
               ),
               const SizedBox(width: 6),
               Text(
-                widget.bangumiDetail!.newEp!['desc'],
+                widget.bangumiDetail.newEp!['desc'],
                 style: smallTitle,
               ),
             ],
@@ -119,7 +120,7 @@ class _IntroDetailState extends CommonCollapseSlidePageState<IntroDetail> {
           ),
           const SizedBox(height: 4),
           SelectableText(
-            '${widget.bangumiDetail!.evaluate!}',
+            widget.bangumiDetail.evaluate!,
             style: smallTitle.copyWith(fontSize: 14),
           ),
           const SizedBox(height: 20),
@@ -129,7 +130,7 @@ class _IntroDetailState extends CommonCollapseSlidePageState<IntroDetail> {
           ),
           const SizedBox(height: 4),
           SelectableText(
-            widget.bangumiDetail.actors,
+            widget.bangumiDetail.actors!,
             style: smallTitle.copyWith(fontSize: 14),
           ),
           if (widget.videoTags is List && widget.videoTags.isNotEmpty) ...[

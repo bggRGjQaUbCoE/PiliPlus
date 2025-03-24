@@ -42,12 +42,12 @@ class VideoCardHMemberVideo extends StatelessWidget {
                 return;
               }
             }
-            if (videoItem.bvid == null || videoItem.firstCid == null) {
+            if (videoItem.bvid == null || videoItem.cid == null) {
               return;
             }
             try {
               Utils.toViewPage(
-                'bvid=${videoItem.bvid}&cid=${videoItem.firstCid}',
+                'bvid=${videoItem.bvid}&cid=${videoItem.cid}',
                 arguments: {
                   'heroTag': Utils.makeHeroTag(videoItem.bvid),
                 },
@@ -90,7 +90,7 @@ class VideoCardHMemberVideo extends StatelessWidget {
                                   right: 6.0,
                                   top: 6.0,
                                 ),
-                              if (videoItem.duration != null)
+                              if (videoItem.duration > 0)
                                 PBadge(
                                   text: Utils.timeFormat(videoItem.duration),
                                   right: 6.0,
@@ -147,7 +147,7 @@ class VideoCardHMemberVideo extends StatelessWidget {
           Expanded(
             child: Text(
               // videoItem.season?['title'] ?? videoItem.title ?? '',
-              videoItem.title ?? '',
+              videoItem.title,
               textAlign: TextAlign.start,
               style: TextStyle(
                 fontWeight: videoItem.bvid != null && videoItem.bvid == bvid
@@ -184,14 +184,14 @@ class VideoCardHMemberVideo extends StatelessWidget {
                 theme: 'gray',
                 // view: videoItem.season?['view_content'] ??
                 //     videoItem.viewContent,
-                value: videoItem.viewContent!,
+                value: videoItem.stat.viewStr,
               ),
               const SizedBox(width: 8),
               StatDanMu(
                 context: context,
                 theme: 'gray',
                 // danmu: videoItem.season?['danmaku'] ?? videoItem.danmaku,
-                value: videoItem.danmaku!,
+                value: videoItem.stat.danmuStr,
               ),
             ],
           ),

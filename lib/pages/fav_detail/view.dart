@@ -2,6 +2,7 @@ import 'package:PiliPlus/common/widgets/dialog.dart';
 import 'package:PiliPlus/common/widgets/refresh_indicator.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/user.dart';
+import 'package:PiliPlus/models/user/fav_detail.dart';
 import 'package:PiliPlus/models/user/fav_folder.dart';
 import 'package:PiliPlus/pages/fav_search/view.dart' show SearchType;
 import 'package:PiliPlus/utils/extension.dart';
@@ -429,15 +430,15 @@ class _FavDetailPageState extends State<FavDetailPage> {
                         ),
                       );
                     }
-                    final element = loadingState.response[index];
+                    FavDetailItemData element = loadingState.response[index];
                     return Stack(
                       children: [
                         Positioned.fill(
                           child: FavVideoCardH(
                             videoItem: element,
                             callFn: () => _favDetailController.onCancelFav(
-                              element.id,
-                              element.type,
+                              element.id!,
+                              element.type!,
                             ),
                             onViewFav: () {
                               Utils.toViewPage(

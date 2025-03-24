@@ -1,12 +1,10 @@
 import 'package:PiliPlus/utils/em.dart';
 import 'package:PiliPlus/utils/utils.dart';
 
-class SearchVideoModel {
-  SearchVideoModel({
-    this.numResults,
-    this.list,
-  });
+import '../model_owner.dart';
+import '../model_video.dart';
 
+class SearchVideoModel {
   int? numResults;
   List<SearchVideoItemModel>? list;
 
@@ -19,68 +17,25 @@ class SearchVideoModel {
   }
 }
 
-class SearchVideoItemModel {
-  SearchVideoItemModel({
-    this.type,
-    this.id,
-    this.cid,
-    // this.author,
-    this.mid,
-    // this.typeid,
-    // this.typename,
-    this.arcurl,
-    this.aid,
-    this.bvid,
-    this.title,
-    this.description,
-    this.pic,
-    // this.play,
-    this.videoReview,
-    // this.favorites,
-    this.tag,
-    // this.review,
-    this.pubdate,
-    this.senddate,
-    this.duration,
-    // this.viewType,
-    // this.like,
-    // this.upic,
-    // this.danmaku,
-    this.owner,
-    this.stat,
-    this.rcmdReason,
-  });
-
+class SearchVideoItemModel extends BaseVideoItemModel {
   String? type;
   int? id;
-  int? cid;
   // String? author;
-  int? mid;
   // String? typeid;
   // String? typename;
   String? arcurl;
-  int? aid;
-  String? bvid;
-  List? title;
-  // List? titleList;
-  String? description;
-  String? pic;
   // String? play;
-  int? videoReview;
+  // int? videoReview;
   // String? favorites;
   String? tag;
   // String? review;
-  int? pubdate;
-  int? senddate;
-  int? duration;
+  int? ctime;
   // String? duration;
   // String? viewType;
   // String? like;
   // String? upic;
   // String? danmaku;
-  Owner? owner;
-  Stat? stat;
-  String? rcmdReason;
+  List<Map<String, String>>? titleList;
 
   SearchVideoItemModel.fromJson(Map<String, dynamic> json) {
     type = json['type'];
@@ -88,43 +43,35 @@ class SearchVideoItemModel {
     arcurl = json['arcurl'];
     aid = json['aid'];
     bvid = json['bvid'];
-    mid = json['mid'];
     // title = json['title'].replaceAll(RegExp(r'<.*?>'), '');
-    title = Em.regTitle(json['title']);
-    description = json['description'];
+    titleList = Em.regTitle(json['title']);
+    title = titleList!.map((i) => i['text']!).join();
+    desc = json['description'];
     pic = json['pic'] != null && json['pic'].startsWith('//')
         ? 'https:${json['pic']}'
         : json['pic'] ?? '';
-    videoReview = json['video_review'];
     pubdate = json['pubdate'];
-    senddate = json['senddate'];
+    ctime = json['senddate'];
     duration = Utils.duration(json['duration']);
-    owner = Owner.fromJson(json);
-    stat = Stat.fromJson(json);
+    owner = SearchOwner.fromJson(json);
+    stat = SearchStat.fromJson(json);
   }
+
+  // @override
+  // String? goto;
+  // @override
+  // bool isFollowed;
+  // @override
+  // String? uri;
 }
 
-class Stat {
-  Stat({
-    this.view,
-    this.danmu,
-    this.favorite,
-    this.reply,
-    this.like,
-  });
-
-  // 播放量
-  int? view;
-  // 弹幕数
-  int? danmu;
+class SearchStat extends BaseStat {
   // 收藏数
   int? favorite;
   // 评论数
   int? reply;
-  // 喜欢
-  int? like;
 
-  Stat.fromJson(Map<String, dynamic> json) {
+  SearchStat.fromJson(Map<String, dynamic> json) {
     view = json['play'];
     danmu = json['danmaku'];
     favorite = json['favorite'];
@@ -133,17 +80,8 @@ class Stat {
   }
 }
 
-class Owner {
-  Owner({
-    this.mid,
-    this.name,
-    this.face,
-  });
-  int? mid;
-  String? name;
-  String? face;
-
-  Owner.fromJson(Map<String, dynamic> json) {
+class SearchOwner extends Owner {
+  SearchOwner.fromJson(Map<String, dynamic> json) {
     mid = json["mid"];
     name = json["author"];
     face = json['upic'];
@@ -301,7 +239,7 @@ class SearchLiveItemModel {
     rankScore = json['rank_score'];
     roomid = json['roomid'];
     attentions = json['attentions'];
-    cateName = Em.regCate(json['cate_name']) ?? '';
+    cateName = Em.regCate(json['cate_name']);
   }
 }
 

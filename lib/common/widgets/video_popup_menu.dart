@@ -1,3 +1,4 @@
+import 'package:PiliPlus/models/model_video.dart';
 import 'package:PiliPlus/pages/search/widgets/search_text.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart';
@@ -21,16 +22,16 @@ class VideoCustomAction {
 }
 
 class VideoCustomActions {
-  dynamic videoItem;
+  BaseSimpleVideoItemModel videoItem;
   BuildContext context;
   late List<VideoCustomAction> actions;
   VoidCallback? onRemove;
 
   VideoCustomActions(this.videoItem, this.context, [this.onRemove]) {
     actions = [
-      if ((videoItem.bvid as String?)?.isNotEmpty == true) ...[
+      if (videoItem.bvid?.isNotEmpty == true) ...[
         VideoCustomAction(
-          videoItem.bvid,
+          videoItem.bvid!,
           'copy',
           Stack(
             children: [
@@ -39,7 +40,7 @@ class VideoCustomActions {
             ],
           ),
           () {
-            Utils.copyText(videoItem.bvid);
+            Utils.copyText(videoItem.bvid!);
           },
         ),
         VideoCustomAction(
@@ -84,7 +85,7 @@ class VideoCustomActions {
               SmartDialog.showToast("未能获取dislikeReasons或feedbacks");
               return;
             }
-            Widget actionButton(DislikeReason? r, FeedbackReason? f) {
+            Widget actionButton(Reason? r, Reason? f) {
               return SearchText(
                 text: r?.name ?? f?.name ?? '未知',
                 onTap: (_) async {
@@ -258,11 +259,11 @@ class VideoCustomActions {
                   TextButton(
                     onPressed: () async {
                       var res = await VideoHttp.relationMod(
-                        mid: videoItem.owner.mid,
+                        mid: videoItem.owner.mid!,
                         act: 5,
                         reSrc: 11,
                       );
-                      GStorage.setBlackMid(videoItem.owner.mid);
+                      GStorage.setBlackMid(videoItem.owner.mid!);
                       Get.back();
                       SmartDialog.showToast(res['msg'] ?? '成功');
                     },

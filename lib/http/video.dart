@@ -349,13 +349,11 @@ class VideoHttp {
     var res =
         await Request().get(Api.relatedList, queryParameters: {'bvid': bvid});
     if (res.data['code'] == 0) {
-      List<HotVideoItemModel> list = [];
-      for (var i in res.data['data']) {
-        HotVideoItemModel videoItem = HotVideoItemModel.fromJson(i);
-        if (!RecommendFilter.filter(videoItem, relatedVideos: true)) {
-          list.add(videoItem);
-        }
-      }
+      final items =
+          (res.data['data'] as List).map((i) => HotVideoItemModel.fromJson(i));
+      final list = RecommendFilter.applyFilterToRelatedVideos
+          ? items.where((i) => !RecommendFilter.filterAll(i)).toList()
+          : items.toList();
       return LoadingState.success(list);
     } else {
       return LoadingState.error(res.data['message']);
@@ -390,7 +388,6 @@ class VideoHttp {
   static Future hasCoinVideo({required String bvid}) async {
     var res =
         await Request().get(Api.hasCoinVideo, queryParameters: {'bvid': bvid});
-    debugPrint('res: $res');
     if (res.data['code'] == 0) {
       return {'status': true, 'data': res.data['data']};
     } else {

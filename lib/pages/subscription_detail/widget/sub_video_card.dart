@@ -129,13 +129,13 @@ class SubVideoCardH extends StatelessWidget {
                     StatView(
                       context: context,
                       theme: 'gray',
-                      value: videoItem.cntInfo?['play'],
+                      value: Utils.numFormat(videoItem.cntInfo?['play']),
                     ),
                     const SizedBox(width: 8),
                     StatDanMu(
                       context: context,
                       theme: 'gray',
-                      value: videoItem.cntInfo?['danmaku'],
+                      value: Utils.numFormat(videoItem.cntInfo?['danmaku']),
                     ),
                     const Spacer(),
                   ],

@@ -10,7 +10,7 @@ class MemberArchiveController extends GetxController {
   int pn = 1;
   int count = 0;
   RxMap<String, String> currentOrder = <String, String>{}.obs;
-  List<Map<String, String>> orderList = [
+  static const List<Map<String, String>> orderList = [
     {'type': 'pubdate', 'label': '最新发布'},
     {'type': 'click', 'label': '最多播放'},
     {'type': 'stow', 'label': '最多收藏'},
@@ -37,8 +37,7 @@ class MemberArchiveController extends GetxController {
     if (res['status']) {
       if (type == 'init') {
         archivesList.value = res['data'].list.vlist;
-      }
-      if (type == 'onLoad') {
+      } else if (type == 'onLoad') {
         archivesList.addAll(res['data'].list.vlist);
       }
       count = res['data'].page['count'];
@@ -49,7 +48,7 @@ class MemberArchiveController extends GetxController {
     return res;
   }
 
-  toggleSort() async {
+  toggleSort() {
     List<String> typeList = orderList.map((e) => e['type']!).toList();
     int index = typeList.indexOf(currentOrder['type']!);
     if (index == orderList.length - 1) {
@@ -61,9 +60,7 @@ class MemberArchiveController extends GetxController {
   }
 
   // 上拉加载
-  Future onLoad() async {
-    getMemberArchive('onLoad');
-  }
+  Future onLoad() => getMemberArchive('onLoad');
 
   @override
   void onClose() {

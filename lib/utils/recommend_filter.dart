@@ -1,3 +1,4 @@
+import 'package:PiliPlus/models/model_video.dart';
 import 'package:hive/hive.dart';
 
 import 'storage.dart';
@@ -30,46 +31,30 @@ class RecommendFilter {
         .get(SettingBoxKey.applyFilterToRelatedVideos, defaultValue: true);
   }
 
-  static bool filter(dynamic videoItem, {bool relatedVideos = false}) {
-    if (relatedVideos && !applyFilterToRelatedVideos) {
-      return false;
-    }
+  static bool filter(BaseVideoItemModel videoItem) {
     //由于相关视频中没有已关注标签，只能视为非关注视频
-    if (!relatedVideos &&
-        videoItem.isFollowed == 1 &&
-        exemptFilterForFollowed) {
+    if (videoItem.isFollowed && exemptFilterForFollowed) {
       return false;
     }
-    if (videoItem.duration > 0 && videoItem.duration < minDurationForRcmd) {
-      return true;
-    }
-    if (filterLikeRatio(videoItem.stat.like, videoItem.stat.view)) {
-      return true;
-    }
-    if (filterTitle(videoItem.title)) {
-      return true;
-    }
-    return false;
+    return filterAll(videoItem);
   }
 
-  static bool filterLikeRatio(like, view) {
-    if (view is int &&
+  static bool filterLikeRatio(int? like, int? view) {
+    return (view != null &&
         view > -1 &&
-        like is int &&
+        like != null &&
         like > -1 &&
-        like * 100 < minLikeRatioForRecommend * view) {
-      return true;
-    }
-    return false;
+        like * 100 < minLikeRatioForRecommend * view);
   }
 
-  static bool filterTitle(String title, {bool? isFollowed}) {
-    if (exemptFilterForFollowed && isFollowed == true) {
-      return false;
-    }
-    if (rcmdRegExp.pattern.isNotEmpty && rcmdRegExp.hasMatch(title)) {
-      return true;
-    }
-    return false;
+  static bool filterTitle(String title) {
+    return (rcmdRegExp.pattern.isNotEmpty && rcmdRegExp.hasMatch(title));
+  }
+
+  static bool filterAll(BaseVideoItemModel videoItem) {
+    return (videoItem.duration > 0 &&
+            videoItem.duration < minDurationForRcmd) ||
+        filterLikeRatio(videoItem.stat.like, videoItem.stat.view) ||
+        filterTitle(videoItem.title);
   }
 }

@@ -234,14 +234,15 @@ class _MediaListPanelState extends CommonSlidePageState<MediaListPanel> {
                                           StatView(
                                             context: context,
                                             theme: 'gray',
-                                            value: item.cntInfo!['play'] as int,
+                                            value: Utils.numFormat(
+                                                item.cntInfo!['play']!),
                                           ),
                                           const SizedBox(width: 8),
                                           StatDanMu(
                                             context: context,
                                             theme: 'gray',
-                                            value:
-                                                item.cntInfo!['danmaku'] as int,
+                                            value: Utils.numFormat(
+                                                item.cntInfo!['danmaku']!),
                                           ),
                                         ],
                                       ),

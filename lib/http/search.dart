@@ -148,8 +148,7 @@ class SearchHttp {
     } else if (bvid != null) {
       data['bvid'] = bvid;
     }
-    final dynamic res = await Request()
-        .get(Api.ab2c, queryParameters: <String, dynamic>{...data});
+    final dynamic res = await Request().get(Api.ab2c, queryParameters: data);
     if (res.data['code'] == 0) {
       return part != null
           ? ((res.data['data'] as List).getOrNull(part - 1)?['cid'] ??
@@ -201,8 +200,8 @@ class SearchHttp {
     } else if (epId != null) {
       data['ep_id'] = epId;
     }
-    final dynamic res = await Request()
-        .get(Api.bangumiInfo, queryParameters: <String, dynamic>{...data});
+    final dynamic res =
+        await Request().get(Api.bangumiInfo, queryParameters: data);
 
     if (res.data['code'] == 0) {
       return {

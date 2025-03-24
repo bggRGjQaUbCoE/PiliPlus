@@ -41,21 +41,20 @@ class FavDetailController extends MultiSelectController {
       item.value = data.info ?? FavFolderItemData();
       isOwner.value = data.info?.mid == mid;
     }
-    if (data.medias.isNullOrEmpty) {
+    if (data.list.isNullOrEmpty) {
       isEnd = true;
     }
     if (currentPage != 1 && loadingState.value is Success) {
-      data.medias ??= <FavDetailItemData>[];
-      data.medias!.insertAll(
+      data.list ??= <FavDetailItemData>[];
+      data.list!.insertAll(
         0,
-        List<FavDetailItemData>.from((loadingState.value as Success).response),
+        (loadingState.value as Success).response,
       );
     }
-    if (isEnd.not &&
-        (data.medias?.length ?? 0) >= (data.info?.mediaCount ?? 0)) {
+    if (isEnd.not && (data.list?.length ?? 0) >= (data.info?.mediaCount ?? 0)) {
       isEnd = true;
     }
-    loadingState.value = LoadingState.success(data.medias);
+    loadingState.value = LoadingState.success(data.list);
     return true;
   }
 
@@ -138,8 +137,7 @@ class FavDetailController extends MultiSelectController {
 
   void toViewPlayAll() {
     if (loadingState.value is Success) {
-      List<FavDetailItemData> list = List<FavDetailItemData>.from(
-          (loadingState.value as Success).response);
+      List<FavDetailItemData> list = (loadingState.value as Success).response;
       for (FavDetailItemData element in list) {
         if (element.cid == null) {
           continue;

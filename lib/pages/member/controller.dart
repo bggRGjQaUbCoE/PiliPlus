@@ -5,7 +5,6 @@ import 'package:get/get.dart';
 import 'package:PiliPlus/http/member.dart';
 import 'package:PiliPlus/http/user.dart';
 import 'package:PiliPlus/http/video.dart';
-import 'package:PiliPlus/models/member/archive.dart';
 import 'package:PiliPlus/models/member/coin.dart';
 import 'package:PiliPlus/models/member/info.dart';
 import 'package:PiliPlus/utils/storage.dart';
@@ -22,7 +21,6 @@ class MemberController extends GetxController {
   late int ownerMid;
   bool specialFollowed = false;
   // 投稿列表
-  RxList<VListItemModel>? archiveList = <VListItemModel>[].obs;
   dynamic userInfo;
   RxInt attribute = (-1).obs;
   RxString attributeText = '关注'.obs;
@@ -43,7 +41,12 @@ class MemberController extends GetxController {
   }
 
   // 获取用户信息
-  Future<Map<String, dynamic>> getInfo() async {
+  Future<Map<String, dynamic>> getInfo() {
+    return Future.wait([getMemberInfo(), getMemberStat(), getMemberView()])
+        .then((res) => res[0]);
+  }
+
+  Future<Map<String, dynamic>> getMemberInfo() async {
     wwebid = await Utils.getWwebid(mid);
     await getMemberStat();
     await getMemberView();

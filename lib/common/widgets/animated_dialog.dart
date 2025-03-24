@@ -1,5 +1,6 @@
 import 'package:PiliPlus/common/widgets/no_splash_factory.dart';
 import 'package:PiliPlus/common/widgets/overlay_pop.dart';
+import 'package:PiliPlus/models/model_video.dart';
 import 'package:flutter/material.dart';
 
 class AnimatedDialog extends StatefulWidget {
@@ -9,7 +10,7 @@ class AnimatedDialog extends StatefulWidget {
     required this.closeFn,
   });
 
-  final dynamic videoItem;
+  final BaseVideoItemModel videoItem;
   final Function closeFn;
 
   @override

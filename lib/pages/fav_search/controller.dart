@@ -49,17 +49,11 @@ class FavSearchController extends CommonController {
     late List currentList = loadingState.value is Success
         ? (loadingState.value as Success).response
         : [];
-    List? dataList = searchType == SearchType.fav
-        ? (currentPage == 1
-            ? response.response.medias
-            : response.response.medias != null
-                ? currentList + response.response.medias
-                : currentList)
-        : (currentPage == 1
-            ? response.response.list
-            : response.response.list != null
-                ? currentList + response.response.list
-                : currentList);
+    List? dataList = currentPage == 1
+        ? response.response.list
+        : response.response.list != null
+            ? currentList + response.response.list
+            : currentList;
     isEnd = searchType == SearchType.fav
         ? response.response.hasMore == false
         : response.response.list == null || response.response.list.isEmpty;

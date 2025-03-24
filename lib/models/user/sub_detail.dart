@@ -1,17 +1,16 @@
 class SubDetailModelData {
   DetailInfo? info;
-  List<SubDetailMediaItem>? medias;
+  List<SubDetailMediaItem>? list;
 
-  SubDetailModelData({this.info, this.medias});
+  List<SubDetailMediaItem>? get medias => list; // 不知道哪里使用了这个
+
+  SubDetailModelData({this.info, this.list});
 
   SubDetailModelData.fromJson(Map<String, dynamic> json) {
     info = DetailInfo.fromJson(json['info']);
-    if (json['medias'] != null) {
-      medias = <SubDetailMediaItem>[];
-      json['medias'].forEach((v) {
-        medias!.add(SubDetailMediaItem.fromJson(v));
-      });
-    }
+    list = (json['medias'] as List?)
+        ?.map((i) => SubDetailMediaItem.fromJson(i))
+        .toList();
   }
 }
 
@@ -23,8 +22,8 @@ class SubDetailMediaItem {
   int? duration;
   int? pubtime;
   String? bvid;
-  Map? upper;
-  Map? cntInfo;
+  Map<String, dynamic>? upper;
+  Map<String, dynamic>? cntInfo;
   int? enableVt;
   String? vtDisplay;
 

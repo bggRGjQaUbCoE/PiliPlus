@@ -16,7 +16,7 @@ import 'video_popup_menu.dart';
 
 // 视频卡片 - 垂直布局
 class VideoCardV extends StatelessWidget {
-  final dynamic videoItem;
+  final BaseRecVideoItemModel videoItem;
   final VoidCallback? onRemove;
 
   const VideoCardV({
@@ -31,14 +31,14 @@ class VideoCardV extends StatelessWidget {
   }
 
   void onPushDetail(heroTag) async {
-    String goto = videoItem.goto;
+    String goto = videoItem.goto!;
     switch (goto) {
       case 'bangumi':
-        Utils.viewBangumi(epId: videoItem.param);
+        Utils.viewBangumi(epId: videoItem.param!);
         break;
       case 'av':
-        String bvid = videoItem.bvid ?? IdUtils.av2bv(videoItem.aid);
-        int cid = videoItem.cid;
+        String bvid = videoItem.bvid ?? IdUtils.av2bv(videoItem.aid!);
+        int cid = videoItem.cid!;
         if (cid == -1) {
           cid = await SearchHttp.ab2c(aid: videoItem.aid, bvid: bvid);
         }
@@ -55,13 +55,13 @@ class VideoCardV extends StatelessWidget {
       case 'picture':
         try {
           String dynamicType = 'picture';
-          String uri = videoItem.uri;
+          String uri = videoItem.uri!;
           String id = '';
-          if (videoItem.uri.startsWith('bilibili://article/')) {
+          if (uri.startsWith('bilibili://article/')) {
             // https://www.bilibili.com/read/cv27063554
             dynamicType = 'read';
             RegExp regex = RegExp(r'\d+');
-            Match match = regex.firstMatch(videoItem.uri)!;
+            Match match = regex.firstMatch(uri)!;
             String matchedNumber = match.group(0)!;
             videoItem.param = int.parse(matchedNumber);
             id = 'cv${videoItem.param}';
@@ -95,8 +95,8 @@ class VideoCardV extends StatelessWidget {
         }
         break;
       default:
-        SmartDialog.showToast(videoItem.goto);
-        Utils.handleWebview(videoItem.uri);
+        SmartDialog.showToast(goto);
+        Utils.handleWebview(videoItem.uri!);
     }
   }
 
@@ -114,7 +114,7 @@ class VideoCardV extends StatelessWidget {
           clipBehavior: Clip.hardEdge,
           margin: EdgeInsets.zero,
           child: InkWell(
-            onTap: () => onPushDetail(Utils.makeHeroTag(videoItem.id)),
+            onTap: () => onPushDetail(Utils.makeHeroTag(videoItem.aid)),
             onLongPress: () => imageSaveDialog(
               context: context,
               title: videoItem.title,
@@ -179,7 +179,7 @@ class VideoCardV extends StatelessWidget {
             Row(
               children: [
                 Expanded(
-                  child: Text(videoItem.title + "\n",
+                  child: Text("${videoItem.title}\n",
                       // semanticsLabel: "${videoItem.title}",
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -223,7 +223,7 @@ class VideoCardV extends StatelessWidget {
                   ),
                   const SizedBox(width: 2),
                 ],
-                if (videoItem.isFollowed == 1) ...[
+                if (videoItem.isFollowed) ...[
                   const PBadge(
                     text: '已关注',
                     stack: 'normal',
@@ -262,7 +262,7 @@ class VideoCardV extends StatelessWidget {
         StatView(
           context: context,
           theme: 'gray',
-          value: videoItem.stat.view!,
+          value: videoItem.stat.viewStr,
           goto: videoItem.goto,
         ),
         const SizedBox(width: 4),
@@ -270,7 +270,7 @@ class VideoCardV extends StatelessWidget {
           StatDanMu(
             context: context,
             theme: 'gray',
-            value: videoItem.stat.danmu!,
+            value: videoItem.stat.danmuStr,
           ),
         if (videoItem is RecVideoItemModel) ...<Widget>[
           const Spacer(),
@@ -294,7 +294,7 @@ class VideoCardV extends StatelessWidget {
         ],
         if (videoItem is RecVideoItemAppModel &&
             videoItem.desc != null &&
-            videoItem.desc.contains(' · ')) ...<Widget>[
+            videoItem.desc!.contains(' · ')) ...<Widget>[
           const Spacer(),
           Expanded(
               flex: 0,
@@ -310,7 +310,7 @@ class VideoCardV extends StatelessWidget {
                           .withOpacity(0.8),
                     ),
                     text: Utils.shortenChineseDateString(
-                        videoItem.desc.split(' · ').last)),
+                        videoItem.desc!.split(' · ').last)),
               )),
           const SizedBox(width: 2),
         ]

@@ -19,22 +19,19 @@ import 'constants.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart' as web;
 
 class Request {
-  static const gzipDecoder = GZipDecoder();
-  static const brotilDecoder = BrotliDecoder();
+  static const _gzipDecoder = GZipDecoder();
+  static const _brotilDecoder = BrotliDecoder();
 
   static final Request _instance = Request._internal();
   static late AccountManager accountManager;
   static late final Dio dio;
   factory Request() => _instance;
-  late bool enableSystemProxy;
-  late String systemProxyHost;
-  late String systemProxyPort;
   static final _rand = Random();
-  static final RegExp spmPrefixExp =
+  static final RegExp _spmPrefixExp =
       RegExp(r'<meta name="spm_prefix" content="([^"]+?)">');
 
   /// 设置cookie
-  static setCookie() async {
+  static Future<void> setCookie() async {
     accountManager = AccountManager();
     dio.interceptors.add(accountManager);
     await Accounts.refresh();
@@ -63,7 +60,7 @@ class Request {
     try {
       final html = await Request().get(Api.dynamicSpmPrefix,
           options: Options(extra: {'account': account}));
-      final String spmPrefix = spmPrefixExp.firstMatch(html.data)!.group(1)!;
+      final String spmPrefix = _spmPrefixExp.firstMatch(html.data)!.group(1)!;
       final String randPngEnd = base64.encode(
           List<int>.generate(32, (_) => _rand.nextInt(256)) +
               List<int>.filled(4, 0) +
@@ -112,12 +109,10 @@ class Request {
         responseDecoder: responseDecoder, // Http2Adapter没有自动解压
         persistentConnection: true);
 
-    enableSystemProxy = GStorage.setting
-        .get(SettingBoxKey.enableSystemProxy, defaultValue: false) as bool;
-    systemProxyHost =
-        GStorage.setting.get(SettingBoxKey.systemProxyHost, defaultValue: '');
-    systemProxyPort =
-        GStorage.setting.get(SettingBoxKey.systemProxyPort, defaultValue: '');
+    final bool enableSystemProxy = GStorage.setting
+        .get(SettingBoxKey.enableSystemProxy, defaultValue: false);
+    final String systemProxyHost = GStorage.defaultSystemProxyHost;
+    final String systemProxyPort = GStorage.defaultSystemProxyPort;
 
     final http11Adapter = IOHttpClientAdapter(createHttpClient: () {
       final client = HttpClient()
@@ -286,10 +281,10 @@ class Request {
       ResponseBody responseBody) {
     switch (responseBody.headers['content-encoding']?.firstOrNull) {
       case 'gzip':
-        return utf8.decode(gzipDecoder.decodeBytes(responseBytes),
+        return utf8.decode(_gzipDecoder.decodeBytes(responseBytes),
             allowMalformed: true);
       case 'br':
-        return utf8.decode(brotilDecoder.convert(responseBytes),
+        return utf8.decode(_brotilDecoder.convert(responseBytes),
             allowMalformed: true);
       default:
         return utf8.decode(responseBytes, allowMalformed: true);

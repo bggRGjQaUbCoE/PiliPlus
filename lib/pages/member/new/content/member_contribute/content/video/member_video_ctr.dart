@@ -136,7 +136,7 @@ class MemberVideoCtr extends CommonController {
       }
 
       for (Item element in list) {
-        if (element.firstCid == null) {
+        if (element.cid == null) {
           continue;
         } else {
           if (element.bvid != list.first.bvid) {
@@ -150,7 +150,7 @@ class MemberVideoCtr extends CommonController {
               ? desc.not
               : desc;
           Utils.toViewPage(
-            'bvid=${element.bvid}&cid=${element.firstCid}',
+            'bvid=${element.bvid}&cid=${element.cid}',
             arguments: {
               'videoItem': element,
               'heroTag': Utils.makeHeroTag(element.bvid),

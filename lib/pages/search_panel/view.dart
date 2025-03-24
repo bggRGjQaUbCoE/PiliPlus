@@ -132,8 +132,6 @@ class _SearchPanelState extends State<SearchPanel>
             _searchPanelController,
             loadingState,
           );
-        default:
-          return const SizedBox.shrink();
       }
     }
   }

@@ -8,7 +8,7 @@ class BangumiListDataModel {
   });
 
   int? hasNext;
-  List? list;
+  List<BangumiListItemModel>? list;
   int? num;
   int? size;
   int? total;

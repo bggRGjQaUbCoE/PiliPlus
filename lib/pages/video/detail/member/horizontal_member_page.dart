@@ -187,7 +187,7 @@ class _HorizontalMemberPageState extends State<HorizontalMemberPage> {
                           widget.videoIntroController.changeSeasonOrbangu(
                             null,
                             videoItem.bvid,
-                            videoItem.firstCid,
+                            videoItem.cid,
                             IdUtils.bv2av(videoItem.bvid!),
                             videoItem.cover,
                           );

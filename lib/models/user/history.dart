@@ -60,47 +60,19 @@ class HisTabItem {
 }
 
 class HisListItem {
-  HisListItem({
-    this.title,
-    this.longTitle,
-    this.cover,
-    this.pic,
-    this.covers,
-    this.uri,
-    this.history,
-    this.videos,
-    this.authorName,
-    this.authorFace,
-    this.authorMid,
-    this.viewAt,
-    this.progress,
-    this.badge,
-    this.showTitle,
-    this.duration,
-    this.current,
-    this.total,
-    this.newDesc,
-    this.isFinish,
-    this.isFav,
-    this.kid,
-    this.tagName,
-    this.liveStatus,
-    this.checked,
-  });
-
-  String? title;
+  late String title;
   String? longTitle;
   String? cover;
   String? pic;
   List? covers;
   String? uri;
-  History? history;
+  late History history;
   int? videos;
   String? authorName;
   String? authorFace;
   int? authorMid;
   int? viewAt;
-  int? progress;
+  int progress = 0;
   String? badge;
   String? showTitle;
   int? duration;
@@ -113,7 +85,7 @@ class HisListItem {
   String? tagName;
   int? liveStatus;
   bool? checked;
-  void isFullScreen;
+  dynamic isFullScreen;
 
   HisListItem.fromJson(Map<String, dynamic> json) {
     title = json['title'];

@@ -1,13 +1,14 @@
+import 'package:PiliPlus/common/widgets/stat/stat.dart';
+import 'package:PiliPlus/models/member/seasons.dart';
 import 'package:flutter/material.dart';
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/network_img_layer.dart';
-import 'package:PiliPlus/common/widgets/stat/stat.dart';
 import 'package:PiliPlus/http/search.dart';
 import 'package:PiliPlus/utils/utils.dart';
 
 class MemberSeasonsItem extends StatelessWidget {
-  final dynamic seasonItem;
+  final MemberArchiveItem seasonItem;
 
   const MemberSeasonsItem({
     super.key,
@@ -65,7 +66,7 @@ class MemberSeasonsItem extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    seasonItem.title,
+                    seasonItem.title!,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -74,7 +75,7 @@ class MemberSeasonsItem extends StatelessWidget {
                     children: [
                       StatView(
                         context: context,
-                        value: seasonItem.view,
+                        value: Utils.numFormat(seasonItem.view!),
                         theme: 'gray',
                       ),
                       const Spacer(),

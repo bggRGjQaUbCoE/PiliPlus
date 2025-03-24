@@ -1,9 +1,9 @@
 import 'package:PiliPlus/common/widgets/image_save.dart';
+import 'package:PiliPlus/common/widgets/stat/stat.dart';
 import 'package:flutter/material.dart';
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/network_img_layer.dart';
-import 'package:PiliPlus/common/widgets/stat/stat.dart';
 import 'package:PiliPlus/http/search.dart';
 import 'package:PiliPlus/models/member/coin.dart';
 import 'package:PiliPlus/utils/utils.dart';
@@ -53,7 +53,7 @@ class MemberCoinsItem extends StatelessWidget {
                       width: maxWidth,
                       height: maxHeight,
                     ),
-                    if (coinItem.duration != null)
+                    if (coinItem.duration > 0)
                       PBadge(
                         bottom: 6,
                         right: 6,
@@ -80,8 +80,14 @@ class MemberCoinsItem extends StatelessWidget {
                     children: [
                       StatView(
                         context: context,
-                        value: coinItem.view!,
+                        value: coinItem.stat.viewStr,
                         theme: 'gray',
+                      ),
+                      const SizedBox(width: 8),
+                      StatDanMu(
+                        context: context,
+                        theme: 'gray',
+                        value: coinItem.stat.danmuStr,
                       ),
                       const Spacer(),
                       Text(

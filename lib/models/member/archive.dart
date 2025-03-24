@@ -1,3 +1,7 @@
+import 'package:PiliPlus/utils/utils.dart';
+
+import '../model_video.dart';
+
 class MemberArchiveDataModel {
   MemberArchiveDataModel({
     this.list,
@@ -51,114 +55,60 @@ class TListItemModel {
   }
 }
 
-class VListItemModel {
-  VListItemModel({
-    this.comment,
-    this.typeid,
-    this.play,
-    this.pic,
-    this.subtitle,
-    this.description,
-    this.copyright,
-    this.title,
-    this.review,
-    this.author,
-    this.mid,
-    this.created,
-    this.pubdate,
-    this.length,
-    this.duration,
-    this.videoReview,
-    this.aid,
-    this.bvid,
-    this.cid,
-    this.hideClick,
-    this.isChargingSrc,
-    this.rcmdReason,
-    this.owner,
-  });
-
+class VListItemModel extends BaseVideoItemModel {
   int? comment;
   int? typeid;
-  int? play;
-  String? pic;
   String? subtitle;
-  String? description;
   String? copyright;
-  String? title;
   int? review;
-  String? author;
-  int? mid;
-  int? created;
-  int? pubdate;
-  String? length;
-  String? duration;
-  int? videoReview;
-  int? aid;
-  String? bvid;
-  int? cid;
   bool? hideClick;
   bool? isChargingSrc;
-  Stat? stat;
-  String? rcmdReason;
-  Owner? owner;
 
   VListItemModel.fromJson(Map<String, dynamic> json) {
     comment = json['comment'];
     typeid = json['typeid'];
-    play = json['play'];
     pic = json['pic'];
     subtitle = json['subtitle'];
-    description = json['description'];
+    desc = json['description'];
     copyright = json['copyright'];
     title = json['title'];
     review = json['review'];
-    author = json['author'];
-    mid = json['mid'];
-    created = json['created'];
     pubdate = json['created'];
-    length = json['length'];
-    duration = json['length'];
-    videoReview = json['video_review'];
+    if (json['length'] != null) duration = Utils.duration(json['length']);
     aid = json['aid'];
     bvid = json['bvid'];
-    cid = null;
     hideClick = json['hide_click'];
     isChargingSrc = json['is_charging_arc'];
-    stat = Stat.fromJson(json);
-    rcmdReason = null;
-    owner = Owner.fromJson(json);
+    stat = VListStat.fromJson(json);
+    owner = VListOwner.fromJson(json);
   }
+
+  // @override
+  // int? cid = null;
+
+  // @override
+  // String? rcmdReason = null;
+
+  // @override
+  // String? goto;
+
+  // @override
+  // bool isFollowed;
+
+  // @override
+  // String? uri;
 }
 
-class Stat {
-  Stat({
-    this.view,
-    this.danmu,
-  });
-
-  int? view;
-  int? danmu;
-
-  Stat.fromJson(Map<String, dynamic> json) {
-    view = json["play"];
-    danmu = json['video_review'];
-  }
-}
-
-class Owner {
-  Owner({
-    this.mid,
-    this.name,
-    this.face,
-  });
-  int? mid;
-  String? name;
-  String? face;
-
-  Owner.fromJson(Map<String, dynamic> json) {
+class VListOwner extends BaseOwner {
+  VListOwner.fromJson(Map<String, dynamic> json) {
     mid = json["mid"];
     name = json["author"];
-    face = '';
+  }
+}
+
+class VListStat extends BaseStat {
+  VListStat.fromJson(Map<String, dynamic> json) {
+    view = json["play"];
+    danmu = json['video_review'];
   }
 }

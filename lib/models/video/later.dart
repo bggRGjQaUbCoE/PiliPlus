@@ -1,3 +1,6 @@
+import '../model_owner.dart';
+import '../model_video.dart';
+
 class MediaVideoItemModel {
   MediaVideoItemModel({
     this.id,
@@ -43,7 +46,7 @@ class MediaVideoItemModel {
   int? attr;
   int? tid;
   int? copyRight;
-  Map? cntInfo;
+  Map<String, dynamic>? cntInfo;
   String? cover;
   int? duration;
   int? pubtime;
@@ -152,24 +155,6 @@ class Page {
       );
 }
 
-class Dimension {
-  Dimension({
-    this.width,
-    this.height,
-    this.rotate,
-  });
-
-  int? width;
-  int? height;
-  int? rotate;
-
-  factory Dimension.fromJson(Map<String, dynamic> json) => Dimension(
-        width: json["width"],
-        height: json["height"],
-        rotate: json["rotate"],
-      );
-}
-
 class Meta {
   Meta({
     this.quality,
@@ -224,26 +209,7 @@ class Rights {
       );
 }
 
-class Upper {
-  Upper({
-    this.mid,
-    this.name,
-    this.face,
-    this.followed,
-    this.fans,
-    this.vipType,
-    this.vipStatue,
-    this.vipDueDate,
-    this.vipPayType,
-    this.officialRole,
-    this.officialTitle,
-    this.officialDesc,
-    this.displayName,
-  });
-
-  int? mid;
-  String? name;
-  String? face;
+class Upper extends Owner {
   int? followed;
   int? fans;
   int? vipType;
@@ -255,19 +221,16 @@ class Upper {
   String? officialDesc;
   String? displayName;
 
-  factory Upper.fromJson(Map<String, dynamic> json) => Upper(
-        mid: json["mid"],
-        name: json["name"],
-        face: json["face"],
-        followed: json["followed"],
-        fans: json["fans"],
-        vipType: json["vip_type"],
-        vipStatue: json["vip_statue"],
-        vipDueDate: json["vip_due_date"],
-        vipPayType: json["vip_pay_type"],
-        officialRole: json["official_role"],
-        officialTitle: json["official_title"],
-        officialDesc: json["official_desc"],
-        displayName: json["display_name"],
-      );
+  Upper.fromJson(Map<String, dynamic> json) : super.fromJson(json) {
+    followed = json["followed"];
+    fans = json["fans"];
+    vipType = json["vip_type"];
+    vipStatue = json["vip_statue"];
+    vipDueDate = json["vip_due_date"];
+    vipPayType = json["vip_pay_type"];
+    officialRole = json["official_role"];
+    officialTitle = json["official_title"];
+    officialDesc = json["official_desc"];
+    displayName = json["display_name"];
+  }
 }

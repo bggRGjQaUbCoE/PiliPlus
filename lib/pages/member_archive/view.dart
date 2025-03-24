@@ -86,7 +86,7 @@ class _MemberArchivePageState extends State<MemberArchivePage> {
                       );
                     }
                     Map data = snapshot.data as Map;
-                    List list = _memberArchivesController.archivesList;
+                    final list = _memberArchivesController.archivesList;
                     if (data['status']) {
                       return Obx(
                         () => list.isNotEmpty

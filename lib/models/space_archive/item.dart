@@ -1,107 +1,90 @@
-import 'package:json_annotation/json_annotation.dart';
-
+import '../model_owner.dart';
+import '../model_video.dart';
 import 'badge.dart';
 import 'cursor_attr.dart';
 import 'three_point.dart';
 
-part 'item.g.dart';
-
-@JsonSerializable()
-class Item {
-  String? title;
+class Item extends BaseSimpleVideoItemModel {
   String? subtitle;
   String? tname;
-  String? cover;
-  @JsonKey(name: 'cover_icon')
+  String? get cover => pic; // 不知道哪里使用了cover
   String? coverIcon;
   String? uri;
   String? param;
   String? goto;
   String? length;
-  int? duration;
-  @JsonKey(name: 'is_popular')
   bool? isPopular;
-  @JsonKey(name: 'is_steins')
   bool? isSteins;
-  @JsonKey(name: 'is_ugcpay')
   bool? isUgcpay;
-  @JsonKey(name: 'is_cooperation')
   bool? isCooperation;
-  @JsonKey(name: 'is_pgc')
   bool? isPgc;
-  @JsonKey(name: 'is_live_playback')
   bool? isLivePlayback;
-  @JsonKey(name: 'is_pugv')
   bool? isPugv;
-  @JsonKey(name: 'is_fold')
   bool? isFold;
-  @JsonKey(name: 'is_oneself')
   bool? isOneself;
-  int? play;
-  int? danmaku;
   int? ctime;
-  @JsonKey(name: 'ugc_pay')
   int? ugcPay;
-  String? author;
   bool? state;
-  String? bvid;
   int? videos;
-  @JsonKey(name: 'three_point')
   List<ThreePoint>? threePoint;
-  @JsonKey(name: 'first_cid')
-  int? firstCid;
-  @JsonKey(name: 'cursor_attr')
   CursorAttr? cursorAttr;
-  @JsonKey(name: 'view_content')
-  String? viewContent;
-  @JsonKey(name: 'icon_type')
   int? iconType;
-  @JsonKey(name: 'publish_time_text')
   String? publishTimeText;
   List<Badge>? badges;
   Map? season;
   Map? history;
 
-  Item({
-    this.title,
-    this.subtitle,
-    this.tname,
-    this.cover,
-    this.coverIcon,
-    this.uri,
-    this.param,
-    this.goto,
-    this.length,
-    this.duration,
-    this.isPopular,
-    this.isSteins,
-    this.isUgcpay,
-    this.isCooperation,
-    this.isPgc,
-    this.isLivePlayback,
-    this.isPugv,
-    this.isFold,
-    this.isOneself,
-    this.play,
-    this.danmaku,
-    this.ctime,
-    this.ugcPay,
-    this.author,
-    this.state,
-    this.bvid,
-    this.videos,
-    this.threePoint,
-    this.firstCid,
-    this.cursorAttr,
-    this.viewContent,
-    this.iconType,
-    this.publishTimeText,
-    this.badges,
-    this.season,
-    this.history,
-  });
+  Item.fromJson(Map<String, dynamic> json) {
+    title = json['title'];
+    subtitle = json['subtitle'];
+    tname = json['tname'];
+    pic = json['cover'];
+    coverIcon = json['cover_icon'];
+    uri = json['uri'];
+    param = json['param'];
+    goto = json['goto'];
+    length = json['length'];
+    duration = json['duration'] ?? -1;
+    isPopular = json['is_popular'];
+    isSteins = json['is_steins'];
+    isUgcpay = json['is_ugcpay'];
+    isCooperation = json['is_cooperation'];
+    isPgc = json['is_pgc'];
+    isLivePlayback = json['is_live_playback'];
+    isPugv = json['is_pugv'];
+    isFold = json['is_fold'];
+    isOneself = json['is_oneself'];
+    ctime = json['ctime'];
+    ugcPay = json['ugc_pay'];
+    state = json['state'];
+    bvid = json['bvid'];
+    videos = json['videos'];
+    threePoint = (json['three_point'] as List<dynamic>?)
+        ?.map((e) => ThreePoint.fromJson(e as Map<String, dynamic>))
+        .toList();
+    cid = json['first_cid'];
+    cursorAttr = json['cursor_attr'] == null
+        ? null
+        : CursorAttr.fromJson(json['cursor_attr'] as Map<String, dynamic>);
+    iconType = json['icon_type'];
+    publishTimeText = json['publish_time_text'];
+    badges = (json['badges'] as List<dynamic>?)
+        ?.map((e) => Badge.fromJson(e as Map<String, dynamic>))
+        .toList();
+    season = json['season'];
+    history = json['history'];
+    stat = PlayStat.fromJson(json);
+    owner = Owner(mid: 0, name: json['author']);
+  }
+}
 
-  factory Item.fromJson(Map<String, dynamic> json) => _$ItemFromJson(json);
+class UserStat extends PlayStat {
+  String? _viewStr;
 
-  Map<String, dynamic> toJson() => _$ItemToJson(this);
+  @override
+  String get viewStr => _viewStr ?? super.viewStr;
+
+  UserStat.fromJson(Map<String, dynamic> json) : super.fromJson(json) {
+    _viewStr = json['view_content'];
+  }
 }

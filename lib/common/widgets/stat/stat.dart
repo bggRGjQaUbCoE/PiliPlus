@@ -42,13 +42,10 @@ abstract class _StatItemBase extends StatelessWidget {
         const SizedBox(width: 2),
         Text(
           Utils.numFormat(value),
-          style: TextStyle(
-            fontSize: size == 'medium' ? 12 : 11,
-            color: color,
-          ),
+          style: TextStyle(fontSize: size == 'medium' ? 12 : 11, color: color),
           overflow: TextOverflow.clip,
           semanticsLabel: semanticsLabel,
-        ),
+        )
       ],
     );
   }

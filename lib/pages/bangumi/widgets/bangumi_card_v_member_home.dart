@@ -98,7 +98,7 @@ Widget bangumiContent(Item bangumiItem) {
             children: [
               Expanded(
                   child: Text(
-                bangumiItem.title ?? '',
+                bangumiItem.title,
                 textAlign: TextAlign.start,
                 style: const TextStyle(
                   letterSpacing: 0.3,

@@ -1,12 +1,12 @@
 import 'package:PiliPlus/common/widgets/icon_button.dart';
 import 'package:PiliPlus/common/widgets/image_save.dart';
+import 'package:PiliPlus/common/widgets/stat/stat.dart';
 import 'package:PiliPlus/models/user/fav_detail.dart';
 import 'package:PiliPlus/utils/extension.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'package:PiliPlus/common/constants.dart';
-import 'package:PiliPlus/common/widgets/stat/stat.dart';
 import 'package:PiliPlus/http/search.dart';
 import 'package:PiliPlus/http/video.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
@@ -16,7 +16,7 @@ import '../../../common/widgets/badge.dart';
 
 // 收藏视频卡片 - 水平布局
 class FavVideoCardH extends StatelessWidget {
-  final dynamic videoItem;
+  final FavDetailItemData videoItem;
   final Function? callFn;
   final int? searchType;
   final GestureTapCallback? onTap;
@@ -37,7 +37,7 @@ class FavVideoCardH extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    int id = videoItem.id;
+    int id = videoItem.id!;
     String bvid = videoItem.bvid ?? IdUtils.av2bv(id);
     return InkWell(
       onTap: () async {
@@ -48,11 +48,11 @@ class FavVideoCardH extends StatelessWidget {
         String? epId;
         if (videoItem.type == 24) {
           videoItem.cid = await SearchHttp.ab2c(bvid: bvid);
-          dynamic seasonId = videoItem.ogv['season_id'];
+          dynamic seasonId = videoItem.ogv!['season_id'];
           epId = videoItem.epId;
           Utils.viewBangumi(seasonId: seasonId, epId: epId);
           return;
-        } else if (videoItem.page == 0 || videoItem.page > 1) {
+        } else if (videoItem.page == 0 || videoItem.page! > 1) {
           var result = await VideoHttp.videoIntro(bvid: bvid);
           if (result['status']) {
             epId = result['data'].epId;
@@ -61,9 +61,8 @@ class FavVideoCardH extends StatelessWidget {
           }
         }
 
-        if (videoItem is FavDetailItemData &&
-            [0, 16].contains(videoItem.attr).not) {
-          Get.toNamed('/member?mid=${videoItem.owner?.mid}');
+        if ([0, 16].contains(videoItem.attr).not) {
+          Get.toNamed('/member?mid=${videoItem.owner.mid}');
           return;
         }
         onViewFav();
@@ -117,20 +116,19 @@ class FavVideoCardH extends StatelessWidget {
                               height: maxHeight,
                             ),
                             PBadge(
-                              text: Utils.timeFormat(videoItem.duration!),
+                              text: Utils.timeFormat(videoItem.duration),
                               right: 6.0,
                               bottom: 6.0,
                               type: 'gray',
                             ),
-                            if (videoItem.ogv != null) ...[
+                            if (videoItem.ogv != null)
                               PBadge(
-                                text: videoItem.ogv['type_name'],
+                                text: videoItem.ogv!['type_name'],
                                 top: 6.0,
                                 right: 6.0,
                                 bottom: null,
                                 left: null,
                               ),
-                            ],
                           ],
                         );
                       },
@@ -163,30 +161,28 @@ class FavVideoCardH extends StatelessWidget {
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
-              if (videoItem.ogv != null) ...[
+              if (videoItem.ogv != null)
                 Text(
-                  videoItem.intro,
+                  videoItem.desc!,
                   style: TextStyle(
                     fontSize: Theme.of(context).textTheme.labelMedium!.fontSize,
                     color: Theme.of(context).colorScheme.outline,
                   ),
                 ),
-              ],
               const Spacer(),
               Text(
                 Utils.dateFormat(videoItem.favTime),
                 style: TextStyle(
                     fontSize: 11, color: Theme.of(context).colorScheme.outline),
               ),
-              if (videoItem.owner.name != '') ...[
+              if (!videoItem.owner.name.isNullOrEmpty)
                 Text(
-                  videoItem.owner.name,
+                  videoItem.owner.name!,
                   style: TextStyle(
                     fontSize: Theme.of(context).textTheme.labelMedium!.fontSize,
                     color: Theme.of(context).colorScheme.outline,
                   ),
                 ),
-              ],
               Padding(
                 padding: const EdgeInsets.only(top: 2),
                 child: Row(
@@ -194,13 +190,13 @@ class FavVideoCardH extends StatelessWidget {
                     StatView(
                       context: context,
                       theme: 'gray',
-                      value: videoItem.cntInfo['play'],
+                      value: videoItem.stat.viewStr,
                     ),
                     const SizedBox(width: 8),
                     StatDanMu(
                       context: context,
                       theme: 'gray',
-                      value: videoItem.cntInfo['danmaku'],
+                      value: videoItem.stat.danmuStr,
                     ),
                     const Spacer(),
                   ],

@@ -616,9 +616,9 @@ class _VideoInfoState extends State<VideoInfo> with TickerProviderStateMixin {
                           StatView(
                             context: context,
                             theme: 'gray',
-                            value: !widget.loadingStatus
+                            value: Utils.numFormat(!widget.loadingStatus
                                 ? videoDetail.stat?.view ?? '-'
-                                : videoItem['stat']?.view ?? '-',
+                                : videoItem['stat']?.view ?? '-'),
                             size: 'medium',
                             textColor: t.colorScheme.outline,
                           ),
@@ -626,9 +626,9 @@ class _VideoInfoState extends State<VideoInfo> with TickerProviderStateMixin {
                           StatDanMu(
                             context: context,
                             theme: 'gray',
-                            value: !widget.loadingStatus
+                            value: Utils.numFormat(!widget.loadingStatus
                                 ? videoDetail.stat?.danmu ?? '-'
-                                : videoItem['stat']?.danmu ?? '-',
+                                : videoItem['stat']?.danmu ?? '-'),
                             size: 'medium',
                             textColor: t.colorScheme.outline,
                           ),

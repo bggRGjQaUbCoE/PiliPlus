@@ -1,5 +1,7 @@
 import 'package:PiliPlus/common/widgets/image_save.dart';
 import 'package:PiliPlus/models/model_hot_video_item.dart';
+import 'package:PiliPlus/models/model_video.dart';
+import 'package:PiliPlus/models/search/result.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import '../../http/search.dart';
@@ -24,7 +26,7 @@ class VideoCardH extends StatelessWidget {
     this.onLongPress,
     this.onViewLater,
   });
-  final dynamic videoItem;
+  final BaseVideoItemModel videoItem;
   final String source;
   final bool showOwner;
   final bool showView;
@@ -36,12 +38,18 @@ class VideoCardH extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final int aid = videoItem.aid;
-    final String bvid = videoItem.bvid;
+    final int aid = videoItem.aid!;
+    final String bvid = videoItem.bvid!;
     String type = 'video';
-    try {
-      type = videoItem.type;
-    } catch (_) {}
+    // try {
+    //   type = videoItem.type;
+    // } catch (_) {}
+    if (videoItem is SearchVideoItemModel) {
+      var typeOrNull = (videoItem as SearchVideoItemModel).type;
+      if (typeOrNull?.isNotEmpty == true) {
+        type = typeOrNull!;
+      }
+    }
     return Material(
       color: Colors.transparent,
       child: Stack(
@@ -61,13 +69,7 @@ class VideoCardH extends StatelessWidget {
                 } else {
                   imageSaveDialog(
                     context: context,
-                    title: videoItem.title is String
-                        ? videoItem.title
-                        : videoItem.title is List
-                            ? (videoItem.title as List)
-                                .map((item) => item['text'])
-                                .join()
-                            : '',
+                    title: videoItem.title,
                     cover: videoItem.pic,
                   );
                 }
@@ -81,9 +83,11 @@ class VideoCardH extends StatelessWidget {
                   SmartDialog.showToast('课堂视频暂不支持播放');
                   return;
                 }
-                if (videoItem is HotVideoItemModel &&
-                    videoItem.redirectUrl?.isNotEmpty == true) {
-                  if (Utils.viewPgcFromUri(videoItem.redirectUrl!)) {
+                if ((videoItem is HotVideoItemModel) &&
+                    (videoItem as HotVideoItemModel).redirectUrl?.isNotEmpty ==
+                        true) {
+                  if (Utils.viewPgcFromUri(
+                      (videoItem as HotVideoItemModel).redirectUrl!)) {
                     return;
                   }
                 }
@@ -124,20 +128,24 @@ class VideoCardH extends StatelessWidget {
                           return Stack(
                             children: [
                               NetworkImgLayer(
-                                src: videoItem.pic as String,
+                                src: videoItem.pic,
                                 width: maxWidth,
                                 height: maxHeight,
                               ),
                               if (videoItem is HotVideoItemModel &&
-                                  videoItem.pgcLabel?.isNotEmpty == true)
+                                  (videoItem as HotVideoItemModel)
+                                          .pgcLabel
+                                          ?.isNotEmpty ==
+                                      true)
                                 PBadge(
-                                  text: videoItem.pgcLabel,
+                                  text:
+                                      (videoItem as HotVideoItemModel).pgcLabel,
                                   top: 6.0,
                                   right: 6.0,
                                 ),
-                              if (videoItem.duration != 0)
+                              if (videoItem.duration > 0)
                                 PBadge(
-                                  text: Utils.timeFormat(videoItem.duration!),
+                                  text: Utils.timeFormat(videoItem.duration),
                                   right: 6.0,
                                   bottom: 6.0,
                                   type: 'gray',
@@ -180,7 +188,7 @@ class VideoCardH extends StatelessWidget {
     );
   }
 
-  Widget videoContent(context) {
+  Widget videoContent(BuildContext context) {
     String pubdate = showPubdate
         ? Utils.dateFormat(videoItem.pubdate!, formatType: 'day')
         : '';
@@ -189,7 +197,33 @@ class VideoCardH extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (videoItem.title is String)
+          if ((videoItem is SearchVideoItemModel) &&
+              (videoItem as SearchVideoItemModel).titleList?.isNotEmpty == true)
+            Expanded(
+              child: Text.rich(
+                overflow: TextOverflow.ellipsis,
+                maxLines: 2,
+                TextSpan(
+                  children: [
+                    for (var i
+                        in (videoItem as SearchVideoItemModel).titleList!)
+                      TextSpan(
+                        text: i['text'],
+                        style: TextStyle(
+                          fontSize:
+                              Theme.of(context).textTheme.bodyMedium!.fontSize,
+                          height: 1.42,
+                          letterSpacing: 0.3,
+                          color: i['type'] == 'em'
+                              ? Theme.of(context).colorScheme.primary
+                              : Theme.of(context).colorScheme.onSurface,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            )
+          else
             Expanded(
               child: Text(
                 videoItem.title,
@@ -201,31 +235,6 @@ class VideoCardH extends StatelessWidget {
                 ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-              ),
-            )
-          else
-            Expanded(
-              child: Text.rich(
-                overflow: TextOverflow.ellipsis,
-                maxLines: 2,
-                TextSpan(
-                  children: [
-                    for (final i in videoItem.title) ...[
-                      TextSpan(
-                        text: i['text'] as String,
-                        style: TextStyle(
-                          fontSize:
-                              Theme.of(context).textTheme.bodyMedium!.fontSize,
-                          height: 1.42,
-                          letterSpacing: 0.3,
-                          color: i['type'] == 'em'
-                              ? Theme.of(context).colorScheme.primary
-                              : Theme.of(context).colorScheme.onSurface,
-                        ),
-                      ),
-                    ]
-                  ],
-                ),
               ),
             ),
           // const Spacer(),
@@ -267,7 +276,7 @@ class VideoCardH extends StatelessWidget {
                 StatView(
                   context: context,
                   theme: 'gray',
-                  value: videoItem.stat.view!,
+                  value: videoItem.stat.viewStr,
                 ),
                 const SizedBox(width: 8),
               ],
@@ -275,7 +284,7 @@ class VideoCardH extends StatelessWidget {
                 StatDanMu(
                   context: context,
                   theme: 'gray',
-                  value: videoItem.stat.danmu!,
+                  value: videoItem.stat.danmuStr,
                 ),
               const Spacer(),
               if (source == 'normal') const SizedBox(width: 24),

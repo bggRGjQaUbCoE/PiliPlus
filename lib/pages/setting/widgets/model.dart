@@ -664,48 +664,22 @@ void _showQualityDialog({
   required int initValue,
   required ValueChanged<int> callback,
 }) {
-  showDialog(
+  showDialog<double>(
     context: context,
-    builder: (context) {
-      int picQuality = initValue;
-      return AlertDialog(
-        title: Text(title),
-        contentPadding:
-            const EdgeInsets.only(top: 20, left: 8, right: 8, bottom: 8),
-        content: SizedBox(
-          height: 40,
-          child: Builder(
-            builder: (context) => Slider(
-              value: picQuality.toDouble(),
-              min: 10,
-              max: 100,
-              divisions: 9,
-              label: '$picQuality%',
-              onChanged: (double val) {
-                picQuality = val.toInt();
-                (context as Element).markNeedsBuild();
-              },
-            ),
-          ),
-        ),
-        actions: [
-          TextButton(
-              onPressed: Get.back,
-              child: Text('取消',
-                  style:
-                      TextStyle(color: Theme.of(context).colorScheme.outline))),
-          TextButton(
-            onPressed: () {
-              Get.back();
-              callback(picQuality);
-              SmartDialog.showToast('设置成功');
-            },
-            child: const Text('确定'),
-          )
-        ],
-      );
-    },
-  );
+    builder: (context) => SlideDialog(
+        value: initValue.toDouble(),
+        title: title,
+        min: 10,
+        max: 100,
+        divisions: 9,
+        suffix: '%',
+        precise: 0),
+  ).then((result) {
+    if (result != null) {
+      SmartDialog.showToast('设置成功');
+      callback(result.toInt());
+    }
+  });
 }
 
 List<SettingsModel> get playSettings => [
@@ -1363,14 +1337,20 @@ List<SettingsModel> get recommendSettings => [
         },
       ),
       getBanwordModel(
+        context: Get.context!,
         title: '标题关键词过滤',
         key: SettingBoxKey.banWordForRecommend,
-        getBanWord: () => GStorage.banWordForRecommend,
+        callback: (value) {
+          RecommendFilter.rcmdRegExp = value;
+        },
       ),
       getBanwordModel(
+        context: Get.context!,
         title: '热门/分区: 视频分区关键词过滤',
         key: SettingBoxKey.banWordForZone,
-        getBanWord: () => GStorage.banWordForZone,
+        callback: (value) {
+          VideoHttp.zoneRegExp = value;
+        },
       ),
       SettingsModel(
         settingsType: SettingsType.normal,
@@ -1824,9 +1804,12 @@ List<SettingsModel> get extraSettings => [
         defaultVal: false,
       ),
       getBanwordModel(
+        context: Get.context!,
         title: '评论关键词过滤',
         key: SettingBoxKey.banWordForReply,
-        getBanWord: () => GStorage.banWordForReply,
+        callback: (value) {
+          ReplyHttp.replyRegExp = value;
+        },
       ),
       SettingsModel(
         settingsType: SettingsType.sw1tch,
@@ -2502,23 +2485,20 @@ List<SettingsModel> get extraSettings => [
       ),
     ];
 
-SettingsModel getBanwordModel({
-  required String title,
-  required String key,
-  required Function getBanWord,
-}) {
+SettingsModel getBanwordModel(
+    {required BuildContext context,
+    required String title,
+    required String key,
+    required ValueChanged<RegExp> callback}) {
+  String banWord = GStorage.setting.get(key, defaultValue: '');
   return SettingsModel(
     settingsType: SettingsType.normal,
     leading: const Icon(Icons.filter_alt_outlined),
     title: title,
-    getSubtitle: () {
-      String banWord = getBanWord();
-      return banWord.isEmpty ? "点击添加" : banWord;
-    },
+    getSubtitle: () => banWord.isEmpty ? "点击添加" : banWord,
     onTap: (setState) {
-      String banWord = getBanWord();
       showDialog(
-        context: Get.context!,
+        context: context,
         builder: (context) {
           return AlertDialog(
             title: Text(title),
@@ -2552,17 +2532,8 @@ SettingsModel getBanwordModel({
                   Get.back();
                   await GStorage.setting.put(key, banWord);
                   setState();
+                  callback(RegExp(banWord, caseSensitive: false));
                   SmartDialog.showToast('已保存');
-                  if (key == SettingBoxKey.banWordForReply) {
-                    ReplyHttp.replyRegExp =
-                        RegExp(banWord, caseSensitive: false);
-                  } else if (key == SettingBoxKey.banWordForRecommend) {
-                    RecommendFilter.rcmdRegExp =
-                        RegExp(banWord, caseSensitive: false);
-                  } else if (key == SettingBoxKey.banWordForZone) {
-                    VideoHttp.zoneRegExp =
-                        RegExp(banWord, caseSensitive: false);
-                  }
                 },
               ),
             ],

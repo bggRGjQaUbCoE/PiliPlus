@@ -13,10 +13,12 @@ abstract mixin class ScrollOrRefreshMixin {
   Future<void> onRefresh();
 
   FutureOr<void> toTopOrRefresh() {
-    if (scrollController.position.pixels == 0) {
-      return onRefresh();
-    } else {
-      animateToTop();
+    if (scrollController.hasClients) {
+      if (scrollController.position.pixels == 0) {
+        return onRefresh();
+      } else {
+        animateToTop();
+      }
     }
   }
 }

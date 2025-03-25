@@ -16,8 +16,7 @@ import '../../models/follow/result.dart';
 import '../common/common_controller.dart';
 
 class DynamicsController extends GetxController
-    with GetTickerProviderStateMixin
-    implements ScrollOrRefreshMixin {
+    with GetTickerProviderStateMixin, ScrollOrRefreshMixin {
   @override
   final ScrollController scrollController = ScrollController();
   String? offset = '';
@@ -183,11 +182,15 @@ class DynamicsController extends GetxController
 
   @override
   FutureOr<void> toTopOrRefresh() {
-    if (scrollController.position.pixels == 0 &&
-        controller.scrollController.position.pixels == 0) {
-      return onRefresh();
+    if (scrollController.hasClients && controller.scrollController.hasClients) {
+      if (scrollController.position.pixels == 0 &&
+          controller.scrollController.position.pixels == 0) {
+        return onRefresh();
+      } else {
+        animateToTop();
+      }
     } else {
-      animateToTop();
+      super.toTopOrRefresh();
     }
   }
 

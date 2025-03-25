@@ -191,9 +191,6 @@ class GStorage {
         defaultValue: CDNService.backupUrl.code,
       );
 
-  static int get minDurationForRcmd =>
-      setting.get(SettingBoxKey.minDurationForRcmd, defaultValue: 0);
-
   static String get banWordForRecommend =>
       setting.get(SettingBoxKey.banWordForRecommend, defaultValue: '');
 
@@ -202,9 +199,6 @@ class GStorage {
 
   static String get banWordForZone =>
       setting.get(SettingBoxKey.banWordForZone, defaultValue: '');
-
-  static int get minLikeRatioForRecommend =>
-      setting.get(SettingBoxKey.minLikeRatioForRecommend, defaultValue: 0);
 
   static bool get appRcmd =>
       setting.get(SettingBoxKey.appRcmd, defaultValue: true);
@@ -636,6 +630,7 @@ class SettingBoxKey {
       appRcmd = 'appRcmd',
       enableSaveLastData = 'enableSaveLastData',
       minDurationForRcmd = 'minDurationForRcmd',
+      minPlayForRcmd = 'minPlayForRcmd',
       minLikeRatioForRecommend = 'minLikeRatioForRecommend',
       exemptFilterForFollowed = 'exemptFilterForFollowed',
       banWordForRecommend = 'banWordForRecommend',

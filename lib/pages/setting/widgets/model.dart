@@ -1308,35 +1308,14 @@ List<SettingsModel> get recommendSettings => [
         },
       ),
       SettingsModel(settingsType: SettingsType.divider),
-      SettingsModel(
-        settingsType: SettingsType.normal,
-        leading: const Icon(Icons.thumb_up_outlined),
-        title: '点赞率过滤',
-        getSubtitle: () =>
-            '过滤掉点赞数/播放量「小于${GStorage.minLikeRatioForRecommend}%」的推荐视频(仅web端)',
-        onTap: (setState) async {
-          int? result = await showDialog(
-            context: Get.context!,
-            builder: (context) {
-              return SelectDialog<int>(
-                  title: '选择点赞率（0即不过滤）',
-                  value: GStorage.minLikeRatioForRecommend,
-                  values: [0, 1, 2, 3, 4].map(
-                    (e) {
-                      return {'title': '$e %', 'value': e};
-                    },
-                  ).toList());
-            },
-          );
-          if (result != null) {
-            await GStorage.setting
-                .put(SettingBoxKey.minLikeRatioForRecommend, result);
-            RecommendFilter.update();
-            setState();
-          }
-        },
+      _getVideoFilterSelectModel(
+        context: Get.context!,
+        title: '点赞率',
+        suffix: '%',
+        key: SettingBoxKey.minLikeRatioForRecommend,
+        values: [0, 1, 2, 3, 4],
       ),
-      getBanwordModel(
+      _getBanwordModel(
         context: Get.context!,
         title: '标题关键词过滤',
         key: SettingBoxKey.banWordForRecommend,
@@ -1344,7 +1323,7 @@ List<SettingsModel> get recommendSettings => [
           RecommendFilter.rcmdRegExp = value;
         },
       ),
-      getBanwordModel(
+      _getBanwordModel(
         context: Get.context!,
         title: '热门/分区: 视频分区关键词过滤',
         key: SettingBoxKey.banWordForZone,
@@ -1352,84 +1331,18 @@ List<SettingsModel> get recommendSettings => [
           VideoHttp.zoneRegExp = value;
         },
       ),
-      SettingsModel(
-        settingsType: SettingsType.normal,
-        title: '视频时长过滤',
-        leading: const Icon(Icons.timelapse_outlined),
-        getSubtitle: () => '过滤掉时长「小于${GStorage.minDurationForRcmd}秒」的推荐视频',
-        onTap: (setState) async {
-          const List<int> defDurations = [0, 30, 60, 90, 120];
-          int? result = await showDialog(
-            context: Get.context!,
-            builder: (context) {
-              int minDurationForRcmd = GStorage.minDurationForRcmd;
-              return SelectDialog<int>(
-                  title: '选择时长（0即不过滤）',
-                  value: minDurationForRcmd,
-                  values: [
-                    ...[
-                      ...defDurations,
-                      if (defDurations.contains(minDurationForRcmd).not)
-                        minDurationForRcmd,
-                    ]..sort(),
-                    -1,
-                  ].map((e) {
-                    if (e == -1) {
-                      return {'title': '自定义', 'value': e};
-                    }
-                    return {'title': '$e 秒', 'value': e};
-                  }).toList());
-            },
-          );
-          if (result != null) {
-            void updateDuration(int value) async {
-              await GStorage.setting
-                  .put(SettingBoxKey.minDurationForRcmd, value);
-              RecommendFilter.update();
-              setState();
-            }
-
-            if (result == -1) {
-              showDialog(
-                context: Get.context!,
-                builder: (context) {
-                  String duration = '';
-                  return AlertDialog(
-                    title: const Text('自定义时长'),
-                    content: TextField(
-                      autofocus: true,
-                      onChanged: (value) => duration = value,
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [
-                        FilteringTextInputFormatter.allow(RegExp(r'\d+')),
-                      ],
-                      decoration: const InputDecoration(suffixText: 's'),
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: Get.back,
-                        child: Text(
-                          '取消',
-                          style: TextStyle(
-                              color: Theme.of(context).colorScheme.outline),
-                        ),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          Get.back();
-                          updateDuration(int.tryParse(duration) ?? 0);
-                        },
-                        child: const Text('确定'),
-                      ),
-                    ],
-                  );
-                },
-              );
-            } else {
-              updateDuration(result);
-            }
-          }
-        },
+      _getVideoFilterSelectModel(
+        context: Get.context!,
+        title: '视频时长',
+        suffix: 's',
+        key: SettingBoxKey.minDurationForRcmd,
+        values: [0, 30, 60, 90, 120],
+      ),
+      _getVideoFilterSelectModel(
+        context: Get.context!,
+        title: '播放量',
+        key: SettingBoxKey.minPlayForRcmd,
+        values: [0, 50, 100, 500, 1000],
       ),
       SettingsModel(
         settingsType: SettingsType.sw1tch,
@@ -1803,7 +1716,7 @@ List<SettingsModel> get extraSettings => [
         setKey: SettingBoxKey.horizontalPreview,
         defaultVal: false,
       ),
-      getBanwordModel(
+      _getBanwordModel(
         context: Get.context!,
         title: '评论关键词过滤',
         key: SettingBoxKey.banWordForReply,
@@ -2485,7 +2398,7 @@ List<SettingsModel> get extraSettings => [
       ),
     ];
 
-SettingsModel getBanwordModel(
+SettingsModel _getBanwordModel(
     {required BuildContext context,
     required String title,
     required String key,
@@ -2540,6 +2453,86 @@ SettingsModel getBanwordModel(
           );
         },
       );
+    },
+  );
+}
+
+SettingsModel _getVideoFilterSelectModel({
+  required BuildContext context,
+  required String title,
+  String? suffix,
+  required String key,
+  required List<int> values,
+}) {
+  int value = GStorage.setting.get(key, defaultValue: 0);
+  return SettingsModel(
+    settingsType: SettingsType.normal,
+    title: '$title过滤',
+    leading: const Icon(Icons.timelapse_outlined),
+    getSubtitle: () => '过滤掉$title小于「$value${suffix ?? ""}」的视频',
+    onTap: (setState) async {
+      var result = await showDialog<int>(
+        context: context,
+        builder: (context) {
+          return SelectDialog<int>(
+              title: '选择$title（0即不过滤）',
+              value: value,
+              values: (values
+                    ..addIf(!values.contains(value), value)
+                    ..sort())
+                  .map((e) => {
+                        'title': suffix == null ? e.toString() : '$e $suffix',
+                        'value': e
+                      })
+                  .toList()
+                ..add({'title': '自定义', 'value': -1}));
+        },
+      );
+      if (result != null) {
+        if (result == -1 && context.mounted) {
+          await showDialog(
+            context: context,
+            builder: (context) {
+              String valueStr = '';
+              return AlertDialog(
+                title: Text('自定义$title'),
+                content: TextField(
+                  autofocus: true,
+                  onChanged: (value) => valueStr = value,
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'\d+')),
+                  ],
+                  decoration: InputDecoration(suffixText: suffix),
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: Get.back,
+                    child: Text(
+                      '取消',
+                      style: TextStyle(
+                          color: Theme.of(context).colorScheme.outline),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Get.back();
+                      result = int.tryParse(valueStr) ?? 0;
+                    },
+                    child: const Text('确定'),
+                  ),
+                ],
+              );
+            },
+          );
+        }
+        if (result != -1) {
+          value = result!;
+          await GStorage.setting.put(key, result);
+          setState();
+          RecommendFilter.update();
+        }
+      }
     },
   );
 }

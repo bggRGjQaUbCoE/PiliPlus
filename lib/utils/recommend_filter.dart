@@ -6,6 +6,7 @@ import 'storage.dart';
 class RecommendFilter {
   // static late int filterUnfollowedRatio;
   static late int minDurationForRcmd;
+  static late int minPlayForRcmd;
   static late int minLikeRatioForRecommend;
   static late bool exemptFilterForFollowed;
   static late bool applyFilterToRelatedVideos;
@@ -23,6 +24,7 @@ class RecommendFilter {
     //     setting.get(SettingBoxKey.filterUnfollowedRatio, defaultValue: 0);
     minDurationForRcmd =
         setting.get(SettingBoxKey.minDurationForRcmd, defaultValue: 0);
+    minPlayForRcmd = setting.get(SettingBoxKey.minPlayForRcmd, defaultValue: 0);
     minLikeRatioForRecommend =
         setting.get(SettingBoxKey.minLikeRatioForRecommend, defaultValue: 0);
     exemptFilterForFollowed =
@@ -40,11 +42,13 @@ class RecommendFilter {
   }
 
   static bool filterLikeRatio(int? like, int? view) {
-    return (view != null &&
-        view > -1 &&
-        like != null &&
-        like > -1 &&
-        like * 100 < minLikeRatioForRecommend * view);
+    if (view != null) {
+      return (view > -1 && view < minPlayForRcmd) ||
+          (like != null &&
+              like > -1 &&
+              like * 100 < minLikeRatioForRecommend * view);
+    }
+    return false;
   }
 
   static bool filterTitle(String title) {

@@ -1,9 +1,13 @@
+import 'dart:async';
+
+import 'package:PiliPlus/pages/common/common_controller.dart';
 import 'package:PiliPlus/pages/rank/zone/index.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:PiliPlus/models/common/rank_type.dart';
 
-class RankController extends GetxController with GetTickerProviderStateMixin {
+class RankController extends GetxController
+    with GetTickerProviderStateMixin, ScrollOrRefreshMixin {
   bool flag = false;
   late RxList tabs = [].obs;
   RxInt initialIndex = 0.obs;
@@ -13,6 +17,12 @@ class RankController extends GetxController with GetTickerProviderStateMixin {
   //     StreamController<bool>.broadcast();
   late bool enableGradientBg;
 
+  ZoneController get controller => Get.find<ZoneController>(
+      tag: tabsConfig[tabController.index]['rid'].toString());
+
+  @override
+  ScrollController get scrollController => controller.scrollController;
+
   @override
   void onInit() {
     super.onInit();
@@ -20,18 +30,6 @@ class RankController extends GetxController with GetTickerProviderStateMixin {
     //     setting.get(SettingBoxKey.enableGradientBg, defaultValue: true);
     // 进行tabs配置
     setTabConfig();
-  }
-
-  void onRefresh() {
-    int index = tabController.index;
-    Get.find<ZoneController>(tag: tabsConfig[index]['rid'].toString())
-        .onRefresh();
-  }
-
-  void animateToTop() {
-    int index = tabController.index;
-    Get.find<ZoneController>(tag: tabsConfig[index]['rid'].toString())
-        .animateToTop();
   }
 
   void setTabConfig() async {
@@ -51,4 +49,7 @@ class RankController extends GetxController with GetTickerProviderStateMixin {
     tabController.dispose();
     super.onClose();
   }
+
+  @override
+  Future<void> onRefresh() => controller.onRefresh();
 }

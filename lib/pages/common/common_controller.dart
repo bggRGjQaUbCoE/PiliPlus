@@ -1,9 +1,29 @@
+import 'dart:async';
+
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/utils/extension.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-abstract class CommonController extends GetxController {
+abstract mixin class ScrollOrRefreshMixin {
+  ScrollController get scrollController;
+
+  void animateToTop() => scrollController.animToTop();
+
+  Future<void> onRefresh();
+
+  FutureOr<void> toTopOrRefresh() {
+    if (scrollController.position.pixels == 0) {
+      return onRefresh();
+    } else {
+      animateToTop();
+    }
+  }
+}
+
+abstract class CommonController extends GetxController
+    with ScrollOrRefreshMixin {
+  @override
   final ScrollController scrollController = ScrollController();
 
   int currentPage = 1;
@@ -57,7 +77,8 @@ abstract class CommonController extends GetxController {
     isLoading = false;
   }
 
-  Future onRefresh() async {
+  @override
+  Future<void> onRefresh() async {
     currentPage = 1;
     isEnd = false;
     await queryData();
@@ -65,10 +86,6 @@ abstract class CommonController extends GetxController {
 
   Future onLoadMore() async {
     await queryData(false);
-  }
-
-  void animateToTop() {
-    scrollController.animToTop();
   }
 
   Future onReload() async {

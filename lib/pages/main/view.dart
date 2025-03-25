@@ -140,9 +140,9 @@ class _MainAppState extends State<MainApp>
       dynamic currentPage = _mainController.pages[value];
 
       if (currentPage is HomePage) {
-        _homeController.animateToTop();
+        _homeController.toTopOrRefresh();
       } else if (currentPage is DynamicsPage) {
-        _dynamicController.animateToTop();
+        _dynamicController.toTopOrRefresh();
       }
 
       int now = DateTime.now().millisecondsSinceEpoch;

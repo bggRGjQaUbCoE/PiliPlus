@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:PiliPlus/http/follow.dart';
 import 'package:PiliPlus/pages/dynamics/tab/controller.dart';
 import 'package:PiliPlus/pages/dynamics/tab/view.dart';
@@ -11,11 +13,14 @@ import 'package:PiliPlus/models/dynamics/up.dart';
 import 'package:PiliPlus/utils/storage.dart';
 
 import '../../models/follow/result.dart';
+import '../common/common_controller.dart';
 
 class DynamicsController extends GetxController
-    with GetTickerProviderStateMixin {
-  String? offset = '';
+    with GetTickerProviderStateMixin
+    implements ScrollOrRefreshMixin {
+  @override
   final ScrollController scrollController = ScrollController();
+  String? offset = '';
   Rx<FollowUpModel> upData = FollowUpModel().obs;
   // 默认获取全部动态
   RxInt mid = (-1).obs;
@@ -35,6 +40,9 @@ class DynamicsController extends GetxController
 
   late int currentMid = -1;
   late bool showLiveItems = GStorage.expandDynLivePanel;
+
+  DynamicsTabController get controller => Get.find<DynamicsTabController>(
+      tag: tabsConfig[tabController.index]['tag']);
 
   @override
   void onInit() {
@@ -160,18 +168,27 @@ class DynamicsController extends GetxController
     tabController.index = (mid == -1 ? 0 : 4);
   }
 
+  @override
   onRefresh() async {
     queryFollowUp();
-    await Get.find<DynamicsTabController>(
-            tag: tabsConfig[tabController.index]['tag'])
-        .onRefresh();
+    await controller.onRefresh();
   }
 
   // 返回顶部并刷新
+  @override
   void animateToTop() async {
-    Get.find<DynamicsTabController>(tag: tabsConfig[tabController.index]['tag'])
-        .animateToTop();
+    controller.animateToTop();
     scrollController.animToTop();
+  }
+
+  @override
+  FutureOr<void> toTopOrRefresh() {
+    if (scrollController.position.pixels == 0 &&
+        controller.scrollController.position.pixels == 0) {
+      return onRefresh();
+    } else {
+      animateToTop();
+    }
   }
 
   @override

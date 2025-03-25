@@ -7,9 +7,11 @@ import 'package:PiliPlus/models/common/tab_type.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import '../../http/index.dart';
 import '../../utils/feed_back.dart';
+import '../common/common_controller.dart';
 import '../mine/view.dart';
 
-class HomeController extends GetxController with GetTickerProviderStateMixin {
+class HomeController extends GetxController
+    with GetTickerProviderStateMixin, ScrollOrRefreshMixin {
   late RxList tabs = [].obs;
   late TabController tabController;
   late List tabsCtrList;
@@ -27,6 +29,19 @@ class HomeController extends GetxController with GetTickerProviderStateMixin {
   late bool enableSearchWord;
   late RxString defaultSearch = ''.obs;
   late int lateCheckSearchAt = 0;
+
+  ScrollOrRefreshMixin get controller {
+    final index = tabController.index;
+    return tabsCtrList[index]!(
+        tag: switch (tabs[index]['type']) {
+      TabType.bangumi => TabType.bangumi.name,
+      TabType.cinema => TabType.cinema.name,
+      _ => null,
+    });
+  }
+
+  @override
+  ScrollController get scrollController => controller.scrollController;
 
   @override
   void onInit() {
@@ -48,32 +63,9 @@ class HomeController extends GetxController with GetTickerProviderStateMixin {
     setTabConfig();
   }
 
-  void onRefresh() {
-    try {
-      int index = tabController.index;
-      var ctr = tabsCtrList[index];
-      ctr(
-              tag: tabs[index]['type'] == TabType.bangumi
-                  ? TabType.bangumi.name
-                  : tabs[index]['type'] == TabType.cinema
-                      ? TabType.cinema.name
-                      : null)
-          .onRefresh();
-    } catch (_) {}
-  }
-
-  void animateToTop() {
-    try {
-      int index = tabController.index;
-      var ctr = tabsCtrList[index];
-      ctr(
-              tag: tabs[index]['type'] == TabType.bangumi
-                  ? TabType.bangumi.name
-                  : tabs[index]['type'] == TabType.cinema
-                      ? TabType.cinema.name
-                      : null)
-          .animateToTop();
-    } catch (_) {}
+  @override
+  Future<void> onRefresh() {
+    return controller.onRefresh().catchError((e) => debugPrint(e.toString()));
   }
 
   void setTabConfig() async {

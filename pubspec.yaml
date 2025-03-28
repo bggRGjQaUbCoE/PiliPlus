@@ -100,14 +100,14 @@ dependencies:
   encrypt: ^5.0.3
 
   # 视频播放器
-  media_kit: ^1.2.0 # Primary package.
+  media_kit: ^1.1.11 # Primary package.
   # media_kit_video: ^1.2.5 # For video rendering.
   media_kit_video:
     git:
       url: https://github.com/bggRGjQaUbCoE/media-kit.git
       path: media_kit_video
-      ref: version_1.3.0
-  media_kit_libs_video: ^1.0.6
+      ref: version_1.2.5
+  media_kit_libs_video: ^1.0.5
 
   # 媒体通知
   audio_service: ^0.18.15

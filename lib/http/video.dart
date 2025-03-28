@@ -374,26 +374,26 @@ class VideoHttp {
   }
 
   // 获取点赞状态
-  static Future hasLikeVideo({required String bvid}) async {
-    var res =
-        await Request().get(Api.hasLikeVideo, queryParameters: {'bvid': bvid});
-    if (res.data['code'] == 0) {
-      return {'status': true, 'data': res.data['data']};
-    } else {
-      return {'status': false, 'data': []};
-    }
-  }
+  // static Future hasLikeVideo({required String bvid}) async {
+  //   var res =
+  //       await Request().get(Api.hasLikeVideo, queryParameters: {'bvid': bvid});
+  //   if (res.data['code'] == 0) {
+  //     return {'status': true, 'data': res.data['data']};
+  //   } else {
+  //     return {'status': false, 'data': []};
+  //   }
+  // }
 
   // 获取投币状态
-  static Future hasCoinVideo({required String bvid}) async {
-    var res =
-        await Request().get(Api.hasCoinVideo, queryParameters: {'bvid': bvid});
-    if (res.data['code'] == 0) {
-      return {'status': true, 'data': res.data['data']};
-    } else {
-      return {'status': false, 'data': []};
-    }
-  }
+  // static Future hasCoinVideo({required String bvid}) async {
+  //   var res =
+  //       await Request().get(Api.hasCoinVideo, queryParameters: {'bvid': bvid});
+  //   if (res.data['code'] == 0) {
+  //     return {'status': true, 'data': res.data['data']};
+  //   } else {
+  //     return {'status': false, 'data': []};
+  //   }
+  // }
 
   // 投币
   static Future coinVideo({
@@ -420,15 +420,15 @@ class VideoHttp {
   }
 
   // 获取收藏状态
-  static Future hasFavVideo({required int aid}) async {
-    var res =
-        await Request().get(Api.hasFavVideo, queryParameters: {'aid': aid});
-    if (res.data['code'] == 0) {
-      return {'status': true, 'data': res.data['data']};
-    } else {
-      return {'status': false, 'data': []};
-    }
-  }
+  // static Future hasFavVideo({required int aid}) async {
+  //   var res =
+  //       await Request().get(Api.hasFavVideo, queryParameters: {'aid': aid});
+  //   if (res.data['code'] == 0) {
+  //     return {'status': true, 'data': res.data['data']};
+  //   } else {
+  //     return {'status': false, 'data': []};
+  //   }
+  // }
 
   // 一键三连 bangumi
   static Future triple({dynamic epId, required dynamic seasonId}) async {
@@ -779,16 +779,6 @@ class VideoHttp {
       return {'status': true};
     } else {
       return {'status': false, 'msg': res.data['message']};
-    }
-  }
-
-  // 查询是否关注up
-  static Future hasFollow({required int mid}) async {
-    var res = await Request().get(Api.relation, queryParameters: {'fid': mid});
-    if (res.data['code'] == 0) {
-      return {'status': true, 'data': res.data['data']};
-    } else {
-      return {'status': false, 'data': []};
     }
   }
 

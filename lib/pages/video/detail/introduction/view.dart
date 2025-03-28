@@ -888,11 +888,13 @@ class _VideoInfoState extends State<VideoInfo> with TickerProviderStateMixin {
                 : t.colorScheme.secondaryContainer,
           ),
           child: Text(
-            attr == 128
-                ? '已拉黑'
-                : attr != 0
-                    ? '已关注'
-                    : '关注',
+            switch (attr) {
+              1 => '悄悄关注',
+              2 => '已关注',
+              6 => '已互关',
+              128 => '已拉黑',
+              _ => '关注'
+            },
             style: TextStyle(fontSize: t.textTheme.labelMedium!.fontSize),
           ),
         );

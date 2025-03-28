@@ -49,7 +49,7 @@ class Api {
   /// aid	num	稿件avid	必要（可选）	avid与bvid任选一个
   /// bvid	str	稿件bvid	必要（可选）	avid与bvid任选一个
   // https://api.bilibili.com/x/web-interface/archive/has/like
-  static const String hasLikeVideo = '/x/web-interface/archive/has/like';
+  // static const String hasLikeVideo = '/x/web-interface/archive/has/like';
 
   static const String bangumiLikeCoinFav = '/pgc/season/episode/community';
 
@@ -79,7 +79,7 @@ class Api {
   /// aid	num	稿件avid	必要（可选）	avid与bvid任选一个
   /// bvid	str	稿件bvid	必要（可选）	avid与bvid任选一个
   /// https://api.bilibili.com/x/web-interface/archive/coins
-  static const String hasCoinVideo = '/x/web-interface/archive/coins';
+  // static const String hasCoinVideo = '/x/web-interface/archive/coins';
 
   /// 收藏夹 详情
   /// media_id  当前收藏夹id 搜索全部时为默认收藏夹id
@@ -119,7 +119,7 @@ class Api {
   // 判断视频是否被收藏（双端）GET
   /// aid
   // https://api.bilibili.com/x/v2/fav/video/favoured
-  static const String hasFavVideo = '/x/v2/fav/video/favoured';
+  // static const String hasFavVideo = '/x/v2/fav/video/favoured';
 
   // 分享视频 （Web端） POST
   // https://api.bilibili.com/x/web-interface/share/add
@@ -280,10 +280,6 @@ class Api {
   // 指定分类的关注
   // https://api.bilibili.com/x/relation/tag?mid=17340771&tagid=-10&pn=1&ps=20
   static const String tagFollowings = '/x/relation/tag';
-
-  // 关注分类
-  // https://api.bilibili.com/x/relation/tags
-  static const String followingsClass = '/x/relation/tags';
 
   // 搜索follow
   static const followSearch = '/x/relation/followings/search';
@@ -708,6 +704,7 @@ class Api {
 
   static const String uploadImage = '/x/upload/web/image';
 
+  // 点赞投币收藏关注
   static const String videoRelation = '/x/web-interface/archive/relation';
 
   static const String seasonFav = '/x/v3/fav/season/'; // + fav unfav

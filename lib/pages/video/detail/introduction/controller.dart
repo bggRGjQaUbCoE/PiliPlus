@@ -66,7 +66,7 @@ class VideoIntroController extends GetxController
   RxBool hasLater = false.obs;
   bool isLogin = false;
   Rx<FavFolderData> favFolderData = FavFolderData().obs;
-  List? favIds;
+  Set? favIds;
   // 关注状态 默认未关注
   RxMap followStatus = {}.obs;
 
@@ -139,18 +139,19 @@ class VideoIntroController extends GetxController
     queryVideoTags();
     var result = await VideoHttp.videoIntro(bvid: bvid);
     if (result['status']) {
-      if (videoDetail.value.ugcSeason?.id == result['data']?.ugcSeason?.id) {
+      VideoDetailData data = result['data'];
+      if (videoDetail.value.ugcSeason?.id == data.ugcSeason?.id) {
         // keep reversed season
-        result['data']?.ugcSeason = videoDetail.value.ugcSeason;
-        result['data']?.isSeasonReversed = videoDetail.value.isSeasonReversed;
+        data.ugcSeason = videoDetail.value.ugcSeason;
+        data.isSeasonReversed = videoDetail.value.isSeasonReversed;
       }
-      if (videoDetail.value.cid == result['data']?.cid) {
+      if (videoDetail.value.cid == data.cid) {
         // keep reversed pages
-        result['data']?.pages = videoDetail.value.pages;
-        result['data']?.isPageReversed = videoDetail.value.isPageReversed;
+        data.pages = videoDetail.value.pages;
+        data.isPageReversed = videoDetail.value.isPageReversed;
       }
-      videoDetail.value = result['data'];
-      videoItem['staff'] = result['data'].staff;
+      videoDetail.value = data;
+      videoItem['staff'] = data.staff;
       try {
         final videoDetailController =
             Get.find<VideoDetailController>(tag: heroTag);
@@ -158,7 +159,7 @@ class VideoIntroController extends GetxController
             videoDetailController.videoItem['pic'] == '' ||
             (videoDetailController.videoUrl.isNullOrEmpty &&
                 videoDetailController.isQuerying.not)) {
-          videoDetailController.videoItem['pic'] = result['data'].pic;
+          videoDetailController.videoItem['pic'] = data.pic;
         }
       } catch (_) {}
       if (videoDetail.value.pages != null &&
@@ -178,13 +179,14 @@ class VideoIntroController extends GetxController
     }
     queryVideoIntroData.value = result;
     if (isLogin) {
-      // 获取点赞状态
-      queryHasLikeVideo();
-      // 获取投币状态
-      queryHasCoinVideo();
-      // 获取收藏状态
-      queryHasFavVideo();
-      //
+      queryAllStatus();
+      // // 获取点赞状态
+      // queryHasLikeVideo();
+      // // 获取投币状态
+      // queryHasCoinVideo();
+      // // 获取收藏状态
+      // queryHasFavVideo();
+      // //
       queryFollowStatus();
     }
   }
@@ -223,38 +225,49 @@ class VideoIntroController extends GetxController
           await MemberHttp.memberCardInfo(mid: videoDetail.value.owner!.mid!);
       if (result['status']) {
         userStat.value = result['data'];
-        userStat.refresh();
       }
     }
   }
 
-  // 获取点赞状态
-  Future queryHasLikeVideo() async {
-    var result = await VideoHttp.hasLikeVideo(bvid: bvid);
-    // data	num	被点赞标志	0：未点赞  1：已点赞  2：已点踩
-    hasLike.value = result["data"] == 1;
-    hasDislike.value = result["data"] == 2;
-  }
-
-  // 获取投币状态
-  Future queryHasCoinVideo() async {
-    var result = await VideoHttp.hasCoinVideo(bvid: bvid);
+  Future<void> queryAllStatus() async {
+    var result = await VideoHttp.videoRelation(bvid: bvid);
     if (result['status']) {
-      hasCoin.value = result["data"]['multiply'] != 0;
+      var data = result['data'];
+      hasLike.value = data['like'];
+      hasDislike.value = data['dislike'];
+      hasCoin.value = data['coin'] != 0;
+      hasFav.value = data['favorite'];
+      // followStatus['attritube'] = data['attention'] ? 2 : 0;
     }
   }
 
-  // 获取收藏状态
-  Future queryHasFavVideo() async {
-    /// fix 延迟查询
-    await Future.delayed(const Duration(milliseconds: 200));
-    var result = await VideoHttp.hasFavVideo(aid: IdUtils.bv2av(bvid));
-    if (result['status']) {
-      hasFav.value = result["data"]['favoured'];
-    } else {
-      hasFav.value = false;
-    }
-  }
+  // // 获取点赞状态
+  // Future queryHasLikeVideo() async {
+  //   var result = await VideoHttp.hasLikeVideo(bvid: bvid);
+  //   // data	num	被点赞标志	0：未点赞  1：已点赞  2：已点踩
+  //   hasLike.value = result["data"] == 1;
+  //   hasDislike.value = result["data"] == 2;
+  // }
+
+  // // 获取投币状态
+  // Future queryHasCoinVideo() async {
+  //   var result = await VideoHttp.hasCoinVideo(bvid: bvid);
+  //   if (result['status']) {
+  //     hasCoin.value = result["data"]['multiply'] != 0;
+  //   }
+  // }
+
+  // // 获取收藏状态
+  // Future queryHasFavVideo() async {
+  //   /// fix 延迟查询
+  //   await Future.delayed(const Duration(milliseconds: 200));
+  //   var result = await VideoHttp.hasFavVideo(aid: IdUtils.bv2av(bvid));
+  //   if (result['status']) {
+  //     hasFav.value = result["data"]['favoured'];
+  //   } else {
+  //     hasFav.value = false;
+  //   }
+  // }
 
   // 一键三连
   Future actionOneThree() async {
@@ -302,7 +315,6 @@ class VideoIntroController extends GetxController
         hasLike.value = false;
         videoDetail.value.stat!.like = videoDetail.value.stat!.like! - 1;
       }
-      hasLike.refresh();
     } else {
       SmartDialog.showToast(result['msg']);
     }
@@ -433,16 +445,17 @@ class VideoIntroController extends GetxController
       queryVideoInFolder().then((res) async {
         if (res['status']) {
           int defaultFolderId = favFolderData.value.list!.first.id!;
-          int favStatus = favFolderData.value.list!.first.favState!;
+          bool notInDefFolder = favFolderData.value.list!.first.favState! == 0;
           var result = await VideoHttp.favVideo(
             aid: IdUtils.bv2av(bvid),
-            addIds: favStatus == 0 ? '$defaultFolderId' : '',
-            delIds: favStatus == 1 ? '$defaultFolderId' : '',
+            addIds: notInDefFolder ? '$defaultFolderId' : '',
+            delIds: !notInDefFolder ? '$defaultFolderId' : '',
           );
           SmartDialog.dismiss();
           if (result['status']) {
+            hasFav.value = !hasFav.value || (hasFav.value && notInDefFolder);
             // 重新获取收藏状态
-            await queryHasFavVideo();
+            // await queryHasFavVideo();
             SmartDialog.showToast('✅ 快速收藏/取消收藏成功');
           } else {
             SmartDialog.showToast(result['msg']);
@@ -481,8 +494,10 @@ class VideoIntroController extends GetxController
     SmartDialog.dismiss();
     if (result['status']) {
       Get.back();
+      hasFav.value =
+          addMediaIdsNew.isNotEmpty || favIds?.length != delMediaIdsNew.length;
       // 重新获取收藏状态
-      await queryHasFavVideo();
+      // await queryHasFavVideo();
       SmartDialog.showToast('操作成功');
     } else {
       SmartDialog.showToast(result['msg']);
@@ -569,7 +584,7 @@ class VideoIntroController extends GetxController
       favIds = favFolderData.value.list
           ?.where((item) => item.favState == 1)
           .map((item) => item.id)
-          .toList();
+          .toSet();
     }
     return result;
   }
@@ -591,11 +606,10 @@ class VideoIntroController extends GetxController
     if (videoDetail.value.owner == null) {
       return;
     }
-    var result = await VideoHttp.hasFollow(mid: videoDetail.value.owner!.mid!);
+    var result = await UserHttp.hasFollow(videoDetail.value.owner!.mid!);
     if (result['status']) {
       followStatus.value = result['data'];
     }
-    return result;
   }
 
   // 关注/取关up
@@ -608,23 +622,21 @@ class VideoIntroController extends GetxController
     if (attr == 128) {
       dynamic res = await VideoHttp.relationMod(
         mid: videoDetail.value.owner?.mid ?? -1,
-        act: attr != 128 ? 5 : 6,
+        act: 6,
         reSrc: 11,
       );
       if (res['status']) {
         followStatus['attribute'] = 0;
-        followStatus.refresh();
       }
       return;
-    }
-    if (context.mounted) {
+    } else {
       Utils.actionRelationMod(
         context: context,
         mid: videoDetail.value.owner?.mid,
-        isFollow: (followStatus['attribute'] ?? 0) != 0,
+        isFollow: attr != 0,
+        followStatus: followStatus,
         callback: (attribute) {
           followStatus['attribute'] = attribute;
-          followStatus.refresh();
         },
       );
     }

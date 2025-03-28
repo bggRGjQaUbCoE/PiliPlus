@@ -14,6 +14,7 @@ import 'package:PiliPlus/http/init.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/member.dart';
 import 'package:PiliPlus/http/search.dart';
+import 'package:PiliPlus/http/user.dart';
 import 'package:PiliPlus/http/video.dart';
 import 'package:PiliPlus/main.dart';
 import 'package:PiliPlus/models/bangumi/info.dart';
@@ -887,6 +888,7 @@ class Utils {
     required dynamic mid,
     required bool isFollow,
     required ValueChanged? callback,
+    Map? followStatus,
   }) async {
     if (mid == null) {
       return;
@@ -900,16 +902,23 @@ class Utils {
       );
       SmartDialog.showToast(res['status'] ? "关注成功" : res['msg']);
       if (res['status']) {
-        callback?.call(1);
+        callback?.call(2);
       }
     } else {
-      dynamic result = await VideoHttp.hasFollow(mid: mid);
-      if (result['status'] && context.mounted) {
-        Map followStatus = result['data'];
+      if (followStatus == null) {
+        Map<String, dynamic> result = await UserHttp.hasFollow(mid);
+        if (result['status']) {
+          followStatus = result['data'];
+        } else {
+          SmartDialog.showToast(result['msg']);
+          return;
+        }
+      }
+      if (context.mounted) {
         showDialog(
           context: context,
           builder: (context) {
-            bool isSpecialFollowed = followStatus['special'] == 1;
+            bool isSpecialFollowed = followStatus!['special'] == 1;
             String text = isSpecialFollowed ? '移除特别关注' : '加入特别关注';
             return AlertDialog(
               clipBehavior: Clip.hardEdge,
@@ -927,25 +936,21 @@ class Utils {
                       );
                       if (res['status']) {
                         SmartDialog.showToast('$text成功');
-                        if (isSpecialFollowed) {
-                          callback?.call(1);
-                        } else {
-                          callback?.call(2);
-                        }
+                        callback?.call(2);
                       } else {
                         SmartDialog.showToast(res['msg']);
                       }
                     },
                     title: Text(
                       text,
-                      style: TextStyle(fontSize: 14),
+                      style: const TextStyle(fontSize: 14),
                     ),
                   ),
                   ListTile(
                     dense: true,
                     onTap: () async {
                       Get.back();
-                      dynamic result = await showModalBottomSheet(
+                      var result = await showModalBottomSheet<bool>(
                         context: context,
                         useSafeArea: true,
                         isScrollControlled: true,
@@ -963,17 +968,15 @@ class Utils {
                                 ScrollController scrollController) {
                               return GroupPanel(
                                 mid: mid,
-                                tags: followStatus['tag'],
+                                tags: followStatus!['tag'],
                                 scrollController: scrollController,
                               );
                             },
                           );
                         },
                       );
-                      if (result == true) {
+                      if (result != null) {
                         callback?.call(2);
-                      } else if (result == false) {
-                        callback?.call(1);
                       }
                     },
                     title: const Text(

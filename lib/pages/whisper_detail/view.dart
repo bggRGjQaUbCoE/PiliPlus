@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 import 'package:PiliPlus/common/widgets/refresh_indicator.dart';
 import 'package:PiliPlus/http/msg.dart';
 import 'package:PiliPlus/models/msg/session.dart';
@@ -273,7 +272,6 @@ class _WhisperDetailPageState
                           biz: 'im',
                         );
                         if (result['status']) {
-                          int imageSize = await File(pickedFile.path).length();
                           String mimeType = lookupMimeType(pickedFile.path)
                                   ?.split('/')
                                   .getOrNull(1) ??
@@ -284,7 +282,7 @@ class _WhisperDetailPageState
                             'width': result['data']['image_width'],
                             'imageType': mimeType,
                             'original': 1,
-                            'size': imageSize / 1024,
+                            'size': result['data']['img_size'] / 1024,
                           };
                           SmartDialog.showLoading(msg: '正在发送');
                           await _whisperDetailController.sendMsg(

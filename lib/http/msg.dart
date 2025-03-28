@@ -231,22 +231,24 @@ class MsgHttp {
     dynamic path,
     String? category,
     String? biz,
+    CancelToken? cancelToken,
   }) async {
-    String csrf = await Request.getCsrf();
-    Map<String, dynamic> data = await WbiSign.makSign({
-      'file_up': await MultipartFile.fromFile(path),
+    final file = await MultipartFile.fromFile(path);
+    Map<String, dynamic> data = {
+      'file_up': file,
       if (category != null) 'category': category,
       if (biz != null) 'biz': biz,
-      'csrf': csrf,
-    });
+      'csrf': await Request.getCsrf(),
+    };
     var res = await Request().post(
       Api.uploadBfs,
       data: FormData.fromMap(data),
+      cancelToken: cancelToken,
     );
     if (res.data['code'] == 0) {
       return {
         'status': true,
-        'data': res.data['data'],
+        'data': res.data['data']..['img_size'] = file.length,
       };
     } else {
       return {

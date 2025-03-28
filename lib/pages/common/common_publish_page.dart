@@ -9,6 +9,7 @@ import 'package:PiliPlus/common/widgets/interactiveviewer_gallery/interactivevie
 import 'package:PiliPlus/http/msg.dart';
 import 'package:PiliPlus/utils/extension.dart';
 import 'package:chat_bottom_container/chat_bottom_container.dart';
+import 'package:dio/dio.dart';
 import 'package:easy_debounce/easy_throttle.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -161,32 +162,34 @@ abstract class CommonPublishPageState<T extends CommonPublishPage>
 
   Future onPublish() async {
     feedBack();
-    List? pictures;
+    List<Map<String, dynamic>>? pictures;
     if (pathList.isNotEmpty) {
-      pictures = [];
-      for (int i = 0; i < pathList.length; i++) {
-        SmartDialog.showLoading(msg: '正在上传图片: ${i + 1}/${pathList.length}');
-        dynamic result = await MsgHttp.uploadBfs(
-          path: pathList[i],
-          category: 'daily',
-          biz: 'new_dyn',
-        );
-        if (result['status']) {
-          int imageSize = await File(pathList[i]).length();
-          pictures.add({
-            'img_width': result['data']['image_width'],
-            'img_height': result['data']['image_height'],
-            'img_size': imageSize / 1024,
-            'img_src': result['data']['image_url'],
-          });
-        } else {
-          SmartDialog.dismiss();
-          SmartDialog.showToast(result['msg']);
-          return;
-        }
-        if (i == pathList.length - 1) {
-          SmartDialog.dismiss();
-        }
+      SmartDialog.showLoading(msg: '正在上传图片...');
+      final cancelToken = CancelToken();
+      try {
+        pictures = await Future.wait<Map<String, dynamic>>(
+            pathList.map((path) async {
+              Map result = await MsgHttp.uploadBfs(
+                path: path,
+                category: 'daily',
+                biz: 'new_dyn',
+                cancelToken: cancelToken,
+              );
+              if (!result['status']) throw HttpException(result['msg']);
+              return {
+                'img_width': result['data']['image_width'],
+                'img_height': result['data']['image_height'],
+                'img_size': result['data']['img_size'] / 1024,
+                'img_src': result['data']['image_url'],
+              };
+            }).toList(),
+            eagerError: true);
+        SmartDialog.dismiss();
+      } on HttpException catch (e) {
+        cancelToken.cancel();
+        SmartDialog.dismiss();
+        SmartDialog.showToast(e.message);
+        return;
       }
     }
     onCustomPublish(message: editController.text, pictures: pictures);

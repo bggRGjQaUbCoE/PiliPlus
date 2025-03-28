@@ -88,7 +88,7 @@ class AccountManager extends Interceptor {
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
     final path = options.path;
 
-    if (path.startsWith(GStorage.blockServer)) return handler.next(options);
+    if (_skipCookie(path)) return handler.next(options);
 
     final Account account = options.extra['account'] ?? _findAccount(path);
 
@@ -148,8 +148,7 @@ class AccountManager extends Interceptor {
   @override
   void onResponse(Response response, ResponseInterceptorHandler handler) {
     final path = response.requestOptions.path;
-    if (path.startsWith(HttpString.appBaseUrl) ||
-        path.startsWith(GStorage.blockServer)) {
+    if (path.startsWith(HttpString.appBaseUrl) || _skipCookie(path)) {
       return handler.next(response);
     } else {
       _saveCookies(response).then((_) => handler.next(response)).catchError(
@@ -167,19 +166,25 @@ class AccountManager extends Interceptor {
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
+    const List<String> skipShow = [
+      'heartbeat',
+      'history/report',
+      'roomEntryAction',
+      'seg.so',
+      'online/total',
+      'github',
+      'hdslb.com',
+      'biliimg.com'
+    ];
     String url = err.requestOptions.uri.toString();
     debugPrint('🌹🌹ApiInterceptor: $url');
-    if (url.contains('heartbeat') ||
-        url.contains('history/report') ||
-        url.contains('roomEntryAction') ||
-        url.contains('seg.so') ||
-        url.contains('online/total') ||
-        url.contains('github') ||
+    if (skipShow.any((i) => url.contains(i)) ||
         (url.contains('skipSegments') && err.requestOptions.method == 'GET')) {
       // skip
     } else {
       dioError(err).then((res) => SmartDialog.showToast(res + url));
     }
+
     if (err.response != null &&
         !err.response!.requestOptions.path.startsWith(HttpString.appBaseUrl)) {
       _saveCookies(err.response!).then((_) => handler.next(err)).catchError(
@@ -229,6 +234,12 @@ class AccountManager extends Interceptor {
       );
     }
     await account.onChange();
+  }
+
+  static bool _skipCookie(String path) {
+    return path.startsWith(GStorage.blockServer) ||
+        path.contains('hdslb.com') ||
+        path.contains('biliimg.com');
   }
 
   Account _findAccount(String path) => loginApi.contains(path)

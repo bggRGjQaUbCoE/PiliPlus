@@ -3,6 +3,7 @@
 // import md5 from 'md5'
 // import axios from 'axios'
 import 'dart:convert';
+import 'package:PiliPlus/utils/utils.dart';
 import 'package:crypto/crypto.dart';
 import 'package:hive/hive.dart';
 import 'package:synchronized/synchronized.dart';
@@ -66,10 +67,6 @@ class WbiSign {
         md5.convert(utf8.encode(queryStr + mixinKey)).toString(); // 计算 w_rid
   }
 
-  static String getFileName(String uri) {
-    return uri.substring(uri.lastIndexOf('/') + 1, uri.lastIndexOf('.'));
-  }
-
   // 获取最新的 img_key 和 sub_key 可以从缓存中获取
   static Future<String> getWbiKeys() async {
     final DateTime nowDate = DateTime.now();
@@ -86,8 +83,8 @@ class WbiSign {
     if (resp.data['code'] == 0) {
       final wbiUrls = resp.data['data']['wbi_img'];
 
-      mixinKey = getMixinKey(
-          getFileName(wbiUrls['img_url']) + getFileName(wbiUrls['sub_url']));
+      mixinKey = getMixinKey(Utils.getFileName(wbiUrls['img_url']) +
+          Utils.getFileName(wbiUrls['sub_url']));
 
       localCache.put(LocalCacheKey.mixinKey, mixinKey);
       localCache.put(LocalCacheKey.timeStamp, nowDate.millisecondsSinceEpoch);

@@ -1670,4 +1670,8 @@ class Utils {
     List<int> randomBytes = generateRandomBytes(minLength, maxLength);
     return base64.encode(randomBytes);
   }
+
+  static String getFileName(String uri) {
+    return uri.substring(uri.lastIndexOf('/') + 1, uri.lastIndexOf('.'));
+  }
 }

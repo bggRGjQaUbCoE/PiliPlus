@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:PiliPlus/http/init.dart';
 import 'package:PiliPlus/utils/extension.dart';
+import 'package:PiliPlus/utils/utils.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -161,55 +162,59 @@ class DownloadUtils {
     List<String> imgList, {
     String imgType = 'cover',
   }) async {
+    if (!await checkPermissionDependOnSdkInt(context)) return;
+    final cancelToken = CancelToken();
+    SmartDialog.showLoading(
+      msg: '正在下载原图',
+      clickMaskDismiss: true,
+      onDismiss: () {
+        cancelToken.cancel();
+      },
+    );
+    final picName =
+        "${imgType}_${DateTime.now().toString().substring(0, 19).replaceAll(' ', '_').replaceAll(':', '-')}";
     try {
-      if (!await checkPermissionDependOnSdkInt(context)) {
-        return;
-      }
-      bool dispose = false;
-      for (int i = 0; i < imgList.length; i++) {
-        SmartDialog.showLoading(
-          msg:
-              '正在下载原图${imgList.length > 1 ? '${i + 1}/${imgList.length}' : ''}',
-          clickMaskDismiss: true,
-          onDismiss: () {
-            dispose = true;
-            if (i != imgList.length - 1) {
-              SmartDialog.showToast('已取消下载剩余图片');
-            }
-          },
-        );
+      await Future.wait(imgList.map((i) async {
         var response = await Request().get(
-          imgList[i].http2https,
+          i.http2https,
           options: Options(responseType: ResponseType.bytes),
+          cancelToken: cancelToken,
         );
-        String picName =
-            "${imgType}_${DateTime.now().toString().replaceAll(' ', '_').replaceAll(':', '-').split('.').first}";
+
+        if (response.data is Map) {
+          throw HttpException(response.data['message']);
+        }
+
+        var name = '${picName}_${Utils.getFileName(i)}';
+
         final SaveResult result = await SaverGallery.saveImage(
-          Uint8List.fromList(response.data),
+          response.data as Uint8List,
           quality: 100,
-          fileName: picName,
+          fileName: name,
           // 保存到 PiliPlus文件夹
           androidRelativePath: "Pictures/PiliPlus",
           skipIfExists: false,
         );
+
         // SmartDialog.dismiss();
         // SmartDialog.showLoading(msg: '正在保存图片至图库');
-        if (i == imgList.length - 1) {
-          SmartDialog.dismiss();
-        }
+
         if (result.isSuccess) {
-          SmartDialog.showToast('「$picName」已保存 ');
+          // SmartDialog.showToast('「$name」已保存');
         } else {
-          SmartDialog.showToast('保存失败，${result.errorMessage}');
+          throw Exception('保存失败，${result.errorMessage}');
         }
-        if (dispose) {
-          break;
-        }
-      }
-      return true;
-    } catch (err) {
+      }), eagerError: true);
       SmartDialog.dismiss();
-      SmartDialog.showToast(err.toString());
+      SmartDialog.showToast('图片已保存');
+      return true;
+    } catch (e) {
+      SmartDialog.dismiss();
+      if (cancelToken.isCancelled) {
+        SmartDialog.showToast('已取消下载');
+      } else {
+        SmartDialog.showToast(e.toString());
+      }
       return false;
     }
   }

@@ -28,6 +28,7 @@ import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart';
 import 'package:floating/floating.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
+import 'package:flutter_volume_controller/flutter_volume_controller.dart';
 import 'package:get/get.dart';
 import 'package:PiliPlus/http/constants.dart';
 import 'package:PiliPlus/http/video.dart';
@@ -1497,8 +1498,12 @@ class VideoDetailController extends GetxController
         String preference = GStorage.defaultSubtitlePreference;
         if (preference != 'off') {
           idx = subtitles.indexWhere((i) => !i['lan']!.startsWith('ai')) + 1;
-          if (idx == 0 && preference == 'on') {
-            idx = 1;
+          if (idx == 0) {
+            if (preference == 'on' ||
+                (preference == 'auto' &&
+                    (await FlutterVolumeController.getVolume() ?? 0) <= 0)) {
+              idx = 1;
+            }
           }
         }
         setSubtitle(idx);

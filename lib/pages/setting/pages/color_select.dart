@@ -61,9 +61,9 @@ class _ColorSelectPageState extends State<ColorSelectPage> {
                   return SelectDialog<ThemeType>(
                       title: '主题模式',
                       value: ctr.themeType.value,
-                      values: ThemeType.values.map((e) {
-                        return {'title': e.description, 'value': e};
-                      }).toList());
+                      values: ThemeType.values
+                          .map((e) => (e, e.description))
+                          .toList());
                 },
               );
               if (result != null) {

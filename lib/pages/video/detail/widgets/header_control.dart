@@ -257,12 +257,8 @@ class HeaderControlState extends State<HeaderControl> {
                     String? result = await showDialog(
                       context: context,
                       builder: (context) {
-                        return SelectDialog<String>(
-                            title: 'CDN 设置',
-                            value: defaultCDNService,
-                            values: CDNService.values.map((e) {
-                              return {'title': e.description, 'value': e.code};
-                            }).toList());
+                        return CdnSelectDialog(
+                            sample: videoInfo.dash?.video?.first);
                       },
                     );
                     if (result != null) {
@@ -1059,7 +1055,7 @@ class HeaderControlState extends State<HeaderControl> {
                             contentPadding:
                                 const EdgeInsets.only(left: 20, right: 20),
                             title: Text(VideoDecodeFormatsCode.fromString(i)!
-                                .description!),
+                                .description),
                             subtitle: Text(
                               i!,
                               style: subTitleStyle,

@@ -56,7 +56,7 @@ extension VideoQualityDesc on VideoQuality {
     '杜比视界',
     '8K 超高清'
   ];
-  get description => _descList[index];
+  String get description => _descList[index];
 }
 
 ///
@@ -89,7 +89,7 @@ extension AudioQualityDesc on AudioQuality {
     '杜比全景声',
     'Hi-Res无损',
   ];
-  get description => _descList[index];
+  String get description => _descList[index];
 }
 
 enum VideoDecodeFormats {
@@ -101,12 +101,12 @@ enum VideoDecodeFormats {
 
 extension VideoDecodeFormatsDesc on VideoDecodeFormats {
   static final List<String> _descList = ['DVH1', 'AV1', 'HEVC', 'AVC'];
-  get description => _descList[index];
+  String get description => _descList[index];
 }
 
 extension VideoDecodeFormatsCode on VideoDecodeFormats {
   static final List<String> _codeList = ['dvh1', 'av01', 'hev1', 'avc1'];
-  get code => _codeList[index];
+  String get code => _codeList[index];
 
   static VideoDecodeFormats? fromCode(String code) {
     final index = _codeList.indexOf(code);

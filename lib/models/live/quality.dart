@@ -39,5 +39,5 @@ extension VideoQualityDesc on LiveQuality {
     '高清',
     '流畅',
   ];
-  get description => _descList[index];
+  String get description => _descList[index];
 }

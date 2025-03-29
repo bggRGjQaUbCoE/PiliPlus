@@ -6,11 +6,11 @@ extension SubtitlePreferenceDesc on SubtitlePreference {
     '选择第一个可用字幕',
     '跳过自动生成(ai)字幕，选择第一个可用字幕'
   ];
-  get description => _descList[index];
+  String get description => _descList[index];
 }
 
 extension SubtitlePreferenceCode on SubtitlePreference {
-  static final List<String> _codeList = ['off', 'on', 'withoutAi'];
+  static const List<String> _codeList = ['off', 'on', 'withoutAi'];
   String get code => _codeList[index];
 
   static SubtitlePreference? fromCode(String code) {

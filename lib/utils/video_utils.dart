@@ -45,20 +45,16 @@ class VideoUtils {
     String defaultCDNHost = CDNServiceCode.fromCode(defaultCDNService)!.host;
     debugPrint("defaultCDNHost:$defaultCDNHost");
     if (videoUrl!.contains("szbdyd.com")) {
-      String hostname =
-          Uri.parse(videoUrl).queryParameters['xy_usource'] ?? defaultCDNHost;
-      videoUrl =
-          Uri.parse(videoUrl).replace(host: hostname, port: 443).toString();
-    } else if (videoUrl.contains(".mcdn.bilivideo")) {
+      final uri = Uri.parse(videoUrl);
+      String hostname = uri.queryParameters['xy_usource'] ?? defaultCDNHost;
+      videoUrl = uri.replace(host: hostname, port: 443).toString();
+    } else if (videoUrl.contains(".mcdn.bilivideo") ||
+        videoUrl.contains("/upgcxcode/")) {
       videoUrl = Uri.parse(videoUrl)
           .replace(host: defaultCDNHost, port: 443)
           .toString();
       // videoUrl =
       //     'https://proxy-tf-all-ws.bilivideo.com/?url=${Uri.encodeComponent(videoUrl)}';
-    } else if (videoUrl.contains("/upgcxcode/")) {
-      videoUrl = Uri.parse(videoUrl)
-          .replace(host: defaultCDNHost, port: 443)
-          .toString();
     }
     debugPrint("videoUrl:$videoUrl");
 

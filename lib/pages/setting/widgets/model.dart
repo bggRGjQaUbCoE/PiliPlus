@@ -280,7 +280,7 @@ List<SettingsModel> get styleSettings => [
                 title: '动态页UP主显示位置',
                 value: GStorage.upPanelPosition,
                 values: UpPanelPosition.values.map((e) {
-                  return {'title': e.labels, 'value': e};
+                  return (e, e.labels);
                 }).toList(),
               );
             },
@@ -318,7 +318,7 @@ List<SettingsModel> get styleSettings => [
                 title: '动态未读标记',
                 value: GStorage.dynamicBadgeType,
                 values: DynamicBadgeMode.values.map((e) {
-                  return {'title': e.description, 'value': e};
+                  return (e, e.description);
                 }).toList(),
               );
             },
@@ -350,7 +350,7 @@ List<SettingsModel> get styleSettings => [
                 title: '消息未读标记',
                 value: GStorage.msgBadgeMode,
                 values: DynamicBadgeMode.values.map((e) {
-                  return {'title': e.description, 'value': e};
+                  return (e, e.description);
                 }).toList(),
               );
             },
@@ -516,7 +516,7 @@ List<SettingsModel> get styleSettings => [
                   value: GStorage.themeType,
                   values: ThemeType.values.map(
                     (e) {
-                      return {'title': e.description, 'value': e};
+                      return (e, e.description);
                     },
                   ).toList());
             },
@@ -562,7 +562,7 @@ List<SettingsModel> get styleSettings => [
                 title: '首页启动页',
                 value: GStorage.defaultHomePage,
                 values: defaultNavigationBars.map((e) {
-                  return {'title': e['label'], 'value': e['id']};
+                  return (e['id'] as int, e['label'] as String);
                 }).toList(),
               );
             },
@@ -763,12 +763,13 @@ List<SettingsModel> get playSettings => [
             context: Get.context!,
             builder: (context) {
               return SelectDialog<String>(
-                  title: '字幕选择偏好',
-                  value: GStorage.setting.get(SettingBoxKey.subtitlePreference,
-                      defaultValue: SubtitlePreference.values.first.code),
-                  values: SubtitlePreference.values.map((e) {
-                    return {'title': e.description, 'value': e.code};
-                  }).toList());
+                title: '字幕选择偏好',
+                value: GStorage.setting.get(SettingBoxKey.subtitlePreference,
+                    defaultValue: SubtitlePreference.values.first.code),
+                values: SubtitlePreference.values
+                    .map((e) => (e.code, e.description))
+                    .toList(),
+              );
             },
           );
           if (result != null) {
@@ -879,7 +880,7 @@ List<SettingsModel> get playSettings => [
                   title: '默认全屏方向',
                   value: GStorage.defaultFullScreenMode,
                   values: FullScreenMode.values.map((e) {
-                    return {'title': e.description, 'value': e.code};
+                    return (e.code, e.description);
                   }).toList());
             },
           );
@@ -903,7 +904,7 @@ List<SettingsModel> get playSettings => [
                   title: '底部进度条展示',
                   value: GStorage.defaultBtmProgressBehavior,
                   values: BtmProgressBehavior.values.map((e) {
-                    return {'title': e.description, 'value': e.code};
+                    return (e.code, e.description);
                   }).toList());
             },
           );
@@ -972,12 +973,7 @@ List<SettingsModel> get videoSettings => [
           String? result = await showDialog(
             context: Get.context!,
             builder: (context) {
-              return SelectDialog<String>(
-                  title: 'CDN 设置',
-                  value: GStorage.defaultCDNService,
-                  values: CDNService.values.map((e) {
-                    return {'title': e.description, 'value': e.code};
-                  }).toList());
+              return CdnSelectDialog();
             },
           );
           if (result != null) {
@@ -1007,7 +1003,7 @@ List<SettingsModel> get videoSettings => [
         title: '默认画质',
         leading: const Icon(Icons.video_settings_outlined),
         getSubtitle: () =>
-            '当前画质：${VideoQualityCode.fromCode(GStorage.defaultVideoQa)!.description!}',
+            '当前画质：${VideoQualityCode.fromCode(GStorage.defaultVideoQa)!.description}',
         onTap: (setState) async {
           int? result = await showDialog(
             context: Get.context!,
@@ -1015,9 +1011,9 @@ List<SettingsModel> get videoSettings => [
               return SelectDialog<int>(
                 title: '默认画质',
                 value: GStorage.defaultVideoQa,
-                values: VideoQuality.values.reversed.map((e) {
-                  return {'title': e.description, 'value': e.code};
-                }).toList(),
+                values: VideoQuality.values.reversed
+                    .map((e) => (e.code, e.description))
+                    .toList(),
               );
             },
           );
@@ -1032,7 +1028,7 @@ List<SettingsModel> get videoSettings => [
         title: '蜂窝网络画质',
         leading: const Icon(Icons.video_settings_outlined),
         getSubtitle: () =>
-            '当前画质：${VideoQualityCode.fromCode(GStorage.defaultVideoQaCellular)!.description!}',
+            '当前画质：${VideoQualityCode.fromCode(GStorage.defaultVideoQaCellular)!.description}',
         onTap: (setState) async {
           int? result = await showDialog(
             context: Get.context!,
@@ -1041,7 +1037,7 @@ List<SettingsModel> get videoSettings => [
                 title: '蜂窝网络画质',
                 value: GStorage.defaultVideoQaCellular,
                 values: VideoQuality.values.reversed.map((e) {
-                  return {'title': e.description, 'value': e.code};
+                  return (e.code, e.description);
                 }).toList(),
               );
             },
@@ -1058,7 +1054,7 @@ List<SettingsModel> get videoSettings => [
         title: '默认音质',
         leading: const Icon(Icons.music_video_outlined),
         getSubtitle: () =>
-            '当前音质：${AudioQualityCode.fromCode(GStorage.defaultAudioQa)!.description!}',
+            '当前音质：${AudioQualityCode.fromCode(GStorage.defaultAudioQa)!.description}',
         onTap: (setState) async {
           int? result = await showDialog(
             context: Get.context!,
@@ -1066,9 +1062,9 @@ List<SettingsModel> get videoSettings => [
               return SelectDialog<int>(
                 title: '默认音质',
                 value: GStorage.defaultAudioQa,
-                values: AudioQuality.values.reversed.map((e) {
-                  return {'title': e.description, 'value': e.code};
-                }).toList(),
+                values: AudioQuality.values.reversed
+                    .map((e) => (e.code, e.description))
+                    .toList(),
               );
             },
           );
@@ -1083,7 +1079,7 @@ List<SettingsModel> get videoSettings => [
         title: '蜂窝网络音质',
         leading: const Icon(Icons.music_video_outlined),
         getSubtitle: () =>
-            '当前音质：${AudioQualityCode.fromCode(GStorage.defaultAudioQaCellular)!.description!}',
+            '当前音质：${AudioQualityCode.fromCode(GStorage.defaultAudioQaCellular)!.description}',
         onTap: (setState) async {
           int? result = await showDialog(
             context: Get.context!,
@@ -1092,7 +1088,7 @@ List<SettingsModel> get videoSettings => [
                 title: '蜂窝网络音质',
                 value: GStorage.defaultAudioQaCellular,
                 values: AudioQuality.values.reversed.map((e) {
-                  return {'title': e.description, 'value': e.code};
+                  return (e.code, e.description);
                 }).toList(),
               );
             },
@@ -1109,7 +1105,7 @@ List<SettingsModel> get videoSettings => [
         title: '直播默认画质',
         leading: const Icon(Icons.video_settings_outlined),
         getSubtitle: () =>
-            '当前画质：${LiveQualityCode.fromCode(GStorage.liveQuality)!.description!}',
+            '当前画质：${LiveQualityCode.fromCode(GStorage.liveQuality)!.description}',
         onTap: (setState) async {
           int? result = await showDialog(
             context: Get.context!,
@@ -1117,9 +1113,9 @@ List<SettingsModel> get videoSettings => [
               return SelectDialog<int>(
                 title: '直播默认画质',
                 value: GStorage.liveQuality,
-                values: LiveQuality.values.map((e) {
-                  return {'title': e.description, 'value': e.code};
-                }).toList(),
+                values: LiveQuality.values
+                    .map((e) => (e.code, e.description))
+                    .toList(),
               );
             },
           );
@@ -1134,7 +1130,7 @@ List<SettingsModel> get videoSettings => [
         title: '蜂窝网络直播默认画质',
         leading: const Icon(Icons.video_settings_outlined),
         getSubtitle: () =>
-            '当前画质：${LiveQualityCode.fromCode(GStorage.liveQualityCellular)!.description!}',
+            '当前画质：${LiveQualityCode.fromCode(GStorage.liveQualityCellular)!.description}',
         onTap: (setState) async {
           int? result = await showDialog(
             context: Get.context!,
@@ -1143,7 +1139,7 @@ List<SettingsModel> get videoSettings => [
                 title: '直播默认画质',
                 value: GStorage.liveQualityCellular,
                 values: LiveQuality.values.map((e) {
-                  return {'title': e.description, 'value': e.code};
+                  return (e.code, e.description);
                 }).toList(),
               );
             },
@@ -1160,7 +1156,7 @@ List<SettingsModel> get videoSettings => [
         title: '首选解码格式',
         leading: const Icon(Icons.movie_creation_outlined),
         getSubtitle: () =>
-            '首选解码格式：${VideoDecodeFormatsCode.fromCode(GStorage.defaultDecode)!.description!}，请根据设备支持情况与需求调整',
+            '首选解码格式：${VideoDecodeFormatsCode.fromCode(GStorage.defaultDecode)!.description}，请根据设备支持情况与需求调整',
         onTap: (setState) async {
           String? result = await showDialog(
             context: Get.context!,
@@ -1168,9 +1164,9 @@ List<SettingsModel> get videoSettings => [
               return SelectDialog<String>(
                   title: '默认解码格式',
                   value: GStorage.defaultDecode,
-                  values: VideoDecodeFormats.values.map((e) {
-                    return {'title': e.description, 'value': e.code};
-                  }).toList());
+                  values: VideoDecodeFormats.values
+                      .map((e) => (e.code, e.description))
+                      .toList());
             },
           );
           if (result != null) {
@@ -1183,7 +1179,7 @@ List<SettingsModel> get videoSettings => [
         settingsType: SettingsType.normal,
         title: '次选解码格式',
         getSubtitle: () =>
-            '非杜比视频次选：${VideoDecodeFormatsCode.fromCode(GStorage.secondDecode)!.description!}，仍无则选择首个提供的解码格式',
+            '非杜比视频次选：${VideoDecodeFormatsCode.fromCode(GStorage.secondDecode)!.description}，仍无则选择首个提供的解码格式',
         leading: const Icon(Icons.swap_horizontal_circle_outlined),
         onTap: (setState) async {
           String? result = await showDialog(
@@ -1193,7 +1189,7 @@ List<SettingsModel> get videoSettings => [
                   title: '次选解码格式',
                   value: GStorage.secondDecode,
                   values: VideoDecodeFormats.values.map((e) {
-                    return {'title': e.description, 'value': e.code};
+                    return (e.code, e.description);
                   }).toList());
             },
           );
@@ -1245,7 +1241,7 @@ List<SettingsModel> get videoSettings => [
                     'display-desync',
                     'desync'
                   ].map((e) {
-                    return {'title': e, 'value': e};
+                    return (e, e);
                   }).toList());
             },
           );
@@ -1269,7 +1265,7 @@ List<SettingsModel> get videoSettings => [
                   value: GStorage.hardwareDecoding,
                   values:
                       ['auto', 'auto-copy', 'auto-safe', 'no', 'yes'].map((e) {
-                    return {'title': e, 'value': e};
+                    return (e, e);
                   }).toList());
             },
           );
@@ -1872,18 +1868,18 @@ List<SettingsModel> get extraSettings => [
               return SelectDialog<String>(
                   title: '音量均衡',
                   value: audioNormalization,
-                  values: values.map((e) {
-                    return {
-                      'title': switch (e) {
-                        '0' => AudioNormalization.disable.title,
-                        '1' => AudioNormalization.dynaudnorm.title,
-                        '2' => AudioNormalization.loudnorm.title,
-                        '3' => AudioNormalization.custom.title,
-                        _ => e,
-                      },
-                      'value': e,
-                    };
-                  }).toList());
+                  values: values
+                      .map((e) => (
+                            switch (e) {
+                              '0' => AudioNormalization.disable.title,
+                              '1' => AudioNormalization.dynaudnorm.title,
+                              '2' => AudioNormalization.loudnorm.title,
+                              '3' => AudioNormalization.custom.title,
+                              _ => e,
+                            },
+                            e
+                          ))
+                      .toList());
             },
           );
           if (result != null) {
@@ -1943,7 +1939,7 @@ List<SettingsModel> get extraSettings => [
                   value:
                       SuperResolutionType.values[GStorage.superResolutionType],
                   values: SuperResolutionType.values.map((e) {
-                    return {'title': e.title, 'value': e};
+                    return (e, e.title);
                   }).toList());
             },
           );
@@ -2268,7 +2264,7 @@ List<SettingsModel> get extraSettings => [
                 title: '评论展示',
                 value: GStorage.defaultReplySort,
                 values: ReplySortType.values.map((e) {
-                  return {'title': e.title, 'value': e.index};
+                  return (e.index, e.title);
                 }).toList(),
               );
             },
@@ -2294,7 +2290,7 @@ List<SettingsModel> get extraSettings => [
                   title: '动态展示',
                   value: GStorage.defaultDynamicType,
                   values: DynamicsType.values.sublist(0, 4).map((e) {
-                    return {'title': e.labels, 'value': e.index};
+                    return (e.index, e.labels);
                   }).toList());
             },
           );
@@ -2319,7 +2315,7 @@ List<SettingsModel> get extraSettings => [
                   title: '用户页默认展示TAB',
                   value: GStorage.memberTab,
                   values: MemberTabType.values.map((e) {
-                    return {'title': e.title, 'value': e};
+                    return (e, e.title);
                   }).toList());
             },
           );
@@ -2511,12 +2507,9 @@ SettingsModel _getVideoFilterSelectModel({
               values: (values
                     ..addIf(!values.contains(value), value)
                     ..sort())
-                  .map((e) => {
-                        'title': suffix == null ? e.toString() : '$e $suffix',
-                        'value': e
-                      })
+                  .map((e) => (e, suffix == null ? e.toString() : '$e $suffix'))
                   .toList()
-                ..add({'title': '自定义', 'value': -1}));
+                ..add((-1, '自定义')));
         },
       );
       if (result != null) {

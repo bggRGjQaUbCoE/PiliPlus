@@ -975,7 +975,7 @@ class VideoHttp {
     }
   }
 
-  static Future subtitlesJson(
+  static Future<Map<String, dynamic>> subtitlesJson(
       {String? aid, String? bvid, required int cid}) async {
     assert(aid != null || bvid != null);
     var res = await Request().get(
@@ -1016,22 +1016,25 @@ class VideoHttp {
     }
   }
 
-  static Future vttSubtitles(subtile) async {
+  static Future vttSubtitles(Map<String, dynamic> subtile) async {
     String subtitleTimecode(num seconds) {
-      int h = (seconds / 3600).floor();
-      int m = ((seconds % 3600) / 60).floor();
-      int s = (seconds % 60).floor();
-      int ms = ((seconds * 1000) % 1000).floor();
-      if (h == 0) {
-        return "${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}.${ms.toString().padLeft(3, '0')}";
-      }
-      return "${h.toString().padLeft(2, '0')}:${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}.${ms.toString().padLeft(3, '0')}";
+      int h = seconds ~/ 3600;
+      seconds %= 3600;
+      int m = seconds ~/ 60;
+      seconds %= 60;
+      String sms = seconds.toStringAsFixed(3).padLeft(6, '0');
+      return h == 0
+          ? "${m.toString().padLeft(2, '0')}:$sms"
+          : "${h.toString().padLeft(2, '0')}:${m.toString().padLeft(2, '0')}:$sms";
     }
 
     String processList(List list) {
-      return list.fold('WEBVTT\n\n', (previous, item) {
-        return '$previous${item?['sid'] ?? 0}\n${subtitleTimecode(item['from'])} --> ${subtitleTimecode(item['to'])}\n${item['content'].trim()}\n\n';
-      });
+      final sb = StringBuffer('WEBVTT\n\n');
+      sb.writeAll(
+          list.map((item) =>
+              '${item?['sid'] ?? 0}\n${subtitleTimecode(item['from'])} --> ${subtitleTimecode(item['to'])}\n${item['content'].trim()}'),
+          '\n\n');
+      return sb.toString();
     }
 
     var res = await Request().get("https:${subtile['subtitle_url']}");

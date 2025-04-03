@@ -49,8 +49,8 @@ class LoginUtils {
       SmartDialog.showToast('设置登录态失败，$e');
     }
     final result = await UserHttp.userInfo();
-    final UserInfoData data = result['data'];
-    if (result['status'] && data.isLogin!) {
+    if (result['status'] && result['data']?.isLogin == true) {
+      final UserInfoData data = result['data'];
       SmartDialog.showToast('main登录成功');
       await GStorage.userInfo.put('userInfoCache', data);
       try {
@@ -109,7 +109,7 @@ class LoginUtils {
       // 获取用户信息失败
       await Accounts.deleteAll({account});
       SmartDialog.showNotify(
-          msg: '登录失败，请检查cookie是否正确，${result['message']}',
+          msg: '登录失败，请检查cookie是否正确，${result['msg']}',
           notifyType: NotifyType.warning);
     }
   }

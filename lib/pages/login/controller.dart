@@ -642,14 +642,15 @@ class LoginPageController extends GetxController
   }
 
   Future<void> setAccount(Map tokenInfo, List cookieInfo) async {
+    final account = LoginAccount(BiliCookieJar.fromList(cookieInfo),
+        tokenInfo['access_token'], tokenInfo['refresh_token']);
     await Future.wait([
-      LoginAccount(BiliCookieJar.fromList(cookieInfo),
-              tokenInfo['access_token'], tokenInfo['refresh_token'])
-          .onChange(),
+      account.onChange(),
       AnonymousAccount()
           .delete()
           .then((_) => Request.buvidActive(AnonymousAccount()))
     ]);
+    Accounts.accountMode.updateAll((_, a) => a == account ? account : a);
     if (Accounts.main.isLogin) {
       SmartDialog.showToast('登录成功');
     } else {

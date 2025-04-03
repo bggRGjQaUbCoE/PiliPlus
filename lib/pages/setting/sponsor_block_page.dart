@@ -289,6 +289,7 @@ class _SponsorBlockPageState extends State<SponsorBlockPage> {
                       _blockServer = HttpString.sponsorBlockBaseUrl;
                       await setting.put(
                           SettingBoxKey.blockServer, _blockServer);
+                      Request.accountManager.blockServer = _blockServer;
                       setState(() {});
                     },
                     child: Text('重置'),
@@ -308,6 +309,7 @@ class _SponsorBlockPageState extends State<SponsorBlockPage> {
                       _blockServer = _textController.text;
                       await setting.put(
                           SettingBoxKey.blockServer, _blockServer);
+                      Request.accountManager.blockServer = _blockServer;
                       setState(() {});
                     },
                     child: Text('确定'),

@@ -66,7 +66,9 @@ class AccountManager extends Interceptor {
     Api.oauth2AccessToken,
   };
 
-  const AccountManager();
+  AccountManager();
+
+  String blockServer = GStorage.blockServer;
 
   static String getCookies(List<Cookie> cookies) {
     // Sort cookies by path (longer path first).
@@ -236,8 +238,8 @@ class AccountManager extends Interceptor {
     await account.onChange();
   }
 
-  static bool _skipCookie(String path) {
-    return path.startsWith(GStorage.blockServer) ||
+  bool _skipCookie(String path) {
+    return path.startsWith(blockServer) ||
         path.contains('hdslb.com') ||
         path.contains('biliimg.com');
   }

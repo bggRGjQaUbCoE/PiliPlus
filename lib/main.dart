@@ -4,6 +4,7 @@ import 'package:PiliPlus/build_config.dart';
 import 'package:PiliPlus/pages/video/detail/view_v.dart';
 import 'package:PiliPlus/utils/cache_manage.dart';
 import 'package:PiliPlus/utils/utils.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flex_seed_scheme/flex_seed_scheme.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
@@ -90,11 +91,17 @@ Commit Hash: ${BuildConfig.commitHash}''';
     },
   );
 
+  bool? isXiaomi;
+  if (Platform.isAndroid) {
+    final androidInfo = await DeviceInfoPlugin().androidInfo;
+    isXiaomi = androidInfo.manufacturer.toLowerCase() == 'xiaomi';
+  }
+
   Catcher2(
     debugConfig: debugConfig,
     releaseConfig: releaseConfig,
     runAppFunction: () {
-      runApp(const MyApp());
+      runApp(MyApp(isXiaomi: isXiaomi));
     },
   );
 
@@ -111,7 +118,9 @@ Commit Hash: ${BuildConfig.commitHash}''';
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const MyApp({super.key, this.isXiaomi});
+
+  final bool? isXiaomi;
 
   Box get setting => GStorage.setting;
 
@@ -204,19 +213,31 @@ class MyApp extends StatelessWidget {
           fallbackLocale: const Locale("zh", "CN"),
           getPages: Routes.getPages,
           home: const MainApp(),
-          builder: FlutterSmartDialog.init(
-            toastBuilder: (String msg) => CustomToast(msg: msg),
-            loadingBuilder: (msg) => LoadingWidget(msg: msg),
-            builder: (context, child) {
-              return MediaQuery(
-                data: MediaQuery.of(context)
-                    .copyWith(textScaler: TextScaler.linear(textScale)),
-                child: child!,
-              );
-            },
-          ),
+          builder: isXiaomi == true
+              ? (BuildContext context, Widget? child) {
+                  return FlutterSmartDialog(
+                    toastBuilder: (String msg) => CustomToast(msg: msg),
+                    loadingBuilder: (msg) => LoadingWidget(msg: msg),
+                    child: MediaQuery(
+                      data: MediaQuery.of(context)
+                          .copyWith(textScaler: TextScaler.linear(textScale)),
+                      child: child!,
+                    ),
+                  );
+                }
+              : FlutterSmartDialog.init(
+                  toastBuilder: (String msg) => CustomToast(msg: msg),
+                  loadingBuilder: (msg) => LoadingWidget(msg: msg),
+                  builder: (context, child) {
+                    return MediaQuery(
+                      data: MediaQuery.of(context)
+                          .copyWith(textScaler: TextScaler.linear(textScale)),
+                      child: child!,
+                    );
+                  },
+                ),
           navigatorObservers: [
-            FlutterSmartDialog.observer,
+            if (isXiaomi != true) FlutterSmartDialog.observer,
             VideoDetailPageV.routeObserver,
             MainApp.routeObserver,
           ],

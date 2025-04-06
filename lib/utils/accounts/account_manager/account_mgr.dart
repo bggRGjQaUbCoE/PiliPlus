@@ -123,11 +123,6 @@ class AccountManager extends Interceptor {
       }
       return handler.next(options);
     } else {
-      if (account is AnonymousAccount) {
-        options.headers[HttpHeaders.cookieHeader] = '';
-        handler.next(options);
-        return;
-      }
       account.cookieJar.loadForRequest(options.uri).then((cookies) {
         final previousCookies =
             options.headers[HttpHeaders.cookieHeader] as String?;

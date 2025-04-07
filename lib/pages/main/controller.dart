@@ -33,7 +33,7 @@ class MainController extends GetxController {
 
   late int homeIndex = -1;
   late DynamicBadgeMode msgBadgeMode = GStorage.msgBadgeMode;
-  late Set<MsgUnReadType> msgUnReadTypes = GStorage.msgUnReadTypeV2.toSet();
+  late Set<MsgUnReadType> msgUnReadTypes = GStorage.msgUnReadTypeV2;
   late final RxString msgUnReadCount = ''.obs;
   late int lastCheckUnreadAt = 0;
 

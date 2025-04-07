@@ -259,7 +259,7 @@ class DefaultUser extends StatelessWidget {
   }
 }
 
-Widget msgBadge(mainController) {
+Widget msgBadge(MainController mainController) {
   void toWhisper() {
     mainController.msgUnReadCount.value = '';
     mainController.lastCheckUnreadAt = DateTime.now().millisecondsSinceEpoch;

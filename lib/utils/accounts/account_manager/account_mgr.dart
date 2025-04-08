@@ -34,7 +34,8 @@ class AccountManager extends Interceptor {
       Api.liveRoomDmToken,
       Api.liveRoomDmPrefetch,
       Api.searchByType,
-      Api.memberDynamicSearch
+      Api.memberDynamicSearch,
+      Api.memberArchive
     },
     AccountType.recommend: {
       Api.recommendListWeb,

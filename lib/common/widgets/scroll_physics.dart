@@ -30,11 +30,7 @@ class CustomTabBarViewScrollPhysics extends ScrollPhysics {
   }
 
   @override
-  SpringDescription get spring => SpringDescription(
-        mass: GStorage.springDescription[0],
-        stiffness: GStorage.springDescription[1],
-        damping: GStorage.springDescription[2],
-      );
+  SpringDescription get spring => CustomSpringDescription();
 }
 
 class CustomTabBarViewClampingScrollPhysics extends ClampingScrollPhysics {
@@ -46,11 +42,7 @@ class CustomTabBarViewClampingScrollPhysics extends ClampingScrollPhysics {
   }
 
   @override
-  SpringDescription get spring => SpringDescription(
-        mass: GStorage.springDescription[0],
-        stiffness: GStorage.springDescription[1],
-        damping: GStorage.springDescription[2],
-      );
+  SpringDescription get spring => CustomSpringDescription();
 }
 
 class PositionRetainedScrollPhysics extends AlwaysScrollableScrollPhysics {
@@ -85,4 +77,21 @@ class PositionRetainedScrollPhysics extends AlwaysScrollableScrollPhysics {
       return position;
     }
   }
+}
+
+class CustomSpringDescription implements SpringDescription {
+  @override
+  final mass = GStorage.springDescription[0];
+
+  @override
+  final stiffness = GStorage.springDescription[1];
+
+  @override
+  final damping = GStorage.springDescription[2];
+
+  CustomSpringDescription._();
+
+  static final _instance = CustomSpringDescription._();
+
+  factory CustomSpringDescription() => _instance;
 }

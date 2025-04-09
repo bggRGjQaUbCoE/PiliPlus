@@ -2583,7 +2583,7 @@ SettingsModel _getVideoFilterSelectModel({
           value = result!;
           await GStorage.setting.put(key, result);
           setState();
-          RecommendFilter.update();
+          if (isFilter) RecommendFilter.update();
         }
       }
     },

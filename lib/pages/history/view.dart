@@ -1,5 +1,6 @@
 import 'package:PiliPlus/common/widgets/http_error.dart';
 import 'package:PiliPlus/common/widgets/refresh_indicator.dart';
+import 'package:PiliPlus/common/widgets/scroll_physics.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/pages/fav_search/view.dart' show SearchType;
 import 'package:PiliPlus/pages/history/base_controller.dart';
@@ -227,7 +228,7 @@ class _HistoryPageState extends State<HistoryPage>
                                 child: TabBarView(
                                   physics: enableMultiSelect
                                       ? const NeverScrollableScrollPhysics()
-                                      : null,
+                                      : const CustomTabBarViewScrollPhysics(),
                                   controller: _historyController.tabController,
                                   children: [
                                     _buildPage,

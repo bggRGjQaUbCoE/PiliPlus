@@ -14,7 +14,7 @@ abstract class Account {
   late String csrf;
   final Map<String, String> headers = const {};
 
-  bool activited = false;
+  // bool activited = false;
 
   Future<void> delete();
   Future<void> onChange();
@@ -52,9 +52,6 @@ class LoginAccount implements Account {
       cookieJar.domainCookies['bilibili.com']!['/']!['bili_jct']!.cookie.value;
 
   @override
-  bool activited = false;
-
-  @override
   Future<void> delete() => _box.delete(_midStr);
 
   @override
@@ -74,9 +71,8 @@ class LoginAccount implements Account {
   late final Box<LoginAccount> _box = Accounts.account;
 
   LoginAccount(this.cookieJar, this.accessKey, this.refresh,
-      [Set<AccountType>? type]) {
-    this.type = type ?? {};
-  }
+      [Set<AccountType>? type])
+      : this.type = type ?? {};
 
   LoginAccount.fromJson(Map json) {
     cookieJar = BiliCookieJar.fromJson(json['cookies']);
@@ -93,7 +89,7 @@ class LoginAccount implements Account {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || (other is Account && mid == other.mid);
+      identical(this, other) || (other is LoginAccount && mid == other.mid);
 }
 
 class AnonymousAccount implements Account {
@@ -115,12 +111,9 @@ class AnonymousAccount implements Account {
   final Map<String, String> headers = const {};
 
   @override
-  bool activited = false;
-
-  @override
   Future<void> delete() async {
     await cookieJar.deleteAll();
-    activited = false;
+    cookieJar.setBuvid3();
   }
 
   @override
@@ -132,7 +125,7 @@ class AnonymousAccount implements Account {
   static final _instance = AnonymousAccount._();
 
   AnonymousAccount._() {
-    cookieJar = DefaultCookieJar(ignoreExpires: true);
+    cookieJar = DefaultCookieJar(ignoreExpires: true)..setBuvid3();
   }
 
   factory AnonymousAccount() => _instance;
@@ -143,7 +136,7 @@ class AnonymousAccount implements Account {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is Account && cookieJar == other.cookieJar);
+      (other is AnonymousAccount && cookieJar == other.cookieJar);
 }
 
 extension BiliCookie on Cookie {
@@ -167,6 +160,12 @@ extension BiliCookieJar on DefaultCookieJar {
           .map((i) => i.value.cookie)
           .toList() ??
       [];
+
+  void setBuvid3() {
+    domainCookies['bilibili.com'] ??= {'/': {}};
+    domainCookies['bilibili.com']!['/']!['buvid3'] ??= SerializableCookie(
+        Cookie('buvid3', Utils.genBuvid3())..setBiliDomain());
+  }
 
   static DefaultCookieJar fromJson(Map json) =>
       DefaultCookieJar(ignoreExpires: true)

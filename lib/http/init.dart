@@ -1,8 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:developer';
 import 'dart:io';
-import 'dart:math' show Random;
 import 'package:PiliPlus/build_config.dart';
 import 'package:PiliPlus/http/retry_interceptor.dart';
 import 'package:PiliPlus/utils/accounts/account.dart';
@@ -13,7 +11,6 @@ import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
 import 'package:dio_http2_adapter/dio_http2_adapter.dart';
 import '../utils/storage.dart';
-import 'api.dart';
 import 'constants.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart' as web;
 
@@ -25,9 +22,8 @@ class Request {
   static late AccountManager accountManager;
   static late final Dio dio;
   factory Request() => _instance;
-  static final _rand = Random();
-  static final RegExp _spmPrefixExp =
-      RegExp(r'<meta name="spm_prefix" content="([^"]+?)">');
+  // static final _rand = Random();
+  // static final RegExp _spmPrefixExp = RegExp(r'<meta name="spm_prefix" content="([^"]+?)">');
 
   /// 设置cookie
   static Future<void> setCookie() async {
@@ -52,36 +48,36 @@ class Request {
     return Accounts.main.csrf;
   }
 
-  static Future<void> buvidActive(Account account) async {
-    // 这样线程不安全, 但仍按预期进行
-    if (account.activited) return;
-    account.activited = true;
-    try {
-      final html = await Request().get(Api.dynamicSpmPrefix,
-          options: Options(extra: {'account': account}));
-      final String spmPrefix = _spmPrefixExp.firstMatch(html.data)!.group(1)!;
-      final String randPngEnd = base64.encode(
-          List<int>.generate(32, (_) => _rand.nextInt(256)) +
-              List<int>.filled(4, 0) +
-              [73, 69, 78, 68] +
-              List<int>.generate(4, (_) => _rand.nextInt(256)));
+  // static Future<void> buvidActive(Account account) async {
+  //   // 这样线程不安全, 但仍按预期进行
+  //   if (account.activited) return;
+  //   account.activited = true;
+  //   try {
+  //     final html = await Request().get(Api.dynamicSpmPrefix,
+  //         options: Options(extra: {'account': account}));
+  //     final String spmPrefix = _spmPrefixExp.firstMatch(html.data)!.group(1)!;
+  //     final String randPngEnd = base64.encode(
+  //         List<int>.generate(32, (_) => _rand.nextInt(256)) +
+  //             List<int>.filled(4, 0) +
+  //             [73, 69, 78, 68] +
+  //             List<int>.generate(4, (_) => _rand.nextInt(256)));
 
-      String jsonData = json.encode({
-        '3064': 1,
-        '39c8': '$spmPrefix.fp.risk',
-        '3c43': {
-          'adca': 'Linux',
-          'bfe9': randPngEnd.substring(randPngEnd.length - 50),
-        },
-      });
+  //     String jsonData = json.encode({
+  //       '3064': 1,
+  //       '39c8': '$spmPrefix.fp.risk',
+  //       '3c43': {
+  //         'adca': 'Linux',
+  //         'bfe9': randPngEnd.substring(randPngEnd.length - 50),
+  //       },
+  //     });
 
-      await Request().post(Api.activateBuvidApi,
-          data: {'payload': jsonData},
-          options: Options(contentType: Headers.jsonContentType));
-    } catch (e) {
-      log("setCookie, $e");
-    }
-  }
+  //     await Request().post(Api.activateBuvidApi,
+  //         data: {'payload': jsonData},
+  //         options: Options(contentType: Headers.jsonContentType));
+  //   } catch (e) {
+  //     log("setCookie, $e");
+  //   }
+  // }
 
   /*
    * config it and create

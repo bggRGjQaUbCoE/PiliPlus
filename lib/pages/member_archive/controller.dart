@@ -7,6 +7,7 @@ import 'package:PiliPlus/models/member/archive.dart';
 class MemberArchiveController extends GetxController {
   final ScrollController scrollController = ScrollController();
   late int mid;
+  late String wwebid;
   int pn = 1;
   int count = 0;
   RxMap<String, String> currentOrder = <String, String>{}.obs;
@@ -21,6 +22,7 @@ class MemberArchiveController extends GetxController {
   void onInit() {
     super.onInit();
     mid = int.parse(Get.parameters['mid']!);
+    wwebid = Get.parameters['wwebid']!;
     currentOrder.value = orderList.first;
   }
 
@@ -33,6 +35,7 @@ class MemberArchiveController extends GetxController {
       mid: mid,
       pn: pn,
       order: currentOrder['type']!,
+      wwebid: wwebid,
     );
     if (res['status']) {
       if (type == 'init') {

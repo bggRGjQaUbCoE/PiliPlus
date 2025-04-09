@@ -5,7 +5,6 @@ import 'package:PiliPlus/common/widgets/pair.dart';
 import 'package:PiliPlus/common/widgets/refresh_indicator.dart'
     show kDragContainerExtentPercentage, displacement;
 import 'package:PiliPlus/http/constants.dart';
-import 'package:PiliPlus/http/index.dart';
 import 'package:PiliPlus/models/common/dynamic_badge_mode.dart';
 import 'package:PiliPlus/models/common/sponsor_block/segment_type.dart';
 import 'package:PiliPlus/models/common/sponsor_block/skip_type.dart';
@@ -903,9 +902,9 @@ class Accounts {
     for (var type in AccountType.values) {
       accountMode[type] ??= AnonymousAccount();
     }
-    await Future.wait((accountMode.values.toSet()
-          ..retainWhere((i) => !i.activited))
-        .map((i) => Request.buvidActive(i)));
+    // await Future.wait((accountMode.values.toSet()
+    //       ..retainWhere((i) => !i.activited))
+    //     .map((i) => Request.buvidActive(i)));
   }
 
   static Future<void> clear() async {
@@ -914,7 +913,7 @@ class Accounts {
       accountMode[i] = AnonymousAccount();
     }
     await AnonymousAccount().delete();
-    Request.buvidActive(AnonymousAccount());
+    // Request.buvidActive(AnonymousAccount());
   }
 
   static Future<void> close() async {
@@ -936,7 +935,7 @@ class Accounts {
     await (accountMode[key]?..type.remove(key))?.onChange();
     accountMode[key] = account..type.add(key);
     await account.onChange();
-    if (!account.activited) await Request.buvidActive(account);
+    // if (!account.activited) await Request.buvidActive(account);
     switch (key) {
       case AccountType.main:
         await (account.isLogin

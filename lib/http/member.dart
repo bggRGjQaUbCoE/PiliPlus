@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/grpc/grpc_repo.dart';
@@ -337,14 +338,14 @@ class MemberHttp {
   }
 
   static Future memberArchive({
-    int? mid,
-    int ps = 40,
+    required int mid,
+    int ps = 25,
     int tid = 0,
     int? pn,
     String? keyword,
     String order = 'pubdate',
     bool orderAvoided = true,
-    dynamic wwebid,
+    String? wwebid,
   }) async {
     String dmImgStr = Utils.base64EncodeRandomString(16, 64);
     String dmCoverImgStr = Utils.base64EncodeRandomString(32, 128);
@@ -356,7 +357,7 @@ class MemberHttp {
       'keyword': keyword ?? '',
       'order': order,
       'platform': 'web',
-      'web_location': 1550101,
+      'web_location': '333.1387',
       'order_avoided': orderAvoided,
       'dm_img_list': '[]',
       'dm_img_str': dmImgStr,
@@ -367,7 +368,11 @@ class MemberHttp {
     var res = await Request().get(
       Api.memberArchive,
       queryParameters: params,
-      extra: {'ua': 'Mozilla/5.0'},
+      options: Options(headers: {
+        HttpHeaders.userAgentHeader: Request.headerUa(type: 'pc'),
+        HttpHeaders.refererHeader: HttpString.spaceBaseUrl,
+        'origin': HttpString.spaceBaseUrl,
+      }),
     );
     if (res.data['code'] == 0) {
       return {

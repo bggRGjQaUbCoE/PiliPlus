@@ -50,6 +50,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:html/dom.dart' as dom;
 import 'package:html/parser.dart' as html_parser;
 import 'package:path/path.dart' as path;
+import 'package:uuid/v4.dart';
 
 import '../models/home/rcmd/result.dart';
 import '../models/model_rec_video_item.dart';
@@ -1875,18 +1876,25 @@ class Utils {
   }
 
   static List<int> generateRandomBytes(int minLength, int maxLength) {
-    return List<int>.generate(random.nextInt(maxLength - minLength + 1),
-        (_) => random.nextInt(0x60) + 0x20);
+    return List<int>.generate(
+      minLength + random.nextInt(maxLength - minLength + 1),
+      (_) => 0x26 + random.nextInt(0x59), // dm_img_str不能有`%`
+    );
   }
 
   static String base64EncodeRandomString(int minLength, int maxLength) {
-    List<int> randomBytes = generateRandomBytes(minLength, maxLength);
-    return base64.encode(randomBytes);
+    final randomBytes = generateRandomBytes(minLength, maxLength);
+    final randomBase64 = base64.encode(randomBytes);
+    return randomBase64.substring(0, randomBase64.length - 2);
   }
 
   static String getFileName(String uri, {bool fileExt = true}) {
     final i0 = uri.lastIndexOf('/') + 1;
     final i1 = fileExt ? uri.length : uri.lastIndexOf('.');
     return uri.substring(i0, i1);
+  }
+
+  static String genBuvid3() {
+    return '${const UuidV4().generate().toUpperCase()}${random.nextInt(100000).toString().padLeft(5, "0")}infoc';
   }
 }

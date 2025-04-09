@@ -47,7 +47,7 @@ class MemberController extends GetxController {
   }
 
   Future<Map<String, dynamic>> getMemberInfo() async {
-    wwebid = await Utils.getWwebid(mid);
+    wwebid ??= await Utils.getWwebid(mid);
     await getMemberStat();
     await getMemberView();
     var res = await MemberHttp.memberInfo(mid: mid, wwebid: wwebid);
@@ -268,7 +268,10 @@ class MemberController extends GetxController {
   void pushDynamicsPage() => Get.toNamed('/memberDynamics?mid=$mid');
 
   // 跳转查看投稿
-  void pushArchivesPage() => Get.toNamed('/memberArchive?mid=$mid');
+  void pushArchivesPage() async {
+    wwebid ??= await Utils.getWwebid(mid);
+    Get.toNamed('/memberArchive?mid=$mid&wwebid=$wwebid');
+  }
 
   // 跳转查看专栏
   void pushSeasonsPage() {}

@@ -646,9 +646,8 @@ class LoginPageController extends GetxController
         tokenInfo['access_token'], tokenInfo['refresh_token']);
     await Future.wait([
       account.onChange(),
-      AnonymousAccount()
-          .delete()
-          .then((_) => Request.buvidActive(AnonymousAccount()))
+      AnonymousAccount().delete()
+      // .then((_) => Request.buvidActive(AnonymousAccount()))
     ]);
     Accounts.accountMode.updateAll((_, a) => a == account ? account : a);
     if (Accounts.main.isLogin) {

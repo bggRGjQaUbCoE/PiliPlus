@@ -463,7 +463,7 @@ class _LiveRoomPageState extends State<LiveRoomPage>
 
   Widget get _buildBodyH {
     double videoWidth =
-        clampDouble(context.height / context.width * 1.04, 0.58, 0.75) *
+        clampDouble(context.height / context.width * 1.08, 0.58, 0.75) *
             context.width;
     return Expanded(
       child: Row(

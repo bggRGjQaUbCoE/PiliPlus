@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 
 import 'rich_node_panel.dart';
 
-Widget content(isSave, context, item, source, callback) {
+Widget content(bool isSave, BuildContext context, item, source, callback) {
   InlineSpan picsNodes() {
     return WidgetSpan(
       child: LayoutBuilder(
@@ -55,7 +55,7 @@ Widget content(isSave, context, item, source, callback) {
               child: Text.rich(
                 /// fix 默认20px高度
                 style: TextStyle(
-                  fontSize: source == 'detail' && isSave != true ? 16 : 15,
+                  fontSize: source == 'detail' && !isSave ? 16 : 15,
                 ),
                 richNodes,
                 maxLines: source == 'detail' ? null : 6,

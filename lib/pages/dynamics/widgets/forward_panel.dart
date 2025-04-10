@@ -68,7 +68,7 @@ Widget _blockedItem(BuildContext context, item, source) {
   );
 }
 
-Widget forWard(isSave, item, BuildContext context, source, callback,
+Widget forWard(bool isSave, item, BuildContext context, source, callback,
     {floor = 1}) {
   switch (item.type) {
     // 图文
@@ -125,12 +125,12 @@ Widget forWard(isSave, item, BuildContext context, source, callback,
               Text.rich(
                 richNodes,
                 // 被转发状态(floor=2) 隐藏
-                maxLines: isSave == true
+                maxLines: isSave
                     ? null
                     : source == 'detail' && floor != 2
                         ? null
                         : 4,
-                overflow: isSave == true
+                overflow: isSave
                     ? null
                     : source == 'detail' && floor != 2
                         ? null
@@ -307,12 +307,12 @@ Widget forWard(isSave, item, BuildContext context, source, callback,
                   Text.rich(
                     richNodes,
                     // 被转发状态(floor=2) 隐藏
-                    maxLines: isSave == true
+                    maxLines: isSave
                         ? null
                         : source == 'detail' && floor != 2
                             ? null
                             : 4,
-                    overflow: isSave == true
+                    overflow: isSave
                         ? null
                         : source == 'detail' && floor != 2
                             ? null

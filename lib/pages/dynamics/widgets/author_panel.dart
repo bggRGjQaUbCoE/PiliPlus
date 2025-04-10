@@ -24,6 +24,7 @@ class AuthorPanel extends StatelessWidget {
   final Function? addBannedList;
   final String? source;
   final Function? onRemove;
+  final bool isSave;
 
   const AuthorPanel({
     super.key,
@@ -31,6 +32,7 @@ class AuthorPanel extends StatelessWidget {
     this.addBannedList,
     this.source,
     this.onRemove,
+    this.isSave = false,
   });
 
   Widget _buildAvatar(double size) => NetworkImgLayer(
@@ -43,7 +45,12 @@ class AuthorPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     String? pubTime = item.modules.moduleAuthor.pubTs != null
-        ? Utils.dateFormat(item.modules.moduleAuthor.pubTs)
+        ? isSave
+            ? DateTime.fromMillisecondsSinceEpoch(
+                    item.modules.moduleAuthor.pubTs * 1000)
+                .toString()
+                .substring(0, 19)
+            : Utils.dateFormat(item.modules.moduleAuthor.pubTs)
         : item.modules.moduleAuthor.pubTime;
     return Stack(
       alignment: Alignment.center,
@@ -210,30 +217,32 @@ class AuthorPanel extends StatelessWidget {
     );
   }
 
-  Widget _moreWidget(context) => SizedBox(
-        width: 32,
-        height: 32,
-        child: IconButton(
-          tooltip: '更多',
-          style: ButtonStyle(
-            padding: WidgetStateProperty.all(EdgeInsets.zero),
+  Widget _moreWidget(BuildContext context) => isSave
+      ? const SizedBox.shrink()
+      : SizedBox(
+          width: 32,
+          height: 32,
+          child: IconButton(
+            tooltip: '更多',
+            style: ButtonStyle(
+              padding: WidgetStateProperty.all(EdgeInsets.zero),
+            ),
+            onPressed: () {
+              showModalBottomSheet(
+                context: context,
+                useSafeArea: true,
+                isScrollControlled: true,
+                constraints: BoxConstraints(
+                  maxWidth: min(640, min(Get.width, Get.height)),
+                ),
+                builder: (context) {
+                  return morePanel(context);
+                },
+              );
+            },
+            icon: const Icon(Icons.more_vert_outlined, size: 18),
           ),
-          onPressed: () {
-            showModalBottomSheet(
-              context: context,
-              useSafeArea: true,
-              isScrollControlled: true,
-              constraints: BoxConstraints(
-                maxWidth: min(640, min(Get.width, Get.height)),
-              ),
-              builder: (context) {
-                return morePanel(context);
-              },
-            );
-          },
-          icon: const Icon(Icons.more_vert_outlined, size: 18),
-        ),
-      );
+        );
 
   Widget morePanel(context) {
     return Padding(

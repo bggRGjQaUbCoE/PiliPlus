@@ -56,6 +56,8 @@ class SavePanel extends StatefulWidget {
 class _SavePanelState extends State<SavePanel> {
   final boundaryKey = GlobalKey();
 
+  bool showBottom = true;
+
   // item
   dynamic get _item => widget.item;
   late String viewType = '查看';
@@ -222,7 +224,7 @@ class _SavePanelState extends State<SavePanel> {
       ByteData? byteData = await image.toByteData(format: ImageByteFormat.png);
       Uint8List pngBytes = byteData!.buffer.asUint8List();
       String picName =
-          "plpl_reply_${DateTime.now().toString().replaceAll(RegExp(r'[- :]'), '').split('.').first}";
+          "plpl_reply_${DateTime.now().toString().substring(0, 19).replaceAll(RegExp(r'[- :]'), '')}";
       if (isShare) {
         Get.back();
         SmartDialog.dismiss();
@@ -263,9 +265,7 @@ class _SavePanelState extends State<SavePanel> {
   Widget build(BuildContext context) {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onTap: () {
-        Get.back();
-      },
+      onTap: Get.back,
       child: Stack(
         clipBehavior: Clip.none,
         alignment: Alignment.center,
@@ -297,6 +297,7 @@ class _SavePanelState extends State<SavePanel> {
                                 replyLevel: '',
                                 needDivider: false,
                                 upMid: widget.upMid,
+                                isSave: true,
                               ),
                             )
                           else if (_item is DynamicItemModel)
@@ -348,10 +349,10 @@ class _SavePanelState extends State<SavePanel> {
                                         if (pubdate != null) ...[
                                           const Spacer(),
                                           Text(
-                                            Utils.dateFormat(
-                                              pubdate,
-                                              formatType: 'detail',
-                                            ),
+                                            DateTime.fromMillisecondsSinceEpoch(
+                                                    pubdate! * 1000)
+                                                .toString()
+                                                .substring(0, 19),
                                             style: TextStyle(
                                               color: Theme.of(context)
                                                   .colorScheme
@@ -365,96 +366,103 @@ class _SavePanelState extends State<SavePanel> {
                                 ],
                               ),
                             ),
-                          Stack(
-                            clipBehavior: Clip.none,
-                            children: [
-                              if (uri.isNotEmpty)
-                                Align(
-                                  alignment: Alignment.centerRight,
-                                  child: Row(
-                                    children: [
-                                      Expanded(
-                                        child: Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.end,
+                          showBottom
+                              ? Stack(
+                                  clipBehavior: Clip.none,
+                                  children: [
+                                    if (uri.isNotEmpty)
+                                      Align(
+                                        alignment: Alignment.centerRight,
+                                        child: Row(
                                           children: [
-                                            if (uname?.isNotEmpty == true) ...[
-                                              Text(
-                                                '@$uname',
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,
-                                                style: TextStyle(
-                                                  color: Theme.of(context)
-                                                      .colorScheme
-                                                      .primary,
-                                                ),
-                                              ),
-                                              const SizedBox(height: 4),
-                                            ],
-                                            Text(
-                                              '识别二维码，$viewType$itemType',
-                                              textAlign: TextAlign.end,
-                                              style: TextStyle(
-                                                color: Theme.of(context)
-                                                    .colorScheme
-                                                    .onSurfaceVariant,
+                                            Expanded(
+                                              child: Column(
+                                                mainAxisSize: MainAxisSize.min,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.end,
+                                                children: [
+                                                  if (uname?.isNotEmpty ==
+                                                      true) ...[
+                                                    Text(
+                                                      '@$uname',
+                                                      maxLines: 1,
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                      style: TextStyle(
+                                                        color: Theme.of(context)
+                                                            .colorScheme
+                                                            .primary,
+                                                      ),
+                                                    ),
+                                                    const SizedBox(height: 4),
+                                                  ],
+                                                  Text(
+                                                    '识别二维码，$viewType$itemType',
+                                                    textAlign: TextAlign.end,
+                                                    style: TextStyle(
+                                                      color: Theme.of(context)
+                                                          .colorScheme
+                                                          .onSurfaceVariant,
+                                                    ),
+                                                  ),
+                                                  const SizedBox(height: 4),
+                                                  Text(
+                                                    DateTime.now()
+                                                        .toString()
+                                                        .split('.')
+                                                        .first,
+                                                    textAlign: TextAlign.end,
+                                                    style: TextStyle(
+                                                      fontSize: 13,
+                                                      color: Theme.of(context)
+                                                          .colorScheme
+                                                          .outline,
+                                                    ),
+                                                  ),
+                                                ],
                                               ),
                                             ),
-                                            const SizedBox(height: 4),
-                                            Text(
-                                              DateTime.now()
-                                                  .toString()
-                                                  .split('.')
-                                                  .first,
-                                              textAlign: TextAlign.end,
-                                              style: TextStyle(
-                                                fontSize: 13,
-                                                color: Theme.of(context)
-                                                    .colorScheme
-                                                    .outline,
+                                            Container(
+                                              width: 100,
+                                              height: 100,
+                                              padding: const EdgeInsets.all(12),
+                                              child: Container(
+                                                color: Get.isDarkMode
+                                                    ? Colors.white
+                                                    : Theme.of(context)
+                                                        .colorScheme
+                                                        .surface,
+                                                padding:
+                                                    const EdgeInsets.all(3),
+                                                child: PrettyQrView.data(
+                                                  data: uri,
+                                                  decoration:
+                                                      const PrettyQrDecoration(
+                                                    shape:
+                                                        PrettyQrRoundedSymbol(
+                                                      borderRadius:
+                                                          BorderRadius.zero,
+                                                    ),
+                                                  ),
+                                                ),
                                               ),
                                             ),
                                           ],
                                         ),
                                       ),
-                                      Container(
+                                    Align(
+                                      alignment: Alignment.centerLeft,
+                                      child: Image.asset(
+                                        'assets/images/logo/logo_2.png',
                                         width: 100,
-                                        height: 100,
-                                        padding: const EdgeInsets.all(12),
-                                        child: Container(
-                                          color: Get.isDarkMode
-                                              ? Colors.white
-                                              : Theme.of(context)
-                                                  .colorScheme
-                                                  .surface,
-                                          padding: const EdgeInsets.all(3),
-                                          child: PrettyQrView.data(
-                                            data: uri,
-                                            decoration:
-                                                const PrettyQrDecoration(
-                                              shape: PrettyQrRoundedSymbol(
-                                                borderRadius: BorderRadius.zero,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onSurfaceVariant,
                                       ),
-                                    ],
-                                  ),
-                                ),
-                              Align(
-                                alignment: Alignment.centerLeft,
-                                child: Image.asset(
-                                  'assets/images/logo/logo_2.png',
-                                  width: 100,
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .onSurfaceVariant,
-                                ),
-                              ),
-                            ],
-                          ),
+                                    ),
+                                  ],
+                                )
+                              : const SizedBox(height: 12),
                         ],
                       ),
                     ),
@@ -468,7 +476,7 @@ class _SavePanelState extends State<SavePanel> {
             right: 0,
             bottom: 0,
             child: Container(
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
@@ -495,6 +503,17 @@ class _SavePanelState extends State<SavePanel> {
                     ),
                     const SizedBox(width: 40),
                     iconButton(
+                        size: 42,
+                        tooltip: showBottom ? '隐藏' : '显示',
+                        context: context,
+                        icon: showBottom
+                            ? Icons.visibility_off
+                            : Icons.visibility,
+                        onPressed: () => setState(() {
+                              showBottom = !showBottom;
+                            })),
+                    const SizedBox(width: 40),
+                    iconButton(
                       size: 42,
                       tooltip: '分享',
                       context: context,
@@ -507,7 +526,7 @@ class _SavePanelState extends State<SavePanel> {
                       tooltip: '保存',
                       context: context,
                       icon: Icons.save_alt,
-                      onPressed: () => _onSaveOrSharePic(),
+                      onPressed: _onSaveOrSharePic,
                     ),
                   ],
                 ),

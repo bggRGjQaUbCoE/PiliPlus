@@ -43,6 +43,7 @@ class ReplyItemGrpc extends StatelessWidget {
     this.callback,
     this.onCheckReply,
     this.onToggleTop,
+    this.isSave = false,
   });
   final ReplyInfo replyItem;
   final String replyLevel;
@@ -58,6 +59,7 @@ class ReplyItemGrpc extends StatelessWidget {
   final Function(List<String>, int)? callback;
   final ValueChanged<ReplyInfo>? onCheckReply;
   final Function(bool isUpTop, int rpid)? onToggleTop;
+  final bool isSave;
 
   @override
   Widget build(BuildContext context) {
@@ -320,7 +322,12 @@ class ReplyItemGrpc extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: <Widget>[
                       Text(
-                        Utils.dateFormat(replyItem.ctime.toInt()),
+                        isSave
+                            ? DateTime.fromMillisecondsSinceEpoch(
+                                    replyItem.ctime.toInt() * 1000)
+                                .toString()
+                                .substring(0, 19)
+                            : Utils.dateFormat(replyItem.ctime.toInt()),
                         style: TextStyle(
                           fontSize:
                               Theme.of(context).textTheme.labelSmall!.fontSize,
@@ -554,15 +561,12 @@ class ReplyItemGrpc extends StatelessWidget {
                   },
                   child: Container(
                     width: double.infinity,
-                    padding: EdgeInsets.fromLTRB(
-                      8,
-                      i == 0 && (extraRow || replyItem.replies.length > 1)
-                          ? 8
-                          : 4,
-                      8,
-                      i == 0 && (extraRow || replyItem.replies.length > 1)
-                          ? 4
-                          : 6,
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical:
+                          i == 0 && (extraRow || replyItem.replies.length > 1)
+                              ? 8
+                              : 4,
                     ),
                     child: Semantics(
                       label:

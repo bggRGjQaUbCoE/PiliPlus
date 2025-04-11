@@ -45,11 +45,16 @@ class Request {
         )));
 
     if (Accounts.main.isLogin) {
-      getCoin();
+      final coin = GStorage.userInfo.get('userInfoCache')?.money;
+      if (coin == null) {
+        setCoin();
+      } else {
+        GlobalData().coins = coin;
+      }
     }
   }
 
-  static Future getCoin() async {
+  static Future<void> setCoin() async {
     final res = await UserHttp.getCoin();
     if (res['status']) {
       GlobalData().coins = res['data'];

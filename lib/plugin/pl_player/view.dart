@@ -110,6 +110,15 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
 
   late final RxBool showRestoreScaleBtn = false.obs;
 
+  late final _isRelative = GStorage.useRelativeSlide;
+  late final _offset = _isRelative
+      ? GStorage.sliderDuration / 100
+      : GStorage.sliderDuration * 1000;
+
+  num get sliderScale => _isRelative
+      ? plPlayerController.duration.value.inMilliseconds * _offset
+      : _offset;
+
   Offset _initialFocalPoint = Offset.zero;
   String? _gestureType;
   //播放器放缩
@@ -820,18 +829,16 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
 
                 final int curSliderPosition =
                     plPlayerController.sliderPosition.value.inMilliseconds;
-                final double scale = 90000 / renderBox.size.width;
+                final double width = renderBox.size.width;
                 final Duration pos = Duration(
-                    milliseconds:
-                        curSliderPosition + (delta.dx * scale).round());
+                    milliseconds: curSliderPosition +
+                        (sliderScale * delta.dx / width).round()); // TODO
                 final Duration result =
                     pos.clamp(Duration.zero, plPlayerController.duration.value);
                 final height = renderBox.size.height * 0.125;
                 if (details.localFocalPoint.dy <= height &&
-                    (details.localFocalPoint.dx >=
-                            renderBox.size.width * 0.875 ||
-                        details.localFocalPoint.dx <=
-                            renderBox.size.width * 0.125)) {
+                    (details.localFocalPoint.dx >= width * 0.875 ||
+                        details.localFocalPoint.dx <= width * 0.125)) {
                   plPlayerController.cancelSeek = true;
                   plPlayerController.showPreview.value = false;
                   if (plPlayerController.hasToast != true) {

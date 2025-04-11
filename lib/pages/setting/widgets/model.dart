@@ -774,11 +774,28 @@ List<SettingsModel> get playSettings => [
       ),
       _getVideoFilterSelectModel(
         context: Get.context!,
-        title: '快进/快退时长',
+        title: '双击快进/快退时长',
         suffix: 's',
         key: SettingBoxKey.fastForBackwardDuration,
         values: [5, 10, 15],
         defaultValue: 10,
+        isFilter: false,
+      ),
+      SettingsModel(
+        settingsType: SettingsType.sw1tch,
+        title: '滑动快进/快退使用相对时长',
+        leading: const Icon(Icons.swap_horiz_outlined),
+        setKey: SettingBoxKey.useRelativeSlide,
+        defaultVal: false,
+      ),
+      _getVideoFilterSelectModel(
+        context: Get.context!,
+        title: '滑动快进/快退时长',
+        subtitle: '从播放器一端滑到另一端的快进/快退时长',
+        suffix: GStorage.useRelativeSlide ? '%' : 's',
+        key: SettingBoxKey.sliderDuration,
+        values: [25, 50, 90, 100],
+        defaultValue: 90,
         isFilter: false,
       ),
       SettingsModel(
@@ -2512,6 +2529,7 @@ SettingsModel _getBanwordModel(
 SettingsModel _getVideoFilterSelectModel({
   required BuildContext context,
   required String title,
+  String? subtitle,
   String? suffix,
   required String key,
   required List<int> values,
@@ -2523,9 +2541,12 @@ SettingsModel _getVideoFilterSelectModel({
     settingsType: SettingsType.normal,
     title: '$title${isFilter ? '过滤' : ''}',
     leading: const Icon(Icons.timelapse_outlined),
-    getSubtitle: () => isFilter
-        ? '过滤掉$title小于「$value${suffix ?? ""}」的视频'
-        : '当前$title:「$value${suffix ?? ""}」',
+    subtitle: subtitle,
+    getSubtitle: subtitle == null
+        ? () => isFilter
+            ? '过滤掉$title小于「$value${suffix ?? ""}」的视频'
+            : '当前$title:「$value${suffix ?? ""}」'
+        : null,
     onTap: (setState) async {
       var result = await showDialog<int>(
         context: context,

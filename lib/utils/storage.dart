@@ -145,6 +145,12 @@ class GStorage {
       setting.get(SettingBoxKey.subtitlePreference,
           defaultValue: SubtitlePreference.values.first.code);
 
+  static bool get useRelativeSlide =>
+      setting.get(SettingBoxKey.useRelativeSlide, defaultValue: false);
+
+  static int get sliderDuration =>
+      setting.get(SettingBoxKey.sliderDuration, defaultValue: 90);
+
   static int get defaultVideoQa => setting.get(
         SettingBoxKey.defaultVideoQa,
         defaultValue: VideoQuality.values.last.code,
@@ -639,6 +645,8 @@ class SettingBoxKey {
       pipNoDanmaku = 'pipNoDanmaku',
       enableAutoLongPressSpeed = 'enableAutoLongPressSpeed',
       subtitlePreference = 'subtitlePreference',
+      useRelativeSlide = 'useRelativeSlide',
+      sliderDuration = 'sliderOffset',
 
       // youtube 双击快进快退
       enableQuickDouble = 'enableQuickDouble',

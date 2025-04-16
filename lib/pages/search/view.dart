@@ -1,3 +1,4 @@
+import 'package:PiliPlus/common/widgets/disabled_icon.dart';
 import 'package:PiliPlus/common/widgets/loading_widget.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/search/search_trending/trending_data.dart';
@@ -5,7 +6,6 @@ import 'package:PiliPlus/models/search/suggest.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'controller.dart';
 import 'widgets/hot_keyword.dart';
@@ -263,25 +263,8 @@ class _SearchPageState extends State<SearchPage> {
                               ? '记录搜索'
                               : '无痕搜索',
                           icon: _searchController.recordSearchHistory.value
-                              ? Icon(
-                                  Icons.history,
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .onSurfaceVariant
-                                      .withOpacity(0.8),
-                                )
-                              : SvgPicture.string(
-                                  width: 22,
-                                  height: 22,
-                                  colorFilter: ColorFilter.mode(
-                                    Theme.of(context)
-                                        .colorScheme
-                                        .outline
-                                        .withOpacity(0.8),
-                                    BlendMode.srcIn,
-                                  ),
-                                  _searchController.historyOff,
-                                ),
+                              ? historyIcon
+                              : historyIcon.disable(),
                           style: IconButton.styleFrom(
                             padding: EdgeInsets.zero,
                           ),
@@ -349,6 +332,9 @@ class _SearchPageState extends State<SearchPage> {
       ),
     );
   }
+
+  Icon get historyIcon => Icon(Icons.history,
+      color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.8));
 
   Widget _buildHotKey(LoadingState<TrendingData> loadingState) {
     return switch (loadingState) {

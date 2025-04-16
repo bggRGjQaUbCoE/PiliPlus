@@ -1,5 +1,6 @@
 import 'package:PiliPlus/common/widgets/dialog.dart';
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/models/search/search_trending/trending_data.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:PiliPlus/http/search.dart';
@@ -22,7 +23,8 @@ class SSearchController extends GetxController {
 
   late bool enableHotKey;
 
-  Rx<LoadingState> loadingState = LoadingState.loading().obs;
+  Rx<LoadingState<TrendingData>> loadingState =
+      LoadingState<TrendingData>.loading().obs;
 
   int initIndex = 0;
 
@@ -112,12 +114,7 @@ class SSearchController extends GetxController {
 
   // 获取热搜关键词
   Future queryHotSearchList() async {
-    dynamic result = await SearchHttp.hotSearchList();
-    if (result['status']) {
-      loadingState.value = LoadingState.success(result['data'].list);
-    } else {
-      loadingState.value = LoadingState.error(result['msg']);
-    }
+    loadingState.value = await SearchHttp.searchTrending(limit: 10);
   }
 
   void onClickKeyword(String keyword) {

@@ -6,33 +6,12 @@ import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import '../models/bangumi/info.dart';
 import '../models/common/search_type.dart';
-import '../models/search/hot.dart';
 import '../models/search/result.dart';
 import '../models/search/suggest.dart';
 import '../utils/storage.dart';
 import 'index.dart';
 
 class SearchHttp {
-  static Future hotSearchList() async {
-    var res = await Request().get(Api.hotSearchList);
-    if (res.data is String) {
-      Map<String, dynamic> resultMap = json.decode(res.data);
-      if (resultMap['code'] == 0) {
-        return {
-          'status': true,
-          'data': HotSearchModel.fromJson(resultMap),
-        };
-      }
-    } else if (res.data is Map<String, dynamic> && res.data['code'] == 0) {
-      return {
-        'status': true,
-        'data': HotSearchModel.fromJson(res.data),
-      };
-    }
-
-    return {'status': false, 'msg': '请求错误'};
-  }
-
   // 获取搜索建议
   static Future searchSuggest({required term}) async {
     var res = await Request().get(Api.searchSuggest,

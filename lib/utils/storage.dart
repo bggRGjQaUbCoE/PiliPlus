@@ -33,7 +33,6 @@ import 'package:get/get_navigation/src/routes/transitions_type.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:PiliPlus/models/model_owner.dart';
-import 'package:PiliPlus/models/search/hot.dart';
 import 'package:PiliPlus/models/user/info.dart';
 import 'global_data.dart';
 import 'package:uuid/uuid.dart';
@@ -588,8 +587,6 @@ class GStorage {
     Hive.registerAdapter(OwnerAdapter());
     Hive.registerAdapter(UserInfoDataAdapter());
     Hive.registerAdapter(LevelInfoAdapter());
-    Hive.registerAdapter(HotSearchModelAdapter());
-    Hive.registerAdapter(HotSearchItemAdapter());
     Hive.registerAdapter(BiliCookieJarAdapter());
     Hive.registerAdapter(LoginAccountAdapter());
     Hive.registerAdapter(AccountTypeAdapter());

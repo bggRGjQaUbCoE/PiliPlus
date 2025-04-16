@@ -1,5 +1,6 @@
 import 'package:PiliPlus/common/widgets/loading_widget.dart';
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/models/search/search_trending/trending_data.dart';
 import 'package:PiliPlus/models/search/suggest.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/utils.dart';
@@ -349,13 +350,13 @@ class _SearchPageState extends State<SearchPage> {
     );
   }
 
-  Widget _buildHotKey(LoadingState loadingState) {
+  Widget _buildHotKey(LoadingState<TrendingData> loadingState) {
     return switch (loadingState) {
-      Success() => (loadingState.response as List?)?.isNotEmpty == true
+      Success() => loadingState.response.list?.isNotEmpty == true
           ? LayoutBuilder(
               builder: (context, constraints) => HotKeyword(
                 width: constraints.maxWidth,
-                hotSearchList: loadingState.response,
+                hotSearchList: loadingState.response.list,
                 onClick: _searchController.onClickKeyword,
               ),
             )

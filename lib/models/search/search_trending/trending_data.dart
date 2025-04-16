@@ -18,11 +18,4 @@ class TrendingData {
             .toList(),
         hotwordEggInfo: json['hotword_egg_info'] as String?,
       );
-
-  Map<String, dynamic> toJson() => {
-        'trackid': trackid,
-        'list': list?.map((e) => e.toJson()).toList(),
-        'top_list': topList?.map((e) => e.toJson()).toList(),
-        'hotword_egg_info': hotwordEggInfo,
-      };
 }

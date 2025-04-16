@@ -7,9 +7,9 @@ abstract class LoadingState<T> {
 }
 
 class Loading extends LoadingState<Never> {
-  Loading._internal();
+  const Loading._internal();
 
-  static final Loading _instance = Loading._internal();
+  static const Loading _instance = Loading._internal();
 
   factory Loading() => _instance;
 }

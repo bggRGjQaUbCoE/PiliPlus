@@ -48,6 +48,8 @@ class AccountManager extends Interceptor {
       Api.searchDefault,
       Api.searchSuggest,
       Api.liveList,
+      Api.searchTrending,
+      Api.searchRecommend,
     },
     AccountType.video: {Api.videoUrl, Api.bangumiVideoUrl}
   };

@@ -190,7 +190,7 @@ class SearchHttp {
 
   static Future<LoadingState<TrendingData>> searchTrending(
       {int limit = 30}) async {
-    final dynamic res = await Request().get(
+    final res = await Request().get(
       Api.searchTrending,
       queryParameters: {
         'limit': limit,
@@ -201,5 +201,18 @@ class SearchHttp {
     } else {
       return LoadingState.error(res.data['message']);
     }
+  }
+
+  static Future<LoadingState<SearchKeywordData>> searchRecommend() async {
+    final res = await Request().get(Api.searchRecommend, queryParameters: {
+      'build': '8350200',
+      'c_locale': 'zh_CN',
+      'mobi_app': 'android',
+      'platform': 'android',
+      's_locale': 'zh_CN',
+    });
+    return res.data['code'] == 0
+        ? LoadingState.success(SearchKeywordData.fromJson(res.data['data']))
+        : LoadingState.error(res.data['message']);
   }
 }

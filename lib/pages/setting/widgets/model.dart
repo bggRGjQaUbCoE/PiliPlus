@@ -2214,6 +2214,14 @@ List<SettingsModel> get extraSettings => [
       ),
       SettingsModel(
         settingsType: SettingsType.sw1tch,
+        title: '搜索发现',
+        subtitle: '是否展示「搜索发现」',
+        leading: const Icon(Icons.search_outlined),
+        setKey: SettingBoxKey.enableSearchRcmd,
+        defaultVal: true,
+      ),
+      SettingsModel(
+        settingsType: SettingsType.sw1tch,
         title: '搜索默认词',
         subtitle: '是否展示搜索框默认词',
         leading: const Icon(Icons.whatshot_outlined),

@@ -1,17 +1,20 @@
+import 'package:PiliPlus/models/search/search_trending/trending_list.dart';
 import 'package:PiliPlus/utils/extension.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 class HotKeyword extends StatelessWidget {
-  final double? width;
-  final List? hotSearchList;
+  final double width;
+  final List<SearchKeywordList> hotSearchList;
   final Function? onClick;
+  final bool showMore;
   const HotKeyword({
-    this.width,
-    this.hotSearchList,
-    this.onClick,
     super.key,
-  });
+    required double width,
+    required this.hotSearchList,
+    this.onClick,
+    this.showMore = true,
+  }) : this.width = width / 2 - 4;
 
   @override
   Widget build(BuildContext context) {
@@ -19,22 +22,19 @@ class HotKeyword extends StatelessWidget {
       runSpacing: 0.4,
       spacing: 5.0,
       children: [
-        for (var i in hotSearchList!)
+        for (var i in hotSearchList)
           SizedBox(
-            width: width! / 2 - 4,
+            width: width,
             child: Material(
               color: Colors.transparent,
-              borderRadius: BorderRadius.circular(3),
+              borderRadius: const BorderRadius.all(Radius.circular(3)),
               clipBehavior: Clip.hardEdge,
               child: InkWell(
                 onTap: () => onClick?.call(i.keyword),
                 child: Padding(
-                  padding: EdgeInsets.only(
-                    left: 2,
-                    right: 10,
-                  ),
+                  padding: const EdgeInsets.only(left: 2, right: 10),
                   child: Tooltip(
-                    message: i.keyword!,
+                    message: i.keyword,
                     child: Row(
                       children: [
                         Flexible(
@@ -48,16 +48,14 @@ class HotKeyword extends StatelessWidget {
                             ),
                           ),
                         ),
-                        if (i.icon != null && i.icon != '') ...[
-                          const SizedBox(width: 4),
-                          SizedBox(
-                            height: 15,
+                        if (!i.icon.isNullOrEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(left: 4),
                             child: CachedNetworkImage(
-                              imageUrl: (i.icon as String).http2https,
-                              height: 15.0,
+                              imageUrl: i.icon!.http2https,
+                              height: 15,
                             ),
-                          ),
-                        ]
+                          )
                       ],
                     ),
                   ),

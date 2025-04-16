@@ -5,7 +5,7 @@ import 'package:PiliPlus/models/search/search_trending/trending_list.dart';
 import 'package:PiliPlus/pages/common/common_list_controller.dart';
 
 class SearchTrendingController
-    extends CommonListController<TrendingData, TrendingList> {
+    extends CommonListController<TrendingData, SearchKeywordList> {
   int topCount = 0;
 
   @override
@@ -15,10 +15,11 @@ class SearchTrendingController
   }
 
   @override
-  List<TrendingList>? getDataList(TrendingData response) {
-    List<TrendingList> topList = (response.topList ?? <TrendingList>[]);
+  List<SearchKeywordList>? getDataList(TrendingData response) {
+    List<SearchKeywordList> topList = response.topList ?? <TrendingList>[];
     topCount = topList.length;
-    return topList + (response.list ?? <TrendingList>[]);
+    return response.list == null ? topList : topList
+      ..addAll(response.list ?? []);
   }
 
   @override

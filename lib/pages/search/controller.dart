@@ -19,9 +19,13 @@ class SSearchController extends GetxController {
   String hintText = '搜索';
 
   late bool enableHotKey;
+  late bool enableSearchRcmd;
 
   Rx<LoadingState<TrendingData>> loadingState =
       LoadingState<TrendingData>.loading().obs;
+
+  Rx<LoadingState<SearchKeywordData>> recommendData =
+      LoadingState<SearchKeywordData>.loading().obs;
 
   int initIndex = 0;
 
@@ -30,6 +34,8 @@ class SSearchController extends GetxController {
   final _debouncer = Debouncer(delay: const Duration(milliseconds: 200));
   late final searchSuggestion = GStorage.searchSuggestion;
   late final RxBool recordSearchHistory = GStorage.recordSearchHistory.obs;
+
+  late final digitOnlyRegExp = RegExp(r'^\d+$');
 
   @override
   void onInit() {
@@ -52,13 +58,20 @@ class SSearchController extends GetxController {
     enableHotKey =
         GStorage.setting.get(SettingBoxKey.enableHotKey, defaultValue: true);
 
+    enableSearchRcmd = GStorage.setting
+        .get(SettingBoxKey.enableSearchRcmd, defaultValue: true);
+
     if (enableHotKey) {
       queryHotSearchList();
+    }
+
+    if (enableSearchRcmd) {
+      queryRecommendList();
     }
   }
 
   void validateUid() {
-    showUidBtn.value = RegExp(r'^\d+$').hasMatch(controller.text);
+    showUidBtn.value = digitOnlyRegExp.hasMatch(controller.text);
   }
 
   void onChange(String value) {
@@ -112,6 +125,10 @@ class SSearchController extends GetxController {
   // 获取热搜关键词
   Future queryHotSearchList() async {
     loadingState.value = await SearchHttp.searchTrending(limit: 10);
+  }
+
+  Future queryRecommendList() async {
+    recommendData.value = await SearchHttp.searchRecommend();
   }
 
   void onClickKeyword(String keyword) {

@@ -123,7 +123,7 @@ class _SearchTrendingPageState extends State<SearchTrendingPage> {
     );
   }
 
-  Widget _buildBody(LoadingState<List<TrendingList>?> loadingState) {
+  Widget _buildBody(LoadingState<List<SearchKeywordList>?> loadingState) {
     return switch (loadingState) {
       Loading() => SliverToBoxAdapter(child: LinearProgressIndicator()),
       Success() => loadingState.response?.isNotEmpty == true

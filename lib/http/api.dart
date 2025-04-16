@@ -766,4 +766,7 @@ class Api {
   static const String searchTrending = '/x/v2/search/trending/ranking';
 
   static const String setTopDyn = '/x/dynamic/feed/space/set_top';
+
+  static const String searchRecommend =
+      '${HttpString.appBaseUrl}/x/v2/search/recommend';
 }

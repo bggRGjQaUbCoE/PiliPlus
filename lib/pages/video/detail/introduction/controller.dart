@@ -546,7 +546,9 @@ class VideoIntroController extends GetxController
     }
     var result = await UserHttp.hasFollow(videoDetail.value.owner!.mid!);
     if (result['status']) {
-      followStatus.value = result['data'];
+      Map data = result['data'];
+      if (data['special'] == 1) data['attribute'] = -10;
+      followStatus.value = data;
     }
   }
 

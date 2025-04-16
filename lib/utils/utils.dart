@@ -1133,7 +1133,7 @@ class Utils {
     required BuildContext context,
     required dynamic mid,
     required bool isFollow,
-    required ValueChanged? callback,
+    required ValueChanged<int>? callback,
     Map? followStatus,
   }) async {
     if (mid == null) {
@@ -1182,7 +1182,7 @@ class Utils {
                       );
                       if (res['status']) {
                         SmartDialog.showToast('$text成功');
-                        callback?.call(2);
+                        callback?.call(-10);
                       } else {
                         SmartDialog.showToast(res['msg']);
                       }

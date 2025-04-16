@@ -30,7 +30,7 @@ class FollowItemModel {
   });
 
   int? mid;
-  int? attribute;
+  int? attribute; // 对于`/x/relation/tag`, 此处的attribute似乎恒为0
   // int? mtime;
   List? tag;
   int? special;

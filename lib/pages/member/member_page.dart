@@ -200,7 +200,7 @@ class _MemberPageNewState extends State<MemberPageNew> {
                       children: [
                         const Icon(Icons.block, size: 19),
                         const SizedBox(width: 10),
-                        Text(_userController.relation.value != -1
+                        Text(_userController.relation.value != 128
                             ? '加入黑名单'
                             : '移除黑名单'),
                       ],
@@ -281,7 +281,6 @@ class _MemberPageNewState extends State<MemberPageNew> {
                 isV: isV,
                 isOwner: _userController.mid == _userController.ownerMid,
                 relation: _userController.relation.value,
-                isFollow: _userController.isFollow.value,
                 card: userState.response.card,
                 images: userState.response.images,
                 onFollow: () => _userController.onFollow(context),

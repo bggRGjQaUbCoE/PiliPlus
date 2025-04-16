@@ -890,6 +890,7 @@ class _VideoInfoState extends State<VideoInfo> {
               2 => '已关注',
               6 => '已互关',
               128 => '已拉黑',
+              -10 => '特别关注',
               _ => '关注'
             },
             style: TextStyle(fontSize: t.textTheme.labelMedium!.fontSize),

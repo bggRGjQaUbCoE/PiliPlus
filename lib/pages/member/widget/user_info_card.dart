@@ -19,7 +19,6 @@ class UserInfoCard extends StatelessWidget {
     required this.card,
     required this.images,
     required this.relation,
-    required this.isFollow,
     required this.onFollow,
     this.live,
     this.silence,
@@ -29,7 +28,6 @@ class UserInfoCard extends StatelessWidget {
   final bool isV;
   final bool isOwner;
   final int relation;
-  final bool isFollow;
   final space.Card card;
   final space.Images images;
   final VoidCallback onFollow;
@@ -380,7 +378,7 @@ class UserInfoCard extends StatelessWidget {
                 child: FilledButton.tonal(
                   onPressed: onFollow,
                   style: FilledButton.styleFrom(
-                    backgroundColor: relation == -1 || isFollow
+                    backgroundColor: relation != 0
                         ? Theme.of(context).colorScheme.onInverseSurface
                         : null,
                     visualDensity: const VisualDensity(
@@ -390,13 +388,13 @@ class UserInfoCard extends StatelessWidget {
                   ),
                   child: Text.rich(
                     style: TextStyle(
-                      color: relation == -1 || isFollow
+                      color: relation != 0
                           ? Theme.of(context).colorScheme.outline
                           : null,
                     ),
                     TextSpan(
                       children: [
-                        if (isFollow)
+                        if (relation != 0 && relation != 128)
                           WidgetSpan(
                             alignment: PlaceholderAlignment.top,
                             child: Icon(
@@ -406,16 +404,17 @@ class UserInfoCard extends StatelessWidget {
                             ),
                           ),
                         TextSpan(
-                          text: isOwner
-                              ? '编辑资料'
-                              : relation == -1
-                                  ? '移除黑名单'
-                                  : relation == 2
-                                      ? ' 特别关注'
-                                      : isFollow
-                                          ? ' 已关注'
-                                          : '关注',
-                        ),
+                            text: isOwner
+                                ? '编辑资料'
+                                : switch (relation) {
+                                    0 => '关注',
+                                    1 => '悄悄关注',
+                                    2 => '已关注',
+                                    6 => '已互关',
+                                    128 => '移除黑名单',
+                                    -10 => '特别关注', // 该状态码并不是官方状态码
+                                    _ => relation.toString(),
+                                  }),
                       ],
                     ),
                   ),

@@ -27,8 +27,7 @@ class MemberControllerNew extends CommonDataController<Data, dynamic>
   RxBool showUname = false.obs;
   String? username;
   int? ownerMid;
-  RxBool isFollow = false.obs;
-  RxInt relation = 1.obs;
+  RxInt relation = 0.obs;
   TabController? tabController;
   late List<Tab> tabs;
   List<Tab2>? tab2;
@@ -36,6 +35,8 @@ class MemberControllerNew extends CommonDataController<Data, dynamic>
   double top = 0;
   bool? hasSeasonOrSeries;
   final fromViewAid = Get.parameters['from_view_aid'];
+
+  bool get isFollow => relation.value != 0 && relation.value != 128;
 
   @override
   void onInit() {
@@ -61,8 +62,11 @@ class MemberControllerNew extends CommonDataController<Data, dynamic>
   bool customHandleResponse(bool isRefresh, Success<Data> response) {
     Data data = response.response;
     username = data.card?.name ?? '';
-    isFollow.value = data.card?.relation?.isFollow == 1;
-    relation.value = data.relSpecial == 1 ? 2 : data.relation ?? 1;
+    relation.value = data.card?.relation?.isFollow == 1
+        ? data.relSpecial == 1
+            ? -10
+            : data.card?.relation?.status ?? 2
+        : 0;
     tab2 = data.tab2;
     live = data.live;
     silence = data.card?.silence;
@@ -153,7 +157,7 @@ class MemberControllerNew extends CommonDataController<Data, dynamic>
       builder: (context) {
         return AlertDialog(
           title: const Text('提示'),
-          content: Text(relation.value != -1 ? '确定拉黑UP主?' : '从黑名单移除UP主'),
+          content: Text(relation.value != 128 ? '确定拉黑UP主?' : '从黑名单移除UP主'),
           actions: [
             TextButton(
               onPressed: Get.back,
@@ -182,19 +186,18 @@ class MemberControllerNew extends CommonDataController<Data, dynamic>
   void _onBlock() async {
     dynamic res = await VideoHttp.relationMod(
       mid: mid,
-      act: relation.value != -1 ? 5 : 6,
+      act: relation.value != 128 ? 5 : 6,
       reSrc: 11,
     );
     if (res['status']) {
-      relation.value = relation.value != -1 ? -1 : 1;
-      isFollow.value = false;
+      relation.value = relation.value != 128 ? 128 : 0;
     }
   }
 
   void onFollow(BuildContext context) async {
     if (mid == ownerMid) {
       Get.toNamed('/editProfile');
-    } else if (relation.value == -1) {
+    } else if (relation.value == 128) {
       _onBlock();
     } else {
       if (ownerMid == null) {
@@ -204,10 +207,9 @@ class MemberControllerNew extends CommonDataController<Data, dynamic>
       Utils.actionRelationMod(
         context: context,
         mid: mid,
-        isFollow: isFollow.value,
+        isFollow: isFollow,
         callback: (attribute) {
           relation.value = attribute;
-          isFollow.value = attribute != 0;
         },
       );
     }

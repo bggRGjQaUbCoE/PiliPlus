@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:PiliPlus/common/constants.dart';
+import 'package:PiliPlus/common/widgets/avatar.dart';
 import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/image_view.dart';
 import 'package:PiliPlus/common/widgets/report.dart';
@@ -175,96 +176,18 @@ class ReplyItemGrpc extends StatelessWidget {
     );
   }
 
-  Widget lfAvtar(BuildContext context) {
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        if (ModuleAuthorModel.showDynDecorate &&
-            replyItem.member.hasGarbPendantImage()) ...[
-          Padding(
-            padding: const EdgeInsets.all(2),
-            child: NetworkImgLayer(
-              src: replyItem.member.face,
-              width: 30,
-              height: 30,
-              type: 'avatar',
-            ),
-          ),
-          Positioned(
-            left: -9,
-            top: -9,
-            child: IgnorePointer(
-              child: CachedNetworkImage(
-                width: 52,
-                height: 52,
-                imageUrl: replyItem.member.garbPendantImage,
-              ),
-            ),
-          ),
-        ] else
-          NetworkImgLayer(
-            src: replyItem.member.face,
-            width: 34,
-            height: 34,
-            type: 'avatar',
-          ),
-        if (replyItem.member.vipStatus > 0)
-          Positioned(
-            right: 0,
-            bottom: 0,
-            child: Container(
-              decoration: BoxDecoration(
-                //borderRadius: BorderRadius.circular(7),
-                shape: BoxShape.circle,
-                color: Theme.of(context).colorScheme.surface,
-              ),
-              child: Image.asset(
-                'assets/images/big-vip.png',
-                height: 14,
-                semanticLabel: "大会员",
-              ),
-            ),
-          ),
-        //https://www.bilibili.com/blackboard/activity-whPrHsYJ2.html
-        if (replyItem.member.officialVerifyType == 0)
-          Positioned(
-            left: 0,
-            bottom: 0,
-            child: Container(
-              decoration: BoxDecoration(
-                // borderRadius: BorderRadius.circular(8),
-                shape: BoxShape.circle,
-                color: Theme.of(context).colorScheme.surface,
-              ),
-              child: const Icon(
-                Icons.offline_bolt,
-                color: Colors.yellow,
-                size: 14,
-                semanticLabel: "认证个人",
-              ),
-            ),
-          )
-        else if (replyItem.member.officialVerifyType == 1)
-          Positioned(
-            left: 0,
-            bottom: 0,
-            child: Container(
-              decoration: BoxDecoration(
-                // borderRadius: BorderRadius.circular(8),
-                shape: BoxShape.circle,
-                color: Theme.of(context).colorScheme.surface,
-              ),
-              child: const Icon(
-                Icons.offline_bolt,
-                color: Colors.lightBlueAccent,
-                size: 14,
-                semanticLabel: "认证机构",
-              ),
-            ),
-          ),
-      ],
-    );
-  }
+  Widget lfAvtar() => Avatar(
+      avatar: replyItem.member.face,
+      size: 34,
+      isVip: replyItem.member.vipStatus > 0,
+      officialType: replyItem.member.officialVerifyType.toInt(),
+      garbPendantImage: replyItem.member.hasGarbPendantImage()
+          ? replyItem.member.garbPendantImage
+          : null,
+      onTap: () {
+        feedBack();
+        Get.toNamed('/member?mid=${replyItem.mid}');
+      });
 
   Widget content(BuildContext context) {
     return Column(
@@ -272,83 +195,76 @@ class ReplyItemGrpc extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
         /// fix Stack内GestureDetector  onTap无效
-        GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: () {
-            feedBack();
-            Get.toNamed('/member?mid=${replyItem.mid}');
-          },
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: <Widget>[
-              lfAvtar(context),
-              const SizedBox(width: 12),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            lfAvtar(),
+            const SizedBox(width: 12),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      replyItem.member.name,
+                      style: TextStyle(
+                        color: (replyItem.member.vipStatus > 0 &&
+                                replyItem.member.vipType == 2)
+                            ? context.vipColor
+                            : Theme.of(context).colorScheme.outline,
+                        fontSize: 13,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Image.asset(
+                      'assets/images/lv/lv${replyItem.member.isSeniorMember == 1 ? '6_s' : replyItem.member.level}.png',
+                      height: 11,
+                      semanticLabel: "等级：${replyItem.member.level}",
+                    ),
+                    const SizedBox(width: 6),
+                    if (replyItem.mid == upMid)
+                      const PBadge(
+                        text: 'UP',
+                        size: 'small',
+                        stack: 'normal',
+                        fs: 9,
+                      ),
+                  ],
+                ),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    Text(
+                      replyLevel == ''
+                          ? DateTime.fromMillisecondsSinceEpoch(
+                                  replyItem.ctime.toInt() * 1000)
+                              .toString()
+                              .substring(0, 19)
+                          : Utils.dateFormat(replyItem.ctime.toInt()),
+                      style: TextStyle(
+                        fontSize:
+                            Theme.of(context).textTheme.labelSmall!.fontSize,
+                        color: Theme.of(context).colorScheme.outline,
+                      ),
+                    ),
+                    if (replyItem.replyControl.location.isNotEmpty)
                       Text(
-                        replyItem.member.name,
+                        ' • ${replyItem.replyControl.location}',
                         style: TextStyle(
-                          color: (replyItem.member.vipStatus > 0 &&
-                                  replyItem.member.vipType == 2)
-                              ? context.vipColor
-                              : Theme.of(context).colorScheme.outline,
-                          fontSize: 13,
-                        ),
+                            fontSize: Theme.of(context)
+                                .textTheme
+                                .labelSmall!
+                                .fontSize,
+                            color: Theme.of(context).colorScheme.outline),
                       ),
-                      const SizedBox(width: 6),
-                      Image.asset(
-                        'assets/images/lv/lv${replyItem.member.isSeniorMember == 1 ? '6_s' : replyItem.member.level}.png',
-                        height: 11,
-                        semanticLabel: "等级：${replyItem.member.level}",
-                      ),
-                      const SizedBox(width: 6),
-                      if (replyItem.mid == upMid)
-                        const PBadge(
-                          text: 'UP',
-                          size: 'small',
-                          stack: 'normal',
-                          fs: 9,
-                        ),
-                    ],
-                  ),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: <Widget>[
-                      Text(
-                        replyLevel == ''
-                            ? DateTime.fromMillisecondsSinceEpoch(
-                                    replyItem.ctime.toInt() * 1000)
-                                .toString()
-                                .substring(0, 19)
-                            : Utils.dateFormat(replyItem.ctime.toInt()),
-                        style: TextStyle(
-                          fontSize:
-                              Theme.of(context).textTheme.labelSmall!.fontSize,
-                          color: Theme.of(context).colorScheme.outline,
-                        ),
-                      ),
-                      if (replyItem.replyControl.location.isNotEmpty)
-                        Text(
-                          ' • ${replyItem.replyControl.location}',
-                          style: TextStyle(
-                              fontSize: Theme.of(context)
-                                  .textTheme
-                                  .labelSmall!
-                                  .fontSize,
-                              color: Theme.of(context).colorScheme.outline),
-                        ),
-                    ],
-                  )
-                ],
-              ),
-            ],
-          ),
+                  ],
+                )
+              ],
+            ),
+          ],
         ),
         // title
         Padding(

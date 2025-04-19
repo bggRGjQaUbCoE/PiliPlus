@@ -135,15 +135,22 @@ class UserInfoCard extends StatelessWidget {
                 ),
                 if (card.vip?.vipStatus == 1) ...[
                   const SizedBox(width: 8),
-                  Image.network(
-                    card.vip!.label!.image!.http2https,
-                    height: 20,
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 5),
+                    decoration: BoxDecoration(
+                        borderRadius: BorderRadius.all(Radius.circular(10)),
+                        color: context.vipColor),
+                    child: Text(card.vip!.label!.text!,
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 10,
+                            color: Theme.of(context).colorScheme.surface)),
                   ),
                 ],
-                if (card.nameplate?.image?.isNotEmpty == true) ...[
+                if (card.nameplate?.imageSmall?.isNotEmpty == true) ...[
                   const SizedBox(width: 8),
-                  Image.network(
-                    card.nameplate!.image!.http2https,
+                  CachedNetworkImage(
+                    imageUrl: card.nameplate!.imageSmall.http2https,
                     height: 20,
                   ),
                 ],
@@ -191,16 +198,12 @@ class UserInfoCard extends StatelessWidget {
                   if (card.officialVerify?.icon?.isNotEmpty == true) ...[
                     WidgetSpan(
                       alignment: PlaceholderAlignment.middle,
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Theme.of(context).colorScheme.surface,
-                        ),
-                        child: CachedNetworkImage(
-                          width: 18,
-                          height: 18,
-                          imageUrl: card.officialVerify!.icon!.http2https,
-                        ),
+                      child: Icon(
+                        Icons.offline_bolt,
+                        color: card.officialVerify?.type == 0
+                            ? Colors.yellow
+                            : Colors.lightBlueAccent,
+                        size: 18,
                       ),
                     ),
                     TextSpan(
@@ -434,17 +437,26 @@ class UserInfoCard extends StatelessWidget {
             shape: BoxShape.circle,
             color: Theme.of(context).colorScheme.surface,
           ),
-          child: card.officialVerify?.icon?.isNotEmpty == true
-              ? CachedNetworkImage(
-                  imageUrl: card.officialVerify!.icon!.http2https,
-                  width: 22,
-                  height: 22,
-                )
-              : Image.asset(
-                  'assets/images/big-vip.png',
-                  width: 22,
-                  height: 22,
-                ),
+          child:
+              card.officialVerify?.type == 0 || card.officialVerify?.type == 1
+                  ? DecoratedBox(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Theme.of(context).colorScheme.surface,
+                      ),
+                      child: Icon(
+                        Icons.offline_bolt,
+                        color: card.officialVerify?.type == 0
+                            ? Colors.yellow
+                            : Colors.lightBlueAccent,
+                        size: 22,
+                      ),
+                    )
+                  : Image.asset(
+                      'assets/images/big-vip.png',
+                      width: 22,
+                      height: 22,
+                    ),
         ),
       );
 

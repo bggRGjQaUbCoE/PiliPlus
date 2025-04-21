@@ -1,4 +1,4 @@
-import 'package:PiliPlus/common/widgets/network_img_layer.dart';
+import 'package:PiliPlus/common/widgets/avatar.dart';
 import 'package:PiliPlus/models/search/result.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart';
@@ -25,35 +25,12 @@ class SearchUserItem extends StatelessWidget {
       child: Row(
         children: [
           const SizedBox(width: 15),
-          Stack(
-            clipBehavior: Clip.none,
-            children: [
-              NetworkImgLayer(
-                width: 42,
-                height: 42,
-                src: item.upic,
-                type: 'avatar',
-              ),
-              if (item.officialVerify?['type'] == 0 ||
-                  item.officialVerify?['type'] == 1)
-                Positioned(
-                  bottom: 0,
-                  right: 0,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Theme.of(context).colorScheme.surface,
-                    ),
-                    child: Icon(
-                      Icons.offline_bolt,
-                      color: item.officialVerify?['type'] == 0
-                          ? const Color(0xFFFFCC00)
-                          : Colors.lightBlueAccent,
-                      size: 14,
-                    ),
-                  ),
-                ),
-            ],
+          Avatar(
+            avatar: item.upic ?? '',
+            size: 42,
+            isVip: false,
+            officialType: item.officialVerify?['type'],
+            roomId: item.isLive == 1 ? item.roomId : null,
           ),
           const SizedBox(width: 10),
           Column(

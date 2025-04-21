@@ -1,7 +1,6 @@
+import 'package:PiliPlus/common/widgets/avatar.dart';
 import 'package:PiliPlus/common/widgets/interactiveviewer_gallery/interactiveviewer_gallery.dart'
     show SourceModel;
-import 'package:PiliPlus/common/widgets/network_img_layer.dart';
-import 'package:PiliPlus/models/dynamics/result.dart';
 import 'package:PiliPlus/models/space/card.dart' as space;
 import 'package:PiliPlus/models/space/images.dart' as space;
 import 'package:PiliPlus/utils/extension.dart';
@@ -72,24 +71,25 @@ class UserInfoCard extends StatelessWidget {
 
   _buildHeader(BuildContext context) {
     bool darken = Theme.of(context).brightness == Brightness.dark;
-    String? imgUrl = darken
-        ? (images.nightImgurl?.isEmpty == true
-            ? images.imgUrl?.http2https
-            : images.nightImgurl?.http2https)
-        : images.imgUrl?.http2https;
+    String imgUrl = (darken
+            ? images.nightImgurl?.isEmpty == true
+                ? images.imgUrl
+                : images.nightImgurl
+            : images.imgUrl)
+        .http2https;
     return Hero(
-      tag: imgUrl ?? '',
+      tag: imgUrl,
       child: GestureDetector(
         onTap: () {
           context.imageView(
-            imgList: [SourceModel(url: imgUrl ?? '')],
+            imgList: [SourceModel(url: imgUrl)],
           );
         },
         child: CachedNetworkImage(
           imageUrl: Utils.thumbnailImgUrl(imgUrl),
           width: double.infinity,
           height: 135,
-          imageBuilder: (context, imageProvider) => Container(
+          imageBuilder: (context, imageProvider) => DecoratedBox(
             decoration: BoxDecoration(
               image: DecorationImage(
                 image: imageProvider,
@@ -118,7 +118,7 @@ class UserInfoCard extends StatelessWidget {
                 onTap: () => Utils.copyText(card.name!),
                 child: Text(
                   card.name!,
-                  strutStyle: StrutStyle(
+                  strutStyle: const StrutStyle(
                     height: 1,
                     leading: 0,
                     fontSize: 17,
@@ -141,16 +141,29 @@ class UserInfoCard extends StatelessWidget {
                 semanticLabel: '等级${card.levelInfo?.currentLevel}',
               ),
               if (card.vip?.vipStatus == 1)
-                CachedNetworkImage(
-                  imageUrl: Utils.thumbnailImgUrl(card.vip!.label!.image!, 80),
-                  height: 20,
-                  placeholder: (context, url) {
-                    return const SizedBox.shrink();
-                  },
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                      borderRadius: const BorderRadius.all(Radius.circular(10)),
+                      color: context.vipColor),
+                  child: Text(
+                    card.vip?.label?.text ?? '大会员',
+                    strutStyle: const StrutStyle(
+                      height: 1,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      forceStrutHeight: true,
+                    ),
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 10,
+                        color: Theme.of(context).colorScheme.surface),
+                  ),
                 ),
-              if (card.nameplate?.image?.isNotEmpty == true)
+              if (card.nameplate?.imageSmall?.isNotEmpty == true)
                 CachedNetworkImage(
-                  imageUrl: Utils.thumbnailImgUrl(card.nameplate!.image!),
+                  imageUrl: Utils.thumbnailImgUrl(card.nameplate!.imageSmall!),
                   height: 20,
                   placeholder: (context, url) {
                     return const SizedBox.shrink();
@@ -164,7 +177,7 @@ class UserInfoCard extends StatelessWidget {
             margin: const EdgeInsets.only(left: 20, top: 8, right: 20),
             padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: const BorderRadius.all(Radius.circular(12)),
               color: Theme.of(context).colorScheme.onInverseSurface,
             ),
             child: Text.rich(
@@ -178,11 +191,12 @@ class UserInfoCard extends StatelessWidget {
                           shape: BoxShape.circle,
                           color: Theme.of(context).colorScheme.surface,
                         ),
-                        child: CachedNetworkImage(
-                          width: 18,
-                          height: 18,
-                          imageUrl:
-                              Utils.thumbnailImgUrl(card.officialVerify!.icon!),
+                        child: Icon(
+                          Icons.offline_bolt,
+                          color: card.officialVerify?.type == 0
+                              ? const Color(0xFFFFCC00)
+                              : Colors.lightBlueAccent,
+                          size: 18,
                         ),
                       ),
                     ),
@@ -210,9 +224,7 @@ class UserInfoCard extends StatelessWidget {
             padding: const EdgeInsets.only(left: 20, top: 6, right: 20),
             child: SelectableText(
               card.sign!.trim().replaceAll(RegExp(r'\n{2,}'), '\n'),
-              style: const TextStyle(
-                fontSize: 14,
-              ),
+              style: const TextStyle(fontSize: 14),
             ),
           ),
         Padding(
@@ -410,51 +422,19 @@ class UserInfoCard extends StatelessWidget {
         ],
       );
 
-  _buildBadge(BuildContext context) => IgnorePointer(
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: Theme.of(context).colorScheme.surface,
-          ),
-          child: card.officialVerify?.icon?.isNotEmpty == true
-              ? CachedNetworkImage(
-                  imageUrl: Utils.thumbnailImgUrl(card.officialVerify!.icon!),
-                  width: 22,
-                  height: 22,
-                )
-              : Image.asset(
-                  'assets/images/big-vip.png',
-                  width: 22,
-                  height: 22,
-                ),
-        ),
-      );
-
   _buildAvatar(BuildContext context) => Hero(
-        tag: card.face ?? '',
-        child: GestureDetector(
-          onTap: () {
-            context.imageView(
-              imgList: [SourceModel(url: card.face ?? '')],
-            );
-          },
-          child: Container(
-            decoration: BoxDecoration(
-              border: Border.all(
-                width: 2.5,
-                color: Theme.of(context).colorScheme.surface,
-              ),
-              shape: BoxShape.circle,
-            ),
-            child: NetworkImgLayer(
-              src: card.face,
-              type: 'avatar',
-              width: 80,
-              height: 80,
-            ),
-          ),
-        ),
-      );
+      tag: card.face ?? '',
+      child: Avatar(
+        avatar: card.face ?? '',
+        size: 80,
+        badgeSize: 22,
+        officialType: card.officialVerify?.type,
+        isVip: (card.vip?.vipStatus ?? -1) > 0,
+        garbPendantImage: card.pendant!.image!,
+        roomId: live is Map && live['liveStatus'] == 1 ? live['roomid'] : null,
+        onTap: () => context
+            .imageView(imgList: [SourceModel(url: card.face.http2https)]),
+      ));
 
   _buildV(BuildContext context) => Column(
         mainAxisSize: MainAxisSize.min,
@@ -475,32 +455,6 @@ class UserInfoCard extends StatelessWidget {
                 left: 20,
                 child: _buildAvatar(context),
               ),
-              if (ModuleAuthorModel.showDynDecorate &&
-                  card.pendant?.image?.isNotEmpty == true)
-                Positioned(
-                  top: 82.5,
-                  left: -7.5,
-                  child: IgnorePointer(
-                    child: CachedNetworkImage(
-                      width: 140,
-                      height: 140,
-                      imageUrl: Utils.thumbnailImgUrl(card.pendant!.image!),
-                    ),
-                  ),
-                ),
-              if (card.officialVerify?.icon?.isNotEmpty == true ||
-                  (card.vip?.vipStatus ?? -1) > 0)
-                Positioned(
-                  top: 172,
-                  left: 82,
-                  child: _buildBadge(context),
-                ),
-              if (live is Map && ((live['liveStatus'] as int?) ?? 0) == 1)
-                Positioned(
-                  top: 180,
-                  left: 20,
-                  child: _buildLiveBadge(context),
-                ),
               Positioned(
                 left: 120,
                 top: 140,
@@ -579,39 +533,6 @@ class UserInfoCard extends StatelessWidget {
         );
       });
 
-  _buildLiveBadge(context) => GestureDetector(
-        onTap: () {
-          Get.toNamed('/liveRoom?roomid=${live['roomid']}');
-        },
-        child: Container(
-          width: 85,
-          alignment: Alignment.center,
-          child: Badge(
-            label: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.equalizer_rounded,
-                  size: MediaQuery.textScalerOf(context).scale(16),
-                  color: Theme.of(context).colorScheme.onSecondaryContainer,
-                ),
-                Text(
-                  '直播中',
-                  style: TextStyle(height: 1),
-                )
-              ],
-            ),
-            padding: const EdgeInsets.symmetric(
-              horizontal: 5,
-              vertical: 1,
-            ),
-            alignment: Alignment.center,
-            textColor: Theme.of(context).colorScheme.onSecondaryContainer,
-            backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
-          ),
-        ),
-      );
-
   _buildH(BuildContext context) => Column(
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.start,
@@ -632,41 +553,7 @@ class UserInfoCard extends StatelessWidget {
                     top: 10,
                     bottom: card.prInfo?.content?.isNotEmpty == true ? 0 : 10,
                   ),
-                  child: Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      _buildAvatar(context),
-                      if (ModuleAuthorModel.showDynDecorate &&
-                          card.pendant?.image?.isNotEmpty == true)
-                        Positioned(
-                          top: -27.5,
-                          left: -27.5,
-                          child: IgnorePointer(
-                            child: CachedNetworkImage(
-                              width: 140,
-                              height: 140,
-                              imageUrl:
-                                  Utils.thumbnailImgUrl(card.pendant!.image!),
-                            ),
-                          ),
-                        ),
-                      if (card.officialVerify?.icon?.isNotEmpty == true ||
-                          (card.vip?.vipStatus ?? -1) > 0)
-                        Positioned(
-                          right: 0,
-                          bottom: 0,
-                          child: _buildBadge(context),
-                        ),
-                      if (live is Map &&
-                          ((live['liveStatus'] as int?) ?? 0) == 1)
-                        Positioned(
-                          left: 0,
-                          bottom: -5,
-                          right: 0,
-                          child: _buildLiveBadge(context),
-                        ),
-                    ],
-                  ),
+                  child: _buildAvatar(context),
                 ),
                 Expanded(
                   child: Column(

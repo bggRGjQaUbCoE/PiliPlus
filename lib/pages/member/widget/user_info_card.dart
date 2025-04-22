@@ -153,12 +153,13 @@ class UserInfoCard extends StatelessWidget {
                       height: 1,
                       fontSize: 10,
                       fontWeight: FontWeight.bold,
-                      forceStrutHeight: true,
                     ),
                     style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 10,
-                        color: Theme.of(context).colorScheme.surface),
+                      height: 1,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 10,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
               if (card.nameplate?.imageSmall?.isNotEmpty == true)

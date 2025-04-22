@@ -32,7 +32,9 @@ class Avatar extends StatelessWidget {
                 : _BadgeType.none
             : officialType == 0
                 ? _BadgeType.person
-                : _BadgeType.institution,
+                : officialType == 1
+                    ? _BadgeType.institution
+                    : _BadgeType.none,
         badgeSize = badgeSize ?? size / 3;
 
   static final showDynDecorate = GStorage.showDynDecorate;
@@ -53,7 +55,8 @@ class Avatar extends StatelessWidget {
               ),
         if (showDynDecorate && !garbPendantImage.isNullOrEmpty)
           Positioned(
-            top: -0.375 * size, // -(size * 1.75 - size) / 2
+            top: -0.375 *
+                (size == 80 ? size - 4 : size), // -(size * 1.75 - size) / 2
             child: IgnorePointer(
               child: CachedNetworkImage(
                 width: size * 1.75,
@@ -87,6 +90,7 @@ class Avatar extends StatelessWidget {
                       '直播中',
                       style: TextStyle(
                         height: 1,
+                        fontSize: 13,
                         color: colorScheme.onSecondaryContainer,
                       ),
                     ),
@@ -101,20 +105,28 @@ class Avatar extends StatelessWidget {
     );
   }
 
-  Widget _buildAvatar(ColorScheme colorScheme) => DecoratedBox(
-      decoration: BoxDecoration(
-        border: Border.all(
-          width: size / 32,
-          color: colorScheme.surface,
-        ),
-        shape: BoxShape.circle,
-      ),
-      child: NetworkImgLayer(
-        src: avatar,
-        width: size,
-        height: size,
-        type: 'avatar',
-      ));
+  Widget _buildAvatar(ColorScheme colorScheme) => size == 80
+      ? Container(
+          decoration: BoxDecoration(
+            border: Border.all(
+              width: 2,
+              color: colorScheme.surface,
+            ),
+            shape: BoxShape.circle,
+          ),
+          child: NetworkImgLayer(
+            src: avatar,
+            width: size,
+            height: size,
+            type: 'avatar',
+          ),
+        )
+      : NetworkImgLayer(
+          src: avatar,
+          width: size,
+          height: size,
+          type: 'avatar',
+        );
 
   Widget _buildBadge(ColorScheme colorScheme) {
     final child = switch (_badgeType) {

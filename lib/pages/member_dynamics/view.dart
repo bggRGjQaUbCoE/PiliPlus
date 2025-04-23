@@ -125,14 +125,11 @@ class _MemberDynamicsPageState extends State<MemberDynamicsPage>
                             ? LastChildLayoutType.foot
                             : LastChildLayoutType.none;
                       },
-                      children: (loadingState.response as List)
-                          .map(
-                            (item) => DynamicPanel(
+                      children: loadingState.response!
+                          .map((item) => DynamicPanel(
                               item: item,
                               onRemove: _memberDynamicController.onRemove,
-                              onSetTop: _memberDynamicController.onSetTop,
-                            ),
-                          )
+                              onSetTop: _memberDynamicController.onSetTop))
                           .toList(),
                     )
                   : SliverCrossAxisGroup(

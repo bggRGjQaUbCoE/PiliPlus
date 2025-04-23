@@ -666,4 +666,28 @@ class UserHttp {
       return {'status': false, 'msg': res.data['message']};
     }
   }
+
+  static Future<Map> dynamicReport({
+    required dynamic mid,
+    required dynamic dynId,
+    required int reasonType,
+    String? reasonDesc,
+  }) async {
+    final res = await Request().post(
+      Api.dynamicReport,
+      queryParameters: {
+        'csrf': Accounts.main.csrf,
+      },
+      data: {
+        "accused_uid": mid,
+        "dynamic_id": dynId,
+        "reason_type": reasonType,
+        "reason_desc": reasonType == 0 ? reasonDesc : null,
+      },
+      options: Options(
+        contentType: Headers.formUrlEncodedContentType,
+      ),
+    );
+    return res.data as Map;
+  }
 }

@@ -775,4 +775,6 @@ class Api {
       '${HttpString.appBaseUrl}/x/v2/search/recommend';
 
   static const String articleInfo = '/x/article/viewinfo';
+
+  static const String dynamicReport = '/x/dynamic/feed/dynamic_report/add';
 }

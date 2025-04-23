@@ -111,7 +111,7 @@ class _SearchDynamicState extends State<SearchDynamic>
                         ? LastChildLayoutType.foot
                         : LastChildLayoutType.none;
                   },
-                  children: (loadingState.response as List)
+                  children: loadingState.response!
                       .map((item) => DynamicPanel(item: item))
                       .toList(),
                 )

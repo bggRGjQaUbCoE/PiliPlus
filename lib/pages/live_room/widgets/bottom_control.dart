@@ -82,7 +82,7 @@ class BottomControl extends StatelessWidget implements PreferredSizeWidget {
                         plPlayerController.toggleVideoFit(boxFit);
                       },
                       child: Text(
-                        "${PlPlayerController.videoFitType[boxFit.index]['desc']}",
+                        boxFit.desc,
                         style:
                             const TextStyle(color: Colors.white, fontSize: 13),
                       ),
@@ -90,7 +90,7 @@ class BottomControl extends StatelessWidget implements PreferredSizeWidget {
                   }).toList();
                 },
                 child: Text(
-                  "${PlPlayerController.videoFitType[plPlayerController.videoFit.value.index]['desc']}",
+                  plPlayerController.videoFit.value.desc,
                   style: const TextStyle(color: Colors.white, fontSize: 13),
                 ),
               ),

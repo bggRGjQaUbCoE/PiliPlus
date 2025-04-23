@@ -545,14 +545,14 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                   plPlayerController.toggleVideoFit(boxFit);
                 },
                 child: Text(
-                  "${PlPlayerController.videoFitType[boxFit.index]['desc']}",
+                  boxFit.desc,
                   style: const TextStyle(color: Colors.white, fontSize: 13),
                 ),
               );
             }).toList();
           },
           child: Text(
-            "${PlPlayerController.videoFitType[plPlayerController.videoFit.value.index]['desc']}",
+            plPlayerController.videoFit.value.desc,
             style: const TextStyle(color: Colors.white, fontSize: 13),
           ),
         ),

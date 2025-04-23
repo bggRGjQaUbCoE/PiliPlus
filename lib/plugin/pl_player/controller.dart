@@ -83,8 +83,7 @@ class PlPlayerController {
 
   final RxString _direction = 'horizontal'.obs;
 
-  final Rx<BoxFit> _videoFit = Rx(videoFitType[1]['attr']);
-  final RxString _videoFitDesc = RxString(videoFitType[1]['desc']);
+  final Rx<BoxFit> _videoFit = Rx(BoxFit.contain);
   late StreamSubscription<DataStatus> _dataListenerForVideoFit;
   late StreamSubscription<DataStatus> _dataListenerForEnterFullscreen;
 
@@ -126,16 +125,6 @@ class PlPlayerController {
   Box get setting => GStorage.setting;
 
   // final Durations durations;
-
-  static List<Map<String, dynamic>> videoFitType = [
-    {'attr': BoxFit.fill, 'desc': '拉伸', 'toast': '拉伸至播放器尺寸，将产生变形（竖屏改为自动）'},
-    {'attr': BoxFit.contain, 'desc': '自动', 'toast': '缩放至播放器尺寸，保留黑边'},
-    {'attr': BoxFit.cover, 'desc': '裁剪', 'toast': '缩放至填满播放器，裁剪超出部分'},
-    {'attr': BoxFit.fitWidth, 'desc': '等宽', 'toast': '缩放至撑满播放器宽度'},
-    {'attr': BoxFit.fitHeight, 'desc': '等高', 'toast': '缩放至撑满播放器高度'},
-    {'attr': BoxFit.none, 'desc': '原始', 'toast': '不缩放，以视频原始尺寸显示'},
-    {'attr': BoxFit.scaleDown, 'desc': '限制', 'toast': '仅超出时缩小至播放器尺寸'},
-  ];
 
   String get bvid => _bvid;
   int get cid => _cid;
@@ -212,7 +201,6 @@ class PlPlayerController {
 
   /// 视频比例
   Rx<BoxFit> get videoFit => _videoFit;
-  RxString get videoFitDEsc => _videoFitDesc;
 
   /// 后台播放
   RxBool get continuePlayInBackground => _continuePlayInBackground;
@@ -1221,25 +1209,22 @@ class PlPlayerController {
 
   /// Toggle Change the videofit accordingly
   void toggleVideoFit(BoxFit value) {
-    _videoFit.value = videoFitType[value.index]['attr'];
-    _videoFitDesc.value = videoFitType[value.index]['desc'];
+    _videoFit.value = value;
     setVideoFit();
     getPlayerKey?.call().currentState?.update(fit: value);
   }
 
   /// 缓存fit
   Future<void> setVideoFit() async {
-    List attrs = videoFitType.map((e) => e['attr']).toList();
-    int index = attrs.indexOf(_videoFit.value);
-    SmartDialog.showToast(videoFitType[index]['toast'],
+    SmartDialog.showToast(_videoFit.value.toast,
         displayTime: const Duration(seconds: 1));
-    video.put(VideoBoxKey.cacheVideoFit, index);
+    video.put(VideoBoxKey.cacheVideoFit, _videoFit.value.index);
   }
 
   /// 读取fit
   Future<void> getVideoFit() async {
     int fitValue = video.get(VideoBoxKey.cacheVideoFit, defaultValue: 1);
-    var attr = videoFitType[fitValue]['attr'];
+    var attr = BoxFit.values[fitValue];
     // 由于none与scaleDown涉及视频原始尺寸，需要等待视频加载后再设置，否则尺寸会变为0，出现错误;
     if (attr == BoxFit.none || attr == BoxFit.scaleDown) {
       if (buffered.value == Duration.zero) {
@@ -1249,7 +1234,7 @@ class PlPlayerController {
             _dataListenerForVideoFit.cancel();
             int fitValue =
                 video.get(VideoBoxKey.cacheVideoFit, defaultValue: 1);
-            var attr = videoFitType[fitValue]['attr'];
+            var attr = BoxFit.values[fitValue];
             if (attr == BoxFit.none || attr == BoxFit.scaleDown) {
               _videoFit.value = attr;
             }
@@ -1261,7 +1246,6 @@ class PlPlayerController {
       attr = BoxFit.contain;
     }
     _videoFit.value = attr;
-    _videoFitDesc.value = videoFitType[fitValue]['desc'];
   }
 
   /// 设置后台播放
@@ -1584,4 +1568,18 @@ class PlPlayerController {
 
   late final RxList dmTrend = [].obs;
   late final RxBool showDmChart = true.obs;
+}
+
+extension BoxFitExt on BoxFit {
+  String get desc => const ['拉伸', '自动', '裁剪', '等宽', '等高', '原始', '限制'][index];
+
+  String get toast => const [
+        '拉伸至播放器尺寸，将产生变形（竖屏改为自动）',
+        '缩放至播放器尺寸，保留黑边',
+        '缩放至填满播放器，裁剪超出部分',
+        '缩放至撑满播放器宽度',
+        '缩放至撑满播放器高度',
+        '不缩放，以视频原始尺寸显示',
+        '仅超出时缩小至播放器尺寸',
+      ][index];
 }

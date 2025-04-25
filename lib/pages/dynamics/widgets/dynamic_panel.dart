@@ -74,8 +74,8 @@ class DynamicPanel extends StatelessWidget {
                 padding: const EdgeInsets.fromLTRB(12, 12, 12, 6),
                 child: authorWidget,
               ),
-              if (item.modules!.moduleDynamic!.desc != null ||
-                  item.modules!.moduleDynamic!.major != null)
+              if (item.modules.moduleDynamic!.desc != null ||
+                  item.modules.moduleDynamic!.major != null)
                 content(isSave, context, item, source, callback),
               forWard(isSave, item, context, source, callback),
               const SizedBox(height: 2),
@@ -94,7 +94,7 @@ class DynamicPanel extends StatelessWidget {
   ) {
     late String? title;
     late String? cover;
-    late final major = item.modules?.moduleDynamic?.major;
+    late final major = item.modules.moduleDynamic?.major;
     switch (item.type) {
       case 'DYNAMIC_TYPE_AV':
         title = major?.archive?.title;

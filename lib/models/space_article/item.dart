@@ -1,107 +1,117 @@
-import 'package:json_annotation/json_annotation.dart';
-
 import 'author.dart';
 import 'category.dart';
 import 'media.dart';
 import 'stats.dart';
 
-part 'item.g.dart';
-
-@JsonSerializable()
 class Item {
   int? id;
   Category? category;
   List<Category>? categories;
   String? title;
   String? summary;
-  @JsonKey(name: 'banner_url')
   String? bannerUrl;
-  @JsonKey(name: 'template_id')
   int? templateId;
   int? state;
   Author? author;
   int? reprint;
-  @JsonKey(name: 'image_urls')
   List<String>? imageUrls;
-  @JsonKey(name: 'publish_time')
   int? publishTime;
   int? ctime;
   int? mtime;
   Stats? stats;
-  int? attributes;
   int? words;
-  @JsonKey(name: 'origin_image_urls')
   List<String>? originImageUrls;
   dynamic list;
-  @JsonKey(name: 'is_like')
   bool? isLike;
   Media? media;
-  @JsonKey(name: 'apply_time')
   String? applyTime;
-  @JsonKey(name: 'check_time')
   String? checkTime;
   int? original;
-  @JsonKey(name: 'act_id')
   int? actId;
   dynamic dispute;
   dynamic authenMark;
-  @JsonKey(name: 'cover_avid')
   int? coverAvid;
-  @JsonKey(name: 'top_video_info')
   dynamic topVideoInfo;
   int? type;
-  @JsonKey(name: 'check_state')
   int? checkState;
-  @JsonKey(name: 'origin_template_id')
   int? originTemplateId;
+
+  // 动态
   String? uri;
   String? param;
   String? goto;
-  @JsonKey(name: 'publish_time_text')
   String? publishTimeText;
   String? dyn;
 
-  Item({
-    this.id,
-    this.category,
-    this.categories,
-    this.title,
-    this.summary,
-    this.bannerUrl,
-    this.templateId,
-    this.state,
-    this.author,
-    this.reprint,
-    this.imageUrls,
-    this.publishTime,
-    this.ctime,
-    this.mtime,
-    this.stats,
-    this.attributes,
-    this.words,
-    this.originImageUrls,
-    this.list,
-    this.isLike,
-    this.media,
-    this.applyTime,
-    this.checkTime,
-    this.original,
-    this.actId,
-    this.dispute,
-    this.authenMark,
-    this.coverAvid,
-    this.topVideoInfo,
-    this.type,
-    this.checkState,
-    this.originTemplateId,
-    this.uri,
-    this.param,
-    this.goto,
-    this.publishTimeText,
-    this.dyn,
-  });
+  // 专栏
+  List<Tag>? tags;
+  int? privatePub;
+  dynamic contentPicList;
+  String? content;
+  String? keywords;
+  int? versionId;
+  String? dynIdStr;
+  int? totalArtNum;
 
-  factory Item.fromJson(Map<String, dynamic> json) => _$ItemFromJson(json);
+  Item.fromJson(Map<String, dynamic> json) {
+    id = json["id"];
+    category =
+        json["category"] == null ? null : Category.fromJson(json["category"]);
+    categories = (json["categories"] as List?)
+        ?.map((x) => Category.fromJson(x))
+        .toList();
+    title = json["title"];
+    summary = json["summary"];
+    bannerUrl = json["banner_url"];
+    templateId = json["template_id"];
+    state = json["state"];
+    author = json["author"] == null ? null : Author.fromJson(json["author"]);
+    reprint = json["reprint"];
+    imageUrls = (json["image_urls"] as List?)?.cast<String>();
+    publishTime = json["publish_time"];
+    ctime = json["ctime"];
+    mtime = json["mtime"];
+    stats = json["stats"] == null ? null : Stats.fromJson(json["stats"]);
+    words = json["words"];
+    originImageUrls = (json["origin_image_urls"] as List?)?.cast<String>();
+    list = json["list"];
+    isLike = json["is_like"];
+    media = json["media"] == null ? null : Media.fromJson(json["media"]);
+    applyTime = json["apply_time"];
+    checkTime = json["check_time"];
+    original = json["original"];
+    actId = json["act_id"];
+    dispute = json["dispute"];
+    authenMark = json["authenMark"];
+    coverAvid = json["cover_avid"];
+    topVideoInfo = json["top_video_info"];
+    type = json["type"];
+    checkState = json["check_state"];
+    originTemplateId = json["origin_template_id"];
 
-  Map<String, dynamic> toJson() => _$ItemToJson(this);
+    uri = json['uri'];
+    param = json['param'];
+    goto = json['goto'];
+    publishTimeText = json['publish_time_text'];
+    dyn = json['dynamic'];
+
+    tags = (json["tags"] as List?)?.map((x) => Tag.fromJson(x)).toList();
+    privatePub = json["private_pub"];
+    contentPicList = json["content_pic_list"];
+    content = json["content"];
+    keywords = json["keywords"];
+    versionId = json["version_id"];
+    dynIdStr = json["dyn_id_str"];
+    totalArtNum = json["total_art_num"];
+  }
+}
+
+class Tag {
+  int? tid;
+  String? name;
+
+  Tag.fromJson(Map<String, dynamic> json) {
+    tid = json["tid"];
+    name = json["name"];
+  }
 }

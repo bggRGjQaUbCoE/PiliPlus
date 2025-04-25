@@ -265,7 +265,7 @@ class PageUtils {
     SmartDialog.dismiss();
     if (res['status']) {
       DynamicItemModel data = res['data'];
-      if (data.basic?['comment_type'] == 12) {
+      if (data.basic?.commentType == 12) {
         toDupNamed(
           '/htmlRender',
           parameters: {

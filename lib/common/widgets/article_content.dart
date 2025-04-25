@@ -5,7 +5,6 @@ import 'package:PiliPlus/models/dynamics/article_content_model.dart';
 import 'package:PiliPlus/utils/extension.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_html/flutter_html.dart';
 
 Widget articleContent({
   required BuildContext context,
@@ -16,7 +15,6 @@ Widget articleContent({
   debugPrint('articleContent');
   List<String>? imgList = list
       .where((item) => item.pic != null)
-      .toList()
       .map((item) => item.pic?.pics?.first.url ?? '')
       .toList();
   return SliverList.separated(
@@ -24,14 +22,13 @@ Widget articleContent({
     itemBuilder: (context, index) {
       ArticleContentModel item = list[index];
       if (item.text != null) {
-        List<InlineSpan> spanList = [];
-        item.text?.nodes?.forEach((item) {
-          spanList.add(TextSpan(
+        List<InlineSpan>? spanList = item.text?.nodes?.map((item) {
+          return TextSpan(
             text: item.word?.words,
             style: TextStyle(
               letterSpacing: 0.3,
               fontSize: 17,
-              height: LineHeight.percent(125).size,
+              height: 1.5, // LineHeight.percent(125).size
               fontStyle:
                   item.word?.style?.italic == true ? FontStyle.italic : null,
               color: item.word?.color != null
@@ -46,8 +43,8 @@ Widget articleContent({
               fontWeight:
                   item.word?.style?.bold == true ? FontWeight.bold : null,
             ),
-          ));
-        });
+          );
+        }).toList();
         return SelectableText.rich(TextSpan(children: spanList));
       } else if (item.line != null) {
         return Container(

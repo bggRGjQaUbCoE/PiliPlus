@@ -12,9 +12,9 @@ import 'package:PiliPlus/utils/feed_back.dart';
 class ActionPanel extends StatefulWidget {
   const ActionPanel({
     super.key,
-    this.item,
+    required this.item,
   });
-  final dynamic item;
+  final DynamicItemModel item;
 
   @override
   State<ActionPanel> createState() => _ActionPanelState();
@@ -33,26 +33,22 @@ class _ActionPanelState extends State<ActionPanel> {
   // 动态点赞
   Future onLikeDynamic() async {
     feedBack();
-    var item = widget.item!;
+    final item = widget.item;
     String dynamicId = item.idStr!;
     // 1 已点赞 2 不喜欢 0 未操作
-    Like like = item.modules.moduleStat.like;
-    int count = like.count == '点赞' ? 0 : int.parse(like.count ?? '0');
-    bool status = like.status!;
+    DynamicStat? like = item.modules.moduleStat?.like;
+    int count = like?.count ?? 0;
+    bool status = like?.status == true;
     int up = status ? 2 : 1;
     var res = await DynamicsHttp.likeDynamic(dynamicId: dynamicId, up: up);
     if (res['status']) {
       SmartDialog.showToast(!status ? '点赞成功' : '取消赞');
       if (up == 1) {
-        item.modules.moduleStat.like.count = (count + 1).toString();
-        item.modules.moduleStat.like.status = true;
+        item.modules.moduleStat?.like?.count = count + 1;
+        item.modules.moduleStat?.like?.status = true;
       } else {
-        if (count == 1) {
-          item.modules.moduleStat.like.count = '点赞';
-        } else {
-          item.modules.moduleStat.like.count = (count - 1).toString();
-        }
-        item.modules.moduleStat.like.status = false;
+        item.modules.moduleStat?.like?.count = count - 1;
+        item.modules.moduleStat?.like?.status = false;
       }
       setState(() {});
     } else {
@@ -78,12 +74,9 @@ class _ActionPanelState extends State<ActionPanel> {
                 builder: (context) => RepostPanel(
                   item: widget.item,
                   callback: () {
-                    int count = int.tryParse(
-                            widget.item!.modules.moduleStat.forward?.count ??
-                                '0') ??
-                        0;
-                    widget.item!.modules.moduleStat.forward!.count =
-                        (count + 1).toString();
+                    int count =
+                        widget.item.modules.moduleStat?.forward?.count ?? 0;
+                    widget.item.modules.moduleStat!.forward!.count = count + 1;
                     setState(() {});
                   },
                 ),
@@ -100,9 +93,9 @@ class _ActionPanelState extends State<ActionPanel> {
               foregroundColor: Theme.of(context).colorScheme.outline,
             ),
             label: Text(
-              widget.item!.modules.moduleStat.forward!.count != null
+              widget.item.modules.moduleStat!.forward!.count != null
                   ? Utils.numFormat(
-                      widget.item!.modules.moduleStat.forward!.count)
+                      widget.item.modules.moduleStat!.forward!.count)
                   : '转发',
             ),
           ),
@@ -123,9 +116,9 @@ class _ActionPanelState extends State<ActionPanel> {
               foregroundColor: Theme.of(context).colorScheme.outline,
             ),
             label: Text(
-              widget.item!.modules.moduleStat.comment!.count != null
+              widget.item.modules.moduleStat!.comment!.count != null
                   ? Utils.numFormat(
-                      widget.item!.modules.moduleStat.comment!.count)
+                      widget.item.modules.moduleStat!.comment!.count)
                   : '评论',
             ),
           ),
@@ -135,15 +128,15 @@ class _ActionPanelState extends State<ActionPanel> {
           child: TextButton.icon(
             onPressed: () => handleState(onLikeDynamic),
             icon: Icon(
-              widget.item!.modules.moduleStat.like!.status!
+              widget.item.modules.moduleStat!.like!.status!
                   ? FontAwesomeIcons.solidThumbsUp
                   : FontAwesomeIcons.thumbsUp,
               size: 16,
-              color: widget.item!.modules.moduleStat.like!.status!
+              color: widget.item.modules.moduleStat!.like!.status!
                   ? primary
                   : color,
               semanticLabel:
-                  widget.item!.modules.moduleStat.like!.status! ? "已赞" : "点赞",
+                  widget.item.modules.moduleStat!.like!.status! ? "已赞" : "点赞",
             ),
             style: TextButton.styleFrom(
               padding: const EdgeInsets.fromLTRB(15, 0, 15, 0),
@@ -155,14 +148,15 @@ class _ActionPanelState extends State<ActionPanel> {
                 return ScaleTransition(scale: animation, child: child);
               },
               child: Text(
-                widget.item!.modules.moduleStat.like!.count != null
+                widget.item.modules.moduleStat!.like!.count != null
                     ? Utils.numFormat(
-                        widget.item!.modules.moduleStat.like!.count)
+                        widget.item.modules.moduleStat!.like!.count)
                     : '点赞',
                 key: ValueKey<String>(
-                    widget.item!.modules.moduleStat.like!.count ?? '点赞'),
+                    widget.item.modules.moduleStat!.like!.count?.toString() ??
+                        '点赞'),
                 style: TextStyle(
-                  color: widget.item!.modules.moduleStat.like!.status!
+                  color: widget.item.modules.moduleStat!.like!.status!
                       ? primary
                       : color,
                 ),

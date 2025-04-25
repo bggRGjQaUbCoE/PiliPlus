@@ -309,9 +309,9 @@ class RequestUtils {
     String dynamicId = item.idStr!;
     // 1 已点赞 2 不喜欢 0 未操作
     item.modules?.moduleStat ??= ModuleStatModel();
-    item.modules?.moduleStat.like ??= Like();
-    Like like = item.modules.moduleStat.like;
-    int count = like.count == '点赞' ? 0 : int.parse(like.count ?? '0');
+    item.modules?.moduleStat.like ??= DynamicStat();
+    DynamicStat like = item.modules.moduleStat.like;
+    int count = like.count ?? 0;
     bool status = like.status ?? false;
     int up = status ? 2 : 1;
     var res = await DynamicsHttp.likeDynamic(dynamicId: dynamicId, up: up);

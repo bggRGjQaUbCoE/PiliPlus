@@ -31,9 +31,9 @@ class DynamicsHttp {
         if (GStorage.antiGoodsDyn) {
           data.items?.removeWhere(
             (item) =>
-                item.orig?.modules?.moduleDynamic?.additional?.type ==
+                item.orig?.modules.moduleDynamic?.additional?.type ==
                     'ADDITIONAL_TYPE_GOODS' ||
-                item.modules?.moduleDynamic?.additional?.type ==
+                item.modules.moduleDynamic?.additional?.type ==
                     'ADDITIONAL_TYPE_GOODS',
           );
         }

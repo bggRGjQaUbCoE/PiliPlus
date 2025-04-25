@@ -1,6 +1,10 @@
 import 'dart:convert';
 
 import 'package:PiliPlus/common/widgets/avatar.dart';
+import 'package:PiliPlus/models/model_owner.dart';
+import 'package:flutter/material.dart';
+
+import 'article_content_model.dart';
 
 class DynamicsDataModel {
   DynamicsDataModel({
@@ -26,25 +30,18 @@ class DynamicsDataModel {
 
 // 单个动态
 class DynamicItemModel {
-  DynamicItemModel({
-    this.basic,
-    this.idStr,
-    this.modules,
-    this.orig,
-    this.type,
-    this.visible,
-  });
+  DynamicItemModel();
 
-  Map? basic;
+  Basic? basic;
   dynamic idStr;
-  ItemModulesModel? modules;
+  late ItemModulesModel modules;
   DynamicItemModel? orig;
   String? type;
   bool? visible;
   bool? isForwarded;
 
   DynamicItemModel.fromJson(Map<String, dynamic> json) {
-    basic = json['basic'];
+    if (json['basic'] != null) basic = Basic.fromJson(json['basic']);
     idStr = json['id_str'];
     modules = ItemModulesModel.fromJson(json['modules']);
     orig =
@@ -52,6 +49,13 @@ class DynamicItemModel {
     orig?.isForwarded = true;
     type = json['type'];
     visible = json['visible'];
+  }
+
+  DynamicItemModel.fromOpusJson(Map<String, dynamic> json) {
+    if (json['basic'] != null) basic = Basic.fromJson(json['basic']);
+    idStr = json['id_str'];
+    // type = json['type']; // int
+    modules = ItemModulesModel.fromOpusJson((json['modules'] as List).cast());
   }
 }
 
@@ -69,7 +73,12 @@ class ItemModulesModel {
   ModuleDynamicModel? moduleDynamic;
   // ModuleInterModel? moduleInter;
   ModuleStatModel? moduleStat;
-  ModuleTag? moduleTag;
+  ModuleTag? moduleTag; // 也做opus的title用
+
+  List<ModuleTag>? moduleExtend; // opus的tag
+  List<ArticleContentModel>? moduleContent;
+
+  // moduleBottom
 
   ItemModulesModel.fromJson(Map<String, dynamic> json) {
     moduleAuthor = json['module_author'] != null
@@ -86,37 +95,58 @@ class ItemModulesModel {
         ? ModuleTag.fromJson(json['module_tag'])
         : null;
   }
+
+  ItemModulesModel.fromOpusJson(List<Map<String, dynamic>> json) {
+    for (var i in json) {
+      switch (i['module_type']) {
+        case 'MODULE_TYPE_TITLE':
+          moduleTag = ModuleTag.fromJson(i['module_title']);
+          break;
+        case 'MODULE_TYPE_AUTHOR':
+          moduleAuthor = ModuleAuthorModel.fromJson(i['module_author']);
+          break;
+        case 'MODULE_TYPE_CONTENT':
+          moduleContent = (i['module_content']?['paragraphs'] as List?)
+              ?.map((i) => ArticleContentModel.fromJson(i))
+              .toList();
+          debugPrint('load moduleContent: ${moduleContent?.length}');
+          break;
+        case 'MODULE_TYPE_EXTEND':
+          moduleExtend = (i['module_extend']['items'] as List?)
+              ?.map((i) => ModuleTag.fromJson(i))
+              .toList();
+          break;
+        case 'MODULE_TYPE_STAT':
+          moduleStat = ModuleStatModel.fromJson(i['module_stat']);
+          break;
+        // case 'MODULE_TYPE_BOTTOM':
+        //   break;
+        // default:
+        //   debugPrint('unknown type: ${i}');
+      }
+    }
+  }
+}
+
+class Basic {
+  String? commentIdStr;
+  int? commentType;
+  Map<String, dynamic>? likeIcon;
+  String? ridStr;
+
+  Basic.fromJson(Map<String, dynamic> json) {
+    commentIdStr = json['comment_id_str'];
+    commentType = json['comment_type'];
+    likeIcon = json['like_icon'];
+    ridStr = json['rid_str'];
+  }
 }
 
 // 单个动态详情 - 作者信息
-class ModuleAuthorModel {
-  ModuleAuthorModel({
-    // this.avatar,
-    // this.decorate,
-    this.face,
-    this.following,
-    this.jumpUrl,
-    this.label,
-    this.mid,
-    this.name,
-    // this.officialVerify,
-    // this.pandant,
-    this.pubAction,
-    // this.pubLocationText,
-    this.pubTime,
-    this.pubTs,
-    this.type,
-    this.vip,
-    this.decorate,
-    this.pendant,
-  });
-
-  String? face;
+class ModuleAuthorModel extends Owner {
   bool? following;
   String? jumpUrl;
   String? label;
-  int? mid;
-  String? name;
   String? pubAction;
   String? pubTime;
   int? pubTs;
@@ -790,63 +820,49 @@ class ModuleStatModel {
     this.comment,
     this.forward,
     this.like,
+    this.favorite,
   });
 
-  Comment? comment;
-  ForWard? forward;
-  Like? like;
+  DynamicStat? comment;
+  DynamicStat? forward;
+  DynamicStat? like;
+  DynamicStat? favorite;
+  // DynamicStat? coin;
 
   ModuleStatModel.fromJson(Map<String, dynamic> json) {
-    comment = Comment.fromJson(json['comment']);
-    forward = ForWard.fromJson(json['forward']);
-    like = Like.fromJson(json['like']);
+    comment = DynamicStat.fromJson(json['comment']);
+    forward = DynamicStat.fromJson(json['forward']);
+    like = DynamicStat.fromJson(json['like']);
+    if (json['favorite'] != null) {
+      favorite = DynamicStat.fromJson(json['favorite']);
+    }
   }
 }
 
-// 动态状态 评论
-class Comment {
-  Comment({
-    this.count,
-    this.forbidden,
-  });
-
-  String? count;
-  bool? forbidden;
-
-  Comment.fromJson(Map<String, dynamic> json) {
-    count = json['count'] == 0 ? null : json['count'].toString();
-    forbidden = json['forbidden'];
-  }
-}
-
-class ForWard {
-  ForWard({this.count, this.forbidden});
-  String? count;
-  bool? forbidden;
-
-  ForWard.fromJson(Map<String, dynamic> json) {
-    count = json['count'] == 0 ? null : json['count'].toString();
-    forbidden = json['forbidden'];
-  }
-}
-
-// 动态状态 点赞
-class Like {
-  Like({
+// 动态状态
+class DynamicStat {
+  DynamicStat({
     this.count,
     this.forbidden,
     this.status,
   });
 
-  String? count;
+  int? count;
   bool? forbidden;
   bool? status;
 
-  Like.fromJson(Map<String, dynamic> json) {
-    count = json['count'] == 0 ? null : json['count'].toString();
+  DynamicStat.fromJson(Map<String, dynamic> json) {
+    count = json['count'] == 0 ? null : _parseInt(json['count']);
     forbidden = json['forbidden'];
     status = json['status'];
   }
+
+  static int? _parseInt(dynamic x) => switch (x) {
+        int() => x,
+        String() => int.tryParse(x),
+        double() => x.toInt(),
+        _ => null
+      };
 }
 
 class Stat {

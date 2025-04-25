@@ -1,17 +1,19 @@
 import 'package:PiliPlus/grpc/app/main/community/reply/v1/reply.pb.dart';
-import 'package:PiliPlus/http/dynamics.dart';
+import 'package:PiliPlus/http/article.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/user.dart';
 import 'package:PiliPlus/http/video.dart';
 import 'package:PiliPlus/models/dynamics/result.dart';
+import 'package:PiliPlus/models/model_owner.dart';
+import 'package:PiliPlus/models/space_article/item.dart';
+import 'package:PiliPlus/models/space_article/stats.dart';
 import 'package:PiliPlus/pages/common/reply_controller.dart';
 import 'package:PiliPlus/pages/mine/controller.dart';
+import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/storage.dart';
-import 'package:PiliPlus/utils/url_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
-import 'package:PiliPlus/http/html.dart';
 import 'package:PiliPlus/http/reply.dart';
 import 'package:fixnum/fixnum.dart' as $fixnum;
 
@@ -19,14 +21,15 @@ class HtmlRenderController extends ReplyController<MainListReply> {
   late String id;
   late String dynamicType;
   late int type;
-  RxInt oid = (-1).obs;
-  late Map response;
-  int? floor;
+  late int oid;
+  Item? readContent;
   dynamic mid;
 
-  Rx<DynamicItemModel> item = DynamicItemModel().obs;
+  final summary = Summary();
 
-  final RxMap favStat = <dynamic, dynamic>{'status': false}.obs;
+  DynamicItemModel? item;
+
+  final Rx<ModuleStatModel?> stats = Rx<ModuleStatModel?>(null);
   final RxBool loaded = false.obs;
 
   late final horizontalPreview = GStorage.horizontalPreview;
@@ -42,72 +45,65 @@ class HtmlRenderController extends ReplyController<MainListReply> {
     dynamicType = Get.parameters['dynamicType']!;
     type = dynamicType == 'picture' ? 11 : 12;
 
-    if (showDynActionBar) {
-      if (dynamicType == 'read') {
-        UrlUtils.parseRedirectUrl('https://www.bilibili.com/read/$id/')
-            .then((url) {
-          if (url != null) {
-            _queryDyn(url.split('/').last);
-          }
-        });
-        DynamicsHttp.articleInfo(cvId: id.substring(2)).then((res) {
-          if (res['status']) {
-            favStat.addAll({
-              'status': true,
-              'isFav': res['data']?['favorite'] ?? false,
-              'favNum': res['data']?['stats']?['favorite'] ?? 0,
-              'data': res['data'],
-            });
-          }
-        });
-      } else {
-        _queryDyn(id);
-      }
-    }
-
     reqHtml();
   }
 
-  _queryDyn(id) {
-    DynamicsHttp.dynamicDetail(id: id).then((res) {
-      if (res['status']) {
-        item.value = res['data'];
-      } else {
-        debugPrint('${res['msg']}');
+  Future<bool> _queryOpus(id) async {
+    final res = await ArticleHttp.opusDetail(id: id);
+    if (res is Success) {
+      item = (res as Success<DynamicItemModel>).response;
+      type = item!.basic!.commentType!;
+      mid = item!.modules.moduleAuthor?.mid;
+      oid = int.parse(item!.basic!.commentIdStr!);
+      if (showDynActionBar && item!.modules.moduleStat != null) {
+        stats.value = item!.modules.moduleStat!;
       }
-    });
+      summary
+        ..author ??= item!.modules.moduleAuthor
+        ..title ??= item!.modules.moduleTag?.text;
+      return true;
+    }
+    return false;
+  }
+
+  Future<bool> _queryRead(cvid) async {
+    final res = await ArticleHttp.articleView(cvid: cvid);
+    if (res is Success) {
+      readContent = (res as Success<Item>).response;
+      if (showDynActionBar) {
+        final dynId = readContent!.dynIdStr;
+        if (!dynId.isNullOrEmpty && await _queryOpus(dynId)) {
+          return true;
+        } else {
+          debugPrint('cvid2opus failed: $id');
+        }
+      }
+      mid = readContent!.author?.mid;
+      if (showDynActionBar && readContent!.stats != null) {
+        stats.value = _statesToModuleStat(readContent!.stats!);
+      }
+      summary
+        ..author ??= readContent!.author
+        ..title ??= readContent!.title
+        ..cover ??= readContent!.originImageUrls?.firstOrNull;
+    }
+    return res is Success;
   }
 
   // 请求动态内容
   Future reqHtml() async {
-    late dynamic res;
     if (dynamicType == 'opus' || dynamicType == 'picture') {
-      res = await HtmlHttp.reqHtml(id, dynamicType);
-      if (res != null) {
-        if (res['commentType'] is int) {
-          type = res['commentType'];
-        }
-        if (res['favorite'] != null) {
-          favStat.addAll({
-            'status': true,
-            'isFav': res['favorite']['status'] ?? false,
-            'favNum': res['favorite']['count'] ?? 0,
-          });
-        }
-      }
+      loaded.value = await _queryOpus(id);
+      if (loaded.value) queryData();
     } else {
-      res = await HtmlHttp.reqReadHtml(id, dynamicType);
-    }
-    if (res != null) {
-      response = res;
-      mid = res['mid'];
-      oid.value = res['commentId'];
-      if (isLogin && !MineController.anonymity.value) {
-        VideoHttp.historyReport(aid: oid.value, type: 5);
-      }
+      type = 12;
+      oid = int.parse(id.replaceFirst('cv', ''));
       queryData();
-      if (res['status'] == true) {
-        loaded.value = true;
+      loaded.value = await _queryRead(oid);
+    }
+    if (loaded.value) {
+      if (isLogin && !MineController.anonymity.value) {
+        VideoHttp.historyReport(aid: oid, type: 5);
       }
     }
   }
@@ -121,7 +117,7 @@ class HtmlRenderController extends ReplyController<MainListReply> {
   Future<LoadingState<MainListReply>> customGetData() {
     return ReplyHttp.replyListGrpc(
       type: type,
-      oid: oid.value,
+      oid: oid,
       cursor: CursorReq(
         next: cursor?.next ?? $fixnum.Int64(0),
         mode: mode.value,
@@ -131,22 +127,43 @@ class HtmlRenderController extends ReplyController<MainListReply> {
   }
 
   Future onFav() async {
-    bool isFav = favStat['isFav'] == true;
+    bool isFav = stats.value?.favorite?.status == true;
     final res = dynamicType == 'read'
         ? isFav
             ? await UserHttp.delFavArticle(id: id.substring(2))
             : await UserHttp.addFavArticle(id: id.substring(2))
         : await UserHttp.communityAction(opusId: id, action: isFav ? 4 : 3);
     if (res['status']) {
-      favStat['isFav'] = !isFav;
+      stats.value?.favorite?.status = !isFav;
+      var count = stats.value?.favorite?.count ?? 0;
       if (isFav) {
-        favStat['favNum'] -= 1;
+        stats.value?.favorite?.count = count - 1;
       } else {
-        favStat['favNum'] += 1;
+        stats.value?.favorite?.count = count + 1;
       }
+      stats.refresh();
       SmartDialog.showToast('${isFav ? '取消' : ''}收藏成功');
     } else {
       SmartDialog.showToast(res['msg']);
     }
   }
+
+  static ModuleStatModel _statesToModuleStat(Stats stats) {
+    return ModuleStatModel(
+      comment: _setCount(stats.reply),
+      forward: _setCount(stats.dyn),
+      like: _setCount(stats.like),
+      favorite: _setCount(stats.favorite),
+    );
+  }
+
+  static DynamicStat _setCount(int? count) => DynamicStat(count: count);
+}
+
+class Summary {
+  Owner? author;
+  String? title;
+  String? cover;
+
+  Summary({this.author, this.title, this.cover});
 }

@@ -47,19 +47,19 @@ class _RepostPanelState extends CommonPublishPageState<RepostPanel> {
   late final dynamic _pic = widget.pic ??
       (widget.item as DynamicItemModel?)
           ?.modules
-          ?.moduleDynamic
+          .moduleDynamic
           ?.major
           ?.archive
           ?.cover ??
       (widget.item as DynamicItemModel?)
           ?.modules
-          ?.moduleDynamic
+          .moduleDynamic
           ?.major
           ?.pgc
           ?.cover ??
       (widget.item as DynamicItemModel?)
           ?.modules
-          ?.moduleDynamic
+          .moduleDynamic
           ?.major
           ?.opus
           ?.pics
@@ -69,28 +69,28 @@ class _RepostPanelState extends CommonPublishPageState<RepostPanel> {
   late final _text = widget.title ??
       (widget.item as DynamicItemModel?)
           ?.modules
-          ?.moduleDynamic
+          .moduleDynamic
           ?.major
           ?.opus
           ?.summary
           ?.text ??
-      (widget.item as DynamicItemModel?)?.modules?.moduleDynamic?.desc?.text ??
+      (widget.item as DynamicItemModel?)?.modules.moduleDynamic?.desc?.text ??
       (widget.item as DynamicItemModel?)
           ?.modules
-          ?.moduleDynamic
+          .moduleDynamic
           ?.major
           ?.archive
           ?.title ??
       (widget.item as DynamicItemModel?)
           ?.modules
-          ?.moduleDynamic
+          .moduleDynamic
           ?.major
           ?.pgc
           ?.title ??
       '';
 
   late final _uname = widget.uname ??
-      (widget.item as DynamicItemModel?)?.modules?.moduleAuthor?.name;
+      (widget.item as DynamicItemModel?)?.modules.moduleAuthor?.name;
 
   @override
   void dispose() {

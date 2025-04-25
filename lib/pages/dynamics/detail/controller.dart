@@ -1,4 +1,5 @@
 import 'package:PiliPlus/grpc/app/main/community/reply/v1/reply.pb.dart';
+import 'package:PiliPlus/http/article.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/reply_type.dart';
 import 'package:PiliPlus/models/dynamics/result.dart';
@@ -6,7 +7,6 @@ import 'package:PiliPlus/pages/common/reply_controller.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:get/get.dart';
-import 'package:PiliPlus/http/html.dart';
 import 'package:PiliPlus/http/reply.dart';
 import 'package:fixnum/fixnum.dart' as $fixnum;
 
@@ -30,7 +30,7 @@ class DynamicDetailController extends ReplyController<MainListReply> {
     item = Get.arguments['item'];
     floor = Get.arguments['floor'];
     if (floor == 1) {
-      count.value = int.parse(item.modules!.moduleStat!.comment!.count ?? '0');
+      count.value = item.modules.moduleStat?.comment?.count ?? 0;
     }
 
     if (oid != 0) {
@@ -40,9 +40,13 @@ class DynamicDetailController extends ReplyController<MainListReply> {
 
   // 根据jumpUrl获取动态html
   reqHtmlByOpusId(int id) async {
-    var res = await HtmlHttp.reqHtml(id, 'opus');
-    type = res['commentType'];
-    oid = res['commentId'];
+    var res = await ArticleHttp.opusDetail(id: id);
+    if (res is Success) {
+      final data = (res as Success<DynamicItemModel>).response;
+      type = data.basic!.commentType!;
+      oid = int.parse(data.basic!.commentIdStr!);
+    }
+
     queryData();
   }
 

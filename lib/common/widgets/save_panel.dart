@@ -105,7 +105,7 @@ class _SavePanelState extends State<SavePanel> {
       } else if (currentRoute.startsWith('/dynamicDetail')) {
         try {
           DynamicItemModel dynItem = Get.arguments['item'];
-          uname = dynItem.modules?.moduleAuthor?.name;
+          uname = dynItem.modules.moduleAuthor?.name;
           final type = _item.type.toInt();
           late final oid = dynItem.idStr;
           late final rootId = hasRoot ? _item.root : _item.id;
@@ -117,7 +117,7 @@ class _SavePanelState extends State<SavePanel> {
             1 ||
             11 ||
             12 =>
-              'bilibili://comment/detail/$type/${dynItem.basic!['rid_str']}/$rootId/?${anchor}enterUri=$enterUri',
+              'bilibili://comment/detail/$type/${dynItem.basic!.ridStr}/$rootId/?${anchor}enterUri=$enterUri',
             _ =>
               'bilibili://comment/detail/$type/$oid/$rootId/?${anchor}enterUri=$enterUri',
           };

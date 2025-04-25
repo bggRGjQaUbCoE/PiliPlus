@@ -143,7 +143,7 @@ Widget forWard(bool isSave, item, BuildContext context, source, callback,
               item.modules.moduleDynamic.additional.type,
               floor: floor,
             ),
-          if (item?.modules?.moduleDynamic?.major?.blocked != null)
+          if (item?.modules.moduleDynamic?.major?.blocked != null)
             _blockedItem(context, item, source),
         ],
       );
@@ -155,27 +155,27 @@ Widget forWard(bool isSave, item, BuildContext context, source, callback,
       return switch (item) {
         DynamicItemModel() => item.isForwarded == true
             ? articlePanel(source, item, context, callback, floor: floor)
-            : item.modules?.moduleDynamic?.major?.blocked != null
+            : item.modules.moduleDynamic?.major?.blocked != null
                 ? Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 12),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        if (item.modules?.moduleDynamic?.major
+                        if (item.modules.moduleDynamic?.major
                                 ?.blocked?['title'] !=
                             null)
                           Text(
-                            '${item.modules?.moduleDynamic?.major?.blocked!['title']}',
+                            '${item.modules.moduleDynamic?.major?.blocked!['title']}',
                             style: TextStyle(
                               color: Theme.of(context).colorScheme.secondary,
                             ),
                           ),
-                        if (item.modules?.moduleDynamic?.major
+                        if (item.modules.moduleDynamic?.major
                                 ?.blocked?['hint_message'] !=
                             null)
                           Text(
-                            '${item.modules?.moduleDynamic?.major?.blocked!['hint_message']}',
+                            '${item.modules.moduleDynamic?.major?.blocked!['hint_message']}',
                             style: TextStyle(
                               fontSize: 12,
                               color: Theme.of(context).colorScheme.outline,
@@ -304,7 +304,7 @@ Widget forWard(bool isSave, item, BuildContext context, source, callback,
                   item.modules.moduleDynamic.additional.type,
                   floor: floor,
                 )
-              : item?.modules?.moduleDynamic?.major?.blocked != null
+              : item?.modules.moduleDynamic?.major?.blocked != null
                   ? _blockedItem(context, item, source)
                   : const SizedBox(height: 0);
     case 'DYNAMIC_TYPE_PGC':

@@ -162,7 +162,7 @@ class _DynamicsTabPageState
                         ] else ...[
                           for (var i in loadingState.response!)
                             if (!dynamicsController.tempBannedList
-                                .contains(i.modules?.moduleAuthor?.mid))
+                                .contains(i.modules.moduleAuthor?.mid))
                               DynamicPanel(
                                 item: i,
                                 onRemove: controller.onRemove,
@@ -185,7 +185,7 @@ class _DynamicsTabPageState
                                           4 &&
                                       dynamicsController.mid.value != -1) ||
                                   !dynamicsController.tempBannedList.contains(
-                                      item.modules?.moduleAuthor?.mid)) {
+                                      item.modules.moduleAuthor?.mid)) {
                                 return DynamicPanel(
                                   item: item,
                                   onRemove: controller.onRemove,

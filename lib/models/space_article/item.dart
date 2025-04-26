@@ -121,7 +121,7 @@ class Tag {
 }
 
 class Opus {
-  double? opusid;
+  int? opusid;
   int? opussource;
   String? title;
   List<ArticleContentModel>? content;

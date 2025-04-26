@@ -21,11 +21,11 @@ class Pic {
   int? style;
   String? url;
   num? width;
-  double? height;
+  num? height;
   num? size;
   String? liveUrl;
 
-  double? calHeight;
+  num? calHeight;
 
   Pic.fromJson(Map<String, dynamic> json) {
     url = json['url'];

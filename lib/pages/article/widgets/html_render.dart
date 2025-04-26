@@ -5,7 +5,7 @@ import 'package:PiliPlus/utils/utils.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
-import 'network_img_layer.dart';
+import '../../../common/widgets/network_img_layer.dart';
 import 'package:html/dom.dart' as dom;
 
 Widget htmlRender({
@@ -64,9 +64,8 @@ Widget htmlRender({
                 },
                 child: NetworkImgLayer(
                   width: isEmote ? 22 : maxWidth,
-                  height: isEmote ? 22 : 200,
+                  height: isEmote ? 22 : null,
                   src: imgUrl,
-                  ignoreHeight: !isEmote,
                 ),
               ),
             );

@@ -9,14 +9,13 @@ class NetworkImgLayer extends StatelessWidget {
     super.key,
     this.src,
     required this.width,
-    required this.height,
+    this.height,
     this.type,
     this.fadeOutDuration,
     this.fadeInDuration,
     // 图片质量 默认1%
     this.quality,
     this.semanticsLabel,
-    this.ignoreHeight,
     this.radius,
     this.imageBuilder,
     this.isLongPic,
@@ -27,13 +26,12 @@ class NetworkImgLayer extends StatelessWidget {
 
   final String? src;
   final double width;
-  final double height;
+  final double? height;
   final String? type;
   final Duration? fadeOutDuration;
   final Duration? fadeInDuration;
   final int? quality;
   final String? semanticsLabel;
-  final bool? ignoreHeight;
   final double? radius;
   final ImageWidgetBuilder? imageBuilder;
   final Function? isLongPic;
@@ -59,7 +57,7 @@ class NetworkImgLayer extends StatelessWidget {
 
   Widget _buildImage(context) {
     int? memCacheWidth, memCacheHeight;
-    if (ignoreHeight == true || callback?.call() == true || width <= height) {
+    if (height == null || callback?.call() == true || width <= height!) {
       memCacheWidth = width.cacheSize(context);
     } else {
       memCacheHeight = height.cacheSize(context);
@@ -67,7 +65,7 @@ class NetworkImgLayer extends StatelessWidget {
     return CachedNetworkImage(
       imageUrl: Utils.thumbnailImgUrl(src, quality),
       width: width,
-      height: ignoreHeight == null || ignoreHeight == false ? height : null,
+      height: height,
       memCacheWidth: memCacheWidth,
       memCacheHeight: memCacheHeight,
       fit: boxFit ?? BoxFit.cover,

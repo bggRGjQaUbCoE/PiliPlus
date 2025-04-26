@@ -204,22 +204,6 @@ class PiliScheme {
             }
             return false;
           case 'opus':
-            // bilibili://opus/detail/12345678?h5awaken=random
-            // String? id = uriDigitRegExp.firstMatch(path)?.group(1);
-            // if (id != null) {
-            //   PageUtils.toDupNamed(
-            //     '/htmlRender',
-            //     parameters: {
-            //       'url': 'https://www.bilibili.com/opus/$id',
-            //       'title': '',
-            //       'id': id,
-            //       'dynamicType': 'opus'
-            //     },
-            //     off: off,
-            //   );
-            //   return true;
-            // }
-            // return false;
             bool hasMatch = await _onPushDynDetail(path, off);
             return hasMatch;
           case 'search':
@@ -234,12 +218,10 @@ class PiliScheme {
             String? id = uriDigitRegExp.firstMatch(path)?.group(1);
             if (id != null) {
               PageUtils.toDupNamed(
-                '/htmlRender',
+                '/articlePage',
                 parameters: {
-                  'url': 'www.bilibili.com/read/cv$id',
-                  'title': '',
-                  'id': 'cv$id',
-                  'dynamicType': 'read'
+                  'id': id,
+                  'type': 'read',
                 },
                 off: off,
               );
@@ -364,12 +346,10 @@ class PiliScheme {
                 ?.group(1);
             if (cvid != null) {
               PageUtils.toDupNamed(
-                '/htmlRender',
+                '/articlePage',
                 parameters: {
-                  'url': 'https://www.bilibili.com/read/cv$cvid',
-                  'title': '',
-                  'id': 'cv$cvid',
-                  'dynamicType': 'read'
+                  'id': cvid,
+                  'type': 'read',
                 },
                 off: off,
               );
@@ -581,12 +561,10 @@ class PiliScheme {
               ?.group(1);
           if (id != null) {
             PageUtils.toDupNamed(
-              '/htmlRender',
+              '/articlePage',
               parameters: {
-                'url': 'https://www.bilibili.com/read/cv$id',
-                'title': '',
-                'id': 'cv$id',
-                'dynamicType': 'read'
+                'id': id,
+                'type': 'read',
               },
               off: off,
             );
@@ -649,12 +627,10 @@ class PiliScheme {
             RegExp(r'cv(\d+)', caseSensitive: false).firstMatch(path)?.group(1);
         if (id != null) {
           PageUtils.toDupNamed(
-            '/htmlRender',
+            '/articlePage',
             parameters: {
-              'url': 'https://www.bilibili.com/read/cv$id',
-              'title': '',
-              'id': 'cv$id',
-              'dynamicType': 'read'
+              'id': id,
+              'type': 'read',
             },
             off: off,
           );

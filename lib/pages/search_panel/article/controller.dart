@@ -28,12 +28,10 @@ class SearchArticleController
     if (cvid != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         Get.toNamed(
-          '/htmlRender',
+          '/articlePage',
           parameters: {
-            'url': 'https://www.bilibili.com/read/cv$cvid',
-            'title': '',
-            'id': 'cv$cvid',
-            'dynamicType': 'read'
+            'id': cvid,
+            'type': 'read',
           },
         );
       });

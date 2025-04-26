@@ -1,3 +1,5 @@
+import 'package:PiliPlus/models/dynamics/article_content_model.dart';
+
 import 'author.dart';
 import 'category.dart';
 import 'media.dart';
@@ -49,6 +51,7 @@ class Item {
   dynamic contentPicList;
   String? content;
   String? keywords;
+  Opus? opus;
   int? versionId;
   String? dynIdStr;
   int? totalArtNum;
@@ -100,6 +103,7 @@ class Item {
     contentPicList = json["content_pic_list"];
     content = json["content"];
     keywords = json["keywords"];
+    if (json['opus'] != null) opus = Opus.fromJson(json['opus']);
     versionId = json["version_id"];
     dynIdStr = json["dyn_id_str"];
     totalArtNum = json["total_art_num"];
@@ -113,5 +117,26 @@ class Tag {
   Tag.fromJson(Map<String, dynamic> json) {
     tid = json["tid"];
     name = json["name"];
+  }
+}
+
+class Opus {
+  double? opusid;
+  int? opussource;
+  String? title;
+  List<ArticleContentModel>? content;
+  // PubInfo? pubinfo;
+  // Article? article;
+  // Version? version;
+
+  Opus.fromJson(Map<String, dynamic> json) {
+    opusid = json['opus_id'];
+    opussource = json['opus_source'];
+    title = json['title'];
+    if (json['content']?['paragraphs'] is List) {
+      content = (json['content']['paragraphs'] as List)
+          .map((i) => ArticleContentModel.fromJson(i))
+          .toList();
+    }
   }
 }

@@ -793,12 +793,13 @@ class ReplyItemGrpc extends StatelessWidget {
                               firstMatch?.group(2) ??
                               firstMatch?.group(3);
                           if (cvid != null) {
-                            Get.toNamed('/htmlRender', parameters: {
-                              'url': 'https://www.bilibili.com/read/cv$cvid',
-                              'title': title,
-                              'id': 'cv$cvid',
-                              'dynamicType': 'read'
-                            });
+                            Get.toNamed(
+                              '/articlePage',
+                              parameters: {
+                                'id': cvid,
+                                'type': 'read',
+                              },
+                            );
                             return;
                           }
                           PageUtils.handleWebview(matchStr);
@@ -902,12 +903,13 @@ class ReplyItemGrpc extends StatelessWidget {
                         .firstMatch(patternStr)
                         ?.group(1);
                     if (cvid != null) {
-                      Get.toNamed('/htmlRender', parameters: {
-                        'url': 'https://www.bilibili.com/read/cv$cvid',
-                        'title': '',
-                        'id': 'cv$cvid',
-                        'dynamicType': 'read'
-                      });
+                      Get.toNamed(
+                        '/articlePage',
+                        parameters: {
+                          'id': cvid,
+                          'type': 'read',
+                        },
+                      );
                       return;
                     }
 

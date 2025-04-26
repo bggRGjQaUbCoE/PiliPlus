@@ -782,10 +782,8 @@ class Api {
 
   static const String dynamicReport = '/x/dynamic/feed/dynamic_report/add';
 
-  // https://github.com/SocialSisterYi/bilibili-API-collect/issues/1228
+  // https://github.com/SocialSisterYi/bilibili-API-collect/pull/1242
   static const String articleView = '/x/article/view';
 
-  // https://github.com/SocialSisterYi/bilibili-API-collect/issues/859
-  static const String opusDetail =
-      '/x/polymer/web-dynamic/v1/opus/detail'; // 见dynamicDetail
+  static const String opusDetail = '/x/polymer/web-dynamic/v1/opus/detail';
 }

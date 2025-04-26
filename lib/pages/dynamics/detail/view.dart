@@ -109,8 +109,7 @@ class _DynamicDetailPageState extends State<DynamicDetailPage>
       duration: const Duration(milliseconds: 300),
     );
     _fabAnimationCtr?.forward();
-    // 滚动事件监听
-    scrollListener();
+    _dynamicDetailController.scrollController.addListener(listener);
   }
 
   // 页面初始化
@@ -140,7 +139,7 @@ class _DynamicDetailPageState extends State<DynamicDetailPage>
               DynamicDetailController(oid, replyType),
               tag: Utils.makeHeroTag(opusId),
             );
-            await _dynamicDetailController.reqHtmlByOpusId(opusId!);
+            await _dynamicDetailController.getCommentParams(opusId!);
             setState(() {});
           }
         } else {
@@ -228,17 +227,22 @@ class _DynamicDetailPageState extends State<DynamicDetailPage>
     });
   }
 
-  // 滑动事件监听
-  void scrollListener() {
-    _dynamicDetailController.scrollController.addListener(listener);
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_dynamicDetailController.scrollController.hasClients) {
+        _visibleTitle.value =
+            _dynamicDetailController.scrollController.positions.first.pixels >
+                55;
+      }
+    });
   }
 
   void listener() {
     // 标题
-    if (_dynamicDetailController.scrollController.positions.length == 1) {
-      _visibleTitle.value =
-          _dynamicDetailController.scrollController.offset > 55;
-    }
+    _visibleTitle.value =
+        _dynamicDetailController.scrollController.positions.first.pixels > 55;
 
     // fab按钮
     final ScrollDirection direction1 = _dynamicDetailController

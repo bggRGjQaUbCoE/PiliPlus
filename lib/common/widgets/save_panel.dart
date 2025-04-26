@@ -138,7 +138,7 @@ class _SavePanelState extends State<SavePanel> {
               'bilibili://comment/detail/$type/$oid/$rootId/?${anchor}enterUri=$enterUri',
           };
         } catch (_) {}
-      } else if (currentRoute.startsWith('/htmlRender')) {
+      } else if (currentRoute.startsWith('/articlePage')) {
         try {
           final type = _item.type.toInt();
           late final oid = _item.oid;

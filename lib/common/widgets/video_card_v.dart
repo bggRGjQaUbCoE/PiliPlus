@@ -53,16 +53,16 @@ class VideoCardV extends StatelessWidget {
       // 动态
       case 'picture':
         try {
-          String dynamicType = 'picture';
+          String type = 'picture';
           String uri = videoItem.uri!;
           String id = '';
           if (uri.startsWith('bilibili://article/')) {
-            dynamicType = 'read';
+            type = 'read';
             RegExp regex = RegExp(r'\d+');
             Match match = regex.firstMatch(uri)!;
             String matchedNumber = match.group(0)!;
             videoItem.param = int.parse(matchedNumber);
-            id = 'cv${videoItem.param}';
+            id = '${videoItem.param}';
           }
           if (uri.startsWith('http')) {
             String id = Uri.parse(uri).path.split('/')[1];
@@ -71,12 +71,13 @@ class VideoCardV extends StatelessWidget {
               return;
             }
           }
-          Get.toNamed('/htmlRender', parameters: {
-            'url': uri,
-            'title': videoItem.title,
-            'id': id,
-            'dynamicType': dynamicType
-          });
+          Get.toNamed(
+            '/articlePage',
+            parameters: {
+              'id': id,
+              'type': type,
+            },
+          );
         } catch (err) {
           SmartDialog.showToast(err.toString());
         }

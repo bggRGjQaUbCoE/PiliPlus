@@ -4,6 +4,7 @@ import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/wbi_sign.dart';
 import 'package:dio/dio.dart';
 
+import '../models/space_article/item.dart';
 import '../models/dynamics/result.dart';
 import '../models/dynamics/up.dart';
 import 'index.dart';
@@ -156,5 +157,37 @@ class DynamicsHttp {
     } else {
       return {'status': false, 'msg': res.data['message']};
     }
+  }
+
+  static Future<LoadingState<Item>> articleView({required dynamic cvid}) async {
+    final res = await Request().get(
+      Api.articleView,
+      queryParameters: await WbiSign.makSign({
+        'id': cvid,
+        'gaia_source': 'main_web',
+        'web_location': '333.976',
+      }),
+    );
+
+    return res.data['code'] == 0
+        ? LoadingState.success(Item.fromJson(res.data['data']))
+        : LoadingState.error(res.data['message']);
+  }
+
+  static Future<LoadingState<DynamicItemModel>> opusDetail(
+      {required dynamic opusId}) async {
+    final res = await Request().get(
+      Api.opusDetail,
+      queryParameters: {
+        'timezone_offset': '-480',
+        'features': 'htmlNewStyle',
+        'id': opusId,
+      },
+    );
+
+    return res.data['code'] == 0
+        ? LoadingState.success(
+            DynamicItemModel.fromOpusJson(res.data['data']['item']))
+        : LoadingState.error(res.data['message']);
   }
 }

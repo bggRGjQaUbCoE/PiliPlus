@@ -219,12 +219,10 @@ class ChatItem extends StatelessWidget {
               type = '专栏';
               onTap = () {
                 Get.toNamed(
-                  '/htmlRender',
+                  '/articlePage',
                   parameters: {
-                    'url': 'www.bilibili.com/opus/cv${content['id']}',
-                    'title': '',
-                    'id': 'cv${content['id']}',
-                    'dynamicType': 'read'
+                    'id': '${content['id']}',
+                    'type': 'read',
                   },
                 );
               };
@@ -463,12 +461,13 @@ class ChatItem extends StatelessWidget {
         case MsgType.article_card:
           return GestureDetector(
             onTap: () async {
-              Get.toNamed('/htmlRender', parameters: {
-                'url': "https://www.bilibili.com/read/cv${content['rid']}/",
-                'title': content['title'] ?? "",
-                'id': "cv${content['rid']}",
-                'dynamicType': "read"
-              });
+              Get.toNamed(
+                '/articlePage',
+                parameters: {
+                  'id': '${content['rid']}',
+                  'type': "read",
+                },
+              );
             },
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

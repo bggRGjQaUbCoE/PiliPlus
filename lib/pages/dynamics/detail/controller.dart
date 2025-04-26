@@ -1,5 +1,5 @@
 import 'package:PiliPlus/grpc/app/main/community/reply/v1/reply.pb.dart';
-import 'package:PiliPlus/http/article.dart';
+import 'package:PiliPlus/http/dynamics.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/reply_type.dart';
 import 'package:PiliPlus/models/dynamics/result.dart';
@@ -38,16 +38,14 @@ class DynamicDetailController extends ReplyController<MainListReply> {
     }
   }
 
-  // 根据jumpUrl获取动态html
-  reqHtmlByOpusId(int id) async {
-    var res = await ArticleHttp.opusDetail(id: id);
+  getCommentParams(int id) async {
+    var res = await DynamicsHttp.opusDetail(opusId: id);
     if (res is Success) {
       final data = (res as Success<DynamicItemModel>).response;
       type = data.basic!.commentType!;
       oid = int.parse(data.basic!.commentIdStr!);
+      queryData();
     }
-
-    queryData();
   }
 
   @override

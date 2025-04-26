@@ -1,5 +1,5 @@
 import 'package:PiliPlus/grpc/app/main/community/reply/v1/reply.pb.dart';
-import 'package:PiliPlus/http/article.dart';
+import 'package:PiliPlus/http/dynamics.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/user.dart';
 import 'package:PiliPlus/http/video.dart';
@@ -9,28 +9,25 @@ import 'package:PiliPlus/models/space_article/item.dart';
 import 'package:PiliPlus/models/space_article/stats.dart';
 import 'package:PiliPlus/pages/common/reply_controller.dart';
 import 'package:PiliPlus/pages/mine/controller.dart';
-import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/storage.dart';
+import 'package:PiliPlus/utils/url_utils.dart';
+import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:PiliPlus/http/reply.dart';
 import 'package:fixnum/fixnum.dart' as $fixnum;
 
-class HtmlRenderController extends ReplyController<MainListReply> {
+class ArticleController extends ReplyController<MainListReply> {
   late String id;
-  late String dynamicType;
-  late int type;
-  late int oid;
-  Item? readContent;
-  dynamic mid;
+  late String type;
 
+  late final String url;
+  late int commentType;
+  dynamic commentId;
   final summary = Summary();
 
-  DynamicItemModel? item;
-
-  final Rx<ModuleStatModel?> stats = Rx<ModuleStatModel?>(null);
-  final RxBool loaded = false.obs;
+  RxBool showTitle = false.obs;
 
   late final horizontalPreview = GStorage.horizontalPreview;
   late final showDynActionBar = GStorage.showDynActionBar;
@@ -38,72 +35,106 @@ class HtmlRenderController extends ReplyController<MainListReply> {
   @override
   dynamic get sourceId => id;
 
+  final RxBool isLoaded = false.obs;
+  DynamicItemModel? opusData;
+  Item? articleData;
+  final Rx<ModuleStatModel?> stats = Rx<ModuleStatModel?>(null);
+
   @override
   void onInit() {
     super.onInit();
     id = Get.parameters['id']!;
-    dynamicType = Get.parameters['dynamicType']!;
-    type = dynamicType == 'picture' ? 11 : 12;
+    type = Get.parameters['type']!;
 
-    reqHtml();
+    // to opus
+    if (type == 'read') {
+      UrlUtils.parseRedirectUrl('https://www.bilibili.com/read/cv$id/')
+          .then((url) {
+        if (url != null) {
+          id = Utils.getFileName(url, fileExt: false);
+          type = 'opus';
+        }
+        init();
+      });
+    } else {
+      init();
+    }
+  }
+
+  init() {
+    url = type == 'read'
+        ? 'https://www.bilibili.com/read/cv$id'
+        : 'https://www.bilibili.com/opus/$id';
+    commentType = type == 'picture' ? 11 : 12;
+
+    if (Get.arguments?['item'] is DynamicItemModel) {
+      opusData = Get.arguments['item'];
+    }
+
+    _queryContent();
   }
 
   Future<bool> _queryOpus(id) async {
-    final res = await ArticleHttp.opusDetail(id: id);
+    final res = await DynamicsHttp.opusDetail(opusId: id);
     if (res is Success) {
-      item = (res as Success<DynamicItemModel>).response;
-      type = item!.basic!.commentType!;
-      mid = item!.modules.moduleAuthor?.mid;
-      oid = int.parse(item!.basic!.commentIdStr!);
-      if (showDynActionBar && item!.modules.moduleStat != null) {
-        stats.value = item!.modules.moduleStat!;
+      opusData = (res as Success<DynamicItemModel>).response;
+      commentType = opusData!.basic!.commentType!;
+      commentId = int.parse(opusData!.basic!.commentIdStr!);
+      if (showDynActionBar && opusData!.modules.moduleStat != null) {
+        stats.value = opusData!.modules.moduleStat!;
       }
       summary
-        ..author ??= item!.modules.moduleAuthor
-        ..title ??= item!.modules.moduleTag?.text;
+        ..author ??= opusData!.modules.moduleAuthor
+        ..title ??= opusData!.modules.moduleTag?.text;
       return true;
     }
     return false;
   }
 
   Future<bool> _queryRead(cvid) async {
-    final res = await ArticleHttp.articleView(cvid: cvid);
+    final res = await DynamicsHttp.articleView(cvid: cvid);
     if (res is Success) {
-      readContent = (res as Success<Item>).response;
-      if (showDynActionBar) {
-        final dynId = readContent!.dynIdStr;
-        if (!dynId.isNullOrEmpty && await _queryOpus(dynId)) {
+      articleData = (res as Success<Item>).response;
+      summary
+        ..author ??= articleData!.author
+        ..title ??= articleData!.title
+        ..cover ??= articleData!.originImageUrls?.firstOrNull;
+
+      if (showDynActionBar && opusData == null) {
+        final dynId = articleData!.dynIdStr;
+        if (dynId != null) {
+          _queryReadAsDyn(dynId);
           return true;
         } else {
           debugPrint('cvid2opus failed: $id');
+          stats.value = _statesToModuleStat(articleData!.stats!); // TODO remove
         }
       }
-      mid = readContent!.author?.mid;
-      if (showDynActionBar && readContent!.stats != null) {
-        stats.value = _statesToModuleStat(readContent!.stats!);
-      }
-      summary
-        ..author ??= readContent!.author
-        ..title ??= readContent!.title
-        ..cover ??= readContent!.originImageUrls?.firstOrNull;
     }
     return res is Success;
   }
 
-  // 请求动态内容
-  Future reqHtml() async {
-    if (dynamicType == 'opus' || dynamicType == 'picture') {
-      loaded.value = await _queryOpus(id);
-      if (loaded.value) queryData();
-    } else {
-      type = 12;
-      oid = int.parse(id.replaceFirst('cv', ''));
-      queryData();
-      loaded.value = await _queryRead(oid);
+  _queryReadAsDyn(id) async {
+    final res = await DynamicsHttp.dynamicDetail(id: id);
+    if (res['status']) {
+      opusData = res['data'] as DynamicItemModel;
     }
-    if (loaded.value) {
+  }
+
+  // 请求动态内容
+  Future _queryContent() async {
+    if (type != 'read') {
+      isLoaded.value = await _queryOpus(id);
+      if (isLoaded.value) queryData();
+    } else {
+      commentId = int.parse(id.replaceFirst('cv', ''));
+      commentType = 12;
+      queryData();
+      isLoaded.value = await _queryRead(commentId);
+    }
+    if (isLoaded.value) {
       if (isLogin && !MineController.anonymity.value) {
-        VideoHttp.historyReport(aid: oid, type: 5);
+        VideoHttp.historyReport(aid: commentId, type: 5);
       }
     }
   }
@@ -116,8 +147,8 @@ class HtmlRenderController extends ReplyController<MainListReply> {
   @override
   Future<LoadingState<MainListReply>> customGetData() {
     return ReplyHttp.replyListGrpc(
-      type: type,
-      oid: oid,
+      type: commentType,
+      oid: commentId,
       cursor: CursorReq(
         next: cursor?.next ?? $fixnum.Int64(0),
         mode: mode.value,
@@ -128,7 +159,7 @@ class HtmlRenderController extends ReplyController<MainListReply> {
 
   Future onFav() async {
     bool isFav = stats.value?.favorite?.status == true;
-    final res = dynamicType == 'read'
+    final res = type == 'read'
         ? isFav
             ? await UserHttp.delFavArticle(id: id.substring(2))
             : await UserHttp.addFavArticle(id: id.substring(2))

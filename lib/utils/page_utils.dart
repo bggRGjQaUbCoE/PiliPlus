@@ -267,12 +267,13 @@ class PageUtils {
       DynamicItemModel data = res['data'];
       if (data.basic?.commentType == 12) {
         toDupNamed(
-          '/htmlRender',
+          '/articlePage',
           parameters: {
-            'url': 'www.bilibili.com/opus/$id',
-            'title': '',
             'id': id,
-            'dynamicType': 'opus'
+            'type': 'opus',
+          },
+          arguments: {
+            'item': data,
           },
           off: off,
         );
@@ -398,20 +399,17 @@ class PageUtils {
       case 'DYNAMIC_TYPE_ARTICLE':
         String? url = item?.modules?.moduleDynamic?.major?.opus?.jumpUrl;
         if (url != null) {
-          String? title = item?.modules?.moduleDynamic?.major?.opus?.title;
           if (url.contains('opus') || url.contains('read')) {
             RegExp digitRegExp = RegExp(r'\d+');
             Iterable<Match> matches = digitRegExp.allMatches(url);
             String number = matches.first.group(0)!;
-            if (url.contains('read')) {
-              number = 'cv$number';
-            }
-            toDupNamed('/htmlRender', parameters: {
-              'url': url.startsWith('//') ? url.split('//').last : url,
-              'title': title ?? '',
-              'id': number,
-              'dynamicType': url.split('//').last.split('/')[1]
-            });
+            toDupNamed(
+              '/articlePage',
+              parameters: {
+                'id': number,
+                'type': url.split('//').last.split('/')[1],
+              },
+            );
           } else {
             handleWebview('https:$url');
           }

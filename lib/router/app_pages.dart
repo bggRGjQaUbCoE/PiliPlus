@@ -1,4 +1,5 @@
 import 'package:PiliPlus/pages/about/view.dart';
+import 'package:PiliPlus/pages/article/view.dart';
 import 'package:PiliPlus/pages/fav/view.dart';
 import 'package:PiliPlus/pages/fav_search/view.dart';
 import 'package:PiliPlus/pages/follow_search/view.dart';
@@ -33,7 +34,6 @@ import '../pages/follow/index.dart';
 import '../pages/history/index.dart';
 import '../pages/home/index.dart';
 import '../pages/hot/index.dart';
-import '../pages/html/index.dart';
 import '../pages/later/index.dart';
 import '../pages/live_room/view.dart';
 import '../pages/login/index.dart';
@@ -126,7 +126,7 @@ class Routes {
     // 关于
     CustomGetPage(name: '/about', page: () => const AboutPage()),
     //
-    CustomGetPage(name: '/htmlRender', page: () => const HtmlRenderPage()),
+    CustomGetPage(name: '/articlePage', page: () => const ArticlePage()),
     // 历史记录搜索
 
     CustomGetPage(name: '/playSpeedSet', page: () => const PlaySpeedPage()),

@@ -122,12 +122,13 @@ class _SearchArticlePanelState extends CommonSearchPanelState<
             final item = list[index];
             return InkWell(
               onTap: () {
-                Get.toNamed('/htmlRender', parameters: {
-                  'url': 'www.bilibili.com/read/cv${item.id}',
-                  'title': item.subTitle ?? '',
-                  'id': 'cv${item.id}',
-                  'dynamicType': 'read'
-                });
+                Get.toNamed(
+                  '/articlePage',
+                  parameters: {
+                    'id': '${item.id}',
+                    'type': 'read',
+                  },
+                );
               },
               onLongPress: () => imageSaveDialog(
                 context: context,

@@ -1,10 +1,5 @@
 class ArticleContentModel {
-  ArticleContentModel({
-    this.paraType,
-    this.text,
-    this.format,
-    this.line,
-  });
+  int? align;
   int? paraType;
   Text? text;
   Format? format;
@@ -12,6 +7,7 @@ class ArticleContentModel {
   Pic? pic;
 
   ArticleContentModel.fromJson(Map<String, dynamic> json) {
+    align = json['align'];
     paraType = json['para_type'];
     text = json['text'] == null ? null : Text.fromJson(json['text']);
     format = json['format'] == null ? null : Format.fromJson(json['format']);
@@ -21,30 +17,30 @@ class ArticleContentModel {
 }
 
 class Pic {
-  Pic({
-    this.url,
-    this.width,
-    this.height,
-    this.size,
-    this.pics,
-    this.style,
-  });
-  String? url;
-  int? width;
-  int? height;
-  double? size;
   List<Pic>? pics;
   int? style;
+  String? url;
+  num? width;
+  double? height;
+  num? size;
+  String? liveUrl;
+
+  double? calHeight;
 
   Pic.fromJson(Map<String, dynamic> json) {
     url = json['url'];
     width = json['width'];
     height = json['height'];
     size = json['size'];
-    pics = (json['pics'] as List<dynamic>?)
-        ?.map((item) => Pic.fromJson(item))
-        .toList();
+    pics = (json['pics'] as List?)?.map((item) => Pic.fromJson(item)).toList();
     style = json['style'];
+    liveUrl = json['live_url'];
+  }
+
+  void onCalHeight(maxWidth) {
+    if (calHeight == null && height != null && width != null) {
+      calHeight = maxWidth * height! / width!;
+    }
   }
 }
 
@@ -84,16 +80,14 @@ class Text {
 }
 
 class Nodes {
-  Nodes({
-    this.nodeType,
-    this.word,
-  });
   int? nodeType;
   Word? word;
+  Rich? rich;
 
   Nodes.fromJson(Map<String, dynamic> json) {
     nodeType = json['node_type'];
     word = json['word'] == null ? null : Word.fromJson(json['word']);
+    rich = json['rich'] == null ? null : Rich.fromJson(json['rich']);
   }
 }
 
@@ -132,6 +126,29 @@ class Style {
     italic = json['italic'];
     strikethrough = json['strikethrough'];
   }
+}
+
+class Rich {
+  Style? style;
+  String? jumpUrl;
+  String? origText;
+  String? text;
+
+  Rich({
+    this.style,
+    this.jumpUrl,
+    this.origText,
+    this.text,
+  });
+
+  factory Rich.fromJson(Map<String, dynamic> json) => Rich(
+        style: json['style'] == null
+            ? null
+            : Style.fromJson(json['style'] as Map<String, dynamic>),
+        jumpUrl: json['jump_url'] as String?,
+        origText: json['orig_text'] as String?,
+        text: json['text'] as String?,
+      );
 }
 
 // class ArticleContentModel {

@@ -48,12 +48,12 @@ class HistoryItem extends StatelessWidget {
         }
         if (videoItem.history.business?.contains('article') == true) {
           PageUtils.toDupNamed(
-            '/htmlRender',
+            '/articlePage',
             parameters: {
-              'url': 'https://www.bilibili.com/read/cv${videoItem.history.oid}',
-              'title': '',
-              'id': 'cv${videoItem.history.oid}',
-              'dynamicType': 'read'
+              'id': videoItem.history.business == 'article-list'
+                  ? '${videoItem.history.cid}'
+                  : '${videoItem.history.oid}',
+              'type': 'read',
             },
           );
         } else if (videoItem.history.business == 'live') {

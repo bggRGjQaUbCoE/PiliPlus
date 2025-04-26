@@ -109,7 +109,7 @@ Widget opusContent({
                   },
                   child: NetworkImgLayer(
                     width: maxWidth,
-                    height: element.pic!.pics!.first.calHeight,
+                    height: element.pic?.pics?.first.calHeight?.toDouble(),
                     src: element.pic!.pics!.first.url!,
                     quality: 60,
                   ),
@@ -120,7 +120,7 @@ Widget opusContent({
             if (element.paraType == 3) {
               return CachedNetworkImage(
                 imageUrl: Utils.thumbnailImgUrl(element.line!.pic!.url!),
-                height: element.line?.pic?.height,
+                height: element.line?.pic?.height?.toDouble(),
               );
             }
 

@@ -10,8 +10,6 @@ import 'package:PiliPlus/models/space_article/stats.dart';
 import 'package:PiliPlus/pages/common/reply_controller.dart';
 import 'package:PiliPlus/pages/mine/controller.dart';
 import 'package:PiliPlus/utils/storage.dart';
-import 'package:PiliPlus/utils/url_utils.dart';
-import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -46,22 +44,6 @@ class ArticleController extends ReplyController<MainListReply> {
     id = Get.parameters['id']!;
     type = Get.parameters['type']!;
 
-    // to opus
-    if (type == 'read') {
-      UrlUtils.parseRedirectUrl('https://www.bilibili.com/read/cv$id/')
-          .then((url) {
-        if (url != null) {
-          id = Utils.getFileName(url, fileExt: false);
-          type = 'opus';
-        }
-        init();
-      });
-    } else {
-      init();
-    }
-  }
-
-  init() {
     url = type == 'read'
         ? 'https://www.bilibili.com/read/cv$id'
         : 'https://www.bilibili.com/opus/$id';

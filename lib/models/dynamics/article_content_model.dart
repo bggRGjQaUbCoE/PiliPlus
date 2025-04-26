@@ -5,6 +5,7 @@ class ArticleContentModel {
   Format? format;
   Line? line;
   Pic? pic;
+  LinkCard? linkCard;
 
   ArticleContentModel.fromJson(Map<String, dynamic> json) {
     align = json['align'];
@@ -13,6 +14,8 @@ class ArticleContentModel {
     format = json['format'] == null ? null : Format.fromJson(json['format']);
     line = json['line'] == null ? null : Line.fromJson(json['line']);
     pic = json['pic'] == null ? null : Pic.fromJson(json['pic']);
+    linkCard =
+        json['link_card'] == null ? null : LinkCard.fromJson(json['link_card']);
   }
 }
 
@@ -134,21 +137,57 @@ class Rich {
   String? origText;
   String? text;
 
-  Rich({
-    this.style,
-    this.jumpUrl,
-    this.origText,
-    this.text,
-  });
+  Rich.fromJson(Map<String, dynamic> json) {
+    style = json['style'] == null ? null : Style.fromJson(json['style']);
+    jumpUrl = json['jump_url'];
+    origText = json['orig_text'];
+    text = json['text'];
+  }
+}
 
-  factory Rich.fromJson(Map<String, dynamic> json) => Rich(
-        style: json['style'] == null
-            ? null
-            : Style.fromJson(json['style'] as Map<String, dynamic>),
-        jumpUrl: json['jump_url'] as String?,
-        origText: json['orig_text'] as String?,
-        text: json['text'] as String?,
-      );
+class Ugc {
+  String? cover;
+  String? descSecond;
+  String? duration;
+  String? headText;
+  String? idStr;
+  String? jumpUrl;
+  bool? multiLine;
+  String? title;
+
+  Ugc.fromJson(Map<String, dynamic> json) {
+    cover = json['cover'];
+    descSecond = json['desc_second'];
+    duration = json['duration'];
+    headText = json['head_text'];
+    idStr = json['id_str'];
+    jumpUrl = json['jump_url'];
+    multiLine = json['multi_line'];
+    title = json['title'];
+  }
+}
+
+class Card {
+  String? oid;
+  String? type;
+  Ugc? ugc;
+
+  Card.fromJson(Map<String, dynamic> json) {
+    oid = json['oid'];
+    type = json['type'];
+    ugc = json['ugc'] == null ? null : Ugc.fromJson(json['ugc']);
+  }
+}
+
+class LinkCard {
+  LinkCard({
+    this.card,
+  });
+  Card? card;
+
+  LinkCard.fromJson(Map<String, dynamic> json) {
+    card = json['card'] == null ? null : Card.fromJson(json['card']);
+  }
 }
 
 // class ArticleContentModel {

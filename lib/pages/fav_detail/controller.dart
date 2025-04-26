@@ -15,7 +15,7 @@ import 'package:PiliPlus/http/video.dart';
 class FavDetailController
     extends MultiSelectController<FavDetailData, FavDetailItemData> {
   Rx<FavFolderItemData> item = FavFolderItemData().obs;
-  int? mediaId;
+  late int mediaId;
   late String heroTag;
   RxBool isOwner = false.obs;
   RxBool titleCtr = false.obs;
@@ -24,11 +24,10 @@ class FavDetailController
 
   @override
   void onInit() {
-    if (Get.parameters.keys.isNotEmpty) {
-      mediaId = int.parse(Get.parameters['mediaId']!);
-      heroTag = Get.parameters['heroTag']!;
-    }
     super.onInit();
+
+    mediaId = int.parse(Get.parameters['mediaId']!);
+    heroTag = Get.parameters['heroTag']!;
 
     mid = Accounts.main.mid;
 
@@ -83,7 +82,7 @@ class FavDetailController
       UserHttp.userFavFolderDetail(
         pn: currentPage,
         ps: 20,
-        mediaId: mediaId!,
+        mediaId: mediaId,
       );
 
   onDelChecked(BuildContext context) {

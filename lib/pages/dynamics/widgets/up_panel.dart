@@ -89,12 +89,13 @@ class _UpPanelState extends State<UpPanel> {
             ),
           ),
         ),
-        SliverList.builder(
-          itemCount: upList.length,
-          itemBuilder: (context, index) {
-            return upItemBuild(upList[index]);
-          },
-        ),
+        if (upList.isNotEmpty)
+          SliverList.builder(
+            itemCount: upList.length,
+            itemBuilder: (context, index) {
+              return upItemBuild(upList[index]);
+            },
+          ),
         const SliverToBoxAdapter(child: SizedBox(height: 200)),
       ],
     );

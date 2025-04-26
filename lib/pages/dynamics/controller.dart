@@ -110,10 +110,6 @@ class DynamicsController extends GetxController
       upData.refresh();
     }
     upData.value.errMsg = null;
-    if (type == 'init') {
-      upData.value.upList = [];
-      upData.value.liveUsers = LiveUsers();
-    }
     if (GStorage.setting
         .get(SettingBoxKey.dynamicsShowAllFollowedUp, defaultValue: false)) {
       allFollowedUpsPage = 1;

@@ -119,9 +119,64 @@ Widget opusContent({
 
             if (element.paraType == 3) {
               return CachedNetworkImage(
-                imageUrl: Utils.thumbnailImgUrl(element.line!.pic!.url!),
+                width: maxWidth,
+                fit: BoxFit.contain,
                 height: element.line?.pic?.height?.toDouble(),
+                imageUrl: Utils.thumbnailImgUrl(element.line!.pic!.url!),
               );
+            }
+
+            if (element.paraType == 6) {
+              if (element.linkCard?.card?.ugc != null) {
+                return Card(
+                  margin: EdgeInsets.zero,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: const BorderRadius.all(Radius.circular(8)),
+                  ),
+                  color: Theme.of(context).colorScheme.onInverseSurface,
+                  child: InkWell(
+                    onTap: () {
+                      try {
+                        PiliScheme.videoPush(
+                          int.parse(element.linkCard!.card!.oid!),
+                          null,
+                        );
+                      } catch (_) {}
+                    },
+                    borderRadius: const BorderRadius.all(Radius.circular(8)),
+                    child: Padding(
+                      padding: const EdgeInsets.all(8),
+                      child: Row(
+                        children: [
+                          NetworkImgLayer(
+                            radius: 6,
+                            width: 65 * 16 / 10,
+                            height: 65,
+                            src: element.linkCard!.card!.ugc!.cover,
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(element.linkCard!.card!.ugc!.title!),
+                                Text(
+                                  element.linkCard!.card!.ugc!.descSecond!,
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color:
+                                        Theme.of(context).colorScheme.outline,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              }
             }
 
             return const SizedBox.shrink();

@@ -9,7 +9,8 @@ Widget errorWidget({errMsg, onReload}) => HttpError(
       onReload: onReload,
     );
 
-Widget scrollErrorWidget({errMsg, onReload}) => CustomScrollView(
+Widget scrollErrorWidget({errMsg, onReload, controller}) => CustomScrollView(
+      controller: controller,
       slivers: [
         HttpError(
           errMsg: errMsg,

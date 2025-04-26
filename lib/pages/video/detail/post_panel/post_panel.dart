@@ -15,6 +15,7 @@ import 'package:PiliPlus/plugin/pl_player/index.dart';
 import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/utils.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -381,55 +382,7 @@ class _PostPanelState extends CommonCollapseSlidePageState<PostPanel> {
                         TextButton(
                           onPressed: () {
                             Get.back();
-                            Request().post(
-                              '${GStorage.blockServer}/api/skipSegments',
-                              data: {
-                                'videoID': videoDetailController.bvid,
-                                'cid': videoDetailController.cid.value,
-                                'userID': GStorage.blockUserID,
-                                'userAgent': Constants.userAgent,
-                                'videoDuration': videoDuration,
-                                'segments': list!
-                                    .map(
-                                      (item) => {
-                                        'segment': [
-                                          item.segment.first,
-                                          item.segment.second,
-                                        ],
-                                        'category': item.category.name,
-                                        'actionType': item.actionType.name,
-                                      },
-                                    )
-                                    .toList(),
-                              },
-                            ).then(
-                              (res) {
-                                if (res.statusCode == 200) {
-                                  Get.back();
-                                  SmartDialog.showToast('提交成功');
-                                  list?.clear();
-                                  videoDetailController.handleSBData(res);
-                                  plPlayerController.segmentList.value =
-                                      videoDetailController
-                                              .segmentProgressList ??
-                                          <Segment>[];
-                                  if (videoDetailController
-                                          .positionSubscription ==
-                                      null) {
-                                    videoDetailController.initSkip();
-                                  }
-                                } else {
-                                  SmartDialog.showToast(
-                                    '提交失败: ${{
-                                          400: '参数错误',
-                                          403: '被自动审核机制拒绝',
-                                          429: '重复提交太快',
-                                          409: '重复提交'
-                                        }[res.statusCode] ?? res.statusCode}',
-                                  );
-                                }
-                              },
-                            );
+                            _onPost();
                           },
                           child: const Text('确定提交'),
                         ),
@@ -568,5 +521,65 @@ class _PostPanelState extends CommonCollapseSlidePageState<PostPanel> {
         },
       ),
     ];
+  }
+
+  void _onPost({String? url}) async {
+    Request()
+        .post(
+      url ?? '${GStorage.blockServer}/api/skipSegments',
+      data: {
+        'videoID': videoDetailController.bvid,
+        'cid': videoDetailController.cid.value.toString(),
+        'userID': GStorage.blockUserID.toString(),
+        'userAgent': Constants.userAgent,
+        'videoDuration': videoDuration,
+        'segments': list!
+            .map(
+              (item) => {
+                'segment': [
+                  item.segment.first,
+                  item.segment.second,
+                ],
+                'category': item.category.name,
+                'actionType': item.actionType.name,
+              },
+            )
+            .toList(),
+      },
+      options: Options(
+        validateStatus: (status) => true,
+      ),
+    )
+        .then(
+      (res) {
+        if (res.statusCode == 200) {
+          Get.back();
+          SmartDialog.showToast('提交成功');
+          list?.clear();
+          videoDetailController.handleSBData(res);
+          plPlayerController.segmentList.value =
+              videoDetailController.segmentProgressList ?? <Segment>[];
+          if (videoDetailController.positionSubscription == null) {
+            videoDetailController.initSkip();
+          }
+        } else {
+          if (const [301, 302, 303, 307, 308].contains(res.statusCode)) {
+            String? redirectUrl = res.headers['location']?.first;
+            if (redirectUrl != null) {
+              _onPost(url: redirectUrl);
+              return;
+            }
+          }
+          SmartDialog.showToast(
+            '提交失败: ${{
+                  400: '参数错误',
+                  403: '被自动审核机制拒绝',
+                  429: '重复提交太快',
+                  409: '重复提交'
+                }[res.statusCode] ?? res.statusCode}',
+          );
+        }
+      },
+    );
   }
 }

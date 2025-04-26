@@ -21,10 +21,8 @@ class SubDetailController
     super.onInit();
     item = Get.arguments;
     playCount.value = item.viewCount!;
-    if (Get.parameters.keys.isNotEmpty) {
-      id = int.parse(Get.parameters['id']!);
-      heroTag = Get.parameters['heroTag']!;
-    }
+    id = int.parse(Get.parameters['id']!);
+    heroTag = Get.parameters['heroTag']!;
     queryData();
   }
 

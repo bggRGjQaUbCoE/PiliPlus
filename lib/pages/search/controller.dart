@@ -44,16 +44,14 @@ class SSearchController extends GetxController {
   void onInit() {
     super.onInit();
     // 其他页面跳转过来
-    if (Get.parameters.keys.isNotEmpty) {
-      if (Get.parameters['keyword'] != null) {
-        onClickKeyword(Get.parameters['keyword']!);
-      }
-      if (Get.parameters['hintText'] != null) {
-        hintText = Get.parameters['hintText']!;
-      }
-      if (Get.parameters['text'] != null) {
-        controller.text = Get.parameters['text']!;
-      }
+    if (Get.parameters['keyword'] != null) {
+      onClickKeyword(Get.parameters['keyword']!);
+    }
+    if (Get.parameters['hintText'] != null) {
+      hintText = Get.parameters['hintText']!;
+    }
+    if (Get.parameters['text'] != null) {
+      controller.text = Get.parameters['text']!;
     }
 
     historyList.value = List.from(GStorage.historyWord.get('cacheList') ?? []);

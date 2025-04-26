@@ -304,29 +304,24 @@ class RequestUtils {
   }
 
   // 动态点赞
-  static Future onLikeDynamic(item, VoidCallback callback) async {
+  static Future onLikeDynamic(
+      DynamicItemModel item, VoidCallback callback) async {
     feedBack();
     String dynamicId = item.idStr!;
     // 1 已点赞 2 不喜欢 0 未操作
-    item.modules?.moduleStat ??= ModuleStatModel();
-    item.modules?.moduleStat.like ??= DynamicStat();
-    DynamicStat like = item.modules.moduleStat.like;
-    int count = like.count ?? 0;
-    bool status = like.status ?? false;
+    DynamicStat? like = item.modules.moduleStat?.like;
+    int count = like?.count ?? 0;
+    bool status = like?.status ?? false;
     int up = status ? 2 : 1;
     var res = await DynamicsHttp.likeDynamic(dynamicId: dynamicId, up: up);
     if (res['status']) {
       SmartDialog.showToast(!status ? '点赞成功' : '取消赞');
       if (up == 1) {
-        item.modules.moduleStat.like.count = (count + 1).toString();
-        item.modules.moduleStat.like.status = true;
+        like?.count = count + 1;
+        like?.status = true;
       } else {
-        if (count == 1) {
-          item.modules.moduleStat.like.count = '点赞';
-        } else {
-          item.modules.moduleStat.like.count = (count - 1).toString();
-        }
-        item.modules.moduleStat.like.status = false;
+        like?.count = count - 1;
+        like?.status = false;
       }
       callback();
     } else {

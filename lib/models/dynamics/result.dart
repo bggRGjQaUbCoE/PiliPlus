@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:PiliPlus/common/widgets/avatar.dart';
 import 'package:PiliPlus/models/model_owner.dart';
-import 'package:flutter/material.dart';
 
 import 'article_content_model.dart';
 
@@ -109,7 +108,6 @@ class ItemModulesModel {
           moduleContent = (i['module_content']?['paragraphs'] as List?)
               ?.map((i) => ArticleContentModel.fromJson(i))
               .toList();
-          debugPrint('load moduleContent: ${moduleContent?.length}');
           break;
         case 'MODULE_TYPE_EXTEND':
           moduleExtend = (i['module_extend']['items'] as List?)

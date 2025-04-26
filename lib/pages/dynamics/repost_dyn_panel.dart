@@ -34,7 +34,7 @@ class RepostPanel extends CommonPublishPage {
   final String? uname;
   final bool? isMax;
 
-  final dynamic item;
+  final DynamicItemModel? item;
   final VoidCallback? callback;
 
   @override
@@ -44,53 +44,19 @@ class RepostPanel extends CommonPublishPage {
 class _RepostPanelState extends CommonPublishPageState<RepostPanel> {
   late bool _isMax = widget.isMax ?? false;
 
-  late final dynamic _pic = widget.pic ??
-      (widget.item as DynamicItemModel?)
-          ?.modules
-          .moduleDynamic
-          ?.major
-          ?.archive
-          ?.cover ??
-      (widget.item as DynamicItemModel?)
-          ?.modules
-          .moduleDynamic
-          ?.major
-          ?.pgc
-          ?.cover ??
-      (widget.item as DynamicItemModel?)
-          ?.modules
-          .moduleDynamic
-          ?.major
-          ?.opus
-          ?.pics
-          ?.firstOrNull
-          ?.url;
+  late final _pic = widget.pic ??
+      widget.item?.modules.moduleDynamic?.major?.archive?.cover ??
+      widget.item?.modules.moduleDynamic?.major?.pgc?.cover ??
+      widget.item?.modules.moduleDynamic?.major?.opus?.pics?.firstOrNull?.url;
 
   late final _text = widget.title ??
-      (widget.item as DynamicItemModel?)
-          ?.modules
-          .moduleDynamic
-          ?.major
-          ?.opus
-          ?.summary
-          ?.text ??
-      (widget.item as DynamicItemModel?)?.modules.moduleDynamic?.desc?.text ??
-      (widget.item as DynamicItemModel?)
-          ?.modules
-          .moduleDynamic
-          ?.major
-          ?.archive
-          ?.title ??
-      (widget.item as DynamicItemModel?)
-          ?.modules
-          .moduleDynamic
-          ?.major
-          ?.pgc
-          ?.title ??
+      widget.item?.modules.moduleDynamic?.major?.opus?.summary?.text ??
+      widget.item?.modules.moduleDynamic?.desc?.text ??
+      widget.item?.modules.moduleDynamic?.major?.archive?.title ??
+      widget.item?.modules.moduleDynamic?.major?.pgc?.title ??
       '';
 
-  late final _uname = widget.uname ??
-      (widget.item as DynamicItemModel?)?.modules.moduleAuthor?.name;
+  late final _uname = widget.uname ?? widget.item?.modules.moduleAuthor?.name;
 
   @override
   void dispose() {

@@ -28,7 +28,7 @@ class Pic {
   num? size;
   String? liveUrl;
 
-  num? calHeight;
+  double? calHeight;
 
   Pic.fromJson(Map<String, dynamic> json) {
     url = json['url'];
@@ -40,7 +40,7 @@ class Pic {
     liveUrl = json['live_url'];
   }
 
-  void onCalHeight(maxWidth) {
+  void onCalHeight(double maxWidth) {
     if (calHeight == null && height != null && width != null) {
       calHeight = maxWidth * height! / width!;
     }

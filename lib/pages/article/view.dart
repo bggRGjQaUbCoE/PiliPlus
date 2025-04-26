@@ -1,8 +1,6 @@
 import 'dart:math';
 
 import 'package:PiliPlus/common/widgets/network_img_layer.dart';
-import 'package:PiliPlus/models/dynamics/article_content_model.dart'
-    show ArticleContentModel;
 import 'package:PiliPlus/models/dynamics/result.dart' show DynamicStat;
 import 'package:PiliPlus/pages/article/widgets/opus_content.dart';
 import 'package:PiliPlus/pages/article/widgets/html_render.dart';
@@ -55,6 +53,8 @@ class _ArticlePageState extends State<ArticlePage>
   bool get _horizontalPreview =>
       context.orientation == Orientation.landscape &&
       _articleCtr.horizontalPreview;
+
+  bool forceHtml = false;
 
   late final _key = GlobalKey<ScaffoldState>();
 
@@ -341,12 +341,9 @@ class _ArticlePageState extends State<ArticlePage>
         sliver: Obx(
           () {
             if (_articleCtr.isLoaded.value) {
-              List<ArticleContentModel>? opus =
-                  _articleCtr.opusData?.modules.moduleContent ??
-                      _articleCtr.articleData?.opus?.content;
-
               late Widget content;
-              if (opus == null) {
+              if (forceHtml || _articleCtr.opus == null) {
+                debugPrint('html page');
                 var res = parser.parse(_articleCtr.articleData!.content!);
                 content = SliverList.separated(
                   itemCount: res.body!.children.length,
@@ -362,9 +359,10 @@ class _ArticlePageState extends State<ArticlePage>
                       const SizedBox(height: 10),
                 );
               } else {
+                debugPrint('json page');
                 content = opusContent(
                   context: context,
-                  opus: opus,
+                  opus: _articleCtr.opus!,
                   callback: _getImageCallback,
                   maxWidth: maxWidth,
                 );
@@ -626,13 +624,51 @@ class _ArticlePageState extends State<ArticlePage>
                   ],
                 ),
               ),
-              if (_articleCtr.type == 'read' && _articleCtr.stats.value != null)
+              if ( //BuildConfig.isDebug &&
+                  _articleCtr.commentType == 12 &&
+                      _articleCtr.articleData?.content?.startsWith('{') != true)
+                PopupMenuItem(
+                  onTap: () async {
+                    if (!forceHtml) {
+                      if (_articleCtr.articleData == null) {
+                        if (!await _articleCtr
+                            .queryRead(_articleCtr.commentId)) {
+                          return;
+                        }
+                      }
+                      // 有时content是json
+                      forceHtml =
+                          _articleCtr.articleData?.content?.startsWith('{') !=
+                              true;
+                      _articleCtr.isLoaded.refresh();
+                    } else {
+                      forceHtml = false;
+                      if (_articleCtr.opus == null) {
+                        if (!await _articleCtr
+                            .queryOpus(_articleCtr.articleData!.dynIdStr)) {
+                          return;
+                        }
+                      }
+                      _articleCtr.isLoaded.refresh();
+                    }
+                  },
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.html_outlined, size: 19),
+                      const SizedBox(width: 10),
+                      Text('从${forceHtml ? "JSON" : "HTML"}解析'),
+                    ],
+                  ),
+                ),
+              if (_articleCtr.commentType == 12 &&
+                  _articleCtr.stats.value != null)
                 PopupMenuItem(
                   onTap: () {
                     try {
                       PageUtils.pmShare(
                         content: {
-                          "id": _articleCtr.id,
+                          "id": _articleCtr.commentId,
                           "title": "- 哔哩哔哩专栏",
                           "headline": _articleCtr.summary.title ?? '',
                           "source": 6,
@@ -782,6 +818,10 @@ class _ArticlePageState extends State<ArticlePage>
                                                 builder: (context) =>
                                                     RepostPanel(
                                                   item: _articleCtr.opusData,
+                                                  pic:
+                                                      _articleCtr.summary.cover,
+                                                  title:
+                                                      _articleCtr.summary.title,
                                                   callback: () {
                                                     int count = _articleCtr
                                                             .stats
@@ -829,7 +869,7 @@ class _ArticlePageState extends State<ArticlePage>
                                           builder: (context) => TextButton.icon(
                                             onPressed: () =>
                                                 RequestUtils.onLikeDynamic(
-                                              _articleCtr.opusData,
+                                              _articleCtr.opusData!,
                                               () {
                                                 if (context.mounted) {
                                                   (context as Element?)

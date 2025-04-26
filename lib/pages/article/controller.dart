@@ -3,6 +3,8 @@ import 'package:PiliPlus/http/dynamics.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/user.dart';
 import 'package:PiliPlus/http/video.dart';
+import 'package:PiliPlus/models/dynamics/article_content_model.dart'
+    show ArticleContentModel;
 import 'package:PiliPlus/models/dynamics/result.dart';
 import 'package:PiliPlus/models/model_owner.dart';
 import 'package:PiliPlus/models/space_article/item.dart';
@@ -34,9 +36,12 @@ class ArticleController extends ReplyController<MainListReply> {
   dynamic get sourceId => id;
 
   final RxBool isLoaded = false.obs;
-  DynamicItemModel? opusData;
+  DynamicItemModel? opusData; // 采用opus信息作为动态信息, 标题信息从summary获取
   Item? articleData;
   final Rx<ModuleStatModel?> stats = Rx<ModuleStatModel?>(null);
+
+  List<ArticleContentModel>? get opus =>
+      opusData?.modules.moduleContent ?? articleData?.opus?.content;
 
   @override
   void onInit() {
@@ -51,12 +56,15 @@ class ArticleController extends ReplyController<MainListReply> {
 
     if (Get.arguments?['item'] is DynamicItemModel) {
       opusData = Get.arguments['item'];
+      if (opusData!.modules.moduleStat != null) {
+        stats.value = opusData!.modules.moduleStat!;
+      }
     }
 
     _queryContent();
   }
 
-  Future<bool> _queryOpus(id) async {
+  Future<bool> queryOpus(id) async {
     final res = await DynamicsHttp.opusDetail(opusId: id);
     if (res is Success) {
       opusData = (res as Success<DynamicItemModel>).response;
@@ -73,7 +81,7 @@ class ArticleController extends ReplyController<MainListReply> {
     return false;
   }
 
-  Future<bool> _queryRead(cvid) async {
+  Future<bool> queryRead(cvid) async {
     final res = await DynamicsHttp.articleView(cvid: cvid);
     if (res is Success) {
       articleData = (res as Success<Item>).response;
@@ -86,33 +94,37 @@ class ArticleController extends ReplyController<MainListReply> {
         final dynId = articleData!.dynIdStr;
         if (dynId != null) {
           _queryReadAsDyn(dynId);
-          return true;
         } else {
           debugPrint('cvid2opus failed: $id');
-          stats.value = _statesToModuleStat(articleData!.stats!); // TODO remove
         }
+        _statsToModuleStat(articleData!.stats!);
       }
+      return true;
     }
-    return res is Success;
+    return false;
   }
 
   _queryReadAsDyn(id) async {
+    // 仅用于获取moduleStat
     final res = await DynamicsHttp.dynamicDetail(id: id);
     if (res['status']) {
       opusData = res['data'] as DynamicItemModel;
+      if (opusData!.modules.moduleStat != null) {
+        stats.value = opusData!.modules.moduleStat!;
+      }
     }
   }
 
   // 请求动态内容
   Future _queryContent() async {
     if (type != 'read') {
-      isLoaded.value = await _queryOpus(id);
+      isLoaded.value = await queryOpus(id);
       if (isLoaded.value) queryData();
     } else {
       commentId = int.parse(id.replaceFirst('cv', ''));
       commentType = 12;
       queryData();
-      isLoaded.value = await _queryRead(commentId);
+      isLoaded.value = await queryRead(commentId);
     }
     if (isLoaded.value) {
       if (isLogin && !MineController.anonymity.value) {
@@ -143,8 +155,8 @@ class ArticleController extends ReplyController<MainListReply> {
     bool isFav = stats.value?.favorite?.status == true;
     final res = type == 'read'
         ? isFav
-            ? await UserHttp.delFavArticle(id: id.substring(2))
-            : await UserHttp.addFavArticle(id: id.substring(2))
+            ? await UserHttp.delFavArticle(id: commentId)
+            : await UserHttp.addFavArticle(id: commentId)
         : await UserHttp.communityAction(opusId: id, action: isFav ? 4 : 3);
     if (res['status']) {
       stats.value?.favorite?.status = !isFav;
@@ -161,13 +173,18 @@ class ArticleController extends ReplyController<MainListReply> {
     }
   }
 
-  static ModuleStatModel _statesToModuleStat(Stats stats) {
-    return ModuleStatModel(
-      comment: _setCount(stats.reply),
-      forward: _setCount(stats.dyn),
-      like: _setCount(stats.like),
-      favorite: _setCount(stats.favorite),
-    );
+  void _statsToModuleStat(Stats dynStats) {
+    if (stats.value == null) {
+      stats.value = ModuleStatModel(
+        comment: _setCount(dynStats.reply),
+        forward: _setCount(dynStats.dyn),
+        like: _setCount(dynStats.like),
+        favorite: _setCount(dynStats.favorite),
+      );
+    } else {
+      // 动态类无收藏数据
+      stats.value!.favorite ??= _setCount(dynStats.favorite);
+    }
   }
 
   static DynamicStat _setCount(int? count) => DynamicStat(count: count);

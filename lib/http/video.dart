@@ -208,9 +208,11 @@ class VideoHttp {
       // 获取所有格式的视频
       'fnval': 4048,
       'fourk': 1,
+      'fnver': 0,
       'voice_balance': 1,
       'gaia_source': 'pre-load',
-      'web_location': 1550101,
+      'isGaiaAvoided': true,
+      'web_location': 1315873,
     };
 
     // 免登录查看1080p

@@ -12,20 +12,14 @@ class RecVideoItemAppModel extends BaseRecVideoItemModel {
   ThreePoint? threePoint;
 
   RecVideoItemAppModel.fromJson(Map<String, dynamic> json) {
-    id = json['player_args'] != null
-        ? json['player_args']['aid']
-        : int.tryParse(json['param'] ?? '-1');
+    id = json['player_args']?['aid'] ?? int.tryParse(json['param'] ?? '0');
     aid = id;
-    bvid = json['bvid'] ??
-        (json['player_args'] != null
-            ? IdUtils.av2bv(json['player_args']['aid'])
-            : '');
-    cid = json['player_args'] != null ? json['player_args']['cid'] : -1;
+    bvid = json['bvid'] ?? IdUtils.av2bv(id!);
+    cid = json['player_args']?['cid'] ?? 0;
     pic = json['cover'];
     stat = RcmdStat.fromJson(json);
     // 改用player_args中的duration作为原始数据（秒数）
-    duration =
-        json['player_args'] != null ? json['player_args']['duration'] : -1;
+    duration = json['player_args']?['duration'] ?? 0;
     //duration = json['cover_right_text'];
     title = json['title'];
     owner = RcmdOwner.fromJson(json);
@@ -91,11 +85,9 @@ class RcmdStat implements BaseStat {
 class RcmdOwner extends BaseOwner {
   RcmdOwner.fromJson(Map<String, dynamic> json) {
     name = json['goto'] == 'av'
-        ? json['args']['up_name']
-        : json['desc_button'] != null
-            ? json['desc_button']['text']
-            : '';
-    mid = json['args']['up_id'] ?? -1;
+        ? (json['args']?['up_name'])
+        : (json['desc_button']?['text'] ?? '');
+    mid = json['args']?['up_id'] ?? 0;
   }
 }
 

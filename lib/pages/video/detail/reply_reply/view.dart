@@ -445,7 +445,6 @@ class _VideoReplyReplyPanelState
           errMsg: loadingState.errMsg,
           onReload: _videoReplyReplyController.onReload,
         ),
-      LoadingState() => throw UnimplementedError(),
     };
   }
 

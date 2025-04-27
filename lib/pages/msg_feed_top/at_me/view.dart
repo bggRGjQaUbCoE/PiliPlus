@@ -162,7 +162,6 @@ class _AtMePageState extends State<AtMePage> {
           errMsg: loadingState.errMsg,
           onReload: _atMeController.onReload,
         ),
-      LoadingState() => throw UnimplementedError(),
     };
   }
 }

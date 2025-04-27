@@ -102,8 +102,6 @@ class SearchHttp {
           case SearchType.article:
             data = SearchArticleModel.fromJson(res.data['data']);
             break;
-          default:
-            break;
         }
         return LoadingState.success(data);
       } catch (err) {

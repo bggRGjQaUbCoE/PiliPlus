@@ -1,9 +1,19 @@
-abstract class LoadingState<T> {
+import 'dart:core' hide Error;
+
+sealed class LoadingState<T> {
   const LoadingState();
 
   factory LoadingState.loading() = Loading;
   factory LoadingState.success(T response) = Success<T>;
   factory LoadingState.error(String errMsg) = Error;
+
+  bool get isSuccess => this is Success<T>;
+
+  T get data => switch (this) {
+        Success(response: final res) => res,
+        Error() => throw this,
+        Loading() => throw Exception('ApiException: loading'),
+      };
 }
 
 class Loading extends LoadingState<Never> {
@@ -50,4 +60,9 @@ class Error extends LoadingState<Never> {
 
   @override
   int get hashCode => errMsg.hashCode;
+
+  @override
+  String toString() {
+    return 'ApiException: $errMsg';
+  }
 }

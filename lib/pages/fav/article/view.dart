@@ -89,7 +89,6 @@ class _FavArticlePageState extends State<FavArticlePage>
           errMsg: loadingState.errMsg,
           onReload: _favArticleController.onReload,
         ),
-      LoadingState() => throw UnimplementedError(),
     };
   }
 }

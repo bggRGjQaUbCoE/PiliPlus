@@ -116,7 +116,6 @@ class _LivePageState extends CommonPageState<LivePage, LiveController>
           errMsg: loadingState.errMsg,
           onReload: controller.onReload,
         ),
-      _ => throw UnimplementedError(),
     };
   }
 
@@ -267,7 +266,6 @@ class _LivePageState extends CommonPageState<LivePage, LiveController>
             ),
           ),
         ),
-      LoadingState() => throw UnimplementedError(),
     };
   }
 
@@ -329,7 +327,6 @@ class _LivePageState extends CommonPageState<LivePage, LiveController>
               ..fetchLiveFollowing();
           },
         ),
-      LoadingState() => throw UnimplementedError(),
     };
   }
 }

@@ -147,7 +147,6 @@ class _FollowPageState extends State<FollowPage> {
         ),
       Error() => FollowChildPage(
           controller: _followController, mid: _followController.mid),
-      _ => throw UnimplementedError(),
     };
   }
 

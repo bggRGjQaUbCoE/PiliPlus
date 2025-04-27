@@ -113,7 +113,6 @@ class _FollowChildPageState extends State<FollowChildPage>
           errMsg: loadingState.errMsg,
           onReload: _followController.onReload,
         ),
-      _ => throw UnimplementedError(),
     };
   }
 

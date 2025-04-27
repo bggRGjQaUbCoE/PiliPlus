@@ -111,7 +111,6 @@ class _BlackListPageState extends State<BlackListPage> {
           errMsg: loadingState.errMsg,
           onReload: _blackListController.onReload,
         ),
-      LoadingState() => throw UnimplementedError(),
     };
   }
 }

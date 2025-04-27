@@ -191,7 +191,6 @@ class _HotPageState extends CommonPageState<HotPage, HotController>
           errMsg: loadingState.errMsg,
           onReload: controller.onReload,
         ),
-      LoadingState() => throw UnimplementedError(),
     };
   }
 }

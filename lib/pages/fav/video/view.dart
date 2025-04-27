@@ -104,7 +104,6 @@ class _FavVideoPageState extends State<FavVideoPage>
           errMsg: loadingState.errMsg,
           onReload: _favController.onReload,
         ),
-      LoadingState() => throw UnimplementedError(),
     };
   }
 }

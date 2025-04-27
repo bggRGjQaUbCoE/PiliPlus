@@ -87,7 +87,6 @@ class _PgcIndexPageState extends State<PgcIndexPage>
             _ctr.getPgcIndexCondition();
           },
         ),
-      LoadingState() => throw UnimplementedError(),
     };
   }
 
@@ -238,7 +237,6 @@ class _PgcIndexPageState extends State<PgcIndexPage>
           errMsg: loadingState.errMsg,
           onReload: _ctr.onReload,
         ),
-      LoadingState() => throw UnimplementedError(),
     };
   }
 }

@@ -230,7 +230,6 @@ class _MemberVideoState extends State<MemberVideo>
           errMsg: loadingState.errMsg,
           onReload: _controller.onReload,
         ),
-      LoadingState() => throw UnimplementedError(),
     };
   }
 }

@@ -291,7 +291,6 @@ class _MemberPageNewState extends State<MemberPageNew> {
               child: SizedBox(height: 56, width: double.infinity),
             ),
       Error() => _errorWidget(userState.errMsg),
-      LoadingState() => throw UnimplementedError(),
     };
   }
 }

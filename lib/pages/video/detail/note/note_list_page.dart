@@ -179,7 +179,6 @@ class _NoteListPageState extends CommonSlidePageState<NoteListPage> {
             )
           : errWidget(),
       Error() => errWidget(loadingState.errMsg),
-      LoadingState() => throw UnimplementedError(),
     };
   }
 

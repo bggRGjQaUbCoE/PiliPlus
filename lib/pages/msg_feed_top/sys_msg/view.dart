@@ -143,7 +143,6 @@ class _SysMsgPageState extends State<SysMsgPage> {
           errMsg: loadingState.errMsg,
           onReload: _sysMsgController.onReload,
         ),
-      LoadingState() => throw UnimplementedError(),
     };
   }
 

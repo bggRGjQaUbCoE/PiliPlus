@@ -93,7 +93,6 @@ class _MemberBangumiState extends State<MemberBangumi>
           errMsg: loadingState.errMsg,
           onReload: _controller.onReload,
         ),
-      LoadingState() => throw UnimplementedError(),
     };
   }
 }

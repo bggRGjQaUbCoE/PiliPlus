@@ -93,7 +93,6 @@ class _ZonePageState extends CommonPageState<ZonePage, ZoneController>
           errMsg: loadingState.errMsg,
           onReload: controller.onReload,
         ),
-      _ => throw UnimplementedError(),
     };
   }
 }

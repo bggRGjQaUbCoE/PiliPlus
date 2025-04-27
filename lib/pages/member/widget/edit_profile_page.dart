@@ -204,7 +204,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
           errMsg: loadingState.errMsg,
           onReload: _getInfo,
         ),
-      LoadingState() => throw UnimplementedError(),
     };
   }
 

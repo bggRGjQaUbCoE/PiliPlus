@@ -171,7 +171,6 @@ class _FavNoteChildPageState extends State<FavNoteChildPage>
           errMsg: loadingState.errMsg,
           onReload: _favNoteController.onReload,
         ),
-      LoadingState() => throw UnimplementedError(),
     };
   }
 

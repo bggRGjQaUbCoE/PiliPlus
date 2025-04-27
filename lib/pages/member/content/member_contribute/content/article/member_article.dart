@@ -72,7 +72,6 @@ class _MemberArticleState extends State<MemberArticle>
           errMsg: loadingState.errMsg,
           onReload: _controller.onReload,
         ),
-      LoadingState() => throw UnimplementedError(),
     };
   }
 }

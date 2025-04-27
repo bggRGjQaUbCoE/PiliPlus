@@ -134,7 +134,6 @@ class _LiveEmotePanelState extends State<LiveEmotePanel>
             )
           : _errorWidget(),
       Error() => _errorWidget(loadingState.errMsg),
-      LoadingState() => throw UnimplementedError(),
     };
   }
 

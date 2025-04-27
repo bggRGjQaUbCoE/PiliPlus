@@ -217,7 +217,6 @@ class _FavPgcChildPageState extends State<FavPgcChildPage>
           errMsg: loadingState.errMsg,
           onReload: _favPgcController.onReload,
         ),
-      LoadingState() => throw UnimplementedError(),
     };
   }
 

@@ -140,7 +140,6 @@ class _RcmdPageState extends CommonPageState<RcmdPage, RcmdController>
           errMsg: loadingState.errMsg,
           onReload: controller.onReload,
         ),
-      LoadingState() => throw UnimplementedError(),
     };
   }
 

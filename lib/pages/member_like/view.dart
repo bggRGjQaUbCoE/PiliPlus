@@ -93,7 +93,6 @@ class _MemberLikePageState extends State<MemberLikePage> {
           errMsg: loadingState.errMsg,
           onReload: _ctr.onReload,
         ),
-      LoadingState() => throw UnimplementedError(),
     };
   }
 }

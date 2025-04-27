@@ -104,7 +104,6 @@ class _BangumiIntroPanelState extends State<BangumiIntroPanel>
           errMsg: loadingState.errMsg,
           onReload: bangumiIntroController.onReload,
         ),
-      LoadingState() => throw UnimplementedError(),
     };
   }
 }

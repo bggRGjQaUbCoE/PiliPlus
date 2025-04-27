@@ -588,7 +588,6 @@ class _FavDetailPageState extends State<FavDetailPage> {
           errMsg: loadingState.errMsg,
           onReload: _favDetailController.onReload,
         ),
-      LoadingState() => throw UnimplementedError(),
     };
   }
 }

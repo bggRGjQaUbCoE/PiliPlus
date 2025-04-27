@@ -161,7 +161,6 @@ class _FansPageState extends State<FansPage> {
           errMsg: loadingState.errMsg,
           onReload: _fansController.onReload,
         ),
-      LoadingState() => throw UnimplementedError(),
     };
   }
 }

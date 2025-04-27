@@ -160,7 +160,6 @@ class _MemberDynamicsPageState extends State<MemberDynamicsPage>
           errMsg: loadingState.errMsg,
           onReload: _memberDynamicController.onReload,
         ),
-      LoadingState() => throw UnimplementedError(),
     };
   }
 }

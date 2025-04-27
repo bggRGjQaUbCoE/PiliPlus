@@ -237,7 +237,6 @@ class _MemberHomeState extends State<MemberHome>
             )
           : errorWidget(),
       Error() => errorWidget(),
-      LoadingState() => throw UnimplementedError(),
     };
   }
 

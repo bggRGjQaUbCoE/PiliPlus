@@ -74,7 +74,6 @@ abstract class CommonSearchPageState<S extends CommonSearchPage, R, T>
           errMsg: loadingState.errMsg,
           onReload: controller.onReload,
         ),
-      _ => throw UnimplementedError(),
     };
   }
 

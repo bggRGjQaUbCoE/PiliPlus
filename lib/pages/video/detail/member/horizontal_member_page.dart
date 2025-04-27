@@ -117,7 +117,6 @@ class _HorizontalMemberPageState extends State<HorizontalMemberPage> {
             _controller.getUserInfo();
           },
         ),
-      LoadingState() => throw UnimplementedError(),
     };
   }
 
@@ -232,7 +231,6 @@ class _HorizontalMemberPageState extends State<HorizontalMemberPage> {
           errMsg: loadingState.errMsg,
           onReload: _controller.onReload,
         ),
-      LoadingState() => throw UnimplementedError(),
     };
   }
 

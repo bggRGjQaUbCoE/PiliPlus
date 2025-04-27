@@ -851,7 +851,6 @@ class _DynamicDetailPageState extends State<DynamicDetailPage>
           errMsg: loadingState.errMsg,
           onReload: _dynamicDetailController.onReload,
         ),
-      LoadingState() => throw UnimplementedError(),
     };
   }
 }

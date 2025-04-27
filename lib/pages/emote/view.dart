@@ -120,7 +120,6 @@ class _EmotePanelState extends State<EmotePanel>
             )
           : _errorWidget(),
       Error() => _errorWidget(loadingState.errMsg),
-      LoadingState() => throw UnimplementedError(),
     };
   }
 

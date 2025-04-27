@@ -229,7 +229,6 @@ class _SearchTrendingPageState extends State<SearchTrendingPage> {
           errMsg: loadingState.errMsg,
           onReload: _controller.onReload,
         ),
-      _ => throw UnimplementedError(),
     };
   }
 }

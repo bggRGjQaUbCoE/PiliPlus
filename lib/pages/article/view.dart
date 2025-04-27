@@ -505,7 +505,6 @@ class _ArticlePageState extends State<ArticlePage>
           errMsg: loadingState.errMsg,
           onReload: _articleCtr.onReload,
         ),
-      LoadingState() => throw UnimplementedError(),
     };
   }
 

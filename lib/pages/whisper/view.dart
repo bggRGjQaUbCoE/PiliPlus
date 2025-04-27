@@ -82,7 +82,6 @@ class _WhisperPageState extends State<WhisperPage> {
           errMsg: loadingState.errMsg,
           onReload: _whisperController.onReload,
         ),
-      _ => throw UnimplementedError(),
     };
   }
 

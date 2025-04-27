@@ -123,7 +123,6 @@ abstract class CommonSearchPanelState<
           errMsg: loadingState.errMsg,
           onReload: controller.onReload,
         ),
-      _ => throw UnimplementedError(),
     };
   }
 

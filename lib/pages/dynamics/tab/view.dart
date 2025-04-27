@@ -207,7 +207,6 @@ class _DynamicsTabPageState
           errMsg: loadingState.errMsg,
           onReload: controller.onReload,
         ),
-      LoadingState() => throw UnimplementedError(),
     };
   }
 }

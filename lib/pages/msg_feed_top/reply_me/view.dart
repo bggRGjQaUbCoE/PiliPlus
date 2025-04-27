@@ -183,7 +183,6 @@ class _ReplyMePageState extends State<ReplyMePage> {
           errMsg: loadingState.errMsg,
           onReload: _replyMeController.onReload,
         ),
-      LoadingState() => throw UnimplementedError(),
     };
   }
 }

@@ -92,7 +92,6 @@ class _SearchArchiveState extends State<SearchArchive>
             widget.ctr.refreshArchive();
           },
         ),
-      LoadingState() => throw UnimplementedError(),
     };
   }
 

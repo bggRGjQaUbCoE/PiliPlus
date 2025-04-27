@@ -203,7 +203,6 @@ class _LaterViewChildPageState extends State<LaterViewChildPage>
           errMsg: loadingState.errMsg,
           onReload: _laterController.onReload,
         ),
-      LoadingState() => throw UnimplementedError(),
     };
   }
 

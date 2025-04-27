@@ -60,7 +60,6 @@ class _RelatedVideoPanelState extends State<RelatedVideoPanel>
           errMsg: loadingState.errMsg,
           onReload: _relatedController.onReload,
         ),
-      LoadingState() => throw UnimplementedError(),
     };
   }
 }

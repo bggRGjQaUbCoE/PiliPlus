@@ -97,7 +97,6 @@ class _SubDetailPageState extends State<SubDetailPage> {
           errMsg: loadingState.errMsg,
           onReload: _subDetailController.onReload,
         ),
-      _ => throw UnimplementedError(),
     };
   }
 

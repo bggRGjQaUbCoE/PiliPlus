@@ -106,7 +106,6 @@ class _SeasonSeriesPageState extends State<SeasonSeriesPage>
             _controller.onReload();
           },
         ),
-      LoadingState() => throw UnimplementedError(),
     };
   }
 }

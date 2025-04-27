@@ -123,7 +123,6 @@ class _LikeMePageState extends State<LikeMePage> {
           errMsg: loadingState.errMsg,
           onReload: _likeMeController.onReload,
         ),
-      LoadingState() => throw UnimplementedError(),
     };
   }
 

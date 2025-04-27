@@ -77,7 +77,6 @@ class _SubPageState extends State<SubPage> {
           errMsg: loadingState.errMsg,
           onReload: _subController.onReload,
         ),
-      LoadingState() => throw UnimplementedError(),
     };
   }
 }

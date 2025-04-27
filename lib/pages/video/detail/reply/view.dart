@@ -266,7 +266,6 @@ class _VideoReplyPanelState extends State<VideoReplyPanel>
           errMsg: loadingState.errMsg,
           onReload: _videoReplyController.onReload,
         ),
-      LoadingState() => throw UnimplementedError(),
     };
   }
 }

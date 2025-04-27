@@ -295,7 +295,6 @@ class _HistoryPageState extends State<HistoryPage>
           errMsg: loadingState.errMsg,
           onReload: _historyController.onReload,
         ),
-      LoadingState() => throw UnimplementedError(),
     };
   }
 

@@ -93,7 +93,6 @@ class _MemberCoinPageState extends State<MemberCoinPage> {
           errMsg: loadingState.errMsg,
           onReload: _ctr.onReload,
         ),
-      LoadingState() => throw UnimplementedError(),
     };
   }
 }

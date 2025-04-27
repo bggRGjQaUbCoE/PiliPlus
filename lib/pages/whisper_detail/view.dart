@@ -189,7 +189,6 @@ class _WhisperDetailPageState
           errMsg: loadingState.errMsg,
           onReload: _whisperDetailController.onReload,
         ),
-      _ => throw UnimplementedError(),
     };
   }
 

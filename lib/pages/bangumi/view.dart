@@ -198,7 +198,6 @@ class _BangumiPageState extends CommonPageState<BangumiPage, BangumiController>
               ),
             ),
           ),
-        LoadingState() => throw UnimplementedError(),
       };
 
   List<Widget> get _buildRcmd => [
@@ -330,7 +329,6 @@ class _BangumiPageState extends CommonPageState<BangumiPage, BangumiController>
           errMsg: loadingState.errMsg,
           onReload: controller.onReload,
         ),
-      LoadingState() => throw UnimplementedError(),
     };
   }
 
@@ -461,7 +459,6 @@ class _BangumiPageState extends CommonPageState<BangumiPage, BangumiController>
             textAlign: TextAlign.center,
           ),
         ),
-      LoadingState() => throw UnimplementedError(),
     };
   }
 }

@@ -149,7 +149,6 @@ class _SearchDynamicState extends State<SearchDynamic>
             widget.ctr.refreshDynamic();
           },
         ),
-      LoadingState() => throw UnimplementedError(),
     };
   }
 

@@ -73,7 +73,6 @@ class _MemberFavoriteState extends State<MemberFavorite>
           errMsg: loadingState.errMsg,
           onReload: _controller.onReload,
         ),
-      LoadingState() => throw UnimplementedError(),
     };
   }
 

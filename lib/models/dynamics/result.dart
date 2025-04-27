@@ -32,27 +32,63 @@ class DynamicItemModel {
   bool? visible;
   bool? isForwarded;
 
+  // opus
+  Fallback? fallback;
+
   DynamicItemModel.fromJson(Map<String, dynamic> json) {
     if (json['basic'] != null) basic = Basic.fromJson(json['basic']);
     idStr = json['id_str'];
-    modules = ItemModulesModel.fromJson(json['modules']);
-    orig =
-        json['orig'] != null ? DynamicItemModel.fromJson(json['orig']) : null;
-    orig?.isForwarded = true;
+    modules = json['modules'] == null
+        ? ItemModulesModel()
+        : ItemModulesModel.fromJson(json['modules']);
+    if (json['orig'] != null) {
+      orig = DynamicItemModel.fromJson(json['orig'])..isForwarded = true;
+    }
     type = json['type'];
     visible = json['visible'];
   }
 
   DynamicItemModel.fromOpusJson(Map<String, dynamic> json) {
-    if (json['basic'] != null) basic = Basic.fromJson(json['basic']);
-    idStr = json['id_str'];
+    if (json['item']?['basic'] != null) {
+      basic = Basic.fromJson(json['item']['basic']);
+    }
+    idStr = json['item']?['id_str'];
     // type = json['type']; // int
-    modules = ItemModulesModel.fromOpusJson((json['modules'] as List).cast());
+    modules = json['item']?['modules'] == null
+        ? ItemModulesModel()
+        : ItemModulesModel.fromOpusJson(
+            (json['item']?['modules'] as List).cast());
+
+    if (json['fallback'] != null) {
+      fallback = Fallback.fromJson(json['fallback']);
+    }
   }
+}
+
+class Fallback {
+  String? id;
+  int? type;
+
+  Fallback({
+    this.id,
+    this.type,
+  });
+
+  factory Fallback.fromJson(Map<String, dynamic> json) => Fallback(
+        id: json['id'],
+        type: json['type'],
+      );
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'type': type,
+      };
 }
 
 // 单个动态详情
 class ItemModulesModel {
+  ItemModulesModel();
+
   ModuleAuthorModel? moduleAuthor;
   ModuleStatModel? moduleStat;
   ModuleTag? moduleTag; // 也做opus的title用
@@ -87,10 +123,14 @@ class ItemModulesModel {
     for (var i in json) {
       switch (i['module_type']) {
         case 'MODULE_TYPE_TITLE':
-          moduleTag = ModuleTag.fromJson(i['module_title']);
+          moduleTag = i['module_title'] == null
+              ? null
+              : ModuleTag.fromJson(i['module_title']);
           break;
         case 'MODULE_TYPE_AUTHOR':
-          moduleAuthor = ModuleAuthorModel.fromJson(i['module_author']);
+          moduleAuthor = i['module_author'] == null
+              ? null
+              : ModuleAuthorModel.fromJson(i['module_author']);
           break;
         case 'MODULE_TYPE_CONTENT':
           moduleContent = (i['module_content']?['paragraphs'] as List?)
@@ -103,7 +143,9 @@ class ItemModulesModel {
               .toList();
           break;
         case 'MODULE_TYPE_STAT':
-          moduleStat = ModuleStatModel.fromJson(i['module_stat']);
+          moduleStat = i['module_stat'] == null
+              ? null
+              : ModuleStatModel.fromJson(i['module_stat']);
           break;
         // case 'MODULE_TYPE_BOTTOM':
         //   break;

@@ -186,8 +186,7 @@ class DynamicsHttp {
     );
 
     return res.data['code'] == 0
-        ? LoadingState.success(
-            DynamicItemModel.fromOpusJson(res.data['data']['item']))
+        ? LoadingState.success(DynamicItemModel.fromOpusJson(res.data['data']))
         : LoadingState.error(res.data['message']);
   }
 }

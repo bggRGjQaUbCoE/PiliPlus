@@ -54,8 +54,6 @@ class _ArticlePageState extends State<ArticlePage>
       context.orientation == Orientation.landscape &&
       _articleCtr.horizontalPreview;
 
-  bool forceHtml = false;
-
   late final _key = GlobalKey<ScaffoldState>();
 
   get _getImageCallback => _horizontalPreview
@@ -342,7 +340,7 @@ class _ArticlePageState extends State<ArticlePage>
           () {
             if (_articleCtr.isLoaded.value) {
               late Widget content;
-              if (forceHtml || _articleCtr.opus == null) {
+              if (_articleCtr.opus == null) {
                 debugPrint('html page');
                 final res = parser.parse(_articleCtr.articleData!.content!);
                 content = SliverList.separated(
@@ -624,43 +622,6 @@ class _ArticlePageState extends State<ArticlePage>
                   ],
                 ),
               ),
-              if ( //BuildConfig.isDebug &&
-                  _articleCtr.commentType == 12 &&
-                      _articleCtr.articleData?.content?.startsWith('{') != true)
-                PopupMenuItem(
-                  onTap: () async {
-                    if (!forceHtml) {
-                      if (_articleCtr.articleData == null) {
-                        if (!await _articleCtr
-                            .queryRead(_articleCtr.commentId)) {
-                          return;
-                        }
-                      }
-                      // 有时content是json
-                      forceHtml =
-                          _articleCtr.articleData?.content?.startsWith('{') !=
-                              true;
-                      _articleCtr.isLoaded.refresh();
-                    } else {
-                      forceHtml = false;
-                      if (_articleCtr.opus == null) {
-                        if (!await _articleCtr
-                            .queryOpus(_articleCtr.articleData!.dynIdStr)) {
-                          return;
-                        }
-                      }
-                      _articleCtr.isLoaded.refresh();
-                    }
-                  },
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.html_outlined, size: 19),
-                      const SizedBox(width: 10),
-                      Text('从${forceHtml ? "JSON" : "HTML"}解析'),
-                    ],
-                  ),
-                ),
               if (_articleCtr.commentType == 12 &&
                   _articleCtr.stats.value != null)
                 PopupMenuItem(
@@ -670,12 +631,12 @@ class _ArticlePageState extends State<ArticlePage>
                         content: {
                           "id": _articleCtr.commentId,
                           "title": "- 哔哩哔哩专栏",
-                          "headline": _articleCtr.summary.title ?? '',
+                          "headline": _articleCtr.summary.title!, // throw
                           "source": 6,
-                          "thumb": _articleCtr.summary.cover ?? '',
-                          "author": _articleCtr.summary.author?.name ?? '',
+                          "thumb": _articleCtr.summary.cover!,
+                          "author": _articleCtr.summary.author!.name,
                           "author_id":
-                              _articleCtr.summary.author?.mid?.toString() ?? '',
+                              _articleCtr.summary.author!.mid.toString(),
                         },
                       );
                     } catch (e) {

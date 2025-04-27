@@ -201,7 +201,7 @@ Widget opusContent({
                 ),
               ),
             );
-          case 7:
+          case 7 when (element.code != null):
             final Highlight highlight = Highlight()
               ..registerLanguages(builtinAllLanguages);
             final HighlightResult result = highlight.highlightAuto(

@@ -12,6 +12,7 @@ import 'package:PiliPlus/models/space_article/stats.dart';
 import 'package:PiliPlus/pages/common/reply_controller.dart';
 import 'package:PiliPlus/pages/mine/controller.dart';
 import 'package:PiliPlus/utils/storage.dart';
+import 'package:PiliPlus/utils/url_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -22,9 +23,9 @@ class ArticleController extends ReplyController<MainListReply> {
   late String id;
   late String type;
 
-  late final String url;
+  late String url;
   late int commentType;
-  dynamic commentId;
+  late int commentId;
   final summary = Summary();
 
   RxBool showTitle = false.obs;
@@ -33,7 +34,7 @@ class ArticleController extends ReplyController<MainListReply> {
   late final showDynActionBar = GStorage.showDynActionBar;
 
   @override
-  dynamic get sourceId => id;
+  dynamic get sourceId => commentType == 12 ? 'cv$commentId' : id;
 
   final RxBool isLoaded = false.obs;
   DynamicItemModel? opusData; // 采用opus信息作为动态信息, 标题信息从summary获取
@@ -49,11 +50,6 @@ class ArticleController extends ReplyController<MainListReply> {
     id = Get.parameters['id']!;
     type = Get.parameters['type']!;
 
-    url = type == 'read'
-        ? 'https://www.bilibili.com/read/cv$id'
-        : 'https://www.bilibili.com/opus/$id';
-    commentType = type == 'picture' ? 11 : 12;
-
     if (Get.arguments?['item'] is DynamicItemModel) {
       opusData = Get.arguments['item'];
       if (opusData!.modules.moduleStat != null) {
@@ -61,13 +57,46 @@ class ArticleController extends ReplyController<MainListReply> {
       }
     }
 
+    // to opus
+    if (type == 'read') {
+      UrlUtils.parseRedirectUrl('https://www.bilibili.com/read/cv$id/')
+          .then((url) {
+        if (url != null) {
+          id = url.split('/').last;
+          type = 'opus';
+        }
+        init();
+      });
+    } else {
+      init();
+    }
+  }
+
+  setUrl() {
+    url = type == 'read'
+        ? 'https://www.bilibili.com/read/cv$id'
+        : 'https://www.bilibili.com/opus/$id';
+  }
+
+  init() {
+    setUrl();
+    commentType = type == 'picture' ? 11 : 12;
+
     _queryContent();
   }
 
-  Future<bool> queryOpus(id) async {
-    final res = await DynamicsHttp.opusDetail(opusId: id);
+  Future<bool> queryOpus(opusId) async {
+    final res = await DynamicsHttp.opusDetail(opusId: opusId);
     if (res is Success) {
       opusData = (res as Success<DynamicItemModel>).response;
+      //fallback
+      if (opusData?.fallback?.id != null) {
+        id = opusData!.fallback!.id!;
+        type = 'read';
+        setUrl();
+        _queryContent();
+        return false;
+      }
       commentType = opusData!.basic!.commentType!;
       commentId = int.parse(opusData!.basic!.commentIdStr!);
       if (showDynActionBar && opusData!.modules.moduleStat != null) {
@@ -90,7 +119,7 @@ class ArticleController extends ReplyController<MainListReply> {
         ..title ??= articleData!.title
         ..cover ??= articleData!.originImageUrls?.firstOrNull;
 
-      if (showDynActionBar && opusData == null) {
+      if (showDynActionBar && opusData?.modules.moduleStat == null) {
         final dynId = articleData!.dynIdStr;
         if (dynId != null) {
           _queryReadAsDyn(dynId);
@@ -119,14 +148,13 @@ class ArticleController extends ReplyController<MainListReply> {
   Future _queryContent() async {
     if (type != 'read') {
       isLoaded.value = await queryOpus(id);
-      if (isLoaded.value) queryData();
     } else {
-      commentId = int.parse(id.replaceFirst('cv', ''));
+      commentId = int.parse(id);
       commentType = 12;
-      queryData();
       isLoaded.value = await queryRead(commentId);
     }
     if (isLoaded.value) {
+      queryData();
       if (isLogin && !MineController.anonymity.value) {
         VideoHttp.historyReport(aid: commentId, type: 5);
       }
@@ -187,7 +215,7 @@ class ArticleController extends ReplyController<MainListReply> {
     }
   }
 
-  static DynamicStat _setCount(int? count) => DynamicStat(count: count);
+  DynamicStat _setCount(int? count) => DynamicStat(count: count);
 }
 
 class Summary {

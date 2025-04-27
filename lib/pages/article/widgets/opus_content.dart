@@ -80,7 +80,7 @@ Widget opusContent({
                 );
               }).toList()),
             );
-          case 2:
+          case 2 when (element.pic != null):
             element.pic!.pics!.first.onCalHeight(maxWidth);
             return Hero(
               tag: element.pic!.pics!.first.url!,
@@ -105,17 +105,17 @@ Widget opusContent({
                 ),
               ),
             );
-          case 3:
+          case 3 when (element.line != null):
             return CachedNetworkImage(
               width: maxWidth,
               fit: BoxFit.contain,
               height: element.line?.pic?.height?.toDouble(),
               imageUrl: Utils.thumbnailImgUrl(element.line!.pic!.url!),
             );
-          case 5:
+          case 5 when (element.list != null):
             return SelectableText.rich(
               TextSpan(
-                children: element.list?.items?.asMap().entries.map((entry) {
+                children: element.list!.items?.asMap().entries.map((entry) {
                   return TextSpan(
                     children: [
                       WidgetSpan(

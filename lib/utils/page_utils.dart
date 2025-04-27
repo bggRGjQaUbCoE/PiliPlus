@@ -344,7 +344,8 @@ class PageUtils {
     );
   }
 
-  static void pushDynDetail(item, floor, {action = 'all'}) async {
+  static void pushDynDetail(DynamicItemModel item, floor,
+      {action = 'all'}) async {
     feedBack();
 
     /// 点击评论action 直接查看评论
@@ -364,14 +365,14 @@ class PageUtils {
 
     switch (item.type) {
       case 'DYNAMIC_TYPE_AV':
-        if (item.modules.moduleDynamic.major.archive?.type == 2) {
-          if (item.modules.moduleDynamic.major.archive.jumpUrl
+        if (item.modules.moduleDynamic?.major?.archive?.type == 2) {
+          if (item.modules.moduleDynamic!.major!.archive!.jumpUrl!
               .startsWith('//')) {
-            item.modules.moduleDynamic.major.archive.jumpUrl =
-                'https:${item.modules.moduleDynamic.major.archive.jumpUrl}';
+            item.modules.moduleDynamic!.major!.archive!.jumpUrl =
+                'https:${item.modules.moduleDynamic!.major!.archive!.jumpUrl!}';
           }
           String? redirectUrl = await UrlUtils.parseRedirectUrl(
-              item.modules.moduleDynamic.major.archive.jumpUrl, false);
+              item.modules.moduleDynamic!.major!.archive!.jumpUrl!, false);
           if (redirectUrl != null) {
             viewPgcFromUri(redirectUrl);
             return;
@@ -379,8 +380,8 @@ class PageUtils {
         }
 
         try {
-          String bvid = item.modules.moduleDynamic.major.archive.bvid;
-          String cover = item.modules.moduleDynamic.major.archive.cover;
+          String bvid = item.modules.moduleDynamic!.major!.archive!.bvid!;
+          String cover = item.modules.moduleDynamic!.major!.archive!.cover!;
           int cid = await SearchHttp.ab2c(bvid: bvid);
           toVideoPage(
             'bvid=$bvid&cid=$cid',
@@ -397,7 +398,7 @@ class PageUtils {
 
       /// 专栏文章查看
       case 'DYNAMIC_TYPE_ARTICLE':
-        String? url = item?.modules?.moduleDynamic?.major?.opus?.jumpUrl;
+        String? url = item.modules.moduleDynamic?.major?.opus?.jumpUrl;
         if (url != null) {
           if (url.contains('opus') || url.contains('read')) {
             RegExp digitRegExp = RegExp(r'\d+');
@@ -422,8 +423,9 @@ class PageUtils {
         break;
 
       case 'DYNAMIC_TYPE_LIVE_RCMD':
-        DynamicLiveModel liveRcmd = item.modules.moduleDynamic.major.liveRcmd;
-        ModuleAuthorModel author = item.modules.moduleAuthor;
+        DynamicLiveModel liveRcmd =
+            item.modules.moduleDynamic!.major!.liveRcmd!;
+        ModuleAuthorModel author = item.modules.moduleAuthor!;
         LiveItemModel liveItem = LiveItemModel.fromJson({
           'title': liveRcmd.title,
           'uname': author.name,
@@ -439,7 +441,7 @@ class PageUtils {
       /// 合集查看
       case 'DYNAMIC_TYPE_UGC_SEASON':
         DynamicArchiveModel ugcSeason =
-            item.modules.moduleDynamic.major.ugcSeason;
+            item.modules.moduleDynamic!.major!.ugcSeason!;
         int aid = ugcSeason.aid!;
         String bvid = IdUtils.av2bv(aid);
         String cover = ugcSeason.cover!;
@@ -457,23 +459,23 @@ class PageUtils {
       /// 番剧查看
       case 'DYNAMIC_TYPE_PGC_UNION':
         debugPrint('DYNAMIC_TYPE_PGC_UNION 番剧');
-        DynamicArchiveModel pgc = item.modules.moduleDynamic.major.pgc;
+        DynamicArchiveModel pgc = item.modules.moduleDynamic!.major!.pgc!;
         if (pgc.epid != null) {
           viewBangumi(epId: pgc.epid);
         }
         break;
       case 'DYNAMIC_TYPE_MEDIALIST':
-        if (item.modules?.moduleDynamic?.major?.medialist != null) {
+        if (item.modules.moduleDynamic?.major?.medialist != null) {
           final String? url =
-              item.modules.moduleDynamic.major.medialist['jump_url'];
+              item.modules.moduleDynamic!.major!.medialist!['jump_url'];
           if (url?.contains('medialist/detail/ml') == true) {
             Get.toNamed(
               '/favDetail',
               parameters: {
                 'heroTag':
-                    '${item.modules.moduleDynamic.major.medialist['cover']}',
+                    '${item.modules.moduleDynamic!.major!.medialist!['cover']}',
                 'mediaId':
-                    '${item.modules.moduleDynamic.major.medialist['id']}',
+                    '${item.modules.moduleDynamic!.major!.medialist!['id']}',
               },
             );
           } else if (url != null) {

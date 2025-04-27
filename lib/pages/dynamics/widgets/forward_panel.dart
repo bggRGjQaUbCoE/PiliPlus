@@ -40,7 +40,7 @@ InlineSpan picsNodes(List<OpusPicsModel> pics, callback) {
   );
 }
 
-Widget _blockedItem(BuildContext context, item, source) {
+Widget _blockedItem(BuildContext context, DynamicItemModel item, source) {
   return Container(
     width: double.infinity,
     padding: EdgeInsets.only(
@@ -49,16 +49,16 @@ Widget _blockedItem(BuildContext context, item, source) {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (item.modules.moduleDynamic.major.blocked['title'] != null)
+        if (item.modules.moduleDynamic!.major!.blocked!['title'] != null)
           Text(
-            item.modules.moduleDynamic.major.blocked['title'],
+            item.modules.moduleDynamic!.major!.blocked!['title'],
             style: TextStyle(
               color: Theme.of(context).colorScheme.secondary,
             ),
           ),
-        if (item.modules.moduleDynamic.major.blocked['hint_message'] != null)
+        if (item.modules.moduleDynamic!.major!.blocked!['hint_message'] != null)
           Text(
-            item.modules.moduleDynamic.major.blocked['hint_message'],
+            item.modules.moduleDynamic!.major!.blocked!['hint_message'],
             style: TextStyle(
               fontSize: 12,
               color: Theme.of(context).colorScheme.outline,
@@ -69,14 +69,14 @@ Widget _blockedItem(BuildContext context, item, source) {
   );
 }
 
-Widget forWard(bool isSave, item, BuildContext context, source, callback,
+Widget forWard(
+    bool isSave, DynamicItemModel item, BuildContext context, source, callback,
     {floor = 1}) {
   switch (item.type) {
     // 图文
     case 'DYNAMIC_TYPE_DRAW':
-      bool hasPics = item.modules.moduleDynamic.major != null &&
-          item.modules.moduleDynamic.major.opus != null &&
-          item.modules.moduleDynamic.major.opus.pics.isNotEmpty;
+      bool hasPics =
+          item.modules.moduleDynamic?.major?.opus?.pics?.isNotEmpty == true;
 
       InlineSpan? richNodes = richNode(item, context);
       return Column(
@@ -87,17 +87,17 @@ Widget forWard(bool isSave, item, BuildContext context, source, callback,
               children: [
                 GestureDetector(
                   onTap: () => Get.toNamed(
-                      '/member?mid=${item.modules.moduleAuthor.mid}',
-                      arguments: {'face': item.modules.moduleAuthor.face}),
+                      '/member?mid=${item.modules.moduleAuthor!.mid}',
+                      arguments: {'face': item.modules.moduleAuthor!.face}),
                   child: Text(
-                    '@${item.modules.moduleAuthor.name}',
+                    '@${item.modules.moduleAuthor!.name}',
                     style:
                         TextStyle(color: Theme.of(context).colorScheme.primary),
                   ),
                 ),
                 const SizedBox(width: 6),
                 Text(
-                  Utils.dateFormat(item.modules.moduleAuthor.pubTs),
+                  Utils.dateFormat(item.modules.moduleAuthor!.pubTs),
                   style: TextStyle(
                       color: Theme.of(context).colorScheme.outline,
                       fontSize:
@@ -123,7 +123,8 @@ Widget forWard(bool isSave, item, BuildContext context, source, callback,
               ),
             if (hasPics) ...[
               Text.rich(
-                picsNodes(item.modules.moduleDynamic.major.opus.pics, callback),
+                picsNodes(
+                    item.modules.moduleDynamic!.major!.opus!.pics!, callback),
               ),
             ],
             const SizedBox(height: 4),
@@ -136,14 +137,14 @@ Widget forWard(bool isSave, item, BuildContext context, source, callback,
           ),
 
           /// 附加内容 商品信息、直播预约等等
-          if (item.modules.moduleDynamic.additional != null)
+          if (item.modules.moduleDynamic?.additional != null)
             addWidget(
               item,
               context,
-              item.modules.moduleDynamic.additional.type,
+              item.modules.moduleDynamic?.additional?.type,
               floor: floor,
             ),
-          if (item?.modules.moduleDynamic?.major?.blocked != null)
+          if (item.modules.moduleDynamic?.major?.blocked != null)
             _blockedItem(context, item, source),
         ],
       );
@@ -152,93 +153,87 @@ Widget forWard(bool isSave, item, BuildContext context, source, callback,
       return videoSeasonWidget(source, item, context, 'archive', floor: floor);
     // 文章
     case 'DYNAMIC_TYPE_ARTICLE':
-      return switch (item) {
-        DynamicItemModel() => item.isForwarded == true
-            ? articlePanel(source, item, context, callback, floor: floor)
-            : item.modules.moduleDynamic?.major?.blocked != null
-                ? Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        if (item.modules.moduleDynamic?.major
-                                ?.blocked?['title'] !=
-                            null)
-                          Text(
-                            '${item.modules.moduleDynamic?.major?.blocked!['title']}',
-                            style: TextStyle(
-                              color: Theme.of(context).colorScheme.secondary,
-                            ),
+      return item.isForwarded == true
+          ? articlePanel(source, item, context, callback, floor: floor)
+          : item.modules.moduleDynamic?.major?.blocked != null
+              ? Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (item.modules.moduleDynamic?.major
+                              ?.blocked?['title'] !=
+                          null)
+                        Text(
+                          item.modules.moduleDynamic!.major!.blocked!['title'],
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.secondary,
                           ),
-                        if (item.modules.moduleDynamic?.major
-                                ?.blocked?['hint_message'] !=
-                            null)
-                          Text(
-                            '${item.modules.moduleDynamic?.major?.blocked!['hint_message']}',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Theme.of(context).colorScheme.outline,
-                            ),
-                          )
-                      ],
-                    ),
-                  )
-                : const SizedBox.shrink(),
-        _ => const SizedBox.shrink(),
-      };
+                        ),
+                      if (item.modules.moduleDynamic?.major
+                              ?.blocked?['hint_message'] !=
+                          null)
+                        Text(
+                          item.modules.moduleDynamic!.major!
+                              .blocked!['hint_message'],
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Theme.of(context).colorScheme.outline,
+                          ),
+                        )
+                    ],
+                  ),
+                )
+              : const SizedBox.shrink();
     // 转发
     case 'DYNAMIC_TYPE_FORWARD':
+      final isNoneMajor =
+          item.orig?.modules.moduleDynamic?.major?.type == 'MAJOR_TYPE_NONE';
       return InkWell(
-        onTap: () {
-          if (item.orig.modules.moduleDynamic.major?.type ==
-              'MAJOR_TYPE_NONE') {
-            return;
-          }
-          PageUtils.pushDynDetail(item.orig, floor + 1);
-        },
-        onLongPress: () {
-          if (item.orig.modules.moduleDynamic.major?.type ==
-              'MAJOR_TYPE_NONE') {
-            return;
-          }
-          if (item.orig.type == 'DYNAMIC_TYPE_AV') {
-            imageSaveDialog(
-              context: context,
-              title: item.orig.modules.moduleDynamic.major.archive.title,
-              cover: item.orig.modules.moduleDynamic.major.archive.cover,
-            );
-          } else if (item.orig.type == 'DYNAMIC_TYPE_UGC_SEASON') {
-            imageSaveDialog(
-              context: context,
-              title: item.orig.modules.moduleDynamic.major.ugcSeason.title,
-              cover: item.orig.modules.moduleDynamic.major.ugcSeason.cover,
-            );
-          } else if (item.orig.type == 'DYNAMIC_TYPE_PGC' ||
-              item.orig.type == 'DYNAMIC_TYPE_PGC_UNION') {
-            imageSaveDialog(
-              context: context,
-              title: item.orig.modules.moduleDynamic.major.pgc.title,
-              cover: item.orig.modules.moduleDynamic.major.pgc.cover,
-            );
-          } else if (item.type == 'DYNAMIC_TYPE_LIVE_RCMD') {
-            imageSaveDialog(
-              context: context,
-              title: item.modules.moduleDynamic.major.liveRcmd.title,
-              cover: item.modules.moduleDynamic.major.liveRcmd.cover,
-            );
-          } else if (item.type == 'DYNAMIC_TYPE_LIVE') {
-            imageSaveDialog(
-              context: context,
-              title: item.modules.moduleDynamic.major.live.title,
-              cover: item.modules.moduleDynamic.major.live.cover,
-            );
-          }
-        },
+        onTap: isNoneMajor
+            ? null
+            : () => PageUtils.pushDynDetail(item.orig!, floor + 1),
+        onLongPress: isNoneMajor
+            ? null
+            : () {
+                late String? title, cover;
+                late var origMajor = item.orig?.modules.moduleDynamic?.major;
+                late var major = item.modules.moduleDynamic?.major;
+                switch (item.orig?.type) {
+                  case 'DYNAMIC_TYPE_AV':
+                    title = origMajor?.archive?.title;
+                    cover = origMajor?.archive?.cover;
+                    break;
+                  case 'DYNAMIC_TYPE_UGC_SEASON':
+                    title = origMajor?.ugcSeason?.title;
+                    cover = origMajor?.ugcSeason?.cover;
+                    break;
+                  case 'DYNAMIC_TYPE_PGC' || 'DYNAMIC_TYPE_PGC_UNION':
+                    title = origMajor?.pgc?.title;
+                    cover = origMajor?.pgc?.cover;
+                    break;
+                  case 'DYNAMIC_TYPE_LIVE_RCMD':
+                    title = major?.liveRcmd?.title;
+                    cover = major?.liveRcmd?.cover;
+                    break;
+                  case 'DYNAMIC_TYPE_LIVE':
+                    title = major?.live?.title;
+                    cover = major?.live?.cover;
+                    break;
+                  default:
+                    return;
+                }
+                imageSaveDialog(
+                  context: context,
+                  title: title,
+                  cover: cover,
+                );
+              },
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
           color: Theme.of(context).dividerColor.withOpacity(0.08),
-          child: forWard(isSave, item.orig, context, source, callback,
+          child: forWard(isSave, item.orig!, context, source, callback,
               floor: floor + 1),
         ),
       );
@@ -261,17 +256,17 @@ Widget forWard(bool isSave, item, BuildContext context, source, callback,
                   children: [
                     GestureDetector(
                       onTap: () => Get.toNamed(
-                          '/member?mid=${item.modules.moduleAuthor.mid}',
-                          arguments: {'face': item.modules.moduleAuthor.face}),
+                          '/member?mid=${item.modules.moduleAuthor?.mid}',
+                          arguments: {'face': item.modules.moduleAuthor?.face}),
                       child: Text(
-                        '@${item.modules.moduleAuthor.name}',
+                        '@${item.modules.moduleAuthor?.name}',
                         style: TextStyle(
                             color: Theme.of(context).colorScheme.primary),
                       ),
                     ),
                     const SizedBox(width: 6),
                     Text(
-                      Utils.dateFormat(item.modules.moduleAuthor.pubTs),
+                      Utils.dateFormat(item.modules.moduleAuthor?.pubTs),
                       style: TextStyle(
                           color: Theme.of(context).colorScheme.outline,
                           fontSize:
@@ -297,14 +292,14 @@ Widget forWard(bool isSave, item, BuildContext context, source, callback,
                   ),
               ],
             )
-          : item.modules.moduleDynamic.additional != null
+          : item.modules.moduleDynamic?.additional != null
               ? addWidget(
                   item,
                   context,
-                  item.modules.moduleDynamic.additional.type,
+                  item.modules.moduleDynamic!.additional!.type,
                   floor: floor,
                 )
-              : item?.modules.moduleDynamic?.major?.blocked != null
+              : item.modules.moduleDynamic?.major?.blocked != null
                   ? _blockedItem(context, item, source)
                   : const SizedBox(height: 0);
     case 'DYNAMIC_TYPE_PGC':
@@ -320,7 +315,7 @@ Widget forWard(bool isSave, item, BuildContext context, source, callback,
             size: 14,
           ),
           const SizedBox(width: 4),
-          Text(item.modules.moduleDynamic.major.none.tips)
+          Text(item.modules.moduleDynamic!.major!.none!.tips!)
         ],
       );
     // 课堂
@@ -329,7 +324,7 @@ Widget forWard(bool isSave, item, BuildContext context, source, callback,
         children: [
           Expanded(
             child: Text(
-              "课堂💪：${item.modules.moduleDynamic.major.courses['title']}",
+              "课堂💪：${item.modules.moduleDynamic!.major!.courses!['title']}",
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
@@ -341,7 +336,7 @@ Widget forWard(bool isSave, item, BuildContext context, source, callback,
       return InkWell(
         onTap: () {
           try {
-            String url = item.modules.moduleDynamic.major.common['jump_url'];
+            String url = item.modules.moduleDynamic!.major!.common!['jump_url'];
             if (url.contains('bangumi/play') && PageUtils.viewPgcFromUri(url)) {
               return;
             }
@@ -360,7 +355,7 @@ Widget forWard(bool isSave, item, BuildContext context, source, callback,
                 radius: 8,
                 width: 45,
                 height: 45,
-                src: item.modules.moduleDynamic.major.common['cover'],
+                src: item.modules.moduleDynamic!.major!.common!['cover'],
               ),
               const SizedBox(width: 10),
               Expanded(
@@ -368,7 +363,7 @@ Widget forWard(bool isSave, item, BuildContext context, source, callback,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      item.modules.moduleDynamic.major.common['title'],
+                      item.modules.moduleDynamic!.major!.common!['title'],
                       style: TextStyle(
                         color: Theme.of(context).colorScheme.primary,
                       ),
@@ -377,7 +372,7 @@ Widget forWard(bool isSave, item, BuildContext context, source, callback,
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      item.modules.moduleDynamic.major.common['desc'],
+                      item.modules.moduleDynamic!.major!.common!['desc'],
                       style: TextStyle(
                         color: Theme.of(context).colorScheme.outline,
                         fontSize:
@@ -394,7 +389,7 @@ Widget forWard(bool isSave, item, BuildContext context, source, callback,
         ),
       );
     case 'DYNAMIC_TYPE_MUSIC':
-      final Map music = item.modules.moduleDynamic.major.music;
+      final Map music = item.modules.moduleDynamic!.major!.music!;
       return InkWell(
         onTap: () {
           PageUtils.handleWebview("https:${music['jump_url']}");
@@ -450,7 +445,7 @@ Widget forWard(bool isSave, item, BuildContext context, source, callback,
             GestureDetector(
               onTap: () {
                 Get.toNamed(
-                  '/member?mid=${item.modules.moduleAuthor.mid}',
+                  '/member?mid=${item.modules.moduleAuthor!.mid}',
                 );
               },
               child: Row(
@@ -459,15 +454,15 @@ Widget forWard(bool isSave, item, BuildContext context, source, callback,
                     width: 28,
                     height: 28,
                     type: 'avatar',
-                    src: item.modules.moduleAuthor.face,
+                    src: item.modules.moduleAuthor!.face,
                   ),
                   const SizedBox(width: 10),
                   Text(
-                    item.modules.moduleAuthor.name,
+                    item.modules.moduleAuthor!.name!,
                     style: TextStyle(
                       color: item.modules.moduleAuthor!.vip != null &&
-                              item.modules.moduleAuthor!.vip['status'] > 0 &&
-                              item.modules.moduleAuthor!.vip['type'] == 2
+                              item.modules.moduleAuthor!.vip!['status'] > 0 &&
+                              item.modules.moduleAuthor!.vip!['type'] == 2
                           ? context.vipColor
                           : Theme.of(context).colorScheme.onSurface,
                       fontSize:
@@ -486,17 +481,18 @@ Widget forWard(bool isSave, item, BuildContext context, source, callback,
               Stack(
                 children: [
                   Hero(
-                    tag: item.modules.moduleDynamic.major.medialist['cover'],
+                    tag: item.modules.moduleDynamic!.major!.medialist!['cover'],
                     child: NetworkImgLayer(
                       width: 180,
                       height: 110,
-                      src: item.modules.moduleDynamic.major.medialist['cover'],
+                      src: item
+                          .modules.moduleDynamic!.major!.medialist!['cover'],
                     ),
                   ),
                   PBadge(
                     right: 6,
                     top: 6,
-                    text: item.modules.moduleDynamic.major.medialist['badge']
+                    text: item.modules.moduleDynamic!.major!.medialist!['badge']
                         ?['text'],
                   )
                 ],
@@ -512,7 +508,7 @@ Widget forWard(bool isSave, item, BuildContext context, source, callback,
                     children: [
                       const SizedBox(height: 4),
                       Text(
-                        item.modules.moduleDynamic.major.medialist['title'],
+                        item.modules.moduleDynamic!.major!.medialist!['title'],
                         style: TextStyle(
                             fontSize: Theme.of(context)
                                 .textTheme
@@ -520,13 +516,13 @@ Widget forWard(bool isSave, item, BuildContext context, source, callback,
                                 .fontSize,
                             fontWeight: FontWeight.bold),
                       ),
-                      if (item.modules.moduleDynamic.major
-                              .medialist['sub_title'] !=
+                      if (item.modules.moduleDynamic?.major
+                              ?.medialist?['sub_title'] !=
                           null) ...[
                         const Spacer(),
                         Text(
-                          item.modules.moduleDynamic.major
-                              .medialist['sub_title'],
+                          item.modules.moduleDynamic!.major!
+                              .medialist!['sub_title'],
                           style: TextStyle(
                               fontSize: Theme.of(context)
                                   .textTheme

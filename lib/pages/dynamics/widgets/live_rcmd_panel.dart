@@ -9,10 +9,10 @@ import 'package:PiliPlus/utils/utils.dart';
 
 import 'rich_node_panel.dart';
 
-Widget liveRcmdPanel(source, item, context, {floor = 1}) {
+Widget liveRcmdPanel(source, DynamicItemModel item, context, {floor = 1}) {
   TextStyle authorStyle =
       TextStyle(color: Theme.of(context).colorScheme.primary);
-  DynamicLiveModel liveRcmd = item.modules.moduleDynamic.major.liveRcmd;
+  DynamicLiveModel liveRcmd = item.modules.moduleDynamic!.major!.liveRcmd!;
   int liveStatus = liveRcmd.liveStatus!;
   Map watchedShow = liveRcmd.watchedShow!;
   InlineSpan? richNodes = richNode(item, context);
@@ -24,16 +24,16 @@ Widget liveRcmdPanel(source, item, context, {floor = 1}) {
           children: [
             GestureDetector(
               onTap: () => Get.toNamed(
-                  '/member?mid=${item.modules.moduleAuthor.mid}',
-                  arguments: {'face': item.modules.moduleAuthor.face}),
+                  '/member?mid=${item.modules.moduleAuthor?.mid}',
+                  arguments: {'face': item.modules.moduleAuthor?.face}),
               child: Text(
-                '@${item.modules.moduleAuthor.name}',
+                '@${item.modules.moduleAuthor?.name}',
                 style: authorStyle,
               ),
             ),
             const SizedBox(width: 6),
             Text(
-              Utils.dateFormat(item.modules.moduleAuthor.pubTs),
+              Utils.dateFormat(item.modules.moduleAuthor?.pubTs),
               style: TextStyle(
                   color: Theme.of(context).colorScheme.outline,
                   fontSize: Theme.of(context).textTheme.labelSmall!.fontSize),
@@ -42,20 +42,20 @@ Widget liveRcmdPanel(source, item, context, {floor = 1}) {
         ),
       ],
       const SizedBox(height: 4),
-      if (item.modules.moduleDynamic.topic != null) ...[
+      if (item.modules.moduleDynamic?.topic != null) ...[
         Padding(
           padding:
               const EdgeInsets.symmetric(horizontal: StyleString.safeSpace),
           child: GestureDetector(
             child: Text(
-              '#${item.modules.moduleDynamic.topic.name}',
+              '#${item.modules.moduleDynamic!.topic!.name}',
               style: authorStyle,
             ),
           ),
         ),
         const SizedBox(height: 6),
       ],
-      if (floor == 2 && item.modules.moduleDynamic.desc != null) ...[
+      if (floor == 2 && item.modules.moduleDynamic?.desc != null) ...[
         if (richNodes != null) Text.rich(richNodes),
         const SizedBox(height: 6),
       ],
@@ -75,7 +75,7 @@ Widget liveRcmdPanel(source, item, context, {floor = 1}) {
                     child: NetworkImgLayer(
                       width: width,
                       height: width / StyleString.aspectRatio,
-                      src: item.modules.moduleDynamic.major.liveRcmd.cover,
+                      src: item.modules.moduleDynamic?.major?.liveRcmd?.cover,
                     ),
                   ),
                   PBadge(
@@ -126,8 +126,8 @@ Widget liveRcmdPanel(source, item, context, {floor = 1}) {
                                 color: Colors.white),
                             child: Row(
                               children: [
-                                Text(item.modules.moduleDynamic.major.liveRcmd
-                                        .areaName ??
+                                Text(item.modules.moduleDynamic?.major?.liveRcmd
+                                        ?.areaName ??
                                     ''),
                               ],
                             ),
@@ -144,7 +144,7 @@ Widget liveRcmdPanel(source, item, context, {floor = 1}) {
       Padding(
         padding: const EdgeInsets.symmetric(horizontal: StyleString.safeSpace),
         child: Text(
-          item.modules.moduleDynamic.major.liveRcmd.title,
+          item.modules.moduleDynamic!.major!.liveRcmd!.title!,
           maxLines: source == 'detail' ? null : 1,
           style: const TextStyle(fontWeight: FontWeight.bold),
           overflow: source == 'detail' ? null : TextOverflow.ellipsis,

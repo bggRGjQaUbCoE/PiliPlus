@@ -31,12 +31,7 @@ Widget articleContent({
               height: 1.5, // LineHeight.percent(125).size
               fontStyle:
                   item.word?.style?.italic == true ? FontStyle.italic : null,
-              color: item.word?.color != null
-                  ? Color(int.parse(
-                      item.word!.color!.replaceFirst('#', 'FF'),
-                      radix: 16,
-                    ))
-                  : null,
+              color: item.word?.color != null ? Color(item.word!.color!) : null,
               decoration: item.word?.style?.strikethrough == true
                   ? TextDecoration.lineThrough
                   : null,

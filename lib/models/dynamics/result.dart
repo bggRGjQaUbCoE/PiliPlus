@@ -6,12 +6,6 @@ import 'package:PiliPlus/models/model_owner.dart';
 import 'article_content_model.dart';
 
 class DynamicsDataModel {
-  DynamicsDataModel({
-    this.hasMore,
-    this.items,
-    this.offset,
-    this.total,
-  });
   bool? hasMore;
   List<DynamicItemModel>? items;
   String? offset;
@@ -29,11 +23,10 @@ class DynamicsDataModel {
 
 // 单个动态
 class DynamicItemModel {
-  DynamicItemModel();
-
   Basic? basic;
   dynamic idStr;
   late ItemModulesModel modules;
+
   DynamicItemModel? orig;
   String? type;
   bool? visible;
@@ -60,20 +53,15 @@ class DynamicItemModel {
 
 // 单个动态详情
 class ItemModulesModel {
-  ItemModulesModel({
-    this.moduleAuthor,
-    this.moduleDynamic,
-    // this.moduleInter,
-    this.moduleStat,
-    this.moduleTag,
-  });
-
   ModuleAuthorModel? moduleAuthor;
-  ModuleDynamicModel? moduleDynamic;
-  // ModuleInterModel? moduleInter;
   ModuleStatModel? moduleStat;
   ModuleTag? moduleTag; // 也做opus的title用
 
+  // 动态
+  ModuleDynamicModel? moduleDynamic;
+  // ModuleInterModel? moduleInter;
+
+  // 专栏
   List<ModuleTag>? moduleExtend; // opus的tag
   List<ArticleContentModel>? moduleContent;
 

@@ -132,7 +132,7 @@ class _LaterViewChildPageState extends State<LaterViewChildPage>
                                 width: constraints.maxHeight *
                                     StyleString.aspectRatio,
                                 decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(10),
+                                  borderRadius: StyleString.mdRadius,
                                   color: Colors.black.withOpacity(0.6),
                                 ),
                                 child: SizedBox(

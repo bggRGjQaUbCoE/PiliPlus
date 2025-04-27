@@ -6,6 +6,8 @@ class ArticleContentModel {
   Line? line;
   Pic? pic;
   LinkCard? linkCard;
+  Code? code;
+  L1st? list;
 
   ArticleContentModel.fromJson(Map<String, dynamic> json) {
     align = json['align'];
@@ -16,6 +18,8 @@ class ArticleContentModel {
     pic = json['pic'] == null ? null : Pic.fromJson(json['pic']);
     linkCard =
         json['link_card'] == null ? null : LinkCard.fromJson(json['link_card']);
+    code = json['code'] == null ? null : Code.fromJson(json['code']);
+    list = json['list'] == null ? null : L1st.fromJson(json['list']);
   }
 }
 
@@ -76,9 +80,8 @@ class Text {
   List<Nodes>? nodes;
 
   Text.fromJson(Map<String, dynamic> json) {
-    nodes = (json['nodes'] as List<dynamic>?)
-        ?.map((item) => Nodes.fromJson(item))
-        .toList();
+    nodes =
+        (json['nodes'] as List?)?.map((item) => Nodes.fromJson(item)).toList();
   }
 }
 
@@ -95,22 +98,21 @@ class Nodes {
 }
 
 class Word {
-  Word({
-    this.words,
-    this.fontSize,
-    this.style,
-    this.color,
-  });
   String? words;
-  int? fontSize;
+  double? fontSize;
   Style? style;
-  String? color;
+  int? color;
+  String? fontLevel;
 
   Word.fromJson(Map<String, dynamic> json) {
     words = json['words'];
-    fontSize = json['font_size'];
+    fontSize = (json['font_size'] as num?)?.toDouble();
     style = json['style'] == null ? null : Style.fromJson(json['style']);
-    color = json['color'];
+    color = json['color'] == null
+        ? null
+        : int.tryParse('FF${(json['color'] as String).substring(1)}',
+            radix: 16);
+    fontLevel = json['font_level'];
   }
 }
 
@@ -187,6 +189,38 @@ class LinkCard {
 
   LinkCard.fromJson(Map<String, dynamic> json) {
     card = json['card'] == null ? null : Card.fromJson(json['card']);
+  }
+}
+
+class L1st {
+  List<Item>? items;
+  int? style;
+
+  L1st.fromJson(Map<String, dynamic> json) {
+    items = (json['items'] as List?)?.map((e) => Item.fromJson(e)).toList();
+    style = json['style'];
+  }
+}
+
+class Item {
+  int? level;
+  int? order;
+  List<Nodes>? nodes;
+
+  Item.fromJson(Map<String, dynamic> json) {
+    level = json['level'];
+    order = json['order'];
+    nodes = (json['nodes'] as List?)?.map((e) => Nodes.fromJson(e)).toList();
+  }
+}
+
+class Code {
+  String? content;
+  String? lang;
+
+  Code.fromJson(Map<String, dynamic> json) {
+    content = json['content'];
+    lang = json['lang'];
   }
 }
 

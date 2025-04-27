@@ -1,3 +1,4 @@
+import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/widgets/avatar.dart';
 import 'package:PiliPlus/common/widgets/interactiveviewer_gallery/interactiveviewer_gallery.dart'
     show SourceModel;
@@ -145,8 +146,9 @@ class UserInfoCard extends StatelessWidget {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
-                      borderRadius: const BorderRadius.all(Radius.circular(10)),
-                      color: context.vipColor),
+                    borderRadius: StyleString.mdRadius,
+                    color: context.vipColor,
+                  ),
                   child: Text(
                     card.vip?.label?.text ?? '大会员',
                     strutStyle: const StrutStyle(

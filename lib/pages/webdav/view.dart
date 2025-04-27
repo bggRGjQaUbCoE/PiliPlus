@@ -1,3 +1,4 @@
+import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/pages/webdav/webdav.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:flutter/material.dart';
@@ -83,7 +84,7 @@ class _WebDavSettingPageState extends State<WebDavSettingPage> {
                 child: FilledButton.tonal(
                   style: FilledButton.styleFrom(
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: StyleString.mdRadius,
                     ),
                   ),
                   onPressed: WebDav().backup,
@@ -95,7 +96,7 @@ class _WebDavSettingPageState extends State<WebDavSettingPage> {
                 child: FilledButton.tonal(
                   style: FilledButton.styleFrom(
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: StyleString.mdRadius,
                     ),
                   ),
                   onPressed: WebDav().restore,

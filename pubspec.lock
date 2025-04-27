@@ -1480,6 +1480,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.2"
+  re_highlight:
+    dependency: "direct main"
+    description:
+      name: re_highlight
+      sha256: "6c4ac3f76f939fb7ca9df013df98526634e17d8f7460e028bd23a035870024f2"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.0.3"
   rxdart:
     dependency: "direct overridden"
     description:

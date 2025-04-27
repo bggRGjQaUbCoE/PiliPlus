@@ -344,7 +344,7 @@ class _ArticlePageState extends State<ArticlePage>
               late Widget content;
               if (forceHtml || _articleCtr.opus == null) {
                 debugPrint('html page');
-                var res = parser.parse(_articleCtr.articleData!.content!);
+                final res = parser.parse(_articleCtr.articleData!.content!);
                 content = SliverList.separated(
                   itemCount: res.body!.children.length,
                   itemBuilder: (context, index) {

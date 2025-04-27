@@ -182,7 +182,7 @@ class HistoryItem extends StatelessWidget {
                         child: Container(
                           alignment: Alignment.center,
                           decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(10),
+                            borderRadius: StyleString.mdRadius,
                             color: Colors.black.withOpacity(0.6),
                           ),
                           child: SizedBox(

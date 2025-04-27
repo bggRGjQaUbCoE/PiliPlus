@@ -564,7 +564,7 @@ class _PostPanelState extends CommonCollapseSlidePageState<PostPanel> {
           }
         } else {
           if (const [301, 302, 303, 307, 308].contains(res.statusCode)) {
-            String? redirectUrl = res.headers['location']?.first;
+            String? redirectUrl = res.headers['location']?.firstOrNull;
             if (redirectUrl != null) {
               _onPost(url: redirectUrl);
               return;

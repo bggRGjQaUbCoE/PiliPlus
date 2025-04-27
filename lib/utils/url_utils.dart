@@ -25,7 +25,7 @@ class UrlUtils {
         ),
       );
       if (response.statusCode == 302 || response.statusCode == 301) {
-        String? redirectUrl = response.headers['location']?.first;
+        String? redirectUrl = response.headers['location']?.firstOrNull;
         debugPrint('redirectUrl: $redirectUrl');
         if (redirectUrl != null) {
           if (redirectUrl.startsWith('/')) {

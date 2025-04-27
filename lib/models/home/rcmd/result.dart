@@ -85,7 +85,7 @@ class RcmdStat implements BaseStat {
 class RcmdOwner extends BaseOwner {
   RcmdOwner.fromJson(Map<String, dynamic> json) {
     name = json['goto'] == 'av'
-        ? (json['args']?['up_name'])
+        ? (json['args']?['up_name'] ?? '')
         : (json['desc_button']?['text'] ?? '');
     mid = json['args']?['up_id'] ?? 0;
   }

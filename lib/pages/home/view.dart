@@ -1,3 +1,4 @@
+import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/models/common/dynamic_badge_mode.dart';
 import 'package:PiliPlus/pages/main/index.dart';
 import 'package:PiliPlus/pages/mine/controller.dart';
@@ -52,7 +53,7 @@ class _HomePageState extends State<HomePage>
                   dividerColor: Colors.transparent,
                   dividerHeight: 0,
                   enableFeedback: true,
-                  splashBorderRadius: BorderRadius.circular(10),
+                  splashBorderRadius: StyleString.mdRadius,
                   tabAlignment: TabAlignment.center,
                   onTap: (value) {
                     feedBack();

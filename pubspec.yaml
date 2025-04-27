@@ -190,6 +190,7 @@ dependencies:
   synchronized: ^3.3.0
   document_file_save_plus: ^2.0.0
   webdav_client: ^1.2.2
+  re_highlight: ^0.0.3
 
 dependency_overrides:
   screen_brightness: ^2.0.1

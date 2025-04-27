@@ -88,7 +88,7 @@ class VideoCardHMemberVideo extends StatelessWidget {
                                 Positioned.fill(
                                   child: DecoratedBox(
                                     decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(10),
+                                      borderRadius: StyleString.mdRadius,
                                       color: Colors.black54,
                                     ),
                                     child: Center(

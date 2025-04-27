@@ -1114,7 +1114,7 @@ class VideoHttp {
         'csrf': Accounts.main.csrf,
       });
       if (res.data['code'] == 0) {
-        if (res.data['data']['noteIds'] != null) {
+        if (res.data['data']?['noteIds'] != null) {
           noteId = res.data['data']['noteIds'].first;
         }
       }

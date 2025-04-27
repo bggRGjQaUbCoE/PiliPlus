@@ -1,11 +1,12 @@
+import 'package:PiliPlus/common/constants.dart';
 import 'package:flutter/material.dart';
 
 Widget videoProgressIndicator(double progress) => ClipRect(
       clipper: ProgressClipper(),
       child: ClipRRect(
         borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(10),
-          bottomRight: Radius.circular(10),
+          bottomLeft: StyleString.imgRadius,
+          bottomRight: StyleString.imgRadius,
         ),
         child: LinearProgressIndicator(
           minHeight: 10,

@@ -82,7 +82,7 @@ class ArticleController extends ReplyController<MainListReply> {
   }
 
   Future<bool> queryRead(cvid) async {
-    final res = await DynamicsHttp.articleView(cvid: cvid);
+    final res = await DynamicsHttp.articleView(cvId: cvid);
     if (res is Success) {
       articleData = (res as Success<Item>).response;
       summary

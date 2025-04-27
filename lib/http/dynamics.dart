@@ -159,11 +159,11 @@ class DynamicsHttp {
     }
   }
 
-  static Future<LoadingState<Item>> articleView({required dynamic cvid}) async {
+  static Future<LoadingState<Item>> articleView({required dynamic cvId}) async {
     final res = await Request().get(
       Api.articleView,
       queryParameters: await WbiSign.makSign({
-        'id': cvid,
+        'id': cvId,
         'gaia_source': 'main_web',
         'web_location': '333.976',
       }),
@@ -178,11 +178,11 @@ class DynamicsHttp {
       {required dynamic opusId}) async {
     final res = await Request().get(
       Api.opusDetail,
-      queryParameters: {
+      queryParameters: await WbiSign.makSign({
         'timezone_offset': '-480',
         'features': 'htmlNewStyle',
         'id': opusId,
-      },
+      }),
     );
 
     return res.data['code'] == 0

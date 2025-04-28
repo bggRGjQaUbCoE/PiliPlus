@@ -272,9 +272,6 @@ class PageUtils {
             'id': id,
             'type': 'opus',
           },
-          arguments: {
-            'item': data,
-          },
           off: off,
         );
       } else {

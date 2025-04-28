@@ -626,8 +626,7 @@ class _ArticlePageState extends State<ArticlePage>
                   onTap: () async {
                     try {
                       if (_articleCtr.summary.cover == null) {
-                        final res = await _articleCtr.getArticleCover();
-                        if (res != true) {
+                        if (!await _articleCtr.getArticleInfo()) {
                           return;
                         }
                       }

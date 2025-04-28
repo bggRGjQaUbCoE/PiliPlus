@@ -786,6 +786,4 @@ class Api {
   static const String articleView = '/x/article/view';
 
   static const String opusDetail = '/x/polymer/web-dynamic/v1/opus/detail';
-
-  static const String feedInfoWeb = '${HttpString.tUrl}/x/im/feed/infoweb';
 }

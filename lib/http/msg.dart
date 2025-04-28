@@ -570,26 +570,4 @@ class MsgHttp {
   static String getDevId() {
     return Uuid().v4();
   }
-
-  static Future feedInfoWeb({
-    List? aids,
-    List? epIds,
-    List? articleIds,
-  }) async {
-    var res = await Request().get(
-      Api.feedInfoWeb,
-      queryParameters: {
-        if (aids != null) 'aids': aids.join(','),
-        if (epIds != null) 'ep_ids': epIds.join(','),
-        if (articleIds != null) 'article_ids': articleIds.join(','),
-        'build': 0,
-        'mobi_app': 'web',
-      },
-    );
-    if (res.data['code'] == 0) {
-      return {'status': true, 'data': res.data['data']};
-    } else {
-      return {'status': false, 'msg': res.data['message']};
-    }
-  }
 }

@@ -1,7 +1,6 @@
 import 'package:PiliPlus/grpc/app/main/community/reply/v1/reply.pb.dart';
 import 'package:PiliPlus/http/dynamics.dart';
 import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/http/msg.dart';
 import 'package:PiliPlus/http/user.dart';
 import 'package:PiliPlus/http/video.dart';
 import 'package:PiliPlus/models/dynamics/article_content_model.dart'
@@ -122,7 +121,7 @@ class ArticleController extends ReplyController<MainListReply> {
 
       if (showDynActionBar) {
         _queryReadAsDyn(articleData!.dynIdStr);
-        _getArticleInfo();
+        getArticleInfo();
       }
       return true;
     }
@@ -141,9 +140,13 @@ class ArticleController extends ReplyController<MainListReply> {
   }
 
   // stats
-  Future _getArticleInfo() async {
+  Future<bool> getArticleInfo() async {
     final res = await DynamicsHttp.articleInfo(cvId: commentId);
     if (res['status']) {
+      summary
+        ..cover ??= (res['data']?['origin_image_urls'] as List?)?.firstOrNull
+        ..title ??= res['data']?['title'];
+
       stats.value = ModuleStatModel(
         comment: DynamicStat(count: res['data']?['stats']?['reply']),
         forward: DynamicStat(count: res['data']?['stats']?['share']),
@@ -156,7 +159,10 @@ class ArticleController extends ReplyController<MainListReply> {
           status: res['data']?['favorite'],
         ),
       );
+      return true;
     }
+    SmartDialog.showToast(res['msg']);
+    return false;
   }
 
   // 请求动态内容
@@ -230,19 +236,6 @@ class ArticleController extends ReplyController<MainListReply> {
       }
       stats.refresh();
       SmartDialog.showToast(!isLike ? '点赞成功' : '取消赞');
-    } else {
-      SmartDialog.showToast(res['msg']);
-    }
-  }
-
-  Future getArticleCover() async {
-    final res = await MsgHttp.feedInfoWeb(articleIds: [commentId]);
-    if (res['status']) {
-      summary.cover = ((res['data']?['article'] as List?)
-              ?.firstOrNull?['image_urls'] as List?)
-          ?.firstOrNull;
-      // debugPrint('cover: ${summary.cover}');
-      return summary.cover != null;
     } else {
       SmartDialog.showToast(res['msg']);
     }

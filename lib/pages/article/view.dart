@@ -357,8 +357,7 @@ class _ArticlePageState extends State<ArticlePage>
                 );
               } else {
                 debugPrint('json page');
-                content = opusContent(
-                  context: context,
+                content = OpusContent(
                   opus: _articleCtr.opus!,
                   callback: _getImageCallback,
                   maxWidth: maxWidth,

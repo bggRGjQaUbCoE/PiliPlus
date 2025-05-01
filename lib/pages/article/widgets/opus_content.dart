@@ -86,10 +86,12 @@ class OpusContent extends StatelessWidget {
             case 4:
               return Container(
                 padding: const EdgeInsets.only(left: 8),
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   border: Border(
-                    left: BorderSide(color: Color(0xFFE0E0E0), width: 4),
+                    left:
+                        BorderSide(color: colorScheme.outlineVariant, width: 4),
                   ),
+                  color: colorScheme.surfaceContainer,
                 ),
                 child: SelectableText.rich(
                   textAlign: element.align == 1 ? TextAlign.center : null,

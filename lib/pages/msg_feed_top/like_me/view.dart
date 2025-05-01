@@ -171,6 +171,7 @@ class _LikeMePageState extends State<LikeMePage> {
             width: 50,
             height: 50,
             child: Stack(
+              clipBehavior: Clip.none,
               children: [
                 for (var j = 0;
                     j < item.users!.length && j < 4;

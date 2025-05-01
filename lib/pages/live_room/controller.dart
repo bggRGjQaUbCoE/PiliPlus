@@ -30,7 +30,7 @@ class LiveRoomController extends GetxController {
   RxBool volumeOff = false.obs;
   PlPlayerController plPlayerController =
       PlPlayerController.getInstance(videoType: 'live');
-  Rx<RoomInfoH5Model> roomInfoH5 = RoomInfoH5Model().obs;
+  Rx<RoomInfoH5Model?> roomInfoH5 = Rx<RoomInfoH5Model?>(null);
 
   RxList<dynamic> messages = [].obs;
   RxBool disableAutoScroll = false.obs;
@@ -50,6 +50,7 @@ class LiveRoomController extends GetxController {
   void onInit() {
     super.onInit();
     roomId = int.parse(Get.parameters['roomid']!);
+    queryLiveInfoH5();
     if (Accounts.main.isLogin && !MineController.anonymity.value) {
       VideoHttp.roomEntryAction(roomId: roomId);
     }
@@ -131,7 +132,6 @@ class LiveRoomController extends GetxController {
         heroTag,
       );
     }
-    return res;
   }
 
   LiveMessageStream? msgStream;

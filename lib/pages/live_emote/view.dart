@@ -60,46 +60,45 @@ class _LiveEmotePanelState extends State<LiveEmotePanel>
                             max(1, item.emoticons!.first.width! / 80);
                         double heightFac =
                             max(1, item.emoticons!.first.height! / 80);
-                        return Padding(
-                          padding: const EdgeInsets.fromLTRB(12, 6, 12, 0),
-                          child: GridView.builder(
-                            gridDelegate:
-                                SliverGridDelegateWithMaxCrossAxisExtent(
-                              maxCrossAxisExtent: widthFac * 40,
-                              mainAxisExtent: heightFac * 40,
-                              crossAxisSpacing: 8,
-                              mainAxisSpacing: 8,
-                            ),
-                            itemCount: item.emoticons!.length,
-                            itemBuilder: (context, index) {
-                              return Material(
-                                color: Colors.transparent,
-                                child: InkWell(
-                                  borderRadius: BorderRadius.circular(8),
-                                  onTap: () {
-                                    if (item.pkgType == 3) {
-                                      widget.onChoose(item.emoticons![index]);
-                                    } else {
-                                      widget.onSendEmoticonUnique(
-                                        item.emoticons![index],
-                                      );
-                                    }
-                                  },
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(6),
-                                    child: NetworkImgLayer(
-                                      boxFit: BoxFit.contain,
-                                      src: item.emoticons![index].url!,
-                                      width: widthFac * 38,
-                                      height: heightFac * 38,
-                                      type: 'emote',
-                                      quality: item.pkgType == 3 ? null : 80,
-                                    ),
+                        return GridView.builder(
+                          padding: const EdgeInsets.only(
+                              left: 12, right: 12, bottom: 12),
+                          gridDelegate:
+                              SliverGridDelegateWithMaxCrossAxisExtent(
+                            maxCrossAxisExtent: widthFac * 40,
+                            mainAxisExtent: heightFac * 40,
+                            crossAxisSpacing: 8,
+                            mainAxisSpacing: 8,
+                          ),
+                          itemCount: item.emoticons!.length,
+                          itemBuilder: (context, index) {
+                            return Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(8),
+                                onTap: () {
+                                  if (item.pkgType == 3) {
+                                    widget.onChoose(item.emoticons![index]);
+                                  } else {
+                                    widget.onSendEmoticonUnique(
+                                      item.emoticons![index],
+                                    );
+                                  }
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.all(6),
+                                  child: NetworkImgLayer(
+                                    boxFit: BoxFit.contain,
+                                    src: item.emoticons![index].url!,
+                                    width: widthFac * 38,
+                                    height: heightFac * 38,
+                                    type: 'emote',
+                                    quality: item.pkgType == 3 ? null : 80,
                                   ),
                                 ),
-                              );
-                            },
-                          ),
+                              ),
+                            );
+                          },
                         );
                       },
                     ).toList(),

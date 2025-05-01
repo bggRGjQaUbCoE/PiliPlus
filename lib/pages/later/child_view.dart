@@ -82,6 +82,7 @@ class _LaterViewChildPageState extends State<LaterViewChildPage>
                   }
                   var videoItem = loadingState.response![index];
                   return Stack(
+                    clipBehavior: Clip.none,
                     children: [
                       VideoCardH(
                         videoItem: videoItem,

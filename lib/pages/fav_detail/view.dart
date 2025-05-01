@@ -451,6 +451,7 @@ class _FavDetailPageState extends State<FavDetailPage> {
                     }
                     FavDetailItemData item = loadingState.response![index];
                     return Stack(
+                      clipBehavior: Clip.none,
                       children: [
                         Positioned.fill(
                           child: FavVideoCardH(

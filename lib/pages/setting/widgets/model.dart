@@ -1509,6 +1509,7 @@ List<SettingsModel> get extraSettings => [
         defaultVal: false,
         onTap: () => Get.toNamed('/sponsorBlock'),
         leading: const Stack(
+          clipBehavior: Clip.none,
           alignment: Alignment.center,
           children: [
             Icon(Icons.shield_outlined),
@@ -2063,6 +2064,7 @@ List<SettingsModel> get extraSettings => [
         title: '发评反诈',
         subtitle: '发送评论后检查评论是否可见',
         leading: const Stack(
+          clipBehavior: Clip.none,
           alignment: Alignment.center,
           children: [
             Icon(Icons.shield_outlined),
@@ -2088,6 +2090,7 @@ List<SettingsModel> get extraSettings => [
         title: '发布/转发动态反诈',
         subtitle: '发布/转发动态后检查动态是否可见',
         leading: const Stack(
+          clipBehavior: Clip.none,
           alignment: Alignment.center,
           children: [
             Icon(Icons.shield_outlined),
@@ -2101,6 +2104,7 @@ List<SettingsModel> get extraSettings => [
         settingsType: SettingsType.sw1tch,
         title: '屏蔽带货动态',
         leading: const Stack(
+          clipBehavior: Clip.none,
           alignment: Alignment.center,
           children: [
             Icon(Icons.shopping_bag_outlined, size: 14),
@@ -2117,6 +2121,7 @@ List<SettingsModel> get extraSettings => [
         settingsType: SettingsType.sw1tch,
         title: '屏蔽带货评论',
         leading: const Stack(
+          clipBehavior: Clip.none,
           alignment: Alignment.center,
           children: [
             Icon(Icons.shopping_bag_outlined, size: 14),

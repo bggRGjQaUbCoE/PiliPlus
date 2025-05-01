@@ -552,6 +552,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                               videoDetailController.scrollCtr.offset != 0 &&
                               context.orientation == Orientation.portrait;
                       return Stack(
+                        clipBehavior: Clip.none,
                         children: [
                           AppBar(
                             backgroundColor: Colors.black,
@@ -639,6 +640,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                           ? animHeight
                           : videoDetailController.videoHeight,
                   flexibleSpace: Stack(
+                    clipBehavior: Clip.none,
                     children: [
                       Builder(
                         builder: (context) {
@@ -702,6 +704,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                                   child: SizedBox(
                                     height: kToolbarHeight,
                                     child: Stack(
+                                      clipBehavior: Clip.none,
                                       children: [
                                         Align(
                                           alignment: Alignment.centerLeft,
@@ -1182,6 +1185,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
       );
 
   Widget get childWhenDisabledLandscape => Stack(
+        clipBehavior: Clip.none,
         children: [
           Scaffold(
             resizeToAvoidBottomInset: false,
@@ -1261,6 +1265,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
         () => Visibility(
           visible: videoDetailController.isShowCover.value,
           child: Stack(
+            clipBehavior: Clip.none,
             children: [
               Positioned(
                 top: 0,
@@ -1634,6 +1639,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
               MediaQuery.of(context).orientation == Orientation.portrait),
       onPopInvokedWithResult: _onPopInvokedWithResult,
       child: Stack(
+        clipBehavior: Clip.none,
         children: [
           Positioned.fill(child: ColoredBox(color: Colors.black)),
 
@@ -1860,6 +1866,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
         );
     if (videoDetailController.isPlayAll) {
       return Stack(
+        clipBehavior: Clip.none,
         children: [
           introPanel(),
           Positioned(

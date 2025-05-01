@@ -291,10 +291,11 @@ class _LivePageState extends CommonPageState<LivePage, LiveController>
     return switch (loadingState) {
       Success() || Loading() => SliverPadding(
           padding: EdgeInsets.only(
-              top: StyleString.cardSpace,
-              left: StyleString.cardSpace,
-              right: StyleString.cardSpace,
-              bottom: MediaQuery.paddingOf(context).bottom + 80),
+            top: StyleString.safeSpace,
+            left: StyleString.safeSpace,
+            right: StyleString.safeSpace,
+            bottom: MediaQuery.paddingOf(context).bottom + 80,
+          ),
           sliver: SliverGrid(
             gridDelegate: SliverGridDelegateWithExtentAndRatio(
               mainAxisSpacing: StyleString.cardSpace,

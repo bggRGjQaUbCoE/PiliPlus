@@ -129,20 +129,13 @@ class AccountManager extends Interceptor {
       account.cookieJar.loadForRequest(options.uri).then((cookies) {
         final previousCookies =
             options.headers[HttpHeaders.cookieHeader] as String?;
-        String newCookies = getCookies([
+        final newCookies = getCookies([
           ...?previousCookies
               ?.split(';')
               .where((e) => e.isNotEmpty)
               .map((c) => Cookie.fromSetCookieValue(c)),
           ...cookies,
         ]);
-        if (options.extra['cookie'] != null) {
-          if (newCookies.isEmpty) {
-            newCookies = '${options.extra['cookie']}';
-          } else {
-            newCookies += ';${options.extra['cookie']}';
-          }
-        }
         options.headers[HttpHeaders.cookieHeader] =
             newCookies.isNotEmpty ? newCookies : '';
         handler.next(options);
@@ -177,7 +170,7 @@ class AccountManager extends Interceptor {
   }
 
   @override
-  void onError(DioException err, ErrorInterceptorHandler handler) async {
+  void onError(DioException err, ErrorInterceptorHandler handler) {
     if (err.requestOptions.method != 'POST') {
       toast(err);
     }
@@ -198,7 +191,7 @@ class AccountManager extends Interceptor {
     }
   }
 
-  static void toast(err) {
+  static void toast(DioException err) {
     const List<String> skipShow = [
       'heartbeat',
       'history/report',

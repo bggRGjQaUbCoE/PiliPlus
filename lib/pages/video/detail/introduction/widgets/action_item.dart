@@ -157,6 +157,7 @@ class ActionItemState extends State<ActionItem>
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Stack(
+                clipBehavior: Clip.none,
                 alignment: Alignment.center,
                 children: [
                   if (widget.needAnim && !_hideCircle)

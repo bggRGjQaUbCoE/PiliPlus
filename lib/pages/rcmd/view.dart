@@ -31,11 +31,8 @@ class _RcmdPageState extends CommonPageState<RcmdPage, RcmdController>
     super.build(context);
     return Container(
       clipBehavior: Clip.hardEdge,
-      margin: const EdgeInsets.only(
-          left: StyleString.safeSpace, right: StyleString.safeSpace),
-      decoration: BoxDecoration(
-        borderRadius: StyleString.mdRadius,
-      ),
+      margin: const EdgeInsets.symmetric(horizontal: StyleString.safeSpace),
+      decoration: const BoxDecoration(borderRadius: StyleString.mdRadius),
       child: refreshIndicator(
         onRefresh: () async {
           await controller.onRefresh();

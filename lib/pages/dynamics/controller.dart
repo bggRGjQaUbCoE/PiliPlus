@@ -189,21 +189,6 @@ class DynamicsController extends GetxController
   }
 
   @override
-  FutureOr<void> toTopOrRefresh() {
-    final ctr = controller;
-    if (scrollController.hasClients && ctr.scrollController.hasClients) {
-      if (scrollController.position.pixels == 0 &&
-          ctr.scrollController.position.pixels == 0) {
-        return onRefresh();
-      } else {
-        animateToTop();
-      }
-    } else {
-      super.toTopOrRefresh();
-    }
-  }
-
-  @override
   void onClose() {
     tabController.dispose();
     scrollController.dispose();

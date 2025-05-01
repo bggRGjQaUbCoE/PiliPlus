@@ -232,6 +232,7 @@ class _ArticlePageState extends State<ArticlePage>
       resizeToAvoidBottomInset: false,
       appBar: _buildAppBar,
       body: Stack(
+        clipBehavior: Clip.none,
         children: [
           SafeArea(
             top: false,

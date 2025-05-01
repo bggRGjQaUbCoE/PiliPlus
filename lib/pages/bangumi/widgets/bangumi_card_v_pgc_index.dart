@@ -38,6 +38,7 @@ class BangumiCardVPgcIndex extends StatelessWidget {
                   final double maxWidth = boxConstraints.maxWidth;
                   final double maxHeight = boxConstraints.maxHeight;
                   return Stack(
+                    clipBehavior: Clip.none,
                     children: [
                       NetworkImgLayer(
                         src: bangumiItem['cover'],

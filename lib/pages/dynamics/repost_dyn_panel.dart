@@ -246,6 +246,7 @@ class _RepostPanelState extends CommonPublishPageState<RepostPanel> {
           height: 34,
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Stack(
+            clipBehavior: Clip.none,
             alignment: Alignment.center,
             children: [
               Align(

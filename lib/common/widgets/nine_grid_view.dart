@@ -172,6 +172,7 @@ class _NineGridViewState extends State<NineGridView> {
           )));
     }
     return Stack(
+      clipBehavior: Clip.none,
       children: list,
     );
   }
@@ -260,6 +261,7 @@ class _NineGridViewState extends State<NineGridView> {
           )));
     }
     return Stack(
+      clipBehavior: Clip.none,
       children: list,
     );
   }
@@ -286,6 +288,7 @@ class _NineGridViewState extends State<NineGridView> {
     }
     return ClipOval(
       child: Stack(
+        clipBehavior: Clip.none,
         children: children,
       ),
     );
@@ -372,7 +375,10 @@ class _NineGridViewState extends State<NineGridView> {
       children.add(child);
     }
 
-    return Stack(children: children);
+    return Stack(
+      clipBehavior: Clip.none,
+      children: children,
+    );
   }
 
   /// double is zero.

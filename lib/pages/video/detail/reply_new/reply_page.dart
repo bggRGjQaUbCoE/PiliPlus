@@ -39,35 +39,31 @@ class ReplyPage extends CommonPublishPage {
 class _ReplyPageState extends CommonPublishPageState<ReplyPage> {
   final RxBool _syncToDynamic = false.obs;
 
-  Widget get child => MediaQuery.removePadding(
-        removeTop: true,
-        context: context,
-        child: GestureDetector(
-          onTap: Get.back,
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              bool isH = constraints.maxWidth > constraints.maxHeight;
-              late double padding = constraints.maxWidth * 0.12;
-              return Padding(
-                padding: EdgeInsets.symmetric(horizontal: isH ? padding : 0),
-                child: Scaffold(
-                  resizeToAvoidBottomInset: false,
-                  backgroundColor: Colors.transparent,
-                  body: GestureDetector(
-                    onTap: () {},
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        buildInputView(),
-                        buildImagePreview(),
-                        buildPanelContainer(themeData.colorScheme.surface),
-                      ],
-                    ),
+  Widget get child => GestureDetector(
+        onTap: Get.back,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            bool isH = constraints.maxWidth > constraints.maxHeight;
+            late double padding = constraints.maxWidth * 0.12;
+            return Padding(
+              padding: EdgeInsets.symmetric(horizontal: isH ? padding : 0),
+              child: Scaffold(
+                resizeToAvoidBottomInset: false,
+                backgroundColor: Colors.transparent,
+                body: GestureDetector(
+                  onTap: () {},
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      buildInputView(),
+                      buildImagePreview(),
+                      buildPanelContainer(themeData.colorScheme.surface),
+                    ],
                   ),
                 ),
-              );
-            },
-          ),
+              ),
+            );
+          },
         ),
       );
 

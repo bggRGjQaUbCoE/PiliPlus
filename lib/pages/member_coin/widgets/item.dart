@@ -1,5 +1,6 @@
 import 'package:PiliPlus/common/widgets/image_save.dart';
 import 'package:PiliPlus/common/widgets/stat/stat.dart';
+import 'package:PiliPlus/utils/app_scheme.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:PiliPlus/common/constants.dart';
@@ -24,6 +25,14 @@ class MemberCoinsItem extends StatelessWidget {
       margin: EdgeInsets.zero,
       child: InkWell(
         onTap: () async {
+          if (coinItem.resourceType != 'ugc') {
+            if (coinItem.redirectUrl?.isNotEmpty == true) {
+              if (await PiliScheme.routePushFromUrl(coinItem.redirectUrl!,
+                  selfHandle: true)) {
+                return;
+              }
+            }
+          }
           int cid =
               await SearchHttp.ab2c(aid: coinItem.aid, bvid: coinItem.bvid);
           PageUtils.toVideoPage(
@@ -47,6 +56,7 @@ class MemberCoinsItem extends StatelessWidget {
                 double maxWidth = boxConstraints.maxWidth;
                 double maxHeight = boxConstraints.maxHeight;
                 return Stack(
+                  clipBehavior: Clip.none,
                   children: [
                     NetworkImgLayer(
                       src: coinItem.pic,

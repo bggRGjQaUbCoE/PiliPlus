@@ -286,6 +286,7 @@ abstract class CommonPublishPageState<T extends CommonPublishPage>
     }
 
     return Stack(
+      clipBehavior: Clip.none,
       children: [
         GestureDetector(
           onTap: () {

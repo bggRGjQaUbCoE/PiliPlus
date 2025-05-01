@@ -198,6 +198,7 @@ class _BangumiInfoState extends State<BangumiInfo> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Stack(
+                        clipBehavior: Clip.none,
                         children: [
                           GestureDetector(
                             onTap: () {

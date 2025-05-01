@@ -4,6 +4,7 @@ class MemberCoinsDataModel extends HotVideoItemModel {
   String? subtitle;
   int? coins;
   int? time;
+  String? resourceType;
   // int? get view => stat.view;
   // int? get danmaku => stat.danmu;
 
@@ -12,6 +13,8 @@ class MemberCoinsDataModel extends HotVideoItemModel {
     coins = json['coins'];
     subtitle = json['subtitle'];
     time = json['time'];
+    resourceType = json['resource_type'];
+    redirectUrl = json['redirect_url'];
     // view = json['stat']['view'];
     // danmaku = json['stat']['danmaku'];
   }

@@ -28,6 +28,7 @@ class VideoCardHMemberVideo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Stack(
+      clipBehavior: Clip.none,
       children: [
         InkWell(
           onLongPress: () => imageSaveDialog(
@@ -77,6 +78,7 @@ class VideoCardHMemberVideo extends StatelessWidget {
                           final double maxWidth = boxConstraints.maxWidth;
                           final double maxHeight = boxConstraints.maxHeight;
                           return Stack(
+                            clipBehavior: Clip.none,
                             children: [
                               NetworkImgLayer(
                                 src: videoItem.cover,

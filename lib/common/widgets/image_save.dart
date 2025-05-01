@@ -28,6 +28,7 @@ void imageSaveDialog({
           mainAxisSize: MainAxisSize.min,
           children: [
             Stack(
+              clipBehavior: Clip.none,
               children: [
                 GestureDetector(
                   onTap: SmartDialog.dismiss,

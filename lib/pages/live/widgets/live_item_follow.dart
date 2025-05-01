@@ -39,6 +39,7 @@ class LiveCardVFollow extends StatelessWidget {
                   double maxWidth = boxConstraints.maxWidth;
                   double maxHeight = boxConstraints.maxHeight;
                   return Stack(
+                    clipBehavior: Clip.none,
                     children: [
                       Hero(
                         tag: heroTag,

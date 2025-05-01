@@ -45,15 +45,10 @@ class MemberFavItem extends StatelessWidget {
                 aspectRatio: StyleString.aspectRatio,
                 child: LayoutBuilder(
                   builder: (context, boxConstraints) {
-                    return Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        NetworkImgLayer(
-                          src: item['cover'],
-                          width: boxConstraints.maxWidth,
-                          height: boxConstraints.maxHeight,
-                        ),
-                      ],
+                    return NetworkImgLayer(
+                      src: item['cover'],
+                      width: boxConstraints.maxWidth,
+                      height: boxConstraints.maxHeight,
                     );
                   },
                 ),

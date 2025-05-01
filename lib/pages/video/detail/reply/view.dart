@@ -104,6 +104,7 @@ class _VideoReplyPanelState extends State<VideoReplyPanel>
         await _videoReplyController.onRefresh();
       },
       child: Stack(
+        clipBehavior: Clip.none,
         children: [
           CustomScrollView(
             controller: widget.needController == false

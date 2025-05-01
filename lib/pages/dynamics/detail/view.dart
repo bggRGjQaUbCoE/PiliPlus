@@ -286,17 +286,20 @@ class _DynamicDetailPageState extends State<DynamicDetailPage>
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
-        title: Obx(
-          () {
-            return AnimatedOpacity(
-              opacity: _visibleTitle.value ? 1 : 0,
-              duration: const Duration(milliseconds: 300),
-              child: AuthorPanel(
-                item: _dynamicDetailController.item,
-                source: 'detail', //to remove tag
-              ),
-            );
-          },
+        title: Padding(
+          padding: const EdgeInsets.only(right: 12),
+          child: Obx(
+            () {
+              return AnimatedOpacity(
+                opacity: _visibleTitle.value ? 1 : 0,
+                duration: const Duration(milliseconds: 300),
+                child: AuthorPanel(
+                  item: _dynamicDetailController.item,
+                  source: 'detail', //to remove tag
+                ),
+              );
+            },
+          ),
         ),
         actions: context.orientation == Orientation.landscape
             ? [
@@ -362,6 +365,7 @@ class _DynamicDetailPageState extends State<DynamicDetailPage>
   }
 
   Widget _buildBody(Orientation orientation, ThemeData theme) => Stack(
+        clipBehavior: Clip.none,
         children: [
           Builder(
             builder: (context) {

@@ -114,7 +114,7 @@ class FavArticleItem extends StatelessWidget {
           ),
           Positioned(
             right: 12,
-            bottom: 0,
+            bottom: -6,
             child: iconButton(
               iconSize: 18,
               context: context,

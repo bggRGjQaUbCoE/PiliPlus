@@ -57,7 +57,7 @@ class MemberDynamicsController
       );
 
   Future onRemove(dynamicId) async {
-    var res = await MsgHttp.removeDynamic(dynamicId);
+    var res = await MsgHttp.removeDynamic(dynIdStr: dynamicId);
     if (res['status']) {
       List<DynamicItemModel> list = (loadingState.value as Success).response;
       list.removeWhere((item) => item.idStr == dynamicId);

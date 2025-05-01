@@ -65,6 +65,7 @@ class AuthorPanel extends StatelessWidget {
             : Utils.dateFormat(item.modules.moduleAuthor!.pubTs)
         : item.modules.moduleAuthor?.pubTime;
     return Stack(
+      clipBehavior: Clip.none,
       alignment: Alignment.center,
       children: [
         Align(
@@ -334,10 +335,10 @@ class AuthorPanel extends StatelessWidget {
                         throw UnsupportedError(
                             'error getting title: {"type": ${item.basic!.commentType}, "id": $id}');
                       }
-                      String thumb = isDyn
-                          ? item.modules.moduleAuthor!.face!
-                          : item.modules.moduleDynamic!.major!.opus!.pics!.first
-                              .url!;
+                      String? thumb = isDyn
+                          ? item.modules.moduleAuthor?.face
+                          : item.modules.moduleDynamic?.major?.opus?.pics
+                              ?.firstOrNull?.url;
                       PageUtils.pmShare(
                         context,
                         content: {
@@ -345,8 +346,7 @@ class AuthorPanel extends StatelessWidget {
                           "title": title,
                           "headline": "",
                           "source": source,
-                          "extra": {},
-                          "thumb": thumb,
+                          if (thumb?.isNotEmpty == true) "thumb": thumb,
                           "author": item.modules.moduleAuthor!.name,
                           "author_id": item.modules.moduleAuthor!.mid.toString()
                         },
@@ -382,6 +382,7 @@ class AuthorPanel extends StatelessWidget {
                   },
                   minLeadingWidth: 0,
                   leading: const Stack(
+                    clipBehavior: Clip.none,
                     alignment: Alignment.center,
                     children: [
                       Icon(Icons.shield_outlined, size: 19),

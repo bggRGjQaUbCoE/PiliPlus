@@ -36,6 +36,7 @@ class SearchPgcItem extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Stack(
+              clipBehavior: Clip.none,
               children: [
                 NetworkImgLayer(
                   width: 111,

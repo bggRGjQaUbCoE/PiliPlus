@@ -179,6 +179,7 @@ class _MediaListPanelState
                     );
                   },
                   child: Stack(
+                    clipBehavior: Clip.none,
                     children: [
                       Padding(
                         padding: const EdgeInsets.symmetric(
@@ -194,6 +195,7 @@ class _MediaListPanelState
                               child: LayoutBuilder(
                                 builder: (context, boxConstraints) {
                                   return Stack(
+                                    clipBehavior: Clip.none,
                                     children: [
                                       NetworkImgLayer(
                                         src: item.cover,
@@ -233,6 +235,8 @@ class _MediaListPanelState
                                   const Spacer(),
                                   Text(
                                     item.upper!.name!,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
                                       fontSize: 12,
                                       color: theme.colorScheme.outline,
@@ -265,7 +269,7 @@ class _MediaListPanelState
                       if (showDelBtn && item.bvid != widget.getBvId())
                         Positioned(
                           right: 12,
-                          bottom: 0,
+                          bottom: -6,
                           child: InkWell(
                             customBorder: const CircleBorder(),
                             onTap: () {
@@ -281,7 +285,7 @@ class _MediaListPanelState
                               child: Icon(
                                 Icons.clear,
                                 size: 18,
-                                color: theme.colorScheme.onSurfaceVariant,
+                                color: theme.colorScheme.outline,
                               ),
                             ),
                           ),

@@ -75,6 +75,7 @@ class SubItem extends StatelessWidget {
             : '其它:${subFolderItem.type}';
     return Expanded(
       child: Stack(
+        clipBehavior: Clip.none,
         children: [
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,

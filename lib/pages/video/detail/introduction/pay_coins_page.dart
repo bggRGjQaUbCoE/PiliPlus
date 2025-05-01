@@ -193,6 +193,7 @@ class _PayCoinsPageState extends State<PayCoinsPage>
 
   Widget _buildBody(isV) => Stack(
         key: _key,
+        clipBehavior: Clip.none,
         alignment: Alignment.center,
         children: [
           Visibility(
@@ -268,6 +269,7 @@ class _PayCoinsPageState extends State<PayCoinsPage>
                                             BlendMode.srcATop,
                                           ),
                                           child: Stack(
+                                            clipBehavior: Clip.none,
                                             alignment: Alignment.center,
                                             children: [
                                               SlideTransition(
@@ -389,6 +391,7 @@ class _PayCoinsPageState extends State<PayCoinsPage>
                   ],
                   const SizedBox(height: 10),
                   Stack(
+                    clipBehavior: Clip.none,
                     alignment: Alignment.centerLeft,
                     children: [
                       GestureDetector(

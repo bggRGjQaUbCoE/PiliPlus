@@ -138,6 +138,7 @@ Widget imageView(
           }
         },
         child: Stack(
+          clipBehavior: Clip.none,
           alignment: Alignment.center,
           children: [
             ClipRRect(

@@ -135,6 +135,7 @@ class _CreateDynPanelState extends CommonPublishPageState<CreateDynPanel> {
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Stack(
+            clipBehavior: Clip.none,
             alignment: Alignment.center,
             children: [
               Align(

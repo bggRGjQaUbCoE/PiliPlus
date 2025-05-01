@@ -2032,6 +2032,7 @@ class HeaderControlState extends State<HeaderControl> {
                       ),
                       onPressed: () => videoDetailCtr.onBlock(context),
                       icon: Stack(
+                        clipBehavior: Clip.none,
                         alignment: Alignment.center,
                         children: [
                           Icon(

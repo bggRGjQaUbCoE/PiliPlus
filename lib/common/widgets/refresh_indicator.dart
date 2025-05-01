@@ -598,6 +598,7 @@ class RefreshIndicatorState extends State<RefreshIndicator>
             _mode == _RefreshIndicatorMode.done;
 
     return Stack(
+      clipBehavior: Clip.none,
       children: <Widget>[
         child,
         if (_mode != null)

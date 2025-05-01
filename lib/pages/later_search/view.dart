@@ -41,6 +41,7 @@ class _LaterSearchPageState
             }
             final item = list[index];
             return Stack(
+              clipBehavior: Clip.none,
               children: [
                 VideoCardH(
                   videoItem: item,

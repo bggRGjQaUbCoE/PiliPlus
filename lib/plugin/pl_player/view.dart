@@ -380,6 +380,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                         color: Colors.white,
                       )
                     : Stack(
+                        clipBehavior: Clip.none,
                         alignment: Alignment.center,
                         children: [
                           Icon(

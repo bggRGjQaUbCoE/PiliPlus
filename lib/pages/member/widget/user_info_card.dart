@@ -441,6 +441,7 @@ class UserInfoCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Stack(
+            clipBehavior: Clip.none,
             children: [
               Column(
                 mainAxisSize: MainAxisSize.min,

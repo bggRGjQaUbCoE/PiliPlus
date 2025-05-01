@@ -165,6 +165,7 @@ class _VideoReplyReplyPanelState
         },
         child: Obx(
           () => Stack(
+            clipBehavior: Clip.none,
             children: [
               ScrollablePositionedList.builder(
                 key: _listKey,

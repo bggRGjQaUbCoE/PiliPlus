@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
 
+import 'package:PiliPlus/models/live/room_info_h5.dart';
 import 'package:PiliPlus/pages/live_room/send_dm_panel.dart';
 import 'package:PiliPlus/pages/live_room/widgets/chat.dart';
 import 'package:PiliPlus/pages/live_room/widgets/header_control.dart';
@@ -36,7 +37,6 @@ class _LiveRoomPageState extends State<LiveRoomPage>
   late final int _roomId;
   late final LiveRoomController _liveRoomController;
   late final PlPlayerController plPlayerController;
-  late Future? _futureBuilder;
   late Future? _futureBuilderFuture;
   bool get isFullScreen => plPlayerController.isFullScreen.value;
 
@@ -113,7 +113,6 @@ class _LiveRoomPageState extends State<LiveRoomPage>
   }
 
   void videoSourceInit() {
-    _futureBuilder = _liveRoomController.queryLiveInfoH5();
     plPlayerController = _liveRoomController.plPlayerController;
   }
 
@@ -214,6 +213,7 @@ class _LiveRoomPageState extends State<LiveRoomPage>
     return ColoredBox(
       color: Colors.black,
       child: Stack(
+        clipBehavior: Clip.none,
         children: [
           Obx(
             () => isFullScreen
@@ -221,14 +221,14 @@ class _LiveRoomPageState extends State<LiveRoomPage>
                 : Positioned.fill(
                     child: Opacity(
                       opacity: 0.6,
-                      child: _liveRoomController.roomInfoH5.value.roomInfo
+                      child: _liveRoomController.roomInfoH5.value?.roomInfo
                                   ?.appBackground?.isNotEmpty ==
                               true
                           ? CachedNetworkImage(
                               fit: BoxFit.cover,
                               width: Get.width,
                               height: Get.height,
-                              imageUrl: _liveRoomController.roomInfoH5.value
+                              imageUrl: _liveRoomController.roomInfoH5.value!
                                   .roomInfo!.appBackground!.http2https,
                             )
                           : Image.asset(
@@ -281,6 +281,7 @@ class _LiveRoomPageState extends State<LiveRoomPage>
         resizeToAvoidBottomInset: false,
         backgroundColor: Colors.transparent,
         body: Stack(
+          clipBehavior: Clip.none,
           children: [
             _buildAppBar,
             Column(
@@ -365,62 +366,54 @@ class _LiveRoomPageState extends State<LiveRoomPage>
         foregroundColor: Colors.white,
         toolbarHeight: isFullScreen ? 0 : null,
         titleTextStyle: TextStyle(color: Colors.white),
-        title: FutureBuilder(
-          future: _futureBuilder,
-          builder: (context, snapshot) {
-            if (snapshot.data == null) {
-              return const SizedBox.shrink();
-            }
-            Map data = snapshot.data as Map;
-            if (data['status']) {
-              return Obx(
-                () => Row(
-                  children: [
-                    GestureDetector(
-                      onTap: () {
-                        dynamic uid =
-                            _liveRoomController.roomInfoH5.value.roomInfo?.uid;
-                        Get.toNamed(
-                          '/member?mid=$uid',
-                          arguments: {
-                            'heroTag': Utils.makeHeroTag(uid),
-                          },
-                        );
-                      },
-                      child: NetworkImgLayer(
-                        width: 34,
-                        height: 34,
-                        type: 'avatar',
-                        src: _liveRoomController
-                            .roomInfoH5.value.anchorInfo!.baseInfo!.face,
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          _liveRoomController
-                              .roomInfoH5.value.anchorInfo!.baseInfo!.uname!,
-                          style: const TextStyle(fontSize: 14),
+        title: Obx(
+          () {
+            return _liveRoomController.roomInfoH5.value == null
+                ? const SizedBox.shrink()
+                : Row(
+                    children: [
+                      GestureDetector(
+                        onTap: () {
+                          dynamic uid = _liveRoomController
+                              .roomInfoH5.value!.roomInfo?.uid;
+                          Get.toNamed(
+                            '/member?mid=$uid',
+                            arguments: {
+                              'heroTag': Utils.makeHeroTag(uid),
+                            },
+                          );
+                        },
+                        child: NetworkImgLayer(
+                          width: 34,
+                          height: 34,
+                          type: 'avatar',
+                          src: _liveRoomController
+                              .roomInfoH5.value!.anchorInfo!.baseInfo!.face,
                         ),
-                        const SizedBox(height: 1),
-                        if (_liveRoomController.roomInfoH5.value.watchedShow !=
-                            null)
+                      ),
+                      const SizedBox(width: 10),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
                           Text(
-                            _liveRoomController.roomInfoH5.value
-                                    .watchedShow!['text_large'] ??
-                                '',
-                            style: const TextStyle(fontSize: 12),
+                            _liveRoomController
+                                .roomInfoH5.value!.anchorInfo!.baseInfo!.uname!,
+                            style: const TextStyle(fontSize: 14),
                           ),
-                      ],
-                    ),
-                  ],
-                ),
-              );
-            } else {
-              return const SizedBox.shrink();
-            }
+                          const SizedBox(height: 1),
+                          if (_liveRoomController
+                                  .roomInfoH5.value!.watchedShow !=
+                              null)
+                            Text(
+                              _liveRoomController.roomInfoH5.value!
+                                      .watchedShow!['text_large'] ??
+                                  '',
+                              style: const TextStyle(fontSize: 12),
+                            ),
+                        ],
+                      ),
+                    ],
+                  );
           },
         ),
         actions: [
@@ -450,42 +443,39 @@ class _LiveRoomPageState extends State<LiveRoomPage>
                   ],
                 ),
               ),
-              PopupMenuItem(
-                onTap: () {
-                  try {
-                    PageUtils.pmShare(
-                      this.context,
-                      content: {
-                        "cover": _liveRoomController
-                            .roomInfoH5.value.roomInfo!.cover!,
-                        "sourceID": _liveRoomController.roomId.toString(),
-                        "title": _liveRoomController
-                            .roomInfoH5.value.roomInfo!.title!,
-                        "url":
-                            "https://live.bilibili.com/${_liveRoomController.roomId}",
-                        "authorID": _liveRoomController
-                            .roomInfoH5.value.roomInfo!.uid
-                            .toString(),
-                        "source": "直播",
-                        "desc": _liveRoomController
-                            .roomInfoH5.value.roomInfo!.title!,
-                        "author": _liveRoomController
-                            .roomInfoH5.value.anchorInfo!.baseInfo!.uname,
-                      },
-                    );
-                  } catch (e) {
-                    SmartDialog.showToast(e.toString());
-                  }
-                },
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.forward_to_inbox, size: 19),
-                    SizedBox(width: 10),
-                    Text('分享至消息'),
-                  ],
+              if (_liveRoomController.roomInfoH5.value != null)
+                PopupMenuItem(
+                  onTap: () {
+                    try {
+                      RoomInfoH5Model roomInfo =
+                          _liveRoomController.roomInfoH5.value!;
+                      PageUtils.pmShare(
+                        this.context,
+                        content: {
+                          "cover": roomInfo.roomInfo!.cover!,
+                          "sourceID": _liveRoomController.roomId.toString(),
+                          "title": roomInfo.roomInfo!.title!,
+                          "url":
+                              "https://live.bilibili.com/${_liveRoomController.roomId}",
+                          "authorID": roomInfo.roomInfo!.uid.toString(),
+                          "source": "直播",
+                          "desc": roomInfo.roomInfo!.title!,
+                          "author": roomInfo.anchorInfo!.baseInfo!.uname,
+                        },
+                      );
+                    } catch (e) {
+                      SmartDialog.showToast(e.toString());
+                    }
+                  },
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.forward_to_inbox, size: 19),
+                      SizedBox(width: 10),
+                      Text('分享至消息'),
+                    ],
+                  ),
                 ),
-              ),
             ],
           ),
         ],

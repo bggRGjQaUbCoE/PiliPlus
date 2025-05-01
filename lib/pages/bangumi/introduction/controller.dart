@@ -358,7 +358,6 @@ class BangumiIntroController
                           "url": item.shareUrl,
                           "headline": title,
                           "source": 16,
-                          "extra": {},
                           "thumb": item.cover,
                           "source_desc": switch (bangumiItem!.type) {
                             1 => '番剧',

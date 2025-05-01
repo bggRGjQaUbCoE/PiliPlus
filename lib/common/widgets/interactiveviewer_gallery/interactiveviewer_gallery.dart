@@ -276,6 +276,7 @@ class _InteractiveviewerGalleryState extends State<InteractiveviewerGallery>
   @override
   Widget build(BuildContext context) {
     return Stack(
+      clipBehavior: Clip.none,
       children: [
         InteractiveViewerBoundary(
           controller: _transformationController,
@@ -344,6 +345,7 @@ class _InteractiveviewerGalleryState extends State<InteractiveviewerGallery>
                   )
                 : null,
             child: Stack(
+              clipBehavior: Clip.none,
               alignment: Alignment.center,
               children: [
                 Align(

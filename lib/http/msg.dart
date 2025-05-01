@@ -278,26 +278,23 @@ class MsgHttp {
     }
   }
 
-  static Future removeDynamic(
-    dynamic dynamicId,
-  ) async {
-    String csrf = Accounts.main.csrf;
-    Map<String, dynamic> data = await WbiSign.makSign({
-      'dynamic_id': dynamicId,
-      'csrf_token': csrf,
-      'csrf': csrf,
-    });
+  static Future removeDynamic({required dynIdStr, dynType, ridStr}) async {
     var res = await Request().post(
-      HttpString.tUrl + Api.removeDynamic,
-      data: FormData.fromMap(data),
+      Api.removeDynamic,
+      queryParameters: {
+        'platform': 'web',
+        'csrf': Accounts.main.csrf,
+      },
+      data: {
+        "dyn_id_str": dynIdStr,
+        if (dynType != null) "dyn_type": dynType,
+        if (ridStr != null) "rid_str": ridStr,
+      },
     );
     if (res.data['code'] == 0) {
       return {'status': true};
     } else {
-      return {
-        'status': false,
-        'msg': res.data['message'],
-      };
+      return {'status': false, 'msg': res.data['message']};
     }
   }
 

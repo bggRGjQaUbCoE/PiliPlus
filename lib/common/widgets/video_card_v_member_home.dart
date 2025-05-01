@@ -1,10 +1,10 @@
 import 'package:PiliPlus/common/widgets/image_save.dart';
 import 'package:PiliPlus/http/search.dart';
 import 'package:PiliPlus/models/space/item.dart';
+import 'package:PiliPlus/utils/app_scheme.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import '../../utils/utils.dart';
 import '../constants.dart';
 import 'badge.dart';
@@ -20,7 +20,7 @@ class VideoCardVMemberHome extends StatelessWidget {
   });
 
   void onPushDetail(heroTag) async {
-    String goto = videoItem.goto ?? '';
+    String? goto = videoItem.goto;
     switch (goto) {
       case 'bangumi':
         PageUtils.viewBangumi(epId: videoItem.param);
@@ -47,62 +47,57 @@ class VideoCardVMemberHome extends StatelessWidget {
         );
         break;
       default:
-        SmartDialog.showToast(goto);
-        PageUtils.handleWebview(videoItem.uri ?? '');
+        if (videoItem.uri?.isNotEmpty == true) {
+          PiliScheme.routePushFromUrl(videoItem.uri!);
+        }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        Semantics(
-          excludeSemantics: true,
-          child: Card(
-            clipBehavior: Clip.hardEdge,
-            margin: EdgeInsets.zero,
-            child: InkWell(
-              onTap: () => onPushDetail(Utils.makeHeroTag(videoItem.bvid)),
-              onLongPress: () => imageSaveDialog(
-                title: videoItem.title,
-                cover: videoItem.cover,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  AspectRatio(
-                    aspectRatio: StyleString.aspectRatio,
-                    child: LayoutBuilder(
-                      builder: (context, boxConstraints) {
-                        double maxWidth = boxConstraints.maxWidth;
-                        double maxHeight = boxConstraints.maxHeight;
-                        return Stack(
-                          children: [
-                            NetworkImgLayer(
-                              src: videoItem.cover,
-                              width: maxWidth,
-                              height: maxHeight,
-                            ),
-                            if ((videoItem.duration ?? -1) > 0)
-                              PBadge(
-                                bottom: 6,
-                                right: 7,
-                                size: 'small',
-                                type: 'gray',
-                                text: Utils.timeFormat(videoItem.duration),
-                              )
-                          ],
-                        );
-                      },
-                    ),
-                  ),
-                  videoContent(context, videoItem)
-                ],
+    return Card(
+      clipBehavior: Clip.hardEdge,
+      margin: EdgeInsets.zero,
+      child: InkWell(
+        onTap: () => onPushDetail(Utils.makeHeroTag(videoItem.bvid)),
+        onLongPress: () => imageSaveDialog(
+          title: videoItem.title,
+          cover: videoItem.cover,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            AspectRatio(
+              aspectRatio: StyleString.aspectRatio,
+              child: LayoutBuilder(
+                builder: (context, boxConstraints) {
+                  double maxWidth = boxConstraints.maxWidth;
+                  double maxHeight = boxConstraints.maxHeight;
+                  return Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      NetworkImgLayer(
+                        src: videoItem.cover,
+                        width: maxWidth,
+                        height: maxHeight,
+                      ),
+                      if ((videoItem.duration ?? -1) > 0)
+                        PBadge(
+                          bottom: 6,
+                          right: 7,
+                          size: 'small',
+                          type: 'gray',
+                          text: Utils.timeFormat(videoItem.duration),
+                        )
+                    ],
+                  );
+                },
               ),
             ),
-          ),
+            videoContent(context, videoItem)
+          ],
         ),
-      ],
+      ),
     );
   }
 }

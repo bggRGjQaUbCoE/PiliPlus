@@ -79,6 +79,7 @@ Widget liveRcmdPanel(
             builder: (context, box) {
               double width = box.maxWidth;
               return Stack(
+                clipBehavior: Clip.none,
                 children: [
                   Hero(
                     tag: liveRcmd.roomId.toString(),

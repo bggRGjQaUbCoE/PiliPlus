@@ -150,6 +150,7 @@ class _VideoInfoState extends State<VideoInfo> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Stack(
+                                clipBehavior: Clip.none,
                                 alignment: Alignment.center,
                                 children: [
                                   Icon(
@@ -548,6 +549,7 @@ class _VideoInfoState extends State<VideoInfo> {
                   ),
                   const SizedBox(height: 8),
                   Stack(
+                    clipBehavior: Clip.none,
                     children: [
                       Row(
                         children: [

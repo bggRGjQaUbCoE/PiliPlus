@@ -31,80 +31,73 @@ class VideoCardHGrpc extends StatelessWidget {
     final int aid = videoItem.smallCoverV5.base.args.aid.toInt();
     String type = 'video';
     final String heroTag = Utils.makeHeroTag(aid);
-    return Stack(
-      children: [
-        Semantics(
-          excludeSemantics: true,
-          child: InkWell(
-            borderRadius: BorderRadius.circular(12),
-            onLongPress: () => imageSaveDialog(
-              title: videoItem.smallCoverV5.base.title,
-              cover: videoItem.smallCoverV5.base.cover,
-            ),
-            onTap: () async {
-              if (type == 'ketang') {
-                SmartDialog.showToast('课堂视频暂不支持播放');
-                return;
-              }
-              try {
-                PiliScheme.routePushFromUrl(videoItem.smallCoverV5.base.uri);
-              } catch (err) {
-                SmartDialog.showToast(err.toString());
-              }
-            },
-            child: LayoutBuilder(
-              builder: (BuildContext context, BoxConstraints boxConstraints) {
-                return Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    AspectRatio(
-                      aspectRatio: StyleString.aspectRatio,
-                      child: LayoutBuilder(
-                        builder: (BuildContext context,
-                            BoxConstraints boxConstraints) {
-                          final double maxWidth = boxConstraints.maxWidth;
-                          final double maxHeight = boxConstraints.maxHeight;
-                          return Stack(
-                            children: [
-                              Hero(
-                                tag: heroTag,
-                                child: NetworkImgLayer(
-                                  src: videoItem.smallCoverV5.base.cover,
-                                  width: maxWidth,
-                                  height: maxHeight,
-                                ),
-                              ),
-                              if (videoItem
-                                  .smallCoverV5.coverRightText1.isNotEmpty)
-                                PBadge(
-                                  text: Utils.timeFormat(
-                                      videoItem.smallCoverV5.coverRightText1),
-                                  right: 6.0,
-                                  bottom: 6.0,
-                                  type: 'gray',
-                                ),
-                              if (type != 'video')
-                                PBadge(
-                                  text: type,
-                                  left: 6.0,
-                                  bottom: 6.0,
-                                  type: 'primary',
-                                ),
-                            ],
-                          );
-                        },
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    videoContent(context),
-                  ],
-                );
-              },
-            ),
-          ),
-        ),
-      ],
+    return InkWell(
+      borderRadius: BorderRadius.circular(12),
+      onLongPress: () => imageSaveDialog(
+        title: videoItem.smallCoverV5.base.title,
+        cover: videoItem.smallCoverV5.base.cover,
+      ),
+      onTap: () async {
+        if (type == 'ketang') {
+          SmartDialog.showToast('课堂视频暂不支持播放');
+          return;
+        }
+        try {
+          PiliScheme.routePushFromUrl(videoItem.smallCoverV5.base.uri);
+        } catch (err) {
+          SmartDialog.showToast(err.toString());
+        }
+      },
+      child: LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints boxConstraints) {
+          return Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              AspectRatio(
+                aspectRatio: StyleString.aspectRatio,
+                child: LayoutBuilder(
+                  builder:
+                      (BuildContext context, BoxConstraints boxConstraints) {
+                    final double maxWidth = boxConstraints.maxWidth;
+                    final double maxHeight = boxConstraints.maxHeight;
+                    return Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        Hero(
+                          tag: heroTag,
+                          child: NetworkImgLayer(
+                            src: videoItem.smallCoverV5.base.cover,
+                            width: maxWidth,
+                            height: maxHeight,
+                          ),
+                        ),
+                        if (videoItem.smallCoverV5.coverRightText1.isNotEmpty)
+                          PBadge(
+                            text: Utils.timeFormat(
+                                videoItem.smallCoverV5.coverRightText1),
+                            right: 6.0,
+                            bottom: 6.0,
+                            type: 'gray',
+                          ),
+                        if (type != 'video')
+                          PBadge(
+                            text: type,
+                            left: 6.0,
+                            bottom: 6.0,
+                            type: 'primary',
+                          ),
+                      ],
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(width: 10),
+              videoContent(context),
+            ],
+          );
+        },
+      ),
     );
   }
 

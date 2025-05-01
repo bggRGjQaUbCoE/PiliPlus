@@ -34,6 +34,7 @@ class VideoCustomActions {
           videoItem.bvid!,
           'copy',
           Stack(
+            clipBehavior: Clip.none,
             children: [
               Icon(MdiIcons.identifier, size: 16),
               Icon(MdiIcons.circleOutline, size: 16),

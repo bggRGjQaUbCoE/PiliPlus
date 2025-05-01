@@ -96,6 +96,7 @@ class FavVideoCardH extends StatelessWidget {
                   double maxWidth = boxConstraints.maxWidth;
                   double maxHeight = boxConstraints.maxHeight;
                   return Stack(
+                    clipBehavior: Clip.none,
                     children: [
                       NetworkImgLayer(
                         src: videoItem.pic,
@@ -132,6 +133,7 @@ class FavVideoCardH extends StatelessWidget {
     final theme = Theme.of(context);
     return Expanded(
       child: Stack(
+        clipBehavior: Clip.none,
         children: [
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -179,7 +181,7 @@ class FavVideoCardH extends StatelessWidget {
           if (onDelFav != null)
             Positioned(
               right: 0,
-              bottom: 0,
+              bottom: -8,
               child: iconButton(
                 context: context,
                 icon: Icons.clear,

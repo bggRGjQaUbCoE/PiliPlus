@@ -111,6 +111,7 @@ class ReplyItemGrpc extends StatelessWidget {
                 top: 8,
                 right: 12,
                 child: Stack(
+                  clipBehavior: Clip.none,
                   alignment: Alignment.centerRight,
                   children: [
                     CachedNetworkImage(
@@ -1179,6 +1180,7 @@ class ReplyItemGrpc extends StatelessWidget {
               onTap: () => menuActionHandler('checkReply'),
               minLeadingWidth: 0,
               leading: Stack(
+                clipBehavior: Clip.none,
                 alignment: Alignment.center,
                 children: [
                   const Icon(Icons.shield_outlined, size: 19),

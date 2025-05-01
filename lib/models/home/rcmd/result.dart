@@ -47,8 +47,8 @@ class RecVideoItemAppModel extends BaseRecVideoItemModel {
 
     cardType = json['card_type'];
     adInfo = json['ad_info'];
-    threePoint = json['three_point'] != null
-        ? ThreePoint.fromJson(json['three_point'])
+    threePoint = json['three_point_v2'] != null
+        ? ThreePoint.fromJson(json['three_point_v2'])
         : null;
     desc = json['desc'];
   }
@@ -94,15 +94,26 @@ class RcmdOwner extends BaseOwner {
 class ThreePoint {
   List<Reason>? dislikeReasons;
   List<Reason>? feedbacks;
-  int? watchLater;
+  // int? watchLater;
 
-  ThreePoint.fromJson(Map<String, dynamic> json) {
-    dislikeReasons = (json['dislike_reasons'] as List?)
-        ?.map((v) => Reason.fromJson(v))
-        .toList();
-    feedbacks =
-        (json['feedbacks'] as List?)?.map((v) => Reason.fromJson(v)).toList();
-    watchLater = json['watch_later'];
+  ThreePoint.fromJson(List json) {
+    for (var elem in json) {
+      switch (elem['type']) {
+        // case 'watch_later':
+        //   watchLater = 1;
+        //   break;
+        case 'feedback':
+          feedbacks = (elem['reasons'] as List?)
+              ?.map((i) => Reason.fromJson(i))
+              .toList();
+          break;
+        case 'dislike':
+          dislikeReasons = (elem['reasons'] as List?)
+              ?.map((i) => Reason.fromJson(i))
+              .toList();
+          break;
+      }
+    }
   }
 }
 

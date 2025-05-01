@@ -170,7 +170,7 @@ class AccountManager extends Interceptor {
   }
 
   @override
-  void onError(DioException err, ErrorInterceptorHandler handler) async {
+  void onError(DioException err, ErrorInterceptorHandler handler) {
     if (err.requestOptions.method != 'POST') {
       toast(err);
     }
@@ -191,7 +191,7 @@ class AccountManager extends Interceptor {
     }
   }
 
-  static void toast(err) {
+  static void toast(DioException err) {
     const List<String> skipShow = [
       'heartbeat',
       'history/report',

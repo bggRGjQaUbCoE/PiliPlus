@@ -1,3 +1,4 @@
+import 'package:PiliPlus/utils/accounts/account.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -14,45 +15,30 @@ class UrlUtils {
     String url, [
     bool returnOri = false,
   ]) async {
+    String? redirectUrl;
     try {
-      final response = await Request().get(
+      final response = await Request.dio.head(
         url,
         options: Options(
-          followRedirects: false,
-          validateStatus: (status) {
-            return status == 200 || status == 301 || status == 302;
-          },
-        ),
+            followRedirects: false,
+            validateStatus: (status) {
+              return 200 <= status! && status < 400;
+            },
+            extra: {'account': AnonymousAccount()}),
       );
-      if (response.statusCode == 302 || response.statusCode == 301) {
-        String? redirectUrl = response.headers['location']?.firstOrNull;
+      if (response.isRedirect) {
+        redirectUrl = response.headers['location']?.firstOrNull;
         debugPrint('redirectUrl: $redirectUrl');
-        if (redirectUrl != null) {
-          if (redirectUrl.startsWith('/')) {
-            return returnOri ? url : null;
-          }
-          if (redirectUrl.endsWith('/')) {
-            redirectUrl = redirectUrl.substring(0, redirectUrl.length - 1);
-          }
-          if (url.contains(redirectUrl)) {
-            if (url.endsWith('/')) {
-              url = url.substring(0, url.length - 1);
-            }
-            return url;
-          }
-          return redirectUrl;
-        } else {
-          if (returnOri && url.endsWith('/')) {
-            url = url.substring(0, url.length - 1);
-          }
-          return returnOri ? url : null;
+        if (redirectUrl != null && !redirectUrl.startsWith('http')) {
+          redirectUrl = Uri.parse(url).resolve(redirectUrl).toString();
         }
-      } else {
-        return returnOri ? url : null;
       }
-    } catch (err) {
-      return returnOri ? url : null;
+    } catch (_) {}
+    if (returnOri && redirectUrl == null) redirectUrl = url;
+    if (redirectUrl?.endsWith('/') == true) {
+      redirectUrl = redirectUrl!.substring(0, redirectUrl.length - 1);
     }
+    return redirectUrl;
   }
 
   // 匹配url路由跳转

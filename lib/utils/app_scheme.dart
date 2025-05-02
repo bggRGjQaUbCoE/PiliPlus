@@ -67,7 +67,7 @@ class PiliScheme {
     int? oid,
   }) async {
     final String scheme = uri.scheme;
-    final String host = uri.host.toLowerCase();
+    final String host = uri.host;
     final String path = uri.path;
 
     switch (scheme) {
@@ -207,12 +207,16 @@ class PiliScheme {
             bool hasMatch = await _onPushDynDetail(path, off);
             return hasMatch;
           case 'search':
-            PageUtils.toDupNamed(
-              '/searchResult',
-              parameters: {'keyword': ''},
-              off: off,
-            );
-            return true;
+            final keyword = uri.queryParameters['keyword'];
+            if (keyword != null) {
+              PageUtils.toDupNamed(
+                '/searchResult',
+                parameters: {'keyword': keyword},
+                off: off,
+              );
+              return true;
+            }
+            return false;
           case 'article':
             // bilibili://article/40679479?jump_opus=1&jump_opus_type=1&opus_type=article&h5awaken=random
             String? id = uriDigitRegExp.firstMatch(path)?.group(1);
@@ -434,6 +438,14 @@ class PiliScheme {
               return true;
             }
             return false;
+          // bilibili://browser/?url=https%3A%2F%2Fwww.bilibili.com%2F
+          case 'browser':
+            final url = uri.queryParameters['url'];
+            if (url != null) {
+              _toWebview(url, off, parameters);
+              return true;
+            }
+            return false;
           default:
             if (selfHandle.not) {
               debugPrint('$uri');
@@ -480,7 +492,7 @@ class PiliScheme {
     // https://m.bilibili.com/bangumi/play/ss39708
     // https | m.bilibili.com | /bangumi/play/ss39708
 
-    String host = uri.host.toLowerCase();
+    String host = uri.host;
 
     if (selfHandle &&
         host.contains('bilibili.com').not &&
@@ -507,7 +519,7 @@ class PiliScheme {
       String? redirectUrl = await UrlUtils.parseRedirectUrl(uri.toString());
       if (redirectUrl != null) {
         uri = Uri.parse(redirectUrl);
-        host = uri.host.toLowerCase();
+        host = uri.host;
       }
       if (host.contains('bilibili.com').not) {
         launchURL();

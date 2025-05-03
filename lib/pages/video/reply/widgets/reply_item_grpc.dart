@@ -8,6 +8,7 @@ import 'package:PiliPlus/common/widgets/dialog/report.dart';
 import 'package:PiliPlus/grpc/app/main/community/reply/v1/reply.pb.dart';
 import 'package:PiliPlus/http/init.dart';
 import 'package:PiliPlus/http/video.dart';
+import 'package:PiliPlus/pages/dynamics/widgets/vote.dart';
 import 'package:PiliPlus/pages/save_panel/view.dart';
 import 'package:PiliPlus/pages/video/controller.dart';
 import 'package:PiliPlus/pages/video/reply/widgets/zan_grpc.dart';
@@ -58,6 +59,9 @@ class ReplyItemGrpc extends StatelessWidget {
   final Function(List<String>, int)? callback;
   final ValueChanged<ReplyInfo>? onCheckReply;
   final Function(bool isUpTop, int rpid)? onToggleTop;
+
+  static final _voteRegExp = RegExp(r"\{vote:\d+?\}");
+  static final _timeRegExp = RegExp(r'^\b(?:\d+[:：])?\d+[:：]\d+\b$');
 
   @override
   Widget build(BuildContext context) {
@@ -593,7 +597,7 @@ class ReplyItemGrpc extends StatelessWidget {
 
     // 投票
     if (content.hasVote()) {
-      message.splitMapJoin(RegExp(r"\{vote:\d+?\}"), onMatch: (Match match) {
+      message = message.replaceAllMapped(_voteRegExp, (Match match) {
         spanChildren.add(
           TextSpan(
             text: '投票: ${content.vote.title}',
@@ -601,22 +605,11 @@ class ReplyItemGrpc extends StatelessWidget {
               color: theme.colorScheme.primary,
             ),
             recognizer: TapGestureRecognizer()
-              ..onTap = () {
-                Get.toNamed(
-                  '/webview',
-                  parameters: {
-                    'url':
-                        'https://t.bilibili.com/vote/h5/index/#/result?vote_id=${content.vote.id}',
-                  },
-                );
-              },
+              ..onTap = () => showVoteDialog(context, content.vote.id.toInt()),
           ),
         );
         return '';
-      }, onNonMatch: (String str) {
-        return str;
       });
-      message = message.replaceAll(RegExp(r"\{vote:\d+?\}"), "");
     }
     // 构建正则表达式
     final List<String> specialTokens = [
@@ -685,7 +678,7 @@ class ReplyItemGrpc extends StatelessWidget {
                 },
             ),
           );
-        } else if (RegExp(r'^\b(?:\d+[:：])?\d+[:：]\d+\b$').hasMatch(matchStr)) {
+        } else if (_timeRegExp.hasMatch(matchStr)) {
           matchStr = matchStr.replaceAll('：', ':');
           bool isValid = false;
           try {

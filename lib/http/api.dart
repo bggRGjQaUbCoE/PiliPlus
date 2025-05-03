@@ -795,4 +795,8 @@ class Api {
   static const String gaiaVgateRegister = '/x/gaia-vgate/v1/register';
 
   static const String gaiaVgateValidate = '/x/gaia-vgate/v1/validate';
+
+  static const String voteInfo = '/x/vote/vote_info';
+
+  static const String doVote = '/x/vote/do_vote';
 }

@@ -1,3 +1,5 @@
+import 'package:PiliPlus/models/dynamics/vote_model.dart';
+
 class ArticleContentModel {
   int? align;
   int? paraType;
@@ -188,7 +190,7 @@ class Card {
   Common? common;
   Live? live;
   Opus? opus;
-  Vote? vote;
+  SimpleVoteInfo? vote;
   Music? music;
   Goods? goods;
 
@@ -201,7 +203,7 @@ class Card {
     common = json['common'] == null ? null : Common.fromJson(json['common']);
     live = json['live'] == null ? null : Live.fromJson(json['live']);
     opus = json['opus'] == null ? null : Opus.fromJson(json['opus']);
-    vote = json['vote'] == null ? null : Vote.fromJson(json['vote']);
+    vote = json['vote'] == null ? null : SimpleVoteInfo.fromJson(json['vote']);
     music = json['music'] == null ? null : Music.fromJson(json['music']);
     goods = json['goods'] == null ? null : Goods.fromJson(json['goods']);
   }
@@ -256,28 +258,6 @@ class Music {
     jumpUrl = json['jump_url'];
     label = json['label'];
     title = json['title'];
-  }
-}
-
-class Vote {
-  int? choiceCnt;
-  int? defaultShare;
-  String? desc;
-  int? endTime;
-  int? status;
-  int? uid;
-  int? voteId;
-  late int joinNum;
-
-  Vote.fromJson(Map<String, dynamic> json) {
-    choiceCnt = json['choice_cnt'];
-    defaultShare = json['default_share'];
-    desc = json['desc'];
-    endTime = json['end_time'];
-    status = json['status'];
-    uid = json['uid'];
-    voteId = json['vote_id'];
-    joinNum = json['join_num'] ?? 0;
   }
 }
 

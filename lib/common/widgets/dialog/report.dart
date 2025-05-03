@@ -61,7 +61,11 @@ void autoWrapReportDialog(
                     ),
                   ),
                 ),
-                BanUserCheckbox(onChanged: (value) => banUid = value),
+                Padding(
+                  padding: const EdgeInsets.only(left: 14, top: 6),
+                  child: CheckBoxText(
+                      text: '拉黑该用户', onChanged: (value) => banUid = value),
+                ),
               ],
             ),
           ),
@@ -145,44 +149,58 @@ class _ReasonFieldState extends State<ReasonField> {
   }
 }
 
-class BanUserCheckbox extends StatefulWidget {
+class CheckBoxText extends StatefulWidget {
+  final String text;
   final ValueChanged<bool> onChanged;
+  final bool selected;
 
-  const BanUserCheckbox({super.key, required this.onChanged});
+  const CheckBoxText({
+    super.key,
+    required this.text,
+    required this.onChanged,
+    this.selected = false,
+  });
 
   @override
-  State<BanUserCheckbox> createState() => _BanUserCheckboxState();
+  State<CheckBoxText> createState() => _CheckBoxTextState();
 }
 
-class _BanUserCheckboxState extends State<BanUserCheckbox> {
-  bool _banUid = false;
+class _CheckBoxTextState extends State<CheckBoxText> {
+  late bool _selected;
+
+  @override
+  void initState() {
+    super.initState();
+    _selected = widget.selected;
+  }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return GestureDetector(
+    final colorScheme = Theme.of(context).colorScheme;
+    return InkWell(
       onTap: () {
-        setState(() => _banUid = !_banUid);
-        widget.onChanged(_banUid);
+        setState(() {
+          _selected = !_selected;
+        });
+        widget.onChanged(_selected);
       },
       child: Padding(
-        padding: const EdgeInsets.only(left: 18, top: 10),
+        padding: const EdgeInsets.all(4),
         child: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
               size: 22,
-              _banUid
+              _selected
                   ? Icons.check_box_outlined
                   : Icons.check_box_outline_blank,
-              color: _banUid
-                  ? theme.colorScheme.primary
-                  : theme.colorScheme.onSurfaceVariant,
+              color: _selected
+                  ? colorScheme.primary
+                  : colorScheme.onSurfaceVariant,
             ),
             Text(
-              ' 拉黑该用户',
-              style: TextStyle(
-                color: _banUid ? theme.colorScheme.primary : null,
-              ),
+              ' ${widget.text}',
+              style: TextStyle(color: _selected ? colorScheme.primary : null),
             ),
           ],
         ),

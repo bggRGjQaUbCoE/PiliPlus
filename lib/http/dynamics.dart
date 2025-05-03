@@ -4,6 +4,7 @@ import 'package:PiliPlus/http/init.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/dynamics/result.dart';
 import 'package:PiliPlus/models/dynamics/up.dart';
+import 'package:PiliPlus/models/dynamics/vote_model.dart';
 import 'package:PiliPlus/models/space_article/item.dart';
 import 'package:PiliPlus/utils/accounts/account.dart';
 import 'package:PiliPlus/utils/storage.dart';
@@ -217,6 +218,42 @@ class DynamicsHttp {
 
     return res.data['code'] == 0
         ? LoadingState.success(DynamicItemModel.fromOpusJson(res.data['data']))
+        : LoadingState.error(res.data['message']);
+  }
+
+  static Future<LoadingState<VoteInfo>> voteInfo(dynamic voteId) async {
+    final res =
+        await Request().get(Api.voteInfo, queryParameters: {'vote_id': voteId});
+
+    return res.data['code'] == 0
+        ? LoadingState.success(VoteInfo.fromSeparatedJson(res.data['data']))
+        : LoadingState.error(res.data['message']);
+  }
+
+  static Future<LoadingState<VoteInfo>> doVote({
+    required int voteId,
+    required List<int> votes,
+    bool anonymity = false,
+    int? dynamicId,
+  }) async {
+    final csrf = Accounts.main.csrf;
+    final data = {
+      'vote_id': 15141778,
+      'votes': votes,
+      'voter_uid': Accounts.main.mid,
+      'status': anonymity ? 1 : 0,
+      'op_bit': 0,
+      'dynamic_id': dynamicId ?? 0,
+      'csrf_token': csrf,
+      'csrf': csrf
+    };
+    final res = await Request().post(Api.doVote,
+        queryParameters: {'csrf': csrf},
+        data: data,
+        options: Options(contentType: Headers.jsonContentType));
+
+    return res.data['code'] == 0
+        ? LoadingState.success(VoteInfo.fromJson(res.data['data']['vote_info']))
         : LoadingState.error(res.data['message']);
   }
 }

@@ -4,6 +4,7 @@ import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/widgets/interactiveviewer_gallery/interactiveviewer_gallery.dart'
     show SourceModel;
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
+import 'package:PiliPlus/pages/dynamics/widgets/vote.dart';
 import 'package:PiliPlus/models/dynamics/article_content_model.dart'
     show ArticleContentModel, Style, Word;
 import 'package:PiliPlus/models/dynamics/result.dart';
@@ -42,11 +43,11 @@ class OpusContent extends StatelessWidget {
         fontSize: fontSize,
       );
 
-  static TextSpan _getSpan(Word? word) => TextSpan(
+  static TextSpan _getSpan(Word? word, [Color? defaultColor]) => TextSpan(
       text: word?.words,
       style: _getStyle(
         word?.style,
-        word?.color != null ? Color(word!.color!) : null,
+        word?.color != null ? Color(word!.color!) : defaultColor,
         word?.fontSize,
       ));
 
@@ -64,8 +65,9 @@ class OpusContent extends StatelessWidget {
         final element = opus[index];
         try {
           switch (element.paraType) {
-            case 1:
-              return SelectableText.rich(
+            case 1 || 4:
+              final isQuote = element.paraType == 4;
+              Widget widget = SelectableText.rich(
                 textAlign: element.align == 1 ? TextAlign.center : null,
                 TextSpan(
                     children: element.text?.nodes?.map<TextSpan>((item) {
@@ -102,50 +104,26 @@ class OpusContent extends StatelessWidget {
                       ],
                     );
                   }
-                  return _getSpan(item.word);
+                  return _getSpan(
+                      item.word, isQuote ? colorScheme.onSurfaceVariant : null);
                 }).toList()),
               );
-            case 4:
-              return Container(
-                padding:
-                    const EdgeInsets.only(left: 8, top: 4, right: 4, bottom: 4),
-                decoration: BoxDecoration(
-                  border: Border(
-                    left:
-                        BorderSide(color: colorScheme.outlineVariant, width: 4),
+              if (isQuote) {
+                widget = Container(
+                  padding: const EdgeInsets.only(
+                      left: 8, top: 4, right: 4, bottom: 4),
+                  decoration: BoxDecoration(
+                    border: Border(
+                      left: BorderSide(
+                          color: colorScheme.outlineVariant, width: 4),
+                    ),
+                    borderRadius: const BorderRadius.all(Radius.circular(6)),
+                    color: colorScheme.onInverseSurface,
                   ),
-                  borderRadius: const BorderRadius.all(Radius.circular(6)),
-                  color: colorScheme.onInverseSurface,
-                ),
-                child: SelectableText.rich(
-                  textAlign: element.align == 1 ? TextAlign.center : null,
-                  TextSpan(
-                      children: element.text?.nodes?.map<TextSpan>((item) {
-                    if (item.rich != null) {
-                      return TextSpan(
-                        text: '\u{1F517}${item.rich?.text}',
-                        style: _getStyle(item.rich?.style, colorScheme.primary),
-                        recognizer: item.rich?.jumpUrl == null
-                            ? null
-                            : (TapGestureRecognizer()
-                              ..onTap = () {
-                                PiliScheme.routePushFromUrl(
-                                    item.rich!.jumpUrl!);
-                              }),
-                      );
-                    }
-                    return TextSpan(
-                        text: item.word?.words,
-                        style: _getStyle(
-                          item.word?.style,
-                          item.word?.color != null
-                              ? Color(item.word!.color!).withOpacity(0.7)
-                              : colorScheme.onSurface.withOpacity(0.7),
-                          item.word?.fontSize,
-                        ));
-                  }).toList()),
-                ),
-              );
+                  child: widget,
+                );
+              }
+              return widget;
             case 2 when (element.pic != null):
               element.pic!.pics!.first.onCalHeight(maxWidth);
               return Hero(
@@ -209,12 +187,10 @@ class OpusContent extends StatelessWidget {
                     try {
                       if (element.linkCard!.card!.type ==
                           'LINK_CARD_TYPE_VOTE') {
-                        Get.toNamed(
-                          '/webview',
-                          parameters: {
-                            'url':
-                                'https://t.bilibili.com/vote/h5/index/#/result?vote_id=${element.linkCard!.card!.oid}',
-                          },
+                        showVoteDialog(
+                          context,
+                          element.linkCard!.card!.vote?.voteId ??
+                              int.parse(element.linkCard!.card!.oid!),
                         );
                         return;
                       }

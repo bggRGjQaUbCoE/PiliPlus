@@ -64,8 +64,7 @@ abstract class CommonController<R, T> extends GetxController
           checkIsEnd(dataList.length);
           loadingState.value = LoadingState<List<T>?>.success(dataList);
         } else if (loadingState.value is Success) {
-          List<T> list = (loadingState.value as Success).response;
-          list.addAll(dataList);
+          final list = (loadingState.value.data! as List<T>)..addAll(dataList);
           checkIsEnd(list.length);
           loadingState.refresh();
         }

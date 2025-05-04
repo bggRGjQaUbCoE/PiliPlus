@@ -57,9 +57,7 @@ class FavPgcController
   Future bangumiDel(index, seasonId) async {
     var result = await VideoHttp.bangumiDel(seasonId: seasonId);
     if (result['status']) {
-      List<BangumiListItemModel> list =
-          (loadingState.value as Success).response;
-      list.removeAt(index);
+      loadingState.value.data!.removeAt(index);
       loadingState.refresh();
     }
     SmartDialog.showToast(result['msg']);
@@ -82,9 +80,8 @@ class FavPgcController
       try {
         final ctr = Get.find<FavPgcController>(tag: '$type$followStatus');
         if (ctr.loadingState.value is Success) {
-          List<BangumiListItemModel> list =
-              (ctr.loadingState.value as Success).response;
-          list.insertAll(0, updateList.map((item) => item..checked = null));
+          ctr.loadingState.value.data!
+              .insertAll(0, updateList.map((item) => item..checked = null));
           ctr.loadingState.refresh();
           ctr.allSelected.value = false;
         }
@@ -108,9 +105,7 @@ class FavPgcController
       try {
         final ctr = Get.find<FavPgcController>(tag: '$type$followStatus');
         if (ctr.loadingState.value is Success) {
-          List<BangumiListItemModel> list =
-              (ctr.loadingState.value as Success).response;
-          list.insert(0, item);
+          ctr.loadingState.value.data!.insert(0, item);
           ctr.loadingState.refresh();
           ctr.allSelected.value = false;
         }

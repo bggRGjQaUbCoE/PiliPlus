@@ -85,10 +85,7 @@ class _FavVideoPageState extends State<FavVideoPage>
                         },
                       );
                       if (res == true) {
-                        List<FavFolderItemData> list =
-                            (_favController.loadingState.value as Success)
-                                .response;
-                        list.removeAt(index);
+                        _favController.loadingState.value.data!.removeAt(index);
                         _favController.loadingState.refresh();
                       }
                     },

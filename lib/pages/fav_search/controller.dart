@@ -45,9 +45,7 @@ class FavSearchController
       type: type,
     );
     if (result['status']) {
-      List<FavDetailItemData> dataList =
-          (loadingState.value as Success).response;
-      dataList.removeAt(index);
+      loadingState.value.data!.removeAt(index);
       loadingState.refresh();
       SmartDialog.showToast('取消收藏');
     }

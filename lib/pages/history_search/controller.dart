@@ -27,8 +27,7 @@ class HistorySearchController
 
     var res = await UserHttp.delHistory([resKid]);
     if (res['status']) {
-      List historyList = (loadingState.value as Success).response;
-      historyList.removeAt(index);
+      loadingState.value.data!.removeAt(index);
       loadingState.refresh();
       SmartDialog.showToast(res['msg']);
     }

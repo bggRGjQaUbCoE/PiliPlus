@@ -85,8 +85,7 @@ class WhisperController
       if (isRefresh) {
         loadingState.value = LoadingState<List<SessionList>?>.success(dataList);
       } else if (loadingState.value is Success) {
-        List<SessionList> list = (loadingState.value as Success).response;
-        list.addAll(dataList);
+        loadingState.value.data!.addAll(dataList);
         loadingState.refresh();
       }
     });
@@ -103,8 +102,7 @@ class WhisperController
   Future onRemove(int index, int? talkerId) async {
     var res = await MsgHttp.removeMsg(talkerId);
     if (res['status']) {
-      List<SessionList> list = (loadingState.value as Success).response;
-      list.removeAt(index);
+      loadingState.value.data!.removeAt(index);
       loadingState.refresh();
       SmartDialog.showToast('删除成功');
     } else {

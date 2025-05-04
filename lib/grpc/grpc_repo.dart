@@ -45,9 +45,6 @@ class GrpcUrl {
 }
 
 class GrpcRepo {
-  static const gzipEncoder = GZipEncoder();
-  static const gzipDecoder = GZipDecoder();
-
   static final String? _accessKey = Accounts.main.accessKey;
   static const _build = 1462100;
   static const _biliChannel = 'bili';
@@ -124,21 +121,19 @@ class GrpcRepo {
   static final unprintableRegExp = RegExp(r"[^\u4e00-\u9fa5，。；！？UP]");
 
   static Uint8List compressProtobuf(Uint8List proto) {
-    proto = gzipEncoder.encodeBytes(proto, level: 0);
-    var byteLength = ByteData(4);
-    byteLength.setInt32(0, proto.length, Endian.big);
-    var compressed = Uint8List(5 + proto.length);
-    compressed[0] = 1;
-    compressed.setRange(1, 5, byteLength.buffer.asUint8List());
-    compressed.setAll(5, proto);
-    return compressed;
+    proto = const GZipEncoder().encodeBytes(proto);
+    var byteLength = ByteData(4)..setInt32(0, proto.length, Endian.big);
+    return Uint8List(5 + proto.length)
+      ..[0] = 1
+      ..setRange(1, 5, byteLength.buffer.asUint8List())
+      ..setAll(5, proto);
   }
 
   static Uint8List decompressProtobuf(Uint8List data) {
     var length = ByteData.sublistView(data, 1, 5).getInt32(0, Endian.big);
 
     if (data[0] == 1) {
-      return gzipDecoder.decodeBytes(data.sublist(5, length + 5));
+      return const GZipDecoder().decodeBytes(data.sublist(5, length + 5));
     } else {
       return data.sublist(5, length + 5);
     }

@@ -1,7 +1,7 @@
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/http/user.dart';
 import 'package:PiliPlus/models/model_hot_video_item.dart';
 import 'package:PiliPlus/pages/common/common_search_controller.dart';
-import 'package:PiliPlus/http/user.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -25,8 +25,7 @@ class LaterSearchController
   Future toViewDel(BuildContext context, int index, aid) async {
     var res = await UserHttp.toViewDel(aids: [aid]);
     if (res['status']) {
-      List<HotVideoItemModel> list = (loadingState.value as Success).response;
-      list.removeAt(index);
+      loadingState.value.data!.removeAt(index);
       loadingState.refresh();
     }
     SmartDialog.showToast(res['msg']);

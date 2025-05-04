@@ -209,7 +209,9 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
   void onPositionChange(Duration position) {
     if (!enableBackgroundPlay ||
         _item.isEmpty ||
-        PlPlayerController.instanceExists().not) return;
+        PlPlayerController.instanceExists().not) {
+      return;
+    }
 
     playbackState.add(playbackState.value.copyWith(
       updatePosition: position,

@@ -14,6 +14,11 @@ sealed class LoadingState<T> {
         Error() => throw this,
         Loading() => throw Exception('ApiException: loading'),
       };
+
+  T? get dataOrNull => switch (this) {
+        Success(response: final res) => res,
+        _ => null,
+      };
 }
 
 class Loading extends LoadingState<Never> {

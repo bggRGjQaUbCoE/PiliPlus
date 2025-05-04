@@ -30,8 +30,7 @@ class FavArticleController extends CommonListController {
   Future<void> onRemove(index, id) async {
     final res = await UserHttp.communityAction(opusId: id, action: 4);
     if (res['status']) {
-      List list = (loadingState.value as Success).response;
-      list.removeAt(index);
+      loadingState.value.data!.removeAt(index);
       loadingState.refresh();
       SmartDialog.showToast('已取消收藏');
     } else {

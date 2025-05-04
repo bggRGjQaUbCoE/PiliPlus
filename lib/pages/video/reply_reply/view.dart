@@ -360,12 +360,8 @@ class _VideoReplyReplyPanelState
       if (res != null) {
         _savedReplies[key] = null;
         ReplyInfo replyInfo = RequestUtils.replyCast(res);
-        List<ReplyInfo> list =
-            _videoReplyReplyController.loadingState.value is Success
-                ? (_videoReplyReplyController.loadingState.value as Success)
-                    .response
-                : <ReplyInfo>[];
-        list.insert(index + 1, replyInfo);
+        _videoReplyReplyController.loadingState.value.dataOrNull
+            ?.insert(index + 1, replyInfo);
         _videoReplyReplyController.count.value += 1;
         _videoReplyReplyController.loadingState.refresh();
         if (_videoReplyReplyController.enableCommAntifraud && mounted) {
@@ -462,9 +458,7 @@ class _VideoReplyReplyPanelState
         _onReply(replyItem, index);
       },
       onDelete: (subIndex) {
-        List<ReplyInfo> list =
-            (_videoReplyReplyController.loadingState.value as Success).response;
-        list.removeAt(index);
+        _videoReplyReplyController.loadingState.value.data!.removeAt(index);
         _videoReplyReplyController.count.value -= 1;
         _videoReplyReplyController.loadingState.refresh();
       },

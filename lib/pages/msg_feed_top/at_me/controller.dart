@@ -45,8 +45,7 @@ class AtMeController extends CommonListController<MsgFeedAtMe, AtMeItems> {
     try {
       var res = await MsgHttp.delMsgfeed(2, id);
       if (res['status']) {
-        List<AtMeItems> list = (loadingState.value as Success).response;
-        list.removeAt(index);
+        loadingState.value.data!.removeAt(index);
         loadingState.refresh();
         SmartDialog.showToast('删除成功');
       } else {

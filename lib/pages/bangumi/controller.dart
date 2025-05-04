@@ -102,9 +102,7 @@ class BangumiController extends CommonListController<
         followState.value = LoadingState.success(list);
         followController?.animToTop();
       } else if (followState.value is Success) {
-        List<BangumiListItemModel> currentList =
-            (followState.value as Success).response;
-        currentList.addAll(list!);
+        final currentList = followState.value.data!..addAll(list!);
         if (currentList.length >= followCount.value) {
           followEnd = true;
         }

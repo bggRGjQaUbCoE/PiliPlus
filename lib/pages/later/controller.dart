@@ -105,9 +105,7 @@ class LaterController extends MultiSelectController<Map, HotVideoItemModel> {
                 Get.back();
                 var res = await UserHttp.toViewDel(aids: [aid]);
                 if (res['status']) {
-                  List<HotVideoItemModel> list =
-                      (loadingState.value as Success).response;
-                  list.removeAt(index);
+                  loadingState.value.data!.removeAt(index);
                   baseCtr.counts[laterViewType] =
                       baseCtr.counts[laterViewType]! - 1;
                   loadingState.refresh();

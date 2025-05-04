@@ -105,9 +105,8 @@ class MemberSearchController extends GetxController
         }
         dynamicState.value = LoadingState.success(items);
       } else if (dynamicState.value is Success) {
-        List<DynamicItemModel> currentList =
-            (dynamicState.value as Success).response;
-        currentList.addAll(items!);
+        List<DynamicItemModel> currentList = dynamicState.value.data!
+          ..addAll(items!);
         if (currentList.length >= dynamicCount.value) {
           isEndDynamic = true;
         }
@@ -147,9 +146,8 @@ class MemberSearchController extends GetxController
         }
         archiveState.value = LoadingState.success(vlist);
       } else if (archiveState.value is Success) {
-        List<VListItemModel> currentList =
-            (archiveState.value as Success).response;
-        currentList.addAll(vlist!);
+        List<VListItemModel> currentList = archiveState.value.data!
+          ..addAll(vlist!);
         if (currentList.length >= archiveCount.value) {
           isEndArchive = true;
         }

@@ -43,8 +43,7 @@ class SysMsgController
     try {
       var res = await MsgHttp.delSysMsg(id);
       if (res['status']) {
-        List<SystemNotifyList> list = (loadingState.value as Success).response;
-        list.removeAt(index);
+        loadingState.value.data!.removeAt(index);
         loadingState.refresh();
         SmartDialog.showToast('删除成功');
       } else {

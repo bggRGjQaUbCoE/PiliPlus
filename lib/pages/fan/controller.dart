@@ -38,8 +38,7 @@ class FansController
       reSrc: 11,
     );
     if (res['status']) {
-      List<FansItemModel> list = (loadingState.value as Success).response;
-      list.removeAt(index);
+      loadingState.value.data!.removeAt(index);
       loadingState.refresh();
       SmartDialog.showToast('移除成功');
     } else {

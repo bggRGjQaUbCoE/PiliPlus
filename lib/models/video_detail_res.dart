@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:PiliPlus/models/model_avatar.dart';
+
 class VideoDetailResponse {
   int? code;
   String? message;
@@ -305,21 +307,6 @@ class Staff {
     face = json["face"];
     vip = json["vip"] == null ? null : Vip.fromJson(json["vip"]);
     official = json['official'];
-  }
-}
-
-class Vip {
-  dynamic type;
-  dynamic status;
-
-  Vip({
-    this.type,
-    this.status,
-  });
-
-  Vip.fromJson(Map<String, dynamic> json) {
-    type = json["type"];
-    status = json["status"];
   }
 }
 

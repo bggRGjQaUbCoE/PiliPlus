@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'dart:math';
 
-import 'package:PiliPlus/common/widgets/avatar.dart';
+import 'package:PiliPlus/common/widgets/pendant_avatar.dart';
 import 'package:PiliPlus/common/widgets/refresh_indicator.dart'
     show kDragContainerExtentPercentage, displacement;
 import 'package:PiliPlus/http/reply.dart';
@@ -2035,7 +2035,7 @@ List<SettingsModel> get extraSettings => [
         leading: Icon(MdiIcons.stickerCircleOutline),
         setKey: SettingBoxKey.showDynDecorate,
         defaultVal: true,
-        onChanged: (value) => Avatar.showDynDecorate = value,
+        onChanged: (value) => PendantAvatar.showDynDecorate = value,
       ),
       SettingsModel(
         settingsType: SettingsType.sw1tch,

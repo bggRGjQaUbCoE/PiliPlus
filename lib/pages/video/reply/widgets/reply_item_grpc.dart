@@ -1,11 +1,11 @@
 import 'dart:math';
 
 import 'package:PiliPlus/common/constants.dart';
-import 'package:PiliPlus/common/widgets/avatar.dart';
 import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/dialog/report.dart';
 import 'package:PiliPlus/common/widgets/image/image_view.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
+import 'package:PiliPlus/common/widgets/pendant_avatar.dart';
 import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
     show ReplyInfo, ReplyControl, Content;
 import 'package:PiliPlus/http/init.dart';
@@ -110,7 +110,8 @@ class ReplyItemGrpc extends StatelessWidget {
   Widget _buildContent(BuildContext context, ThemeData theme) {
     return Column(
       children: [
-        if (Avatar.showDynDecorate && replyItem.member.hasGarbCardImage())
+        if (PendantAvatar.showDynDecorate &&
+            replyItem.member.hasGarbCardImage())
           Stack(
             clipBehavior: Clip.none,
             children: [
@@ -163,7 +164,7 @@ class ReplyItemGrpc extends StatelessWidget {
     );
   }
 
-  Widget lfAvtar() => Avatar(
+  Widget lfAvtar() => PendantAvatar(
         avatar: replyItem.member.face,
         size: 34,
         badgeSize: 14,

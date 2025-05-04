@@ -1,7 +1,4 @@
-import 'package:PiliPlus/models/space/pr_info.dart';
-import 'package:PiliPlus/models/space/space_tag_bottom.dart';
-import 'package:json_annotation/json_annotation.dart';
-
+import 'package:PiliPlus/models/model_avatar.dart' hide Avatar;
 import 'package:PiliPlus/models/space/achieve.dart';
 import 'package:PiliPlus/models/space/avatar.dart';
 import 'package:PiliPlus/models/space/entrance.dart';
@@ -11,10 +8,11 @@ import 'package:PiliPlus/models/space/likes.dart';
 import 'package:PiliPlus/models/space/nameplate.dart';
 import 'package:PiliPlus/models/space/nft_certificate.dart';
 import 'package:PiliPlus/models/space/official_verify.dart';
-import 'package:PiliPlus/models/space/pendant.dart';
+import 'package:PiliPlus/models/space/pr_info.dart';
 import 'package:PiliPlus/models/space/profession_verify.dart';
 import 'package:PiliPlus/models/space/relation.dart';
-import 'package:PiliPlus/models/space/vip.dart';
+import 'package:PiliPlus/models/space/space_tag_bottom.dart';
+import 'package:json_annotation/json_annotation.dart';
 
 part 'card.g.dart';
 

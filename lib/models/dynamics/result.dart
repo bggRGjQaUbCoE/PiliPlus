@@ -1,8 +1,8 @@
 import 'dart:convert';
 
-import 'package:PiliPlus/common/widgets/avatar.dart';
+import 'package:PiliPlus/common/widgets/pendant_avatar.dart';
 import 'package:PiliPlus/models/dynamics/article_content_model.dart';
-import 'package:PiliPlus/models/model_owner.dart';
+import 'package:PiliPlus/models/model_avatar.dart';
 
 class DynamicsDataModel {
   bool? hasMore;
@@ -218,7 +218,7 @@ class Basic {
 }
 
 // 单个动态详情 - 作者信息
-class ModuleAuthorModel extends Owner {
+class ModuleAuthorModel extends Avatar {
   bool? following;
   String? jumpUrl;
   String? label;
@@ -226,25 +226,21 @@ class ModuleAuthorModel extends Owner {
   String? pubTime;
   int? pubTs;
   String? type;
-  Map? vip;
   Map? decorate;
-  Map? pendant;
 
-  ModuleAuthorModel.fromJson(Map<String, dynamic> json) {
-    face = json['face'];
+  ModuleAuthorModel.fromJson(Map<String, dynamic> json) : super.fromJson(json) {
+    if (json['official'] != null) {
+      officialVerify ??= BaseOfficialVerify.fromJson(json['official']); // opus
+    }
     following = json['following'];
     jumpUrl = json['jump_url'];
     label = json['label'];
-    mid = json['mid'];
-    name = json['name'];
     pubAction = json['pub_action'];
     pubTime = json['pub_time'];
     pubTs = json['pub_ts'] == 0 ? null : json['pub_ts'];
     type = json['type'];
-    vip = json['vip'];
-    if (Avatar.showDynDecorate) {
+    if (PendantAvatar.showDynDecorate) {
       decorate = json['decorate'];
-      pendant = json['pendant'];
     }
   }
 }

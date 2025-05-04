@@ -1,4 +1,4 @@
-import 'package:PiliPlus/common/widgets/avatar.dart';
+import 'package:PiliPlus/common/widgets/pendant_avatar.dart';
 import 'package:PiliPlus/models/search/result.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart';
@@ -28,8 +28,8 @@ class SearchUserItem extends StatelessWidget {
       child: Row(
         children: [
           const SizedBox(width: 15),
-          Avatar(
-            avatar: item.upic ?? '',
+          PendantAvatar(
+            avatar: item.upic,
             size: 42,
             isVip: false,
             officialType: item.officialVerify?['type'],

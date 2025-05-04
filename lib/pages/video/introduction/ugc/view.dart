@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:PiliPlus/common/constants.dart';
-import 'package:PiliPlus/common/widgets/avatar.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
+import 'package:PiliPlus/common/widgets/pendant_avatar.dart';
 import 'package:PiliPlus/common/widgets/self_sized_horizontal_list.dart';
 import 'package:PiliPlus/common/widgets/stat/stat.dart';
 import 'package:PiliPlus/models/video_detail_res.dart';
@@ -296,10 +296,9 @@ class _VideoInfoState extends State<VideoInfo> {
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Obx(() => Avatar(
+                                    Obx(() => PendantAvatar(
                                           avatar: videoIntroController
-                                                  .userStat['card']?['face'] ??
-                                              '',
+                                              .userStat['card']?['face'],
                                           size: 35,
                                           badgeSize: 14,
                                           isVip: (videoIntroController

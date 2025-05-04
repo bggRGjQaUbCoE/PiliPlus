@@ -1,29 +1,15 @@
-import 'package:json_annotation/json_annotation.dart';
+import 'package:PiliPlus/models/model_avatar.dart';
 
-part 'official_verify.g.dart';
+class OfficialVerify extends BaseOfficialVerify {
+  int? role;
+  String? title;
+  String? icon;
+  String? spliceTitle;
 
-@JsonSerializable()
-class OfficialVerify {
-	int? type;
-	String? desc;
-	int? role;
-	String? title;
-	String? icon;
-	@JsonKey(name: 'splice_title') 
-	String? spliceTitle;
-
-	OfficialVerify({
-		this.type, 
-		this.desc, 
-		this.role, 
-		this.title, 
-		this.icon, 
-		this.spliceTitle, 
-	});
-
-	factory OfficialVerify.fromJson(Map<String, dynamic> json) {
-		return _$OfficialVerifyFromJson(json);
-	}
-
-	Map<String, dynamic> toJson() => _$OfficialVerifyToJson(this);
+  OfficialVerify.fromJson(Map<String, dynamic> json) : super.fromJson(json) {
+    role = json['role'];
+    title = json['title'];
+    icon = json['icon'];
+    spliceTitle = json['splice_title'];
+  }
 }

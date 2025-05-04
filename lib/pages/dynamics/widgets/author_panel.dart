@@ -1,7 +1,7 @@
 import 'dart:math';
 
-import 'package:PiliPlus/common/widgets/avatar.dart';
 import 'package:PiliPlus/common/widgets/dialog/report.dart';
+import 'package:PiliPlus/common/widgets/pendant_avatar.dart';
 import 'package:PiliPlus/http/constants.dart';
 import 'package:PiliPlus/http/user.dart';
 import 'package:PiliPlus/http/video.dart';
@@ -38,9 +38,9 @@ class AuthorPanel extends StatelessWidget {
   });
 
   Widget _buildAvatar() {
-    String? pendant = item.modules.moduleAuthor?.pendant?['image'];
-    Widget avatar = Avatar(
-      avatar: item.modules.moduleAuthor?.face ?? '',
+    String? pendant = item.modules.moduleAuthor?.pendant?.image;
+    Widget avatar = PendantAvatar(
+      avatar: item.modules.moduleAuthor?.face,
       size: pendant.isNullOrEmpty ? 40 : 34,
       isVip: null, // item.modules.moduleAuthor!.vip['status'] > 0
       officialType: null, // 已被注释
@@ -96,8 +96,8 @@ class AuthorPanel extends StatelessWidget {
                     item.modules.moduleAuthor?.name ?? '',
                     style: TextStyle(
                       color: item.modules.moduleAuthor!.vip != null &&
-                              item.modules.moduleAuthor!.vip!['status'] > 0 &&
-                              item.modules.moduleAuthor!.vip!['type'] == 2
+                              item.modules.moduleAuthor!.vip!.status > 0 &&
+                              item.modules.moduleAuthor!.vip!.type == 2
                           ? context.vipColor
                           : theme.colorScheme.onSurface,
                       fontSize: theme.textTheme.titleSmall!.fontSize,

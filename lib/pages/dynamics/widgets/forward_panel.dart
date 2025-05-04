@@ -420,8 +420,8 @@ Widget forWard(
                     item.modules.moduleAuthor!.name!,
                     style: TextStyle(
                       color: item.modules.moduleAuthor!.vip != null &&
-                              item.modules.moduleAuthor!.vip!['status'] > 0 &&
-                              item.modules.moduleAuthor!.vip!['type'] == 2
+                              item.modules.moduleAuthor!.vip!.status > 0 &&
+                              item.modules.moduleAuthor!.vip!.type == 2
                           ? context.vipColor
                           : theme.colorScheme.onSurface,
                       fontSize: theme.textTheme.titleMedium!.fontSize,

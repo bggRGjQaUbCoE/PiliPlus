@@ -6,16 +6,16 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-class Avatar extends StatelessWidget {
+class PendantAvatar extends StatelessWidget {
   final _BadgeType _badgeType;
-  final String avatar;
+  final String? avatar;
   final double size;
   final double badgeSize;
   final String? garbPendantImage;
   final dynamic roomId;
   final VoidCallback? onTap;
 
-  const Avatar({
+  const PendantAvatar({
     super.key,
     required this.avatar,
     this.size = 80,

@@ -1,3 +1,5 @@
+import 'package:PiliPlus/models/model_avatar.dart';
+
 class ReplyMember {
   ReplyMember({
     this.mid,
@@ -36,24 +38,6 @@ class ReplyMember {
     userSailing = json['user_sailing'] != null
         ? UserSailing.fromJson(json['user_sailing'])
         : UserSailing();
-  }
-}
-
-class Pendant {
-  Pendant({
-    this.pid,
-    this.name,
-    this.image,
-  });
-
-  int? pid;
-  String? name;
-  String? image;
-
-  Pendant.fromJson(Map<String, dynamic> json) {
-    pid = json['pid'];
-    name = json['name'];
-    image = json['image'];
   }
 }
 

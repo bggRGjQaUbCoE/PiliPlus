@@ -1,7 +1,7 @@
 import 'package:PiliPlus/common/constants.dart';
-import 'package:PiliPlus/common/widgets/avatar.dart';
 import 'package:PiliPlus/common/widgets/interactiveviewer_gallery/interactiveviewer_gallery.dart'
     show SourceModel;
+import 'package:PiliPlus/common/widgets/pendant_avatar.dart';
 import 'package:PiliPlus/models/space/card.dart';
 import 'package:PiliPlus/models/space/images.dart';
 import 'package:PiliPlus/utils/extension.dart';
@@ -131,8 +131,7 @@ class UserInfoCard extends StatelessWidget {
                     height: 1,
                     fontSize: 17,
                     fontWeight: FontWeight.bold,
-                    color: (card.vip?.vipStatus ?? -1) > 0 &&
-                            card.vip?.vipType == 2
+                    color: (card.vip?.status ?? -1) > 0 && card.vip?.type == 2
                         ? context.vipColor
                         : null,
                   ),
@@ -143,7 +142,7 @@ class UserInfoCard extends StatelessWidget {
                 height: 11,
                 semanticLabel: '等级${card.levelInfo?.currentLevel}',
               ),
-              if (card.vip?.vipStatus == 1)
+              if (card.vip?.status == 1)
                 Container(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
@@ -417,12 +416,12 @@ class UserInfoCard extends StatelessWidget {
 
   Hero _buildAvatar(BuildContext context) => Hero(
       tag: card.face ?? '',
-      child: Avatar(
-        avatar: card.face ?? '',
+      child: PendantAvatar(
+        avatar: card.face,
         size: 80,
         badgeSize: 22,
         officialType: card.officialVerify?.type,
-        isVip: (card.vip?.vipStatus ?? -1) > 0,
+        isVip: (card.vip?.status ?? -1) > 0,
         garbPendantImage: card.pendant!.image!,
         roomId: live is Map && live['liveStatus'] == 1 ? live['roomid'] : null,
         onTap: () => context

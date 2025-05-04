@@ -8,7 +8,7 @@ import 'package:PiliPlus/http/video.dart';
 import 'package:PiliPlus/models/dynamics/article_content_model.dart'
     show ArticleContentModel;
 import 'package:PiliPlus/models/dynamics/result.dart';
-import 'package:PiliPlus/models/model_owner.dart';
+import 'package:PiliPlus/models/model_avatar.dart';
 import 'package:PiliPlus/models/space_article/item.dart';
 import 'package:PiliPlus/pages/common/reply_controller.dart';
 import 'package:PiliPlus/pages/mine/controller.dart';
@@ -224,7 +224,7 @@ class ArticleController extends ReplyController<MainListReply> {
 }
 
 class Summary {
-  Owner? author;
+  Avatar? author;
   String? title;
   String? cover;
 

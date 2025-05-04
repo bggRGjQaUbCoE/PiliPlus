@@ -1,3 +1,5 @@
+import 'package:PiliPlus/models/model_avatar.dart';
+
 class MemberInfoModel {
   MemberInfoModel({
     this.mid,
@@ -41,27 +43,6 @@ class MemberInfoModel {
     liveRoom =
         json['live_room'] != null ? LiveRoom.fromJson(json['live_room']) : null;
     isSeniorMember = json['is_senior_member'];
-  }
-}
-
-class Vip {
-  Vip({
-    this.type,
-    this.status,
-    this.dueDate,
-    this.label,
-  });
-
-  int? type;
-  int? status;
-  int? dueDate;
-  Map? label;
-
-  Vip.fromJson(Map<String, dynamic> json) {
-    type = json['type'];
-    status = json['status'];
-    dueDate = json['due_date'];
-    label = json['label'];
   }
 }
 

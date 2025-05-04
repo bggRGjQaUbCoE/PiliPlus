@@ -6,15 +6,16 @@ class PlDanmakuController {
   PlDanmakuController(
     this.cid,
     this.plPlayerController,
-  );
+  ) : mergeDanmaku = plPlayerController.mergeDanmaku;
   final int cid;
   final PlPlayerController plPlayerController;
+  final bool mergeDanmaku;
 
   Map<int, List<DanmakuElem>> dmSegMap = {};
   // 已请求的段落标记
-  Map requestedSeg = {};
+  Set<int> requestedSeg = {};
 
-  static int segmentLength = 60 * 6 * 1000;
+  static const int segmentLength = 60 * 6 * 1000;
 
   void dispose() {
     dmSegMap.clear();
@@ -26,36 +27,48 @@ class PlDanmakuController {
   }
 
   Future<void> queryDanmaku(int segmentIndex) async {
-    if (requestedSeg[segmentIndex] == true) {
+    if (requestedSeg.contains(segmentIndex)) {
       return;
     }
-    requestedSeg[segmentIndex] = true;
-    final Map result = await DanmakuHttp.queryDanmaku(
+    requestedSeg.add(segmentIndex);
+    final result = await DanmakuHttp.queryDanmaku(
       cid: cid,
       segmentIndex: segmentIndex + 1,
-      mergeDanmaku: plPlayerController.mergeDanmaku,
     );
-    if (result['status']) {
-      if (result['data'].elems.isNotEmpty) {
-        for (DanmakuElem element in result['data'].elems) {
-          if (element.mode == 7 && !plPlayerController.showSpecialDanmaku) {
-            continue;
+
+    if (result.isSuccess) {
+      final data = result.data;
+      if (data.elems.isNotEmpty) {
+        final Map<String, int> counts = {};
+        if (mergeDanmaku) {
+          data.elems.retainWhere((item) {
+            int? count = counts[item.content];
+            counts[item.content] = count != null ? count + 1 : 1;
+            return count == null;
+          });
+        }
+
+        for (final element in data.elems) {
+          if (mergeDanmaku) {
+            final count = counts[element.content];
+            if (count != 1) {
+              element.attr = count!;
+            } else {
+              element.clearAttr();
+            }
           }
           int pos = element.progress ~/ 100; //每0.1秒存储一次
-          if (dmSegMap[pos] == null) {
-            dmSegMap[pos] = [];
-          }
-          dmSegMap[pos]!.add(element);
+          (dmSegMap[pos] ??= []).add(element);
         }
       }
     } else {
-      requestedSeg[segmentIndex] = false;
+      requestedSeg.remove(segmentIndex);
     }
   }
 
   List<DanmakuElem>? getCurrentDanmaku(int progress) {
     int segmentIndex = calcSegment(progress);
-    if (requestedSeg[segmentIndex] != true) {
+    if (!requestedSeg.contains(segmentIndex)) {
       queryDanmaku(segmentIndex);
       return null;
     }

@@ -249,7 +249,7 @@ class PlPlayerController {
   bool showDanmaku = true;
   late final mergeDanmaku = GStorage.mergeDanmaku;
   // 弹幕相关配置
-  late List blockTypes;
+  late Set<int> blockTypes;
   late double showArea;
   late double opacity;
   late double fontSize;
@@ -434,7 +434,11 @@ class PlPlayerController {
         setting.get(SettingBoxKey.enableShowDanmaku, defaultValue: true);
     danmakuWeight = setting.get(SettingBoxKey.danmakuWeight, defaultValue: 0);
     filters = GStorage.danmakuFilterRule;
-    blockTypes = setting.get(SettingBoxKey.danmakuBlockType, defaultValue: []);
+    blockTypes =
+        (setting.get(SettingBoxKey.danmakuBlockType, defaultValue: <int>[])
+                as Iterable)
+            .cast<int>()
+            .toSet();
     showArea = setting.get(SettingBoxKey.danmakuShowArea, defaultValue: 0.5);
     // 不透明度
     opacity = setting.get(SettingBoxKey.danmakuOpacity, defaultValue: 1.0);
@@ -1484,7 +1488,7 @@ class PlPlayerController {
   void putDanmakuSettings() {
     setting
       ..put(SettingBoxKey.danmakuWeight, danmakuWeight)
-      ..put(SettingBoxKey.danmakuBlockType, blockTypes)
+      ..put(SettingBoxKey.danmakuBlockType, blockTypes.toList())
       ..put(SettingBoxKey.danmakuShowArea, showArea)
       ..put(SettingBoxKey.danmakuOpacity, opacity)
       ..put(SettingBoxKey.danmakuFontScale, fontSize)

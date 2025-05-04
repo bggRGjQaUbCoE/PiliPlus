@@ -2,15 +2,15 @@ import 'package:PiliPlus/grpc/bilibili/community/service/dm/v1.pb.dart';
 import 'package:PiliPlus/grpc/grpc_repo.dart';
 import 'package:PiliPlus/http/api.dart';
 import 'package:PiliPlus/http/init.dart';
+import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:dio/dio.dart';
 
 class DanmakuHttp {
   // 获取视频弹幕
-  static Future queryDanmaku({
+  static Future<LoadingState<DmSegMobileReply>> queryDanmaku({
     required int cid,
     required int segmentIndex,
-    required bool mergeDanmaku,
     int queryCount = 1,
   }) async {
     // 构建参数对象
@@ -18,34 +18,18 @@ class DanmakuHttp {
         await GrpcRepo.dmSegMobile(cid: cid, segmentIndex: segmentIndex);
     if (!response['status']) {
       if (queryCount >= 3) {
-        return {'status': false};
+        return const Error('');
       } else {
         await Future.delayed(const Duration(seconds: 1));
         return await queryDanmaku(
           cid: cid,
           segmentIndex: segmentIndex,
-          mergeDanmaku: mergeDanmaku,
           queryCount: ++queryCount,
         );
       }
     }
     DmSegMobileReply data = response['data'];
-    if (mergeDanmaku && data.elems.isNotEmpty) {
-      final Map counts = <String, int>{};
-      data.elems.retainWhere((item) {
-        int? count = counts[item.content];
-        counts[item.content] = count != null ? count + 1 : 1;
-        return count == null;
-      });
-      for (DanmakuElem item in data.elems) {
-        item.clearAttr();
-        final count = counts[item.content];
-        if (count != 1) {
-          item.attr = count;
-        }
-      }
-    }
-    return {'status': true, 'data': data};
+    return LoadingState.success(data);
   }
 
   static Future shootDanmaku({

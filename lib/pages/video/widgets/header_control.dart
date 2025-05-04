@@ -1264,13 +1264,13 @@ class HeaderControlState extends State<HeaderControl> {
   /// 弹幕功能
   void showSetDanmaku() {
     // 屏蔽类型
-    const List<Map<String, dynamic>> blockTypesList = [
-      {'value': 5, 'label': '顶部'},
-      {'value': 2, 'label': '滚动'},
-      {'value': 4, 'label': '底部'},
-      {'value': 6, 'label': '彩色'},
+    const List<({int value, String label})> blockTypesList = [
+      (value: 5, label: '顶部'),
+      (value: 2, label: '滚动'),
+      (value: 4, label: '底部'),
+      (value: 6, label: '彩色'),
     ];
-    final List blockTypes = widget.controller.blockTypes;
+    final blockTypes = widget.controller.blockTypes;
     // 智能云屏蔽
     int danmakuWeight = widget.controller.danmakuWeight;
     // 显示区域
@@ -1501,16 +1501,14 @@ class HeaderControlState extends State<HeaderControl> {
                     padding: const EdgeInsets.only(top: 12),
                     child: Row(
                       children: [
-                        for (final Map<String, dynamic> i
+                        for (final (value: value, label: label)
                             in blockTypesList) ...[
                           ActionRowLineItem(
                             onTap: () {
-                              final bool isChoose =
-                                  blockTypes.contains(i['value']);
-                              if (isChoose) {
-                                blockTypes.remove(i['value']);
+                              if (blockTypes.contains(value)) {
+                                blockTypes.remove(value);
                               } else {
-                                blockTypes.add(i['value']);
+                                blockTypes.add(value);
                               }
                               widget.controller
                                 ..blockTypes = blockTypes
@@ -1527,8 +1525,8 @@ class HeaderControlState extends State<HeaderControl> {
                                 );
                               } catch (_) {}
                             },
-                            text: i['label'],
-                            selectStatus: blockTypes.contains(i['value']),
+                            text: label,
+                            selectStatus: blockTypes.contains(value),
                           ),
                           const SizedBox(width: 10),
                         ]

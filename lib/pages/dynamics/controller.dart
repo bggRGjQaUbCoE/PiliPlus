@@ -10,6 +10,7 @@ import 'package:PiliPlus/pages/dynamics_tab/controller.dart';
 import 'package:PiliPlus/pages/dynamics_tab/view.dart';
 import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/storage.dart';
+import 'package:easy_debounce/easy_throttle.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -191,12 +192,16 @@ class DynamicsController extends GetxController
   }
 
   @override
-  FutureOr<void> toTopOrRefresh() {
+  void toTopOrRefresh() {
     final ctr = controller;
-    if (scrollController.hasClients && ctr.scrollController.hasClients) {
-      if (scrollController.position.pixels == 0 &&
-          ctr.scrollController.position.pixels == 0) {
-        return onRefresh();
+    if (ctr.scrollController.hasClients) {
+      if (ctr.scrollController.position.pixels == 0) {
+        if (scrollController.hasClients &&
+            scrollController.position.pixels != 0) {
+          scrollController.animToTop();
+        }
+        EasyThrottle.throttle(
+            'topOrRefresh', const Duration(milliseconds: 500), onRefresh);
       } else {
         animateToTop();
       }

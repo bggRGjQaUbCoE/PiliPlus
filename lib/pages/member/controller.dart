@@ -16,7 +16,7 @@ import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
-class MemberController extends CommonDataController<SpaceData, dynamic>
+class MemberController extends CommonDataController<SpaceData, SpaceData?>
     with GetTickerProviderStateMixin {
   MemberController({required this.mid});
   int mid;
@@ -141,7 +141,7 @@ class MemberController extends CommonDataController<SpaceData, dynamic>
     );
     showUname.value = true;
     username = errMsg;
-    loadingState.value = LoadingState.success(null);
+    loadingState.value = LoadingState<SpaceData?>.success(null);
     return true;
   }
 

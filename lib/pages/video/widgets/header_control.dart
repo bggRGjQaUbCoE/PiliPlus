@@ -6,8 +6,8 @@ import 'package:PiliPlus/common/widgets/button/icon_button.dart';
 import 'package:PiliPlus/common/widgets/self_sized_horizontal_list.dart';
 import 'package:PiliPlus/models/common/search_type.dart';
 import 'package:PiliPlus/models/common/super_resolution_type.dart';
-import 'package:PiliPlus/models/common/video/CDN.dart';
 import 'package:PiliPlus/models/common/video/audio_quality.dart';
+import 'package:PiliPlus/models/common/video/cdn_type.dart';
 import 'package:PiliPlus/models/common/video/video_decode_type.dart';
 import 'package:PiliPlus/models/common/video/video_quality.dart';
 import 'package:PiliPlus/models/video/play/url.dart';
@@ -253,7 +253,7 @@ class HeaderControlState extends State<HeaderControl> {
                   title: const Text('CDN 设置', style: titleStyle),
                   leading: Icon(MdiIcons.cloudPlusOutline, size: 20),
                   subtitle: Text(
-                    '当前：${CDNServiceCode.fromCode(defaultCDNService)!.description}，无法播放请切换',
+                    '当前：${CDNService.fromCode(defaultCDNService).description}，无法播放请切换',
                     style: subTitleStyle,
                   ),
                   onTap: () async {
@@ -269,7 +269,7 @@ class HeaderControlState extends State<HeaderControl> {
                       defaultCDNService = result;
                       setting.put(SettingBoxKey.CDNService, result);
                       SmartDialog.showToast(
-                          '已设置为 ${CDNServiceCode.fromCode(result)!.description}，正在重载视频');
+                          '已设置为 ${CDNService.fromCode(result).description}，正在重载视频');
                       setState(() {});
                       videoDetailCtr.queryVideoUrl(
                         videoDetailCtr.playedTime,

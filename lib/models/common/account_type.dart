@@ -1,10 +1,9 @@
 enum AccountType {
-  main,
-  heartbeat,
-  recommend,
-  video,
-}
+  main('主账号'),
+  heartbeat('记录观看'),
+  recommend('推荐'),
+  video('视频取流');
 
-extension AccountTypeExt on AccountType {
-  String get title => const ['主账号', '记录观看', '推荐', '视频取流'][index];
+  final String title;
+  const AccountType(this.title);
 }

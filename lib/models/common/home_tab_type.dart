@@ -12,10 +12,16 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
-enum HomeTabType { live, rcmd, hot, rank, bangumi, cinema }
+enum HomeTabType {
+  live('直播'),
+  rcmd('推荐'),
+  hot('热门'),
+  rank('分区'),
+  bangumi('番剧'),
+  cinema('影视');
 
-extension HomeTabTypeExt on HomeTabType {
-  String get description => const ['直播', '推荐', '热门', '分区', '番剧', '影视'][index];
+  final String description;
+  const HomeTabType(this.description);
 }
 
 List get homeTabsConfig => [

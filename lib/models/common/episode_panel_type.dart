@@ -1,5 +1,8 @@
-enum EpisodeType { part, season, bangumi }
+enum EpisodeType {
+  part('分P'),
+  season('合集'),
+  bangumi('番剧');
 
-extension EpisodeTypeExt on EpisodeType {
-  String get title => const ['分P', '合集', '番剧'][index];
+  final String title;
+  const EpisodeType(this.title);
 }

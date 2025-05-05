@@ -1,6 +1,9 @@
-enum FollowOrderType { def, attention }
+enum FollowOrderType {
+  def('', '最近关注'),
+  attention('attention', '最常访问');
 
-extension FollowOrderTypeExt on FollowOrderType {
-  String get type => const ['', 'attention'][index];
-  String get title => const ['最近关注', '最常访问'][index];
+  final String type;
+  final String title;
+
+  const FollowOrderType(this.type, this.title);
 }

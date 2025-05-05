@@ -1,23 +1,20 @@
 enum HistoryBusinessType {
   // 普通视频
-  archive,
+  archive('archive'),
   // 剧集（番剧 / 影视）
-  pgc,
+  pgc('pgc'),
   // 直播
-  live,
+  live('live'),
   // 文章
-  articleList,
+  articleList('article-list'),
   // 文章
-  article,
-  hiddenDurationType,
-  showBadge
-}
+  article('article');
 
-extension HistoryBusinessTypeExt on HistoryBusinessType {
-  String get type =>
-      const ['archive', 'pgc', 'live', 'article-list', 'article'][index];
   // 隐藏时长
-  List get hiddenDurationType => const ['live', 'article-list', 'article'];
+  static const hiddenDurationType = {'live', 'article-list', 'article'};
   // 右上
-  List get showBadge => const ['pgc', 'article-list', 'article'];
+  static const showBadge = {'pgc', 'article-list', 'article'};
+
+  final String type;
+  const HistoryBusinessType(this.type);
 }

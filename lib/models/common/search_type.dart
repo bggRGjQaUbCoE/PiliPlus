@@ -2,52 +2,41 @@
 enum SearchType {
   // all,
   // 视频：video
-  video,
+  video('视频'),
   // 番剧：media_bangumi,
-  media_bangumi,
+  media_bangumi('番剧'),
   // 影视：media_ft
-  media_ft,
+  media_ft('影视'),
   // 直播间及主播：live
   // live,
   // 直播间：live_room
-  live_room,
+  live_room('直播间'),
   // 主播：live_user
   // live_user,
   // 话题：topic
   // topic,
   // 用户：bili_user
-  bili_user,
+  bili_user('用户'),
   // 专栏：article
-  article,
+  article('专栏');
   // 相簿：photo
   // photo
-}
 
-extension SearchTypeExtension on SearchType {
-  String get label => const [
-        // '综合',
-        '视频',
-        '番剧',
-        '影视',
-        '直播间',
-        '用户',
-        '专栏',
-      ][index];
+  final String label;
+  const SearchType(this.label);
 }
 
 // 搜索类型为视频、专栏及相簿时
 enum ArchiveFilterType {
-  totalrank,
-  click,
-  pubdate,
-  dm,
-  stow,
-  scores,
+  totalrank('默认排序'),
+  click('播放多'),
+  pubdate('新发布'),
+  dm('弹幕多'),
+  stow('收藏多'),
+  scores('评论多');
   // 专栏
-  // attention,
-}
+  // attention('最多喜欢'),
 
-extension ArchiveFilterTypeExtension on ArchiveFilterType {
-  String get description =>
-      const ['默认排序', '播放多', '新发布', '弹幕多', '收藏多', '评论多', '最多喜欢'][index];
+  final String description;
+  const ArchiveFilterType(this.description);
 }

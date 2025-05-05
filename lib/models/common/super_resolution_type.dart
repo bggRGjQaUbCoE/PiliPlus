@@ -1,5 +1,8 @@
-enum SuperResolutionType { disable, efficiency, quality }
+enum SuperResolutionType {
+  disable('禁用'),
+  efficiency('效率'),
+  quality('画质');
 
-extension SuperResolutionTypeExt on SuperResolutionType {
-  String get title => const ['禁用', '效率', '画质'][index];
+  final String title;
+  const SuperResolutionType(this.title);
 }

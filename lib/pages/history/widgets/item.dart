@@ -145,8 +145,7 @@ class HistoryItem extends StatelessWidget {
                             width: maxWidth,
                             height: maxHeight,
                           ),
-                          if (!HistoryBusinessType
-                              .hiddenDurationType.hiddenDurationType
+                          if (!HistoryBusinessType.hiddenDurationType
                               .contains(videoItem.history.business))
                             PBadge(
                               text: videoItem.progress == -1
@@ -157,7 +156,7 @@ class HistoryItem extends StatelessWidget {
                               type: 'gray',
                             ),
                           // 右上角
-                          if (HistoryBusinessType.showBadge.showBadge
+                          if (HistoryBusinessType.showBadge
                                   .contains(videoItem.history.business) ||
                               videoItem.history.business ==
                                   HistoryBusinessType.live.type)

@@ -1,4 +1,4 @@
-import 'package:PiliPlus/models/common/video/CDN.dart';
+import 'package:PiliPlus/models/common/video/cdn_type.dart';
 import 'package:PiliPlus/models/live/live_room/room_info.dart';
 import 'package:PiliPlus/models/video/play/url.dart';
 import 'package:PiliPlus/utils/extension.dart';
@@ -6,11 +6,10 @@ import 'package:PiliPlus/utils/storage.dart';
 import 'package:flutter/material.dart';
 
 class VideoUtils {
-  static String getCdnUrl(dynamic item, [defaultCDNService]) {
+  static String getCdnUrl(dynamic item, [String? defaultCDNService]) {
     String? backupUrl;
     String? videoUrl;
-    defaultCDNService ??= GStorage.setting
-        .get(SettingBoxKey.CDNService, defaultValue: CDNService.backupUrl.code);
+    defaultCDNService ??= GStorage.defaultCDNService;
     if (item is AudioItem) {
       if (GStorage.setting
           .get(SettingBoxKey.disableAudioCDN, defaultValue: true)) {
@@ -41,7 +40,7 @@ class VideoUtils {
     }
     debugPrint("videoUrl:$videoUrl");
 
-    String defaultCDNHost = CDNServiceCode.fromCode(defaultCDNService)!.host;
+    String defaultCDNHost = CDNService.fromCode(defaultCDNService).host;
     debugPrint("defaultCDNHost:$defaultCDNHost");
     if (videoUrl!.contains("szbdyd.com")) {
       final uri = Uri.parse(videoUrl);

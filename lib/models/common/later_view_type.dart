@@ -1,12 +1,15 @@
 import 'package:PiliPlus/pages/later/child_view.dart';
 import 'package:flutter/material.dart';
 
-enum LaterViewType { all, toView, unfinished, viewed }
+enum LaterViewType {
+  all('全部'),
+  toView('未看'),
+  unfinished('未看完'),
+  viewed('已看完');
 
-extension LaterViewTypeExt on LaterViewType {
   int get type => index;
-
-  String get title => const ['全部', '未看', '未看完', '已看完'][index];
-
   Widget get page => LaterViewChildPage(laterViewType: this);
+
+  final String title;
+  const LaterViewType(this.title);
 }

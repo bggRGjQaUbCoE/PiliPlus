@@ -1,3 +1,4 @@
+// TODO named record or enum
 const List rankTabsConfig = [
   {
     'rid': 0,

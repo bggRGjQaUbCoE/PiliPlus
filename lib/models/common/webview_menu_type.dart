@@ -1,19 +1,11 @@
 enum WebviewMenuItem {
-  refresh,
-  copy,
-  openInBrowser,
-  clearCache,
-  resetCookie,
-  goBack,
-}
+  refresh('刷新'),
+  copy('复制链接'),
+  openInBrowser('浏览器中打开'),
+  clearCache('清除缓存'),
+  resetCookie('重新设置Cookie'),
+  goBack('返回');
 
-extension WebviewMenuItemExt on WebviewMenuItem {
-  String get title => const [
-        '刷新',
-        '复制链接',
-        '浏览器中打开',
-        '清除缓存',
-        '重新设置Cookie',
-        '返回',
-      ][index];
+  final String title;
+  const WebviewMenuItem(this.title);
 }

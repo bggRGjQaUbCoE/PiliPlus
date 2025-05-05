@@ -19,8 +19,8 @@ import 'package:PiliPlus/models/common/reply/reply_sort_type.dart';
 import 'package:PiliPlus/models/common/settings_type.dart';
 import 'package:PiliPlus/models/common/super_resolution_type.dart';
 import 'package:PiliPlus/models/common/theme/theme_type.dart';
-import 'package:PiliPlus/models/common/video/CDN.dart';
 import 'package:PiliPlus/models/common/video/audio_quality.dart';
+import 'package:PiliPlus/models/common/video/cdn_type.dart';
 import 'package:PiliPlus/models/common/video/live_quality.dart';
 import 'package:PiliPlus/models/common/video/subtitle_pref_type.dart';
 import 'package:PiliPlus/models/common/video/video_decode_type.dart';
@@ -1029,7 +1029,7 @@ List<SettingsModel> get videoSettings => [
         title: 'CDN 设置',
         leading: Icon(MdiIcons.cloudPlusOutline),
         getSubtitle: () =>
-            '当前使用：${CDNServiceCode.fromCode(GStorage.defaultCDNService)!.description}，部分 CDN 可能失效，如无法播放请尝试切换',
+            '当前使用：${CDNService.fromCode(GStorage.defaultCDNService).description}，部分 CDN 可能失效，如无法播放请尝试切换',
         onTap: (setState) async {
           String? result = await showDialog(
             context: Get.context!,

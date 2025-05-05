@@ -12,11 +12,7 @@ import 'package:PiliPlus/models/space/pr_info.dart';
 import 'package:PiliPlus/models/space/profession_verify.dart';
 import 'package:PiliPlus/models/space/relation.dart';
 import 'package:PiliPlus/models/space/space_tag_bottom.dart';
-import 'package:json_annotation/json_annotation.dart';
 
-part 'card.g.dart';
-
-@JsonSerializable()
 class SpaceCard {
   Avatar? avatar;
   String? mid;
@@ -24,7 +20,6 @@ class SpaceCard {
   bool? approve;
   String? rank;
   String? face;
-  @JsonKey(name: 'DisplayRank')
   String? displayRank;
   int? regtime;
   int? spacesta;
@@ -33,112 +28,148 @@ class SpaceCard {
   String? description;
   int? article;
   dynamic attentions;
-  int fans;
+  late int fans;
   int? friend;
-  int attention;
+  late int attention;
   String? sign;
-  @JsonKey(name: 'level_info')
   LevelInfo? levelInfo;
   Pendant? pendant;
   Nameplate? nameplate;
-  @JsonKey(name: 'official_verify')
   OfficialVerify? officialVerify;
-  @JsonKey(name: 'profession_verify')
   ProfessionVerify? professionVerify;
   Vip? vip;
   int? silence;
-  @JsonKey(name: 'end_time')
   int? endTime;
-  @JsonKey(name: 'silence_url')
   String? silenceUrl;
   Likes? likes;
   Achieve? achieve;
-  @JsonKey(name: 'pendant_url')
   String? pendantUrl;
-  @JsonKey(name: 'pendant_title')
   String? pendantTitle;
-  @JsonKey(name: 'pr_info')
   PrInfo? prInfo;
   Relation? relation;
-  @JsonKey(name: 'is_deleted')
   int? isDeleted;
   Honours? honours;
   // Profession? profession;
   // School? school;
-  @JsonKey(name: 'space_tag')
   List<Item>? spaceTag;
-  @JsonKey(name: 'face_nft_new')
   int? faceNftNew;
-  @JsonKey(name: 'has_face_nft')
   bool? hasFaceNft;
-  @JsonKey(name: 'nft_certificate')
   NftCertificate? nftCertificate;
   Entrance? entrance;
-  @JsonKey(name: 'nft_id')
   String? nftId;
-  @JsonKey(name: 'nft_face_icon')
   dynamic nftFaceIcon;
-  @JsonKey(name: 'space_tag_bottom')
   List<Item>? spaceTagBottom;
-  @JsonKey(name: 'digital_id')
   String? digitalId;
-  @JsonKey(name: 'digital_type')
   int? digitalType;
-  @JsonKey(name: 'has_digital_asset')
   bool? hasDigitalAsset;
 
-  SpaceCard({
-    this.avatar,
-    this.mid,
-    this.name,
-    this.approve,
-    this.rank,
-    this.face,
-    this.displayRank,
-    this.regtime,
-    this.spacesta,
-    this.birthday,
-    this.place,
-    this.description,
-    this.article,
-    this.attentions,
-    required this.fans,
-    this.friend,
-    required this.attention,
-    this.sign,
-    this.levelInfo,
-    this.pendant,
-    this.nameplate,
-    this.officialVerify,
-    this.professionVerify,
-    this.vip,
-    this.silence,
-    this.endTime,
-    this.silenceUrl,
-    this.likes,
-    this.achieve,
-    this.pendantUrl,
-    this.pendantTitle,
-    this.prInfo,
-    this.relation,
-    this.isDeleted,
-    this.honours,
-    // this.profession,
-    // this.school,
-    this.spaceTag,
-    this.faceNftNew,
-    this.hasFaceNft,
-    this.nftCertificate,
-    this.entrance,
-    this.nftId,
-    this.nftFaceIcon,
-    this.spaceTagBottom,
-    this.digitalId,
-    this.digitalType,
-    this.hasDigitalAsset,
-  });
+  SpaceCard.fromJson(Map<String, dynamic> json) {
+    avatar = json['avatar'] == null
+        ? null
+        : Avatar.fromJson(json['avatar'] as Map<String, dynamic>);
+    mid = json['mid'] as String?;
+    name = json['name'] as String?;
+    approve = json['approve'] as bool?;
+    rank = json['rank'] as String?;
+    face = json['face'] as String?;
+    displayRank = json['DisplayRank'] as String?;
+    regtime = (json['regtime'] as num?)?.toInt();
+    spacesta = (json['spacesta'] as num?)?.toInt();
+    birthday = json['birthday'] as String?;
+    place = json['place'] as String?;
+    description = json['description'] as String?;
+    article = (json['article'] as num?)?.toInt();
+    attentions = json['attentions'];
+    fans = (json['fans'] as num?)?.toInt() ?? 0;
+    friend = (json['friend'] as num?)?.toInt();
+    attention = (json['attention'] as num?)?.toInt() ?? 0;
+    sign = json['sign'] as String?;
+    levelInfo = json['level_info'] == null
+        ? null
+        : LevelInfo.fromJson(json['level_info'] as Map<String, dynamic>);
+    pendant = json['pendant'] == null
+        ? null
+        : Pendant.fromJson(json['pendant'] as Map<String, dynamic>);
+    nameplate = json['nameplate'] == null
+        ? null
+        : Nameplate.fromJson(json['nameplate'] as Map<String, dynamic>);
+    officialVerify = json['official_verify'] == null
+        ? null
+        : OfficialVerify.fromJson(
+            json['official_verify'] as Map<String, dynamic>);
+    professionVerify = json['profession_verify'] == null
+        ? null
+        : ProfessionVerify.fromJson(
+            json['profession_verify'] as Map<String, dynamic>);
+    vip = json['vip'] == null
+        ? null
+        : CardVip.fromJson(json['vip'] as Map<String, dynamic>);
+    silence = (json['silence'] as num?)?.toInt();
+    endTime = (json['end_time'] as num?)?.toInt();
+    silenceUrl = json['silence_url'] as String?;
+    likes = json['likes'] == null
+        ? null
+        : Likes.fromJson(json['likes'] as Map<String, dynamic>);
+    achieve = json['achieve'] == null
+        ? null
+        : Achieve.fromJson(json['achieve'] as Map<String, dynamic>);
+    pendantUrl = json['pendant_url'] as String?;
+    pendantTitle = json['pendant_title'] as String?;
+    prInfo = json['pr_info'] == null
+        ? null
+        : PrInfo.fromJson(json['pr_info'] as Map<String, dynamic>);
+    relation = json['relation'] == null
+        ? null
+        : Relation.fromJson(json['relation'] as Map<String, dynamic>);
+    isDeleted = (json['is_deleted'] as num?)?.toInt();
+    honours = json['honours'] == null
+        ? null
+        : Honours.fromJson(json['honours'] as Map<String, dynamic>);
+    // profession = json['profession'] == null
+    //     ? null
+    //     : Profession.fromJson(json['profession'] as Map<String, dynamic>);
+    // school = json['school'] == null
+    //     ? null
+    //     : School.fromJson(json['school'] as Map<String, dynamic>);
+    spaceTag = (json['space_tag'] as List<dynamic>?)
+        ?.where((item) => (item['title'] as String?)?.startsWith('IP') == true)
+        .toList()
+        .map((item) => Item.fromJson(item))
+        .toList();
+    faceNftNew = (json['face_nft_new'] as num?)?.toInt();
+    hasFaceNft = json['has_face_nft'] as bool?;
+    nftCertificate = json['nft_certificate'] == null
+        ? null
+        : NftCertificate.fromJson(
+            json['nft_certificate'] as Map<String, dynamic>);
+    entrance = json['entrance'] == null
+        ? null
+        : Entrance.fromJson(json['entrance'] as Map<String, dynamic>);
+    nftId = json['nft_id'] as String?;
+    nftFaceIcon = json['nft_face_icon'];
+    spaceTagBottom = (json['space_tag_bottom'] as List<dynamic>?)
+        ?.map((item) => Item.fromJson(item))
+        .toList();
+    digitalId = json['digital_id'] as String?;
+    digitalType = (json['digital_type'] as num?)?.toInt();
+    hasDigitalAsset = json['has_digital_asset'] as bool?;
+  }
+}
 
-  factory SpaceCard.fromJson(Map<String, dynamic> json) => _$CardFromJson(json);
+class CardVip implements Vip {
+  @override
+  int? dueDate;
+  @override
+  Label? label;
+  @override
+  late int status;
+  @override
+  int? type;
 
-  Map<String, dynamic> toJson() => _$CardToJson(this);
+  CardVip.fromJson(Map<String, dynamic> json) {
+    type = json['vipType'];
+    status = json['vipStatus'] ?? 0;
+    dueDate = json['vipDueDate'];
+    if (json['label'] != null) label = Label.fromJson(json['label']);
+  }
 }

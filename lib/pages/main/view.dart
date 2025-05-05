@@ -156,9 +156,9 @@ class _MainAppState extends State<MainApp>
         });
       } else {
         if (currentPage is HomePage) {
-          _homeController.animateToTop();
+          _homeController.toTopOrRefresh();
         } else if (currentPage is DynamicsPage) {
-          _dynamicController.animateToTop();
+          _dynamicController.toTopOrRefresh();
         }
       }
       _lastSelectTime = now;

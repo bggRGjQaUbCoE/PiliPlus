@@ -182,7 +182,7 @@ class VideoHttp {
     dynamic seasonId,
     bool? forcePgcApi,
   }) async {
-    Map<String, dynamic> data = {
+    final params = await WbiSign.makSign({
       if (avid != null) 'avid': avid,
       if (bvid != null) 'bvid': bvid,
       if (epid != null) 'ep_id': epid,
@@ -197,15 +197,11 @@ class VideoHttp {
       'gaia_source': 'pre-load',
       'isGaiaAvoided': true,
       'web_location': 1315873,
-    };
-
-    // 免登录查看1080p
-    if (!Accounts.get(AccountType.video).isLogin &&
-        GStorage.setting.get(SettingBoxKey.p1080, defaultValue: true)) {
-      data['try_look'] = 1;
-    }
-
-    Map params = await WbiSign.makSign(data);
+      // 免登录查看1080p
+      if (!Accounts.get(AccountType.video).isLogin &&
+          GStorage.setting.get(SettingBoxKey.p1080, defaultValue: true))
+        'try_look': 1,
+    });
 
     late final usePgcApi =
         forcePgcApi == true || Accounts.get(AccountType.video).isLogin;
@@ -880,7 +876,7 @@ class VideoHttp {
     int? cid,
     int? upMid,
   }) async {
-    Map params = await WbiSign.makSign({
+    final params = await WbiSign.makSign({
       'bvid': bvid,
       'cid': cid,
       'up_mid': upMid,

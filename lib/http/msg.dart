@@ -457,7 +457,7 @@ class MsgHttp {
     beginSeqno,
     endSeqno,
   }) async {
-    Map params = await WbiSign.makSign({
+    final params = await WbiSign.makSign({
       'talker_id': talkerId,
       'session_type': 1,
       'size': 20,
@@ -486,7 +486,7 @@ class MsgHttp {
     int? ackSeqno,
   }) async {
     String csrf = Accounts.main.csrf;
-    Map params = await WbiSign.makSign({
+    final params = await WbiSign.makSign({
       'talker_id': talkerId,
       'session_type': 1,
       'ack_seqno': ackSeqno,

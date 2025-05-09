@@ -266,7 +266,7 @@ class MemberHttp {
   }) async {
     String dmImgStr = Utils.base64EncodeRandomString(16, 64);
     String dmCoverImgStr = Utils.base64EncodeRandomString(32, 128);
-    Map params = await WbiSign.makSign({
+    final params = await WbiSign.makSign({
       'mid': mid,
       'token': token,
       'platform': 'web',
@@ -332,7 +332,7 @@ class MemberHttp {
   }) async {
     String dmImgStr = Utils.base64EncodeRandomString(16, 64);
     String dmCoverImgStr = Utils.base64EncodeRandomString(32, 128);
-    Map params = await WbiSign.makSign({
+    final params = await WbiSign.makSign({
       'mid': mid,
       'ps': ps,
       'tid': tid,
@@ -383,7 +383,7 @@ class MemberHttp {
   }) async {
     String dmImgStr = Utils.base64EncodeRandomString(16, 64);
     String dmCoverImgStr = Utils.base64EncodeRandomString(32, 128);
-    Map params = await WbiSign.makSign({
+    final params = await WbiSign.makSign({
       'mid': mid,
       'ps': ps,
       'tid': tid,
@@ -426,7 +426,7 @@ class MemberHttp {
   }) async {
     String dmImgStr = Utils.base64EncodeRandomString(16, 64);
     String dmCoverImgStr = Utils.base64EncodeRandomString(32, 128);
-    Map params = await WbiSign.makSign({
+    final params = await WbiSign.makSign({
       'offset': offset ?? '',
       'host_mid': mid,
       'timezone_offset': '-480',

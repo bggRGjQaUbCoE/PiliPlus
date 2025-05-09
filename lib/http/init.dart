@@ -187,73 +187,75 @@ class Request {
   /*
    * get请求
    */
-  Future<Response> get(url,
-      {queryParameters, options, cancelToken, extra}) async {
-    Response response;
-    if (extra != null) {
-      if (extra['ua'] != null) {
-        options ??= Options();
-        options.headers ??= <String, dynamic>{};
-        options.headers!['user-agent'] = headerUa(type: extra['ua']);
-      }
+  Future<Response> get<T>(
+    String url, {
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+    CancelToken? cancelToken,
+    String? uaType,
+  }) async {
+    if (uaType != null) {
+      options ??= Options();
+      options.headers ??= <String, dynamic>{};
+      options.headers!['user-agent'] = headerUa(type: uaType);
     }
 
     try {
-      response = await dio.get(
+      return await dio.get<T>(
         url,
         queryParameters: queryParameters,
         options: options,
         cancelToken: cancelToken,
       );
-      return response;
     } on DioException catch (e) {
-      Response errResponse = Response(
+      return Response(
         data: {
           'message': await AccountManager.dioError(e)
         }, // 将自定义 Map 数据赋值给 Response 的 data 属性
         statusCode: e.response?.statusCode ?? -1,
-        requestOptions: RequestOptions(),
+        requestOptions: e.requestOptions,
       );
-      return errResponse;
     }
   }
 
   /*
    * post请求
    */
-  Future<Response> post(url,
-      {data, queryParameters, options, cancelToken}) async {
+  Future<Response> post<T>(
+    String url, {
+    Object? data,
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+    CancelToken? cancelToken,
+  }) async {
     // debugPrint('post-data: $data');
-    Response response;
     try {
-      response = await dio.post(
+      return await dio.post<T>(
         url,
         data: data,
         queryParameters: queryParameters,
         options: options,
         cancelToken: cancelToken,
       );
-      // debugPrint('post success: ${response.data}');
-      return response;
     } on DioException catch (e) {
       AccountManager.toast(e);
-      Response errResponse = Response(
+      return Response(
         data: {
           'message': await AccountManager.dioError(e)
         }, // 将自定义 Map 数据赋值给 Response 的 data 属性
         statusCode: e.response?.statusCode ?? -1,
-        requestOptions: RequestOptions(),
+        requestOptions: e.requestOptions,
       );
-      return errResponse;
     }
   }
 
   /*
    * 下载文件
    */
-  Future<Response> downloadFile(urlPath, savePath, {cancelToken}) async {
+  Future<Response> downloadFile(String urlPath, String savePath,
+      {CancelToken? cancelToken}) async {
     try {
-      Response response = await dio.download(
+      final response = await dio.download(
         urlPath,
         savePath,
         cancelToken: cancelToken,
@@ -271,7 +273,7 @@ class Request {
           'message': await AccountManager.dioError(e),
         },
         statusCode: e.response?.statusCode ?? -1,
-        requestOptions: RequestOptions(),
+        requestOptions: e.requestOptions,
       );
     }
   }
@@ -286,7 +288,7 @@ class Request {
     token.cancel("cancelled");
   }
 
-  static String headerUa({type = 'mob'}) {
+  static String headerUa({String type = 'mob'}) {
     return switch (type) {
       'mob' =>
         'Mozilla/5.0 (Linux; Android 10; SM-G975F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.101 Mobile Safari/537.36',

@@ -500,8 +500,8 @@ class Utils {
     if (BuildConfig.isDebug) return;
     SmartDialog.dismiss();
     try {
-      dynamic res = await Request().get(Api.latestApp, extra: {'ua': 'mob'});
-      if (res.data.isEmpty) {
+      final res = await Request().get(Api.latestApp, uaType: 'mob');
+      if (res.data is Map || res.data.isEmpty) {
         if (isAuto.not) {
           SmartDialog.showToast('检查更新失败，GitHub接口未返回数据，请检查网络');
         }

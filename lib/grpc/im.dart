@@ -8,13 +8,12 @@ import 'package:protobuf/protobuf.dart' show PbMap;
 import 'package:uuid/uuid.dart';
 
 class ImGrpc {
-  static Future sendMsg({
+  static Future<LoadingState<RspSendMsg>> sendMsg({
     required int senderUid,
     required int receiverId,
     required String content,
     MsgType msgType = MsgType.EN_MSG_TYPE_TEXT,
   }) {
-    final devId = const Uuid().v4();
     return GrpcRepo.request(
       GrpcUrl.sendMsg,
       ReqSendMsg(
@@ -28,13 +27,13 @@ class ImGrpc {
           msgStatus: 0,
           newFaceVersion: 1,
         ),
-        devId: devId,
+        devId: const Uuid().v4(),
       ),
       RspSendMsg.fromBuffer,
     );
   }
 
-  static Future shareList({int size = 10}) {
+  static Future<LoadingState<RspShareList>> shareList({int size = 10}) {
     return GrpcRepo.request(
       GrpcUrl.shareList,
       ReqShareList(size: size),
@@ -42,28 +41,22 @@ class ImGrpc {
     );
   }
 
-  static Future<LoadingState<SessionMainReply>> sessionMain({
-    PbMap<int, Offset>? offset,
-  }) async {
-    final res = await GrpcRepo.request(
+  static Future<LoadingState<SessionMainReply>> sessionMain(
+      {PbMap<int, Offset>? offset}) {
+    return GrpcRepo.request(
       GrpcUrl.sessionMain,
       SessionMainReq(
         paginationParams: PaginationParams(offsets: offset),
       ),
       SessionMainReply.fromBuffer,
     );
-    if (res['status']) {
-      return LoadingState.success(res['data']);
-    } else {
-      return LoadingState.error(res['msg']);
-    }
   }
 
   static Future<LoadingState<SessionSecondaryReply>> sessionSecondary({
     PbMap<int, Offset>? offset,
     SessionPageType? pageType,
-  }) async {
-    final res = await GrpcRepo.request(
+  }) {
+    return GrpcRepo.request(
       GrpcUrl.sessionSecondary,
       SessionSecondaryReq(
         paginationParams: PaginationParams(offsets: offset),
@@ -71,14 +64,9 @@ class ImGrpc {
       ),
       SessionSecondaryReply.fromBuffer,
     );
-    if (res['status']) {
-      return LoadingState.success(res['data']);
-    } else {
-      return LoadingState.error(res['msg']);
-    }
   }
 
-  static Future clearUnread({
+  static Future<LoadingState<ClearUnreadReply>> clearUnread({
     SessionPageType? pageType,
     SessionId? sessionId,
   }) {
@@ -92,7 +80,7 @@ class ImGrpc {
     );
   }
 
-  static Future sessionUpdate({
+  static Future<LoadingState<SessionUpdateReply>> sessionUpdate({
     SessionPageType? pageType,
     SessionId? sessionId,
   }) {
@@ -106,7 +94,7 @@ class ImGrpc {
     );
   }
 
-  static Future pinSession({
+  static Future<LoadingState<PinSessionReply>> pinSession({
     SessionId? sessionId,
     Int64? topTimeMicros,
   }) {
@@ -120,7 +108,7 @@ class ImGrpc {
     );
   }
 
-  static Future unpinSession({
+  static Future<LoadingState<UnPinSessionReply>> unpinSession({
     SessionId? sessionId,
   }) {
     return GrpcRepo.request(
@@ -132,7 +120,7 @@ class ImGrpc {
     );
   }
 
-  static Future deleteSessionList({
+  static Future<LoadingState<DeleteSessionListReply>> deleteSessionList({
     SessionPageType? pageType,
   }) {
     return GrpcRepo.request(
@@ -145,22 +133,18 @@ class ImGrpc {
   }
 
   static Future<LoadingState<GetImSettingsReply>> getImSettings(
-      {IMSettingType? type}) async {
-    var res = await GrpcRepo.request(
+      {IMSettingType? type}) {
+    return GrpcRepo.request(
       GrpcUrl.getImSettings,
       GetImSettingsReq(
         type: type,
       ),
       GetImSettingsReply.fromBuffer,
     );
-    if (res['status']) {
-      return LoadingState.success(res['data']);
-    } else {
-      return LoadingState.error(res['msg']);
-    }
   }
 
-  static Future setImSettings({PbMap<int, Setting>? settings}) {
+  static Future<LoadingState<SetImSettingsReply>> setImSettings(
+      {PbMap<int, Setting>? settings}) {
     return GrpcRepo.request(
       GrpcUrl.setImSettings,
       SetImSettingsReq(
@@ -170,21 +154,16 @@ class ImGrpc {
     );
   }
 
-  static Future<LoadingState<KeywordBlockingListReply>>
-      keywordBlockingList() async {
-    var res = await GrpcRepo.request(
+  static Future<LoadingState<KeywordBlockingListReply>> keywordBlockingList() {
+    return GrpcRepo.request(
       GrpcUrl.keywordBlockingList,
       KeywordBlockingListReq(),
       KeywordBlockingListReply.fromBuffer,
     );
-    if (res['status']) {
-      return LoadingState.success(res['data']);
-    } else {
-      return LoadingState.error(res['msg']);
-    }
   }
 
-  static Future keywordBlockingAdd(String keyword) {
+  static Future<LoadingState<KeywordBlockingAddReply>> keywordBlockingAdd(
+      String keyword) {
     return GrpcRepo.request(
       GrpcUrl.keywordBlockingAdd,
       KeywordBlockingAddReq(keyword: keyword),
@@ -192,7 +171,8 @@ class ImGrpc {
     );
   }
 
-  static Future keywordBlockingDelete(String keyword) {
+  static Future<LoadingState<KeywordBlockingDeleteReply>> keywordBlockingDelete(
+      String keyword) {
     return GrpcRepo.request(
       GrpcUrl.keywordBlockingDelete,
       KeywordBlockingDeleteReq(keyword: keyword),

@@ -176,8 +176,8 @@ class MainController extends GetxController {
       return;
     }
     DynGrpc.dynRed().then((res) {
-      if (res['status']) {
-        setCount(res['data']);
+      if (res != null) {
+        setCount(res);
       }
     });
   }

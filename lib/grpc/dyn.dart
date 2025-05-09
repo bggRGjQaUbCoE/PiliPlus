@@ -18,12 +18,12 @@ class DynGrpc {
   //   );
   // }
 
-  static Future dynRed() {
-    return GrpcRepo.request(
+  static Future<int?> dynRed() async {
+    final res = await GrpcRepo.request(
       GrpcUrl.dynRed,
       DynRedReq(tabOffset: [TabOffset(tab: 1)]),
       DynRedReply.fromBuffer,
-      onSuccess: (response) => response.dynRedItem.count.toInt(),
     );
+    return res.dataOrNull?.dynRedItem.count.toInt();
   }
 }

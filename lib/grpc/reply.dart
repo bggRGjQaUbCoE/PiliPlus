@@ -17,18 +17,21 @@ class ReplyGrpc {
   // }
 
   // ref BiliRoamingX
-  static bool needRemoveGrpc(ReplyInfo reply) {
-    if ((reply.content.urls.isNotEmpty &&
+  static bool needRemoveGoodGrpc(ReplyInfo reply) {
+    return (reply.content.urls.isNotEmpty &&
             reply.content.urls.values.any((url) {
               return url.hasExtra() &&
-                  (url.extra.goodsCmControl == 1 ||
-                      url.extra.goodsItemId != 0 ||
+                  (url.extra.goodsCmControl == Int64.ONE ||
+                      url.extra.goodsItemId != Int64.ZERO ||
                       url.extra.goodsPrefetchedCache.isNotEmpty);
             })) ||
-        reply.content.message.contains(Constants.goodsUrlPrefix)) {
-      return true;
-    }
-    return false;
+        reply.content.message.contains(Constants.goodsUrlPrefix);
+  }
+
+  static bool needRemoveGrpc(ReplyInfo reply, final bool antiGoodsReply) {
+    return (ReplyHttp.replyRegExp.pattern.isNotEmpty &&
+            ReplyHttp.replyRegExp.hasMatch(reply.content.message)) ||
+        (antiGoodsReply && needRemoveGoodGrpc(reply));
   }
 
   static Future<LoadingState<MainListReply>> mainList({
@@ -37,14 +40,14 @@ class ReplyGrpc {
     required Mode mode,
     required String? offset,
     required Int64? cursorNext,
-    required bool antiGoodsReply,
+    required final bool antiGoodsReply,
   }) async {
-    dynamic res = await GrpcRepo.request(
+    final res = await GrpcRepo.request(
       GrpcUrl.mainList,
       MainListReq(
         oid: Int64(oid),
         type: Int64(type),
-        rpid: Int64(0),
+        rpid: Int64.ZERO,
         cursor: CursorReq(
           mode: mode,
           next: cursorNext,
@@ -53,59 +56,25 @@ class ReplyGrpc {
       ),
       MainListReply.fromBuffer,
     );
-    if (res['status']) {
-      MainListReply mainListReply = res['data'];
+    if (res.isSuccess) {
+      final mainListReply = res.data;
       // keyword filter
-      if (ReplyHttp.replyRegExp.pattern.isNotEmpty) {
-        // upTop
-        if (mainListReply.hasUpTop() &&
-            ReplyHttp.replyRegExp
-                .hasMatch(mainListReply.upTop.content.message)) {
-          mainListReply.clearUpTop();
-        }
-
-        // replies
-        if (mainListReply.replies.isNotEmpty) {
-          mainListReply.replies.removeWhere((item) {
-            bool hasMatch =
-                ReplyHttp.replyRegExp.hasMatch(item.content.message);
-            // remove subreplies
-            if (!hasMatch) {
-              if (item.replies.isNotEmpty) {
-                item.replies.removeWhere((item) =>
-                    ReplyHttp.replyRegExp.hasMatch(item.content.message));
-              }
-            }
-            return hasMatch;
-          });
-        }
+      if (mainListReply.hasUpTop() &&
+          needRemoveGrpc(mainListReply.upTop, antiGoodsReply)) {
+        mainListReply.clearUpTop();
       }
 
-      // antiGoodsReply
-      if (antiGoodsReply) {
-        // upTop
-        if (mainListReply.hasUpTop() && needRemoveGrpc(mainListReply.upTop)) {
-          mainListReply.clearUpTop();
-        }
-
-        // replies
-        if (mainListReply.replies.isNotEmpty) {
-          mainListReply.replies.removeWhere((item) {
-            bool hasMatch = needRemoveGrpc(item);
-            // remove subreplies
-            if (!hasMatch) {
-              if (item.replies.isNotEmpty) {
-                item.replies.removeWhere(needRemoveGrpc);
-              }
-            }
-            return hasMatch;
-          });
-        }
+      if (mainListReply.replies.isNotEmpty) {
+        mainListReply.replies.removeWhere((item) {
+          final hasMatch = needRemoveGrpc(item, antiGoodsReply);
+          if (!hasMatch && item.replies.isNotEmpty) {
+            item.replies.removeWhere((i) => needRemoveGrpc(i, antiGoodsReply));
+          }
+          return hasMatch;
+        });
       }
-      return LoadingState.success(mainListReply);
-    } else {
-      return LoadingState.error(res['msg']);
     }
+    return res;
   }
 
   static Future<LoadingState<DetailListReply>> detailList({
@@ -115,9 +84,9 @@ class ReplyGrpc {
     required int rpid,
     required Mode mode,
     required String? offset,
-    required bool antiGoodsReply,
+    required final bool antiGoodsReply,
   }) async {
-    dynamic res = await GrpcRepo.request(
+    final res = await GrpcRepo.request(
       GrpcUrl.detailList,
       DetailListReq(
         oid: Int64(oid),
@@ -130,23 +99,11 @@ class ReplyGrpc {
       ),
       DetailListReply.fromBuffer,
     );
-    if (res['status']) {
-      DetailListReply detailListReply = res['data'];
-      if (ReplyHttp.replyRegExp.pattern.isNotEmpty) {
-        if (detailListReply.root.replies.isNotEmpty) {
-          detailListReply.root.replies.removeWhere(
-              (item) => ReplyHttp.replyRegExp.hasMatch(item.content.message));
-        }
-      }
-      if (antiGoodsReply) {
-        if (detailListReply.root.replies.isNotEmpty) {
-          detailListReply.root.replies.removeWhere(needRemoveGrpc);
-        }
-      }
-      return LoadingState.success(detailListReply);
-    } else {
-      return LoadingState.error(res['msg']);
-    }
+    return res
+      ..dataOrNull
+          ?.root
+          .replies
+          .removeWhere((item) => needRemoveGrpc(item, antiGoodsReply));
   }
 
   static Future<LoadingState<DialogListReply>> dialogList({
@@ -155,9 +112,9 @@ class ReplyGrpc {
     required int root,
     required int dialog,
     required String? offset,
-    required bool antiGoodsReply,
+    required final bool antiGoodsReply,
   }) async {
-    dynamic res = await GrpcRepo.request(
+    final res = await GrpcRepo.request(
       GrpcUrl.dialogList,
       DialogListReq(
         oid: Int64(oid),
@@ -168,22 +125,9 @@ class ReplyGrpc {
       ),
       DialogListReply.fromBuffer,
     );
-    if (res['status']) {
-      DialogListReply dialogListReply = res['data'];
-      if (ReplyHttp.replyRegExp.pattern.isNotEmpty) {
-        if (dialogListReply.replies.isNotEmpty) {
-          dialogListReply.replies.removeWhere(
-              (item) => ReplyHttp.replyRegExp.hasMatch(item.content.message));
-        }
-      }
-      if (antiGoodsReply) {
-        if (dialogListReply.replies.isNotEmpty) {
-          dialogListReply.replies.removeWhere(needRemoveGrpc);
-        }
-      }
-      return LoadingState.success(dialogListReply);
-    } else {
-      return LoadingState.error(res['msg']);
-    }
+    return res
+      ..dataOrNull
+          ?.replies
+          .removeWhere((item) => needRemoveGrpc(item, antiGoodsReply));
   }
 }

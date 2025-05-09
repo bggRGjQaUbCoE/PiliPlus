@@ -37,9 +37,8 @@ class PageUtils {
     List<UserModel> userList = <UserModel>[];
 
     final shareListRes = await ImGrpc.shareList(size: 3);
-    if (shareListRes['status'] && shareListRes['data'].sessionList.isNotEmpty) {
-      userList.addAll(shareListRes['data']
-          .sessionList
+    if (shareListRes.isSuccess && shareListRes.data.sessionList.isNotEmpty) {
+      userList.addAll(shareListRes.data.sessionList
           .map<UserModel>((item) => UserModel(
                 mid: item.talkerId.toInt(),
                 name: item.talkerUname,

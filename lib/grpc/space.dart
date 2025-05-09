@@ -9,8 +9,8 @@ class SpaceGrpc {
     required int hostMid,
     String? next,
     required String filterType,
-  }) async {
-    final res = await GrpcRepo.request(
+  }) {
+    return GrpcRepo.request(
       GrpcUrl.opusSpaceFlow,
       OpusSpaceFlowReq(
         hostMid: Int64(hostMid),
@@ -22,10 +22,5 @@ class SpaceGrpc {
       ),
       OpusSpaceFlowResp.fromBuffer,
     );
-    if (res['status']) {
-      return LoadingState.success(res['data']);
-    } else {
-      return LoadingState.error(res['msg']);
-    }
   }
 }

@@ -62,7 +62,7 @@ class RequestUtils {
           : MsgType.EN_MSG_TYPE_SHARE_V2,
     );
 
-    if (contentRes['status']) {
+    if (contentRes.isSuccess) {
       if (message?.isNotEmpty == true) {
         var msgRes = await MsgHttp.sendMsg(
           senderUid: ownerMid,
@@ -81,7 +81,7 @@ class RequestUtils {
         SmartDialog.showToast('分享成功');
       }
     } else {
-      SmartDialog.showToast('分享失败: ${contentRes['msg']}');
+      SmartDialog.showToast('分享失败: ${(contentRes as Error).errMsg}');
     }
     SmartDialog.dismiss();
   }

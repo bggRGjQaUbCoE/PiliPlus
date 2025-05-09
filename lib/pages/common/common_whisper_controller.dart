@@ -26,7 +26,7 @@ abstract class CommonWhisperController<R>
         ? await ImGrpc.unpinSession(sessionId: sessionId)
         : await ImGrpc.pinSession(sessionId: sessionId);
 
-    if (res['status']) {
+    if (res.isSuccess) {
       List<Session> list = loadingState.value.data!;
       list[index].isPinned = isTop ? false : true;
       if (!isTop) {
@@ -35,14 +35,14 @@ abstract class CommonWhisperController<R>
       loadingState.refresh();
       SmartDialog.showToast('${isTop ? '移除' : ''}置顶成功');
     } else {
-      SmartDialog.showToast(res['msg']);
+      res.toast();
     }
   }
 
   Future<void> onClearUnread() async {
     final res = await ImGrpc.clearUnread(pageType: sessionPageType);
-    if (res['status']) {
-      if (loadingState.value is Success) {
+    if (res.isSuccess) {
+      if (loadingState.value.isSuccess) {
         List<Session>? list = loadingState.value.data;
         if (list?.isNotEmpty == true) {
           for (var item in list!) {
@@ -55,16 +55,16 @@ abstract class CommonWhisperController<R>
       }
       SmartDialog.showToast('已标记为已读');
     } else {
-      SmartDialog.showToast(res['msg']);
+      res.toast();
     }
   }
 
   Future<void> onDeleteList() async {
     var res = await ImGrpc.deleteSessionList(pageType: sessionPageType);
-    if (res['status']) {
+    if (res.isSuccess) {
       loadingState.value = LoadingState.success(null);
     } else {
-      SmartDialog.showToast(res['msg']);
+      res.toast();
     }
   }
 }

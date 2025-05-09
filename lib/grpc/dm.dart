@@ -8,8 +8,8 @@ class DmGrpc {
     required int cid,
     required int segmentIndex,
     int type = 1,
-  }) async {
-    final res = await GrpcRepo.request(
+  }) {
+    return GrpcRepo.request(
       GrpcUrl.dmSegMobile,
       DmSegMobileReq(
         oid: Int64(cid),
@@ -18,10 +18,5 @@ class DmGrpc {
       ),
       DmSegMobileReply.fromBuffer,
     );
-    if (res['status']) {
-      return LoadingState.success(res['data']);
-    } else {
-      return const Error('');
-    }
   }
 }

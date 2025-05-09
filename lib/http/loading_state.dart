@@ -1,5 +1,7 @@
 import 'dart:core' hide Error;
 
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
+
 sealed class LoadingState<T> {
   const LoadingState();
 
@@ -11,14 +13,15 @@ sealed class LoadingState<T> {
 
   T get data => switch (this) {
         Success(response: final res) => res,
-        Error() => throw this,
-        Loading() => throw Exception('ApiException: loading'),
+        _ => throw this,
       };
 
   T? get dataOrNull => switch (this) {
         Success(response: final res) => res,
         _ => null,
       };
+
+  void toast() => SmartDialog.showToast(toString());
 }
 
 class Loading extends LoadingState<Never> {
@@ -27,6 +30,11 @@ class Loading extends LoadingState<Never> {
   static const Loading _instance = Loading._internal();
 
   factory Loading() => _instance;
+
+  @override
+  String toString() {
+    return 'ApiException: loading';
+  }
 }
 
 class Success<T> extends LoadingState<T> {

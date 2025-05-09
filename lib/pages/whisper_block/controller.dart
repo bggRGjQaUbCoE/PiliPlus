@@ -30,8 +30,8 @@ class WhisperBlockController extends CommonListController<
       ImGrpc.keywordBlockingList();
 
   Future<void> onAdd(String keyword) async {
-    var res = await ImGrpc.keywordBlockingAdd(keyword);
-    if (res['status']) {
+    final res = await ImGrpc.keywordBlockingAdd(keyword);
+    if (res.isSuccess) {
       Get.back();
       loadingState
         ..value.data!.add(KeywordBlockingItem(keyword: keyword))
@@ -39,20 +39,20 @@ class WhisperBlockController extends CommonListController<
       count.value += 1;
       SmartDialog.showToast('添加成功');
     } else {
-      SmartDialog.showToast(res['msg']);
+      res.toast();
     }
   }
 
   Future<void> onRemove(KeywordBlockingItem item) async {
-    var res = await ImGrpc.keywordBlockingDelete(item.keyword);
-    if (res['status']) {
+    final res = await ImGrpc.keywordBlockingDelete(item.keyword);
+    if (res.isSuccess) {
       loadingState
         ..value.data!.remove(item)
         ..refresh();
       count.value -= 1;
       SmartDialog.showToast('删除成功');
     } else {
-      SmartDialog.showToast(res['msg']);
+      res.toast();
     }
   }
 }

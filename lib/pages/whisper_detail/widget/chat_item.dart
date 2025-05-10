@@ -20,8 +20,7 @@ import 'package:get/get.dart';
 
 class ChatItem extends StatelessWidget {
   static MsgType msgTypeFromValue(int value) {
-    return MsgType.values.firstWhere((e) => e.value == value,
-        orElse: () => MsgType.EN_INVALID_MSG_TYPE);
+    return MsgType.valueOf(value) ?? MsgType.EN_INVALID_MSG_TYPE;
   }
 
   const ChatItem({

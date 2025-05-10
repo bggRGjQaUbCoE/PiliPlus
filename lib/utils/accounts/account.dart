@@ -5,15 +5,15 @@ import 'package:cookie_jar/cookie_jar.dart';
 import 'package:hive/hive.dart';
 
 abstract class Account {
-  final bool isLogin = false;
-  late final DefaultCookieJar cookieJar;
-  String? accessKey;
-  String? refresh;
-  late final Set<AccountType> type;
+  bool get isLogin;
+  DefaultCookieJar get cookieJar;
+  String? get accessKey;
+  String? get refresh;
+  Set<AccountType> get type;
 
-  final int mid = 0;
-  late String csrf;
-  final Map<String, String> headers = const {};
+  int get mid;
+  String get csrf;
+  Map<String, String> get headers;
 
   // bool activited = false;
 
@@ -29,16 +29,16 @@ class LoginAccount implements Account {
   final bool isLogin = true;
   @override
   @HiveField(0)
-  late final DefaultCookieJar cookieJar;
+  final DefaultCookieJar cookieJar;
   @override
   @HiveField(1)
-  String? accessKey;
+  final String? accessKey;
   @override
   @HiveField(2)
-  String? refresh;
+  final String? refresh;
   @override
   @HiveField(3)
-  late final Set<AccountType> type;
+  final Set<AccountType> type;
 
   @override
   late final int mid = int.parse(_midStr);
@@ -49,7 +49,7 @@ class LoginAccount implements Account {
     'x-bili-aurora-eid': Utils.genAuroraEid(mid),
   };
   @override
-  late String csrf =
+  late final String csrf =
       cookieJar.domainCookies['bilibili.com']!['/']!['bili_jct']!.cookie.value;
 
   @override
@@ -71,19 +71,19 @@ class LoginAccount implements Account {
 
   late final Box<LoginAccount> _box = Accounts.account;
 
-  LoginAccount(this.cookieJar, this.accessKey, this.refresh,
-      [Set<AccountType>? type])
-      : type = type ?? {};
+  LoginAccount(
+    this.cookieJar,
+    this.accessKey,
+    this.refresh, [
+    Set<AccountType>? type,
+  ]) : type = type ?? {};
 
-  LoginAccount.fromJson(Map json) {
-    cookieJar = BiliCookieJar.fromJson(json['cookies']);
-    accessKey = json['accessKey'];
-    refresh = json['refresh'];
-    type = (json['type'] as Iterable?)
-            ?.map((i) => AccountType.values[i])
-            .toSet() ??
-        {};
-  }
+  factory LoginAccount.fromJson(Map<String, dynamic> json) => LoginAccount(
+        BiliCookieJar.fromJson(json['cookies'])..setBuvid3(),
+        json['accessKey'],
+        json['refresh'],
+        (json['type'] as Iterable?)?.map((i) => AccountType.values[i]).toSet(),
+      );
 
   @override
   int get hashCode => mid.hashCode;
@@ -97,17 +97,18 @@ class AnonymousAccount implements Account {
   @override
   final bool isLogin = false;
   @override
-  late final DefaultCookieJar cookieJar;
+  final DefaultCookieJar cookieJar = DefaultCookieJar(ignoreExpires: true)
+    ..setBuvid3();
   @override
-  String? accessKey;
+  final String? accessKey = null;
   @override
-  String? refresh;
+  final String? refresh = null;
   @override
-  Set<AccountType> type = {};
+  final Set<AccountType> type = {};
   @override
   final int mid = 0;
   @override
-  String csrf = '';
+  final String csrf = '';
   @override
   final Map<String, String> headers = const {};
 
@@ -125,9 +126,7 @@ class AnonymousAccount implements Account {
 
   static final _instance = AnonymousAccount._();
 
-  AnonymousAccount._() {
-    cookieJar = DefaultCookieJar(ignoreExpires: true)..setBuvid3();
-  }
+  AnonymousAccount._();
 
   factory AnonymousAccount() => _instance;
 

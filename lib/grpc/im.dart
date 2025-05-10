@@ -199,4 +199,13 @@ class ImGrpc {
       KeywordBlockingDeleteReply.fromBuffer,
     );
   }
+
+  static Future<LoadingState<RspTotalUnread>> getTotalUnread(
+      {int? unreadType}) {
+    return GrpcRepo.request(
+      GrpcUrl.getTotalUnread,
+      ReqTotalUnread(unreadType: unreadType, showUnfollowList: 1),
+      RspTotalUnread.fromBuffer,
+    );
+  }
 }

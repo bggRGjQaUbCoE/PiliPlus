@@ -155,7 +155,7 @@ class _WhisperPageState extends State<WhisperPage> {
                             radius: 22,
                             backgroundColor: theme.colorScheme.onInverseSurface,
                             child: Icon(
-                              _controller.msgFeedTopItems[index]['icon'],
+                              _controller.msgFeedTopItems[index].icon,
                               size: 20,
                               color: theme.colorScheme.primary,
                             ),
@@ -164,20 +164,20 @@ class _WhisperPageState extends State<WhisperPage> {
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        _controller.msgFeedTopItems[index]['name'],
+                        _controller.msgFeedTopItems[index].name,
                         style: const TextStyle(fontSize: 13),
                       ),
                     ],
                   ),
                 ),
                 onTap: () {
-                  if (!_controller.msgFeedTopItems[index]['enabled']) {
+                  if (!_controller.msgFeedTopItems[index].enabled) {
                     SmartDialog.showToast('已禁用');
                     return;
                   }
                   _controller.unreadCounts[index] = 0;
                   Get.toNamed(
-                    _controller.msgFeedTopItems[index]['route'],
+                    _controller.msgFeedTopItems[index].route,
                   );
                 },
               );

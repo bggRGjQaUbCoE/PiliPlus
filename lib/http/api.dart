@@ -476,11 +476,11 @@ class Api {
 
   // 获取未读私信数
   // https://api.vc.bilibili.com/session_svr/v1/session_svr/single_unread
-  static const String msgUnread =
-      '${HttpString.tUrl}/session_svr/v1/session_svr/single_unread';
+  // static const String msgUnread =
+  //     '${HttpString.tUrl}/session_svr/v1/session_svr/single_unread';
 
   // 获取消息中心未读信息
-  static const String msgFeedUnread = '/x/msgfeed/unread';
+  // static const String msgFeedUnread = '/x/msgfeed/unread';
   //https://api.bilibili.com/x/msgfeed/reply?platform=web&build=0&mobi_app=web
   static const String msgFeedReply = '/x/msgfeed/reply';
   //https://api.bilibili.com/x/msgfeed/at?platform=web&build=0&mobi_app=web

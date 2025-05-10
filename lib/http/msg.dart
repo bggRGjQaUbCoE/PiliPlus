@@ -103,18 +103,6 @@ class MsgHttp {
     }
   }
 
-  static Future msgFeedUnread() async {
-    var res = await Request().get(Api.msgFeedUnread);
-    if (res.data['code'] == 0) {
-      return {
-        'status': true,
-        'data': res.data['data'],
-      };
-    } else {
-      return {'status': false, 'msg': res.data['message']};
-    }
-  }
-
   static Future createDynamic({
     dynamic mid,
     dynamic dynIdStr, // repost dyn

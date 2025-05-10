@@ -57,23 +57,6 @@ extension ListExt<T> on List<T>? {
   T getOrElse(int index, {required T Function() orElse}) {
     return getOrNull(index) ?? orElse();
   }
-
-  bool eq(List<T>? other) {
-    if (this == null) {
-      return other == null;
-    }
-    if (other == null || this!.length != other.length) {
-      return false;
-    }
-    for (int index = 0; index < this!.length; index += 1) {
-      if (this![index] != other[index]) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  bool ne(List<T>? other) => !eq(other);
 }
 
 final _regExp = RegExp("^(http:)?//", caseSensitive: false);
@@ -127,17 +110,6 @@ extension ColorExtension on Color {
   Color darken([double amount = .5]) {
     assert(amount >= 0 && amount <= 1, 'Amount must be between 0 and 1');
     return Color.lerp(this, Colors.black, amount)!;
-  }
-
-  Color blend(Color color, [double fraction = 0.5]) {
-    assert(fraction >= 0 && fraction <= 1, 'Fraction must be between 0 and 1');
-    final blendedRed = (red * (1 - fraction) + color.red * fraction).toInt();
-    final blendedGreen =
-        (green * (1 - fraction) + color.green * fraction).toInt();
-    final blendedBlue = (blue * (1 - fraction) + color.blue * fraction).toInt();
-    final blendedAlpha =
-        (alpha * (1 - fraction) + color.alpha * fraction).toInt();
-    return Color.fromARGB(blendedAlpha, blendedRed, blendedGreen, blendedBlue);
   }
 }
 

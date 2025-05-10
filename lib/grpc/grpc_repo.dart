@@ -62,6 +62,7 @@ class GrpcUrl {
   static const keywordBlockingAdd = '$im2/KeywordBlockingAdd';
   static const keywordBlockingDelete = '$im2/KeywordBlockingDelete';
   static const syncFetchSessionMsgs = '$im/SyncFetchSessionMsgs';
+  static const getTotalUnread = '$im/GetTotalUnread';
 }
 
 class GrpcRepo {

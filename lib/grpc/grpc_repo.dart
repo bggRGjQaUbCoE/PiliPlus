@@ -8,6 +8,7 @@ import 'package:PiliPlus/grpc/bilibili/metadata/fawkes.pb.dart';
 import 'package:PiliPlus/grpc/bilibili/metadata/locale.pb.dart';
 import 'package:PiliPlus/grpc/bilibili/metadata/network.pb.dart' as network;
 import 'package:PiliPlus/grpc/bilibili/metadata/restriction.pb.dart';
+import 'package:PiliPlus/grpc/google/rpc/status.pb.dart';
 import 'package:PiliPlus/http/constants.dart';
 import 'package:PiliPlus/http/init.dart';
 import 'package:PiliPlus/http/loading_state.dart';
@@ -153,7 +154,7 @@ class GrpcRepo {
     'x-bili-exps-bin': '',
   };
 
-  static final unprintableRegExp = RegExp(r"[^\u4e00-\u9fa5，。；！？UP]");
+  static final _unprintableRegExp = RegExp(r"[^\u4e00-\u9fa5，。；！？UP]");
 
   static Uint8List compressProtobuf(Uint8List proto) {
     proto = const GZipEncoder().encodeBytes(proto);
@@ -196,13 +197,21 @@ class GrpcRepo {
     } else {
       try {
         String msg = response.headers.value('Grpc-Status-Details-Bin') ?? '';
-        if (msg != '') {
+        if (msg.isNotEmpty) {
           while (msg.length % 4 != 0) {
             msg += '=';
           }
-          msg = utf8
-              .decode(base64Decode(msg), allowMalformed: true)
-              .replaceAll(unprintableRegExp, '');
+          final msgBytes = base64Decode(msg);
+          try {
+            final grpcMsg = Status.fromBuffer(msgBytes);
+            // UNKNOWN : -400 : msg
+            msg =
+                '${grpcMsg.code} : ${grpcMsg.message} : ${grpcMsg.details.firstOrNull?.status.message}';
+          } catch (e) {
+            msg = utf8
+                .decode(msgBytes, allowMalformed: true)
+                .replaceAll(_unprintableRegExp, '');
+          }
         }
         return LoadingState.error(msg);
       } catch (e) {

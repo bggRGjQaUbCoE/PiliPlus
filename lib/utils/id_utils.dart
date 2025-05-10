@@ -3,62 +3,49 @@
 import 'dart:convert';
 
 class IdUtils {
-  static final XOR_CODE = BigInt.parse('23442827791579');
-  static final MASK_CODE = BigInt.parse('2251799813685247');
-  static final MAX_AID = BigInt.one << (BigInt.from(51)).toInt();
-  static final BASE = BigInt.from(58);
+  static const XOR_CODE = 23442827791579;
+  static const MASK_CODE = 2251799813685247;
+  static const MAX_AID = 1 << 51;
+  static const BASE = 58;
 
   static const data =
       'FcwAPNKTMug3GV5Lj7EJnHpWsx4tb8haYeviqBz6rkCy12mUSDQX9RdoZf';
+  static final invData = {for (var (i, c) in data.codeUnits.indexed) c: i};
+
+  static final bvRegex = RegExp(r'bv(1[0-9A-Za-z]{9})', caseSensitive: false);
+  static final avRegex = RegExp(r'av(\d+)', caseSensitive: false);
+
+  static void swap<T>(List<T> list, int idx1, int idx2) {
+    final idx1Value = list[idx1];
+    list[idx1] = list[idx2];
+    list[idx2] = idx1Value;
+  }
 
   /// av转bv
   static String av2bv(int aid) {
-    List<String> bytes = [
-      'B',
-      'V',
-      '1',
-      '0',
-      '0',
-      '0',
-      '0',
-      '0',
-      '0',
-      '0',
-      '0',
-      '0'
-    ];
+    final bytes = ['B', 'V', '1', '0', '0', '0', '0', '0', '0', '0', '0', '0'];
     int bvIndex = bytes.length - 1;
-    BigInt tmp = (MAX_AID | BigInt.from(aid)) ^ XOR_CODE;
-    while (tmp > BigInt.zero) {
-      bytes[bvIndex] = data[(tmp % BASE).toInt()];
-      tmp = tmp ~/ BASE;
-      bvIndex -= 1;
+    int tmp = (MAX_AID | aid) ^ XOR_CODE;
+    while (tmp > 0) {
+      bytes[bvIndex--] = data[tmp % BASE];
+      tmp ~/= BASE;
     }
-    String tmpSwap = bytes[3];
-    bytes[3] = bytes[9];
-    bytes[9] = tmpSwap;
 
-    tmpSwap = bytes[4];
-    bytes[4] = bytes[7];
-    bytes[7] = tmpSwap;
+    swap(bytes, 3, 9);
+    swap(bytes, 4, 7);
 
     return bytes.join();
   }
 
   /// bv转av
   static int bv2av(String bvid) {
-    List<String> bvidArr = bvid.split('');
-    final tmpValue = bvidArr[3];
-    bvidArr[3] = bvidArr[9];
-    bvidArr[9] = tmpValue;
+    final bvidArr = List.of(bvid.codeUnits);
 
-    final tmpValue2 = bvidArr[4];
-    bvidArr[4] = bvidArr[7];
-    bvidArr[7] = tmpValue2;
+    swap(bvidArr, 3, 9);
+    swap(bvidArr, 4, 7);
 
     bvidArr.removeRange(0, 3);
-    BigInt tmp = bvidArr.fold(BigInt.zero,
-        (pre, bvidChar) => pre * BASE + BigInt.from(data.indexOf(bvidChar)));
+    int tmp = bvidArr.fold(0, (pre, char) => pre * BASE + invData[char]!);
     return ((tmp & MASK_CODE) ^ XOR_CODE).toInt();
   }
 
@@ -68,10 +55,8 @@ class IdUtils {
     if (input == null || input.isEmpty) {
       return result;
     }
-    final RegExp bvRegex = RegExp(r'bv([0-9A-Za-z]{10})', caseSensitive: false);
     String? bvid = bvRegex.firstMatch(input)?.group(1);
 
-    late final RegExp avRegex = RegExp(r'av(\d+)', caseSensitive: false);
     late String? aid = avRegex.firstMatch(input)?.group(1);
 
     if (bvid != null) {

@@ -96,18 +96,16 @@ class NetworkImgLayer extends StatelessWidget {
                     ? BorderRadius.circular(radius!)
                     : StyleString.mdRadius,
       ),
-      child: type == 'bg'
-          ? const SizedBox.shrink()
-          : Center(
-              child: Image.asset(
-                type == ImageType.avatar
-                    ? 'assets/images/noface.jpeg'
-                    : 'assets/images/loading.png',
-                width: width,
-                height: height,
-                cacheWidth: width.cacheSize(context),
-              ),
-            ),
+      child: Center(
+        child: Image.asset(
+          type == ImageType.avatar
+              ? 'assets/images/noface.jpeg'
+              : 'assets/images/loading.png',
+          width: width,
+          height: height,
+          cacheWidth: width.cacheSize(context),
+        ),
+      ),
     );
   }
 }

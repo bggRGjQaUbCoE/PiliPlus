@@ -1169,10 +1169,10 @@ class VideoDetailController extends GetxController
             id: data.quality!,
             baseUrl: videoUrl,
             codecs: 'avc1',
-            quality: VideoQualityExt.fromCode(data.quality!)!);
+            quality: VideoQuality.fromCode(data.quality!));
         setVideoHeight();
         currentDecodeFormats = VideoDecodeFormatTypeExt.fromString('avc1')!;
-        currentVideoQa = VideoQualityExt.fromCode(data.quality!)!;
+        currentVideoQa = VideoQuality.fromCode(data.quality!);
         if (autoPlay.value) {
           isShowCover.value = false;
           await playerInit();
@@ -1196,7 +1196,7 @@ class VideoDetailController extends GetxController
       final List<VideoItem> allVideosList = data.dash!.video!;
       // debugPrint("allVideosList:${allVideosList}");
       // 当前可播放的最高质量视频
-      int currentHighVideoQa = allVideosList.first.quality!.code;
+      int currentHighVideoQa = allVideosList.first.quality.code;
       // 预设的画质为null，则当前可用的最高质量
       int resVideoQa = currentHighVideoQa;
       if (plPlayerController.cacheVideoQa! <= currentHighVideoQa) {
@@ -1206,11 +1206,11 @@ class VideoDetailController extends GetxController
         resVideoQa =
             Utils.findClosestNumber(plPlayerController.cacheVideoQa!, numbers);
       }
-      currentVideoQa = VideoQualityExt.fromCode(resVideoQa)!;
+      currentVideoQa = VideoQuality.fromCode(resVideoQa);
 
       /// 取出符合当前画质的videoList
       final List<VideoItem> videosList =
-          allVideosList.where((e) => e.quality!.code == resVideoQa).toList();
+          allVideosList.where((e) => e.quality.code == resVideoQa).toList();
 
       /// 优先顺序 设置中指定解码格式 -> 当前可选的首个解码格式
       final List<FormatItem> supportFormats = data.supportFormats!;
@@ -1274,7 +1274,7 @@ class VideoDetailController extends GetxController
             orElse: () => audiosList.first);
         audioUrl = VideoUtils.getCdnUrl(firstAudio);
         if (firstAudio.id != null) {
-          currentAudioQa = AudioQualityExt.fromCode(firstAudio.id!)!;
+          currentAudioQa = AudioQuality.fromCode(firstAudio.id!);
         }
       } else {
         firstAudio = AudioItem();

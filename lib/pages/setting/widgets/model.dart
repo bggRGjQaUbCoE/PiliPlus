@@ -1064,7 +1064,7 @@ List<SettingsModel> get videoSettings => [
         title: '默认画质',
         leading: const Icon(Icons.video_settings_outlined),
         getSubtitle: () =>
-            '当前画质：${VideoQualityExt.fromCode(GStorage.defaultVideoQa)!.description}',
+            '当前画质：${VideoQuality.fromCode(GStorage.defaultVideoQa).description}',
         onTap: (setState) async {
           int? result = await showDialog(
             context: Get.context!,
@@ -1089,7 +1089,7 @@ List<SettingsModel> get videoSettings => [
         title: '蜂窝网络画质',
         leading: const Icon(Icons.video_settings_outlined),
         getSubtitle: () =>
-            '当前画质：${VideoQualityExt.fromCode(GStorage.defaultVideoQaCellular)!.description}',
+            '当前画质：${VideoQuality.fromCode(GStorage.defaultVideoQaCellular).description}',
         onTap: (setState) async {
           int? result = await showDialog(
             context: Get.context!,
@@ -1115,7 +1115,7 @@ List<SettingsModel> get videoSettings => [
         title: '默认音质',
         leading: const Icon(Icons.music_video_outlined),
         getSubtitle: () =>
-            '当前音质：${AudioQualityExt.fromCode(GStorage.defaultAudioQa)!.description}',
+            '当前音质：${AudioQuality.fromCode(GStorage.defaultAudioQa).description}',
         onTap: (setState) async {
           int? result = await showDialog(
             context: Get.context!,
@@ -1140,7 +1140,7 @@ List<SettingsModel> get videoSettings => [
         title: '蜂窝网络音质',
         leading: const Icon(Icons.music_video_outlined),
         getSubtitle: () =>
-            '当前音质：${AudioQualityExt.fromCode(GStorage.defaultAudioQaCellular)!.description}',
+            '当前音质：${AudioQuality.fromCode(GStorage.defaultAudioQaCellular).description}',
         onTap: (setState) async {
           int? result = await showDialog(
             context: Get.context!,

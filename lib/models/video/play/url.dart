@@ -136,24 +136,7 @@ bool _isMCDNorPCDN(String url) {
       _ipRegExp.hasMatch(url);
 }
 
-class VideoItem {
-  VideoItem({
-    this.id,
-    this.baseUrl,
-    this.backupUrl,
-    this.bandWidth,
-    this.mimeType,
-    this.codecs,
-    this.width,
-    this.height,
-    this.frameRate,
-    this.sar,
-    this.startWithSap,
-    this.segmentBase,
-    this.codecid,
-    this.quality,
-  });
-
+abstract class BaseItem {
   int? id;
   String? baseUrl;
   String? backupUrl;
@@ -167,16 +150,31 @@ class VideoItem {
   int? startWithSap;
   Map? segmentBase;
   int? codecid;
-  VideoQuality? quality;
 
-  VideoItem.fromJson(Map<String, dynamic> json) {
+  BaseItem({
+    this.id,
+    this.baseUrl,
+    this.backupUrl,
+    this.bandWidth,
+    this.mimeType,
+    this.codecs,
+    this.width,
+    this.height,
+    this.frameRate,
+    this.sar,
+    this.startWithSap,
+    this.segmentBase,
+    this.codecid,
+  });
+
+  BaseItem.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     baseUrl = json['baseUrl'];
-    var backupUrls = json['backupUrl']?.toList() ?? [];
+    final backupUrls = (json['backupUrl'] as List?)?.cast<String>() ?? [];
     backupUrl = backupUrls.isNotEmpty
         ? backupUrls.firstWhere((i) => !_isMCDNorPCDN(i),
             orElse: () => backupUrls.first)
-        : '';
+        : null;
     bandWidth = json['bandWidth'];
     mimeType = json['mime_type'];
     codecs = json['codecs'];
@@ -187,82 +185,41 @@ class VideoItem {
     startWithSap = json['startWithSap'];
     segmentBase = json['segmentBase'];
     codecid = json['codecid'];
-    quality = VideoQuality.values.firstWhere((i) => i.code == json['id']);
-  }
-
-  Map<String, dynamic> toJson() {
-    Map<String, dynamic> data = <String, dynamic>{};
-    data['id'] = id;
-    data['baseUrl'] = baseUrl;
-    data['backupUrl'] = backupUrl;
-    data['bandWidth'] = bandWidth;
-    data['mime_type'] = mimeType;
-    data['codecs'] = codecs;
-    data['width'] = width;
-    data['height'] = height;
-    data['frameRate'] = frameRate;
-    data['sar'] = sar;
-    data['startWithSap'] = startWithSap;
-    data['segmentBase'] = segmentBase;
-    data['codecid'] = codecid;
-    data['quality'] = quality;
-    return data;
   }
 }
 
-class AudioItem {
-  AudioItem({
-    this.id,
-    this.baseUrl,
-    this.backupUrl,
-    this.bandWidth,
-    this.mimeType,
-    this.codecs,
-    this.width,
-    this.height,
-    this.frameRate,
-    this.sar,
-    this.startWithSap,
-    this.segmentBase,
-    this.codecid,
-    this.quality,
+class VideoItem extends BaseItem {
+  late VideoQuality quality;
+
+  VideoItem({
+    super.id,
+    super.baseUrl,
+    super.backupUrl,
+    super.bandWidth,
+    super.mimeType,
+    super.codecs,
+    super.width,
+    super.height,
+    super.frameRate,
+    super.sar,
+    super.startWithSap,
+    super.segmentBase,
+    super.codecid,
+    required this.quality,
   });
 
-  int? id;
-  String? baseUrl;
-  String? backupUrl;
-  int? bandWidth;
-  String? mimeType;
-  String? codecs;
-  int? width;
-  int? height;
-  String? frameRate;
-  String? sar;
-  int? startWithSap;
-  Map? segmentBase;
-  int? codecid;
-  String? quality;
+  VideoItem.fromJson(Map<String, dynamic> json) : super.fromJson(json) {
+    quality = VideoQuality.fromCode(json['id']);
+  }
+}
 
-  AudioItem.fromJson(Map<String, dynamic> json) {
-    id = json['id'];
-    baseUrl = json['baseUrl'];
-    var backupUrls = json['backupUrl']?.toList() ?? [];
-    backupUrl = backupUrls.isNotEmpty
-        ? backupUrls.firstWhere((i) => !_isMCDNorPCDN(i),
-            orElse: () => backupUrls.first)
-        : '';
-    bandWidth = json['bandWidth'];
-    mimeType = json['mime_type'];
-    codecs = json['codecs'];
-    width = json['width'];
-    height = json['height'];
-    frameRate = json['frameRate'];
-    sar = json['sar'];
-    startWithSap = json['startWithSap'];
-    segmentBase = json['segmentBase'];
-    codecid = json['codecid'];
-    quality =
-        AudioQuality.values.firstWhere((i) => i.code == json['id']).description;
+class AudioItem extends BaseItem {
+  late String quality;
+
+  AudioItem();
+
+  AudioItem.fromJson(Map<String, dynamic> json) : super.fromJson(json) {
+    quality = AudioQuality.fromCode(json['id']).description;
   }
 }
 

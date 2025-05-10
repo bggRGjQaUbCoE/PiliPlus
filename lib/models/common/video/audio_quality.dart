@@ -1,30 +1,16 @@
-// ignore_for_file: constant_identifier_names
+enum AudioQuality {
+  k64(30216, '64K'),
+  k132(30232, '132K'),
+  k192(30280, '192K'),
+  dolby(30250, '杜比全景声'),
+  hiRes(30251, 'Hi-Res无损');
 
-enum AudioQuality { k64, k132, k192, dolby, hiRes }
+  final int code;
+  final String description;
 
-extension AudioQualityExt on AudioQuality {
-  static const List<int> _codeList = [
-    30216,
-    30232,
-    30280,
-    30250,
-    30251,
-  ];
-  int get code => _codeList[index];
+  const AudioQuality(this.code, this.description);
 
-  static AudioQuality? fromCode(int code) {
-    final index = _codeList.indexOf(code);
-    if (index != -1) {
-      return AudioQuality.values[index];
-    }
-    return null;
-  }
+  static final _codeMap = {for (var i in values) i.code: i};
 
-  String get description => const [
-        '64K',
-        '132K',
-        '192K',
-        '杜比全景声',
-        'Hi-Res无损',
-      ][index];
+  static AudioQuality fromCode(int code) => _codeMap[code]!;
 }

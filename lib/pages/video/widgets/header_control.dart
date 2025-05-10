@@ -650,7 +650,7 @@ class HeaderControlState extends State<HeaderControl> {
                                 final int quality = videoFormat[i].quality!;
                                 videoDetailCtr
                                   ..currentVideoQa =
-                                      VideoQualityExt.fromCode(quality)!
+                                      VideoQuality.fromCode(quality)
                                   ..updatePlayer();
 
                                 // update
@@ -659,16 +659,16 @@ class HeaderControlState extends State<HeaderControl> {
                                     .checkConnectivity()
                                     .then((res) {
                                   if (res.contains(ConnectivityResult.wifi)) {
-                                    oldQualityDesc = VideoQualityExt.fromCode(
-                                            GStorage.defaultVideoQa)!
+                                    oldQualityDesc = VideoQuality.fromCode(
+                                            GStorage.defaultVideoQa)
                                         .description;
                                     setting.put(
                                       SettingBoxKey.defaultVideoQa,
                                       quality,
                                     );
                                   } else {
-                                    oldQualityDesc = VideoQualityExt.fromCode(
-                                            GStorage.defaultVideoQaCellular)!
+                                    oldQualityDesc = VideoQuality.fromCode(
+                                            GStorage.defaultVideoQaCellular)
                                         .description;
                                     setting.put(
                                       SettingBoxKey.defaultVideoQaCellular,
@@ -677,7 +677,7 @@ class HeaderControlState extends State<HeaderControl> {
                                   }
                                 });
                                 SmartDialog.showToast(
-                                  "默认画质由：$oldQualityDesc 变为：${VideoQualityExt.fromCode(quality)!.description}",
+                                  "默认画质由：$oldQualityDesc 变为：${VideoQuality.fromCode(quality).description}",
                                 );
                               },
                               // 可能包含会员解锁画质
@@ -745,7 +745,7 @@ class HeaderControlState extends State<HeaderControl> {
                               final int quality = i.id!;
                               videoDetailCtr
                                 ..currentAudioQa =
-                                    AudioQualityExt.fromCode(quality)!
+                                    AudioQuality.fromCode(quality)
                                 ..updatePlayer();
 
                               // update
@@ -754,16 +754,16 @@ class HeaderControlState extends State<HeaderControl> {
                                   .checkConnectivity()
                                   .then((res) {
                                 if (res.contains(ConnectivityResult.wifi)) {
-                                  oldQualityDesc = AudioQualityExt.fromCode(
-                                          GStorage.defaultAudioQa)!
+                                  oldQualityDesc = AudioQuality.fromCode(
+                                          GStorage.defaultAudioQa)
                                       .description;
                                   setting.put(
                                     SettingBoxKey.defaultAudioQa,
                                     quality,
                                   );
                                 } else {
-                                  oldQualityDesc = AudioQualityExt.fromCode(
-                                          GStorage.defaultAudioQaCellular)!
+                                  oldQualityDesc = AudioQuality.fromCode(
+                                          GStorage.defaultAudioQaCellular)
                                       .description;
                                   setting.put(
                                     SettingBoxKey.defaultAudioQaCellular,
@@ -772,12 +772,12 @@ class HeaderControlState extends State<HeaderControl> {
                                 }
                               });
                               SmartDialog.showToast(
-                                "默认音质由：$oldQualityDesc 变为：${AudioQualityExt.fromCode(quality)!.description}",
+                                "默认音质由：$oldQualityDesc 变为：${AudioQuality.fromCode(quality).description}",
                               );
                             },
                             contentPadding:
                                 const EdgeInsets.only(left: 20, right: 20),
-                            title: Text(i.quality!),
+                            title: Text(i.quality),
                             subtitle: Text(
                               i.codecs!,
                               style: subTitleStyle,
@@ -811,7 +811,7 @@ class HeaderControlState extends State<HeaderControl> {
     // 当前视频可用的解码格式
     final List<FormatItem> videoFormat = videoInfo.supportFormats!;
     final List? list = videoFormat
-        .firstWhere((FormatItem e) => e.quality == firstVideo.quality!.code)
+        .firstWhere((FormatItem e) => e.quality == firstVideo.quality.code)
         .codecs;
     if (list == null) {
       SmartDialog.showToast('当前视频不支持选择解码格式');

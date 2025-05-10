@@ -3,6 +3,7 @@ import 'package:PiliPlus/common/skeleton/video_card_h.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/refresh_indicator.dart';
+import 'package:PiliPlus/http/constants.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/models/dynamics/article_list/list.dart';
@@ -10,6 +11,7 @@ import 'package:PiliPlus/models/space_article/item.dart';
 import 'package:PiliPlus/pages/article_list/controller.dart';
 import 'package:PiliPlus/pages/article_list/widgets/item.dart';
 import 'package:PiliPlus/utils/grid.dart';
+import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -188,6 +190,16 @@ class _ArticleListPageState extends State<ArticleListPage> {
           ),
         ),
       ),
+      actions: [
+        IconButton(
+          tooltip: '浏览器打开',
+          onPressed: () {
+            PageUtils.inAppWebview(
+                '${HttpString.baseUrl}/read/readlist/rl${_controller.id}');
+          },
+          icon: const Icon(Icons.open_in_browser_outlined, size: 19),
+        )
+      ],
     );
   }
 }

@@ -138,7 +138,7 @@ class ReplyHttp {
   }
 
   @Deprecated('Use replyReplyListGrpc instead')
-  static Future<LoadingState> replyReplyList({
+  static Future<LoadingState<ReplyReplyData>> replyReplyList({
     required bool isLogin,
     required int oid,
     required int root,

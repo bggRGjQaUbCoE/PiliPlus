@@ -32,7 +32,7 @@ class VideoReplyReplyController extends ReplyController
   int rpid;
   ReplyType replyType; // = ReplyType.video;
 
-  dynamic firstFloor;
+  ReplyInfo? firstFloor;
 
   int? index;
   AnimationController? controller;
@@ -65,9 +65,9 @@ class VideoReplyReplyController extends ReplyController
   bool customHandleResponse(bool isRefresh, Success response) {
     final data = response.response;
 
-    upMid ??= data.subjectControl.upMid.toInt();
+    upMid ??= data.subjectControl.upMid;
     paginationReply = data.paginationReply;
-    isEnd = data.cursor?.isEnd ?? false;
+    isEnd = data.cursor.isEnd;
 
     // reply2Reply // isDialogue.not
     if (data is DetailListReply) {

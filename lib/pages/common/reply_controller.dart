@@ -33,7 +33,7 @@ abstract class ReplyController<R> extends CommonListController<R, ReplyInfo> {
 
   late final bool isLogin = Accounts.main.isLogin;
 
-  dynamic upMid;
+  Int64? upMid;
   Int64? cursorNext;
   FeedPaginationReply? paginationReply;
   late Rx<Mode> mode = Mode.MAIN_LIST_HOT.obs;
@@ -256,8 +256,8 @@ abstract class ReplyController<R> extends CommonListController<R, ReplyInfo> {
   // ref https://github.com/freedom-introvert/biliSendCommAntifraud
   Future<void> checkReply({
     required BuildContext context,
-    required dynamic oid,
-    required dynamic rpid,
+    required int oid,
+    required int? rpid,
     required int replyType,
     required int replyId,
     required String message,
@@ -346,7 +346,7 @@ abstract class ReplyController<R> extends CommonListController<R, ReplyInfo> {
           // not found
           if (context.mounted.not) return;
           // cookie check
-          dynamic res1 = await ReplyHttp.replyReplyList(
+          final res1 = await ReplyHttp.replyReplyList(
             isLogin: isLogin,
             oid: oid,
             root: rpid ?? replyId,
@@ -363,11 +363,11 @@ abstract class ReplyController<R> extends CommonListController<R, ReplyInfo> {
                 '无法找到你的评论。\n\n你的评论：$message',
               );
             }
-          } else if (res1 is Success) {
+          } else {
             // found
             if (context.mounted.not) return;
             // no cookie check
-            dynamic res2 = await ReplyHttp.replyReplyList(
+            final res2 = await ReplyHttp.replyReplyList(
               isLogin: false,
               oid: oid,
               root: rpid ?? replyId,
@@ -387,7 +387,7 @@ abstract class ReplyController<R> extends CommonListController<R, ReplyInfo> {
                       : '评论不可见(${res2.errMsg}): $message',
                 );
               }
-            } else if (res2 is Success) {
+            } else {
               // found
               if (context.mounted) {
                 showReplyCheckResult(isManual
@@ -404,12 +404,12 @@ https://api.bilibili.com/x/v2/reply/reply?oid=$oid&pn=1&ps=20&root=${rpid ?? rep
         }
       }
     } else {
-      for (int i = 1; true; i++) {
+      for (int i = 1;; i++) {
         if (context.mounted.not) return;
-        dynamic res3 = await ReplyHttp.replyReplyList(
+        final res3 = await ReplyHttp.replyReplyList(
           isLogin: false,
           oid: oid,
-          root: rpid ?? replyId,
+          root: rpid,
           pageNum: i,
           type: replyType,
           filterBanWord: false,
@@ -418,8 +418,8 @@ https://api.bilibili.com/x/v2/reply/reply?oid=$oid&pn=1&ps=20&root=${rpid ?? rep
         );
         if (res3 is Error) {
           break;
-        } else if (res3 is Success) {
-          ReplyReplyData data = res3.response;
+        } else {
+          final data = res3.data;
           if (data.replies.isNullOrEmpty) {
             break;
           }
@@ -439,12 +439,12 @@ https://api.bilibili.com/x/v2/reply/reply?oid=$oid&pn=1&ps=20&root=${rpid ?? rep
         }
       }
 
-      for (int i = 1; true; i++) {
+      for (int i = 1;; i++) {
         if (context.mounted.not) return;
-        dynamic res4 = await ReplyHttp.replyReplyList(
+        final res4 = await ReplyHttp.replyReplyList(
           isLogin: true,
           oid: oid,
-          root: rpid ?? replyId,
+          root: rpid,
           pageNum: i,
           type: replyType,
           filterBanWord: false,
@@ -453,8 +453,8 @@ https://api.bilibili.com/x/v2/reply/reply?oid=$oid&pn=1&ps=20&root=${rpid ?? rep
         );
         if (res4 is Error) {
           break;
-        } else if (res4 is Success) {
-          ReplyReplyData data = res4.response;
+        } else {
+          final data = res4.data;
           if (data.replies.isNullOrEmpty) {
             break;
           }

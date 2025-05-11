@@ -37,7 +37,7 @@ class VideoReplyReplyPanel extends CommonSlidePage {
   final int oid;
   final int rpid;
   final int? dialog;
-  final dynamic firstFloor;
+  final ReplyInfo? firstFloor;
   final String? source;
   final ReplyType replyType;
   final bool isDialogue;
@@ -53,14 +53,14 @@ class _VideoReplyReplyPanelState
     extends CommonSlidePageState<VideoReplyReplyPanel>
     with TickerProviderStateMixin {
   late VideoReplyReplyController _videoReplyReplyController;
-  late final _savedReplies = {};
+  late final _savedReplies = <int, String>{};
   late final itemPositionsListener = ItemPositionsListener.create();
   late final _key = GlobalKey<ScaffoldState>();
   late final _listKey = GlobalKey();
   late final _tag =
       Utils.makeHeroTag('${widget.rpid}${widget.dialog}${widget.isDialogue}');
 
-  dynamic get firstFloor =>
+  ReplyInfo? get firstFloor =>
       widget.firstFloor ?? _videoReplyReplyController.firstFloor;
 
   bool get _horizontalPreview =>
@@ -179,11 +179,11 @@ class _VideoReplyReplyPanelState
                   } else if (firstFloor != null) {
                     if (index == 0) {
                       return ReplyItemGrpc(
-                        replyItem: firstFloor,
+                        replyItem: firstFloor!,
                         replyLevel: '2',
                         needDivider: false,
                         onReply: () {
-                          _onReply(firstFloor, -1);
+                          _onReply(firstFloor!, -1);
                         },
                         upMid: _videoReplyReplyController.upMid,
                         onViewImage: widget.onViewImage,
@@ -287,41 +287,40 @@ class _VideoReplyReplyPanelState
         ),
       );
 
-  Function(dynamic imgList, dynamic index)? get _getImageCallback =>
-      _horizontalPreview
-          ? (imgList, index) {
-              final ctr = AnimationController(
-                vsync: this,
-                duration: const Duration(milliseconds: 200),
-              )..forward();
-              PageUtils.onHorizontalPreview(
-                _key,
-                AnimationController(
-                  vsync: this,
-                  duration: Duration.zero,
-                ),
-                ctr,
-                imgList,
-                index,
-                (value) async {
-                  if (value == false) {
-                    await ctr.reverse();
-                  }
-                  try {
-                    ctr.dispose();
-                  } catch (_) {}
-                  if (value == false) {
-                    Get.back();
-                  }
-                },
-              );
-            }
-          : null;
+  Function(List<String>, int)? get _getImageCallback => _horizontalPreview
+      ? (imgList, index) {
+          final ctr = AnimationController(
+            vsync: this,
+            duration: const Duration(milliseconds: 200),
+          )..forward();
+          PageUtils.onHorizontalPreview(
+            _key,
+            AnimationController(
+              vsync: this,
+              duration: Duration.zero,
+            ),
+            ctr,
+            imgList,
+            index,
+            (value) async {
+              if (value == false) {
+                await ctr.reverse();
+              }
+              try {
+                ctr.dispose();
+              } catch (_) {}
+              if (value == false) {
+                Get.back();
+              }
+            },
+          );
+        }
+      : null;
 
-  void _onReply(dynamic item, int index) {
-    dynamic oid = item?.oid.toInt();
-    dynamic root = item?.id.toInt();
-    dynamic key = oid + root;
+  void _onReply(ReplyInfo item, int index) {
+    final oid = item.oid.toInt();
+    final root = item.id.toInt();
+    final key = oid + root;
 
     Navigator.of(context)
         .push(
@@ -357,7 +356,7 @@ class _VideoReplyReplyPanelState
     )
         .then((res) {
       if (res != null) {
-        _savedReplies[key] = null;
+        _savedReplies.remove(key);
         ReplyInfo replyInfo = RequestUtils.replyCast(res);
         _videoReplyReplyController.loadingState.value.dataOrNull
             ?.insert(index + 1, replyInfo);
@@ -385,7 +384,8 @@ class _VideoReplyReplyPanelState
     });
   }
 
-  Widget _buildBody(ThemeData theme, LoadingState loadingState, int index) {
+  Widget _buildBody(
+      ThemeData theme, LoadingState<List<ReplyInfo>?> loadingState, int index) {
     return switch (loadingState) {
       Loading() => IgnorePointer(
           child: CustomScrollView(
@@ -402,7 +402,7 @@ class _VideoReplyReplyPanelState
           ),
         ),
       Success(:var response) => () {
-          if (index == response.length) {
+          if (index == response!.length) {
             _videoReplyReplyController.onLoadMore();
             return Container(
               alignment: Alignment.center,
@@ -445,7 +445,7 @@ class _VideoReplyReplyPanelState
     };
   }
 
-  Widget _replyItem(replyItem, index) {
+  Widget _replyItem(ReplyInfo replyItem, int index) {
     return ReplyItemGrpc(
       replyItem: replyItem,
       replyLevel: widget.isDialogue ? '3' : '2',
@@ -484,18 +484,14 @@ class _VideoReplyReplyPanelState
     );
   }
 
-  int _itemCount(LoadingState loadingState) {
+  int _itemCount(LoadingState<List<ReplyInfo>?> loadingState) {
     if (widget.isDialogue) {
-      return (loadingState is Success ? loadingState.response.length : 0) + 1;
+      return (loadingState.dataOrNull?.length ?? 0) + 1;
     }
     int itemCount = 0;
     if (firstFloor != null) {
       itemCount = 2;
     }
-    if (loadingState is Success) {
-      return loadingState.response.length + itemCount + 2;
-    } else {
-      return itemCount + 2;
-    }
+    return (loadingState.dataOrNull?.length ?? 0) + itemCount + 2;
   }
 }

@@ -25,6 +25,7 @@ import 'package:PiliPlus/utils/url_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dio/dio.dart';
+import 'package:fixnum/fixnum.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -54,7 +55,7 @@ class ReplyItemGrpc extends StatelessWidget {
   final bool needDivider;
   final VoidCallback? onReply;
   final ValueChanged<int?>? onDelete;
-  final dynamic upMid;
+  final Int64? upMid;
   final VoidCallback? showDialogue;
   final Function? getTag;
   final VoidCallback? onViewImage;
@@ -667,7 +668,7 @@ class ReplyItemGrpc extends StatelessWidget {
             content.atNameToMid.containsKey(matchStr.substring(1))) {
           // 处理@用户
           final String userName = matchStr.substring(1);
-          final int userId = content.atNameToMid[userName]!.toInt();
+          final userId = content.atNameToMid[userName]!.toString();
           spanChildren.add(
             TextSpan(
               text: matchStr,
@@ -966,8 +967,8 @@ class ReplyItemGrpc extends StatelessWidget {
     required onDelete,
     required bool isSubReply,
   }) {
-    int ownerMid = Accounts.main.mid;
-    Future<dynamic> menuActionHandler(String type) async {
+    final ownerMid = Int64(Accounts.main.mid);
+    Future<void> menuActionHandler(String type) async {
       late String message = item.content.message;
       switch (type) {
         case 'report':
@@ -1100,7 +1101,7 @@ class ReplyItemGrpc extends StatelessWidget {
     }
 
     final theme = Theme.of(context);
-    Color errorColor = theme.colorScheme.error;
+    final errorColor = theme.colorScheme.error;
     final style = theme.textTheme.titleSmall;
 
     return Padding(
@@ -1129,21 +1130,21 @@ class ReplyItemGrpc extends StatelessWidget {
               ),
             ),
           ),
-          if (ownerMid == upMid.toInt() || ownerMid == item.member.mid.toInt())
+          if (ownerMid == upMid || ownerMid == item.member.mid)
             ListTile(
               onTap: () => menuActionHandler('delete'),
               minLeadingWidth: 0,
               leading: Icon(Icons.delete_outlined, color: errorColor, size: 19),
               title: Text('删除', style: style!.copyWith(color: errorColor)),
             ),
-          if (ownerMid != 0)
+          if (ownerMid != Int64.ZERO)
             ListTile(
               onTap: () => menuActionHandler('report'),
               minLeadingWidth: 0,
               leading: Icon(Icons.error_outline, color: errorColor, size: 19),
               title: Text('举报', style: style!.copyWith(color: errorColor)),
             ),
-          if (replyLevel == '1' && isSubReply.not && ownerMid == upMid.toInt())
+          if (replyLevel == '1' && isSubReply.not && ownerMid == upMid)
             ListTile(
               onTap: () => menuActionHandler('top'),
               minLeadingWidth: 0,
@@ -1171,7 +1172,7 @@ class ReplyItemGrpc extends StatelessWidget {
             leading: const Icon(Icons.save_alt, size: 19),
             title: Text('保存评论', style: style),
           ),
-          if (item.mid.toInt() == ownerMid)
+          if (item.mid == ownerMid)
             ListTile(
               onTap: () => menuActionHandler('checkReply'),
               minLeadingWidth: 0,

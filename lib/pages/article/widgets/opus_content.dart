@@ -37,6 +37,7 @@ class OpusContent extends StatelessWidget {
       TextStyle(
         decoration:
             style?.strikethrough == true ? TextDecoration.lineThrough : null,
+        decorationColor: color
         fontStyle: style?.italic == true ? FontStyle.italic : null,
         fontWeight: style?.bold == true ? FontWeight.bold : null,
         color: color,

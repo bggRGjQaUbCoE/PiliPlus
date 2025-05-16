@@ -6,18 +6,15 @@ import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/dynamics/vote_model.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 
 class VotePanel extends StatefulWidget {
   final VoteInfo voteInfo;
   final FutureOr<LoadingState<VoteInfo>> Function(Set<int>, bool) callback;
-  final bool embedded;
 
   const VotePanel({
     super.key,
     required this.voteInfo,
     required this.callback,
-    this.embedded = false,
   });
 
   @override
@@ -28,7 +25,6 @@ class _VotePanelState extends State<VotePanel> {
   bool anonymity = false;
 
   late VoteInfo _voteInfo;
-  late final bool _embedded;
   late final groupValue = _voteInfo.myVotes?.toSet() ?? {};
   late var _percentage = _cnt2Percentage(_voteInfo.options);
   late bool _enabled = groupValue.isEmpty &&
@@ -36,21 +32,10 @@ class _VotePanelState extends State<VotePanel> {
   late bool _showPercentage = !_enabled;
   late final _maxCnt = _voteInfo.choiceCnt ?? _voteInfo.options.length;
 
-  late final _selectedNum = ValueNotifier(groupValue.length);
-  late final _canVote = ValueNotifier(false);
-
   @override
   void initState() {
     super.initState();
     _voteInfo = widget.voteInfo;
-    _embedded = widget.embedded || widget.voteInfo.options.length < 5;
-  }
-
-  @override
-  void dispose() {
-    _selectedNum.dispose();
-    _canVote.dispose();
-    super.dispose();
   }
 
   @override
@@ -97,45 +82,35 @@ class _VotePanelState extends State<VotePanel> {
                       ? '已结束'
                       : '已完成',
             ),
-            if (_enabled)
-              ValueListenableBuilder(
-                valueListenable: _selectedNum,
-                builder: (_, val, __) => Text('$val / $_maxCnt'),
-              ),
+            if (_enabled) Text('${groupValue.length} / $_maxCnt'),
           ],
         ),
-        if (_embedded)
-          _buildContext()
-        else
-          Flexible(fit: FlexFit.loose, child: _buildContext()),
+        Flexible(fit: FlexFit.loose, child: _buildContext()),
         if (_enabled)
           Padding(
             padding: const EdgeInsets.only(top: 16),
-            child: ValueListenableBuilder(
-              valueListenable: _canVote,
-              builder: (_, val, __) => OutlinedButton(
-                onPressed: val
-                    ? () async {
-                        final res = await widget.callback(
-                          groupValue,
-                          anonymity,
-                        );
-                        if (res.isSuccess) {
-                          if (mounted) {
-                            setState(() {
-                              _enabled = false;
-                              _showPercentage = true;
-                              _voteInfo = res.data;
-                              _percentage = _cnt2Percentage(_voteInfo.options);
-                            });
-                          }
-                        } else {
-                          SmartDialog.showToast((res as Error).errMsg ?? '');
+            child: OutlinedButton(
+              onPressed: groupValue.isNotEmpty
+                  ? () async {
+                      final res = await widget.callback(
+                        groupValue,
+                        anonymity,
+                      );
+                      if (res.isSuccess) {
+                        if (mounted) {
+                          setState(() {
+                            _enabled = false;
+                            _showPercentage = true;
+                            _voteInfo = res.data;
+                            _percentage = _cnt2Percentage(_voteInfo.options);
+                          });
                         }
+                      } else {
+                        res.toast();
                       }
-                    : null,
-                child: const Center(child: Text('投票')),
-              ),
+                    }
+                  : null,
+              child: const Center(child: Text('投票')),
             ),
           ),
       ],
@@ -159,7 +134,6 @@ class _VotePanelState extends State<VotePanel> {
             anonymity = val;
           },
         ),
-        // TODO 转发到动态
       ];
 
   Widget _buildOptions(int index) {
@@ -167,7 +141,7 @@ class _VotePanelState extends State<VotePanel> {
     final selected = groupValue.contains(opt.optidx);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
-      child: PercentageChip<int>(
+      child: PercentageChip(
         label: opt.optdesc!,
         percentage: _showPercentage ? _percentage[index] : null,
         selected: selected,
@@ -184,31 +158,20 @@ class _VotePanelState extends State<VotePanel> {
     } else {
       groupValue.remove(optidx);
     }
-    _selectedNum.value = groupValue.length;
-    _canVote.value = groupValue.isNotEmpty;
     setState(() {});
   }
 
   Widget _buildContext() {
-    return _embedded
-        ? Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              ...List.generate(_voteInfo.options.length, _buildOptions),
-              if (_enabled) ..._checkBoxs,
-            ],
-          )
-        : CustomScrollView(
-            shrinkWrap: true,
-            slivers: [
-              SliverList.builder(
-                itemCount: _voteInfo.options.length,
-                itemBuilder: (context, index) => _buildOptions(index),
-              ),
-              if (_enabled) SliverList.list(children: _checkBoxs)
-            ],
-          );
+    return CustomScrollView(
+      shrinkWrap: true,
+      slivers: [
+        SliverList.builder(
+          itemCount: _voteInfo.options.length,
+          itemBuilder: (context, index) => _buildOptions(index),
+        ),
+        if (_enabled) SliverList.list(children: _checkBoxs)
+      ],
+    );
   }
 
   static List<double> _cnt2Percentage(List<Option> options) {
@@ -219,7 +182,7 @@ class _VotePanelState extends State<VotePanel> {
   }
 }
 
-class PercentageChip<T> extends StatelessWidget {
+class PercentageChip extends StatelessWidget {
   final String label;
   final double? percentage;
   final bool selected;
@@ -237,6 +200,7 @@ class PercentageChip<T> extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     return ChoiceChip(
+      tooltip: label,
       labelPadding: EdgeInsets.zero,
       padding: EdgeInsets.zero,
       showCheckmark: false,
@@ -267,7 +231,7 @@ class PercentageChip<T> extends StatelessWidget {
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(label),
+                    Text(label, maxLines: 1, overflow: TextOverflow.ellipsis),
                     if (selected)
                       Padding(
                         padding: const EdgeInsets.only(left: 4),
@@ -292,54 +256,6 @@ class PercentageChip<T> extends StatelessWidget {
   }
 }
 
-// class VoteCard extends StatefulWidget {
-//   final int voteId;
-//   final bool isSliver;
-
-//   const VoteCard(this.voteId, {super.key, this.isSliver = false});
-
-//   @override
-//   State<VoteCard> createState() => _VoteCardState();
-// }
-
-// class _VoteCardState extends State<VoteCard> {
-//   late Future<LoadingState<VoteInfo>> _futureBuilderFuture;
-
-//   @override
-//   void initState() {
-//     super.initState();
-//     _futureBuilderFuture = getInfo();
-//   }
-
-//   Future<LoadingState<VoteInfo>> getInfo() =>
-//       DynamicsHttp.voteInfo(widget.voteId);
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return FutureBuilder(
-//         future: _futureBuilderFuture,
-//         builder: (context, snapshot) => switch (snapshot.data) {
-//               Success(response: final res) => VotePanel(
-//                   embedded: true,
-//                   voteInfo: res,
-//                   callback: (votes, anonymity) => DynamicsHttp.doVote(
-//                         voteId: widget.voteId,
-//                         votes: votes.toList(),
-//                         anonymity: anonymity,
-//                       )),
-//               Error(errMsg: final msg) => HttpError(
-//                   isSliver: widget.isSliver,
-//                   errMsg: msg,
-//                   onReload: () {
-//                     setState(() {
-//                       _futureBuilderFuture = getInfo();
-//                     });
-//                   }),
-//               _ => const SizedBox.shrink()
-//             });
-//   }
-// }
-
 Future showVoteDialog(BuildContext context, voteId, [dynamicId]) async {
   final voteInfo = await DynamicsHttp.voteInfo(voteId);
   if (context.mounted) {
@@ -348,7 +264,7 @@ Future showVoteDialog(BuildContext context, voteId, [dynamicId]) async {
           context: context,
           builder: (context) => AlertDialog(
                 content: SizedBox(
-                  width: 120,
+                  width: 160,
                   child: VotePanel(
                     voteInfo: voteInfo.data,
                     callback: (votes, anonymity) => DynamicsHttp.doVote(
@@ -361,7 +277,7 @@ Future showVoteDialog(BuildContext context, voteId, [dynamicId]) async {
                 ),
               ));
     } else {
-      SmartDialog.showToast((voteInfo as Error).errMsg ?? '');
+      voteInfo.toast();
     }
   }
 }

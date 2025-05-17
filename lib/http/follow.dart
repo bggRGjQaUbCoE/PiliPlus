@@ -4,7 +4,7 @@ import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/follow/result.dart';
 
 class FollowHttp {
-  static Future followings({
+  static Future<LoadingState<FollowDataModel>> followings({
     int? vmid,
     int? pn,
     int? ps,
@@ -18,12 +18,11 @@ class FollowHttp {
       'order_type': orderType,
     });
     if (res.data['code'] == 0) {
-      return {
-        'status': true,
-        'data': FollowDataModel.fromJson(res.data['data'])
-      };
+      return Success(
+        FollowDataModel.fromJson(res.data['data']),
+      );
     } else {
-      return {'status': false, 'msg': res.data['message']};
+      return Error(res.data['message']);
     }
   }
 

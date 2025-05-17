@@ -38,59 +38,54 @@ class LiveUsers {
   }
 }
 
-class LiveUserItem {
-  LiveUserItem({
-    this.face,
-    this.isReserveRecall,
-    this.jumpUrl,
-    this.mid,
-    this.roomId,
-    this.title,
-    this.uname,
-  });
-
+sealed class UserItem {
   String? face;
+  bool? hasUpdate;
+  late int mid;
+  String? uname;
+
+  UserItem({
+    this.face,
+    this.hasUpdate,
+    int? mid,
+    this.uname,
+  }) : mid = mid ?? -1;
+}
+
+class LiveUserItem extends UserItem {
   bool? isReserveRecall;
   String? jumpUrl;
-  int? mid;
   int? roomId;
   String? title;
-  String? uname;
-  bool hasUpdate = false;
-  String type = 'live';
 
   LiveUserItem.fromJson(Map<String, dynamic> json) {
     face = json['face'];
     isReserveRecall = json['is_reserve_recall'];
     jumpUrl = json['jump_url'];
-    mid = json['mid'];
+    mid = json['mid'] ?? -1;
     roomId = json['room_id'];
     title = json['title'];
     uname = json['uname'];
+    hasUpdate = false;
   }
 }
 
-class UpItem {
+class UpItem extends UserItem {
   UpItem({
-    this.face,
-    this.hasUpdate,
+    super.face,
+    super.hasUpdate,
     // this.isReserveRecall,
-    this.mid,
-    this.uname,
+    super.mid,
+    super.uname,
   });
 
-  String? face;
-  bool? hasUpdate;
   // bool? isReserveRecall;
-  int? mid;
-  String? uname;
-  String type = 'up';
 
   UpItem.fromJson(Map<String, dynamic> json) {
     face = json['face'];
     hasUpdate = json['has_update'];
     // isReserveRecall = json['is_reserve_recall'];
-    mid = json['mid'];
+    mid = json['mid'] ?? -1;
     uname = json['uname'];
   }
 }

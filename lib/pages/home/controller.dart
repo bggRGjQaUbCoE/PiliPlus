@@ -46,7 +46,7 @@ class HomeController extends GetxController
     super.onInit();
     final userInfo = GStorage.userInfo.get('userInfoCache');
     isLogin.value = userInfo != null;
-    userFace.value = userInfo != null ? userInfo.face : '';
+    userFace.value = userInfo != null ? userInfo.face! : '';
 
     hideSearchBar =
         GStorage.setting.get(SettingBoxKey.hideSearchBar, defaultValue: true);

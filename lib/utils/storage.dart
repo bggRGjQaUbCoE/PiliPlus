@@ -56,9 +56,9 @@ class GStorage {
         ),
       );
 
-  static List<String> get tabbarSort =>
-      List<String>.from(setting.get(SettingBoxKey.tabbarSort) ??
-          HomeTabType.values.map((item) => item.name).toList());
+  static List<int> get tabbarSort =>
+      List<int>.from(setting.get(SettingBoxKey.tabBarSort) ??
+          HomeTabType.values.map((item) => item.index).toList());
 
   static List<Pair<SegmentType, SkipType>> get blockSettings {
     List<int> list = List<int>.from(setting.get(SettingBoxKey.blockSettings) ??
@@ -846,7 +846,7 @@ class SettingBoxKey {
       enableMYBar = 'enableMYBar',
       hideSearchBar = 'hideSearchBar', // 收起顶栏
       hideTabBar = 'hideTabBar', // 收起底栏
-      tabbarSort = 'tabbarSort', // 首页tabbar
+      tabBarSort = 'tabBarSort', // 首页tabbar
       dynamicBadgeMode = 'dynamicBadgeMode',
       msgBadgeMode = 'msgBadgeMode',
       msgUnReadTypeV2 = 'msgUnReadTypeV2',

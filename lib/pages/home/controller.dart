@@ -13,8 +13,7 @@ import 'package:get/get.dart';
 
 class HomeController extends GetxController
     with GetSingleTickerProviderStateMixin, ScrollOrRefreshMixin {
-  late List tabs;
-  late List tabsCtrList;
+  late List<HomeTabType> tabs;
   late TabController tabController;
 
   RxBool isLogin = false.obs;
@@ -28,15 +27,7 @@ class HomeController extends GetxController
   late RxString defaultSearch = ''.obs;
   late int lateCheckSearchAt = 0;
 
-  ScrollOrRefreshMixin get controller {
-    final index = tabController.index;
-    return tabsCtrList[index]!(
-        tag: switch (tabs[index]['type']) {
-      HomeTabType.bangumi => HomeTabType.bangumi.name,
-      HomeTabType.cinema => HomeTabType.cinema.name,
-      _ => null,
-    });
-  }
+  ScrollOrRefreshMixin get controller => tabs[tabController.index].ctr();
 
   @override
   ScrollController get scrollController => controller.scrollController;
@@ -73,21 +64,12 @@ class HomeController extends GetxController
   }
 
   void setTabConfig() {
-    final defaultTabs = [...homeTabsConfig];
-    final tabbarSort = GStorage.tabbarSort;
-    defaultTabs
-      ..retainWhere(
-          (item) => tabbarSort.contains((item['type'] as HomeTabType).name))
-      ..sort((a, b) => tabbarSort
-          .indexOf((a['type'] as HomeTabType).name)
-          .compareTo(tabbarSort.indexOf((b['type'] as HomeTabType).name)));
-
-    tabs = defaultTabs;
-
-    tabsCtrList = tabs.map((e) => e['ctr']).toList();
+    List<int>? localTabs = GStorage.setting.get(SettingBoxKey.tabBarSort);
+    tabs = localTabs?.map((i) => HomeTabType.values[i]).toList() ??
+        HomeTabType.values;
 
     tabController = TabController(
-      initialIndex: max(0, tabbarSort.indexOf(HomeTabType.rcmd.name)),
+      initialIndex: max(0, tabs.indexOf(HomeTabType.rcmd)),
       length: tabs.length,
       vsync: this,
     );

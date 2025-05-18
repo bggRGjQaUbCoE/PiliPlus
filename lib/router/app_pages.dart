@@ -35,10 +35,10 @@ import 'package:PiliPlus/pages/search_result/view.dart';
 import 'package:PiliPlus/pages/search_trending/view.dart';
 import 'package:PiliPlus/pages/setting/extra_setting.dart';
 import 'package:PiliPlus/pages/setting/navigation_bar_set.dart';
+import 'package:PiliPlus/pages/setting/pages/bar_set.dart';
 import 'package:PiliPlus/pages/setting/pages/color_select.dart';
 import 'package:PiliPlus/pages/setting/pages/display_mode.dart';
 import 'package:PiliPlus/pages/setting/pages/font_size_select.dart';
-import 'package:PiliPlus/pages/setting/pages/home_tabbar_set.dart';
 import 'package:PiliPlus/pages/setting/pages/logs.dart';
 import 'package:PiliPlus/pages/setting/pages/play_speed_set.dart';
 import 'package:PiliPlus/pages/setting/play_setting.dart';
@@ -116,8 +116,6 @@ class Routes {
     //
     CustomGetPage(name: '/blackListPage', page: () => const BlackListPage()),
     CustomGetPage(name: '/colorSetting', page: () => const ColorSelectPage()),
-    // 首页tabbar
-    CustomGetPage(name: '/tabbarSetting', page: () => const TabbarSetPage()),
     CustomGetPage(
         name: '/fontSizeSetting', page: () => const FontSizeSelectPage()),
     // 屏幕帧率
@@ -165,9 +163,6 @@ class Routes {
     CustomGetPage(name: '/sponsorBlock', page: () => const SponsorBlockPage()),
     CustomGetPage(name: '/createFav', page: () => const CreateFavPage()),
     CustomGetPage(name: '/editProfile', page: () => const EditProfilePage()),
-    // navigation bar
-    CustomGetPage(
-        name: '/navbarSetting', page: () => const NavigationBarSetPage()),
     CustomGetPage(
         name: '/settingsSearch', page: () => const SettingsSearchPage()),
     CustomGetPage(
@@ -176,6 +171,9 @@ class Routes {
         name: '/searchTrending', page: () => const SearchTrendingPage()),
     CustomGetPage(name: '/dynTopic', page: () => const DynTopicPage()),
     CustomGetPage(name: '/articleList', page: () => const ArticleListPage()),
+    CustomGetPage(name: '/barSetting', page: () => const BarSetPage()),
+    CustomGetPage(
+        name: '/navbarSetting', page: () => const NavigationBarSetPage()),
   ];
 }
 

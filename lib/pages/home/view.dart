@@ -49,7 +49,7 @@ class _HomePageState extends State<HomePage>
                 child: TabBar(
                   controller: _homeController.tabController,
                   tabs: [
-                    for (var i in _homeController.tabs) Tab(text: i['label'])
+                    for (var i in _homeController.tabs) Tab(text: i.label)
                   ],
                   isScrollable: true,
                   dividerColor: Colors.transparent,
@@ -71,8 +71,7 @@ class _HomePageState extends State<HomePage>
           Expanded(
             child: tabBarView(
               controller: _homeController.tabController,
-              children:
-                  _homeController.tabs.map<Widget>((e) => e['page']).toList(),
+              children: _homeController.tabs.map((e) => e.page).toList(),
             ),
           ),
         ],

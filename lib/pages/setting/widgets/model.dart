@@ -14,6 +14,7 @@ import 'package:PiliPlus/models/common/audio_normalization.dart';
 import 'package:PiliPlus/models/common/dynamic/dynamic_badge_mode.dart';
 import 'package:PiliPlus/models/common/dynamic/dynamics_type.dart';
 import 'package:PiliPlus/models/common/dynamic/up_panel_position.dart';
+import 'package:PiliPlus/models/common/home_tab_type.dart';
 import 'package:PiliPlus/models/common/member/tab_type.dart';
 import 'package:PiliPlus/models/common/msg/msg_unread_type.dart';
 import 'package:PiliPlus/models/common/nav_bar_config.dart';
@@ -699,7 +700,11 @@ List<SettingsModel> get styleSettings => [
       ),
       SettingsModel(
         settingsType: SettingsType.normal,
-        onTap: (setState) => Get.toNamed('/tabbarSetting'),
+        onTap: (setState) => Get.toNamed('/barSetting', arguments: {
+          'key': SettingBoxKey.tabBarSort,
+          'defaultBars': HomeTabType.values,
+          'title': '首页标签页'
+        }),
         title: '首页标签页',
         subtitle: '删除或调换首页标签页',
         leading: const Icon(Icons.toc_outlined),

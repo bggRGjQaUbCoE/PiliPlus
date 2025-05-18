@@ -80,9 +80,8 @@ class _HotPageState extends CommonPageState<HotPage, HotController>
                               try {
                                 HomeController homeController =
                                     Get.find<HomeController>();
-                                int index = homeController.tabs.indexWhere(
-                                  (item) => item['type'] == HomeTabType.rank,
-                                );
+                                int index = homeController.tabs
+                                    .indexOf(HomeTabType.rank);
                                 if (index != -1) {
                                   homeController.tabController.animateTo(index);
                                 } else {

@@ -6,7 +6,7 @@ import 'package:easy_debounce/easy_throttle.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-abstract mixin class ScrollOrRefreshMixin {
+mixin ScrollOrRefreshMixin {
   ScrollController get scrollController;
 
   void animateToTop() => scrollController.animToTop();

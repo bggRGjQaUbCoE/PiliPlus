@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:PiliPlus/common/widgets/pendant_avatar.dart';
 import 'package:PiliPlus/common/widgets/refresh_indicator.dart'
     show kDragContainerExtentPercentage, displacement;
+import 'package:PiliPlus/http/dynamics.dart';
 import 'package:PiliPlus/http/reply.dart';
 import 'package:PiliPlus/http/video.dart';
 import 'package:PiliPlus/main.dart';
@@ -1798,6 +1799,14 @@ List<SettingsModel> get extraSettings => [
         key: SettingBoxKey.banWordForReply,
         callback: (value) {
           ReplyHttp.replyRegExp = value;
+        },
+      ),
+      _getBanwordModel(
+        context: Get.context!,
+        title: '动态关键词过滤',
+        key: SettingBoxKey.banWordForDyn,
+        callback: (value) {
+          DynamicsHttp.banWordForDyn = value;
         },
       ),
       SettingsModel(

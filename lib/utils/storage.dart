@@ -493,6 +493,9 @@ class GStorage {
     return isTablet;
   }
 
+  static String get banWordForDyn =>
+      GStorage.setting.get(SettingBoxKey.banWordForDyn, defaultValue: '');
+
   static List<double> get dynamicDetailRatio => List<double>.from(setting
       .get(SettingBoxKey.dynamicDetailRatio, defaultValue: const [60.0, 40.0]));
 
@@ -789,6 +792,7 @@ class SettingBoxKey {
       showPgcTimeline = 'showPgcTimeline',
       pageTransition = 'pageTransition',
       optTabletNav = 'optTabletNav',
+      banWordForDyn = 'banWordForDyn',
 
       // WebDAV
       webdavUri = 'webdavUri',

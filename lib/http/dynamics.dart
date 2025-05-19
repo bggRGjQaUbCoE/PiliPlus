@@ -16,6 +16,9 @@ import 'package:PiliPlus/utils/wbi_sign.dart';
 import 'package:dio/dio.dart';
 
 class DynamicsHttp {
+  static RegExp banWordForDyn =
+      RegExp(GStorage.banWordForDyn, caseSensitive: false);
+
   static Future<LoadingState<DynamicsDataModel>> followDynamic({
     DynamicsTabType type = DynamicsTabType.all,
     String? offset,
@@ -35,15 +38,30 @@ class DynamicsHttp {
     if (res.data['code'] == 0) {
       try {
         DynamicsDataModel data = DynamicsDataModel.fromJson(res.data['data']);
-        if (GStorage.antiGoodsDyn) {
-          data.items?.removeWhere(
-            (item) =>
-                item.orig?.modules.moduleDynamic?.additional?.type ==
-                    'ADDITIONAL_TYPE_GOODS' ||
-                item.modules.moduleDynamic?.additional?.type ==
-                    'ADDITIONAL_TYPE_GOODS',
-          );
-        }
+        final antiGoodsDyn = GStorage.antiGoodsDyn;
+        final filterWord = banWordForDyn.pattern.isNotEmpty;
+
+        data.items?.removeWhere(
+          (item) =>
+              (antiGoodsDyn &&
+                  (item.orig?.modules.moduleDynamic?.additional?.type ==
+                          'ADDITIONAL_TYPE_GOODS' ||
+                      item.modules.moduleDynamic?.additional?.type ==
+                          'ADDITIONAL_TYPE_GOODS')) ||
+              (filterWord &&
+                  (item.orig?.modules.moduleDynamic?.major?.opus?.summary?.text
+                              ?.contains(banWordForDyn) ==
+                          true ||
+                      item.modules.moduleDynamic?.major?.opus?.summary?.text
+                              ?.contains(banWordForDyn) ==
+                          true ||
+                      item.orig?.modules.moduleDynamic?.desc?.text
+                              ?.contains(banWordForDyn) ==
+                          true ||
+                      item.modules.moduleDynamic?.desc?.text
+                              ?.contains(banWordForDyn) ==
+                          true)),
+        );
         return Success(data);
       } catch (err) {
         return Error(err.toString());

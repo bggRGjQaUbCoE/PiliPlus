@@ -157,7 +157,8 @@ class MainController extends GetxController {
   }
 
   void setNavBarConfig() {
-    List<int>? navBarSort = GStorage.setting.get(SettingBoxKey.navBarSort);
+    List<int>? navBarSort =
+        (GStorage.setting.get(SettingBoxKey.navBarSort) as List?)?.cast();
     int defaultHomePage = GStorage.defaultHomePage;
     late final List<NavigationBarType> navigationBars;
     if (navBarSort == null) {

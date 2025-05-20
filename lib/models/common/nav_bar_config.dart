@@ -1,9 +1,10 @@
+import 'package:PiliPlus/models/common/enum_with_label.dart';
 import 'package:PiliPlus/pages/dynamics/view.dart';
 import 'package:PiliPlus/pages/home/view.dart';
 import 'package:PiliPlus/pages/media/view.dart';
 import 'package:flutter/material.dart';
 
-enum NavigationBarType {
+enum NavigationBarType implements EnumWithLabel {
   home(
     '首页',
     Icon(Icons.home_outlined, size: 23),
@@ -23,9 +24,10 @@ enum NavigationBarType {
     MediaPage(),
   );
 
+  @override
+  final String label;
   final Icon icon;
   final Icon selectIcon;
-  final String label;
   final Widget page;
 
   const NavigationBarType(this.label, this.icon, this.selectIcon, this.page);

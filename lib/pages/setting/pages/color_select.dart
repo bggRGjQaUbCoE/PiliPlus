@@ -257,11 +257,11 @@ class _ColorSelectPageState extends State<ColorSelectPage> {
               ),
               IgnorePointer(
                 child: NavigationBar(
-                  destinations: defaultNavigationBars
+                  destinations: NavigationBarType.values
                       .map(
                         (item) => NavigationDestination(
-                          icon: item['icon'],
-                          label: item['label'],
+                          icon: item.icon,
+                          label: item.label,
                         ),
                       )
                       .toList(),

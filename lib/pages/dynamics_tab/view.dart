@@ -6,6 +6,7 @@ import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/refresh_indicator.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/dynamic/dynamics_type.dart';
+import 'package:PiliPlus/models/common/nav_bar_config.dart';
 import 'package:PiliPlus/models/dynamics/result.dart';
 import 'package:PiliPlus/pages/common/common_page.dart';
 import 'package:PiliPlus/pages/dynamics/controller.dart';
@@ -82,7 +83,7 @@ class _DynamicsTabPageState
 
   @override
   void listener() {
-    if (_mainController.navigationBars[0]['id'] != 1 &&
+    if (_mainController.navigationBars[0] != NavigationBarType.dynamics &&
         _mainController.selectedIndex.value == 0) {
       return;
     }

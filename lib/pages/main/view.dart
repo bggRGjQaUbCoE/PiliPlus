@@ -4,6 +4,7 @@ import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/tabs.dart';
 import 'package:PiliPlus/models/common/dynamic/dynamic_badge_mode.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
+import 'package:PiliPlus/models/common/nav_bar_config.dart';
 import 'package:PiliPlus/pages/dynamics/controller.dart';
 import 'package:PiliPlus/pages/dynamics/view.dart';
 import 'package:PiliPlus/pages/home/controller.dart';
@@ -94,8 +95,8 @@ class _MainAppState extends State<MainApp>
   void _checkDefaultSearch([bool shouldCheck = false]) {
     if (_mainController.homeIndex != -1 && _homeController.enableSearchWord) {
       if (shouldCheck &&
-          _mainController.pages[_mainController.selectedIndex.value]
-              is! HomePage) {
+          _mainController.navigationBars[_mainController.selectedIndex.value] !=
+              NavigationBarType.home) {
         return;
       }
       int now = DateTime.now().millisecondsSinceEpoch;
@@ -112,8 +113,8 @@ class _MainAppState extends State<MainApp>
         _mainController.homeIndex != -1 &&
         _mainController.msgBadgeMode != DynamicBadgeMode.hidden) {
       if (shouldCheck &&
-          _mainController.pages[_mainController.selectedIndex.value]
-              is! HomePage) {
+          _mainController.navigationBars[_mainController.selectedIndex.value] !=
+              NavigationBarType.home) {
         return;
       }
       int now = DateTime.now().millisecondsSinceEpoch;
@@ -128,6 +129,7 @@ class _MainAppState extends State<MainApp>
   void setIndex(int value) {
     feedBack();
 
+    final currentPage = _mainController.navigationBars[value].page;
     if (value != _mainController.selectedIndex.value) {
       _mainController.selectedIndex.value = value;
       if (_mainController.mainTabBarView) {
@@ -135,7 +137,6 @@ class _MainAppState extends State<MainApp>
       } else {
         _mainController.controller.jumpToPage(value);
       }
-      dynamic currentPage = _mainController.pages[value];
       if (currentPage is HomePage) {
         _checkDefaultSearch();
         _checkUnread();
@@ -143,8 +144,6 @@ class _MainAppState extends State<MainApp>
         _mainController.setCount();
       }
     } else {
-      dynamic currentPage = _mainController.pages[value];
-
       int now = DateTime.now().millisecondsSinceEpoch;
       if (now - _lastSelectTime < 500) {
         EasyThrottle.throttle('topOrRefresh', const Duration(milliseconds: 500),
@@ -241,16 +240,23 @@ class _MainAppState extends State<MainApp>
                                           ..._mainController.navigationBars
                                               .map((e) {
                                             return NavigationDrawerDestination(
-                                              label: Text(e['label']),
+                                              label: Text(e.label),
                                               icon: _buildIcon(
-                                                id: e['id'],
-                                                count: e['count'],
-                                                icon: e['icon'],
+                                                type: e,
+                                                count: e ==
+                                                        NavigationBarType
+                                                            .dynamics
+                                                    ? _mainController.dynCount
+                                                    : 0,
                                               ),
                                               selectedIcon: _buildIcon(
-                                                id: e['id'],
-                                                count: e['count'],
-                                                icon: e['selectIcon'],
+                                                type: e,
+                                                count: e ==
+                                                        NavigationBarType
+                                                            .dynamics
+                                                    ? _mainController.dynCount
+                                                    : 0,
+                                                selected: true,
                                               ),
                                             );
                                           }),
@@ -271,17 +277,20 @@ class _MainAppState extends State<MainApp>
                               destinations: _mainController.navigationBars
                                   .map(
                                     (e) => NavigationRailDestination(
+                                      label: Text(e.label),
                                       icon: _buildIcon(
-                                        id: e['id'],
-                                        count: e['count'],
-                                        icon: e['icon'],
+                                        type: e,
+                                        count: e == NavigationBarType.dynamics
+                                            ? _mainController.dynCount
+                                            : 0,
                                       ),
                                       selectedIcon: _buildIcon(
-                                        id: e['id'],
-                                        count: e['count'],
-                                        icon: e['selectIcon'],
+                                        type: e,
+                                        count: e == NavigationBarType.dynamics
+                                            ? _mainController.dynCount
+                                            : 0,
+                                        selected: true,
                                       ),
-                                      label: Text(e['label']),
                                     ),
                                   )
                                   .toList(),
@@ -315,12 +324,16 @@ class _MainAppState extends State<MainApp>
                               isPortrait ? Axis.horizontal : Axis.vertical,
                           physics: const NeverScrollableScrollPhysics(),
                           controller: _mainController.controller,
-                          children: _mainController.pages,
+                          children: _mainController.navigationBars
+                              .map((i) => i.page)
+                              .toList(),
                         )
                       : PageView(
                           physics: const NeverScrollableScrollPhysics(),
                           controller: _mainController.controller,
-                          children: _mainController.pages,
+                          children: _mainController.navigationBars
+                              .map((i) => i.page)
+                              .toList(),
                         ),
                 ),
               ),
@@ -353,17 +366,22 @@ class _MainAppState extends State<MainApp>
                                           _mainController.navigationBars.map(
                                         (e) {
                                           return NavigationDestination(
+                                            label: e.label,
                                             icon: _buildIcon(
-                                              id: e['id'],
-                                              count: e['count'],
-                                              icon: e['icon'],
+                                              type: e,
+                                              count: e ==
+                                                      NavigationBarType.dynamics
+                                                  ? _mainController.dynCount
+                                                  : 0,
                                             ),
                                             selectedIcon: _buildIcon(
-                                              id: e['id'],
-                                              count: e['count'],
-                                              icon: e['selectIcon'],
+                                              type: e,
+                                              count: e ==
+                                                      NavigationBarType.dynamics
+                                                  ? _mainController.dynCount
+                                                  : 0,
+                                              selected: true,
                                             ),
-                                            label: e['label'],
                                           );
                                         },
                                       ).toList(),
@@ -383,17 +401,24 @@ class _MainAppState extends State<MainApp>
                                       items: _mainController.navigationBars
                                           .map(
                                             (e) => BottomNavigationBarItem(
+                                              label: e.label,
                                               icon: _buildIcon(
-                                                id: e['id'],
-                                                count: e['count'],
-                                                icon: e['icon'],
+                                                type: e,
+                                                count: e ==
+                                                        NavigationBarType
+                                                            .dynamics
+                                                    ? _mainController.dynCount
+                                                    : 0,
                                               ),
                                               activeIcon: _buildIcon(
-                                                id: e['id'],
-                                                count: e['count'],
-                                                icon: e['selectIcon'],
+                                                type: e,
+                                                count: e ==
+                                                        NavigationBarType
+                                                            .dynamics
+                                                    ? _mainController.dynCount
+                                                    : 0,
+                                                selected: true,
                                               ),
-                                              label: e['label'],
                                             ),
                                           )
                                           .toList(),
@@ -409,21 +434,21 @@ class _MainAppState extends State<MainApp>
   }
 
   Widget _buildIcon({
-    required int id,
+    required NavigationBarType type,
     required int count,
-    required Widget icon,
-  }) =>
-      id == 1 &&
-              _mainController.dynamicBadgeMode != DynamicBadgeMode.hidden &&
-              count > 0
-          ? Badge(
-              label: _mainController.dynamicBadgeMode == DynamicBadgeMode.number
-                  ? Text(count.toString())
-                  : null,
-              padding: const EdgeInsets.fromLTRB(6, 0, 6, 0),
-              child: icon,
-            )
-          : icon;
+    bool selected = false,
+  }) {
+    final icon = selected ? type.selectIcon : type.icon;
+    return count > 0
+        ? Badge(
+            label: _mainController.dynamicBadgeMode == DynamicBadgeMode.number
+                ? Text(count.toString())
+                : null,
+            padding: const EdgeInsets.fromLTRB(6, 0, 6, 0),
+            child: icon,
+          )
+        : icon;
+  }
 
   Widget userAndSearchVertical(ThemeData theme) {
     return Column(

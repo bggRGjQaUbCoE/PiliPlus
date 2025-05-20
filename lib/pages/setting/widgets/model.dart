@@ -592,8 +592,8 @@ List<SettingsModel> get styleSettings => [
               return SelectDialog<int>(
                 title: '首页启动页',
                 value: GStorage.defaultHomePage,
-                values: defaultNavigationBars.map((e) {
-                  return (e['id'] as int, e['label'] as String);
+                values: NavigationBarType.values.map((e) {
+                  return (e.index, e.label);
                 }).toList(),
               );
             },
@@ -607,7 +607,7 @@ List<SettingsModel> get styleSettings => [
         leading: const Icon(Icons.home_outlined),
         title: '默认启动页',
         getSubtitle: () =>
-            '当前启动页：${defaultNavigationBars.firstWhere((e) => e['id'] == GStorage.defaultHomePage)['label']}',
+            '当前启动页：${NavigationBarType.values.firstWhere((e) => e.index == GStorage.defaultHomePage).label}',
       ),
       SettingsModel(
         settingsType: SettingsType.normal,
@@ -711,8 +711,13 @@ List<SettingsModel> get styleSettings => [
       ),
       SettingsModel(
         settingsType: SettingsType.normal,
-        onTap: (setState) => Get.toNamed('/navbarSetting'),
+        onTap: (setState) => Get.toNamed('/barSetting', arguments: {
+          'key': SettingBoxKey.navBarSort,
+          'defaultBars': NavigationBarType.values,
+          'title': 'Navbar'
+        }),
         title: 'Navbar编辑',
+        subtitle: '删除或调换Navbar',
         leading: const Icon(Icons.toc_outlined),
       ),
       if (Platform.isAndroid)

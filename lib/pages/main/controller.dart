@@ -5,18 +5,14 @@ import 'package:PiliPlus/grpc/im.dart';
 import 'package:PiliPlus/models/common/dynamic/dynamic_badge_mode.dart';
 import 'package:PiliPlus/models/common/msg/msg_unread_type.dart';
 import 'package:PiliPlus/models/common/nav_bar_config.dart';
-import 'package:PiliPlus/pages/dynamics/view.dart';
-import 'package:PiliPlus/pages/home/view.dart';
-import 'package:PiliPlus/pages/media/view.dart';
 import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/utils.dart';
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class MainController extends GetxController {
-  List<Widget> pages = <Widget>[];
-  RxList navigationBars = [].obs;
+  RxList<NavigationBarType> navigationBars = <NavigationBarType>[].obs;
+  int dynCount = 0;
 
   StreamController<bool>? bottomBarStream;
   late bool hideTabBar;
@@ -58,7 +54,7 @@ class MainController extends GetxController {
         SettingBoxKey.dynamicBadgeMode,
         defaultValue: DynamicBadgeMode.number.index)];
 
-    dynIndex = navigationBars.indexWhere((e) => e['id'] == 1);
+    dynIndex = navigationBars.indexOf(NavigationBarType.dynamics);
     if (dynamicBadgeMode != DynamicBadgeMode.hidden) {
       if (dynIndex != -1) {
         if (checkDynamic) {
@@ -68,7 +64,7 @@ class MainController extends GetxController {
       }
     }
 
-    homeIndex = navigationBars.indexWhere((e) => e['id'] == 0);
+    homeIndex = navigationBars.indexOf(NavigationBarType.home);
     if (msgBadgeMode != DynamicBadgeMode.hidden) {
       if (homeIndex != -1) {
         lastCheckUnreadAt = DateTime.now().millisecondsSinceEpoch;
@@ -141,8 +137,8 @@ class MainController extends GetxController {
   }
 
   Future<void> setCount([int count = 0]) async {
-    if (dynIndex == -1 || navigationBars[dynIndex]['count'] == count) return;
-    navigationBars[dynIndex]['count'] = count;
+    if (dynIndex == -1 || dynCount == count) return;
+    dynCount = count;
     navigationBars.refresh();
   }
 
@@ -161,28 +157,18 @@ class MainController extends GetxController {
   }
 
   void setNavBarConfig() {
-    List defaultNavTabs = [...defaultNavigationBars];
-    List navBarSort =
-        GStorage.setting.get(SettingBoxKey.navBarSort, defaultValue: [0, 1, 2]);
-    defaultNavTabs
-      ..retainWhere((item) => navBarSort.contains(item['id']))
-      ..sort((a, b) =>
-          navBarSort.indexOf(a['id']).compareTo(navBarSort.indexOf(b['id'])));
-    navigationBars.value = defaultNavTabs;
-    int defaultHomePage = GStorage.setting
-        .get(SettingBoxKey.defaultHomePage, defaultValue: 0) as int;
-    int defaultIndex =
-        navigationBars.indexWhere((item) => item['id'] == defaultHomePage);
-    // 如果找不到匹配项，默认索引设置为0或其他合适的值
-    selectedIndex.value = defaultIndex != -1 ? defaultIndex : 0;
-    pages = navigationBars
-        .map<Widget>((e) => switch (e['id']) {
-              0 => const HomePage(),
-              1 => const DynamicsPage(),
-              2 => const MediaPage(),
-              _ => throw UnimplementedError(),
-            })
-        .toList();
+    List<int>? navBarSort = GStorage.setting.get(SettingBoxKey.navBarSort);
+    int defaultHomePage = GStorage.defaultHomePage;
+    late final List<NavigationBarType> navigationBars;
+    if (navBarSort == null) {
+      navigationBars = NavigationBarType.values;
+    } else {
+      navigationBars =
+          navBarSort.map((i) => NavigationBarType.values[i]).toList();
+      if (!navBarSort.contains(defaultHomePage)) defaultHomePage = 0;
+    }
+    this.navigationBars.value = navigationBars;
+    selectedIndex.value = defaultHomePage;
   }
 
   @override

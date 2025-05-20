@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/models/common/nav_bar_config.dart';
 import 'package:PiliPlus/models/user/fav_folder.dart';
 import 'package:PiliPlus/pages/common/common_page.dart';
 import 'package:PiliPlus/pages/main/controller.dart';
@@ -29,7 +30,7 @@ class _MediaPageState extends CommonPageState<MediaPage, MediaController>
 
   @override
   void listener() {
-    if (_mainController.navigationBars[0]['id'] != 2 &&
+    if (_mainController.navigationBars[0] != NavigationBarType.media &&
         _mainController.selectedIndex.value == 0) {
       return;
     }

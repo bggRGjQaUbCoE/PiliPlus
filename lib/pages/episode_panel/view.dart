@@ -408,8 +408,9 @@ class _EpisodePanelState extends CommonSlidePageState<EpisodePanel> {
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.start,
+              spacing: 10,
               children: [
-                if (cover?.isNotEmpty == true) ...[
+                if (cover?.isNotEmpty == true)
                   AspectRatio(
                     aspectRatio: StyleString.aspectRatio,
                     child: LayoutBuilder(
@@ -444,17 +445,14 @@ class _EpisodePanelState extends CommonSlidePageState<EpisodePanel> {
                         );
                       },
                     ),
-                  ),
-                  const SizedBox(width: 10),
-                ] else if (isCurrentIndex) ...[
+                  )
+                else if (isCurrentIndex)
                   Image.asset(
                     'assets/images/live.png',
                     color: primary,
                     height: 12,
                     semanticLabel: "正在播放：",
                   ),
-                  const SizedBox(width: 10),
-                ],
                 Expanded(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,

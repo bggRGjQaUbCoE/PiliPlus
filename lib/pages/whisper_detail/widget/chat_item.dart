@@ -269,6 +269,7 @@ class ChatItem extends StatelessWidget {
         padding: const EdgeInsets.all(12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          spacing: 6,
           children: [
             Text(
               content['main_title'],
@@ -279,8 +280,7 @@ class ChatItem extends StatelessWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            for (var i in content['sub_cards']) ...[
-              const SizedBox(height: 6),
+            for (var i in content['sub_cards'])
               GestureDetector(
                 onTap: () async {
                   RegExp bvRegex =
@@ -309,13 +309,13 @@ class ChatItem extends StatelessWidget {
                   }
                 },
                 child: Row(
+                  spacing: 6,
                   children: [
                     NetworkImgLayer(
                       width: 130,
                       height: 130 * 9 / 16,
                       src: i['cover_url'],
                     ),
-                    const SizedBox(width: 6),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -354,7 +354,6 @@ class ChatItem extends StatelessWidget {
                   ],
                 ),
               ),
-            ],
           ],
         ),
       ),

@@ -83,10 +83,9 @@ class SearchArticleController
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
+              spacing: 10,
               children: [
-                const SizedBox(height: 10),
                 const Text('排序', style: TextStyle(fontSize: 16)),
-                const SizedBox(height: 10),
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,
@@ -115,9 +114,7 @@ class SearchArticleController
                       )
                       .toList(),
                 ),
-                const SizedBox(height: 20),
                 const Text('分区', style: TextStyle(fontSize: 16)),
-                const SizedBox(height: 10),
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,

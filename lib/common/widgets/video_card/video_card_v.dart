@@ -177,8 +177,9 @@ class VideoCardV extends StatelessWidget {
             ),
             videoStat(context, theme),
             Row(
+              spacing: 2,
               children: [
-                if (videoItem.goto == 'bangumi') ...[
+                if (videoItem.goto == 'bangumi')
                   PBadge(
                     text: videoItem.bangumiBadge,
                     isStack: false,
@@ -186,18 +187,14 @@ class VideoCardV extends StatelessWidget {
                     type: PBadgeType.line_primary,
                     fontSize: 9,
                   ),
-                  const SizedBox(width: 2),
-                ],
-                if (videoItem.rcmdReason != null) ...[
+                if (videoItem.rcmdReason != null)
                   PBadge(
                     text: videoItem.rcmdReason,
                     isStack: false,
                     size: PBadgeSize.small,
                     type: PBadgeType.secondary,
                   ),
-                  const SizedBox(width: 2),
-                ],
-                if (videoItem.goto == 'picture') ...[
+                if (videoItem.goto == 'picture')
                   const PBadge(
                     text: '动态',
                     isStack: false,
@@ -205,17 +202,13 @@ class VideoCardV extends StatelessWidget {
                     type: PBadgeType.line_primary,
                     fontSize: 9,
                   ),
-                  const SizedBox(width: 2),
-                ],
-                if (videoItem.isFollowed) ...[
+                if (videoItem.isFollowed)
                   const PBadge(
                     text: '已关注',
                     isStack: false,
                     size: PBadgeSize.small,
                     type: PBadgeType.secondary,
                   ),
-                  const SizedBox(width: 2),
-                ],
                 Expanded(
                   flex: 1,
                   child: Text(

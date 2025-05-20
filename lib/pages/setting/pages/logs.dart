@@ -74,7 +74,7 @@ class _LogsPageState extends State<LogsPage> {
             }
             return l;
           })
-          .where((dynamic l) => l.replaceAll("\n", "").trim().isNotEmpty)
+          .where((l) => l.replaceAll("\n", "").trim().isNotEmpty)
           .join("\n");
       if (date != null || body != '') {
         result.add({'date': date, 'body': body, 'expand': false});
@@ -159,8 +159,10 @@ class _LogsPageState extends State<LogsPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
+                      spacing: 5,
                       children: [
                         Row(
+                          spacing: 10,
                           children: [
                             Text(
                               log['date'].toString(),
@@ -171,7 +173,6 @@ class _LogsPageState extends State<LogsPage> {
                                     .fontSize,
                               ),
                             ),
-                            const SizedBox(width: 10),
                             TextButton.icon(
                               style: TextButton.styleFrom(
                                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -195,7 +196,6 @@ class _LogsPageState extends State<LogsPage> {
                             )
                           ],
                         ),
-                        const SizedBox(height: 5),
                         Card(
                           elevation: 1,
                           margin: EdgeInsets.zero,

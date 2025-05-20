@@ -192,15 +192,16 @@ class ReplyItemGrpc extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.center,
+            spacing: 12,
             children: [
               lfAvtar(),
-              const SizedBox(width: 12),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Row(
                     mainAxisSize: MainAxisSize.min,
+                    spacing: 6,
                     children: [
                       Text(
                         replyItem.member.name,
@@ -212,13 +213,11 @@ class ReplyItemGrpc extends StatelessWidget {
                           fontSize: 13,
                         ),
                       ),
-                      const SizedBox(width: 6),
                       Image.asset(
                         'assets/images/lv/lv${replyItem.member.isSeniorMember == 1 ? '6_s' : replyItem.member.level}.png',
                         height: 11,
                         semanticLabel: "等级：${replyItem.member.level}",
                       ),
-                      const SizedBox(width: 6),
                       if (replyItem.mid == upMid)
                         const PBadge(
                           text: 'UP',

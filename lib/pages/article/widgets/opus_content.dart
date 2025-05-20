@@ -274,6 +274,7 @@ class OpusContent extends StatelessWidget {
                     padding: const EdgeInsets.all(8),
                     child: switch (element.linkCard?.card?.type) {
                       'LINK_CARD_TYPE_UGC' => Row(
+                          spacing: 10,
                           children: [
                             NetworkImgLayer(
                               radius: 6,
@@ -281,7 +282,6 @@ class OpusContent extends StatelessWidget {
                               height: 65,
                               src: element.linkCard!.card!.ugc!.cover,
                             ),
-                            const SizedBox(width: 10),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -309,6 +309,7 @@ class OpusContent extends StatelessWidget {
                           ],
                         ),
                       'LINK_CARD_TYPE_COMMON' => Row(
+                          spacing: 10,
                           children: [
                             NetworkImgLayer(
                               radius: 6,
@@ -316,7 +317,6 @@ class OpusContent extends StatelessWidget {
                               height: 65,
                               src: element.linkCard!.card!.common!.cover,
                             ),
-                            const SizedBox(width: 10),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -346,6 +346,7 @@ class OpusContent extends StatelessWidget {
                           ],
                         ),
                       'LINK_CARD_TYPE_LIVE' => Row(
+                          spacing: 10,
                           children: [
                             NetworkImgLayer(
                               radius: 6,
@@ -353,7 +354,6 @@ class OpusContent extends StatelessWidget {
                               height: 65,
                               src: element.linkCard!.card!.live!.cover,
                             ),
-                            const SizedBox(width: 10),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -384,6 +384,7 @@ class OpusContent extends StatelessWidget {
                           ],
                         ),
                       'LINK_CARD_TYPE_OPUS' => Row(
+                          spacing: 10,
                           children: [
                             NetworkImgLayer(
                               radius: 6,
@@ -391,7 +392,6 @@ class OpusContent extends StatelessWidget {
                               height: 65,
                               src: element.linkCard!.card!.opus!.cover,
                             ),
-                            const SizedBox(width: 10),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -410,6 +410,7 @@ class OpusContent extends StatelessWidget {
                           ],
                         ),
                       'LINK_CARD_TYPE_VOTE' => Row(
+                          spacing: 10,
                           children: [
                             Container(
                               decoration: BoxDecoration(
@@ -426,7 +427,6 @@ class OpusContent extends StatelessWidget {
                                 color: colorScheme.onSurfaceVariant,
                               ),
                             ),
-                            const SizedBox(width: 10),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -445,6 +445,7 @@ class OpusContent extends StatelessWidget {
                           ],
                         ),
                       'LINK_CARD_TYPE_MUSIC' => Row(
+                          spacing: 10,
                           children: [
                             NetworkImgLayer(
                               radius: 6,
@@ -452,7 +453,6 @@ class OpusContent extends StatelessWidget {
                               height: 65,
                               src: element.linkCard!.card!.music!.cover,
                             ),
-                            const SizedBox(width: 10),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -482,6 +482,7 @@ class OpusContent extends StatelessWidget {
                                 }
                               },
                               child: Row(
+                                spacing: 10,
                                 children: [
                                   NetworkImgLayer(
                                     radius: 6,
@@ -489,7 +490,6 @@ class OpusContent extends StatelessWidget {
                                     height: 65,
                                     src: e.cover,
                                   ),
-                                  const SizedBox(width: 10),
                                   Expanded(
                                     child: Column(
                                       crossAxisAlignment:
@@ -694,20 +694,18 @@ Widget moduleBlockedItem(
     decoration: bgImg(),
     padding: const EdgeInsets.all(12),
     child: Row(
+      spacing: 8,
       children: [
-        if (moduleBlocked.icon != null) ...[
-          icon(42),
-          const SizedBox(width: 8),
-        ],
+        if (moduleBlocked.icon != null) icon(42),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
+            spacing: 2,
             children: [
               if (moduleBlocked.title?.isNotEmpty == true)
                 Text(moduleBlocked.title!),
-              if (moduleBlocked.hintMessage?.isNotEmpty == true) ...[
-                const SizedBox(height: 2),
+              if (moduleBlocked.hintMessage?.isNotEmpty == true)
                 Text(
                   moduleBlocked.hintMessage!,
                   style: TextStyle(
@@ -715,12 +713,10 @@ Widget moduleBlockedItem(
                     color: theme.colorScheme.outline,
                   ),
                 ),
-              ],
             ],
           ),
         ),
-        if (moduleBlocked.button != null) ...[
-          const SizedBox(width: 8),
+        if (moduleBlocked.button != null)
           btn(
             visualDensity: const VisualDensity(vertical: -3, horizontal: -4),
             shape: const RoundedRectangleBorder(
@@ -728,7 +724,6 @@ Widget moduleBlockedItem(
             ),
             padding: const EdgeInsets.symmetric(horizontal: 10),
           ),
-        ],
       ],
     ),
   );

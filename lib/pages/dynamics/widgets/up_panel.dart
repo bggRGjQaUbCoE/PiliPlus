@@ -37,57 +37,58 @@ class _UpPanelState extends State<UpPanel> {
       physics: const AlwaysScrollableScrollPhysics(),
       controller: widget.dynamicsController.scrollController,
       slivers: [
-        SliverToBoxAdapter(
-          child: InkWell(
-            onTap: () => setState(() {
-              widget.dynamicsController.showLiveItems =
-                  !widget.dynamicsController.showLiveItems;
-            }),
-            child: Container(
-              alignment: Alignment.center,
-              height: isTop ? 76 : 60,
-              padding: isTop ? const EdgeInsets.only(left: 12, right: 6) : null,
-              child: Text.rich(
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 13,
-                  color: theme.colorScheme.primary,
-                ),
-                TextSpan(
-                  children: [
-                    TextSpan(
-                      text:
-                          'Live(${widget.dynamicsController.upData.value.liveUsers?.count})', // checked
-                    ),
-                    if (!isTop) ...[
-                      const TextSpan(text: '\n'),
-                      WidgetSpan(
-                        alignment: PlaceholderAlignment.middle,
-                        child: Icon(
-                          widget.dynamicsController.showLiveItems
-                              ? Icons.expand_less
-                              : Icons.expand_more,
-                          size: 12,
-                          color: theme.colorScheme.primary,
-                        ),
+        if (widget.dynamicsController.upData.value.liveUsers?.count != null)
+          SliverToBoxAdapter(
+            child: InkWell(
+              onTap: () => setState(() {
+                widget.dynamicsController.showLiveItems =
+                    !widget.dynamicsController.showLiveItems;
+              }),
+              child: Container(
+                alignment: Alignment.center,
+                height: isTop ? 76 : 60,
+                padding: isTop ? const EdgeInsets.only(left: 12, right: 6) : null,
+                child: Text.rich(
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: theme.colorScheme.primary,
+                  ),
+                  TextSpan(
+                    children: [
+                      TextSpan(
+                        text:
+                            'Live(${widget.dynamicsController.upData.value.liveUsers?.count})', // checked
                       ),
-                    ] else
-                      WidgetSpan(
-                        alignment: PlaceholderAlignment.middle,
-                        child: Icon(
-                          widget.dynamicsController.showLiveItems
-                              ? Icons.keyboard_arrow_right
-                              : Icons.keyboard_arrow_left,
-                          color: theme.colorScheme.primary,
-                          size: 14,
+                      if (!isTop) ...[
+                        const TextSpan(text: '\n'),
+                        WidgetSpan(
+                          alignment: PlaceholderAlignment.middle,
+                          child: Icon(
+                            widget.dynamicsController.showLiveItems
+                                ? Icons.expand_less
+                                : Icons.expand_more,
+                            size: 12,
+                            color: theme.colorScheme.primary,
+                          ),
                         ),
-                      ),
-                  ],
+                      ] else
+                        WidgetSpan(
+                          alignment: PlaceholderAlignment.middle,
+                          child: Icon(
+                            widget.dynamicsController.showLiveItems
+                                ? Icons.keyboard_arrow_right
+                                : Icons.keyboard_arrow_left,
+                            color: theme.colorScheme.primary,
+                            size: 14,
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
               ),
             ),
           ),
-        ),
         if (widget.dynamicsController.showLiveItems &&
             liveList?.isNotEmpty == true)
           SliverList.builder(

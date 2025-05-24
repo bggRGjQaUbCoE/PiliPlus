@@ -219,7 +219,7 @@ Commit Hash: ${BuildConfig.commitHash}''',
                 clipBehavior: Clip.hardEdge,
                 children: [
                   ListTile(
-                    title: const Text('导出'),
+                    title: const Text('导出登录信息至剪贴板'),
                     onTap: () {
                       Get.back();
                       String res = jsonEncode(Accounts.account.toMap());
@@ -227,7 +227,7 @@ Commit Hash: ${BuildConfig.commitHash}''',
                     },
                   ),
                   ListTile(
-                    title: const Text('导入'),
+                    title: const Text('从剪贴板导入登录信息'),
                     onTap: () async {
                       Get.back();
                       ClipboardData? data =

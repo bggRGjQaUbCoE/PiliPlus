@@ -19,18 +19,17 @@ class UrlUtils {
       final response = await Request.dio.head(
         url,
         options: Options(
-            followRedirects: false,
-            validateStatus: (status) {
-              return 200 <= status! && status < 400;
-            },
-            extra: {'account': AnonymousAccount()}),
+          followRedirects: false,
+          validateStatus: (status) {
+            return 200 <= status! && status < 400;
+          },
+          extra: {'account': AnonymousAccount()},
+        ),
       );
-      if (response.isRedirect) {
-        redirectUrl = response.headers['location']?.firstOrNull;
-        debugPrint('redirectUrl: $redirectUrl');
-        if (redirectUrl != null && !redirectUrl.startsWith('http')) {
-          redirectUrl = Uri.parse(url).resolve(redirectUrl).toString();
-        }
+      redirectUrl = response.headers['location']?.firstOrNull;
+      debugPrint('redirectUrl: $redirectUrl');
+      if (redirectUrl != null && !redirectUrl.startsWith('http')) {
+        redirectUrl = Uri.parse(url).resolve(redirectUrl).toString();
       }
     } catch (_) {}
     if (returnOri && redirectUrl == null) redirectUrl = url;

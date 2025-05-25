@@ -268,29 +268,25 @@ class _ArticlePageState extends State<ArticlePage>
                     return LayoutBuilder(builder: (context, constraints) {
                       final maxWidth = constraints.maxWidth - 2 * padding - 24;
                       return Padding(
-                          padding: EdgeInsets.symmetric(horizontal: padding),
-                          child: SelectionArea(
-                            child: CustomScrollView(
-                              controller: _articleCtr.scrollController,
-                              physics: const AlwaysScrollableScrollPhysics(),
-                              slivers: [
-                                _buildContent(theme, maxWidth),
-                                SelectionContainer.disabled(
-                                    child: SliverToBoxAdapter(
-                                  child: Divider(
-                                    thickness: 8,
-                                    color: theme.dividerColor
-                                        .withValues(alpha: 0.05),
-                                  ),
-                                )),
-                                SelectionContainer.disabled(
-                                    child: _buildReplyHeader(theme)),
-                                SelectionContainer.disabled(
-                                    child: Obx(() => _buildReplyList(theme,
-                                        _articleCtr.loadingState.value))),
-                              ],
+                        padding: EdgeInsets.symmetric(horizontal: padding),
+                        child: CustomScrollView(
+                          controller: _articleCtr.scrollController,
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          slivers: [
+                            _buildContent(theme, maxWidth),
+                            SliverToBoxAdapter(
+                              child: Divider(
+                                thickness: 8,
+                                color:
+                                    theme.dividerColor.withValues(alpha: 0.05),
+                              ),
                             ),
-                          ));
+                            _buildReplyHeader(theme),
+                            Obx(() => _buildReplyList(
+                                theme, _articleCtr.loadingState.value)),
+                          ],
+                        ),
+                      );
                     });
                   } else {
                     return Row(
@@ -302,8 +298,7 @@ class _ArticlePageState extends State<ArticlePage>
                             builder: (context, constraints) {
                               final maxWidth =
                                   constraints.maxWidth - padding / 4 - 24;
-                              return SelectionArea(
-                                  child: CustomScrollView(
+                              return CustomScrollView(
                                 controller: _articleCtr.scrollController,
                                 physics: const AlwaysScrollableScrollPhysics(),
                                 slivers: [
@@ -317,7 +312,7 @@ class _ArticlePageState extends State<ArticlePage>
                                     sliver: _buildContent(theme, maxWidth),
                                   ),
                                 ],
-                              ));
+                              );
                             },
                           ),
                         ),
@@ -426,89 +421,90 @@ class _ArticlePageState extends State<ArticlePage>
                               ?.pics?.isNotEmpty ==
                           true)
                     SliverToBoxAdapter(
-                        child: SelectionContainer.disabled(child: Builder(
-                      builder: (context) {
-                        final pics = _articleCtr
-                            .opusData!.modules.moduleTop!.display!.album!.pics!;
-                        final length = pics.length;
-                        final first = pics.first;
-                        double height;
-                        double paddingRight;
-                        if (first.height != null && first.width != null) {
-                          final ratio = first.height! / first.width!;
-                          height = min(maxWidth * ratio, Get.height * 0.55);
-                          paddingRight = (maxWidth - height / ratio) / 2 + 12;
-                        } else {
-                          height = Get.height * 0.55;
-                          paddingRight = 12;
-                        }
-                        return Stack(
-                          clipBehavior: Clip.none,
-                          children: [
-                            Container(
-                              height: height,
-                              width: maxWidth,
-                              margin: const EdgeInsets.only(bottom: 10),
-                              child: PageView.builder(
-                                physics: const ClampingScrollPhysics(),
-                                onPageChanged: (value) {
-                                  _articleCtr.topIndex.value = value;
-                                },
-                                itemCount: length,
-                                itemBuilder: (context, index) {
-                                  final pic = pics[index];
-                                  return GestureDetector(
-                                    behavior: HitTestBehavior.opaque,
-                                    onTap: () => context.imageView(
-                                      imgList: pics
-                                          .map((e) => SourceModel(url: e.url!))
-                                          .toList(),
-                                      initialPage: index,
-                                    ),
-                                    child: Hero(
-                                      tag: pic.url!,
-                                      child: Stack(
-                                        clipBehavior: Clip.none,
-                                        alignment: Alignment.center,
-                                        children: [
-                                          Positioned.fill(
-                                            child: CachedNetworkImage(
-                                              fit: pic.isLongPic == true
-                                                  ? BoxFit.cover
-                                                  : null,
-                                              imageUrl: Utils.thumbnailImgUrl(
-                                                  pic.url, 60),
-                                            ),
-                                          ),
-                                          if (pic.isLongPic == true)
-                                            PBadge(
-                                              text: '长图',
-                                              type: PBadgeType.primary,
-                                              right: paddingRight,
-                                              bottom: 12,
-                                            ),
-                                        ],
+                      child: Builder(
+                        builder: (context) {
+                          final pics = _articleCtr.opusData!.modules.moduleTop!
+                              .display!.album!.pics!;
+                          final length = pics.length;
+                          final first = pics.first;
+                          double height;
+                          double paddingRight;
+                          if (first.height != null && first.width != null) {
+                            final ratio = first.height! / first.width!;
+                            height = min(maxWidth * ratio, Get.height * 0.55);
+                            paddingRight = (maxWidth - height / ratio) / 2 + 12;
+                          } else {
+                            height = Get.height * 0.55;
+                            paddingRight = 12;
+                          }
+                          return Stack(
+                            clipBehavior: Clip.none,
+                            children: [
+                              Container(
+                                height: height,
+                                width: maxWidth,
+                                margin: const EdgeInsets.only(bottom: 10),
+                                child: PageView.builder(
+                                  physics: const ClampingScrollPhysics(),
+                                  onPageChanged: (value) {
+                                    _articleCtr.topIndex.value = value;
+                                  },
+                                  itemCount: length,
+                                  itemBuilder: (context, index) {
+                                    final pic = pics[index];
+                                    return GestureDetector(
+                                      behavior: HitTestBehavior.opaque,
+                                      onTap: () => context.imageView(
+                                        imgList: pics
+                                            .map(
+                                                (e) => SourceModel(url: e.url!))
+                                            .toList(),
+                                        initialPage: index,
                                       ),
-                                    ),
-                                  );
-                                },
+                                      child: Hero(
+                                        tag: pic.url!,
+                                        child: Stack(
+                                          clipBehavior: Clip.none,
+                                          alignment: Alignment.center,
+                                          children: [
+                                            Positioned.fill(
+                                              child: CachedNetworkImage(
+                                                fit: pic.isLongPic == true
+                                                    ? BoxFit.cover
+                                                    : null,
+                                                imageUrl: Utils.thumbnailImgUrl(
+                                                    pic.url, 60),
+                                              ),
+                                            ),
+                                            if (pic.isLongPic == true)
+                                              PBadge(
+                                                text: '长图',
+                                                type: PBadgeType.primary,
+                                                right: paddingRight,
+                                                bottom: 12,
+                                              ),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
                               ),
-                            ),
-                            Obx(
-                              () => PBadge(
-                                  top: 12,
-                                  right: paddingRight,
-                                  type: PBadgeType.gray,
-                                  text:
-                                      '${_articleCtr.topIndex.value + 1}/$length'),
-                            ),
-                          ],
-                        );
-                      },
-                    ))),
+                              Obx(
+                                () => PBadge(
+                                    top: 12,
+                                    right: paddingRight,
+                                    type: PBadgeType.gray,
+                                    text:
+                                        '${_articleCtr.topIndex.value + 1}/$length'),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                    ),
                   if (_articleCtr.summary.title != null)
-                    SelectionContainer.disabled(
-                        child: SliverToBoxAdapter(
+                    SliverToBoxAdapter(
                       child: Text(
                         _articleCtr.summary.title!,
                         style: const TextStyle(
@@ -516,9 +512,8 @@ class _ArticlePageState extends State<ArticlePage>
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                    )),
-                  SelectionContainer.disabled(
-                      child: SliverToBoxAdapter(
+                    ),
+                  SliverToBoxAdapter(
                     child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 10),
                       child: GestureDetector(
@@ -559,16 +554,15 @@ class _ArticlePageState extends State<ArticlePage>
                         ),
                       ),
                     ),
-                  )),
+                  ),
                   if (_articleCtr.type != 'read' &&
                       _articleCtr.opusData?.modules.moduleCollection != null)
-                    SelectionContainer.disabled(
-                        child: SliverToBoxAdapter(
+                    SliverToBoxAdapter(
                       child: opusCollection(
                         theme,
                         _articleCtr.opusData!.modules.moduleCollection!,
                       ),
-                    )),
+                    ),
                   content,
                 ],
               );

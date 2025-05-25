@@ -25,14 +25,13 @@ class ReadOpus extends StatelessWidget {
         try {
           final item = ops![index];
           if (item.insert is String) {
-            return Text(item.insert);
+            return SelectableText(item.insert);
           }
 
           if (item.insert is Insert) {
             InsertCard card = item.insert.card;
             if (card.url?.isNotEmpty == true) {
-              return SelectionContainer.disabled(
-                  child: GestureDetector(
+              return GestureDetector(
                 onTap: () {
                   switch (item.attributes?.clazz) {
                     case 'article-card card':
@@ -61,7 +60,7 @@ class ReadOpus extends StatelessWidget {
                     imageUrl: Utils.thumbnailImgUrl(card.url, 60),
                   ),
                 ),
-              ));
+              );
             }
           }
 

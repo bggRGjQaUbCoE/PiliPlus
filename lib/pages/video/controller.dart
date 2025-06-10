@@ -696,7 +696,8 @@ class VideoDetailController extends GetxController
   void handleSBData(List<SegmentItemModel> list) {
     if (list.isNotEmpty) {
       try {
-        final duration = list.first.videoDuration;
+        final duration = list.first.videoDuration ??
+            plPlayerController.duration.value.inMilliseconds;
         // segmentList
         segmentList.addAll(list
             .where((item) =>

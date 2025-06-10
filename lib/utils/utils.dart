@@ -455,22 +455,16 @@ class Utils {
   }
 
   static String formatDuration(num seconds) {
-    int hours = seconds ~/ 3600;
-    int minutes = (seconds % 3600) ~/ 60;
-    num remainingSeconds = seconds % 60;
-    if (remainingSeconds is double) {
-      remainingSeconds = remainingSeconds.toPrecision(3);
-    }
-
-    String minutesStr = minutes.toString().padLeft(2, '0');
-    String secondsStr = remainingSeconds.toString().padLeft(2, '0');
-
-    if (hours > 0) {
-      String hoursStr = hours.toString().padLeft(2, '0');
-      return "$hoursStr:$minutesStr:$secondsStr";
-    } else {
-      return "$minutesStr:$secondsStr";
-    }
+    int h = seconds ~/ 3600;
+    seconds %= 3600;
+    int m = seconds ~/ 60;
+    seconds %= 60;
+    String sms = seconds is double
+        ? seconds.toStringAsFixed(3).padLeft(6, '0')
+        : seconds.toString().padLeft(2, '0');
+    return h == 0
+        ? "${m.toString().padLeft(2, '0')}:$sms"
+        : "${h.toString().padLeft(2, '0')}:${m.toString().padLeft(2, '0')}:$sms";
   }
 
   static int duration(String duration) {

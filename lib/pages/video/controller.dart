@@ -611,7 +611,7 @@ class VideoDetailController extends GetxController
                     ),
                     contentPadding: const EdgeInsets.only(left: 16, right: 8),
                     subtitle: Text(
-                      '${Utils.formatDuration(item.segment.first)} 至 ${Utils.formatDuration(item.segment.second)}',
+                      '${Utils.formatDuration(item.segment.first / 1000)} 至 ${Utils.formatDuration(item.segment.second / 1000)}',
                       style: const TextStyle(fontSize: 13),
                     ),
                     trailing: Row(

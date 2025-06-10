@@ -4,7 +4,7 @@ class SegmentItemModel {
   String actionType;
   List<int> segment;
   String uuid;
-  double videoDuration;
+  num videoDuration;
 
   SegmentItemModel({
     required this.cid,
@@ -20,9 +20,10 @@ class SegmentItemModel {
         cid: json["cid"],
         category: json["category"],
         actionType: json["actionType"],
-        segment:
-            (json["segment"] as List).map((e) => (e as num).round()).toList(),
+        segment: (json["segment"] as List)
+            .map((e) => ((e as num) * 1000).round())
+            .toList(),
         uuid: json["UUID"],
-        videoDuration: (json["videoDuration"] as num).toDouble(),
+        videoDuration: (json["videoDuration"] as num) * 1000,
       );
 }

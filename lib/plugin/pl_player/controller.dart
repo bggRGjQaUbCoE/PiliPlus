@@ -300,12 +300,10 @@ class PlPlayerController {
   late final List<Pair<SegmentType, SkipType>> blockSettings =
       GStorage.blockSettings;
   late final List<Color> blockColor = GStorage.blockColor;
-  late final List<String> segmentTypes =
-      SegmentType.values.map((item) => item.name).toList();
-  late final List<String> enableList = blockSettings
+  late final Set<String> enableList = blockSettings
       .where((item) => item.second != SkipType.disable)
       .map((item) => item.first.name)
-      .toList();
+      .toSet();
   late final blockServer = GStorage.blockServer;
 
   // settings

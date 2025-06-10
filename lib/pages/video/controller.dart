@@ -696,7 +696,7 @@ class VideoDetailController extends GetxController
   void handleSBData(List<SegmentItemModel> list) {
     if (list.isNotEmpty) {
       try {
-        double duration = list.first.videoDuration;
+        final duration = list.first.videoDuration;
         // segmentList
         segmentList.addAll(list
             .where((item) =>
@@ -704,13 +704,12 @@ class VideoDetailController extends GetxController
                 item.segment[1] >= item.segment[0])
             .map(
           (item) {
-            SegmentType segmentType = SegmentType
-                .values[plPlayerController.segmentTypes.indexOf(item.category)];
+            final segmentType = SegmentType.values.byName(item.category);
             if (item.segment[0] == 0 && item.segment[1] == 0) {
               videoLabel.value +=
                   '${videoLabel.value.isNotEmpty ? '/' : ''}${segmentType.title}';
             }
-            SkipType skipType =
+            var skipType =
                 plPlayerController.blockSettings[segmentType.index].second;
             if (skipType != SkipType.showOnly) {
               if (item.segment[1] == item.segment[0] ||
@@ -733,7 +732,7 @@ class VideoDetailController extends GetxController
             if (positionSubscription == null &&
                 !isShowCover.value &&
                 plPlayerController.videoPlayerController != null) {
-              final currPost = plPlayerController.position.value.inSeconds;
+              final currPost = plPlayerController.position.value.inMilliseconds;
               if (currPost > segmentModel.segment.first &&
                   currPost < segmentModel.segment.second) {
                 if (segmentModel.skipType == SkipType.alwaysSkip) {
@@ -760,8 +759,7 @@ class VideoDetailController extends GetxController
         ).toList());
 
         // _segmentProgressList
-        segmentProgressList ??= <Segment>[];
-        segmentProgressList!.addAll(segmentList.map((e) {
+        (segmentProgressList ??= <Segment>[]).addAll(segmentList.map((e) {
           double start = (e.segment.first / duration).clamp(0.0, 1.0);
           double end = (e.segment.second / duration).clamp(0.0, 1.0);
           return Segment(start, end, _getColor(e.segmentType));
@@ -790,16 +788,18 @@ class VideoDetailController extends GetxController
         int currentPos = position.inSeconds;
         if (currentPos != _lastPos) {
           _lastPos = currentPos;
+          final msPos = currentPos * 1000;
           for (SegmentModel item in segmentList) {
             // if (kDebugMode) {
             //   debugPrint(
             //       '${position.inSeconds},,${item.segment.first},,${item.segment.second},,${item.skipType.name},,${item.hasSkipped}');
             // }
-            if (item.segment.first == position.inSeconds) {
+            if (msPos <= item.segment.first &&
+                item.segment.first <= msPos + 1000) {
               if (item.skipType == SkipType.alwaysSkip) {
                 onSkip(item);
               } else if (item.skipType == SkipType.skipOnce &&
-                  item.hasSkipped != true) {
+                  item.hasSkipped) {
                 item.hasSkipped = true;
                 onSkip(item);
               } else if (item.skipType == SkipType.skipManually) {
@@ -905,7 +905,7 @@ class VideoDetailController extends GetxController
     try {
       plPlayerController.danmakuController?.clear();
       await plPlayerController.videoPlayerController
-          ?.seek(Duration(seconds: item.segment.second));
+          ?.seek(Duration(milliseconds: item.segment.second));
       if (isSkip) {
         if (GStorage.blockToast) {
           _showBlockToast('已跳过${item.segmentType.shortTitle}片段');

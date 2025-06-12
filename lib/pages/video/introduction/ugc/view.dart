@@ -554,6 +554,17 @@ class _VideoInfoState extends State<VideoInfo> {
                       Row(
                         spacing: 10,
                         children: [
+                          GestureDetector(
+                            onTap: () => Utils.copyText(
+                                '${videoIntroController.videoDetail.value.bvid}'),
+                            child: Text(
+                              videoIntroController.videoDetail.value.bvid ?? '',
+                              style: TextStyle(
+                                fontSize: 10,
+                                color: theme.colorScheme.secondary,
+                              ),
+                            ),
+                          ),
                           StatWidget(
                             type: StatType.play,
                             value: !widget.isLoading
@@ -672,24 +683,14 @@ class _VideoInfoState extends State<VideoInfo> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const SizedBox(height: 8),
-                        GestureDetector(
-                          onTap: () => Utils.copyText(
-                              '${videoIntroController.videoDetail.value.bvid}'),
-                          child: Text(
-                            videoIntroController.videoDetail.value.bvid ?? '',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: theme.colorScheme.secondary,
-                            ),
-                          ),
-                        ),
+
                         if (videoIntroController
                                 .videoDetail.value.descV2?.isNotEmpty ==
                             true) ...[
-                          const SizedBox(height: 8),
                           SelectableText.rich(
                             style: const TextStyle(
-                              height: 1.4,
+                              fontSize: 12,
+                              height: 1.2,
                             ),
                             TextSpan(
                               children: [

@@ -18,9 +18,9 @@ enum NavigationBarType implements EnumWithLabel {
     DynamicsPage(),
   ),
   media(
-    '媒体库',
-    Icon(Icons.video_collection_outlined, size: 21),
-    Icon(Icons.video_collection, size: 21),
+    '我的',
+    Icon(Icons.person_outline, size: 21),
+    Icon(Icons.person, size: 21),
     MediaPage(),
   );
 

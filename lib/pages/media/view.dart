@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/nav_bar_config.dart';
 import 'package:PiliPlus/models_new/fav/fav_folder/list.dart';
@@ -7,6 +8,7 @@ import 'package:PiliPlus/pages/common/common_page.dart';
 import 'package:PiliPlus/pages/main/controller.dart';
 import 'package:PiliPlus/pages/media/controller.dart';
 import 'package:PiliPlus/pages/media/widgets/item.dart';
+import 'package:PiliPlus/pages/mine/view.dart';
 import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart';
@@ -42,54 +44,46 @@ class _MediaPageState extends CommonPageState<MediaPage, MediaController>
     super.build(context);
     final theme = Theme.of(context);
     Color primary = theme.colorScheme.primary;
-    return Padding(
-      padding: const EdgeInsets.only(top: 30),
-      child: Material(
+    return Material(
         color: Colors.transparent,
         child: ListView(
           controller: controller.scrollController,
           physics: const AlwaysScrollableScrollPhysics(),
           children: [
-            ListTile(
-              leading: null,
-              title: Padding(
-                padding: const EdgeInsets.only(left: 20),
-                child: Text(
-                  '媒体库',
-                  style: TextStyle(
-                    fontSize: theme.textTheme.titleLarge!.fontSize,
-                    fontWeight: FontWeight.bold,
+          const MinePage(),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              const SizedBox(width: 8),
+              for (int i = 0; i < controller.list.length; i++) ...[
+                InkWell(
+                  onTap: controller.list[i].onTap,
+                  borderRadius: StyleString.mdRadius,
+                  child: SizedBox(
+                    width: 75,
+                    height: 75,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          controller.list[i].icon,
+                          color: primary,
+                          size: 24.0,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          controller.list[i].title,
+                          style: const TextStyle(fontSize: 15),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              trailing: IconButton(
-                tooltip: '设置',
-                onPressed: () => Get.toNamed('/setting'),
-                icon: const Icon(
-                  Icons.settings_outlined,
-                  size: 20,
-                ),
-              ),
-            ),
-            for (var item in controller.list)
-              ListTile(
-                onTap: item.onTap,
-                dense: true,
-                leading: Padding(
-                  padding: const EdgeInsets.only(left: 15),
-                  child: Icon(
-                    item.icon,
-                    color: primary,
-                  ),
-                ),
-                contentPadding:
-                    const EdgeInsets.only(left: 15, top: 2, bottom: 2),
-                minLeadingWidth: 0,
-                title: Text(
-                  item.title,
-                  style: const TextStyle(fontSize: 15),
-                ),
-              ),
+                const SizedBox(width: 8),
+              ],
+            ],
+          ),
             Obx(
               () => controller.loadingState.value is Loading
                   ? const SizedBox.shrink()
@@ -97,7 +91,7 @@ class _MediaPageState extends CommonPageState<MediaPage, MediaController>
             )
           ],
         ),
-      ),
+
     );
   }
 
@@ -123,7 +117,7 @@ class _MediaPageState extends CommonPageState<MediaPage, MediaController>
                 TextSpan(
                   children: [
                     TextSpan(
-                      text: '我的收藏  ',
+                      text: '收藏夹  ',
                       style: TextStyle(
                           fontSize: theme.textTheme.titleMedium!.fontSize,
                           fontWeight: FontWeight.bold),

@@ -114,7 +114,7 @@ class _MinePageState extends State<MinePage> {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const SizedBox(width: 20),
+              const SizedBox(width: 30),
               userInfo.face != null
                   ? Stack(
                       clipBehavior: Clip.none,
@@ -154,7 +154,6 @@ class _MinePageState extends State<MinePage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
-                      spacing: 4,
                       children: [
                         Flexible(
                           child: Text(
@@ -167,6 +166,7 @@ class _MinePageState extends State<MinePage> {
                             ),
                           ),
                         ),
+                        const SizedBox(width: 4),
                         Image.asset(
                           'assets/images/lv/lv${levelInfo == null ? 0 : userInfo.isSeniorMember == 1 ? '6_s' : levelInfo.currentLevel}.png',
                           height: 10,
@@ -174,68 +174,89 @@ class _MinePageState extends State<MinePage> {
                       ],
                     ),
                     const SizedBox(height: 8),
-                    FittedBox(
-                      child: Text.rich(
-                        TextSpan(
-                          children: [
-                            TextSpan(
-                              text: '硬币 ',
-                              style: TextStyle(
-                                fontSize: theme.textTheme.labelSmall!.fontSize,
-                                color: theme.colorScheme.outline,
+
+                    IntrinsicWidth(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment
+                            .stretch, // Make children stretch to the intrinsic width
+                        children: [
+                          FittedBox(
+                            child: Text.rich(
+                              TextSpan(
+                                children: [
+                                  TextSpan(
+                                    text: '硬币 ',
+                                    style: TextStyle(
+                                      fontSize:
+                                          theme.textTheme.labelSmall!.fontSize,
+                                      color: theme.colorScheme.outline,
+                                    ),
+                                  ),
+                                  TextSpan(
+                                    text: userInfo.money?.toString() ?? '-',
+                                    style: TextStyle(
+                                      fontSize:
+                                          theme.textTheme.labelSmall!.fontSize,
+                                      fontWeight: FontWeight.bold,
+                                      color: theme.colorScheme.primary,
+                                    ),
+                                  ),
+                                  TextSpan(
+                                    text: "    经验 ",
+                                    style: TextStyle(
+                                      fontSize:
+                                          theme.textTheme.labelSmall!.fontSize,
+                                      color: theme.colorScheme.outline,
+                                    ),
+                                  ),
+                                  TextSpan(
+                                    text: "${levelInfo?.currentExp ?? '-'}",
+                                    semanticsLabel:
+                                        "当前${levelInfo?.currentExp ?? '-'}",
+                                    style: TextStyle(
+                                      fontSize:
+                                          theme.textTheme.labelSmall!.fontSize,
+                                      fontWeight: FontWeight.bold,
+                                      color: theme.colorScheme.primary,
+                                    ),
+                                  ),
+                                  TextSpan(
+                                    text: "/${levelInfo?.nextExp ?? '-'}",
+                                    semanticsLabel:
+                                        "升级需${levelInfo?.nextExp ?? '-'}",
+                                    style: TextStyle(
+                                      fontSize:
+                                          theme.textTheme.labelSmall!.fontSize,
+                                      color: theme.colorScheme.outline,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                            TextSpan(
-                              text: userInfo.money?.toString() ?? '-',
-                              style: TextStyle(
-                                fontSize: theme.textTheme.labelSmall!.fontSize,
-                                fontWeight: FontWeight.bold,
-                                color: theme.colorScheme.primary,
-                              ),
-                            ),
-                            TextSpan(
-                              text: "    经验 ",
-                              style: TextStyle(
-                                fontSize: theme.textTheme.labelSmall!.fontSize,
-                                color: theme.colorScheme.outline,
-                              ),
-                            ),
-                            TextSpan(
-                              text: "${levelInfo?.currentExp ?? '-'}",
-                              semanticsLabel:
-                                  "当前${levelInfo?.currentExp ?? '-'}",
-                              style: TextStyle(
-                                fontSize: theme.textTheme.labelSmall!.fontSize,
-                                fontWeight: FontWeight.bold,
-                                color: theme.colorScheme.primary,
-                              ),
-                            ),
-                            TextSpan(
-                              text: "/${levelInfo?.nextExp ?? '-'}",
-                              semanticsLabel: "升级需${levelInfo?.nextExp ?? '-'}",
-                              style: TextStyle(
-                                fontSize: theme.textTheme.labelSmall!.fontSize,
-                                color: theme.colorScheme.outline,
-                              ),
-                            ),
-                          ],
-                        ),
+                          ),
+                          const SizedBox(height: 4),
+                          LinearProgressIndicator(
+                            minHeight: 2,
+                            value: levelInfo != null
+                                ? (levelInfo.currentExp! / levelInfo.nextExp!)
+                                : 0,
+                            backgroundColor: theme.colorScheme.inversePrimary,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                                theme.colorScheme.primary),
+                          ),
+                        ],
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    LinearProgressIndicator(
-                      minHeight: 2,
-                      value: levelInfo != null
-                          ? (levelInfo.currentExp! / levelInfo.nextExp!)
-                          : 0,
-                      backgroundColor: theme.colorScheme.inversePrimary,
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                          theme.colorScheme.primary),
-                    ),
+                    )
                   ],
                 ),
               ),
-              const SizedBox(width: 20),
+              const SizedBox(width: 8),
+              Icon(
+                Icons.arrow_forward_ios,
+                size: 18,
+                color: theme.colorScheme.primary,
+              ),
+              const SizedBox(width: 30),
             ],
           ),
         ),

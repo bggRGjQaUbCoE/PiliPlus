@@ -842,6 +842,7 @@ class VideoDetailController extends GetxController
   }
 
   Widget buildItem(dynamic item, Animation<double> animation) {
+    final theme = Get.theme;
     return Align(
       alignment: Alignment.centerLeft,
       child: SlideTransition(
@@ -858,12 +859,9 @@ class VideoDetailController extends GetxController
               }
             },
             child: SearchText(
-              bgColor: Theme.of(Get.context!)
-                  .colorScheme
-                  .secondaryContainer
-                  .withValues(alpha: 0.8),
-              textColor:
-                  Theme.of(Get.context!).colorScheme.onSecondaryContainer,
+              bgColor:
+                  theme.colorScheme.secondaryContainer.withValues(alpha: 0.8),
+              textColor: theme.colorScheme.onSecondaryContainer,
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               fontSize: 14,
               text: item is SegmentModel

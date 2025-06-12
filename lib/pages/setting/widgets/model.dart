@@ -470,7 +470,7 @@ List<SettingsModel> get styleSettings => [
           padding: const EdgeInsets.symmetric(horizontal: 8.0),
           child: Text(
             '${GStorage.picQuality}%',
-            style: Theme.of(Get.context!).textTheme.titleSmall,
+            style: Get.theme.textTheme.titleSmall,
           ),
         ),
       ),
@@ -496,7 +496,7 @@ List<SettingsModel> get styleSettings => [
           padding: const EdgeInsets.symmetric(horizontal: 8.0),
           child: Text(
             '${GStorage.previewQ}%',
-            style: Theme.of(Get.context!).textTheme.titleSmall,
+            style: Get.theme.textTheme.titleSmall,
           ),
         ),
       ),
@@ -528,7 +528,7 @@ List<SettingsModel> get styleSettings => [
           padding: const EdgeInsets.symmetric(horizontal: 8.0),
           child: Text(
             GStorage.toastOpacity.toStringAsFixed(1),
-            style: Theme.of(Get.context!).textTheme.titleSmall,
+            style: Get.theme.textTheme.titleSmall,
           ),
         ),
       ),
@@ -569,7 +569,7 @@ List<SettingsModel> get styleSettings => [
         setKey: SettingBoxKey.isPureBlackTheme,
         defaultVal: false,
         onChanged: (value) {
-          if (Theme.of(Get.context!).brightness == Brightness.dark ||
+          if (Get.theme.brightness == Brightness.dark ||
               GStorage.darkVideoPage) {
             Get.forceAppUpdate();
           }
@@ -1657,7 +1657,7 @@ List<SettingsModel> get extraSettings => [
         setKey: SettingBoxKey.replyLengthLimit,
         getTrailing: () => Text(
           '${GlobalData().replyLengthLimit}行',
-          style: Theme.of(Get.context!).textTheme.titleSmall,
+          style: Get.theme.textTheme.titleSmall,
         ),
         onTap: (setState) {
           String replyLengthLimit = GlobalData().replyLengthLimit.toString();
@@ -1715,7 +1715,7 @@ List<SettingsModel> get extraSettings => [
         leading: const Icon(Icons.subtitles_outlined),
         getTrailing: () => Text(
           GStorage.danmakuLineHeight.toString(),
-          style: Theme.of(Get.context!).textTheme.titleSmall,
+          style: Get.theme.textTheme.titleSmall,
         ),
         onTap: (setState) {
           String danmakuLineHeight = GStorage.danmakuLineHeight.toString();

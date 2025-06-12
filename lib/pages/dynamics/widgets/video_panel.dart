@@ -66,6 +66,7 @@ Widget videoSeasonWidget(
               width: width,
               height: width / StyleString.aspectRatio,
               src: itemContent.cover,
+              quality: 40,
             ),
             if (itemContent.badge?.text != null)
               PBadge(
@@ -111,10 +112,12 @@ Widget videoSeasonWidget(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       if (itemContent.durationText != null) ...[
-                        Text(
-                          itemContent.durationText!,
-                          semanticsLabel:
-                              '时长${Utils.durationReadFormat(itemContent.durationText!)}',
+                        DecoratedBox(
+                          decoration: const BoxDecoration(
+                            color: Colors.black45,
+                            borderRadius: BorderRadius.all(Radius.circular(4)),
+                          ),
+                          child: Text(' ${itemContent.durationText} '),
                         ),
                         const SizedBox(width: 6),
                       ],

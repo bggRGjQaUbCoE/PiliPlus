@@ -37,6 +37,7 @@ Widget livePanelSub(
                       width: width,
                       height: width / StyleString.aspectRatio,
                       src: content.cover,
+                      quality: 40,
                     ),
                   ),
                   PBadge(

@@ -392,8 +392,7 @@ class LoginPageController extends GetxController
                 onPressed: Get.back,
                 child: Text(
                   "取消",
-                  style: TextStyle(
-                      color: Theme.of(Get.context!).colorScheme.outline),
+                  style: TextStyle(color: Get.theme.colorScheme.outline),
                 ),
               ),
               TextButton(

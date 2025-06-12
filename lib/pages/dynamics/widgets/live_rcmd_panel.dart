@@ -36,6 +36,7 @@ Widget liveRcmdPanel(
                       width: width,
                       height: width / StyleString.aspectRatio,
                       src: liveRcmd.cover,
+                      quality: 40,
                     ),
                   ),
                   PBadge(

@@ -101,6 +101,8 @@ class VideoCardV extends StatelessWidget {
           label: Utils.videoItemSemantics(videoItem),
           excludeSemantics: true,
           child: Card(
+            color: Colors.transparent,
+            elevation: 0,
             clipBehavior: Clip.hardEdge,
             margin: EdgeInsets.zero,
             child: InkWell(

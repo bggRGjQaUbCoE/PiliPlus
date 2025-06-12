@@ -97,10 +97,7 @@ class _HomePageState extends State<HomePage>
                           color: Colors.transparent,
                           child: InkWell(
                             onTap: () =>
-                                Get.amed('/').setIndex(max(
-                                0,
-                                _mainController.navigationBars.indexWhere(
-                                    (e) => e == NavigationBarType.media))),
+                                _homeController.showUserInfoDialog(context),
                             splashColor: theme.colorScheme.primaryContainer
                                 .withValues(alpha: 0.3),
                             customBorder: const CircleBorder(),
@@ -133,7 +130,7 @@ class _HomePageState extends State<HomePage>
                 : defaultUser(
                     theme: theme,
                     onPressed: () =>
-                        Get.toNamed('/media'),
+                        _homeController.showUserInfoDialog(context),
                   ),
           ),
         ),

@@ -1,8 +1,11 @@
+import 'dart:math';
+
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart';
 import 'package:PiliPlus/models/common/dynamic/dynamic_badge_mode.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
+import 'package:PiliPlus/models/common/nav_bar_config.dart';
 import 'package:PiliPlus/pages/home/controller.dart';
 import 'package:PiliPlus/pages/main/controller.dart';
 import 'package:PiliPlus/pages/mine/controller.dart';
@@ -84,8 +87,9 @@ class _HomePageState extends State<HomePage>
                     children: [
                       NetworkImgLayer(
                         type: ImageType.avatar,
-                        width: 34,
-                        height: 34,
+                        width: 44,
+                        height: 44,
+
                         src: _homeController.accountService.face.value,
                       ),
                       Positioned.fill(
@@ -93,7 +97,10 @@ class _HomePageState extends State<HomePage>
                           color: Colors.transparent,
                           child: InkWell(
                             onTap: () =>
-                                _homeController.showUserInfoDialog(context),
+                                Get.amed('/').setIndex(max(
+                                0,
+                                _mainController.navigationBars.indexWhere(
+                                    (e) => e == NavigationBarType.media))),
                             splashColor: theme.colorScheme.primaryContainer
                                 .withValues(alpha: 0.3),
                             customBorder: const CircleBorder(),
@@ -126,7 +133,7 @@ class _HomePageState extends State<HomePage>
                 : defaultUser(
                     theme: theme,
                     onPressed: () =>
-                        _homeController.showUserInfoDialog(context),
+                        Get.toNamed('/media'),
                   ),
           ),
         ),

@@ -114,7 +114,7 @@ class _MinePageState extends State<MinePage> {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const SizedBox(width: 30),
+              const SizedBox(width: 25),
               userInfo.face != null
                   ? Stack(
                       clipBehavior: Clip.none,
@@ -123,8 +123,8 @@ class _MinePageState extends State<MinePage> {
                           src: userInfo.face,
                           semanticsLabel: '头像',
                           type: ImageType.avatar,
-                          width: 55,
-                          height: 55,
+                          width: 65,
+                          height: 65,
                         ),
                         if (isVip)
                           Positioned(

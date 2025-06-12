@@ -75,14 +75,6 @@ class _HomePageState extends State<HomePage>
   Widget searchBarAndUser(ThemeData theme) {
     return Row(
       children: [
-        searchBar(theme),
-        const SizedBox(width: 4),
-        Obx(
-          () => _homeController.accountService.isLogin.value
-              ? msgBadge(_mainController)
-              : const SizedBox.shrink(),
-        ),
-        const SizedBox(width: 8),
         Semantics(
           label: "我的",
           child: Obx(
@@ -138,6 +130,14 @@ class _HomePageState extends State<HomePage>
                   ),
           ),
         ),
+        const SizedBox(width: 8),
+        searchBar(theme),
+        const SizedBox(width: 4),
+        Obx(
+          () => _homeController.accountService.isLogin.value
+              ? msgBadge(_mainController)
+              : const SizedBox.shrink(),
+        )
       ],
     );
   }

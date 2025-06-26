@@ -630,6 +630,9 @@ List<SettingsModel> get styleSettings => [
         leading: const Icon(Icons.exit_to_app_outlined),
         setKey: SettingBoxKey.directExitOnBack,
         defaultVal: false,
+        onChanged: (value) {
+          Get.find<MainController>().directExitOnBack = value;
+        },
       ),
       if (Platform.isAndroid)
         SettingsModel(

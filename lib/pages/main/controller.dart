@@ -46,6 +46,8 @@ class MainController extends GetxController
   late bool navSearchStreamDebounce = Pref.navSearchStreamDebounce;
   late final optTabletNav = Pref.optTabletNav;
 
+  late bool directExitOnBack = Pref.directExitOnBack;
+
   @override
   void onInit() {
     super.onInit();

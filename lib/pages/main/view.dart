@@ -15,6 +15,7 @@ import 'package:PiliPlus/utils/app_scheme.dart';
 import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:PiliPlus/utils/storage.dart';
+import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:easy_debounce/easy_throttle.dart';
 import 'package:flutter/material.dart';
@@ -166,15 +167,23 @@ class _MainAppState extends State<MainApp>
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (bool didPop, Object? result) {
-        if (_mainController.selectedIndex.value != 0) {
-          setIndex(0);
-          _mainController.bottomBarStream?.add(true);
-          _homeController.searchBarStream?.add(true);
-        } else {
+        if (Pref.directExitOnBack) {
           if (Platform.isAndroid) {
             Utils.channel.invokeMethod('back');
           } else {
             SystemNavigator.pop();
+          }
+        } else {
+          if (_mainController.selectedIndex.value != 0) {
+            setIndex(0);
+            _mainController.bottomBarStream?.add(true);
+            _homeController.searchBarStream?.add(true);
+          } else {
+            if (Platform.isAndroid) {
+              Utils.channel.invokeMethod('back');
+            } else {
+              SystemNavigator.pop();
+            }
           }
         }
       },

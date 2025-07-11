@@ -86,6 +86,7 @@ class Privacy {
             name: '勋章墙公开显示所有粉丝勋章',
             key: 'only_show_wearing',
             value: json['only_show_wearing'],
+            isReverse: true,
           ),
           SpaceSettingModel(
             name: '公开学校信息',

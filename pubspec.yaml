@@ -105,14 +105,14 @@ dependencies:
   encrypt: ^5.0.3
 
   # 视频播放器
-  media_kit: 1.1.11 # Primary package.
+  media_kit: ^1.2.0 # Primary package.
   # media_kit_video: ^1.2.5 # For video rendering.
   media_kit_video:
     git:
       url: https://github.com/bggRGjQaUbCoE/media-kit.git
       path: media_kit_video
       ref: version_1.2.5
-  media_kit_libs_video: 1.0.5
+  media_kit_libs_video: ^1.0.6
 
   # 媒体通知
   audio_service: ^0.18.15
@@ -219,8 +219,6 @@ dependency_overrides:
   mime: ^2.0.0
   fading_edge_scrollview: ^4.1.1
   rxdart: ^0.28.0
-  media_kit: 1.1.11
-  media_kit_libs_video: 1.0.5
 
 dev_dependencies:
   flutter_test:

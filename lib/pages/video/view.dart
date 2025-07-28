@@ -37,6 +37,7 @@ import 'package:PiliPlus/pages/video/reply_reply/view.dart';
 import 'package:PiliPlus/pages/video/view_point/view.dart';
 import 'package:PiliPlus/pages/video/widgets/header_control.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
+import 'package:PiliPlus/plugin/pl_player/models/fullscreen_mode.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_repeat.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
 import 'package:PiliPlus/plugin/pl_player/utils/fullscreen.dart';
@@ -181,6 +182,25 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     if (state == AppLifecycleState.resumed) {
       videoIntroController.startTimer();
       videoDetailController.plPlayerController.showDanmaku = true;
+
+      // 修复从后台恢复时全屏状态下屏幕方向错误的问题
+      if (plPlayerController?.isFullScreen.value == true) {
+        // 延迟一点执行，确保应用完全恢复
+        Future.delayed(const Duration(milliseconds: 100), () async {
+          // 根据视频方向重新设置屏幕方向
+          final isVertical = plPlayerController?.isVertical ?? false;
+          final mode = plPlayerController?.mode;
+
+          if (mode == FullScreenMode.vertical ||
+              (mode == FullScreenMode.auto && isVertical) ||
+              (mode == FullScreenMode.ratio &&
+                  (Get.height / Get.width < 1.25 || isVertical))) {
+            await verticalScreenForTwoSeconds();
+          } else {
+            await landScape();
+          }
+        });
+      }
     } else if (state == AppLifecycleState.paused) {
       videoIntroController.canelTimer();
       videoDetailController.plPlayerController.showDanmaku = false;

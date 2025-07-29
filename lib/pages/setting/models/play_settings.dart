@@ -197,6 +197,13 @@ List<SettingsModel> get playSettings => [
   ),
   SettingsModel(
     settingsType: SettingsType.sw1tch,
+    title: '全屏展示点赞/投币/收藏等操作按钮',
+    leading: const Icon(MdiIcons.dotsHorizontalCircleOutline),
+    setKey: SettingBoxKey.showFSActionItem,
+    defaultVal: true,
+  ),
+  SettingsModel(
+    settingsType: SettingsType.sw1tch,
     title: '观看人数',
     subtitle: '展示同时在看人数',
     leading: const Icon(Icons.people_outlined),

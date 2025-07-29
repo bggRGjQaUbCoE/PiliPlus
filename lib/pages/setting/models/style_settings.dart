@@ -344,28 +344,13 @@ List<SettingsModel> get styleSettings => [
   ),
   SettingsModel(
     settingsType: SettingsType.sw1tch,
-    title: '降低收起/展开顶/底栏频率',
-    leading: const Icon(Icons.vertical_distribute),
-    setKey: SettingBoxKey.navSearchStreamDebounce,
-    defaultVal: false,
-    onChanged: (value) {
-      try {
-        Get.find<MainController>().navSearchStreamDebounce = value;
-        Get.forceAppUpdate();
-      } catch (_) {}
-    },
-  ),
-  SettingsModel(
-    settingsType: SettingsType.normal,
     title: '顶/底栏滚动阈值',
-    subtitle: '滚动多少像素后收起/展开顶底栏，默认100像素',
+    subtitle: '滚动多少像素后收起/展开顶底栏，默认50像素',
     leading: const Icon(Icons.swipe_vertical),
-    setKey: SettingBoxKey.scrollThreshold,
-    getTrailing: () => Text(
-      '${Pref.scrollThreshold.toInt()}px',
-      style: Get.theme.textTheme.titleSmall,
-    ),
-    onTap: (setState) {
+    defaultVal: true,
+    setKey: SettingBoxKey.enableScrollThreshold,
+    needReboot: true,
+    onTap: () {
       String scrollThreshold = Pref.scrollThreshold.toString();
       showDialog(
         context: Get.context!,
@@ -397,16 +382,16 @@ List<SettingsModel> get styleSettings => [
                 ),
               ),
               TextButton(
-                onPressed: () async {
+                onPressed: () {
                   Get.back();
-                  await GStorage.setting.put(
+                  GStorage.setting.put(
                     SettingBoxKey.scrollThreshold,
                     max(
                       10.0,
-                      double.tryParse(scrollThreshold) ?? 100.0,
+                      double.tryParse(scrollThreshold) ?? 50.0,
                     ),
                   );
-                  setState();
+                  SmartDialog.showToast('重启生效');
                 },
                 child: const Text('确定'),
               ),

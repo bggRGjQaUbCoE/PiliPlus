@@ -52,7 +52,6 @@ class MainController extends GetxController
   final enableMYBar = Pref.enableMYBar;
   final useSideBar = Pref.useSideBar;
   final mainTabBarView = Pref.mainTabBarView;
-  late bool navSearchStreamDebounce = Pref.navSearchStreamDebounce;
   late final optTabletNav = Pref.optTabletNav;
 
   late bool directExitOnBack = Pref.directExitOnBack;

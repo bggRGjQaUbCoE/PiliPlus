@@ -17,10 +17,11 @@ abstract class CommonPageState<T extends CommonPage, R extends CommonController>
   R get controller;
   StreamController<bool>? mainStream;
   StreamController<bool>? searchBarStream;
-  double _downScrollCount = 0.0; // 向下滚动计数器
-  double _upScrollCount = 0.0; // 向上滚动计数器
+  // late double _downScrollCount = 0.0; // 向下滚动计数器
+  late double _upScrollCount = 0.0; // 向上滚动计数器
   double? _lastScrollPosition; // 记录上次滚动位置
-  double get _scrollThreshold => Pref.scrollThreshold; // 滚动阈值
+  final _enableScrollThreshold = Pref.enableScrollThreshold;
+  late final double _scrollThreshold = Pref.scrollThreshold; // 滚动阈值
 
   @override
   void initState() {
@@ -35,10 +36,21 @@ abstract class CommonPageState<T extends CommonPage, R extends CommonController>
   }
 
   void listener() {
-    final ScrollController scrollController = controller.scrollController;
+    final scrollController = controller.scrollController;
+    final direction = scrollController.position.userScrollDirection;
+
+    if (!_enableScrollThreshold) {
+      if (direction == ScrollDirection.forward) {
+        mainStream?.add(true);
+        searchBarStream?.add(true);
+      } else if (direction == ScrollDirection.reverse) {
+        mainStream?.add(false);
+        searchBarStream?.add(false);
+      }
+      return;
+    }
+
     final double currentPosition = scrollController.position.pixels;
-    final ScrollDirection direction =
-        scrollController.position.userScrollDirection;
 
     // 初始化上次位置
     _lastScrollPosition ??= currentPosition;
@@ -47,22 +59,24 @@ abstract class CommonPageState<T extends CommonPage, R extends CommonController>
     final double scrollDelta = currentPosition - _lastScrollPosition!;
 
     if (direction == ScrollDirection.reverse) {
-      // 向下滚动，累加向下滚动距离，重置向上滚动计数器
-      if (scrollDelta > 0) {
-        _downScrollCount += scrollDelta;
-        _upScrollCount = 0.0; // 重置向上滚动计数器
+      mainStream?.add(false);
+      searchBarStream?.add(false); // // 向下滚动，累加向下滚动距离，重置向上滚动计数器
+      _upScrollCount = 0.0; // 重置向上滚动计数器
+      // if (scrollDelta > 0) {
+      //   _downScrollCount += scrollDelta;
+      //   // _upScrollCount = 0.0; // 重置向上滚动计数器
 
-        // 当累计向下滚动距离超过阈值时，隐藏顶底栏
-        if (_downScrollCount >= _scrollThreshold) {
-          mainStream?.add(false);
-          searchBarStream?.add(false);
-        }
-      }
+      //   // 当累计向下滚动距离超过阈值时，隐藏顶底栏
+      //   if (_downScrollCount >= _scrollThreshold) {
+      //     mainStream?.add(false);
+      //     searchBarStream?.add(false);
+      //   }
+      // }
     } else if (direction == ScrollDirection.forward) {
       // 向上滚动，累加向上滚动距离，重置向下滚动计数器
       if (scrollDelta < 0) {
         _upScrollCount += (-scrollDelta); // 使用绝对值
-        _downScrollCount = 0.0; // 重置向下滚动计数器
+        // _downScrollCount = 0.0; // 重置向下滚动计数器
 
         // 当累计向上滚动距离超过阈值时，显示顶底栏
         if (_upScrollCount >= _scrollThreshold) {

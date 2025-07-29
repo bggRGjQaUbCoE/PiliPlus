@@ -502,9 +502,6 @@ class Pref {
   static bool get recordSearchHistory =>
       _setting.get(SettingBoxKey.recordSearchHistory, defaultValue: true);
 
-  static bool get navSearchStreamDebounce =>
-      _setting.get(SettingBoxKey.navSearchStreamDebounce, defaultValue: false);
-
   static String get webdavUri =>
       _setting.get(SettingBoxKey.webdavUri, defaultValue: '');
 
@@ -607,8 +604,11 @@ class Pref {
   static bool get hideSearchBar =>
       _setting.get(SettingBoxKey.hideSearchBar, defaultValue: true);
 
+  static bool get enableScrollThreshold =>
+      _setting.get(SettingBoxKey.enableScrollThreshold, defaultValue: true);
+
   static double get scrollThreshold =>
-      _setting.get(SettingBoxKey.scrollThreshold, defaultValue: 100.0);
+      _setting.get(SettingBoxKey.scrollThreshold, defaultValue: 50.0);
 
   static bool get enableSearchWord =>
       _setting.get(SettingBoxKey.enableSearchWord, defaultValue: true);

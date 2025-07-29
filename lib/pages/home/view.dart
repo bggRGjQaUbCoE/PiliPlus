@@ -10,7 +10,6 @@ import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
-import 'package:stream_transform/stream_transform.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -149,14 +148,11 @@ class _HomePageState extends State<HomePage>
   }
 
   Widget customAppBar(ThemeData theme) {
+    if (!_homeController.hideSearchBar) {
+      return searchBarAndUser(theme);
+    }
     return StreamBuilder(
-      stream: _homeController.hideSearchBar
-          ? _mainController.navSearchStreamDebounce
-                ? _homeController.searchBarStream?.stream.distinct().throttle(
-                    const Duration(milliseconds: 500),
-                  )
-                : _homeController.searchBarStream?.stream.distinct()
-          : null,
+      stream: _homeController.searchBarStream?.stream.distinct(),
       initialData: true,
       builder: (BuildContext context, AsyncSnapshot snapshot) {
         return AnimatedOpacity(

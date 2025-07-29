@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 
 import 'package:PiliPlus/common/widgets/custom_toast.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart';
@@ -352,6 +353,67 @@ List<SettingsModel> get styleSettings => [
         Get.find<MainController>().navSearchStreamDebounce = value;
         Get.forceAppUpdate();
       } catch (_) {}
+    },
+  ),
+  SettingsModel(
+    settingsType: SettingsType.normal,
+    title: '顶/底栏滚动阈值',
+    subtitle: '滚动多少像素后收起/展开顶底栏，默认100像素',
+    leading: const Icon(Icons.swipe_vertical),
+    setKey: SettingBoxKey.scrollThreshold,
+    getTrailing: () => Text(
+      '${Pref.scrollThreshold.toInt()}px',
+      style: Get.theme.textTheme.titleSmall,
+    ),
+    onTap: (setState) {
+      String scrollThreshold = Pref.scrollThreshold.toString();
+      showDialog(
+        context: Get.context!,
+        builder: (context) {
+          return AlertDialog(
+            title: const Text('滚动阈值'),
+            content: TextFormField(
+              autofocus: true,
+              initialValue: scrollThreshold,
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              onChanged: (value) {
+                scrollThreshold = value;
+              },
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'[\d\.]+')),
+              ],
+              decoration: const InputDecoration(suffixText: 'px'),
+            ),
+            actions: [
+              TextButton(
+                onPressed: Get.back,
+                child: Text(
+                  '取消',
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.outline,
+                  ),
+                ),
+              ),
+              TextButton(
+                onPressed: () async {
+                  Get.back();
+                  await GStorage.setting.put(
+                    SettingBoxKey.scrollThreshold,
+                    max(
+                      10.0,
+                      double.tryParse(scrollThreshold) ?? 100.0,
+                    ),
+                  );
+                  setState();
+                },
+                child: const Text('确定'),
+              ),
+            ],
+          );
+        },
+      );
     },
   ),
   SettingsModel(

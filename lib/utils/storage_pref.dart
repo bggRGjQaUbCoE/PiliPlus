@@ -607,6 +607,9 @@ class Pref {
   static bool get hideSearchBar =>
       _setting.get(SettingBoxKey.hideSearchBar, defaultValue: true);
 
+  static double get scrollThreshold =>
+      _setting.get(SettingBoxKey.scrollThreshold, defaultValue: 100.0);
+
   static bool get enableSearchWord =>
       _setting.get(SettingBoxKey.enableSearchWord, defaultValue: true);
 

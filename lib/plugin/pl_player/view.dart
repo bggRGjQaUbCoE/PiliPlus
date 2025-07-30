@@ -1821,52 +1821,87 @@ Widget buildDmChart(
   PlPlayerController plPlayerController, [
   double offset = 0,
 ]) {
-  final color = theme.colorScheme.primary;
-  return IgnorePointer(
-    child: Container(
-      height: 12,
-      margin: EdgeInsets.only(
-        bottom:
-            plPlayerController.viewPointList.isNotEmpty &&
-                plPlayerController.showVP.value
-            ? 20.25 + offset
-            : 4.25 + offset,
-      ),
-      child: LineChart(
-        LineChartData(
-          titlesData: const FlTitlesData(show: false),
-          lineTouchData: const LineTouchData(enabled: false),
-          gridData: const FlGridData(show: false),
-          borderData: FlBorderData(show: false),
-          minX: 0,
-          maxX: (plPlayerController.dmTrend.length - 1).toDouble(),
-          minY: 0,
-          maxY: plPlayerController.dmTrend
-              .reduce((a, b) => a > b ? a : b)
-              .toDouble(),
-          lineBarsData: [
-            LineChartBarData(
-              spots: List.generate(
-                plPlayerController.dmTrend.length,
-                (index) => FlSpot(
-                  index.toDouble(),
-                  plPlayerController.dmTrend[index],
+  return Obx(() {
+    final primaryColor = theme.colorScheme.primary;
+    final grayColor = Colors.grey[600]!;
+    final lightGrayColor = Colors.grey[400]!.withValues(alpha: 0.3);
+
+    // 计算当前播放进度对应的数据点索引
+    final currentPositionSeconds =
+        plPlayerController.sliderPositionSeconds.value;
+    final totalSeconds = plPlayerController.durationSeconds.value.inSeconds;
+    final progressRatio = totalSeconds > 0
+        ? currentPositionSeconds / totalSeconds
+        : 0.0;
+    final progressIndex = (plPlayerController.dmTrend.length * progressRatio)
+        .round();
+
+    return IgnorePointer(
+      child: Container(
+        height: 12,
+        margin: EdgeInsets.only(
+          bottom:
+              plPlayerController.viewPointList.isNotEmpty &&
+                  plPlayerController.showVP.value
+              ? 20.25 + offset
+              : 4.25 + offset,
+        ),
+        child: LineChart(
+          LineChartData(
+            titlesData: const FlTitlesData(show: false),
+            lineTouchData: const LineTouchData(enabled: false),
+            gridData: const FlGridData(show: false),
+            borderData: FlBorderData(show: false),
+            minX: 0,
+            maxX: (plPlayerController.dmTrend.length - 1).toDouble(),
+            minY: 0,
+            maxY: plPlayerController.dmTrend
+                .reduce((a, b) => a > b ? a : b)
+                .toDouble(),
+            lineBarsData: [
+              // 未播放部分（灰色背景曲线）
+              LineChartBarData(
+                spots: List.generate(
+                  plPlayerController.dmTrend.length,
+                  (index) => FlSpot(
+                    index.toDouble(),
+                    plPlayerController.dmTrend[index],
+                  ),
+                ),
+                isCurved: true,
+                barWidth: 1,
+                color: grayColor,
+                dotData: const FlDotData(show: false),
+                belowBarData: BarAreaData(
+                  show: true,
+                  color: lightGrayColor,
                 ),
               ),
-              isCurved: true,
-              barWidth: 1,
-              color: color,
-              dotData: const FlDotData(show: false),
-              belowBarData: BarAreaData(
-                show: true,
-                color: color.withValues(alpha: 0.4),
-              ),
-            ),
-          ],
+              // 已播放部分（主题色曲线）
+              if (progressIndex > 0)
+                LineChartBarData(
+                  spots: List.generate(
+                    progressIndex + 1,
+                    (index) => FlSpot(
+                      index.toDouble(),
+                      plPlayerController.dmTrend[index],
+                    ),
+                  ),
+                  isCurved: true,
+                  barWidth: 1,
+                  color: primaryColor,
+                  dotData: const FlDotData(show: false),
+                  belowBarData: BarAreaData(
+                    show: true,
+                    color: primaryColor.withValues(alpha: 0.4),
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
-    ),
-  );
+    );
+  });
 }
 
 Widget buildSeekPreviewWidget(PlPlayerController plPlayerController) {

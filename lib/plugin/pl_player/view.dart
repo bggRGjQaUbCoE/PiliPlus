@@ -1870,11 +1870,11 @@ Widget buildDmChart(
                 ),
                 isCurved: true,
                 barWidth: 1,
-                color: grayColor,
+                color: grayColor.withValues(alpha: 0.2),
                 dotData: const FlDotData(show: false),
                 belowBarData: BarAreaData(
                   show: true,
-                  color: lightGrayColor,
+                  color: lightGrayColor.withValues(alpha: 0.2),
                 ),
               ),
               // 已播放部分（主题色曲线）
@@ -1887,9 +1887,10 @@ Widget buildDmChart(
                       plPlayerController.dmTrend[index],
                     ),
                   ),
+
                   isCurved: true,
                   barWidth: 1,
-                  color: primaryColor,
+                  color: primaryColor.withValues(alpha: 0.2),
                   dotData: const FlDotData(show: false),
                   belowBarData: BarAreaData(
                     show: true,

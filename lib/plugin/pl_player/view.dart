@@ -29,6 +29,7 @@ import 'package:PiliPlus/plugin/pl_player/widgets/play_pause_btn.dart';
 import 'package:PiliPlus/utils/duration_util.dart';
 import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
+import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_debounce/easy_throttle.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -1447,7 +1448,9 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                       alignment: Alignment.bottomCenter,
                       children: [
                         if (plPlayerController.dmTrend.isNotEmpty &&
-                            plPlayerController.showDmTreandChart.value)
+                            plPlayerController.showDmTreandChart.value &&
+                            (Pref.dmChartAlwaysShow ||
+                                plPlayerController.showControls.value))
                           buildDmChart(theme, plPlayerController),
                         if (plPlayerController.viewPointList.isNotEmpty &&
                             plPlayerController.showVP.value)

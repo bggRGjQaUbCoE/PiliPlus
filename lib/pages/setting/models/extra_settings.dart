@@ -609,14 +609,6 @@ List<SettingsModel> get extraSettings => [
   ),
   SettingsModel(
     settingsType: SettingsType.sw1tch,
-    title: '显示高能进度条',
-    subtitle: '高能进度条反应了在时域上，单位时间内弹幕发送量的变化趋势',
-    leading: const Icon(Icons.show_chart),
-    setKey: SettingBoxKey.showDmChart,
-    defaultVal: false,
-  ),
-  SettingsModel(
-    settingsType: SettingsType.sw1tch,
     title: '发评反诈',
     subtitle: '发送评论后检查评论是否可见',
     leading: const Stack(

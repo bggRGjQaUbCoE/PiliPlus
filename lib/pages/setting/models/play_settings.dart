@@ -271,4 +271,20 @@ List<SettingsModel> get playSettings => [
       videoPlayerServiceHandler.enableBackgroundPlay = value;
     },
   ),
+  SettingsModel(
+    settingsType: SettingsType.sw1tch,
+    title: '显示高能进度条',
+    subtitle: '高能进度条反应了在时域上，单位时间内弹幕发送量的变化趋势',
+    leading: const Icon(Icons.show_chart),
+    setKey: SettingBoxKey.showDmChart,
+    defaultVal: false,
+  ),
+  SettingsModel(
+    settingsType: SettingsType.sw1tch,
+    title: '高能进度条始终显示',
+    subtitle: '开启后播放器控件收起时也显示高能进度条，关闭则仅在显示控件时显示',
+    leading: const Icon(Icons.visibility_outlined),
+    setKey: SettingBoxKey.dmChartAlwaysShow,
+    defaultVal: true,
+  ),
 ];

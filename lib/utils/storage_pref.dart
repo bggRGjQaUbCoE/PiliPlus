@@ -425,6 +425,9 @@ class Pref {
   static bool get showDmChart =>
       _setting.get(SettingBoxKey.showDmChart, defaultValue: false);
 
+  static bool get dmChartAlwaysShow =>
+      _setting.get(SettingBoxKey.dmChartAlwaysShow, defaultValue: true);
+
   static bool get enableCommAntifraud =>
       _setting.get(SettingBoxKey.enableCommAntifraud, defaultValue: false);
 

@@ -1,5 +1,5 @@
 import 'package:PiliPlus/models/model_owner.dart';
-import 'package:PiliPlus/models_new/video/video_detail/dimension.dart';
+import 'package:PiliPlus/models/model_video.dart';
 import 'package:PiliPlus/models_new/video/video_detail/rights.dart';
 import 'package:PiliPlus/models_new/video/video_detail/stat.dart';
 
@@ -18,7 +18,7 @@ class Arc {
   int? duration;
   Rights? rights;
   Owner? author;
-  Stat? stat;
+  VideoStat? stat;
   String? dynam1c;
   Dimension? dimension;
   bool? isChargeableSeason;
@@ -77,7 +77,7 @@ class Arc {
         : Owner.fromJson(json['author'] as Map<String, dynamic>),
     stat: json['stat'] == null
         ? null
-        : Stat.fromJson(json['stat'] as Map<String, dynamic>),
+        : VideoStat.fromJson(json['stat'] as Map<String, dynamic>),
     dynam1c: json['dynamic'] as String?,
     dimension: json['dimension'] == null
         ? null

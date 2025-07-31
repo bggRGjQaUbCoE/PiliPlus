@@ -17,7 +17,7 @@ class Season {
   int? seasonId;
   String? seasonTitle;
   int? seasonType;
-  Stat? stat;
+  PgcStat? stat;
 
   Season({
     this.badge,
@@ -58,6 +58,6 @@ class Season {
     seasonType: json['season_type'] as int?,
     stat: json['stat'] == null
         ? null
-        : Stat.fromJson(json['stat'] as Map<String, dynamic>),
+        : PgcStat.fromJson(json['stat'] as Map<String, dynamic>),
   );
 }

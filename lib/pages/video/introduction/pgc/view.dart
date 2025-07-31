@@ -209,11 +209,11 @@ class _PgcIntroPageState extends State<PgcIntroPage>
                             children: [
                               StatWidget(
                                 type: StatType.play,
-                                value: item.stat!.views,
+                                value: item.stat!.view,
                               ),
                               StatWidget(
                                 type: StatType.danmaku,
-                                value: item.stat!.danmakus,
+                                value: item.stat!.danmaku,
                               ),
                               if (isLandscape) ...[
                                 areasAndPubTime(theme, item),
@@ -280,7 +280,7 @@ class _PgcIntroPageState extends State<PgcIntroPage>
               onLongPress: pgcIntroController.actionOneThree,
               selectStatus: pgcIntroController.hasLike.value,
               semanticsLabel: '点赞',
-              text: NumUtil.numFormat(item.stat!.likes),
+              text: NumUtil.numFormat(item.stat!.like),
               needAnim: true,
               hasTriple:
                   pgcIntroController.hasLike.value &&
@@ -306,7 +306,7 @@ class _PgcIntroPageState extends State<PgcIntroPage>
               onTap: () => handleState(pgcIntroController.actionCoinVideo),
               selectStatus: pgcIntroController.hasCoin,
               semanticsLabel: '投币',
-              text: NumUtil.numFormat(item.stat!.coins),
+              text: NumUtil.numFormat(item.stat!.coin),
               needAnim: true,
             ),
           ),

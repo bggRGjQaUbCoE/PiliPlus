@@ -682,7 +682,7 @@ class FavHttp {
   }
 
   // 查看视频被收藏在哪个文件夹
-  static Future videoInFolder({
+  static Future<LoadingState<FavFolderData>> videoInFolder({
     dynamic mid,
     dynamic rid,
     dynamic type,
@@ -696,9 +696,9 @@ class FavHttp {
       },
     );
     if (res.data['code'] == 0) {
-      return {'status': true, 'data': FavFolderData.fromJson(res.data['data'])};
+      return Success(FavFolderData.fromJson(res.data['data']));
     } else {
-      return {'status': false, 'msg': res.data['message']};
+      return Error(res.data['message']);
     }
   }
 }

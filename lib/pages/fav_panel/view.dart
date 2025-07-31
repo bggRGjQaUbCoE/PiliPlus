@@ -33,11 +33,7 @@ class _FavPanelState extends State<FavPanel> {
   Future<void> _query() async {
     var res = await widget.ctr.queryVideoInFolder();
     if (mounted) {
-      if (res['status']) {
-        loadingState = const Success(null);
-      } else {
-        loadingState = Error(res['msg']);
-      }
+      loadingState = res;
       setState(() {});
     }
   }

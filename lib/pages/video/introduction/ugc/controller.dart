@@ -4,14 +4,12 @@ import 'dart:math';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart';
 import 'package:PiliPlus/http/api.dart';
 import 'package:PiliPlus/http/constants.dart';
-import 'package:PiliPlus/http/fav.dart';
 import 'package:PiliPlus/http/init.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/member.dart';
 import 'package:PiliPlus/http/search.dart';
 import 'package:PiliPlus/http/user.dart';
 import 'package:PiliPlus/http/video.dart';
-import 'package:PiliPlus/models_new/fav/fav_folder/data.dart';
 import 'package:PiliPlus/models_new/member_card_info/data.dart';
 import 'package:PiliPlus/models_new/triple/ugc_triple.dart';
 import 'package:PiliPlus/models_new/video/video_ai_conclusion/data.dart';
@@ -21,6 +19,7 @@ import 'package:PiliPlus/models_new/video/video_detail/episode.dart';
 import 'package:PiliPlus/models_new/video/video_detail/page.dart';
 import 'package:PiliPlus/models_new/video/video_detail/section.dart';
 import 'package:PiliPlus/models_new/video/video_detail/staff.dart';
+import 'package:PiliPlus/models_new/video/video_detail/stat_detail.dart';
 import 'package:PiliPlus/models_new/video/video_detail/ugc_season.dart';
 import 'package:PiliPlus/models_new/video/video_relation/data.dart';
 import 'package:PiliPlus/pages/common/common_intro_controller.dart';
@@ -40,7 +39,6 @@ import 'package:PiliPlus/utils/request_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:expandable/expandable.dart';
-import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -308,29 +306,6 @@ class VideoIntroController extends CommonIntroController with ReloadMixin {
     SmartDialog.showToast(res['msg']);
   }
 
-  Future<void> coinVideo(int coin, [bool selectLike = false]) async {
-    if (videoDetail.value.stat == null) {
-      return;
-    }
-    var res = await VideoHttp.coinVideo(
-      bvid: bvid,
-      multiply: coin,
-      selectLike: selectLike ? 1 : 0,
-    );
-    if (res['status']) {
-      SmartDialog.showToast('投币成功');
-      coinNum.value += coin;
-      GlobalData().afterCoin(coin);
-      final stat = videoDetail.value.stat!..coin += coin;
-      if (selectLike && !hasLike.value) {
-        stat.like++;
-        hasLike.value = true;
-      }
-    } else {
-      SmartDialog.showToast(res['msg']);
-    }
-  }
-
   // 投币
   Future<void> actionCoinVideo() async {
     if (!accountService.isLogin.value) {
@@ -356,74 +331,11 @@ class VideoIntroController extends CommonIntroController with ReloadMixin {
     );
   }
 
-  // （取消）收藏
   @override
-  Future<void> actionFavVideo({bool isQuick = false}) async {
-    // 收藏至默认文件夹
-    if (isQuick) {
-      SmartDialog.showLoading(msg: '请求中');
-      queryVideoInFolder().then((res) async {
-        if (res['status']) {
-          final hasFav = this.hasFav.value;
-          var result = hasFav
-              ? await FavHttp.unfavAll(rid: IdUtils.bv2av(bvid), type: 2)
-              : await FavHttp.favVideo(
-                  resources: '${IdUtils.bv2av(bvid)}:2',
-                  addIds: favFolderId.toString(),
-                );
-          SmartDialog.dismiss();
-          if (result['status']) {
-            videoDetail.value.stat!.favorite += hasFav ? -1 : 1;
-            this.hasFav.value = !hasFav;
-            SmartDialog.showToast('✅ 快速收藏/取消收藏成功');
-          } else {
-            SmartDialog.showToast(result['msg']);
-          }
-        } else {
-          SmartDialog.dismiss();
-        }
-      });
-      return;
-    }
+  (Object, int) getFavRidType() => (IdUtils.bv2av(bvid), 2);
 
-    List<int?> addMediaIdsNew = [];
-    List<int?> delMediaIdsNew = [];
-    try {
-      for (var i in favFolderData.value.list!.toList()) {
-        bool isFaved = favIds?.contains(i.id) == true;
-        if (i.favState == 1) {
-          if (!isFaved) {
-            addMediaIdsNew.add(i.id);
-          }
-        } else {
-          if (isFaved) {
-            delMediaIdsNew.add(i.id);
-          }
-        }
-      }
-    } catch (e) {
-      if (kDebugMode) debugPrint(e.toString());
-    }
-    SmartDialog.showLoading(msg: '请求中');
-    var result = await FavHttp.favVideo(
-      resources: '${IdUtils.bv2av(bvid)}:2',
-      addIds: addMediaIdsNew.join(','),
-      delIds: delMediaIdsNew.join(','),
-    );
-    SmartDialog.dismiss();
-    if (result['status']) {
-      Get.back();
-      final newVal =
-          addMediaIdsNew.isNotEmpty || favIds?.length != delMediaIdsNew.length;
-      if (hasFav.value != newVal) {
-        videoDetail.value.stat!.favorite += newVal ? 1 : -1;
-        hasFav.value = newVal;
-      }
-      SmartDialog.showToast('操作成功');
-    } else {
-      SmartDialog.showToast(result['msg']);
-    }
-  }
+  @override
+  StatDetail? getStat() => videoDetail.value.stat;
 
   // 分享视频
   void actionShareVideo(BuildContext context) {
@@ -528,24 +440,6 @@ class VideoIntroController extends CommonIntroController with ReloadMixin {
         );
       },
     );
-  }
-
-  @override
-  Future queryVideoInFolder() async {
-    favIds = null;
-    var result = await FavHttp.videoInFolder(
-      mid: accountService.mid,
-      rid: IdUtils.bv2av(bvid),
-    );
-    if (result['status']) {
-      FavFolderData data = result['data'];
-      favFolderData.value = data;
-      favIds = data.list
-          ?.where((item) => item.favState == 1)
-          .map((item) => item.id)
-          .toSet();
-    }
-    return result;
   }
 
   // 查询关注状态

@@ -10,7 +10,7 @@ class UgcSeason {
   int? signState;
   int? attribute;
   List<SectionItem>? sections;
-  Stat? stat;
+  VideoStat? stat;
   int? epCount;
   int? seasonType;
   bool? isPaySeason;
@@ -45,7 +45,7 @@ class UgcSeason {
         .toList(),
     stat: json['stat'] == null
         ? null
-        : Stat.fromJson(json['stat'] as Map<String, dynamic>),
+        : VideoStat.fromJson(json['stat'] as Map<String, dynamic>),
     epCount: json['ep_count'] as int?,
     seasonType: json['season_type'] as int?,
     isPaySeason: json['is_pay_season'] as bool?,

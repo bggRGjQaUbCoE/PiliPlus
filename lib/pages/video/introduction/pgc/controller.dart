@@ -5,12 +5,12 @@ import 'package:PiliPlus/grpc/bilibili/app/viewunite/pgcanymodel.pb.dart'
     show ViewPgcAny;
 import 'package:PiliPlus/grpc/view.dart';
 import 'package:PiliPlus/http/constants.dart';
-import 'package:PiliPlus/http/fav.dart';
 import 'package:PiliPlus/http/video.dart';
 import 'package:PiliPlus/models/pgc_lcf.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_info_model/episode.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_info_model/result.dart';
 import 'package:PiliPlus/models_new/triple/pgc_triple.dart';
+import 'package:PiliPlus/models_new/video/video_detail/stat_detail.dart';
 import 'package:PiliPlus/pages/common/common_intro_controller.dart';
 import 'package:PiliPlus/pages/dynamics_repost/view.dart';
 import 'package:PiliPlus/pages/video/controller.dart';
@@ -64,7 +64,7 @@ class PgcIntroController extends CommonIntroController {
       final hasFav = data.favorite == 1;
       late final stat = pgcItem.stat!;
       if (hasLike) {
-        stat.likes = max(1, stat.likes);
+        stat.like = max(1, stat.like);
       }
       if (hasFav) {
         stat.favorite = max(1, stat.favorite);
@@ -87,30 +87,10 @@ class PgcIntroController extends CommonIntroController {
     var result = await VideoHttp.likeVideo(bvid: bvid, type: newVal);
     if (result['status']) {
       SmartDialog.showToast(newVal ? result['data']['toast'] : '取消赞');
-      pgcItem.stat!.likes += newVal ? 1 : -1;
+      pgcItem.stat!.like += newVal ? 1 : -1;
       hasLike.value = newVal;
     } else {
       SmartDialog.showToast(result['msg']);
-    }
-  }
-
-  Future<void> coinVideo(int coin, [bool selectLike = false]) async {
-    var res = await VideoHttp.coinVideo(
-      bvid: bvid,
-      multiply: coin,
-      selectLike: selectLike ? 1 : 0,
-    );
-    if (res['status']) {
-      SmartDialog.showToast('投币成功');
-      coinNum.value += coin;
-      GlobalData().afterCoin(coin);
-      final stat = pgcItem.stat!..coins += coin;
-      if (selectLike && !hasLike.value) {
-        stat.likes++;
-        hasLike.value = true;
-      }
-    } else {
-      SmartDialog.showToast(res['msg']);
     }
   }
 
@@ -137,70 +117,11 @@ class PgcIntroController extends CommonIntroController {
     );
   }
 
-  // （取消）收藏 pgc
   @override
-  Future<void> actionFavVideo({bool isQuick = false}) async {
-    // 收藏至默认文件夹
-    if (isQuick) {
-      SmartDialog.showLoading(msg: '请求中');
-      queryVideoInFolder().then((res) async {
-        if (res['status']) {
-          final hasFav = this.hasFav.value;
-          var result = hasFav
-              ? await FavHttp.unfavAll(rid: epId, type: 24)
-              : await FavHttp.favVideo(
-                  resources: '$epId:24',
-                  addIds: favFolderId.toString(),
-                );
-          SmartDialog.dismiss();
-          if (result['status']) {
-            pgcItem.stat!.favorite += hasFav ? -1 : 1;
-            this.hasFav.value = !hasFav;
-            SmartDialog.showToast('✅ 快速收藏/取消收藏成功');
-          } else {
-            SmartDialog.showToast(result['msg']);
-          }
-        } else {
-          SmartDialog.dismiss();
-        }
-      });
-      return;
-    }
+  (Object, int) getFavRidType() => (epId!, 24);
 
-    List<int?> addMediaIdsNew = [];
-    List<int?> delMediaIdsNew = [];
-    try {
-      for (var i in favFolderData.value.list!.toList()) {
-        bool isFaved = favIds?.contains(i.id) == true;
-        if (i.favState == 1) {
-          if (!isFaved) {
-            addMediaIdsNew.add(i.id);
-          }
-        } else {
-          if (isFaved) {
-            delMediaIdsNew.add(i.id);
-          }
-        }
-      }
-    } catch (_) {}
-    var result = await FavHttp.favVideo(
-      resources: '$epId:24',
-      addIds: addMediaIdsNew.join(','),
-      delIds: delMediaIdsNew.join(','),
-    );
-    if (result['status']) {
-      SmartDialog.showToast('操作成功');
-      Get.back();
-      final newVal =
-          addMediaIdsNew.isNotEmpty || favIds?.length != delMediaIdsNew.length;
-      if (hasFav.value != newVal) {
-        pgcItem.stat!.favorite += newVal ? 1 : -1;
-        hasFav.value = newVal;
-      }
-    } else {
-      SmartDialog.showToast(result['msg']);
-    }
-  }
+  @override
+  StatDetail? getStat() => pgcItem.stat;
 
   // 分享视频
   void actionShareVideo(BuildContext context) {
@@ -407,24 +328,6 @@ class PgcIntroController extends CommonIntroController {
     SmartDialog.showToast(result['msg']);
   }
 
-  @override
-  Future queryVideoInFolder() async {
-    favIds = null;
-    var result = await FavHttp.videoInFolder(
-      mid: accountService.mid,
-      rid: epId, // pgc
-      type: 24, // pgc
-    );
-    if (result['status']) {
-      favFolderData.value = result['data'];
-      favIds = favFolderData.value.list
-          ?.where((item) => item.favState == 1)
-          .map((item) => item.id)
-          .toSet();
-    }
-    return result;
-  }
-
   bool prevPlay() {
     List episodes = pgcItem.episodes!;
     VideoDetailController videoDetailCtr = Get.find<VideoDetailController>(
@@ -503,11 +406,11 @@ class PgcIntroController extends CommonIntroController {
       PgcTriple data = result['data'];
       late final stat = pgcItem.stat!;
       if ((data.like == 1) != hasLike.value) {
-        stat.likes++;
+        stat.like++;
         hasLike.value = true;
       }
       if ((data.coin == 1) != hasCoin) {
-        stat.coins += 2;
+        stat.coin += 2;
         coinNum.value = 2;
         GlobalData().afterCoin(2);
       }

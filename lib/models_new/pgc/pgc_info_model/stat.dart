@@ -1,38 +1,19 @@
-class Stat {
-  num coins;
-  int? danmakus;
-  int favorite;
+import 'package:PiliPlus/models_new/video/video_detail/stat_detail.dart';
+
+class PgcStat extends StatDetail {
   int? favorites;
   String? followText;
-  int likes;
-  int? reply;
-  int? share;
-  int? views;
-  int? vt;
 
-  Stat({
-    required this.coins,
-    this.danmakus,
-    required this.favorite,
-    this.favorites,
-    this.followText,
-    required this.likes,
-    this.reply,
-    this.share,
-    this.views,
-    this.vt,
-  });
-
-  factory Stat.fromJson(Map<String, dynamic> json) => Stat(
-    coins: json["coins"] ?? 0,
-    danmakus: json["danmakus"],
-    favorite: json["favorite"] ?? 0,
-    favorites: json["favorites"],
-    followText: json["follow_text"],
-    likes: json["likes"] ?? 0,
-    reply: json["reply"],
-    share: json["share"],
-    views: json["views"],
-    vt: json["vt"],
-  );
+  PgcStat.fromJson(Map<String, dynamic> json) {
+    coin = json["coins"] ?? 0;
+    danmaku = json["danmakus"];
+    favorite = json["favorite"] ?? 0;
+    favorites = json["favorites"];
+    followText = json["follow_text"];
+    like = json["likes"] ?? 0;
+    reply = json["reply"];
+    share = json["share"];
+    view = json["views"];
+    vt = json["vt"];
+  }
 }

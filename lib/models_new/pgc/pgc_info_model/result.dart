@@ -56,7 +56,7 @@ class PgcInfoModel {
   int? showSeasonType;
   String? squareCover;
   String? staff;
-  Stat? stat;
+  PgcStat? stat;
   int? status;
   List? styles;
   String? subtitle;
@@ -187,7 +187,7 @@ class PgcInfoModel {
     staff: json['staff'] as String?,
     stat: json['stat'] == null
         ? null
-        : Stat.fromJson(json['stat'] as Map<String, dynamic>),
+        : PgcStat.fromJson(json['stat'] as Map<String, dynamic>),
     status: json['status'] as int?,
     styles: json['styles'],
     subtitle: json['subtitle'] as String?,

@@ -114,11 +114,11 @@ class _IntroDetailState extends CommonCollapseSlidePageState<PgcIntroPanel> {
           children: [
             StatWidget(
               type: StatType.play,
-              value: widget.item.stat!.views,
+              value: widget.item.stat!.view,
             ),
             StatWidget(
               type: StatType.danmaku,
-              value: widget.item.stat!.danmakus,
+              value: widget.item.stat!.danmaku,
             ),
           ],
         ),

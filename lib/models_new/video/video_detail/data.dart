@@ -30,7 +30,7 @@ class VideoDetailData {
   int? duration;
   Rights? rights;
   Owner? owner;
-  Stat? stat;
+  VideoStat? stat;
   ArgueInfo? argueInfo;
   String? dynam1c;
   int? cid;
@@ -137,7 +137,7 @@ class VideoDetailData {
             : Owner.fromJson(json['owner'] as Map<String, dynamic>),
         stat: json['stat'] == null
             ? null
-            : Stat.fromJson(json['stat'] as Map<String, dynamic>),
+            : VideoStat.fromJson(json['stat'] as Map<String, dynamic>),
         argueInfo: json['argue_info'] == null
             ? null
             : ArgueInfo.fromJson(json['argue_info'] as Map<String, dynamic>),

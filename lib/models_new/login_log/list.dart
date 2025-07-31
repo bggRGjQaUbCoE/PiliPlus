@@ -1,12 +1,12 @@
 class LoginLogItem {
-  String ip;
-  int? time;
-  String timeAt;
-  bool? status;
-  int? type;
-  String geo;
+  final String ip;
+  final int? time;
+  final String timeAt;
+  final bool? status;
+  final int? type;
+  final String geo;
 
-  LoginLogItem({
+  const LoginLogItem({
     required this.ip,
     this.time,
     required this.timeAt,

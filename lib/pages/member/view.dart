@@ -4,9 +4,10 @@ import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models_new/space/space/data.dart';
-import 'package:PiliPlus/pages/coin_log/view.dart';
-import 'package:PiliPlus/pages/exp_log/view.dart';
-import 'package:PiliPlus/pages/login_log/view.dart';
+import 'package:PiliPlus/pages/coin_log/controller.dart';
+import 'package:PiliPlus/pages/exp_log/controller.dart';
+import 'package:PiliPlus/pages/log_table/view.dart';
+import 'package:PiliPlus/pages/login_log/controller.dart';
 import 'package:PiliPlus/pages/member/controller.dart';
 import 'package:PiliPlus/pages/member/widget/user_info_card.dart';
 import 'package:PiliPlus/pages/member_cheese/view.dart';
@@ -172,7 +173,10 @@ class _MemberPageState extends State<MemberPage> {
                       ),
                     ),
                   PopupMenuItem(
-                    onTap: () => Get.to(const LoginLogPage()),
+                    onTap: () => Get.to(
+                      const LogPage(),
+                      arguments: LoginLogController(),
+                    ),
                     child: const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -183,7 +187,10 @@ class _MemberPageState extends State<MemberPage> {
                     ),
                   ),
                   PopupMenuItem(
-                    onTap: () => Get.to(const CoinLogPage()),
+                    onTap: () => Get.to(
+                      const LogPage(),
+                      arguments: CoinLogController(),
+                    ),
                     child: const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -194,7 +201,10 @@ class _MemberPageState extends State<MemberPage> {
                     ),
                   ),
                   PopupMenuItem(
-                    onTap: () => Get.to(const ExpLogPage()),
+                    onTap: () => Get.to(
+                      const LogPage(),
+                      arguments: ExpLogController(),
+                    ),
                     child: const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [

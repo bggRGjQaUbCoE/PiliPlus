@@ -1,25 +1,24 @@
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
 import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/models_new/coin_log/list.dart';
-import 'package:PiliPlus/pages/exp_log/controller.dart';
+import 'package:PiliPlus/pages/log_table/controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-class ExpLogPage extends StatefulWidget {
-  const ExpLogPage({super.key});
+class LogPage<T> extends StatefulWidget {
+  const LogPage({super.key});
 
   @override
-  State<ExpLogPage> createState() => _ExpLogPageState();
+  State<LogPage<T>> createState() => _LogPageState<T>();
 }
 
-class _ExpLogPageState extends State<ExpLogPage> {
-  late final _controller = Get.put(ExpLogController());
+class _LogPageState<T> extends State<LogPage<T>> {
+  final _controller = Get.put<LogController<dynamic, T>>(Get.arguments);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('经验记录')),
+      appBar: AppBar(title: Text(_controller.title)),
       body: SafeArea(
         top: false,
         bottom: false,
@@ -44,7 +43,7 @@ class _ExpLogPageState extends State<ExpLogPage> {
     );
   }
 
-  Widget _buildBody(LoadingState<List<CoinLogItem>?> loadingState) {
+  Widget _buildBody(LoadingState<List<T>?> loadingState) {
     return switch (loadingState) {
       Loading() => linearLoading,
       Success(:var response) =>
@@ -73,11 +72,7 @@ class _ExpLogPageState extends State<ExpLogPage> {
                         child: ColoredBox(
                           color: them.colorScheme.onInverseSurface,
                           child: _item(
-                            const CoinLogItem(
-                              time: '时间',
-                              delta: '变化',
-                              reason: '原因',
-                            ),
+                            _controller.header,
                             dividerV,
                             isHeader: true,
                           ),
@@ -104,7 +99,7 @@ class _ExpLogPageState extends State<ExpLogPage> {
     };
   }
 
-  Widget _item(CoinLogItem item, Widget divider, {bool isHeader = false}) {
+  Widget _item(T item, Widget divider, {bool isHeader = false}) {
     Widget text(int flex, String text) => Expanded(
       flex: flex,
       child: Padding(
@@ -122,15 +117,14 @@ class _ExpLogPageState extends State<ExpLogPage> {
         ),
       ),
     );
+
     Widget content = Row(
       children: [
         divider,
-        text(2, item.time),
-        divider,
-        text(1, item.delta),
-        divider,
-        text(2, item.reason),
-        divider,
+        for (var (i, j) in _controller.getFlexAndText(item)) ...[
+          text(i, j),
+          divider,
+        ],
       ],
     );
     return IntrinsicHeight(

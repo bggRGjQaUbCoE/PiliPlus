@@ -15,6 +15,7 @@ import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/image_util.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
+import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dio/dio.dart';
@@ -89,7 +90,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   ..name.value = data.name!
                   ..face.value = data.face!;
                 try {
-                  UserInfoData userInfo = GStorage.userInfo.get('userInfoCache')
+                  UserInfoData userInfo = Pref.userInfoCache!
                     ..uname = data.name
                     ..face = data.face;
                   GStorage.userInfo.put('userInfoCache', userInfo);
@@ -386,7 +387,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 ..coins = data.coins! - 6;
               accountService.name.value = _textController.text;
               try {
-                UserInfoData userInfo = GStorage.userInfo.get('userInfoCache')
+                UserInfoData userInfo = Pref.userInfoCache!
                   ..uname = _textController.text;
                 GStorage.userInfo.put('userInfoCache', userInfo);
               } catch (_) {}

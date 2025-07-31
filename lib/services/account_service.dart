@@ -1,5 +1,5 @@
 import 'package:PiliPlus/models/user/info.dart';
-import 'package:PiliPlus/utils/storage.dart' show GStorage;
+import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:get/get.dart';
 
 class AccountService extends GetxService {
@@ -11,7 +11,7 @@ class AccountService extends GetxService {
   @override
   void onInit() {
     super.onInit();
-    UserInfoData? userInfo = GStorage.userInfo.get('userInfoCache');
+    UserInfoData? userInfo = Pref.userInfoCache;
     mid = userInfo?.mid ?? 0;
     name = (userInfo?.uname ?? '').obs;
     face = (userInfo?.face ?? '').obs;

@@ -6,7 +6,7 @@ import 'package:PiliPlus/models_new/pgc/pgc_info_model/new_ep.dart';
 import 'package:PiliPlus/models_new/video/video_detail/episode.dart'
     hide EpisodeItem;
 import 'package:PiliPlus/pages/video/controller.dart';
-import 'package:PiliPlus/utils/storage.dart';
+import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -50,7 +50,7 @@ class _PgcPanelState extends State<PgcPanel> {
     currentIndex = widget.pages.indexWhere((e) => e.cid == cid);
     scrollToIndex();
 
-    UserInfoData? userInfo = GStorage.userInfo.get('userInfoCache');
+    UserInfoData? userInfo = Pref.userInfoCache;
     vipStatus = userInfo?.vipStatus ?? 0;
 
     videoDetailCtr = Get.find<VideoDetailController>(tag: widget.heroTag);

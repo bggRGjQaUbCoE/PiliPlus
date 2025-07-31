@@ -13,7 +13,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:path_provider/path_provider.dart';
 
 class GStorage {
-  static late final Box<dynamic> userInfo;
+  static late final Box<UserInfoData> userInfo;
   static late final Box<dynamic> historyWord;
   static late final Box<dynamic> localCache;
   static late final Box<dynamic> setting;
@@ -25,7 +25,7 @@ class GStorage {
     await Hive.initFlutter('$path/hive');
     regAdapter();
     // 登录用户信息
-    userInfo = await Hive.openBox(
+    userInfo = await Hive.openBox<UserInfoData>(
       'userInfo',
       compactionStrategy: (int entries, int deletedEntries) {
         return deletedEntries > 2;

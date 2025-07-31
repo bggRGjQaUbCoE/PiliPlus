@@ -13,6 +13,7 @@ import 'package:PiliPlus/utils/accounts/account.dart';
 import 'package:PiliPlus/utils/login_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
+import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -82,7 +83,7 @@ class MineController
   @override
   void onInit() {
     super.onInit();
-    UserInfoData? userInfoCache = GStorage.userInfo.get('userInfoCache');
+    UserInfoData? userInfoCache = Pref.userInfoCache;
     if (userInfoCache != null) {
       userInfo.value = userInfoCache;
       queryData();
@@ -104,7 +105,9 @@ class MineController
       UserInfoData data = res.data;
       if (data.isLogin == true) {
         userInfo.value = data;
-        GStorage.userInfo.put('userInfoCache', data);
+        if (data != Pref.userInfoCache) {
+          GStorage.userInfo.put('userInfoCache', data);
+        }
         accountService
           ..mid = data.mid!
           ..name.value = data.uname!

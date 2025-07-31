@@ -17,6 +17,7 @@ import 'package:PiliPlus/services/account_service.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/accounts/account.dart';
 import 'package:PiliPlus/utils/storage.dart';
+import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart' as web;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -57,7 +58,9 @@ class LoginUtils {
           ..isLogin.value = true;
 
         SmartDialog.showToast('main登录成功');
-        await GStorage.userInfo.put('userInfoCache', data);
+        if (data != Pref.userInfoCache) {
+          await GStorage.userInfo.put('userInfoCache', data);
+        }
 
         try {
           Get.find<MineController>().onRefresh();

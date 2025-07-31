@@ -10,7 +10,6 @@ import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/accounts/account.dart';
 import 'package:PiliPlus/utils/accounts/account_manager/account_mgr.dart';
 import 'package:PiliPlus/utils/global_data.dart';
-import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:archive/archive.dart';
@@ -52,7 +51,7 @@ class Request {
     );
 
     if (Accounts.main.isLogin) {
-      final coin = GStorage.userInfo.get('userInfoCache')?.money;
+      final coin = Pref.userInfoCache?.money;
       if (coin == null) {
         setCoin();
       } else {

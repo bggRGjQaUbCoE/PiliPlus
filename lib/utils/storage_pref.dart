@@ -17,6 +17,7 @@ import 'package:PiliPlus/models/common/video/subtitle_pref_type.dart';
 import 'package:PiliPlus/models/common/video/video_decode_type.dart';
 import 'package:PiliPlus/models/common/video/video_quality.dart';
 import 'package:PiliPlus/models/user/danmaku_rule.dart';
+import 'package:PiliPlus/models/user/info.dart';
 import 'package:PiliPlus/plugin/pl_player/models/bottom_progress_behavior.dart';
 import 'package:PiliPlus/plugin/pl_player/models/fullscreen_mode.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_repeat.dart';
@@ -33,6 +34,9 @@ class Pref {
   static final Box _setting = GStorage.setting;
   static final Box _video = GStorage.video;
   static final Box _localCache = GStorage.localCache;
+
+  static UserInfoData? get userInfoCache =>
+      GStorage.userInfo.get('userInfoCache');
 
   static List<double> get dynamicDetailRatio => List<double>.from(
     _setting.get(

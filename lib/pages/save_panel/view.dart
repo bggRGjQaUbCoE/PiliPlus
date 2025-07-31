@@ -81,10 +81,10 @@ class _SavePanelState extends State<SavePanel> {
   @override
   void initState() {
     super.initState();
-    if (_item is ReplyInfo) {
+    if (_item case ReplyInfo reply) {
       itemType = '评论';
       final currentRoute = Get.currentRoute;
-      late final hasRoot = _item.hasRoot();
+      late final hasRoot = reply.hasRoot();
 
       if (currentRoute.startsWith('/video')) {
         try {
@@ -97,15 +97,15 @@ class _SavePanelState extends State<SavePanel> {
           uname = videoDetail.owner?.name;
         } catch (_) {}
         uri =
-            'bilibili://video/${_item.oid}?comment_root_id=${hasRoot ? _item.root : _item.id}${hasRoot ? '&comment_secondary_id=${_item.id}' : ''}';
+            'bilibili://video/${reply.oid}?comment_root_id=${hasRoot ? reply.root : reply.id}${hasRoot ? '&comment_secondary_id=${reply.id}' : ''}';
 
         try {
           final heroTag = Get.arguments?['heroTag'];
           late final ctr = Get.find<PgcIntroController>(tag: heroTag);
-          final type = _item.type.toInt();
-          late final oid = _item.oid;
-          late final rootId = hasRoot ? _item.root : _item.id;
-          late final anchor = hasRoot ? 'anchor=${_item.id}&' : '';
+          final type = reply.type.toInt();
+          late final oid = reply.oid;
+          late final rootId = hasRoot ? reply.root : reply.id;
+          late final anchor = hasRoot ? 'anchor=${reply.id}&' : '';
           uri =
               'bilibili://comment/detail/$type/$oid/$rootId/?${anchor}enterUri=bilibili://pgc/season/ep/${ctr.epId}';
         } catch (_) {}
@@ -113,10 +113,10 @@ class _SavePanelState extends State<SavePanel> {
         try {
           DynamicItemModel dynItem = Get.arguments['item'];
           uname = dynItem.modules.moduleAuthor?.name;
-          final type = _item.type.toInt();
+          final type = reply.type.toInt();
           late final oid = dynItem.idStr;
-          late final rootId = hasRoot ? _item.root : _item.id;
-          late final anchor = hasRoot ? 'anchor=${_item.id}&' : '';
+          late final rootId = hasRoot ? reply.root : reply.id;
+          late final anchor = hasRoot ? 'anchor=${reply.id}&' : '';
           late final enterUri = parseDyn(dynItem);
           viewType = '查看';
           itemType = '评论';
@@ -129,10 +129,10 @@ class _SavePanelState extends State<SavePanel> {
         } catch (_) {}
       } else if (currentRoute.startsWith('/Scaffold')) {
         try {
-          final type = _item.type.toInt();
+          final type = reply.type.toInt();
           late final oid = Get.arguments['oid'];
-          late final rootId = hasRoot ? _item.root : _item.id;
-          late final anchor = hasRoot ? 'anchor=${_item.id}&' : '';
+          late final rootId = hasRoot ? reply.root : reply.id;
+          late final anchor = hasRoot ? 'anchor=${reply.id}&' : '';
           late final enterUri = 'bilibili://following/detail/$oid';
           uri = switch (type) {
             1 || 11 || 12 =>
@@ -143,10 +143,10 @@ class _SavePanelState extends State<SavePanel> {
         } catch (_) {}
       } else if (currentRoute.startsWith('/articlePage')) {
         try {
-          final type = _item.type.toInt();
-          late final oid = _item.oid;
-          late final rootId = hasRoot ? _item.root : _item.id;
-          late final anchor = hasRoot ? 'anchor=${_item.id}&' : '';
+          final type = reply.type.toInt();
+          late final oid = reply.oid;
+          late final rootId = hasRoot ? reply.root : reply.id;
+          late final anchor = hasRoot ? 'anchor=${reply.id}&' : '';
           late final enterUri =
               'bilibili://following/detail/${Get.parameters['id'] ?? Get.arguments?['id']}';
           uri =
@@ -155,21 +155,21 @@ class _SavePanelState extends State<SavePanel> {
       }
 
       if (kDebugMode) debugPrint(uri);
-    } else if (_item is DynamicItemModel) {
-      uri = parseDyn(_item);
+    } else if (_item case DynamicItemModel i) {
+      uri = parseDyn(i);
 
       if (kDebugMode) debugPrint(uri);
     }
   }
 
-  String parseDyn(dynamic item) {
+  String parseDyn(DynamicItemModel item) {
     String uri = '';
     try {
       switch (item.type) {
         case 'DYNAMIC_TYPE_AV':
           viewType = '观看';
           itemType = '视频';
-          uri = 'bilibili://video/${item.basic.commentIdStr}';
+          uri = 'bilibili://video/${item.basic!.commentIdStr}';
           break;
 
         case 'DYNAMIC_TYPE_ARTICLE':
@@ -180,14 +180,14 @@ class _SavePanelState extends State<SavePanel> {
         case 'DYNAMIC_TYPE_LIVE_RCMD':
           viewType = '观看';
           itemType = '直播';
-          final roomId = item.modules.moduleDynamic.major.liveRcmd.roomId;
+          final roomId = item.modules.moduleDynamic!.major!.liveRcmd!.roomId;
           uri = 'bilibili://live/$roomId';
           break;
 
         case 'DYNAMIC_TYPE_UGC_SEASON':
           viewType = '观看';
           itemType = '合集';
-          int aid = item.modules.moduleDynamic.major.ugcSeason.aid;
+          final aid = item.modules.moduleDynamic!.major!.ugcSeason!.aid;
           uri = 'bilibili://video/$aid';
           break;
 
@@ -195,15 +195,15 @@ class _SavePanelState extends State<SavePanel> {
         case 'DYNAMIC_TYPE_PGC_UNION':
           viewType = '观看';
           itemType =
-              item?.modules?.moduleDynamic?.major?.pgc?.badge?['text'] ?? '番剧';
-          final epid = item.modules.moduleDynamic.major.pgc.epid;
+              item.modules.moduleDynamic?.major?.pgc?.badge?.text ?? '番剧';
+          final epid = item.modules.moduleDynamic!.major!.pgc!.epid;
           uri = 'bilibili://pgc/season/ep/$epid';
           break;
 
         // https://www.bilibili.com/medialist/detail/ml12345678
         case 'DYNAMIC_TYPE_MEDIALIST':
           itemType = '收藏夹';
-          final mediaId = item.modules.moduleDynamic.major.medialist!['id'];
+          final mediaId = item.modules.moduleDynamic!.major!.medialist!.id;
           uri = 'bilibili://medialist/detail/$mediaId';
           break;
 

@@ -158,7 +158,7 @@ class RequestUtils {
                     dense: true,
                     onTap: () async {
                       Get.back();
-                      var result = await showModalBottomSheet<List?>(
+                      var result = await showModalBottomSheet<Set<int>>(
                         context: context,
                         useSafeArea: true,
                         isScrollControlled: true,
@@ -190,7 +190,7 @@ class RequestUtils {
                           );
                         },
                       );
-                      followStatus!['tag'] = result;
+                      followStatus!['tag'] = result?.toList();
                       if (result != null) {
                         callback?.call(result.contains(-10) ? -10 : 2);
                       }

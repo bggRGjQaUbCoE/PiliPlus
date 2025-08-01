@@ -466,17 +466,16 @@ class MemberHttp {
   }
 
   // 查询分组
-  static Future followUpTags() async {
+  static Future<LoadingState<List<MemberTagItemModel>>> followUpTags() async {
     var res = await Request().get(Api.followUpTag);
     if (res.data['code'] == 0) {
-      return {
-        'status': true,
-        'data': res.data['data']
-            .map<MemberTagItemModel>((e) => MemberTagItemModel.fromJson(e))
+      return Success(
+        (res.data['data'] as List)
+            .map((e) => MemberTagItemModel.fromJson(e))
             .toList(),
-      };
+      );
     } else {
-      return {'status': false, 'msg': res.data['message']};
+      return Error(res.data['message']);
     }
   }
 

@@ -32,11 +32,10 @@ class FollowController extends GetxController with GetTickerProviderStateMixin {
 
   Future<void> queryFollowUpTags() async {
     var res = await MemberHttp.followUpTags();
-    if (res['status']) {
+    if (res.isSuccess) {
       tabs
-        ..clear()
-        ..addAll(res['data'])
-        ..insert(0, MemberTagItemModel(name: '全部关注'));
+        ..assign(MemberTagItemModel(name: '全部关注'))
+        ..addAll(res.data);
       int initialIndex = 0;
       if (tabController != null) {
         initialIndex = tabController!.index.clamp(0, tabs.length - 1);
@@ -49,7 +48,7 @@ class FollowController extends GetxController with GetTickerProviderStateMixin {
       );
       followState.value = Success(tabs.hashCode);
     } else {
-      followState.value = Error(res['msg']);
+      followState.value = res;
     }
   }
 

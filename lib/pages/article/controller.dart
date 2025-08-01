@@ -13,6 +13,7 @@ import 'package:PiliPlus/models_new/article/article_info/data.dart';
 import 'package:PiliPlus/models_new/article/article_view/data.dart';
 import 'package:PiliPlus/pages/common/dyn/common_dyn_controller.dart';
 import 'package:PiliPlus/utils/accounts.dart';
+import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/url_utils.dart';
 import 'package:flutter/rendering.dart' show ScrollDirection;
@@ -194,11 +195,10 @@ class ArticleController extends CommonDynController<MainListReply> {
         : await FavHttp.communityAction(opusId: id, action: isFav ? 4 : 3);
     if (res['status']) {
       favorite?.status = !isFav;
-      var count = favorite?.count ?? 0;
       if (isFav) {
-        favorite?.count = count - 1;
+        favorite?.count--;
       } else {
-        favorite?.count = count + 1;
+        favorite?.count++;
       }
       stats.refresh();
       SmartDialog.showToast('${isFav ? '取消' : ''}收藏成功');
@@ -216,11 +216,10 @@ class ArticleController extends CommonDynController<MainListReply> {
     );
     if (res['status']) {
       like?.status = !isLike;
-      int count = like?.count ?? 0;
       if (isLike) {
-        like?.count = count - 1;
+        like?.count--;
       } else {
-        like?.count = count + 1;
+        like?.count++;
       }
       stats.refresh();
       SmartDialog.showToast(!isLike ? '点赞成功' : '取消赞');

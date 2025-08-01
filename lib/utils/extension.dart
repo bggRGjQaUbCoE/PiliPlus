@@ -19,6 +19,11 @@ extension ImageExtension on num? {
   }
 }
 
+extension IntExt on int? {
+  int? operator +(int other) => this == null ? null : this! + other;
+  int? operator -(int other) => this == null ? null : this! - other;
+}
+
 extension ScrollControllerExt on ScrollController {
   void animToTop() {
     if (!hasClients) return;

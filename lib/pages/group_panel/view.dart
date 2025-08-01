@@ -77,10 +77,10 @@ class _GroupPanelState extends State<GroupPanel> {
                   final tagid = item.tagid!;
                   if (tags.contains(tagid)) {
                     tags.remove(tagid);
-                    if (item.count != null) item.count = item.count! - 1;
+                    item.count--;
                   } else {
                     tags.add(tagid);
-                    if (item.count != null) item.count = item.count! + 1;
+                    item.count++;
                   }
                   (context as Element).markNeedsBuild();
                   showDefaultBtn.value = tags.isEmpty;

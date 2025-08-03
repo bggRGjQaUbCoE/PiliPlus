@@ -97,7 +97,7 @@ class _CreateVotePageState extends State<CreateVotePage> {
                   ..add(
                     _buildInput(
                       theme,
-                      key: ValueKey(e.hashCode),
+                      key: ObjectKey(e),
                       showDel: showDel,
                       onDel: () {
                         FocusManager.instance.primaryFocus?.unfocus();

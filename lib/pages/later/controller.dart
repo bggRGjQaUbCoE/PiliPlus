@@ -28,41 +28,17 @@ class LaterController extends MultiSelectController<LaterData, LaterItemModel> {
   final LaterBaseController baseCtr = Get.put(LaterBaseController());
 
   @override
+  RxBool get enableMultiSelect => baseCtr.enableMultiSelect;
+
+  @override
+  RxInt get rxCount => baseCtr.checkedCount;
+
+  @override
   Future<LoadingState<LaterData>> customGetData() => UserHttp.seeYouLater(
     page: page,
     viewed: laterViewType.type,
     asc: asc.value,
   );
-
-  @override
-  void onSelect(LaterItemModel item, [bool disableSelect = true]) {
-    List<LaterItemModel> list = loadingState.value.data!;
-    item.checked = !(item.checked ?? false);
-    baseCtr.checkedCount.value = list
-        .where((item) => item.checked == true)
-        .length;
-    loadingState.refresh();
-    if (baseCtr.checkedCount.value == 0) {
-      baseCtr.enableMultiSelect.value = false;
-    }
-  }
-
-  @override
-  void handleSelect([bool checked = false, bool disableSelect = true]) {
-    if (loadingState.value.isSuccess) {
-      List<LaterItemModel>? list = loadingState.value.data;
-      if (list?.isNotEmpty == true) {
-        for (LaterItemModel item in list!) {
-          item.checked = checked;
-        }
-        baseCtr.checkedCount.value = checked ? list.length : 0;
-        loadingState.refresh();
-      }
-    }
-    if (!checked) {
-      baseCtr.enableMultiSelect.value = false;
-    }
-  }
 
   @override
   void onInit() {
@@ -102,7 +78,7 @@ class LaterController extends MultiSelectController<LaterData, LaterItemModel> {
             TextButton(
               onPressed: () async {
                 Get.back();
-                var res = await UserHttp.toViewDel(aids: [aid]);
+                final res = await UserHttp.toViewDel(aids: {aid!});
                 if (res['status']) {
                   baseCtr.counts[laterViewType] =
                       baseCtr.counts[laterViewType]! - 1;
@@ -148,51 +124,24 @@ class LaterController extends MultiSelectController<LaterData, LaterItemModel> {
     );
   }
 
-  void onDelChecked(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('提示'),
-          content: const Text('确认删除所选稍后再看吗？'),
-          actions: [
-            TextButton(
-              onPressed: Get.back,
-              child: Text(
-                '取消',
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.outline,
-                ),
-              ),
-            ),
-            TextButton(
-              onPressed: () {
-                Get.back();
-                _onDelete(
-                  loadingState.value.data!
-                      .where((e) => e.checked == true)
-                      .toList(),
-                );
-              },
-              child: const Text('确认'),
-            ),
-          ],
-        );
-      },
+  @override
+  void onConfirm() {
+    showConfirmDialog(
+      context: Get.context!,
+      content: '确认删除所选稍后再看吗？',
+      title: '提示',
+      onConfirm: () => _onDelete(allChecked.toSet()),
     );
   }
 
-  Future<void> _onDelete(List<LaterItemModel> result) async {
+  Future<void> _onDelete(Set<LaterItemModel> result) async {
     SmartDialog.showLoading(msg: '请求中');
-    List<int?> aids = result.map((item) => item.aid).toList();
-    var res = await UserHttp.toViewDel(aids: aids);
+    final res = await UserHttp.toViewDel(aids: result.map((item) => item.aid!));
     if (res['status']) {
-      Set<LaterItemModel> remainList = loadingState.value.data!
-          .toSet()
-          .difference(result.toSet());
+      afterDelete(result);
+
       baseCtr.counts[laterViewType] =
-          baseCtr.counts[laterViewType]! - aids.length;
-      loadingState.value = Success(remainList.toList());
+          baseCtr.counts[laterViewType]! - result.length;
       if (baseCtr.enableMultiSelect.value) {
         baseCtr.checkedCount.value = 0;
         baseCtr.enableMultiSelect.value = false;

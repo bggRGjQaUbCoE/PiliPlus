@@ -128,8 +128,7 @@ class _FavPgcChildPageState extends State<FavPgcChildPage>
                               child: GestureDetector(
                                 behavior: HitTestBehavior.opaque,
                                 onTap: () {
-                                  if (_favPgcController.checkedCount.value !=
-                                      0) {
+                                  if (_favPgcController.checkedCount != 0) {
                                     _favPgcController.onUpdateList(
                                       item.followStatus,
                                     );

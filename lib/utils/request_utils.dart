@@ -18,7 +18,6 @@ import 'package:PiliPlus/http/validate.dart';
 import 'package:PiliPlus/http/video.dart';
 import 'package:PiliPlus/models/dynamics/result.dart';
 import 'package:PiliPlus/models/login/model.dart';
-import 'package:PiliPlus/models_new/fav/fav_folder/list.dart';
 import 'package:PiliPlus/pages/common/multi_select_controller.dart';
 import 'package:PiliPlus/pages/dynamics_tab/controller.dart';
 import 'package:PiliPlus/pages/group_panel/view.dart';
@@ -376,11 +375,9 @@ class RequestUtils {
     required dynamic mid,
   }) {
     FavHttp.allFavFolders(mid).then((res) {
-      if (context.mounted &&
-          res['status'] &&
-          (res['data'].list as List?)?.isNotEmpty == true) {
-        List<FavFolderInfo> list = res['data'].list;
-        dynamic checkedId;
+      if (context.mounted && res.dataOrNull?.list?.isNotEmpty == true) {
+        final list = res.data.list!;
+        int? checkedId;
         showDialog(
           context: context,
           builder: (context) {
@@ -392,7 +389,7 @@ class RequestUtils {
                   builder: (context) => Column(
                     children: List.generate(list.length, (index) {
                       final item = list[index];
-                      return RadioWidget(
+                      return RadioWidget<int>(
                         padding: const EdgeInsets.only(left: 14),
                         title: item.title,
                         groupValue: checkedId,
@@ -421,9 +418,7 @@ class RequestUtils {
                 TextButton(
                   onPressed: () {
                     if (checkedId != null) {
-                      List resources = ctr.loadingState.value.data!
-                          .where((e) => e.checked == true)
-                          .toList();
+                      Set resources = ctr.allChecked.toSet();
                       SmartDialog.showLoading();
                       FavHttp.copyOrMoveFav(
                         isCopy: isCopy,
@@ -439,22 +434,20 @@ class RequestUtils {
                             .toList(),
                         mid: isCopy ? mid : null,
                       ).then((res) {
-                        if (res['status']) {
+                        if (res.isSuccess) {
                           ctr.handleSelect(false);
                           if (!isCopy) {
-                            List<T> dataList = ctr.loadingState.value.data!;
-                            List<T> remainList = dataList
-                                .toSet()
-                                .difference(resources.toSet())
-                                .toList();
-                            ctr.loadingState.value = Success(remainList);
+                            ctr.loadingState.value.data!.removeWhere(
+                              resources.contains,
+                            );
+                            ctr.loadingState.refresh();
                           }
                           SmartDialog.dismiss();
                           SmartDialog.showToast('${isCopy ? '复制' : '移动'}成功');
                           Get.back();
                         } else {
                           SmartDialog.dismiss();
-                          SmartDialog.showToast('${res['msg']}');
+                          res.toast();
                         }
                       });
                     }
@@ -466,7 +459,7 @@ class RequestUtils {
           },
         );
       } else {
-        SmartDialog.showToast('${res['msg']}');
+        res.toast();
       }
     });
   }

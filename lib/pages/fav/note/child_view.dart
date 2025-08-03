@@ -115,11 +115,11 @@ class _FavNoteChildPageState extends State<FavNoteChildPage>
                           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         ),
                         onPressed: () {
-                          if (_favNoteController.checkedCount.value != 0) {
+                          if (_favNoteController.checkedCount != 0) {
                             showConfirmDialog(
                               context: context,
                               title: '确定删除已选中的笔记吗？',
-                              onConfirm: _favNoteController.onRemove,
+                              onConfirm: _favNoteController.onConfirm,
                             );
                           }
                         },

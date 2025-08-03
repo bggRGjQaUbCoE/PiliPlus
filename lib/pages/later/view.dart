@@ -1,8 +1,8 @@
+import 'package:PiliPlus/common/widgets/appbar/appbar.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart';
 import 'package:PiliPlus/models/common/later_view_type.dart';
 import 'package:PiliPlus/models_new/later/data.dart';
 import 'package:PiliPlus/models_new/later/list.dart';
-import 'package:PiliPlus/pages/history/view.dart' show AppBarWidget;
 import 'package:PiliPlus/pages/later/base_controller.dart';
 import 'package:PiliPlus/pages/later/controller.dart';
 import 'package:PiliPlus/utils/accounts.dart';
@@ -128,9 +128,54 @@ class _LaterPageState extends State<LaterPage>
     final theme = Theme.of(context);
     Color color = theme.colorScheme.secondary;
 
-    return AppBarWidget(
+    return MultiSelectAppBarWidget(
       visible: enableMultiSelect,
-      child1: AppBar(
+      ctr: currCtr(),
+      children: [
+        TextButton(
+          style: TextButton.styleFrom(
+            visualDensity: VisualDensity.compact,
+          ),
+          onPressed: () {
+            final ctr = currCtr();
+            RequestUtils.onCopyOrMove<LaterData, LaterItemModel>(
+              context: context,
+              isCopy: true,
+              ctr: ctr,
+              mediaId: null,
+              mid: ctr.accountService.mid,
+            );
+          },
+          child: Text(
+            '复制',
+            style: TextStyle(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ),
+        TextButton(
+          style: TextButton.styleFrom(
+            visualDensity: VisualDensity.compact,
+          ),
+          onPressed: () {
+            final ctr = currCtr();
+            RequestUtils.onCopyOrMove<LaterData, LaterItemModel>(
+              context: context,
+              isCopy: false,
+              ctr: ctr,
+              mediaId: null,
+              mid: ctr.accountService.mid,
+            );
+          },
+          child: Text(
+            '移动',
+            style: TextStyle(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ),
+      ],
+      child: AppBar(
         title: const Text('稍后再看'),
         actions: [
           IconButton(
@@ -249,76 +294,6 @@ class _LaterPageState extends State<LaterPage>
             ),
           ),
           const SizedBox(width: 8),
-        ],
-      ),
-      child2: AppBar(
-        leading: IconButton(
-          tooltip: '取消',
-          onPressed: currCtr().handleSelect,
-          icon: const Icon(Icons.close_outlined),
-        ),
-        title: Obx(() => Text('已选: ${_baseCtr.checkedCount.value}')),
-        actions: [
-          TextButton(
-            style: TextButton.styleFrom(
-              visualDensity: VisualDensity.compact,
-            ),
-            onPressed: () => currCtr().handleSelect(true),
-            child: const Text('全选'),
-          ),
-          TextButton(
-            style: TextButton.styleFrom(
-              visualDensity: VisualDensity.compact,
-            ),
-            onPressed: () {
-              final ctr = currCtr();
-              RequestUtils.onCopyOrMove<LaterData, LaterItemModel>(
-                context: context,
-                isCopy: true,
-                ctr: ctr,
-                mediaId: null,
-                mid: ctr.accountService.mid,
-              );
-            },
-            child: Text(
-              '复制',
-              style: TextStyle(
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
-            ),
-          ),
-          TextButton(
-            style: TextButton.styleFrom(
-              visualDensity: VisualDensity.compact,
-            ),
-            onPressed: () {
-              final ctr = currCtr();
-              RequestUtils.onCopyOrMove<LaterData, LaterItemModel>(
-                context: context,
-                isCopy: false,
-                ctr: ctr,
-                mediaId: null,
-                mid: ctr.accountService.mid,
-              );
-            },
-            child: Text(
-              '移动',
-              style: TextStyle(
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
-            ),
-          ),
-          TextButton(
-            style: TextButton.styleFrom(
-              visualDensity: VisualDensity.compact,
-            ),
-            onPressed: () => currCtr().onDelChecked(context),
-            child: Text(
-              '移除',
-              style: TextStyle(color: theme.colorScheme.error),
-            ),
-          ),
-          const SizedBox(width: 6),
         ],
       ),
     );

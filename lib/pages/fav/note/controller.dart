@@ -34,24 +34,15 @@ class FavNoteController
         : FavHttp.noteList(page: page);
   }
 
-  Future<void> onRemove() async {
-    List<FavNoteItemModel> dataList = loadingState.value.data!;
-    Set<FavNoteItemModel> removeList = dataList
-        .where((item) => item.checked == true)
-        .toSet();
+  @override
+  Future<void> onConfirm() async {
+    Set<FavNoteItemModel> removeList = allChecked.toSet();
     final res = await FavHttp.delNote(
       isPublish: isPublish,
-      noteIds: removeList
-          .map((item) => isPublish ? item.cvid : item.noteId)
-          .toList(),
+      noteIds: removeList.map((item) => isPublish ? item.cvid : item.noteId),
     );
     if (res['status']) {
-      List<FavNoteItemModel> remainList = dataList
-          .toSet()
-          .difference(removeList)
-          .toList();
-      loadingState.value = Success(remainList);
-      enableMultiSelect.value = false;
+      afterDelete(removeList);
       SmartDialog.showToast('删除成功');
     } else {
       SmartDialog.showToast(res['msg']);
@@ -59,7 +50,7 @@ class FavNoteController
   }
 
   void onDisable() {
-    if (checkedCount.value != 0) {
+    if (checkedCount != 0) {
       handleSelect();
     }
     enableMultiSelect.value = false;

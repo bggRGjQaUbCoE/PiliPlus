@@ -1,3 +1,4 @@
+import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
 import 'package:PiliPlus/http/fav.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/fav_order_type.dart';
@@ -11,7 +12,6 @@ import 'package:PiliPlus/services/account_service.dart';
 import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 
@@ -90,60 +90,27 @@ class FavDetailController
         order: order.value,
       );
 
-  void onDelChecked(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('提示'),
-          content: const Text('确认删除所选收藏吗？'),
-          actions: [
-            TextButton(
-              onPressed: Get.back,
-              child: Text(
-                '取消',
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.outline,
-                ),
-              ),
-            ),
-            TextButton(
-              onPressed: () async {
-                Get.back();
-                List<FavDetailItemModel> list = loadingState.value.data!
-                    .where((e) => e.checked == true)
-                    .toList();
-                var result = await FavHttp.favVideo(
-                  resources: list
-                      .map((item) => '${item.id}:${item.type}')
-                      .join(','),
-                  delIds: mediaId.toString(),
-                );
-                if (result['status']) {
-                  List<FavDetailItemModel> dataList = loadingState.value.data!;
-                  List<FavDetailItemModel> remainList = dataList
-                      .toSet()
-                      .difference(list.toSet())
-                      .toList();
-                  folderInfo
-                    ..value.mediaCount -= list.length
-                    ..refresh();
-                  if (remainList.isNotEmpty) {
-                    loadingState.value = Success(remainList);
-                  } else {
-                    onReload();
-                  }
-                  SmartDialog.showToast('取消收藏');
-                  checkedCount.value = 0;
-                  enableMultiSelect.value = false;
-                } else {
-                  SmartDialog.showToast(result['msg']);
-                }
-              },
-              child: const Text('确认'),
-            ),
-          ],
+  @override
+  void onConfirm() {
+    showConfirmDialog(
+      context: Get.context!,
+      content: '确认删除所选收藏吗？',
+      title: '提示',
+      onConfirm: () async {
+        final checked = allChecked.toSet();
+        var result = await FavHttp.favVideo(
+          resources: checked.map((item) => '${item.id}:${item.type}').join(','),
+          delIds: mediaId.toString(),
         );
+        if (result['status']) {
+          afterDelete(checked);
+          folderInfo
+            ..value.mediaCount -= checked.length
+            ..refresh();
+          SmartDialog.showToast('取消收藏');
+        } else {
+          SmartDialog.showToast(result['msg']);
+        }
       },
     );
   }

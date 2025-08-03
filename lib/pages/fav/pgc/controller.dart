@@ -48,7 +48,7 @@ class FavPgcController
   );
 
   void onDisable() {
-    if (checkedCount.value != 0) {
+    if (checkedCount != 0) {
       handleSelect();
     }
     enableMultiSelect.value = false;
@@ -65,22 +65,19 @@ class FavPgcController
     SmartDialog.showToast(result['msg']);
   }
 
+  @override
+  void onConfirm() {
+    assert(false, 'call onUpdateList');
+  }
+
   Future<void> onUpdateList(int followStatus) async {
-    List<FavPgcItemModel> dataList = loadingState.value.data!;
-    Set<FavPgcItemModel> updateList = dataList
-        .where((item) => item.checked == true)
-        .toSet();
+    final updateList = allChecked.toSet();
     final res = await VideoHttp.pgcUpdate(
       seasonId: updateList.map((item) => item.seasonId).toList(),
       status: followStatus,
     );
     if (res['status']) {
-      List<FavPgcItemModel> remainList = dataList
-          .toSet()
-          .difference(updateList)
-          .toList();
-      loadingState.value = Success(remainList);
-      enableMultiSelect.value = false;
+      afterDelete(updateList);
       try {
         final ctr = Get.find<FavPgcController>(tag: '$type$followStatus');
         if (ctr.loadingState.value.isSuccess) {

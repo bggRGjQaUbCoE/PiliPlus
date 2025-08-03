@@ -113,7 +113,7 @@ class _FavDetailPageState extends State<FavDetailPage> {
                 Obx(
                   () {
                     return Text(
-                      '已选: ${_favDetailController.checkedCount.value}',
+                      '已选: ${_favDetailController.checkedCount}',
                       style: const TextStyle(fontSize: 15),
                     );
                   },
@@ -327,7 +327,7 @@ class _FavDetailPageState extends State<FavDetailPage> {
       style: TextButton.styleFrom(
         visualDensity: VisualDensity.compact,
       ),
-      onPressed: () => _favDetailController.onDelChecked(context),
+      onPressed: _favDetailController.onConfirm,
       child: Text(
         '删除',
         style: TextStyle(color: theme.colorScheme.error),

@@ -14,7 +14,6 @@ import 'package:PiliPlus/models/common/reply/reply_sort_type.dart';
 import 'package:PiliPlus/models/common/settings_type.dart';
 import 'package:PiliPlus/models/common/super_resolution_type.dart';
 import 'package:PiliPlus/models/dynamics/result.dart';
-import 'package:PiliPlus/models_new/fav/fav_folder/data.dart';
 import 'package:PiliPlus/pages/common/common_slide_page.dart';
 import 'package:PiliPlus/pages/home/controller.dart';
 import 'package:PiliPlus/pages/hot/controller.dart';
@@ -786,9 +785,8 @@ List<SettingsModel> get extraSettings => [
     onTap: () async {
       if (Accounts.main.isLogin) {
         final res = await FavHttp.allFavFolders(Accounts.main.mid);
-        if (res['status']) {
-          final FavFolderData data = res['data'];
-          final list = data.list;
+        if (res.isSuccess) {
+          final list = res.data.list;
           if (list.isNullOrEmpty) {
             return;
           }
@@ -821,7 +819,7 @@ List<SettingsModel> get extraSettings => [
             ),
           );
         } else {
-          SmartDialog.showToast('${res['msg']}');
+          res.toast();
         }
       }
     },

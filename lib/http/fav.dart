@@ -312,7 +312,7 @@ class FavHttp {
 
   static Future delNote({
     required bool isPublish,
-    required List noteIds,
+    required Iterable noteIds,
   }) async {
     final res = await Request().post(
       isPublish ? Api.delPublishNote : Api.delNote,
@@ -637,13 +637,13 @@ class FavHttp {
     }
   }
 
-  static Future copyOrMoveFav({
+  static Future<LoadingState> copyOrMoveFav({
     required bool isCopy,
     required bool isFav,
     required dynamic srcMediaId,
     required dynamic tarMediaId,
     dynamic mid,
-    required List resources,
+    required Iterable resources,
   }) async {
     var res = await Request().post(
       isFav
@@ -664,21 +664,21 @@ class FavHttp {
       options: Options(contentType: Headers.formUrlEncodedContentType),
     );
     if (res.data['code'] == 0) {
-      return {'status': true};
+      return const Success(null);
     } else {
-      return {'status': false, 'msg': res.data['message']};
+      return Error(res.data['message']);
     }
   }
 
-  static Future allFavFolders(mid) async {
+  static Future<LoadingState<FavFolderData>> allFavFolders(Object mid) async {
     var res = await Request().get(
       Api.favFolder,
       queryParameters: {'up_mid': mid},
     );
     if (res.data['code'] == 0) {
-      return {'status': true, 'data': FavFolderData.fromJson(res.data['data'])};
+      return Success(FavFolderData.fromJson(res.data['data']));
     } else {
-      return {'status': false, 'msg': res.data['message']};
+      return Error(res.data['message']);
     }
   }
 

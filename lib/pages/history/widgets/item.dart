@@ -1,6 +1,5 @@
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/widgets/badge.dart';
-import 'package:PiliPlus/common/widgets/image/image_save.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/progress_bar/video_progress_indicator.dart';
 import 'package:PiliPlus/http/search.dart';
@@ -9,7 +8,6 @@ import 'package:PiliPlus/models/common/badge_type.dart';
 import 'package:PiliPlus/models/common/history_business_type.dart';
 import 'package:PiliPlus/models_new/history/list.dart';
 import 'package:PiliPlus/pages/common/multi_select_controller.dart';
-import 'package:PiliPlus/pages/history/base_controller.dart';
 import 'package:PiliPlus/utils/date_util.dart';
 import 'package:PiliPlus/utils/duration_util.dart';
 import 'package:PiliPlus/utils/feed_back.dart';
@@ -23,15 +21,13 @@ import 'package:material_design_icons_flutter/material_design_icons_flutter.dart
 
 class HistoryItem extends StatelessWidget {
   final HistoryItemModel item;
-  final dynamic ctr;
-  final Function? onChoose;
-  final Function(dynamic kid, dynamic business) onDelete;
+  final MultiSelectMixin ctr;
+  final void Function(int kid, String business) onDelete;
 
   const HistoryItem({
     super.key,
     required this.item,
-    this.ctr,
-    this.onChoose,
+    required this.ctr,
     required this.onDelete,
   });
 
@@ -45,11 +41,9 @@ class HistoryItem extends StatelessWidget {
       type: MaterialType.transparency,
       child: InkWell(
         onTap: () async {
-          if (ctr is MultiSelectController || ctr is HistoryBaseController) {
-            if (ctr.enableMultiSelect.value) {
-              onChoose?.call();
-              return;
-            }
+          if (ctr.enableMultiSelect.value) {
+            ctr.onSelect(item);
+            return;
           }
           if (item.history.business?.contains('article') == true) {
             PageUtils.toDupNamed(
@@ -97,18 +91,16 @@ class HistoryItem extends StatelessWidget {
           }
         },
         onLongPress: () {
-          if (ctr is MultiSelectController || ctr is HistoryBaseController) {
-            if (!ctr.enableMultiSelect.value) {
-              ctr.enableMultiSelect.value = true;
-              onChoose?.call();
-            }
-            return;
+          if (!ctr.enableMultiSelect.value) {
+            ctr.enableMultiSelect.value = true;
+            ctr.onSelect(item);
           }
-          imageSaveDialog(
-            title: item.title,
-            cover: item.cover,
-            bvid: bvid,
-          );
+          return;
+          // imageSaveDialog(
+          //   title: item.title,
+          //   cover: item.cover,
+          //   bvid: bvid,
+          // );
         },
         child: Stack(
           clipBehavior: Clip.none,
@@ -205,7 +197,7 @@ class HistoryItem extends StatelessWidget {
                                         ),
                                         onPressed: () {
                                           feedBack();
-                                          onChoose?.call();
+                                          ctr.onSelect(item);
                                         },
                                         icon: Icon(
                                           Icons.done_all_outlined,
@@ -287,7 +279,7 @@ class HistoryItem extends StatelessWidget {
                           ),
                         PopupMenuItem<String>(
                           onTap: () =>
-                              onDelete(item.kid, item.history.business),
+                              onDelete(item.kid!, item.history.business!),
                           height: 35,
                           child: const Row(
                             children: [

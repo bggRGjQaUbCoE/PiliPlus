@@ -1,5 +1,6 @@
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/skeleton/video_card_h.dart';
+import 'package:PiliPlus/common/widgets/appbar/appbar.dart';
 import 'package:PiliPlus/common/widgets/keep_alive_wrapper.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/refresh_indicator.dart';
@@ -65,9 +66,10 @@ class _HistoryPageState extends State<HistoryPage>
                   }
                 },
                 child: Scaffold(
-                  appBar: AppBarWidget(
+                  appBar: MultiSelectAppBarWidget(
                     visible: enableMultiSelect,
-                    child1: AppBar(
+                    ctr: currCtr(),
+                    child: AppBar(
                       title: const Text('观看记录'),
                       bottom: _buildPauseTip,
                       actions: [
@@ -149,36 +151,6 @@ class _HistoryPageState extends State<HistoryPage>
                                   child: Text('多选删除'),
                                 ),
                               ],
-                        ),
-                        const SizedBox(width: 6),
-                      ],
-                    ),
-                    child2: AppBar(
-                      bottom: _buildPauseTip,
-                      leading: IconButton(
-                        tooltip: '取消',
-                        onPressed: currCtr().handleSelect,
-                        icon: const Icon(Icons.close_outlined),
-                      ),
-                      title: Obx(
-                        () => Text(
-                          '已选: ${_historyController.baseCtr.checkedCount.value}',
-                        ),
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () => currCtr().handleSelect(true),
-                          child: const Text('全选'),
-                        ),
-                        TextButton(
-                          onPressed: () =>
-                              currCtr().onDelCheckedHistory(context),
-                          child: Text(
-                            '删除',
-                            style: TextStyle(
-                              color: Theme.of(context).colorScheme.error,
-                            ),
-                          ),
                         ),
                         const SizedBox(width: 6),
                       ],
@@ -288,8 +260,7 @@ class _HistoryPageState extends State<HistoryPage>
                     final item = response[index];
                     return HistoryItem(
                       item: item,
-                      ctr: _historyController.baseCtr,
-                      onChoose: () => _historyController.onSelect(item),
+                      ctr: _historyController,
                       onDelete: (kid, business) =>
                           _historyController.delHistory(item),
                     );
@@ -358,33 +329,4 @@ class _HistoryPageState extends State<HistoryPage>
 
   @override
   bool get wantKeepAlive => widget.type != null;
-}
-
-class AppBarWidget extends StatelessWidget implements PreferredSizeWidget {
-  const AppBarWidget({
-    required this.child1,
-    required this.child2,
-    required this.visible,
-    super.key,
-  });
-
-  final PreferredSizeWidget child1;
-  final PreferredSizeWidget child2;
-  final bool visible;
-  @override
-  Size get preferredSize => child1.preferredSize;
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedSwitcher(
-      duration: const Duration(milliseconds: 500),
-      transitionBuilder: (Widget child, Animation<double> animation) {
-        return ScaleTransition(
-          scale: animation,
-          child: child,
-        );
-      },
-      child: !visible ? child1 : child2,
-    );
-  }
 }

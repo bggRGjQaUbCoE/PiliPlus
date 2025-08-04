@@ -15,6 +15,7 @@ class Accounts {
   static late final Box<LoginAccount> account;
   static final Map<AccountType, Account> accountMode = {};
   static Account get main => accountMode[AccountType.main]!;
+  static Account get heartbeat => accountMode[AccountType.heartbeat]!;
   // static set main(Account account) => set(AccountType.main, account);
 
   static Future<void> init() async {

@@ -463,6 +463,14 @@ class PiliScheme {
               return true;
             }
             return false;
+          case 'cheese':
+            // bilibili://cheese/season/123456
+            String? seasonId = uriDigitRegExp.firstMatch(path)?.group(1);
+            if (seasonId != null) {
+              PageUtils.viewPugv(seasonId: seasonId);
+              return true;
+            }
+            return false;
           default:
             if (!selfHandle) {
               // if (kDebugMode) debugPrint('$uri');
@@ -818,6 +826,7 @@ class PiliScheme {
         launchURL();
         return false;
       case 'cheese':
+        // https://www.bilibili.com/cheese/play/ss123456
         bool hasMatch = PageUtils.viewPgcFromUri(path, isPgc: false);
         if (hasMatch) {
           return true;

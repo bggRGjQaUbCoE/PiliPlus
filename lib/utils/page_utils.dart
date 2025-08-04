@@ -9,7 +9,6 @@ import 'package:PiliPlus/models/common/video/video_type.dart';
 import 'package:PiliPlus/models/dynamics/result.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_info_model/episode.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_info_model/result.dart';
-import 'package:PiliPlus/models_new/pgc/pgc_info_model/section.dart';
 import 'package:PiliPlus/pages/common/common_intro_controller.dart';
 import 'package:PiliPlus/pages/contact/view.dart';
 import 'package:PiliPlus/pages/fav_panel/view.dart';
@@ -699,6 +698,7 @@ class PageUtils {
     String uri, {
     bool isPgc = true,
     String? progress,
+    int? aid,
   }) {
     RegExpMatch? match = _pgcRegex.firstMatch(uri);
     if (match != null) {
@@ -714,11 +714,28 @@ class PageUtils {
         viewPugv(
           seasonId: isSeason ? id : null,
           epId: isSeason ? null : id,
+          aid: aid,
         );
       }
       return true;
     }
     return false;
+  }
+
+  static EpisodeItem findEpisode(
+    List<EpisodeItem> episodes, {
+    dynamic epId,
+    bool isPgc = true,
+  }) {
+    // epId episode -> progress episode -> first episode
+    EpisodeItem? episode;
+    if (epId != null) {
+      epId = epId.toString();
+      episode = episodes.firstWhereOrNull(
+        (item) => (isPgc ? item.epId : item.id).toString() == epId,
+      );
+    }
+    return episode ?? episodes.first;
   }
 
   static Future<void> viewPgc({
@@ -732,66 +749,57 @@ class PageUtils {
       SmartDialog.dismiss();
       if (result.isSuccess) {
         PgcInfoModel data = result.data;
+        final episodes = data.episodes;
 
-        // epId episode -> progress episode -> first episode
-        EpisodeItem? episode;
-
-        if (epId != null) {
-          if (data.episodes?.isNotEmpty == true) {
-            episode = data.episodes!.firstWhereOrNull(
-              (item) {
-                return item.epId.toString() == epId.toString();
-              },
-            );
-          }
-          if (episode == null && data.section?.isNotEmpty == true) {
-            for (Section item in data.section!) {
-              if (item.episodes?.isNotEmpty == true) {
-                for (EpisodeItem item in item.episodes!) {
-                  if (item.epId.toString() == epId.toString()) {
-                    // view as normal video
-                    toVideoPage(
-                      'bvid=${item.bvid}&cid=${item.cid}&seasonId=${data.seasonId}&epId=${item.epId}',
-                      arguments: {
-                        'pgcApi': true,
-                        'pic': item.cover,
-                        'heroTag': Utils.makeHeroTag(item.cid),
-                        'videoType': VideoType.ugc,
-                        if (progress != null)
-                          'progress': int.tryParse(progress),
-                      },
-                      preventDuplicates: false,
-                    );
-                    return;
+        if (episodes != null && episodes.isNotEmpty) {
+          final EpisodeItem episode = findEpisode(
+            episodes,
+            epId: epId ?? data.userStatus?.progress?.lastEpId,
+          );
+          toVideoPage(
+            'bvid=${episode.bvid}&cid=${episode.cid}&seasonId=${data.seasonId}&epId=${episode.epId}&type=${data.type}',
+            arguments: {
+              'pic': episode.cover,
+              'heroTag': Utils.makeHeroTag(episode.cid),
+              'videoType': VideoType.pgc,
+              'pgcItem': data,
+              if (progress != null) 'progress': int.tryParse(progress),
+            },
+            preventDuplicates: false,
+          );
+        } else {
+          // find section
+          if (epId != null) {
+            final sections = data.section;
+            if (sections != null && sections.isNotEmpty) {
+              epId = epId.toString();
+              for (var section in sections) {
+                final episodes = section.episodes;
+                if (episodes != null && episodes.isNotEmpty) {
+                  for (var episode in episodes) {
+                    if (episode.epId.toString() == epId) {
+                      // view as ugc
+                      toVideoPage(
+                        'bvid=${episode.bvid}&cid=${episode.cid}&seasonId=${data.seasonId}&epId=${episode.epId}',
+                        arguments: {
+                          'pgcApi': true,
+                          'pic': episode.cover,
+                          'heroTag': Utils.makeHeroTag(episode.cid),
+                          'videoType': VideoType.ugc,
+                          if (progress != null)
+                            'progress': int.tryParse(progress),
+                        },
+                        preventDuplicates: false,
+                      );
+                      return;
+                    }
                   }
                 }
               }
             }
           }
-        }
-
-        if (data.episodes.isNullOrEmpty) {
           SmartDialog.showToast('资源加载失败');
-          return;
         }
-
-        episode ??= data.userStatus?.progress?.lastEpId != null
-            ? data.episodes!.firstWhereOrNull(
-                    (item) => item.epId == data.userStatus?.progress?.lastEpId,
-                  ) ??
-                  data.episodes!.first
-            : data.episodes!.first;
-        toVideoPage(
-          'bvid=${episode.bvid}&cid=${episode.cid}&seasonId=${data.seasonId}&epId=${episode.epId}&type=${data.type}',
-          arguments: {
-            'pic': episode.cover,
-            'heroTag': Utils.makeHeroTag(episode.cid),
-            'videoType': VideoType.pgc,
-            'pgcItem': data,
-            if (progress != null) 'progress': int.tryParse(progress),
-          },
-          preventDuplicates: false,
-        );
       } else {
         result.toast();
       }
@@ -802,27 +810,40 @@ class PageUtils {
     }
   }
 
-  static Future<void> viewPugv({dynamic seasonId, dynamic epId}) async {
+  static Future<void> viewPugv({
+    dynamic seasonId,
+    dynamic epId,
+    int? aid,
+  }) async {
     try {
       SmartDialog.showLoading(msg: '资源获取中');
       var res = await SearchHttp.pugvInfo(seasonId: seasonId, epId: epId);
       SmartDialog.dismiss();
       if (res.isSuccess) {
         PgcInfoModel data = res.data;
-        if (data.episodes?.isNotEmpty == true) {
-          final item = data.episodes!.first;
+        final episodes = data.episodes;
+        if (episodes != null && episodes.isNotEmpty) {
+          EpisodeItem? episode;
+          if (aid != null) {
+            episode = episodes.firstWhereOrNull((e) => e.aid == aid);
+          }
+          episode ??= findEpisode(
+            episodes,
+            epId: epId ?? data.userStatus?.progress?.lastEpId,
+            isPgc: false,
+          );
           toVideoPage(
-            'bvid=${IdUtils.av2bv(item.aid!)}&cid=${item.cid}&seasonId=${data.seasonId}&epId=${item.id}',
+            'bvid=${IdUtils.av2bv(episode.aid!)}&cid=${episode.cid}&seasonId=${data.seasonId}&epId=${episode.id}',
             arguments: {
-              'pic': item.cover,
-              'heroTag': Utils.makeHeroTag(item.cid),
+              'pic': episode.cover,
+              'heroTag': Utils.makeHeroTag(episode.cid),
               'videoType': VideoType.pugv,
               'pgcItem': data,
             },
             preventDuplicates: false,
           );
         } else {
-          SmartDialog.showToast('NULL');
+          SmartDialog.showToast('资源加载失败');
         }
       } else {
         res.toast();

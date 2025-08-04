@@ -1130,6 +1130,7 @@ class VideoDetailController extends GetxController
               : Duration(milliseconds: data.timeLength!)),
       // 宽>高 水平 否则 垂直
       isVertical: isVertical.value,
+      aid: aid,
       bvid: bvid,
       cid: cid.value,
       autoplay: autoplay ?? autoPlay.value,
@@ -1599,6 +1600,7 @@ class VideoDetailController extends GetxController
               : playedTime!.inSeconds,
           type: HeartBeatType.status,
           isManual: true,
+          aid: aid,
           bvid: bvid,
           cid: cid.value,
           epid: isUgc ? null : epId,

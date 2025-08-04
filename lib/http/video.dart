@@ -224,12 +224,18 @@ class VideoHttp {
       if (res.data['code'] == 0) {
         late PlayUrlModel data;
         switch (videoType) {
-          case VideoType.ugc || VideoType.pugv:
+          case VideoType.ugc:
             data = PlayUrlModel.fromJson(res.data['data']);
+          case VideoType.pugv:
+            var result = res.data['data'];
+            data = PlayUrlModel.fromJson(result)
+              ..lastPlayTime =
+                  result?['play_view_business_info']?['user_status']?['watch_progress']?['current_watch_progress'];
           case VideoType.pgc:
-            data = PlayUrlModel.fromJson(res.data['result']['video_info'])
-              ..lastPlayTime = res
-                  .data['result']?['play_view_business_info']?['user_status']?['watch_progress']?['current_watch_progress'];
+            var result = res.data['result'];
+            data = PlayUrlModel.fromJson(result['video_info'])
+              ..lastPlayTime =
+                  result?['play_view_business_info']?['user_status']?['watch_progress']?['current_watch_progress'];
         }
         return {'status': true, 'data': data};
       } else {
@@ -614,7 +620,7 @@ class VideoHttp {
     await Request().post(
       Api.roomEntryAction,
       queryParameters: {
-        'csrf': Accounts.main.csrf,
+        'csrf': Accounts.heartbeat.csrf,
       },
       data: {
         'room_id': roomId,
@@ -632,13 +638,14 @@ class VideoHttp {
       queryParameters: {
         'aid': ?aid,
         'type': ?type,
-        'csrf': Accounts.main.csrf,
+        'csrf': Accounts.heartbeat.csrf,
       },
     );
   }
 
   // 视频播放进度
   static Future heartBeat({
+    aid,
     bvid,
     cid,
     progress,
@@ -647,17 +654,18 @@ class VideoHttp {
     subType,
     required VideoType videoType,
   }) async {
+    final isPugv = videoType == VideoType.pugv;
     await Request().post(
       Api.heartBeat,
       queryParameters: {
-        'bvid': bvid,
+        if (isPugv) 'aid': ?aid else 'bvid': ?bvid,
         'cid': cid,
         'epid': ?epid,
         'sid': ?seasonId,
         'type': videoType.type,
         'sub_type': ?subType,
         'played_time': progress,
-        'csrf': Accounts.main.csrf,
+        'csrf': Accounts.heartbeat.csrf,
       },
     );
   }
@@ -673,7 +681,7 @@ class VideoHttp {
         'desc': desc,
         'oid': oid,
         'upper_mid': upperMid,
-        'csrf': Accounts.main.csrf,
+        'csrf': Accounts.heartbeat.csrf,
       },
     );
   }

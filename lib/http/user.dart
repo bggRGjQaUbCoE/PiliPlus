@@ -105,7 +105,7 @@ class UserHttp {
       queryParameters: {
         'switch': switchStatus,
         'jsonp': 'jsonp',
-        'csrf': Accounts.main.csrf,
+        'csrf': Accounts.heartbeat.csrf,
       },
     );
     return res;
@@ -127,7 +127,7 @@ class UserHttp {
       Api.clearHistory,
       queryParameters: {
         'jsonp': 'jsonp',
-        'csrf': Accounts.main.csrf,
+        'csrf': Accounts.heartbeat.csrf,
       },
     );
     return res;
@@ -210,7 +210,7 @@ class UserHttp {
       data: {
         'kid': kidList.join(','),
         'jsonp': 'jsonp',
-        'csrf': Accounts.main.csrf,
+        'csrf': Accounts.heartbeat.csrf,
       },
       options: Options(
         contentType: Headers.formUrlEncodedContentType,

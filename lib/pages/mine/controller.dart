@@ -31,9 +31,7 @@ class MineController
 
   Rx<ThemeType> themeType = ThemeType.system.obs;
   static RxBool anonymity =
-      (Accounts.account.isNotEmpty &&
-              !Accounts.get(AccountType.heartbeat).isLogin)
-          .obs;
+      (Accounts.account.isNotEmpty && !Accounts.heartbeat.isLogin).obs;
   ThemeType get nextThemeType =>
       ThemeType.values[(themeType.value.index + 1) % ThemeType.values.length];
 

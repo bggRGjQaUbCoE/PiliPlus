@@ -71,7 +71,11 @@ class HistoryItem extends StatelessWidget {
             PageUtils.viewPgc(epId: item.history.epid);
           } else if (item.history.business == 'cheese') {
             if (item.uri?.isNotEmpty == true) {
-              PageUtils.viewPgcFromUri(item.uri!, isPgc: false);
+              PageUtils.viewPgcFromUri(
+                item.uri!,
+                isPgc: false,
+                aid: item.history.oid,
+              );
             }
           } else {
             int? cid =

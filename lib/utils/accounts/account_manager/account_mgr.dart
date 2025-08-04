@@ -24,9 +24,23 @@ class AccountManager extends Interceptor {
       Api.videoIntro,
       Api.replyList,
       Api.replyReplyList,
+
+      // history
       Api.heartBeat,
-      Api.ab2c,
+      Api.historyReport,
+      Api.roomEntryAction,
+      Api.historyList,
+      Api.pauseHistory,
+      Api.clearHistory,
+      Api.delHistory,
+      Api.searchHistory,
+      Api.historyStatus,
+      Api.mediaListHistory,
+      // progress
       Api.pgcInfo,
+      Api.pugvInfo,
+
+      Api.ab2c,
       Api.liveRoomInfo,
       Api.liveRoomInfoH5,
       Api.onlineTotal,
@@ -53,6 +67,7 @@ class AccountManager extends Interceptor {
       Api.searchTrending,
       Api.searchRecommend,
     },
+    // progress
     AccountType.video: {
       Api.ugcUrl,
       Api.pgcUrl,

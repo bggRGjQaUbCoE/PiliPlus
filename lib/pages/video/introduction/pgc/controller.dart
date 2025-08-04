@@ -312,8 +312,8 @@ class PgcIntroController extends CommonIntroController {
 
       hasLater.value = false;
       this.cid.value = cid;
-      queryVideoIntro();
       queryOnlineTotal();
+      queryVideoIntro(episode as EpisodeItem);
     } catch (e) {
       debugPrint('pgc onChangeEpisode: $e');
     }
@@ -467,8 +467,8 @@ class PgcIntroController extends CommonIntroController {
   }
 
   @override
-  Future<void> queryVideoIntro() async {
-    final episode = pgcItem.episodes!.firstWhere((e) => e.cid == cid.value);
+  void queryVideoIntro([EpisodeItem? episode]) {
+    episode ??= pgcItem.episodes!.firstWhere((e) => e.cid == cid.value);
     videoPlayerServiceHandler.onVideoDetailChange(
       episode,
       cid.value,

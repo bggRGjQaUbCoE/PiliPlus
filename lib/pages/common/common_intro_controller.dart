@@ -49,7 +49,7 @@ abstract class CommonIntroController extends GetxController {
 
   final Rx<VideoDetailData> videoDetail = VideoDetailData().obs;
 
-  Future<void> queryVideoIntro();
+  void queryVideoIntro();
 
   bool prevPlay();
   bool nextPlay();

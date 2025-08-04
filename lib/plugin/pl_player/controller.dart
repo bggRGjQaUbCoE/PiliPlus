@@ -118,6 +118,7 @@ class PlPlayerController {
   final bool _listenersInitialized = false;
 
   // 记录历史记录
+  int? _aid;
   String _bvid = '';
   int _cid = 0;
   dynamic _epid;
@@ -477,7 +478,7 @@ class PlPlayerController {
   // 添加一个私有构造函数
   PlPlayerController._({bool isLive = false}) {
     _isLive = isLive;
-    if (!Accounts.get(AccountType.heartbeat).isLogin || Pref.historyPause) {
+    if (!Accounts.heartbeat.isLogin || Pref.historyPause) {
       enableHeart = false;
     }
 
@@ -528,6 +529,7 @@ class PlPlayerController {
     // 方向
     bool? isVertical,
     // 记录历史记录
+    int? aid,
     String bvid = '',
     int cid = 0,
     dynamic epid,
@@ -553,6 +555,7 @@ class PlPlayerController {
       dataStatus.status.value = DataStatus.loading;
       // 初始化全屏方向
       _isVertical = isVertical ?? false;
+      _aid = aid;
       _bvid = bvid;
       _cid = cid;
       _epid = epid;
@@ -1440,6 +1443,7 @@ class PlPlayerController {
     int progress, {
     HeartBeatType type = HeartBeatType.playing,
     bool isManual = false,
+    dynamic aid,
     dynamic bvid,
     dynamic cid,
     dynamic epid,
@@ -1467,6 +1471,7 @@ class PlPlayerController {
 
     if (type == HeartBeatType.status || type == HeartBeatType.completed) {
       await VideoHttp.heartBeat(
+        aid: aid ?? _aid,
         bvid: bvid ?? _bvid,
         cid: cid ?? _cid,
         progress: isComplete ? -1 : progress,
@@ -1481,6 +1486,7 @@ class PlPlayerController {
     else if (progress - _heartDuration >= 5) {
       _heartDuration = progress;
       await VideoHttp.heartBeat(
+        aid: aid ?? _aid,
         bvid: bvid ?? _bvid,
         cid: cid ?? _cid,
         progress: progress,

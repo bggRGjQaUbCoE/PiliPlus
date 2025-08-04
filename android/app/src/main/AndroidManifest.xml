@@ -99,13 +99,6 @@
             </intent-filter>
             <intent-filter android:label="PiliPlus">
                 <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="bilibili" />
-                <data android:host="search" />
-            </intent-filter>
-            <intent-filter android:label="PiliPlus">
-                <action android:name="android.intent.action.VIEW" />
                 <action android:name="android.intent.action.SEARCH" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
@@ -118,9 +111,10 @@
                     android:pathPattern="/readlist" />
                 <data android:host="advertise" android:path="/home" />
                 <data android:host="clip" />
-                <data android:host="search" />
+                <data android:host="search" android:pathPattern=".*" />
                 <data android:host="stardust-search" />
                 <data android:host="music" />
+                <data android:host="cheese" />
                 <data android:host="bangumi"
                     android:pathPattern="/season.*" />
                 <data android:host="bangumi" android:pathPattern="/.*" />
@@ -165,7 +159,6 @@
                 <data android:host="user_center" android:path="/vip" />
                 <data android:host="history" />
                 <data android:host="charge" android:path="/rank" />
-                <data android:host="assistant" />
                 <data android:host="assistant" />
                 <data android:host="feedback" />
                 <data android:host="auth" android:path="/launch" />

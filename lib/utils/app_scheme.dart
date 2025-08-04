@@ -219,7 +219,8 @@ class PiliScheme {
               );
               return true;
             }
-            return false;
+            Get.toNamed('search');
+            return true;
           case 'article':
             // bilibili://article/40679479?jump_opus=1&jump_opus_type=1&opus_type=article&h5awaken=random
             String? id = uriDigitRegExp.firstMatch(path)?.group(1);

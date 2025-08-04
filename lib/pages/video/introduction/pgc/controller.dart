@@ -7,6 +7,7 @@ import 'package:PiliPlus/grpc/view.dart';
 import 'package:PiliPlus/http/constants.dart';
 import 'package:PiliPlus/http/search.dart';
 import 'package:PiliPlus/http/video.dart';
+import 'package:PiliPlus/models/common/video/source_type.dart';
 import 'package:PiliPlus/models/common/video/video_type.dart';
 import 'package:PiliPlus/models/pgc_lcf.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_info_model/episode.dart';
@@ -312,7 +313,7 @@ class PgcIntroController extends CommonIntroController {
         queryPgcLikeCoinFav();
       }
 
-      hasLater.value = false;
+      hasLater.value = videoDetailCtr.sourceType == SourceType.watchLater;
       this.cid.value = cid;
       queryOnlineTotal();
       queryVideoIntro(episode as EpisodeItem);

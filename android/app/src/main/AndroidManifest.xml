@@ -99,6 +99,13 @@
             </intent-filter>
             <intent-filter android:label="PiliPlus">
                 <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="bilibili" />
+                <data android:host="search" />
+            </intent-filter>
+            <intent-filter android:label="PiliPlus">
+                <action android:name="android.intent.action.VIEW" />
                 <action android:name="android.intent.action.SEARCH" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
@@ -145,7 +152,6 @@
                 <data android:host="video" />
                 <data android:host="story" />
                 <data android:host="podcast" />
-                <data android:host="search" />
                 <data android:host="main" android:path="/favorite" />
                 <data android:host="pgc" android:path="/theater/match" />
                 <data android:host="pgc" android:path="/theater/square" />

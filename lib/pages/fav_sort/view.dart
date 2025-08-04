@@ -136,10 +136,7 @@ class _FavSortPageState extends State<FavSortPage> {
         return SizedBox(
           key: Key(item.id.toString()),
           height: 98,
-          child: FavVideoCardH(
-            isSort: true,
-            item: item,
-          ),
+          child: FavVideoCardH(item: item),
         );
       },
     );

@@ -6,9 +6,9 @@ mixin MultiSelectData {
   bool? checked;
 }
 
-mixin MultiSelectMixin<T> {
-  late final RxBool enableMultiSelect = false.obs;
-  late final allSelected = false.obs;
+abstract class MultiSelectBase<T> {
+  RxBool get enableMultiSelect;
+  RxBool get allSelected;
 
   int get checkedCount;
 
@@ -19,9 +19,15 @@ mixin MultiSelectMixin<T> {
 
 abstract class MultiSelectController<R, T extends MultiSelectData>
     extends CommonListController<R, T>
-    with MultiSelectMixin<T>, CommonMultiSelectMixin, DeleteItemMixin {}
+    with CommonMultiSelectMixin<T>, DeleteItemMixin {}
 
-mixin CommonMultiSelectMixin<T extends MultiSelectData> on MultiSelectMixin<T> {
+mixin CommonMultiSelectMixin<T extends MultiSelectData>
+    implements MultiSelectBase<T> {
+  @override
+  late final RxBool enableMultiSelect = false.obs;
+  @override
+  late final allSelected = false.obs;
+
   Rx<LoadingState<List<T>?>> get loadingState;
   late final RxInt rxCount = 0.obs;
 

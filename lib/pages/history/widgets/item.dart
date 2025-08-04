@@ -2,6 +2,7 @@ import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/progress_bar/video_progress_indicator.dart';
+import 'package:PiliPlus/common/widgets/select_mask.dart';
 import 'package:PiliPlus/http/search.dart';
 import 'package:PiliPlus/http/user.dart';
 import 'package:PiliPlus/models/common/badge_type.dart';
@@ -10,7 +11,6 @@ import 'package:PiliPlus/models_new/history/list.dart';
 import 'package:PiliPlus/pages/common/multi_select_controller.dart';
 import 'package:PiliPlus/utils/date_util.dart';
 import 'package:PiliPlus/utils/duration_util.dart';
-import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:flutter/material.dart';
@@ -20,7 +20,7 @@ import 'package:material_design_icons_flutter/material_design_icons_flutter.dart
 
 class HistoryItem extends StatelessWidget {
   final HistoryItemModel item;
-  final MultiSelectMixin ctr;
+  final MultiSelectBase ctr;
   final void Function(int kid, String business) onDelete;
 
   const HistoryItem({
@@ -90,18 +90,12 @@ class HistoryItem extends StatelessWidget {
             }
           }
         },
-        onLongPress: () {
-          if (!ctr.enableMultiSelect.value) {
-            ctr.enableMultiSelect.value = true;
-            ctr.onSelect(item);
-          }
-          return;
-          // imageSaveDialog(
-          //   title: item.title,
-          //   cover: item.cover,
-          //   bvid: bvid,
-          // );
-        },
+        onLongPress: ctr.enableMultiSelect.value
+            ? null
+            : () {
+                ctr.enableMultiSelect.value = true;
+                ctr.onSelect(item);
+              },
         child: Stack(
           clipBehavior: Clip.none,
           children: [
@@ -164,49 +158,7 @@ class HistoryItem extends StatelessWidget {
                                 ),
                               ),
                             Positioned.fill(
-                              child: AnimatedOpacity(
-                                opacity: item.checked == true ? 1 : 0,
-                                duration: const Duration(milliseconds: 200),
-                                child: Container(
-                                  alignment: Alignment.center,
-                                  decoration: BoxDecoration(
-                                    borderRadius: StyleString.mdRadius,
-                                    color: Colors.black.withValues(alpha: 0.6),
-                                  ),
-                                  child: SizedBox(
-                                    width: 34,
-                                    height: 34,
-                                    child: AnimatedScale(
-                                      scale: item.checked == true ? 1 : 0,
-                                      duration: const Duration(
-                                        milliseconds: 250,
-                                      ),
-                                      curve: Curves.easeInOut,
-                                      child: IconButton(
-                                        tooltip: '取消选择',
-                                        style: ButtonStyle(
-                                          padding: WidgetStateProperty.all(
-                                            EdgeInsets.zero,
-                                          ),
-                                          backgroundColor:
-                                              WidgetStatePropertyAll(
-                                                theme.colorScheme.surface
-                                                    .withValues(alpha: 0.8),
-                                              ),
-                                        ),
-                                        onPressed: () {
-                                          feedBack();
-                                          ctr.onSelect(item);
-                                        },
-                                        icon: Icon(
-                                          Icons.done_all_outlined,
-                                          color: theme.colorScheme.primary,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
+                              child: selectMask(theme, item.checked == true),
                             ),
                           ],
                         );

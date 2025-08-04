@@ -1,8 +1,11 @@
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/widgets/badge.dart';
+import 'package:PiliPlus/common/widgets/button/icon_button.dart';
+import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
 import 'package:PiliPlus/common/widgets/image/image_save.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/progress_bar/video_progress_indicator.dart';
+import 'package:PiliPlus/common/widgets/select_mask.dart';
 import 'package:PiliPlus/common/widgets/stat/stat.dart';
 import 'package:PiliPlus/http/search.dart';
 import 'package:PiliPlus/models/common/badge_type.dart';
@@ -22,11 +25,13 @@ class VideoCardHLater extends StatelessWidget {
     this.onTap,
     this.onLongPress,
     this.onViewLater,
+    this.onRemove,
   });
   final LaterItemModel videoItem;
   final VoidCallback? onTap;
   final VoidCallback? onLongPress;
   final ValueChanged<int>? onViewLater;
+  final VoidCallback? onRemove;
 
   @override
   Widget build(BuildContext context) {
@@ -152,6 +157,12 @@ class VideoCardHLater extends StatelessWidget {
                             bottom: 6.0,
                             type: PBadgeType.gray,
                           ),
+                        Positioned.fill(
+                          child: selectMask(
+                            Theme.of(context),
+                            videoItem.checked == true,
+                          ),
+                        ),
                       ],
                     );
                   },
@@ -234,6 +245,22 @@ class VideoCardHLater extends StatelessWidget {
                   type: StatType.danmaku,
                   value: videoItem.stat?.danmaku,
                 ),
+                if (onRemove != null) ...[
+                  const Spacer(),
+                  iconButton(
+                    tooltip: '移除',
+                    context: context,
+                    onPressed: () => showConfirmDialog(
+                      context: context,
+                      title: '提示',
+                      content: '即将移除该视频，确定是否移除',
+                      onConfirm: onRemove!,
+                    ),
+                    icon: Icons.clear,
+                    iconColor: theme.colorScheme.outline,
+                    bgColor: Colors.transparent,
+                  ),
+                ],
               ],
             ),
           ],

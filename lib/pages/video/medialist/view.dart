@@ -42,7 +42,7 @@ class MediaListPanel extends CommonCollapseSlidePage {
   final bool desc;
   final VoidCallback onReverse;
   final RefreshCallback? loadPrevious;
-  final Function(dynamic item, int index)? onDelete;
+  final Function(MediaListItemModel item, int index)? onDelete;
 
   @override
   State<MediaListPanel> createState() => _MediaListPanelState();

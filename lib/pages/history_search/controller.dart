@@ -10,10 +10,7 @@ import 'package:get/get.dart';
 
 class HistorySearchController
     extends CommonSearchController<HistoryData, HistoryItemModel>
-    with
-        MultiSelectMixin<HistoryItemModel>,
-        CommonMultiSelectMixin,
-        DeleteItemMixin {
+    with CommonMultiSelectMixin<HistoryItemModel>, DeleteItemMixin {
   @override
   Future<LoadingState<HistoryData>> customGetData() => UserHttp.searchHistory(
     pn: page,

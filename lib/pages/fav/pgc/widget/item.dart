@@ -18,7 +18,7 @@ class FavPgcItem extends StatelessWidget {
   });
 
   final FavPgcItemModel item;
-  final MultiSelectMixin ctr;
+  final MultiSelectBase ctr;
   final VoidCallback onSelect;
   final VoidCallback onUpdateStatus;
 

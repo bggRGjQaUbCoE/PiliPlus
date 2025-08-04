@@ -1,4 +1,3 @@
-import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/skeleton/video_card_h.dart';
 import 'package:PiliPlus/common/widgets/button/icon_button.dart';
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
@@ -8,7 +7,6 @@ import 'package:PiliPlus/common/widgets/refresh_indicator.dart';
 import 'package:PiliPlus/http/fav.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/fav_order_type.dart';
-import 'package:PiliPlus/models/common/video/source_type.dart';
 import 'package:PiliPlus/models_new/fav/fav_detail/data.dart';
 import 'package:PiliPlus/models_new/fav/fav_detail/media.dart';
 import 'package:PiliPlus/models_new/fav/fav_folder/list.dart';
@@ -17,7 +15,6 @@ import 'package:PiliPlus/pages/fav_detail/controller.dart';
 import 'package:PiliPlus/pages/fav_detail/widget/fav_video_card.dart';
 import 'package:PiliPlus/utils/fav_util.dart';
 import 'package:PiliPlus/utils/grid.dart';
-import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/request_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart';
@@ -156,7 +153,7 @@ class _FavDetailPageState extends State<FavDetailPage> {
               'mediaId': int.parse(mediaId),
               'title': folderInfo.title,
               'count': folderInfo.mediaCount,
-              'isOwner': _favDetailController.isOwner.value ?? false,
+              'isOwner': _favDetailController.isOwner,
             },
           );
         },
@@ -198,7 +195,7 @@ class _FavDetailPageState extends State<FavDetailPage> {
       PopupMenuButton(
         icon: const Icon(Icons.more_vert),
         itemBuilder: (context) {
-          final isOwner = _favDetailController.isOwner.value ?? false;
+          final isOwner = _favDetailController.isOwner;
           final folderInfo = _favDetailController.folderInfo.value;
           return [
             if (isOwner) ...[
@@ -373,7 +370,7 @@ class _FavDetailPageState extends State<FavDetailPage> {
                         right: 6,
                         top: 6,
                         child: Obx(() {
-                          if (_favDetailController.isOwner.value != false) {
+                          if (_favDetailController.isOwner) {
                             return const SizedBox.shrink();
                           }
                           bool isFav = folderInfo.favState == 1;
@@ -485,113 +482,11 @@ class _FavDetailPageState extends State<FavDetailPage> {
                         ),
                       );
                     }
-                    final isOwner = _favDetailController.isOwner.value ?? false;
                     FavDetailItemModel item = response[index];
-                    return Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        Positioned.fill(
-                          child: FavVideoCardH(
-                            item: item,
-                            onDelFav: isOwner
-                                ? () => _favDetailController.onCancelFav(
-                                    index,
-                                    item.id!,
-                                    item.type!,
-                                  )
-                                : null,
-                            onViewFav: () {
-                              final folderInfo =
-                                  _favDetailController.folderInfo.value;
-                              PageUtils.toVideoPage(
-                                bvid: item.bvid,
-                                cid: item.ugc!.firstCid!,
-                                cover: item.cover,
-                                title: item.title,
-                                extraArguments: {
-                                  'sourceType': SourceType.fav,
-                                  'mediaId': folderInfo.id,
-                                  'oid': item.id,
-                                  'favTitle': folderInfo.title,
-                                  'count': folderInfo.mediaCount,
-                                  'desc': true,
-                                  'isContinuePlaying': index != 0,
-                                  'isOwner': isOwner,
-                                },
-                              );
-                            },
-                            onTap: enableMultiSelect
-                                ? () => _favDetailController.onSelect(item)
-                                : null,
-                            onLongPress: isOwner
-                                ? () {
-                                    if (!enableMultiSelect) {
-                                      _favDetailController
-                                              .enableMultiSelect
-                                              .value =
-                                          true;
-                                      _favDetailController.onSelect(item);
-                                    }
-                                  }
-                                : null,
-                          ),
-                        ),
-                        Positioned(
-                          top: 5,
-                          left: 12,
-                          bottom: 5,
-                          child: IgnorePointer(
-                            child: LayoutBuilder(
-                              builder: (context, constraints) =>
-                                  AnimatedOpacity(
-                                    opacity: item.checked == true ? 1 : 0,
-                                    duration: const Duration(milliseconds: 200),
-                                    child: Container(
-                                      alignment: Alignment.center,
-                                      height: constraints.maxHeight,
-                                      width:
-                                          constraints.maxHeight *
-                                          StyleString.aspectRatio,
-                                      decoration: BoxDecoration(
-                                        borderRadius: StyleString.mdRadius,
-                                        color: Colors.black.withValues(
-                                          alpha: 0.6,
-                                        ),
-                                      ),
-                                      child: SizedBox(
-                                        width: 34,
-                                        height: 34,
-                                        child: AnimatedScale(
-                                          scale: item.checked == true ? 1 : 0,
-                                          duration: const Duration(
-                                            milliseconds: 250,
-                                          ),
-                                          curve: Curves.easeInOut,
-                                          child: IconButton(
-                                            style: ButtonStyle(
-                                              padding: WidgetStateProperty.all(
-                                                EdgeInsets.zero,
-                                              ),
-                                              backgroundColor:
-                                                  WidgetStatePropertyAll(
-                                                    theme.colorScheme.surface
-                                                        .withValues(alpha: 0.8),
-                                                  ),
-                                            ),
-                                            onPressed: null,
-                                            icon: Icon(
-                                              Icons.done_all_outlined,
-                                              color: theme.colorScheme.primary,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                            ),
-                          ),
-                        ),
-                      ],
+                    return FavVideoCardH(
+                      item: item,
+                      index: index,
+                      ctr: _favDetailController,
                     );
                   },
                   childCount: response!.length + 1,

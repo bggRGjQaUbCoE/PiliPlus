@@ -40,7 +40,7 @@ class HistorySearchController
       title: '提示',
       onConfirm: () async {
         SmartDialog.showLoading(msg: '请求中');
-        final removeList = allChecked;
+        final removeList = allChecked.toSet();
         var response = await UserHttp.delHistory(
           removeList
               .map((item) => '${item.history.business!}_${item.kid!}')

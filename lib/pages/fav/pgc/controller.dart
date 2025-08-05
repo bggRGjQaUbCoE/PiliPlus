@@ -71,7 +71,7 @@ class FavPgcController
   }
 
   Future<void> onUpdateList(int followStatus) async {
-    final removeList = allChecked;
+    final removeList = allChecked.toSet();
     final res = await VideoHttp.pgcUpdate(
       seasonId: removeList.map((item) => item.seasonId).join(','),
       status: followStatus,

@@ -51,7 +51,7 @@ mixin BaseFavController
       content: '确认删除所选收藏吗？',
       title: '提示',
       onConfirm: () async {
-        final removeList = allChecked;
+        final removeList = allChecked.toSet();
         var result = await FavHttp.favVideo(
           resources: removeList
               .map((item) => '${item.id}:${item.type}')

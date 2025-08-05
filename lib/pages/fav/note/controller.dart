@@ -36,7 +36,7 @@ class FavNoteController
 
   @override
   Future<void> onRemove() async {
-    final removeList = allChecked;
+    final removeList = allChecked.toSet();
     final res = await FavHttp.delNote(
       isPublish: isPublish,
       noteIds: removeList

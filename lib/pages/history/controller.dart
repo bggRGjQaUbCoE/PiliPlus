@@ -91,9 +91,9 @@ class HistoryController
   // 删除已看历史记录
   void onDelViewedHistory() {
     if (loadingState.value.isSuccess) {
-      final viewedList = loadingState.value.data!.where(
-        (e) => e.progress == -1,
-      );
+      final viewedList = loadingState.value.data!
+          .where((e) => e.progress == -1)
+          .toSet();
       if (viewedList.isNotEmpty) {
         _onDelete(viewedList);
       } else {
@@ -102,7 +102,7 @@ class HistoryController
     }
   }
 
-  Future<void> _onDelete(Iterable<HistoryItemModel> removeList) async {
+  Future<void> _onDelete(Set<HistoryItemModel> removeList) async {
     SmartDialog.showLoading(msg: '请求中');
     final response = await UserHttp.delHistory(
       removeList
@@ -123,7 +123,7 @@ class HistoryController
       context: Get.context!,
       content: '确认删除所选历史记录吗？',
       title: '提示',
-      onConfirm: () => _onDelete(allChecked),
+      onConfirm: () => _onDelete(allChecked.toSet()),
     );
   }
 

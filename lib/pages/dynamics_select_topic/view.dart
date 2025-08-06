@@ -8,7 +8,7 @@ import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models_new/dynamic/dyn_topic_top/topic_item.dart';
 import 'package:PiliPlus/pages/dynamics_select_topic/controller.dart';
 import 'package:PiliPlus/pages/dynamics_select_topic/widgets/item.dart';
-import 'package:PiliPlus/pages/search/controller.dart' show SearchKeywordMixin;
+import 'package:PiliPlus/pages/search/controller.dart' show SearchState;
 import 'package:PiliPlus/utils/context_ext.dart';
 import 'package:PiliPlus/utils/extension.dart';
 import 'package:flutter/material.dart';
@@ -56,8 +56,7 @@ class SelectTopicPanel extends StatefulWidget {
   State<SelectTopicPanel> createState() => _SelectTopicPanelState();
 }
 
-class _SelectTopicPanelState extends State<SelectTopicPanel>
-    with SearchKeywordMixin {
+class _SelectTopicPanelState extends SearchState<SelectTopicPanel> {
   final _controller = Get.put(SelectTopicController());
   @override
   Duration get duration => const Duration(milliseconds: 300);
@@ -68,13 +67,6 @@ class _SelectTopicPanelState extends State<SelectTopicPanel>
     if (_controller.loadingState.value is Error) {
       _controller.onReload();
     }
-    subInit();
-  }
-
-  @override
-  void dispose() {
-    subDispose();
-    super.dispose();
   }
 
   @override

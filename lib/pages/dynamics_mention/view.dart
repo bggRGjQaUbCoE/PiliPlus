@@ -10,7 +10,7 @@ import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models_new/dynamic/dyn_mention/group.dart';
 import 'package:PiliPlus/pages/dynamics_mention/controller.dart';
 import 'package:PiliPlus/pages/dynamics_mention/widgets/item.dart';
-import 'package:PiliPlus/pages/search/controller.dart' show SearchKeywordMixin;
+import 'package:PiliPlus/pages/search/controller.dart' show SearchState;
 import 'package:PiliPlus/utils/context_ext.dart';
 import 'package:PiliPlus/utils/extension.dart';
 import 'package:flutter/material.dart';
@@ -58,8 +58,7 @@ class DynMentionPanel extends StatefulWidget {
   State<DynMentionPanel> createState() => _DynMentionPanelState();
 }
 
-class _DynMentionPanelState extends State<DynMentionPanel>
-    with SearchKeywordMixin {
+class _DynMentionPanelState extends SearchState<DynMentionPanel> {
   final _controller = Get.put(DynMentionController());
   @override
   Duration get duration => const Duration(milliseconds: 300);
@@ -70,13 +69,6 @@ class _DynMentionPanelState extends State<DynMentionPanel>
     if (_controller.loadingState.value is Error) {
       _controller.onReload();
     }
-    subInit();
-  }
-
-  @override
-  void dispose() {
-    subDispose();
-    super.dispose();
   }
 
   @override

@@ -30,6 +30,23 @@ mixin SearchKeywordMixin {
   void subDispose() {
     sub?.cancel();
     ctr?.close();
+    sub = null;
+    ctr = null;
+  }
+}
+
+abstract class SearchState<T extends StatefulWidget> extends State<T>
+    with SearchKeywordMixin {
+  @override
+  void dispose() {
+    subDispose();
+    super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    subInit();
   }
 }
 

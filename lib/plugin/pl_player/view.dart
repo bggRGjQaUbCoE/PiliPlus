@@ -12,7 +12,6 @@ import 'package:PiliPlus/models_new/video/video_shot/data.dart';
 import 'package:PiliPlus/pages/common/common_intro_controller.dart';
 import 'package:PiliPlus/pages/video/controller.dart';
 import 'package:PiliPlus/pages/video/introduction/pgc/controller.dart';
-import 'package:PiliPlus/pages/video/introduction/ugc/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/models/bottom_control_type.dart';
 import 'package:PiliPlus/plugin/pl_player/models/bottom_progress_behavior.dart';
@@ -49,8 +48,7 @@ class PLVideoPlayer extends StatefulWidget {
   const PLVideoPlayer({
     required this.plPlayerController,
     this.videoDetailController,
-    this.ugcIntroController,
-    this.pgcIntroController,
+    this.introController,
     required this.headerControl,
     this.bottomControl,
     this.danmuWidget,
@@ -65,8 +63,7 @@ class PLVideoPlayer extends StatefulWidget {
 
   final PlPlayerController plPlayerController;
   final VideoDetailController? videoDetailController;
-  final UgcIntroController? ugcIntroController;
-  final PgcIntroController? pgcIntroController;
+  final CommonIntroController? introController;
   final Widget headerControl;
   final Widget? bottomControl;
   final Widget? danmuWidget;
@@ -87,12 +84,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     with TickerProviderStateMixin {
   late AnimationController animationController;
   late VideoController videoController;
-  UgcIntroController? ugcIntroController;
-  PgcIntroController? pgcIntroController;
-  late final CommonIntroController introController =
-      widget.videoDetailController!.isUgc
-      ? ugcIntroController!
-      : pgcIntroController!;
+  late final CommonIntroController introController = widget.introController!;
 
   final GlobalKey _playerKey = GlobalKey();
   final GlobalKey<VideoState> key = GlobalKey<VideoState>();
@@ -175,8 +167,6 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       duration: const Duration(milliseconds: 100),
     );
     videoController = plPlayerController.videoController!;
-    ugcIntroController = widget.ugcIntroController;
-    pgcIntroController = widget.pgcIntroController;
     Future.microtask(() async {
       try {
         FlutterVolumeController.updateShowSystemUI(true);
@@ -258,15 +248,18 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     final videoDetail = introController.videoDetail.value;
     final isSeason = videoDetail.ugcSeason != null;
     final isPart = videoDetail.pages != null && videoDetail.pages!.length > 1;
-    final isPgc = pgcIntroController != null;
+    final isPgc = !widget.videoDetailController!.isUgc;
     final anySeason = isSeason || isPart || isPgc;
-    final isPlayAll = widget.videoDetailController?.isPlayAll == true;
+    final isPlayAll =
+        anySeason || widget.videoDetailController?.isPlayAll == true;
 
     final double widgetWidth = isFullScreen && context.isLandscape ? 42 : 35;
 
-    Map<BottomControlType, Widget> videoProgressWidgets = {
+    Widget progressWidget(
+      BottomControlType bottomControl,
+    ) => switch (bottomControl) {
       /// 上一集
-      BottomControlType.pre: Container(
+      BottomControlType.pre => Container(
         width: widgetWidth,
         height: 30,
         alignment: Alignment.center,
@@ -286,12 +279,12 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       ),
 
       /// 播放暂停
-      BottomControlType.playOrPause: PlayOrPauseButton(
+      BottomControlType.playOrPause => PlayOrPauseButton(
         plPlayerController: plPlayerController,
       ),
 
       /// 下一集
-      BottomControlType.next: Container(
+      BottomControlType.next => Container(
         width: widgetWidth,
         height: 30,
         alignment: Alignment.center,
@@ -311,7 +304,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       ),
 
       /// 时间进度
-      BottomControlType.time: Column(
+      BottomControlType.time => Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
@@ -346,7 +339,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       ),
 
       /// 高能进度条
-      BottomControlType.dmChart: Obx(
+      BottomControlType.dmChart => Obx(
         () => plPlayerController.dmTrend.isEmpty
             ? const SizedBox.shrink()
             : Container(
@@ -383,46 +376,47 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       ),
 
       /// 超分辨率
-      BottomControlType.superResolution: plPlayerController.isAnim
-          ? Container(
-              height: 30,
-              margin: const EdgeInsets.symmetric(horizontal: 10),
-              alignment: Alignment.center,
-              child: PopupMenuButton<SuperResolutionType>(
-                initialValue: SuperResolutionType
-                    .values[plPlayerController.superResolutionType],
-                color: Colors.black.withValues(alpha: 0.8),
-                itemBuilder: (BuildContext context) {
-                  return SuperResolutionType.values.map((
-                    SuperResolutionType type,
-                  ) {
-                    return PopupMenuItem<SuperResolutionType>(
-                      height: 35,
-                      padding: const EdgeInsets.only(left: 30),
-                      value: type,
-                      onTap: () => plPlayerController.setShader(type.index),
-                      child: Text(
-                        type.title,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 13,
+      BottomControlType.superResolution =>
+        plPlayerController.isAnim
+            ? Container(
+                height: 30,
+                margin: const EdgeInsets.symmetric(horizontal: 10),
+                alignment: Alignment.center,
+                child: PopupMenuButton<SuperResolutionType>(
+                  initialValue: SuperResolutionType
+                      .values[plPlayerController.superResolutionType],
+                  color: Colors.black.withValues(alpha: 0.8),
+                  itemBuilder: (BuildContext context) {
+                    return SuperResolutionType.values.map((
+                      SuperResolutionType type,
+                    ) {
+                      return PopupMenuItem<SuperResolutionType>(
+                        height: 35,
+                        padding: const EdgeInsets.only(left: 30),
+                        value: type,
+                        onTap: () => plPlayerController.setShader(type.index),
+                        child: Text(
+                          type.title,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 13,
+                          ),
                         ),
-                      ),
-                    );
-                  }).toList();
-                },
-                child: Text(
-                  SuperResolutionType
-                      .values[plPlayerController.superResolutionType]
-                      .title,
-                  style: const TextStyle(color: Colors.white, fontSize: 13),
+                      );
+                    }).toList();
+                  },
+                  child: Text(
+                    SuperResolutionType
+                        .values[plPlayerController.superResolutionType]
+                        .title,
+                    style: const TextStyle(color: Colors.white, fontSize: 13),
+                  ),
                 ),
-              ),
-            )
-          : const SizedBox.shrink(),
+              )
+            : const SizedBox.shrink(),
 
       /// 分段信息
-      BottomControlType.viewPoints: Obx(
+      BottomControlType.viewPoints => Obx(
         () => plPlayerController.viewPointList.isEmpty
             ? const SizedBox.shrink()
             : Container(
@@ -450,7 +444,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       ),
 
       /// 选集
-      BottomControlType.episode: Container(
+      BottomControlType.episode => Container(
         width: widgetWidth,
         height: 30,
         alignment: Alignment.center,
@@ -487,7 +481,8 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
             } else if (isPart) {
               episodes = videoDetail.pages!;
             } else if (isPgc) {
-              episodes = pgcIntroController!.pgcItem.episodes!;
+              episodes =
+                  (introController as PgcIntroController).pgcItem.episodes!;
             }
             widget.showEpisodes?.call(
               index,
@@ -504,7 +499,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       ),
 
       /// 画面比例
-      BottomControlType.fit: Container(
+      BottomControlType.fit => Container(
         height: 30,
         margin: const EdgeInsets.symmetric(horizontal: 10),
         alignment: Alignment.center,
@@ -533,7 +528,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       ),
 
       /// 字幕
-      BottomControlType.subtitle: Obx(
+      BottomControlType.subtitle => Obx(
         () => widget.videoDetailController?.subtitles.isEmpty == true
             ? const SizedBox.shrink()
             : SizedBox(
@@ -590,7 +585,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       ),
 
       /// 播放速度
-      BottomControlType.speed: Obx(
+      BottomControlType.speed => Obx(
         () => Container(
           height: 30,
           margin: const EdgeInsets.symmetric(horizontal: 10),
@@ -623,7 +618,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       ),
 
       /// 全屏
-      BottomControlType.fullscreen: SizedBox(
+      BottomControlType.fullscreen => SizedBox(
         width: widgetWidth,
         height: 30,
         child: Obx(
@@ -644,7 +639,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     List<BottomControlType> userSpecifyItemLeft = [
       BottomControlType.playOrPause,
       BottomControlType.time,
-      if (anySeason || isPlayAll) ...[
+      if (isPlayAll) ...[
         BottomControlType.pre,
         BottomControlType.next,
       ],
@@ -654,7 +649,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       BottomControlType.dmChart,
       BottomControlType.superResolution,
       BottomControlType.viewPoints,
-      if (anySeason || isPlayAll) BottomControlType.episode,
+      if (isPlayAll) BottomControlType.episode,
       if (isFullScreen) BottomControlType.fit,
       BottomControlType.subtitle,
       BottomControlType.speed,
@@ -663,7 +658,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
 
     return Row(
       children: [
-        ...userSpecifyItemLeft.map((item) => videoProgressWidgets[item]!),
+        ...userSpecifyItemLeft.map(progressWidget),
         Expanded(
           child: LayoutBuilder(
             builder: (context, constraints) => FittedBox(
@@ -673,9 +668,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.end,
-                  children: userSpecifyItemRight
-                      .map((item) => videoProgressWidgets[item]!)
-                      .toList(),
+                  children: userSpecifyItemRight.map(progressWidget).toList(),
                 ),
               ),
             ),
@@ -810,7 +803,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                           curSliderPosition +
                           (plPlayerController.sliderScale * delta.dx / maxWidth)
                               .round(),
-                    ); // TODO
+                    );
                     final Duration result = pos.clamp(
                       Duration.zero,
                       plPlayerController.duration.value,

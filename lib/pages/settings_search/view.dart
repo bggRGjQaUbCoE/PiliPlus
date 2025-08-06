@@ -1,5 +1,5 @@
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
-import 'package:PiliPlus/pages/search/controller.dart' show SearchKeywordMixin;
+import 'package:PiliPlus/pages/search/controller.dart' show SearchState;
 import 'package:PiliPlus/pages/setting/models/extra_settings.dart';
 import 'package:PiliPlus/pages/setting/models/model.dart';
 import 'package:PiliPlus/pages/setting/models/play_settings.dart';
@@ -19,8 +19,7 @@ class SettingsSearchPage extends StatefulWidget {
   State<SettingsSearchPage> createState() => _SettingsSearchPageState();
 }
 
-class _SettingsSearchPageState extends State<SettingsSearchPage>
-    with SearchKeywordMixin {
+class _SettingsSearchPageState extends SearchState<SettingsSearchPage> {
   final _textEditingController = TextEditingController();
   final RxList<SettingsModel> _list = <SettingsModel>[].obs;
   late final _settings = [
@@ -31,12 +30,6 @@ class _SettingsSearchPageState extends State<SettingsSearchPage>
     ...playSettings,
     ...styleSettings,
   ];
-
-  @override
-  void initState() {
-    super.initState();
-    subInit();
-  }
 
   @override
   void onKeywordChanged(String value) {
@@ -58,7 +51,6 @@ class _SettingsSearchPageState extends State<SettingsSearchPage>
 
   @override
   void dispose() {
-    subDispose();
     _textEditingController.dispose();
     super.dispose();
   }

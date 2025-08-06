@@ -13,7 +13,7 @@ class ActionRowLineItem extends StatelessWidget {
   });
   final bool selectStatus;
   final Function? onTap;
-  final bool? isLoading;
+  final bool isLoading;
   final String? text;
   final IconData? iconData;
   final Widget? icon;
@@ -55,7 +55,7 @@ class ActionRowLineItem extends StatelessWidget {
               else if (icon != null)
                 icon!,
               AnimatedOpacity(
-                opacity: isLoading! ? 0 : 1,
+                opacity: isLoading ? 0 : 1,
                 duration: const Duration(milliseconds: 200),
                 child: Text(
                   text!,

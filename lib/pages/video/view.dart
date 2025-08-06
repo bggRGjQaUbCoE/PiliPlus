@@ -1366,11 +1366,8 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
             key: playerKey,
             plPlayerController: plPlayerController!,
             videoDetailController: videoDetailController,
-            ugcIntroController: videoDetailController.isUgc
+            introController: videoDetailController.isUgc
                 ? ugcIntroController
-                : null,
-            pgcIntroController: videoDetailController.isUgc
-                ? null
                 : pgcIntroController,
             headerControl: HeaderControl(
               key: videoDetailController.headerCtrKey,

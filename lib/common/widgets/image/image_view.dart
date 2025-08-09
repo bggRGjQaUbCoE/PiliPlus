@@ -151,8 +151,8 @@ Widget imageView(
                   src: item.url,
                   width: imageWidth,
                   height: imageHeight,
-                  isLongPic: () => item.isLongPic,
-                  callback: () => item.width <= item.height,
+                  isLongPic: item.isLongPic,
+                  forceUseCacheWidth: item.width <= item.height,
                   getPlaceHolder: () {
                     return Container(
                       width: imageWidth,

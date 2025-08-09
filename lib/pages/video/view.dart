@@ -5,6 +5,7 @@ import 'dart:ui';
 
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/widgets/custom_icon.dart';
+import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart';
 import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
     show ReplyInfo;
@@ -50,7 +51,6 @@ import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:auto_orientation/auto_orientation.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_debounce/easy_throttle.dart';
 import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart';
 import 'package:floating/floating.dart';
@@ -1640,17 +1640,14 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                 child: GestureDetector(
                   onTap: handlePlay,
                   child: Obx(
-                    () => CachedNetworkImage(
-                      imageUrl: videoDetailController.cover.value.http2https,
+                    () => NetworkImgLayer(
+                      src: videoDetailController.cover.value,
                       width: width,
                       height: height,
-                      fit: BoxFit.cover,
+                      boxFit: BoxFit.cover,
                       fadeOutDuration: const Duration(milliseconds: 120),
                       fadeInDuration: const Duration(milliseconds: 120),
-                      memCacheWidth: width.cacheSize(context),
-                      placeholder: (context, url) => Center(
-                        child: Image.asset('assets/images/loading.png'),
-                      ),
+                      forceUseCacheWidth: true,
                     ),
                   ),
                 ),

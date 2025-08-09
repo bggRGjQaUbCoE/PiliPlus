@@ -202,7 +202,8 @@ class SettingBoxKey {
       hiddenSettingUnlocked = 'hiddenSettingUnlocked',
       enableGradientBg = 'enableGradientBg',
       navBarSort = 'navBarSort',
-      tempPlayerConf = 'tempPlayerConf';
+      tempPlayerConf = 'tempPlayerConf',
+      reduceLuxColor = 'reduceLuxColor';
 }
 
 class LocalCacheKey {

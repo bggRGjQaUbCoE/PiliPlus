@@ -2,6 +2,8 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:PiliPlus/common/widgets/custom_toast.dart';
+import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
+import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart';
 import 'package:PiliPlus/main.dart';
 import 'package:PiliPlus/models/common/dynamic/dynamic_badge_mode.dart';
@@ -15,6 +17,7 @@ import 'package:PiliPlus/pages/main/controller.dart';
 import 'package:PiliPlus/pages/mine/controller.dart';
 import 'package:PiliPlus/pages/setting/models/model.dart';
 import 'package:PiliPlus/pages/setting/pages/color_select.dart';
+import 'package:PiliPlus/pages/setting/slide_color_picker.dart';
 import 'package:PiliPlus/pages/setting/widgets/multi_select_dialog.dart';
 import 'package:PiliPlus/pages/setting/widgets/select_dialog.dart';
 import 'package:PiliPlus/pages/setting/widgets/slide_dialog.dart';
@@ -448,6 +451,67 @@ List<SettingsModel> get styleSettings => [
       child: Text(
         '${Pref.previewQ}%',
         style: Get.theme.textTheme.titleSmall,
+      ),
+    ),
+  ),
+  SettingsModel(
+    settingsType: SettingsType.normal,
+    onTap: (setState) {
+      showDialog(
+        context: Get.context!,
+        builder: (context) => AlertDialog(
+          clipBehavior: Clip.hardEdge,
+          contentPadding: const EdgeInsets.symmetric(vertical: 16),
+          title: const Text('Color Picker'),
+          content: SlideColorPicker(
+            showResetBtn: false,
+            color: Pref.reduceLuxColor ?? Colors.white,
+            callback: (Color? color) async {
+              if (color != null && color != Pref.reduceLuxColor) {
+                if (color == Colors.white) {
+                  NetworkImgLayer.reduceLuxColor = null;
+                  GStorage.setting.delete(SettingBoxKey.reduceLuxColor);
+                  SmartDialog.showToast('设置成功');
+                  setState();
+                } else {
+                  void onConfirm() {
+                    NetworkImgLayer.reduceLuxColor = color;
+                    GStorage.setting.put(
+                      SettingBoxKey.reduceLuxColor,
+                      color.toARGB32(),
+                    );
+                    SmartDialog.showToast('设置成功');
+                    setState();
+                  }
+
+                  if (color.computeLuminance() < 0.2) {
+                    await showConfirmDialog(
+                      context: context,
+                      title:
+                          '确认使用#${(color.toARGB32() & 0xFFFFFF).toRadixString(16).toUpperCase().padLeft(6)}？',
+                      content: '所选颜色过于昏暗，可能会影响图片观看',
+                      onConfirm: onConfirm,
+                    );
+                  } else {
+                    onConfirm();
+                  }
+                }
+              }
+            },
+          ),
+        ),
+      );
+    },
+    title: '深色下图片颜色叠加',
+    subtitle: '显示颜色=图片原色x所选颜色，大图查看不受影响',
+    leading: const Icon(Icons.format_color_fill_outlined),
+    getTrailing: () => Container(
+      padding: const EdgeInsets.only(right: 8.0),
+      width: 20,
+      height: 20,
+      decoration: BoxDecoration(
+        color: Pref.reduceLuxColor ?? Colors.white,
+        shape: BoxShape.circle,
       ),
     ),
   ),

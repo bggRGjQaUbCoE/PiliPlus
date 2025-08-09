@@ -779,4 +779,12 @@ class Pref {
 
   static bool get tempPlayerConf =>
       _setting.get(SettingBoxKey.tempPlayerConf, defaultValue: false);
+
+  static Color? get reduceLuxColor {
+    final int? color = _setting.get(SettingBoxKey.reduceLuxColor);
+    if (color != null && color != 0xFFFFFFFF) {
+      return Color(color);
+    }
+    return null;
+  }
 }

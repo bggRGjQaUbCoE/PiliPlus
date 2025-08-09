@@ -1,7 +1,9 @@
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
+import 'package:PiliPlus/utils/context_ext.dart';
 import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/image_util.dart';
+import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
@@ -19,8 +21,8 @@ class NetworkImgLayer extends StatelessWidget {
     this.semanticsLabel,
     this.radius,
     this.imageBuilder,
-    this.isLongPic,
-    this.callback,
+    this.isLongPic = false,
+    this.forceUseCacheWidth = false,
     this.getPlaceHolder,
     this.boxFit,
   });
@@ -35,30 +37,34 @@ class NetworkImgLayer extends StatelessWidget {
   final String? semanticsLabel;
   final double? radius;
   final ImageWidgetBuilder? imageBuilder;
-  final Function? isLongPic;
-  final Function? callback;
-  final Function? getPlaceHolder;
+  final bool isLongPic;
+  final bool forceUseCacheWidth;
+  final Widget Function()? getPlaceHolder;
   final BoxFit? boxFit;
+
+  static Color? reduceLuxColor = Pref.reduceLuxColor;
 
   @override
   Widget build(BuildContext context) {
+    final reduce =
+        quality != 100 && reduceLuxColor != null && context.isDarkMode;
     return src?.isNotEmpty == true
         ? type == ImageType.avatar
-              ? ClipOval(child: _buildImage(context))
+              ? ClipOval(child: _buildImage(context, reduce))
               : radius == 0 || type == ImageType.emote
-              ? _buildImage(context)
+              ? _buildImage(context, reduce)
               : ClipRRect(
                   borderRadius: radius != null
                       ? BorderRadius.circular(radius!)
                       : StyleString.mdRadius,
-                  child: _buildImage(context),
+                  child: _buildImage(context, reduce),
                 )
-        : getPlaceHolder?.call() ?? placeholder(context);
+        : getPlaceHolder?.call() ?? _placeholder(context, reduce);
   }
 
-  Widget _buildImage(BuildContext context) {
+  Widget _buildImage(BuildContext context, bool reduce) {
     int? memCacheWidth, memCacheHeight;
-    if (height == null || callback?.call() == true || width <= height!) {
+    if (height == null || forceUseCacheWidth || width <= height!) {
       memCacheWidth = width.cacheSize(context);
     } else {
       memCacheHeight = height.cacheSize(context);
@@ -70,20 +76,20 @@ class NetworkImgLayer extends StatelessWidget {
       memCacheWidth: memCacheWidth,
       memCacheHeight: memCacheHeight,
       fit: boxFit ?? BoxFit.cover,
-      alignment: isLongPic?.call() == true
-          ? Alignment.topCenter
-          : Alignment.center,
+      alignment: isLongPic ? Alignment.topCenter : Alignment.center,
       fadeOutDuration: fadeOutDuration ?? const Duration(milliseconds: 120),
       fadeInDuration: fadeInDuration ?? const Duration(milliseconds: 120),
       filterQuality: FilterQuality.low,
       placeholder: (BuildContext context, String url) =>
-          getPlaceHolder?.call() ?? placeholder(context),
+          getPlaceHolder?.call() ?? _placeholder(context, reduce),
       imageBuilder: imageBuilder,
-      errorWidget: (context, url, error) => placeholder(context),
+      errorWidget: (context, url, error) => _placeholder(context, reduce),
+      colorBlendMode: reduce ? BlendMode.modulate : null,
+      color: reduce ? reduceLuxColor : null,
     );
   }
 
-  Widget placeholder(BuildContext context) {
+  Widget _placeholder(BuildContext context, bool reduce) {
     return Container(
       width: width,
       height: height,
@@ -108,6 +114,8 @@ class NetworkImgLayer extends StatelessWidget {
           width: width,
           height: height,
           cacheWidth: width.cacheSize(context),
+          colorBlendMode: reduce ? BlendMode.modulate : null,
+          color: reduce ? reduceLuxColor : null,
         ),
       ),
     );

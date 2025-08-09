@@ -40,7 +40,7 @@ class SettingPage extends StatefulWidget {
 
 class _SettingPageState extends State<SettingPage> {
   late SettingType _type = SettingType.privacySetting;
-  final RxBool _noAccount = Accounts.accountMode.isEmpty.obs;
+  final RxBool _noAccount = Accounts.account.isEmpty.obs;
   late bool _isPortrait;
 
   final List<_SettingsModel> _items = const [
@@ -147,6 +147,12 @@ class _SettingPageState extends State<SettingPage> {
     );
   }
 
+  @override
+  void dispose() {
+    _noAccount.close();
+    super.dispose();
+  }
+
   void _toPage(SettingType type) {
     if (_isPortrait) {
       Get.toNamed('/${type.name}');
@@ -189,7 +195,7 @@ class _SettingPageState extends State<SettingPage> {
         ListTile(
           onTap: () => LoginPageController.switchAccountDialog(context),
           leading: const Icon(Icons.switch_account_outlined),
-          title: const Text('设置账号模式'),
+          title: Text('设置账号模式', style: titleStyle),
         ),
         Obx(
           () => _noAccount.value

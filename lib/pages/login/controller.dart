@@ -698,9 +698,10 @@ class LoginPageController extends GetxController
     }
   }
 
-  static Future<void> switchAccountDialog(BuildContext context) {
+  static Future<void>? switchAccountDialog(BuildContext context) {
     if (Accounts.account.isEmpty) {
-      return SmartDialog.showToast('请先登录');
+      SmartDialog.showToast('请先登录');
+      return Get.toNamed('/loginPage');
     }
     final selectAccount = Map.of(Accounts.accountMode);
     final options = {

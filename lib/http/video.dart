@@ -187,7 +187,7 @@ class VideoHttp {
   }
 
   // 视频流
-  static Future videoUrl({
+  static Future<LoadingState<PlayUrlModel>> videoUrl({
     int? avid,
     String? bvid,
     required int cid,
@@ -238,29 +238,31 @@ class VideoHttp {
               ..lastPlayTime =
                   result?['play_view_business_info']?['user_status']?['watch_progress']?['current_watch_progress'];
         }
-        return {'status': true, 'data': data};
-      } else {
-        if (epid != null && videoType == VideoType.ugc) {
-          return videoUrl(
-            avid: avid,
-            bvid: bvid,
-            cid: cid,
-            qn: qn,
-            epid: epid,
-            seasonId: seasonId,
-            tryLook: tryLook,
-            videoType: VideoType.pgc,
-          );
-        }
-        return {
-          'status': false,
-          'code': res.data['code'],
-          'msg': res.data['message'],
-        };
+        return Success(data);
+      } else if (epid != null && videoType == VideoType.ugc) {
+        return videoUrl(
+          avid: avid,
+          bvid: bvid,
+          cid: cid,
+          qn: qn,
+          epid: epid,
+          seasonId: seasonId,
+          tryLook: tryLook,
+          videoType: VideoType.pgc,
+        );
       }
+      return Error(_parseVideoErr(res.data['code'], res.data['message']));
     } catch (err) {
-      return {'status': false, 'msg': err.toString()};
+      return Error(err.toString());
     }
+  }
+
+  static String _parseVideoErr(int? code, String? msg) {
+    return switch (code) {
+      -404 => '视频不存在或已被删除',
+      87008 => '当前视频可能是专属视频，可能需包月充电观看($msg})',
+      _ => '错误($code): $msg',
+    };
   }
 
   // 视频信息 标题、简介

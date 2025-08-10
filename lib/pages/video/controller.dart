@@ -1177,8 +1177,8 @@ class VideoDetailController extends GetxController
       videoType: _actualVideoType ?? videoType,
     );
 
-    if (result['status']) {
-      data = result['data'];
+    if (result.isSuccess) {
+      data = result.data;
 
       if (data.acceptDesc?.contains('试看') == true) {
         SmartDialog.showToast(
@@ -1338,17 +1338,9 @@ class VideoDetailController extends GetxController
       }
     } else {
       autoPlay.value = false;
-      videoState.value = Error(result['msg']);
+      videoState.value = result..toast();
       if (plPlayerController.isFullScreen.value) {
         plPlayerController.toggleFullScreen(false);
-      }
-      final code = result['code'];
-      if (code == -404) {
-        SmartDialog.showToast('视频不存在或已被删除');
-      } else if (code == 87008) {
-        SmartDialog.showToast("当前视频可能是专属视频，可能需包月充电观看(${result['msg']})");
-      } else {
-        SmartDialog.showToast("错误($code): ${result['msg']}");
       }
     }
     isQuerying = false;

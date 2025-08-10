@@ -201,7 +201,8 @@ class SettingBoxKey {
       msgUnReadTypeV2 = 'msgUnReadTypeV2',
       hiddenSettingUnlocked = 'hiddenSettingUnlocked',
       enableGradientBg = 'enableGradientBg',
-      navBarSort = 'navBarSort';
+      navBarSort = 'navBarSort',
+      tempPlayerConf = 'tempPlayerConf';
 }
 
 class LocalCacheKey {

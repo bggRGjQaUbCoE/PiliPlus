@@ -4,6 +4,7 @@ import 'package:PiliPlus/plugin/pl_player/widgets/common_btn.dart';
 import 'package:PiliPlus/plugin/pl_player/widgets/play_pause_btn.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
+import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -88,10 +89,12 @@ class BottomControl extends StatelessWidget {
                   onPressed: () {
                     final newVal = !enableShowDanmaku;
                     plPlayerController.enableShowDanmaku.value = newVal;
-                    GStorage.setting.put(
-                      SettingBoxKey.enableShowDanmaku,
-                      newVal,
-                    );
+                    if (!Pref.tempPlayerConf) {
+                      GStorage.setting.put(
+                        SettingBoxKey.enableShowDanmaku,
+                        newVal,
+                      );
+                    }
                   },
                   icon: Icon(
                     size: 18,

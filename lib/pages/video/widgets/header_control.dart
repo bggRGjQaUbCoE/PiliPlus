@@ -161,20 +161,20 @@ class HeaderControlState extends State<HeaderControl> {
                   ),
                 ListTile(
                   dense: true,
-                  onTap: () => {
-                    Get.back(),
-                    PageUtils.scheduleExit(this.context, isFullScreen),
+                  onTap: () {
+                    Get.back();
+                    PageUtils.scheduleExit(this.context, isFullScreen);
                   },
                   leading: const Icon(Icons.hourglass_top_outlined, size: 20),
                   title: const Text('定时关闭', style: titleStyle),
                 ),
                 ListTile(
                   dense: true,
-                  onTap: () => {
-                    Get.back(),
+                  onTap: () {
+                    Get.back();
                     videoDetailCtr.queryVideoUrl(
                       videoDetailCtr.playedTime,
-                    ),
+                    );
                   },
                   leading: const Icon(Icons.refresh_outlined, size: 20),
                   title: const Text('重载视频', style: titleStyle),
@@ -350,7 +350,10 @@ class HeaderControlState extends State<HeaderControl> {
                 ),
                 ListTile(
                   dense: true,
-                  onTap: () => {Get.back(), showSetVideoQa()},
+                  onTap: () {
+                    Get.back();
+                    showSetVideoQa();
+                  },
                   leading: const Icon(Icons.play_circle_outline, size: 20),
                   title: const Text('选择画质', style: titleStyle),
                   subtitle: Text(
@@ -361,7 +364,10 @@ class HeaderControlState extends State<HeaderControl> {
                 if (videoDetailCtr.currentAudioQa != null)
                   ListTile(
                     dense: true,
-                    onTap: () => {Get.back(), showSetAudioQa()},
+                    onTap: () {
+                      Get.back();
+                      showSetAudioQa();
+                    },
                     leading: const Icon(Icons.album_outlined, size: 20),
                     title: const Text('选择音质', style: titleStyle),
                     subtitle: Text(
@@ -371,7 +377,10 @@ class HeaderControlState extends State<HeaderControl> {
                   ),
                 ListTile(
                   dense: true,
-                  onTap: () => {Get.back(), showSetDecodeFormats()},
+                  onTap: () {
+                    Get.back();
+                    showSetDecodeFormats();
+                  },
                   leading: const Icon(Icons.av_timer_outlined, size: 20),
                   title: const Text('解码格式', style: titleStyle),
                   subtitle: Text(
@@ -381,7 +390,10 @@ class HeaderControlState extends State<HeaderControl> {
                 ),
                 ListTile(
                   dense: true,
-                  onTap: () => {Get.back(), showSetRepeat()},
+                  onTap: () {
+                    Get.back();
+                    showSetRepeat();
+                  },
                   leading: const Icon(Icons.repeat, size: 20),
                   title: const Text('播放顺序', style: titleStyle),
                   subtitle: Text(
@@ -391,20 +403,29 @@ class HeaderControlState extends State<HeaderControl> {
                 ),
                 ListTile(
                   dense: true,
-                  onTap: () => {Get.back(), showSetDanmaku()},
+                  onTap: () {
+                    Get.back();
+                    showSetDanmaku();
+                  },
                   leading: const Icon(CustomIcon.dm_settings, size: 20),
                   title: const Text('弹幕设置', style: titleStyle),
                 ),
                 ListTile(
                   dense: true,
-                  onTap: () => {Get.back(), showSetSubtitle()},
+                  onTap: () {
+                    Get.back();
+                    showSetSubtitle();
+                  },
                   leading: const Icon(Icons.subtitles_outlined, size: 20),
                   title: const Text('字幕设置', style: titleStyle),
                 ),
                 if (videoDetailCtr.subtitles.isNotEmpty)
                   ListTile(
                     dense: true,
-                    onTap: () => {Get.back(), onExportSubtitle()},
+                    onTap: () {
+                      Get.back();
+                      onExportSubtitle();
+                    },
                     leading: const Icon(Icons.download_outlined, size: 20),
                     title: const Text('保存字幕', style: titleStyle),
                   ),
@@ -643,28 +664,22 @@ class HeaderControlState extends State<HeaderControl> {
                         ..updatePlayer();
 
                       // update
-                      late String oldQualityDesc;
-                      await Connectivity().checkConnectivity().then((res) {
+                      if (!Pref.tempPlayerConf) {
+                        final res = await Connectivity().checkConnectivity();
                         if (res.contains(ConnectivityResult.wifi)) {
-                          oldQualityDesc = VideoQuality.fromCode(
-                            Pref.defaultVideoQa,
-                          ).desc;
                           setting.put(
                             SettingBoxKey.defaultVideoQa,
                             quality,
                           );
                         } else {
-                          oldQualityDesc = VideoQuality.fromCode(
-                            Pref.defaultVideoQaCellular,
-                          ).desc;
                           setting.put(
                             SettingBoxKey.defaultVideoQaCellular,
                             quality,
                           );
                         }
-                      });
+                      }
                       SmartDialog.showToast(
-                        "默认画质由：$oldQualityDesc 变为：${VideoQuality.fromCode(quality).desc}",
+                        "画质已变为：${VideoQuality.fromCode(quality).desc}",
                       );
                     },
                     // 可能包含会员解锁画质
@@ -726,28 +741,22 @@ class HeaderControlState extends State<HeaderControl> {
                         ..updatePlayer();
 
                       // update
-                      late String oldQualityDesc;
-                      await Connectivity().checkConnectivity().then((res) {
+                      if (!Pref.tempPlayerConf) {
+                        final res = await Connectivity().checkConnectivity();
                         if (res.contains(ConnectivityResult.wifi)) {
-                          oldQualityDesc = AudioQuality.fromCode(
-                            Pref.defaultAudioQa,
-                          ).desc;
                           setting.put(
                             SettingBoxKey.defaultAudioQa,
                             quality,
                           );
                         } else {
-                          oldQualityDesc = AudioQuality.fromCode(
-                            Pref.defaultAudioQaCellular,
-                          ).desc;
                           setting.put(
                             SettingBoxKey.defaultAudioQaCellular,
                             quality,
                           );
                         }
-                      });
+                      }
                       SmartDialog.showToast(
-                        "默认音质由：$oldQualityDesc 变为：${AudioQuality.fromCode(quality).desc}",
+                        "音质已变为：${AudioQuality.fromCode(quality).desc}",
                       );
                     },
                     contentPadding: const EdgeInsets.only(left: 20, right: 20),
@@ -1443,13 +1452,12 @@ class HeaderControlState extends State<HeaderControl> {
                           minimumSize: Size.zero,
                           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         ),
-                        onPressed: () => {
-                          Get.back(),
-                          Get.toNamed(
+                        onPressed: () => Get
+                          ..back()
+                          ..toNamed(
                             '/danmakuBlock',
                             arguments: widget.controller,
                           ),
-                        },
                         child: Text(
                           "屏蔽管理(${plPlayerController.filters.count})",
                         ),
@@ -2094,7 +2102,9 @@ class HeaderControlState extends State<HeaderControl> {
                     onPressed: () {
                       final newVal = !enableShowDanmaku;
                       plPlayerController.enableShowDanmaku.value = newVal;
-                      setting.put(SettingBoxKey.enableShowDanmaku, newVal);
+                      if (!Pref.tempPlayerConf) {
+                        setting.put(SettingBoxKey.enableShowDanmaku, newVal);
+                      }
                     },
                     icon: Icon(
                       enableShowDanmaku

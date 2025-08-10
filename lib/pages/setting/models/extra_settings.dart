@@ -119,52 +119,52 @@ List<SettingsModel> get extraSettings => [
     setKey: SettingBoxKey.showViewPoints,
     defaultVal: true,
   ),
-  SettingsModel(
+  const SettingsModel(
     settingsType: SettingsType.sw1tch,
     title: '视频页显示相关视频',
-    leading: const Icon(MdiIcons.motionPlayOutline),
+    leading: Icon(MdiIcons.motionPlayOutline),
     setKey: SettingBoxKey.showRelatedVideo,
     defaultVal: true,
   ),
-  SettingsModel(
+  const SettingsModel(
     settingsType: SettingsType.sw1tch,
     title: '显示视频评论',
-    leading: const Icon(MdiIcons.commentTextOutline),
+    leading: Icon(MdiIcons.commentTextOutline),
     setKey: SettingBoxKey.showVideoReply,
     defaultVal: true,
   ),
-  SettingsModel(
+  const SettingsModel(
     settingsType: SettingsType.sw1tch,
     title: '显示番剧评论',
-    leading: const Icon(MdiIcons.commentTextOutline),
+    leading: Icon(MdiIcons.commentTextOutline),
     setKey: SettingBoxKey.showBangumiReply,
     defaultVal: true,
   ),
-  SettingsModel(
+  const SettingsModel(
     settingsType: SettingsType.sw1tch,
     title: '默认展开视频简介',
-    leading: const Icon(Icons.expand_more),
+    leading: Icon(Icons.expand_more),
     setKey: SettingBoxKey.alwaysExapndIntroPanel,
     defaultVal: false,
   ),
-  SettingsModel(
+  const SettingsModel(
     settingsType: SettingsType.sw1tch,
     title: '横屏自动展开视频简介',
-    leading: const Icon(Icons.expand_more),
+    leading: Icon(Icons.expand_more),
     setKey: SettingBoxKey.exapndIntroPanelH,
     defaultVal: false,
   ),
-  SettingsModel(
+  const SettingsModel(
     settingsType: SettingsType.sw1tch,
     title: '横屏分P/合集列表显示在Tab栏',
-    leading: const Icon(Icons.format_list_numbered_rtl_sharp),
+    leading: Icon(Icons.format_list_numbered_rtl_sharp),
     setKey: SettingBoxKey.horizontalSeasonPanel,
     defaultVal: false,
   ),
-  SettingsModel(
+  const SettingsModel(
     settingsType: SettingsType.sw1tch,
     title: '横屏播放页在侧栏打开UP主页',
-    leading: const Icon(Icons.account_circle_outlined),
+    leading: Icon(Icons.account_circle_outlined),
     setKey: SettingBoxKey.horizontalMemberPage,
     defaultVal: false,
   ),
@@ -284,40 +284,40 @@ List<SettingsModel> get extraSettings => [
       );
     },
   ),
-  SettingsModel(
+  const SettingsModel(
     settingsType: SettingsType.sw1tch,
     title: '显示视频警告/争议信息',
-    leading: const Icon(Icons.warning_amber_rounded),
+    leading: Icon(Icons.warning_amber_rounded),
     setKey: SettingBoxKey.showArgueMsg,
     defaultVal: true,
   ),
-  SettingsModel(
+  const SettingsModel(
     settingsType: SettingsType.sw1tch,
     title: '分P/合集：倒序播放从首集开始播放',
     subtitle: '开启则自动切换为倒序首集，否则保持当前集',
-    leading: const Icon(MdiIcons.sort),
+    leading: Icon(MdiIcons.sort),
     setKey: SettingBoxKey.reverseFromFirst,
     defaultVal: true,
   ),
-  SettingsModel(
+  const SettingsModel(
     settingsType: SettingsType.sw1tch,
     title: '禁用 SSL 证书验证',
     subtitle: '谨慎开启，禁用容易受到中间人攻击',
-    leading: const Icon(Icons.security),
+    leading: Icon(Icons.security),
     needReboot: true,
     setKey: SettingBoxKey.badCertificateCallback,
   ),
-  SettingsModel(
+  const SettingsModel(
     settingsType: SettingsType.sw1tch,
     title: '显示继续播放分P提示',
-    leading: const Icon(Icons.local_parking),
+    leading: Icon(Icons.local_parking),
     setKey: SettingBoxKey.continuePlayingPart,
     defaultVal: true,
   ),
-  SettingsModel(
+  const SettingsModel(
     settingsType: SettingsType.sw1tch,
     title: '横屏在侧栏打开图片预览',
-    leading: const Icon(Icons.photo_outlined),
+    leading: Icon(Icons.photo_outlined),
     setKey: SettingBoxKey.horizontalPreview,
     defaultVal: false,
   ),
@@ -339,10 +339,10 @@ List<SettingsModel> get extraSettings => [
       DynamicsDataModel.enableFilter = value.pattern.isNotEmpty;
     },
   ),
-  SettingsModel(
+  const SettingsModel(
     settingsType: SettingsType.sw1tch,
     title: '使用外部浏览器打开链接',
-    leading: const Icon(Icons.open_in_browser),
+    leading: Icon(Icons.open_in_browser),
     setKey: SettingBoxKey.openInBrowser,
     defaultVal: false,
   ),
@@ -402,25 +402,25 @@ List<SettingsModel> get extraSettings => [
       }
     },
   ),
-  SettingsModel(
+  const SettingsModel(
     settingsType: SettingsType.sw1tch,
     title: '显示会员彩色弹幕',
-    leading: const Icon(MdiIcons.gradientHorizontal),
+    leading: Icon(MdiIcons.gradientHorizontal),
     setKey: SettingBoxKey.showVipDanmaku,
     defaultVal: true,
   ),
-  SettingsModel(
+  const SettingsModel(
     settingsType: SettingsType.sw1tch,
     title: '显示高级弹幕',
-    leading: const Icon(MdiIcons.paletteAdvanced),
+    leading: Icon(MdiIcons.paletteAdvanced),
     setKey: SettingBoxKey.showSpecialDanmaku,
     defaultVal: false,
   ),
-  SettingsModel(
+  const SettingsModel(
     settingsType: SettingsType.sw1tch,
     title: '合并弹幕',
     subtitle: '合并一段时间内获取到的相同弹幕',
-    leading: const Icon(Icons.merge),
+    leading: Icon(Icons.merge),
     setKey: SettingBoxKey.mergeDanmaku,
     defaultVal: false,
   ),
@@ -550,33 +550,33 @@ List<SettingsModel> get extraSettings => [
       }
     },
   ),
-  SettingsModel(
+  const SettingsModel(
     settingsType: SettingsType.sw1tch,
     title: '提前初始化播放器',
     subtitle: '相对减少手动播放加载时间',
-    leading: const Icon(Icons.play_circle_outlined),
+    leading: Icon(Icons.play_circle_outlined),
     setKey: SettingBoxKey.preInitPlayer,
     defaultVal: false,
   ),
-  SettingsModel(
+  const SettingsModel(
     settingsType: SettingsType.sw1tch,
     title: '首页切换页面动画',
-    leading: const Icon(Icons.home_outlined),
+    leading: Icon(Icons.home_outlined),
     setKey: SettingBoxKey.mainTabBarView,
     defaultVal: false,
     needReboot: true,
   ),
-  SettingsModel(
+  const SettingsModel(
     settingsType: SettingsType.sw1tch,
     title: '搜索建议',
-    leading: const Icon(Icons.search),
+    leading: Icon(Icons.search),
     setKey: SettingBoxKey.searchSuggestion,
     defaultVal: true,
   ),
-  SettingsModel(
+  const SettingsModel(
     settingsType: SettingsType.sw1tch,
     title: '记录搜索历史',
-    leading: const Icon(Icons.history),
+    leading: Icon(Icons.history),
     setKey: SettingBoxKey.recordSearchHistory,
     defaultVal: true,
   ),
@@ -599,26 +599,26 @@ List<SettingsModel> get extraSettings => [
       ImageModel.enableLivePhoto = value;
     },
   ),
-  SettingsModel(
+  const SettingsModel(
     settingsType: SettingsType.sw1tch,
     title: '滑动跳转预览视频缩略图',
-    leading: const Icon(Icons.preview_outlined),
+    leading: Icon(Icons.preview_outlined),
     setKey: SettingBoxKey.showSeekPreview,
     defaultVal: true,
   ),
-  SettingsModel(
+  const SettingsModel(
     settingsType: SettingsType.sw1tch,
     title: '显示高能进度条',
     subtitle: '高能进度条反应了在时域上，单位时间内弹幕发送量的变化趋势',
-    leading: const Icon(Icons.show_chart),
+    leading: Icon(Icons.show_chart),
     setKey: SettingBoxKey.showDmChart,
     defaultVal: false,
   ),
-  SettingsModel(
+  const SettingsModel(
     settingsType: SettingsType.sw1tch,
     title: '发评反诈',
     subtitle: '发送评论后检查评论是否可见',
-    leading: const Stack(
+    leading: Stack(
       clipBehavior: Clip.none,
       alignment: Alignment.center,
       children: [
@@ -629,22 +629,22 @@ List<SettingsModel> get extraSettings => [
     setKey: SettingBoxKey.enableCommAntifraud,
     defaultVal: false,
   ),
-  SettingsModel(
+  const SettingsModel(
     settingsType: SettingsType.sw1tch,
     title: '使用「哔哩发评反诈」检查评论',
     subtitle: '仅对Android生效',
-    leading: const Icon(
+    leading: Icon(
       FontAwesomeIcons.b,
       size: 22,
     ),
     setKey: SettingBoxKey.biliSendCommAntifraud,
     defaultVal: false,
   ),
-  SettingsModel(
+  const SettingsModel(
     settingsType: SettingsType.sw1tch,
     title: '发布/转发动态反诈',
     subtitle: '发布/转发动态后检查动态是否可见',
-    leading: const Stack(
+    leading: Stack(
       clipBehavior: Clip.none,
       alignment: Alignment.center,
       children: [
@@ -702,31 +702,31 @@ List<SettingsModel> get extraSettings => [
       CommonSlidePageState.slideDismissReplyPage = value;
     },
   ),
-  SettingsModel(
+  const SettingsModel(
     settingsType: SettingsType.sw1tch,
     title: '启用双指缩小视频',
-    leading: const Icon(Icons.pinch),
+    leading: Icon(Icons.pinch),
     setKey: SettingBoxKey.enableShrinkVideoSize,
     defaultVal: true,
   ),
-  SettingsModel(
+  const SettingsModel(
     settingsType: SettingsType.sw1tch,
     title: '动态/专栏详情页展示底部操作栏',
-    leading: const Icon(Icons.more_horiz),
+    leading: Icon(Icons.more_horiz),
     setKey: SettingBoxKey.showDynActionBar,
     defaultVal: true,
   ),
-  SettingsModel(
+  const SettingsModel(
     settingsType: SettingsType.sw1tch,
     title: '启用拖拽字幕调整底部边距',
-    leading: const Icon(MdiIcons.dragVariant),
+    leading: Icon(MdiIcons.dragVariant),
     setKey: SettingBoxKey.enableDragSubtitle,
     defaultVal: false,
   ),
-  SettingsModel(
+  const SettingsModel(
     settingsType: SettingsType.sw1tch,
     title: '展示追番时间表',
-    leading: const Icon(MdiIcons.chartTimelineVariantShimmer),
+    leading: Icon(MdiIcons.chartTimelineVariantShimmer),
     setKey: SettingBoxKey.showPgcTimeline,
     defaultVal: true,
     needReboot: true,
@@ -742,19 +742,19 @@ List<SettingsModel> get extraSettings => [
     title: '震动反馈',
     subtitle: '请确定手机设置中已开启震动反馈',
   ),
-  SettingsModel(
+  const SettingsModel(
     settingsType: SettingsType.sw1tch,
     title: '大家都在搜',
     subtitle: '是否展示「大家都在搜」',
-    leading: const Icon(Icons.data_thresholding_outlined),
+    leading: Icon(Icons.data_thresholding_outlined),
     setKey: SettingBoxKey.enableHotKey,
     defaultVal: true,
   ),
-  SettingsModel(
+  const SettingsModel(
     settingsType: SettingsType.sw1tch,
     title: '搜索发现',
     subtitle: '是否展示「搜索发现」',
-    leading: const Icon(Icons.search_outlined),
+    leading: Icon(Icons.search_outlined),
     setKey: SettingBoxKey.enableSearchRcmd,
     defaultVal: true,
   ),
@@ -836,34 +836,34 @@ List<SettingsModel> get extraSettings => [
       ReplyItemGrpc.enableWordRe = value;
     },
   ),
-  SettingsModel(
+  const SettingsModel(
     settingsType: SettingsType.sw1tch,
     title: '启用AI总结',
     subtitle: '视频详情页开启AI总结',
-    leading: const Icon(Icons.engineering_outlined),
+    leading: Icon(Icons.engineering_outlined),
     setKey: SettingBoxKey.enableAi,
     defaultVal: false,
   ),
-  SettingsModel(
+  const SettingsModel(
     settingsType: SettingsType.sw1tch,
     title: '消息页禁用"收到的赞"功能',
     subtitle: '禁止打开入口，降低网络社交依赖',
-    leading: const Icon(Icons.beach_access_outlined),
+    leading: Icon(Icons.beach_access_outlined),
     setKey: SettingBoxKey.disableLikeMsg,
     defaultVal: false,
   ),
-  SettingsModel(
+  const SettingsModel(
     settingsType: SettingsType.sw1tch,
     title: '默认展示评论区',
     subtitle: '在视频详情页默认切换至评论区页（仅Tab型布局）',
-    leading: const Icon(Icons.mode_comment_outlined),
+    leading: Icon(Icons.mode_comment_outlined),
     setKey: SettingBoxKey.defaultShowComment,
     defaultVal: false,
   ),
-  SettingsModel(
+  const SettingsModel(
     settingsType: SettingsType.sw1tch,
     title: '启用HTTP/2',
-    leading: const Icon(Icons.swap_horizontal_circle_outlined),
+    leading: Icon(Icons.swap_horizontal_circle_outlined),
     setKey: SettingBoxKey.enableHttp2,
     defaultVal: false,
     needReboot: true,
@@ -1081,11 +1081,11 @@ List<SettingsModel> get extraSettings => [
     subtitle: '设置代理 host:port',
     setKey: SettingBoxKey.enableSystemProxy,
   ),
-  SettingsModel(
+  const SettingsModel(
     settingsType: SettingsType.sw1tch,
     title: '自动清除缓存',
     subtitle: '每次启动时清除缓存',
-    leading: const Icon(Icons.auto_delete_outlined),
+    leading: Icon(Icons.auto_delete_outlined),
     setKey: SettingBoxKey.autoClearCache,
     defaultVal: false,
   ),

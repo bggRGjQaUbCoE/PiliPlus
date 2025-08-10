@@ -1,4 +1,3 @@
-import 'package:PiliPlus/pages/setting/models/model.dart';
 import 'package:PiliPlus/pages/setting/models/privacy_settings.dart';
 import 'package:flutter/material.dart';
 

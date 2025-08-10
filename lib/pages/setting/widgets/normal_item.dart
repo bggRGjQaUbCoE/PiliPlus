@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
 
+typedef StringGetter = String Function();
+
 class NormalItem extends StatefulWidget {
   final String? title;
-  final Function? getTitle;
+  final StringGetter? getTitle;
   final String? subtitle;
-  final Function? getSubtitle;
+  final StringGetter? getSubtitle;
   final String? setKey;
   final bool? defaultVal;
   final ValueChanged<bool>? onChanged;
   final bool? needReboot;
   final Widget? leading;
-  final Function? getTrailing;
+  final Widget Function()? getTrailing;
   final Function? onTap;
   final EdgeInsetsGeometry? contentPadding;
   final TextStyle? titleStyle;
@@ -30,7 +32,7 @@ class NormalItem extends StatefulWidget {
     this.contentPadding,
     this.titleStyle,
     super.key,
-  });
+  }) : assert(title != null || getTitle != null);
 
   @override
   State<NormalItem> createState() => _NormalItemState();
@@ -45,12 +47,12 @@ class _NormalItemState extends State<NormalItem> {
         setState(() {});
       }),
       title: Text(
-        widget.title ?? widget.getTitle?.call(),
+        widget.title ?? widget.getTitle!(),
         style: widget.titleStyle ?? Theme.of(context).textTheme.titleMedium!,
       ),
       subtitle: widget.subtitle != null || widget.getSubtitle != null
           ? Text(
-              widget.subtitle ?? widget.getSubtitle?.call(),
+              widget.subtitle ?? widget.getSubtitle!(),
               style: Theme.of(context).textTheme.labelMedium!.copyWith(
                 color: Theme.of(context).colorScheme.outline,
               ),

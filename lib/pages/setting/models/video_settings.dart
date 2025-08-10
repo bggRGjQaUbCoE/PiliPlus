@@ -17,19 +17,19 @@ import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
 List<SettingsModel> get videoSettings => [
-  SettingsModel(
+  const SettingsModel(
     settingsType: SettingsType.sw1tch,
     title: '开启硬解',
     subtitle: '以较低功耗播放视频，若异常卡死请关闭',
-    leading: const Icon(Icons.flash_on_outlined),
+    leading: Icon(Icons.flash_on_outlined),
     setKey: SettingBoxKey.enableHA,
     defaultVal: true,
   ),
-  SettingsModel(
+  const SettingsModel(
     settingsType: SettingsType.sw1tch,
     title: '免登录1080P',
     subtitle: '免登录查看1080P视频',
-    leading: const Icon(Icons.hd_outlined),
+    leading: Icon(Icons.hd_outlined),
     setKey: SettingBoxKey.p1080,
     defaultVal: true,
   ),
@@ -75,10 +75,10 @@ List<SettingsModel> get videoSettings => [
       }
     },
   ),
-  SettingsModel(
+  const SettingsModel(
     settingsType: SettingsType.sw1tch,
     title: 'CDN 测速',
-    leading: const Icon(Icons.speed),
+    leading: Icon(Icons.speed),
     subtitle: '测速通过模拟加载视频实现，注意流量消耗，结果仅供参考',
     setKey: SettingBoxKey.cdnSpeedTest,
     defaultVal: true,
@@ -301,18 +301,18 @@ List<SettingsModel> get videoSettings => [
     },
   ),
   if (Platform.isAndroid)
-    SettingsModel(
+    const SettingsModel(
       settingsType: SettingsType.sw1tch,
       title: '优先使用 OpenSL ES 输出音频',
-      leading: const Icon(Icons.speaker_outlined),
+      leading: Icon(Icons.speaker_outlined),
       subtitle: '关闭则优先使用AudioTrack输出音频（此项即mpv的--ao），若遇系统音效丢失、无声、音画不同步等问题请尝试关闭。',
       setKey: SettingBoxKey.useOpenSLES,
       defaultVal: true,
     ),
-  SettingsModel(
+  const SettingsModel(
     settingsType: SettingsType.sw1tch,
     title: '扩大缓冲区',
-    leading: const Icon(Icons.storage_outlined),
+    leading: Icon(Icons.storage_outlined),
     subtitle: '默认缓冲区为视频4MB/直播16MB，开启后为32MB/64MB，加载时间变长',
     setKey: SettingBoxKey.expandBuffer,
     defaultVal: false,

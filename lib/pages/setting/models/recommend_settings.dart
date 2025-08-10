@@ -9,20 +9,20 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 List<SettingsModel> get recommendSettings => [
-  SettingsModel(
+  const SettingsModel(
     settingsType: SettingsType.sw1tch,
     title: '首页使用app端推荐',
     subtitle: '若web端推荐不太符合预期，可尝试切换至app端推荐',
-    leading: const Icon(Icons.model_training_outlined),
+    leading: Icon(Icons.model_training_outlined),
     setKey: SettingBoxKey.appRcmd,
     defaultVal: true,
     needReboot: true,
   ),
-  SettingsModel(
+  const SettingsModel(
     settingsType: SettingsType.sw1tch,
     title: '推荐动态',
     subtitle: '是否在推荐内容中展示动态(仅app端)',
-    leading: const Icon(Icons.motion_photos_on_outlined),
+    leading: Icon(Icons.motion_photos_on_outlined),
     setKey: SettingBoxKey.enableRcmdDynamic,
     defaultVal: true,
   ),

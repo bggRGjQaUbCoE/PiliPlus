@@ -27,10 +27,11 @@ class SelectDialog<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final titleMedium = Theme.of(context).textTheme.titleMedium!;
     return AlertDialog(
       clipBehavior: Clip.hardEdge,
       title: Text(title),
-      contentPadding: const EdgeInsets.fromLTRB(0, 12, 0, 12),
+      contentPadding: const EdgeInsets.symmetric(vertical: 12),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -43,7 +44,7 @@ class SelectDialog<T> extends StatelessWidget {
                 value: item.$1,
                 title: Text(
                   item.$2,
-                  style: Theme.of(context).textTheme.titleMedium!,
+                  style: titleMedium,
                 ),
                 subtitle: subtitleBuilder?.call(context, index),
                 groupValue: value,
@@ -106,8 +107,9 @@ class _CdnSelectDialogState extends State<CdnSelectDialog> {
       tryLook: false,
       videoType: VideoType.ugc,
     );
-    if (!result['status']) throw Exception('无法获取视频流');
-    return result['data'].dash.video.first;
+    final item = result.dataOrNull?.dash?.video?.first;
+    if (item == null) throw Exception('无法获取视频流');
+    return item;
   }
 
   Future<void> _startSpeedTest() async {

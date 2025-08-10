@@ -8,7 +8,40 @@ import 'package:flutter/services.dart' show FilteringTextInputFormatter;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 
-extension SettingsModelExt on SettingsModel {
+@immutable
+class SettingsModel {
+  final SettingsType settingsType;
+  final String? title;
+  final StringGetter? getTitle;
+  final String? subtitle;
+  final StringGetter? getSubtitle;
+  final String? setKey;
+  final bool? defaultVal;
+  final ValueChanged<bool>? onChanged;
+  final bool? needReboot;
+  final Widget? leading;
+  final Widget Function()? getTrailing;
+  final Function? onTap;
+  final EdgeInsetsGeometry? contentPadding;
+  final TextStyle? titleStyle;
+
+  const SettingsModel({
+    required this.settingsType,
+    this.title,
+    this.getTitle,
+    this.subtitle,
+    this.getSubtitle,
+    this.setKey,
+    this.defaultVal,
+    this.onChanged,
+    this.needReboot,
+    this.leading,
+    this.getTrailing,
+    this.onTap,
+    this.contentPadding,
+    this.titleStyle,
+  }) : assert(title != null || getTitle != null);
+
   Widget get widget => switch (settingsType) {
     SettingsType.normal => NormalItem(
       title: title,
@@ -38,40 +71,6 @@ extension SettingsModelExt on SettingsModel {
       titleStyle: titleStyle,
     ),
   };
-}
-
-class SettingsModel {
-  final SettingsType settingsType;
-  final String? title;
-  final Function? getTitle;
-  final String? subtitle;
-  final Function? getSubtitle;
-  final String? setKey;
-  final bool? defaultVal;
-  final ValueChanged<bool>? onChanged;
-  final bool? needReboot;
-  final Widget? leading;
-  final Function? getTrailing;
-  final Function? onTap;
-  final EdgeInsetsGeometry? contentPadding;
-  final TextStyle? titleStyle;
-
-  SettingsModel({
-    required this.settingsType,
-    this.title,
-    this.getTitle,
-    this.subtitle,
-    this.getSubtitle,
-    this.setKey,
-    this.defaultVal,
-    this.onChanged,
-    this.needReboot,
-    this.leading,
-    this.getTrailing,
-    this.onTap,
-    this.contentPadding,
-    this.titleStyle,
-  });
 }
 
 SettingsModel getBanwordModel({

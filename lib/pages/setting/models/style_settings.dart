@@ -47,11 +47,11 @@ List<SettingsModel> get styleSettings => [
       }
     },
   ),
-  SettingsModel(
+  const SettingsModel(
     settingsType: SettingsType.sw1tch,
     title: '改用侧边栏',
     subtitle: '开启后底栏与顶栏被替换，且相关设置失效',
-    leading: const Icon(Icons.chrome_reader_mode_outlined),
+    leading: Icon(Icons.chrome_reader_mode_outlined),
     setKey: SettingBoxKey.useSideBar,
     defaultVal: false,
     needReboot: true,
@@ -115,19 +115,19 @@ List<SettingsModel> get styleSettings => [
       }
     },
   ),
-  SettingsModel(
+  const SettingsModel(
     settingsType: SettingsType.sw1tch,
     title: '优化平板导航栏',
-    leading: const Icon(MdiIcons.soundbar),
+    leading: Icon(MdiIcons.soundbar),
     setKey: SettingBoxKey.optTabletNav,
     defaultVal: true,
     needReboot: true,
   ),
-  SettingsModel(
+  const SettingsModel(
     settingsType: SettingsType.sw1tch,
     title: 'MD3样式底栏',
     subtitle: 'Material You设计规范底栏，关闭可变窄',
-    leading: const Icon(Icons.design_services_outlined),
+    leading: Icon(Icons.design_services_outlined),
     setKey: SettingBoxKey.enableMYBar,
     defaultVal: true,
     needReboot: true,
@@ -171,19 +171,19 @@ List<SettingsModel> get styleSettings => [
       }
     },
   ),
-  SettingsModel(
+  const SettingsModel(
     settingsType: SettingsType.sw1tch,
     title: '播放页移除安全边距',
     subtitle: '隐藏状态栏、撑满屏幕，但播放控件仍处于安全域内',
-    leading: const Icon(Icons.fit_screen_outlined),
+    leading: Icon(Icons.fit_screen_outlined),
     setKey: SettingBoxKey.videoPlayerRemoveSafeArea,
     defaultVal: false,
   ),
-  SettingsModel(
+  const SettingsModel(
     settingsType: SettingsType.sw1tch,
     title: '动态页启用瀑布流',
     subtitle: '关闭会显示为单列',
-    leading: const Icon(Icons.view_array_outlined),
+    leading: Icon(Icons.view_array_outlined),
     setKey: SettingBoxKey.dynamicsWaterfallFlow,
     defaultVal: true,
     needReboot: true,
@@ -213,17 +213,17 @@ List<SettingsModel> get styleSettings => [
       }
     },
   ),
-  SettingsModel(
+  const SettingsModel(
     settingsType: SettingsType.sw1tch,
     title: '动态页显示所有已关注UP主',
-    leading: const Icon(Icons.people_alt_outlined),
+    leading: Icon(Icons.people_alt_outlined),
     setKey: SettingBoxKey.dynamicsShowAllFollowedUp,
     defaultVal: false,
   ),
-  SettingsModel(
+  const SettingsModel(
     settingsType: SettingsType.sw1tch,
     title: '动态页展开正在直播UP列表',
-    leading: const Icon(Icons.live_tv),
+    leading: Icon(Icons.live_tv),
     setKey: SettingBoxKey.expandDynLivePanel,
     defaultVal: false,
   ),
@@ -324,20 +324,20 @@ List<SettingsModel> get styleSettings => [
     getSubtitle: () =>
         '当前消息类型：${Pref.msgUnReadTypeV2.map((item) => item.title).join('、')}',
   ),
-  SettingsModel(
+  const SettingsModel(
     settingsType: SettingsType.sw1tch,
     title: '首页顶栏收起',
     subtitle: '首页列表滑动时，收起顶栏',
-    leading: const Icon(Icons.vertical_align_top_outlined),
+    leading: Icon(Icons.vertical_align_top_outlined),
     setKey: SettingBoxKey.hideSearchBar,
     defaultVal: true,
     needReboot: true,
   ),
-  SettingsModel(
+  const SettingsModel(
     settingsType: SettingsType.sw1tch,
     title: '首页底栏收起',
     subtitle: '首页列表滑动时，收起底栏',
-    leading: const Icon(Icons.vertical_align_bottom_outlined),
+    leading: Icon(Icons.vertical_align_bottom_outlined),
     setKey: SettingBoxKey.hideTabBar,
     defaultVal: true,
     needReboot: true,

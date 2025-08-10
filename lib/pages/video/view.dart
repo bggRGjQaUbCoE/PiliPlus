@@ -50,6 +50,7 @@ import 'package:PiliPlus/utils/num_util.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
+import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:auto_orientation/auto_orientation.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_debounce/easy_throttle.dart';
@@ -1553,10 +1554,12 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                                     .enableShowDanmaku
                                     .value =
                                 newVal;
-                            GStorage.setting.put(
-                              SettingBoxKey.enableShowDanmaku,
-                              newVal,
-                            );
+                            if (!Pref.tempPlayerConf) {
+                              GStorage.setting.put(
+                                SettingBoxKey.enableShowDanmaku,
+                                newVal,
+                              );
+                            }
                           },
                           icon: Icon(
                             size: 22,

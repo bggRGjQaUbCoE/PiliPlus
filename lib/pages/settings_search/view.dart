@@ -40,7 +40,7 @@ class _SettingsSearchPageState extends SearchState<SettingsSearchPage> {
       _list.value = _settings
           .where(
             (item) =>
-                (item.title ?? item.getTitle?.call())?.toLowerCase().contains(
+                (item.title ?? item.getTitle!()).toLowerCase().contains(
                   value,
                 ) ||
                 item.subtitle?.toLowerCase().contains(value) == true,

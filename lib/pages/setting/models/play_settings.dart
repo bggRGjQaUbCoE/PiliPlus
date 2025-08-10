@@ -19,11 +19,11 @@ import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
 List<SettingsModel> get playSettings => [
-  SettingsModel(
+  const SettingsModel(
     settingsType: SettingsType.sw1tch,
     title: '弹幕开关',
     subtitle: '是否展示弹幕',
-    leading: const Icon(CustomIcon.dm_settings),
+    leading: Icon(CustomIcon.dm_settings),
     setKey: SettingBoxKey.enableShowDanmaku,
     defaultVal: true,
   ),
@@ -34,33 +34,33 @@ List<SettingsModel> get playSettings => [
     title: '倍速设置',
     subtitle: '设置视频播放速度',
   ),
-  SettingsModel(
+  const SettingsModel(
     settingsType: SettingsType.sw1tch,
     title: '自动播放',
     subtitle: '进入详情页自动播放',
-    leading: const Icon(Icons.motion_photos_auto_outlined),
+    leading: Icon(Icons.motion_photos_auto_outlined),
     setKey: SettingBoxKey.autoPlayEnable,
     defaultVal: false,
   ),
-  SettingsModel(
+  const SettingsModel(
     settingsType: SettingsType.sw1tch,
     title: '双击快退/快进',
     subtitle: '左侧双击快退/右侧双击快进，关闭则双击均为暂停/播放',
-    leading: const Icon(Icons.touch_app_outlined),
+    leading: Icon(Icons.touch_app_outlined),
     setKey: SettingBoxKey.enableQuickDouble,
     defaultVal: true,
   ),
-  SettingsModel(
+  const SettingsModel(
     settingsType: SettingsType.sw1tch,
     title: '左右侧滑动调节亮度/音量',
-    leading: const Icon(MdiIcons.tuneVerticalVariant),
+    leading: Icon(MdiIcons.tuneVerticalVariant),
     setKey: SettingBoxKey.enableSlideVolumeBrightness,
     defaultVal: true,
   ),
-  SettingsModel(
+  const SettingsModel(
     settingsType: SettingsType.sw1tch,
     title: '中间滑动进入/退出全屏',
-    leading: const Icon(MdiIcons.panVertical),
+    leading: Icon(MdiIcons.panVertical),
     setKey: SettingBoxKey.enableSlideFS,
     defaultVal: true,
   ),
@@ -73,10 +73,10 @@ List<SettingsModel> get playSettings => [
     defaultValue: 10,
     isFilter: false,
   ),
-  SettingsModel(
+  const SettingsModel(
     settingsType: SettingsType.sw1tch,
     title: '滑动快进/快退使用相对时长',
-    leading: const Icon(Icons.swap_horiz_outlined),
+    leading: Icon(Icons.swap_horiz_outlined),
     setKey: SettingBoxKey.useRelativeSlide,
     defaultVal: false,
   ),
@@ -115,35 +115,35 @@ List<SettingsModel> get playSettings => [
       }
     },
   ),
-  SettingsModel(
+  const SettingsModel(
     settingsType: SettingsType.sw1tch,
     title: '竖屏扩大展示',
     subtitle: '小屏竖屏视频宽高比由16:9扩大至1:1（不支持收起）；横屏适配时，扩大至9:16',
-    leading: const Icon(Icons.expand_outlined),
+    leading: Icon(Icons.expand_outlined),
     setKey: SettingBoxKey.enableVerticalExpand,
     defaultVal: false,
   ),
-  SettingsModel(
+  const SettingsModel(
     settingsType: SettingsType.sw1tch,
     title: '自动全屏',
     subtitle: '视频开始播放时进入全屏',
-    leading: const Icon(Icons.fullscreen_outlined),
+    leading: Icon(Icons.fullscreen_outlined),
     setKey: SettingBoxKey.enableAutoEnter,
     defaultVal: false,
   ),
-  SettingsModel(
+  const SettingsModel(
     settingsType: SettingsType.sw1tch,
     title: '自动退出全屏',
     subtitle: '视频结束播放时退出全屏',
-    leading: const Icon(Icons.fullscreen_exit_outlined),
+    leading: Icon(Icons.fullscreen_exit_outlined),
     setKey: SettingBoxKey.enableAutoExit,
     defaultVal: true,
   ),
-  SettingsModel(
+  const SettingsModel(
     settingsType: SettingsType.sw1tch,
     title: '延长播放控件显示时间',
     subtitle: '开启后延长至30秒，便于屏幕阅读器滑动切换控件焦点',
-    leading: const Icon(Icons.timer_outlined),
+    leading: Icon(Icons.timer_outlined),
     setKey: SettingBoxKey.enableLongShowControl,
     defaultVal: false,
   ),
@@ -156,11 +156,11 @@ List<SettingsModel> get playSettings => [
     defaultVal: true,
     onChanged: (value) => allowRotateScreen = value,
   ),
-  SettingsModel(
+  const SettingsModel(
     settingsType: SettingsType.sw1tch,
     title: '后台播放',
     subtitle: '进入后台时继续播放',
-    leading: const Icon(Icons.motion_photos_pause_outlined),
+    leading: Icon(Icons.motion_photos_pause_outlined),
     setKey: SettingBoxKey.continuePlayInBackground,
     defaultVal: false,
   ),
@@ -178,35 +178,35 @@ List<SettingsModel> get playSettings => [
         }
       },
     ),
-    SettingsModel(
+    const SettingsModel(
       settingsType: SettingsType.sw1tch,
       title: '画中画不加载弹幕',
       subtitle: '当弹幕开关开启时，小窗屏蔽弹幕以获得较好的体验',
-      leading: const Icon(Icons.subtitles_off_outlined),
+      leading: Icon(Icons.subtitles_off_outlined),
       setKey: SettingBoxKey.pipNoDanmaku,
       defaultVal: false,
     ),
   ],
-  SettingsModel(
+  const SettingsModel(
     settingsType: SettingsType.sw1tch,
     title: '全屏手势反向',
     subtitle: '默认播放器中部向上滑动进入全屏，向下退出\n开启后向下全屏，向上退出',
-    leading: const Icon(Icons.swap_vert_outlined),
+    leading: Icon(Icons.swap_vert_outlined),
     setKey: SettingBoxKey.fullScreenGestureReverse,
     defaultVal: false,
   ),
-  SettingsModel(
+  const SettingsModel(
     settingsType: SettingsType.sw1tch,
     title: '全屏展示点赞/投币/收藏等操作按钮',
-    leading: const Icon(MdiIcons.dotsHorizontalCircleOutline),
+    leading: Icon(MdiIcons.dotsHorizontalCircleOutline),
     setKey: SettingBoxKey.showFSActionItem,
     defaultVal: true,
   ),
-  SettingsModel(
+  const SettingsModel(
     settingsType: SettingsType.sw1tch,
     title: '观看人数',
     subtitle: '展示同时在看人数',
-    leading: const Icon(Icons.people_outlined),
+    leading: Icon(Icons.people_outlined),
     setKey: SettingBoxKey.enableOnlineTotal,
     defaultVal: false,
   ),
@@ -270,5 +270,13 @@ List<SettingsModel> get playSettings => [
     onChanged: (value) {
       videoPlayerServiceHandler.enableBackgroundPlay = value;
     },
+  ),
+  const SettingsModel(
+    settingsType: SettingsType.sw1tch,
+    title: '播放器设置仅对当前生效',
+    subtitle: '弹幕、字幕及部分设置中没有的设置除外',
+    leading: Icon(Icons.video_settings_outlined),
+    setKey: SettingBoxKey.tempPlayerConf,
+    defaultVal: false,
   ),
 ];

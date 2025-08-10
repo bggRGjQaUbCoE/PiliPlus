@@ -656,7 +656,7 @@ class PlPlayerController {
       type ??= superResolutionType;
     } else {
       superResolutionType = type;
-      if (isAnim) {
+      if (isAnim && !Pref.tempPlayerConf) {
         GStorage.setting.put(SettingBoxKey.superResolutionType, type);
       }
     }
@@ -1314,7 +1314,9 @@ class PlPlayerController {
   /// 设置后台播放
   Future<void> setBackgroundPlay(bool val) async {
     videoPlayerServiceHandler.enableBackgroundPlay = val;
-    setting.put(SettingBoxKey.enableBackgroundPlay, val);
+    if (!Pref.tempPlayerConf) {
+      setting.put(SettingBoxKey.enableBackgroundPlay, val);
+    }
   }
 
   set controls(bool visible) {
@@ -1594,10 +1596,12 @@ class PlPlayerController {
 
   void setContinuePlayInBackground() {
     _continuePlayInBackground.value = !_continuePlayInBackground.value;
-    setting.put(
-      SettingBoxKey.continuePlayInBackground,
-      _continuePlayInBackground.value,
-    );
+    if (!Pref.tempPlayerConf) {
+      setting.put(
+        SettingBoxKey.continuePlayInBackground,
+        _continuePlayInBackground.value,
+      );
+    }
   }
 
   void setOnlyPlayAudio() {

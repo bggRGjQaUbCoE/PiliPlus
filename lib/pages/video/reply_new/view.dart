@@ -301,7 +301,7 @@ class _ReplyPageState extends CommonRichTextPubPageState<ReplyPage> {
       height: height,
       child: GridView(
         padding: const EdgeInsets.only(left: 12, bottom: 12, right: 12),
-        gridDelegate: const SliverGridDelegateWithExtentAndRatio(
+        gridDelegate: SliverGridDelegateWithExtentAndRatio(
           maxCrossAxisExtent: 65,
           mainAxisSpacing: 12,
           crossAxisSpacing: 12,

@@ -26,7 +26,7 @@ class SliverGridDelegateWithExtentAndRatio extends SliverGridDelegate {
   /// The [maxCrossAxisExtent], [mainAxisExtent], [mainAxisSpacing],
   /// and [crossAxisSpacing] arguments must not be negative.
   /// The [childAspectRatio] argument must be greater than zero.
-  const SliverGridDelegateWithExtentAndRatio({
+  SliverGridDelegateWithExtentAndRatio({
     required this.maxCrossAxisExtent,
     this.mainAxisSpacing = 0.0,
     this.crossAxisSpacing = 0.0,
@@ -76,9 +76,13 @@ class SliverGridDelegateWithExtentAndRatio extends SliverGridDelegate {
     return true;
   }
 
+  SliverGridLayout? layoutCache;
+
   @override
   SliverGridLayout getLayout(SliverConstraints constraints) {
+    // invoked before each frame
     assert(_debugAssertIsValid(constraints.crossAxisExtent));
+    if (layoutCache != null) return layoutCache!;
     int crossAxisCount =
         ((constraints.crossAxisExtent - crossAxisSpacing) /
                 (maxCrossAxisExtent + crossAxisSpacing))
@@ -95,7 +99,7 @@ class SliverGridDelegateWithExtentAndRatio extends SliverGridDelegate {
       minHeight,
       childCrossAxisExtent / childAspectRatio + mainAxisExtent,
     );
-    return SliverGridRegularTileLayout(
+    return layoutCache = SliverGridRegularTileLayout(
       crossAxisCount: crossAxisCount,
       mainAxisStride: childMainAxisExtent + mainAxisSpacing,
       crossAxisStride: childCrossAxisExtent + crossAxisSpacing,
@@ -107,10 +111,13 @@ class SliverGridDelegateWithExtentAndRatio extends SliverGridDelegate {
 
   @override
   bool shouldRelayout(SliverGridDelegateWithExtentAndRatio oldDelegate) {
-    return oldDelegate.maxCrossAxisExtent != maxCrossAxisExtent ||
+    final flag =
+        oldDelegate.maxCrossAxisExtent != maxCrossAxisExtent ||
         oldDelegate.mainAxisSpacing != mainAxisSpacing ||
         oldDelegate.crossAxisSpacing != crossAxisSpacing ||
         oldDelegate.childAspectRatio != childAspectRatio ||
         oldDelegate.mainAxisExtent != mainAxisExtent;
+    if (flag) layoutCache = null;
+    return flag;
   }
 }

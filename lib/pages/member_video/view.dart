@@ -42,6 +42,8 @@ class _MemberVideoState extends State<MemberVideo>
   @override
   bool get wantKeepAlive => true;
 
+  late final gridDelegate = Grid.videoCardHDelegate(context);
+
   late final _controller = Get.put(
     MemberVideoCtr(
       type: widget.type,
@@ -89,12 +91,29 @@ class _MemberVideoState extends State<MemberVideo>
                       top: false,
                       left: false,
                       child: FloatingActionButton.extended(
-                        onPressed: () => _controller
-                          ..isLocating.value = true
-                          ..lastAid = _controller.fromViewAid
-                          ..page = 0
-                          ..loadingState.value = LoadingState.loading()
-                          ..queryData(),
+                        onPressed: () {
+                          final fromViewAid = _controller.fromViewAid;
+                          _controller
+                            ..isLocating.value = true
+                            ..lastAid = fromViewAid;
+                          final locatedIndex = _controller
+                              .loadingState
+                              .value
+                              .dataOrNull
+                              ?.indexWhere((i) => i.param == fromViewAid);
+                          if (locatedIndex == null || locatedIndex == -1) {
+                            _controller
+                              ..page = 0
+                              ..loadingState.value = LoadingState.loading()
+                              ..queryData();
+                          } else {
+                            PrimaryScrollController.of(context).jumpTo(
+                              gridDelegate.layoutCache!
+                                  .getGeometryForChildIndex(locatedIndex)
+                                  .scrollOffset,
+                            );
+                          }
+                        },
                         label: const Text('定位至上次观看'),
                       ),
                     ),
@@ -217,7 +236,7 @@ class _MemberVideoState extends State<MemberVideo>
                     ),
                   ),
                   SliverGrid(
-                    gridDelegate: Grid.videoCardHDelegate(context),
+                    gridDelegate: gridDelegate,
                     delegate: SliverChildBuilderDelegate(
                       (context, index) {
                         if (widget.type != ContributeType.season &&

@@ -77,12 +77,17 @@ class SliverGridDelegateWithExtentAndRatio extends SliverGridDelegate {
   }
 
   SliverGridLayout? layoutCache;
+  double? crossAxisExtentCache;
 
   @override
   SliverGridLayout getLayout(SliverConstraints constraints) {
     // invoked before each frame
     assert(_debugAssertIsValid(constraints.crossAxisExtent));
-    if (layoutCache != null) return layoutCache!;
+    if (layoutCache != null &&
+        constraints.crossAxisExtent == crossAxisExtentCache) {
+      return layoutCache!;
+    }
+    crossAxisExtentCache = constraints.crossAxisExtent;
     int crossAxisCount =
         ((constraints.crossAxisExtent - crossAxisSpacing) /
                 (maxCrossAxisExtent + crossAxisSpacing))

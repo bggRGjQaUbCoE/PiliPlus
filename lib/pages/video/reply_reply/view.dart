@@ -321,6 +321,7 @@ class _VideoReplyReplyPanelState
               ),
             );
           } else {
+            final child = _replyItem(response[index], index);
             if (_controller.index != null && _controller.index == index) {
               colorAnimation ??= ColorTween(
                 begin: theme.colorScheme.onInverseSurface,
@@ -328,17 +329,17 @@ class _VideoReplyReplyPanelState
               ).animate(_controller.controller!);
               return AnimatedBuilder(
                 animation: colorAnimation!,
-                builder: (context, child) {
+                builder: (context, _) {
                   return ColoredBox(
                     color:
                         colorAnimation!.value ??
                         theme.colorScheme.onInverseSurface,
-                    child: _replyItem(response[index], index),
+                    child: child,
                   );
                 },
               );
             }
-            return _replyItem(response[index], index);
+            return child;
           }
         },
       ),

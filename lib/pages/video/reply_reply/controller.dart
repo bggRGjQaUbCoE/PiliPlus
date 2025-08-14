@@ -7,6 +7,7 @@ import 'package:PiliPlus/pages/video/reply_new/view.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:PiliPlus/utils/request_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
+import 'package:fixnum/fixnum.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_navigation/src/dialog/dialog_route.dart';
@@ -72,26 +73,26 @@ class VideoReplyReplyController extends ReplyController
         firstFloor = data.root;
       }
       if (id != null) {
-        index = data.root.replies.indexWhere((item) => item.id.toInt() == id);
-        if (index == -1) {
-          index = null;
-        } else {
+        final id64 = Int64(id!);
+        final index = data.root.replies.indexWhere((item) => item.id == id64);
+        if (index != -1) {
+          this.index = index;
           controller = AnimationController(
             duration: const Duration(milliseconds: 300),
             vsync: this,
           );
           WidgetsBinding.instance.addPostFrameCallback((_) async {
-            if (index != null) {
-              try {
-                itemScrollCtr.jumpTo(
-                  index: hasRoot ? index! + 3 : index! + 1,
-                  alignment: 0.25,
-                );
-                await Future.delayed(const Duration(milliseconds: 800));
-                await controller?.forward();
-                index = null;
-              } catch (_) {}
-            }
+            try {
+              itemScrollCtr.jumpTo(
+                index: hasRoot ? index + 3 : index + 1,
+                alignment: 0.25,
+              );
+              await Future.delayed(
+                const Duration(milliseconds: 800),
+                controller?.forward,
+              );
+              this.index = null;
+            } catch (_) {}
           });
         }
         id = null;

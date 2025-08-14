@@ -20,7 +20,7 @@ import 'package:PiliPlus/models_new/pgc/pgc_info_model/episode.dart' as pgc;
 import 'package:PiliPlus/models_new/video/video_detail/episode.dart' as ugc;
 import 'package:PiliPlus/models_new/video/video_detail/page.dart';
 import 'package:PiliPlus/models_new/video/video_relation/data.dart';
-import 'package:PiliPlus/pages/common/slide/common_slide_page.dart';
+import 'package:PiliPlus/pages/common/slide/common_collapse_slide_page.dart';
 import 'package:PiliPlus/pages/video/controller.dart';
 import 'package:PiliPlus/pages/video/introduction/ugc/controller.dart';
 import 'package:PiliPlus/pages/video/introduction/ugc/widgets/page.dart';
@@ -36,7 +36,7 @@ import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
-class EpisodePanel extends CommonSlidePage {
+class EpisodePanel extends CommonCollapseSlidePage {
   const EpisodePanel({
     super.key,
     super.enableSlide,
@@ -83,7 +83,7 @@ class EpisodePanel extends CommonSlidePage {
   State<EpisodePanel> createState() => _EpisodePanelState();
 }
 
-class _EpisodePanelState extends CommonSlidePageState<EpisodePanel> {
+class _EpisodePanelState extends CommonCollapseSlidePageState<EpisodePanel> {
   // tab
   late final TabController _tabController = TabController(
     initialIndex: widget.initialTabIndex,
@@ -109,8 +109,6 @@ class _EpisodePanelState extends CommonSlidePageState<EpisodePanel> {
   // fav
   Rx<LoadingState>? _favState;
 
-  late bool _isInit = true;
-
   void listener() {
     _currentTabIndex.value = _tabController.index;
   }
@@ -123,8 +121,8 @@ class _EpisodePanelState extends CommonSlidePageState<EpisodePanel> {
     }
 
     void jumpToCurrent() {
-      int newItemIndex = _findCurrentItemIndex;
-      if (_currentItemIndex != _findCurrentItemIndex) {
+      final newItemIndex = _findCurrentItemIndex;
+      if (_currentItemIndex != newItemIndex) {
         _currentItemIndex = newItemIndex;
         try {
           _itemScrollController[_currentTabIndex.value].jumpTo(
@@ -153,7 +151,7 @@ class _EpisodePanelState extends CommonSlidePageState<EpisodePanel> {
       widget.list.length,
       (_) => ItemScrollController(),
     );
-    _isReversed = List.generate(widget.list.length, (_) => false);
+    _isReversed = List.filled(widget.list.length, false);
 
     if (widget.type == EpisodeType.season && Accounts.main.isLogin) {
       _favState = LoadingState.loading().obs;
@@ -168,20 +166,6 @@ class _EpisodePanelState extends CommonSlidePageState<EpisodePanel> {
     }
 
     _currentItemIndex = _findCurrentItemIndex;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        setState(() {
-          _isInit = false;
-        });
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          try {
-            _itemScrollController[widget.initialTabIndex].jumpTo(
-              index: _currentItemIndex,
-            );
-          } catch (_) {}
-        });
-      }
-    });
   }
 
   @override
@@ -190,17 +174,6 @@ class _EpisodePanelState extends CommonSlidePageState<EpisodePanel> {
       ..removeListener(listener)
       ..dispose();
     super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (_isInit) {
-      return const CustomScrollView(
-        physics: NeverScrollableScrollPhysics(),
-      );
-    }
-
-    return super.build(context);
   }
 
   @override
@@ -281,6 +254,7 @@ class _EpisodePanelState extends CommonSlidePageState<EpisodePanel> {
         ),
         reverse: _isReversed[tabIndex],
         itemCount: episodes.length,
+        initialScrollIndex: _currentItemIndex,
         physics: const AlwaysScrollableScrollPhysics(),
         itemBuilder: (BuildContext context, int itemIndex) {
           final episode = episodes[itemIndex];

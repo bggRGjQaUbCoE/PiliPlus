@@ -17,7 +17,7 @@ class BottomControl extends StatelessWidget {
   });
 
   final PlPlayerController controller;
-  final Widget Function(double maxWidth) buildBottomControl;
+  final Widget Function() buildBottomControl;
 
   @override
   Widget build(BuildContext context) {
@@ -28,15 +28,15 @@ class BottomControl extends StatelessWidget {
     double lastAnnouncedValue = -1;
     return Padding(
       padding: const EdgeInsets.fromLTRB(10, 0, 10, 12),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final maxWidth = constraints.maxWidth;
-          return Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(10, 0, 10, 7),
-                child: Obx(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(10, 0, 10, 7),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final maxWidth = constraints.maxWidth;
+                return Obx(
                   () => Stack(
                     clipBehavior: Clip.none,
                     alignment: Alignment.bottomCenter,
@@ -63,20 +63,16 @@ class BottomControl extends StatelessWidget {
                           thumbRadius: 7,
                           onDragStart: (duration) {
                             feedBack();
-                            controller.onChangedSliderStart(
-                              duration.timeStamp,
-                            );
+                            controller.onChangedSliderStart(duration.timeStamp);
                           },
                           onDragUpdate: (duration) {
+                            if (controller.showSeekPreview) {
+                              controller.updatePreviewIndex(
+                                duration.timeStamp.inSeconds,
+                              );
+                            }
                             double newProgress =
                                 duration.timeStamp.inSeconds / max;
-                            if (controller.showSeekPreview) {
-                              if (!controller.showPreview.value) {
-                                controller.showPreview.value = true;
-                              }
-                              controller.previewDx.value =
-                                  duration.localPosition.dx;
-                            }
                             if ((newProgress - lastAnnouncedValue).abs() >
                                 0.02) {
                               accessibilityDebounce?.cancel();
@@ -151,31 +147,20 @@ class BottomControl extends StatelessWidget {
                         buildViewPointWidget(
                           controller,
                           8.75,
-                          maxWidth - 20,
+                          maxWidth,
                         ),
                       ],
                       if (controller.dmTrend.isNotEmpty &&
                           controller.showDmTreandChart.value)
                         buildDmChart(theme, controller, 4.5),
-                      if (controller.showSeekPreview &&
-                          controller.showControls.value)
-                        Positioned(
-                          left: 0,
-                          right: 0,
-                          bottom: 18,
-                          child: buildSeekPreviewWidget(
-                            controller,
-                            maxWidth - 20,
-                          ),
-                        ),
                     ],
                   ),
-                ),
-              ),
-              buildBottomControl(maxWidth),
-            ],
-          );
-        },
+                );
+              },
+            ),
+          ),
+          buildBottomControl(),
+        ],
       ),
     );
   }

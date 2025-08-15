@@ -201,6 +201,7 @@ dependencies:
       ref: master
   crclib: ^3.0.0
   web_socket_channel: ^3.0.3
+  image: ^4.5.4
 
   vector_math: any
   fixnum: any
@@ -212,6 +213,7 @@ dependencies:
   path: any
   collection: any
   material_color_utilities: any
+  flutter_cache_manager: any
 
 dependency_overrides:
   screen_brightness: ^2.0.1

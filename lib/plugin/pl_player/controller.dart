@@ -1,10 +1,14 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math' show max;
+import 'dart:ui' as ui;
 
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/widgets/progress_bar/segment_progress_bar.dart';
 import 'package:PiliPlus/http/init.dart';
+import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/http/ua_type.dart';
 import 'package:PiliPlus/http/video.dart';
 import 'package:PiliPlus/models/common/account_type.dart';
 import 'package:PiliPlus/models/common/audio_normalization.dart';
@@ -33,6 +37,7 @@ import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:canvas_danmaku/canvas_danmaku.dart';
 import 'package:crclib/catalog.dart';
+import 'package:dio/dio.dart' show Options;
 import 'package:easy_debounce/easy_throttle.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
@@ -561,9 +566,7 @@ class PlPlayerController {
       _pgcType = pgcType;
 
       if (showSeekPreview) {
-        videoShot = null;
-        showPreview.value = false;
-        previewDx.value = 0;
+        _clearPreview();
       }
 
       if (_videoPlayerController != null &&
@@ -1542,6 +1545,7 @@ class PlPlayerController {
     }
     dmState.clear();
     _playerCount = 0;
+    _clearPreview();
     Utils.channel.setMethodCallHandler(null);
     pause();
     try {
@@ -1600,17 +1604,48 @@ class PlPlayerController {
     );
   }
 
-  late final showSeekPreview = Pref.showSeekPreview;
-  late bool _isQueryingVideoShot = false;
-  Map? videoShot;
+  Map<String, WeakReference<ui.Image>>? previewCache;
+  LoadingState<VideoShotData>? videoShot;
   late final RxBool showPreview = false.obs;
-  late final RxDouble previewDx = 0.0.obs;
+  late final showSeekPreview = Pref.showSeekPreview;
+  late final Rx<int?> previewIndex = Rx<int?>(null);
 
-  Future<void> getVideoShot() async {
-    if (_isQueryingVideoShot) {
+  void updatePreviewIndex(int seconds) {
+    if (videoShot == null) {
+      videoShot = LoadingState.loading();
+      getVideoShot();
       return;
     }
-    _isQueryingVideoShot = true;
+    if (videoShot case Success<VideoShotData> success) {
+      final data = success.response;
+      if (data.index.isNullOrEmpty) {
+        return;
+      }
+      if (!showPreview.value) {
+        showPreview.value = true;
+      }
+      previewIndex.value = max(
+        0,
+        (data.index.where((item) => item <= seconds).length - 2),
+      );
+    }
+  }
+
+  void _clearPreview() {
+    showPreview.value = false;
+    previewIndex.value = null;
+    videoShot = null;
+    previewCache
+      ?..forEach((_, ref) {
+        try {
+          ref.target?.dispose();
+        } catch (_) {}
+      })
+      ..clear();
+    previewCache = null;
+  }
+
+  Future<void> getVideoShot() async {
     try {
       var res = await Request().get(
         '/x/player/videoshot',
@@ -1620,20 +1655,22 @@ class PlPlayerController {
           'cid': _cid,
           'index': 1,
         },
+        options: Options(
+          headers: {
+            'user-agent': UaType.pc.ua,
+            'referer': 'https://www.bilibili.com/video/$bvid',
+          },
+        ),
       );
       if (res.data['code'] == 0) {
-        videoShot = {
-          'status': true,
-          'data': VideoShotData.fromJson(res.data['data']),
-        };
+        videoShot = Success(VideoShotData.fromJson(res.data['data']));
       } else {
-        videoShot = {'status': false};
+        videoShot = const Error(null);
       }
     } catch (e) {
-      videoShot = {'status': false};
+      videoShot = const Error(null);
       if (kDebugMode) debugPrint('getVideoShot: $e');
     }
-    _isQueryingVideoShot = false;
   }
 
   late final RxList<double> dmTrend = <double>[].obs;

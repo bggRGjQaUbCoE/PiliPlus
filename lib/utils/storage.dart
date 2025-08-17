@@ -14,7 +14,7 @@ import 'package:path_provider/path_provider.dart';
 
 class GStorage {
   static late final Box<UserInfoData> userInfo;
-  static late final Box<dynamic> historyWord;
+  static late final Box<List<String>> historyWord;
   static late final Box<dynamic> localCache;
   static late final Box<dynamic> setting;
   static late final Box<dynamic> video;
@@ -41,7 +41,7 @@ class GStorage {
     // 设置
     setting = await Hive.openBox('setting');
     // 搜索历史
-    historyWord = await Hive.openBox(
+    historyWord = await Hive.openBox<List<String>>(
       'historyWord',
       compactionStrategy: (int entries, int deletedEntries) {
         return deletedEntries > 10;
@@ -60,8 +60,10 @@ class GStorage {
     });
   }
 
-  static Future<void> importAllSettings(String data) async {
-    final Map<String, dynamic> map = jsonDecode(data);
+  static Future<void> importAllSettings(String data) =>
+      importAllJsonSettings(jsonDecode(data));
+
+  static Future<void> importAllJsonSettings(Map<String, dynamic> map) async {
     await setting.clear();
     await video.clear();
     await setting.putAll(map[setting.name]);

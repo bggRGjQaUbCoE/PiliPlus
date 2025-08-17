@@ -150,7 +150,6 @@ class SSearchController extends GetxController
       historyList
         ..remove(controller.text)
         ..insert(0, controller.text);
-      GStorage.historyWord.put('cacheList', historyList);
     }
 
     searchFocusNode.unfocus();
@@ -198,7 +197,6 @@ class SSearchController extends GetxController
 
   void onLongSelect(String word) {
     historyList.remove(word);
-    GStorage.historyWord.put('cacheList', historyList);
   }
 
   void onClearHistory() {
@@ -207,13 +205,13 @@ class SSearchController extends GetxController
       title: '确定清空搜索历史？',
       onConfirm: () {
         historyList.clear();
-        GStorage.historyWord.put('cacheList', []);
       },
     );
   }
 
   @override
   void onClose() {
+    GStorage.historyWord.put('cacheList', historyList);
     subDispose();
     searchFocusNode.dispose();
     controller.dispose();

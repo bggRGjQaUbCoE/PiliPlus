@@ -1,9 +1,9 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
 import 'package:PiliPlus/build_config.dart';
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
-import 'package:PiliPlus/models/common/account_type.dart';
 import 'package:PiliPlus/pages/mine/controller.dart';
 import 'package:PiliPlus/services/loggeer.dart';
 import 'package:PiliPlus/utils/accounts.dart';
@@ -24,6 +24,9 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:re_highlight/languages/json.dart';
+import 'package:re_highlight/re_highlight.dart';
+import 'package:re_highlight/styles/github.dart';
 import 'package:share_plus/share_plus.dart';
 
 class AboutPage extends StatefulWidget {
@@ -222,199 +225,33 @@ Commit Hash: ${BuildConfig.commitHash}''',
           ListTile(
             title: const Text('导入/导出登录信息'),
             leading: const Icon(Icons.import_export_outlined),
-            onTap: () => showDialog(
-              context: context,
-              builder: (context) => SimpleDialog(
-                title: const Text('导入/导出登录信息'),
-                clipBehavior: Clip.hardEdge,
-                children: [
-                  ListTile(
-                    dense: true,
-                    title: const Text('导出', style: style),
-                    onTap: () {
-                      Get.back();
-                      String res = jsonEncode(Accounts.account.toMap());
-                      Utils.copyText(res);
-                    },
-                  ),
-                  ListTile(
-                    dense: true,
-                    title: const Text('导入', style: style),
-                    onTap: () async {
-                      Get.back();
-                      ClipboardData? data = await Clipboard.getData(
-                        'text/plain',
-                      );
-                      if (data?.text?.isNotEmpty != true) {
-                        SmartDialog.showToast('剪贴板无数据');
-                        return;
-                      }
-                      if (!context.mounted) return;
-                      showDialog(
-                        context: context,
-                        builder: (context) {
-                          return AlertDialog(
-                            title: const Text('是否导入以下登录信息？'),
-                            content: SingleChildScrollView(
-                              child: Text(data!.text!),
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: Get.back,
-                                child: Text(
-                                  '取消',
-                                  style: TextStyle(color: outline),
-                                ),
-                              ),
-                              TextButton(
-                                onPressed: () {
-                                  Get.back();
-                                  try {
-                                    final res = (jsonDecode(data.text!) as Map)
-                                        .map(
-                                          (key, value) => MapEntry(
-                                            key,
-                                            LoginAccount.fromJson(value),
-                                          ),
-                                        );
-                                    Accounts.account
-                                        .putAll(res)
-                                        .whenComplete(Accounts.refresh)
-                                        .whenComplete(() {
-                                          MineController.anonymity.value =
-                                              !Accounts.get(
-                                                AccountType.heartbeat,
-                                              ).isLogin;
-                                          if (Accounts.main.isLogin) {
-                                            return LoginUtils.onLoginMain();
-                                          }
-                                        });
-                                  } catch (e) {
-                                    SmartDialog.showToast('导入失败：$e');
-                                  }
-                                },
-                                child: const Text('确定'),
-                              ),
-                            ],
-                          );
-                        },
-                      );
-                    },
-                  ),
-                ],
-              ),
+            onTap: () => showInportExportDialog<Map>(
+              context,
+              title: '登录信息',
+              toJson: () => jsonEncode(Accounts.account.toMap()),
+              fromJson: (json) async {
+                final res = json.map(
+                  (key, value) => MapEntry(key, LoginAccount.fromJson(value)),
+                );
+                await Accounts.account.putAll(res);
+                await Accounts.refresh();
+                MineController.anonymity.value = !Accounts.heartbeat.isLogin;
+                if (Accounts.main.isLogin) {
+                  await LoginUtils.onLoginMain();
+                }
+              },
             ),
           ),
           ListTile(
             title: const Text('导入/导出设置'),
             dense: false,
             leading: const Icon(Icons.import_export_outlined),
-            onTap: () => showDialog(
-              context: context,
-              builder: (context) {
-                return SimpleDialog(
-                  clipBehavior: Clip.hardEdge,
-                  title: const Text('导入/导出设置'),
-                  children: [
-                    ListTile(
-                      dense: true,
-                      title: const Text('导出文件至本地', style: style),
-                      onTap: () async {
-                        Get.back();
-                        final res = utf8.encode(GStorage.exportAllSettings());
-                        final name =
-                            'piliplus_settings_${context.isTablet ? 'pad' : 'phone'}_'
-                            '${DateFormat('yyyyMMddHHmmss').format(DateTime.now())}.json';
-                        try {
-                          DocumentFileSavePlusPlatform.instance
-                              .saveMultipleFiles(
-                                dataList: [res],
-                                fileNameList: [name],
-                                mimeTypeList: [Headers.jsonContentType],
-                              );
-                          if (Platform.isAndroid) {
-                            SmartDialog.showToast('已保存');
-                          }
-                        } catch (e) {
-                          SharePlus.instance.share(
-                            ShareParams(
-                              files: [
-                                XFile.fromData(
-                                  res,
-                                  name: name,
-                                  mimeType: Headers.jsonContentType,
-                                ),
-                              ],
-                              sharePositionOrigin:
-                                  await Utils.sharePositionOrigin,
-                            ),
-                          );
-                        }
-                      },
-                    ),
-                    ListTile(
-                      dense: true,
-                      title: const Text('导出设置至剪贴板', style: style),
-                      onTap: () {
-                        Get.back();
-                        String data = GStorage.exportAllSettings();
-                        Utils.copyText(data);
-                      },
-                    ),
-                    ListTile(
-                      dense: true,
-                      title: const Text('从剪贴板导入设置', style: style),
-                      onTap: () async {
-                        Get.back();
-                        ClipboardData? data = await Clipboard.getData(
-                          'text/plain',
-                        );
-                        if (data == null ||
-                            data.text == null ||
-                            data.text!.isEmpty) {
-                          SmartDialog.showToast('剪贴板无数据');
-                          return;
-                        }
-                        if (!context.mounted) return;
-                        showDialog(
-                          context: context,
-                          builder: (context) {
-                            return AlertDialog(
-                              title: const Text('是否导入如下设置？'),
-                              content: SingleChildScrollView(
-                                child: Text(data.text!),
-                              ),
-                              actions: [
-                                TextButton(
-                                  onPressed: Get.back,
-                                  child: Text(
-                                    '取消',
-                                    style: TextStyle(color: outline),
-                                  ),
-                                ),
-                                TextButton(
-                                  onPressed: () async {
-                                    Get.back();
-                                    try {
-                                      await GStorage.importAllSettings(
-                                        data.text!,
-                                      );
-                                      SmartDialog.showToast('导入成功');
-                                    } catch (e) {
-                                      SmartDialog.showToast('导入失败：$e');
-                                    }
-                                  },
-                                  child: const Text('确定'),
-                                ),
-                              ],
-                            );
-                          },
-                        );
-                      },
-                    ),
-                  ],
-                );
-              },
+            onTap: () => showInportExportDialog(
+              context,
+              title: '设置',
+              label: GStorage.setting.name,
+              toJson: GStorage.exportAllSettings,
+              fromJson: GStorage.importAllJsonSettings,
             ),
           ),
           ListTile(
@@ -466,3 +303,128 @@ Commit Hash: ${BuildConfig.commitHash}''',
     );
   }
 }
+
+Future<void> showInportExportDialog<T>(
+  BuildContext context, {
+  required String title,
+  String? label,
+  required String Function() toJson,
+  required FutureOr<void> Function(T json) fromJson,
+}) => showDialog(
+  context: context,
+  builder: (context) {
+    const style = TextStyle(fontSize: 15);
+    return SimpleDialog(
+      clipBehavior: Clip.hardEdge,
+      title: Text('导入/导出$title'),
+      children: [
+        if (label != null)
+          ListTile(
+            dense: true,
+            title: const Text('导出文件至本地', style: style),
+            onTap: () async {
+              Get.back();
+              final res = utf8.encode(toJson());
+              final name =
+                  'piliplus_${label}_${context.isTablet ? 'pad' : 'phone'}_'
+                  '${DateFormat('yyyyMMddHHmmss').format(DateTime.now())}.json';
+              try {
+                DocumentFileSavePlusPlatform.instance.saveMultipleFiles(
+                  dataList: [res],
+                  fileNameList: [name],
+                  mimeTypeList: const [Headers.jsonContentType],
+                );
+                if (Platform.isAndroid) {
+                  SmartDialog.showToast('已保存');
+                }
+              } catch (e) {
+                SharePlus.instance.share(
+                  ShareParams(
+                    files: [
+                      XFile.fromData(
+                        res,
+                        name: name,
+                        mimeType: Headers.jsonContentType,
+                      ),
+                    ],
+                    sharePositionOrigin: await Utils.sharePositionOrigin,
+                  ),
+                );
+              }
+            },
+          ),
+        ListTile(
+          dense: true,
+          title: Text('导出$title至剪贴板', style: style),
+          onTap: () {
+            Get.back();
+            Utils.copyText(toJson());
+          },
+        ),
+        ListTile(
+          dense: true,
+          title: Text('从剪贴板导入$title', style: style),
+          onTap: () async {
+            Get.back();
+            ClipboardData? data = await Clipboard.getData(
+              'text/plain',
+            );
+            if (data?.text?.isNotEmpty != true) {
+              SmartDialog.showToast('剪贴板无数据');
+              return;
+            }
+            if (!context.mounted) return;
+            final text = data!.text!;
+            late final T json;
+            late final String formatText;
+            try {
+              json = jsonDecode(text);
+              formatText = const JsonEncoder.withIndent('    ').convert(json);
+            } catch (e) {
+              SmartDialog.showToast('解析json失败：$e');
+              return;
+            }
+            final renderer = TextSpanRenderer(const TextStyle(), githubTheme);
+            Highlight()
+              ..registerLanguage('json', langJson)
+              ..highlight(code: formatText, language: 'json').render(renderer);
+            showDialog(
+              context: context,
+              builder: (context) {
+                return AlertDialog(
+                  title: Text('是否导入如下$title？'),
+                  content: SingleChildScrollView(
+                    child: Text.rich(renderer.span!),
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: Get.back,
+                      child: Text(
+                        '取消',
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.outline,
+                        ),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () async {
+                        Get.back();
+                        try {
+                          await fromJson(json);
+                          SmartDialog.showToast('导入成功');
+                        } catch (e) {
+                          SmartDialog.showToast('导入失败：$e');
+                        }
+                      },
+                      child: const Text('确定'),
+                    ),
+                  ],
+                );
+              },
+            );
+          },
+        ),
+      ],
+    );
+  },
+);

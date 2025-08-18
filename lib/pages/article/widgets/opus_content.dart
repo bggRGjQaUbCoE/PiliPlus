@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:PiliPlus/common/widgets/image/image_view.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
+import 'package:PiliPlus/http/constants.dart';
 import 'package:PiliPlus/models/common/image_preview_type.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/models/dynamics/article_content_model.dart'
@@ -9,6 +10,7 @@ import 'package:PiliPlus/models/dynamics/article_content_model.dart'
 import 'package:PiliPlus/models/dynamics/result.dart';
 import 'package:PiliPlus/pages/dynamics/widgets/vote.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
+import 'package:PiliPlus/utils/context_ext.dart';
 import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/image_util.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
@@ -17,7 +19,7 @@ import 'package:cached_network_svg_image/cached_network_svg_image.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide ContextExtensionss;
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:re_highlight/languages/all.dart';
 import 'package:re_highlight/re_highlight.dart';
@@ -64,6 +66,10 @@ class OpusContent extends StatelessWidget {
     if (opus.isEmpty) {
       return const SliverToBoxAdapter();
     }
+
+    late final highlight = Highlight()..registerLanguages(builtinAllLanguages);
+    late final isDarkMode = context.isDarkMode;
+
     final colorScheme = Theme.of(context).colorScheme;
     return SliverList.separated(
       itemCount: opus.length,
@@ -119,16 +125,19 @@ class OpusContent extends StatelessWidget {
                             );
                         }
                       case 'TEXT_NODE_TYPE_FORMULA' when (item.formula != null):
+                        final latex = item.formula!.latexContent!;
                         return WidgetSpan(
                           child: CachedNetworkSVGImage(
+                            cacheKey: latex,
+                            semanticsLabel: latex,
                             height: 65,
-                            'https://api.bilibili.com/x/web-frontend/mathjax/tex?formula=${Uri.encodeComponent(item.formula!.latexContent!)}',
+                            '${HttpString.apiBaseUrl}/x/web-frontend/mathjax/tex?formula=${Uri.encodeComponent(latex)}',
                             colorFilter: ColorFilter.mode(
                               colorScheme.onSurfaceVariant,
                               BlendMode.srcIn,
                             ),
                             alignment: Alignment.centerLeft,
-                            placeholderBuilder: (_) => const SizedBox.shrink(),
+                            placeholderBuilder: (_) => Text(latex),
                           ),
                         );
                       default:
@@ -559,23 +568,22 @@ class OpusContent extends StatelessWidget {
                 ),
               );
             case 7 when (element.code != null):
-              final Highlight highlight = Highlight()
-                ..registerLanguages(builtinAllLanguages);
-              final HighlightResult result = highlight.highlightAuto(
-                element.code!.content!,
-                element.code!.lang == 'language-clike'
-                    ? const ['c', 'java']
-                    : [
-                        element.code!.lang!
-                            .replaceAll('language-', '')
-                            .replaceAll('like', ''),
-                      ],
-              );
-              final TextSpanRenderer renderer = TextSpanRenderer(
+              final renderer = TextSpanRenderer(
                 const TextStyle(),
-                context.isDarkMode ? githubDarkTheme : githubTheme,
+                isDarkMode ? githubDarkTheme : githubTheme,
               );
-              result.render(renderer);
+              highlight
+                  .highlightAuto(
+                    element.code!.content!,
+                    element.code!.lang == 'language-clike'
+                        ? const ['c', 'java']
+                        : [
+                            element.code!.lang!
+                                .replaceAll('language-', '')
+                                .replaceAll('like', ''),
+                          ],
+                  )
+                  .render(renderer);
               return Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(

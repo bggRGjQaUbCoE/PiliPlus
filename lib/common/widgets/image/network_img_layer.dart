@@ -47,24 +47,32 @@ class NetworkImgLayer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final noRadius = type == ImageType.emote || radius == 0;
+    final Widget child;
 
     if (src?.isNotEmpty == true) {
-      Widget child = _buildImage(context, noRadius);
-      if (noRadius) {
-        return child;
-      }
-      if (type == ImageType.avatar) {
-        return ClipOval(child: child);
-      }
-      return ClipRRect(
-        borderRadius: radius != null
-            ? BorderRadius.circular(radius!)
-            : StyleString.mdRadius,
-        child: child,
-      );
+      child = noRadius
+          ? _buildImage(context, noRadius)
+          : type == ImageType.avatar
+          ? ClipOval(child: _buildImage(context, noRadius))
+          : ClipRRect(
+              borderRadius: radius != null
+                  ? BorderRadius.circular(radius!)
+                  : StyleString.mdRadius,
+              child: _buildImage(context, noRadius),
+            );
+    } else {
+      child = getPlaceHolder?.call() ?? _placeholder(context, noRadius);
     }
 
-    return getPlaceHolder?.call() ?? _placeholder(context, noRadius);
+    return semanticsLabel?.isNotEmpty == true
+        ? Semantics(
+            container: true,
+            image: true,
+            excludeSemantics: true,
+            label: semanticsLabel,
+            child: child,
+          )
+        : child;
   }
 
   Widget _buildImage(BuildContext context, bool noRadius) {

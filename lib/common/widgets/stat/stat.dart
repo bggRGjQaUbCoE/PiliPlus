@@ -27,6 +27,7 @@ class StatWidget extends StatelessWidget {
       children: [
         Icon(
           type.iconData,
+          semanticLabel: type.label,
           size: iconSize,
           color: color,
         ),

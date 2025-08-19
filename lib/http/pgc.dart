@@ -15,9 +15,9 @@ class PgcHttp {
   static Future<LoadingState<PgcIndexResult>> pgcIndexResult({
     required int page,
     required Map<String, dynamic> params,
-    seasonType,
-    type,
-    indexType,
+    Object? seasonType,
+    Object? type,
+    Object? indexType,
   }) async {
     var res = await Request().get(
       Api.pgcIndexResult,
@@ -38,15 +38,15 @@ class PgcHttp {
   }
 
   static Future<LoadingState<PgcIndexConditionData>> pgcIndexCondition({
-    seasonType,
-    type,
-    indexType,
+    Object? seasonType,
+    required Object type,
+    Object? indexType,
   }) async {
     var res = await Request().get(
       Api.pgcIndexCondition,
       queryParameters: {
         'season_type': ?seasonType,
-        'type': ?type,
+        'type': type,
         'index_type': ?indexType,
       },
     );
@@ -119,8 +119,8 @@ class PgcHttp {
   }
 
   static Future pgcReviewLike({
-    required mediaId,
-    required reviewId,
+    required Object mediaId,
+    required Object reviewId,
   }) async {
     var res = await Request().post(
       Api.pgcReviewLike,
@@ -140,8 +140,8 @@ class PgcHttp {
   }
 
   static Future pgcReviewDislike({
-    required mediaId,
-    required reviewId,
+    required Object mediaId,
+    required Object reviewId,
   }) async {
     var res = await Request().post(
       Api.pgcReviewDislike,
@@ -161,7 +161,7 @@ class PgcHttp {
   }
 
   static Future pgcReviewPost({
-    required mediaId,
+    required Object mediaId,
     required int score,
     required String content,
     bool shareFeed = false,
@@ -185,10 +185,10 @@ class PgcHttp {
   }
 
   static Future pgcReviewMod({
-    required mediaId,
+    required Object mediaId,
     required int score,
     required String content,
-    required reviewId,
+    required Object reviewId,
   }) async {
     var res = await Request().post(
       Api.pgcReviewMod,
@@ -209,8 +209,8 @@ class PgcHttp {
   }
 
   static Future pgcReviewDel({
-    required mediaId,
-    required reviewId,
+    required Object mediaId,
+    required Object reviewId,
   }) async {
     var res = await Request().post(
       Api.pgcReviewDel,

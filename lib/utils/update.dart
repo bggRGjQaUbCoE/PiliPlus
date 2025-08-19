@@ -111,7 +111,7 @@ class Update {
   }
 
   // 下载适用于当前系统的安装包
-  static Future<void> onDownload(data) async {
+  static Future<void> onDownload(Map<String, dynamic> data) async {
     SmartDialog.dismiss();
     try {
       void download(plat) {

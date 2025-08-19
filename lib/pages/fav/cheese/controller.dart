@@ -26,7 +26,7 @@ class FavCheeseController
   Future<LoadingState<SpaceCheeseData>> customGetData() =>
       FavHttp.favPugv(mid: mid, page: page);
 
-  Future<void> onRemove(int index, int? sid) async {
+  Future<void> onRemove(int index, int sid) async {
     var res = await FavHttp.delFavPugv(sid);
     if (res['status']) {
       loadingState

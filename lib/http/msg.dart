@@ -237,7 +237,11 @@ class MsgHttp {
     }
   }
 
-  static Future removeDynamic({required dynIdStr, dynType, ridStr}) async {
+  static Future removeDynamic({
+    required Object dynIdStr,
+    Object? dynType,
+    Object? ridStr,
+  }) async {
     var res = await Request().post(
       Api.removeDynamic,
       queryParameters: {
@@ -482,9 +486,9 @@ class MsgHttp {
   }
 
   static Future setMsgDnd({
-    required uid,
+    required Object uid,
     required int setting,
-    required dndUid,
+    required Object dndUid,
   }) async {
     final csrf = Accounts.main.csrf;
     var res = await Request().post(
@@ -557,7 +561,7 @@ class MsgHttp {
   }
 
   static Future<LoadingState<SessionSsData>> getSessionSs({
-    required talkerUid,
+    required Object talkerUid,
   }) async {
     final csrf = Accounts.main.csrf;
     var res = await Request().get(
@@ -578,7 +582,7 @@ class MsgHttp {
   }
 
   static Future<LoadingState<List<UidSetting>?>> getMsgDnd({
-    required uidsStr,
+    required Object uidsStr,
   }) async {
     final csrf = Accounts.main.csrf;
     var res = await Request().get(

@@ -25,7 +25,7 @@ class ReplyHttp {
     required int page,
     int sort = 1,
     required bool antiGoodsReply,
-    bool? enableFilter,
+    // bool? enableFilter,
   }) async {
     var res = !isLogin
         ? await Request().get(
@@ -248,9 +248,9 @@ class ReplyHttp {
   }
 
   static Future replyTop({
-    required oid,
-    required type,
-    required rpid,
+    required Object oid,
+    required Object type,
+    required Object rpid,
     required bool isUpTop,
   }) async {
     var res = await Request().post(

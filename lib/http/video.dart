@@ -39,7 +39,7 @@ class VideoHttp {
   static bool enableFilter = zoneRegExp.pattern.isNotEmpty;
 
   // 首页推荐视频
-  static Future<LoadingState> rcmdVideoList({
+  static Future<LoadingState<List<RecVideoItemModel>>> rcmdVideoList({
     required int ps,
     required int freshIdx,
   }) async {
@@ -75,7 +75,9 @@ class VideoHttp {
   }
 
   // 添加额外的loginState变量模拟未登录状态
-  static Future<LoadingState> rcmdVideoListApp({required int freshIdx}) async {
+  static Future<LoadingState<List<RecVideoItemAppModel>>> rcmdVideoListApp({
+    required int freshIdx,
+  }) async {
     final params = {
       'build': 2001100,
       'c_locale': 'zh_CN',
@@ -627,7 +629,7 @@ class VideoHttp {
   }
 
   static Future roomEntryAction({
-    roomId,
+    required Object roomId,
   }) async {
     await Request().post(
       Api.roomEntryAction,
@@ -642,14 +644,14 @@ class VideoHttp {
   }
 
   static Future historyReport({
-    aid,
-    type,
+    required Object aid,
+    required Object type,
   }) async {
     await Request().post(
       Api.historyReport,
       data: {
-        'aid': ?aid,
-        'type': ?type,
+        'aid': aid,
+        'type': type,
         'csrf': Accounts.heartbeat.csrf,
       },
       options: Options(contentType: Headers.formUrlEncodedContentType),
@@ -658,13 +660,13 @@ class VideoHttp {
 
   // 视频播放进度
   static Future heartBeat({
-    aid,
-    bvid,
-    cid,
-    progress,
-    epid,
-    seasonId,
-    subType,
+    Object? aid,
+    Object? bvid,
+    required Object cid,
+    required Object progress,
+    Object? epid,
+    Object? seasonId,
+    Object? subType,
     required VideoType videoType,
   }) async {
     final isPugv = videoType == VideoType.pugv;
@@ -903,7 +905,7 @@ class VideoHttp {
   }
 
   // pgc 排行
-  static Future<LoadingState> pgcRankList({
+  static Future<LoadingState<List<PgcRankItemModel>?>> pgcRankList({
     int day = 3,
     required int seasonType,
   }) async {
@@ -926,7 +928,7 @@ class VideoHttp {
   }
 
   // pgc season 排行
-  static Future<LoadingState> pgcSeasonRankList({
+  static Future<LoadingState<List<PgcRankItemModel>?>> pgcSeasonRankList({
     int day = 3,
     required int seasonType,
   }) async {

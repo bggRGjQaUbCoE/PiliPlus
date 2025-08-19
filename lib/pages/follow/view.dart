@@ -202,7 +202,7 @@ class _FollowPageState extends State<FollowPage> {
                     context: context,
                     title: '删除分组',
                     content: '删除后，该分组下的用户依旧保留？',
-                    onConfirm: () => _followController.onDelTag(item.tagid),
+                    onConfirm: () => _followController.onDelTag(item.tagid!),
                   );
                 },
                 dense: true,

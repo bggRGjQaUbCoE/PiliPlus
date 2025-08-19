@@ -18,7 +18,7 @@ import 'package:PiliPlus/utils/app_sign.dart';
 import 'package:dio/dio.dart';
 
 class FavHttp {
-  static Future favFavFolder(mediaId) async {
+  static Future favFavFolder(Object mediaId) async {
     var res = await Request().post(
       Api.favFavFolder,
       data: {
@@ -34,7 +34,7 @@ class FavHttp {
     }
   }
 
-  static Future unfavFavFolder(mediaId) async {
+  static Future unfavFavFolder(Object mediaId) async {
     var res = await Request().post(
       Api.unfavFavFolder,
       data: {
@@ -165,7 +165,7 @@ class FavHttp {
     }
   }
 
-  static Future addFavPugv(seasonId) async {
+  static Future addFavPugv(Object seasonId) async {
     var res = await Request().post(
       Api.addFavPugv,
       data: {
@@ -181,7 +181,7 @@ class FavHttp {
     }
   }
 
-  static Future delFavPugv(seasonId) async {
+  static Future delFavPugv(Object seasonId) async {
     var res = await Request().post(
       Api.delFavPugv,
       data: {
@@ -215,7 +215,7 @@ class FavHttp {
     }
   }
 
-  static Future addFavTopic(topicId) async {
+  static Future addFavTopic(Object topicId) async {
     var res = await Request().post(
       Api.addFavTopic,
       data: {
@@ -231,7 +231,7 @@ class FavHttp {
     }
   }
 
-  static Future delFavTopic(topicId) async {
+  static Future delFavTopic(Object topicId) async {
     var res = await Request().post(
       Api.delFavTopic,
       data: {
@@ -247,7 +247,7 @@ class FavHttp {
     }
   }
 
-  static Future likeTopic(topicId, bool isLike) async {
+  static Future likeTopic(Object topicId, bool isLike) async {
     var res = await Request().post(
       Api.likeTopic,
       data: {
@@ -673,8 +673,8 @@ class FavHttp {
 
   // （取消）收藏
   static Future unfavAll({
-    required rid,
-    required type,
+    required Object rid,
+    required Object type,
   }) async {
     var res = await Request().post(
       Api.unfavAll,

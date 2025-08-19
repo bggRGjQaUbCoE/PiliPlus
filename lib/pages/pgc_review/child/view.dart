@@ -170,7 +170,7 @@ class _PgcReviewChildPageState extends State<PgcReviewChildPage>
                               context: context,
                               title: '删除短评，同时删除评分？',
                               onConfirm: () =>
-                                  _controller.onDel(index, item.reviewId),
+                                  _controller.onDel(index, item.reviewId!),
                             );
                           },
                         ),

@@ -396,7 +396,7 @@ class UserHttp {
     }
   }
 
-  static Future spaceSettingMod(data) async {
+  static Future spaceSettingMod(Map data) async {
     final res = await Request().post(
       Api.spaceSettingMod,
       queryParameters: {

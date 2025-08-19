@@ -70,7 +70,7 @@ class FollowController extends GetxController with GetTickerProviderStateMixin {
   }
 
   Future<void> onUpdateTag(MemberTagItemModel item, String tagName) async {
-    final res = await MemberHttp.updateFollowTag(item.tagid, tagName);
+    final res = await MemberHttp.updateFollowTag(item.tagid!, tagName);
     if (res['status']) {
       item.name = tagName;
       tabs.refresh();
@@ -80,7 +80,7 @@ class FollowController extends GetxController with GetTickerProviderStateMixin {
     }
   }
 
-  Future<void> onDelTag(int? tagid) async {
+  Future<void> onDelTag(int tagid) async {
     final res = await MemberHttp.delFollowTag(tagid);
     if (res['status']) {
       followState.value = LoadingState.loading();

@@ -101,7 +101,7 @@ class PgcReviewController
     }
   }
 
-  Future<void> onDel(int index, int? reviewId) async {
+  Future<void> onDel(int index, int reviewId) async {
     var res = await PgcHttp.pgcReviewDel(
       mediaId: mediaId,
       reviewId: reviewId,

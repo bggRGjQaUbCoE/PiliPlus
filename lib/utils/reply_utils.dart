@@ -144,7 +144,6 @@ class ReplyUtils {
         type: type,
         sort: ReplySortType.time.index,
         page: 1,
-        enableFilter: false,
         antiGoodsReply: false,
       );
 

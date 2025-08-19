@@ -4,6 +4,7 @@ import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/video_card/video_card_v.dart';
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/models/model_rec_video_item.dart';
 import 'package:PiliPlus/pages/common/common_page.dart';
 import 'package:PiliPlus/pages/rcmd/controller.dart';
 import 'package:PiliPlus/utils/grid.dart';
@@ -59,7 +60,7 @@ class _RcmdPageState extends CommonPageState<RcmdPage, RcmdController>
     mainAxisExtent: MediaQuery.textScalerOf(context).scale(90),
   );
 
-  Widget _buildBody(LoadingState<List<dynamic>?> loadingState) {
+  Widget _buildBody(LoadingState<List<BaseRecVideoItemModel>?> loadingState) {
     return switch (loadingState) {
       Loading() => _buildSkeleton,
       Success(:var response) =>

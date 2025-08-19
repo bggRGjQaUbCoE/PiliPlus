@@ -93,7 +93,7 @@ class _FavTopicPageState extends State<FavTopicPage>
                         context: context,
                         title: '确定取消收藏？',
                         onConfirm: () {
-                          _controller.onRemove(index, item.id);
+                          _controller.onRemove(index, item.id!);
                         },
                       ),
                       borderRadius: const BorderRadius.all(

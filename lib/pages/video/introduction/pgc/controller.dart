@@ -494,8 +494,8 @@ class PgcIntroController extends CommonIntroController {
 
   Future<void> onFavPugv(bool isFav) async {
     final res = isFav
-        ? await FavHttp.delFavPugv(seasonId)
-        : await FavHttp.addFavPugv(seasonId);
+        ? await FavHttp.delFavPugv(seasonId!)
+        : await FavHttp.addFavPugv(seasonId!);
     if (res['status']) {
       this.isFav.value = !isFav;
       SmartDialog.showToast('${isFav ? '取消' : ''}收藏成功');

@@ -216,11 +216,11 @@ Widget addWidget(
                                             : () async {
                                                 var res =
                                                     await DynamicsHttp.dynReserve(
-                                                      reserveId: reserve.rid,
-                                                      curBtnStatus: btn.status,
+                                                      reserveId: reserve.rid!,
+                                                      curBtnStatus: btn.status!,
                                                       dynamicIdStr: item.idStr,
                                                       reserveTotal:
-                                                          reserve.reserveTotal,
+                                                          reserve.reserveTotal!,
                                                     );
                                                 if (res['status']) {
                                                   DynReserveData data =

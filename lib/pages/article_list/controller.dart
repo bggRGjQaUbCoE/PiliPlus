@@ -9,7 +9,7 @@ import 'package:get/get.dart';
 
 class ArticleListController
     extends CommonListController<ArticleListData, ArticleListItemModel> {
-  final id = Get.parameters['id'];
+  final id = Get.parameters['id']!;
 
   @override
   void onInit() {

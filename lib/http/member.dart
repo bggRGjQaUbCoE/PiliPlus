@@ -205,13 +205,13 @@ class MemberHttp {
   }
 
   static Future<LoadingState> spaceStory({
-    required mid,
-    required aid,
-    required beforeSize,
-    required afterSize,
-    required cid,
-    required contain,
-    required index,
+    required Object mid,
+    required Object aid,
+    required Object beforeSize,
+    required Object afterSize,
+    required Object cid,
+    required Object contain,
+    required Object index,
   }) async {
     final params = {
       'aid': aid,
@@ -345,7 +345,7 @@ class MemberHttp {
   }
 
   static Future<LoadingState<SearchArchiveData>> searchArchive({
-    required mid,
+    required Object mid,
     int ps = 30,
     int tid = 0,
     int? pn,
@@ -573,7 +573,7 @@ class MemberHttp {
     }
   }
 
-  static Future createFollowTag(tagName) async {
+  static Future createFollowTag(Object tagName) async {
     var res = await Request().post(
       Api.createFollowTag,
       queryParameters: {
@@ -593,7 +593,7 @@ class MemberHttp {
     }
   }
 
-  static Future updateFollowTag(tagid, name) async {
+  static Future updateFollowTag(Object tagid, Object name) async {
     var res = await Request().post(
       Api.updateFollowTag,
       queryParameters: {
@@ -614,7 +614,7 @@ class MemberHttp {
     }
   }
 
-  static Future delFollowTag(tagid) async {
+  static Future delFollowTag(Object tagid) async {
     var res = await Request().post(
       Api.delFollowTag,
       queryParameters: {
@@ -719,7 +719,7 @@ class MemberHttp {
   }
 
   static Future<LoadingState<UpowerRankData>> upowerRank({
-    required upMid,
+    required Object upMid,
     required int page,
     int? privilegeType,
   }) async {

@@ -1,5 +1,6 @@
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
+import 'package:PiliPlus/models_new/live/live_danmaku/danmaku_msg.dart';
 import 'package:PiliPlus/pages/live_room/controller.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/gestures.dart';
@@ -54,7 +55,7 @@ class LiveRoomChat extends StatelessWidget {
                     TextSpan(
                       children: [
                         TextSpan(
-                          text: '${item['name']}: ',
+                          text: '${item.name}: ',
                           style: TextStyle(
                             color: nameColor,
                             fontSize: 14,
@@ -62,7 +63,7 @@ class LiveRoomChat extends StatelessWidget {
                           recognizer: TapGestureRecognizer()
                             ..onTap = () {
                               try {
-                                Get.toNamed('/member?mid=${item['uid']}');
+                                Get.toNamed('/member?mid=${item.uid}');
                               } catch (err) {
                                 if (kDebugMode) debugPrint(err.toString());
                               }
@@ -99,31 +100,37 @@ class LiveRoomChat extends StatelessWidget {
     );
   }
 
-  TextSpan _buildMsg(dynamic obj) {
-    dynamic emots = obj['emots'];
-    dynamic uemote = obj['uemote'];
-    List<String> list = [
-      if (emots != null) ...emots.keys,
-      if (uemote is Map) uemote['emoticon_unique'].replaceFirst('upower_', ''),
-    ];
-    if (list.isNotEmpty) {
-      RegExp regExp = RegExp(list.map(RegExp.escape).join('|'));
+  InlineSpan _buildMsg(DanmakuMsg obj) {
+    final uemote = obj.uemote;
+    if (uemote != null) {
+      // "room_{{room_id}}_{{int}}" or "upower_[{{emote}}]"
+      return WidgetSpan(
+        child: NetworkImgLayer(
+          src: uemote.url,
+          type: ImageType.emote,
+          width: uemote.width,
+          height: uemote.height,
+          semanticsLabel: obj.text,
+        ),
+      );
+    }
+    final emots = obj.emots;
+    if (emots != null) {
+      RegExp regExp = RegExp(emots.keys.map(RegExp.escape).join('|'));
       final List<InlineSpan> spanChildren = <InlineSpan>[];
-      (obj['text'] as String).splitMapJoin(
+      obj.text.splitMapJoin(
         regExp,
-        onMatch: (Match match) {
-          String key = match[0]!;
-          dynamic emote = emots?[key] ?? uemote;
+        onMatch: (match) {
+          final key = match[0]!;
+          final emote = emots[key]!;
           spanChildren.add(
             WidgetSpan(
-              child: ExcludeSemantics(
-                child: NetworkImgLayer(
-                  src: emote['url'],
-                  type: ImageType.emote,
-                  width: emote['width'].toDouble(),
-                  height: emote['height'].toDouble(),
-                  semanticsLabel: key,
-                ),
+              child: NetworkImgLayer(
+                src: emote.url,
+                type: ImageType.emote,
+                width: emote.width,
+                height: emote.height,
+                semanticsLabel: key,
               ),
             ),
           );
@@ -145,7 +152,7 @@ class LiveRoomChat extends StatelessWidget {
       return TextSpan(children: spanChildren);
     } else {
       return TextSpan(
-        text: obj['text'],
+        text: obj.text,
         style: const TextStyle(
           color: Colors.white,
           fontSize: 14,

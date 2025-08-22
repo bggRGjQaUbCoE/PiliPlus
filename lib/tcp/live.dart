@@ -10,59 +10,57 @@ import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 class PackageHeader {
-  int totalSize;
-  int headerSize;
-  int protocolVer;
-  int operationCode;
-  int seq;
+  final int protocolVer;
+  final int operationCode;
+  final int seq;
 
   @override
   String toString() {
-    return 'PackageHeader{totalSize: $totalSize, headerSize: $headerSize, protocolVer: $protocolVer, operationCode: $operationCode, seq: $seq}';
+    return 'PackageHeader{protocolVer: $protocolVer, operationCode: $operationCode, seq: $seq}';
   }
 
-  PackageHeader({
-    required this.totalSize,
-    required this.headerSize,
+  const PackageHeader({
     required this.protocolVer,
     required this.operationCode,
     required this.seq,
   });
 
-  Uint8List toBytes() {
-    final buffer = BytesBuilder()
-      ..add(_int32ToBytes(totalSize))
-      ..add(_int16ToBytes(headerSize))
-      ..add(_int16ToBytes(protocolVer))
-      ..add(_int32ToBytes(operationCode))
-      ..add(_int32ToBytes(seq));
-    return buffer.toBytes();
-  }
-
-  List<int> _int32ToBytes(int value) {
-    final bytes = ByteData(4)..setInt32(0, value, Endian.big);
+  Uint8List toBytes(int contentSize) {
+    final bytes = ByteData(0x10)
+      ..setInt32(0, 0x10 + contentSize, Endian.big)
+      ..setInt16(4, 0x10, Endian.big)
+      ..setInt16(6, protocolVer, Endian.big)
+      ..setInt32(8, operationCode, Endian.big)
+      ..setInt32(12, seq, Endian.big);
     return bytes.buffer.asUint8List();
   }
+}
 
-  List<int> _int16ToBytes(int value) {
-    final bytes = ByteData(2)..setInt16(0, value, Endian.big);
-    return bytes.buffer.asUint8List();
-  }
+class PackageHeaderRes extends PackageHeader {
+  PackageHeaderRes({
+    required this.totalSize,
+    required this.headerSize,
+    required super.protocolVer,
+    required super.operationCode,
+    required super.seq,
+  });
+  final int totalSize;
+  final int headerSize;
 
-  static PackageHeader? fromBytesData(Uint8List data) {
+  static PackageHeaderRes? fromBytesData(Uint8List data) {
     if (data.length < 10) {
       getLogger().i('数据不足以解析PackageHeader');
       return null;
     }
     final byteData = ByteData.sublistView(data);
 
-    int totalSize = byteData.getUint32(0, Endian.big);
-    int headerSize = byteData.getUint16(4, Endian.big);
-    int protocolVer = byteData.getUint16(6, Endian.big);
-    int operationCode = byteData.getUint32(8, Endian.big);
-    int seq = byteData.getUint32(12, Endian.big);
+    final totalSize = byteData.getUint32(0, Endian.big);
+    final headerSize = byteData.getUint16(4, Endian.big);
+    final protocolVer = byteData.getUint16(6, Endian.big);
+    final operationCode = byteData.getUint32(8, Endian.big);
+    final seq = byteData.getUint32(12, Endian.big);
 
-    return PackageHeader(
+    return PackageHeaderRes(
       totalSize: totalSize,
       headerSize: headerSize,
       protocolVer: protocolVer,
@@ -70,11 +68,15 @@ class PackageHeader {
       seq: seq,
     );
   }
+
+  @override
+  String toString() {
+    return 'PackageHeaderRes{totalSize: $totalSize, headerSize: $headerSize, protocolVer: $protocolVer, operationCode: $operationCode, seq: $seq}';
+  }
 }
 
 abstract class Message {
   String toJsonStr();
-  int getMessageSize();
 }
 
 class AuthMessage implements Message {
@@ -106,11 +108,6 @@ class AuthMessage implements Message {
     };
     return jsonEncode(message);
   }
-
-  @override
-  int getMessageSize() {
-    return utf8.encode(toJsonStr()).length;
-  }
 }
 
 abstract class AbstractPackage<T> {
@@ -126,13 +123,10 @@ class AuthPackage extends AbstractPackage<Message> {
 
   @override
   Uint8List marshal() {
-    int size = body.getMessageSize();
-    header.headerSize = 0x10; // 固定大小
-    size += header.headerSize;
-    header.totalSize = size;
+    final json = utf8.encode(body.toJsonStr());
     final buffer = BytesBuilder()
-      ..add(header.toBytes())
-      ..add(utf8.encode(body.toJsonStr()));
+      ..add(header.toBytes(json.length))
+      ..add(json);
     return buffer.toBytes();
   }
 }
@@ -143,12 +137,7 @@ class HeartbeatPackage extends AbstractPackage<dynamic> {
 
   @override
   Uint8List marshal() {
-    final buffer = BytesBuilder();
-    header
-      ..headerSize = 0x10
-      ..totalSize = 0x10;
-    buffer.add(header.toBytes());
-    return buffer.toBytes();
+    return header.toBytes(0);
   }
 }
 
@@ -173,9 +162,7 @@ class LiveMessageStream {
 
   Future<void> init() async {
     final authPackage = AuthPackage(
-      header: PackageHeader(
-        totalSize: 0,
-        headerSize: 0,
+      header: const PackageHeader(
         protocolVer: 1,
         operationCode: 7,
         seq: 1,
@@ -215,7 +202,7 @@ class LiveMessageStream {
       //   ..d('$logTag ===> 发送认证包');
       _socketSubscription = _channel?.stream.listen(
         (data) {
-          PackageHeader? header = PackageHeader.fromBytesData(data);
+          final header = PackageHeaderRes.fromBytesData(data);
           if (header != null) {
             List<int> decompressedData = [];
             //心跳包回复不用处理
@@ -256,11 +243,11 @@ class LiveMessageStream {
 
   void _processingData(List<int> data) {
     try {
-      PackageHeader? subHeader = PackageHeader.fromBytesData(
+      final subHeader = PackageHeaderRes.fromBytesData(
         Uint8List.fromList(data),
       );
       if (subHeader != null) {
-        var msgBody = utf8.decode(
+        final msgBody = utf8.decode(
           data.sublist(subHeader.headerSize, subHeader.totalSize),
         );
         for (var f in _eventListeners) {
@@ -291,10 +278,8 @@ class LiveMessageStream {
         return;
       }
       if (kDebugMode) logger.i("$logTag heartBeat $hashCode");
-      var package = HeartbeatPackage(
+      final package = HeartbeatPackage(
         header: PackageHeader(
-          totalSize: 0,
-          headerSize: 0,
           protocolVer: 1,
           operationCode: 2,
           seq: heartBeatCount,

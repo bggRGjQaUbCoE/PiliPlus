@@ -6,6 +6,8 @@ import 'package:PiliPlus/http/constants.dart';
 import 'package:PiliPlus/http/live.dart';
 import 'package:PiliPlus/http/video.dart';
 import 'package:PiliPlus/models/common/video/live_quality.dart';
+import 'package:PiliPlus/models_new/live/live_danmaku/danmaku_msg.dart';
+import 'package:PiliPlus/models_new/live/live_danmaku/live_emote.dart';
 import 'package:PiliPlus/models_new/live/live_dm_info/data.dart';
 import 'package:PiliPlus/models_new/live/live_room_info_h5/data.dart';
 import 'package:PiliPlus/models_new/live/live_room_play_info/codec.dart';
@@ -60,7 +62,7 @@ class LiveRoomController extends GetxController {
   // dm
   LiveDmInfoData? dmInfo;
   List<RichTextItem>? savedDanmaku;
-  RxList<dynamic> messages = [].obs;
+  RxList<DanmakuMsg> messages = <DanmakuMsg>[].obs;
   RxBool disableAutoScroll = false.obs;
   LiveMessageStream? _msgStream;
   late final ScrollController scrollController = ScrollController()
@@ -214,17 +216,7 @@ class LiveRoomController extends GetxController {
           if (v['data'] case List list) {
             try {
               messages.addAll(
-                list.map(
-                  (obj) => {
-                    'name': obj['user']['base']['name'],
-                    'uid': obj['user']['uid'],
-                    'text': obj['text'],
-                    'emots': obj['emots'],
-                    'uemote': obj['emoticon']['emoticon_unique'] != ""
-                        ? obj['emoticon']
-                        : null,
-                  },
-                ),
+                list.cast<Map<String, dynamic>>().map(DanmakuMsg.fromPrefetch),
               );
               WidgetsBinding.instance.addPostFrameCallback(scrollToBottom);
             } catch (_) {}
@@ -307,13 +299,18 @@ class LiveRoomController extends GetxController {
                 final extra = jsonDecode(content['extra']);
                 final user = content['user'];
                 final uid = user['uid'];
-                messages.add({
-                  'name': user['base']['name'],
-                  'uid': uid,
-                  'text': info[1],
-                  'emots': extra['emots'],
-                  'uemote': first[13],
-                });
+                messages.add(
+                  DanmakuMsg()
+                    ..name = user['base']['name']
+                    ..uid = uid
+                    ..text = info[1]
+                    ..emots = (extra['emots'] as Map<String, dynamic>?)?.map(
+                      (k, v) => MapEntry(k, BaseEmote.fromJson(v)),
+                    )
+                    ..uemote = first[13] is Map<String, dynamic>
+                        ? BaseEmote.fromJson(first[13])
+                        : null,
+                );
 
                 if (plPlayerController.showDanmaku) {
                   plPlayerController.danmakuController?.addDanmaku(

@@ -1446,7 +1446,7 @@ class VideoDetailController extends GetxController
         '/x/stein/edgeinfo_v2',
         queryParameters: {
           'bvid': bvid,
-          'graph_version': graphVersion,
+          'graph_version': ?graphVersion,
           'edge_id': ?edgeId,
         },
       );

@@ -58,7 +58,7 @@ class WbiSign {
   }
 
   // 为请求参数进行 wbi 签名
-  static void encWbi(Map<String, dynamic> params, String mixinKey) {
+  static void encWbi(Map<String, Object> params, String mixinKey) {
     params['wts'] = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     // 按照 key 重排参数
     final List<String> keys = params.keys.toList()..sort();
@@ -104,8 +104,8 @@ class WbiSign {
     }
   }
 
-  static Future<Map<String, dynamic>> makSign(
-    Map<String, dynamic> params,
+  static Future<Map<String, Object>> makSign(
+    Map<String, Object> params,
   ) async {
     // params 为需要加密的请求参数
     final String mixinKey = await lock.synchronized(getWbiKeys);

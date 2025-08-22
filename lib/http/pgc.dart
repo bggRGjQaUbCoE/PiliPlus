@@ -58,7 +58,7 @@ class PgcHttp {
   }
 
   static Future<LoadingState<List<PgcIndexItem>?>> pgcIndex({
-    int? page,
+    required int page,
     int? indexType,
   }) async {
     var res = await Request().get(

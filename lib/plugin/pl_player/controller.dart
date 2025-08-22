@@ -1633,8 +1633,8 @@ class PlPlayerController {
         '/x/player/videoshot',
         queryParameters: {
           // 'aid': IdUtils.bv2av(_bvid),
-          'bvid': _bvid,
-          'cid': _cid,
+          'bvid': _bvid!,
+          'cid': _cid!,
           'index': 1,
         },
         options: Options(

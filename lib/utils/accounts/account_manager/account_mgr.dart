@@ -133,11 +133,9 @@ class AccountManager extends Interceptor {
       // if (kDebugMode) debugPrint('is app: ${options.path}');
       // bytes是grpc响应
       if (options.responseType != ResponseType.bytes) {
-        final dataPtr =
-            (options.method == 'POST' && options.data is Map
-                    ? options.data as Map
-                    : options.queryParameters)
-                .cast<String, dynamic>();
+        final dataPtr = (options.method == 'POST' && options.data is Map
+            ? (options.data as Map).cast<String, dynamic>()
+            : options.queryParameters);
         if (dataPtr.isNotEmpty) {
           if (!account.accessKey.isNullOrEmpty) {
             dataPtr['access_key'] = account.accessKey!;

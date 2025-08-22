@@ -781,12 +781,13 @@ class VideoHttp {
   }
 
   // 查看视频同时在看人数
-  static Future onlineTotal({int? aid, String? bvid, int? cid}) async {
+  static Future onlineTotal({int? aid, String? bvid, required int cid}) async {
+    assert(aid != null || bvid != null);
     var res = await Request().get(
       Api.onlineTotal,
       queryParameters: {
-        'aid': aid,
-        'bvid': bvid,
+        'aid': ?aid,
+        'bvid': ?bvid,
         'cid': cid,
       },
     );
@@ -798,14 +799,14 @@ class VideoHttp {
   }
 
   static Future aiConclusion({
-    String? bvid,
-    int? cid,
+    required String bvid,
+    required int cid,
     int? upMid,
   }) async {
     final params = await WbiSign.makSign({
       'bvid': bvid,
       'cid': cid,
-      'up_mid': upMid,
+      'up_mid': ?upMid,
     });
     var res = await Request().get(Api.aiConclusion, queryParameters: params);
     if (res.data['code'] == 0 && res.data['data']['code'] == 0) {

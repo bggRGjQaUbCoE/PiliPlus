@@ -86,7 +86,7 @@ class MemberHttp {
   }
 
   static Future<LoadingState<SpaceSsData>> seasonSeriesList({
-    required int? mid,
+    required int mid,
     required int pn,
   }) async {
     var res = await Request().get(
@@ -108,7 +108,7 @@ class MemberHttp {
 
   static Future<LoadingState<SpaceArchiveData>> spaceArchive({
     required ContributeType type,
-    required int? mid,
+    required int mid,
     String? aid,
     String? order,
     String? sort,
@@ -116,7 +116,7 @@ class MemberHttp {
     int? next,
     int? seasonId,
     int? seriesId,
-    includeCursor,
+    Object? includeCursor,
   }) async {
     final params = {
       'aid': ?aid,
@@ -248,8 +248,8 @@ class MemberHttp {
   }
 
   static Future<LoadingState<SpaceData>> space({
-    int? mid,
-    dynamic fromViewAid,
+    required int mid,
+    Object? fromViewAid,
   }) async {
     final params = {
       'build': 8430300,
@@ -281,7 +281,7 @@ class MemberHttp {
   }
 
   static Future memberInfo({
-    int? mid,
+    required int mid,
     String token = '',
   }) async {
     String dmImgStr = Utils.base64EncodeRandomString(16, 64);
@@ -317,7 +317,7 @@ class MemberHttp {
     }
   }
 
-  static Future memberStat({int? mid}) async {
+  static Future memberStat({required int mid}) async {
     var res = await Request().get(Api.userStat, queryParameters: {'vmid': mid});
     if (res.data['code'] == 0) {
       return {'status': true, 'data': res.data['data']};
@@ -326,7 +326,7 @@ class MemberHttp {
     }
   }
 
-  static Future memberCardInfo({int? mid}) async {
+  static Future memberCardInfo({required int mid}) async {
     var res = await Request().get(
       Api.memberCardInfo,
       queryParameters: {
@@ -359,7 +359,7 @@ class MemberHttp {
       'mid': mid,
       'ps': ps,
       'tid': tid,
-      'pn': pn,
+      'pn': ?pn,
       'keyword': ?keyword,
       'order': order,
       'platform': 'web',
@@ -394,7 +394,7 @@ class MemberHttp {
   // 用户动态
   static Future<LoadingState<DynamicsDataModel>> memberDynamic({
     String? offset,
-    int? mid,
+    required int mid,
   }) async {
     String dmImgStr = Utils.base64EncodeRandomString(16, 64);
     String dmCoverImgStr = Utils.base64EncodeRandomString(32, 128);
@@ -545,14 +545,14 @@ class MemberHttp {
   // 获取某分组下的up
   static Future<LoadingState<FollowData>> followUpGroup({
     int? mid,
-    int? tagid,
-    int? pn,
+    required int tagid,
+    required int pn,
     int ps = 20,
   }) async {
     var res = await Request().get(
       Api.followUpGroup,
       queryParameters: {
-        'mid': mid,
+        'mid': ?mid,
         'tagid': tagid,
         'pn': pn,
         'ps': ps,
@@ -669,7 +669,7 @@ class MemberHttp {
     required int pn,
     required String name,
   }) async {
-    Map<String, dynamic> data = {
+    final data = {
       'vmid': mid,
       'pn': pn,
       'ps': ps,
@@ -679,14 +679,10 @@ class MemberHttp {
       'name': name,
       'web_location': 333.999,
     };
-    Map params = await WbiSign.makSign(data);
+    await WbiSign.makSign(data);
     var res = await Request().get(
       Api.followSearch,
-      queryParameters: {
-        ...data,
-        'w_rid': params['w_rid'],
-        'wts': params['wts'],
-      },
+      queryParameters: data,
     );
     if (res.data['code'] == 0) {
       return Success(FollowData.fromJson(res.data['data']));

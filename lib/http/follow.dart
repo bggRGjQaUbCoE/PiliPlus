@@ -5,8 +5,8 @@ import 'package:PiliPlus/models_new/follow/data.dart';
 
 class FollowHttp {
   static Future<LoadingState<FollowData>> followings({
-    int? vmid,
-    int? pn,
+    required int vmid,
+    required int pn,
     int ps = 20,
     String orderType = '', // ''=>最近关注，'attention'=>最常访问
   }) async {

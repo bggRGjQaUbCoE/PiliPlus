@@ -76,8 +76,8 @@ class LiveController extends CommonListController {
       return LiveHttp.liveSecondList(
         pn: page,
         isLogin: accountService.isLogin.value,
-        areaId: areaId,
-        parentAreaId: parentAreaId,
+        areaId: areaId!,
+        parentAreaId: parentAreaId!,
         sortType: sortType,
       );
     }

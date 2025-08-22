@@ -5,8 +5,8 @@ import 'package:PiliPlus/models_new/fans/data.dart';
 
 class FanHttp {
   static Future<LoadingState<FansData>> fans({
-    int? vmid,
-    int? pn,
+    required int vmid,
+    required int pn,
     int ps = 20,
     String? orderType,
   }) async {
@@ -17,7 +17,7 @@ class FanHttp {
         'pn': pn,
         'ps': ps,
         'order': 'desc',
-        'order_type': orderType,
+        'order_type': ?orderType,
       },
     );
     if (res.data['code'] == 0) {

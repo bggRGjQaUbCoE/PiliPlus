@@ -371,8 +371,8 @@ class MsgHttp {
 
   // 消息标记已读
   static Future ackSessionMsg({
-    int? talkerId,
-    int? ackSeqno,
+    required int talkerId,
+    required int ackSeqno,
   }) async {
     String csrf = Accounts.main.csrf;
     final params = await WbiSign.makSign({
@@ -403,14 +403,14 @@ class MsgHttp {
 
   // 发送私信
   static Future sendMsg({
-    int? senderUid,
-    int? receiverId,
+    required int senderUid,
+    required int receiverId,
     int? msgType,
     dynamic content,
   }) async {
     String csrf = Accounts.main.csrf;
     final devId = getDevId();
-    Map<String, dynamic> data = {
+    final data = {
       'msg': {
         'sender_uid': senderUid,
         'receiver_id': receiverId,
@@ -428,15 +428,15 @@ class MsgHttp {
       'csrf_token': csrf,
       'csrf': csrf,
     };
-    Map<String, dynamic> params = await WbiSign.makSign(data);
+    final params = await WbiSign.makSign(data);
     var res = await Request().post(
       Api.sendMsg,
-      queryParameters: <String, dynamic>{
+      queryParameters: {
         'w_sender_uid': senderUid,
         'w_receiver_id': receiverId,
         'w_dev_id': devId,
-        'w_rid': params['w_rid'],
-        'wts': params['wts'],
+        'w_rid': params['w_rid']!,
+        'wts': params['wts']!,
       },
       data: data,
       options: Options(

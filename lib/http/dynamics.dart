@@ -31,14 +31,14 @@ class DynamicsHttp {
     int? mid,
     Set<int>? tempBannedList,
   }) async {
-    Map<String, dynamic> data = {
+    final data = {
       if (type == DynamicsTabType.up)
-        'host_mid': mid
+        'host_mid': mid!
       else ...{
         'type': type.name,
         'timezone_offset': '-480',
       },
-      'offset': offset,
+      'offset': ?offset,
       'features': 'itemOpusStyle,listOnlyfans',
     };
     var res = await Request().get(Api.followDynamic, queryParameters: data);
@@ -531,7 +531,7 @@ class DynamicsHttp {
     final res = await Request().get(
       Api.dynMention,
       queryParameters: {
-        if (keyword?.isNotEmpty == true) 'keyword': keyword,
+        if (keyword?.isNotEmpty == true) 'keyword': keyword!,
         'web_location': 333.1365,
       },
     );

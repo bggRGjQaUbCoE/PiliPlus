@@ -1,3 +1,5 @@
+import 'package:PiliPlus/utils/extension.dart';
+
 class LikeInfoV3 {
   int? totalLikes;
   bool? clickBlock;
@@ -50,8 +52,8 @@ class LikeInfoV3 {
     guildEmoText: json['guild_emo_text'] as String?,
     guildDmText: json['guild_dm_text'] as String?,
     likeDmText: json['like_dm_text'] as String?,
-    handIcons: (json['hand_icons'] as List?)?.cast(),
-    dmIcons: (json['dm_icons'] as List?)?.cast(),
+    handIcons: (json['hand_icons'] as List?)?.fromCast(),
+    dmIcons: (json['dm_icons'] as List?)?.fromCast(),
     eggshellsIcon: json['eggshells_icon'] as String?,
     countShowTime: json['count_show_time'] as int?,
     processIcon: json['process_icon'] as String?,
@@ -62,7 +64,7 @@ class LikeInfoV3 {
     icon: json['icon'] as String?,
     cooldown: (json['cooldown'] as num?)?.toDouble(),
     handUseFace: json['hand_use_face'] as bool?,
-    guideIconUrls: (json['guide_icon_urls'] as List?)?.cast(),
+    guideIconUrls: (json['guide_icon_urls'] as List?)?.fromCast(),
     guideIconRatio: (json['guide_icon_ratio'] as num?)?.toDouble(),
   );
 }

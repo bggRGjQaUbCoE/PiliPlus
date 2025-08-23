@@ -8,7 +8,7 @@ class BiliCookieJarAdapter extends TypeAdapter<DefaultCookieJar> {
 
   @override
   DefaultCookieJar read(BinaryReader reader) =>
-      BiliCookieJar.fromJson(reader.readMap().cast<String, String>());
+      BiliCookieJar.fromJson(reader.readMap());
 
   @override
   void write(BinaryWriter writer, DefaultCookieJar obj) {

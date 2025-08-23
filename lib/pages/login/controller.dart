@@ -706,8 +706,8 @@ class LoginPageController extends GetxController
     final selectAccount = Map.of(Accounts.accountMode);
     final options = {
       AnonymousAccount(): '0',
-      ...Accounts.account.toMap().cast<String, Account>().map(
-        (k, v) => MapEntry(v, k),
+      ...Accounts.account.toMap().map(
+        (k, v) => MapEntry(v, k as String),
       ),
     };
     return showDialog(

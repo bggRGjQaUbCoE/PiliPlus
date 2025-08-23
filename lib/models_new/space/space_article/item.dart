@@ -2,6 +2,7 @@ import 'package:PiliPlus/models_new/space/space_article/author.dart';
 import 'package:PiliPlus/models_new/space/space_article/category.dart';
 import 'package:PiliPlus/models_new/space/space_article/media.dart';
 import 'package:PiliPlus/models_new/space/space_article/stats.dart';
+import 'package:PiliPlus/utils/extension.dart';
 
 class SpaceArticleItem {
   int? id;
@@ -100,7 +101,7 @@ class SpaceArticleItem {
             ? null
             : Author.fromJson(json['author'] as Map<String, dynamic>),
         reprint: json['reprint'] as int?,
-        imageUrls: (json['image_urls'] as List?)?.cast(),
+        imageUrls: (json['image_urls'] as List?)?.fromCast(),
         publishTime: json['publish_time'] as int?,
         ctime: json['ctime'] as int?,
         mtime: json['mtime'] as int?,
@@ -109,7 +110,7 @@ class SpaceArticleItem {
             : Stats.fromJson(json['stats'] as Map<String, dynamic>),
         attributes: json['attributes'] as int?,
         words: json['words'] as int?,
-        originImageUrls: (json['origin_image_urls'] as List?)?.cast(),
+        originImageUrls: (json['origin_image_urls'] as List?)?.fromCast(),
         list: json['list'] as dynamic,
         isLike: json['is_like'] as bool?,
         media: json['media'] == null

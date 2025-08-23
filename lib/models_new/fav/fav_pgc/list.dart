@@ -12,6 +12,7 @@ import 'package:PiliPlus/models_new/fav/fav_pgc/section.dart';
 import 'package:PiliPlus/models_new/fav/fav_pgc/series.dart';
 import 'package:PiliPlus/models_new/fav/fav_pgc/stat.dart';
 import 'package:PiliPlus/pages/common/multi_select/base.dart';
+import 'package:PiliPlus/utils/extension.dart';
 
 class FavPgcItemModel with MultiSelectData {
   int? seasonId;
@@ -194,7 +195,7 @@ class FavPgcItemModel with MultiSelectData {
         ?.map((e) => Producer.fromJson(e as Map<String, dynamic>))
         .toList(),
     summary: json['summary'] as String?,
-    styles: (json['styles'] as List?)?.cast(),
+    styles: (json['styles'] as List?)?.fromCast(),
     configAttrs: json['config_attrs'] == null
         ? null
         : ConfigAttrs.fromJson(json['config_attrs'] as Map<String, dynamic>),

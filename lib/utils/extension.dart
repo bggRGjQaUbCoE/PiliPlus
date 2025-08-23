@@ -48,6 +48,18 @@ extension IterableExt<T> on Iterable<T>? {
   bool get isNullOrEmpty => this == null || this!.isEmpty;
 }
 
+extension MapExt<K, V> on Map<K, V> {
+  Map<RK, RV> fromCast<RK, RV>() {
+    return Map<RK, RV>.from(this);
+  }
+}
+
+extension NonNullListExt<T> on List<T> {
+  List<R> fromCast<R>() {
+    return List<R>.from(this);
+  }
+}
+
 extension ListExt<T> on List<T>? {
   T? getOrNull(int index) {
     if (isNullOrEmpty) {

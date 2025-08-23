@@ -1,3 +1,5 @@
+import 'package:PiliPlus/utils/extension.dart';
+
 class SimpleVoteInfo {
   int? choiceCnt;
   int? defaultShare;
@@ -73,7 +75,7 @@ class VoteInfo extends SimpleVoteInfo {
     title = json['title'];
     uid = json['vote_publisher'];
     ctime = json['ctime'];
-    myVotes = (json['my_votes'] as List?)?.cast(); // doVote
+    myVotes = (json['my_votes'] as List?)?.fromCast(); // doVote
     options =
         (json['options'] as List?)?.map((v) => Option.fromJson(v)).toList() ??
         <Option>[];
@@ -87,7 +89,7 @@ class VoteInfo extends SimpleVoteInfo {
 
   factory VoteInfo.fromSeparatedJson(Map<String, dynamic> json) {
     return VoteInfo.fromJson(json['vote_info'])
-      ..myVotes = (json['my_votes'] as List?)?.cast(); // voteInfo
+      ..myVotes = (json['my_votes'] as List?)?.fromCast(); // voteInfo
   }
 
   Map<String, dynamic> toJson() => {

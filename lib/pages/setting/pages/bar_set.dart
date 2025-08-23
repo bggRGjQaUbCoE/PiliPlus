@@ -24,7 +24,7 @@ class _BarSetPageState extends State<BarSetPage> {
     key = args['key'];
     title = args['title'] ?? '';
     defaultBars = List<EnumWithLabel>.from(args['defaultBars']);
-    List<int>? bars = (GStorage.setting.get(key) as List?)?.cast();
+    List? bars = GStorage.setting.get(key);
     if (bars != null) {
       barIndex = {for (var (k, v) in bars.indexed) v: k};
 

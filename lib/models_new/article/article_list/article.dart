@@ -1,5 +1,6 @@
 import 'package:PiliPlus/models_new/article/article_list/category.dart';
 import 'package:PiliPlus/models_new/article/article_list/stats.dart';
+import 'package:PiliPlus/utils/extension.dart';
 
 class ArticleListItemModel {
   int? id;
@@ -45,7 +46,7 @@ class ArticleListItemModel {
         state: json['state'] as int?,
         publishTime: json['publish_time'] as int?,
         words: json['words'] as int?,
-        imageUrls: (json['image_urls'] as List?)?.cast(),
+        imageUrls: (json['image_urls'] as List?)?.fromCast(),
         category: json['category'] == null
             ? null
             : Category.fromJson(json['category'] as Map<String, dynamic>),

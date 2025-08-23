@@ -1,4 +1,5 @@
 import 'package:PiliPlus/models_new/reply/pagination_reply.dart';
+import 'package:PiliPlus/utils/extension.dart';
 
 class ReplyCursor {
   bool? isBegin;
@@ -41,7 +42,7 @@ class ReplyCursor {
     mode: json['mode'] as int?,
     modeText: json['mode_text'] as String?,
     allCount: json['all_count'] as int?,
-    supportMode: (json['support_mode'] as List?)?.cast(),
+    supportMode: (json['support_mode'] as List?)?.fromCast(),
     name: json['name'] as String?,
   );
 }

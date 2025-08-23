@@ -1,3 +1,5 @@
+import 'package:PiliPlus/utils/extension.dart';
+
 class SpaceCheeseItem {
   bool? cooperated;
   String? cooperationMark;
@@ -36,7 +38,7 @@ class SpaceCheeseItem {
         cover: json['cover'] as String?,
         epCount: json['ep_count'] as int?,
         link: json['link'] as String?,
-        marks: (json['marks'] as List?)?.cast(),
+        marks: (json['marks'] as List?)?.fromCast(),
         page: json['page'] as int?,
         play: json['play'] as int?,
         seasonId: json['season_id'] as int?,

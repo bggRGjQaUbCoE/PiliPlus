@@ -2,6 +2,7 @@ import 'package:PiliPlus/models_new/upower_rank/level_info.dart';
 import 'package:PiliPlus/models_new/upower_rank/rank_info.dart';
 import 'package:PiliPlus/models_new/upower_rank/up_info.dart';
 import 'package:PiliPlus/models_new/upower_rank/user_info.dart';
+import 'package:PiliPlus/utils/extension.dart';
 
 class UpowerRankData {
   UpInfo? upInfo;
@@ -37,7 +38,7 @@ class UpowerRankData {
     memberTotal: json['member_total'] as int?,
     privilegeType: json['privilege_type'] as int?,
     isCharge: json['is_charge'] as bool?,
-    tabs: (json['tabs'] as List?)?.cast(),
+    tabs: (json['tabs'] as List?)?.fromCast(),
     levelInfo: (json['level_info'] as List<dynamic>?)
         ?.map((e) => LevelInfo.fromJson(e as Map<String, dynamic>))
         .toList(),

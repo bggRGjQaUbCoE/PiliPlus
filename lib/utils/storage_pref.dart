@@ -102,31 +102,30 @@ class Pref {
     ),
   );
 
-  static List<int>? get tabbarSort =>
-      (_setting.get(SettingBoxKey.tabBarSort) as List?)?.cast<int>();
-
   static List<Pair<SegmentType, SkipType>> get blockSettings {
-    List<int>? list = (_setting.get(SettingBoxKey.blockSettings) as List?)
-        ?.cast<int>();
+    final list = _setting.get(SettingBoxKey.blockSettings) as List?;
+    if (list == null) {
+      return SegmentType.values
+          .map((i) => Pair(first: i, second: SkipType.values[i.index]))
+          .toList();
+    }
     return SegmentType.values
         .map(
-          (item) => Pair<SegmentType, SkipType>(
-            first: item,
-            second: SkipType.values[list?[item.index] ?? 1],
-          ),
+          (item) =>
+              Pair(first: item, second: SkipType.values[list[item.index]]),
         )
         .toList();
   }
 
   static List<Color> get blockColor {
-    List<String>? list = (_setting.get(SettingBoxKey.blockColor) as List?)
-        ?.cast<String>();
+    final list = _setting.get(SettingBoxKey.blockColor) as List?;
+    if (list == null) {
+      return SegmentType.values.map((i) => i.color).toList();
+    }
     return SegmentType.values.map(
       (item) {
-        final e = list?[item.index];
-        final color = e != null && e.isNotEmpty
-            ? int.tryParse('FF$e', radix: 16)
-            : null;
+        final String e = list[item.index];
+        final color = e.isNotEmpty ? int.tryParse('FF$e', radix: 16) : null;
         return color != null ? Color(color) : item.color;
       },
     ).toList();
@@ -692,11 +691,9 @@ class Pref {
   static bool get enableHA =>
       _setting.get(SettingBoxKey.enableHA, defaultValue: true);
 
-  static Set<int> get danmakuBlockType =>
-      (_setting.get(SettingBoxKey.danmakuBlockType, defaultValue: <int>[])
-              as Iterable)
-          .cast<int>()
-          .toSet();
+  static Set<int> get danmakuBlockType => Set<int>.from(
+    _setting.get(SettingBoxKey.danmakuBlockType, defaultValue: const <int>{}),
+  );
 
   static int get danmakuWeight =>
       _setting.get(SettingBoxKey.danmakuWeight, defaultValue: 0);

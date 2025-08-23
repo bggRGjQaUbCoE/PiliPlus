@@ -1,5 +1,6 @@
 import 'package:PiliPlus/models/common/video/audio_quality.dart';
 import 'package:PiliPlus/models/common/video/video_quality.dart';
+import 'package:PiliPlus/utils/extension.dart';
 
 class PlayUrlModel {
   PlayUrlModel({
@@ -172,7 +173,8 @@ abstract class BaseItem {
     id = json['id'];
     baseUrl = json['baseUrl'] ?? json['base_url'];
     final backupUrls =
-        ((json['backupUrl'] ?? json['backup_url']) as List?)?.cast<String>() ??
+        ((json['backupUrl'] ?? json['backup_url']) as List?)
+            ?.fromCast<String>() ??
         <String>[];
     backupUrl = backupUrls.isNotEmpty
         ? backupUrls.firstWhere(
@@ -248,7 +250,7 @@ class FormatItem {
     format = json['format'];
     newDesc = json['new_description'];
     displayDesc = json['display_desc'];
-    codecs = (json['codecs'] as List?)?.cast<String>();
+    codecs = (json['codecs'] as List?)?.fromCast<String>();
   }
 }
 

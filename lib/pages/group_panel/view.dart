@@ -26,7 +26,9 @@ class GroupPanel extends StatefulWidget {
 class _GroupPanelState extends State<GroupPanel> {
   LoadingState<List<MemberTagItemModel>> loadingState = LoadingState.loading();
   RxBool showDefaultBtn = true.obs;
-  late final Set<int> tags = widget.tags?.cast<int>().toSet() ?? {};
+  late final Set<int> tags = widget.tags == null
+      ? {}
+      : Set<int>.from(widget.tags!);
 
   @override
   void initState() {

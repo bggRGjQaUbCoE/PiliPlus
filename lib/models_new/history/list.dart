@@ -1,5 +1,6 @@
 import 'package:PiliPlus/models_new/history/history.dart';
 import 'package:PiliPlus/pages/common/multi_select/base.dart';
+import 'package:PiliPlus/utils/extension.dart';
 
 class HistoryItemModel with MultiSelectData {
   String? title;
@@ -57,7 +58,7 @@ class HistoryItemModel with MultiSelectData {
         title: json['title'] as String?,
         longTitle: json['long_title'] as String?,
         cover: json['cover'] as String?,
-        covers: (json['covers'] as List?)?.cast(),
+        covers: (json['covers'] as List?)?.fromCast(),
         uri: json['uri'] as String?,
         history: json['history'] == null
             ? History()

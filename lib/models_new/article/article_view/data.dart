@@ -5,6 +5,7 @@ import 'package:PiliPlus/models_new/article/article_view/ops.dart';
 import 'package:PiliPlus/models_new/article/article_view/opus.dart';
 import 'package:PiliPlus/models_new/article/article_view/stats.dart';
 import 'package:PiliPlus/models_new/article/article_view/tag.dart';
+import 'package:PiliPlus/utils/extension.dart';
 
 class ArticleViewData {
   int? id;
@@ -111,7 +112,7 @@ class ArticleViewData {
             ? null
             : Avatar.fromJson(json['author'] as Map<String, dynamic>),
         reprint: json['reprint'] as int?,
-        imageUrls: (json['image_urls'] as List?)?.cast(),
+        imageUrls: (json['image_urls'] as List?)?.fromCast(),
         publishTime: json['publish_time'] as int?,
         ctime: json['ctime'] as int?,
         mtime: json['mtime'] as int?,
@@ -122,7 +123,7 @@ class ArticleViewData {
             ?.map((e) => Tag.fromJson(e as Map<String, dynamic>))
             .toList(),
         words: json['words'] as int?,
-        originImageUrls: (json['origin_image_urls'] as List?)?.cast(),
+        originImageUrls: (json['origin_image_urls'] as List?)?.fromCast(),
         list: json['list'] as dynamic,
         isLike: json['is_like'] as bool?,
         media: json['media'] == null

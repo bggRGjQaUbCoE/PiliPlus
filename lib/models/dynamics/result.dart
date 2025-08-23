@@ -118,7 +118,7 @@ class DynamicItemModel {
     idStr = json['item']?['id_str'];
     // type = json['type']; // int
     if (json['item']?['modules'] case List list) {
-      modules = ItemModulesModel.fromOpusJson(list.cast());
+      modules = ItemModulesModel.fromOpusJson(list);
     } else {
       modules = ItemModulesModel();
     }
@@ -181,8 +181,8 @@ class ItemModulesModel {
         : null;
   }
 
-  ItemModulesModel.fromOpusJson(List<Map<String, dynamic>> json) {
-    for (var i in json) {
+  ItemModulesModel.fromOpusJson(List json) {
+    for (Map<String, dynamic> i in json) {
       switch (i['module_type']) {
         case 'MODULE_TYPE_TOP':
           moduleTop = i['module_top'] == null

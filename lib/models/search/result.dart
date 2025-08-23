@@ -425,7 +425,7 @@ class SearchArticleItemModel {
     subTitle = title.map((e) => e.text).join();
     rankOffset = json['rank_offset'];
     mid = json['mid'];
-    imageUrls = (json['image_urls'] as List?)?.cast();
+    imageUrls = (json['image_urls'] as List?)?.fromCast();
     id = json['id'];
     categoryId = json['category_id'];
     view = json['view'];

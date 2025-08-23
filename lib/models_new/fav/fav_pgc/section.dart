@@ -1,3 +1,5 @@
+import 'package:PiliPlus/utils/extension.dart';
+
 class Section {
   int? sectionId;
   int? seasonId;
@@ -24,6 +26,6 @@ class Section {
     watchPlatform: json['watch_platform'] as int?,
     copyright: json['copyright'] as String?,
     banAreaShow: json['ban_area_show'] as int?,
-    episodeIds: (json['episode_ids'] as List?)?.cast(),
+    episodeIds: (json['episode_ids'] as List?)?.fromCast(),
   );
 }

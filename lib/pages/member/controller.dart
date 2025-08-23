@@ -12,6 +12,8 @@ import 'package:PiliPlus/models_new/space/space/tab2.dart';
 import 'package:PiliPlus/pages/common/common_data_controller.dart';
 import 'package:PiliPlus/services/account_service.dart';
 import 'package:PiliPlus/utils/request_utils.dart';
+import 'package:PiliPlus/utils/storage.dart';
+import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart'
@@ -175,6 +177,12 @@ class MemberController extends CommonDataController<SpaceData, SpaceData?>
 
   void shareUser() {
     Utils.shareText('https://space.bilibili.com/$mid');
+  }
+  void addToStarUser(int mid){
+    Set<int> starUsers = GStorage.localCache.get(LocalCacheKey.starUsers)?.toSet() ?? <int>{};
+    starUsers.add(mid);
+    GStorage.localCache.put(LocalCacheKey.starUsers, starUsers);
+    SmartDialog.showToast('收藏成功');
   }
 
   Future<void> _onBlock() async {

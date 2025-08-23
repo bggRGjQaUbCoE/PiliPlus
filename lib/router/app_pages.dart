@@ -55,6 +55,7 @@ import 'package:PiliPlus/pages/setting/view.dart';
 import 'package:PiliPlus/pages/settings_search/view.dart';
 import 'package:PiliPlus/pages/space_setting/view.dart';
 import 'package:PiliPlus/pages/sponsor_block/view.dart';
+import 'package:PiliPlus/pages/star_user/view.dart';
 import 'package:PiliPlus/pages/subscription/view.dart';
 import 'package:PiliPlus/pages/subscription_detail/view.dart';
 import 'package:PiliPlus/pages/video/view.dart';
@@ -207,6 +208,7 @@ class Routes {
       page: () => const LiveDmBlockPage(),
     ),
     CustomGetPage(name: '/createVote', page: () => const CreateVotePage()),
+    CustomGetPage(name: '/starUser', page: ()=>const StarUserPage())
   ];
 }
 

@@ -47,13 +47,28 @@ class Pref {
     ),
   );
 
-  static Set<int> get blackMids =>
-      _localCache.get(LocalCacheKey.blackMids, defaultValue: <int>{});
+  static Set<int> get blackMids {
+    final result = _localCache.get(LocalCacheKey.blackMids);
+    if (result == null) {
+      return <int>{};
+    }
+    return Set<int>.from(result);
+  }
 
   static set blackMids(Set<int> blackMidsSet) {
     _localCache.put(LocalCacheKey.blackMids, blackMidsSet);
   }
+  static Set<int> get starUsers {
+    final result = _localCache.get(LocalCacheKey.starUsers);
+    if (result == null) {
+      return <int>{};
+    }
+    return Set<int>.from(result);
+  }
+  static set starUsers(Set<int> starUserMids){
+    _localCache.put(LocalCacheKey.starUsers, starUserMids);
 
+  }
   static RuleFilter get danmakuFilterRule => _localCache.get(
     LocalCacheKey.danmakuFilterRules,
     defaultValue: RuleFilter.empty(),

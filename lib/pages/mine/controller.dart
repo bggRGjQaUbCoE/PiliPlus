@@ -78,6 +78,13 @@ class MineController
         }
       },
     ),
+    (
+    icon: Icons.star_border,
+    title: '收藏用户',
+    onTap: () {
+      Get.toNamed("starUser");
+    },
+    )
   ];
 
   @override

@@ -145,6 +145,19 @@ class _MemberPageState extends State<MemberPage> {
           ),
         ),
         PopupMenuItem(
+          onTap: () => _userController.addToStarUser(_mid),
+          child: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.star_border_outlined, size: 19),
+              SizedBox(width: 10),
+               Text(
+                '收藏用户',
+              ),
+            ],
+          ),
+        ),
+        PopupMenuItem(
           onTap: () => Get.toNamed(
             '/upowerRank',
             parameters: {

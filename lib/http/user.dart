@@ -150,7 +150,8 @@ class UserHttp {
   }
 
   // 稍后再看
-  static Future toViewLater({String? bvid, dynamic aid}) async {
+  static Future toViewLater({String? bvid, Object? aid}) async {
+    assert(aid != null || bvid != null);
     var res = await Request().post(
       Api.toViewLater,
       data: {
@@ -318,14 +319,14 @@ class UserHttp {
 
   // 稍后再看列表
   static Future getMediaList({
-    required dynamic type,
-    required bizId,
+    required Object type,
+    required Object bizId,
     required int ps,
-    dynamic oid,
+    Object? oid,
     int? otype,
     bool withCurrent = false,
     bool desc = true,
-    dynamic sortField = 1,
+    sortField = 1,
     bool direction = false,
   }) async {
     var res = await Request().get(
@@ -361,8 +362,8 @@ class UserHttp {
   }
 
   static Future<Map> dynamicReport({
-    required dynamic mid,
-    required dynamic dynId,
+    required Object mid,
+    required Object dynId,
     required int reasonType,
     String? reasonDesc,
   }) async {

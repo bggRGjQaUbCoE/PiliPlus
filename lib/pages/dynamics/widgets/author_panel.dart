@@ -29,7 +29,7 @@ class AuthorPanel extends StatelessWidget {
   final bool isDetail;
   final ValueChanged? onRemove;
   final bool isSave;
-  final Function(bool isTop, dynamic dynId)? onSetTop;
+  final Function(bool isTop, Object dynId)? onSetTop;
   final VoidCallback? onBlock;
 
   const AuthorPanel({
@@ -519,7 +519,7 @@ class AuthorPanel extends StatelessWidget {
                           );
                         }
                         return UserHttp.dynamicReport(
-                          mid: item.modules.moduleAuthor!.mid,
+                          mid: item.modules.moduleAuthor!.mid!,
                           dynId: item.idStr,
                           reasonType: reasonType,
                         );

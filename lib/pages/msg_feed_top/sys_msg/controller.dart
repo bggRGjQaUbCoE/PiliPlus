@@ -34,7 +34,7 @@ class SysMsgController
     return super.onRefresh();
   }
 
-  Future<void> onRemove(dynamic id, int index) async {
+  Future<void> onRemove(Object id, int index) async {
     try {
       var res = await MsgHttp.delSysMsg(id);
       if (res['status']) {

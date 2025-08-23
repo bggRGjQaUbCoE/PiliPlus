@@ -37,7 +37,7 @@ class ReplyMeController
   Future<LoadingState<MsgReplyData>> customGetData() =>
       MsgHttp.msgFeedReplyMe(cursor: cursor, cursorTime: cursorTime);
 
-  Future<void> onRemove(dynamic id, int index) async {
+  Future<void> onRemove(Object id, int index) async {
     try {
       var res = await MsgHttp.delMsgfeed(1, id);
       if (res['status']) {

@@ -115,7 +115,7 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
   }
 
   void onVideoDetailChange(
-    dynamic data,
+    Object data,
     int cid,
     String herotag, {
     String? artist,
@@ -127,7 +127,6 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
     //   debugPrint(StackTrace.current);
     // }
     if (!PlPlayerController.instanceExists()) return;
-    if (data == null) return;
 
     late final id = '$cid$herotag';
     MediaItem? mediaItem;

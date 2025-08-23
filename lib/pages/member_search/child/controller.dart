@@ -65,7 +65,7 @@ class MemberSearchChildController extends CommonListController {
         order: 'pubdate',
       ),
       MemberSearchType.dynamic => MemberHttp.dynSearch(
-        mid: controller.mid,
+        mid: controller.mid!,
         pn: page,
         offset: offset ?? '',
         keyword: controller.editingController.text,

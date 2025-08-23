@@ -26,7 +26,7 @@ class WhisperSessionItem extends StatelessWidget {
   final Session item;
   final Function(bool isTop, SessionId id) onSetTop;
   final Function(bool isMuted, Int64 talkerUid) onSetMute;
-  final ValueChanged<int?> onRemove;
+  final ValueChanged<int> onRemove;
 
   @override
   Widget build(BuildContext context) {

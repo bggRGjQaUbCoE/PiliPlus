@@ -49,7 +49,7 @@ class DynamicsTabController
         tempBannedList: dynamicsController.tempBannedList,
       );
 
-  Future<void> onRemove(int index, dynamic dynamicId) async {
+  Future<void> onRemove(int index, Object dynamicId) async {
     var res = await MsgHttp.removeDynamic(dynIdStr: dynamicId);
     if (res['status']) {
       loadingState

@@ -160,7 +160,7 @@ class _LikeMePageState extends State<LikeMePage> {
   Widget _buildItem(
     ThemeData theme,
     MsgLikeItem item,
-    ValueChanged<int?> onRemove,
+    ValueChanged<int> onRemove,
   ) {
     return ListTile(
       onTap: () {
@@ -199,7 +199,7 @@ class _LikeMePageState extends State<LikeMePage> {
                       context: context,
                       title: '删除',
                       content: '该条通知删除后，当有新点赞时会重新出现在列表，是否继续？',
-                      onConfirm: () => onRemove(item.id),
+                      onConfirm: () => onRemove(item.id!),
                     );
                   },
                   dense: true,

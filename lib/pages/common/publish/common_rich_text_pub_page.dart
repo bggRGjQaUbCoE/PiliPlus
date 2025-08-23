@@ -182,7 +182,7 @@ abstract class CommonRichTextPubPageState<T extends CommonRichTextPubPage>
     );
   }
 
-  void onChooseEmote(dynamic emote, double? width, double? height) {
+  void onChooseEmote(Object emote, double? width, double? height) {
     if (emote is e.Emote) {
       final isTextEmote = width == null;
       onInsertText(

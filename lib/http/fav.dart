@@ -284,7 +284,7 @@ class FavHttp {
   }
 
   static Future addFavArticle({
-    required dynamic id,
+    required Object id,
   }) async {
     var res = await Request().post(
       Api.addFavArticle,
@@ -304,7 +304,7 @@ class FavHttp {
   }
 
   static Future delFavArticle({
-    required dynamic id,
+    required Object id,
   }) async {
     var res = await Request().post(
       Api.delFavArticle,
@@ -387,7 +387,7 @@ class FavHttp {
   }
 
   static Future<LoadingState<FavPgcData>> favPgc({
-    required dynamic mid,
+    required Object mid,
     required int type,
     required int pn,
     int? followStatus,
@@ -412,7 +412,7 @@ class FavHttp {
   static Future<LoadingState<FavFolderData>> userfavFolder({
     required int pn,
     required int ps,
-    required dynamic mid,
+    required Object mid,
   }) async {
     var res = await Request().get(
       Api.userFavFolder,
@@ -452,7 +452,7 @@ class FavHttp {
   }
 
   static Future sortFav({
-    required dynamic mediaId,
+    required Object mediaId,
     required String sort,
   }) async {
     Map<String, dynamic> data = {
@@ -476,7 +476,7 @@ class FavHttp {
   }
 
   static Future cleanFav({
-    required dynamic mediaId,
+    required Object mediaId,
   }) async {
     var res = await Request().post(
       Api.cleanFav,
@@ -519,7 +519,7 @@ class FavHttp {
 
   static Future addOrEditFolder({
     required bool isAdd,
-    dynamic mediaId,
+    Object? mediaId,
     required String title,
     required int privacy,
     required String cover,
@@ -547,7 +547,7 @@ class FavHttp {
   }
 
   static Future favFolderInfo({
-    dynamic mediaId,
+    required Object mediaId,
   }) async {
     var res = await Request().get(
       Api.favFolderInfo,
@@ -564,7 +564,7 @@ class FavHttp {
 
   static Future seasonFav({
     required bool isFav,
-    required dynamic seasonId,
+    required Object seasonId,
   }) async {
     var res = await Request().post(
       isFav ? Api.unfavSeason : Api.favSeason,
@@ -625,8 +625,8 @@ class FavHttp {
   }
 
   static Future communityAction({
-    required dynamic opusId,
-    required dynamic action,
+    required Object opusId,
+    required Object action,
   }) async {
     var res = await Request().post(
       Api.communityAction,
@@ -695,9 +695,9 @@ class FavHttp {
   static Future<LoadingState> copyOrMoveFav({
     required bool isCopy,
     required bool isFav,
-    required dynamic srcMediaId,
-    required dynamic tarMediaId,
-    dynamic mid,
+    required Object? srcMediaId,
+    required Object tarMediaId,
+    mid,
     required String resources,
   }) async {
     var res = await Request().post(
@@ -709,7 +709,7 @@ class FavHttp {
           ? Api.copyToview
           : Api.moveToview,
       data: {
-        'src_media_id': ?srcMediaId,
+        'src_media_id': srcMediaId,
         'tar_media_id': tarMediaId,
         'mid': ?mid,
         'resources': resources,
@@ -739,9 +739,9 @@ class FavHttp {
 
   // 查看视频被收藏在哪个文件夹
   static Future<LoadingState<FavFolderData>> videoInFolder({
-    dynamic mid,
-    dynamic rid,
-    dynamic type,
+    required Object mid,
+    required Object rid,
+    Object? type,
   }) async {
     var res = await Request().get(
       Api.favFolder,

@@ -86,7 +86,7 @@ class MsgHttp {
   }
 
   static Future<LoadingState<MsgLikeDetailData>> msgLikeDetail({
-    required dynamic cardId,
+    required Object cardId,
     required int pn,
   }) async {
     var res = await Request().get(
@@ -155,7 +155,7 @@ class MsgHttp {
   }
 
   static Future uploadImage({
-    required dynamic path,
+    required String path,
     required String bucket,
     required String dir,
   }) async {
@@ -211,7 +211,7 @@ class MsgHttp {
   }
 
   static Future createTextDynamic(
-    dynamic content,
+    Object content,
   ) async {
     String csrf = Accounts.main.csrf;
     Map<String, dynamic> data = await WbiSign.makSign({
@@ -262,7 +262,7 @@ class MsgHttp {
   }
 
   static Future removeMsg(
-    dynamic talkerId,
+    Object talkerId,
   ) async {
     String csrf = Accounts.main.csrf;
     Map<String, dynamic> data = await WbiSign.makSign({
@@ -287,7 +287,7 @@ class MsgHttp {
 
   static Future delMsgfeed(
     int tp,
-    dynamic id,
+    Object id,
   ) async {
     String csrf = Accounts.main.csrf;
     var res = await Request().post(
@@ -313,7 +313,7 @@ class MsgHttp {
   }
 
   static Future delSysMsg(
-    dynamic id,
+    Object id,
   ) async {
     String csrf = Accounts.main.csrf;
     var res = await Request().post(
@@ -341,7 +341,7 @@ class MsgHttp {
   }
 
   static Future setTop({
-    required dynamic talkerId,
+    required Object talkerId,
     required int opType,
   }) async {
     String csrf = Accounts.main.csrf;
@@ -406,7 +406,7 @@ class MsgHttp {
     required int senderUid,
     required int receiverId,
     int? msgType,
-    dynamic content,
+    required Object content,
   }) async {
     String csrf = Accounts.main.csrf;
     final devId = getDevId();
@@ -458,7 +458,7 @@ class MsgHttp {
   }
 
   static Future msgSetNotice({
-    required dynamic id,
+    required Object id,
     required int noticeState,
   }) async {
     final csrf = Accounts.main.csrf;

@@ -5,7 +5,7 @@ import 'package:PiliPlus/models_new/match/match_info/contest.dart';
 import 'package:PiliPlus/models_new/match/match_info/data.dart';
 
 class MatchHttp {
-  static Future<LoadingState<MatchContest?>> matchInfo(dynamic cid) async {
+  static Future<LoadingState<MatchContest?>> matchInfo(Object cid) async {
     var res = await Request().get(
       Api.matchInfo,
       queryParameters: {

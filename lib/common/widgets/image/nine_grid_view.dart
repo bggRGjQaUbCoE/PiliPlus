@@ -506,7 +506,7 @@ class _ImageUtil {
           );
         }
       },
-      onError: (dynamic exception, StackTrace? stackTrace) {
+      onError: (exception, stackTrace) {
         imageStream.removeListener(listener);
         if (!completer.isCompleted) {
           completer.completeError(exception, stackTrace);

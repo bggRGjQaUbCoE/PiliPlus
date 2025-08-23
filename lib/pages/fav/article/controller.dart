@@ -25,7 +25,7 @@ class FavArticleController
   Future<LoadingState<FavArticleData>> customGetData() =>
       FavHttp.favArticle(page: page);
 
-  Future<void> onRemove(int index, String? id) async {
+  Future<void> onRemove(int index, String id) async {
     final res = await FavHttp.communityAction(opusId: id, action: 4);
     if (res['status']) {
       loadingState

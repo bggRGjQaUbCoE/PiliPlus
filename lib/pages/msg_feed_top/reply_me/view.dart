@@ -110,7 +110,7 @@ class _ReplyMePageState extends State<ReplyMePage> {
                       context: context,
                       title: '确定删除该通知?',
                       onConfirm: () =>
-                          _replyMeController.onRemove(item.id, index),
+                          _replyMeController.onRemove(item.id!, index),
                     ),
                     leading: GestureDetector(
                       onTap: () => Get.toNamed('/member?mid=${item.user?.mid}'),

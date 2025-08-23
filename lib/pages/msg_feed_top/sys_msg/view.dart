@@ -83,7 +83,7 @@ class _SysMsgPageState extends State<SysMsgPage> {
                       context: context,
                       title: '确定删除该通知?',
                       onConfirm: () =>
-                          _sysMsgController.onRemove(item.id, index),
+                          _sysMsgController.onRemove(item.id!, index),
                     ),
                     title: Text(
                       "${item.title}",

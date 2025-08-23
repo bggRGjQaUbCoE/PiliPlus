@@ -63,7 +63,7 @@ class LikeMeController
   Future<LoadingState<MsgLikeData>> customGetData() =>
       MsgHttp.msgFeedLikeMe(cursor: cursor, cursorTime: cursorTime);
 
-  Future<void> onRemove(dynamic id, int index, bool isLatest) async {
+  Future<void> onRemove(Object id, int index, bool isLatest) async {
     try {
       var res = await MsgHttp.delMsgfeed(0, id);
       if (res['status']) {
@@ -84,7 +84,10 @@ class LikeMeController
 
   Future<void> onSetNotice(MsgLikeItem item, bool isNotice) async {
     int noticeState = isNotice ? 1 : 0;
-    var res = await MsgHttp.msgSetNotice(id: item.id, noticeState: noticeState);
+    var res = await MsgHttp.msgSetNotice(
+      id: item.id!,
+      noticeState: noticeState,
+    );
     if (res['status']) {
       item.noticeState = noticeState;
       loadingState.refresh();

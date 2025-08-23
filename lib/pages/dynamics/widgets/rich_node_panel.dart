@@ -285,7 +285,7 @@ TextSpan? richNode(
                         return;
                       }
 
-                      DynamicsHttp.dynPic(i.rid).then((res) {
+                      DynamicsHttp.dynPic(i.rid!).then((res) {
                         if (res.isSuccess) {
                           var list = res.data;
                           if (Platform.isAndroid) {

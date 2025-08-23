@@ -513,7 +513,7 @@ class _EpisodePanelState extends CommonCollapseSlidePageState<EpisodePanel> {
         onPressed: () async {
           var result = await FavHttp.seasonFav(
             isFav: response,
-            seasonId: widget.seasonId,
+            seasonId: widget.seasonId!,
           );
           if (result['status']) {
             SmartDialog.showToast('${response ? '取消' : ''}订阅成功');

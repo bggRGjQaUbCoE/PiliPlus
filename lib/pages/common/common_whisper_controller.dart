@@ -12,7 +12,7 @@ abstract class CommonWhisperController<R>
     extends CommonListController<R, Session> {
   SessionPageType get sessionPageType;
 
-  Future<void> onRemove(int index, int? talkerId) async {
+  Future<void> onRemove(int index, int talkerId) async {
     var res = await MsgHttp.removeMsg(talkerId);
     if (res['status']) {
       loadingState

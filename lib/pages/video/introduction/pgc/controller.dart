@@ -78,7 +78,7 @@ class PgcIntroController extends CommonIntroController {
 
   // 获取点赞/投币/收藏状态
   Future<void> queryPgcLikeCoinFav() async {
-    var result = await VideoHttp.pgcLikeCoinFav(epId: epId);
+    var result = await VideoHttp.pgcLikeCoinFav(epId: epId!);
     if (result['status']) {
       PgcLCF data = result['data'];
       final hasLike = data.like == 1;
@@ -424,7 +424,7 @@ class PgcIntroController extends CommonIntroController {
       SmartDialog.showToast('已三连');
       return;
     }
-    var result = await VideoHttp.pgcTriple(epId: epId, seasonId: seasonId);
+    var result = await VideoHttp.pgcTriple(epId: epId!, seasonId: seasonId);
     if (result['status']) {
       PgcTriple data = result['data'];
       late final stat = pgcItem.stat!;

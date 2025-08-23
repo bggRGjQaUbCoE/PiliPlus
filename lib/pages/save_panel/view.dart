@@ -15,6 +15,7 @@ import 'package:PiliPlus/utils/context_ext.dart';
 import 'package:PiliPlus/utils/date_util.dart';
 import 'package:PiliPlus/utils/image_util.dart';
 import 'package:PiliPlus/utils/utils.dart';
+import 'package:fixnum/fixnum.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -33,13 +34,13 @@ class SavePanel extends StatefulWidget {
     super.key,
   });
 
-  final dynamic upMid;
-  final dynamic item;
+  final Int64? upMid;
+  final Object item;
 
   @override
   State<SavePanel> createState() => _SavePanelState();
 
-  static void toSavePanel({dynamic upMid, dynamic item}) {
+  static void toSavePanel({Int64? upMid, required Object item}) {
     Get.generalDialog(
       barrierLabel: '',
       barrierDismissible: true,

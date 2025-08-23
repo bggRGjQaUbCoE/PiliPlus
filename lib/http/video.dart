@@ -193,8 +193,8 @@ class VideoHttp {
     String? bvid,
     required int cid,
     int? qn,
-    dynamic epid,
-    dynamic seasonId,
+    Object? epid,
+    Object? seasonId,
     required bool tryLook,
     required VideoType videoType,
   }) async {
@@ -282,7 +282,7 @@ class VideoHttp {
     }
   }
 
-  static Future videoRelation({required dynamic bvid}) async {
+  static Future videoRelation({required String bvid}) async {
     var res = await Request().get(
       Api.videoRelation,
       queryParameters: {
@@ -325,7 +325,7 @@ class VideoHttp {
   }
 
   // 获取点赞/投币/收藏状态 pgc
-  static Future pgcLikeCoinFav({dynamic epId}) async {
+  static Future pgcLikeCoinFav({required Object epId}) async {
     var res = await Request().get(
       Api.pgcLikeCoinFav,
       queryParameters: {'ep_id': epId},
@@ -362,7 +362,10 @@ class VideoHttp {
   }
 
   // 一键三连 pgc
-  static Future pgcTriple({dynamic epId, required dynamic seasonId}) async {
+  static Future pgcTriple({
+    required Object epId,
+    Object? seasonId,
+  }) async {
     var res = await Request().post(
       Api.pgcTriple,
       data: {
@@ -373,7 +376,10 @@ class VideoHttp {
         contentType: Headers.formUrlEncodedContentType,
         headers: {
           'origin': 'https://www.bilibili.com',
-          'referer': 'https://www.bilibili.com/bangumi/play/ss$seasonId',
+          if (seasonId != null)
+            'referer': 'https://www.bilibili.com/bangumi/play/ss$seasonId',
+          if (seasonId == null)
+            'referer': 'https://www.bilibili.com/bangumi/play/ep$epId',
           'user-agent': UaType.pc.ua,
         },
       ),
@@ -688,8 +694,8 @@ class VideoHttp {
 
   static Future medialistHistory({
     required int desc,
-    required dynamic oid,
-    required dynamic upperMid,
+    required Object oid,
+    required Object upperMid,
   }) async {
     await Request().post(
       Api.mediaListHistory,
@@ -952,8 +958,8 @@ class VideoHttp {
   }
 
   static Future<LoadingState<VideoNoteData>> getVideoNoteList({
-    dynamic oid,
-    dynamic uperMid,
+    required Object oid,
+    Object? uperMid,
     required int page,
   }) async {
     var res = await Request().get(

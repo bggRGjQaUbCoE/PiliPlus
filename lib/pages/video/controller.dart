@@ -826,7 +826,7 @@ class VideoDetailController extends GetxController
     }
   }
 
-  void onAddItem(dynamic item) {
+  void onAddItem(Object item) {
     if (listData.contains(item)) return;
     listData.insert(0, item);
     listKey.currentState?.insertItem(0);

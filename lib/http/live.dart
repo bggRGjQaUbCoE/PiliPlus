@@ -523,7 +523,7 @@ class LiveHttp {
   }
 
   static Future<LoadingState<ShieldInfo?>> getLiveInfoByUser(
-    dynamic roomId,
+    Object roomId,
   ) async {
     var res = await Request().get(
       Api.getLiveInfoByUser,
@@ -604,8 +604,8 @@ class LiveHttp {
   }
 
   static Future liveShieldUser({
-    required dynamic uid,
-    required dynamic roomid,
+    required Object uid,
+    required Object roomid,
     required int type,
   }) async {
     final csrf = Accounts.main.csrf;
@@ -629,9 +629,9 @@ class LiveHttp {
 
   static Future liveLikeReport({
     required int clickTime,
-    required dynamic roomId,
-    required dynamic uid,
-    required dynamic anchorId,
+    required Object roomId,
+    required Object uid,
+    Object? anchorId,
   }) async {
     var res = await Request().post(
       Api.liveLikeReport,
@@ -639,7 +639,7 @@ class LiveHttp {
         'click_time': clickTime,
         'room_id': roomId,
         'uid': uid,
-        'anchor_id': anchorId,
+        'anchor_id': ?anchorId,
         'web_location': 444.8,
         'csrf': Accounts.heartbeat.csrf,
       }),

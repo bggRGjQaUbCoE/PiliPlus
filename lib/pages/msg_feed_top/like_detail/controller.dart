@@ -31,7 +31,7 @@ class LikeDetailController
   @override
   Future<LoadingState<MsgLikeDetailData>> customGetData() =>
       MsgHttp.msgLikeDetail(
-        cardId: cardId,
+        cardId: cardId!,
         pn: page,
       );
 }

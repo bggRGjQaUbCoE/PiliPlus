@@ -18,7 +18,7 @@ class DynamicPanel extends StatelessWidget {
   final ValueChanged? onRemove;
   final Function(List<String>, int)? callback;
   final bool isSave;
-  final Function(bool isTop, dynamic dynId)? onSetTop;
+  final Function(bool isTop, Object dynId)? onSetTop;
   final VoidCallback? onBlock;
 
   const DynamicPanel({

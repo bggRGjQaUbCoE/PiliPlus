@@ -36,7 +36,7 @@ class LiveDmBlockController extends GetxController
   }
 
   Future<void> queryData() async {
-    var res = await LiveHttp.getLiveInfoByUser(roomId);
+    var res = await LiveHttp.getLiveInfoByUser(roomId!);
     if (res.isSuccess) {
       ShieldInfo? data = res.data;
       ShieldRules? shieldRules = data?.shieldRules;
@@ -115,7 +115,7 @@ class LiveDmBlockController extends GetxController
     } else {
       var res = await LiveHttp.liveShieldUser(
         uid: value,
-        roomid: roomId,
+        roomid: roomId!,
         type: 1,
       );
       if (res['status']) {
@@ -132,11 +132,11 @@ class LiveDmBlockController extends GetxController
     }
   }
 
-  Future<void> onRemove(int index, dynamic item) async {
+  Future<void> onRemove(int index, Object item) async {
     if (item is ShieldUserList) {
       var res = await LiveHttp.liveShieldUser(
-        uid: item.uid,
-        roomid: roomId,
+        uid: item.uid!,
+        roomid: roomId!,
         type: 0,
       );
       if (res['status']) {
@@ -145,7 +145,7 @@ class LiveDmBlockController extends GetxController
         SmartDialog.showToast(res['msg']);
       }
     } else {
-      var res = await LiveHttp.delShieldKeyword(keyword: item);
+      var res = await LiveHttp.delShieldKeyword(keyword: item as String);
       if (res['status']) {
         keywordList.removeAt(index);
       } else {

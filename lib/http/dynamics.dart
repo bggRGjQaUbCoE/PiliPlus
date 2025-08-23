@@ -120,11 +120,11 @@ class DynamicsHttp {
   }
 
   static Future createDynamic({
-    dynamic mid,
-    dynamic dynIdStr, // repost dyn
-    dynamic rid, // repost video
-    dynamic dynType,
-    dynamic rawText,
+    Object? mid,
+    Object? dynIdStr, // repost dyn
+    Object? rid, // repost video
+    Object? dynType,
+    Object? rawText,
     List? pics,
     int? publishTime,
     ReplyOptionType? replyOption,
@@ -255,7 +255,7 @@ class DynamicsHttp {
   }
 
   static Future setTop({
-    required dynamic dynamicId,
+    required Object dynamicId,
   }) async {
     var res = await Request().post(
       Api.setTopDyn,
@@ -274,7 +274,7 @@ class DynamicsHttp {
   }
 
   static Future rmTop({
-    required dynamic dynamicId,
+    required Object dynamicId,
   }) async {
     var res = await Request().post(
       Api.rmTopDyn,
@@ -293,7 +293,7 @@ class DynamicsHttp {
   }
 
   static Future articleInfo({
-    required dynamic cvId,
+    required Object cvId,
   }) async {
     var res = await Request().get(
       Api.articleInfo,
@@ -315,7 +315,7 @@ class DynamicsHttp {
   }
 
   static Future<LoadingState<ArticleViewData>> articleView({
-    required dynamic cvId,
+    required Object cvId,
   }) async {
     final res = await Request().get(
       Api.articleView,
@@ -333,7 +333,7 @@ class DynamicsHttp {
   }
 
   static Future<LoadingState<DynamicItemModel>> opusDetail({
-    required dynamic opusId,
+    required Object opusId,
   }) async {
     final res = await Request().get(
       Api.opusDetail,
@@ -350,7 +350,7 @@ class DynamicsHttp {
     }
   }
 
-  static Future<LoadingState<VoteInfo>> voteInfo(dynamic voteId) async {
+  static Future<LoadingState<VoteInfo>> voteInfo(Object voteId) async {
     final res = await Request().get(
       Api.voteInfo,
       queryParameters: {'vote_id': voteId},
@@ -506,7 +506,7 @@ class DynamicsHttp {
     }
   }
 
-  static Future<LoadingState<List<OpusPicModel>?>> dynPic(dynamic id) async {
+  static Future<LoadingState<List<OpusPicModel>?>> dynPic(Object id) async {
     final res = await Request().get(
       Api.dynPic,
       queryParameters: {
@@ -621,7 +621,7 @@ class DynamicsHttp {
   }
 
   static Future<LoadingState<ReserveInfoData>> reserveInfo({
-    required dynamic sid,
+    required Object sid,
   }) async {
     final res = await Request().get(
       Api.reserveInfo,

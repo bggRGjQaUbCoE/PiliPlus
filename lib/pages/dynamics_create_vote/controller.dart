@@ -58,7 +58,7 @@ class CreateVoteController extends GetxController {
   }
 
   Future<void> queryData() async {
-    var res = await DynamicsHttp.voteInfo(voteId);
+    var res = await DynamicsHttp.voteInfo(voteId!);
     if (res.isSuccess) {
       key = Utils.generateRandomString(6);
       final VoteInfo data = res.data;

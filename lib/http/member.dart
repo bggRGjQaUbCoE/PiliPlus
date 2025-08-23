@@ -31,7 +31,7 @@ import 'package:dio/dio.dart';
 
 class MemberHttp {
   static Future reportMember(
-    dynamic mid, {
+    Object mid, {
     String? reason,
     int? reasonV2,
   }) async {
@@ -431,8 +431,8 @@ class MemberHttp {
   // 搜索用户动态
   static Future memberDynamicSearch({
     required int pn,
-    required dynamic mid,
-    required dynamic offset,
+    required Object mid,
+    required Object offset,
     required String keyword,
   }) async {
     var res = await Request().get(
@@ -461,8 +461,8 @@ class MemberHttp {
 
   static Future<LoadingState<DynamicsDataModel>> dynSearch({
     required int pn,
-    required dynamic mid,
-    required dynamic offset,
+    required Object mid,
+    required Object offset,
     required String keyword,
   }) async {
     var res = await Request().get(

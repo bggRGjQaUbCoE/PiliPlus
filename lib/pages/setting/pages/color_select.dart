@@ -167,7 +167,7 @@ class _ColorSelectPageState extends State<ColorSelectPage> {
                 value: 0,
                 title: const Text('动态取色'),
                 groupValue: ctr.type.value,
-                onChanged: (dynamic val) {
+                onChanged: (val) {
                   ctr
                     ..type.value = 0
                     ..setting.put(SettingBoxKey.dynamicColor, true);
@@ -180,7 +180,7 @@ class _ColorSelectPageState extends State<ColorSelectPage> {
                 value: 1,
                 title: const Text('指定颜色'),
                 groupValue: ctr.type.value,
-                onChanged: (dynamic val) {
+                onChanged: (val) {
                   ctr
                     ..type.value = 1
                     ..setting.put(SettingBoxKey.dynamicColor, false);

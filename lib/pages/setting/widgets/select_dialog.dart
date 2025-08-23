@@ -177,7 +177,7 @@ class _CdnSelectDialogState extends State<CdnSelectDialog> {
     _cdnResList[index].value = '${speed}MB/s';
   }
 
-  void _handleSpeedTestError(dynamic error, int index) {
+  void _handleSpeedTestError(Object error, int index) {
     final item = _cdnResList[index];
     if (item.value != null) return;
 

@@ -36,7 +36,7 @@ class AtMeController extends CommonListController<MsgAtData, MsgAtItem> {
   Future<LoadingState<MsgAtData>> customGetData() =>
       MsgHttp.msgFeedAtMe(cursor: cursor, cursorTime: cursorTime);
 
-  Future<void> onRemove(dynamic id, int index) async {
+  Future<void> onRemove(Object id, int index) async {
     try {
       var res = await MsgHttp.delMsgfeed(2, id);
       if (res['status']) {

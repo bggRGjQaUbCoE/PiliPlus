@@ -304,7 +304,7 @@ class UserInfoCard extends StatelessWidget {
       Row(
         children: List.generate(
           5,
-          (index) => index % 2 == 0
+          (index) => index.isEven
               ? _countWidget(
                   colorScheme: colorScheme,
                   title: ['粉丝', '关注', '获赞'][index ~/ 2],

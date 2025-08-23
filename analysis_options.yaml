@@ -62,5 +62,6 @@ linter:
     - use_named_constants
     - use_null_aware_elements
     - unnecessary_lambdas
+    - use_is_even_rather_than_modulo
 # Additional information about this file can be found at
 # https://dart.dev/guides/language/analysis-options

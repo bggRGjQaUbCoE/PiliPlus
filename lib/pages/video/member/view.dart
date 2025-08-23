@@ -259,7 +259,7 @@ class _HorizontalMemberPageState extends State<HorizontalMemberPage>
       Obx(
         () => Row(
           children: List.generate(5, (index) {
-            if (index % 2 == 0) {
+            if (index.isEven) {
               return _buildChildInfo(
                 theme: theme,
                 title: const ['粉丝', '关注', '获赞'][index ~/ 2],

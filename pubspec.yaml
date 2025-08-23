@@ -215,6 +215,7 @@ dependencies:
   material_color_utilities: any
   flutter_cache_manager: any
 
+  http2: any
 dependency_overrides:
   screen_brightness: ^2.0.1
   path: ^1.9.1

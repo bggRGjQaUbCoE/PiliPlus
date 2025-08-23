@@ -262,7 +262,7 @@ class _PostPanelState extends CommonCollapseSlidePageState<PostPanel> {
                 List<num> split = res
                     .split(':')
                     .reversed
-                    .map((e) => num.parse(e))
+                    .map(num.parse)
                     .toList();
                 double duration = 0;
                 for (int i = 0; i < split.length; i++) {

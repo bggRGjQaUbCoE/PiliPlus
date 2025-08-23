@@ -61,5 +61,6 @@ linter:
     - use_decorated_box
     - use_named_constants
     - use_null_aware_elements
+    - unnecessary_lambdas
 # Additional information about this file can be found at
 # https://dart.dev/guides/language/analysis-options

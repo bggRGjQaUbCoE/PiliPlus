@@ -10,7 +10,7 @@ import 'package:get/get_utils/get_utils.dart';
 
 Future<VideoPlayerServiceHandler> initAudioService() async {
   return AudioService.init(
-    builder: () => VideoPlayerServiceHandler(),
+    builder: VideoPlayerServiceHandler.new,
     config: const AudioServiceConfig(
       androidNotificationChannelId: 'com.example.piliplus.audio',
       androidNotificationChannelName: 'Audio Service PiliPlus',

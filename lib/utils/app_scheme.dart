@@ -31,9 +31,7 @@ class PiliScheme {
     appLinks = AppLinks();
 
     listener?.cancel();
-    listener = appLinks.uriLinkStream.listen((uri) {
-      routePush(uri);
-    });
+    listener = appLinks.uriLinkStream.listen(routePush);
   }
 
   static Future<bool> routePushFromUrl(

@@ -244,9 +244,7 @@ class _CustomTabBarViewState extends State<CustomTabBarView> {
       );
     }
     if (mounted) {
-      setState(() {
-        _updateChildren();
-      });
+      setState(_updateChildren);
     }
     return Future<void>.value();
   }
@@ -286,9 +284,7 @@ class _CustomTabBarViewState extends State<CustomTabBarView> {
     }
 
     if (mounted) {
-      setState(() {
-        _updateChildren();
-      });
+      setState(_updateChildren);
     }
   }
 

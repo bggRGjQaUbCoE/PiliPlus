@@ -159,7 +159,7 @@ class AccountManager extends Interceptor {
               ...?previousCookies
                   ?.split(';')
                   .where((e) => e.isNotEmpty)
-                  .map((c) => Cookie.fromSetCookieValue(c)),
+                  .map(Cookie.fromSetCookieValue),
               ...cookies,
             ]);
             options.headers[HttpHeaders.cookieHeader] = newCookies.isNotEmpty
@@ -257,7 +257,7 @@ class AccountManager extends Interceptor {
         .map((str) => str.split(_setCookieReg))
         .expand((cookie) => cookie)
         .where((cookie) => cookie.isNotEmpty)
-        .map((str) => Cookie.fromSetCookieValue(str))
+        .map(Cookie.fromSetCookieValue)
         .toList();
     final statusCode = response.statusCode ?? 0;
     final locations = response.headers[HttpHeaders.locationHeader] ?? [];

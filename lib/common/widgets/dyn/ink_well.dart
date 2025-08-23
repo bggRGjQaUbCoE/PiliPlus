@@ -980,9 +980,7 @@ class _InkResponseState extends State<_InkResponseStateWidget>
     if (!mounted) {
       return;
     }
-    setState(() {
-      updateFocusHighlights();
-    });
+    setState(updateFocusHighlights);
   }
 
   bool get _shouldShowFocus =>

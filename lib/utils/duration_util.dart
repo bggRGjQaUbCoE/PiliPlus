@@ -24,7 +24,7 @@ class DurationUtil {
     List<int> split = data
         .split(':')
         .reversed
-        .map((e) => int.parse(e))
+        .map(int.parse)
         .toList();
     int duration = 0;
     for (int i = 0; i < split.length; i++) {

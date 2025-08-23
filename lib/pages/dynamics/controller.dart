@@ -136,7 +136,7 @@ class DynamicsController extends GetxController
 
         final list = data.upList;
         _cacheUpList = List<UpItem>.from(list);
-        list.addAll(list1..removeWhere((e) => list.contains(e)));
+        list.addAll(list1..removeWhere(list.contains));
       }
       upState.value = Success(data);
     } else {

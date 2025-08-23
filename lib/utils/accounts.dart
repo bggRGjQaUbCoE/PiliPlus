@@ -78,7 +78,7 @@ class Accounts {
     }
     await Future.wait(
       (accountMode.values.toSet()..retainWhere((i) => !i.activited)).map(
-        (i) => Request.buvidActive(i),
+        Request.buvidActive,
       ),
     );
   }

@@ -500,9 +500,7 @@ class LoginPageController extends GetxController
           String geeGt = captureUri.queryParameters['gee_gt']!;
           String geeChallenge = captureUri.queryParameters['gee_challenge']!;
 
-          getCaptcha(geeGt, geeChallenge, () {
-            loginByPassword();
-          });
+          getCaptcha(geeGt, geeChallenge, loginByPassword);
           break;
         default:
           SmartDialog.showToast(res['msg']);
@@ -665,9 +663,7 @@ class LoginPageController extends GetxController
             return;
           }
 
-          getCaptcha(geeGt, geeChallenge, () {
-            sendSmsCode();
-          });
+          getCaptcha(geeGt, geeChallenge, sendSmsCode);
           break;
         default:
           SmartDialog.showToast(res['msg']);

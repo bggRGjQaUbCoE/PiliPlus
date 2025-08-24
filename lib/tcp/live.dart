@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:PiliPlus/services/loggeer.dart';
+import 'package:PiliPlus/services/logger.dart';
 import 'package:brotli/brotli.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -49,7 +49,7 @@ class PackageHeaderRes extends PackageHeader {
 
   static PackageHeaderRes? fromBytesData(Uint8List data) {
     if (data.length < 10) {
-      getLogger().i('数据不足以解析PackageHeader');
+      logger.i('数据不足以解析PackageHeader');
       return null;
     }
     final byteData = ByteData.sublistView(data);
@@ -157,7 +157,6 @@ class LiveMessageStream {
   WebSocketChannel? _channel;
   StreamSubscription? _socketSubscription;
   Timer? _timer;
-  PiliLogger logger = getLogger();
   final String logTag = "LiveStreamService";
 
   Future<void> init() async {
@@ -236,8 +235,7 @@ class LiveMessageStream {
       );
       _channel?.sink.add(authPackage.marshal());
     } catch (e) {
-      SmartDialog.showToast("弹幕地址链接失败");
-      if (kDebugMode) logger.i('$logTag ===> TCP连接失败: $e');
+      SmartDialog.showToast("弹幕地址链接失败: $e");
     }
   }
 

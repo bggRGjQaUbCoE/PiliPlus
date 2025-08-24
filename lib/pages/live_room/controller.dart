@@ -24,6 +24,7 @@ import 'package:PiliPlus/utils/video_utils.dart';
 import 'package:canvas_danmaku/canvas_danmaku.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:easy_debounce/easy_throttle.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -219,7 +220,9 @@ class LiveRoomController extends GetxController {
                 list.cast<Map<String, dynamic>>().map(DanmakuMsg.fromPrefetch),
               );
               WidgetsBinding.instance.addPostFrameCallback(scrollToBottom);
-            } catch (_) {}
+            } catch (e) {
+              if (kDebugMode) debugPrint(e.toString());
+            }
           }
         }
       });
@@ -332,7 +335,9 @@ class LiveRoomController extends GetxController {
                   }
                 }
               }
-            } catch (_) {}
+            } catch (e) {
+              if (kDebugMode) debugPrint(e.toString());
+            }
           })
           ..init();
   }

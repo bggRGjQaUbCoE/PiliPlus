@@ -6,7 +6,7 @@ import 'package:PiliPlus/http/init.dart';
 import 'package:PiliPlus/models/common/theme/theme_color_type.dart';
 import 'package:PiliPlus/router/app_pages.dart';
 import 'package:PiliPlus/services/account_service.dart';
-import 'package:PiliPlus/services/loggeer.dart';
+import 'package:PiliPlus/services/logger.dart';
 import 'package:PiliPlus/services/service_locator.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
 import 'package:PiliPlus/utils/cache_manage.dart';
@@ -81,7 +81,7 @@ Commit Hash: ${BuildConfig.commitHash}''';
     final Catcher2Options debugConfig = Catcher2Options(
       SilentReportMode(),
       [
-        FileHandler(await getLogsPath()),
+        FileHandler(await LoggerUtils.getLogsPath()),
         ConsoleHandler(
           enableDeviceParameters: false,
           enableApplicationParameters: false,
@@ -96,7 +96,7 @@ Commit Hash: ${BuildConfig.commitHash}''';
     final Catcher2Options releaseConfig = Catcher2Options(
       SilentReportMode(),
       [
-        FileHandler(await getLogsPath()),
+        FileHandler(await LoggerUtils.getLogsPath()),
         ConsoleHandler(
           enableCustomParameters: true,
         ),

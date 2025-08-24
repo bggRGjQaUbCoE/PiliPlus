@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
-import 'package:PiliPlus/services/loggeer.dart';
+import 'package:PiliPlus/services/logger.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
@@ -18,16 +18,18 @@ class LogsPage extends StatefulWidget {
   State<LogsPage> createState() => _LogsPageState();
 }
 
+typedef _LogInfo = ({Object? date, String body});
+
 class _LogsPageState extends State<LogsPage> {
   late File logsPath;
   late String fileContent;
-  List logsContent = [];
+  List<_LogInfo> logsContent = [];
   DateTime? latestLog;
   late bool enableLog = Pref.enableLog;
 
   @override
   void initState() {
-    getPath();
+    getLog();
     super.initState();
   }
 
@@ -35,20 +37,20 @@ class _LogsPageState extends State<LogsPage> {
   void dispose() {
     if (latestLog != null) {
       if (DateTime.now().difference(latestLog!) >= const Duration(days: 14)) {
-        clearLogs();
+        LoggerUtils.clearLogs();
       }
     }
     super.dispose();
   }
 
-  Future<void> getPath() async {
-    logsPath = await getLogsPath();
+  Future<void> getLog() async {
+    logsPath = await LoggerUtils.getLogsPath();
     fileContent = await logsPath.readAsString();
     logsContent = parseLogs(fileContent);
     setState(() {});
   }
 
-  List<Map<String, dynamic>> parseLogs(String fileContent) {
+  List<_LogInfo> parseLogs(String fileContent) {
     const String splitToken =
         '======================================================================';
     List contentList = fileContent.split(splitToken).map((item) {
@@ -62,9 +64,9 @@ class _LogsPageState extends State<LogsPage> {
           .replaceAll('ERROR', '错误信息')
           .replaceAll('STACK TRACE', '错误堆栈');
     }).toList();
-    List<Map<String, dynamic>> result = [];
+    List<_LogInfo> result = [];
     for (String i in contentList) {
-      dynamic date;
+      Object? date;
       String body = i
           .split("\n")
           .map((l) {
@@ -84,7 +86,7 @@ class _LogsPageState extends State<LogsPage> {
           .where((l) => l.replaceAll("\n", "").trim().isNotEmpty)
           .join("\n");
       if (date != null || body != '') {
-        result.add({'date': date, 'body': body, 'expand': false});
+        result.add((date: date, body: body));
       }
     }
     return result.reversed.toList();
@@ -100,12 +102,12 @@ class _LogsPageState extends State<LogsPage> {
   }
 
   Future<void> clearLogsHandle() async {
-    if (await clearLogs()) {
+    if (await LoggerUtils.clearLogs()) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('已清空')),
         );
-        logsContent = [];
+        logsContent.clear();
         setState(() {});
       }
     }
@@ -173,8 +175,8 @@ class _LogsPageState extends State<LogsPage> {
               itemCount: logsContent.length,
               itemBuilder: (context, index) {
                 final log = logsContent[index];
-                if (log['date'] is DateTime) {
-                  latestLog ??= log['date'];
+                if (log.date case DateTime date) {
+                  latestLog ??= date;
                 }
                 return Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -187,7 +189,7 @@ class _LogsPageState extends State<LogsPage> {
                         spacing: 10,
                         children: [
                           Text(
-                            log['date'].toString(),
+                            log.date.toString(),
                             style: TextStyle(
                               fontSize: Theme.of(
                                 context,
@@ -201,14 +203,14 @@ class _LogsPageState extends State<LogsPage> {
                             ),
                             onPressed: () {
                               Utils.copyText(
-                                '```\n${log['body']}\n```',
+                                '```\n${log.body}\n```',
                                 needToast: false,
                               );
                               if (context.mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
                                     content: Text(
-                                      '已将 ${log['date'].toString()} 复制至剪贴板',
+                                      '已将 ${log.date} 复制至剪贴板',
                                     ),
                                   ),
                                 );
@@ -223,7 +225,7 @@ class _LogsPageState extends State<LogsPage> {
                         child: Container(
                           width: double.infinity,
                           padding: const EdgeInsets.all(12.0),
-                          child: SelectableText(log['body']),
+                          child: SelectableText(log.body),
                         ),
                       ),
                     ],

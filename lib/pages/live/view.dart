@@ -21,7 +21,7 @@ import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-class LivePage extends CommonPage {
+class LivePage extends StatefulWidget {
   const LivePage({super.key});
 
   @override

@@ -24,7 +24,7 @@ import 'package:PiliPlus/utils/grid.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-class PgcPage extends CommonPage {
+class PgcPage extends StatefulWidget {
   const PgcPage({
     super.key,
     required this.tabType,

@@ -20,7 +20,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
-class MinePage extends CommonPage {
+class MinePage extends StatefulWidget {
   const MinePage({super.key});
 
   @override

@@ -10,7 +10,7 @@ import 'package:PiliPlus/utils/grid.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-class RcmdPage extends CommonPage {
+class RcmdPage extends StatefulWidget {
   const RcmdPage({super.key});
 
   @override

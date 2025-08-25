@@ -18,7 +18,7 @@ import 'package:get/get.dart';
 import 'package:waterfall_flow/waterfall_flow.dart'
     hide SliverWaterfallFlowDelegateWithMaxCrossAxisExtent;
 
-class DynamicsTabPage extends CommonPage {
+class DynamicsTabPage extends StatefulWidget {
   const DynamicsTabPage({super.key, required this.dynamicsType});
 
   final DynamicsTabType dynamicsType;

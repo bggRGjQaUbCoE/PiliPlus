@@ -14,11 +14,7 @@ import 'package:easy_debounce/easy_throttle.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide ContextExtensionss;
 
-abstract class CommonDynPage extends StatefulWidget {
-  const CommonDynPage({super.key});
-}
-
-abstract class CommonDynPageState<T extends CommonDynPage> extends State<T>
+abstract class CommonDynPageState<T extends StatefulWidget> extends State<T>
     with TickerProviderStateMixin {
   CommonDynController get controller;
 

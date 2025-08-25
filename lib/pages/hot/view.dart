@@ -15,7 +15,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-class HotPage extends CommonPage {
+class HotPage extends StatefulWidget {
   const HotPage({super.key});
 
   @override

@@ -10,7 +10,7 @@ import 'package:PiliPlus/utils/grid.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-class ZonePage extends CommonPage {
+class ZonePage extends StatefulWidget {
   const ZonePage({super.key, this.rid, this.seasonType});
 
   final int? rid;

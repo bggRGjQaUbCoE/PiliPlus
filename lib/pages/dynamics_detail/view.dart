@@ -20,7 +20,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart' hide ContextExtensionss;
 
-class DynamicDetailPage extends CommonDynPage {
+class DynamicDetailPage extends StatefulWidget {
   const DynamicDetailPage({super.key});
 
   @override

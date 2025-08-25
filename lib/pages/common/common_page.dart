@@ -8,11 +8,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:get/get.dart';
 
-abstract class CommonPage extends StatefulWidget {
-  const CommonPage({super.key});
-}
-
-abstract class CommonPageState<T extends CommonPage, R extends CommonController>
+abstract class CommonPageState<
+  T extends StatefulWidget,
+  R extends CommonController
+>
     extends State<T> {
   R get controller;
   StreamController<bool>? mainStream;

@@ -36,7 +36,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart' hide ContextExtensionss;
 import 'package:html/parser.dart' as parser;
 
-class ArticlePage extends CommonDynPage {
+class ArticlePage extends StatefulWidget {
   const ArticlePage({super.key});
 
   @override

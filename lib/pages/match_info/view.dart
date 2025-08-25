@@ -23,7 +23,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
-class MatchInfoPage extends CommonDynPage {
+class MatchInfoPage extends StatefulWidget {
   const MatchInfoPage({super.key});
 
   @override

@@ -120,8 +120,8 @@ class MemberCoinLikeItem extends StatelessWidget {
                       Text(
                         DateUtil.dateFormat(
                           item.ctime,
-                          shortFormat: VideoCardV.shortFormat,
-                          longFormat: VideoCardV.longFormat,
+                          short: VideoCardV.shortFormat,
+                          long: VideoCardV.longFormat,
                         ),
                         style: TextStyle(
                           fontSize: 11,

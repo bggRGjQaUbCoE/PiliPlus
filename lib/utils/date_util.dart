@@ -1,7 +1,7 @@
 import 'package:intl/intl.dart' show DateFormat;
 
 class DateUtil {
-  static final _shortFormat = DateFormat('MM-dd');
+  static final shortFormat = DateFormat('MM-dd');
   static final longFormat = DateFormat('yyyy-MM-dd');
   static final _shortFormatD = DateFormat('MM-dd HH:mm');
   static final longFormatD = DateFormat('yyyy-MM-dd HH:mm');
@@ -9,8 +9,8 @@ class DateUtil {
 
   static String dateFormat(
     int? time, {
-    DateFormat? shortFormat,
-    DateFormat? longFormat,
+    DateFormat? short,
+    DateFormat? long,
   }) {
     if (time == null || time == 0) {
       return '';
@@ -37,8 +37,8 @@ class DateUtil {
       return '$dayDiff天前';
     }
     final DateFormat sdf = now.year == date.year
-        ? shortFormat ?? _shortFormat
-        : longFormat ?? DateUtil.longFormat;
+        ? short ?? shortFormat
+        : long ?? DateUtil.longFormat;
     return sdf.format(date);
   }
 

@@ -235,8 +235,8 @@ class VideoCardV extends StatelessWidget {
               ),
               text: DateUtil.dateFormat(
                 videoItem.pubdate,
-                shortFormat: shortFormat,
-                longFormat: longFormat,
+                short: shortFormat,
+                long: longFormat,
               ),
             ),
           ),

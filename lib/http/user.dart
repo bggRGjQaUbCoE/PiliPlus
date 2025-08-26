@@ -301,18 +301,22 @@ class UserHttp {
     }
   }
 
-  static Future<Map<String, dynamic>> videoTags({required String bvid}) async {
+  static Future<LoadingState<List<VideoTagItem>?>> videoTags({
+    required String bvid,
+    Object? cid,
+  }) async {
     var res = await Request().get(
       Api.videoTags,
-      queryParameters: {'bvid': bvid},
+      queryParameters: {'bvid': bvid, 'cid': ?cid},
     );
     if (res.data['code'] == 0) {
-      List<VideoTagItem>? list = (res.data['data'] as List?)
-          ?.map((e) => VideoTagItem.fromJson(e))
-          .toList();
-      return {'status': true, 'data': list};
+      return Success(
+        (res.data['data'] as List?)
+            ?.map((e) => VideoTagItem.fromJson(e))
+            .toList(),
+      );
     } else {
-      return {'status': false};
+      return const Error(null);
     }
   }
 

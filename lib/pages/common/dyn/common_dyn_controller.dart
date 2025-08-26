@@ -21,7 +21,7 @@ abstract class CommonDynController extends ReplyController<MainListReply>
   late final horizontalPreview = Pref.horizontalPreview;
   late final List<double> ratio = Pref.dynamicDetailRatio;
 
-  double offsetDy = 1;
+  final double offsetDy = 1;
 
   @override
   void onInit() {
@@ -89,4 +89,7 @@ abstract class CommonDynController extends ReplyController<MainListReply>
     cursorNext: cursorNext,
     offset: paginationReply?.nextOffset,
   );
+
+  @override
+  List<ReplyInfo>? getDataList(MainListReply response) => response.replies;
 }

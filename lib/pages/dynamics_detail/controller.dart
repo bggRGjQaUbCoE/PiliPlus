@@ -1,5 +1,3 @@
-import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
-    show MainListReply, ReplyInfo;
 import 'package:PiliPlus/http/dynamics.dart';
 import 'package:PiliPlus/models/dynamics/result.dart';
 import 'package:PiliPlus/pages/common/dyn/common_dyn_controller.dart';
@@ -46,10 +44,5 @@ class DynamicDetailController extends CommonDynController {
     oid = int.parse(commentIdStr);
     replyType = commentType;
     queryData();
-  }
-
-  @override
-  List<ReplyInfo>? getDataList(MainListReply response) {
-    return response.replies;
   }
 }

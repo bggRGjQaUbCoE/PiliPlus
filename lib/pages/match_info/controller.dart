@@ -1,4 +1,3 @@
-import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/match.dart';
 import 'package:PiliPlus/models_new/match/match_info/contest.dart';
@@ -18,8 +17,10 @@ class MatchInfoController extends CommonDynController {
       LoadingState<MatchContest?>.loading().obs;
 
   @override
+  double get offsetDy => 2;
+
+  @override
   void onInit() {
-    offsetDy = 2;
     super.onInit();
     getMatchInfo();
   }
@@ -30,10 +31,5 @@ class MatchInfoController extends CommonDynController {
       queryData();
     }
     infoState.value = res;
-  }
-
-  @override
-  List<ReplyInfo>? getDataList(MainListReply response) {
-    return response.replies;
   }
 }

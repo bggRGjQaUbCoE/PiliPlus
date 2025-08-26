@@ -951,4 +951,12 @@ class Api {
 
   static const String loginDevices =
       '${HttpString.passBaseUrl}/x/safecenter/user_login_devices';
+
+  static const String bgmDetail = '/x/copyright-music-publicity/bgm/detail';
+
+  static const String wishUpdate =
+      '/x/copyright-music-publicity/bgm/wish/update';
+
+  static const String bgmRecommend =
+      '/x/copyright-music-publicity/bgm/recommend_list';
 }

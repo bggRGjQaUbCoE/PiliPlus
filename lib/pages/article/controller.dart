@@ -1,5 +1,3 @@
-import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
-    show MainListReply, ReplyInfo;
 import 'package:PiliPlus/http/dynamics.dart';
 import 'package:PiliPlus/http/fav.dart';
 import 'package:PiliPlus/http/video.dart';
@@ -166,11 +164,6 @@ class ArticleController extends CommonDynController {
         VideoHttp.historyReport(aid: commentId, type: 5);
       }
     }
-  }
-
-  @override
-  List<ReplyInfo>? getDataList(MainListReply response) {
-    return response.replies;
   }
 
   Future<void> onFav() async {

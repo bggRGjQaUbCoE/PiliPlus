@@ -38,7 +38,7 @@ typedef IndexedFocusedWidgetBuilder =
 
 typedef IndexedTagStringBuilder = String Function(int index);
 
-class InteractiveviewerGallery<T> extends StatefulWidget {
+class InteractiveviewerGallery extends StatefulWidget {
   const InteractiveviewerGallery({
     super.key,
     required this.sources,

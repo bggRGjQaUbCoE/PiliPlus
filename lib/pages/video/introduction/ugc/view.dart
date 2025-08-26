@@ -933,11 +933,25 @@ class _UgcIntroPanelState extends TripleState<UgcIntroPanel>
               .map(
                 (item) => SearchText(
                   fontSize: 13,
-                  text: item.tagName!,
-                  onTap: (tagName) => Get.toNamed(
-                    '/searchResult',
-                    parameters: {'keyword': tagName},
-                  ),
+                  text: switch (item.tagType) {
+                    'bgm' => item.tagName!.replaceFirst('发现', '\u{1f3b5}BGM：'),
+                    'topic' => '#${item.tagName}',
+                    _ => item.tagName!,
+                  },
+                  onTap: switch (item.tagType) {
+                    'bgm' => (_) => Get.toNamed(
+                      '/musicDetail',
+                      parameters: {'musicId': item.musicId!},
+                    ),
+                    'topic' => (_) => Get.toNamed(
+                      '/dynTopic',
+                      parameters: {'id': item.tagId!.toString()},
+                    ),
+                    _ => (tagName) => Get.toNamed(
+                      '/searchResult',
+                      parameters: {'keyword': tagName},
+                    ),
+                  },
                   onLongPress: Utils.copyText,
                 ),
               )

@@ -609,9 +609,7 @@ class PiliScheme {
         launchURL();
       }
       return hasMatch;
-    }
-
-    if (host.contains('live.bilibili.com')) {
+    } else if (host.contains('live.bilibili.com')) {
       String? roomId = uriDigitRegExp.firstMatch(path)?.group(1);
       if (roomId != null) {
         PageUtils.toLiveRoom(int.parse(roomId), off: off);
@@ -619,9 +617,7 @@ class PiliScheme {
       }
       launchURL();
       return false;
-    }
-
-    if (host.contains('space.bilibili.com')) {
+    } else if (host.contains('space.bilibili.com')) {
       String? sid =
           uri.queryParameters['sid'] ??
           RegExp(r'lists/(\d+)').firstMatch(path)?.group(1);
@@ -636,9 +632,7 @@ class PiliScheme {
       }
       launchURL();
       return false;
-    }
-
-    if (host.contains('search.bilibili.com')) {
+    } else if (host.contains('search.bilibili.com')) {
       String? keyword = uri.queryParameters['keyword'];
       if (keyword != null) {
         PageUtils.toDupNamed(
@@ -650,9 +644,23 @@ class PiliScheme {
       }
       launchURL();
       return false;
+    } else if (host.contains('music.bilibili.com')) {
+      // music.bilibili.com/pc/music-detail?music_id=MA***
+      // music.bilibili.com/h5-music-detail?music_id=MA***
+      if (path.contains('music-detail')) {
+        final musicId = uri.queryParameters['music_id'];
+        if (musicId != null && musicId.startsWith('MA')) {
+          PageUtils.toDupNamed(
+            '/musicDetail',
+            parameters: {'musicId': musicId},
+          );
+          return true;
+        }
+        launchURL();
+      }
     }
 
-    List<String> pathSegments = uri.pathSegments;
+    final pathSegments = uri.pathSegments;
     if (pathSegments.isEmpty) {
       launchURL();
       return false;

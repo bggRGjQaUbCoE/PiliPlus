@@ -1,10 +1,13 @@
+import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart';
+import 'package:PiliPlus/grpc/reply.dart';
+import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/pages/common/reply_controller.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart' show ScrollDirection;
 import 'package:get/get.dart';
 
-abstract class CommonDynController<R> extends ReplyController<R>
+abstract class CommonDynController extends ReplyController<MainListReply>
     with GetSingleTickerProviderStateMixin {
   int get oid;
   int get replyType;
@@ -77,4 +80,13 @@ abstract class CommonDynController<R> extends ReplyController<R>
     scrollController.removeListener(listener);
     super.onClose();
   }
+
+  @override
+  Future<LoadingState<MainListReply>> customGetData() => ReplyGrpc.mainList(
+    type: replyType,
+    oid: oid,
+    mode: mode.value,
+    cursorNext: cursorNext,
+    offset: paginationReply?.nextOffset,
+  );
 }

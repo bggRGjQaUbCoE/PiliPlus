@@ -15,7 +15,6 @@ import 'package:PiliPlus/pages/match_info/controller.dart';
 import 'package:PiliPlus/pages/video/reply/widgets/reply_item_grpc.dart';
 import 'package:PiliPlus/pages/video/reply_reply/view.dart';
 import 'package:PiliPlus/utils/date_util.dart';
-import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:easy_debounce/easy_throttle.dart';
@@ -63,19 +62,7 @@ class _MatchInfoPageState extends CommonDynPageState<MatchInfoPage> {
       ),
       floatingActionButton: SlideTransition(
         position: controller.fabAnim,
-        child: FloatingActionButton(
-          heroTag: null,
-          onPressed: () {
-            feedBack();
-            controller.onReply(
-              context,
-              oid: controller.oid,
-              replyType: controller.replyType,
-            );
-          },
-          tooltip: '评论动态',
-          child: const Icon(Icons.reply),
-        ),
+        child: replyButton,
       ),
     );
   }

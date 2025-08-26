@@ -1,9 +1,7 @@
 import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
     show MainListReply, ReplyInfo;
-import 'package:PiliPlus/grpc/reply.dart';
 import 'package:PiliPlus/http/dynamics.dart';
 import 'package:PiliPlus/http/fav.dart';
-import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/video.dart';
 import 'package:PiliPlus/models/dynamics/article_content_model.dart'
     show ArticleContentModel;
@@ -19,7 +17,7 @@ import 'package:PiliPlus/utils/url_utils.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 
-class ArticleController extends CommonDynController<MainListReply> {
+class ArticleController extends CommonDynController {
   late String id;
   late String type;
 
@@ -174,15 +172,6 @@ class ArticleController extends CommonDynController<MainListReply> {
   List<ReplyInfo>? getDataList(MainListReply response) {
     return response.replies;
   }
-
-  @override
-  Future<LoadingState<MainListReply>> customGetData() => ReplyGrpc.mainList(
-    type: commentType,
-    oid: commentId,
-    mode: mode.value,
-    cursorNext: cursorNext,
-    offset: paginationReply?.nextOffset,
-  );
 
   Future<void> onFav() async {
     final favorite = stats.value?.favorite;

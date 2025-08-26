@@ -21,13 +21,10 @@ import 'package:PiliPlus/pages/common/dyn/common_dyn_page.dart';
 import 'package:PiliPlus/pages/dynamics_repost/view.dart';
 import 'package:PiliPlus/pages/video/reply/widgets/reply_item_grpc.dart';
 import 'package:PiliPlus/utils/date_util.dart';
-import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:PiliPlus/utils/grid.dart';
 import 'package:PiliPlus/utils/image_util.dart';
 import 'package:PiliPlus/utils/num_util.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
-import 'package:PiliPlus/utils/storage.dart';
-import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -479,49 +476,7 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
     }),
     actions: [
       const SizedBox(width: 4),
-      if (!isPortrait)
-        IconButton(
-          tooltip: '页面比例调节',
-          onPressed: () => showDialog(
-            context: context,
-            builder: (context) => Align(
-              alignment: Alignment.topRight,
-              child: Container(
-                margin: const EdgeInsets.only(
-                  top: 56,
-                  right: 16,
-                ),
-                width: maxWidth / 4,
-                height: 32,
-                child: Builder(
-                  builder: (context) => Slider(
-                    min: 1,
-                    max: 100,
-                    value: controller.ratio.first,
-                    onChanged: (value) {
-                      if (value >= 10 && value <= 90) {
-                        value = value.toPrecision(2);
-                        controller.ratio
-                          ..[0] = value
-                          ..[1] = 100 - value;
-                        GStorage.setting.put(
-                          SettingBoxKey.dynamicDetailRatio,
-                          controller.ratio,
-                        );
-                        (context as Element).markNeedsBuild();
-                        setState(() {});
-                      }
-                    },
-                  ),
-                ),
-              ),
-            ),
-          ),
-          icon: Transform.rotate(
-            angle: pi / 2,
-            child: const Icon(Icons.splitscreen, size: 19),
-          ),
-        ),
+      if (!isPortrait) ratioWidget(maxWidth),
       IconButton(
         tooltip: '浏览器打开',
         onPressed: () => PageUtils.inAppWebview(controller.url),
@@ -605,20 +560,6 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
       position: controller.fabAnim,
       child: Builder(
         builder: (context) {
-          Widget button() => FloatingActionButton(
-            heroTag: null,
-            onPressed: () {
-              feedBack();
-              controller.onReply(
-                context,
-                oid: controller.commentId,
-                replyType: controller.commentType,
-              );
-            },
-            tooltip: '评论动态',
-            child: const Icon(Icons.reply),
-          );
-
           if (!controller.showDynActionBar) {
             return Align(
               alignment: Alignment.bottomRight,
@@ -627,7 +568,7 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
                   right: 14,
                   bottom: padding.bottom + 14,
                 ),
-                child: button(),
+                child: replyButton,
               ),
             );
           }
@@ -671,7 +612,7 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
                 right: 14,
                 bottom: 14 + (stats != null ? 0 : padding.bottom),
               ),
-              child: button(),
+              child: replyButton,
             );
 
             if (stats == null) {

@@ -9,12 +9,9 @@ import 'package:PiliPlus/pages/dynamics/widgets/author_panel.dart';
 import 'package:PiliPlus/pages/dynamics/widgets/dynamic_panel.dart';
 import 'package:PiliPlus/pages/dynamics_detail/controller.dart';
 import 'package:PiliPlus/pages/dynamics_repost/view.dart';
-import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:PiliPlus/utils/grid.dart';
 import 'package:PiliPlus/utils/num_util.dart';
 import 'package:PiliPlus/utils/request_utils.dart';
-import 'package:PiliPlus/utils/storage.dart';
-import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -94,45 +91,7 @@ class _DynamicDetailPageState extends CommonDynPageState<DynamicDetailPage> {
     actions: isPortrait
         ? null
         : [
-            IconButton(
-              tooltip: '页面比例调节',
-              onPressed: () => showDialog(
-                context: context,
-                builder: (context) => Align(
-                  alignment: Alignment.topRight,
-                  child: Container(
-                    margin: const EdgeInsets.only(top: 56, right: 16),
-                    width: maxWidth / 4,
-                    height: 32,
-                    child: Builder(
-                      builder: (context) => Slider(
-                        min: 1,
-                        max: 100,
-                        value: controller.ratio.first,
-                        onChanged: (value) {
-                          if (value >= 10 && value <= 90) {
-                            value = value.toPrecision(2);
-                            controller.ratio
-                              ..[0] = value
-                              ..[1] = 100 - value;
-                            GStorage.setting.put(
-                              SettingBoxKey.dynamicDetailRatio,
-                              controller.ratio,
-                            );
-                            (context as Element).markNeedsBuild();
-                            setState(() {});
-                          }
-                        },
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              icon: Transform.rotate(
-                angle: pi / 2,
-                child: const Icon(Icons.splitscreen, size: 19),
-              ),
-            ),
+            ratioWidget(maxWidth),
             const SizedBox(width: 16),
           ],
   );
@@ -237,20 +196,6 @@ class _DynamicDetailPageState extends CommonDynPageState<DynamicDetailPage> {
         position: controller.fabAnim,
         child: Builder(
           builder: (context) {
-            Widget button() => FloatingActionButton(
-              heroTag: null,
-              onPressed: () {
-                feedBack();
-                controller.onReply(
-                  context,
-                  oid: controller.oid,
-                  replyType: controller.replyType,
-                );
-              },
-              tooltip: '评论动态',
-              child: const Icon(Icons.reply),
-            );
-
             if (!controller.showDynActionBar) {
               return Align(
                 alignment: Alignment.bottomRight,
@@ -259,7 +204,7 @@ class _DynamicDetailPageState extends CommonDynPageState<DynamicDetailPage> {
                     right: 14,
                     bottom: padding.bottom + 14,
                   ),
-                  child: button(),
+                  child: replyButton,
                 ),
               );
             }
@@ -302,7 +247,7 @@ class _DynamicDetailPageState extends CommonDynPageState<DynamicDetailPage> {
               children: [
                 Padding(
                   padding: const EdgeInsets.only(right: 14, bottom: 14),
-                  child: button(),
+                  child: replyButton,
                 ),
                 Container(
                   decoration: BoxDecoration(

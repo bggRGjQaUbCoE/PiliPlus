@@ -1,16 +1,15 @@
 import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart';
-import 'package:PiliPlus/grpc/reply.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/match.dart';
 import 'package:PiliPlus/models_new/match/match_info/contest.dart';
 import 'package:PiliPlus/pages/common/dyn/common_dyn_controller.dart';
 import 'package:get/get.dart';
 
-class MatchInfoController extends CommonDynController<MainListReply> {
+class MatchInfoController extends CommonDynController {
   @override
   final int oid = int.parse(Get.parameters['cid']!);
   @override
-  int get replyType => 27;
+  final int replyType = 27;
 
   @override
   dynamic get sourceId => oid.toString();
@@ -37,13 +36,4 @@ class MatchInfoController extends CommonDynController<MainListReply> {
   List<ReplyInfo>? getDataList(MainListReply response) {
     return response.replies;
   }
-
-  @override
-  Future<LoadingState<MainListReply>> customGetData() => ReplyGrpc.mainList(
-    type: replyType,
-    oid: oid,
-    mode: mode.value,
-    cursorNext: cursorNext,
-    offset: paginationReply?.nextOffset,
-  );
 }

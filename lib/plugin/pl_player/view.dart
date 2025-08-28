@@ -2277,13 +2277,13 @@ class VideoShotImage extends StatefulWidget {
 
 Future<ui.Image?> _getImg(String url) async {
   final cacheManager = DefaultCacheManager();
-  final cacheKey = url.hashCode.toString();
+  final cacheKey = Utils.getFileName(url, fileExt: false);
   final fileInfo = await cacheManager.getFileFromCache(cacheKey);
   if (fileInfo != null) {
     final bytes = await fileInfo.file.readAsBytes();
     return _loadImg(bytes);
   } else {
-    final res = await Request().get(
+    final res = await Request().get<Uint8List>(
       url,
       options: Options(responseType: ResponseType.bytes),
     );

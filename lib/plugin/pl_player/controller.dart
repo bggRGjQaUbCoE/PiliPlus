@@ -953,7 +953,12 @@ class PlPlayerController {
           isLive,
         );
       }),
+      if (kDebugMode)
+        videoPlayerController!.stream.log.listen(((PlayerLog log) {
+          debugPrint(log.toString());
+        })),
       videoPlayerController!.stream.error.listen((String event) {
+        debugPrint('MPV Exception: $event');
         if (isLive) {
           if (event.startsWith('tcp: ffurl_read returned ') ||
               event.startsWith("Failed to open https://") ||
@@ -992,16 +997,13 @@ class PlPlayerController {
           );
         } else if (event.startsWith('Could not open codec')) {
           SmartDialog.showToast('无法加载解码器, $event，可能会切换至软解');
-        } else {
-          if (!onlyPlayAudio.value) {
-            if (event.startsWith("Failed to open .") ||
-                event.startsWith("Cannot open") ||
-                event.startsWith("Can not open")) {
-              return;
-            }
-            SmartDialog.showToast('视频加载错误, $event');
-            if (kDebugMode) debugPrint('视频加载错误, $event');
+        } else if (!onlyPlayAudio.value) {
+          if (event.startsWith("Failed to open .") ||
+              event.startsWith("Cannot open") ||
+              event.startsWith("Can not open")) {
+            return;
           }
+          SmartDialog.showToast('视频加载错误, $event');
         }
       }),
       // videoPlayerController!.stream.volume.listen((event) {

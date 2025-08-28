@@ -4,10 +4,15 @@ import 'dart:math';
 import 'dart:ui' as ui;
 
 import 'package:PiliPlus/common/constants.dart';
+import 'package:PiliPlus/common/widgets/loading_widget.dart';
+import 'package:PiliPlus/common/widgets/pair.dart';
 import 'package:PiliPlus/common/widgets/progress_bar/audio_video_progress_bar.dart';
 import 'package:PiliPlus/common/widgets/progress_bar/segment_progress_bar.dart';
 import 'package:PiliPlus/common/widgets/view_safe_area.dart';
 import 'package:PiliPlus/http/init.dart';
+import 'package:PiliPlus/models/common/sponsor_block/action_type.dart';
+import 'package:PiliPlus/models/common/sponsor_block/post_segment_model.dart';
+import 'package:PiliPlus/models/common/sponsor_block/segment_type.dart';
 import 'package:PiliPlus/models/common/super_resolution_type.dart';
 import 'package:PiliPlus/models/common/video/video_quality.dart';
 import 'package:PiliPlus/models/video/play/url.dart';
@@ -18,6 +23,7 @@ import 'package:PiliPlus/models_new/video/video_shot/data.dart';
 import 'package:PiliPlus/pages/common/common_intro_controller.dart';
 import 'package:PiliPlus/pages/video/controller.dart';
 import 'package:PiliPlus/pages/video/introduction/pgc/controller.dart';
+import 'package:PiliPlus/pages/video/post_panel/view.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/models/bottom_control_type.dart';
 import 'package:PiliPlus/plugin/pl_player/models/bottom_progress_behavior.dart';
@@ -31,8 +37,10 @@ import 'package:PiliPlus/plugin/pl_player/widgets/backward_seek.dart';
 import 'package:PiliPlus/plugin/pl_player/widgets/bottom_control.dart';
 import 'package:PiliPlus/plugin/pl_player/widgets/common_btn.dart';
 import 'package:PiliPlus/plugin/pl_player/widgets/forward_seek.dart';
+import 'package:PiliPlus/plugin/pl_player/widgets/mpv_convert_webp.dart';
 import 'package:PiliPlus/plugin/pl_player/widgets/play_pause_btn.dart';
 import 'package:PiliPlus/utils/duration_util.dart';
+import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
@@ -1655,6 +1663,9 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                           size: 20,
                           color: Colors.white,
                         ),
+                        onLongPress: Platform.isAndroid || kDebugMode
+                            ? screenshotWebp
+                            : null,
                         onTap: () {
                           SmartDialog.showToast('截图中');
                           plPlayerController.videoPlayerController
@@ -1855,6 +1866,103 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                 : const SizedBox.shrink(),
           ),
       ],
+    );
+  }
+
+  Future<void> screenshotWebp() async {
+    final ctr = plPlayerController;
+    final url =
+        ctr.videoPlayerController?.state.playlist.medias.firstOrNull?.uri;
+    if (url == null) return;
+    final theme = Theme.of(context);
+    final currentPos = ctr.position.value.inMilliseconds / 1000.0;
+    final duration = ctr.durationSeconds.value.inMilliseconds / 1000.0;
+    final segment = Pair(first: currentPos, second: currentPos + 10.0);
+    final model = PostSegmentModel(
+      segment: segment,
+      category: SegmentType.sponsor,
+      actionType: ActionType.skip,
+    );
+    final isPlay = ctr.playerStatus.playing;
+    if (isPlay) ctr.pause();
+    final success =
+        await Get.dialog<bool>(
+          AlertDialog(
+            title: const Text('动态截屏'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                PostPanel.segmentWidget(
+                  theme,
+                  item: model,
+                  currentPos: currentPos,
+                  videoDuration: duration,
+                ),
+                Text(
+                  '*转码使用软解，速度可能慢于播放，请不要选择过长的时间段',
+                  style: theme.textTheme.bodySmall,
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: Get.back,
+                child: Text(
+                  '取消',
+                  style: TextStyle(
+                    color: theme.colorScheme.outline,
+                  ),
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                  if (segment.first < segment.second) {
+                    Get.back(result: true);
+                  }
+                },
+                child: const Text('确定'),
+              ),
+            ],
+          ),
+        ) ??
+        false;
+    if (!success) return;
+
+    final progress = 0.0.obs;
+    final name = '${DateTime.now()}.webp';
+    final file = '${await Utils.temporaryDirectory}/$name';
+
+    final mpv = MpvConvertWebp(
+      url,
+      file,
+      segment.first,
+      segment.second,
+      progress: progress,
+    );
+    final future = mpv.convert().whenComplete(
+      () => SmartDialog.dismiss(status: SmartStatus.loading),
+    );
+
+    SmartDialog.showLoading(
+      backType: SmartBackType.normal,
+      builder: (_) => LoadingWidget(progress: progress, msg: '正在保存，可能需要较长时间'),
+      onDismiss: () async {
+        if (progress.value < 1.0) {
+          mpv.dispose();
+          SmartDialog.showToast('已取消');
+        }
+        if (await future) {
+          await SaverGallery.saveFile(
+            filePath: file,
+            fileName: name,
+            skipIfExists: false,
+          );
+          SmartDialog.showToast('$name已保存到相册/截图');
+        }
+        progress.close();
+        File(file).delSync();
+        if (isPlay) ctr.play();
+      },
     );
   }
 }

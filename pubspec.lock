@@ -1198,7 +1198,7 @@ packages:
     source: hosted
     version: "1.0.11"
   media_kit_native_event_loop:
-    dependency: transitive
+    dependency: "direct overridden"
     description:
       name: media_kit_native_event_loop
       sha256: "7d82e3b3e9ded5c35c3146c5ba1da3118d1dd8ac3435bac7f29f458181471b40"

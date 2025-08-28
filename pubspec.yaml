@@ -223,6 +223,7 @@ dependency_overrides:
   rxdart: ^0.28.0
   media_kit: 1.1.11
   media_kit_libs_video: 1.0.5
+  media_kit_native_event_loop: ^1.0.9
   font_awesome_flutter: 10.9.0
   media_kit_libs_android_video:
     git:

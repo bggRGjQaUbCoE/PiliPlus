@@ -37,6 +37,154 @@ class PostPanel extends CommonCollapseSlidePage {
 
   @override
   State<PostPanel> createState() => _PostPanelState();
+
+  static void updateSegment({
+    required bool isFirst,
+    required PostSegmentModel item,
+    required double value,
+  }) {
+    if (isFirst) {
+      item.segment.first = value;
+    } else {
+      item.segment.second = value;
+    }
+    if (item.category == SegmentType.poi_highlight ||
+        item.actionType == ActionType.full) {
+      item.segment.second = value;
+    }
+  }
+
+  static Widget segmentWidget(
+    ThemeData theme, {
+    required PostSegmentModel item,
+    required double currentPos,
+    required double videoDuration,
+  }) {
+    List<Widget> segment(BuildContext context, bool isFirst) {
+      String value = DurationUtil.formatDuration(
+        isFirst ? item.segment.first : item.segment.second,
+      );
+      return [
+        Text(
+          '${isFirst ? '开始' : '结束'}: $value',
+        ),
+        iconButton(
+          context: context,
+          size: 26,
+          tooltip: '设为当前',
+          icon: Icons.my_location,
+          onPressed: () {
+            updateSegment(
+              isFirst: isFirst,
+              item: item,
+              value: currentPos,
+            );
+            (context as Element).markNeedsBuild();
+          },
+        ),
+        iconButton(
+          context: context,
+          size: 26,
+          tooltip: isFirst ? '视频开头' : '视频结尾',
+          icon: isFirst ? Icons.first_page : Icons.last_page,
+          onPressed: () {
+            updateSegment(
+              isFirst: isFirst,
+              item: item,
+              value: isFirst ? 0 : videoDuration,
+            );
+            (context as Element).markNeedsBuild();
+          },
+        ),
+        iconButton(
+          context: context,
+          size: 26,
+          tooltip: '编辑',
+          icon: Icons.edit,
+          onPressed: () {
+            showDialog<String>(
+              context: context,
+              builder: (context) {
+                String initV = value;
+                return AlertDialog(
+                  content: TextFormField(
+                    initialValue: value,
+                    autofocus: true,
+                    onChanged: (value) => initV = value,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(RegExp(r'[\d:.]+')),
+                    ],
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: Get.back,
+                      child: Text(
+                        '取消',
+                        style: TextStyle(color: theme.colorScheme.outline),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () => Get.back(result: initV),
+                      child: const Text('确定'),
+                    ),
+                  ],
+                );
+              },
+            ).then((res) {
+              if (res != null) {
+                try {
+                  List<num> split = res
+                      .split(':')
+                      .reversed
+                      .map(num.parse)
+                      .toList();
+                  double duration = 0;
+                  for (int i = 0; i < split.length; i++) {
+                    duration += split[i] * pow(60, i);
+                  }
+                  if (duration <= videoDuration) {
+                    updateSegment(
+                      isFirst: isFirst,
+                      item: item,
+                      value: duration,
+                    );
+                    (context as Element).markNeedsBuild();
+                  }
+                } catch (e) {
+                  if (kDebugMode) debugPrint(e.toString());
+                }
+              }
+            });
+          },
+        ),
+      ];
+    }
+
+    final child = Builder(
+      builder: (context) => Row(
+        spacing: 5,
+        mainAxisSize: MainAxisSize.min,
+        children: segment(context, true),
+      ),
+    );
+    if (item.category != SegmentType.poi_highlight) {
+      return Wrap(
+        runSpacing: 8,
+        spacing: 16,
+        children: [
+          child,
+          Builder(
+            builder: (context) => Row(
+              spacing: 5,
+              mainAxisSize: MainAxisSize.min,
+              children: segment(context, false),
+            ),
+          ),
+        ],
+      );
+    }
+    return child;
+  }
 }
 
 class _PostPanelState extends CommonCollapseSlidePageState<PostPanel> {
@@ -162,130 +310,6 @@ class _PostPanelState extends CommonCollapseSlidePageState<PostPanel> {
     );
   }
 
-  void updateSegment({
-    required bool isFirst,
-    required PostSegmentModel item,
-    required double value,
-  }) {
-    if (isFirst) {
-      item.segment.first = value;
-    } else {
-      item.segment.second = value;
-    }
-    if (item.category == SegmentType.poi_highlight ||
-        item.actionType == ActionType.full) {
-      item.segment.second = value;
-    }
-  }
-
-  List<Widget> segmentWidget(
-    BuildContext context,
-    ThemeData theme, {
-    required PostSegmentModel item,
-    required bool isFirst,
-  }) {
-    String value = DurationUtil.formatDuration(
-      isFirst ? item.segment.first : item.segment.second,
-    );
-    return [
-      Text(
-        '${isFirst ? '开始' : '结束'}: $value',
-      ),
-      const SizedBox(width: 5),
-      iconButton(
-        context: context,
-        size: 26,
-        tooltip: '设为当前',
-        icon: Icons.my_location,
-        onPressed: () {
-          updateSegment(
-            isFirst: isFirst,
-            item: item,
-            value: currentPos,
-          );
-          (context as Element).markNeedsBuild();
-        },
-      ),
-      const SizedBox(width: 5),
-      iconButton(
-        context: context,
-        size: 26,
-        tooltip: isFirst ? '视频开头' : '视频结尾',
-        icon: isFirst ? Icons.first_page : Icons.last_page,
-        onPressed: () {
-          updateSegment(
-            isFirst: isFirst,
-            item: item,
-            value: isFirst ? 0 : videoDuration,
-          );
-          (context as Element).markNeedsBuild();
-        },
-      ),
-      const SizedBox(width: 5),
-      iconButton(
-        context: context,
-        size: 26,
-        tooltip: '编辑',
-        icon: Icons.edit,
-        onPressed: () {
-          showDialog<String>(
-            context: context,
-            builder: (context) {
-              String initV = value;
-              return AlertDialog(
-                content: TextFormField(
-                  initialValue: value,
-                  autofocus: true,
-                  onChanged: (value) => initV = value,
-                  inputFormatters: [
-                    FilteringTextInputFormatter.allow(RegExp(r'[\d:.]+')),
-                  ],
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: Get.back,
-                    child: Text(
-                      '取消',
-                      style: TextStyle(color: theme.colorScheme.outline),
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: () => Get.back(result: initV),
-                    child: const Text('确定'),
-                  ),
-                ],
-              );
-            },
-          ).then((res) {
-            if (res != null) {
-              try {
-                List<num> split = res
-                    .split(':')
-                    .reversed
-                    .map(num.parse)
-                    .toList();
-                double duration = 0;
-                for (int i = 0; i < split.length; i++) {
-                  duration += split[i] * pow(60, i);
-                }
-                if (duration <= videoDuration) {
-                  updateSegment(
-                    isFirst: isFirst,
-                    item: item,
-                    value: duration,
-                  );
-                  (context as Element).markNeedsBuild();
-                }
-              } catch (e) {
-                if (kDebugMode) debugPrint(e.toString());
-              }
-            }
-          });
-        },
-      ),
-    ];
-  }
-
   void _onPost() {
     Request()
         .post(
@@ -376,42 +400,13 @@ class _PostPanelState extends CommonCollapseSlidePageState<PostPanel> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  if (item.actionType != ActionType.full) ...[
-                    Wrap(
-                      runSpacing: 8,
-                      spacing: 16,
-                      children: [
-                        Builder(
-                          builder: (context) {
-                            return Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: segmentWidget(
-                                context,
-                                theme,
-                                isFirst: true,
-                                item: item,
-                              ),
-                            );
-                          },
-                        ),
-                        if (item.category != SegmentType.poi_highlight)
-                          Builder(
-                            builder: (context) {
-                              return Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: segmentWidget(
-                                  context,
-                                  theme,
-                                  isFirst: false,
-                                  item: item,
-                                ),
-                              );
-                            },
-                          ),
-                      ],
+                  if (item.actionType != ActionType.full)
+                    PostPanel.segmentWidget(
+                      theme,
+                      item: item,
+                      currentPos: currentPos,
+                      videoDuration: videoDuration,
                     ),
-                    const SizedBox(height: 8),
-                  ],
                   Wrap(
                     runSpacing: 8,
                     spacing: 16,
@@ -430,14 +425,14 @@ class _PostPanelState extends CommonCollapseSlidePageState<PostPanel> {
                               }
                               switch (e) {
                                 case SegmentType.poi_highlight:
-                                  updateSegment(
+                                  PostPanel.updateSegment(
                                     isFirst: false,
                                     item: item,
                                     value: item.segment.first,
                                   );
                                   break;
                                 case SegmentType.exclusive_access:
-                                  updateSegment(
+                                  PostPanel.updateSegment(
                                     isFirst: true,
                                     item: item,
                                     value: 0,
@@ -491,7 +486,7 @@ class _PostPanelState extends CommonCollapseSlidePageState<PostPanel> {
                             onSelected: (e) {
                               item.actionType = e;
                               if (e == ActionType.full) {
-                                updateSegment(
+                                PostPanel.updateSegment(
                                   isFirst: true,
                                   item: item,
                                   value: 0,

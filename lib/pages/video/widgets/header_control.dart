@@ -4,6 +4,7 @@ import 'dart:math';
 
 import 'package:PiliPlus/common/widgets/button/icon_button.dart';
 import 'package:PiliPlus/common/widgets/custom_icon.dart';
+import 'package:PiliPlus/common/widgets/marquee.dart';
 import 'package:PiliPlus/models/common/super_resolution_type.dart';
 import 'package:PiliPlus/models/common/video/audio_quality.dart';
 import 'package:PiliPlus/models/common/video/cdn_type.dart';
@@ -42,7 +43,6 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:hive/hive.dart';
 import 'package:intl/intl.dart' show DateFormat;
-import 'package:marquee/marquee.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:share_plus/share_plus.dart';
@@ -1960,9 +1960,9 @@ class HeaderControlState extends TripleState<HeaderControl> {
                       builder: (context, constraints) {
                         return Obx(
                           () {
-                            String title;
                             final videoDetail =
                                 introController.videoDetail.value;
+                            final String title;
                             if (videoDetail.videos == 1) {
                               title = videoDetail.title!;
                             } else {
@@ -1975,59 +1975,14 @@ class HeaderControlState extends TripleState<HeaderControl> {
                                       ?.pagePart ??
                                   videoDetail.title!;
                             }
-                            final textPainter = TextPainter(
-                              text: TextSpan(
-                                text: title,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16,
-                                ),
+                            return MarqueeText(
+                              title,
+                              maxWidth: constraints.maxWidth,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
                               ),
-                              textDirection: TextDirection.ltr,
-                              maxLines: 1,
-                            )..layout(maxWidth: constraints.maxWidth);
-                            if (textPainter.didExceedMaxLines) {
-                              return ConstrainedBox(
-                                constraints: const BoxConstraints(
-                                  maxHeight: 25,
-                                ),
-                                child: Marquee(
-                                  text: title,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 16,
-                                  ),
-                                  scrollAxis: Axis.horizontal,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  blankSpace: 200,
-                                  velocity: 40,
-                                  startAfter: const Duration(seconds: 1),
-                                  showFadingOnlyWhenScrolling: true,
-                                  fadingEdgeStartFraction: 0,
-                                  fadingEdgeEndFraction: 0.1,
-                                  numberOfRounds: 1,
-                                  startPadding: 0,
-                                  accelerationDuration: const Duration(
-                                    seconds: 1,
-                                  ),
-                                  accelerationCurve: Curves.linear,
-                                  decelerationDuration: const Duration(
-                                    milliseconds: 500,
-                                  ),
-                                  decelerationCurve: Curves.easeOut,
-                                ),
-                              );
-                            } else {
-                              return Text(
-                                title,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16,
-                                ),
-                                maxLines: 1,
-                                textDirection: TextDirection.ltr,
-                              );
-                            }
+                            );
                           },
                         );
                       },

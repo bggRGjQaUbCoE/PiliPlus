@@ -4,6 +4,7 @@ import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/custom_icon.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
+import 'package:PiliPlus/common/widgets/marquee.dart';
 import 'package:PiliPlus/common/widgets/refresh_indicator.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/music.dart';
@@ -354,7 +355,7 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
   }
 
   Widget _buildArtist(Artist artist, TextStyle? style) {
-    Widget child = Text('${artist.name}(${artist.identity})', style: style);
+    Widget child = Text('${artist.identity}: ${artist.name}', style: style);
     if (!artist.face.isNullOrEmpty) {
       child = Row(
         mainAxisSize: MainAxisSize.min,
@@ -413,9 +414,9 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
+                spacing: 8,
                 children: [
                   GestureDetector(
                     onTap: () => PageUtils.imageView(
@@ -438,41 +439,89 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
                           onTap: () => Utils.copyText(
                             item.musicTitle!,
                           ),
-                          child: Text(
+                          child: MarqueeText(
                             item.musicTitle!,
+                            maxWidth: maxWidth - 136, // 80 + 16 + 32 + 8
                             style: textTheme.titleMedium,
                           ),
                         ),
-                        if (!item.artistsList.isNullOrEmpty)
-                          for (var artist in item.artistsList!)
-                            _buildArtist(artist, textTheme.bodySmall),
-                        if (!item.musicRank.isNullOrEmpty)
-                          PBadge(
-                            text: item.musicRank,
-                            type: PBadgeType.secondary,
-                            isStack: false,
-                          ),
-                        if (!item.musicPublish.isNullOrEmpty)
-                          Text(
-                            '${item.musicPublish}发行',
-                            style: textTheme.bodySmall,
-                          ),
-                        if (item.mvCid != null || item.mvCid != 0)
-                          InkWell(
-                            borderRadius: StyleString.mdRadius,
-                            onTap: () => PageUtils.toVideoPage(
-                              bvid: item.mvBvid,
-                              cid: item.mvCid!,
-                              aid: item.mvAid,
-                            ),
-                            child: const Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(Icons.play_circle_outline),
-                                Text('看MV'),
-                              ],
-                            ),
-                          ),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 2,
+                          alignment: WrapAlignment.spaceEvenly,
+                          children: [
+                            if (!item.artistsList.isNullOrEmpty)
+                              for (var artist in item.artistsList!)
+                                _buildArtist(artist, textTheme.bodySmall),
+                            if (!item.musicPublish.isNullOrEmpty)
+                              Text(
+                                '发行日期：${item.musicPublish}',
+                                style: textTheme.bodySmall,
+                              ),
+                          ],
+                        ),
+                        Wrap(
+                          spacing: 16,
+                          children: [
+                            if (!item.musicRank.isNullOrEmpty)
+                              PBadge(
+                                text: item.musicRank,
+                                type: PBadgeType.secondary,
+                                isStack: false,
+                                fontSize: 11,
+                              ),
+                            if (item.mvCid != null && item.mvCid != 0)
+                              InkWell(
+                                borderRadius: const BorderRadius.all(
+                                  Radius.circular(4),
+                                ),
+                                onTap: () => PageUtils.toVideoPage(
+                                  bvid: item.mvBvid,
+                                  cid: item.mvCid!,
+                                  aid: item.mvAid,
+                                ),
+                                child: ColoredBox(
+                                  color: theme.colorScheme.secondaryContainer
+                                      .withValues(alpha: 0.5),
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 2,
+                                      horizontal: 3,
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          Icons.play_circle_outline,
+                                          size: 11,
+                                          color: theme
+                                              .colorScheme
+                                              .onSecondaryContainer,
+                                        ),
+                                        Text(
+                                          '看MV',
+                                          style: TextStyle(
+                                            color: theme
+                                                .colorScheme
+                                                .onSecondaryContainer,
+                                            height: 1,
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                          strutStyle: const StrutStyle(
+                                            leading: 0,
+                                            height: 1,
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
                       ],
                     ),
                   ),

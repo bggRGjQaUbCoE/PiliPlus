@@ -166,7 +166,7 @@ dependencies:
   #瀑布流
   waterfall_flow: ^3.1.0
   #跑马灯
-  marquee: ^2.3.0
+  # marquee: ^2.3.0
   #富文本
   # extended_text: ^14.1.0
   # chat_bottom_container: ^0.2.0

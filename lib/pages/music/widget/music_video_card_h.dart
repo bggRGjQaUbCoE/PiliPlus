@@ -2,6 +2,7 @@ import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/image/image_save.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
+import 'package:PiliPlus/common/widgets/marquee.dart';
 import 'package:PiliPlus/common/widgets/stat/stat.dart';
 import 'package:PiliPlus/http/search.dart';
 import 'package:PiliPlus/models/common/badge_type.dart';
@@ -13,10 +14,12 @@ import 'package:flutter/material.dart';
 
 class MusicVideoCardH extends StatelessWidget {
   final BgmRecommend videoItem;
+  final Animation<double> animation;
 
   const MusicVideoCardH({
     super.key,
     required this.videoItem,
+    required this.animation,
   });
 
   @override
@@ -112,27 +115,30 @@ class MusicVideoCardH extends StatelessWidget {
               ),
             ],
           ),
-          Row(
-            spacing: 8,
-            children: [
-              if (videoItem.labelList case final labelList?)
-                for (final label in labelList)
-                  PBadge(
-                    text: label.name,
-                    isStack: false,
-                    size: PBadgeSize.small,
-                    type: PBadgeType.secondary,
+          BounceMarquee(
+            animation: animation,
+            child: Row(
+              spacing: 8,
+              children: [
+                if (videoItem.labelList case final labelList?)
+                  for (final label in labelList)
+                    PBadge(
+                      text: label.name,
+                      isStack: false,
+                      size: PBadgeSize.small,
+                      type: PBadgeType.secondary,
+                    ),
+                Text(
+                  videoItem.upNickName!,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Theme.of(context).colorScheme.outline,
                   ),
-              Text(
-                videoItem.upNickName!,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Theme.of(context).colorScheme.outline,
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       ),

@@ -11,6 +11,7 @@ import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/ua_type.dart';
 import 'package:PiliPlus/http/video.dart';
 import 'package:PiliPlus/models/common/account_type.dart';
+import 'package:PiliPlus/models/common/audio_normalization.dart';
 import 'package:PiliPlus/models/common/sponsor_block/skip_type.dart';
 import 'package:PiliPlus/models/common/super_resolution_type.dart';
 import 'package:PiliPlus/models/common/video/video_type.dart';
@@ -717,7 +718,16 @@ class PlPlayerController {
       if (isAnim) {
         setShader(superResolutionType.value, pp);
       }
-      await pp.setProperty("af", "scaletempo2=max-speed=8");
+      String audioNormalization = Pref.audioNormalization;
+      audioNormalization = switch (audioNormalization) {
+        '0' => '',
+        '1' => ',${AudioNormalization.dynaudnorm.param}',
+        _ => ',$audioNormalization',
+      };
+      await pp.setProperty(
+        "af",
+        "scaletempo2=max-speed=8$audioNormalization",
+      );
       if (Platform.isAndroid) {
         await pp.setProperty("volume-max", "100");
         String ao = Pref.useOpenSLES

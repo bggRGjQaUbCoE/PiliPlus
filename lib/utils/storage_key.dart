@@ -91,6 +91,7 @@ class SettingBoxKey {
       refreshDragPercentage = 'refreshDragPercentage',
       refreshDisplacement = 'refreshDisplacement',
       showHotRcmd = 'showHotRcmd',
+      audioNormalization = 'audioNormalization',
       superResolutionType = 'superResolutionType',
       preInitPlayer = 'preInitPlayer',
       mainTabBarView = 'mainTabBarView',

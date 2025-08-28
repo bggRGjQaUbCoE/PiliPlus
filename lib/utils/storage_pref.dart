@@ -405,6 +405,9 @@ class Pref {
   static bool get showHotRcmd =>
       _setting.get(SettingBoxKey.showHotRcmd, defaultValue: false);
 
+  static String get audioNormalization =>
+      _setting.get(SettingBoxKey.audioNormalization, defaultValue: '0');
+
   static SuperResolutionType get superResolutionType {
     SuperResolutionType? superResolutionType;
     final index = _setting.get(SettingBoxKey.superResolutionType);

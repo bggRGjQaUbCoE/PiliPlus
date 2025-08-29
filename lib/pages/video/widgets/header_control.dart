@@ -83,9 +83,7 @@ class HeaderControlState extends TripleState<HeaderControl> {
   Timer? clock;
   bool get isFullScreen => plPlayerController.isFullScreen.value;
   Box setting = GStorage.setting;
-  MarqueeController? marqueeController;
-  MarqueeController get _marqueeController =>
-      marqueeController ??= MarqueeController(autoStart: false);
+  late final provider = ContextSingleTicker(context);
 
   @override
   void initState() {
@@ -100,8 +98,6 @@ class HeaderControlState extends TripleState<HeaderControl> {
   @override
   void dispose() {
     clock?.cancel();
-    marqueeController?.dispose();
-    marqueeController = null;
     super.dispose();
   }
 
@@ -1934,11 +1930,11 @@ class HeaderControlState extends TripleState<HeaderControl> {
                             title,
                             spacing: 30,
                             velocity: 30,
-                            controller: _marqueeController,
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 16,
                             ),
+                            provider: provider,
                           );
                         },
                       ),

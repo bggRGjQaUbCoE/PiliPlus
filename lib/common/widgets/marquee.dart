@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
@@ -7,7 +8,7 @@ class MarqueeText extends StatelessWidget {
   final TextStyle? style;
   final double spacing;
   final double velocity;
-  final MarqueeController? controller;
+  final ContextSingleTicker? provider;
 
   const MarqueeText(
     this.text, {
@@ -15,7 +16,7 @@ class MarqueeText extends StatelessWidget {
     this.style,
     this.spacing = 0,
     this.velocity = 25,
-    this.controller,
+    this.provider,
   });
 
   @override
@@ -23,7 +24,7 @@ class MarqueeText extends StatelessWidget {
     return NormalMarquee(
       velocity: velocity,
       spacing: spacing,
-      controller: controller,
+      provider: provider,
       child: Text(
         text,
         style: style,
@@ -39,7 +40,7 @@ abstract class Marquee extends SingleChildRenderObjectWidget {
   final Clip clipBehavior;
   final double spacing;
   final double velocity;
-  final MarqueeController? controller;
+  final ContextSingleTicker? provider;
 
   const Marquee({
     super.key,
@@ -48,7 +49,7 @@ abstract class Marquee extends SingleChildRenderObjectWidget {
     this.direction = Axis.horizontal,
     this.clipBehavior = Clip.hardEdge,
     this.spacing = 0,
-    this.controller,
+    this.provider,
   });
 
   @override
@@ -61,6 +62,10 @@ abstract class Marquee extends SingleChildRenderObjectWidget {
       ..clipBehavior = clipBehavior
       ..velocity = velocity
       ..spacing = spacing;
+
+    if (provider != null) {
+      renderObject.provider = provider!;
+    }
   }
 }
 
@@ -72,7 +77,7 @@ class NormalMarquee extends Marquee {
     super.direction,
     super.clipBehavior,
     super.spacing,
-    super.controller,
+    super.provider,
   });
 
   @override
@@ -81,7 +86,7 @@ class NormalMarquee extends Marquee {
     velocity: velocity,
     clipBehavior: clipBehavior,
     spacing: spacing,
-    controller: controller,
+    provider: provider ?? ContextSingleTicker(context),
   );
 }
 
@@ -93,6 +98,7 @@ class BounceMarquee extends Marquee {
     super.direction,
     super.clipBehavior,
     super.spacing,
+    super.provider,
   });
 
   @override
@@ -101,6 +107,7 @@ class BounceMarquee extends Marquee {
     velocity: velocity,
     clipBehavior: clipBehavior,
     spacing: spacing,
+    provider: provider ?? ContextSingleTicker(context),
   );
 }
 
@@ -111,15 +118,14 @@ abstract class MarqueeRender extends RenderBox
     required double velocity,
     required double spacing,
     required this.clipBehavior,
-    this.controller,
-  }) : _spacing = spacing,
+    required ContextSingleTicker provider,
+  }) : _ticker = provider,
+       _spacing = spacing,
        _velocity = velocity,
        _direction = direction,
        assert(spacing.isFinite && !spacing.isNaN);
 
   Clip clipBehavior;
-
-  MarqueeController? controller;
 
   Axis _direction;
   Axis get direction => _direction;
@@ -129,12 +135,26 @@ abstract class MarqueeRender extends RenderBox
     markNeedsLayout();
   }
 
+  ContextSingleTicker _ticker;
+  set provider(ContextSingleTicker value) {
+    if (_ticker == value) return;
+    if (_ticker._ticker != null) {
+      if (value._ticker != null) {
+        value._ticker!.absorbTicker(_ticker._ticker!);
+      } else {
+        value.createTicker(_onTick);
+      }
+    }
+    _ticker.cancel();
+    _ticker = value;
+  }
+
   double _velocity;
   set velocity(double value) {
     if (_velocity == value) return;
     _velocity = value;
     _simulation = _simulation?.copyWith(initialValue: _delta, velocity: value);
-    controller?.reset();
+    _ticker.reset();
   }
 
   double _spacing;
@@ -149,7 +169,7 @@ abstract class MarqueeRender extends RenderBox
       addSize: value - _spacing,
     );
     _spacing = value;
-    controller?.reset();
+    _ticker.reset();
   }
 
   double _delta = 0;
@@ -160,14 +180,14 @@ abstract class MarqueeRender extends RenderBox
   }
 
   @override
-  void detach() {
-    controller?.dispose();
-    super.detach();
+  void attach(PipelineOwner owner) {
+    super.attach(owner);
+    _ticker.updateTicker();
   }
 
   @override
   void dispose() {
-    controller?.dispose();
+    _ticker.cancel();
     super.dispose();
   }
 
@@ -203,11 +223,9 @@ abstract class MarqueeRender extends RenderBox
 
     if (_distance > 0) {
       updateSize();
-      (controller ??= MarqueeController())
-        ..ticker ??= Ticker(_onTick)
-        ..initStart();
+      _ticker.createTicker(_onTick);
     } else {
-      controller?.dispose();
+      _ticker.cancel();
     }
   }
 
@@ -237,6 +255,7 @@ class _BounceMarqueeRender extends MarqueeRender {
     required super.velocity,
     required super.clipBehavior,
     required super.spacing,
+    required super.provider,
   });
 
   @override
@@ -278,7 +297,7 @@ class _NormalMarqueeRender extends MarqueeRender {
     required super.velocity,
     required super.clipBehavior,
     required super.spacing,
-    super.controller,
+    required super.provider,
   });
 
   @override
@@ -375,44 +394,56 @@ class _MarqueeSimulation extends Simulation {
   );
 }
 
-extension on Ticker {
+class ContextSingleTicker {
+  Ticker? _ticker;
+  BuildContext context;
+
+  ContextSingleTicker(this.context);
+
+  void createTicker(TickerCallback onTick) {
+    assert(() {
+      if (_ticker == null) {
+        return true;
+      }
+      throw FlutterError.fromParts(<DiagnosticsNode>[
+        ErrorSummary(
+          '$runtimeType is a SingleTickerProviderStateMixin but multiple tickers were created.',
+        ),
+        ErrorDescription(
+          'A SingleTickerProviderStateMixin can only be used as a TickerProvider once.',
+        ),
+        ErrorHint(
+          'If a State is used for multiple AnimationController objects, or if it is passed to other '
+          'objects and those objects might use it more than one time in total, then instead of '
+          'mixing in a SingleTickerProviderStateMixin, use a regular TickerProviderStateMixin.',
+        ),
+      ]);
+    }());
+    _ticker = Ticker(
+      onTick,
+      debugLabel: kDebugMode ? 'created by ${describeIdentity(this)}' : null,
+    )..start();
+    _tickerModeNotifier = TickerMode.getNotifier(context)
+      ..addListener(updateTicker);
+    updateTicker(); // Sets _ticker.mute correctly.
+  }
+
   void reset() {
-    this
-      ..stop()
+    _ticker
+      ?..stop()
       ..start();
   }
-}
 
-class MarqueeController {
-  MarqueeController({this.autoStart = true});
-  bool autoStart;
-
-  Ticker? ticker;
-
-  void initStart() {
-    if (autoStart) {
-      start();
-    }
+  void cancel() {
+    _ticker?.dispose();
+    _ticker = null;
+    _tickerModeNotifier?.removeListener(updateTicker);
+    _tickerModeNotifier = null;
   }
 
-  void start() {
-    if (ticker != null) {
-      if (!ticker!.isTicking) {
-        ticker!.start();
-      }
-    }
-  }
+  ValueListenable<bool>? _tickerModeNotifier;
 
-  void stop() {
-    ticker?.stop();
-  }
+  void updateTicker() => _ticker?.muted = !_tickerModeNotifier!.value;
 
-  void reset() {
-    ticker?.reset();
-  }
-
-  void dispose() {
-    ticker?.dispose();
-    ticker = null;
-  }
+  set muted(bool value) => _ticker?.muted = value;
 }

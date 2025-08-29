@@ -187,22 +187,12 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     super.initState();
     _controlsListener = plPlayerController.showControls.listen((bool val) {
       final visible = val && !plPlayerController.controlsLock.value;
+      widget.videoDetailController?.headerCtrKey.currentState?.provider.muted =
+          !visible;
       if (visible) {
         animationController.forward();
-        widget
-            .videoDetailController
-            ?.headerCtrKey
-            .currentState
-            ?.marqueeController
-            ?.start();
       } else {
         animationController.reverse();
-        widget
-            .videoDetailController
-            ?.headerCtrKey
-            .currentState
-            ?.marqueeController
-            ?.stop();
       }
     });
     animationController = AnimationController(

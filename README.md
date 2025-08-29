@@ -24,7 +24,7 @@
 
 ## 开发环境
 
-```bash
+```text
 [✓] Flutter (Channel stable, 3.24.0, on Microsoft Windows [版本 10.0.19045.4046], locale zh-CN)
 [✓] Android toolchain - develop for Android devices (Android SDK version 34.0.0)
 [✓] Xcode - develop for iOS and macOS (Xcode 15.1)

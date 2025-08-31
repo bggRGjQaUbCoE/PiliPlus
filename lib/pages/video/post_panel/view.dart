@@ -12,6 +12,7 @@ import 'package:PiliPlus/models/common/sponsor_block/segment_type.dart';
 import 'package:PiliPlus/models_new/sponsor_block/segment_item.dart';
 import 'package:PiliPlus/pages/common/slide/common_collapse_slide_page.dart';
 import 'package:PiliPlus/pages/video/controller.dart';
+import 'package:PiliPlus/pages/video/post_panel/popup_menu_text.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/utils/duration_util.dart';
 import 'package:PiliPlus/utils/extension.dart';
@@ -22,7 +23,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show FilteringTextInputFormatter;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart' hide Response;
-import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
 class PostPanel extends CommonCollapseSlidePage {
   const PostPanel({
@@ -60,130 +60,122 @@ class PostPanel extends CommonCollapseSlidePage {
     required double currentPos,
     required double videoDuration,
   }) {
-    List<Widget> segment(BuildContext context, bool isFirst) {
-      String value = DurationUtil.formatDuration(
-        isFirst ? item.segment.first : item.segment.second,
-      );
-      return [
-        Text(
-          '${isFirst ? '开始' : '结束'}: $value',
-        ),
-        iconButton(
-          context: context,
-          size: 26,
-          tooltip: '设为当前',
-          icon: Icons.my_location,
-          onPressed: () {
-            updateSegment(
-              isFirst: isFirst,
-              item: item,
-              value: currentPos,
-            );
-            (context as Element).markNeedsBuild();
-          },
-        ),
-        iconButton(
-          context: context,
-          size: 26,
-          tooltip: isFirst ? '视频开头' : '视频结尾',
-          icon: isFirst ? Icons.first_page : Icons.last_page,
-          onPressed: () {
-            updateSegment(
-              isFirst: isFirst,
-              item: item,
-              value: isFirst ? 0 : videoDuration,
-            );
-            (context as Element).markNeedsBuild();
-          },
-        ),
-        iconButton(
-          context: context,
-          size: 26,
-          tooltip: '编辑',
-          icon: Icons.edit,
-          onPressed: () {
-            showDialog<String>(
+    Widget segment(bool isFirst) => Builder(
+      builder: (context) {
+        String value = DurationUtil.formatDuration(
+          isFirst ? item.segment.first : item.segment.second,
+        );
+        return Row(
+          spacing: 5,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              '${isFirst ? '开始' : '结束'}: $value',
+            ),
+            iconButton(
               context: context,
-              builder: (context) {
-                String initV = value;
-                return AlertDialog(
-                  content: TextFormField(
-                    initialValue: value,
-                    autofocus: true,
-                    onChanged: (value) => initV = value,
-                    inputFormatters: [
-                      FilteringTextInputFormatter.allow(RegExp(r'[\d:.]+')),
-                    ],
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: Get.back,
-                      child: Text(
-                        '取消',
-                        style: TextStyle(color: theme.colorScheme.outline),
-                      ),
-                    ),
-                    TextButton(
-                      onPressed: () => Get.back(result: initV),
-                      child: const Text('确定'),
-                    ),
-                  ],
+              size: 26,
+              tooltip: '设为当前',
+              icon: Icons.my_location,
+              onPressed: () {
+                updateSegment(
+                  isFirst: isFirst,
+                  item: item,
+                  value: currentPos,
                 );
+                (context as Element).markNeedsBuild();
               },
-            ).then((res) {
-              if (res != null) {
-                try {
-                  List<num> split = res
-                      .split(':')
-                      .reversed
-                      .map(num.parse)
-                      .toList();
-                  double duration = 0;
-                  for (int i = 0; i < split.length; i++) {
-                    duration += split[i] * pow(60, i);
-                  }
-                  if (duration <= videoDuration) {
-                    updateSegment(
-                      isFirst: isFirst,
-                      item: item,
-                      value: duration,
+            ),
+            iconButton(
+              context: context,
+              size: 26,
+              tooltip: isFirst ? '视频开头' : '视频结尾',
+              icon: isFirst ? Icons.first_page : Icons.last_page,
+              onPressed: () {
+                updateSegment(
+                  isFirst: isFirst,
+                  item: item,
+                  value: isFirst ? 0 : videoDuration,
+                );
+                (context as Element).markNeedsBuild();
+              },
+            ),
+            iconButton(
+              context: context,
+              size: 26,
+              tooltip: '编辑',
+              icon: Icons.edit,
+              onPressed: () async {
+                final res = await showDialog<String>(
+                  context: context,
+                  builder: (context) {
+                    String initV = value;
+                    return AlertDialog(
+                      content: TextFormField(
+                        initialValue: value,
+                        autofocus: true,
+                        onChanged: (value) => initV = value,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.allow(RegExp(r'[\d:.]+')),
+                        ],
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: Get.back,
+                          child: Text(
+                            '取消',
+                            style: TextStyle(
+                              color: theme.colorScheme.outline,
+                            ),
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () => Get.back(result: initV),
+                          child: const Text('确定'),
+                        ),
+                      ],
                     );
-                    (context as Element).markNeedsBuild();
-                  }
-                } catch (e) {
-                  if (kDebugMode) debugPrint(e.toString());
-                }
-              }
-            });
-          },
-        ),
-      ];
-    }
+                  },
+                );
 
-    final child = Builder(
-      builder: (context) => Row(
-        spacing: 5,
-        mainAxisSize: MainAxisSize.min,
-        children: segment(context, true),
-      ),
+                if (res != null) {
+                  try {
+                    List<num> split = res
+                        .split(':')
+                        .reversed
+                        .map(num.parse)
+                        .toList();
+                    double duration = 0;
+                    for (int i = 0; i < split.length; i++) {
+                      duration += split[i] * pow(60, i);
+                    }
+                    if (duration <= videoDuration) {
+                      updateSegment(
+                        isFirst: isFirst,
+                        item: item,
+                        value: duration,
+                      );
+                      (context as Element).markNeedsBuild();
+                    }
+                  } catch (e) {
+                    if (kDebugMode) debugPrint(e.toString());
+                  }
+                }
+              },
+            ),
+          ],
+        );
+      },
     );
+
     if (item.category != SegmentType.poi_highlight) {
       return Wrap(
         runSpacing: 8,
         spacing: 16,
-        children: [
-          child,
-          Builder(
-            builder: (context) => Row(
-              spacing: 5,
-              mainAxisSize: MainAxisSize.min,
-              children: segment(context, false),
-            ),
-          ),
-        ],
+        children: [segment(true), segment(false)],
       );
     }
-    return child;
+    return segment(true);
   }
 }
 
@@ -191,7 +183,7 @@ class _PostPanelState extends CommonCollapseSlidePageState<PostPanel> {
   late final VideoDetailController videoDetailController =
       widget.videoDetailController;
   late final PlPlayerController plPlayerController = widget.plPlayerController;
-  late final List<PostSegmentModel>? list = videoDetailController.postList;
+  late final List<PostSegmentModel> list = videoDetailController.postList;
 
   late final double videoDuration =
       plPlayerController.durationSeconds.value.inMilliseconds / 1000;
@@ -224,7 +216,7 @@ class _PostPanelState extends CommonCollapseSlidePageState<PostPanel> {
             tooltip: '添加片段',
             onPressed: () {
               setState(() {
-                list?.insert(
+                list.insert(
                   0,
                   PostSegmentModel(
                     segment: Pair(
@@ -263,18 +255,14 @@ class _PostPanelState extends CommonCollapseSlidePageState<PostPanel> {
     return Stack(
       clipBehavior: Clip.none,
       children: [
-        SingleChildScrollView(
+        ListView.builder(
           controller: _controller,
           physics: const AlwaysScrollableScrollPhysics(),
           padding: EdgeInsets.only(bottom: 88 + bottom),
-          child: Column(
-            children: List.generate(
-              list!.length,
-              (index) {
-                return _buildItem(theme, index, list![index]);
-              },
-            ),
-          ),
+          itemCount: list.length,
+          itemBuilder: (context, index) {
+            return _buildItem(theme, index, list[index]);
+          },
         ),
         Positioned(
           right: 16,
@@ -294,10 +282,7 @@ class _PostPanelState extends CommonCollapseSlidePageState<PostPanel> {
                     ),
                   ),
                   TextButton(
-                    onPressed: () {
-                      Get.back();
-                      _onPost();
-                    },
+                    onPressed: _onPost,
                     child: const Text('确定提交'),
                   ),
                 ],
@@ -310,59 +295,56 @@ class _PostPanelState extends CommonCollapseSlidePageState<PostPanel> {
     );
   }
 
-  void _onPost() {
-    Request()
-        .post(
-          '${widget.videoDetailController.blockServer}/api/skipSegments',
-          data: {
-            'videoID': videoDetailController.bvid,
-            'cid': videoDetailController.cid.value.toString(),
-            'userID': Pref.blockUserID.toString(),
-            'userAgent': Constants.userAgent,
-            'videoDuration': videoDuration,
-            'segments': list!
-                .map(
-                  (item) => {
-                    'segment': [
-                      item.segment.first,
-                      item.segment.second,
-                    ],
-                    'category': item.category.name,
-                    'actionType': item.actionType.name,
-                  },
-                )
-                .toList(),
-          },
-          options: Options(
-            followRedirects: true, // Defaults to true.
-            validateStatus: (int? status) {
-              return (status! >= 200 && status < 300) ||
-                  const [400, 403, 429, 409] // reduce extra toast
-                      .contains(status);
-            },
-          ),
-        )
-        .then(
-          (res) {
-            if (res.statusCode == 200) {
-              Get.back();
-              SmartDialog.showToast('提交成功');
-              list?.clear();
-              if (res.data case List list) {
-                videoDetailController.handleSBData(
-                  list.map((e) => SegmentItemModel.fromJson(e)).toList(),
-                );
-              }
-              plPlayerController.segmentList.value =
-                  videoDetailController.segmentProgressList ?? <Segment>[];
-              if (videoDetailController.positionSubscription == null) {
-                videoDetailController.initSkip();
-              }
-            } else {
-              SmartDialog.showToast('提交失败: ${_errMsg(res)}');
-            }
-          },
+  Future<void> _onPost() async {
+    Get.back();
+    final res = await Request().post(
+      '${widget.videoDetailController.blockServer}/api/skipSegments',
+      data: {
+        'videoID': videoDetailController.bvid,
+        'cid': videoDetailController.cid.value.toString(),
+        'userID': Pref.blockUserID.toString(),
+        'userAgent': Constants.userAgent,
+        'videoDuration': videoDuration,
+        'segments': list
+            .map(
+              (item) => {
+                'segment': [
+                  item.segment.first,
+                  item.segment.second,
+                ],
+                'category': item.category.name,
+                'actionType': item.actionType.name,
+              },
+            )
+            .toList(),
+      },
+      options: Options(
+        followRedirects: true, // Defaults to true.
+        validateStatus: (int? status) {
+          return (status! >= 200 && status < 300) ||
+              const [400, 403, 429, 409] // reduce extra toast
+                  .contains(status);
+        },
+      ),
+    );
+
+    if (res.statusCode == 200) {
+      Get.back();
+      SmartDialog.showToast('提交成功');
+      list.clear();
+      if (res.data case List list) {
+        videoDetailController.handleSBData(
+          list.map((e) => SegmentItemModel.fromJson(e)).toList(),
         );
+      }
+      plPlayerController.segmentList.value =
+          videoDetailController.segmentProgressList ?? <Segment>[];
+      if (videoDetailController.positionSubscription == null) {
+        videoDetailController.initSkip();
+      }
+    } else {
+      SmartDialog.showToast('提交失败: ${_errMsg(res)}');
+    }
   }
 
   String _errMsg(Response res) {
@@ -381,216 +363,142 @@ class _PostPanelState extends CommonCollapseSlidePageState<PostPanel> {
   }
 
   Widget _buildItem(ThemeData theme, int index, PostSegmentModel item) {
-    return Builder(
-      builder: (context) {
-        return Stack(
-          clipBehavior: Clip.none,
-          children: [
-            Container(
-              margin: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 5,
-              ),
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.onInverseSurface,
-                borderRadius: const BorderRadius.all(Radius.circular(12)),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        Container(
+          width: double.infinity,
+          margin: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 5,
+          ),
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.onInverseSurface,
+            borderRadius: const BorderRadius.all(Radius.circular(12)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (item.actionType != ActionType.full)
+                PostPanel.segmentWidget(
+                  theme,
+                  item: item,
+                  currentPos: currentPos,
+                  videoDuration: videoDuration,
+                ),
+              Wrap(
+                runSpacing: 8,
+                spacing: 16,
                 children: [
-                  if (item.actionType != ActionType.full)
-                    PostPanel.segmentWidget(
-                      theme,
-                      item: item,
-                      currentPos: currentPos,
-                      videoDuration: videoDuration,
-                    ),
-                  Wrap(
-                    runSpacing: 8,
-                    spacing: 16,
-                    children: [
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Text('分类: '),
-                          PopupMenuButton<SegmentType>(
-                            initialValue: item.category,
-                            onSelected: (e) {
-                              item.category = e;
-                              List<ActionType> constraintList = e.toActionType;
-                              if (!constraintList.contains(item.actionType)) {
-                                item.actionType = constraintList.first;
-                              }
-                              switch (e) {
-                                case SegmentType.poi_highlight:
-                                  PostPanel.updateSegment(
-                                    isFirst: false,
-                                    item: item,
-                                    value: item.segment.first,
-                                  );
-                                  break;
-                                case SegmentType.exclusive_access:
-                                  PostPanel.updateSegment(
-                                    isFirst: true,
-                                    item: item,
-                                    value: 0,
-                                  );
-                                  break;
-                                default:
-                              }
-                              (context as Element).markNeedsBuild();
-                            },
-                            itemBuilder: (context) => SegmentType.values
-                                .map(
-                                  (e) => PopupMenuItem<SegmentType>(
-                                    value: e,
-                                    child: Text(e.title),
-                                  ),
-                                )
-                                .toList(),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  item.category.title,
-                                  style: TextStyle(
-                                    height: 1,
-                                    fontSize: 14,
-                                    color: theme.colorScheme.secondary,
-                                  ),
-                                  strutStyle: const StrutStyle(
-                                    height: 1,
-                                    leading: 0,
-                                  ),
-                                ),
-                                Icon(
-                                  MdiIcons.unfoldMoreHorizontal,
-                                  size: MediaQuery.textScalerOf(
-                                    context,
-                                  ).scale(14),
-                                  color: theme.colorScheme.secondary,
-                                ),
-                              ],
-                            ),
+                  PopupMenuText(
+                    title: '分类',
+                    initialValue: item.category,
+                    onSelected: (e) {
+                      item.category = e;
+                      List<ActionType> constraintList = e.toActionType;
+                      if (!constraintList.contains(item.actionType)) {
+                        item.actionType = constraintList.first;
+                      }
+                      switch (e) {
+                        case SegmentType.poi_highlight:
+                          PostPanel.updateSegment(
+                            isFirst: false,
+                            item: item,
+                            value: item.segment.first,
+                          );
+                          break;
+                        case SegmentType.exclusive_access:
+                          PostPanel.updateSegment(
+                            isFirst: true,
+                            item: item,
+                            value: 0,
+                          );
+                          break;
+                        default:
+                      }
+                    },
+                    itemBuilder: (context) => SegmentType.values
+                        .map(
+                          (e) => PopupMenuItem(value: e, child: Text(e.title)),
+                        )
+                        .toList(),
+                    getSelectTitle: (category) => category.title,
+                  ),
+                  PopupMenuText(
+                    title: '行为类别',
+                    initialValue: item.actionType,
+                    onSelected: (e) {
+                      item.actionType = e;
+                      if (e == ActionType.full) {
+                        PostPanel.updateSegment(
+                          isFirst: true,
+                          item: item,
+                          value: 0,
+                        );
+                      }
+                    },
+                    itemBuilder: (context) => ActionType.values
+                        .map(
+                          (e) => PopupMenuItem(
+                            enabled: item.category.toActionType.contains(e),
+                            value: e,
+                            child: Text(e.title),
                           ),
-                        ],
-                      ),
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Text('行为类别: '),
-                          PopupMenuButton<ActionType>(
-                            initialValue: item.actionType,
-                            onSelected: (e) {
-                              item.actionType = e;
-                              if (e == ActionType.full) {
-                                PostPanel.updateSegment(
-                                  isFirst: true,
-                                  item: item,
-                                  value: 0,
-                                );
-                              }
-                              (context as Element).markNeedsBuild();
-                            },
-                            itemBuilder: (context) => ActionType.values
-                                .map(
-                                  (e) => PopupMenuItem<ActionType>(
-                                    enabled: item.category.toActionType
-                                        .contains(e),
-                                    value: e,
-                                    child: Text(e.title),
-                                  ),
-                                )
-                                .toList(),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  item.actionType.title,
-                                  style: TextStyle(
-                                    height: 1,
-                                    fontSize: 14,
-                                    color: theme.colorScheme.secondary,
-                                  ),
-                                  strutStyle: const StrutStyle(
-                                    height: 1,
-                                    leading: 0,
-                                  ),
-                                ),
-                                Icon(
-                                  MdiIcons.unfoldMoreHorizontal,
-                                  size: MediaQuery.textScalerOf(
-                                    context,
-                                  ).scale(14),
-                                  color: theme.colorScheme.secondary,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
+                        )
+                        .toList(),
+                    getSelectTitle: (i) => i.title,
                   ),
                 ],
               ),
-            ),
-            Positioned(
-              top: 0,
-              right: 4,
-              child: iconButton(
-                context: context,
-                size: 26,
-                tooltip: '移除',
-                icon: Icons.clear,
-                onPressed: () {
-                  setState(() {
-                    list!.removeAt(index);
-                  });
-                },
-              ),
-            ),
-            Positioned(
-              top: 0,
-              left: 4,
-              child: iconButton(
-                context: context,
-                size: 26,
-                tooltip: '预览',
-                icon: Icons.preview_outlined,
-                onPressed: () async {
-                  if (widget.plPlayerController.videoPlayerController != null) {
-                    int start = max(
-                      0,
-                      (item.segment.first * 1000).round() - 2000,
-                    );
-                    await widget.plPlayerController.videoPlayerController!.seek(
-                      Duration(milliseconds: start),
-                    );
-                    if (!widget
-                        .plPlayerController
-                        .videoPlayerController!
-                        .state
-                        .playing) {
-                      await widget.plPlayerController.videoPlayerController!
-                          .play();
-                    }
-                    if (start != 0) {
-                      await Future.delayed(const Duration(seconds: 2));
-                    }
-                    widget.plPlayerController.videoPlayerController!.seek(
-                      Duration(
-                        milliseconds: (item.segment.second * 1000).round(),
-                      ),
-                    );
-                  }
-                },
-              ),
-            ),
-          ],
-        );
-      },
+            ],
+          ),
+        ),
+        Positioned(
+          top: 0,
+          right: 4,
+          child: iconButton(
+            context: context,
+            size: 26,
+            tooltip: '移除',
+            icon: Icons.clear,
+            onPressed: () {
+              setState(() {
+                list.removeAt(index);
+              });
+            },
+          ),
+        ),
+        Positioned(
+          top: 0,
+          left: 4,
+          child: iconButton(
+            context: context,
+            size: 26,
+            tooltip: '预览',
+            icon: Icons.preview_outlined,
+            onPressed: () async {
+              final videoCtr = widget.plPlayerController.videoPlayerController;
+              if (videoCtr != null) {
+                final start = (item.segment.first * 1000).round();
+                final seek = max(0, start - 2000);
+                await videoCtr.seek(Duration(milliseconds: seek));
+                if (!videoCtr.state.playing) {
+                  await videoCtr.play();
+                }
+                final delay = start - seek;
+                if (delay > 0) {
+                  await Future.delayed(Duration(milliseconds: delay));
+                }
+                videoCtr.seek(
+                  Duration(milliseconds: (item.segment.second * 1000).round()),
+                );
+              }
+            },
+          ),
+        ),
+      ],
     );
   }
 }

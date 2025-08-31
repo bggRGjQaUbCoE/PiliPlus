@@ -425,7 +425,7 @@ class VideoDetailController extends GetxController
   bool get showVideoSheet => !horizontalScreen && !isPortrait;
 
   int? _lastPos;
-  List<PostSegmentModel>? postList;
+  List<PostSegmentModel> postList = [];
   RxList<SegmentModel> segmentList = <SegmentModel>[].obs;
   List<Segment> viewPointList = <Segment>[];
   List<Segment>? segmentProgressList;
@@ -1316,9 +1316,8 @@ class VideoDetailController extends GetxController
   }
 
   void onBlock(BuildContext context) {
-    postList ??= <PostSegmentModel>[];
-    if (postList!.isEmpty) {
-      postList!.add(
+    if (postList.isEmpty) {
+      postList.add(
         PostSegmentModel(
           segment: Pair(
             first: 0,

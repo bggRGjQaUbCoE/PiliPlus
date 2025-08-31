@@ -23,6 +23,7 @@ import 'package:PiliPlus/models_new/video/video_shot/data.dart';
 import 'package:PiliPlus/pages/common/common_intro_controller.dart';
 import 'package:PiliPlus/pages/video/controller.dart';
 import 'package:PiliPlus/pages/video/introduction/pgc/controller.dart';
+import 'package:PiliPlus/pages/video/post_panel/popup_menu_text.dart';
 import 'package:PiliPlus/pages/video/post_panel/view.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/models/bottom_control_type.dart';
@@ -1866,9 +1867,13 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     );
   }
 
+  late final segment = Pair(
+    first: plPlayerController.position.value.inMilliseconds / 1000.0,
+    second: plPlayerController.position.value.inMilliseconds / 1000.0,
+  );
   Future<void> screenshotWebp() async {
     final videoCtr = widget.videoDetailController!;
-    final videoInfo = widget.videoDetailController!.data;
+    final videoInfo = videoCtr.data;
     final ids = videoInfo.dash!.video!.map((i) => i.id!).toSet();
     final video = videoCtr.findVideoByQa(ids.reduce((p, n) => p < n ? p : n));
 
@@ -1880,7 +1885,6 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     final theme = Theme.of(context);
     final currentPos = ctr.position.value.inMilliseconds / 1000.0;
     final duration = ctr.durationSeconds.value.inMilliseconds / 1000.0;
-    final segment = Pair(first: currentPos, second: currentPos + 10.0);
     final model = PostSegmentModel(
       segment: segment,
       category: SegmentType.sponsor,
@@ -1905,43 +1909,37 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                   currentPos: currentPos,
                   videoDuration: duration,
                 ),
-                Builder(
-                  builder: (context) => PopupMenuButton(
-                    initialValue: qa.code,
-                    onSelected: (value) {
-                      if (value == qa.code) return;
-                      final video = videoCtr.findVideoByQa(value);
-                      url = video.baseUrl;
-                      qa = video.quality;
-                      (context as Element).markNeedsBuild();
-                    },
-                    itemBuilder: (_) => videoInfo.supportFormats!
-                        .map(
-                          (i) => PopupMenuItem<int>(
-                            enabled: ids.contains(i.quality),
-                            value: i.quality,
-                            child: Text(i.newDesc ?? ''),
-                          ),
-                        )
-                        .toList(),
-                    child: Text('转码画质：${qa.shortDesc}'),
-                  ),
+                PopupMenuText(
+                  title: '选择画质',
+                  initialValue: qa.code,
+                  onSelected: (value) {
+                    final video = videoCtr.findVideoByQa(value);
+                    url = video.baseUrl;
+                    qa = video.quality;
+                  },
+                  itemBuilder: (context) => videoInfo.supportFormats!
+                      .map(
+                        (i) => PopupMenuItem(
+                          enabled: ids.contains(i.quality),
+                          value: i.quality,
+                          child: Text(i.newDesc ?? ''),
+                        ),
+                      )
+                      .toList(),
+                  getSelectTitle: (_) => qa.shortDesc,
                 ),
-                Builder(
-                  builder: (context) => PopupMenuButton(
-                    initialValue: preset,
-                    onSelected: (value) {
-                      if (preset == value) return;
-                      preset = value;
-                      (context as Element).markNeedsBuild();
-                    },
-                    itemBuilder: (_) => WebpPreset.values
-                        .map(
-                          (i) => PopupMenuItem(value: i, child: Text(i.name)),
-                        )
-                        .toList(),
-                    child: Text('webp预设：${preset.name}（${preset.desc}）'),
-                  ),
+                PopupMenuText(
+                  title: 'webp预设',
+                  initialValue: preset,
+                  onSelected: (value) {
+                    if (preset == value) return;
+                    preset = value;
+                    (context as Element).markNeedsBuild();
+                  },
+                  itemBuilder: (context) => WebpPreset.values
+                      .map((i) => PopupMenuItem(value: i, child: Text(i.name)))
+                      .toList(),
+                  getSelectTitle: (i) => '${i.name}(${i.desc})',
                 ),
                 Text(
                   '*转码使用软解，速度可能慢于播放，请不要选择过长的时间段或过高画质',

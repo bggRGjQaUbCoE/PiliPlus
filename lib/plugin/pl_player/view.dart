@@ -411,6 +411,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       /// 超分辨率
       BottomControlType.superResolution => Obx(
         () => PopupMenuButton<SuperResolutionType>(
+          tooltip: '超分辨率',
           requestFocus: false,
           initialValue: plPlayerController.superResolutionType.value,
           color: Colors.black.withValues(alpha: 0.8),
@@ -519,6 +520,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       /// 画面比例
       BottomControlType.fit => Obx(
         () => PopupMenuButton<VideoFitType>(
+          tooltip: '画面比例',
           requestFocus: false,
           initialValue: plPlayerController.videoFit.value,
           color: Colors.black.withValues(alpha: 0.8),
@@ -553,6 +555,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
         () => widget.videoDetailController?.subtitles.isEmpty == true
             ? const SizedBox.shrink()
             : PopupMenuButton<int>(
+                tooltip: '选择字幕',
                 requestFocus: false,
                 initialValue: widget
                     .videoDetailController!
@@ -605,6 +608,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       /// 播放速度
       BottomControlType.speed => Obx(
         () => PopupMenuButton<double>(
+          tooltip: '倍速',
           requestFocus: false,
           initialValue: plPlayerController.playbackSpeed,
           color: Colors.black.withValues(alpha: 0.8),
@@ -658,6 +662,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
             }
           }
           return PopupMenuButton<int>(
+            tooltip: '画质',
             requestFocus: false,
             initialValue: currentVideoQa.code,
             color: Colors.black.withValues(alpha: 0.8),
@@ -1663,7 +1668,8 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                           size: 20,
                           color: Colors.white,
                         ),
-                        onLongPress: Platform.isAndroid || kDebugMode
+                        onLongPress:
+                            (Platform.isAndroid || kDebugMode) && !isLive
                             ? screenshotWebp
                             : null,
                         onTap: () {
@@ -1885,11 +1891,13 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     );
     final isPlay = ctr.playerStatus.playing;
     if (isPlay) ctr.pause();
+    WebpPreset preset = WebpPreset.def;
     final success =
         await Get.dialog<bool>(
           AlertDialog(
-            title: const Text('动态截屏'),
+            title: const Text('动态截图'),
             content: Column(
+              spacing: 12,
               mainAxisSize: MainAxisSize.min,
               children: [
                 PostPanel.segmentWidget(
@@ -1897,6 +1905,23 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                   item: model,
                   currentPos: currentPos,
                   videoDuration: duration,
+                ),
+                Builder(
+                  builder: (context) => PopupMenuButton(
+                    initialValue: preset,
+                    onSelected: (value) {
+                      if (preset != value) {
+                        preset = value;
+                        (context as Element).markNeedsBuild();
+                      }
+                    },
+                    itemBuilder: (_) => WebpPreset.values
+                        .map(
+                          (i) => PopupMenuItem(value: i, child: Text(i.name)),
+                        )
+                        .toList(),
+                    child: Text('webp预设：${preset.name}（${preset.desc}）'),
+                  ),
                 ),
                 Text(
                   '*转码使用软解，速度可能慢于播放，请不要选择过长的时间段',
@@ -1929,7 +1954,8 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     if (!success) return;
 
     final progress = 0.0.obs;
-    final name = '${DateTime.now()}.webp';
+    final name =
+        '${ctr.cid}-${segment.first.toStringAsFixed(3)}_${segment.second.toStringAsFixed(3)}.webp';
     final file = '${await Utils.temporaryDirectory}/$name';
 
     final mpv = MpvConvertWebp(
@@ -1938,6 +1964,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       segment.first,
       segment.second,
       progress: progress,
+      preset: preset,
     );
     final future = mpv.convert().whenComplete(
       () => SmartDialog.dismiss(status: SmartStatus.loading),
@@ -1949,7 +1976,6 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       onDismiss: () async {
         if (progress.value < 1.0) {
           mpv.dispose();
-          SmartDialog.showToast('已取消');
         }
         if (await future) {
           await SaverGallery.saveFile(
@@ -1958,6 +1984,8 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
             skipIfExists: false,
           );
           SmartDialog.showToast('$name已保存到相册/截图');
+        } else {
+          SmartDialog.showToast('转码出现错误或已取消');
         }
         progress.close();
         File(file).delSync();

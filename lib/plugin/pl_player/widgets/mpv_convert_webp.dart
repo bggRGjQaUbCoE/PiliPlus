@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:ffi';
 
 import 'package:PiliPlus/http/constants.dart';
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:get/get_rx/get_rx.dart';
 import 'package:media_kit/ffi/src/allocation.dart';
@@ -22,6 +23,7 @@ class MpvConvertWebp {
   final double start;
   final double duration;
   final RxDouble? progress;
+  final WebpPreset preset;
 
   MpvConvertWebp(
     this.url,
@@ -29,6 +31,7 @@ class MpvConvertWebp {
     this.start,
     double end, {
     this.progress,
+    this.preset = WebpPreset.def,
   }) : duration = end - start;
 
   Future<void> _init() async {
@@ -42,12 +45,16 @@ class MpvConvertWebp {
         'of': 'webp',
         'ovc': 'libwebp_anim',
         'ofopts': 'loop=0',
+        'ovcopts': 'preset=${preset.flag}',
       },
     );
     _setHeader();
     if (progress != null) {
       _observeProperty('time-pos');
     }
+    final level = (kDebugMode ? 'info' : 'error').toNativeUtf8();
+    _mpv.mpv_request_log_messages(_ctx, level.cast());
+    calloc.free(level);
   }
 
   void dispose() {
@@ -79,7 +86,13 @@ class MpvConvertWebp {
         final prefix = log.prefix.cast<Utf8>().toDartString().trim();
         final level = log.level.cast<Utf8>().toDartString().trim();
         final text = log.text.cast<Utf8>().toDartString().trim();
-        debugPrint('$level $prefix : $text');
+        debugPrint('WebpConvert: $level $prefix : $text');
+        if (kDebugMode) {
+          _success = level != 'error' && level != 'fatal';
+        } else {
+          _success = false;
+        }
+        break;
       case generated.mpv_event_id.MPV_EVENT_END_FILE ||
           generated.mpv_event_id.MPV_EVENT_SHUTDOWN:
         progress?.value = 1;
@@ -154,4 +167,20 @@ class MpvConvertWebp {
       ..free(valRef.u.list)
       ..free(value);
   }
+}
+
+enum WebpPreset {
+  none('none', '无', '不使用预设'),
+  def('default', '默认', '默认预设'),
+  picture('picture', '图片', '数码照片，如人像、室内拍摄'),
+  photo('photo', '照片', '户外摄影，自然光环境'),
+  drawing('drawing', '绘图', '手绘或线稿，高对比度细节'),
+  icon('icon', '图标', '小型彩色图像'),
+  text('text', '文本', '文字类');
+
+  final String flag;
+  final String name;
+  final String desc;
+
+  const WebpPreset(this.flag, this.name, this.desc);
 }

@@ -729,9 +729,12 @@ class PiliScheme {
       case 'bangumi':
         // www.bilibili.com/bangumi/play/ep{eid}?start_progress={offset}&thumb_up_dm_id={dmid}
         // if (kDebugMode) debugPrint('番剧');
+        final queryParameters = uri.queryParameters;
         bool hasMatch = PageUtils.viewPgcFromUri(
           path,
-          progress: uri.queryParameters['start_progress'],
+          progress:
+              queryParameters['start_progress'] ??
+              queryParameters['dm_progress'],
         );
         if (hasMatch) {
           return true;

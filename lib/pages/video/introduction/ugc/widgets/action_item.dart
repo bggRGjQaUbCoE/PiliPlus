@@ -114,9 +114,11 @@ class ArcPainter extends CustomPainter {
   const ArcPainter({
     required this.color,
     required this.sweepAngle,
+    this.strokeWidth = 2,
   });
   final Color color;
   final double sweepAngle;
+  final double strokeWidth;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -126,7 +128,7 @@ class ArcPainter extends CustomPainter {
 
     final paint = Paint()
       ..color = color
-      ..strokeWidth = 2
+      ..strokeWidth = strokeWidth
       ..style = PaintingStyle.stroke;
 
     final rect = Rect.fromCircle(

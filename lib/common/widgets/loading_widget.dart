@@ -35,6 +35,7 @@ class LoadingWidget extends StatelessWidget {
                 size: const Size.square(40),
                 painter: ArcPainter(
                   color: onSurfaceVariant,
+                  strokeWidth: 3,
                   sweepAngle: progress.value * 2 * pi,
                 ),
               ),

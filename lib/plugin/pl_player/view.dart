@@ -1876,10 +1876,16 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
   }
 
   Future<void> screenshotWebp() async {
-    final ctr = plPlayerController;
-    final url =
-        ctr.videoPlayerController?.state.playlist.medias.firstOrNull?.uri;
+    final videoCtr = widget.videoDetailController!;
+    final videoInfo = widget.videoDetailController!.data;
+    final ids = videoInfo.dash!.video!.map((i) => i.id!).toSet();
+    final video = videoCtr.findVideoByQa(ids.reduce((p, n) => p < n ? p : n));
+
+    VideoQuality qa = video.quality;
+    String? url = video.baseUrl;
     if (url == null) return;
+
+    final ctr = plPlayerController;
     final theme = Theme.of(context);
     final currentPos = ctr.position.value.inMilliseconds / 1000.0;
     final duration = ctr.durationSeconds.value.inMilliseconds / 1000.0;
@@ -1891,7 +1897,9 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     );
     final isPlay = ctr.playerStatus.playing;
     if (isPlay) ctr.pause();
+
     WebpPreset preset = WebpPreset.def;
+
     final success =
         await Get.dialog<bool>(
           AlertDialog(
@@ -1908,12 +1916,33 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                 ),
                 Builder(
                   builder: (context) => PopupMenuButton(
+                    initialValue: qa.code,
+                    onSelected: (value) {
+                      if (value == qa.code) return;
+                      final video = videoCtr.findVideoByQa(value);
+                      url = video.baseUrl;
+                      qa = video.quality;
+                      (context as Element).markNeedsBuild();
+                    },
+                    itemBuilder: (_) => videoInfo.supportFormats!
+                        .map(
+                          (i) => PopupMenuItem<int>(
+                            enabled: ids.contains(i.quality),
+                            value: i.quality,
+                            child: Text(i.newDesc ?? ''),
+                          ),
+                        )
+                        .toList(),
+                    child: Text('转码画质：${qa.shortDesc}'),
+                  ),
+                ),
+                Builder(
+                  builder: (context) => PopupMenuButton(
                     initialValue: preset,
                     onSelected: (value) {
-                      if (preset != value) {
-                        preset = value;
-                        (context as Element).markNeedsBuild();
-                      }
+                      if (preset == value) return;
+                      preset = value;
+                      (context as Element).markNeedsBuild();
                     },
                     itemBuilder: (_) => WebpPreset.values
                         .map(
@@ -1924,7 +1953,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                   ),
                 ),
                 Text(
-                  '*转码使用软解，速度可能慢于播放，请不要选择过长的时间段',
+                  '*转码使用软解，速度可能慢于播放，请不要选择过长的时间段或过高画质',
                   style: theme.textTheme.bodySmall,
                 ),
               ],
@@ -1959,7 +1988,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     final file = '${await Utils.temporaryDirectory}/$name';
 
     final mpv = MpvConvertWebp(
-      url,
+      url!,
       file,
       segment.first,
       segment.second,
@@ -1981,6 +2010,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
           await SaverGallery.saveFile(
             filePath: file,
             fileName: name,
+            androidRelativePath: 'Pictures/Screenshots',
             skipIfExists: false,
           );
           SmartDialog.showToast('$name已保存到相册/截图');

@@ -837,7 +837,7 @@ class HeaderControlState extends TripleState<HeaderControl> {
                             }
                             videoDetailCtr
                               ..currentDecodeFormats =
-                                  VideoDecodeFormatTypeExt.fromString(i)!
+                                  VideoDecodeFormatType.fromString(i)
                               ..updatePlayer();
                             Get.back();
                           },
@@ -846,7 +846,7 @@ class HeaderControlState extends TripleState<HeaderControl> {
                             right: 20,
                           ),
                           title: Text(
-                            VideoDecodeFormatTypeExt.fromString(i)!.description,
+                            VideoDecodeFormatType.fromString(i).description,
                           ),
                           subtitle: Text(
                             i,

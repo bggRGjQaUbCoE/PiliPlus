@@ -1,34 +1,19 @@
 // ignore_for_file: constant_identifier_names
 
 enum VideoDecodeFormatType {
-  DVH1,
-  AV1,
-  HEVC,
-  AVC,
-}
+  DVH1('dvh1'),
+  AV1('av01'),
+  HEVC('hev1'),
+  AVC('avc1');
 
-extension VideoDecodeFormatTypeExt on VideoDecodeFormatType {
-  String get description => const ['DVH1', 'AV1', 'HEVC', 'AVC'][index];
+  String get description => name;
+  final String code;
 
-  static const List<String> _codeList = ['dvh1', 'av01', 'hev1', 'avc1'];
-  String get code => _codeList[index];
+  const VideoDecodeFormatType(this.code);
 
-  static VideoDecodeFormatType? fromCode(String code) {
-    final index = _codeList.indexOf(code);
-    if (index != -1) {
-      return VideoDecodeFormatType.values[index];
-    }
-    return null;
-  }
+  static VideoDecodeFormatType fromCode(String code) =>
+      values.firstWhere((i) => i.code == code);
 
-  static VideoDecodeFormatType? fromString(String val) {
-    var result = VideoDecodeFormatType.values.first;
-    for (var i in _codeList) {
-      if (val.startsWith(i)) {
-        result = VideoDecodeFormatType.values[_codeList.indexOf(i)];
-        break;
-      }
-    }
-    return result;
-  }
+  static VideoDecodeFormatType fromString(String val) =>
+      values.firstWhere((i) => val.startsWith(i.code));
 }

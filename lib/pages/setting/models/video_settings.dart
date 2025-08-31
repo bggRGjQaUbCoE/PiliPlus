@@ -242,7 +242,7 @@ List<SettingsModel> get videoSettings => [
     title: '首选解码格式',
     leading: const Icon(Icons.movie_creation_outlined),
     getSubtitle: () =>
-        '首选解码格式：${VideoDecodeFormatTypeExt.fromCode(Pref.defaultDecode)!.description}，请根据设备支持情况与需求调整',
+        '首选解码格式：${VideoDecodeFormatType.fromCode(Pref.defaultDecode).description}，请根据设备支持情况与需求调整',
     onTap: (setState) async {
       String? result = await showDialog(
         context: Get.context!,
@@ -266,7 +266,7 @@ List<SettingsModel> get videoSettings => [
     settingsType: SettingsType.normal,
     title: '次选解码格式',
     getSubtitle: () =>
-        '非杜比视频次选：${VideoDecodeFormatTypeExt.fromCode(Pref.secondDecode)!.description}，仍无则选择首个提供的解码格式',
+        '非杜比视频次选：${VideoDecodeFormatType.fromCode(Pref.secondDecode).description}，仍无则选择首个提供的解码格式',
     leading: const Icon(Icons.swap_horizontal_circle_outlined),
     onTap: (setState) async {
       String? result = await showDialog(

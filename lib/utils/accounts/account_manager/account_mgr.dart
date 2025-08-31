@@ -74,6 +74,11 @@ class AccountManager extends Interceptor {
       Api.pgcUrl,
       Api.pugvUrl,
     },
+    AccountType.progress: {
+      '${Api.ugcUrl}#progress#',
+      '${Api.pgcUrl}#progress#',
+      '${Api.pugvUrl}#progress#',
+    },
   };
 
   static const loginApi = {
@@ -116,6 +121,9 @@ class AccountManager extends Interceptor {
     final path = options.path;
 
     late final Account account = options.extra['account'] ?? _findAccount(path);
+    if (path.endsWith('#progress#')) {
+      options.path = path.replaceAll('#progress#', '');
+    }
 
     if (_skipCookie(path) || account is NoAccount) return handler.next(options);
 

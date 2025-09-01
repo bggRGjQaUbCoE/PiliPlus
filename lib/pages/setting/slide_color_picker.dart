@@ -40,12 +40,12 @@ class _SlideColorPickerState extends State<SlideColorPicker> {
     super.dispose();
   }
 
-  String get _convert => Color.fromARGB(
-    255,
+  String get _convert => Color.fromRGBO(
     _r,
     _g,
     _b,
-  ).value.toRadixString(16).substring(2).toUpperCase();
+    1,
+  ).toARGB32().toRadixString(16).substring(2).toUpperCase();
 
   Widget _slider({
     required String title,

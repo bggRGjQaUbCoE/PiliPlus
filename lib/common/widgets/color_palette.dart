@@ -15,7 +15,7 @@ class ColorPalette extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final Hct hct = Hct.fromInt(color.value);
+    final Hct hct = Hct.fromInt(color.toARGB32());
     final primary = Color(Hct.from(hct.hue, 20.0, 90.0).toInt());
     final tertiary = Color(Hct.from(hct.hue + 50, 20.0, 85.0).toInt());
     final primaryContainer = Color(Hct.from(hct.hue, 30.0, 50.0).toInt());

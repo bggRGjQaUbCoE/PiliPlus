@@ -52,7 +52,7 @@ extension ContextExtensions on BuildContext {
   double get devicePixelRatio => MediaQuery.devicePixelRatioOf(this);
 
   /// similar to [MediaQuery.of(this).textScaleFactor]
-  double get textScaleFactor => MediaQuery.textScaleFactorOf(this);
+  TextScaler get textScaler => MediaQuery.textScalerOf(this);
 
   /// get the shortestSide from screen
   double get mediaQueryShortestSide => mediaQuerySize.shortestSide;

@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
-import 'package:PiliPlus/common/widgets/radio_widget.dart';
 import 'package:PiliPlus/grpc/bilibili/im/type.pbenum.dart';
 import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
     show ReplyInfo;
@@ -400,23 +399,20 @@ class RequestUtils {
               title: Text('${isCopy ? '复制' : '移动'}到'),
               contentPadding: const EdgeInsets.only(top: 5),
               content: SingleChildScrollView(
-                child: Builder(
-                  builder: (context) => Column(
-                    children: List.generate(list.length, (index) {
-                      final item = list[index];
-                      return RadioWidget<int>(
-                        padding: const EdgeInsets.only(left: 14),
-                        title: item.title,
-                        groupValue: checkedId,
+                child: RadioGroup(
+                  onChanged: (value) {
+                    checkedId = value;
+                    (context as Element).markNeedsBuild();
+                  },
+                  groupValue: checkedId,
+                  child: Column(
+                    children: list.map((item) {
+                      return RadioListTile<int>(
+                        dense: true,
+                        title: Text(item.title),
                         value: item.id,
-                        onChanged: (value) {
-                          checkedId = value;
-                          if (context.mounted) {
-                            (context as Element).markNeedsBuild();
-                          }
-                        },
                       );
-                    }),
+                    }).toList(),
                   ),
                 ),
               ),

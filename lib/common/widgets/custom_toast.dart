@@ -46,7 +46,7 @@ class LoadingWidget extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
       decoration: BoxDecoration(
-        color: theme.dialogBackgroundColor,
+        color: theme.dialogTheme.backgroundColor,
         borderRadius: const BorderRadius.all(Radius.circular(15)),
       ),
       child: Column(

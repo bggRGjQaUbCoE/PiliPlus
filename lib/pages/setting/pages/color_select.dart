@@ -98,13 +98,13 @@ class _ColorSelectPageState extends State<ColorSelectPage> {
           ),
           Obx(
             () => ListTile(
-              enabled: ctr.type.value != 0,
+              enabled: !ctr.dynamicColor.value,
               title: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text('调色板风格'),
                   PopupMenuButton(
-                    enabled: ctr.type.value != 0,
+                    enabled: !ctr.dynamicColor.value,
                     initialValue: _dynamicSchemeVariant,
                     onSelected: (item) {
                       _dynamicSchemeVariant = item;
@@ -130,7 +130,7 @@ class _ColorSelectPageState extends State<ColorSelectPage> {
                           style: TextStyle(
                             height: 1,
                             fontSize: 13,
-                            color: ctr.type.value == 0
+                            color: ctr.dynamicColor.value
                                 ? theme.colorScheme.outline.withValues(
                                     alpha: 0.8,
                                   )
@@ -141,7 +141,7 @@ class _ColorSelectPageState extends State<ColorSelectPage> {
                         Icon(
                           size: 20,
                           Icons.keyboard_arrow_right,
-                          color: ctr.type.value == 0
+                          color: ctr.dynamicColor.value
                               ? theme.colorScheme.outline.withValues(
                                   alpha: 0.8,
                                 )
@@ -164,27 +164,14 @@ class _ColorSelectPageState extends State<ColorSelectPage> {
             ),
           ),
           Obx(
-            () => RadioListTile(
-              value: 0,
+            () => CheckboxListTile(
               title: const Text('动态取色'),
-              groupValue: ctr.type.value,
-              onChanged: (dynamic val) {
+              controlAffinity: ListTileControlAffinity.leading,
+              value: ctr.dynamicColor.value,
+              onChanged: (val) {
                 ctr
-                  ..type.value = 0
-                  ..setting.put(SettingBoxKey.dynamicColor, true);
-                Get.forceAppUpdate();
-              },
-            ),
-          ),
-          Obx(
-            () => RadioListTile(
-              value: 1,
-              title: const Text('指定颜色'),
-              groupValue: ctr.type.value,
-              onChanged: (dynamic val) {
-                ctr
-                  ..type.value = 1
-                  ..setting.put(SettingBoxKey.dynamicColor, false);
+                  ..dynamicColor.value = val!
+                  ..setting.put(SettingBoxKey.dynamicColor, val);
                 Get.forceAppUpdate();
               },
             ),
@@ -196,78 +183,79 @@ class _ColorSelectPageState extends State<ColorSelectPage> {
               alignment: Alignment.topCenter,
               duration: const Duration(milliseconds: 200),
               child: Obx(
-                () => SizedBox(
-                  height: ctr.type.value == 0 ? 0 : null,
-                  child: Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: Wrap(
-                      alignment: WrapAlignment.center,
-                      spacing: 22,
-                      runSpacing: 18,
-                      children: colorThemeTypes.indexed.map(
-                        (e) {
-                          final index = e.$1;
-                          final item = e.$2;
-                          return GestureDetector(
-                            behavior: HitTestBehavior.opaque,
-                            onTap: () {
-                              ctr
-                                ..currentColor.value = index
-                                ..setting.put(SettingBoxKey.customColor, index);
-                              Get.forceAppUpdate();
+                () => ctr.dynamicColor.value
+                    ? const SizedBox.shrink(key: ValueKey(false))
+                    : Padding(
+                        key: const ValueKey(true),
+                        padding: const EdgeInsets.all(12),
+                        child: Wrap(
+                          alignment: WrapAlignment.center,
+                          spacing: 22,
+                          runSpacing: 18,
+                          children: colorThemeTypes.indexed.map(
+                            (e) {
+                              final index = e.$1;
+                              final item = e.$2;
+                              return GestureDetector(
+                                behavior: HitTestBehavior.opaque,
+                                onTap: () {
+                                  ctr
+                                    ..currentColor.value = index
+                                    ..setting.put(
+                                      SettingBoxKey.customColor,
+                                      index,
+                                    );
+                                  Get.forceAppUpdate();
+                                },
+                                child: Column(
+                                  spacing: 3,
+                                  children: [
+                                    ColorPalette(
+                                      color: item.color,
+                                      selected: ctr.currentColor.value == index,
+                                    ),
+                                    Text(
+                                      item.label,
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: ctr.currentColor.value != index
+                                            ? theme.colorScheme.outline
+                                            : null,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
                             },
-                            child: Column(
-                              spacing: 3,
-                              children: [
-                                ColorPalette(
-                                  color: item.color,
-                                  selected: ctr.currentColor.value == index,
-                                ),
-                                Text(
-                                  item.label,
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: ctr.currentColor.value != index
-                                        ? theme.colorScheme.outline
-                                        : null,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                      ).toList(),
-                    ),
-                  ),
-                ),
+                          ).toList(),
+                        ),
+                      ),
               ),
             ),
           ),
-          ...[
-            Padding(
-              padding: padding,
-              child: IgnorePointer(
-                child: Container(
-                  height: size.height / 2,
-                  width: size.width,
-                  color: theme.colorScheme.surface,
-                  child: const HomePage(),
-                ),
+          Padding(
+            padding: padding,
+            child: IgnorePointer(
+              child: Container(
+                height: size.height / 2,
+                width: size.width,
+                color: theme.colorScheme.surface,
+                child: const HomePage(),
               ),
             ),
-            IgnorePointer(
-              child: NavigationBar(
-                destinations: NavigationBarType.values
-                    .map(
-                      (item) => NavigationDestination(
-                        icon: item.icon,
-                        label: item.label,
-                      ),
-                    )
-                    .toList(),
-              ),
+          ),
+          IgnorePointer(
+            child: NavigationBar(
+              destinations: NavigationBarType.values
+                  .map(
+                    (item) => NavigationDestination(
+                      icon: item.icon,
+                      label: item.label,
+                    ),
+                  )
+                  .toList(),
             ),
-          ],
+          ),
         ],
       ),
     );
@@ -276,7 +264,6 @@ class _ColorSelectPageState extends State<ColorSelectPage> {
 
 class ColorSelectController extends GetxController {
   final RxBool dynamicColor = Pref.dynamicColor.obs;
-  late final RxInt type = (dynamicColor.value ? 0 : 1).obs;
   final RxInt currentColor = Pref.customColor.obs;
   final RxDouble currentTextScale = Pref.defaultTextScale.obs;
   final Rx<ThemeType> themeType = Pref.themeType.obs;

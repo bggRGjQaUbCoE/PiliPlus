@@ -423,7 +423,7 @@ class _SponsorBlockPageState extends State<SponsorBlockPage> {
             setting.put(
               SettingBoxKey.blockColor,
               _blockColor
-                  .map((item) => item.value.toRadixString(16).substring(2))
+                  .map((item) => item.toARGB32().toRadixString(16).substring(2))
                   .toList(),
             );
             (context as Element).markNeedsBuild();

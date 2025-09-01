@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 
-void autoWrapReportDialog(
+Future<void> autoWrapReportDialog(
   BuildContext context,
   Map<String, Map<int, String>> options,
   Future<Map> Function(int reasonType, String? reasonDesc, bool banUid)
@@ -14,30 +14,30 @@ void autoWrapReportDialog(
   String? reasonDesc;
   bool banUid = false;
   late final key = GlobalKey<FormState>();
-  showDialog(
+  return showDialog(
     context: context,
-    builder: (context) => StatefulBuilder(
-      builder: (context, setState) {
-        return AlertDialog(
-          title: const Text('举报'),
-          titlePadding: const EdgeInsets.only(left: 22, top: 16, right: 22),
-          contentPadding: const EdgeInsets.symmetric(vertical: 5),
-          actionsPadding: const EdgeInsets.only(
-            left: 16,
-            right: 16,
-            bottom: 10,
-          ),
-          content: Form(
-            key: key,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Flexible(
-                  child: SingleChildScrollView(
-                    child: AnimatedSize(
-                      duration: const Duration(milliseconds: 200),
-                      child: Column(
+    builder: (context) {
+      return AlertDialog(
+        title: const Text('举报'),
+        titlePadding: const EdgeInsets.only(left: 22, top: 16, right: 22),
+        contentPadding: const EdgeInsets.symmetric(vertical: 5),
+        actionsPadding: const EdgeInsets.only(
+          left: 16,
+          right: 16,
+          bottom: 10,
+        ),
+        content: Form(
+          key: key,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Flexible(
+                child: SingleChildScrollView(
+                  child: AnimatedSize(
+                    duration: const Duration(milliseconds: 200),
+                    child: Builder(
+                      builder: (context) => Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Padding(
@@ -48,13 +48,20 @@ void autoWrapReportDialog(
                             ),
                             child: Text('请选择举报的理由：'),
                           ),
-                          ...options.entries.map(
-                            (entry) => WrapRadioOptionsGroup<int>(
-                              groupTitle: entry.key,
-                              options: entry.value,
-                              selectedValue: reasonType,
-                              onChanged: (value) =>
-                                  setState(() => reasonType = value),
+                          RadioGroup(
+                            onChanged: (value) {
+                              reasonType = value;
+                              (context as Element).markNeedsBuild();
+                            },
+                            groupValue: reasonType,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: options.entries.map((entry) {
+                                return WrapRadioOptionsGroup<int>(
+                                  groupTitle: entry.key,
+                                  options: entry.value,
+                                );
+                              }).toList(),
                             ),
                           ),
                           if (reasonType == 0)
@@ -66,51 +73,51 @@ void autoWrapReportDialog(
                     ),
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.only(left: 14, top: 6),
-                  child: CheckBoxText(
-                    text: '拉黑该用户',
-                    onChanged: (value) => banUid = value,
-                  ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(left: 14, top: 6),
+                child: CheckBoxText(
+                  text: '拉黑该用户',
+                  onChanged: (value) => banUid = value,
                 ),
-              ],
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: Get.back,
+            child: Text(
+              '取消',
+              style: TextStyle(color: Theme.of(context).colorScheme.outline),
             ),
           ),
-          actions: [
-            TextButton(
-              onPressed: Get.back,
-              child: Text(
-                '取消',
-                style: TextStyle(color: Theme.of(context).colorScheme.outline),
-              ),
-            ),
-            TextButton(
-              onPressed: () async {
-                if (reasonType == null ||
-                    (reasonType == 0 && key.currentState?.validate() != true)) {
-                  return;
+          TextButton(
+            onPressed: () async {
+              if (reasonType == null ||
+                  (reasonType == 0 && key.currentState?.validate() != true)) {
+                return;
+              }
+              SmartDialog.showLoading();
+              try {
+                final data = await onSuccess(reasonType!, reasonDesc, banUid);
+                SmartDialog.dismiss();
+                if (data['code'] == 0) {
+                  Get.back();
+                  SmartDialog.showToast('举报成功');
+                } else {
+                  SmartDialog.showToast(data['message']);
                 }
-                SmartDialog.showLoading();
-                try {
-                  final data = await onSuccess(reasonType!, reasonDesc, banUid);
-                  SmartDialog.dismiss();
-                  if (data['code'] == 0) {
-                    Get.back();
-                    SmartDialog.showToast('举报成功');
-                  } else {
-                    SmartDialog.showToast(data['message']);
-                  }
-                } catch (e) {
-                  SmartDialog.dismiss();
-                  SmartDialog.showToast('提交失败：$e');
-                }
-              },
-              child: const Text('确定'),
-            ),
-          ],
-        );
-      },
-    ),
+              } catch (e) {
+                SmartDialog.dismiss();
+                SmartDialog.showToast('提交失败：$e');
+              }
+            },
+            child: const Text('确定'),
+          ),
+        ],
+      );
+    },
   );
 }
 
@@ -186,8 +193,8 @@ class _CheckBoxTextState extends State<CheckBoxText> {
       onTap: () {
         setState(() {
           _selected = !_selected;
+          widget.onChanged(_selected);
         });
-        widget.onChanged(_selected);
       },
       child: Padding(
         padding: const EdgeInsets.all(4),

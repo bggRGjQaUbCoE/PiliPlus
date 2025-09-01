@@ -259,19 +259,10 @@ class _MemberPageState extends State<MemberPage> {
           ] else ...[
             const PopupMenuDivider(),
             PopupMenuItem(
-              onTap: () => showDialog(
-                context: context,
-                builder: (context) => AlertDialog(
-                  clipBehavior: Clip.hardEdge,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 16,
-                  ),
-                  content: MemberReportPanel(
-                    name: _userController.username,
-                    mid: _mid,
-                  ),
-                ),
+              onTap: () => showMemberReportDialog(
+                context,
+                name: _userController.username,
+                mid: _mid,
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,

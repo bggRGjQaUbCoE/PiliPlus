@@ -708,56 +708,59 @@ class LoginPageController extends GetxController
     };
     return showDialog(
       context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) {
-          return AlertDialog(
-            title: const Text('选择账号mid, 为0时使用匿名'),
-            titlePadding: const EdgeInsets.only(left: 22, top: 16, right: 22),
-            contentPadding: const EdgeInsets.symmetric(vertical: 5),
-            actionsPadding: const EdgeInsets.only(
-              left: 16,
-              right: 16,
-              bottom: 10,
-            ),
-            content: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: AccountType.values
-                    .map(
-                      (e) => WrapRadioOptionsGroup<Account>(
+      builder: (context) => AlertDialog(
+        title: const Text('选择账号mid, 为0时使用匿名'),
+        titlePadding: const EdgeInsets.only(left: 22, top: 16, right: 22),
+        contentPadding: const EdgeInsets.symmetric(vertical: 5),
+        actionsPadding: const EdgeInsets.only(
+          left: 16,
+          right: 16,
+          bottom: 10,
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: AccountType.values
+                .map(
+                  (e) => Builder(
+                    builder: (context) => RadioGroup(
+                      groupValue: selectAccount[e],
+                      onChanged: (v) {
+                        selectAccount[e] = v!;
+                        (context as Element).markNeedsBuild();
+                      },
+                      child: WrapRadioOptionsGroup<Account>(
                         groupTitle: e.title,
                         options: options,
-                        selectedValue: selectAccount[e],
-                        onChanged: (v) => setState(() => selectAccount[e] = v!),
                       ),
-                    )
-                    .toList(),
+                    ),
+                  ),
+                )
+                .toList(),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: Get.back,
+            child: Text(
+              '取消',
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.outline,
               ),
             ),
-            actions: [
-              TextButton(
-                onPressed: Get.back,
-                child: Text(
-                  '取消',
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.outline,
-                  ),
-                ),
-              ),
-              TextButton(
-                onPressed: () {
-                  for (var i in selectAccount.entries) {
-                    if (i.value != Accounts.get(i.key)) {
-                      Accounts.set(i.key, i.value);
-                    }
-                  }
-                  Get.back();
-                },
-                child: const Text('确定'),
-              ),
-            ],
-          );
-        },
+          ),
+          TextButton(
+            onPressed: () {
+              for (var i in selectAccount.entries) {
+                if (i.value != Accounts.get(i.key)) {
+                  Accounts.set(i.key, i.value);
+                }
+              }
+              Get.back();
+            },
+            child: const Text('确定'),
+          ),
+        ],
       ),
     );
   }

@@ -456,7 +456,7 @@ class _SendDanmakuPanelState extends CommonTextPubPageState<SendDanmakuPanel> {
       msg: editController.text,
       mode: _mode.value,
       fontsize: _fontsize.value,
-      color: isColorful ? null : _color.value.value & 0xFFFFFF,
+      color: isColorful ? null : _color.value.toARGB32() & 0xFFFFFF,
       colorful: isColorful,
     );
     SmartDialog.dismiss();

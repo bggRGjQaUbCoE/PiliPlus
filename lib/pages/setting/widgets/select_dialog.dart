@@ -33,24 +33,26 @@ class SelectDialog<T> extends StatelessWidget {
       title: Text(title),
       contentPadding: const EdgeInsets.symmetric(vertical: 12),
       content: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: List.generate(
-            values.length,
-            (index) {
-              final item = values[index];
-              return RadioListTile<T>(
-                dense: true,
-                value: item.$1,
-                title: Text(
-                  item.$2,
-                  style: titleMedium,
-                ),
-                subtitle: subtitleBuilder?.call(context, index),
-                groupValue: value,
-                onChanged: Navigator.of(context).pop,
-              );
-            },
+        child: RadioGroup<T>(
+          onChanged: Navigator.of(context).pop,
+          groupValue: value,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: List.generate(
+              values.length,
+              (index) {
+                final item = values[index];
+                return RadioListTile<T>(
+                  dense: true,
+                  value: item.$1,
+                  title: Text(
+                    item.$2,
+                    style: titleMedium,
+                  ),
+                  subtitle: subtitleBuilder?.call(context, index),
+                );
+              },
+            ),
           ),
         ),
       ),

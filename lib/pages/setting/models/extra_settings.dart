@@ -4,7 +4,6 @@ import 'dart:math' show pi, max;
 import 'package:PiliPlus/common/widgets/image/custom_grid_view.dart'
     show ImageModel;
 import 'package:PiliPlus/common/widgets/pendant_avatar.dart';
-import 'package:PiliPlus/common/widgets/radio_widget.dart';
 import 'package:PiliPlus/common/widgets/refresh_indicator.dart';
 import 'package:PiliPlus/grpc/reply.dart';
 import 'package:PiliPlus/http/fav.dart';
@@ -25,7 +24,6 @@ import 'package:PiliPlus/pages/setting/widgets/slide_dialog.dart';
 import 'package:PiliPlus/pages/video/reply/widgets/reply_item_grpc.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/cache_manage.dart';
-import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:PiliPlus/utils/image_util.dart';
 import 'package:PiliPlus/utils/storage.dart';
@@ -799,7 +797,7 @@ List<SettingsModel> get extraSettings => [
         final res = await FavHttp.allFavFolders(Accounts.main.mid);
         if (res.isSuccess) {
           final list = res.data.list;
-          if (list.isNullOrEmpty) {
+          if (list == null || list.isEmpty) {
             return;
           }
           final quickFavId = Pref.quickFavId;
@@ -809,22 +807,22 @@ List<SettingsModel> get extraSettings => [
               title: const Text('选择默认收藏夹'),
               contentPadding: const EdgeInsets.only(top: 5, bottom: 18),
               content: SingleChildScrollView(
-                child: Builder(
-                  builder: (context) => Column(
-                    children: List.generate(list!.length, (index) {
-                      final item = list[index];
-                      return RadioWidget(
-                        padding: const EdgeInsets.only(left: 14),
-                        title: item.title,
-                        groupValue: quickFavId,
+                child: RadioGroup(
+                  onChanged: (value) {
+                    Get.back();
+                    GStorage.setting.put(SettingBoxKey.quickFavId, value);
+                    SmartDialog.showToast('设置成功');
+                  },
+                  groupValue: quickFavId,
+                  child: Column(
+                    children: list.map((item) {
+                      return RadioListTile(
+                        toggleable: true,
+                        dense: true,
+                        title: Text(item.title),
                         value: item.id,
-                        onChanged: (value) {
-                          Get.back();
-                          GStorage.setting.put(SettingBoxKey.quickFavId, value);
-                          SmartDialog.showToast('设置成功');
-                        },
                       );
-                    }),
+                    }).toList(),
                   ),
                 ),
               ),

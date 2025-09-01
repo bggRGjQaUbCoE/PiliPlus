@@ -577,7 +577,7 @@ List<SettingsModel> get styleSettings => [
     leading: const Icon(Icons.color_lens_outlined),
     title: '应用主题',
     getSubtitle: () =>
-        '当前主题：${Get.put(ColorSelectController()).type.value == 0 ? '动态取色' : '指定颜色'}',
+        '当前主题：${Get.put(ColorSelectController()).dynamicColor.value ? '动态取色' : '指定颜色'}',
   ),
   SettingsModel(
     settingsType: SettingsType.normal,

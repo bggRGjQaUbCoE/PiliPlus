@@ -216,17 +216,25 @@ class VideoHttp {
     });
 
     try {
-      var res = await Request().get(
-        videoType.api,
-        queryParameters: params,
-      );
-      var resProgress = res;
+      late Response res;
+      late Response resProgress;
+
       if (Accounts.get(AccountType.video).mid !=
           Accounts.get(AccountType.progress).mid) {
-        resProgress = await Request().get(
-          '${videoType.api}#progress#',
+        // 并行获取视频数据和进度数据
+        final results = await Future.wait([
+          Request().get(videoType.api, queryParameters: params),
+          Request().get('${videoType.api}#progress#', queryParameters: params),
+        ]);
+        res = results[0];
+        resProgress = results[1];
+      } else {
+        // 只需要获取视频数据，进度数据使用相同的结果
+        res = await Request().get(
+          videoType.api,
           queryParameters: params,
         );
+        resProgress = res;
       }
 
       if (res.data['code'] == 0) {

@@ -564,7 +564,7 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
                     theme,
                     () => Get.to(
                       const MusicRecommandPage(),
-                      arguments: item,
+                      arguments: (id: controller.musicId, item: item),
                     ),
                   ),
                 ],

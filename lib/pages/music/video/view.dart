@@ -22,7 +22,7 @@ class _MusicRecommandPageState extends State<MusicRecommandPage>
     with GridMixin {
   late final MusicRecommendController _controller = Get.putOrFind(
     MusicRecommendController.new,
-    tag: Get.parameters['musicId']!,
+    tag: (Get.arguments as MusicRecommendArgs).id,
   );
 
   @override

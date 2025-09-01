@@ -242,12 +242,12 @@ class PiliScheme {
           case 'comment':
             if (path.startsWith("/detail/")) {
               // bilibili://comment/detail/17/832703053858603029/238686570016/?subType=0&anchor=238686628816&showEnter=1&extraIntentId=0&scene=1&enterName=%E6%9F%A5%E7%9C%8B%E5%8A%A8%E6%80%81%E8%AF%A6%E6%83%85&enterUri=bilibili://following/detail/832703053858603029
-              List<String> pathSegments = uri.pathSegments;
-              Map<String, String> queryParameters = uri.queryParameters;
-              int type = int.parse(pathSegments[1]); // business_id
-              int oid = int.parse(pathSegments[2]); // subject_id
-              int rootId = int.parse(pathSegments[3]); // root_id // target_id
-              int? rpId =
+              final pathSegments = uri.pathSegments;
+              final queryParameters = uri.queryParameters;
+              final type = int.parse(pathSegments[1]); // business_id
+              final oid = int.parse(pathSegments[2]); // subject_id
+              final rootId = int.parse(pathSegments[3]); // root_id // target_id
+              final rpId =
                   queryParameters['anchor'] !=
                       null // source_id
                   ? int.tryParse(queryParameters['anchor']!)
@@ -255,34 +255,39 @@ class PiliScheme {
               // int subType = int.parse(queryParameters['subType'] ?? '0');
               // int extraIntentId =
               // int.parse(queryParameters['extraIntentId'] ?? '0');
+              final enterUri = queryParameters['enterUri'];
               Get.to(
                 arguments: {
                   'oid': oid,
                   'rpid': rootId,
                   'id': rpId,
                   'type': type,
-                  'enterUri': queryParameters['enterUri'],
+                  'enterUri': enterUri,
                 },
                 () => Scaffold(
                   resizeToAvoidBottomInset: false,
                   appBar: AppBar(
                     title: const Text('评论详情'),
-                    actions: [
-                      IconButton(
-                        tooltip: '前往',
-                        onPressed: () {
-                          String? enterUri = queryParameters['enterUri'];
-                          if (enterUri != null) {
-                            routePush(Uri.parse(enterUri));
-                          } else {
-                            routePush(
-                              Uri.parse('bilibili://following/detail/$oid'),
-                            );
-                          }
-                        },
-                        icon: const Icon(Icons.open_in_new),
-                      ),
-                    ],
+                    actions:
+                        enterUri != null || const [11, 16, 17].contains(type)
+                        ? [
+                            IconButton(
+                              tooltip: '前往',
+                              onPressed: () {
+                                if (enterUri != null) {
+                                  routePush(Uri.parse(enterUri));
+                                } else {
+                                  routePush(
+                                    Uri.parse(
+                                      'bilibili://following/detail/$oid',
+                                    ),
+                                  );
+                                }
+                              },
+                              icon: const Icon(Icons.open_in_new),
+                            ),
+                          ]
+                        : null,
                   ),
                   body: ViewSafeArea(
                     child: VideoReplyReplyPanel(

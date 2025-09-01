@@ -8,6 +8,7 @@ import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
 import 'package:PiliPlus/models/common/video/video_type.dart';
 import 'package:PiliPlus/models/dynamics/result.dart';
 import 'package:PiliPlus/pages/dynamics/widgets/dynamic_panel.dart';
+import 'package:PiliPlus/pages/music/controller.dart';
 import 'package:PiliPlus/pages/video/introduction/pgc/controller.dart';
 import 'package:PiliPlus/pages/video/introduction/ugc/controller.dart';
 import 'package:PiliPlus/pages/video/reply/widgets/reply_item_grpc.dart';
@@ -74,8 +75,10 @@ class _SavePanelState extends State<SavePanel> {
 
   //reply
   String? cover;
+  _CoverType coverType = _CoverType.def16_9;
   String? title;
   int? pubdate;
+  DateFormat dateFormat = DateUtil.longFormatDs;
   String? uname;
 
   String uri = '';
@@ -159,14 +162,42 @@ class _SavePanelState extends State<SavePanel> {
       } else if (currentRoute.startsWith('/articlePage')) {
         try {
           final type = reply.type.toInt();
-          late final oid = reply.oid;
-          late final rootId = hasRoot ? reply.root : reply.id;
-          late final anchor = hasRoot ? 'anchor=${reply.id}&' : '';
-          late final enterUri =
+          final oid = reply.oid;
+          final rootId = hasRoot ? reply.root : reply.id;
+          final anchor = hasRoot ? 'anchor=${reply.id}&' : '';
+          final enterUri =
               'bilibili://following/detail/${Get.parameters['id'] ?? Get.arguments?['id']}';
           uri =
               'bilibili://comment/detail/$type/$oid/$rootId/?${anchor}enterUri=$enterUri';
         } catch (_) {}
+      } else if (currentRoute.startsWith('/musicDetail')) {
+        final type = reply.type.toInt();
+        final oid = reply.oid;
+        final rootId = hasRoot ? reply.root : reply.id;
+        final anchor = hasRoot ? 'anchor=${reply.id}&' : '';
+        String enterUri = '';
+        try {
+          final ctr = Get.find<MusicDetailController>(
+            tag: Get.parameters['musicId'],
+          );
+          // enterUri = 'enterUri=${Uri.encodeComponent(ctr.shareUrl)}'; // official client cannot parse it
+          final data = ctr.infoState.value.dataOrNull;
+          if (data != null) {
+            coverType = _CoverType.square;
+            cover = data.mvCover;
+            title = data.musicTitle;
+            if (data.musicPublish != null) {
+              final time = DateTime.tryParse(
+                data.musicPublish!,
+              )?.millisecondsSinceEpoch;
+              if (time != null) {
+                pubdate = time ~/ 1000;
+                dateFormat = DateUtil.longFormat;
+              }
+            }
+          }
+        } catch (_) {}
+        uri = 'bilibili://comment/detail/$type/$oid/$rootId/?$anchor$enterUri';
       }
 
       if (kDebugMode) debugPrint(uri);
@@ -296,6 +327,7 @@ class _SavePanelState extends State<SavePanel> {
     final theme = Theme.of(context);
     final padding = MediaQuery.viewPaddingOf(context);
     final maxWidth = context.mediaQueryShortestSide;
+    late final coverSize = MediaQuery.textScalerOf(context).scale(65);
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: Get.back,
@@ -367,15 +399,10 @@ class _SavePanelState extends State<SavePanel> {
                                   NetworkImgLayer(
                                     radius: 6,
                                     src: cover!,
-                                    height: MediaQuery.textScalerOf(
-                                      context,
-                                    ).scale(65),
-                                    width:
-                                        MediaQuery.textScalerOf(
-                                          context,
-                                        ).scale(65) *
-                                        16 /
-                                        9,
+                                    height: coverSize,
+                                    width: coverType == _CoverType.def16_9
+                                        ? coverSize * 16 / 9
+                                        : coverSize,
                                     quality: 100,
                                   ),
                                   const SizedBox(width: 10),
@@ -394,7 +421,7 @@ class _SavePanelState extends State<SavePanel> {
                                           Text(
                                             DateUtil.format(
                                               pubdate,
-                                              format: DateUtil.longFormatDs,
+                                              format: dateFormat,
                                             ),
                                             style: TextStyle(
                                               color: theme.colorScheme.outline,
@@ -577,3 +604,5 @@ class _SavePanelState extends State<SavePanel> {
     );
   }
 }
+
+enum _CoverType { def16_9, square }

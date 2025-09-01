@@ -223,3 +223,8 @@ extension FileExt on File {
 extension SizeExt on Size {
   bool get isPortrait => width < 600 || height >= width;
 }
+
+extension GetExt on GetInterface {
+  S putOrFind<S>(InstanceBuilderCallback<S> dep, {String? tag}) =>
+      GetInstance().putOrFind(dep, tag: tag);
+}

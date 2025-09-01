@@ -18,11 +18,14 @@ import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:easy_debounce/easy_throttle.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:get/get.dart' hide ContextExtensionss;
 
 abstract class CommonDynPageState<T extends StatefulWidget> extends State<T>
     with TickerProviderStateMixin {
   CommonDynController get controller;
+
+  late final scrollController = ScrollController()..addListener(listener);
 
   late final scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -35,6 +38,49 @@ abstract class CommonDynPageState<T extends StatefulWidget> extends State<T>
   late bool isPortrait;
   late double maxWidth;
 
+  bool _showFab = true;
+
+  final fabOffset = const Offset(0, 1);
+
+  late final AnimationController fabAnimationCtr = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 300),
+  )..forward();
+
+  late final Animation<Offset> fabAnim = Tween<Offset>(
+    begin: fabOffset,
+    end: Offset.zero,
+  ).animate(CurvedAnimation(parent: fabAnimationCtr, curve: Curves.easeInOut));
+
+  void listener() {
+    final pos = scrollController.positions;
+    controller.showTitle.value = pos.first.pixels > 55;
+
+    final direction1 = pos.first.userScrollDirection;
+    late final direction2 = pos.last.userScrollDirection;
+    if (direction1 == ScrollDirection.forward ||
+        direction2 == ScrollDirection.forward) {
+      showFab();
+    } else if (direction1 == ScrollDirection.reverse ||
+        direction2 == ScrollDirection.reverse) {
+      hideFab();
+    }
+  }
+
+  void showFab() {
+    if (!_showFab) {
+      _showFab = true;
+      fabAnimationCtr.forward();
+    }
+  }
+
+  void hideFab() {
+    if (_showFab) {
+      _showFab = false;
+      fabAnimationCtr.reverse();
+    }
+  }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -43,7 +89,7 @@ abstract class CommonDynPageState<T extends StatefulWidget> extends State<T>
     isPortrait = size.isPortrait;
     imageCallback = horizontalPreview
         ? (imgList, index) {
-            controller.hideFab();
+            hideFab();
             PageUtils.onHorizontalPreview(
               scaffoldKey,
               this,
@@ -53,6 +99,12 @@ abstract class CommonDynPageState<T extends StatefulWidget> extends State<T>
           }
         : null;
     padding = MediaQuery.viewPaddingOf(context);
+  }
+
+  @override
+  void dispose() {
+    scrollController.dispose();
+    super.dispose();
   }
 
   Widget buildReplyHeader(ThemeData theme) {
@@ -220,7 +272,7 @@ abstract class CommonDynPageState<T extends StatefulWidget> extends State<T>
       } else {
         ScaffoldState? scaffoldState = Scaffold.maybeOf(context);
         if (scaffoldState != null) {
-          controller.hideFab();
+          hideFab();
           scaffoldState.showBottomSheet(
             backgroundColor: Colors.transparent,
             (context) => replyReplyPage(showBackBtn: false),

@@ -292,14 +292,14 @@ class PageUtils {
 
   static Future<void> pushDynFromId({id, rid, bool off = false}) async {
     SmartDialog.showLoading();
-    var res = await DynamicsHttp.dynamicDetail(
+    final res = await DynamicsHttp.dynamicDetail(
       id: id,
       rid: rid,
       type: rid != null ? 2 : null,
     );
     SmartDialog.dismiss();
-    if (res['status']) {
-      DynamicItemModel data = res['data'];
+    if (res.isSuccess) {
+      final data = res.data;
       if (data.basic?.commentType == 12) {
         toDupNamed(
           '/articlePage',
@@ -313,13 +313,13 @@ class PageUtils {
         toDupNamed(
           '/dynamicDetail',
           arguments: {
-            'item': res['data'],
+            'item': data,
           },
           off: off,
         );
       }
     } else {
-      SmartDialog.showToast(res['msg']);
+      res.toast();
     }
   }
 

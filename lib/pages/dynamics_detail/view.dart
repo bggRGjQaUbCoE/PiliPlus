@@ -9,6 +9,7 @@ import 'package:PiliPlus/pages/dynamics/widgets/author_panel.dart';
 import 'package:PiliPlus/pages/dynamics/widgets/dynamic_panel.dart';
 import 'package:PiliPlus/pages/dynamics_detail/controller.dart';
 import 'package:PiliPlus/pages/dynamics_repost/view.dart';
+import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/grid.dart';
 import 'package:PiliPlus/utils/num_util.dart';
 import 'package:PiliPlus/utils/request_utils.dart';
@@ -26,9 +27,9 @@ class DynamicDetailPage extends StatefulWidget {
 
 class _DynamicDetailPageState extends CommonDynPageState<DynamicDetailPage> {
   @override
-  final DynamicDetailController controller = Get.put(
-    DynamicDetailController(),
-    tag: Utils.generateRandomString(8),
+  final DynamicDetailController controller = Get.putOrFind(
+    DynamicDetailController.new,
+    tag: (Get.arguments['item'] as DynamicItemModel).idStr.toString(),
   );
 
   @override
@@ -40,9 +41,9 @@ class _DynamicDetailPageState extends CommonDynPageState<DynamicDetailPage> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (controller.scrollController.hasClients) {
+      if (scrollController.hasClients) {
         controller.showTitle.value =
-            controller.scrollController.positions.first.pixels > 55;
+            scrollController.positions.first.pixels > 55;
       }
     });
   }
@@ -100,7 +101,7 @@ class _DynamicDetailPageState extends CommonDynPageState<DynamicDetailPage> {
       child = Padding(
         padding: EdgeInsets.symmetric(horizontal: padding),
         child: CustomScrollView(
-          controller: controller.scrollController,
+          controller: scrollController,
           physics: const AlwaysScrollableScrollPhysics(),
           slivers: [
             SliverToBoxAdapter(
@@ -126,7 +127,7 @@ class _DynamicDetailPageState extends CommonDynPageState<DynamicDetailPage> {
           Expanded(
             flex: flex,
             child: CustomScrollView(
-              controller: controller.scrollController,
+              controller: scrollController,
               physics: const AlwaysScrollableScrollPhysics(),
               slivers: [
                 SliverPadding(
@@ -161,7 +162,7 @@ class _DynamicDetailPageState extends CommonDynPageState<DynamicDetailPage> {
                 body: refreshIndicator(
                   onRefresh: controller.onRefresh,
                   child: CustomScrollView(
-                    controller: controller.scrollController,
+                    controller: scrollController,
                     physics: const AlwaysScrollableScrollPhysics(),
                     slivers: [
                       buildReplyHeader(theme),
@@ -192,7 +193,7 @@ class _DynamicDetailPageState extends CommonDynPageState<DynamicDetailPage> {
       right: 0,
       bottom: 0,
       child: SlideTransition(
-        position: controller.fabAnim,
+        position: fabAnim,
         child: Builder(
           builder: (context) {
             if (!controller.showDynActionBar) {
@@ -282,8 +283,8 @@ class _DynamicDetailPageState extends CommonDynPageState<DynamicDetailPage> {
                                       int count = forward.count ?? 0;
                                       forward.count = count + 1;
                                       if (btnContext.mounted) {
-                                        (btnContext as Element?)
-                                            ?.markNeedsBuild();
+                                        (btnContext as Element)
+                                            .markNeedsBuild();
                                       }
                                     }
                                   },
@@ -315,7 +316,7 @@ class _DynamicDetailPageState extends CommonDynPageState<DynamicDetailPage> {
                                 controller.dynItem,
                                 () {
                                   if (context.mounted) {
-                                    (context as Element?)?.markNeedsBuild();
+                                    (context as Element).markNeedsBuild();
                                   }
                                 },
                               ),

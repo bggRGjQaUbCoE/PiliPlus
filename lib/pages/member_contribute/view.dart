@@ -7,6 +7,7 @@ import 'package:PiliPlus/pages/member_contribute/controller.dart';
 import 'package:PiliPlus/pages/member_opus/view.dart';
 import 'package:PiliPlus/pages/member_season_series/view.dart';
 import 'package:PiliPlus/pages/member_video/view.dart';
+import 'package:PiliPlus/utils/extension.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -31,8 +32,8 @@ class _MemberContributeState extends State<MemberContribute>
   @override
   bool get wantKeepAlive => true;
 
-  late final _controller = Get.put(
-    MemberContributeCtr(
+  late final _controller = Get.putOrFind(
+    () => MemberContributeCtr(
       heroTag: widget.heroTag,
       initialIndex: widget.initialIndex,
     ),

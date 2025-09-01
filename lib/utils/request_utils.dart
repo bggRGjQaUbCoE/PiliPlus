@@ -287,17 +287,17 @@ class RequestUtils {
       if (id != null) {
         await Future.delayed(const Duration(milliseconds: 200));
         var res = await DynamicsHttp.dynamicDetail(id: id);
-        if (res['status']) {
+        if (res.isSuccess) {
           final ctr = Get.find<DynamicsTabController>(tag: 'all');
           if (ctr.loadingState.value.isSuccess) {
             List<DynamicItemModel>? list = ctr.loadingState.value.data;
             if (list != null) {
-              list.insert(0, res['data']);
+              list.insert(0, res.data);
               ctr.loadingState.refresh();
               return;
             }
           }
-          ctr.loadingState.value = Success([res['data']]);
+          ctr.loadingState.value = Success([res.data]);
         }
       }
     } catch (e) {
@@ -317,7 +317,7 @@ class RequestUtils {
             await Future.delayed(const Duration(seconds: 5));
           }
           var res = await DynamicsHttp.dynamicDetail(id: id, clearCookie: true);
-          bool isBan = !res['status'];
+          bool isBan = !res.isSuccess;
           Get.dialog(
             AlertDialog(
               title: const Text('动态检查结果'),

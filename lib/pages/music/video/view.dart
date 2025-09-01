@@ -6,8 +6,8 @@ import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/models_new/music/bgm_recommend_list.dart';
 import 'package:PiliPlus/pages/music/video/controller.dart';
 import 'package:PiliPlus/pages/music/widget/music_video_card_h.dart';
+import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/grid.dart';
-import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -20,9 +20,9 @@ class MusicRecommandPage extends StatefulWidget {
 
 class _MusicRecommandPageState extends State<MusicRecommandPage>
     with GridMixin {
-  late final _controller = Get.put(
-    MusicRecommendController(),
-    tag: Utils.generateRandomString(8),
+  late final MusicRecommendController _controller = Get.putOrFind(
+    MusicRecommendController.new,
+    tag: Get.parameters['musicId']!,
   );
 
   @override
@@ -34,7 +34,6 @@ class _MusicRecommandPageState extends State<MusicRecommandPage>
       child: refreshIndicator(
         onRefresh: _controller.onRefresh,
         child: CustomScrollView(
-          controller: _controller.scrollController,
           physics: const AlwaysScrollableScrollPhysics(),
           slivers: [
             _buildAppBar(theme, padding),

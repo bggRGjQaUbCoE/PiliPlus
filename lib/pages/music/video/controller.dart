@@ -13,9 +13,8 @@ class MusicRecommendController
   @override
   void onInit() {
     super.onInit();
-    final Map<String, dynamic> args = Get.arguments;
-    musicId = args['id'];
-    musicDetail = args['detail'];
+    musicId = Get.parameters['musicId']!;
+    musicDetail = Get.arguments;
     queryData();
   }
 

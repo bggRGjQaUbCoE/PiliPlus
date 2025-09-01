@@ -63,6 +63,7 @@ class ArticleController extends CommonDynController {
             id = opusId;
             type = 'opus';
           }
+          Get.putOrFind(() => this, tag: type + id);
         }
         init();
       });

@@ -15,8 +15,8 @@ import 'package:PiliPlus/pages/match_info/controller.dart';
 import 'package:PiliPlus/pages/video/reply/widgets/reply_item_grpc.dart';
 import 'package:PiliPlus/pages/video/reply_reply/view.dart';
 import 'package:PiliPlus/utils/date_util.dart';
+import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
-import 'package:PiliPlus/utils/utils.dart';
 import 'package:easy_debounce/easy_throttle.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -31,13 +31,16 @@ class MatchInfoPage extends StatefulWidget {
 
 class _MatchInfoPageState extends CommonDynPageState<MatchInfoPage> {
   @override
-  final MatchInfoController controller = Get.put(
-    MatchInfoController(),
-    tag: Utils.generateRandomString(8),
+  final MatchInfoController controller = Get.putOrFind(
+    MatchInfoController.new,
+    tag: Get.parameters['cid']!,
   );
 
   @override
   dynamic get arguments => null;
+
+  @override
+  Offset get fabOffset => const Offset(0, 2);
 
   @override
   Widget build(BuildContext context) {
@@ -48,7 +51,7 @@ class _MatchInfoPageState extends CommonDynPageState<MatchInfoPage> {
       body: refreshIndicator(
         onRefresh: controller.onRefresh,
         child: CustomScrollView(
-          controller: controller.scrollController,
+          controller: scrollController,
           physics: const AlwaysScrollableScrollPhysics(),
           slivers: [
             Obx(() => _buildInfo(theme, controller.infoState.value)),
@@ -61,7 +64,7 @@ class _MatchInfoPageState extends CommonDynPageState<MatchInfoPage> {
         ),
       ),
       floatingActionButton: SlideTransition(
-        position: controller.fabAnim,
+        position: fabAnim,
         child: replyButton,
       ),
     );

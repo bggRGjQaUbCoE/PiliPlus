@@ -212,7 +212,7 @@ class DynamicsHttp {
   }
 
   //
-  static Future dynamicDetail({
+  static Future<LoadingState<DynamicItemModel>> dynamicDetail({
     dynamic id,
     dynamic rid,
     dynamic type,
@@ -236,21 +236,12 @@ class DynamicsHttp {
     );
     if (res.data['code'] == 0) {
       try {
-        return {
-          'status': true,
-          'data': DynamicItemModel.fromJson(res.data['data']['item']),
-        };
+        return Success(DynamicItemModel.fromJson(res.data['data']['item']));
       } catch (err) {
-        return {
-          'status': false,
-          'msg': err.toString(),
-        };
+        return Error(err.toString());
       }
     } else {
-      return {
-        'status': false,
-        'msg': res.data['message'],
-      };
+      return Error(res.data['message']);
     }
   }
 

@@ -36,9 +36,9 @@ class MusicDetailPage extends StatefulWidget {
 
 class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
   @override
-  final MusicDetailController controller = Get.put(
-    MusicDetailController(),
-    tag: Utils.generateRandomString(8),
+  late final MusicDetailController controller = Get.putOrFind(
+    MusicDetailController.new,
+    tag: Get.parameters['musicId']!,
   );
 
   @override
@@ -110,7 +110,7 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
           child = Padding(
             padding: EdgeInsets.symmetric(horizontal: padding),
             child: CustomScrollView(
-              controller: controller.scrollController,
+              controller: scrollController,
               physics: const AlwaysScrollableScrollPhysics(),
               slivers: [
                 SliverToBoxAdapter(
@@ -136,7 +136,7 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
               Expanded(
                 flex: flex,
                 child: CustomScrollView(
-                  controller: controller.scrollController,
+                  controller: scrollController,
                   physics: const AlwaysScrollableScrollPhysics(),
                   slivers: [
                     SliverPadding(
@@ -235,7 +235,7 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
       right: 0,
       bottom: 0,
       child: SlideTransition(
-        position: controller.fabAnim,
+        position: fabAnim,
         child: controller.showDynActionBar
             ? Column(
                 mainAxisSize: MainAxisSize.min,
@@ -288,9 +288,8 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
                           child: textIconButton(
                             icon: CustomIcon.share_node,
                             text: '分享',
-                            onPressed: () => Utils.shareText(
-                              'https://music.bilibili.com/h5/music-detail?music_id=${controller.musicId}',
-                            ),
+                            onPressed: () =>
+                                Utils.shareText(controller.shareUrl),
                           ),
                         ),
                         Expanded(
@@ -565,7 +564,7 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
                     theme,
                     () => Get.to(
                       const MusicRecommandPage(),
-                      arguments: {'id': controller.musicId, 'detail': item},
+                      arguments: item,
                     ),
                   ),
                 ],

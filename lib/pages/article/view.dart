@@ -21,6 +21,7 @@ import 'package:PiliPlus/pages/common/dyn/common_dyn_page.dart';
 import 'package:PiliPlus/pages/dynamics_repost/view.dart';
 import 'package:PiliPlus/pages/video/reply/widgets/reply_item_grpc.dart';
 import 'package:PiliPlus/utils/date_util.dart';
+import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/grid.dart';
 import 'package:PiliPlus/utils/image_util.dart';
 import 'package:PiliPlus/utils/num_util.dart';
@@ -42,9 +43,9 @@ class ArticlePage extends StatefulWidget {
 
 class _ArticlePageState extends CommonDynPageState<ArticlePage> {
   @override
-  final ArticleController controller = Get.put(
-    ArticleController(),
-    tag: Utils.generateRandomString(8),
+  final ArticleController controller = Get.putOrFind(
+    ArticleController.new,
+    tag: Get.parameters['type']! + Get.parameters['id']!,
   );
 
   @override
@@ -56,9 +57,9 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (controller.scrollController.hasClients) {
+      if (scrollController.hasClients) {
         controller.showTitle.value =
-            controller.scrollController.positions.last.pixels >= 45;
+            scrollController.positions.last.pixels >= 45;
       }
     });
   }
@@ -88,7 +89,7 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
       return Padding(
         padding: EdgeInsets.symmetric(horizontal: padding),
         child: CustomScrollView(
-          controller: controller.scrollController,
+          controller: scrollController,
           physics: const AlwaysScrollableScrollPhysics(),
           slivers: [
             _buildContent(
@@ -117,7 +118,7 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
         Expanded(
           flex: flex,
           child: CustomScrollView(
-            controller: controller.scrollController,
+            controller: scrollController,
             physics: const AlwaysScrollableScrollPhysics(),
             slivers: [
               SliverPadding(
@@ -150,7 +151,7 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
               body: refreshIndicator(
                 onRefresh: controller.onRefresh,
                 child: CustomScrollView(
-                  controller: controller.scrollController,
+                  controller: scrollController,
                   physics: const AlwaysScrollableScrollPhysics(),
                   slivers: [
                     buildReplyHeader(theme),
@@ -554,7 +555,7 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
     bottom: 0,
     right: 0,
     child: SlideTransition(
-      position: controller.fabAnim,
+      position: fabAnim,
       child: Builder(
         builder: (context) {
           if (!controller.showDynActionBar) {

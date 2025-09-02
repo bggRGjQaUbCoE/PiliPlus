@@ -118,7 +118,7 @@ class MemberHttp {
     int? next,
     int? seasonId,
     int? seriesId,
-    includeCursor,
+    bool? includeCursor,
   }) async {
     final params = {
       'aid': ?aid,

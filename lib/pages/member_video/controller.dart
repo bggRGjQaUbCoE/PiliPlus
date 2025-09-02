@@ -40,18 +40,19 @@ class MemberVideoCtr
   String? firstAid;
   String? lastAid;
   String? fromViewAid;
-  Rx<bool?> isLocating = Rx<bool?>(null);
-  bool? isLoadPrevious;
+  RxBool isLocating = false.obs;
+  bool isLoadPrevious = false;
   bool? hasPrev;
 
   @override
   Future<void> onRefresh() async {
-    if (isLocating.value == true) {
+    if (isLocating.value) {
       if (hasPrev == true) {
         isLoadPrevious = true;
         await queryData();
       }
     } else {
+      isLoadPrevious = false;
       firstAid = null;
       lastAid = null;
       next = null;
@@ -76,15 +77,15 @@ class MemberVideoCtr
     bool isRefresh,
     Success<SpaceArchiveData> response,
   ) {
-    SpaceArchiveData data = response.response;
+    final data = response.response;
     episodicButton
       ..value = data.episodicButton ?? EpisodicButton()
       ..refresh();
     next = data.next;
-    if (page == 0 || isLoadPrevious == true) {
+    if (page == 0 || isLoadPrevious) {
       hasPrev = data.hasPrev;
     }
-    if (page == 0 || isLoadPrevious != true) {
+    if (page == 0 || !isLoadPrevious) {
       if ((type == ContributeType.video
               ? data.hasNext == false
               : data.next == 0) ||
@@ -97,7 +98,7 @@ class MemberVideoCtr
         : (data.count ?? -1);
     if (page != 0 && loadingState.value.isSuccess) {
       data.item ??= <SpaceArchiveItem>[];
-      if (isLoadPrevious == true) {
+      if (isLoadPrevious) {
         data.item!.addAll(loadingState.value.data!);
       } else {
         data.item!.insertAll(0, loadingState.value.data!);
@@ -105,7 +106,6 @@ class MemberVideoCtr
     }
     firstAid = data.item?.firstOrNull?.param;
     lastAid = data.item?.lastOrNull?.param;
-    isLoadPrevious = null;
     loadingState.value = Success(data.item);
     return true;
   }
@@ -116,13 +116,13 @@ class MemberVideoCtr
         type: type,
         mid: mid,
         aid: type == ContributeType.video
-            ? isLoadPrevious == true
+            ? isLoadPrevious
                   ? firstAid
                   : lastAid
             : null,
         order: type == ContributeType.video ? order.value : null,
         sort: type == ContributeType.video
-            ? isLoadPrevious == true
+            ? isLoadPrevious
                   ? 'asc'
                   : null
             : sort.value,
@@ -130,12 +130,12 @@ class MemberVideoCtr
         next: next,
         seasonId: seasonId,
         seriesId: seriesId,
-        includeCursor: isLocating.value == true && page == 0 ? true : null,
+        includeCursor: isLocating.value && page == 0,
       );
 
   void queryBySort() {
     if (type == ContributeType.video) {
-      isLocating.value = null;
+      isLocating.value = false;
       order.value = order.value == 'pubdate' ? 'click' : 'pubdate';
     } else {
       sort.value = sort.value == 'desc' ? 'asc' : 'desc';
@@ -223,7 +223,7 @@ class MemberVideoCtr
   @override
   Future<void> onReload() {
     reload = true;
-    isLocating.value = null;
+    isLocating.value = false;
     return super.onReload();
   }
 }

@@ -58,7 +58,6 @@ class _MemberPageState extends State<MemberPage> {
           if (_userController.loadingState.value.isSuccess) {
             return ExtendedNestedScrollView(
               key: _userController.key,
-              controller: _userController.scrollController,
               onlyOneScrollInBody: true,
               pinnedHeaderSliverHeightBuilder: () =>
                   kToolbarHeight + MediaQuery.viewPaddingOf(context).top,

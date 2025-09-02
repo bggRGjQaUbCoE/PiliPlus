@@ -10,6 +10,7 @@ import 'package:PiliPlus/pages/member_video/controller.dart';
 import 'package:PiliPlus/pages/member_video/widgets/video_card_h_member_video.dart';
 import 'package:PiliPlus/utils/grid.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:get/get.dart';
 
 class MemberVideo extends StatefulWidget {
@@ -59,8 +60,25 @@ class _MemberVideoState extends State<MemberVideo>
     super.build(context);
     final theme = Theme.of(context);
     final padding = MediaQuery.viewPaddingOf(context);
-    Widget child = refreshIndicator(
-      onRefresh: _controller.onRefresh,
+    final child = refreshIndicator(
+      onRefresh: () async {
+        final count = _controller.loadingState.value.dataOrNull?.length;
+        await _controller.onRefresh();
+        if (_controller.isLoadPrevious) {
+          if (mounted) {
+            final newCount = _controller.loadingState.value.dataOrNull?.length;
+            if (count != null && newCount != null && newCount > count) {
+              SchedulerBinding.instance.addPostFrameCallback((_) {
+                PrimaryScrollController.of(this.context).jumpTo(
+                  gridDelegate.layoutCache!
+                      .getGeometryForChildIndex(newCount - count)
+                      .scrollOffset,
+                );
+              });
+            }
+          }
+        }
+      },
       child: CustomScrollView(
         physics: ReloadScrollPhysics(controller: _controller),
         slivers: [
@@ -80,23 +98,21 @@ class _MemberVideoState extends State<MemberVideo>
         children: [
           child,
           Obx(
-            () => _controller.isLocating.value != true
+            () => !_controller.isLocating.value
                 ? Positioned(
                     right: 15 + padding.right,
                     bottom: 15 + padding.bottom,
                     child: FloatingActionButton.extended(
                       onPressed: () {
                         final fromViewAid = _controller.fromViewAid;
-                        _controller
-                          ..isLocating.value = true
-                          ..lastAid = fromViewAid;
-                        final locatedIndex = _controller
-                            .loadingState
-                            .value
-                            .dataOrNull
-                            ?.indexWhere((i) => i.param == fromViewAid);
-                        if (locatedIndex == null || locatedIndex == -1) {
+                        _controller.isLocating.value = true;
+                        final locatedIndex =
+                            _controller.loadingState.value.dataOrNull
+                                ?.indexWhere((i) => i.param == fromViewAid) ??
+                            -1;
+                        if (locatedIndex == -1) {
                           _controller
+                            ..lastAid = fromViewAid
                             ..reload = true
                             ..page = 0
                             ..loadingState.value = LoadingState.loading()

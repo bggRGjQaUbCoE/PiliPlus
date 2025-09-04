@@ -33,38 +33,31 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   MediaKit.ensureInitialized();
   await GStorage.init();
-  Get.put(AccountService());
-  if (Pref.autoClearCache) {
-    await CacheManage.clearLibraryCache();
-  } else {
-    final num maxCacheSize = Pref.maxCacheSize;
-    if (maxCacheSize != 0) {
-      final double currCache = await CacheManage().loadApplicationCache();
-      if (currCache >= maxCacheSize) {
-        await CacheManage.clearLibraryCache();
-      }
-    }
-  }
-  if (Pref.horizontalScreen) {
-    await SystemChrome.setPreferredOrientations(
-      //支持竖屏与横屏
-      [
-        DeviceOrientation.portraitUp,
-        // DeviceOrientation.portraitDown,
-        DeviceOrientation.landscapeLeft,
-        DeviceOrientation.landscapeRight,
-      ],
-    );
-  } else {
-    await SystemChrome.setPreferredOrientations(
-      //支持竖屏
-      [
-        DeviceOrientation.portraitUp,
-      ],
-    );
-  }
+  Get.lazyPut(AccountService.new);
   HttpOverrides.global = _CustomHttpOverrides();
-  await setupServiceLocator();
+
+  await Future.wait([
+    CacheManage.autoClearCache(),
+    if (Pref.horizontalScreen)
+      SystemChrome.setPreferredOrientations(
+        //支持竖屏与横屏
+        [
+          DeviceOrientation.portraitUp,
+          // DeviceOrientation.portraitDown,
+          DeviceOrientation.landscapeLeft,
+          DeviceOrientation.landscapeRight,
+        ],
+      )
+    else
+      SystemChrome.setPreferredOrientations(
+        //支持竖屏
+        [
+          DeviceOrientation.portraitUp,
+        ],
+      ),
+    setupServiceLocator(),
+  ]);
+
   Request();
   Request.setCookie();
 

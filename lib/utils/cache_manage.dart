@@ -2,17 +2,12 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:PiliPlus/utils/extension.dart';
+import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:path_provider/path_provider.dart';
 
-class CacheManage {
-  CacheManage._internal();
-
-  static final CacheManage cacheManage = CacheManage._internal();
-
-  factory CacheManage() => cacheManage;
-
+abstract class CacheManage {
   // 获取缓存目录
-  Future<double> loadApplicationCache() async {
+  static Future<double> loadApplicationCache() async {
     /// clear all of image in memory
     // clearMemoryImageCache();
     /// get ImageCache
@@ -47,7 +42,9 @@ class CacheManage {
   }
 
   // 循环计算文件的大小（递归）
-  Future<double> getTotalSizeOfFilesInDir(final FileSystemEntity file) async {
+  static Future<double> getTotalSizeOfFilesInDir(
+    final FileSystemEntity file,
+  ) async {
     if (file is File) {
       int length = await file.length();
       return double.parse(length.toString());
@@ -76,7 +73,7 @@ class CacheManage {
   }
 
   /// 清除 Documents 目录下的 DioCache.db
-  Future<void> clearApplicationCache() async {
+  static Future<void> clearApplicationCache() async {
     Directory directory = await getApplicationDocumentsDirectory();
     if (directory.existsSync()) {
       String dioCacheFileName =
@@ -103,7 +100,7 @@ class CacheManage {
   }
 
   /// 递归方式删除目录及文件
-  Future<void> deleteDirectory(FileSystemEntity file) async {
+  static Future<void> deleteDirectory(FileSystemEntity file) async {
     if (file is Directory) {
       final List<FileSystemEntity> children = file.listSync();
       for (final FileSystemEntity child in children) {
@@ -111,5 +108,19 @@ class CacheManage {
       }
     }
     await file.delete();
+  }
+
+  static Future<void> autoClearCache() async {
+    if (Pref.autoClearCache) {
+      await CacheManage.clearLibraryCache();
+    } else {
+      final maxCacheSize = Pref.maxCacheSize;
+      if (maxCacheSize != 0) {
+        final currCache = await loadApplicationCache();
+        if (currCache >= maxCacheSize) {
+          await CacheManage.clearLibraryCache();
+        }
+      }
+    }
   }
 }

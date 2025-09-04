@@ -33,7 +33,7 @@ import 'package:get/get.dart' hide ContextExtensionss;
 import 'package:hive/hive.dart';
 import 'package:uuid/uuid.dart';
 
-class Pref {
+abstract class Pref {
   static final Box _setting = GStorage.setting;
   static final Box _video = GStorage.video;
   static final Box _localCache = GStorage.localCache;

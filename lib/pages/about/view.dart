@@ -56,9 +56,16 @@ class _AboutPageState extends State<AboutPage> {
     getCurrentApp();
   }
 
+  @override
+  void dispose() {
+    currentVersion.close();
+    cacheSize.close();
+    super.dispose();
+  }
+
   Future<void> getCacheSize() async {
     cacheSize.value = CacheManage.formatSize(
-      await CacheManage().loadApplicationCache(),
+      await CacheManage.loadApplicationCache(),
     );
   }
 

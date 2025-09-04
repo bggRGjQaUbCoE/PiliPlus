@@ -12,7 +12,7 @@ import 'package:PiliPlus/utils/set_int_adapter.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:path_provider/path_provider.dart';
 
-class GStorage {
+abstract class GStorage {
   static late final Box<UserInfoData> userInfo;
   static late final Box<dynamic> historyWord;
   static late final Box<dynamic> localCache;

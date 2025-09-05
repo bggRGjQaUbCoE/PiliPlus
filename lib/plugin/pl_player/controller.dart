@@ -44,6 +44,7 @@ import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
+import 'package:flutter_volume_controller/flutter_volume_controller.dart';
 import 'package:get/get.dart';
 import 'package:hive/hive.dart';
 import 'package:media_kit/media_kit.dart';
@@ -52,7 +53,6 @@ import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 import 'package:screen_brightness/screen_brightness.dart';
 import 'package:universal_platform/universal_platform.dart';
-import 'package:volume_controller/volume_controller.dart';
 
 class PlPlayerController {
   Player? _videoPlayerController;
@@ -1212,7 +1212,7 @@ class PlPlayerController {
   Future<void> getCurrentVolume() async {
     // mac try...catch
     try {
-      _currentVolume.value = await VolumeController.instance.getVolume();
+      _currentVolume.value = (await FlutterVolumeController.getVolume())!;
     } catch (_) {}
   }
 
@@ -1231,9 +1231,8 @@ class PlPlayerController {
     volume.value = volumeNew;
 
     try {
-      await (VolumeController.instance..showSystemUI = false).setVolume(
-        volumeNew,
-      );
+      FlutterVolumeController.updateShowSystemUI(false);
+      await FlutterVolumeController.setVolume(volumeNew);
     } catch (err) {
       if (kDebugMode) debugPrint(err.toString());
     }

@@ -54,6 +54,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
+import 'package:flutter_volume_controller/flutter_volume_controller.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart' hide ContextExtensionss;
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
@@ -61,7 +62,6 @@ import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 import 'package:saver_gallery/saver_gallery.dart';
 import 'package:screen_brightness/screen_brightness.dart';
-import 'package:volume_controller/volume_controller.dart';
 
 class PLVideoPlayer extends StatefulWidget {
   const PLVideoPlayer({
@@ -203,12 +203,12 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     videoController = plPlayerController.videoController!;
     Future.microtask(() async {
       try {
-        final volumeCtr = VolumeController.instance..showSystemUI = true;
-        _volumeValue.value = await volumeCtr.getVolume();
-        volumeCtr.addListener((double value) {
+        FlutterVolumeController.updateShowSystemUI(true);
+        _volumeValue.value = (await FlutterVolumeController.getVolume())!;
+        FlutterVolumeController.addListener((double value) {
           if (mounted && !_volumeInterceptEventStream.value) {
             _volumeValue.value = value;
-            if (Platform.isIOS && !volumeCtr.showSystemUI) {
+            if (Platform.isIOS && !FlutterVolumeController.showSystemUI) {
               _volumeIndicator.value = true;
               _volumeTimer?.cancel();
               _volumeTimer = Timer(const Duration(milliseconds: 800), () {
@@ -239,9 +239,9 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
 
   Future<void> setVolume(double value) async {
     try {
-      await (VolumeController.instance..showSystemUI = false).setVolume(value);
+      FlutterVolumeController.updateShowSystemUI(false);
+      await FlutterVolumeController.setVolume(value);
     } catch (_) {}
-
     _volumeValue.value = value;
     _volumeIndicator.value = true;
     _volumeInterceptEventStream.value = true;
@@ -273,7 +273,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     _listener?.cancel();
     _controlsListener?.cancel();
     animationController.dispose();
-    VolumeController.instance.removeListener();
+    FlutterVolumeController.removeListener();
     transformationController.dispose();
     super.dispose();
   }

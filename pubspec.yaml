@@ -104,7 +104,7 @@ dependencies:
   # media_kit_video: ^1.2.5 # For video rendering.
   media_kit_video:
     git:
-      url: https://github.com/My-Responsitories/media-kit.git
+      url: https://github.com/bggRGjQaUbCoE/media-kit.git
       path: media_kit_video
       ref: version_1.2.5
   media_kit_libs_video: 1.0.5
@@ -114,7 +114,7 @@ dependencies:
   audio_session: ^0.2.2
 
   # 音量、亮度、屏幕控制
-  volume_controller: ^2.0.7
+  flutter_volume_controller: ^1.3.3
   wakelock_plus: ^1.2.8
   # universal_platform: ^1.1.0
   auto_orientation:
@@ -230,7 +230,6 @@ dependency_overrides:
       url: https://github.com/My-Responsitories/media-kit.git
       path: libs/android/media_kit_libs_android_video
       ref: version_1.2.5
-  volume_controller: ^3.4.0
 
 dev_dependencies:
   flutter_test:

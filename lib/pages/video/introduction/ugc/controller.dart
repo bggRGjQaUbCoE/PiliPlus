@@ -754,8 +754,10 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
     if (res['status']) {
       AiConclusionData data = res['data'];
       aiConclusionResult = data.modelResult;
+    } else if (res['handling']) {
+      SmartDialog.showToast("AI处理中，请稍后再试");
     } else {
-      SmartDialog.showToast("当前视频可能暂不支持AI视频总结");
+      SmartDialog.showToast("当前视频暂不支持AI视频总结");
     }
   }
 }

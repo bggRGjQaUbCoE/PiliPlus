@@ -812,7 +812,8 @@ class VideoHttp {
         'data': AiConclusionData.fromJson(res.data['data']),
       };
     } else {
-      return {'status': false, 'msg': res.data['message']};
+      final handling = res.data['code'] == 0 && res.data['data']['code'] == 1;
+      return {'status': false, 'msg': res.data['message'], 'handling': handling};
     }
   }
 

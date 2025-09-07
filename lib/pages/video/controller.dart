@@ -99,6 +99,7 @@ class VideoDetailController extends GetxController
   late Rx<VideoQuality> currentVideoQa;
   AudioQuality? currentAudioQa;
   late VideoDecodeFormatType currentDecodeFormats;
+
   // 是否开始自动播放 存在多p的情况下，第二p需要为true
   final RxBool autoPlay = true.obs;
 
@@ -114,6 +115,7 @@ class VideoDetailController extends GetxController
   String? audioUrl;
   Duration? defaultST;
   Duration? playedTime;
+
   // 亮度
   double? brightness;
 
@@ -142,6 +144,7 @@ class VideoDetailController extends GetxController
   late bool isExpanding = false;
   late bool isCollapsing = false;
   AnimationController? _animationController;
+
   AnimationController get animationController =>
       _animationController ??= AnimationController(
         vsync: this,
@@ -421,7 +424,9 @@ class VideoDetailController extends GetxController
   }
 
   bool isPortrait = true;
+
   bool get horizontalScreen => plPlayerController.horizontalScreen;
+
   bool get showVideoSheet => !horizontalScreen && !isPortrait;
 
   int? _lastPos;
@@ -429,9 +434,11 @@ class VideoDetailController extends GetxController
   RxList<SegmentModel> segmentList = <SegmentModel>[].obs;
   List<Segment> viewPointList = <Segment>[];
   List<Segment>? segmentProgressList;
+
   Color _getColor(SegmentType segment) =>
       plPlayerController.blockColor[segment.index];
   late RxString videoLabel = ''.obs;
+
   String get blockServer => plPlayerController.blockServer;
 
   Timer? skipTimer;
@@ -993,23 +1000,23 @@ class VideoDetailController extends GetxController
     /// 根据currentVideoQa和currentDecodeFormats 重新设置videoUrl
     final videoList = data.dash!.video!.where((i) => i.id == qa).toList();
 
-    final currentDecodeFormats = this.currentDecodeFormats.code;
+    final currentDecodeFormats = this.currentDecodeFormats.codes;
     final defaultDecodeFormats = VideoDecodeFormatType.fromString(
       cacheDecode,
-    ).code;
+    ).codes;
     final secondDecodeFormats = VideoDecodeFormatType.fromString(
       cacheSecondDecode,
-    ).code;
+    ).codes;
 
     VideoItem? video;
     for (var i in videoList) {
       final codec = i.codecs!;
-      if (codec.startsWith(currentDecodeFormats)) {
+      if (currentDecodeFormats.any(codec.startsWith)) {
         video = i;
         break;
-      } else if (codec.startsWith(defaultDecodeFormats)) {
+      } else if (defaultDecodeFormats.any(codec.startsWith)) {
         video = i;
-      } else if (video == null && codec.startsWith(secondDecodeFormats)) {
+      } else if (video == null && secondDecodeFormats.any(codec.startsWith)) {
         video = i;
       }
     }
@@ -1108,6 +1115,7 @@ class VideoDetailController extends GetxController
   }
 
   bool isQuerying = false;
+
   // 视频链接
   Future<void> queryVideoUrl({
     Duration? defaultST,
@@ -1226,10 +1234,10 @@ class VideoDetailController extends GetxController
       // 当前视频没有对应格式返回第一个
       int flag = 0;
       for (var i in supportDecodeFormats) {
-        if (i.startsWith(currentDecodeFormats.code)) {
+        if (currentDecodeFormats.codes.any(i.startsWith)) {
           flag = 1;
           break;
-        } else if (i.startsWith(secondDecodeFormats.code)) {
+        } else if (secondDecodeFormats.codes.any(i.startsWith)) {
           flag = 2;
         }
       }
@@ -1243,7 +1251,7 @@ class VideoDetailController extends GetxController
 
       /// 取出符合当前解码格式的videoItem
       firstVideo = videosList.firstWhere(
-        (e) => e.codecs!.startsWith(currentDecodeFormats.code),
+        (e) => currentDecodeFormats.codes.any(e.codecs!.startsWith),
         orElse: () => videosList.first,
       );
       setVideoHeight();
@@ -1405,6 +1413,7 @@ class VideoDetailController extends GetxController
   int? graphVersion;
   EdgeInfoData? steinEdgeInfo;
   late final RxBool showSteinEdgeInfo = false.obs;
+
   Future<void> getSteinEdgeInfo([int? edgeId]) async {
     steinEdgeInfo = null;
     try {

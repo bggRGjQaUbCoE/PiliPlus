@@ -251,7 +251,7 @@ List<SettingsModel> get videoSettings => [
             title: '默认解码格式',
             value: Pref.defaultDecode,
             values: VideoDecodeFormatType.values
-                .map((e) => (e.code, e.description))
+                .map((e) => (e.codes.first, e.description))
                 .toList(),
           );
         },
@@ -276,7 +276,7 @@ List<SettingsModel> get videoSettings => [
             title: '次选解码格式',
             value: Pref.secondDecode,
             values: VideoDecodeFormatType.values
-                .map((e) => (e.code, e.description))
+                .map((e) => (e.codes.first, e.description))
                 .toList(),
           );
         },

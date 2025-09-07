@@ -218,12 +218,12 @@ abstract class Pref {
 
   static String get defaultDecode => _setting.get(
     SettingBoxKey.defaultDecode,
-    defaultValue: VideoDecodeFormatType.values.last.code,
+    defaultValue: VideoDecodeFormatType.values.last.codes.first,
   );
 
   static String get secondDecode => _setting.get(
     SettingBoxKey.secondDecode,
-    defaultValue: VideoDecodeFormatType.AV1.code,
+    defaultValue: VideoDecodeFormatType.AV1.codes.first,
   );
 
   static String get hardwareDecoding => _setting.get(

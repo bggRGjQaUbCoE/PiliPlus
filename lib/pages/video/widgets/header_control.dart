@@ -55,6 +55,7 @@ class HeaderControl extends StatefulWidget {
     required this.heroTag,
     super.key,
   });
+
   final bool isPortrait;
   final PlPlayerController controller;
   final VideoDetailController videoDetailCtr;
@@ -70,6 +71,7 @@ class HeaderControlState extends TripleState<HeaderControl> {
   late final PlayUrlModel videoInfo = videoDetailCtr.data;
   static const TextStyle subTitleStyle = TextStyle(fontSize: 12);
   static const TextStyle titleStyle = TextStyle(fontSize: 14);
+
   String get heroTag => widget.heroTag;
   late final UgcIntroController ugcIntroController;
   late final PgcIntroController pgcIntroController;
@@ -77,10 +79,12 @@ class HeaderControlState extends TripleState<HeaderControl> {
   late CommonIntroController introController = videoDetailCtr.isUgc
       ? ugcIntroController
       : pgcIntroController;
+
   bool get isPortrait => widget.isPortrait;
   late final horizontalScreen = videoDetailCtr.horizontalScreen;
   RxString now = ''.obs;
   Timer? clock;
+
   bool get isFullScreen => plPlayerController.isFullScreen.value;
   Box setting = GStorage.setting;
   late final provider = ContextSingleTicker(context);
@@ -828,7 +832,7 @@ class HeaderControlState extends TripleState<HeaderControl> {
                         ListTile(
                           dense: true,
                           onTap: () {
-                            if (i.startsWith(currentDecodeFormats.code)) {
+                            if (currentDecodeFormats.codes.any(i.startsWith)) {
                               return;
                             }
                             videoDetailCtr
@@ -848,7 +852,7 @@ class HeaderControlState extends TripleState<HeaderControl> {
                             i,
                             style: subTitleStyle,
                           ),
-                          trailing: i.startsWith(currentDecodeFormats.code)
+                          trailing: currentDecodeFormats.codes.any(i.startsWith)
                               ? Icon(
                                   Icons.done,
                                   color: theme.colorScheme.primary,

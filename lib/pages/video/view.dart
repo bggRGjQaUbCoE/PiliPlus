@@ -58,7 +58,8 @@ import 'package:floating/floating.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutter/services.dart' show SystemUiOverlayStyle;
+import 'package:flutter/services.dart'
+    show SystemUiOverlayStyle, KeyDownEvent, LogicalKeyboardKey;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart' hide ContextExtensionss;
@@ -84,19 +85,24 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
   late final UgcIntroController ugcIntroController;
   late final PgcIntroController pgcIntroController;
   ScrollController? _introScrollController;
+
   ScrollController get introScrollController =>
       _introScrollController ??= ScrollController();
 
   bool get autoExitFullscreen =>
       videoDetailController.plPlayerController.autoExitFullscreen;
+
   bool get autoPlayEnable =>
       videoDetailController.plPlayerController.autoPlayEnable;
+
   bool get enableVerticalExpand =>
       videoDetailController.plPlayerController.enableVerticalExpand;
+
   bool get pipNoDanmaku =>
       videoDetailController.plPlayerController.pipNoDanmaku;
 
   bool isShowing = true;
+
   bool get isFullScreen =>
       videoDetailController.plPlayerController.isFullScreen.value;
 
@@ -505,6 +511,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
   }
 
   late double animHeight;
+
   void cal() {
     if (videoDetailController.isExpanding) {
       animHeight = clampDouble(
@@ -1491,6 +1498,19 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     } else {
       child = autoChoose(childWhenDisabledAlmostSquare);
     }
+    child = Focus(
+      onKeyEvent: (node, event) {
+        if (event is KeyDownEvent &&
+            (event.logicalKey == LogicalKeyboardKey.arrowLeft ||
+                event.logicalKey == LogicalKeyboardKey.arrowRight ||
+                event.logicalKey == LogicalKeyboardKey.arrowUp ||
+                event.logicalKey == LogicalKeyboardKey.arrowDown)) {
+          return KeyEventResult.handled;
+        }
+        return KeyEventResult.ignored;
+      },
+      child: child,
+    );
     return videoDetailController.plPlayerController.darkVideoPage
         ? Theme(data: themeData, child: child)
         : child;

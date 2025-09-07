@@ -52,6 +52,7 @@ import 'package:easy_debounce/easy_throttle.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:flutter_volume_controller/flutter_volume_controller.dart';
@@ -90,6 +91,7 @@ class PLVideoPlayer extends StatefulWidget {
   final Widget headerControl;
   final Widget? bottomControl;
   final Widget? danmuWidget;
+
   // List<Widget> or Widget
 
   final Widget? customWidget;
@@ -110,6 +112,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
   late VideoController videoController;
   late final CommonIntroController introController = widget.introController!;
 
+  final GlobalKey _keyboardKey = GlobalKey();
   final GlobalKey _playerKey = GlobalKey();
   final GlobalKey<VideoState> key = GlobalKey<VideoState>();
 
@@ -133,14 +136,17 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
 
   Offset _initialFocalPoint = Offset.zero;
   GestureType? _gestureType;
+
   //播放器放缩
   bool interacting = false;
 
   // 是否在调整固定进度条
   RxBool draggingFixedProgressBar = false.obs;
+
   // 阅读器限制
   // Timer? _accessibilityDebounce;
   // double _lastAnnouncedValue = -1;
+  final FocusNode _focusNode = FocusNode();
 
   void onDoubleTapSeekBackward() {
     _mountSeekBackwardButton.value = true;
@@ -1117,6 +1123,40 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     doubleTapFuc(type);
   }
 
+  void _handleKey(KeyEvent event) {
+    if (event is KeyDownEvent) {
+      final key = event.logicalKey;
+      switch (key) {
+        case LogicalKeyboardKey.space:
+          onDoubleTapCenter();
+          break;
+        case LogicalKeyboardKey.keyF:
+          plPlayerController.triggerFullScreen(status: !isFullScreen);
+          break;
+        case LogicalKeyboardKey.arrowLeft:
+          onDoubleTapSeekBackward();
+          break;
+        case LogicalKeyboardKey.arrowRight:
+          onDoubleTapSeekForward();
+          break;
+        case LogicalKeyboardKey.escape:
+          if (isFullScreen) {
+            plPlayerController.triggerFullScreen(status: false);
+          } else {
+            Get.back();
+          }
+          break;
+        case LogicalKeyboardKey.keyD:
+          final newVal = !plPlayerController.enableShowDanmaku.value;
+          plPlayerController.enableShowDanmaku.value = newVal;
+          if (!plPlayerController.tempPlayerConf) {
+            GStorage.setting.put(SettingBoxKey.enableShowDanmaku, newVal);
+          }
+          break;
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     theme = Theme.of(context);
@@ -1130,7 +1170,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     final isFullScreen = this.isFullScreen;
     final isLive = plPlayerController.isLive;
 
-    return Stack(
+    Widget buildContent() => Stack(
       fit: StackFit.passthrough,
       key: _playerKey,
       children: <Widget>[
@@ -1866,12 +1906,21 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
           ),
       ],
     );
+
+    return KeyboardListener(
+      key: _keyboardKey,
+      focusNode: _focusNode,
+      autofocus: true,
+      onKeyEvent: _handleKey,
+      child: buildContent(),
+    );
   }
 
   late final segment = Pair(
     first: plPlayerController.position.value.inMilliseconds / 1000.0,
     second: plPlayerController.position.value.inMilliseconds / 1000.0,
   );
+
   Future<void> screenshotWebp() async {
     final videoCtr = widget.videoDetailController!;
     final videoInfo = videoCtr.data;

@@ -15,7 +15,6 @@ import 'package:flutter/material.dart' hide RefreshCallback;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
-import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 class MediaListPanel extends CommonCollapseSlidePage {
   const MediaListPanel({
@@ -32,7 +31,7 @@ class MediaListPanel extends CommonCollapseSlidePage {
     this.onDelete,
   });
 
-  final List<MediaListItemModel> mediaList;
+  final RxList<MediaListItemModel> mediaList;
   final ValueChanged<BaseEpisodeItem> onChangeEpisode;
   final String? panelTitle;
   final Function getBvId;
@@ -41,7 +40,7 @@ class MediaListPanel extends CommonCollapseSlidePage {
   final bool desc;
   final VoidCallback onReverse;
   final RefreshCallback? loadPrevious;
-  final Function(MediaListItemModel item, int index)? onDelete;
+  final void Function(MediaListItemModel item, int index)? onDelete;
 
   @override
   State<MediaListPanel> createState() => _MediaListPanelState();
@@ -49,7 +48,7 @@ class MediaListPanel extends CommonCollapseSlidePage {
 
 class _MediaListPanelState
     extends CommonCollapseSlidePageState<MediaListPanel> {
-  final _controller = ItemScrollController();
+  final _controller = ScrollController();
 
   @override
   void init() {
@@ -59,7 +58,7 @@ class _MediaListPanelState
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
           isInit = false;
-          _controller.jumpTo(index: bvIndex);
+          _controller.jumpTo(bvIndex * 100.0);
         }
       });
     }
@@ -123,25 +122,31 @@ class _MediaListPanelState
   Widget _buildList(ThemeData theme) => Obx(
     () {
       final showDelBtn = widget.onDelete != null && widget.mediaList.length > 1;
-      return ScrollablePositionedList.separated(
-        itemScrollController: _controller,
+      return CustomScrollView(
+        controller: _controller,
         physics: const AlwaysScrollableScrollPhysics(),
-        itemCount: widget.mediaList.length,
-        padding: EdgeInsets.only(
-          top: 7,
-          bottom: MediaQuery.viewPaddingOf(context).bottom + 100,
-        ),
-        itemBuilder: ((context, index) {
-          if (index == widget.mediaList.length - 1 &&
-              (widget.count == null ||
-                  widget.mediaList.length < widget.count!)) {
-            widget.loadMoreMedia();
-          }
-          var item = widget.mediaList[index];
-          final isCurr = item.bvid == widget.getBvId();
-          return _buildItem(theme, index, item, isCurr, showDelBtn);
-        }),
-        separatorBuilder: (context, index) => const SizedBox(height: 2),
+        slivers: [
+          SliverPadding(
+            padding: EdgeInsets.only(
+              top: 7,
+              bottom: MediaQuery.viewPaddingOf(context).bottom + 100,
+            ),
+            sliver: SliverFixedExtentList.builder(
+              itemExtent: 100,
+              itemCount: widget.mediaList.length,
+              itemBuilder: (context, index) {
+                if (index == widget.mediaList.length - 1 &&
+                    (widget.count == null ||
+                        widget.mediaList.length < widget.count!)) {
+                  widget.loadMoreMedia();
+                }
+                var item = widget.mediaList[index];
+                final isCurr = item.bvid == widget.getBvId();
+                return _buildItem(theme, index, item, isCurr, showDelBtn);
+              },
+            ),
+          ),
+        ],
       );
     },
   );

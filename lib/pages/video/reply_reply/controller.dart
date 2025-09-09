@@ -11,7 +11,6 @@ import 'package:fixnum/fixnum.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_navigation/src/dialog/dialog_route.dart';
-import 'package:super_sliver_list/super_sliver_list.dart';
 
 class VideoReplyReplyController extends ReplyController
     with GetSingleTickerProviderStateMixin {
@@ -38,7 +37,6 @@ class VideoReplyReplyController extends ReplyController
 
   int? index;
   AnimationController? animController;
-  final listController = ListController();
 
   late final horizontalPreview = Pref.horizontalPreview;
 
@@ -82,18 +80,11 @@ class VideoReplyReplyController extends ReplyController
             vsync: this,
           );
           WidgetsBinding.instance.addPostFrameCallback((_) async {
-            try {
-              listController.jumpToItem(
-                index: index,
-                scrollController: scrollController,
-                alignment: 0.25,
-              );
-              await Future.delayed(
-                const Duration(milliseconds: 800),
-                animController?.forward,
-              );
-              this.index = null;
-            } catch (_) {}
+            await Future.delayed(
+              const Duration(milliseconds: 800),
+              () => animController?.forward(), // may dispose
+            );
+            this.index = null;
           });
         }
         id = null;
@@ -202,7 +193,7 @@ class VideoReplyReplyController extends ReplyController
   @override
   void onClose() {
     animController?.dispose();
-    listController.dispose();
+    animController = null;
     super.dispose();
   }
 }

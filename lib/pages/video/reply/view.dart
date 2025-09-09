@@ -58,7 +58,7 @@ class _VideoReplyPanelState extends State<VideoReplyPanel>
   void didChangeDependencies() {
     super.didChangeDependencies();
     _videoReplyController.showFab();
-    if (widget.needController != false) {
+    if (widget.needController) {
       _videoReplyController.scrollController.addListener(listener);
     } else {
       _videoReplyController.scrollController.removeListener(listener);
@@ -68,7 +68,7 @@ class _VideoReplyPanelState extends State<VideoReplyPanel>
 
   @override
   void dispose() {
-    if (widget.needController != false) {
+    if (widget.needController) {
       _videoReplyController.scrollController.removeListener(listener);
     }
     super.dispose();
@@ -186,14 +186,17 @@ class _VideoReplyPanelState extends State<VideoReplyPanel>
     );
   }
 
-  Widget _buildBody(ThemeData theme, LoadingState loadingState) {
+  Widget _buildBody(
+    ThemeData theme,
+    LoadingState<List<ReplyInfo>?> loadingState,
+  ) {
     return switch (loadingState) {
       Loading() => SliverList.builder(
         itemBuilder: (context, index) => const VideoReplySkeleton(),
         itemCount: 5,
       ),
       Success(:var response) =>
-        response?.isNotEmpty == true
+        response != null && response.isNotEmpty
             ? SliverList.builder(
                 itemBuilder: (context, index) {
                   if (index == response.length) {

@@ -17,7 +17,7 @@ import 'package:live_photo_maker/live_photo_maker.dart';
 import 'package:saver_gallery/saver_gallery.dart';
 import 'package:share_plus/share_plus.dart';
 
-class ImageUtils {
+abstract class ImageUtils {
   static String get time =>
       DateFormat('yyyy-MM-dd_HH-mm-ss').format(DateTime.now());
   static bool silentDownImg = Pref.silentDownImg;

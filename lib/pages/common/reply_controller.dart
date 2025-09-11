@@ -7,7 +7,6 @@ import 'package:PiliPlus/http/reply.dart';
 import 'package:PiliPlus/models/common/reply/reply_sort_type.dart';
 import 'package:PiliPlus/pages/common/common_list_controller.dart';
 import 'package:PiliPlus/pages/video/reply_new/view.dart';
-import 'package:PiliPlus/services/account_service.dart';
 import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:PiliPlus/utils/reply_utils.dart';
 import 'package:PiliPlus/utils/request_utils.dart';
@@ -21,14 +20,12 @@ import 'package:get/get.dart';
 import 'package:get/get_navigation/src/dialog/dialog_route.dart';
 
 abstract class ReplyController<R> extends CommonListController<R, ReplyInfo> {
-  RxInt count = (-1).obs;
+  final RxInt count = (-1).obs;
 
-  late Rx<ReplySortType> sortType;
-  late Rx<Mode> mode;
+  late final Rx<ReplySortType> sortType;
+  late final Rx<Mode> mode;
 
-  late final savedReplies = <Object, List<RichTextItem>?>{};
-
-  AccountService accountService = Get.find<AccountService>();
+  final savedReplies = <Object, List<RichTextItem>?>{};
 
   Int64? upMid;
   Int64? cursorNext;

@@ -307,16 +307,14 @@ class _VideoReplyReplyPanelState
     } else {
       final child = _replyItem(data[index], index);
       if (_controller.index != null && _controller.index == index) {
-        colorAnimation ??= ColorTween(
-          begin: theme.colorScheme.onInverseSurface,
-          end: theme.colorScheme.surface,
-        ).animate(_controller.animController!);
         return AnimatedBuilder(
-          animation: colorAnimation!,
+          animation: colorAnimation ??= ColorTween(
+            begin: theme.colorScheme.onInverseSurface,
+            end: theme.colorScheme.surface,
+          ).animate(_controller.controller!),
           builder: (context, _) {
             return ColoredBox(
-              color:
-                  colorAnimation!.value ?? theme.colorScheme.onInverseSurface,
+              color: colorAnimation!.value!,
               child: child,
             );
           },

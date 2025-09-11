@@ -99,8 +99,6 @@ abstract class CommonPublishPageState<T extends CommonPublishPage>
 
   void updatePanelType(PanelType type) {
     final isSwitchToKeyboard = PanelType.keyboard == type;
-    final isSwitchToEmojiPanel =
-        PanelType.emoji == type || PanelType.more == type;
     bool isUpdated = false;
     switch (type) {
       case PanelType.keyboard:
@@ -119,9 +117,9 @@ abstract class CommonPublishPageState<T extends CommonPublishPage>
             ? ChatBottomPanelType.keyboard
             : ChatBottomPanelType.other,
         data: type,
-        forceHandleFocus: isSwitchToEmojiPanel
+        forceHandleFocus: isSwitchToKeyboard
             ? ChatBottomHandleFocus.requestFocus
-            : ChatBottomHandleFocus.none,
+            : ChatBottomHandleFocus.unfocus,
       );
     }
 

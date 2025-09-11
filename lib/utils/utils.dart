@@ -16,6 +16,11 @@ class Utils {
 
   static const channel = MethodChannel("PiliPlus");
 
+  static final bool isMobile = Platform.isAndroid || Platform.isIOS;
+
+  static final bool isDesktop =
+      Platform.isWindows || Platform.isMacOS || Platform.isLinux;
+
   static Color parseColor(String color) =>
       Color(int.parse(color.replaceFirst('#', 'FF'), radix: 16));
 
@@ -70,7 +75,9 @@ class Utils {
     String baseDirectory,
     List<String> shaders,
   ) {
-    return shaders.map((shader) => path.join(baseDirectory, shader)).join(':');
+    return shaders
+        .map((shader) => path.join(baseDirectory, shader))
+        .join(Platform.isWindows ? ';' : ':');
   }
 
   static final numericRegex = RegExp(r'^[\d\.]+$');

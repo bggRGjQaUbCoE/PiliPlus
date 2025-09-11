@@ -12,7 +12,7 @@ import 'package:PiliPlus/models_new/fav/fav_folder/list.dart';
 import 'package:PiliPlus/pages/dynamics_repost/view.dart';
 import 'package:PiliPlus/pages/fav_detail/controller.dart';
 import 'package:PiliPlus/pages/fav_detail/widget/fav_video_card.dart';
-import 'package:PiliPlus/utils/fav_util.dart';
+import 'package:PiliPlus/utils/fav_utils.dart';
 import 'package:PiliPlus/utils/grid.dart';
 import 'package:PiliPlus/utils/request_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
@@ -161,7 +161,7 @@ class _FavDetailPageState extends State<FavDetailPage> with GridMixin {
       ),
       Obx(() {
         final attr = _favDetailController.folderInfo.value.attr;
-        return attr == -1 || !FavUtil.isPublicFav(attr)
+        return attr == -1 || !FavUtils.isPublicFav(attr)
             ? const SizedBox.shrink()
             : IconButton(
                 iconSize: 22,
@@ -221,7 +221,7 @@ class _FavDetailPageState extends State<FavDetailPage> with GridMixin {
                     _favDetailController.onFav(folderInfo.favState == 1),
                 child: Text('${folderInfo.favState == 1 ? '取消' : ''}收藏'),
               ),
-            if (FavUtil.isPublicFav(folderInfo.attr))
+            if (FavUtils.isPublicFav(folderInfo.attr))
               PopupMenuItem(
                 onTap: () => showModalBottomSheet(
                   context: context,
@@ -242,7 +242,7 @@ class _FavDetailPageState extends State<FavDetailPage> with GridMixin {
                 onTap: _favDetailController.cleanFav,
                 child: const Text('清除失效内容'),
               ),
-              if (!FavUtil.isDefaultFav(folderInfo.attr)) ...[
+              if (!FavUtils.isDefaultFav(folderInfo.attr)) ...[
                 const PopupMenuDivider(height: 12),
                 PopupMenuItem(
                   onTap: () => showConfirmDialog(
@@ -434,7 +434,7 @@ class _FavDetailPageState extends State<FavDetailPage> with GridMixin {
                           ],
                           Text(
                             '共${folderInfo.mediaCount}条视频 · '
-                            '${FavUtil.isPublicFavText(folderInfo.attr)}',
+                            '${FavUtils.isPublicFavText(folderInfo.attr)}',
                             style: style,
                           ),
                         ],

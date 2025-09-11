@@ -8,8 +8,8 @@ import 'package:PiliPlus/http/search.dart';
 import 'package:PiliPlus/models/common/badge_type.dart';
 import 'package:PiliPlus/models/common/stat_type.dart';
 import 'package:PiliPlus/models_new/member/coin_like_arc/item.dart';
-import 'package:PiliPlus/utils/date_util.dart';
-import 'package:PiliPlus/utils/duration_util.dart';
+import 'package:PiliPlus/utils/date_utils.dart';
+import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:flutter/material.dart';
 
@@ -86,7 +86,7 @@ class MemberCoinLikeItem extends StatelessWidget {
                           bottom: 6,
                           right: 6,
                           type: PBadgeType.gray,
-                          text: DurationUtil.formatDuration(item.duration),
+                          text: DurationUtils.formatDuration(item.duration),
                         ),
                     ],
                   );
@@ -118,7 +118,7 @@ class MemberCoinLikeItem extends StatelessWidget {
                       ),
                       const Spacer(),
                       Text(
-                        DateUtil.dateFormat(
+                        DateFormatUtils.dateFormat(
                           item.ctime,
                           short: VideoCardV.shortFormat,
                           long: VideoCardV.longFormat,

@@ -14,7 +14,7 @@ import 'package:PiliPlus/pages/common/dyn/common_dyn_page.dart';
 import 'package:PiliPlus/pages/match_info/controller.dart';
 import 'package:PiliPlus/pages/video/reply/widgets/reply_item_grpc.dart';
 import 'package:PiliPlus/pages/video/reply_reply/view.dart';
-import 'package:PiliPlus/utils/date_util.dart';
+import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:easy_debounce/easy_throttle.dart';
@@ -156,14 +156,14 @@ class _MatchInfoPageState extends CommonDynPageState<MatchInfoPage> {
                             )
                           else if (data.contestStatus == 3)
                             Text(
-                              '${DateUtil.dateFormat(data.stime)}${data.contestStatus == 3 ? ' 已结束' : ''}',
+                              '${DateFormatUtils.dateFormat(data.stime)}${data.contestStatus == 3 ? ' 已结束' : ''}',
                               style: TextStyle(
                                 color: theme.colorScheme.outline,
                               ),
                             )
                           else if (data.contestStatus == 1)
                             Text(
-                              DateUtil.format(
+                              DateFormatUtils.format(
                                 data.stime,
                                 format: DateFormat('yy-MM-dd HH:mm'),
                               ),

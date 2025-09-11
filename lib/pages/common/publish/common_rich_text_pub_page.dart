@@ -16,6 +16,7 @@ import 'package:PiliPlus/pages/dynamics_mention/view.dart';
 import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
+import 'package:PiliPlus/utils/utils.dart';
 import 'package:dio/dio.dart' show CancelToken;
 import 'package:easy_debounce/easy_throttle.dart';
 import 'package:flutter/material.dart';
@@ -62,7 +63,7 @@ abstract class CommonRichTextPubPageState<T extends CommonRichTextPubPage>
   @override
   void dispose() {
     for (var i in pathList) {
-      File(i).delSync();
+      File(i).tryDel();
     }
     super.dispose();
   }
@@ -115,18 +116,19 @@ abstract class CommonRichTextPubPageState<T extends CommonRichTextPubPage>
             ),
           ),
         ),
-        Positioned(
-          top: 34,
-          right: 5,
-          child: iconButton(
-            context: context,
-            icon: Icons.edit,
-            onPressed: () => onCropImage(index),
-            size: 24,
-            iconSize: 14,
-            bgColor: color,
+        if (Utils.isMobile)
+          Positioned(
+            top: 34,
+            right: 5,
+            child: iconButton(
+              context: context,
+              icon: Icons.edit,
+              onPressed: () => onCropImage(index),
+              size: 24,
+              iconSize: 14,
+              bgColor: color,
+            ),
           ),
-        ),
         Positioned(
           top: 5,
           right: 5,

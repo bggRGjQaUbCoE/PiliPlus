@@ -1,5 +1,5 @@
 import 'package:PiliPlus/pages/dynamics_create_reserve/controller.dart';
-import 'package:PiliPlus/utils/date_util.dart';
+import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'
@@ -127,7 +127,7 @@ class _CreateReservePageState extends State<CreateReservePage> {
                     padding: const EdgeInsets.symmetric(vertical: 4),
                     child: Obx(
                       () => Text(
-                        DateUtil.longFormatD.format(_controller.date.value),
+                        DateFormatUtils.longFormatD.format(_controller.date.value),
                       ),
                     ),
                   ),

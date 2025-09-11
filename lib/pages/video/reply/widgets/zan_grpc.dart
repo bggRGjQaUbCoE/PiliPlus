@@ -2,7 +2,7 @@ import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
     show ReplyInfo;
 import 'package:PiliPlus/http/reply.dart';
 import 'package:PiliPlus/utils/feed_back.dart';
-import 'package:PiliPlus/utils/num_util.dart';
+import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -160,7 +160,7 @@ class ZanButtonGrpc extends StatelessWidget {
                   semanticLabel: isLike ? '已赞' : '点赞',
                 ),
                 Text(
-                  NumUtil.numFormat(replyItem.like.toInt()),
+                  NumUtils.numFormat(replyItem.like.toInt()),
                   style: TextStyle(
                     color: isLike ? primary : outline,
                     fontSize: theme.textTheme.labelSmall!.fontSize,

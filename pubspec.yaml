@@ -45,7 +45,7 @@ dependencies:
   # 网络
   dio: ^5.7.0
   cookie_jar: ^4.0.8
-  connectivity_plus: ^6.1.1
+  connectivity_plus: ^7.0.0
   dio_http2_adapter: ^2.5.3
 
   # 图片
@@ -67,12 +67,17 @@ dependencies:
   # 权限
   permission_handler: ^12.0.0+1
   # 分享
-  share_plus: ^11.0.0
+  share_plus: ^12.0.0
   # cookie 管理
   # webview_cookie_manager: ^2.0.6
   # 浏览器
   # webview_flutter: ^4.10.0
-  flutter_inappwebview: ^6.1.5
+  # flutter_inappwebview: ^6.1.5
+  flutter_inappwebview:
+    git:
+      url: https://github.com/bggRGjQaUbCoE/flutter_inappwebview.git
+      path: flutter_inappwebview
+      ref: version_6.1.5
   # 解决sliver滑动不同步
   # extended_nested_scroll_view: ^6.2.1
   extended_nested_scroll_view:
@@ -187,7 +192,7 @@ dependencies:
   live_photo_maker: ^0.0.6
   fl_chart: ^1.0.0
   synchronized: ^3.3.0
-  document_file_save_plus: ^2.0.0
+  # document_file_save_plus: ^2.0.0
   # webdav_client: ^1.2.2
   webdav_client:
     git:
@@ -202,12 +207,14 @@ dependencies:
   crclib: ^3.0.0
   web_socket_channel: ^3.0.3
   image: ^4.5.4
+  window_manager: ^0.5.1
+  file_picker: ^10.3.3
 
   vector_math: any
   fixnum: any
   json_annotation: any
   stream_transform: any
-  screen_brightness: any
+  screen_brightness_platform_interface: any
   mime: any
   universal_platform: any
   path: any
@@ -217,7 +224,10 @@ dependencies:
   http2: any
 
 dependency_overrides:
-  screen_brightness: ^2.1.7
+  # screen_brightness: ^2.1.
+  screen_brightness_ios: ^2.1.2
+  screen_brightness_android: ^2.1.3
+  screen_brightness_platform_interface: ^2.1.0
   path: ^1.9.1
   mime: ^2.0.0
   rxdart: ^0.28.0

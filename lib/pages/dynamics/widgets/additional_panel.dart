@@ -6,7 +6,7 @@ import 'package:PiliPlus/models/dynamics/result.dart';
 import 'package:PiliPlus/models_new/dynamic/dyn_reserve/data.dart';
 import 'package:PiliPlus/pages/dynamics/widgets/vote.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
-import 'package:PiliPlus/utils/num_util.dart';
+import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart' hide InkWell;
@@ -446,7 +446,7 @@ Widget addWidget(
                         overflow: TextOverflow.ellipsis,
                       ),
                       Text(
-                        '${NumUtil.numFormat(vote.joinNum)}人参与',
+                        '${NumUtils.numFormat(vote.joinNum)}人参与',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(

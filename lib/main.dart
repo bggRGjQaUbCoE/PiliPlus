@@ -10,24 +10,26 @@ import 'package:PiliPlus/services/logger.dart';
 import 'package:PiliPlus/services/service_locator.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
 import 'package:PiliPlus/utils/cache_manage.dart';
-import 'package:PiliPlus/utils/date_util.dart';
+import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/request_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/theme_utils.dart';
+import 'package:PiliPlus/utils/utils.dart';
 import 'package:catcher_2/catcher_2.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flex_seed_scheme/flex_seed_scheme.dart';
-import 'package:flutter/foundation.dart' show kDebugMode;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
-import 'package:media_kit/media_kit.dart'; // Provides [Player], [Media], [Playlist] etc.
+import 'package:media_kit/media_kit.dart';
+import 'package:window_manager/window_manager.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -38,36 +40,62 @@ void main() async {
 
   await Future.wait([
     CacheManage.autoClearCache(),
-    if (Pref.horizontalScreen)
+    if (Utils.isMobile) ...[
       SystemChrome.setPreferredOrientations(
-        //支持竖屏与横屏
         [
           DeviceOrientation.portraitUp,
-          // DeviceOrientation.portraitDown,
-          DeviceOrientation.landscapeLeft,
-          DeviceOrientation.landscapeRight,
+          if (Pref.horizontalScreen) ...[
+            DeviceOrientation.landscapeLeft,
+            DeviceOrientation.landscapeRight,
+          ],
         ],
-      )
-    else
-      SystemChrome.setPreferredOrientations(
-        //支持竖屏
-        [DeviceOrientation.portraitUp],
       ),
-    setupServiceLocator(),
+      setupServiceLocator(),
+    ],
   ]);
 
   Request();
   Request.setCookie();
+  RequestUtils.syncHistoryStatus();
+  PiliScheme.init();
 
   SmartDialog.config.toast = SmartConfigToast(
     displayType: SmartToastType.onlyRefresh,
   );
 
+  if (Utils.isMobile) {
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(
+        systemNavigationBarColor: Colors.transparent,
+        systemNavigationBarDividerColor: Colors.transparent,
+        statusBarColor: Colors.transparent,
+        systemNavigationBarContrastEnforced: false,
+      ),
+    );
+  } else if (Utils.isDesktop) {
+    await windowManager.ensureInitialized();
+    WindowOptions windowOptions = WindowOptions(
+      minimumSize: const Size(400, 720),
+      size: const Size(1180, 720),
+      center: true,
+      skipTaskbar: false,
+      titleBarStyle: Platform.isMacOS
+          ? TitleBarStyle.hidden
+          : TitleBarStyle.normal,
+      title: 'PiliPlus',
+    );
+    windowManager.waitUntilReadyToShow(windowOptions, () async {
+      await windowManager.show();
+      await windowManager.focus();
+    });
+  }
+
   if (Pref.enableLog) {
     // 异常捕获 logo记录
     String buildConfig =
         '''\n
-Build Time: ${DateUtil.format(BuildConfig.buildTime, format: DateUtil.longFormatDs)}
+Build Time: ${DateFormatUtils.format(BuildConfig.buildTime, format: DateFormatUtils.longFormatDs)}
 Commit Hash: ${BuildConfig.commitHash}''';
     final Catcher2Options debugConfig = Catcher2Options(
       SilentReportMode(),
@@ -107,19 +135,6 @@ Commit Hash: ${BuildConfig.commitHash}''';
   } else {
     runApp(const MyApp());
   }
-
-  // 小白条、导航栏沉浸
-  SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-  SystemChrome.setSystemUIOverlayStyle(
-    const SystemUiOverlayStyle(
-      systemNavigationBarColor: Colors.transparent,
-      systemNavigationBarDividerColor: Colors.transparent,
-      statusBarColor: Colors.transparent,
-      systemNavigationBarContrastEnforced: false,
-    ),
-  );
-  RequestUtils.syncHistoryStatus();
-  PiliScheme.init();
 }
 
 class MyApp extends StatelessWidget {
@@ -219,6 +234,7 @@ class MyApp extends StatelessWidget {
             FlutterSmartDialog.observer,
             PageUtils.routeObserver,
           ],
+          scrollBehavior: const ScrollBehavior().copyWith(scrollbars: false),
         );
       }),
     );
@@ -234,8 +250,7 @@ class _CustomHttpOverrides extends HttpOverrides {
       // ..maxConnectionsPerHost = 32
       ..idleTimeout = const Duration(seconds: 15);
     if (badCertificateCallback) {
-      client.badCertificateCallback =
-          (X509Certificate cert, String host, int port) => true;
+      client.badCertificateCallback = (cert, host, port) => true;
     }
     return client;
   }

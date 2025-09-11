@@ -11,7 +11,7 @@ import 'package:PiliPlus/pages/dynamics_detail/controller.dart';
 import 'package:PiliPlus/pages/dynamics_repost/view.dart';
 import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/grid.dart';
-import 'package:PiliPlus/utils/num_util.dart';
+import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:PiliPlus/utils/request_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart';
@@ -235,7 +235,7 @@ class _DynamicDetailPageState extends CommonDynPageState<DynamicDetailPage> {
                 ),
                 style: btnStyle,
                 label: Text(
-                  stat?.count != null ? NumUtil.numFormat(stat!.count) : text,
+                  stat?.count != null ? NumUtils.numFormat(stat!.count) : text,
                   style: TextStyle(color: color),
                 ),
               );

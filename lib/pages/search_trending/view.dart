@@ -9,7 +9,7 @@ import 'package:PiliPlus/models_new/search/search_trending/list.dart';
 import 'package:PiliPlus/pages/search_trending/controller.dart';
 import 'package:PiliPlus/utils/context_ext.dart';
 import 'package:PiliPlus/utils/extension.dart';
-import 'package:PiliPlus/utils/image_util.dart';
+import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' hide ListTile;
@@ -203,7 +203,7 @@ class _SearchTrendingPageState extends State<SearchTrendingPage> {
                         if (item.icon?.isNotEmpty == true) ...[
                           const SizedBox(width: 4),
                           CachedNetworkImage(
-                            imageUrl: ImageUtil.thumbnailUrl(item.icon!),
+                            imageUrl: ImageUtils.thumbnailUrl(item.icon!),
                             height: 16,
                           ),
                         ] else if (item.showLiveIcon == true) ...[

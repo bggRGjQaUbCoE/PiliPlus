@@ -12,7 +12,7 @@ import 'package:PiliPlus/pages/dynamics/controller.dart';
 import 'package:PiliPlus/pages/save_panel/view.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/context_ext.dart';
-import 'package:PiliPlus/utils/date_util.dart';
+import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
@@ -63,11 +63,11 @@ class AuthorPanel extends StatelessWidget {
     final moduleAuthor = item.modules.moduleAuthor!;
     final pubTime = moduleAuthor.pubTs != null
         ? isSave
-              ? DateUtil.format(
+              ? DateFormatUtils.format(
                   moduleAuthor.pubTs,
-                  format: DateUtil.longFormatDs,
+                  format: DateFormatUtils.longFormatDs,
                 )
-              : DateUtil.dateFormat(moduleAuthor.pubTs)
+              : DateFormatUtils.dateFormat(moduleAuthor.pubTs)
         : moduleAuthor.pubTime;
     return Stack(
       clipBehavior: Clip.none,

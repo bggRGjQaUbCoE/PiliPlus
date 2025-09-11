@@ -14,7 +14,7 @@ import 'package:PiliPlus/pages/common/slide/common_collapse_slide_page.dart';
 import 'package:PiliPlus/pages/video/controller.dart';
 import 'package:PiliPlus/pages/video/post_panel/popup_menu_text.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
-import 'package:PiliPlus/utils/duration_util.dart';
+import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:dio/dio.dart';
@@ -62,7 +62,7 @@ class PostPanel extends CommonCollapseSlidePage {
   }) {
     Widget segment(bool isFirst) => Builder(
       builder: (context) {
-        String value = DurationUtil.formatDuration(
+        String value = DurationUtils.formatDuration(
           isFirst ? item.segment.first : item.segment.second,
         );
         return Row(

@@ -39,8 +39,8 @@ jobs:
 
       - name: Build iOS
         run: |
-          chmod +x lib/scripts/build.sh
-          lib/scripts/build.sh
+          chmod +x lib/scripts/build.dart
+          dart lib/scripts/build.dart
           flutter build ios --release --no-codesign 
           ln -sf ./build/ios/iphoneos Payload
           zip -r9 ios-release-no-sign.ipa Payload/runner.app

@@ -6,7 +6,7 @@ import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
     show SearchItem, SearchItemVideoSubType;
 import 'package:PiliPlus/models/common/badge_type.dart';
 import 'package:PiliPlus/models/common/reply/reply_search_type.dart';
-import 'package:PiliPlus/utils/duration_util.dart';
+import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -84,7 +84,7 @@ class ReplySearchItem extends StatelessWidget {
                           PBadge(
                             right: 6,
                             bottom: 6,
-                            text: DurationUtil.formatDuration(duration),
+                            text: DurationUtils.formatDuration(duration),
                             type: PBadgeType.gray,
                           ),
                       ],

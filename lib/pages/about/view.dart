@@ -11,14 +11,13 @@ import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/accounts/account.dart';
 import 'package:PiliPlus/utils/cache_manage.dart';
 import 'package:PiliPlus/utils/context_ext.dart';
-import 'package:PiliPlus/utils/date_util.dart';
+import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/login_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/update.dart';
 import 'package:PiliPlus/utils/utils.dart';
-import 'package:dio/dio.dart' show Headers;
-import 'package:document_file_save_plus/document_file_save_plus_platform_interface.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart' hide ListTile;
 import 'package:flutter/services.dart' show Clipboard, ClipboardData;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -30,7 +29,6 @@ import 'package:re_highlight/languages/json.dart';
 import 'package:re_highlight/re_highlight.dart';
 import 'package:re_highlight/styles/github-dark.dart';
 import 'package:re_highlight/styles/github.dart';
-import 'package:share_plus/share_plus.dart';
 
 class AboutPage extends StatefulWidget {
   const AboutPage({super.key, this.showAppBar = true});
@@ -161,7 +159,7 @@ class _AboutPageState extends State<AboutPage> {
           ListTile(
             title: Text(
               '''
-Build Time: ${DateUtil.format(BuildConfig.buildTime, format: DateUtil.longFormatDs)}
+Build Time: ${DateFormatUtils.format(BuildConfig.buildTime, format: DateFormatUtils.longFormatDs)}
 Commit Hash: ${BuildConfig.commitHash}''',
               style: const TextStyle(fontSize: 14),
             ),
@@ -248,7 +246,9 @@ Commit Hash: ${BuildConfig.commitHash}''',
             onTap: () => showInportExportDialog<Map>(
               context,
               title: '登录信息',
-              toJson: () => jsonEncode(Accounts.account.toMap()),
+              toJson: () => const JsonEncoder.withIndent(
+                '    ',
+              ).convert(Accounts.account.toMap()),
               fromJson: (json) async {
                 final res = json.map(
                   (key, value) => MapEntry(key, LoginAccount.fromJson(value)),
@@ -349,27 +349,22 @@ Future<void> showInportExportDialog<T>(
                   'piliplus_${label}_${context.isTablet ? 'pad' : 'phone'}_'
                   '${DateFormat('yyyyMMddHHmmss').format(DateTime.now())}.json';
               try {
-                DocumentFileSavePlusPlatform.instance.saveMultipleFiles(
-                  dataList: [res],
-                  fileNameList: [name],
-                  mimeTypeList: const [Headers.jsonContentType],
+                final path = await FilePicker.platform.saveFile(
+                  allowedExtensions: ['json'],
+                  type: FileType.custom,
+                  fileName: name,
+                  bytes: Utils.isDesktop ? null : res,
                 );
-                if (Platform.isAndroid) {
-                  SmartDialog.showToast('已保存');
+                if (path == null) {
+                  SmartDialog.showToast("取消保存");
+                  return;
                 }
+                if (Utils.isDesktop) {
+                  await File(path).writeAsBytes(res);
+                }
+                SmartDialog.showToast("已保存");
               } catch (e) {
-                SharePlus.instance.share(
-                  ShareParams(
-                    files: [
-                      XFile.fromData(
-                        res,
-                        name: name,
-                        mimeType: Headers.jsonContentType,
-                      ),
-                    ],
-                    sharePositionOrigin: await Utils.sharePositionOrigin,
-                  ),
-                );
+                SmartDialog.showToast("保存失败: $e");
               }
             },
           ),

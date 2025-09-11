@@ -13,8 +13,8 @@ import 'package:PiliPlus/pages/video/introduction/pgc/controller.dart';
 import 'package:PiliPlus/pages/video/introduction/ugc/controller.dart';
 import 'package:PiliPlus/pages/video/reply/widgets/reply_item_grpc.dart';
 import 'package:PiliPlus/utils/context_ext.dart';
-import 'package:PiliPlus/utils/date_util.dart';
-import 'package:PiliPlus/utils/image_util.dart';
+import 'package:PiliPlus/utils/date_utils.dart';
+import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
@@ -23,7 +23,6 @@ import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart' hide ContextExtensionss;
 import 'package:intl/intl.dart' show DateFormat;
 import 'package:pretty_qr_code/pretty_qr_code.dart';
-import 'package:saver_gallery/saver_gallery.dart';
 import 'package:share_plus/share_plus.dart';
 
 class SavePanel extends StatefulWidget {
@@ -79,7 +78,7 @@ class _SavePanelState extends State<SavePanel> {
   _CoverType coverType = _CoverType.def16_9;
   String? title;
   int? pubdate;
-  DateFormat dateFormat = DateUtil.longFormatDs;
+  DateFormat dateFormat = DateFormatUtils.longFormatDs;
   String? uname;
 
   String uri = '';
@@ -193,7 +192,7 @@ class _SavePanelState extends State<SavePanel> {
               )?.millisecondsSinceEpoch;
               if (time != null) {
                 pubdate = time ~/ 1000;
-                dateFormat = DateUtil.longFormat;
+                dateFormat = DateFormatUtils.longFormat;
               }
             }
           }
@@ -273,7 +272,7 @@ class _SavePanelState extends State<SavePanel> {
 
   Future<void> _onSaveOrSharePic([bool isShare = false]) async {
     if (!isShare) {
-      if (mounted && !await ImageUtil.checkPermissionDependOnSdkInt(context)) {
+      if (mounted && !await ImageUtils.checkPermissionDependOnSdkInt(context)) {
         return;
       }
     }
@@ -303,18 +302,14 @@ class _SavePanelState extends State<SavePanel> {
           ),
         );
       } else {
-        final result = await SaverGallery.saveImage(
-          pngBytes,
-          fileName: '$picName.png',
-          androidRelativePath: "Pictures/PiliPlus",
-          skipIfExists: false,
+        final result = await ImageUtils.saveByteImg(
+          bytes: pngBytes,
+          fileName: picName,
         );
-        SmartDialog.dismiss();
-        if (result.isSuccess) {
-          Get.back();
-          SmartDialog.showToast('保存成功');
-        } else if (result.errorMessage?.isNotEmpty == true) {
-          SmartDialog.showToast(result.errorMessage!);
+        if (result != null) {
+          if (result.isSuccess) {
+            Get.back();
+          }
         }
       }
     } catch (e) {
@@ -420,7 +415,7 @@ class _SavePanelState extends State<SavePanel> {
                                         if (pubdate != null) ...[
                                           const Spacer(),
                                           Text(
-                                            DateUtil.format(
+                                            DateFormatUtils.format(
                                               pubdate,
                                               format: dateFormat,
                                             ),
@@ -473,7 +468,7 @@ class _SavePanelState extends State<SavePanel> {
                                                     ),
                                                   ),
                                                   Text(
-                                                    DateUtil.longFormatDs
+                                                    DateFormatUtils.longFormatDs
                                                         .format(
                                                           DateTime.now(),
                                                         ),

@@ -25,7 +25,7 @@ import 'package:PiliPlus/pages/emote/controller.dart';
 import 'package:PiliPlus/pages/emote/view.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/context_ext.dart';
-import 'package:PiliPlus/utils/date_util.dart';
+import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/grid.dart';
 import 'package:PiliPlus/utils/request_utils.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
@@ -524,7 +524,7 @@ class _CreateDynPanelState extends CommonRichTextPubPageState<CreateDynPanel> {
             visualDensity: VisualDensity.compact,
           ),
           onPressed: () => _publishTime.value = null,
-          label: Text(DateUtil.longFormatD.format(_publishTime.value!)),
+          label: Text(DateFormatUtils.longFormatD.format(_publishTime.value!)),
           icon: const Icon(Icons.clear, size: 20),
           iconAlignment: IconAlignment.end,
         );
@@ -792,7 +792,7 @@ class _CreateDynPanelState extends CommonRichTextPubPageState<CreateDynPanel> {
                   children: [
                     Text('直播预约: ${reserveCard.title}'),
                     Text(
-                      '${DateUtil.longFormatD.format(
+                      '${DateFormatUtils.longFormatD.format(
                         DateTime.fromMillisecondsSinceEpoch(reserveCard.livePlanStartTime! * 1000),
                       )} 直播',
                     ),

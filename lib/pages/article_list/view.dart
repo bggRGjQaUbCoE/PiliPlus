@@ -8,9 +8,9 @@ import 'package:PiliPlus/models_new/article/article_list/article.dart';
 import 'package:PiliPlus/models_new/article/article_list/list.dart';
 import 'package:PiliPlus/pages/article_list/controller.dart';
 import 'package:PiliPlus/pages/article_list/widgets/item.dart';
-import 'package:PiliPlus/utils/date_util.dart';
+import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/grid.dart';
-import 'package:PiliPlus/utils/num_util.dart';
+import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart';
@@ -158,12 +158,12 @@ class _ArticleListPageState extends State<ArticleListPage> with GridMixin {
                     TextSpan(
                       children: [
                         TextSpan(
-                          text: '${NumUtil.numFormat(item.articlesCount)}篇专栏',
+                          text: '${NumUtils.numFormat(item.articlesCount)}篇专栏',
                         ),
                         divider,
-                        TextSpan(text: '${NumUtil.numFormat(item.words)}个字'),
+                        TextSpan(text: '${NumUtils.numFormat(item.words)}个字'),
                         divider,
-                        TextSpan(text: '${NumUtil.numFormat(item.read)}次阅读'),
+                        TextSpan(text: '${NumUtils.numFormat(item.read)}次阅读'),
                       ],
                       style: style,
                     ),
@@ -172,7 +172,7 @@ class _ArticleListPageState extends State<ArticleListPage> with GridMixin {
                     TextSpan(
                       children: [
                         TextSpan(
-                          text: '${DateUtil.dateFormat(item.updateTime)}更新',
+                          text: '${DateFormatUtils.dateFormat(item.updateTime)}更新',
                         ),
                         divider,
                         TextSpan(text: '文集号: ${item.id}'),

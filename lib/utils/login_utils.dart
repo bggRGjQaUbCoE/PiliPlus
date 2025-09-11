@@ -1,3 +1,5 @@
+import 'dart:async' show FutureOr;
+import 'dart:io' show Platform;
 import 'dart:math';
 
 import 'package:PiliPlus/grpc/grpc_req.dart';
@@ -16,6 +18,7 @@ import 'package:PiliPlus/pages/pgc/controller.dart';
 import 'package:PiliPlus/services/account_service.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/accounts/account.dart';
+import 'package:PiliPlus/utils/request_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart' as web;
@@ -25,7 +28,10 @@ import 'package:get/get.dart';
 class LoginUtils {
   static final random = Random();
 
-  static Future setWebCookie([Account? account]) async {
+  static FutureOr setWebCookie([Account? account]) {
+    if (Platform.isWindows) {
+      return null;
+    }
     final cookies = (account ?? Accounts.main).cookieJar.toList();
     final webManager = web.CookieManager();
     return Future.wait(
@@ -47,6 +53,7 @@ class LoginUtils {
     final account = Accounts.main;
     GrpcReq.updateHeaders(account.accessKey);
     setWebCookie(account);
+    RequestUtils.syncHistoryStatus();
     final result = await UserHttp.userInfo();
     if (result.isSuccess) {
       final UserInfoData data = result.data;

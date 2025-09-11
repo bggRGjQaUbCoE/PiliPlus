@@ -20,11 +20,11 @@ import 'package:PiliPlus/pages/article/widgets/opus_content.dart';
 import 'package:PiliPlus/pages/common/dyn/common_dyn_page.dart';
 import 'package:PiliPlus/pages/dynamics_repost/view.dart';
 import 'package:PiliPlus/pages/video/reply/widgets/reply_item_grpc.dart';
-import 'package:PiliPlus/utils/date_util.dart';
+import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/grid.dart';
-import 'package:PiliPlus/utils/image_util.dart';
-import 'package:PiliPlus/utils/num_util.dart';
+import 'package:PiliPlus/utils/image_utils.dart';
+import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -295,7 +295,7 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
                                             fit: pic.isLongPic == true
                                                 ? BoxFit.cover
                                                 : null,
-                                            imageUrl: ImageUtil.thumbnailUrl(
+                                            imageUrl: ImageUtils.thumbnailUrl(
                                               pic.url,
                                               60,
                                             ),
@@ -371,7 +371,7 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
                             ),
                             if (pubTime != null)
                               Text(
-                                DateUtil.format(pubTime),
+                                DateFormatUtils.format(pubTime),
                                 style: TextStyle(
                                   color: theme.colorScheme.outline,
                                   fontSize:
@@ -596,7 +596,7 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
               ),
               style: btnStyle,
               label: Text(
-                stat?.count != null ? NumUtil.numFormat(stat!.count) : text,
+                stat?.count != null ? NumUtils.numFormat(stat!.count) : text,
                 style: TextStyle(color: color),
               ),
             );

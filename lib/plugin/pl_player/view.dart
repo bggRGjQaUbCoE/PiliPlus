@@ -40,9 +40,9 @@ import 'package:PiliPlus/plugin/pl_player/widgets/common_btn.dart';
 import 'package:PiliPlus/plugin/pl_player/widgets/forward_seek.dart';
 import 'package:PiliPlus/plugin/pl_player/widgets/mpv_convert_webp.dart';
 import 'package:PiliPlus/plugin/pl_player/widgets/play_pause_btn.dart';
-import 'package:PiliPlus/utils/duration_util.dart';
-import 'package:PiliPlus/utils/extension.dart';
+import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
+import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/utils.dart';
@@ -61,8 +61,7 @@ import 'package:get/get.dart' hide ContextExtensionss;
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
-import 'package:saver_gallery/saver_gallery.dart';
-import 'package:screen_brightness/screen_brightness.dart';
+import 'package:screen_brightness_platform_interface/screen_brightness_platform_interface.dart';
 
 class PLVideoPlayer extends StatefulWidget {
   const PLVideoPlayer({
@@ -123,7 +122,6 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
   final RxBool _brightnessIndicator = false.obs;
   Timer? _brightnessTimer;
 
-  final RxDouble _volumeValue = 0.0.obs;
   final RxBool _volumeIndicator = false.obs;
   Timer? _volumeTimer;
 
@@ -207,49 +205,52 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       duration: const Duration(milliseconds: 100),
     );
     videoController = plPlayerController.videoController!;
-    Future.microtask(() async {
-      try {
-        FlutterVolumeController.updateShowSystemUI(true);
-        _volumeValue.value = (await FlutterVolumeController.getVolume())!;
-        FlutterVolumeController.addListener((double value) {
-          if (mounted && !_volumeInterceptEventStream.value) {
-            _volumeValue.value = value;
-            if (Platform.isIOS && !FlutterVolumeController.showSystemUI) {
-              _volumeIndicator.value = true;
-              _volumeTimer?.cancel();
-              _volumeTimer = Timer(const Duration(milliseconds: 800), () {
+
+    if (Utils.isMobile) {
+      Future.microtask(() async {
+        try {
+          FlutterVolumeController.updateShowSystemUI(true);
+          plPlayerController.volume.value =
+              (await FlutterVolumeController.getVolume())!;
+          FlutterVolumeController.addListener((double value) {
+            if (mounted && !_volumeInterceptEventStream.value) {
+              plPlayerController.volume.value = value;
+              if (Platform.isIOS && !FlutterVolumeController.showSystemUI) {
+                _volumeIndicator.value = true;
+                _volumeTimer?.cancel();
+                _volumeTimer = Timer(const Duration(milliseconds: 800), () {
+                  if (mounted) {
+                    _volumeIndicator.value = false;
+                  }
+                });
+              }
+            }
+          });
+        } catch (_) {}
+      });
+
+      Future.microtask(() async {
+        try {
+          _brightnessValue.value =
+              await ScreenBrightnessPlatform.instance.application;
+          _listener = ScreenBrightnessPlatform
+              .instance
+              .onApplicationScreenBrightnessChanged
+              .listen((double value) {
                 if (mounted) {
-                  _volumeIndicator.value = false;
+                  _brightnessValue.value = value;
                 }
               });
-            }
-          }
-        });
-      } catch (_) {}
-    });
-
-    Future.microtask(() async {
-      try {
-        _brightnessValue.value = await ScreenBrightness.instance.application;
-        _listener = ScreenBrightness
-            .instance
-            .onApplicationScreenBrightnessChanged
-            .listen((double value) {
-              if (mounted) {
-                _brightnessValue.value = value;
-              }
-            });
-      } catch (_) {}
-    });
+        } catch (_) {}
+      });
+    }
   }
 
   Future<void> setVolume(double value) async {
-    try {
-      FlutterVolumeController.updateShowSystemUI(false);
-      await FlutterVolumeController.setVolume(value);
-    } catch (_) {}
-
-    _volumeValue.value = value;
+    if (plPlayerController.volume.value == value) {
+      return;
+    }
+    plPlayerController.setVolume(value);
     _volumeIndicator.value = true;
     _volumeInterceptEventStream.value = true;
     _volumeTimer?.cancel();
@@ -263,7 +264,9 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
 
   Future<void> setBrightness(double value) async {
     try {
-      await ScreenBrightness.instance.setApplicationScreenBrightness(value);
+      await ScreenBrightnessPlatform.instance.setApplicationScreenBrightness(
+        value,
+      );
     } catch (_) {}
     _brightnessIndicator.value = true;
     _brightnessTimer?.cancel();
@@ -281,7 +284,9 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     _listener?.cancel();
     _controlsListener?.cancel();
     animationController.dispose();
-    FlutterVolumeController.removeListener();
+    if (Utils.isMobile) {
+      FlutterVolumeController.removeListener();
+    }
     transformationController.dispose();
     super.dispose();
   }
@@ -347,7 +352,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
           // 播放时间
           Obx(
             () => Text(
-              DurationUtil.formatDuration(
+              DurationUtils.formatDuration(
                 plPlayerController.positionSeconds.value,
               ),
               style: const TextStyle(
@@ -360,7 +365,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
           ),
           Obx(
             () => Text(
-              DurationUtil.formatDuration(
+              DurationUtils.formatDuration(
                 plPlayerController.durationSeconds.value.inSeconds,
               ),
               style: const TextStyle(
@@ -847,7 +852,8 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
         final double tapPosition = details.localFocalPoint.dx;
         final double sectionWidth = maxWidth / 3;
         if (tapPosition < sectionWidth) {
-          if (!plPlayerController.enableSlideVolumeBrightness) {
+          if (Utils.isDesktop ||
+              !plPlayerController.enableSlideVolumeBrightness) {
             return;
           }
           // 左边区域
@@ -975,9 +981,12 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
         'setVolume',
         const Duration(milliseconds: 20),
         () {
-          final double volume = _volumeValue.value - delta.dy / level;
-          final double result = volume.clamp(0.0, 1.0);
-          setVolume(result);
+          final double volume = clampDouble(
+            plPlayerController.volume.value - delta.dy / level,
+            0.0,
+            1.0,
+          );
+          setVolume(volume);
         },
       );
     }
@@ -1025,7 +1034,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     final double sectionWidth = maxWidth / 3;
     late GestureType gestureType;
     if (tapPosition < sectionWidth) {
-      if (!plPlayerController.enableSlideVolumeBrightness) {
+      if (Utils.isDesktop || !plPlayerController.enableSlideVolumeBrightness) {
         return;
       }
       // 左边区域
@@ -1089,9 +1098,12 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
         'setVolume',
         const Duration(milliseconds: 20),
         () {
-          final double volume = _volumeValue.value - details.delta.dy / level;
-          final double result = volume.clamp(0.0, 1.0);
-          setVolume(result);
+          final double volume = clampDouble(
+            plPlayerController.volume.value - details.delta.dy / level,
+            0.0,
+            1.0,
+          );
+          setVolume(volume);
         },
       );
     }
@@ -1298,7 +1310,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                         children: [
                           Obx(() {
                             return Text(
-                              DurationUtil.formatDuration(
+                              DurationUtils.formatDuration(
                                 plPlayerController
                                     .sliderTempPosition
                                     .value
@@ -1311,7 +1323,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                           Obx(
                             () {
                               return Text(
-                                DurationUtil.formatDuration(
+                                DurationUtils.formatDuration(
                                   plPlayerController
                                       .durationSeconds
                                       .value
@@ -1336,44 +1348,47 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
           child: Align(
             alignment: Alignment.center,
             child: Obx(
-              () => AnimatedOpacity(
-                curve: Curves.easeInOut,
-                opacity: _volumeIndicator.value ? 1.0 : 0.0,
-                duration: const Duration(milliseconds: 150),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 5,
-                  ),
-                  decoration: const BoxDecoration(
-                    color: Color(0x88000000),
-                    borderRadius: BorderRadius.all(Radius.circular(64)),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      Icon(
-                        _volumeValue.value == 0.0
-                            ? Icons.volume_off
-                            : _volumeValue.value < 0.5
-                            ? Icons.volume_down
-                            : Icons.volume_up,
-                        color: Colors.white,
-                        size: 20.0,
-                      ),
-                      const SizedBox(width: 2.0),
-                      Text(
-                        '${(_volumeValue.value * 100.0).round()}%',
-                        style: const TextStyle(
-                          fontSize: 13.0,
+              () {
+                final volume = plPlayerController.volume.value;
+                return AnimatedOpacity(
+                  curve: Curves.easeInOut,
+                  opacity: _volumeIndicator.value ? 1.0 : 0.0,
+                  duration: const Duration(milliseconds: 150),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 5,
+                    ),
+                    decoration: const BoxDecoration(
+                      color: Color(0x88000000),
+                      borderRadius: BorderRadius.all(Radius.circular(64)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        Icon(
+                          volume == 0.0
+                              ? Icons.volume_off
+                              : volume < 0.5
+                              ? Icons.volume_down
+                              : Icons.volume_up,
                           color: Colors.white,
+                          size: 20.0,
                         ),
-                      ),
-                    ],
+                        const SizedBox(width: 2.0),
+                        Text(
+                          '${(volume * 100.0).round()}%',
+                          style: const TextStyle(
+                            fontSize: 13.0,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ),
+                );
+              },
             ),
           ),
         ),
@@ -1728,29 +1743,13 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                                         //移除圆角
                                         shape: const RoundedRectangleBorder(),
                                         content: GestureDetector(
-                                          onTap: () async {
+                                          onTap: () {
                                             Get.back();
-
-                                            String name = DateTime.now()
-                                                .toString();
-                                            final SaveResult result =
-                                                await SaverGallery.saveImage(
-                                                  value,
-                                                  fileName: name,
-                                                  androidRelativePath:
-                                                      "Pictures/Screenshots",
-                                                  skipIfExists: false,
-                                                );
-
-                                            if (result.isSuccess) {
-                                              SmartDialog.showToast(
-                                                '$name.png已保存到相册/截图',
-                                              );
-                                            } else {
-                                              SmartDialog.showToast(
-                                                '保存失败，${result.errorMessage}',
-                                              );
-                                            }
+                                            ImageUtils.saveByteImg(
+                                              bytes: value,
+                                              fileName:
+                                                  'screenshot_${ImageUtils.time}',
+                                            );
                                           },
                                           child: ConstrainedBox(
                                             constraints: BoxConstraints(
@@ -2047,18 +2046,15 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
           mpv.dispose();
         }
         if (await future) {
-          await SaverGallery.saveFile(
+          await ImageUtils.saveFileImg(
             filePath: file,
-            fileName: name,
-            androidRelativePath: 'Pictures/Screenshots',
-            skipIfExists: false,
+            fileName: '$name.webp',
+            needToast: true,
           );
-          SmartDialog.showToast('$name已保存到相册/截图');
         } else {
           SmartDialog.showToast('转码出现错误或已取消');
         }
         progress.close();
-        File(file).delSync();
         if (isPlay) ctr.play();
       },
     );
@@ -2233,7 +2229,7 @@ Future<ui.Image?> _getImg(String url) async {
       options: Options(responseType: ResponseType.bytes),
     );
     if (res.statusCode == 200) {
-      final data = res.data;
+      final Uint8List data = res.data;
       cacheManager.putFile(cacheKey, data, fileExtension: 'jpg');
       return _loadImg(data);
     }

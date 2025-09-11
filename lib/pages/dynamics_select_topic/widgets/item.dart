@@ -1,6 +1,6 @@
 import 'package:PiliPlus/common/widgets/custom_icon.dart';
 import 'package:PiliPlus/models_new/dynamic/dyn_topic_top/topic_item.dart';
-import 'package:PiliPlus/utils/num_util.dart';
+import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:flutter/material.dart';
 
 class DynTopicItem extends StatelessWidget {
@@ -43,7 +43,7 @@ class DynTopicItem extends StatelessWidget {
         subtitle: Padding(
           padding: const EdgeInsets.only(left: 23),
           child: Text(
-            '${NumUtil.numFormat(item.view)}浏览 · ${NumUtil.numFormat(item.discuss)}讨论',
+            '${NumUtils.numFormat(item.view)}浏览 · ${NumUtils.numFormat(item.discuss)}讨论',
             style: TextStyle(color: Theme.of(context).colorScheme.outline),
           ),
         ),

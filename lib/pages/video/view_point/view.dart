@@ -5,7 +5,7 @@ import 'package:PiliPlus/common/widgets/progress_bar/segment_progress_bar.dart';
 import 'package:PiliPlus/pages/common/slide/common_collapse_slide_page.dart';
 import 'package:PiliPlus/pages/video/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
-import 'package:PiliPlus/utils/duration_util.dart';
+import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -166,8 +166,8 @@ class _ViewPointsPageState
                           : null,
                     ),
                     Text(
-                      '${segment.from != null ? DurationUtil.formatDuration(segment.from) : ''} - '
-                      '${segment.to != null ? DurationUtil.formatDuration(segment.to) : ''}',
+                      '${segment.from != null ? DurationUtils.formatDuration(segment.from) : ''} - '
+                      '${segment.to != null ? DurationUtils.formatDuration(segment.to) : ''}',
                       style: TextStyle(color: theme.colorScheme.outline),
                     ),
                   ],

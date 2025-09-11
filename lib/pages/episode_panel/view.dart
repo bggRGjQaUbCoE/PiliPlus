@@ -25,8 +25,8 @@ import 'package:PiliPlus/pages/video/controller.dart';
 import 'package:PiliPlus/pages/video/introduction/ugc/controller.dart';
 import 'package:PiliPlus/pages/video/introduction/ugc/widgets/page.dart';
 import 'package:PiliPlus/utils/accounts.dart';
-import 'package:PiliPlus/utils/date_util.dart';
-import 'package:PiliPlus/utils/duration_util.dart';
+import 'package:PiliPlus/utils/date_utils.dart';
+import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
@@ -412,7 +412,7 @@ class _EpisodePanelState extends CommonCollapseSlidePageState<EpisodePanel> {
                       ),
                       if (duration != null && duration > 0)
                         PBadge(
-                          text: DurationUtil.formatDuration(duration),
+                          text: DurationUtils.formatDuration(duration),
                           right: 6.0,
                           bottom: 6.0,
                           type: PBadgeType.gray,
@@ -466,7 +466,7 @@ class _EpisodePanelState extends CommonCollapseSlidePageState<EpisodePanel> {
                       ),
                       if (pubdate != null)
                         Text(
-                          DateUtil.format(pubdate),
+                          DateFormatUtils.format(pubdate),
                           maxLines: 1,
                           style: TextStyle(
                             fontSize: 12,

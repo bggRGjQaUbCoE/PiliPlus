@@ -62,8 +62,8 @@ jobs:
 
       - name: flutter build apk
         run: |
-          chmod +x lib/scripts/build.sh
-          lib/scripts/build.sh
+          chmod +x lib/scripts/build.dart
+          dart lib/scripts/build.dart
           flutter build apk --release --split-per-abi
 
       - name: 上传

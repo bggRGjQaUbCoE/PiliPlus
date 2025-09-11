@@ -3,55 +3,61 @@ import 'dart:io';
 
 import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
+import 'package:PiliPlus/utils/utils.dart';
 import 'package:path_provider/path_provider.dart';
 
 abstract class CacheManage {
   // 获取缓存目录
-  static Future<double> loadApplicationCache() async {
+  static Future<int> loadApplicationCache() async {
     /// clear all of image in memory
     // clearMemoryImageCache();
     /// get ImageCache
     // var res = getMemoryImageCache();
 
     // 缓存大小
-    double cacheSize = 0;
     // cached_network_image directory
     Directory tempDirectory = await getTemporaryDirectory();
+    if (Utils.isDesktop) {
+      final dir = Directory('${tempDirectory.path}/libCachedImageData');
+      if (dir.existsSync()) {
+        return await getTotalSizeOfFilesInDir(dir);
+      } else {
+        return 0;
+      }
+    }
     // get_storage directory
     Directory docDirectory = await getApplicationDocumentsDirectory();
 
+    int cacheSize = 0;
     // 获取缓存大小
     if (tempDirectory.existsSync()) {
-      double value = await getTotalSizeOfFilesInDir(tempDirectory);
-      cacheSize += value;
+      cacheSize += await getTotalSizeOfFilesInDir(tempDirectory);
     }
 
     /// 获取缓存大小 dioCache
     if (docDirectory.existsSync()) {
-      double value = 0;
       String dioCacheFileName =
           '${docDirectory.path}${Platform.pathSeparator}DioCache.db';
       var dioCacheFile = File(dioCacheFileName);
       if (dioCacheFile.existsSync()) {
-        value = await getTotalSizeOfFilesInDir(dioCacheFile);
+        cacheSize += await getTotalSizeOfFilesInDir(dioCacheFile);
       }
-      cacheSize += value;
     }
 
     return cacheSize;
   }
 
   // 循环计算文件的大小（递归）
-  static Future<double> getTotalSizeOfFilesInDir(
+  static Future<int> getTotalSizeOfFilesInDir(
     final FileSystemEntity file,
   ) async {
     if (file is File) {
       int length = await file.length();
-      return double.parse(length.toString());
+      return int.parse(length.toString());
     }
     if (file is Directory) {
       final List<FileSystemEntity> children = file.listSync();
-      double total = 0;
+      int total = 0;
       for (final FileSystemEntity child in children) {
         total += await getTotalSizeOfFilesInDir(child);
       }
@@ -87,10 +93,17 @@ abstract class CacheManage {
 
   // 清除 Library/Caches 目录及文件缓存
   static Future<void> clearLibraryCache() async {
-    var appDocDir = await getTemporaryDirectory();
-    if (appDocDir.existsSync()) {
+    var tempDirectory = await getTemporaryDirectory();
+    if (Utils.isDesktop) {
+      final dir = Directory('${tempDirectory.path}/libCachedImageData');
+      if (dir.existsSync()) {
+        await dir.delete(recursive: true);
+      }
+      return;
+    }
+    if (tempDirectory.existsSync()) {
       // await appDocDir.delete(recursive: true);
-      final List<FileSystemEntity> children = appDocDir.listSync(
+      final List<FileSystemEntity> children = tempDirectory.listSync(
         recursive: false,
       );
       for (final FileSystemEntity file in children) {

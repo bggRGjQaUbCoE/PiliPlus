@@ -3,7 +3,7 @@ import 'dart:ui';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart';
 import 'package:PiliPlus/pages/login/controller.dart';
 import 'package:PiliPlus/utils/extension.dart';
-import 'package:PiliPlus/utils/image_util.dart';
+import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -11,7 +11,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart' hide ContextExtensionss;
 import 'package:pretty_qr_code/pretty_qr_code.dart';
-import 'package:saver_gallery/saver_gallery.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -62,21 +61,8 @@ class _LoginPageState extends State<LoginPage> {
                 );
                 Uint8List pngBytes = byteData!.buffer.asUint8List();
                 SmartDialog.dismiss();
-                SmartDialog.showLoading(msg: '正在保存至图库');
-                String picName = "PiliPlus_loginQRCode_${ImageUtil.time}";
-                final SaveResult result = await SaverGallery.saveImage(
-                  Uint8List.fromList(pngBytes),
-                  fileName: picName,
-                  extension: 'png',
-                  androidRelativePath: "Pictures/PiliPlus",
-                  skipIfExists: false,
-                );
-                SmartDialog.dismiss();
-                if (result.isSuccess) {
-                  await SmartDialog.showToast('「$picName」已保存 ');
-                } else {
-                  await SmartDialog.showToast('保存失败，${result.errorMessage}');
-                }
+                String picName = "PiliPlus_loginQRCode_${ImageUtils.time}";
+                ImageUtils.saveByteImg(bytes: pngBytes, fileName: picName);
               },
               icon: const Icon(Icons.save),
               label: const Text('保存至相册'),

@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:PiliPlus/http/init.dart';
 import 'package:PiliPlus/utils/extension.dart';
@@ -6,6 +7,7 @@ import 'package:PiliPlus/utils/global_data.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:dio/dio.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:intl/intl.dart' show DateFormat;
@@ -14,7 +16,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:saver_gallery/saver_gallery.dart';
 import 'package:share_plus/share_plus.dart';
 
-class ImageUtil {
+class ImageUtils {
   static String get time =>
       DateFormat('yyyy-MM-dd_HH-mm-ss').format(DateTime.now());
   static bool silentDownImg = Pref.silentDownImg;
@@ -35,7 +37,7 @@ class ImageUtil {
                 sharePositionOrigin: await Utils.sharePositionOrigin,
               ),
             )
-            .whenComplete(() => File(path).delSync());
+            .whenComplete(File(path).tryDel);
       }
     } catch (e) {
       SmartDialog.showToast(e.toString());
@@ -131,8 +133,8 @@ class ImageUtil {
               height: height,
             ).whenComplete(
               () {
-                File(videoPath).delSync();
-                File(imagePath).delSync();
+                File(videoPath).tryDel();
+                File(imagePath).tryDel();
               },
             );
         if (success) {
@@ -143,18 +145,12 @@ class ImageUtil {
         }
       } else {
         if (!silentDownImg) SmartDialog.showLoading(msg: '正在保存');
-        final SaveResult result = await SaverGallery.saveFile(
+        await saveFileImg(
           filePath: videoPath,
           fileName: videoName,
-          androidRelativePath: "Pictures/PiliPlus",
-          skipIfExists: false,
-        ).whenComplete(() => File(videoPath).delSync());
-        if (result.isSuccess) {
-          SmartDialog.showToast(' 已保存 ');
-        } else {
-          SmartDialog.showToast('保存失败，${result.errorMessage}');
-          return false;
-        }
+          type: FileType.video,
+          needToast: true,
+        );
       }
       return true;
     } catch (err) {
@@ -199,7 +195,7 @@ class ImageUtil {
               fileName: name,
               androidRelativePath: "Pictures/PiliPlus",
               skipIfExists: false,
-            ).whenComplete(() => File(filePath).delSync());
+            ).whenComplete(File(filePath).tryDel);
           }
         }
         return (
@@ -212,13 +208,10 @@ class ImageUtil {
       if (!isAndroid) {
         for (var res in result) {
           if (res.statusCode == 200) {
-            await SaverGallery.saveFile(
+            await saveFileImg(
               filePath: res.filePath,
               fileName: res.name,
-              androidRelativePath: "Pictures/PiliPlus",
-              skipIfExists: false,
             );
-            File(res.filePath).delSync();
           }
         }
       }
@@ -264,5 +257,84 @@ class ImageUtil {
       }
     }
     return src.http2https;
+  }
+
+  static Future<SaveResult?> saveByteImg({
+    required Uint8List bytes,
+    required String fileName,
+    String ext = 'png',
+  }) async {
+    SaveResult? result;
+    fileName += '.$ext';
+    if (Utils.isMobile) {
+      SmartDialog.showLoading(msg: '正在保存');
+      result = await SaverGallery.saveImage(
+        bytes,
+        fileName: fileName,
+        androidRelativePath: "Pictures/PiliPlus",
+        skipIfExists: false,
+      );
+      SmartDialog.dismiss();
+      if (result.isSuccess) {
+        SmartDialog.showToast(' 已保存 ');
+      } else {
+        SmartDialog.showToast('保存失败，${result.errorMessage}');
+      }
+    } else {
+      SmartDialog.dismiss();
+      final savePath = await FilePicker.platform.saveFile(
+        type: FileType.image,
+        fileName: fileName,
+      );
+      if (savePath == null) {
+        SmartDialog.showToast("取消保存");
+        return null;
+      }
+      await File(savePath).writeAsBytes(bytes);
+      SmartDialog.showToast(' 已保存 ');
+      result = SaveResult(true, null);
+    }
+    return result;
+  }
+
+  static Future<void> saveFileImg({
+    required String filePath,
+    required String fileName,
+    FileType type = FileType.image,
+    bool needToast = false,
+  }) async {
+    final file = File(filePath);
+    if (!file.existsSync()) {
+      SmartDialog.showToast("文件不存在");
+      return;
+    }
+    SaveResult? result;
+    if (Utils.isMobile) {
+      result = await SaverGallery.saveFile(
+        filePath: filePath,
+        fileName: fileName,
+        androidRelativePath: "Pictures/PiliPlus",
+        skipIfExists: false,
+      ).whenComplete(file.tryDel);
+    } else {
+      final savePath = await FilePicker.platform.saveFile(
+        type: type,
+        fileName: fileName,
+      );
+      if (savePath == null) {
+        SmartDialog.showToast("取消保存");
+        return;
+      }
+      await file.copy(savePath);
+      file.tryDel();
+      result = SaveResult(true, null);
+    }
+    if (needToast) {
+      if (result.isSuccess) {
+        SmartDialog.showToast(' 已保存 ');
+      } else {
+        SmartDialog.showToast('保存失败，${result.errorMessage}');
+      }
+    }
   }
 }

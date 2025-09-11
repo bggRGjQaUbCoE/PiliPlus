@@ -5,7 +5,7 @@ import 'package:PiliPlus/common/widgets/stat/stat.dart';
 import 'package:PiliPlus/http/search.dart';
 import 'package:PiliPlus/models/common/stat_type.dart';
 import 'package:PiliPlus/models_new/space/space_audio/item.dart';
-import 'package:PiliPlus/utils/date_util.dart';
+import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -72,7 +72,7 @@ class MemberAudioItem extends StatelessWidget {
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      DateUtil.dateFormat(
+                      DateFormatUtils.dateFormat(
                         hasStat ? item.ctime! ~/ 1000 : item.ctime!,
                       ),
                       style: TextStyle(

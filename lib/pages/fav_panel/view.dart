@@ -2,7 +2,7 @@ import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models_new/fav/fav_folder/list.dart';
 import 'package:PiliPlus/pages/common/common_intro_controller.dart';
-import 'package:PiliPlus/utils/fav_util.dart';
+import 'package:PiliPlus/utils/fav_utils.dart';
 import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -64,13 +64,13 @@ class _FavPanelState extends State<FavPanel> {
                 return ListTile(
                   onTap: onTap,
                   dense: true,
-                  leading: FavUtil.isPublicFav(item.attr)
+                  leading: FavUtils.isPublicFav(item.attr)
                       ? const Icon(Icons.folder_outlined)
                       : const Icon(Icons.lock_outline),
                   minLeadingWidth: 0,
                   title: Text(item.title),
                   subtitle: Text(
-                    '${item.mediaCount}个内容 . ${FavUtil.isPublicFavText(item.attr)}',
+                    '${item.mediaCount}个内容 . ${FavUtils.isPublicFavText(item.attr)}',
                   ),
                   trailing: Transform.scale(
                     scale: 0.9,

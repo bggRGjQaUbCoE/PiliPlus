@@ -18,7 +18,7 @@ import 'package:PiliPlus/pages/emote/view.dart';
 import 'package:PiliPlus/pages/video/controller.dart';
 import 'package:PiliPlus/pages/video/reply_search_item/view.dart';
 import 'package:PiliPlus/utils/context_ext.dart';
-import 'package:PiliPlus/utils/duration_util.dart';
+import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:PiliPlus/utils/grid.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
@@ -347,7 +347,7 @@ class _ReplyPageState extends CommonRichTextPubPageState<ReplyPage> {
                     tag: heroTag,
                   );
                   onInsertText(
-                    ' ${DurationUtil.formatDuration((plPlayerController.playedTime ?? Duration.zero).inSeconds)} ',
+                    ' ${DurationUtils.formatDuration((plPlayerController.playedTime ?? Duration.zero).inSeconds)} ',
                     RichTextType.common,
                   );
                 } catch (e) {

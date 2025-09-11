@@ -12,7 +12,7 @@ import 'package:PiliPlus/pages/dynamics/widgets/vote.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
 import 'package:PiliPlus/utils/context_ext.dart';
 import 'package:PiliPlus/utils/extension.dart';
-import 'package:PiliPlus/utils/image_util.dart';
+import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cached_network_svg_image/cached_network_svg_image.dart';
@@ -196,7 +196,7 @@ class OpusContent extends StatelessWidget {
                       child: CachedNetworkImage(
                         width: width,
                         height: height,
-                        imageUrl: ImageUtil.thumbnailUrl(pic.url!, 60),
+                        imageUrl: ImageUtils.thumbnailUrl(pic.url!, 60),
                         fadeInDuration: const Duration(milliseconds: 120),
                         fadeOutDuration: const Duration(milliseconds: 120),
                         placeholder: (context, url) =>
@@ -224,7 +224,7 @@ class OpusContent extends StatelessWidget {
                 width: maxWidth,
                 fit: BoxFit.contain,
                 height: element.line!.pic!.height?.toDouble(),
-                imageUrl: ImageUtil.thumbnailUrl(element.line!.pic!.url!),
+                imageUrl: ImageUtils.thumbnailUrl(element.line!.pic!.url!),
               );
             case 5 when (element.list != null):
               return SelectableText.rich(
@@ -642,7 +642,7 @@ Widget moduleBlockedItem(
             image: DecorationImage(
               fit: BoxFit.fill,
               image: CachedNetworkImageProvider(
-                ImageUtil.thumbnailUrl(
+                ImageUtils.thumbnailUrl(
                   isDarkMode
                       ? moduleBlocked.bgImg!.imgDark
                       : moduleBlocked.bgImg!.imgDay,
@@ -656,7 +656,7 @@ Widget moduleBlockedItem(
     return CachedNetworkImage(
       width: width,
       fit: BoxFit.contain,
-      imageUrl: ImageUtil.thumbnailUrl(
+      imageUrl: ImageUtils.thumbnailUrl(
         isDarkMode ? moduleBlocked.icon!.imgDark : moduleBlocked.icon!.imgDay,
       ),
     );

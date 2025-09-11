@@ -43,7 +43,7 @@ import 'package:PiliPlus/plugin/pl_player/models/data_source.dart';
 import 'package:PiliPlus/plugin/pl_player/models/heart_beat_type.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
 import 'package:PiliPlus/utils/accounts.dart';
-import 'package:PiliPlus/utils/duration_util.dart';
+import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
@@ -143,10 +143,10 @@ class VideoDetailController extends GetxController
     ..addListener(scrollListener);
   late bool isExpanding = false;
   late bool isCollapsing = false;
-  AnimationController? _animationController;
+  AnimationController? animController;
 
   AnimationController get animationController =>
-      _animationController ??= AnimationController(
+      animController ??= AnimationController(
         vsync: this,
         duration: const Duration(milliseconds: 200),
       );
@@ -612,7 +612,7 @@ class VideoDetailController extends GetxController
                     ),
                     contentPadding: const EdgeInsets.only(left: 16, right: 8),
                     subtitle: Text(
-                      '${DurationUtil.formatDuration(item.segment.first / 1000)} 至 ${DurationUtil.formatDuration(item.segment.second / 1000)}',
+                      '${DurationUtils.formatDuration(item.segment.first / 1000)} 至 ${DurationUtils.formatDuration(item.segment.second / 1000)}',
                       style: const TextStyle(fontSize: 13),
                     ),
                     trailing: Row(
@@ -1511,6 +1511,7 @@ class VideoDetailController extends GetxController
           if (idx == 0) {
             if (preference == SubtitlePrefType.on ||
                 (preference == SubtitlePrefType.auto &&
+                    Utils.isMobile &&
                     (await FlutterVolumeController.getVolume() ?? 0) <= 0)) {
               idx = 1;
             }
@@ -1563,7 +1564,7 @@ class VideoDetailController extends GetxController
     scrollCtr
       ..removeListener(scrollListener)
       ..dispose();
-    _animationController?.dispose();
+    animController?.dispose();
     super.onClose();
   }
 

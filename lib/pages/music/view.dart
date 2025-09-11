@@ -15,10 +15,10 @@ import 'package:PiliPlus/pages/common/dyn/common_dyn_page.dart';
 import 'package:PiliPlus/pages/music/controller.dart';
 import 'package:PiliPlus/pages/music/video/view.dart';
 import 'package:PiliPlus/utils/accounts.dart';
-import 'package:PiliPlus/utils/date_util.dart';
+import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/grid.dart';
-import 'package:PiliPlus/utils/num_util.dart';
+import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -224,7 +224,7 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
           foregroundColor: outline,
         ),
         label: Text(
-          count != null ? NumUtil.numFormat(count) : text,
+          count != null ? NumUtils.numFormat(count) : text,
           style: TextStyle(color: color),
         ),
       );
@@ -385,7 +385,7 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
     final child = Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(NumUtil.numFormat(rank)),
+        Text(NumUtils.numFormat(rank)),
         Text(
           name,
           style: theme.textTheme.bodySmall!.copyWith(color: outline),
@@ -625,7 +625,7 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
                             space: 8 * sqrt2,
                             meta: meta,
                             child: Text(
-                              DateUtil.shortFormat.format(
+                              DateFormatUtils.shortFormat.format(
                                 DateTime.fromMillisecondsSinceEpoch(
                                   heat[index.toInt()].date * 1000,
                                 ),

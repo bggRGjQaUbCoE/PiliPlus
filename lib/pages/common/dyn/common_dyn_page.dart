@@ -12,7 +12,7 @@ import 'package:PiliPlus/pages/video/reply/widgets/reply_item_grpc.dart';
 import 'package:PiliPlus/pages/video/reply_reply/view.dart';
 import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/feed_back.dart';
-import 'package:PiliPlus/utils/num_util.dart';
+import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
@@ -124,7 +124,7 @@ abstract class CommonDynPageState<T extends StatefulWidget> extends State<T>
                 () {
                   final count = controller.count.value;
                   return Text(
-                    '${count == -1 ? 0 : NumUtil.numFormat(count)}条回复',
+                    '${count == -1 ? 0 : NumUtils.numFormat(count)}条回复',
                   );
                 },
               ),

@@ -3,7 +3,7 @@ import 'package:PiliPlus/common/widgets/image/image_save.dart';
 import 'package:PiliPlus/models/dynamics/result.dart';
 import 'package:PiliPlus/pages/dynamics/widgets/dyn_content.dart';
 import 'package:PiliPlus/pages/dynamics/widgets/module_panel.dart';
-import 'package:PiliPlus/utils/date_util.dart';
+import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:flutter/material.dart' hide InkWell;
 import 'package:get/get.dart';
@@ -123,8 +123,11 @@ Widget _forwardAuthor({
       const SizedBox(width: 6),
       Text(
         isSave
-            ? DateUtil.format(moduleAuthor.pubTs, format: DateUtil.longFormatDs)
-            : DateUtil.dateFormat(moduleAuthor.pubTs),
+            ? DateFormatUtils.format(
+                moduleAuthor.pubTs,
+                format: DateFormatUtils.longFormatDs,
+              )
+            : DateFormatUtils.dateFormat(moduleAuthor.pubTs),
         style: TextStyle(
           color: theme.colorScheme.outline,
           fontSize: theme.textTheme.labelSmall!.fontSize,

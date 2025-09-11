@@ -2,7 +2,7 @@ import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/widgets/image/image_save.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/models_new/live/live_feed_index/card_data_list_item.dart';
-import 'package:PiliPlus/utils/num_util.dart';
+import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:flutter/material.dart';
 
@@ -129,7 +129,7 @@ class LiveCardVApp extends StatelessWidget {
           ),
           if (item.watchedShow?.textSmall != null)
             Text(
-              '${NumUtil.numFormat(item.watchedShow!.textSmall)}围观',
+              '${NumUtils.numFormat(item.watchedShow!.textSmall)}围观',
               style: const TextStyle(fontSize: 11, color: Colors.white),
             ),
         ],

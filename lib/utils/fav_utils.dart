@@ -1,4 +1,4 @@
-class FavUtil {
+class FavUtils {
   static bool isDefaultFav(int? attr) {
     if (attr == null) {
       return false;

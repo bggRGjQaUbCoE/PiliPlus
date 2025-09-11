@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:math';
+import 'dart:typed_data';
 
 import 'package:PiliPlus/common/widgets/button/icon_button.dart';
 import 'package:PiliPlus/common/widgets/custom_icon.dart';
@@ -26,7 +27,7 @@ import 'package:PiliPlus/plugin/pl_player/utils/fullscreen.dart';
 import 'package:PiliPlus/services/service_locator.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/extension.dart';
-import 'package:PiliPlus/utils/image_util.dart';
+import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
@@ -35,7 +36,7 @@ import 'package:PiliPlus/utils/video_utils.dart';
 import 'package:canvas_danmaku/canvas_danmaku.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
-import 'package:document_file_save_plus/document_file_save_plus_platform_interface.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:floating/floating.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -45,7 +46,6 @@ import 'package:hive/hive.dart';
 import 'package:intl/intl.dart' show DateFormat;
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:media_kit/media_kit.dart';
-import 'package:share_plus/share_plus.dart';
 
 class HeaderControl extends StatefulWidget {
   const HeaderControl({
@@ -159,7 +159,7 @@ class HeaderControlState extends TripleState<HeaderControl> {
                     dense: true,
                     onTap: () {
                       Get.back();
-                      ImageUtil.downloadImg(
+                      ImageUtils.downloadImg(
                         context,
                         [widget.videoDetailCtr.cover.value],
                       );
@@ -893,33 +893,23 @@ class HeaderControlState extends TripleState<HeaderControl> {
                             options: Options(responseType: ResponseType.bytes),
                           );
                           if (res.statusCode == 200) {
+                            final Uint8List bytes = res.data;
                             final name =
                                 '${introController.videoDetail.value.title}-${videoDetailCtr.bvid}-${videoDetailCtr.cid.value}-${item.lanDoc}.json';
-                            try {
-                              DocumentFileSavePlusPlatform.instance
-                                  .saveMultipleFiles(
-                                    dataList: [res.data],
-                                    fileNameList: [name],
-                                    mimeTypeList: [Headers.jsonContentType],
-                                  );
-                              if (Platform.isAndroid) {
-                                SmartDialog.showToast('已保存');
-                              }
-                            } catch (e) {
-                              SharePlus.instance.share(
-                                ShareParams(
-                                  files: [
-                                    XFile.fromData(
-                                      res.data,
-                                      name: name,
-                                      mimeType: Headers.jsonContentType,
-                                    ),
-                                  ],
-                                  sharePositionOrigin:
-                                      await Utils.sharePositionOrigin,
-                                ),
-                              );
+                            final path = await FilePicker.platform.saveFile(
+                              allowedExtensions: ['json'],
+                              type: FileType.custom,
+                              fileName: name,
+                              bytes: Utils.isDesktop ? null : bytes,
+                            );
+                            if (path == null) {
+                              SmartDialog.showToast("取消保存");
+                              return;
                             }
+                            if (Utils.isDesktop) {
+                              await File(path).writeAsBytes(bytes);
+                            }
+                            SmartDialog.showToast("已保存");
                           }
                         } catch (e) {
                           SmartDialog.showToast(e.toString());
@@ -2083,7 +2073,7 @@ class HeaderControlState extends TripleState<HeaderControl> {
                     bool canUsePiP = await Floating().isPipAvailable;
                     plPlayerController.hiddenControls(false);
                     if (canUsePiP) {
-                      if (!videoPlayerServiceHandler.enableBackgroundPlay &&
+                      if (!videoPlayerServiceHandler!.enableBackgroundPlay &&
                           mounted) {
                         final theme = Theme.of(context);
                         ScaffoldMessenger.of(context).showSnackBar(

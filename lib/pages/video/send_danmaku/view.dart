@@ -329,23 +329,24 @@ class _SendDanmakuPanelState extends CommonTextPubPageState<SendDanmakuPanel> {
       child: Row(
         children: [
           Obx(
-            () => iconButton(
-              context: context,
-              tooltip: '弹幕样式',
-              onPressed: () {
-                updatePanelType(
-                  panelType.value == PanelType.keyboard
-                      ? PanelType.emoji
-                      : PanelType.keyboard,
-                );
-              },
-              bgColor: Colors.transparent,
-              iconSize: 24,
-              icon: Icons.text_format,
-              iconColor: panelType.value == PanelType.emoji
-                  ? themeData.colorScheme.primary
-                  : themeData.colorScheme.onSurfaceVariant,
-            ),
+            () {
+              final isEmoji = panelType.value == PanelType.emoji;
+              return iconButton(
+                context: context,
+                tooltip: '弹幕样式',
+                onPressed: () {
+                  updatePanelType(
+                    isEmoji ? PanelType.keyboard : PanelType.emoji,
+                  );
+                },
+                bgColor: Colors.transparent,
+                iconSize: 24,
+                icon: Icons.text_format,
+                iconColor: isEmoji
+                    ? themeData.colorScheme.primary
+                    : themeData.colorScheme.onSurfaceVariant,
+              );
+            },
           ),
           const SizedBox(width: 12),
           Expanded(

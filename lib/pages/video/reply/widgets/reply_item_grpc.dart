@@ -19,11 +19,11 @@ import 'package:PiliPlus/pages/video/controller.dart';
 import 'package:PiliPlus/pages/video/reply/widgets/zan_grpc.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/context_ext.dart';
-import 'package:PiliPlus/utils/date_util.dart';
-import 'package:PiliPlus/utils/duration_util.dart';
+import 'package:PiliPlus/utils/date_utils.dart';
+import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/feed_back.dart';
-import 'package:PiliPlus/utils/image_util.dart';
+import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/url_utils.dart';
@@ -238,11 +238,13 @@ class ReplyItemGrpc extends StatelessWidget {
                     children: <Widget>[
                       Text(
                         replyLevel == 0
-                            ? DateUtil.format(
+                            ? DateFormatUtils.format(
                                 replyItem.ctime.toInt(),
-                                format: DateUtil.longFormatDs,
+                                format: DateFormatUtils.longFormatDs,
                               )
-                            : DateUtil.dateFormat(replyItem.ctime.toInt()),
+                            : DateFormatUtils.dateFormat(
+                                replyItem.ctime.toInt(),
+                              ),
                         style: TextStyle(
                           fontSize: theme.textTheme.labelSmall!.fontSize,
                           color: theme.colorScheme.outline,
@@ -616,7 +618,7 @@ class ReplyItemGrpc extends StatelessWidget {
         if (!isCv && url.hasPrefixIcon())
           WidgetSpan(
             child: CachedNetworkImage(
-              imageUrl: ImageUtil.thumbnailUrl(url.prefixIcon),
+              imageUrl: ImageUtils.thumbnailUrl(url.prefixIcon),
               height: 19,
               color: theme.colorScheme.primary,
               placeholder: (context, url) {
@@ -727,7 +729,7 @@ class ReplyItemGrpc extends StatelessWidget {
               tag: getTag?.call() ?? Get.arguments['heroTag'],
             );
             isValid =
-                DurationUtil.parseDuration(matchStr) * 1000 <=
+                DurationUtils.parseDuration(matchStr) * 1000 <=
                 ctr.data.timeLength!;
           } catch (e) {
             if (kDebugMode) debugPrint('failed to validate: $e');
@@ -748,7 +750,7 @@ class ReplyItemGrpc extends StatelessWidget {
                             tag: Get.arguments['heroTag'],
                           ).plPlayerController.seekTo(
                             Duration(
-                              seconds: DurationUtil.parseDuration(matchStr),
+                              seconds: DurationUtils.parseDuration(matchStr),
                             ),
                             isSeek: false,
                           );

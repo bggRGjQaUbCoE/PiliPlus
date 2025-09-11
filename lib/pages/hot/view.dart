@@ -10,7 +10,7 @@ import 'package:PiliPlus/pages/home/controller.dart';
 import 'package:PiliPlus/pages/hot/controller.dart';
 import 'package:PiliPlus/pages/rank/view.dart';
 import 'package:PiliPlus/utils/grid.dart';
-import 'package:PiliPlus/utils/image_util.dart';
+import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -44,7 +44,7 @@ class _HotPageState extends CommonPageState<HotPage, HotController>
           CachedNetworkImage(
             width: 35,
             height: 35,
-            imageUrl: ImageUtil.thumbnailUrl(iconUrl),
+            imageUrl: ImageUtils.thumbnailUrl(iconUrl),
           ),
           const SizedBox(height: 4),
           Text(

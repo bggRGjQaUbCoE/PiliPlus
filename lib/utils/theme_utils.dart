@@ -50,7 +50,7 @@ class ThemeUtils {
         titleSpacing: 0,
         centerTitle: false,
         scrolledUnderElevation: 0,
-        backgroundColor: isDynamic ? null : colorScheme.surface,
+        backgroundColor: colorScheme.surface,
         titleTextStyle: TextStyle(
           fontSize: 16,
           color: colorScheme.onSurface,

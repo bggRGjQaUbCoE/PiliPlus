@@ -11,7 +11,7 @@ import 'package:PiliPlus/models_new/msg/msg_reply/item.dart';
 import 'package:PiliPlus/pages/msg_feed_top/reply_me/controller.dart';
 import 'package:PiliPlus/pages/whisper_settings/view.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
-import 'package:PiliPlus/utils/date_util.dart';
+import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -179,7 +179,7 @@ class _ReplyMePageState extends State<ReplyMePage> {
                             ),
                           ),
                         Text(
-                          DateUtil.dateFormat(item.replyTime),
+                          DateFormatUtils.dateFormat(item.replyTime),
                           style: theme.textTheme.bodyMedium!.copyWith(
                             fontSize: 13,
                             color: theme.colorScheme.outline,

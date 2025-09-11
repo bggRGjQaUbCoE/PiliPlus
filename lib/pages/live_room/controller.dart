@@ -174,7 +174,7 @@ class LiveRoomController extends GetxController {
     if (res['status']) {
       RoomInfoH5Data data = res['data'];
       roomInfoH5.value = data;
-      videoPlayerServiceHandler.onVideoDetailChange(data, roomId, heroTag);
+      videoPlayerServiceHandler?.onVideoDetailChange(data, roomId, heroTag);
     } else {
       if (res['msg'] != null) {
         _showDialog(res['msg']);

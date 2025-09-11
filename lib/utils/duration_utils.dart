@@ -1,6 +1,6 @@
 import 'dart:math' show pow;
 
-class DurationUtil {
+class DurationUtils {
   static String formatDuration(num? seconds) {
     if (seconds == null || seconds == 0) {
       return '00:00';

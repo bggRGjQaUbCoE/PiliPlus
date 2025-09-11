@@ -25,7 +25,7 @@ import 'package:PiliPlus/pages/video/reply/widgets/reply_item_grpc.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/cache_manage.dart';
 import 'package:PiliPlus/utils/feed_back.dart';
-import 'package:PiliPlus/utils/image_util.dart';
+import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
@@ -739,7 +739,7 @@ List<SettingsModel> get extraSettings => [
     leading: const Icon(Icons.download_for_offline_outlined),
     setKey: SettingBoxKey.silentDownImg,
     defaultVal: false,
-    onChanged: (value) => ImageUtil.silentDownImg = value,
+    onChanged: (value) => ImageUtils.silentDownImg = value,
   ),
   SettingsModel(
     settingsType: SettingsType.sw1tch,
@@ -961,7 +961,7 @@ List<SettingsModel> get extraSettings => [
     settingsType: SettingsType.normal,
     title: '动态展示',
     setKey: SettingBoxKey.defaultDynamicType,
-    leading: const Icon(Icons.dynamic_feed_outlined),
+    leading: const Icon(Icons.dynamic_feed_rounded),
     getSubtitle: () =>
         '当前优先展示「${DynamicsTabType.values[Pref.defaultDynamicType].label}」',
     onTap: (setState) async {
@@ -1162,7 +1162,7 @@ List<SettingsModel> get extraSettings => [
     settingsType: SettingsType.sw1tch,
     title: '检查更新',
     subtitle: '每次启动时检查是否需要更新',
-    leading: const Icon(Icons.system_update_alt_outlined),
+    leading: const Icon(Icons.system_update_alt),
     setKey: SettingBoxKey.autoUpdate,
     defaultVal: true,
     onChanged: (val) {

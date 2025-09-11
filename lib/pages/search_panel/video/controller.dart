@@ -8,7 +8,7 @@ import 'package:PiliPlus/pages/search/widgets/search_text.dart';
 import 'package:PiliPlus/pages/search_panel/controller.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
 import 'package:PiliPlus/utils/context_ext.dart';
-import 'package:PiliPlus/utils/date_util.dart';
+import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -98,7 +98,7 @@ class SearchVideoController
                 pubTimeType == null &&
                 (isFirst ? customPubBeginDate : customPubEndDate);
             return SearchText(
-              text: DateUtil.longFormat.format(
+              text: DateFormatUtils.longFormat.format(
                 isFirst ? pubBeginDate : pubEndDate,
               ),
               textAlign: TextAlign.center,

@@ -2,8 +2,8 @@ import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/http/fav.dart';
 import 'package:PiliPlus/http/msg.dart';
 import 'package:PiliPlus/models_new/fav/fav_folder/list.dart';
-import 'package:PiliPlus/utils/fav_util.dart';
-import 'package:PiliPlus/utils/image_util.dart';
+import 'package:PiliPlus/utils/fav_utils.dart';
+import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_debounce/easy_throttle.dart';
 import 'package:flutter/material.dart';
@@ -46,7 +46,7 @@ class _CreateFavPageState extends State<CreateFavPage> {
         FavFolderInfo data = res['data'];
         _titleController.text = data.title;
         _introController.text = data.intro ?? '';
-        _isPublic = FavUtil.isPublicFav(data.attr);
+        _isPublic = FavUtils.isPublicFav(data.attr);
         _cover = data.cover;
         _attr = data.attr;
       } else {
@@ -176,7 +176,7 @@ class _CreateFavPageState extends State<CreateFavPage> {
   Widget _buildBody(ThemeData theme) => SingleChildScrollView(
     child: Column(
       children: [
-        if (_attr == null || !FavUtil.isDefaultFav(_attr!)) ...[
+        if (_attr == null || !FavUtils.isDefaultFav(_attr!)) ...[
           Builder(
             builder: (context) {
               return ListTile(
@@ -251,7 +251,7 @@ class _CreateFavPageState extends State<CreateFavPage> {
                             Radius.circular(6),
                           ),
                           child: CachedNetworkImage(
-                            imageUrl: ImageUtil.thumbnailUrl(_cover!),
+                            imageUrl: ImageUtils.thumbnailUrl(_cover!),
                             height: 55,
                             width: 88,
                             fit: BoxFit.cover,
@@ -298,11 +298,11 @@ class _CreateFavPageState extends State<CreateFavPage> {
           ),
           title: TextField(
             autofocus: true,
-            readOnly: _attr != null && FavUtil.isDefaultFav(_attr!),
+            readOnly: _attr != null && FavUtils.isDefaultFav(_attr!),
             controller: _titleController,
             style: TextStyle(
               fontSize: 14,
-              color: _attr != null && FavUtil.isDefaultFav(_attr!)
+              color: _attr != null && FavUtils.isDefaultFav(_attr!)
                   ? theme.colorScheme.outline
                   : null,
             ),
@@ -325,7 +325,7 @@ class _CreateFavPageState extends State<CreateFavPage> {
           ),
         ),
         const SizedBox(height: 16),
-        if (_attr == null || !FavUtil.isDefaultFav(_attr!)) ...[
+        if (_attr == null || !FavUtils.isDefaultFav(_attr!)) ...[
           ListTile(
             tileColor: theme.colorScheme.onInverseSurface,
             title: Row(

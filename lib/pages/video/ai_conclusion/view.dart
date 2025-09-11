@@ -1,7 +1,7 @@
 import 'package:PiliPlus/models_new/video/video_ai_conclusion/model_result.dart';
 import 'package:PiliPlus/pages/common/slide/common_collapse_slide_page.dart';
 import 'package:PiliPlus/pages/video/controller.dart';
-import 'package:PiliPlus/utils/duration_util.dart';
+import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -122,7 +122,7 @@ class _AiDetailState extends CommonCollapseSlidePageState<AiConclusionPanel> {
                               ),
                               children: [
                                 TextSpan(
-                                  text: DurationUtil.formatDuration(
+                                  text: DurationUtils.formatDuration(
                                     item.timestamp,
                                   ),
                                   style: TextStyle(

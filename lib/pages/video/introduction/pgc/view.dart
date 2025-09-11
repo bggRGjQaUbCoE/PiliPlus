@@ -15,7 +15,7 @@ import 'package:PiliPlus/pages/video/introduction/pgc/controller.dart';
 import 'package:PiliPlus/pages/video/introduction/pgc/widgets/pgc_panel.dart';
 import 'package:PiliPlus/pages/video/introduction/ugc/widgets/action_item.dart';
 import 'package:PiliPlus/pages/video/introduction/ugc/widgets/triple_state.dart';
-import 'package:PiliPlus/utils/num_util.dart';
+import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -418,7 +418,7 @@ class _PgcIntroPageState extends TripleState<PgcIntroPage>
               selectIcon: const Icon(FontAwesomeIcons.solidThumbsUp),
               selectStatus: introController.hasLike.value,
               semanticsLabel: '点赞',
-              text: NumUtil.numFormat(item.stat!.like),
+              text: NumUtils.numFormat(item.stat!.like),
               onStartTriple: onStartTriple,
               onCancelTriple: onCancelTriple,
             ),
@@ -431,7 +431,7 @@ class _PgcIntroPageState extends TripleState<PgcIntroPage>
               onTap: introController.actionCoinVideo,
               selectStatus: introController.hasCoin,
               semanticsLabel: '投币',
-              text: NumUtil.numFormat(item.stat!.coin),
+              text: NumUtils.numFormat(item.stat!.coin),
             ),
           ),
           Obx(
@@ -446,7 +446,7 @@ class _PgcIntroPageState extends TripleState<PgcIntroPage>
               ),
               selectStatus: introController.hasFav.value,
               semanticsLabel: '收藏',
-              text: NumUtil.numFormat(item.stat!.favorite),
+              text: NumUtils.numFormat(item.stat!.favorite),
             ),
           ),
           Obx(
@@ -465,7 +465,7 @@ class _PgcIntroPageState extends TripleState<PgcIntroPage>
             onTap: () => introController.actionShareVideo(context),
             selectStatus: false,
             semanticsLabel: '转发',
-            text: NumUtil.numFormat(item.stat!.share),
+            text: NumUtils.numFormat(item.stat!.share),
           ),
         ],
       ),

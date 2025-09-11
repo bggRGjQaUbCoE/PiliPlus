@@ -54,7 +54,7 @@ abstract class GStorage {
   }
 
   static String exportAllSettings() {
-    return jsonEncode({
+    return const JsonEncoder.withIndent('    ').convert({
       setting.name: setting.toMap(),
       video.name: video.toMap(),
     });

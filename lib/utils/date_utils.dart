@@ -1,6 +1,6 @@
 import 'package:intl/intl.dart' show DateFormat;
 
-class DateUtil {
+class DateFormatUtils {
   static final shortFormat = DateFormat('MM-dd');
   static final longFormat = DateFormat('yyyy-MM-dd');
   static final _shortFormatD = DateFormat('MM-dd HH:mm');
@@ -38,7 +38,7 @@ class DateUtil {
     }
     final DateFormat sdf = now.year == date.year
         ? short ?? shortFormat
-        : long ?? DateUtil.longFormat;
+        : long ?? DateFormatUtils.longFormat;
     return sdf.format(date);
   }
 

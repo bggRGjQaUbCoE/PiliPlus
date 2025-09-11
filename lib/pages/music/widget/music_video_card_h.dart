@@ -8,7 +8,7 @@ import 'package:PiliPlus/http/search.dart';
 import 'package:PiliPlus/models/common/badge_type.dart';
 import 'package:PiliPlus/models/common/stat_type.dart';
 import 'package:PiliPlus/models_new/music/bgm_recommend_list.dart';
-import 'package:PiliPlus/utils/duration_util.dart';
+import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:flutter/material.dart';
 
@@ -65,7 +65,9 @@ class MusicVideoCardH extends StatelessWidget {
                           height: maxHeight,
                         ),
                         PBadge(
-                          text: DurationUtil.formatDuration(videoItem.duration),
+                          text: DurationUtils.formatDuration(
+                            videoItem.duration,
+                          ),
                           right: 6.0,
                           bottom: 6.0,
                           type: PBadgeType.gray,

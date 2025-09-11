@@ -13,7 +13,7 @@ import 'package:PiliPlus/pages/dynamics/widgets/dynamic_panel.dart';
 import 'package:PiliPlus/pages/dynamics_create/view.dart';
 import 'package:PiliPlus/pages/dynamics_topic/controller.dart';
 import 'package:PiliPlus/utils/global_data.dart';
-import 'package:PiliPlus/utils/num_util.dart';
+import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:PiliPlus/utils/waterfall.dart';
@@ -231,7 +231,7 @@ class _DynTopicPageState extends State<DynTopicPage> with DynMixin {
                 Row(
                   children: [
                     Text(
-                      '${NumUtil.numFormat(response.topicItem!.view)}浏览 · ${NumUtil.numFormat(response.topicItem!.discuss)}讨论',
+                      '${NumUtils.numFormat(response.topicItem!.view)}浏览 · ${NumUtils.numFormat(response.topicItem!.discuss)}讨论',
                       style: TextStyle(
                         fontSize: 13,
                         color: theme.colorScheme.outline,
@@ -261,7 +261,7 @@ class _DynTopicPageState extends State<DynTopicPage> with DynMixin {
                           ? const Icon(FontAwesomeIcons.solidThumbsUp, size: 13)
                           : const Icon(FontAwesomeIcons.thumbsUp, size: 13),
                       label: Text(
-                        NumUtil.numFormat(response.topicItem!.like),
+                        NumUtils.numFormat(response.topicItem!.like),
                         style: const TextStyle(fontSize: 13),
                         textScaler: TextScaler.noScaling,
                       ),
@@ -290,7 +290,7 @@ class _DynTopicPageState extends State<DynTopicPage> with DynMixin {
                           ? const Icon(FontAwesomeIcons.solidStar, size: 13)
                           : const Icon(FontAwesomeIcons.star, size: 13),
                       label: Text(
-                        NumUtil.numFormat(response.topicItem!.fav),
+                        NumUtils.numFormat(response.topicItem!.fav),
                         style: const TextStyle(fontSize: 13),
                         textScaler: TextScaler.noScaling,
                       ),

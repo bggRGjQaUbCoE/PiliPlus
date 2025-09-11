@@ -13,9 +13,9 @@ Future<void> landScape() async {
   try {
     if (kIsWeb) {
       await document.documentElement?.requestFullscreen();
-    } else if (Platform.isAndroid || Platform.isIOS) {
+    } else if (Utils.isMobile) {
       await AutoOrientation.landscapeAutoMode(forceSensor: true);
-    } else if (Platform.isMacOS || Platform.isWindows || Platform.isLinux) {
+    } else if (Utils.isDesktop) {
       await const MethodChannel(
         'com.alexmercerind/media_kit_video',
       ).invokeMethod(
@@ -86,7 +86,7 @@ Future<void> showStatusBar() async {
   try {
     if (kIsWeb) {
       document.exitFullscreen();
-    } else if (Platform.isAndroid || Platform.isIOS) {
+    } else if (Utils.isMobile) {
       if (Platform.isAndroid && (await Utils.sdkInt < 29)) {
         mode = SystemUiMode.manual;
       }
@@ -94,7 +94,7 @@ Future<void> showStatusBar() async {
         mode,
         overlays: SystemUiOverlay.values,
       );
-    } else if (Platform.isMacOS || Platform.isWindows || Platform.isLinux) {
+    } else if (Utils.isDesktop) {
       await const MethodChannel(
         'com.alexmercerind/media_kit_video',
       ).invokeMethod(

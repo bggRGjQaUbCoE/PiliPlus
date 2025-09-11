@@ -13,7 +13,7 @@ import 'package:PiliPlus/pages/pgc_review/child/controller.dart';
 import 'package:PiliPlus/pages/pgc_review/post/view.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/extension.dart';
-import 'package:PiliPlus/utils/num_util.dart';
+import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
@@ -351,7 +351,7 @@ class _PgcReviewChildPageState extends State<PgcReviewChildPage>
                                 color: isLike ? primary : color,
                               ),
                               Text(
-                                NumUtil.numFormat(item.stat?.likes ?? 0),
+                                NumUtils.numFormat(item.stat?.likes ?? 0),
                                 style: TextStyle(
                                   color: isLike ? primary : color,
                                   fontSize: 12,
@@ -390,7 +390,7 @@ class _PgcReviewChildPageState extends State<PgcReviewChildPage>
                 return count == null
                     ? const SizedBox.shrink()
                     : Text(
-                        '${NumUtil.numFormat(count)}条点评',
+                        '${NumUtils.numFormat(count)}条点评',
                         style: const TextStyle(fontSize: 13),
                       );
               },

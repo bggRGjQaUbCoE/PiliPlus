@@ -227,9 +227,9 @@ extension ThreeDotItemTypeExt on ThreeDotItemType {
 }
 
 extension FileExt on File {
-  void delSync({bool recursive = false}) {
+  void tryDel({bool recursive = false}) {
     try {
-      deleteSync(recursive: recursive);
+      delete(recursive: recursive);
     } catch (_) {}
   }
 }

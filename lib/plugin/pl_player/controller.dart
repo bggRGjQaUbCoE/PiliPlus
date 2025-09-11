@@ -51,7 +51,6 @@ import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
-import 'package:screen_brightness/screen_brightness.dart';
 import 'package:universal_platform/universal_platform.dart';
 
 class PlPlayerController {
@@ -465,11 +464,8 @@ class PlPlayerController {
     return _instance?.volume.value;
   }
 
-  static Future<void> setVolumeIfExists(
-    double volumeNew, {
-    bool videoPlayerVolume = false,
-  }) async {
-    await _instance?.setVolume(volumeNew, videoPlayerVolume: videoPlayerVolume);
+  static Future<void> setVolumeIfExists(double volumeNew) async {
+    await _instance?.setVolume(volumeNew);
   }
 
   Box video = GStorage.video;
@@ -897,7 +893,7 @@ class PlPlayerController {
         } else {
           playerStatus.status.value = PlayerStatus.paused;
         }
-        videoPlayerServiceHandler.onStatusChange(
+        videoPlayerServiceHandler?.onStatusChange(
           playerStatus.status.value,
           isBuffering.value,
           isLive,
@@ -947,7 +943,7 @@ class PlPlayerController {
       }),
       videoPlayerController!.stream.buffering.listen((bool event) {
         isBuffering.value = event;
-        videoPlayerServiceHandler.onStatusChange(
+        videoPlayerServiceHandler?.onStatusChange(
           playerStatus.status.value,
           event,
           isLive,
@@ -1012,20 +1008,22 @@ class PlPlayerController {
       //   }
       // }),
       // 媒体通知监听
-      onPlayerStatusChanged.listen((PlayerStatus event) {
-        videoPlayerServiceHandler.onStatusChange(
-          event,
-          isBuffering.value,
-          isLive,
-        );
-      }),
-      onPositionChanged.listen((Duration event) {
-        EasyThrottle.throttle(
-          'mediaServicePosition',
-          const Duration(seconds: 1),
-          () => videoPlayerServiceHandler.onPositionChange(event),
-        );
-      }),
+      if (videoPlayerServiceHandler != null) ...[
+        onPlayerStatusChanged.listen((PlayerStatus event) {
+          videoPlayerServiceHandler!.onStatusChange(
+            event,
+            isBuffering.value,
+            isLive,
+          );
+        }),
+        onPositionChanged.listen((Duration event) {
+          EasyThrottle.throttle(
+            'mediaServicePosition',
+            const Duration(seconds: 1),
+            () => videoPlayerServiceHandler!.onPositionChange(event),
+          );
+        }),
+      ],
     };
   }
 
@@ -1138,7 +1136,7 @@ class PlPlayerController {
     playerStatus.status.value = PlayerStatus.playing;
     // screenManager.setOverlays(false);
 
-    audioSessionHandler.setActive(true);
+    audioSessionHandler?.setActive(true);
   }
 
   /// 暂停播放
@@ -1148,7 +1146,7 @@ class PlPlayerController {
 
     // 主动暂停时让出音频焦点
     if (!isInterrupt) {
-      audioSessionHandler.setActive(false);
+      audioSessionHandler?.setActive(false);
     }
   }
 
@@ -1208,31 +1206,15 @@ class PlPlayerController {
     hideTaskControls();
   }
 
-  /// 音量
-  Future<void> getCurrentVolume() async {
-    // mac try...catch
+  Future<void> setVolume(double volume) async {
+    this.volume.value = volume;
     try {
-      _currentVolume.value = (await FlutterVolumeController.getVolume())!;
-    } catch (_) {}
-  }
-
-  Future<void> setVolume(
-    double volumeNew, {
-    bool videoPlayerVolume = false,
-  }) async {
-    if (volumeNew < 0.0) {
-      volumeNew = 0.0;
-    } else if (volumeNew > 1.0) {
-      volumeNew = 1.0;
-    }
-    if (volume.value == volumeNew) {
-      return;
-    }
-    volume.value = volumeNew;
-
-    try {
-      FlutterVolumeController.updateShowSystemUI(false);
-      await FlutterVolumeController.setVolume(volumeNew);
+      if (Utils.isDesktop) {
+        _videoPlayerController!.setVolume(volume * 100);
+      } else {
+        FlutterVolumeController.updateShowSystemUI(false);
+        await FlutterVolumeController.setVolume(volume);
+      }
     } catch (err) {
       if (kDebugMode) debugPrint(err.toString());
     }
@@ -1246,28 +1228,8 @@ class PlPlayerController {
     });
   }
 
-  /// 亮度
-  Future<void> getCurrentBrightness() async {
-    try {
-      _currentBrightness.value = await ScreenBrightness.instance.application;
-    } catch (e) {
-      throw 'Failed to get current brightness';
-      //return 0;
-    }
-  }
-
   void setCurrBrightness(double brightness) {
     _currentBrightness.value = brightness;
-  }
-
-  Future<void> setBrightness(double brightness) async {
-    try {
-      this.brightness.value = brightness;
-      ScreenBrightness.instance.setApplicationScreenBrightness(brightness);
-      // setVideoBrightness();
-    } catch (e) {
-      throw 'Failed to set brightness';
-    }
   }
 
   /// Toggle Change the videofit accordingly
@@ -1303,7 +1265,7 @@ class PlPlayerController {
 
   /// 设置后台播放
   Future<void> setBackgroundPlay(bool val) async {
-    videoPlayerServiceHandler.enableBackgroundPlay = val;
+    videoPlayerServiceHandler?.enableBackgroundPlay = val;
     if (!tempPlayerConf) {
       setting.put(SettingBoxKey.enableBackgroundPlay, val);
     }
@@ -1387,10 +1349,11 @@ class PlPlayerController {
         return;
       }
       late final size = Get.size;
-      if (mode == FullScreenMode.vertical ||
-          (mode == FullScreenMode.auto && isVertical) ||
-          (mode == FullScreenMode.ratio &&
-              (isVertical || size.height / size.width < 1.25))) {
+      if (Utils.isMobile &&
+          (mode == FullScreenMode.vertical ||
+              (mode == FullScreenMode.auto && isVertical) ||
+              (mode == FullScreenMode.ratio &&
+                  (isVertical || size.height / size.width < 1.25)))) {
         await verticalScreenForTwoSeconds();
       } else {
         await landScape();
@@ -1561,7 +1524,7 @@ class PlPlayerController {
         _videoPlayerController = null;
       }
       _instance = null;
-      videoPlayerServiceHandler.clear();
+      videoPlayerServiceHandler?.clear();
     } catch (err) {
       if (kDebugMode) debugPrint(err.toString());
     }

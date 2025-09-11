@@ -46,11 +46,12 @@ import 'package:PiliPlus/services/service_locator.dart';
 import 'package:PiliPlus/services/shutdown_timer_service.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/extension.dart';
-import 'package:PiliPlus/utils/image_util.dart';
-import 'package:PiliPlus/utils/num_util.dart';
+import 'package:PiliPlus/utils/image_utils.dart';
+import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
+import 'package:PiliPlus/utils/utils.dart';
 import 'package:auto_orientation/auto_orientation.dart';
 import 'package:easy_debounce/easy_throttle.dart';
 import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart';
@@ -63,7 +64,7 @@ import 'package:flutter/services.dart'
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart' hide ContextExtensionss;
-import 'package:screen_brightness/screen_brightness.dart';
+import 'package:screen_brightness_platform_interface/screen_brightness_platform_interface.dart';
 
 class VideoDetailPageV extends StatefulWidget {
   const VideoDetailPageV({super.key});
@@ -158,8 +159,6 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
             .addListener(innerScrollListener);
       });
     }
-
-    videoDetailController.animationController.addListener(animListener);
 
     WidgetsBinding.instance.addObserver(this);
   }
@@ -327,29 +326,36 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
 
   @override
   void dispose() {
+    plPlayerController
+      ?..removeStatusLister(playerListener)
+      ..removePositionListener(positionListener);
+
     videoDetailController
       ..skipTimer?.cancel()
-      ..skipTimer = null;
+      ..skipTimer = null
+      ..positionSubscription?.cancel()
+      ..cid.close()
+      ..animController?.removeListener(animListener);
+
+    Get.delete<HorizontalMemberPageController>(
+      tag: videoDetailController.heroTag,
+    );
 
     try {
-      Get.delete<HorizontalMemberPageController>(
-        tag: videoDetailController.heroTag,
-      );
-      videoDetailController.animationController.removeListener(animListener);
       if (videoDetailController.showReply) {
         videoDetailController.scrollKey.currentState?.innerController
             .removeListener(innerScrollListener);
       }
     } catch (_) {}
 
-    WidgetsBinding.instance.removeObserver(this);
     if (!Get.previousRoute.startsWith('/video')) {
-      ScreenBrightness.instance.resetApplicationScreenBrightness();
+      if (Utils.isMobile) {
+        ScreenBrightnessPlatform.instance.resetApplicationScreenBrightness();
+      }
       PlPlayerController.setPlayCallBack(null);
     }
-    videoDetailController
-      ..positionSubscription?.cancel()
-      ..cid.close();
+
+    _introScrollController?.dispose();
     if (videoDetailController.isUgc) {
       ugcIntroController
         ..canelTimer()
@@ -362,20 +368,17 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     }
     shutdownTimerService.handleWaitingFinished();
     if (videoDetailController.plPlayerController.backToHome != true) {
-      videoPlayerServiceHandler.onVideoDetailDispose(heroTag);
+      videoPlayerServiceHandler?.onVideoDetailDispose(heroTag);
     }
     if (plPlayerController != null) {
       videoDetailController.makeHeartBeat();
-      plPlayerController!
-        ..removeStatusLister(playerListener)
-        ..removePositionListener(positionListener)
-        ..dispose();
+      plPlayerController!.dispose();
     } else {
       PlPlayerController.updatePlayCount();
     }
     PageUtils.routeObserver.unsubscribe(this);
+    WidgetsBinding.instance.removeObserver(this);
     showStatusBar();
-    _introScrollController?.dispose();
     super.dispose();
   }
 
@@ -388,7 +391,9 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
 
     WidgetsBinding.instance.removeObserver(this);
 
-    ScreenBrightness.instance.resetApplicationScreenBrightness();
+    if (Utils.isMobile) {
+      ScreenBrightnessPlatform.instance.resetApplicationScreenBrightness();
+    }
 
     videoDetailController.positionSubscription?.cancel();
 
@@ -430,20 +435,20 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
 
     introController.startTimer();
 
-    if (mounted) {
+    if (Utils.isMobile && mounted) {
       if (videoDetailController.brightness != null) {
         plPlayerController?.setCurrBrightness(
           videoDetailController.brightness!,
         );
         if (videoDetailController.brightness != -1.0) {
-          ScreenBrightness.instance.setApplicationScreenBrightness(
+          ScreenBrightnessPlatform.instance.setApplicationScreenBrightness(
             videoDetailController.brightness!,
           );
         } else {
-          ScreenBrightness.instance.resetApplicationScreenBrightness();
+          ScreenBrightnessPlatform.instance.resetApplicationScreenBrightness();
         }
       } else {
-        ScreenBrightness.instance.resetApplicationScreenBrightness();
+        ScreenBrightnessPlatform.instance.resetApplicationScreenBrightness();
       }
     }
     super.didPopNext();
@@ -558,6 +563,9 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
   }
 
   Widget get childWhenDisabled {
+    videoDetailController.animationController
+      ..removeListener(animListener)
+      ..addListener(animListener);
     if (mounted && isShowing && !isFullScreen) {
       if (isPortrait) {
         if (!videoDetailController.imageStatus) {
@@ -807,7 +815,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                                                         );
                                                     break;
                                                   case 'savePic':
-                                                    ImageUtil.downloadImg(
+                                                    ImageUtils.downloadImg(
                                                       context,
                                                       [
                                                         videoDetailController
@@ -1378,7 +1386,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                         videoDetailController.showNoteList(context);
                         break;
                       case 'savePic':
-                        ImageUtil.downloadImg(
+                        ImageUtils.downloadImg(
                           context,
                           [videoDetailController.cover.value],
                         );
@@ -1575,7 +1583,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
           return Obx(() {
             final count = _videoReplyController.count.value;
             return Tab(
-              text: '评论${count == -1 ? '' : ' ${NumUtil.numFormat(count)}'}',
+              text: '评论${count == -1 ? '' : ' ${NumUtils.numFormat(count)}'}',
             );
           });
         } else {

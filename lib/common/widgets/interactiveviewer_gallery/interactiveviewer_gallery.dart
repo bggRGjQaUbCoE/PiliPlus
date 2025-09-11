@@ -5,7 +5,8 @@ import 'package:PiliPlus/common/widgets/interactiveviewer_gallery/interactive_vi
 import 'package:PiliPlus/common/widgets/interactiveviewer_gallery/interactive_viewer_boundary.dart';
 import 'package:PiliPlus/models/common/image_preview_type.dart';
 import 'package:PiliPlus/utils/extension.dart';
-import 'package:PiliPlus/utils/image_util.dart';
+import 'package:PiliPlus/utils/image_utils.dart';
+import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -224,7 +225,7 @@ class _InteractiveviewerGalleryState extends State<InteractiveviewerGallery>
 
   String _getActualUrl(String url) {
     return _quality != 100
-        ? ImageUtil.thumbnailUrl(url, _quality)
+        ? ImageUtils.thumbnailUrl(url, _quality)
         : url.http2https;
   }
 
@@ -351,7 +352,7 @@ class _InteractiveviewerGalleryState extends State<InteractiveviewerGallery>
                         final item = widget.sources[currentIndex.value];
                         return [
                           PopupMenuItem(
-                            onTap: () => ImageUtil.onShareImg(item.url),
+                            onTap: () => ImageUtils.onShareImg(item.url),
                             child: const Text("分享图片"),
                           ),
                           PopupMenuItem(
@@ -359,15 +360,20 @@ class _InteractiveviewerGalleryState extends State<InteractiveviewerGallery>
                             child: const Text("复制链接"),
                           ),
                           PopupMenuItem(
-                            onTap: () => ImageUtil.downloadImg(
+                            onTap: () => ImageUtils.downloadImg(
                               this.context,
                               [item.url],
                             ),
                             child: const Text("保存图片"),
                           ),
-                          if (widget.sources.length > 1)
+                          if (Utils.isDesktop)
                             PopupMenuItem(
-                              onTap: () => ImageUtil.downloadImg(
+                              onTap: () => PageUtils.launchURL(item.url),
+                              child: const Text("网页打开"),
+                            )
+                          else if (widget.sources.length > 1)
+                            PopupMenuItem(
+                              onTap: () => ImageUtils.downloadImg(
                                 this.context,
                                 widget.sources.map((item) => item.url).toList(),
                               ),
@@ -376,7 +382,7 @@ class _InteractiveviewerGalleryState extends State<InteractiveviewerGallery>
                           if (item.sourceType == SourceType.livePhoto)
                             PopupMenuItem(
                               onTap: () {
-                                ImageUtil.downloadLivePhoto(
+                                ImageUtils.downloadLivePhoto(
                                   context: this.context,
                                   url: item.url,
                                   liveUrl: item.liveUrl!,
@@ -417,7 +423,7 @@ class _InteractiveviewerGalleryState extends State<InteractiveviewerGallery>
               return CachedNetworkImage(
                 fadeInDuration: Duration.zero,
                 fadeOutDuration: Duration.zero,
-                imageUrl: ImageUtil.thumbnailUrl(item.url, widget.quality),
+                imageUrl: ImageUtils.thumbnailUrl(item.url, widget.quality),
               );
             },
           ),
@@ -497,7 +503,7 @@ class _InteractiveviewerGalleryState extends State<InteractiveviewerGallery>
               ListTile(
                 onTap: () {
                   Get.back();
-                  ImageUtil.onShareImg(item.url);
+                  ImageUtils.onShareImg(item.url);
                 },
                 dense: true,
                 title: const Text('分享', style: TextStyle(fontSize: 14)),
@@ -513,7 +519,7 @@ class _InteractiveviewerGalleryState extends State<InteractiveviewerGallery>
               ListTile(
                 onTap: () {
                   Get.back();
-                  ImageUtil.downloadImg(
+                  ImageUtils.downloadImg(
                     this.context,
                     [item.url],
                   );
@@ -521,11 +527,20 @@ class _InteractiveviewerGalleryState extends State<InteractiveviewerGallery>
                 dense: true,
                 title: const Text('保存图片', style: TextStyle(fontSize: 14)),
               ),
-              if (widget.sources.length > 1)
+              if (Utils.isDesktop)
                 ListTile(
                   onTap: () {
                     Get.back();
-                    ImageUtil.downloadImg(
+                    PageUtils.launchURL(item.url);
+                  },
+                  dense: true,
+                  title: const Text('网页打开', style: TextStyle(fontSize: 14)),
+                )
+              else if (widget.sources.length > 1)
+                ListTile(
+                  onTap: () {
+                    Get.back();
+                    ImageUtils.downloadImg(
                       this.context,
                       widget.sources.map((item) => item.url).toList(),
                     );
@@ -537,7 +552,7 @@ class _InteractiveviewerGalleryState extends State<InteractiveviewerGallery>
                 ListTile(
                   onTap: () {
                     Get.back();
-                    ImageUtil.downloadLivePhoto(
+                    ImageUtils.downloadLivePhoto(
                       context: this.context,
                       url: item.url,
                       liveUrl: item.liveUrl!,

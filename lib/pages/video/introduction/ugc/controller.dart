@@ -92,7 +92,7 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
     var res = await VideoHttp.videoIntro(bvid: bvid);
     if (res.isSuccess) {
       VideoDetailData data = res.data;
-      videoPlayerServiceHandler.onVideoDetailChange(data, cid.value, heroTag);
+      videoPlayerServiceHandler?.onVideoDetailChange(data, cid.value, heroTag);
       if (videoDetail.value.ugcSeason?.id == data.ugcSeason?.id) {
         // keep reversed season
         data.ugcSeason = videoDetail.value.ugcSeason;
@@ -532,7 +532,7 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
       } else {
         if (episode is Part) {
           final videoDetail = this.videoDetail.value;
-          videoPlayerServiceHandler.onVideoDetailChange(
+          videoPlayerServiceHandler?.onVideoDetailChange(
             episode,
             cid,
             heroTag,

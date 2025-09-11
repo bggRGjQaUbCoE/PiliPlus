@@ -8,7 +8,7 @@ import 'package:PiliPlus/models_new/msg/msg_like_detail/card.dart';
 import 'package:PiliPlus/models_new/msg/msg_like_detail/item.dart';
 import 'package:PiliPlus/pages/msg_feed_top/like_detail/controller.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
-import 'package:PiliPlus/utils/date_util.dart';
+import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -141,7 +141,7 @@ class _LikeDetailPageState extends State<LikeDetailPage> {
         overflow: TextOverflow.ellipsis,
       ),
       subtitle: Text(
-        DateUtil.dateFormat(item.likeTime),
+        DateFormatUtils.dateFormat(item.likeTime),
         style: theme.textTheme.bodyMedium!.copyWith(
           fontSize: 13,
           color: theme.colorScheme.outline,

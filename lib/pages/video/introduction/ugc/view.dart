@@ -17,11 +17,11 @@ import 'package:PiliPlus/pages/video/introduction/ugc/widgets/page.dart';
 import 'package:PiliPlus/pages/video/introduction/ugc/widgets/season.dart';
 import 'package:PiliPlus/pages/video/introduction/ugc/widgets/triple_state.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
-import 'package:PiliPlus/utils/date_util.dart';
+import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
-import 'package:PiliPlus/utils/num_util.dart';
+import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/request_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
@@ -517,7 +517,7 @@ class _UgcIntroPanelState extends TripleState<UgcIntroPanel>
               selectStatus: introController.hasLike.value,
               semanticsLabel: '点赞',
               text: !isLoading
-                  ? NumUtil.numFormat(videoDetail.stat!.like)
+                  ? NumUtils.numFormat(videoDetail.stat!.like)
                   : null,
               onStartTriple: onStartTriple,
               onCancelTriple: onCancelTriple,
@@ -544,7 +544,7 @@ class _UgcIntroPanelState extends TripleState<UgcIntroPanel>
               selectStatus: introController.hasCoin,
               semanticsLabel: '投币',
               text: !isLoading
-                  ? NumUtil.numFormat(videoDetail.stat!.coin)
+                  ? NumUtils.numFormat(videoDetail.stat!.coin)
                   : null,
             ),
           ),
@@ -561,7 +561,7 @@ class _UgcIntroPanelState extends TripleState<UgcIntroPanel>
               selectStatus: introController.hasFav.value,
               semanticsLabel: '收藏',
               text: !isLoading
-                  ? NumUtil.numFormat(videoDetail.stat!.favorite)
+                  ? NumUtils.numFormat(videoDetail.stat!.favorite)
                   : null,
             ),
           ),
@@ -582,7 +582,7 @@ class _UgcIntroPanelState extends TripleState<UgcIntroPanel>
             selectStatus: false,
             semanticsLabel: '分享',
             text: !isLoading
-                ? NumUtil.numFormat(videoDetail.stat!.share!)
+                ? NumUtils.numFormat(videoDetail.stat!.share!)
                 : null,
           ),
         ],
@@ -835,7 +835,7 @@ class _UgcIntroPanelState extends TripleState<UgcIntroPanel>
                 ),
                 const SizedBox(height: 0),
                 Text(
-                  '${NumUtil.numFormat(userStat.follower)}粉丝    ${'${NumUtil.numFormat(userStat.archiveCount)}视频'}',
+                  '${NumUtils.numFormat(userStat.follower)}粉丝    ${'${NumUtils.numFormat(userStat.archiveCount)}视频'}',
                   style: TextStyle(
                     fontSize: 12,
                     color: theme.colorScheme.outline,
@@ -863,7 +863,7 @@ class _UgcIntroPanelState extends TripleState<UgcIntroPanel>
         color: theme.colorScheme.outline,
       ),
       Text(
-        DateUtil.format(videoDetail.pubdate),
+        DateFormatUtils.format(videoDetail.pubdate),
         style: TextStyle(
           fontSize: 12,
           color: theme.colorScheme.outline,

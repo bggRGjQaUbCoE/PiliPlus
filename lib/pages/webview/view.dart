@@ -60,6 +60,17 @@ class _WebviewPageState extends State<WebviewPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (Platform.isWindows) {
+      return Scaffold(
+        appBar: AppBar(),
+        body: Center(
+          child: TextButton(
+            onPressed: () => PageUtils.launchURL(_url),
+            child: const Text('unsupported'),
+          ),
+        ),
+      );
+    }
     return Scaffold(
       appBar: widget.url != null
           ? null

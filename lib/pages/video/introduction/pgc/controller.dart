@@ -483,7 +483,7 @@ class PgcIntroController extends CommonIntroController {
     videoDetail
       ..value.title = episode.showTitle
       ..refresh();
-    videoPlayerServiceHandler.onVideoDetailChange(
+    videoPlayerServiceHandler?.onVideoDetailChange(
       episode,
       cid.value,
       heroTag,

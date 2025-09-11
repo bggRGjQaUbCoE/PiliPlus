@@ -1,5 +1,5 @@
 import 'package:PiliPlus/models/model_video.dart';
-import 'package:PiliPlus/utils/duration_util.dart';
+import 'package:PiliPlus/utils/duration_utils.dart';
 
 class VListItemModel extends BaseVideoItemModel {
   int? comment;
@@ -21,7 +21,7 @@ class VListItemModel extends BaseVideoItemModel {
     review = json['review'];
     pubdate = json['created'];
     if (json['length'] != null) {
-      duration = DurationUtil.parseDuration(json['length']);
+      duration = DurationUtils.parseDuration(json['length']);
     }
     aid = json['aid'];
     bvid = json['bvid'];

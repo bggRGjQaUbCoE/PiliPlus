@@ -20,7 +20,7 @@ import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
 import 'package:PiliPlus/plugin/pl_player/utils/fullscreen.dart';
 import 'package:PiliPlus/plugin/pl_player/view.dart';
 import 'package:PiliPlus/services/service_locator.dart';
-import 'package:PiliPlus/utils/duration_util.dart';
+import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
@@ -34,7 +34,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show SystemUiOverlayStyle;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart' hide ContextExtensionss;
-import 'package:screen_brightness/screen_brightness.dart';
+import 'package:screen_brightness_platform_interface/screen_brightness_platform_interface.dart';
 
 class LiveRoomPage extends StatefulWidget {
   const LiveRoomPage({super.key});
@@ -138,9 +138,11 @@ class _LiveRoomPageState extends State<LiveRoomPage>
 
   @override
   void dispose() {
-    videoPlayerServiceHandler.onVideoDetailDispose(heroTag);
+    videoPlayerServiceHandler?.onVideoDetailDispose(heroTag);
     WidgetsBinding.instance.removeObserver(this);
-    ScreenBrightness.instance.resetApplicationScreenBrightness();
+    if (Utils.isMobile) {
+      ScreenBrightnessPlatform.instance.resetApplicationScreenBrightness();
+    }
     PlPlayerController.setPlayCallBack(null);
     plPlayerController
       ..removeStatusLister(playerListener)
@@ -539,7 +541,7 @@ class _LiveRoomPageState extends State<LiveRoomPage>
                         if (text.isNotEmpty) {
                           text += '  ';
                         }
-                        final duration = DurationUtil.formatDurationBetween(
+                        final duration = DurationUtils.formatDurationBetween(
                           liveTime * 1000,
                           DateTime.now().millisecondsSinceEpoch,
                         );

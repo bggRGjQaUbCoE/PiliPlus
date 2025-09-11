@@ -566,7 +566,7 @@ List<SettingsModel> get styleSettings => [
     setKey: SettingBoxKey.isPureBlackTheme,
     defaultVal: false,
     onChanged: (value) {
-      if (Get.theme.brightness == Brightness.dark || Pref.darkVideoPage) {
+      if (Get.isDarkMode || Pref.darkVideoPage) {
         Get.forceAppUpdate();
       }
     },

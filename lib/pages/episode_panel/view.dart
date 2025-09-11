@@ -92,7 +92,8 @@ class _EpisodePanelState extends CommonCollapseSlidePageState<EpisodePanel> {
   )..addListener(listener);
   late final RxInt _currentTabIndex = _tabController.index.obs;
 
-  List get _getCurrEpisodes => widget.type == EpisodeType.season
+  List<ugc.BaseEpisodeItem> get _getCurrEpisodes =>
+      widget.type == EpisodeType.season
       ? widget.list[_currentTabIndex.value].episodes
       : widget.list[_currentTabIndex.value];
 
@@ -257,8 +258,13 @@ class _EpisodePanelState extends CommonCollapseSlidePageState<EpisodePanel> {
     return _buildBody(theme, 0, _getCurrEpisodes);
   }
 
-  Widget _buildBody(ThemeData theme, int tabIndex, List episodes) {
+  Widget _buildBody(
+    ThemeData theme,
+    int tabIndex,
+    List<ugc.BaseEpisodeItem> episodes,
+  ) {
     final isCurrTab = tabIndex == widget.initialTabIndex;
+    // TODO: try ListView instead, it can use PageStorageKey
     return KeepAliveWrapper(
       builder: (context) => ScrollablePositionedList.separated(
         padding: EdgeInsets.only(
@@ -269,7 +275,7 @@ class _EpisodePanelState extends CommonCollapseSlidePageState<EpisodePanel> {
         itemCount: episodes.length,
         physics: const AlwaysScrollableScrollPhysics(),
         itemBuilder: (BuildContext context, int itemIndex) {
-          final ugc.BaseEpisodeItem episode = episodes[itemIndex];
+          final episode = episodes[itemIndex];
           final isCurrItem = isCurrTab ? itemIndex == _currentItemIndex : false;
           Widget episodeItem = _buildEpisodeItem(
             theme: theme,

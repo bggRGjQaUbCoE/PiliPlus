@@ -35,8 +35,8 @@ class PagesPanel extends StatefulWidget {
 class _PagesPanelState extends State<PagesPanel> {
   late int cid;
   int pageIndex = -1;
-  late VideoDetailController _videoDetailController;
-  final ScrollController _scrollController = ScrollController();
+  late final VideoDetailController _videoDetailController;
+  late final ScrollController _scrollController;
   StreamSubscription? _listener;
 
   List<Part> get pages =>
@@ -48,28 +48,32 @@ class _PagesPanelState extends State<PagesPanel> {
     _videoDetailController = Get.find<VideoDetailController>(
       tag: widget.heroTag,
     );
+    double offset = 0;
     if (widget.list == null) {
       cid = widget.ugcIntroController.cid.value;
       pageIndex = pages.indexWhere((Part e) => e.cid == cid);
-      _listener = _videoDetailController.cid.listen((int cid) {
+      offset = targetOffset;
+      _listener = _videoDetailController.cid.listen((cid) {
         this.cid = cid;
-        pageIndex = max(0, pages.indexWhere((Part e) => e.cid == cid));
+        pageIndex = max(0, pages.indexWhere((e) => e.cid == cid));
         if (!mounted) return;
         setState(() {});
         jumpToCurr();
       });
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        jumpToCurr();
-      });
     }
+    _scrollController = ScrollController(initialScrollOffset: offset);
+  }
+
+  double get targetOffset {
+    const double itemWidth = 150;
+    return max(0, pageIndex * itemWidth - itemWidth / 2);
   }
 
   void jumpToCurr() {
     if (!_scrollController.hasClients || pages.isEmpty) {
       return;
     }
-    const double itemWidth = 150;
-    final double targetOffset = (pageIndex * itemWidth - itemWidth / 2).clamp(
+    final double targetOffset = this.targetOffset.clamp(
       _scrollController.position.minScrollExtent,
       _scrollController.position.maxScrollExtent,
     );
@@ -136,6 +140,7 @@ class _PagesPanelState extends State<PagesPanel> {
         SizedBox(
           height: 35,
           child: ListView.builder(
+            key: PageStorageKey(widget.bvid),
             controller: _scrollController,
             scrollDirection: Axis.horizontal,
             itemCount: pages.length,

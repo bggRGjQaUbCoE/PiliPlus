@@ -122,10 +122,8 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
 
   final GlobalKey relatedVideoPanelKey = GlobalKey();
   final GlobalKey videoPlayerKey = GlobalKey();
-  final GlobalKey playerKey = GlobalKey();
   final GlobalKey videoReplyPanelKey = GlobalKey();
-  late final GlobalKey ugcPanelKey = GlobalKey();
-  late final GlobalKey pgcPanelKey = GlobalKey();
+  final GlobalKey introKey = GlobalKey();
 
   @override
   void initState() {
@@ -1138,6 +1136,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                                 .plPlayerController
                                 .showRelatedVideo)
                           CustomScrollView(
+                            key: const PageStorageKey(RelatedVideoPanel),
                             controller: introScrollController,
                             slivers: [
                               RelatedVideoPanel(
@@ -1449,7 +1448,6 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
             plPlayerController?.videoController == null
         ? const SizedBox.shrink()
         : PLVideoPlayer(
-            key: playerKey,
             maxWidth: width,
             maxHeight: height,
             plPlayerController: plPlayerController!,
@@ -1842,7 +1840,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
       slivers: [
         if (videoDetailController.isUgc) ...[
           UgcIntroPanel(
-            key: ugcPanelKey,
+            key: introKey,
             heroTag: heroTag,
             showAiBottomSheet: showAiBottomSheet,
             showEpisodes: showEpisodes,
@@ -1867,7 +1865,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
           ],
         ] else
           PgcIntroPage(
-            key: pgcPanelKey,
+            key: introKey,
             heroTag: heroTag,
             cid: videoDetailController.cid.value,
             showEpisodes: showEpisodes,

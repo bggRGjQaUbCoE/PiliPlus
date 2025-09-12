@@ -35,7 +35,7 @@ import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart' hide ContextExtensionss;
 import 'package:gt3_flutter_plugin/gt3_flutter_plugin.dart';
 
-class RequestUtils {
+abstract class RequestUtils {
   static Future<void> syncHistoryStatus() async {
     final account = Accounts.history;
     if (!account.isLogin) {

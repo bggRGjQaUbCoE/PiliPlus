@@ -34,7 +34,7 @@ import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart' hide ContextExtensionss;
 import 'package:url_launcher/url_launcher.dart';
 
-class PageUtils {
+abstract class PageUtils {
   static final RouteObserver<PageRoute> routeObserver =
       RouteObserver<PageRoute>();
 
@@ -44,7 +44,7 @@ class PageUtils {
     ValueChanged<int>? onDismissed,
     int? quality,
   }) {
-    return Navigator.of(Get.context!).push(
+    return Get.key.currentState!.push<void>(
       HeroDialogRoute(
         builder: (context) => InteractiveviewerGallery(
           sources: imgList,

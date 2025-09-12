@@ -5,7 +5,7 @@ import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:flex_seed_scheme/flex_seed_scheme.dart';
 import 'package:flutter/material.dart';
 
-class ThemeUtils {
+abstract class ThemeUtils {
   static ThemeData getThemeData({
     required ColorScheme colorScheme,
     required bool isDynamic,

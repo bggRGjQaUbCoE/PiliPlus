@@ -5,7 +5,7 @@ import 'dart:convert';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:uuid/v4.dart';
 
-class IdUtils {
+abstract class IdUtils {
   static const XOR_CODE = 23442827791579;
   static const MASK_CODE = 2251799813685247;
   static const MAX_AID = 1 << 51;

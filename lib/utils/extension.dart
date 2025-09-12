@@ -11,7 +11,7 @@ import 'package:PiliPlus/utils/app_scheme.dart';
 import 'package:floating/floating.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide ContextExtensionss;
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
 extension ImageExtension on num? {
@@ -29,13 +29,15 @@ extension IntExt on int? {
 }
 
 extension ScrollControllerExt on ScrollController {
-  void animToTop() {
+  void animToTop() => animTo(0);
+
+  void animTo(double offset) {
     if (!hasClients) return;
-    if (offset >= Get.mediaQuery.size.height * 7) {
-      jumpTo(0);
+    if ((offset - this.offset).abs() >= position.viewportDimension * 7) {
+      jumpTo(offset);
     } else {
       animateTo(
-        0,
+        offset,
         duration: const Duration(milliseconds: 500),
         curve: Curves.easeInOut,
       );

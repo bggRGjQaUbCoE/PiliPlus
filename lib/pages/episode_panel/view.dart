@@ -5,7 +5,6 @@ import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/button/icon_button.dart';
 import 'package:PiliPlus/common/widgets/image/image_save.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
-import 'package:PiliPlus/common/widgets/keep_alive_wrapper.dart';
 import 'package:PiliPlus/common/widgets/page/tabs.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart';
 import 'package:PiliPlus/common/widgets/stat/stat.dart';
@@ -19,7 +18,6 @@ import 'package:PiliPlus/models/user/info.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_info_model/episode.dart' as pgc;
 import 'package:PiliPlus/models_new/video/video_detail/episode.dart' as ugc;
 import 'package:PiliPlus/models_new/video/video_detail/page.dart';
-import 'package:PiliPlus/models_new/video/video_relation/data.dart';
 import 'package:PiliPlus/pages/common/slide/common_collapse_slide_page.dart';
 import 'package:PiliPlus/pages/video/controller.dart';
 import 'package:PiliPlus/pages/video/introduction/ugc/controller.dart';
@@ -27,14 +25,14 @@ import 'package:PiliPlus/pages/video/introduction/ugc/widgets/page.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/duration_utils.dart';
+import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
-import 'package:flutter/foundation.dart' show kDebugMode;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' hide TabBarView;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
-import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 class EpisodePanel extends CommonCollapseSlidePage {
   const EpisodePanel({
@@ -92,6 +90,8 @@ class _EpisodePanelState extends CommonCollapseSlidePageState<EpisodePanel> {
   )..addListener(listener);
   late final RxInt _currentTabIndex = _tabController.index.obs;
 
+  late final showTitle = widget.showTitle;
+
   List<ugc.BaseEpisodeItem> get _getCurrEpisodes =>
       widget.type == EpisodeType.season
       ? widget.list[_currentTabIndex.value].episodes
@@ -105,10 +105,10 @@ class _EpisodePanelState extends CommonCollapseSlidePageState<EpisodePanel> {
   );
 
   late final List<bool> _isReversed;
-  late final List<ItemScrollController> _itemScrollController;
+  late final List<ScrollController> _itemScrollController;
 
   // fav
-  Rx<LoadingState>? _favState;
+  Rx<LoadingState<bool>>? _favState;
 
   void listener() {
     _currentTabIndex.value = _tabController.index;
@@ -117,7 +117,7 @@ class _EpisodePanelState extends CommonCollapseSlidePageState<EpisodePanel> {
   @override
   void didUpdateWidget(EpisodePanel oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.showTitle) {
+    if (showTitle) {
       return;
     }
 
@@ -126,10 +126,18 @@ class _EpisodePanelState extends CommonCollapseSlidePageState<EpisodePanel> {
       if (_currentItemIndex != newItemIndex) {
         _currentItemIndex = newItemIndex;
         try {
-          _itemScrollController[_currentTabIndex.value].jumpTo(
-            index: newItemIndex,
+          final ctr = _itemScrollController[_currentTabIndex.value];
+          ctr.jumpTo(
+            _calcItemOffset(
+              newItemIndex,
+            ).clamp(
+              ctr.position.minScrollExtent,
+              ctr.position.maxScrollExtent - 100,
+            ),
           );
-        } catch (_) {}
+        } catch (_) {
+          if (kDebugMode) rethrow;
+        }
       }
     }
 
@@ -148,37 +156,28 @@ class _EpisodePanelState extends CommonCollapseSlidePageState<EpisodePanel> {
   @override
   void initState() {
     super.initState();
+    _currentItemIndex = _findCurrentItemIndex;
     _itemScrollController = List.generate(
       widget.list.length,
-      (_) => ItemScrollController(),
+      (i) => ScrollController(
+        initialScrollOffset: i == widget.initialTabIndex
+            ? _calcItemOffset(_currentItemIndex)
+            : 0,
+      ),
+      growable: false,
     );
     _isReversed = List.filled(widget.list.length, false);
 
     if (widget.type == EpisodeType.season && Accounts.main.isLogin) {
-      _favState = LoadingState.loading().obs;
+      _favState = LoadingState<bool>.loading().obs;
       VideoHttp.videoRelation(bvid: widget.bvid).then(
         (result) {
-          if (result['status']) {
-            VideoRelation data = result['data'];
-            _favState!.value = Success(data.seasonFav ?? false);
+          if (result case Success(:var response)) {
+            _favState!.value = Success(response.seasonFav ?? false);
           }
         },
       );
     }
-
-    _currentItemIndex = _findCurrentItemIndex;
-  }
-
-  @override
-  void init() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        isInit = false;
-        _itemScrollController[widget.initialTabIndex].jumpTo(
-          index: _currentItemIndex,
-        );
-      }
-    });
   }
 
   @override
@@ -186,6 +185,7 @@ class _EpisodePanelState extends CommonCollapseSlidePageState<EpisodePanel> {
     _tabController
       ..removeListener(listener)
       ..dispose();
+    _favState?.close();
     super.dispose();
   }
 
@@ -226,8 +226,8 @@ class _EpisodePanelState extends CommonCollapseSlidePageState<EpisodePanel> {
     }
 
     return Material(
-      color: widget.showTitle ? theme.colorScheme.surface : null,
-      type: widget.showTitle ? MaterialType.canvas : MaterialType.transparency,
+      color: showTitle ? theme.colorScheme.surface : null,
+      type: showTitle ? MaterialType.canvas : MaterialType.transparency,
       child: Column(
         children: [
           _buildToolbar(theme),
@@ -258,61 +258,108 @@ class _EpisodePanelState extends CommonCollapseSlidePageState<EpisodePanel> {
     return _buildBody(theme, 0, _getCurrEpisodes);
   }
 
+  double _calcItemOffset(int index) {
+    if (showTitle) {
+      final episodes = _getCurrEpisodes;
+      double offset = 0;
+      for (var i = 0; i < index; i++) {
+        offset += _calcItemHeight(episodes[i]);
+      }
+      return offset;
+    } else {
+      return index * 100;
+    }
+  }
+
+  double _calcItemHeight(ugc.BaseEpisodeItem episode) {
+    if (episode is ugc.EpisodeItem && episode.pages!.length > 1) {
+      return 145; // 100 + 10 + 35
+    }
+    return 100;
+  }
+
   Widget _buildBody(
     ThemeData theme,
     int tabIndex,
     List<ugc.BaseEpisodeItem> episodes,
   ) {
     final isCurrTab = tabIndex == widget.initialTabIndex;
-    // TODO: try ListView instead, it can use PageStorageKey
-    return KeepAliveWrapper(
-      builder: (context) => ScrollablePositionedList.separated(
-        padding: EdgeInsets.only(
-          top: 7,
-          bottom: MediaQuery.viewPaddingOf(context).bottom + 100,
-        ),
-        reverse: _isReversed[tabIndex],
-        itemCount: episodes.length,
-        physics: const AlwaysScrollableScrollPhysics(),
-        itemBuilder: (BuildContext context, int itemIndex) {
-          final episode = episodes[itemIndex];
-          final isCurrItem = isCurrTab ? itemIndex == _currentItemIndex : false;
-          Widget episodeItem = _buildEpisodeItem(
-            theme: theme,
-            episode: episode,
-            index: itemIndex,
-            length: episodes.length,
-            isCurrentIndex: isCurrItem,
-          );
-          if (episode is ugc.EpisodeItem &&
-              widget.showTitle &&
-              episode.pages!.length > 1) {
-            return Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                episodeItem,
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 5,
-                  ),
-                  child: PagesPanel(
-                    list: isCurrTab && isCurrItem ? null : episode.pages,
-                    cover: episode.arc?.pic,
-                    heroTag: widget.heroTag,
-                    ugcIntroController: widget.ugcIntroController!,
-                    bvid: episode.bvid ?? IdUtils.av2bv(episode.aid!),
-                  ),
+    return CustomScrollView(
+      key: PageStorageKey(tabIndex),
+      reverse: _isReversed[tabIndex],
+      physics: const AlwaysScrollableScrollPhysics(),
+      controller: _itemScrollController[tabIndex],
+      slivers: [
+        SliverPadding(
+          padding: EdgeInsets.only(
+            top: 7,
+            bottom: MediaQuery.viewPaddingOf(context).bottom + 100,
+          ),
+          sliver: showTitle
+              ? SliverVariedExtentList.builder(
+                  itemCount: episodes.length,
+                  itemBuilder: (context, index) {
+                    final episode = episodes[index];
+                    final isCurrItem = isCurrTab
+                        ? index == _currentItemIndex
+                        : false;
+                    Widget episodeItem = _buildEpisodeItem(
+                      theme: theme,
+                      episode: episode,
+                      index: index,
+                      length: episodes.length,
+                      isCurrentIndex: isCurrItem,
+                    );
+                    if (episode is ugc.EpisodeItem &&
+                        episode.pages!.length > 1) {
+                      return Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          episodeItem, // 98
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 5,
+                            ), // 10
+                            child: PagesPanel(
+                              // 35
+                              list: isCurrTab && isCurrItem
+                                  ? null
+                                  : episode.pages,
+                              cover: episode.arc?.pic,
+                              heroTag: widget.heroTag,
+                              ugcIntroController: widget.ugcIntroController!,
+                              bvid: episode.bvid ?? IdUtils.av2bv(episode.aid!),
+                            ),
+                          ),
+                        ],
+                      );
+                    }
+                    return episodeItem;
+                  },
+                  itemExtentBuilder: (index, _) =>
+                      _calcItemHeight(episodes[index]),
+                )
+              : SliverFixedExtentList.builder(
+                  itemCount: episodes.length,
+                  itemBuilder: (context, index) {
+                    final episode = episodes[index];
+                    final isCurrItem = isCurrTab
+                        ? index == _currentItemIndex
+                        : false;
+                    return _buildEpisodeItem(
+                      theme: theme,
+                      episode: episode,
+                      index: index,
+                      length: episodes.length,
+                      isCurrentIndex: isCurrItem,
+                    );
+                  },
+                  itemExtent: 100,
                 ),
-              ],
-            );
-          }
-          return episodeItem;
-        },
-        itemScrollController: _itemScrollController[tabIndex],
-        separatorBuilder: (context, index) => const SizedBox(height: 2),
-      ),
+        ),
+      ],
     );
   }
 
@@ -382,7 +429,7 @@ class _EpisodePanelState extends CommonCollapseSlidePageState<EpisodePanel> {
             }
             SmartDialog.showToast('切换到：$title');
             widget.onClose?.call();
-            if (!widget.showTitle) {
+            if (!showTitle) {
               _currentItemIndex = index;
             }
             widget.onChangeEpisode(episode);
@@ -391,7 +438,9 @@ class _EpisodePanelState extends CommonCollapseSlidePageState<EpisodePanel> {
                 Get.find<VideoDetailController>(
                   tag: widget.ugcIntroController!.heroTag,
                 ).seasonCid = episode.cid;
-              } catch (_) {}
+              } catch (_) {
+                if (kDebugMode) rethrow;
+              }
             }
           },
           onLongPress: () {
@@ -509,7 +558,7 @@ class _EpisodePanelState extends CommonCollapseSlidePageState<EpisodePanel> {
     );
   }
 
-  Widget _buildFavBtn(LoadingState loadingState) {
+  Widget _buildFavBtn(LoadingState<bool> loadingState) {
     return switch (loadingState) {
       Success(:var response) => mediumButton(
         tooltip: response ? '取消订阅' : '订阅',
@@ -541,9 +590,15 @@ class _EpisodePanelState extends CommonCollapseSlidePageState<EpisodePanel> {
     onPressed: () => widget.onReverse?.call(),
   );
 
+  void _animToTopOrBottom({bool top = true}) {
+    final tabIndex = _currentTabIndex.value;
+    final ctr = _itemScrollController[tabIndex];
+    ctr.animTo(top ^ _isReversed[tabIndex] ? 0 : ctr.position.maxScrollExtent);
+  }
+
   Widget _buildToolbar(ThemeData theme) => Container(
     height: 45,
-    padding: EdgeInsets.symmetric(horizontal: widget.showTitle ? 14 : 6),
+    padding: EdgeInsets.symmetric(horizontal: showTitle ? 14 : 6),
     decoration: BoxDecoration(
       border: Border(
         bottom: BorderSide(
@@ -553,7 +608,7 @@ class _EpisodePanelState extends CommonCollapseSlidePageState<EpisodePanel> {
     ),
     child: Row(
       children: [
-        if (widget.showTitle)
+        if (showTitle)
           Text(
             widget.type.title,
             style: theme.textTheme.titleMedium,
@@ -562,52 +617,31 @@ class _EpisodePanelState extends CommonCollapseSlidePageState<EpisodePanel> {
         mediumButton(
           tooltip: '跳至顶部',
           icon: Icons.vertical_align_top,
-          onPressed: () {
-            try {
-              final currentTabIndex = _currentTabIndex.value;
-              _itemScrollController[currentTabIndex].scrollTo(
-                index: !_isReversed[currentTabIndex]
-                    ? 0
-                    : _getCurrEpisodes.length - 1,
-                duration: const Duration(milliseconds: 200),
-              );
-            } catch (e) {
-              if (kDebugMode) debugPrint('to top: $e');
-            }
-          },
+          onPressed: _animToTopOrBottom,
         ),
         mediumButton(
           tooltip: '跳至底部',
           icon: Icons.vertical_align_bottom,
-          onPressed: () {
-            try {
-              final currentTabIndex = _currentTabIndex.value;
-              _itemScrollController[currentTabIndex].scrollTo(
-                index: !_isReversed[currentTabIndex]
-                    ? _getCurrEpisodes.length - 1
-                    : 0,
-                duration: const Duration(milliseconds: 200),
-              );
-            } catch (e) {
-              if (kDebugMode) debugPrint('to bottom: $e');
-            }
-          },
+          onPressed: () => _animToTopOrBottom(top: false),
         ),
         mediumButton(
           tooltip: '跳至当前',
           icon: Icons.my_location,
           onPressed: () async {
-            try {
-              final currentTabIndex = _currentTabIndex.value;
-              if (currentTabIndex != widget.initialTabIndex) {
-                _tabController.animateTo(widget.initialTabIndex);
-                await Future.delayed(const Duration(milliseconds: 225));
-              }
-              _itemScrollController[widget.initialTabIndex].scrollTo(
-                index: _currentItemIndex,
-                duration: const Duration(milliseconds: 200),
-              );
-            } catch (_) {}
+            final currentTabIndex = _currentTabIndex.value;
+            if (currentTabIndex != widget.initialTabIndex) {
+              _tabController.animateTo(widget.initialTabIndex);
+              await Future.delayed(const Duration(milliseconds: 225));
+            }
+            final ctr = _itemScrollController[widget.initialTabIndex];
+            ctr.animTo(
+              _calcItemOffset(
+                _currentItemIndex,
+              ).clamp(
+                ctr.position.minScrollExtent,
+                ctr.position.maxScrollExtent - 100,
+              ),
+            );
           },
         ),
         if (widget.isSupportReverse == true)

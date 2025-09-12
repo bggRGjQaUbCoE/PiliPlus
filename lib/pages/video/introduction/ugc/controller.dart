@@ -22,7 +22,6 @@ import 'package:PiliPlus/models_new/video/video_detail/section.dart';
 import 'package:PiliPlus/models_new/video/video_detail/staff.dart';
 import 'package:PiliPlus/models_new/video/video_detail/stat_detail.dart';
 import 'package:PiliPlus/models_new/video/video_detail/ugc_season.dart';
-import 'package:PiliPlus/models_new/video/video_relation/data.dart';
 import 'package:PiliPlus/pages/common/common_intro_controller.dart';
 import 'package:PiliPlus/pages/dynamics_repost/view.dart';
 import 'package:PiliPlus/pages/video/controller.dart';
@@ -166,19 +165,18 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
 
   Future<void> queryAllStatus() async {
     var result = await VideoHttp.videoRelation(bvid: bvid);
-    if (result['status']) {
-      VideoRelation data = result['data'];
+    if (result case Success(:var response)) {
       late final stat = videoDetail.value.stat!;
-      if (data.like!) {
+      if (response.like!) {
         stat.like = max(1, stat.like);
       }
-      if (data.favorite!) {
+      if (response.favorite!) {
         stat.favorite = max(1, stat.favorite);
       }
-      hasLike.value = data.like!;
-      hasDislike.value = data.dislike!;
-      coinNum.value = data.coin!;
-      hasFav.value = data.favorite!;
+      hasLike.value = response.like!;
+      hasDislike.value = response.dislike!;
+      coinNum.value = response.coin!;
+      hasFav.value = response.favorite!;
     }
   }
 

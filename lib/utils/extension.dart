@@ -229,9 +229,9 @@ extension ThreeDotItemTypeExt on ThreeDotItemType {
 }
 
 extension FileExt on File {
-  void tryDel({bool recursive = false}) {
+  Future<void> tryDel({bool recursive = false}) async {
     try {
-      delete(recursive: recursive);
+      await delete(recursive: recursive);
     } catch (_) {}
   }
 }

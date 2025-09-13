@@ -18,8 +18,10 @@ abstract class Utils {
 
   static const channel = MethodChannel(Constants.appName);
 
+  @pragma("vm:platform-const")
   static final bool isMobile = Platform.isAndroid || Platform.isIOS;
 
+  @pragma("vm:platform-const")
   static final bool isDesktop =
       Platform.isWindows || Platform.isMacOS || Platform.isLinux;
 

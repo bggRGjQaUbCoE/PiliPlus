@@ -21,10 +21,8 @@ class VideoReplyReplyController extends ReplyController
     required this.rpid,
     required this.dialog,
     required this.replyType,
-    required this.isDialogue,
   });
   final int? dialog;
-  final bool isDialogue;
   int? id;
   // 视频aid 请求时使用的oid
   int oid;
@@ -33,10 +31,15 @@ class VideoReplyReplyController extends ReplyController
   int replyType;
 
   bool hasRoot = false;
-  late final Rx<ReplyInfo?> firstFloor = Rx<ReplyInfo?>(null);
+  ReplyInfo? firstFloor;
 
-  int? index;
-  AnimationController? animController;
+  final index = RxnInt();
+  AnimationController? _controller;
+
+  AnimationController get animController => _controller ??= AnimationController(
+    duration: const Duration(milliseconds: 1000),
+    vsync: this,
+  );
 
   late final horizontalPreview = Pref.horizontalPreview;
 
@@ -52,7 +55,7 @@ class VideoReplyReplyController extends ReplyController
 
   @override
   List<ReplyInfo>? getDataList(response) {
-    return isDialogue ? response.replies : response.root.replies;
+    return dialog != null ? response.replies : response.root.replies;
   }
 
   @override
@@ -68,25 +71,10 @@ class VideoReplyReplyController extends ReplyController
     if (data is DetailListReply) {
       count.value = data.root.count.toInt();
       if (isRefresh && !hasRoot) {
-        firstFloor.value ??= data.root;
+        firstFloor ??= data.root;
       }
       if (id != null) {
-        final id64 = Int64(id!);
-        final index = data.root.replies.indexWhere((item) => item.id == id64);
-        if (index != -1) {
-          this.index = index;
-          animController = AnimationController(
-            duration: const Duration(milliseconds: 300),
-            vsync: this,
-          );
-          WidgetsBinding.instance.addPostFrameCallback((_) async {
-            await Future.delayed(
-              const Duration(milliseconds: 800),
-              () => animController?.forward(), // may dispose
-            );
-            this.index = null;
-          });
-        }
+        setIndexById(Int64(id!), data.root.replies);
         id = null;
       }
     }
@@ -94,8 +82,22 @@ class VideoReplyReplyController extends ReplyController
     return false;
   }
 
+  bool setIndexById(Int64 id64, [List<ReplyInfo>? replies]) {
+    final index = (replies ?? loadingState.value.data!).indexWhere(
+      (item) => item.id == id64,
+    );
+    if (index != -1) {
+      this.index.value = index;
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        animController.forward(from: 0);
+      });
+      return true;
+    }
+    return false;
+  }
+
   @override
-  Future<LoadingState> customGetData() => isDialogue
+  Future<LoadingState> customGetData() => dialog != null
       ? ReplyGrpc.dialogList(
           type: replyType,
           oid: oid,
@@ -114,6 +116,7 @@ class VideoReplyReplyController extends ReplyController
 
   @override
   void queryBySort() {
+    index.value = null;
     mode.value = mode.value == Mode.MAIN_LIST_HOT
         ? Mode.MAIN_LIST_TIME
         : Mode.MAIN_LIST_HOT;
@@ -192,8 +195,8 @@ class VideoReplyReplyController extends ReplyController
 
   @override
   void onClose() {
-    animController?.dispose();
-    animController = null;
+    _controller?.dispose();
+    _controller = null;
     super.dispose();
   }
 }

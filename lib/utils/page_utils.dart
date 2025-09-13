@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:PiliPlus/common/widgets/interactiveviewer_gallery/hero_dialog_route.dart';
 import 'package:PiliPlus/common/widgets/interactiveviewer_gallery/interactiveviewer_gallery.dart';
+import 'package:PiliPlus/common/widgets/marquee.dart';
 import 'package:PiliPlus/grpc/im.dart';
 import 'package:PiliPlus/http/dynamics.dart';
 import 'package:PiliPlus/http/search.dart';
@@ -558,23 +559,23 @@ abstract class PageUtils {
     }
   }
 
-  static void onHorizontalPreview(
-    GlobalKey<ScaffoldState> key,
+  static void onHorizontalPreviewState(
+    ScaffoldState state,
     TickerProvider vsync,
-    List<String> imgList,
+    List<SourceModel> imgList,
     int index,
   ) {
     final ctr = AnimationController(
       vsync: vsync,
       duration: const Duration(milliseconds: 200),
     )..forward();
-    key.currentState?.showBottomSheet(
+    state.showBottomSheet(
       constraints: const BoxConstraints(),
       (context) {
         return FadeTransition(
           opacity: Tween<double>(begin: 0, end: 1).animate(ctr),
           child: InteractiveviewerGallery(
-            sources: imgList.map((url) => SourceModel(url: url)).toList(),
+            sources: imgList,
             initIndex: index,
             onClose: (value) async {
               if (!value) {
@@ -598,6 +599,24 @@ abstract class PageUtils {
       backgroundColor: Colors.transparent,
       sheetAnimationStyle: const AnimationStyle(duration: Duration.zero),
     );
+  }
+
+  static void onHorizontalPreview(
+    BuildContext context,
+    List<SourceModel> imgList,
+    int index,
+  ) {
+    final scaffold = Scaffold.maybeOf(context);
+    if (scaffold != null) {
+      onHorizontalPreviewState(
+        scaffold,
+        ContextSingleTicker(scaffold.context),
+        imgList,
+        index,
+      );
+    } else {
+      imageView(imgList: imgList, initialPage: index);
+    }
   }
 
   static void inAppWebview(

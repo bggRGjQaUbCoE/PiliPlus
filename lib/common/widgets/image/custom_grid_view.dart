@@ -23,6 +23,7 @@ import 'package:PiliPlus/common/widgets/custom_layout.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/models/common/badge_type.dart';
 import 'package:PiliPlus/models/common/image_preview_type.dart';
+import 'package:PiliPlus/utils/context_ext.dart';
 import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
@@ -64,7 +65,7 @@ class CustomGridView extends StatelessWidget {
     required this.picArr,
     this.onViewImage,
     this.onDismissed,
-    this.callback,
+    this.fullScreen = false,
   });
 
   final double maxWidth;
@@ -72,29 +73,32 @@ class CustomGridView extends StatelessWidget {
   final List<ImageModel> picArr;
   final VoidCallback? onViewImage;
   final ValueChanged<int>? onDismissed;
-  final Function(List<String>, int)? callback;
+  final bool fullScreen;
 
-  void onTap(int index) {
-    if (callback != null) {
-      callback!(picArr.map((item) => item.url).toList(), index);
+  void onTap(BuildContext context, int index) {
+    final imgList = picArr.map(
+      (item) {
+        bool isLive = item.isLivePhoto;
+        return SourceModel(
+          sourceType: isLive ? SourceType.livePhoto : SourceType.networkImage,
+          url: item.url,
+          liveUrl: isLive ? item.liveUrl : null,
+          width: isLive ? item.width.toInt() : null,
+          height: isLive ? item.height.toInt() : null,
+        );
+      },
+    ).toList();
+    onViewImage?.call();
+    if (!fullScreen && Pref.horizontalPreview && context.isLandscape) {
+      PageUtils.onHorizontalPreview(
+        context,
+        imgList,
+        index,
+      );
     } else {
-      onViewImage?.call();
       PageUtils.imageView(
         initialPage: index,
-        imgList: picArr.map(
-          (item) {
-            bool isLive = item.isLivePhoto;
-            return SourceModel(
-              sourceType: isLive
-                  ? SourceType.livePhoto
-                  : SourceType.networkImage,
-              url: item.url,
-              liveUrl: isLive ? item.liveUrl : null,
-              width: isLive ? item.width.toInt() : null,
-              height: isLive ? item.height.toInt() : null,
-            );
-          },
-        ).toList(),
+        imgList: imgList,
         onDismissed: onDismissed,
       );
     }
@@ -195,7 +199,7 @@ class CustomGridView extends StatelessWidget {
               child: Hero(
                 tag: item.url,
                 child: GestureDetector(
-                  onTap: () => onTap(index),
+                  onTap: () => onTap(context, index),
                   child: Stack(
                     clipBehavior: Clip.none,
                     alignment: Alignment.center,

@@ -7,7 +7,9 @@ import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/pages/video/reply/controller.dart';
 import 'package:PiliPlus/pages/video/reply/widgets/reply_item_grpc.dart';
+import 'package:PiliPlus/pages/video/reply_reply/view.dart';
 import 'package:PiliPlus/utils/feed_back.dart';
+import 'package:easy_debounce/easy_throttle.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:get/get.dart';
@@ -17,19 +19,15 @@ class VideoReplyPanel extends StatefulWidget {
     super.key,
     this.replyLevel = 1,
     required this.heroTag,
-    required this.replyReply,
     this.onViewImage,
     this.onDismissed,
-    this.callback,
     required this.needController,
   });
 
   final int replyLevel;
   final String heroTag;
-  final Function(ReplyInfo replyItem, int? rpid) replyReply;
   final VoidCallback? onViewImage;
   final ValueChanged<int>? onDismissed;
-  final Function(List<String>, int)? callback;
   final bool needController;
 
   @override
@@ -218,7 +216,7 @@ class _VideoReplyPanelState extends State<VideoReplyPanel>
                     return ReplyItemGrpc(
                       replyItem: response[index],
                       replyLevel: widget.replyLevel,
-                      replyReply: widget.replyReply,
+                      replyReply: replyReply,
                       onReply: (replyItem) => _videoReplyController.onReply(
                         context,
                         replyItem: replyItem,
@@ -229,7 +227,6 @@ class _VideoReplyPanelState extends State<VideoReplyPanel>
                       getTag: () => heroTag,
                       onViewImage: widget.onViewImage,
                       onDismissed: widget.onDismissed,
-                      callback: widget.callback,
                       onCheckReply: (item) => _videoReplyController
                           .onCheckReply(item, isManual: true),
                       onToggleTop: (item) => _videoReplyController.onToggleTop(
@@ -252,5 +249,28 @@ class _VideoReplyPanelState extends State<VideoReplyPanel>
         onReload: _videoReplyController.onReload,
       ),
     };
+  }
+
+  // 展示二级回复
+  void replyReply(ReplyInfo replyItem, int? id) {
+    EasyThrottle.throttle('replyReply', const Duration(milliseconds: 500), () {
+      int oid = replyItem.oid.toInt();
+      int rpid = replyItem.id.toInt();
+      showBottomSheet(
+        context: context,
+        backgroundColor: Colors.transparent,
+        constraints: const BoxConstraints(),
+        builder: (context) => VideoReplyReplyPanel(
+          id: id,
+          oid: oid,
+          rpid: rpid,
+          firstFloor: replyItem,
+          replyType: _videoReplyController.videoType.replyType,
+          isVideoDetail: true,
+          onViewImage: widget.onViewImage,
+          onDismissed: widget.onDismissed,
+        ),
+      );
+    });
   }
 }

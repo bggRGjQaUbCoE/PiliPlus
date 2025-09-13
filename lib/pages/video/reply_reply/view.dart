@@ -11,7 +11,6 @@ import 'package:PiliPlus/pages/video/reply/widgets/reply_item_grpc.dart';
 import 'package:PiliPlus/pages/video/reply_reply/controller.dart';
 import 'package:PiliPlus/utils/context_ext.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
-import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide ContextExtensionss;
@@ -54,10 +53,6 @@ class _VideoReplyReplyPanelState
     '${widget.rpid}${widget.dialog}${widget.isDialogue}',
   );
 
-  bool get _horizontalPreview =>
-      _controller.horizontalPreview && context.isLandscape;
-  Function(List<String> imgList, int index)? _imageCallback;
-
   Animation<Color?>? colorAnimation;
 
   @override
@@ -81,19 +76,6 @@ class _VideoReplyReplyPanelState
   void dispose() {
     Get.delete<VideoReplyReplyController>(tag: _tag);
     super.dispose();
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _imageCallback = _horizontalPreview
-        ? (imgList, index) => PageUtils.onHorizontalPreview(
-            _key,
-            this,
-            imgList,
-            index,
-          )
-        : null;
   }
 
   @override
@@ -264,7 +246,6 @@ class _VideoReplyReplyPanelState
             upMid: _controller.upMid,
             onViewImage: widget.onViewImage,
             onDismissed: widget.onDismissed,
-            callback: _imageCallback,
             onCheckReply: (item) =>
                 _controller.onCheckReply(item, isManual: true),
           ),
@@ -346,7 +327,6 @@ class _VideoReplyReplyPanelState
       ),
       onViewImage: widget.onViewImage,
       onDismissed: widget.onDismissed,
-      callback: _imageCallback,
       onCheckReply: (item) => _controller.onCheckReply(item, isManual: true),
     );
   }

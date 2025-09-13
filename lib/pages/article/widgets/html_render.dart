@@ -14,7 +14,6 @@ Widget htmlRender({
   int? imgCount,
   List<String>? imgList,
   required double maxWidth,
-  Function(List<String>, int)? callback,
 }) {
   // if (kDebugMode) debugPrint('htmlRender');
   final extensions = [
@@ -51,14 +50,10 @@ Widget htmlRender({
             tag: imgUrl,
             child: GestureDetector(
               onTap: () {
-                if (callback != null) {
-                  callback([imgUrl], 0);
-                } else {
-                  PageUtils.imageView(
-                    imgList: [SourceModel(url: imgUrl)],
-                    quality: 60,
-                  );
-                }
+                PageUtils.imageView(
+                  imgList: [SourceModel(url: imgUrl)],
+                  quality: 60,
+                );
               },
               child: CachedNetworkImage(
                 width: size,

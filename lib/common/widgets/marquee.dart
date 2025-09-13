@@ -142,7 +142,7 @@ abstract class MarqueeRender extends RenderBox
       if (value._ticker != null) {
         value._ticker!.absorbTicker(_ticker._ticker!);
       } else {
-        value.createTicker(_onTick);
+        value.createTicker(_onTick).start();
       }
     }
     _ticker.cancel();
@@ -223,7 +223,7 @@ abstract class MarqueeRender extends RenderBox
 
     if (_distance > 0) {
       updateSize();
-      _ticker.createTicker(_onTick);
+      _ticker.createTicker(_onTick).start();
     } else {
       _ticker.cancel();
     }
@@ -394,13 +394,14 @@ class _MarqueeSimulation extends Simulation {
   );
 }
 
-class ContextSingleTicker {
+class ContextSingleTicker implements TickerProvider {
   Ticker? _ticker;
   BuildContext context;
 
   ContextSingleTicker(this.context);
 
-  void createTicker(TickerCallback onTick) {
+  @override
+  Ticker createTicker(TickerCallback onTick) {
     assert(() {
       if (_ticker == null) {
         return true;
@@ -422,10 +423,11 @@ class ContextSingleTicker {
     _ticker = Ticker(
       onTick,
       debugLabel: kDebugMode ? 'created by ${describeIdentity(this)}' : null,
-    )..start();
+    );
     _tickerModeNotifier = TickerMode.getNotifier(context)
       ..addListener(updateTicker);
     updateTicker(); // Sets _ticker.mute correctly.
+    return _ticker!;
   }
 
   void reset() {

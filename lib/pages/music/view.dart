@@ -164,7 +164,6 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
                 child: Padding(
                   padding: EdgeInsets.only(right: padding),
                   child: Scaffold(
-                    key: scaffoldKey,
                     backgroundColor: Colors.transparent,
                     resizeToAvoidBottomInset: false,
                     body: refreshIndicator(

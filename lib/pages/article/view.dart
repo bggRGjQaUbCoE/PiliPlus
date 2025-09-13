@@ -145,7 +145,6 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
           child: Padding(
             padding: EdgeInsets.only(right: padding),
             child: Scaffold(
-              key: scaffoldKey,
               backgroundColor: Colors.transparent,
               resizeToAvoidBottomInset: false,
               body: refreshIndicator(
@@ -179,7 +178,6 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
             // if (kDebugMode) debugPrint('json page');
             content = OpusContent(
               opus: controller.opus!,
-              callback: imageCallback,
               maxWidth: maxWidth,
             );
           } else if (controller.opusData?.modules.moduleBlocked != null) {
@@ -201,7 +199,6 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
                   context: context,
                   html: controller.articleData!.content!,
                   maxWidth: maxWidth,
-                  callback: imageCallback,
                 ),
               );
             } else {
@@ -212,7 +209,6 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
                     context: context,
                     element: res.body!.children[index],
                     maxWidth: maxWidth,
-                    callback: imageCallback,
                   );
                 },
                 separatorBuilder: (context, index) =>
@@ -444,7 +440,6 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
                       onDelete: (item, subIndex) =>
                           controller.onRemove(index, item, subIndex),
                       upMid: controller.upMid,
-                      callback: imageCallback,
                       onCheckReply: (item) =>
                           controller.onCheckReply(item, isManual: true),
                       onToggleTop: (item) => controller.onToggleTop(

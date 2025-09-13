@@ -51,7 +51,6 @@ class ReplyItemGrpc extends StatelessWidget {
     this.getTag,
     this.onViewImage,
     this.onDismissed,
-    this.callback,
     this.onCheckReply,
     this.onToggleTop,
   });
@@ -66,7 +65,6 @@ class ReplyItemGrpc extends StatelessWidget {
   final Function? getTag;
   final VoidCallback? onViewImage;
   final ValueChanged<int>? onDismissed;
-  final Function(List<String>, int)? callback;
   final ValueChanged<ReplyInfo>? onCheckReply;
   final ValueChanged<ReplyInfo>? onToggleTop;
 
@@ -312,7 +310,6 @@ class ReplyItemGrpc extends StatelessWidget {
                     .toList(),
                 onViewImage: onViewImage,
                 onDismissed: onDismissed,
-                callback: callback,
               ),
             ),
           ),

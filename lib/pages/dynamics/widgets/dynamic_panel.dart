@@ -12,7 +12,6 @@ class DynamicPanel extends StatelessWidget {
   final double maxWidth;
   final bool isDetail;
   final ValueChanged? onRemove;
-  final Function(List<String>, int)? callback;
   final bool isSave;
   final Function(bool isTop, dynamic dynId)? onSetTop;
   final VoidCallback? onBlock;
@@ -25,7 +24,6 @@ class DynamicPanel extends StatelessWidget {
     required this.maxWidth,
     this.isDetail = false,
     this.onRemove,
-    this.callback,
     this.isSave = false,
     this.onSetTop,
     this.onBlock,
@@ -80,7 +78,6 @@ class DynamicPanel extends StatelessWidget {
               isDetail: isDetail,
               item: item,
               floor: 1,
-              callback: callback,
               maxWidth: maxWidth,
             ),
             const SizedBox(height: 2),

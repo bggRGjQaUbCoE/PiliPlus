@@ -15,7 +15,6 @@ Widget content(
   required bool isSave,
   required bool isDetail,
   required double maxWidth,
-  Function(List<String>, int)? callback,
 }) {
   if (floor == 1) {
     maxWidth -= 24;
@@ -99,7 +98,7 @@ Widget content(
                   ),
                 )
                 .toList(),
-            callback: callback,
+            fullScreen: true,
           ),
       ],
     ),

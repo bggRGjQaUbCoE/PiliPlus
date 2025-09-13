@@ -13,7 +13,6 @@ import 'package:PiliPlus/pages/video/reply_reply/view.dart';
 import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
-import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:easy_debounce/easy_throttle.dart';
@@ -22,15 +21,12 @@ import 'package:flutter/rendering.dart';
 import 'package:get/get.dart' hide ContextExtensionss;
 
 abstract class CommonDynPageState<T extends StatefulWidget> extends State<T>
-    with TickerProviderStateMixin {
+    with SingleTickerProviderStateMixin {
   CommonDynController get controller;
 
   late final scrollController = ScrollController()..addListener(listener);
 
-  late final scaffoldKey = GlobalKey<ScaffoldState>();
-
   bool get horizontalPreview => !isPortrait && controller.horizontalPreview;
-  Function(List<String> imgList, int index)? imageCallback;
 
   dynamic get arguments;
 
@@ -87,17 +83,6 @@ abstract class CommonDynPageState<T extends StatefulWidget> extends State<T>
     final size = MediaQuery.sizeOf(context);
     maxWidth = size.width;
     isPortrait = size.isPortrait;
-    imageCallback = horizontalPreview
-        ? (imgList, index) {
-            hideFab();
-            PageUtils.onHorizontalPreview(
-              scaffoldKey,
-              this,
-              imgList,
-              index,
-            );
-          }
-        : null;
     padding = MediaQuery.viewPaddingOf(context);
   }
 
@@ -193,7 +178,7 @@ abstract class CommonDynPageState<T extends StatefulWidget> extends State<T>
                       onDelete: (item, subIndex) =>
                           controller.onRemove(index, item, subIndex),
                       upMid: controller.upMid,
-                      callback: imageCallback,
+                      onViewImage: hideFab,
                       onCheckReply: (item) =>
                           controller.onCheckReply(item, isManual: true),
                       onToggleTop: (item) => controller.onToggleTop(
@@ -270,7 +255,7 @@ abstract class CommonDynPageState<T extends StatefulWidget> extends State<T>
           arguments: arguments,
         );
       } else {
-        ScaffoldState? scaffoldState = Scaffold.maybeOf(context);
+        final scaffoldState = Scaffold.maybeOf(context);
         if (scaffoldState != null) {
           hideFab();
           scaffoldState.showBottomSheet(

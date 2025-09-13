@@ -28,13 +28,11 @@ import 'package:re_highlight/styles/github.dart';
 
 class OpusContent extends StatelessWidget {
   final List<ArticleContentModel> opus;
-  final void Function(List<String>, int)? callback;
   final double maxWidth;
 
   const OpusContent({
     super.key,
     required this.opus,
-    this.callback,
     required this.maxWidth,
   });
 
@@ -183,14 +181,10 @@ class OpusContent extends StatelessWidget {
                   tag: pic.url!,
                   child: GestureDetector(
                     onTap: () {
-                      if (callback != null) {
-                        callback!([pic.url!], 0);
-                      } else {
-                        PageUtils.imageView(
-                          imgList: [SourceModel(url: pic.url!)],
-                          quality: 60,
-                        );
-                      }
+                      PageUtils.imageView(
+                        imgList: [SourceModel(url: pic.url!)],
+                        quality: 60,
+                      );
                     },
                     child: Center(
                       child: CachedNetworkImage(

@@ -7,8 +7,6 @@ import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/widgets/custom_icon.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart';
-import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
-    show ReplyInfo;
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/main.dart';
 import 'package:PiliPlus/models/common/episode_panel_type.dart';
@@ -33,7 +31,6 @@ import 'package:PiliPlus/pages/video/member/view.dart';
 import 'package:PiliPlus/pages/video/related/view.dart';
 import 'package:PiliPlus/pages/video/reply/controller.dart';
 import 'package:PiliPlus/pages/video/reply/view.dart';
-import 'package:PiliPlus/pages/video/reply_reply/view.dart';
 import 'package:PiliPlus/pages/video/view_point/view.dart';
 import 'package:PiliPlus/pages/video/widgets/focus.dart';
 import 'package:PiliPlus/pages/video/widgets/header_control.dart';
@@ -54,7 +51,6 @@ import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:auto_orientation/auto_orientation.dart';
-import 'package:easy_debounce/easy_throttle.dart';
 import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart';
 import 'package:floating/floating.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
@@ -116,9 +112,6 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
         (videoDetail.ugcSeason != null ||
             ((videoDetail.pages?.length ?? 0) > 1));
   }
-
-  bool get _horizontalPreview =>
-      !isPortrait && videoDetailController.plPlayerController.horizontalPreview;
 
   final GlobalKey relatedVideoPanelKey = GlobalKey();
   final GlobalKey videoPlayerKey = GlobalKey();
@@ -468,8 +461,6 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     plPlayerController?.addPositionListener(positionListener);
   }
 
-  Function(List<String> imgList, int index)? _imageCallback;
-
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -496,14 +487,6 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     themeData = videoDetailController.plPlayerController.darkVideoPage
         ? MyApp.darkThemeData ?? Theme.of(context)
         : Theme.of(context);
-    _imageCallback = _horizontalPreview
-        ? (imgList, index) => PageUtils.onHorizontalPreview(
-            videoDetailController.childKey,
-            this,
-            imgList,
-            index,
-          )
-        : null;
   }
 
   void animListener() {
@@ -578,7 +561,6 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
         final isFullScreen = this.isFullScreen;
         return Scaffold(
           resizeToAvoidBottomInset: false,
-          key: videoDetailController.scaffoldKey,
           appBar: isFullScreen
               ? null
               : PreferredSize(
@@ -990,7 +972,6 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
       final padding = MediaQuery.viewPaddingOf(context);
       return Scaffold(
         resizeToAvoidBottomInset: false,
-        key: videoDetailController.scaffoldKey,
         appBar: isFullScreen
             ? null
             : AppBar(backgroundColor: Colors.black, toolbarHeight: 0),
@@ -1164,7 +1145,6 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     final padding = MediaQuery.viewPaddingOf(context);
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      key: videoDetailController.scaffoldKey,
       appBar: isFullScreen
           ? null
           : AppBar(backgroundColor: Colors.black, toolbarHeight: 0),
@@ -2033,33 +2013,9 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     key: videoReplyPanelKey,
     needController: needCtr,
     heroTag: heroTag,
-    replyReply: replyReply,
     onViewImage: videoDetailController.onViewImage,
     onDismissed: videoDetailController.onDismissed,
-    callback: _imageCallback,
   );
-
-  // 展示二级回复
-  void replyReply(ReplyInfo replyItem, int? id) {
-    EasyThrottle.throttle('replyReply', const Duration(milliseconds: 500), () {
-      int oid = replyItem.oid.toInt();
-      int rpid = replyItem.id.toInt();
-      videoDetailController.childKey.currentState?.showBottomSheet(
-        backgroundColor: Colors.transparent,
-        constraints: const BoxConstraints(),
-        (context) => VideoReplyReplyPanel(
-          id: id,
-          oid: oid,
-          rpid: rpid,
-          firstFloor: replyItem,
-          replyType: _videoReplyController.videoType.replyType,
-          isVideoDetail: true,
-          onViewImage: videoDetailController.onViewImage,
-          onDismissed: videoDetailController.onDismissed,
-        ),
-      );
-    });
-  }
 
   // ai总结
   void showAiBottomSheet() {

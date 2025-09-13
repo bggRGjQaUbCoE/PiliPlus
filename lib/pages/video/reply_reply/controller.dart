@@ -117,11 +117,18 @@ class VideoReplyReplyController extends ReplyController
 
   @override
   void queryBySort() {
-    index.value = null;
     mode.value = mode.value == Mode.MAIN_LIST_HOT
         ? Mode.MAIN_LIST_TIME
         : Mode.MAIN_LIST_HOT;
     onReload();
+  }
+
+  @override
+  Future<void> onReload() {
+    if (loadingState.value.isSuccess) {
+      index.value = null;
+    }
+    return super.onReload();
   }
 
   @override

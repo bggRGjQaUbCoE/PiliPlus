@@ -493,13 +493,21 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
                                   cid: item.mvCid!,
                                   aid: item.mvAid,
                                 ),
-                                child: ColoredBox(
-                                  color: theme.colorScheme.secondaryContainer
-                                      .withValues(alpha: 0.5),
+                                child: DecoratedBox(
+                                  decoration: BoxDecoration(
+                                    borderRadius: const BorderRadius.all(
+                                      Radius.circular(4),
+                                    ),
+                                    color: theme.colorScheme.secondaryContainer
+                                        .withValues(alpha: 0.5),
+                                    border: const Border.fromBorderSide(
+                                      BorderSide(color: Colors.transparent),
+                                    ),
+                                  ),
                                   child: Padding(
                                     padding: const EdgeInsets.symmetric(
-                                      vertical: 2,
-                                      horizontal: 3,
+                                      vertical: 3,
+                                      horizontal: 4,
                                     ),
                                     child: Row(
                                       mainAxisSize: MainAxisSize.min,

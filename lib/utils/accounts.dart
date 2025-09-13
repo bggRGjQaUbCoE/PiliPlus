@@ -5,7 +5,7 @@ import 'package:PiliPlus/utils/accounts/account.dart';
 import 'package:PiliPlus/utils/login_utils.dart';
 import 'package:hive/hive.dart';
 
-class Accounts {
+abstract class Accounts {
   static late final Box<LoginAccount> account;
   static final Map<AccountType, Account> accountMode = {};
   static Account get main => accountMode[AccountType.main]!;

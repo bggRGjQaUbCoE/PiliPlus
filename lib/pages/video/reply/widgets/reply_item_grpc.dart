@@ -51,9 +51,9 @@ class ReplyItemGrpc extends StatelessWidget {
     this.getTag,
     this.onViewImage,
     this.onDismissed,
-    this.callback,
     this.onCheckReply,
     this.onToggleTop,
+    this.jumpToDialogue,
   });
   final ReplyInfo replyItem;
   final int replyLevel;
@@ -66,9 +66,9 @@ class ReplyItemGrpc extends StatelessWidget {
   final Function? getTag;
   final VoidCallback? onViewImage;
   final ValueChanged<int>? onDismissed;
-  final Function(List<String>, int)? callback;
   final ValueChanged<ReplyInfo>? onCheckReply;
   final ValueChanged<ReplyInfo>? onToggleTop;
+  final VoidCallback? jumpToDialogue;
 
   static final _voteRegExp = RegExp(r"^\{vote:\d+?\}$");
   static final _timeRegExp = RegExp(r'^\b(?:\d+[:：])?\d+[:：]\d+\b$');
@@ -312,7 +312,6 @@ class ReplyItemGrpc extends StatelessWidget {
                     .toList(),
                 onViewImage: onViewImage,
                 onDismissed: onDismissed,
-                callback: callback,
               ),
             ),
           ),
@@ -409,6 +408,24 @@ class ReplyItemGrpc extends StatelessWidget {
               style: style,
               child: Text(
                 '查看对话',
+                style: TextStyle(
+                  color: theme.colorScheme.outline,
+                  fontSize: theme.textTheme.labelMedium!.fontSize,
+                  fontWeight: FontWeight.normal,
+                ),
+              ),
+            ),
+          )
+        else if (replyLevel == 3 &&
+            needDivider &&
+            replyItem.parent != replyItem.root)
+          SizedBox(
+            height: 32,
+            child: TextButton(
+              onPressed: jumpToDialogue,
+              style: style,
+              child: Text(
+                '跳转回复',
                 style: TextStyle(
                   color: theme.colorScheme.outline,
                   fontSize: theme.textTheme.labelMedium!.fontSize,

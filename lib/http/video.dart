@@ -278,7 +278,9 @@ class VideoHttp {
     }
   }
 
-  static Future videoRelation({required dynamic bvid}) async {
+  static Future<LoadingState<VideoRelation>> videoRelation({
+    required String bvid,
+  }) async {
     var res = await Request().get(
       Api.videoRelation,
       queryParameters: {
@@ -287,15 +289,9 @@ class VideoHttp {
       },
     );
     if (res.data['code'] == 0) {
-      return {
-        'status': true,
-        'data': VideoRelation.fromJson(res.data['data']),
-      };
+      return Success(VideoRelation.fromJson(res.data['data']));
     } else {
-      return {
-        'status': false,
-        'msg': res.data['message'],
-      };
+      return Error(res.data['message']);
     }
   }
 

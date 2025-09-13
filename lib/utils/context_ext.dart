@@ -8,24 +8,24 @@ extension ContextExtensions on BuildContext {
   /// The same of [MediaQuery.of(context).size.height]
   /// Note: updates when you rezise your screen (like on a browser or
   /// desktop window)
-  double get height => mediaQuerySize.height;
+  double get height => MediaQuery.heightOf(this);
 
   /// The same of [MediaQuery.of(context).size.width]
   /// Note: updates when you rezise your screen (like on a browser or
   /// desktop window)
-  double get width => mediaQuerySize.width;
+  double get width => MediaQuery.widthOf(this);
 
   /// similar to [MediaQuery.of(context).padding]
   ThemeData get theme => Theme.of(this);
 
   /// Check if dark mode theme is enable
-  bool get isDarkMode => (theme.brightness == Brightness.dark);
+  bool get isDarkMode => (Theme.brightnessOf(this) == Brightness.dark);
 
   /// give access to Theme.of(context).iconTheme.color
-  Color? get iconColor => theme.iconTheme.color;
+  Color? get iconColor => IconTheme.of(this).color;
 
   /// similar to [MediaQuery.of(context).padding]
-  TextTheme get textTheme => Theme.of(this).textTheme;
+  TextTheme get textTheme => TextTheme.of(this);
 
   /// similar to [MediaQuery.of(context).padding]
   EdgeInsets get mediaQueryPadding => MediaQuery.viewPaddingOf(this);

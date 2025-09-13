@@ -42,8 +42,6 @@ class _NoteListPageState extends CommonSlidePageState<NoteListPage> {
     tag: widget.heroTag,
   );
 
-  final _key = GlobalKey<ScaffoldState>();
-
   @override
   void dispose() {
     Get.delete<NoteListPageCtr>(tag: widget.heroTag);
@@ -54,7 +52,6 @@ class _NoteListPageState extends CommonSlidePageState<NoteListPage> {
   Widget buildPage(ThemeData theme) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      key: _key,
       body: Column(
         children: [
           SizedBox(
@@ -129,30 +126,32 @@ class _NoteListPageState extends CommonSlidePageState<NoteListPage> {
                 ),
               ),
             ),
-            child: FilledButton.tonal(
-              style: FilledButton.styleFrom(
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                padding: EdgeInsets.zero,
-                shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(6)),
-                ),
-              ),
-              onPressed: () {
-                if (!Accounts.main.isLogin) {
-                  SmartDialog.showToast('账号未登录');
-                  return;
-                }
-                _key.currentState?.showBottomSheet(
-                  constraints: const BoxConstraints(),
-                  (context) => WebviewPage(
-                    oid: widget.oid,
-                    title: widget.title,
-                    url:
-                        'https://www.bilibili.com/h5/note-app?oid=${widget.oid}&pagefrom=ugcvideo&is_stein_gate=${widget.isStein ? 1 : 0}',
+            child: Builder(
+              builder: (context) => FilledButton.tonal(
+                style: FilledButton.styleFrom(
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  padding: EdgeInsets.zero,
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(6)),
                   ),
-                );
-              },
-              child: const Text('开始记笔记'),
+                ),
+                onPressed: () {
+                  if (!Accounts.main.isLogin) {
+                    SmartDialog.showToast('账号未登录');
+                    return;
+                  }
+                  Scaffold.of(context).showBottomSheet(
+                    constraints: const BoxConstraints(),
+                    (context) => WebviewPage(
+                      oid: widget.oid,
+                      title: widget.title,
+                      url:
+                          'https://www.bilibili.com/h5/note-app?oid=${widget.oid}&pagefrom=ugcvideo&is_stein_gate=${widget.isStein ? 1 : 0}',
+                    ),
+                  );
+                },
+                child: const Text('开始记笔记'),
+              ),
             ),
           ),
         ],

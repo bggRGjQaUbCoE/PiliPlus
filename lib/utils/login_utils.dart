@@ -25,7 +25,7 @@ import 'package:flutter_inappwebview/flutter_inappwebview.dart' as web;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 
-class LoginUtils {
+abstract class LoginUtils {
   static final random = Random();
 
   static FutureOr setWebCookie([Account? account]) {

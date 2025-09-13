@@ -13,7 +13,6 @@ List<Widget> dynContent(
   required bool isSave,
   required bool isDetail,
   required double maxWidth,
-  Function(List<String>, int)? callback,
 }) {
   final moduleDynamic = item.modules.moduleDynamic;
   return [
@@ -25,7 +24,6 @@ List<Widget> dynContent(
         isDetail: isDetail,
         item: item,
         floor: floor,
-        callback: callback,
         maxWidth: maxWidth,
       ),
     module(
@@ -35,7 +33,6 @@ List<Widget> dynContent(
       isDetail: isDetail,
       item: item,
       floor: floor,
-      callback: callback,
       maxWidth: maxWidth,
     ),
     if (moduleDynamic?.additional case final additional?)

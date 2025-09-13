@@ -1,6 +1,6 @@
 import 'package:html/parser.dart' show parse;
 
-class Em {
+abstract class Em {
   static final _exp = RegExp('<[^>]*>([^<]*)</[^>]*>');
 
   static String regCate(String origin) {

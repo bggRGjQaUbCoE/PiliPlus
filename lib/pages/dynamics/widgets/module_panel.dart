@@ -37,7 +37,6 @@ Widget module(
   required bool isSave,
   required bool isDetail,
   required double maxWidth,
-  Function(List<String>, int)? callback,
 }) {
   final moduleDynamic = item.modules.moduleDynamic;
   final major = moduleDynamic?.major;
@@ -74,7 +73,6 @@ Widget module(
         floor: floor,
         isSave: isSave,
         isDetail: isDetail,
-        callback: callback,
         maxWidth: maxWidth,
       );
     // 转发
@@ -85,7 +83,6 @@ Widget module(
         isSave: isSave,
         orig: item.orig!,
         isDetail: isDetail,
-        callback: callback,
         floor: floor + 1,
         maxWidth: maxWidth,
       );
@@ -314,7 +311,6 @@ Widget module(
         isDetail: isDetail,
         item: item,
         floor: floor,
-        callback: callback,
         maxWidth: maxWidth,
       );
 

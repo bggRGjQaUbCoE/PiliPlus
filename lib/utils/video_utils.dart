@@ -4,7 +4,7 @@ import 'package:PiliPlus/models_new/live/live_room_play_info/codec.dart';
 import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 
-class VideoUtils {
+abstract class VideoUtils {
   static String cdnService = Pref.defaultCDNService;
   static bool disableAudioCDN = Pref.disableAudioCDN;
 

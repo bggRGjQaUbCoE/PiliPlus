@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart' show kDebugMode, debugPrint;
 import 'package:get/get_utils/get_utils.dart';
 
-class NumUtils {
+abstract class NumUtils {
   static final _numRegExp = RegExp(r'([\d\.]+)([千万亿])?');
 
   static int _getUnit(String? unit) {

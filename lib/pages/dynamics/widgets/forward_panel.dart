@@ -16,7 +16,6 @@ Widget forwardPanel(
   required bool isSave,
   required bool isDetail,
   required double maxWidth,
-  Function(List<String>, int)? callback,
 }) {
   final moduleDynamic = orig.modules.moduleDynamic;
   final major = moduleDynamic?.major;
@@ -44,7 +43,6 @@ Widget forwardPanel(
           isDetail: isDetail,
           item: orig,
           floor: floor + 1,
-          callback: callback,
           maxWidth: maxWidth - 30,
         ),
       ],

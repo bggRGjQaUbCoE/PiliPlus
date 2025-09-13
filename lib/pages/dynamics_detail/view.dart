@@ -108,7 +108,6 @@ class _DynamicDetailPageState extends CommonDynPageState<DynamicDetailPage> {
               child: DynamicPanel(
                 item: controller.dynItem,
                 isDetail: true,
-                callback: imageCallback,
                 maxWidth: maxWidth - this.padding.horizontal - 2 * padding,
                 isDetailPortraitW: isPortrait,
               ),
@@ -139,7 +138,6 @@ class _DynamicDetailPageState extends CommonDynPageState<DynamicDetailPage> {
                     child: DynamicPanel(
                       item: controller.dynItem,
                       isDetail: true,
-                      callback: imageCallback,
                       maxWidth:
                           (maxWidth - this.padding.horizontal) *
                               (flex / (flex + flex1)) -
@@ -156,7 +154,6 @@ class _DynamicDetailPageState extends CommonDynPageState<DynamicDetailPage> {
             child: Padding(
               padding: EdgeInsets.only(right: padding),
               child: Scaffold(
-                key: scaffoldKey,
                 backgroundColor: Colors.transparent,
                 resizeToAvoidBottomInset: false,
                 body: refreshIndicator(

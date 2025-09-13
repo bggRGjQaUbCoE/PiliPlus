@@ -19,7 +19,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 
-class PiliScheme {
+abstract class PiliScheme {
   static late AppLinks appLinks;
   static StreamSubscription? listener;
   static final uriDigitRegExp = RegExp(r'/(\d+)');

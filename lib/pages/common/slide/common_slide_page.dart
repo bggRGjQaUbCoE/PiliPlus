@@ -12,7 +12,7 @@ abstract class CommonSlidePage extends StatefulWidget {
 }
 
 abstract class CommonSlidePageState<T extends CommonSlidePage> extends State<T>
-    with TickerProviderStateMixin {
+    with SingleTickerProviderStateMixin {
   Offset? downPos;
   bool? isSliding;
   late double maxWidth;

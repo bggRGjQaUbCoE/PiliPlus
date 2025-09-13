@@ -12,7 +12,6 @@ Widget livePanelSub(
   required DynamicItemModel item,
   required bool isDetail,
   required double maxWidth,
-  Function(List<String>, int)? callback,
 }) {
   LivePlayInfo? live = item
       .modules

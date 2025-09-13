@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:PiliPlus/models/user/info.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_info_model/episode.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_info_model/new_ep.dart';
 import 'package:PiliPlus/models_new/video/video_detail/episode.dart'
@@ -37,22 +36,23 @@ class PgcPanel extends StatefulWidget {
 
 class _PgcPanelState extends State<PgcPanel> {
   late int currentIndex;
-  final ScrollController listViewScrollCtr = ScrollController();
+  late final ScrollController listViewScrollCtr;
   // 默认未开通
-  late int vipStatus;
+  late final bool vipStatus;
   late int cid;
   late final VideoDetailController videoDetailCtr;
-  StreamSubscription? _listener;
+  late final StreamSubscription<int> _listener;
 
   @override
   void initState() {
     super.initState();
     cid = widget.cid!;
     currentIndex = widget.pages.indexWhere((e) => e.cid == cid);
-    scrollToIndex();
+    listViewScrollCtr = ScrollController(
+      initialScrollOffset: currentIndex * 150.0,
+    );
 
-    UserInfoData? userInfo = Pref.userInfoCache;
-    vipStatus = userInfo?.vipStatus ?? 0;
+    vipStatus = Pref.userInfoCache?.vipStatus != 1;
 
     videoDetailCtr = Get.find<VideoDetailController>(tag: widget.heroTag);
 
@@ -67,7 +67,7 @@ class _PgcPanelState extends State<PgcPanel> {
 
   @override
   void dispose() {
-    _listener?.cancel();
+    _listener.cancel();
     listViewScrollCtr.dispose();
     super.dispose();
   }
@@ -134,6 +134,7 @@ class _PgcPanelState extends State<PgcPanel> {
         SizedBox(
           height: 60,
           child: ListView.builder(
+            key: const PageStorageKey(_PgcPanelState),
             padding: EdgeInsets.zero,
             controller: listViewScrollCtr,
             scrollDirection: Axis.horizontal,
@@ -163,7 +164,7 @@ class _PgcPanelState extends State<PgcPanel> {
         child: InkWell(
           borderRadius: const BorderRadius.all(Radius.circular(6)),
           onTap: () {
-            if (item.badge == '会员' && vipStatus != 1) {
+            if (item.badge == '会员' && vipStatus) {
               SmartDialog.showToast('需要大会员');
             }
             widget.onChangeEpisode(item);

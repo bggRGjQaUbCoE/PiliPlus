@@ -246,7 +246,7 @@ class _InteractiveviewerGalleryState extends State<InteractiveviewerGallery>
       children: [
         InteractiveViewerBoundary(
           controller: _transformationController,
-          boundaryWidth: MediaQuery.sizeOf(context).width,
+          boundaryWidth: MediaQuery.widthOf(context),
           onScaleChanged: _onScaleChanged,
           onLeftBoundaryHit: _onLeftBoundaryHit,
           onRightBoundaryHit: _onRightBoundaryHit,

@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:PiliPlus/common/constants.dart';
 import 'package:crypto/crypto.dart';
 
-class AppSign {
+abstract class AppSign {
   static void appSign(
     Map<String, dynamic> params, [
     String appkey = Constants.appKey,

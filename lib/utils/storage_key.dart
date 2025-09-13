@@ -1,6 +1,6 @@
 // ignore_for_file: constant_identifier_names
 
-class SettingBoxKey {
+abstract class SettingBoxKey {
   static const String btmProgressBehavior = 'btmProgressBehavior',
       defaultVideoSpeed = 'defaultVideoSpeed',
       autoUpgradeEnable = 'autoUpgradeEnable',
@@ -210,7 +210,7 @@ class SettingBoxKey {
       reduceLuxColor = 'reduceLuxColor';
 }
 
-class LocalCacheKey {
+abstract class LocalCacheKey {
   static const String historyPause = 'historyPause',
       blackMids = 'blackMids',
       danmakuFilterRules = 'danmakuFilterRules',
@@ -219,7 +219,7 @@ class LocalCacheKey {
       buvid = 'buvid';
 }
 
-class VideoBoxKey {
+abstract class VideoBoxKey {
   static const String videoFit = 'videoFit',
       videoBrightness = 'videoBrightness',
       videoSpeed = 'videoSpeed',

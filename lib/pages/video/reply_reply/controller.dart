@@ -11,6 +11,7 @@ import 'package:fixnum/fixnum.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_navigation/src/dialog/dialog_route.dart';
+import 'package:super_sliver_list/super_sliver_list.dart';
 
 class VideoReplyReplyController extends ReplyController
     with GetSingleTickerProviderStateMixin {
@@ -31,11 +32,13 @@ class VideoReplyReplyController extends ReplyController
   int replyType;
 
   bool hasRoot = false;
-  ReplyInfo? firstFloor;
+  final Rx<ReplyInfo?> firstFloor = Rx(null);
 
   final index = RxnInt();
-  AnimationController? _controller;
 
+  final listController = ListController();
+
+  AnimationController? _controller;
   AnimationController get animController => _controller ??= AnimationController(
     duration: const Duration(milliseconds: 1000),
     vsync: this,
@@ -71,7 +74,7 @@ class VideoReplyReplyController extends ReplyController
     if (data is DetailListReply) {
       count.value = data.root.count.toInt();
       if (isRefresh && !hasRoot) {
-        firstFloor ??= data.root;
+        firstFloor.value ??= data.root;
       }
       if (id != null) {
         setIndexById(Int64(id!), data.root.replies);
@@ -88,9 +91,7 @@ class VideoReplyReplyController extends ReplyController
     );
     if (index != -1) {
       this.index.value = index;
-      WidgetsBinding.instance.addPostFrameCallback((_) async {
-        animController.forward(from: 0);
-      });
+      animController.forward(from: 0);
       return true;
     }
     return false;

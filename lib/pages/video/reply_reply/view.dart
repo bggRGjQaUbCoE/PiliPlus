@@ -337,9 +337,7 @@ class _VideoReplyReplyPanelState
         ),
       ),
       jumpToDialogue: () {
-        if (_controller.setIndexById(replyItem.parent)) {
-          _jumpToItem(index);
-        } else {
+        if (!_controller.setIndexById(replyItem.parent)) {
           SmartDialog.showToast('评论可能已被删除');
         }
       },

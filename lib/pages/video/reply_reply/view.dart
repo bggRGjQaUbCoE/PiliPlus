@@ -58,7 +58,12 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _controller.didChangeDependencies(context);
+    final controller = PrimaryScrollController.of(context);
+    _controller
+      ..didChangeDependencies(context)
+      ..nestedController = controller is ExtendedNestedScrollController
+          ? controller
+          : null;
   }
 
   @override
@@ -124,21 +129,16 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
   ReplyInfo? get firstFloor =>
       widget.firstFloor ?? _controller.firstFloor.value;
 
+  ScrollController get scrollController =>
+      _controller.nestedController ?? _controller.scrollController;
+
   @override
   Widget buildList(ThemeData theme) {
-    final primaryCtr = PrimaryScrollController.of(context);
-    if (primaryCtr is ExtendedNestedScrollController) {
-      _controller.nestedController = primaryCtr;
-    } else {
-      _controller.nestedController = null;
-    }
-    final controller =
-        _controller.nestedController ?? _controller.scrollController;
     return refreshIndicator(
       onRefresh: _controller.onRefresh,
       child: CustomScrollView(
-        key: ValueKey(controller.hashCode),
-        controller: controller,
+        key: ValueKey(scrollController.hashCode),
+        controller: scrollController,
         physics: widget.isNested
             ? const AlwaysScrollableScrollPhysics(
                 parent: ClampingScrollPhysics(),
@@ -251,7 +251,7 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
     ThemeData theme,
     LoadingState<List<ReplyInfo>?> loadingState,
   ) {
-    late final jumpIndex = _controller.index;
+    late final jumpIndex = _controller.index.value;
     return switch (loadingState) {
       Loading() => SliverPrototypeExtentList.builder(
         prototypeItem: const VideoReplySkeleton(),
@@ -282,10 +282,16 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
           final child = _replyItem(context, response[index], index);
           if (jumpIndex == index) {
             return AnimatedBuilder(
-              animation: colorAnimation ??= ColorTween(
-                begin: theme.colorScheme.onInverseSurface,
-                end: theme.colorScheme.surface,
-              ).animate(_controller.animController),
+              animation: colorAnimation ??=
+                  ColorTween(
+                    begin: theme.colorScheme.onInverseSurface,
+                    end: theme.colorScheme.surface,
+                  ).animate(
+                    CurvedAnimation(
+                      parent: _controller.animController,
+                      curve: const Interval(0.8, 1.0), // 前0.8s不变, 后0.2s开始动画
+                    ),
+                  ),
               child: child,
               builder: (context, child) {
                 return ColoredBox(

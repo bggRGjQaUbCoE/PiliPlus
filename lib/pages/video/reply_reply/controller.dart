@@ -9,6 +9,7 @@ import 'package:PiliPlus/utils/request_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart';
 import 'package:fixnum/fixnum.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:get/get.dart';
@@ -36,7 +37,7 @@ class VideoReplyReplyController extends ReplyController
   bool hasRoot = false;
   final Rx<ReplyInfo?> firstFloor = Rx(null);
 
-  int? index;
+  final index = RxnInt();
 
   final listController = ListController();
 
@@ -92,19 +93,8 @@ class VideoReplyReplyController extends ReplyController
       (item) => item.id == id64,
     );
     if (index != -1) {
-      this.index = index;
-      if (replies == null) {
-        loadingState.refresh();
-      }
-      SchedulerBinding.instance.addPostFrameCallback((_) {
-        animController.forward(from: 0);
-        jumpToItem(
-          index: index,
-          scrollController: scrollController,
-          alignment: 0.25,
-        );
-        this.index = null;
-      });
+      this.index.value = index;
+      jumpToItem(index);
       return true;
     }
     return false;
@@ -112,27 +102,22 @@ class VideoReplyReplyController extends ReplyController
 
   ExtendedNestedScrollController? nestedController;
 
-  void jumpToItem({
-    required int index,
-    required ScrollController scrollController,
-    required double alignment,
-    Rect? rect,
-  }) {
-    try {
-      // ignore: invalid_use_of_visible_for_testing_member
-      final offset = listController.getOffsetToReveal(
-        index,
-        alignment,
-        rect: rect,
-      );
-      if (offset.isFinite) {
-        if (nestedController != null) {
-          nestedController!.nestedPositions.last.localJumpTo(offset);
-        } else {
-          scrollController.jumpTo(offset);
+  void jumpToItem(int index) {
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      try {
+        // ignore: invalid_use_of_visible_for_testing_member
+        final offset = listController.getOffsetToReveal(index, 0.25);
+        if (offset.isFinite) {
+          if (nestedController case final nestedController?) {
+            nestedController.nestedPositions.last.localJumpTo(offset);
+          } else {
+            scrollController.jumpTo(offset);
+          }
         }
+      } catch (_) {
+        if (kDebugMode) rethrow;
       }
-    } catch (_) {}
+    });
   }
 
   @override
@@ -159,6 +144,14 @@ class VideoReplyReplyController extends ReplyController
         ? Mode.MAIN_LIST_TIME
         : Mode.MAIN_LIST_HOT;
     onReload();
+  }
+
+  @override
+  Future<void> onReload() {
+    if (loadingState.value.isSuccess) {
+      index.value = null;
+    }
+    return super.onReload();
   }
 
   @override

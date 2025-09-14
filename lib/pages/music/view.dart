@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:math';
 
 import 'package:PiliPlus/common/widgets/badge.dart';
@@ -448,10 +449,8 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         GestureDetector(
-                          // TODO: android intent ACTION_MEDIA_SEARCH
-                          onTap: () => Utils.copyText(
-                            item.musicTitle!,
-                          ),
+                          onTap: () => _searchMusic(item),
+                          onLongPress: () => Utils.copyText(item.musicTitle!),
                           behavior: HitTestBehavior.opaque,
                           child: MarqueeText(
                             item.musicTitle!,
@@ -500,9 +499,6 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
                                     ),
                                     color: theme.colorScheme.secondaryContainer
                                         .withValues(alpha: 0.5),
-                                    border: const Border.fromBorderSide(
-                                      BorderSide(color: Colors.transparent),
-                                    ),
                                   ),
                                   child: Padding(
                                     padding: const EdgeInsets.symmetric(
@@ -683,5 +679,19 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
         ],
       ),
     );
+  }
+
+  Future<void> _searchMusic(MusicDetail item) async {
+    final res =
+        Platform.isAndroid &&
+        (await Utils.channel.invokeMethod<bool>('music', {
+              'title': item.musicTitle,
+              'artist': item.originArtist ?? item.originArtistList,
+              'album': item.album,
+            }) ??
+            false);
+    if (!res) {
+      Utils.copyText(item.musicTitle!);
+    }
   }
 }

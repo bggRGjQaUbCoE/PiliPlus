@@ -6,6 +6,7 @@ import 'dart:ui';
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/widgets/custom_icon.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
+import 'package:PiliPlus/common/widgets/keep_alive_wrapper.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/main.dart';
@@ -113,10 +114,8 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
             ((videoDetail.pages?.length ?? 0) > 1));
   }
 
-  final GlobalKey relatedVideoPanelKey = GlobalKey();
-  final GlobalKey videoPlayerKey = GlobalKey();
-  final GlobalKey videoReplyPanelKey = GlobalKey();
-  final GlobalKey introKey = GlobalKey();
+  final videoPlayerKey = GlobalKey();
+  final videoReplyPanelKey = GlobalKey();
 
   @override
   void initState() {
@@ -1116,15 +1115,12 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                             videoDetailController
                                 .plPlayerController
                                 .showRelatedVideo)
-                          CustomScrollView(
-                            key: const PageStorageKey(RelatedVideoPanel),
-                            controller: introScrollController,
-                            slivers: [
-                              RelatedVideoPanel(
-                                key: relatedVideoPanelKey,
-                                heroTag: heroTag,
-                              ),
-                            ],
+                          KeepAliveWrapper(
+                            builder: (context) => CustomScrollView(
+                              key: const PageStorageKey(RelatedVideoPanel),
+                              controller: introScrollController,
+                              slivers: [RelatedVideoPanel(heroTag: heroTag)],
+                            ),
                           ),
                         if (videoDetailController.showReply) videoReplyPanel(),
                         if (_shouldShowSeasonPanel) seasonPanel,
@@ -1812,7 +1808,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
   }) {
     final bottom = MediaQuery.viewPaddingOf(context).bottom;
     Widget introPanel() => CustomScrollView(
-      key: const PageStorageKey<String>('简介'),
+      key: const PageStorageKey(RelatedVideoPanel),
       controller: needCtr ? introScrollController : null,
       physics: !needCtr
           ? const AlwaysScrollableScrollPhysics(parent: ClampingScrollPhysics())
@@ -1820,7 +1816,6 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
       slivers: [
         if (videoDetailController.isUgc) ...[
           UgcIntroPanel(
-            key: introKey,
             heroTag: heroTag,
             showAiBottomSheet: showAiBottomSheet,
             showEpisodes: showEpisodes,
@@ -1841,11 +1836,10 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                 ),
               ),
             ),
-            RelatedVideoPanel(key: relatedVideoPanelKey, heroTag: heroTag),
+            RelatedVideoPanel(heroTag: heroTag),
           ],
         ] else
           PgcIntroPage(
-            key: introKey,
             heroTag: heroTag,
             cid: videoDetailController.cid.value,
             showEpisodes: showEpisodes,
@@ -1915,20 +1909,66 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
 
   Widget get seasonPanel {
     final videoDetail = ugcIntroController.videoDetail.value;
-    return Column(
-      children: [
-        if ((videoDetail.pages?.length ?? 0) > 1)
-          if (videoDetail.ugcSeason != null)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 14),
-              child: PagesPanel(
-                heroTag: heroTag,
-                ugcIntroController: ugcIntroController,
-                bvid: ugcIntroController.bvid,
-                showEpisodes: showEpisodes,
+    return KeepAliveWrapper(
+      wantKeepAlive: _shouldShowSeasonPanel,
+      builder: (context) => Column(
+        children: [
+          if ((videoDetail.pages?.length ?? 0) > 1)
+            if (videoDetail.ugcSeason != null)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 14),
+                child: PagesPanel(
+                  heroTag: heroTag,
+                  ugcIntroController: ugcIntroController,
+                  bvid: ugcIntroController.bvid,
+                  showEpisodes: showEpisodes,
+                ),
+              )
+            else
+              Expanded(
+                child: Obx(
+                  () => EpisodePanel(
+                    heroTag: heroTag,
+                    enableSlide: false,
+                    ugcIntroController: videoDetailController.isUgc
+                        ? ugcIntroController
+                        : null,
+                    type: EpisodeType.part,
+                    list: [videoDetail.pages!],
+                    cover: videoDetailController.cover.value,
+                    bvid: videoDetailController.bvid,
+                    aid: videoDetailController.aid,
+                    cid: videoDetailController.cid.value,
+                    isReversed: videoDetail.isPageReversed,
+                    onChangeEpisode: videoDetailController.isUgc
+                        ? ugcIntroController.onChangeEpisode
+                        : pgcIntroController.onChangeEpisode,
+                    showTitle: false,
+                    isSupportReverse: videoDetailController.isUgc,
+                    onReverse: () => onReversePlay(isSeason: false),
+                  ),
+                ),
               ),
-            )
-          else
+          if (videoDetail.ugcSeason != null) ...[
+            if ((videoDetail.pages?.length ?? 0) > 1) ...[
+              const SizedBox(height: 8),
+              Divider(
+                height: 1,
+                color: themeData.colorScheme.outline.withValues(alpha: 0.1),
+              ),
+            ],
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Obx(
+                () => SeasonPanel(
+                  key: ValueKey(introController.videoDetail.value),
+                  heroTag: heroTag,
+                  canTap: false,
+                  showEpisodes: showEpisodes,
+                  ugcIntroController: ugcIntroController,
+                ),
+              ),
+            ),
             Expanded(
               child: Obx(
                 () => EpisodePanel(
@@ -1937,75 +1977,32 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                   ugcIntroController: videoDetailController.isUgc
                       ? ugcIntroController
                       : null,
-                  type: EpisodeType.part,
-                  list: [videoDetail.pages!],
+                  type: EpisodeType.season,
+                  initialTabIndex: videoDetailController.seasonIndex.value,
                   cover: videoDetailController.cover.value,
+                  seasonId: videoDetail.ugcSeason!.id,
+                  list: videoDetail.ugcSeason!.sections!,
                   bvid: videoDetailController.bvid,
                   aid: videoDetailController.aid,
-                  cid: videoDetailController.cid.value,
-                  isReversed: videoDetail.isPageReversed,
+                  cid: videoDetailController.seasonCid ?? 0,
+                  isReversed: ugcIntroController
+                      .videoDetail
+                      .value
+                      .ugcSeason!
+                      .sections![videoDetailController.seasonIndex.value]
+                      .isReversed,
                   onChangeEpisode: videoDetailController.isUgc
                       ? ugcIntroController.onChangeEpisode
                       : pgcIntroController.onChangeEpisode,
                   showTitle: false,
                   isSupportReverse: videoDetailController.isUgc,
-                  onReverse: () => onReversePlay(isSeason: false),
+                  onReverse: () => onReversePlay(isSeason: true),
                 ),
               ),
             ),
-        if (videoDetail.ugcSeason != null) ...[
-          if ((videoDetail.pages?.length ?? 0) > 1) ...[
-            const SizedBox(height: 8),
-            Divider(
-              height: 1,
-              color: themeData.colorScheme.outline.withValues(alpha: 0.1),
-            ),
           ],
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: Obx(
-              () => SeasonPanel(
-                key: ValueKey(introController.videoDetail.value),
-                heroTag: heroTag,
-                canTap: false,
-                showEpisodes: showEpisodes,
-                ugcIntroController: ugcIntroController,
-              ),
-            ),
-          ),
-          Expanded(
-            child: Obx(
-              () => EpisodePanel(
-                heroTag: heroTag,
-                enableSlide: false,
-                ugcIntroController: videoDetailController.isUgc
-                    ? ugcIntroController
-                    : null,
-                type: EpisodeType.season,
-                initialTabIndex: videoDetailController.seasonIndex.value,
-                cover: videoDetailController.cover.value,
-                seasonId: videoDetail.ugcSeason!.id,
-                list: videoDetail.ugcSeason!.sections!,
-                bvid: videoDetailController.bvid,
-                aid: videoDetailController.aid,
-                cid: videoDetailController.seasonCid ?? 0,
-                isReversed: ugcIntroController
-                    .videoDetail
-                    .value
-                    .ugcSeason!
-                    .sections![videoDetailController.seasonIndex.value]
-                    .isReversed,
-                onChangeEpisode: videoDetailController.isUgc
-                    ? ugcIntroController.onChangeEpisode
-                    : pgcIntroController.onChangeEpisode,
-                showTitle: false,
-                isSupportReverse: videoDetailController.isUgc,
-                onReverse: () => onReversePlay(isSeason: true),
-              ),
-            ),
-          ),
         ],
-      ],
+      ),
     );
   }
 

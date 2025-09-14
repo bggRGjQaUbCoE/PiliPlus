@@ -24,7 +24,8 @@ class ViewPointsPage extends CommonSlidePage {
   State<ViewPointsPage> createState() => _ViewPointsPageState();
 }
 
-class _ViewPointsPageState extends CommonSlidePageState<ViewPointsPage> {
+class _ViewPointsPageState extends State<ViewPointsPage>
+    with SingleTickerProviderStateMixin, CommonSlideMixin {
   VideoDetailController get videoDetailController =>
       widget.videoDetailController;
   PlPlayerController? get plPlayerController => widget.plPlayerController;

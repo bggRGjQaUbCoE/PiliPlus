@@ -29,7 +29,8 @@ class PgcIntroPanel extends CommonSlidePage {
   State<PgcIntroPanel> createState() => _IntroDetailState();
 }
 
-class _IntroDetailState extends CommonSlidePageState<PgcIntroPanel> {
+class _IntroDetailState extends State<PgcIntroPanel>
+    with TickerProviderStateMixin, CommonSlideMixin {
   late final _tabController = TabController(length: 2, vsync: this);
   final _controller = ScrollController();
 

@@ -43,8 +43,8 @@ class VideoReplyReplyPanel extends CommonSlidePage {
   State<VideoReplyReplyPanel> createState() => _VideoReplyReplyPanelState();
 }
 
-class _VideoReplyReplyPanelState
-    extends CommonSlidePageState<VideoReplyReplyPanel> {
+class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
+    with SingleTickerProviderStateMixin, CommonSlideMixin {
   late VideoReplyReplyController _controller;
   late final _tag = Utils.makeHeroTag('${widget.rpid}${widget.dialog}');
   Animation<Color?>? colorAnimation;

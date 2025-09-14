@@ -46,7 +46,8 @@ class MediaListPanel extends CommonSlidePage {
   State<MediaListPanel> createState() => _MediaListPanelState();
 }
 
-class _MediaListPanelState extends CommonSlidePageState<MediaListPanel> {
+class _MediaListPanelState extends State<MediaListPanel>
+    with SingleTickerProviderStateMixin, CommonSlideMixin {
   final _controller = ScrollController();
 
   @override

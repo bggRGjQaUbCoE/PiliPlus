@@ -179,7 +179,8 @@ class PostPanel extends CommonSlidePage {
   }
 }
 
-class _PostPanelState extends CommonSlidePageState<PostPanel> {
+class _PostPanelState extends State<PostPanel>
+    with SingleTickerProviderStateMixin, CommonSlideMixin {
   late final VideoDetailController videoDetailController =
       widget.videoDetailController;
   late final PlPlayerController plPlayerController = widget.plPlayerController;

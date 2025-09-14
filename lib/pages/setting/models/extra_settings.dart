@@ -715,7 +715,7 @@ List<SettingsModel> get extraSettings => [
     setKey: SettingBoxKey.slideDismissReplyPage,
     defaultVal: Platform.isIOS,
     onChanged: (value) {
-      CommonSlidePageState.slideDismissReplyPage = value;
+      CommonSlideMixin.slideDismissReplyPage = value;
     },
   ),
   const SettingsModel(

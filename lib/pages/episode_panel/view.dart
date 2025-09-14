@@ -81,7 +81,8 @@ class EpisodePanel extends CommonSlidePage {
   State<EpisodePanel> createState() => _EpisodePanelState();
 }
 
-class _EpisodePanelState extends CommonSlidePageState<EpisodePanel> {
+class _EpisodePanelState extends State<EpisodePanel>
+    with TickerProviderStateMixin, CommonSlideMixin {
   // tab
   late final TabController _tabController = TabController(
     initialIndex: widget.initialTabIndex,

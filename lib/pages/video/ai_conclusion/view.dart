@@ -18,7 +18,8 @@ class AiConclusionPanel extends CommonSlidePage {
   State<AiConclusionPanel> createState() => _AiDetailState();
 }
 
-class _AiDetailState extends CommonSlidePageState<AiConclusionPanel> {
+class _AiDetailState extends State<AiConclusionPanel>
+    with SingleTickerProviderStateMixin, CommonSlideMixin {
   final _controller = ScrollController();
 
   @override

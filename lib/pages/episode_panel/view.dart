@@ -264,15 +264,15 @@ class _EpisodePanelState extends CommonSlidePageState<EpisodePanel> {
       }
       return offset + 7;
     } else {
-      return index * 98 + 7;
+      return index * 100 + 7;
     }
   }
 
   double _calcItemHeight(ugc.BaseEpisodeItem episode) {
     if (episode is ugc.EpisodeItem && episode.pages!.length > 1) {
-      return 143; // 98 + 10 + 35
+      return 145; // 98 + 2 + 10 + 35
     }
-    return 98;
+    return 100;
   }
 
   Widget _buildBody(
@@ -353,7 +353,7 @@ class _EpisodePanelState extends CommonSlidePageState<EpisodePanel> {
                       isCurrentIndex: isCurrItem,
                     );
                   },
-                  itemExtent: 98,
+                  itemExtent: 100,
                 ),
         ),
       ],

@@ -118,7 +118,7 @@ class AccountManager extends Interceptor {
 
     late final Account account = options.extra['account'] ?? _findAccount(path);
 
-    if (_skipCookie(path) || account is NoAccount) return handler.next(options);
+    if (account is NoAccount || _skipCookie(path)) return handler.next(options);
 
     if (!account.isLogin && path == Api.heartBeat) {
       return handler.reject(

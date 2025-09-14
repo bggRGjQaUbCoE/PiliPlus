@@ -13,7 +13,7 @@ import 'package:dio/dio.dart';
 class ReplyHttp {
   static final Options options = Options(
     headers: {...Constants.baseHeaders, 'cookie': ''},
-    extra: {'account': NoAccount()},
+    extra: {'account': const NoAccount()},
   );
 
   static Future<LoadingState> replyList({

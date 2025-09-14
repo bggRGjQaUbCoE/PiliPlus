@@ -25,7 +25,7 @@ abstract class Update {
         Api.latestApp,
         options: Options(
           headers: {'user-agent': UaType.mob.ua},
-          extra: {'account': NoAccount()},
+          extra: {'account': const NoAccount()},
         ),
       );
       if (res.data is Map || res.data.isEmpty) {

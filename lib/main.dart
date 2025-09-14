@@ -78,14 +78,12 @@ void main() async {
     );
   } else if (Utils.isDesktop) {
     await windowManager.ensureInitialized();
-    WindowOptions windowOptions = WindowOptions(
-      minimumSize: const Size(400, 720),
-      size: const Size(1180, 720),
+    WindowOptions windowOptions = const WindowOptions(
+      minimumSize: Size(400, 720),
+      size: Size(1180, 720),
       center: true,
       skipTaskbar: false,
-      titleBarStyle: Platform.isMacOS
-          ? TitleBarStyle.hidden
-          : TitleBarStyle.normal,
+      titleBarStyle: TitleBarStyle.normal,
       title: Constants.appName,
     );
     windowManager.waitUntilReadyToShow(windowOptions, () async {

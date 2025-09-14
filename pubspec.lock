@@ -505,7 +505,7 @@ packages:
     description:
       path: "."
       ref: mod
-      resolved-ref: "8289673adc2b0485ab2abda49bea42ef8b899bf0"
+      resolved-ref: dba054088abb29a6780d835bdd7f88199527ced7
       url: "https://github.com/bggRGjQaUbCoE/extended_nested_scroll_view.git"
     source: git
     version: "6.2.1"
@@ -1535,14 +1535,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.2.0"
-  scrollable_positioned_list:
-    dependency: "direct main"
-    description:
-      name: scrollable_positioned_list
-      sha256: "1b54d5f1329a1e263269abc9e2543d90806131aa14fe7c6062a8054d57249287"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.3.8"
   sentry:
     dependency: transitive
     description:

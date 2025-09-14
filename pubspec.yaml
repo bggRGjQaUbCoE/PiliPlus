@@ -167,7 +167,7 @@ dependencies:
   # 极验
   gt3_flutter_plugin: ^0.1.0
   uuid: ^4.5.1
-  scrollable_positioned_list: ^0.3.8
+  # scrollable_positioned_list: ^0.3.8
   # nil: ^1.1.1
   catcher_2: ^2.1.0
   logger: ^2.5.0

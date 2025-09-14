@@ -5,6 +5,7 @@ import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/button/icon_button.dart';
 import 'package:PiliPlus/common/widgets/image/image_save.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
+import 'package:PiliPlus/common/widgets/keep_alive_wrapper.dart';
 import 'package:PiliPlus/common/widgets/page/tabs.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart';
 import 'package:PiliPlus/common/widgets/stat/stat.dart';
@@ -18,7 +19,7 @@ import 'package:PiliPlus/models/user/info.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_info_model/episode.dart' as pgc;
 import 'package:PiliPlus/models_new/video/video_detail/episode.dart' as ugc;
 import 'package:PiliPlus/models_new/video/video_detail/page.dart';
-import 'package:PiliPlus/pages/common/slide/common_collapse_slide_page.dart';
+import 'package:PiliPlus/pages/common/slide/common_slide_page.dart';
 import 'package:PiliPlus/pages/video/controller.dart';
 import 'package:PiliPlus/pages/video/introduction/ugc/controller.dart';
 import 'package:PiliPlus/pages/video/introduction/ugc/widgets/page.dart';
@@ -34,7 +35,7 @@ import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
-class EpisodePanel extends CommonCollapseSlidePage {
+class EpisodePanel extends CommonSlidePage {
   const EpisodePanel({
     super.key,
     super.enableSlide,
@@ -81,7 +82,7 @@ class EpisodePanel extends CommonCollapseSlidePage {
   State<EpisodePanel> createState() => _EpisodePanelState();
 }
 
-class _EpisodePanelState extends CommonCollapseSlidePageState<EpisodePanel> {
+class _EpisodePanelState extends CommonSlidePageState<EpisodePanel> {
   // tab
   late final TabController _tabController = TabController(
     initialIndex: widget.initialTabIndex,
@@ -126,14 +127,8 @@ class _EpisodePanelState extends CommonCollapseSlidePageState<EpisodePanel> {
       if (_currentItemIndex != newItemIndex) {
         _currentItemIndex = newItemIndex;
         try {
-          final ctr = _itemScrollController[_currentTabIndex.value];
-          ctr.jumpTo(
-            _calcItemOffset(
-              newItemIndex,
-            ).clamp(
-              ctr.position.minScrollExtent,
-              ctr.position.maxScrollExtent - 100,
-            ),
+          _itemScrollController[_currentTabIndex.value].jumpTo(
+            _calcItemOffset(newItemIndex),
           );
         } catch (_) {
           if (kDebugMode) rethrow;
@@ -186,6 +181,9 @@ class _EpisodePanelState extends CommonCollapseSlidePageState<EpisodePanel> {
       ..removeListener(listener)
       ..dispose();
     _favState?.close();
+    for (var e in _itemScrollController) {
+      e.dispose();
+    }
     super.dispose();
   }
 
@@ -265,17 +263,17 @@ class _EpisodePanelState extends CommonCollapseSlidePageState<EpisodePanel> {
       for (var i = 0; i < index; i++) {
         offset += _calcItemHeight(episodes[i]);
       }
-      return offset;
+      return offset + 7;
     } else {
-      return index * 100;
+      return index * 98 + 7;
     }
   }
 
   double _calcItemHeight(ugc.BaseEpisodeItem episode) {
     if (episode is ugc.EpisodeItem && episode.pages!.length > 1) {
-      return 145; // 100 + 10 + 35
+      return 143; // 98 + 10 + 35
     }
-    return 100;
+    return 98;
   }
 
   Widget _buildBody(
@@ -284,82 +282,84 @@ class _EpisodePanelState extends CommonCollapseSlidePageState<EpisodePanel> {
     List<ugc.BaseEpisodeItem> episodes,
   ) {
     final isCurrTab = tabIndex == widget.initialTabIndex;
-    return CustomScrollView(
-      key: PageStorageKey(tabIndex),
-      reverse: _isReversed[tabIndex],
-      physics: const AlwaysScrollableScrollPhysics(),
-      controller: _itemScrollController[tabIndex],
-      slivers: [
-        SliverPadding(
-          padding: EdgeInsets.only(
-            top: 7,
-            bottom: MediaQuery.viewPaddingOf(context).bottom + 100,
-          ),
-          sliver: showTitle
-              ? SliverVariedExtentList.builder(
-                  itemCount: episodes.length,
-                  itemBuilder: (context, index) {
-                    final episode = episodes[index];
-                    final isCurrItem = isCurrTab
-                        ? index == _currentItemIndex
-                        : false;
-                    Widget episodeItem = _buildEpisodeItem(
-                      theme: theme,
-                      episode: episode,
-                      index: index,
-                      length: episodes.length,
-                      isCurrentIndex: isCurrItem,
-                    );
-                    if (episode is ugc.EpisodeItem &&
-                        episode.pages!.length > 1) {
-                      return Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          episodeItem, // 98
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 5,
-                            ), // 10
-                            child: PagesPanel(
-                              // 35
-                              list: isCurrTab && isCurrItem
-                                  ? null
-                                  : episode.pages,
-                              cover: episode.arc?.pic,
-                              heroTag: widget.heroTag,
-                              ugcIntroController: widget.ugcIntroController!,
-                              bvid: episode.bvid ?? IdUtils.av2bv(episode.aid!),
-                            ),
-                          ),
-                        ],
+    return KeepAliveWrapper(
+      builder: (context) => CustomScrollView(
+        reverse: _isReversed[tabIndex],
+        physics: const AlwaysScrollableScrollPhysics(),
+        controller: _itemScrollController[tabIndex],
+        slivers: [
+          SliverPadding(
+            padding: EdgeInsets.only(
+              top: 7,
+              bottom: MediaQuery.viewPaddingOf(context).bottom + 100,
+            ),
+            sliver: showTitle
+                ? SliverVariedExtentList.builder(
+                    itemCount: episodes.length,
+                    itemBuilder: (context, index) {
+                      final episode = episodes[index];
+                      final isCurrItem = isCurrTab
+                          ? index == _currentItemIndex
+                          : false;
+                      Widget episodeItem = _buildEpisodeItem(
+                        theme: theme,
+                        episode: episode,
+                        index: index,
+                        length: episodes.length,
+                        isCurrentIndex: isCurrItem,
                       );
-                    }
-                    return episodeItem;
-                  },
-                  itemExtentBuilder: (index, _) =>
-                      _calcItemHeight(episodes[index]),
-                )
-              : SliverFixedExtentList.builder(
-                  itemCount: episodes.length,
-                  itemBuilder: (context, index) {
-                    final episode = episodes[index];
-                    final isCurrItem = isCurrTab
-                        ? index == _currentItemIndex
-                        : false;
-                    return _buildEpisodeItem(
-                      theme: theme,
-                      episode: episode,
-                      index: index,
-                      length: episodes.length,
-                      isCurrentIndex: isCurrItem,
-                    );
-                  },
-                  itemExtent: 100,
-                ),
-        ),
-      ],
+                      if (episode is ugc.EpisodeItem &&
+                          episode.pages!.length > 1) {
+                        return Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            episodeItem, // 98
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 5,
+                              ), // 10
+                              child: PagesPanel(
+                                // 35
+                                list: isCurrTab && isCurrItem
+                                    ? null
+                                    : episode.pages,
+                                cover: episode.arc?.pic,
+                                heroTag: widget.heroTag,
+                                ugcIntroController: widget.ugcIntroController!,
+                                bvid:
+                                    episode.bvid ?? IdUtils.av2bv(episode.aid!),
+                              ),
+                            ),
+                          ],
+                        );
+                      }
+                      return episodeItem;
+                    },
+                    itemExtentBuilder: (index, _) =>
+                        _calcItemHeight(episodes[index]),
+                  )
+                : SliverFixedExtentList.builder(
+                    itemCount: episodes.length,
+                    itemBuilder: (context, index) {
+                      final episode = episodes[index];
+                      final isCurrItem = isCurrTab
+                          ? index == _currentItemIndex
+                          : false;
+                      return _buildEpisodeItem(
+                        theme: theme,
+                        episode: episode,
+                        index: index,
+                        length: episodes.length,
+                        isCurrentIndex: isCurrItem,
+                      );
+                    },
+                    itemExtent: 98,
+                  ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -592,8 +592,12 @@ class _EpisodePanelState extends CommonCollapseSlidePageState<EpisodePanel> {
 
   void _animToTopOrBottom({bool top = true}) {
     final tabIndex = _currentTabIndex.value;
-    final ctr = _itemScrollController[tabIndex];
-    ctr.animTo(top ^ _isReversed[tabIndex] ? 0 : ctr.position.maxScrollExtent);
+    _itemScrollController[tabIndex].animTo(
+      top ^ _isReversed[tabIndex]
+          ? 0
+          : _calcItemOffset(_getCurrEpisodes.length),
+      duration: const Duration(milliseconds: 200),
+    );
   }
 
   Widget _buildToolbar(ThemeData theme) => Container(
@@ -633,14 +637,9 @@ class _EpisodePanelState extends CommonCollapseSlidePageState<EpisodePanel> {
               _tabController.animateTo(widget.initialTabIndex);
               await Future.delayed(const Duration(milliseconds: 225));
             }
-            final ctr = _itemScrollController[widget.initialTabIndex];
-            ctr.animTo(
-              _calcItemOffset(
-                _currentItemIndex,
-              ).clamp(
-                ctr.position.minScrollExtent,
-                ctr.position.maxScrollExtent - 100,
-              ),
+            _itemScrollController[widget.initialTabIndex].animTo(
+              _calcItemOffset(_currentItemIndex),
+              duration: const Duration(milliseconds: 200),
             );
           },
         ),

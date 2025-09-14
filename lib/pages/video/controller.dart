@@ -153,9 +153,10 @@ class VideoDetailController extends GetxController
   late double videoHeight;
 
   void animToTop() {
-    if (scrollKey.currentState?.outerController.hasClients == true) {
-      scrollKey.currentState!.outerController.animateTo(
-        scrollKey.currentState!.outerController.offset,
+    final outerController = scrollKey.currentState!.outerController;
+    if (outerController.hasClients) {
+      outerController.animateTo(
+        outerController.offset,
         duration: const Duration(milliseconds: 500),
         curve: Curves.easeInOut,
       );
@@ -1507,8 +1508,8 @@ class VideoDetailController extends GetxController
           idx = subtitles.indexWhere((i) => !i.lan!.startsWith('ai')) + 1;
           if (idx == 0) {
             if (preference == SubtitlePrefType.on ||
-                (preference == SubtitlePrefType.auto &&
-                    Utils.isMobile &&
+                (Utils.isMobile &&
+                    preference == SubtitlePrefType.auto &&
                     (await FlutterVolumeController.getVolume() ?? 0) <= 0)) {
               idx = 1;
             }

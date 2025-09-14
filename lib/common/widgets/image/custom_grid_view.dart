@@ -75,6 +75,8 @@ class CustomGridView extends StatelessWidget {
   final ValueChanged<int>? onDismissed;
   final bool fullScreen;
 
+  static bool horizontalPreview = Pref.horizontalPreview;
+
   void onTap(BuildContext context, int index) {
     final imgList = picArr.map(
       (item) {
@@ -89,7 +91,9 @@ class CustomGridView extends StatelessWidget {
       },
     ).toList();
     onViewImage?.call();
-    if (!fullScreen && Pref.horizontalPreview && context.isLandscape) {
+    if (horizontalPreview &&
+        !fullScreen &&
+        !context.mediaQuerySize.isPortrait) {
       PageUtils.onHorizontalPreview(
         context,
         imgList,

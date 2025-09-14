@@ -6,7 +6,7 @@ import 'package:PiliPlus/common/widgets/stat/stat.dart';
 import 'package:PiliPlus/models/common/stat_type.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_info_model/result.dart';
 import 'package:PiliPlus/models_new/video/video_tag/data.dart';
-import 'package:PiliPlus/pages/common/slide/common_collapse_slide_page.dart';
+import 'package:PiliPlus/pages/common/slide/common_slide_page.dart';
 import 'package:PiliPlus/pages/pgc_review/view.dart';
 import 'package:PiliPlus/pages/search/widgets/search_text.dart';
 import 'package:PiliPlus/utils/extension.dart';
@@ -14,7 +14,7 @@ import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart' hide TabBarView;
 import 'package:get/get.dart';
 
-class PgcIntroPanel extends CommonCollapseSlidePage {
+class PgcIntroPanel extends CommonSlidePage {
   final PgcInfoModel item;
   final List<VideoTagItem>? videoTags;
 
@@ -29,7 +29,7 @@ class PgcIntroPanel extends CommonCollapseSlidePage {
   State<PgcIntroPanel> createState() => _IntroDetailState();
 }
 
-class _IntroDetailState extends CommonCollapseSlidePageState<PgcIntroPanel> {
+class _IntroDetailState extends CommonSlidePageState<PgcIntroPanel> {
   late final _tabController = TabController(length: 2, vsync: this);
   final _controller = ScrollController();
 

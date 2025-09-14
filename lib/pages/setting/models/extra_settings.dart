@@ -2,7 +2,7 @@ import 'dart:io';
 import 'dart:math' show pi, max;
 
 import 'package:PiliPlus/common/widgets/image/custom_grid_view.dart'
-    show ImageModel;
+    show CustomGridView, ImageModel;
 import 'package:PiliPlus/common/widgets/pendant_avatar.dart';
 import 'package:PiliPlus/common/widgets/refresh_indicator.dart';
 import 'package:PiliPlus/grpc/reply.dart';
@@ -328,12 +328,13 @@ List<SettingsModel> get extraSettings => [
     setKey: SettingBoxKey.continuePlayingPart,
     defaultVal: true,
   ),
-  const SettingsModel(
+  SettingsModel(
     settingsType: SettingsType.sw1tch,
     title: '横屏在侧栏打开图片预览',
-    leading: Icon(Icons.photo_outlined),
+    leading: const Icon(Icons.photo_outlined),
     setKey: SettingBoxKey.horizontalPreview,
     defaultVal: false,
+    onChanged: (value) => CustomGridView.horizontalPreview = value,
   ),
   getBanwordModel(
     context: Get.context!,

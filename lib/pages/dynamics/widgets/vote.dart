@@ -5,11 +5,9 @@ import 'package:PiliPlus/http/dynamics.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/dynamics/vote_model.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
-import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide ContextExtensionss;
-import 'package:get/get_utils/src/extensions/export.dart';
 
 class VotePanel extends StatefulWidget {
   final VoteInfo voteInfo;
@@ -46,7 +44,8 @@ class _VotePanelState extends State<VotePanel> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final usePortrait = context.mediaQuerySize.isPortrait;
+    final size = MediaQuery.sizeOf(context);
+    final usePortrait = size.width < 600 || size.shortestSide >= 600;
     final right = [
       Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,

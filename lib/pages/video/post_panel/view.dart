@@ -10,7 +10,7 @@ import 'package:PiliPlus/models/common/sponsor_block/action_type.dart';
 import 'package:PiliPlus/models/common/sponsor_block/post_segment_model.dart';
 import 'package:PiliPlus/models/common/sponsor_block/segment_type.dart';
 import 'package:PiliPlus/models_new/sponsor_block/segment_item.dart';
-import 'package:PiliPlus/pages/common/slide/common_collapse_slide_page.dart';
+import 'package:PiliPlus/pages/common/slide/common_slide_page.dart';
 import 'package:PiliPlus/pages/video/controller.dart';
 import 'package:PiliPlus/pages/video/post_panel/popup_menu_text.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
@@ -24,7 +24,7 @@ import 'package:flutter/services.dart' show FilteringTextInputFormatter;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart' hide Response;
 
-class PostPanel extends CommonCollapseSlidePage {
+class PostPanel extends CommonSlidePage {
   const PostPanel({
     super.key,
     super.enableSlide,
@@ -179,7 +179,7 @@ class PostPanel extends CommonCollapseSlidePage {
   }
 }
 
-class _PostPanelState extends CommonCollapseSlidePageState<PostPanel> {
+class _PostPanelState extends CommonSlidePageState<PostPanel> {
   late final VideoDetailController videoDetailController =
       widget.videoDetailController;
   late final PlPlayerController plPlayerController = widget.plPlayerController;

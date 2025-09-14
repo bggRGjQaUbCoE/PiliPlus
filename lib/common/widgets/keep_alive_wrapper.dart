@@ -23,5 +23,13 @@ class _KeepAliveWrapperState extends State<KeepAliveWrapper>
   }
 
   @override
+  void didUpdateWidget(KeepAliveWrapper oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.wantKeepAlive != widget.wantKeepAlive) {
+      updateKeepAlive();
+    }
+  }
+
+  @override
   bool get wantKeepAlive => widget.wantKeepAlive;
 }

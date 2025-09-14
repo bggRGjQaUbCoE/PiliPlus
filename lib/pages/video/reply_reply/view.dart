@@ -11,7 +11,6 @@ import 'package:PiliPlus/pages/video/reply_reply/controller.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart' hide ContextExtensionss;
 import 'package:super_sliver_list/super_sliver_list.dart';
@@ -51,11 +50,7 @@ class _VideoReplyReplyPanelState
 
   Animation<Color?>? colorAnimation;
 
-  bool get isDialogue => widget.dialog != null;
-
-  ScrollController? _scrollController;
-
-  late ScrollController scrollController;
+  late final bool isDialogue = widget.dialog != null;
 
   @override
   void didChangeDependencies() {
@@ -82,7 +77,6 @@ class _VideoReplyReplyPanelState
   @override
   void dispose() {
     Get.delete<VideoReplyReplyController>(tag: _tag);
-    _scrollController?.dispose();
     super.dispose();
   }
 
@@ -129,27 +123,19 @@ class _VideoReplyReplyPanelState
 
   @override
   Widget buildList(ThemeData theme) {
-    // ExtendedNestedScrollController 在 ButtomSheet 的 Scaffold 中行为怪异
-    scrollController = isDialogue
-        ? _scrollController ??= ScrollController()
-        : PrimaryScrollController.of(context);
     return refreshIndicator(
       onRefresh: _controller.onRefresh,
       child: CustomScrollView(
+        controller: _controller.scrollController,
         physics: const AlwaysScrollableScrollPhysics(),
-        key: ValueKey(scrollController.hashCode), // force reset
-        controller: scrollController,
         slivers: [
-          _buildFirstFloor(theme),
-          _sortWidget(theme),
+          if (!isDialogue) ...[
+            _buildFirstFloor(theme),
+            _sortWidget(theme),
+          ],
           Obx(() {
             final state = _controller.loadingState.value;
-            final int? jump = _controller.index.value;
-            if (jump != null) {
-              SchedulerBinding.instance.addPostFrameCallback(
-                (_) => _jumpToItem(jump),
-              );
-            }
+            final jump = _controller.index;
             return switch (state) {
               Loading() => SliverPrototypeExtentList.builder(
                 prototypeItem: const VideoReplySkeleton(),
@@ -169,7 +155,6 @@ class _VideoReplyReplyPanelState
                   ),
                 ),
               Error(:var errMsg) => HttpError(
-                isSliver: true,
                 errMsg: errMsg,
                 onReload: _controller.onReload,
               ),
@@ -233,37 +218,45 @@ class _VideoReplyReplyPanelState
   }
 
   Widget _buildFirstFloor(ThemeData theme) {
-    return Obx(
-      () => firstFloor == null || isDialogue
-          ? const SliverToBoxAdapter()
-          : SliverMainAxisGroup(
-              slivers: [
-                SliverToBoxAdapter(
-                  child: ReplyItemGrpc(
-                    replyItem: firstFloor!,
-                    replyLevel: 2,
-                    needDivider: false,
-                    onReply: (replyItem) => _controller.onReply(
-                      context,
-                      replyItem: replyItem,
-                      index: -1,
-                    ),
-                    upMid: _controller.upMid,
-                    onViewImage: widget.onViewImage,
-                    onDismissed: widget.onDismissed,
-                    onCheckReply: (item) =>
-                        _controller.onCheckReply(item, isManual: true),
-                  ),
-                ),
-                SliverToBoxAdapter(
-                  child: Divider(
-                    height: 20,
-                    color: theme.dividerColor.withValues(alpha: 0.1),
-                    thickness: 6,
-                  ),
-                ),
-              ],
+    Widget child(ReplyInfo firstFloor) => SliverMainAxisGroup(
+      slivers: [
+        SliverToBoxAdapter(
+          child: ReplyItemGrpc(
+            replyItem: firstFloor,
+            replyLevel: 2,
+            needDivider: false,
+            onReply: (replyItem) => _controller.onReply(
+              context,
+              replyItem: replyItem,
+              index: -1,
             ),
+            upMid: _controller.upMid,
+            onViewImage: widget.onViewImage,
+            onDismissed: widget.onDismissed,
+            onCheckReply: (item) =>
+                _controller.onCheckReply(item, isManual: true),
+          ),
+        ),
+        SliverToBoxAdapter(
+          child: Divider(
+            height: 20,
+            color: theme.dividerColor.withValues(alpha: 0.1),
+            thickness: 6,
+          ),
+        ),
+      ],
+    );
+    if (firstFloor case final e?) {
+      return child(e);
+    }
+    return Obx(
+      () {
+        final firstFloor = _controller.firstFloor.value;
+        if (firstFloor != null) {
+          return child(firstFloor);
+        }
+        return const SliverToBoxAdapter();
+      },
     );
   }
 
@@ -272,7 +265,7 @@ class _VideoReplyReplyPanelState
     ThemeData theme,
     List<ReplyInfo> data,
     int index,
-    bool highLight,
+    bool highlight,
   ) {
     if (index == data.length) {
       _controller.onLoadMore();
@@ -294,7 +287,7 @@ class _VideoReplyReplyPanelState
     }
 
     final child = _replyItem(context, data[index], index);
-    if (highLight) {
+    if (highlight) {
       return AnimatedBuilder(
         animation: colorAnimation ??=
             ColorTween(
@@ -306,7 +299,8 @@ class _VideoReplyReplyPanelState
                 curve: const Interval(0.8, 1.0),
               ),
             ),
-        builder: (context, _) {
+        child: child,
+        builder: (context, child) {
           return ColoredBox(
             color: colorAnimation!.value!,
             child: child,
@@ -345,22 +339,5 @@ class _VideoReplyReplyPanelState
       onDismissed: widget.onDismissed,
       onCheckReply: (item) => _controller.onCheckReply(item, isManual: true),
     );
-  }
-
-  void _jumpToItem(int index) {
-    final offset = _controller.listController.getOffsetToReveal(index, 0.25);
-    if (offset.isFinite) {
-      final pos = scrollController.positions.last;
-      final minExtent = pos.minScrollExtent;
-      final maxExtent = pos.maxScrollExtent;
-      final pixels = pos.pixels;
-      // If the scroll view is already at the edge don't do anything.
-      // Otherwise this may result in scrollbar handle artifacts.
-      if ((offset <= minExtent && pixels == minExtent) ||
-          (offset >= maxExtent && pixels == maxExtent)) {
-        return;
-      }
-      pos.jumpTo(offset);
-    }
   }
 }

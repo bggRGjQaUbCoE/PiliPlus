@@ -9,6 +9,7 @@ import 'package:PiliPlus/utils/request_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:fixnum/fixnum.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:get/get.dart';
 import 'package:get/get_navigation/src/dialog/dialog_route.dart';
 import 'package:super_sliver_list/super_sliver_list.dart';
@@ -34,7 +35,7 @@ class VideoReplyReplyController extends ReplyController
   bool hasRoot = false;
   final Rx<ReplyInfo?> firstFloor = Rx(null);
 
-  final index = RxnInt();
+  int? index;
 
   final listController = ListController();
 
@@ -90,8 +91,19 @@ class VideoReplyReplyController extends ReplyController
       (item) => item.id == id64,
     );
     if (index != -1) {
-      this.index.value = index;
-      animController.forward(from: 0);
+      this.index = index;
+      if (replies == null) {
+        loadingState.refresh();
+      }
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        animController.forward(from: 0);
+        listController.jumpToItem(
+          index: index,
+          scrollController: scrollController,
+          alignment: 0.25,
+        );
+        this.index = null;
+      });
       return true;
     }
     return false;
@@ -121,14 +133,6 @@ class VideoReplyReplyController extends ReplyController
         ? Mode.MAIN_LIST_TIME
         : Mode.MAIN_LIST_HOT;
     onReload();
-  }
-
-  @override
-  Future<void> onReload() {
-    if (loadingState.value.isSuccess) {
-      index.value = null;
-    }
-    return super.onReload();
   }
 
   @override

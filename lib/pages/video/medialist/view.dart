@@ -9,14 +9,14 @@ import 'package:PiliPlus/models/common/badge_type.dart';
 import 'package:PiliPlus/models/common/stat_type.dart';
 import 'package:PiliPlus/models_new/media_list/media_list.dart';
 import 'package:PiliPlus/models_new/video/video_detail/episode.dart';
-import 'package:PiliPlus/pages/common/slide/common_collapse_slide_page.dart';
+import 'package:PiliPlus/pages/common/slide/common_slide_page.dart';
 import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:flutter/material.dart' hide RefreshCallback;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
-class MediaListPanel extends CommonCollapseSlidePage {
+class MediaListPanel extends CommonSlidePage {
   const MediaListPanel({
     super.key,
     required this.mediaList,
@@ -46,20 +46,17 @@ class MediaListPanel extends CommonCollapseSlidePage {
   State<MediaListPanel> createState() => _MediaListPanelState();
 }
 
-class _MediaListPanelState
-    extends CommonCollapseSlidePageState<MediaListPanel> {
+class _MediaListPanelState extends CommonSlidePageState<MediaListPanel> {
   final _controller = ScrollController();
 
   @override
-  void init() {
+  void initState() {
+    super.initState();
     final bvid = widget.getBvId();
     final bvIndex = widget.mediaList.indexWhere((item) => item.bvid == bvid);
     if (bvIndex != -1) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          isInit = false;
-          _controller.jumpTo(bvIndex * 100.0);
-        }
+        _controller.jumpTo(bvIndex * 100.0);
       });
     }
   }

@@ -62,8 +62,10 @@ abstract class CommonRichTextPubPageState<T extends CommonRichTextPubPage>
 
   @override
   void dispose() {
-    for (var i in pathList) {
-      File(i).tryDel();
+    if (Utils.isMobile) {
+      for (var i in pathList) {
+        File(i).tryDel();
+      }
     }
     super.dispose();
   }

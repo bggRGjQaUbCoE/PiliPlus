@@ -2,6 +2,7 @@ import 'package:PiliPlus/common/skeleton/video_reply.dart';
 import 'package:PiliPlus/common/widgets/custom_sliver_persistent_header_delegate.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/refresh_indicator.dart';
+import 'package:PiliPlus/common/widgets/scaffold/bottom_sheet.dart';
 import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
     show ReplyInfo;
 import 'package:PiliPlus/http/loading_state.dart';
@@ -10,7 +11,7 @@ import 'package:PiliPlus/pages/video/reply/widgets/reply_item_grpc.dart';
 import 'package:PiliPlus/pages/video/reply_reply/view.dart';
 import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:easy_debounce/easy_throttle.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide showBottomSheet;
 import 'package:flutter/rendering.dart';
 import 'package:get/get.dart';
 

@@ -251,7 +251,7 @@ class VideoHttp {
                   resultProgress?['play_view_business_info']?['user_status']?['watch_progress']?['current_watch_progress'];
           case VideoType.pgc:
             var result = res.data['result'];
-            var resultProgress = resProgress.data['data'];
+            var resultProgress = resProgress.data['result'];
             data = PlayUrlModel.fromJson(result['video_info'])
               ..lastPlayTime =
                   resultProgress?['play_view_business_info']?['user_status']?['watch_progress']?['current_watch_progress'];

@@ -251,7 +251,7 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
     ThemeData theme,
     LoadingState<List<ReplyInfo>?> loadingState,
   ) {
-    late final jumpIndex = _controller.index.value;
+    final jumpIndex = _controller.index.value;
     return switch (loadingState) {
       Loading() => SliverPrototypeExtentList.builder(
         prototypeItem: const VideoReplySkeleton(),

@@ -104,6 +104,7 @@ class VideoReplyReplyController extends ReplyController
 
   void jumpToItem(int index) {
     SchedulerBinding.instance.addPostFrameCallback((_) {
+      animController.forward(from: 0);
       try {
         // ignore: invalid_use_of_visible_for_testing_member
         final offset = listController.getOffsetToReveal(index, 0.25);

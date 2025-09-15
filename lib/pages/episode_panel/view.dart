@@ -411,8 +411,8 @@ class _EpisodePanelState extends State<EpisodePanel>
     }
     late final Color primary = theme.colorScheme.primary;
 
-    return Align(
-      alignment: Alignment.topLeft,
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 2),
       child: SizedBox(
         height: 98,
         child: Material(

@@ -90,6 +90,14 @@ class _NoteListPageState extends State<NoteListPage>
     );
   }
 
+  late Key _key;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _key = ValueKey(PrimaryScrollController.of(context).hashCode);
+  }
+
   @override
   Widget buildList(ThemeData theme) {
     return refreshIndicator(
@@ -99,6 +107,7 @@ class _NoteListPageState extends State<NoteListPage>
         children: [
           Expanded(
             child: CustomScrollView(
+              key: _key,
               physics: const AlwaysScrollableScrollPhysics(),
               slivers: [
                 SliverPadding(

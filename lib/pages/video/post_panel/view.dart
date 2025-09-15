@@ -239,6 +239,14 @@ class _PostPanelState extends State<PostPanel>
     );
   }
 
+  late Key _key;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _key = ValueKey(PrimaryScrollController.of(context).hashCode);
+  }
+
   @override
   Widget buildList(ThemeData theme) {
     if (list.isNullOrEmpty) {
@@ -249,6 +257,7 @@ class _PostPanelState extends State<PostPanel>
       clipBehavior: Clip.none,
       children: [
         ListView.builder(
+          key: _key,
           physics: const AlwaysScrollableScrollPhysics(),
           padding: EdgeInsets.only(bottom: 88 + bottom),
           itemCount: list.length,

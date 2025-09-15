@@ -51,9 +51,18 @@ class _AiDetailState extends State<AiConclusionPanel>
     );
   }
 
+  late Key _key;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _key = ValueKey(PrimaryScrollController.of(context).hashCode);
+  }
+
   @override
   Widget buildList(ThemeData theme) {
     return CustomScrollView(
+      key: _key,
       physics: const AlwaysScrollableScrollPhysics(),
       slivers: [
         if (widget.item.summary?.isNotEmpty == true) ...[

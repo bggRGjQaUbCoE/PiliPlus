@@ -85,9 +85,18 @@ class _ViewPointsPageState extends State<ViewPointsPage>
     );
   }
 
+  late Key _key;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _key = ValueKey(PrimaryScrollController.of(context).hashCode);
+  }
+
   @override
   Widget buildList(ThemeData theme) {
     return ListView.builder(
+      key: _key,
       physics: const AlwaysScrollableScrollPhysics(),
       padding: EdgeInsets.only(
         top: 7,

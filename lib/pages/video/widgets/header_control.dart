@@ -442,15 +442,19 @@ class HeaderControlState extends TripleState<HeaderControl> {
                   dense: true,
                   title: const Text('播放信息', style: titleStyle),
                   leading: const Icon(Icons.info_outline, size: 20),
-                  onTap: () {
-                    Player? player = plPlayerController.videoPlayerController;
+                  onTap: () async {
+                    final player = plPlayerController.videoPlayerController;
                     if (player == null) {
                       SmartDialog.showToast('播放器未初始化');
                       return;
                     }
+                    final hwdec = await (player.platform as NativePlayer)
+                        .getProperty('hwdec-current');
+                    if (!context.mounted) return;
                     showDialog(
                       context: context,
                       builder: (context) {
+                        final state = player.state;
                         return AlertDialog(
                           title: const Text('播放信息'),
                           content: SingleChildScrollView(
@@ -460,10 +464,10 @@ class HeaderControlState extends TripleState<HeaderControl> {
                                   dense: true,
                                   title: const Text("Resolution"),
                                   subtitle: Text(
-                                    '${player.state.width}x${player.state.height}',
+                                    '${state.width}x${state.height}',
                                   ),
                                   onTap: () => Utils.copyText(
-                                    'Resolution\n${player.state.width}x${player.state.height}',
+                                    'Resolution\n${state.width}x${state.height}',
                                     needToast: false,
                                   ),
                                 ),
@@ -471,10 +475,10 @@ class HeaderControlState extends TripleState<HeaderControl> {
                                   dense: true,
                                   title: const Text("VideoParams"),
                                   subtitle: Text(
-                                    player.state.videoParams.toString(),
+                                    state.videoParams.toString(),
                                   ),
                                   onTap: () => Utils.copyText(
-                                    'VideoParams\n${player.state.videoParams}',
+                                    'VideoParams\n${state.videoParams}',
                                     needToast: false,
                                   ),
                                 ),
@@ -482,10 +486,10 @@ class HeaderControlState extends TripleState<HeaderControl> {
                                   dense: true,
                                   title: const Text("AudioParams"),
                                   subtitle: Text(
-                                    player.state.audioParams.toString(),
+                                    state.audioParams.toString(),
                                   ),
                                   onTap: () => Utils.copyText(
-                                    'AudioParams\n${player.state.audioParams}',
+                                    'AudioParams\n${state.audioParams}',
                                     needToast: false,
                                   ),
                                 ),
@@ -493,10 +497,10 @@ class HeaderControlState extends TripleState<HeaderControl> {
                                   dense: true,
                                   title: const Text("Media"),
                                   subtitle: Text(
-                                    player.state.playlist.toString(),
+                                    state.playlist.toString(),
                                   ),
                                   onTap: () => Utils.copyText(
-                                    'Media\n${player.state.playlist}',
+                                    'Media\n${state.playlist}',
                                     needToast: false,
                                   ),
                                 ),
@@ -504,10 +508,10 @@ class HeaderControlState extends TripleState<HeaderControl> {
                                   dense: true,
                                   title: const Text("AudioTrack"),
                                   subtitle: Text(
-                                    player.state.track.audio.toString(),
+                                    state.track.audio.toString(),
                                   ),
                                   onTap: () => Utils.copyText(
-                                    'AudioTrack\n${player.state.track.audio}',
+                                    'AudioTrack\n${state.track.audio}',
                                     needToast: false,
                                   ),
                                 ),
@@ -515,28 +519,28 @@ class HeaderControlState extends TripleState<HeaderControl> {
                                   dense: true,
                                   title: const Text("VideoTrack"),
                                   subtitle: Text(
-                                    player.state.track.video.toString(),
+                                    state.track.video.toString(),
                                   ),
                                   onTap: () => Utils.copyText(
-                                    'VideoTrack\n${player.state.track.audio}',
+                                    'VideoTrack\n${state.track.audio}',
                                     needToast: false,
                                   ),
                                 ),
                                 ListTile(
                                   dense: true,
                                   title: const Text("pitch"),
-                                  subtitle: Text(player.state.pitch.toString()),
+                                  subtitle: Text(state.pitch.toString()),
                                   onTap: () => Utils.copyText(
-                                    'pitch\n${player.state.pitch}',
+                                    'pitch\n${state.pitch}',
                                     needToast: false,
                                   ),
                                 ),
                                 ListTile(
                                   dense: true,
                                   title: const Text("rate"),
-                                  subtitle: Text(player.state.rate.toString()),
+                                  subtitle: Text(state.rate.toString()),
                                   onTap: () => Utils.copyText(
-                                    'rate\n${player.state.rate}',
+                                    'rate\n${state.rate}',
                                     needToast: false,
                                   ),
                                 ),
@@ -544,10 +548,10 @@ class HeaderControlState extends TripleState<HeaderControl> {
                                   dense: true,
                                   title: const Text("AudioBitrate"),
                                   subtitle: Text(
-                                    player.state.audioBitrate.toString(),
+                                    state.audioBitrate.toString(),
                                   ),
                                   onTap: () => Utils.copyText(
-                                    'AudioBitrate\n${player.state.audioBitrate}',
+                                    'AudioBitrate\n${state.audioBitrate}',
                                     needToast: false,
                                   ),
                                 ),
@@ -555,10 +559,19 @@ class HeaderControlState extends TripleState<HeaderControl> {
                                   dense: true,
                                   title: const Text("Volume"),
                                   subtitle: Text(
-                                    player.state.volume.toString(),
+                                    state.volume.toString(),
                                   ),
                                   onTap: () => Utils.copyText(
-                                    'Volume\n${player.state.volume}',
+                                    'Volume\n${state.volume}',
+                                    needToast: false,
+                                  ),
+                                ),
+                                ListTile(
+                                  dense: true,
+                                  title: const Text('hwdec'),
+                                  subtitle: Text(hwdec),
+                                  onTap: () => Utils.copyText(
+                                    'hwdec\n$hwdec',
                                     needToast: false,
                                   ),
                                 ),

@@ -78,7 +78,7 @@ class _DanmakuBlockPageState extends State<DanmakuBlockPage> {
     );
   }
 
-  Widget tabViewBuilder(int tabIndex, List<SimpleRule> list) {
+  Widget tabViewBuilder(final int tabIndex, List<SimpleRule> list) {
     if (list.isEmpty) {
       return scrollErrorWidget();
     }
@@ -89,31 +89,54 @@ class _DanmakuBlockPageState extends State<DanmakuBlockPage> {
       ),
       itemBuilder: (context, itemIndex) {
         final SimpleRule item = list[itemIndex];
+        final child = IconButton(
+          icon: const Icon(Icons.delete_outlined),
+          onPressed: () => showConfirmDialog(
+            context: context,
+            title: '确定删除该规则？',
+            onConfirm: () => _controller.danmakuFilterDel(
+              tabIndex,
+              itemIndex,
+              item.id,
+            ),
+          ),
+        );
         return ListTile(
           title: Text(
             item.filter,
             style: Theme.of(context).textTheme.bodyMedium,
           ),
-          trailing: IconButton(
-            icon: const Icon(Icons.delete_outlined),
-            onPressed: () => showConfirmDialog(
-              context: context,
-              title: '确定删除该规则？',
-              onConfirm: () => _controller.danmakuFilterDel(
-                tabIndex,
-                itemIndex,
-                item.id,
-              ),
-            ),
-          ),
+          trailing: tabIndex == 2
+              ? child
+              : Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.edit_outlined),
+                      onPressed: () => _showAddDialog(
+                        DmBlockType.values[_controller.tabController.index],
+                        initFilter: item.filter,
+                        itemIndex: itemIndex,
+                        itemId: item.id,
+                      ),
+                    ),
+                    child,
+                  ],
+                ),
         );
       },
     );
   }
 
-  void _showAddDialog(DmBlockType type) {
-    String filter = '';
-    String hintText = switch (type) {
+  void _showAddDialog(
+    DmBlockType type, {
+    String initFilter = '',
+    int? itemIndex,
+    int? itemId,
+  }) {
+    assert((itemIndex == null) == (itemId == null));
+    String filter = initFilter;
+    final hintText = switch (type) {
       DmBlockType.keyword => '输入过滤的关键词，其它类别请切换标签页后添加',
       DmBlockType.regex => '输入//之间的正则表达式，无需包含头尾的"/"',
       DmBlockType.uid => '输入用户UID',
@@ -123,7 +146,7 @@ class _DanmakuBlockPageState extends State<DanmakuBlockPage> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('添加新的${type.label}规则'),
+          title: Text('${itemId != null ? "编辑" : "添加新的"}${type.label}规则'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -150,15 +173,24 @@ class _DanmakuBlockPageState extends State<DanmakuBlockPage> {
             ),
             TextButton(
               child: const Text('添加'),
-              onPressed: () {
-                if (filter.isNotEmpty) {
+              onPressed: () async {
+                if (filter != initFilter) {
                   Get.back();
-                  _controller.danmakuFilterAdd(
+                  if (itemId != null) {
+                    await _controller.danmakuFilterDel(
+                      type.index,
+                      itemIndex!,
+                      itemId,
+                    );
+                  }
+                  await _controller.danmakuFilterAdd(
                     filter: filter,
                     type: type.index,
                   );
                 } else {
-                  SmartDialog.showToast('输入内容不能为空');
+                  SmartDialog.showToast(
+                    '输入内容${filter.isEmpty ? "不能为空" : "与上次相同"}',
+                  );
                 }
               },
             ),

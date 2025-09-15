@@ -7,6 +7,7 @@ Future<void> showConfirmDialog({
   dynamic content,
   required VoidCallback onConfirm,
 }) {
+  assert(content is String? || content is Widget);
   return showDialog(
     context: context,
     builder: (context) {

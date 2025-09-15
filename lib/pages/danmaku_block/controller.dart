@@ -32,10 +32,10 @@ class DanmakuBlockController extends GetxController
 
   Future<void> queryDanmakuFilter() async {
     SmartDialog.showLoading(msg: '正在同步弹幕屏蔽规则……');
-    var result = await DanmakuFilterHttp.danmakuFilter();
+    final result = await DanmakuFilterHttp.danmakuFilter();
     SmartDialog.dismiss();
-    if (result['status']) {
-      DanmakuBlockDataModel data = result['data'];
+    if (result.isSuccess) {
+      final data = result.data;
       rules[0].addAll(data.rule);
       rules[1].addAll(data.rule1);
       rules[2].addAll(data.rule2);
@@ -43,19 +43,19 @@ class DanmakuBlockController extends GetxController
         SmartDialog.showToast(data.toast!);
       }
     } else {
-      SmartDialog.showToast(result['msg']);
+      result.toast();
     }
   }
 
   Future<void> danmakuFilterDel(int tabIndex, int itemIndex, int id) async {
     SmartDialog.showLoading(msg: '正在删除弹幕屏蔽规则……');
-    var result = await DanmakuFilterHttp.danmakuFilterDel(ids: id);
+    final result = await DanmakuFilterHttp.danmakuFilterDel(ids: id);
     SmartDialog.dismiss();
-    if (result['status']) {
+    if (result.isSuccess) {
       rules[tabIndex].removeAt(itemIndex);
       SmartDialog.showToast('删除成功');
     } else {
-      SmartDialog.showToast(result['msg']);
+      result.toast();
     }
   }
 
@@ -67,17 +67,16 @@ class DanmakuBlockController extends GetxController
       filter = Crc32Xz().convert(utf8.encode(filter)).toRadixString(16);
     }
     SmartDialog.showLoading(msg: '正在添加弹幕屏蔽规则……');
-    var result = await DanmakuFilterHttp.danmakuFilterAdd(
+    final result = await DanmakuFilterHttp.danmakuFilterAdd(
       filter: filter,
       type: type,
     );
     SmartDialog.dismiss();
-    if (result['status']) {
-      SimpleRule rule = result['data'];
-      rules[type].add(rule);
+    if (result.isSuccess) {
+      rules[type].add(result.data);
       SmartDialog.showToast('添加成功');
     } else {
-      SmartDialog.showToast(result['msg']);
+      result.toast();
     }
   }
 }

@@ -32,14 +32,6 @@ class _ViewPointsPageState extends State<ViewPointsPage>
 
   int currentIndex = -1;
 
-  final _controller = ScrollController();
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
   @override
   Widget buildPage(ThemeData theme) {
     return Scaffold(
@@ -96,7 +88,6 @@ class _ViewPointsPageState extends State<ViewPointsPage>
   @override
   Widget buildList(ThemeData theme) {
     return ListView.builder(
-      controller: _controller,
       physics: const AlwaysScrollableScrollPhysics(),
       padding: EdgeInsets.only(
         top: 7,

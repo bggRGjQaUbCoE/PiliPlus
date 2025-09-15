@@ -192,14 +192,6 @@ class _PostPanelState extends State<PostPanel>
   double get currentPos =>
       plPlayerController.position.value.inMilliseconds / 1000;
 
-  final _controller = ScrollController();
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
   @override
   Widget buildPage(ThemeData theme) {
     return Scaffold(
@@ -257,7 +249,6 @@ class _PostPanelState extends State<PostPanel>
       clipBehavior: Clip.none,
       children: [
         ListView.builder(
-          controller: _controller,
           physics: const AlwaysScrollableScrollPhysics(),
           padding: EdgeInsets.only(bottom: 88 + bottom),
           itemCount: list.length,

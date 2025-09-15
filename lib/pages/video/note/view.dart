@@ -99,7 +99,6 @@ class _NoteListPageState extends State<NoteListPage>
         children: [
           Expanded(
             child: CustomScrollView(
-              controller: _controller.scrollController,
               physics: const AlwaysScrollableScrollPhysics(),
               slivers: [
                 SliverPadding(

@@ -154,8 +154,8 @@ class _MediaListPanelState extends State<MediaListPanel>
     bool isCurr,
     bool showDelBtn,
   ) {
-    return Align(
-      alignment: Alignment.topLeft,
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 2),
       child: SizedBox(
         height: 98,
         child: Material(

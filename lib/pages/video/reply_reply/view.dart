@@ -72,7 +72,6 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
         rpid: widget.rpid,
         dialog: widget.dialog,
         replyType: widget.replyType,
-        isNested: widget.isNested,
       ),
       tag: _tag,
     );
@@ -127,16 +126,19 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
 
   @override
   Widget buildList(ThemeData theme) {
+    final primaryCtr = PrimaryScrollController.of(context);
+    if (primaryCtr is ExtendedNestedScrollController) {
+      _controller.nestedController = primaryCtr;
+    } else {
+      _controller.nestedController = null;
+    }
+    final controller =
+        _controller.nestedController ?? _controller.scrollController;
     return refreshIndicator(
       onRefresh: _controller.onRefresh,
       child: CustomScrollView(
-        controller: widget.isNested
-            ? (_controller.nestedController ??=
-                  (PrimaryScrollController.of(
-                        context,
-                      )
-                      as ExtendedNestedScrollController))
-            : _controller.scrollController,
+        key: ValueKey(controller.hashCode),
+        controller: controller,
         physics: widget.isNested
             ? const AlwaysScrollableScrollPhysics(
                 parent: ClampingScrollPhysics(),

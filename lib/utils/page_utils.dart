@@ -608,7 +608,7 @@ abstract class PageUtils {
     int index,
   ) {
     final dynamic scaffoldState =
-        Scaffold.maybeOf(context) ?? scaffold.Scaffold.maybeOf(context);
+        scaffold.Scaffold.maybeOf(context) ?? Scaffold.maybeOf(context);
     if (scaffoldState != null) {
       onHorizontalPreviewState(
         scaffoldState,

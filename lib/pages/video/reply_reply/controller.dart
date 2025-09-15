@@ -24,7 +24,6 @@ class VideoReplyReplyController extends ReplyController
     required this.rpid,
     required this.dialog,
     required this.replyType,
-    required this.isNested,
   });
   final int? dialog;
   int? id;
@@ -40,8 +39,6 @@ class VideoReplyReplyController extends ReplyController
   int? index;
 
   final listController = ListController();
-
-  final bool isNested;
 
   AnimationController? _controller;
   AnimationController get animController => _controller ??= AnimationController(
@@ -129,8 +126,8 @@ class VideoReplyReplyController extends ReplyController
         rect: rect,
       );
       if (offset.isFinite) {
-        if (isNested) {
-          nestedController?.nestedPositions.last.localJumpTo(offset);
+        if (nestedController != null) {
+          nestedController!.nestedPositions.last.localJumpTo(offset);
         } else {
           scrollController.jumpTo(offset);
         }

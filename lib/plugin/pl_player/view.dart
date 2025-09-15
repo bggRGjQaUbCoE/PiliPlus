@@ -1133,19 +1133,11 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       switch (key) {
         case LogicalKeyboardKey.space:
           onDoubleTapCenter();
-          break;
+          return;
 
         case LogicalKeyboardKey.keyF:
           plPlayerController.triggerFullScreen(status: !isFullScreen);
-          break;
-
-        case LogicalKeyboardKey.arrowLeft when (!plPlayerController.isLive):
-          onDoubleTapSeekBackward();
-          break;
-
-        case LogicalKeyboardKey.arrowRight when (!plPlayerController.isLive):
-          onDoubleTapSeekForward();
-          break;
+          return;
 
         case LogicalKeyboardKey.escape:
           if (isFullScreen) {
@@ -1153,7 +1145,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
           } else {
             Get.back();
           }
-          break;
+          return;
 
         case LogicalKeyboardKey.keyD:
           final newVal = !plPlayerController.enableShowDanmaku.value;
@@ -1161,7 +1153,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
           if (!plPlayerController.tempPlayerConf) {
             GStorage.setting.put(SettingBoxKey.enableShowDanmaku, newVal);
           }
-          break;
+          return;
 
         case LogicalKeyboardKey.arrowUp:
           final volume = math.min(
@@ -1169,7 +1161,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
             plPlayerController.volume.value + 0.1,
           );
           setVolume(volume);
-          break;
+          return;
 
         case LogicalKeyboardKey.arrowDown:
           final volume = math.max(
@@ -1177,7 +1169,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
             plPlayerController.volume.value - 0.1,
           );
           setVolume(volume);
-          break;
+          return;
 
         case LogicalKeyboardKey.keyM:
           final isMuted = !plPlayerController.isMuted;
@@ -1186,45 +1178,57 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
           );
           plPlayerController.isMuted = isMuted;
           SmartDialog.showToast('${isMuted ? '' : '取消'}静音');
-          break;
+          return;
+      }
 
-        case LogicalKeyboardKey.keyQ when (!plPlayerController.isLive):
-          introController.actionLikeVideo();
-          break;
+      if (!plPlayerController.isLive) {
+        switch (key) {
+          case LogicalKeyboardKey.arrowLeft:
+            onDoubleTapSeekBackward();
+            return;
 
-        case LogicalKeyboardKey.keyW when (!plPlayerController.isLive):
-          introController.actionCoinVideo();
-          break;
+          case LogicalKeyboardKey.arrowRight:
+            onDoubleTapSeekForward();
+            return;
 
-        case LogicalKeyboardKey.keyE when (!plPlayerController.isLive):
-          introController.actionFavVideo(isQuick: true);
-          break;
+          case LogicalKeyboardKey.keyQ:
+            introController.actionLikeVideo();
+            return;
 
-        case LogicalKeyboardKey.keyR when (!plPlayerController.isLive):
-          introController.viewLater();
-          break;
+          case LogicalKeyboardKey.keyW:
+            introController.actionCoinVideo();
+            return;
 
-        case LogicalKeyboardKey.keyG when (!plPlayerController.isLive):
-          if (introController case UgcIntroController ugcCtr) {
-            ugcCtr.actionRelationMod(context);
-          }
-          break;
+          case LogicalKeyboardKey.keyE:
+            introController.actionFavVideo(isQuick: true);
+            return;
 
-        case LogicalKeyboardKey.bracketLeft when (!plPlayerController.isLive):
-          if (!introController.prevPlay()) {
-            SmartDialog.showToast('已经是第一集了');
-          }
-          break;
+          case LogicalKeyboardKey.keyR:
+            introController.viewLater();
+            return;
 
-        case LogicalKeyboardKey.bracketRight when (!plPlayerController.isLive):
-          if (!introController.nextPlay()) {
-            SmartDialog.showToast('已经是最后一集了');
-          }
-          break;
+          case LogicalKeyboardKey.keyG:
+            if (introController case UgcIntroController ugcCtr) {
+              ugcCtr.actionRelationMod(context);
+            }
+            return;
 
-        case LogicalKeyboardKey.enter when (!plPlayerController.isLive):
-          widget.videoDetailController?.showShootDanmakuSheet();
-          break;
+          case LogicalKeyboardKey.bracketLeft:
+            if (!introController.prevPlay()) {
+              SmartDialog.showToast('已经是第一集了');
+            }
+            return;
+
+          case LogicalKeyboardKey.bracketRight:
+            if (!introController.nextPlay()) {
+              SmartDialog.showToast('已经是最后一集了');
+            }
+            return;
+
+          case LogicalKeyboardKey.enter:
+            widget.videoDetailController?.showShootDanmakuSheet();
+            return;
+        }
       }
     }
   }

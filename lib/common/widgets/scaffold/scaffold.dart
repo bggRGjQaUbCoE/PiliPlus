@@ -27,6 +27,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart' show DragStartBehavior;
 import 'package:flutter/material.dart'
     hide showBottomSheet, showModalBottomSheet, BottomSheet;
+import 'package:flutter/material.dart' as material;
 
 // Examples can assume:
 // late TabController tabController;
@@ -1692,7 +1693,7 @@ class _FloatingActionButtonTransitionState
 ///  * [ScaffoldState], which is the state associated with this widget.
 ///  * <https://material.io/design/layout/responsive-layout-grid.html>
 ///  * Cookbook: [Add a Drawer to a screen](https://docs.flutter.dev/cookbook/design/drawer)
-class Scaffold extends StatefulWidget {
+class Scaffold extends StatefulWidget implements material.Scaffold {
   /// Creates a visual scaffold for Material Design widgets.
   const Scaffold({
     super.key,
@@ -2214,8 +2215,9 @@ class Scaffold extends StatefulWidget {
 ///
 /// Can display [BottomSheet]s. Retrieve a [ScaffoldState] from the current
 /// [BuildContext] using [Scaffold.of].
-class ScaffoldState extends State<Scaffold>
-    with TickerProviderStateMixin, RestorationMixin {
+class ScaffoldState extends State<material.Scaffold>
+    with TickerProviderStateMixin, RestorationMixin
+    implements material.ScaffoldState {
   @override
   String? get restorationId => widget.restorationId;
 
@@ -3524,7 +3526,8 @@ class _StandardBottomSheetState extends State<_StandardBottomSheet> {
 /// sheets. A bottom sheet is only persistent if it is set as the
 /// [Scaffold.bottomSheet].
 class PersistentBottomSheetController
-    extends ScaffoldFeatureController<_StandardBottomSheet, void> {
+    extends ScaffoldFeatureController<_StandardBottomSheet, void>
+    implements material.PersistentBottomSheetController {
   const PersistentBottomSheetController._(
     super.widget,
     super.completer,

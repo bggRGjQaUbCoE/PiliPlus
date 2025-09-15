@@ -117,6 +117,8 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
 
   final videoPlayerKey = GlobalKey();
   final videoReplyPanelKey = GlobalKey();
+  final videoRelatedKey = GlobalKey();
+  final videoIntroKey = GlobalKey();
 
   @override
   void initState() {
@@ -1113,12 +1115,14 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                             videoDetailController
                                 .plPlayerController
                                 .showRelatedVideo)
-                          KeepAliveWrapper(
-                            builder: (context) => CustomScrollView(
-                              key: const PageStorageKey(RelatedVideoPanel),
-                              controller: introScrollController,
-                              slivers: [RelatedVideoPanel(heroTag: heroTag)],
-                            ),
+                          CustomScrollView(
+                            controller: introScrollController,
+                            slivers: [
+                              RelatedVideoPanel(
+                                key: videoRelatedKey,
+                                heroTag: heroTag,
+                              ),
+                            ],
                           ),
                         if (videoDetailController.showReply) videoReplyPanel(),
                         if (_shouldShowSeasonPanel) seasonPanel,
@@ -1805,56 +1809,63 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     bool needCtr = true,
   }) {
     final bottom = MediaQuery.viewPaddingOf(context).bottom;
-    Widget introPanel() => CustomScrollView(
-      key: const PageStorageKey(RelatedVideoPanel),
-      controller: needCtr ? introScrollController : null,
-      physics: !needCtr
-          ? const AlwaysScrollableScrollPhysics(parent: ClampingScrollPhysics())
-          : null,
-      slivers: [
-        if (videoDetailController.isUgc) ...[
-          UgcIntroPanel(
-            heroTag: heroTag,
-            showAiBottomSheet: showAiBottomSheet,
-            showEpisodes: showEpisodes,
-            onShowMemberPage: onShowMemberPage,
-            isPortrait: isPortrait,
-            isHorizontal: isHorizontal ?? width! > height! * 1.25,
-          ),
-          if (needRelated &&
-              videoDetailController.plPlayerController.showRelatedVideo) ...[
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.only(top: StyleString.safeSpace),
-                child: Divider(
-                  height: 1,
-                  indent: 12,
-                  endIndent: 12,
-                  color: themeData.colorScheme.outline.withValues(alpha: 0.08),
+    Widget introPanel() => KeepAliveWrapper(
+      builder: (context) => CustomScrollView(
+        controller: needCtr ? introScrollController : null,
+        physics: !needCtr
+            ? const AlwaysScrollableScrollPhysics(
+                parent: ClampingScrollPhysics(),
+              )
+            : null,
+        slivers: [
+          if (videoDetailController.isUgc) ...[
+            UgcIntroPanel(
+              key: videoIntroKey,
+              heroTag: heroTag,
+              showAiBottomSheet: showAiBottomSheet,
+              showEpisodes: showEpisodes,
+              onShowMemberPage: onShowMemberPage,
+              isPortrait: isPortrait,
+              isHorizontal: isHorizontal ?? width! > height! * 1.25,
+            ),
+            if (needRelated &&
+                videoDetailController.plPlayerController.showRelatedVideo) ...[
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.only(top: StyleString.safeSpace),
+                  child: Divider(
+                    height: 1,
+                    indent: 12,
+                    endIndent: 12,
+                    color: themeData.colorScheme.outline.withValues(
+                      alpha: 0.08,
+                    ),
+                  ),
                 ),
               ),
+              RelatedVideoPanel(key: videoRelatedKey, heroTag: heroTag),
+            ],
+          ] else
+            PgcIntroPage(
+              key: videoIntroKey,
+              heroTag: heroTag,
+              cid: videoDetailController.cid.value,
+              showEpisodes: showEpisodes,
+              showIntroDetail: showIntroDetail,
+              maxWidth: width ?? maxWidth,
+              isLandscape: !isPortrait,
             ),
-            RelatedVideoPanel(heroTag: heroTag),
-          ],
-        ] else
-          PgcIntroPage(
-            heroTag: heroTag,
-            cid: videoDetailController.cid.value,
-            showEpisodes: showEpisodes,
-            showIntroDetail: showIntroDetail,
-            maxWidth: width ?? maxWidth,
-            isLandscape: !isPortrait,
+          SliverToBoxAdapter(
+            child: SizedBox(
+              height:
+                  (videoDetailController.isPlayAll && !isPortrait
+                      ? 80
+                      : StyleString.safeSpace) +
+                  bottom,
+            ),
           ),
-        SliverToBoxAdapter(
-          child: SizedBox(
-            height:
-                (videoDetailController.isPlayAll && !isPortrait
-                    ? 80
-                    : StyleString.safeSpace) +
-                bottom,
-          ),
-        ),
-      ],
+        ],
+      ),
     );
     if (videoDetailController.isPlayAll) {
       return Stack(

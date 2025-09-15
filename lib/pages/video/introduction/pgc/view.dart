@@ -15,6 +15,7 @@ import 'package:PiliPlus/pages/video/introduction/pgc/controller.dart';
 import 'package:PiliPlus/pages/video/introduction/pgc/widgets/pgc_panel.dart';
 import 'package:PiliPlus/pages/video/introduction/ugc/widgets/action_item.dart';
 import 'package:PiliPlus/pages/video/introduction/ugc/widgets/triple_state.dart';
+import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:flutter/material.dart';
@@ -43,25 +44,23 @@ class PgcIntroPage extends StatefulWidget {
   State<PgcIntroPage> createState() => _PgcIntroPageState();
 }
 
-class _PgcIntroPageState extends TripleState<PgcIntroPage>
-    with AutomaticKeepAliveClientMixin {
+class _PgcIntroPageState extends TripleState<PgcIntroPage> {
   @override
-  late PgcIntroController introController;
-  late VideoDetailController videoDetailCtr;
-
-  @override
-  bool get wantKeepAlive => true;
+  late final PgcIntroController introController;
+  late final VideoDetailController videoDetailCtr;
 
   @override
   void initState() {
     super.initState();
-    introController = Get.put(PgcIntroController(), tag: widget.heroTag);
+    introController = Get.putOrFind(
+      PgcIntroController.new,
+      tag: widget.heroTag,
+    );
     videoDetailCtr = Get.find<VideoDetailController>(tag: widget.heroTag);
   }
 
   @override
   Widget build(BuildContext context) {
-    super.build(context);
     final ThemeData theme = Theme.of(context);
     final item = introController.pgcItem;
     final isLandscape = widget.isLandscape;

@@ -54,22 +54,23 @@ class UgcIntroPanel extends StatefulWidget {
   State<UgcIntroPanel> createState() => _UgcIntroPanelState();
 }
 
-class _UgcIntroPanelState extends TripleState<UgcIntroPanel>
-    with AutomaticKeepAliveClientMixin {
+class _UgcIntroPanelState extends TripleState<UgcIntroPanel> {
   @override
-  late UgcIntroController introController;
+  late final UgcIntroController introController;
   late final VideoDetailController videoDetailCtr =
       Get.find<VideoDetailController>(tag: widget.heroTag);
 
   @override
   void initState() {
     super.initState();
-    introController = Get.put(UgcIntroController(), tag: widget.heroTag);
+    introController = Get.putOrFind(
+      UgcIntroController.new,
+      tag: widget.heroTag,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    super.build(context);
     final ThemeData theme = Theme.of(context);
     const expandTheme = ExpandableThemeData(
       animationDuration: Duration(milliseconds: 300),
@@ -963,7 +964,4 @@ class _UgcIntroPanelState extends TripleState<UgcIntroPanel>
       ),
     );
   }
-
-  @override
-  bool get wantKeepAlive => true;
 }

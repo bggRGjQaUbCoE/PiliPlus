@@ -137,6 +137,11 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
                       )
                       as ExtendedNestedScrollController))
             : _controller.scrollController,
+        physics: widget.isNested
+            ? const AlwaysScrollableScrollPhysics(
+                parent: ClampingScrollPhysics(),
+              )
+            : const AlwaysScrollableScrollPhysics(),
         slivers: [
           if (!isDialogue) ...[
             if (widget.firstFloor case final firstFloor?)

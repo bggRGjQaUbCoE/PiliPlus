@@ -611,9 +611,6 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                 ),
           body: ExtendedNestedScrollView(
             key: videoDetailController.scrollKey,
-            physics: const NeverScrollableScrollPhysics(
-              parent: ClampingScrollPhysics(),
-            ),
             controller: videoDetailController.scrollCtr,
             onlyOneScrollInBody: true,
             pinnedHeaderSliverHeightBuilder: () {
@@ -952,7 +949,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                       children: [
                         videoIntro(isHorizontal: false, needCtr: false),
                         if (videoDetailController.showReply)
-                          videoReplyPanel(false),
+                          videoReplyPanel(isNested: true),
                         if (_shouldShowSeasonPanel) seasonPanel,
                       ],
                     ),
@@ -1859,11 +1856,11 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
         ),
       ],
     );
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        introPanel(),
-        if (videoDetailController.isPlayAll)
+    if (videoDetailController.isPlayAll) {
+      return Stack(
+        clipBehavior: Clip.none,
+        children: [
+          introPanel(),
           Positioned(
             left: 12,
             right: 12,
@@ -1901,11 +1898,11 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                 ),
               ),
             ),
-          )
-        else if (Platform.isAndroid)
-          const SizedBox.shrink(),
-      ],
-    );
+          ),
+        ],
+      );
+    }
+    return introPanel();
   }
 
   Widget get seasonPanel {
@@ -2007,9 +2004,9 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     );
   }
 
-  Widget videoReplyPanel([bool needCtr = true]) => VideoReplyPanel(
+  Widget videoReplyPanel({bool isNested = false}) => VideoReplyPanel(
     key: videoReplyPanelKey,
-    needController: needCtr,
+    isNested: isNested,
     heroTag: heroTag,
     onViewImage: videoDetailController.onViewImage,
     onDismissed: videoDetailController.onDismissed,

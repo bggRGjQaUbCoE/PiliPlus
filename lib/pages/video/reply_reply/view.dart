@@ -11,6 +11,7 @@ import 'package:PiliPlus/pages/video/reply/widgets/reply_item_grpc.dart';
 import 'package:PiliPlus/pages/video/reply_reply/controller.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
+import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart';
 import 'package:flutter/material.dart' hide Scaffold, ScaffoldState;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart' hide ContextExtensionss;
@@ -29,6 +30,7 @@ class VideoReplyReplyPanel extends CommonSlidePage {
     required this.replyType,
     this.onViewImage,
     this.onDismissed,
+    this.isNested = false,
   });
   final int? id;
   final int oid;
@@ -39,6 +41,7 @@ class VideoReplyReplyPanel extends CommonSlidePage {
   final int replyType;
   final VoidCallback? onViewImage;
   final ValueChanged<int>? onDismissed;
+  final bool isNested;
 
   @override
   State<VideoReplyReplyPanel> createState() => _VideoReplyReplyPanelState();
@@ -51,9 +54,6 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
   Animation<Color?>? colorAnimation;
 
   late final bool isDialogue = widget.dialog != null;
-
-  ScrollController? _scrollController;
-  late ScrollController scrollController;
 
   @override
   void didChangeDependencies() {
@@ -72,17 +72,15 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
         rpid: widget.rpid,
         dialog: widget.dialog,
         replyType: widget.replyType,
+        isNested: widget.isNested,
       ),
       tag: _tag,
     );
-    // TODO
-    // _controller.index.listen(_jumpToItem);
   }
 
   @override
   void dispose() {
     Get.delete<VideoReplyReplyController>(tag: _tag);
-    _scrollController?.dispose();
     super.dispose();
   }
 
@@ -129,13 +127,16 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
 
   @override
   Widget buildList(ThemeData theme) {
-    scrollController = isDialogue
-        ? _scrollController ??= ScrollController()
-        : PrimaryScrollController.of(context);
     return refreshIndicator(
       onRefresh: _controller.onRefresh,
       child: CustomScrollView(
-        controller: scrollController,
+        controller: widget.isNested
+            ? (_controller.nestedController ??=
+                  (PrimaryScrollController.of(
+                        context,
+                      )
+                      as ExtendedNestedScrollController))
+            : _controller.scrollController,
         slivers: [
           if (!isDialogue) ...[
             if (widget.firstFloor case final firstFloor?)
@@ -245,17 +246,10 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
   ) {
     late final jumpIndex = _controller.index;
     return switch (loadingState) {
-      // should NOT be replaced with SliverList, as doing so will prevent drag to close
-      Loading() => SliverToBoxAdapter(
-        child: IgnorePointer(
-          child: ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemBuilder: (_, _) => const VideoReplySkeleton(),
-            itemCount: 8,
-            prototypeItem: const VideoReplySkeleton(),
-          ),
-        ),
+      Loading() => SliverPrototypeExtentList.builder(
+        prototypeItem: const VideoReplySkeleton(),
+        itemBuilder: (_, _) => const VideoReplySkeleton(),
+        itemCount: 8,
       ),
       Success(:var response!) => SuperSliverList.builder(
         listController: _controller.listController,
@@ -285,7 +279,8 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
                 begin: theme.colorScheme.onInverseSurface,
                 end: theme.colorScheme.surface,
               ).animate(_controller.animController),
-              builder: (context, _) {
+              child: child,
+              builder: (context, child) {
                 return ColoredBox(
                   color: colorAnimation!.value!,
                   child: child,
@@ -321,6 +316,7 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
           dialog: replyItem.dialog.toInt(),
           replyType: widget.replyType,
           isVideoDetail: true,
+          isNested: widget.isNested,
         ),
       ),
       jumpToDialogue: () {
@@ -333,25 +329,4 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
       onCheckReply: (item) => _controller.onCheckReply(item, isManual: true),
     );
   }
-
-  // void _jumpToItem(int? index) {
-  //   if (index == null) return;
-  //   SchedulerBinding.instance.addPostFrameCallback((_) {
-  //     // ignore: invalid_use_of_visible_for_testing_member
-  //     final offset = _controller.listController.getOffsetToReveal(index, 0.25);
-  //     if (offset.isFinite) {
-  //       final pos = scrollController.positions.last;
-  //       final minExtent = pos.minScrollExtent;
-  //       final maxExtent = pos.maxScrollExtent;
-  //       final pixels = pos.pixels;
-  //       // If the scroll view is already at the edge don't do anything.
-  //       // Otherwise this may result in scrollbar handle artifacts.
-  //       if ((offset <= minExtent && pixels == minExtent) ||
-  //           (offset >= maxExtent && pixels == maxExtent)) {
-  //         return;
-  //       }
-  //       pos.jumpTo(offset);
-  //     }
-  //   });
-  // }
 }

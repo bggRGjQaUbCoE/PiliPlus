@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:PiliPlus/common/widgets/interactiveviewer_gallery/hero_dialog_route.dart';
 import 'package:PiliPlus/common/widgets/interactiveviewer_gallery/interactiveviewer_gallery.dart';
 import 'package:PiliPlus/common/widgets/marquee.dart';
+import 'package:PiliPlus/common/widgets/scaffold/scaffold.dart' as scaffold;
 import 'package:PiliPlus/grpc/im.dart';
 import 'package:PiliPlus/http/dynamics.dart';
 import 'package:PiliPlus/http/search.dart';
@@ -560,7 +561,7 @@ abstract class PageUtils {
   }
 
   static void onHorizontalPreviewState(
-    ScaffoldState state,
+    dynamic state,
     TickerProvider vsync,
     List<SourceModel> imgList,
     int index,
@@ -595,7 +596,7 @@ abstract class PageUtils {
         );
       },
       enableDrag: false,
-      elevation: 0,
+      elevation: 0.0,
       backgroundColor: Colors.transparent,
       sheetAnimationStyle: const AnimationStyle(duration: Duration.zero),
     );
@@ -606,11 +607,12 @@ abstract class PageUtils {
     List<SourceModel> imgList,
     int index,
   ) {
-    final scaffold = Scaffold.maybeOf(context);
-    if (scaffold != null) {
+    final dynamic scaffoldState =
+        Scaffold.maybeOf(context) ?? scaffold.Scaffold.maybeOf(context);
+    if (scaffoldState != null) {
       onHorizontalPreviewState(
-        scaffold,
-        ContextSingleTicker(scaffold.context),
+        scaffoldState,
+        ContextSingleTicker(scaffoldState.context),
         imgList,
         index,
       );

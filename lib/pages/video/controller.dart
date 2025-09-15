@@ -362,7 +362,7 @@ class VideoDetailController extends GetxController
           } catch (_) {}
         },
         panelTitle: watchLaterTitle,
-        getBvId: () => bvid,
+        bvid: bvid,
         count: args['count'],
         loadMoreMedia: getMediaList,
         desc: _mediaDesc,

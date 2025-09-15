@@ -7,6 +7,7 @@ import 'package:PiliPlus/pages/video/reply_new/view.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:PiliPlus/utils/request_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
+import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart';
 import 'package:fixnum/fixnum.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -23,6 +24,7 @@ class VideoReplyReplyController extends ReplyController
     required this.rpid,
     required this.dialog,
     required this.replyType,
+    required this.isNested,
   });
   final int? dialog;
   int? id;
@@ -38,6 +40,8 @@ class VideoReplyReplyController extends ReplyController
   int? index;
 
   final listController = ListController();
+
+  final bool isNested;
 
   AnimationController? _controller;
   AnimationController get animController => _controller ??= AnimationController(
@@ -97,7 +101,7 @@ class VideoReplyReplyController extends ReplyController
       }
       SchedulerBinding.instance.addPostFrameCallback((_) {
         animController.forward(from: 0);
-        listController.jumpToItem(
+        jumpToItem(
           index: index,
           scrollController: scrollController,
           alignment: 0.25,
@@ -107,6 +111,31 @@ class VideoReplyReplyController extends ReplyController
       return true;
     }
     return false;
+  }
+
+  ExtendedNestedScrollController? nestedController;
+
+  void jumpToItem({
+    required int index,
+    required ScrollController scrollController,
+    required double alignment,
+    Rect? rect,
+  }) {
+    try {
+      // ignore: invalid_use_of_visible_for_testing_member
+      final offset = listController.getOffsetToReveal(
+        index,
+        alignment,
+        rect: rect,
+      );
+      if (offset.isFinite) {
+        if (isNested) {
+          nestedController?.nestedPositions.last.localJumpTo(offset);
+        } else {
+          scrollController.jumpTo(offset);
+        }
+      }
+    } catch (_) {}
   }
 
   @override

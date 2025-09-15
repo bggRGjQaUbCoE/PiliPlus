@@ -22,14 +22,14 @@ class VideoReplyPanel extends StatefulWidget {
     required this.heroTag,
     this.onViewImage,
     this.onDismissed,
-    required this.needController,
+    required this.isNested,
   });
 
   final int replyLevel;
   final String heroTag;
   final VoidCallback? onViewImage;
   final ValueChanged<int>? onDismissed;
-  final bool needController;
+  final bool isNested;
 
   @override
   State<VideoReplyPanel> createState() => _VideoReplyPanelState();
@@ -57,17 +57,17 @@ class _VideoReplyPanelState extends State<VideoReplyPanel>
   void didChangeDependencies() {
     super.didChangeDependencies();
     _videoReplyController.showFab();
-    if (widget.needController) {
-      _videoReplyController.scrollController.addListener(listener);
-    } else {
+    if (widget.isNested) {
       _videoReplyController.scrollController.removeListener(listener);
+    } else {
+      _videoReplyController.scrollController.addListener(listener);
     }
     bottom = MediaQuery.viewPaddingOf(context).bottom;
   }
 
   @override
   void dispose() {
-    if (widget.needController) {
+    if (!widget.isNested) {
       _videoReplyController.scrollController.removeListener(listener);
     }
     super.dispose();
@@ -99,14 +99,14 @@ class _VideoReplyPanelState extends State<VideoReplyPanel>
         clipBehavior: Clip.none,
         children: [
           CustomScrollView(
-            controller: widget.needController
-                ? _videoReplyController.scrollController
-                : null,
-            physics: widget.needController
-                ? const AlwaysScrollableScrollPhysics()
-                : const AlwaysScrollableScrollPhysics(
+            controller: widget.isNested
+                ? null
+                : _videoReplyController.scrollController,
+            physics: widget.isNested
+                ? const AlwaysScrollableScrollPhysics(
                     parent: ClampingScrollPhysics(),
-                  ),
+                  )
+                : const AlwaysScrollableScrollPhysics(),
             key: const PageStorageKey<String>('评论'),
             slivers: <Widget>[
               SliverPersistentHeader(
@@ -270,6 +270,7 @@ class _VideoReplyPanelState extends State<VideoReplyPanel>
           isVideoDetail: true,
           onViewImage: widget.onViewImage,
           onDismissed: widget.onDismissed,
+          isNested: widget.isNested,
         ),
       );
     });

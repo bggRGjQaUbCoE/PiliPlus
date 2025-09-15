@@ -411,144 +411,149 @@ class _EpisodePanelState extends State<EpisodePanel>
     }
     late final Color primary = theme.colorScheme.primary;
 
-    return SizedBox(
-      height: 98,
-      child: Material(
-        type: MaterialType.transparency,
-        child: InkWell(
-          onTap: () {
-            if (episode.badge == "会员") {
-              UserInfoData? userInfo = Pref.userInfoCache;
-              int vipStatus = userInfo?.vipStatus ?? 0;
-              if (vipStatus != 1) {
-                SmartDialog.showToast('需要大会员');
-                // return;
+    return Align(
+      alignment: Alignment.topLeft,
+      child: SizedBox(
+        height: 98,
+        child: Material(
+          type: MaterialType.transparency,
+          child: InkWell(
+            onTap: () {
+              if (episode.badge == "会员") {
+                UserInfoData? userInfo = Pref.userInfoCache;
+                int vipStatus = userInfo?.vipStatus ?? 0;
+                if (vipStatus != 1) {
+                  SmartDialog.showToast('需要大会员');
+                  // return;
+                }
               }
-            }
-            SmartDialog.showToast('切换到：$title');
-            widget.onClose?.call();
-            if (!showTitle) {
-              _currentItemIndex = index;
-            }
-            widget.onChangeEpisode(episode);
-            if (widget.type == EpisodeType.season) {
-              try {
-                Get.find<VideoDetailController>(
-                  tag: widget.ugcIntroController!.heroTag,
-                ).seasonCid = episode.cid;
-              } catch (_) {
-                if (kDebugMode) rethrow;
+              SmartDialog.showToast('切换到：$title');
+              widget.onClose?.call();
+              if (!showTitle) {
+                _currentItemIndex = index;
               }
-            }
-          },
-          onLongPress: () {
-            if (cover?.isNotEmpty == true) {
-              imageSaveDialog(title: title, cover: cover, bvid: bvid);
-            }
-          },
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: StyleString.safeSpace,
-              vertical: 5,
-            ),
-            child: Row(
-              spacing: 10,
-              children: [
-                if (cover?.isNotEmpty == true)
-                  Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      NetworkImgLayer(
-                        src: cover,
-                        width: 140.8,
-                        height: 88,
-                      ),
-                      if (duration != null && duration > 0)
-                        PBadge(
-                          text: DurationUtils.formatDuration(duration),
-                          right: 6.0,
-                          bottom: 6.0,
-                          type: PBadgeType.gray,
+              widget.onChangeEpisode(episode);
+              if (widget.type == EpisodeType.season) {
+                try {
+                  Get.find<VideoDetailController>(
+                    tag: widget.ugcIntroController!.heroTag,
+                  ).seasonCid = episode.cid;
+                } catch (_) {
+                  if (kDebugMode) rethrow;
+                }
+              }
+            },
+            onLongPress: () {
+              if (cover?.isNotEmpty == true) {
+                imageSaveDialog(title: title, cover: cover, bvid: bvid);
+              }
+            },
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: StyleString.safeSpace,
+                vertical: 5,
+              ),
+              child: Row(
+                spacing: 10,
+                children: [
+                  if (cover?.isNotEmpty == true)
+                    Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        NetworkImgLayer(
+                          src: cover,
+                          width: 140.8,
+                          height: 88,
                         ),
-                      if (isCharging == true)
-                        const PBadge(
-                          text: '充电专属',
-                          top: 6,
-                          right: 6,
-                          type: PBadgeType.error,
-                        )
-                      else if (episode.badge != null)
-                        PBadge(
-                          text: episode.badge,
-                          top: 6,
-                          right: 6,
-                          type: switch (episode.badge) {
-                            '预告' => PBadgeType.gray,
-                            '限免' => PBadgeType.free,
-                            _ => PBadgeType.primary,
-                          },
-                        ),
-                    ],
-                  )
-                else if (isCurrentIndex)
-                  Image.asset(
-                    'assets/images/live.png',
-                    color: primary,
-                    height: 12,
-                    semanticLabel: "正在播放：",
-                  ),
-                Expanded(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          title,
-                          textAlign: TextAlign.start,
-                          style: TextStyle(
-                            fontSize: theme.textTheme.bodyMedium!.fontSize,
-                            height: 1.42,
-                            letterSpacing: 0.3,
-                            fontWeight: isCurrentIndex ? FontWeight.bold : null,
-                            color: isCurrentIndex ? primary : null,
+                        if (duration != null && duration > 0)
+                          PBadge(
+                            text: DurationUtils.formatDuration(duration),
+                            right: 6.0,
+                            bottom: 6.0,
+                            type: PBadgeType.gray,
                           ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      if (pubdate != null)
-                        Text(
-                          DateFormatUtils.format(pubdate),
-                          maxLines: 1,
-                          style: TextStyle(
-                            fontSize: 12,
-                            height: 1,
-                            color: theme.colorScheme.outline,
-                            overflow: TextOverflow.clip,
+                        if (isCharging == true)
+                          const PBadge(
+                            text: '充电专属',
+                            top: 6,
+                            right: 6,
+                            type: PBadgeType.error,
+                          )
+                        else if (episode.badge != null)
+                          PBadge(
+                            text: episode.badge,
+                            top: 6,
+                            right: 6,
+                            type: switch (episode.badge) {
+                              '预告' => PBadgeType.gray,
+                              '限免' => PBadgeType.free,
+                              _ => PBadgeType.primary,
+                            },
                           ),
-                        ),
-                      if (view != null) ...[
-                        const SizedBox(height: 2),
-                        Row(
-                          spacing: 8,
-                          children: [
-                            StatWidget(
-                              value: view,
-                              type: StatType.play,
-                            ),
-                            if (danmaku != null)
-                              StatWidget(
-                                value: danmaku,
-                                type: StatType.danmaku,
-                              ),
-                          ],
-                        ),
                       ],
-                    ],
+                    )
+                  else if (isCurrentIndex)
+                    Image.asset(
+                      'assets/images/live.png',
+                      color: primary,
+                      height: 12,
+                      semanticLabel: "正在播放：",
+                    ),
+                  Expanded(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            title,
+                            textAlign: TextAlign.start,
+                            style: TextStyle(
+                              fontSize: theme.textTheme.bodyMedium!.fontSize,
+                              height: 1.42,
+                              letterSpacing: 0.3,
+                              fontWeight: isCurrentIndex
+                                  ? FontWeight.bold
+                                  : null,
+                              color: isCurrentIndex ? primary : null,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        if (pubdate != null)
+                          Text(
+                            DateFormatUtils.format(pubdate),
+                            maxLines: 1,
+                            style: TextStyle(
+                              fontSize: 12,
+                              height: 1,
+                              color: theme.colorScheme.outline,
+                              overflow: TextOverflow.clip,
+                            ),
+                          ),
+                        if (view != null) ...[
+                          const SizedBox(height: 2),
+                          Row(
+                            spacing: 8,
+                            children: [
+                              StatWidget(
+                                value: view,
+                                type: StatType.play,
+                              ),
+                              if (danmaku != null)
+                                StatWidget(
+                                  value: danmaku,
+                                  type: StatType.danmaku,
+                                ),
+                            ],
+                          ),
+                        ],
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

@@ -5,6 +5,7 @@ import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/button/icon_button.dart';
 import 'package:PiliPlus/common/widgets/image/image_save.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
+import 'package:PiliPlus/common/widgets/keep_alive_wrapper.dart';
 import 'package:PiliPlus/common/widgets/page/tabs.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart';
 import 'package:PiliPlus/common/widgets/stat/stat.dart';
@@ -282,82 +283,84 @@ class _EpisodePanelState extends State<EpisodePanel>
     List<ugc.BaseEpisodeItem> episodes,
   ) {
     final isCurrTab = tabIndex == widget.initialTabIndex;
-    return CustomScrollView(
-      key: PageStorageKey(tabIndex),
-      reverse: _isReversed[tabIndex],
-      physics: const AlwaysScrollableScrollPhysics(),
-      controller: _itemScrollController[tabIndex],
-      slivers: [
-        SliverPadding(
-          padding: EdgeInsets.only(
-            top: 7,
-            bottom: MediaQuery.viewPaddingOf(context).bottom + 100,
-          ),
-          sliver: showTitle
-              ? SliverVariedExtentList.builder(
-                  itemCount: episodes.length,
-                  itemBuilder: (context, index) {
-                    final episode = episodes[index];
-                    final isCurrItem = isCurrTab
-                        ? index == _currentItemIndex
-                        : false;
-                    Widget episodeItem = _buildEpisodeItem(
-                      theme: theme,
-                      episode: episode,
-                      index: index,
-                      length: episodes.length,
-                      isCurrentIndex: isCurrItem,
-                    );
-                    if (episode is ugc.EpisodeItem &&
-                        episode.pages!.length > 1) {
-                      return Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          episodeItem, // 98
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 5,
-                            ), // 10
-                            child: PagesPanel(
-                              // 35
-                              list: isCurrTab && isCurrItem
-                                  ? null
-                                  : episode.pages,
-                              cover: episode.arc?.pic,
-                              heroTag: widget.heroTag,
-                              ugcIntroController: widget.ugcIntroController!,
-                              bvid: episode.bvid ?? IdUtils.av2bv(episode.aid!),
-                            ),
-                          ),
-                        ],
+    return KeepAliveWrapper(
+      builder: (context) => CustomScrollView(
+        reverse: _isReversed[tabIndex],
+        physics: const AlwaysScrollableScrollPhysics(),
+        controller: _itemScrollController[tabIndex],
+        slivers: [
+          SliverPadding(
+            padding: EdgeInsets.only(
+              top: 7,
+              bottom: MediaQuery.viewPaddingOf(context).bottom + 100,
+            ),
+            sliver: showTitle
+                ? SliverVariedExtentList.builder(
+                    itemCount: episodes.length,
+                    itemBuilder: (context, index) {
+                      final episode = episodes[index];
+                      final isCurrItem = isCurrTab
+                          ? index == _currentItemIndex
+                          : false;
+                      Widget episodeItem = _buildEpisodeItem(
+                        theme: theme,
+                        episode: episode,
+                        index: index,
+                        length: episodes.length,
+                        isCurrentIndex: isCurrItem,
                       );
-                    }
-                    return episodeItem;
-                  },
-                  itemExtentBuilder: (index, _) =>
-                      _calcItemHeight(episodes[index]),
-                )
-              : SliverFixedExtentList.builder(
-                  itemCount: episodes.length,
-                  itemBuilder: (context, index) {
-                    final episode = episodes[index];
-                    final isCurrItem = isCurrTab
-                        ? index == _currentItemIndex
-                        : false;
-                    return _buildEpisodeItem(
-                      theme: theme,
-                      episode: episode,
-                      index: index,
-                      length: episodes.length,
-                      isCurrentIndex: isCurrItem,
-                    );
-                  },
-                  itemExtent: 100,
-                ),
-        ),
-      ],
+                      if (episode is ugc.EpisodeItem &&
+                          episode.pages!.length > 1) {
+                        return Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            episodeItem, // 98
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 5,
+                              ), // 10
+                              child: PagesPanel(
+                                // 35
+                                list: isCurrTab && isCurrItem
+                                    ? null
+                                    : episode.pages,
+                                cover: episode.arc?.pic,
+                                heroTag: widget.heroTag,
+                                ugcIntroController: widget.ugcIntroController!,
+                                bvid:
+                                    episode.bvid ?? IdUtils.av2bv(episode.aid!),
+                              ),
+                            ),
+                          ],
+                        );
+                      }
+                      return episodeItem;
+                    },
+                    itemExtentBuilder: (index, _) =>
+                        _calcItemHeight(episodes[index]),
+                  )
+                : SliverFixedExtentList.builder(
+                    itemCount: episodes.length,
+                    itemBuilder: (context, index) {
+                      final episode = episodes[index];
+                      final isCurrItem = isCurrTab
+                          ? index == _currentItemIndex
+                          : false;
+                      return _buildEpisodeItem(
+                        theme: theme,
+                        episode: episode,
+                        index: index,
+                        length: episodes.length,
+                        isCurrentIndex: isCurrItem,
+                      );
+                    },
+                    itemExtent: 100,
+                  ),
+          ),
+        ],
+      ),
     );
   }
 

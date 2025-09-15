@@ -192,8 +192,12 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     super.initState();
     _controlsListener = plPlayerController.showControls.listen((bool val) {
       final visible = val && !plPlayerController.controlsLock.value;
-      widget.videoDetailController?.headerCtrKey.currentState?.provider.muted =
-          !visible;
+      if (widget.videoDetailController?.headerCtrKey.currentState?.provider
+          case final provider?) {
+        provider
+          ..startIfNeeded()
+          ..muted = !visible;
+      }
       if (visible) {
         animationController.forward();
       } else {

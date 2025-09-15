@@ -1115,14 +1115,16 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                             videoDetailController
                                 .plPlayerController
                                 .showRelatedVideo)
-                          CustomScrollView(
-                            controller: introScrollController,
-                            slivers: [
-                              RelatedVideoPanel(
-                                key: videoRelatedKey,
-                                heroTag: heroTag,
-                              ),
-                            ],
+                          KeepAliveWrapper(
+                            builder: (context) => CustomScrollView(
+                              controller: introScrollController,
+                              slivers: [
+                                RelatedVideoPanel(
+                                  key: videoRelatedKey,
+                                  heroTag: heroTag,
+                                ),
+                              ],
+                            ),
                           ),
                         if (videoDetailController.showReply) videoReplyPanel(),
                         if (_shouldShowSeasonPanel) seasonPanel,
@@ -1919,7 +1921,6 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
   Widget get seasonPanel {
     final videoDetail = ugcIntroController.videoDetail.value;
     return KeepAliveWrapper(
-      wantKeepAlive: _shouldShowSeasonPanel,
       builder: (context) => Column(
         children: [
           if ((videoDetail.pages?.length ?? 0) > 1)

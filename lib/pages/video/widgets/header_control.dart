@@ -86,7 +86,7 @@ class HeaderControlState extends TripleState<HeaderControl> {
 
   bool get isFullScreen => plPlayerController.isFullScreen.value;
   Box setting = GStorage.setting;
-  late final provider = ContextSingleTicker(context);
+  late final provider = ContextSingleTicker(context, autoStart: false);
 
   @override
   void initState() {

@@ -142,7 +142,9 @@ abstract class MarqueeRender extends RenderBox
       if (value._ticker != null) {
         value._ticker!.absorbTicker(_ticker._ticker!);
       } else {
-        value.createTicker(_onTick).start();
+        value
+          ..createTicker(_onTick)
+          ..initStart();
       }
     }
     _ticker.cancel();
@@ -223,7 +225,9 @@ abstract class MarqueeRender extends RenderBox
 
     if (_distance > 0) {
       updateSize();
-      _ticker.createTicker(_onTick).start();
+      _ticker
+        ..createTicker(_onTick)
+        ..initStart();
     } else {
       _ticker.cancel();
     }
@@ -397,8 +401,23 @@ class _MarqueeSimulation extends Simulation {
 class ContextSingleTicker implements TickerProvider {
   Ticker? _ticker;
   BuildContext context;
+  final bool autoStart;
 
-  ContextSingleTicker(this.context);
+  ContextSingleTicker(this.context, {this.autoStart = true});
+
+  void initStart() {
+    if (autoStart) {
+      _ticker?.start();
+    }
+  }
+
+  void startIfNeeded() {
+    if (_ticker case final ticker?) {
+      if (!ticker.isActive) {
+        ticker.start();
+      }
+    }
+  }
 
   @override
   Ticker createTicker(TickerCallback onTick) {

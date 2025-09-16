@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:ffi';
 
 import 'package:PiliPlus/http/constants.dart';
+import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:get/get_rx/get_rx.dart';
@@ -35,6 +36,7 @@ class MpvConvertWebp {
   }) : duration = end - start;
 
   Future<void> _init() async {
+    final enableHA = Pref.enableHA;
     _ctx = await Initializer.create(
       NativeLibrary.path,
       _onEvent,
@@ -46,6 +48,10 @@ class MpvConvertWebp {
         'ovc': 'libwebp_anim',
         'ofopts': 'loop=0',
         'ovcopts': 'preset=${preset.flag}',
+        if (enableHA) 'vo': 'gpu',
+        if (enableHA)
+          'hwdec':
+              '${Pref.hardwareDecoding},auto-copy', // transcode only support copy
       },
     );
     _setHeader();

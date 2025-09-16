@@ -2059,7 +2059,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                   getSelectTitle: (i) => '${i.name}(${i.desc})',
                 ),
                 Text(
-                  '*转码使用软解，速度可能慢于播放，请不要选择过长的时间段或过高画质',
+                  '*转码使用CPU，速度可能慢于播放，请不要选择过长的时间段或过高画质',
                   style: theme.textTheme.bodySmall,
                 ),
               ],
@@ -2115,13 +2115,12 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
         if (await future) {
           await ImageUtils.saveFileImg(
             filePath: file,
-            fileName: '$name.webp',
+            fileName: name,
             needToast: true,
           );
         } else {
           SmartDialog.showToast('转码出现错误或已取消');
         }
-        progress.close();
         if (isPlay) ctr.play();
       },
     );

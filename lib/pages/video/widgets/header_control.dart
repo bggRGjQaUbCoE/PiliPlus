@@ -648,71 +648,77 @@ class HeaderControlState extends TripleState<HeaderControl> {
             clipBehavior: Clip.hardEdge,
             color: theme.colorScheme.surface,
             borderRadius: const BorderRadius.all(Radius.circular(12)),
-            child: ListView(
-              padding: EdgeInsets.zero,
-              children: [
-                SizedBox(
-                  height: 45,
-                  child: GestureDetector(
-                    onTap: () => SmartDialog.showToast(
-                      '标灰画质需要bilibili会员（已是会员？请关闭无痕模式）；4k和杜比视界播放效果可能不佳',
-                    ),
-                    child: Row(
-                      spacing: 8,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Text('选择画质', style: titleStyle),
-                        Icon(
-                          Icons.info_outline,
-                          size: 16,
-                          color: theme.colorScheme.outline,
-                        ),
-                      ],
+            child: CustomScrollView(
+              slivers: [
+                SliverToBoxAdapter(
+                  child: SizedBox(
+                    height: 45,
+                    child: GestureDetector(
+                      onTap: () => SmartDialog.showToast(
+                        '标灰画质需要bilibili会员（已是会员？请关闭无痕模式）；4k和杜比视界播放效果可能不佳',
+                      ),
+                      child: Row(
+                        spacing: 8,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text('选择画质', style: titleStyle),
+                          Icon(
+                            Icons.info_outline,
+                            size: 16,
+                            color: theme.colorScheme.outline,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
-                ...List.generate(totalQaSam, (index) {
-                  final item = videoFormat[index];
-                  return ListTile(
-                    dense: true,
-                    onTap: () async {
-                      if (currentVideoQa.code == item.quality) {
-                        return;
-                      }
-                      Get.back();
-                      final int quality = item.quality!;
-                      final newQa = VideoQuality.fromCode(quality);
-                      videoDetailCtr
-                        ..currentVideoQa.value = newQa
-                        ..updatePlayer();
+                SliverList.builder(
+                  itemCount: totalQaSam,
+                  itemBuilder: (context, index) {
+                    final item = videoFormat[index];
+                    return ListTile(
+                      dense: true,
+                      onTap: () async {
+                        if (currentVideoQa.code == item.quality) {
+                          return;
+                        }
+                        Get.back();
+                        final int quality = item.quality!;
+                        final newQa = VideoQuality.fromCode(quality);
+                        videoDetailCtr
+                          ..currentVideoQa.value = newQa
+                          ..updatePlayer();
 
-                      SmartDialog.showToast("画质已变为：${newQa.desc}");
+                        SmartDialog.showToast("画质已变为：${newQa.desc}");
 
-                      // update
-                      if (!plPlayerController.tempPlayerConf) {
-                        setting.put(
-                          await Utils.isWiFi
-                              ? SettingBoxKey.defaultVideoQa
-                              : SettingBoxKey.defaultVideoQaCellular,
-                          quality,
-                        );
-                      }
-                    },
-                    // 可能包含会员解锁画质
-                    enabled: index >= totalQaSam - userfulQaSam,
-                    contentPadding: const EdgeInsets.only(left: 20, right: 20),
-                    title: Text(item.newDesc!),
-                    trailing: currentVideoQa.code == item.quality
-                        ? Icon(
-                            Icons.done,
-                            color: theme.colorScheme.primary,
-                          )
-                        : Text(
-                            item.format!,
-                            style: subTitleStyle,
-                          ),
-                  );
-                }),
+                        // update
+                        if (!plPlayerController.tempPlayerConf) {
+                          setting.put(
+                            await Utils.isWiFi
+                                ? SettingBoxKey.defaultVideoQa
+                                : SettingBoxKey.defaultVideoQaCellular,
+                            quality,
+                          );
+                        }
+                      },
+                      // 可能包含会员解锁画质
+                      enabled: index >= totalQaSam - userfulQaSam,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                      ),
+                      title: Text(item.newDesc!),
+                      trailing: currentVideoQa.code == item.quality
+                          ? Icon(
+                              Icons.done,
+                              color: theme.colorScheme.primary,
+                            )
+                          : Text(
+                              item.format!,
+                              style: subTitleStyle,
+                            ),
+                    );
+                  },
+                ),
               ],
             ),
           ),
@@ -734,55 +740,62 @@ class HeaderControlState extends TripleState<HeaderControl> {
             clipBehavior: Clip.hardEdge,
             color: theme.colorScheme.surface,
             borderRadius: const BorderRadius.all(Radius.circular(12)),
-            child: ListView(
-              padding: EdgeInsets.zero,
-              children: [
-                const SizedBox(
-                  height: 45,
-                  child: Center(
-                    child: Text('选择音质', style: titleStyle),
+            child: CustomScrollView(
+              slivers: [
+                const SliverToBoxAdapter(
+                  child: SizedBox(
+                    height: 45,
+                    child: Center(
+                      child: Text('选择音质', style: titleStyle),
+                    ),
                   ),
                 ),
-                for (final AudioItem i in audio) ...[
-                  ListTile(
-                    dense: true,
-                    onTap: () async {
-                      if (currentAudioQa.code == i.id) {
-                        return;
-                      }
-                      Get.back();
-                      final int quality = i.id!;
-                      final newQa = AudioQuality.fromCode(quality);
-                      videoDetailCtr
-                        ..currentAudioQa = newQa
-                        ..updatePlayer();
+                SliverList.builder(
+                  itemCount: audio.length,
+                  itemBuilder: (context, index) {
+                    final i = audio[index];
+                    return ListTile(
+                      dense: true,
+                      onTap: () async {
+                        if (currentAudioQa.code == i.id) {
+                          return;
+                        }
+                        Get.back();
+                        final int quality = i.id!;
+                        final newQa = AudioQuality.fromCode(quality);
+                        videoDetailCtr
+                          ..currentAudioQa = newQa
+                          ..updatePlayer();
 
-                      SmartDialog.showToast("音质已变为：${newQa.desc}");
+                        SmartDialog.showToast("音质已变为：${newQa.desc}");
 
-                      // update
-                      if (!plPlayerController.tempPlayerConf) {
-                        setting.put(
-                          await Utils.isWiFi
-                              ? SettingBoxKey.defaultAudioQa
-                              : SettingBoxKey.defaultAudioQaCellular,
-                          quality,
-                        );
-                      }
-                    },
-                    contentPadding: const EdgeInsets.only(left: 20, right: 20),
-                    title: Text(i.quality),
-                    subtitle: Text(
-                      i.codecs!,
-                      style: subTitleStyle,
-                    ),
-                    trailing: currentAudioQa.code == i.id
-                        ? Icon(
-                            Icons.done,
-                            color: theme.colorScheme.primary,
-                          )
-                        : null,
-                  ),
-                ],
+                        // update
+                        if (!plPlayerController.tempPlayerConf) {
+                          setting.put(
+                            await Utils.isWiFi
+                                ? SettingBoxKey.defaultAudioQa
+                                : SettingBoxKey.defaultAudioQaCellular,
+                            quality,
+                          );
+                        }
+                      },
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                      ),
+                      title: Text(i.quality),
+                      subtitle: Text(
+                        i.codecs!,
+                        style: subTitleStyle,
+                      ),
+                      trailing: currentAudioQa.code == i.id
+                          ? Icon(
+                              Icons.done,
+                              color: theme.colorScheme.primary,
+                            )
+                          : null,
+                    );
+                  },
+                ),
               ],
             ),
           ),
@@ -825,41 +838,41 @@ class HeaderControlState extends TripleState<HeaderControl> {
                   ),
                 ),
                 Expanded(
-                  child: ListView(
-                    padding: EdgeInsets.zero,
-                    children: [
-                      for (var i in list) ...[
-                        ListTile(
-                          dense: true,
-                          onTap: () {
-                            if (currentDecodeFormats.codes.any(i.startsWith)) {
-                              return;
-                            }
-                            videoDetailCtr
-                              ..currentDecodeFormats =
-                                  VideoDecodeFormatType.fromString(i)
-                              ..updatePlayer();
-                            Get.back();
-                          },
-                          contentPadding: const EdgeInsets.only(
-                            left: 20,
-                            right: 20,
-                          ),
-                          title: Text(
-                            VideoDecodeFormatType.fromString(i).description,
-                          ),
-                          subtitle: Text(
-                            i,
-                            style: subTitleStyle,
-                          ),
-                          trailing: currentDecodeFormats.codes.any(i.startsWith)
-                              ? Icon(
-                                  Icons.done,
-                                  color: theme.colorScheme.primary,
-                                )
-                              : null,
-                        ),
-                      ],
+                  child: CustomScrollView(
+                    slivers: [
+                      SliverList.builder(
+                        itemCount: list.length,
+                        itemBuilder: (context, index) {
+                          final i = list[index];
+                          final format = VideoDecodeFormatType.fromString(i);
+                          return ListTile(
+                            dense: true,
+                            onTap: () {
+                              if (currentDecodeFormats.codes.any(
+                                i.startsWith,
+                              )) {
+                                return;
+                              }
+                              videoDetailCtr
+                                ..currentDecodeFormats = format
+                                ..updatePlayer();
+                              Get.back();
+                            },
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                            ),
+                            title: Text(format.description),
+                            subtitle: Text(i, style: subTitleStyle),
+                            trailing:
+                                currentDecodeFormats.codes.any(i.startsWith)
+                                ? Icon(
+                                    Icons.done,
+                                    color: theme.colorScheme.primary,
+                                  )
+                                : null,
+                          );
+                        },
+                      ),
                     ],
                   ),
                 ),
@@ -1845,32 +1858,39 @@ class HeaderControlState extends TripleState<HeaderControl> {
             clipBehavior: Clip.hardEdge,
             color: theme.colorScheme.surface,
             borderRadius: const BorderRadius.all(Radius.circular(12)),
-            child: ListView(
-              padding: EdgeInsets.zero,
-              children: [
-                const SizedBox(
-                  height: 45,
-                  child: Center(
-                    child: Text('选择播放顺序', style: titleStyle),
+            child: CustomScrollView(
+              slivers: [
+                const SliverToBoxAdapter(
+                  child: SizedBox(
+                    height: 45,
+                    child: Center(
+                      child: Text('选择播放顺序', style: titleStyle),
+                    ),
                   ),
                 ),
-                for (final PlayRepeat i in PlayRepeat.values) ...[
-                  ListTile(
-                    dense: true,
-                    onTap: () {
-                      plPlayerController.setPlayRepeat(i);
-                      Get.back();
-                    },
-                    contentPadding: const EdgeInsets.only(left: 20, right: 20),
-                    title: Text(i.desc),
-                    trailing: plPlayerController.playRepeat == i
-                        ? Icon(
-                            Icons.done,
-                            color: theme.colorScheme.primary,
-                          )
-                        : null,
-                  ),
-                ],
+                SliverList.builder(
+                  itemCount: PlayRepeat.values.length,
+                  itemBuilder: (context, index) {
+                    final i = PlayRepeat.values[index];
+                    return ListTile(
+                      dense: true,
+                      onTap: () {
+                        plPlayerController.setPlayRepeat(i);
+                        Get.back();
+                      },
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                      ),
+                      title: Text(i.desc),
+                      trailing: plPlayerController.playRepeat == i
+                          ? Icon(
+                              Icons.done,
+                              color: theme.colorScheme.primary,
+                            )
+                          : null,
+                    );
+                  },
+                ),
               ],
             ),
           ),

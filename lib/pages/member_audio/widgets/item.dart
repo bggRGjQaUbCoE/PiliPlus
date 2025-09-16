@@ -25,7 +25,7 @@ class MemberAudioItem extends StatelessWidget {
         onTap: () async {
           // TODO music play
           final aid = item.aid;
-          if (aid != null) {
+          if (aid != null && aid != 0) {
             final cid = await SearchHttp.ab2c(aid: aid);
             if (cid != null) {
               PageUtils.toVideoPage(cid: cid, aid: aid);

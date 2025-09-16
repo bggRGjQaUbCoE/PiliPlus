@@ -47,7 +47,10 @@ class _SettingsSearchPageState
                 (item.title ?? item.getTitle!()).toLowerCase().contains(
                   value,
                 ) ||
-                item.subtitle?.toLowerCase().contains(value) == true,
+                (item.subtitle ?? item.getSubtitle?.call())
+                        ?.toLowerCase()
+                        .contains(value) ==
+                    true,
           )
           .toList();
     }

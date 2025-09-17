@@ -30,8 +30,7 @@ enum HomeTabType implements EnumWithLabel {
     HomeTabType.live => Get.find<LiveController>,
     HomeTabType.rcmd => Get.find<RcmdController>,
     HomeTabType.hot => Get.find<HotController>,
-    HomeTabType.rank =>
-      (Get.find<RankController>) as ScrollOrRefreshMixin Function(),
+    HomeTabType.rank => Get.find<RankController>,
     HomeTabType.bangumi ||
     HomeTabType.cinema => () => Get.find<PgcController>(tag: name),
   };

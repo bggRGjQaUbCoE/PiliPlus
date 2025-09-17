@@ -10,6 +10,7 @@ class SearchText extends StatelessWidget {
   final Color? textColor;
   final TextAlign? textAlign;
   final EdgeInsetsGeometry? padding;
+  final double? height;
 
   const SearchText({
     super.key,
@@ -21,6 +22,7 @@ class SearchText extends StatelessWidget {
     this.textColor,
     this.textAlign,
     this.padding,
+    this.height,
   });
 
   @override
@@ -46,6 +48,7 @@ class SearchText extends StatelessWidget {
             textAlign: textAlign,
             style: TextStyle(
               fontSize: fontSize,
+              height: height,
               color: textColor ?? colorScheme.onSurfaceVariant,
             ),
           ),

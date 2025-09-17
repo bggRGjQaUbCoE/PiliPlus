@@ -1,12 +1,14 @@
+import 'package:PiliPlus/pages/setting/widgets/checkbox_num_list_tile.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-class MultiSelectDialog<T> extends StatefulWidget {
+class OrderedMultiSelectDialog<T> extends StatefulWidget {
   final Iterable<T> initValues;
   final String title;
   final Map<T, String> values;
 
-  const MultiSelectDialog({
+  const OrderedMultiSelectDialog({
     super.key,
     required this.initValues,
     required this.values,
@@ -14,16 +16,18 @@ class MultiSelectDialog<T> extends StatefulWidget {
   });
 
   @override
-  State<MultiSelectDialog<T>> createState() => _MultiSelectDialogState<T>();
+  State<OrderedMultiSelectDialog<T>> createState() =>
+      _OrderedMultiSelectDialogState<T>();
 }
 
-class _MultiSelectDialogState<T> extends State<MultiSelectDialog<T>> {
-  late Set<T> _tempValues;
+class _OrderedMultiSelectDialogState<T>
+    extends State<OrderedMultiSelectDialog<T>> {
+  late Map<T, int> _tempValues;
 
   @override
   void initState() {
     super.initState();
-    _tempValues = widget.initValues.toSet();
+    _tempValues = {for (var (i, j) in widget.initValues.indexed) j: i + 1};
   }
 
   @override
@@ -39,20 +43,28 @@ class _MultiSelectDialogState<T> extends State<MultiSelectDialog<T>> {
           children: widget.values.entries.map((i) {
             return Builder(
               builder: (context) {
-                bool isChecked = _tempValues.contains(i.key);
-                return CheckboxListTile(
+                return OrderedCheckboxListTile(
                   dense: true,
-                  value: isChecked,
-                  controlAffinity: ListTileControlAffinity.leading,
+                  value: _tempValues[i.key],
                   title: Text(
                     i.value,
                     style: theme.textTheme.titleMedium!,
                   ),
                   onChanged: (value) {
-                    isChecked
-                        ? _tempValues.remove(i.key)
-                        : _tempValues.add(i.key);
-                    (context as Element).markNeedsBuild();
+                    if (value == null) {
+                      _tempValues[i.key] = _tempValues.length + 1;
+                      (context as Element).markNeedsBuild();
+                    } else {
+                      final pos = _tempValues.remove(i.key)!;
+                      if (pos == _tempValues.length + 1) {
+                        (context as Element).markNeedsBuild();
+                      } else {
+                        _tempValues.updateAll(
+                          (key, value) => value > pos ? value - 1 : value,
+                        );
+                        setState(() {});
+                      }
+                    }
                   },
                 );
               },
@@ -72,7 +84,10 @@ class _MultiSelectDialogState<T> extends State<MultiSelectDialog<T>> {
           ),
         ),
         TextButton(
-          onPressed: () => Get.back(result: _tempValues),
+          onPressed: () {
+            assert(_tempValues.values.isSorted((a, b) => a.compareTo(b)));
+            Get.back(result: _tempValues.keys.toList());
+          },
           child: const Text('确定'),
         ),
       ],

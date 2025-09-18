@@ -20,17 +20,15 @@ class NoteListPage extends CommonSlidePage {
     super.key,
     super.enableSlide,
     required this.heroTag,
-    this.oid,
-    this.upperMid,
+    required this.oid,
     required this.isStein,
     required this.title,
   });
 
-  final dynamic heroTag;
-  final dynamic oid;
-  final dynamic upperMid;
+  final String? heroTag;
+  final int oid;
   final bool isStein;
-  final dynamic title;
+  final String? title;
 
   @override
   State<NoteListPage> createState() => _NoteListPageState();
@@ -39,7 +37,7 @@ class NoteListPage extends CommonSlidePage {
 class _NoteListPageState extends State<NoteListPage>
     with SingleTickerProviderStateMixin, CommonSlideMixin {
   late final _controller = Get.put(
-    NoteListPageCtr(oid: widget.oid, upperMid: widget.upperMid),
+    NoteListPageCtr(oid: widget.oid),
     tag: widget.heroTag,
   );
 

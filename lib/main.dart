@@ -45,9 +45,10 @@ void main() async {
   Get.lazyPut(AccountService.new);
   HttpOverrides.global = _CustomHttpOverrides();
 
-  await Future.wait([
-    CacheManage.autoClearCache(),
-    if (Utils.isMobile) ...[
+  CacheManage.autoClearCache();
+
+  if (Utils.isMobile) {
+    await Future.wait([
       SystemChrome.setPreferredOrientations(
         [
           DeviceOrientation.portraitUp,
@@ -58,8 +59,8 @@ void main() async {
         ],
       ),
       setupServiceLocator(),
-    ],
-  ]);
+    ]);
+  }
 
   Request();
   Request.setCookie();

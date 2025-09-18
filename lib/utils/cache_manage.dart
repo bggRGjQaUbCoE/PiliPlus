@@ -52,13 +52,12 @@ abstract class CacheManage {
     final FileSystemEntity file,
   ) async {
     if (file is File) {
-      int length = await file.length();
-      return int.parse(length.toString());
+      return await file.length();
     }
     if (file is Directory) {
-      final List<FileSystemEntity> children = file.listSync();
+      final children = file.list();
       int total = 0;
-      for (final FileSystemEntity child in children) {
+      await for (final child in children) {
         total += await getTotalSizeOfFilesInDir(child);
       }
       return total;
@@ -68,7 +67,7 @@ abstract class CacheManage {
 
   // 缓存大小格式转换
   static String formatSize(num value) {
-    List<String> unitArr = const ['B', 'K', 'M', 'G', 'T', 'P'];
+    const unitArr = ['B', 'K', 'M', 'G', 'T', 'P'];
     int index = 0;
     while (value >= 1024) {
       index++;
@@ -76,19 +75,6 @@ abstract class CacheManage {
     }
     String size = value.toStringAsFixed(2);
     return size + unitArr.getOrElse(index, orElse: () => '');
-  }
-
-  /// 清除 Documents 目录下的 DioCache.db
-  static Future<void> clearApplicationCache() async {
-    Directory directory = await getApplicationDocumentsDirectory();
-    if (directory.existsSync()) {
-      String dioCacheFileName =
-          '${directory.path}${Platform.pathSeparator}DioCache.db';
-      var dioCacheFile = File(dioCacheFileName);
-      if (dioCacheFile.existsSync()) {
-        dioCacheFile.delete();
-      }
-    }
   }
 
   // 清除 Library/Caches 目录及文件缓存
@@ -110,17 +96,6 @@ abstract class CacheManage {
         await file.delete(recursive: true);
       }
     }
-  }
-
-  /// 递归方式删除目录及文件
-  static Future<void> deleteDirectory(FileSystemEntity file) async {
-    if (file is Directory) {
-      final List<FileSystemEntity> children = file.listSync();
-      for (final FileSystemEntity child in children) {
-        await deleteDirectory(child);
-      }
-    }
-    await file.delete();
   }
 
   static Future<void> autoClearCache() async {

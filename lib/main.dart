@@ -93,20 +93,14 @@ void main() async {
       title: Constants.appName,
     );
     windowManager.waitUntilReadyToShow(windowOptions, () async {
-      final windowSize = Pref.windowSize;
-      final windowOffset = await Utils.windowOffset;
-      final bounds = Rect.fromLTWH(
-        windowOffset.left,
-        windowOffset.top,
-        windowSize[0],
-        windowSize[1],
-      );
-      await windowManager.setBounds(bounds);
-      if (Pref.isWindowMaximized) {
-        await windowManager.maximize();
-      }
-      await windowManager.show();
-      await windowManager.focus();
+      await Future.wait([
+        Utils.windowOffset.then(
+          (offset) => windowManager.setBounds(offset & Pref.windowSize),
+        ),
+        if (Pref.isWindowMaximized) windowManager.maximize(),
+        windowManager.show(),
+        windowManager.focus(),
+      ]);
     });
   }
 
@@ -172,7 +166,9 @@ class MyApp extends StatelessWidget {
       late List<DisplayMode> modes;
       FlutterDisplayMode.supported.then((value) {
         modes = value;
-        var storageDisplay = GStorage.setting.get(SettingBoxKey.displayMode);
+        final String? storageDisplay = GStorage.setting.get(
+          SettingBoxKey.displayMode,
+        );
         DisplayMode? displayMode;
         if (storageDisplay != null) {
           displayMode = modes.firstWhereOrNull(

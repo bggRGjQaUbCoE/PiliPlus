@@ -8,7 +8,9 @@ import 'package:path_provider/path_provider.dart';
 
 abstract class CacheManage {
   // 获取缓存目录
-  static Future<int> loadApplicationCache() async {
+  static Future<int> loadApplicationCache([
+    final num maxSize = double.infinity,
+  ]) async {
     /// clear all of image in memory
     // clearMemoryImageCache();
     /// get ImageCache
@@ -20,49 +22,34 @@ abstract class CacheManage {
     if (Utils.isDesktop) {
       final dir = Directory('${tempDirectory.path}/libCachedImageData');
       if (dir.existsSync()) {
-        return await getTotalSizeOfFilesInDir(dir);
+        return await getTotalSizeOfFilesInDir(dir, maxSize);
       } else {
         return 0;
       }
     }
-    // get_storage directory
-    Directory docDirectory = await getApplicationDocumentsDirectory();
 
-    int cacheSize = 0;
     // 获取缓存大小
     if (tempDirectory.existsSync()) {
-      cacheSize += await getTotalSizeOfFilesInDir(tempDirectory);
+      return await getTotalSizeOfFilesInDir(tempDirectory, maxSize);
     }
 
-    /// 获取缓存大小 dioCache
-    if (docDirectory.existsSync()) {
-      String dioCacheFileName =
-          '${docDirectory.path}${Platform.pathSeparator}DioCache.db';
-      var dioCacheFile = File(dioCacheFileName);
-      if (dioCacheFile.existsSync()) {
-        cacheSize += await getTotalSizeOfFilesInDir(dioCacheFile);
-      }
-    }
-
-    return cacheSize;
+    return 0;
   }
 
-  // 循环计算文件的大小（递归）
+  // 循环计算文件的大小
   static Future<int> getTotalSizeOfFilesInDir(
-    final FileSystemEntity file,
-  ) async {
-    if (file is File) {
-      return await file.length();
-    }
-    if (file is Directory) {
-      final children = file.list();
-      int total = 0;
-      await for (final child in children) {
-        total += await getTotalSizeOfFilesInDir(child);
+    final Directory file, [
+    final num maxSize = double.infinity,
+  ]) async {
+    final children = file.list(recursive: true);
+    int total = 0;
+    await for (final child in children) {
+      if (child is File) {
+        total += await child.length();
+        if (total >= maxSize) break;
       }
-      return total;
     }
-    return 0;
+    return total;
   }
 
   // 缓存大小格式转换
@@ -89,10 +76,8 @@ abstract class CacheManage {
     }
     if (tempDirectory.existsSync()) {
       // await appDocDir.delete(recursive: true);
-      final List<FileSystemEntity> children = tempDirectory.listSync(
-        recursive: false,
-      );
-      for (final FileSystemEntity file in children) {
+      final children = tempDirectory.list(recursive: false);
+      await for (final file in children) {
         await file.delete(recursive: true);
       }
     }
@@ -104,7 +89,7 @@ abstract class CacheManage {
     } else {
       final maxCacheSize = Pref.maxCacheSize;
       if (maxCacheSize != 0) {
-        final currCache = await loadApplicationCache();
+        final currCache = await loadApplicationCache(maxCacheSize);
         if (currCache >= maxCacheSize) {
           await clearLibraryCache();
         }

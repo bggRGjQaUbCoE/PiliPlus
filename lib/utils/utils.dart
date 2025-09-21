@@ -28,17 +28,15 @@ abstract class Utils {
   static final bool isDesktop =
       Platform.isWindows || Platform.isMacOS || Platform.isLinux;
 
-  static Future<({double left, double top})> get windowOffset async {
+  static Future<Offset> get windowOffset async {
     final windowPosition = Pref.windowPosition;
     if (windowPosition != null) {
-      return (left: windowPosition[0], top: windowPosition[1]);
+      return Offset(windowPosition[0], windowPosition[1]);
     }
-    final Size windowSize = await windowManager.getSize();
-    final Offset position = await calcWindowPosition(
-      windowSize,
+    return await calcWindowPosition(
+      await windowManager.getSize(),
       Alignment.center,
     );
-    return (left: position.dx, top: position.dy);
   }
 
   static Future<bool> get isWiFi async {

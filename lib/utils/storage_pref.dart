@@ -819,10 +819,10 @@ abstract class Pref {
   static bool get minimizeOnExit =>
       _setting.get(SettingBoxKey.minimizeOnExit, defaultValue: true);
 
-  static List<double> get windowSize => _setting.get(
-    SettingBoxKey.windowSize,
-    defaultValue: const [1180.0, 720.0],
-  );
+  static Size get windowSize {
+    final List<double>? size = _setting.get(SettingBoxKey.windowSize);
+    return size == null ? const Size(1180.0, 720.0) : Size(size[0], size[1]);
+  }
 
   static List<double>? get windowPosition =>
       _setting.get(SettingBoxKey.windowPosition);

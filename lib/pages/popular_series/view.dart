@@ -57,10 +57,10 @@ class _PopularSeriesPageState extends State<PopularSeriesPage> with GridMixin {
         return gridSkeleton;
       case Success<List<HotVideoItemModel>?>(:var response):
         Widget sliver;
-        if (response?.isNotEmpty == true) {
+        if (response != null && response.isNotEmpty == true) {
           sliver = SliverGrid.builder(
             gridDelegate: gridDelegate,
-            itemCount: response!.length,
+            itemCount: response.length,
             itemBuilder: (context, index) {
               final item = response[index];
               return VideoCardH(
@@ -126,7 +126,6 @@ class _PopularSeriesPageState extends State<PopularSeriesPage> with GridMixin {
         showDialog(
           context: context,
           builder: (context) {
-            final theme = Theme.of(context);
             return Dialog(
               clipBehavior: Clip.hardEdge,
               child: SizedBox(
@@ -140,39 +139,27 @@ class _PopularSeriesPageState extends State<PopularSeriesPage> with GridMixin {
                   itemBuilder: (context, index) {
                     final item = seriesList[index];
                     final isCurr = index == currIndex;
-                    Widget child = Text(
-                      item.name!,
-                      style: const TextStyle(fontSize: 14),
-                    );
-                    if (isCurr) {
-                      child = Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          child,
-                          const Icon(Icons.check, size: 18),
-                        ],
-                      );
-                    }
-                    return Material(
-                      color: isCurr ? theme.highlightColor : null,
-                      child: InkWell(
-                        onTap: () {
-                          Get.back();
-                          if (!isCurr) {
-                            _controller
-                              ..number = item.number!
-                              ..onReload();
-                          }
-                        },
-                        child: Padding(
-                          padding: const EdgeInsetsGeometry.symmetric(
-                            horizontal: 16,
-                          ),
-                          child: Align(
-                            alignment: Alignment.centerLeft,
-                            child: child,
-                          ),
-                        ),
+                    return ListTile(
+                      dense: true,
+                      minTileHeight: 44,
+                      selected: isCurr,
+                      onTap: () {
+                        Get.back();
+                        if (!isCurr) {
+                          _controller
+                            ..number = item.number!
+                            ..onReload();
+                        }
+                      },
+                      title: Text(
+                        item.name!,
+                        style: const TextStyle(fontSize: 14),
+                      ),
+                      trailing: isCurr
+                          ? const Icon(Icons.check, size: 18)
+                          : null,
+                      contentPadding: const EdgeInsetsGeometry.symmetric(
+                        horizontal: 16,
                       ),
                     );
                   },

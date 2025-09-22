@@ -6,7 +6,6 @@ import 'package:PiliPlus/models_new/live/live_feed_index/card_data_list_item.dar
 import 'package:PiliPlus/models_new/live/live_second_list/data.dart';
 import 'package:PiliPlus/models_new/live/live_second_list/tag.dart';
 import 'package:PiliPlus/pages/common/common_list_controller.dart';
-import 'package:PiliPlus/services/account_service.dart';
 import 'package:get/get.dart';
 
 class LiveAreaChildController
@@ -22,8 +21,6 @@ class LiveAreaChildController
   // tag
   final RxInt tagIndex = 0.obs;
   List<LiveSecondTag>? newTags;
-
-  AccountService accountService = Get.find<AccountService>();
 
   @override
   void onInit() {
@@ -53,7 +50,6 @@ class LiveAreaChildController
   Future<LoadingState<LiveSecondData>> customGetData() =>
       LiveHttp.liveSecondList(
         pn: page,
-        isLogin: accountService.isLogin.value,
         areaId: areaId,
         parentAreaId: parentAreaId,
         sortType: sortType,

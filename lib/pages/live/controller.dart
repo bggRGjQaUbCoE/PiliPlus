@@ -7,7 +7,6 @@ import 'package:PiliPlus/models_new/live/live_feed_index/data.dart';
 import 'package:PiliPlus/models_new/live/live_second_list/data.dart';
 import 'package:PiliPlus/models_new/live/live_second_list/tag.dart';
 import 'package:PiliPlus/pages/common/common_list_controller.dart';
-import 'package:PiliPlus/services/account_service.dart';
 import 'package:get/get.dart';
 
 class LiveController extends CommonListController {
@@ -16,8 +15,6 @@ class LiveController extends CommonListController {
     super.onInit();
     queryData();
   }
-
-  AccountService accountService = Get.find<AccountService>();
 
   int? count;
 
@@ -75,16 +72,12 @@ class LiveController extends CommonListController {
     if (areaIndex.value != 0) {
       return LiveHttp.liveSecondList(
         pn: page,
-        isLogin: accountService.isLogin.value,
         areaId: areaId,
         parentAreaId: parentAreaId,
         sortType: sortType,
       );
     }
-    return LiveHttp.liveFeedIndex(
-      pn: page,
-      isLogin: accountService.isLogin.value,
-    );
+    return LiveHttp.liveFeedIndex(pn: page);
   }
 
   @override
@@ -99,11 +92,7 @@ class LiveController extends CommonListController {
   }
 
   Future<void> queryTop() async {
-    final res = await LiveHttp.liveFeedIndex(
-      pn: page,
-      isLogin: accountService.isLogin.value,
-      moduleSelect: true,
-    );
+    final res = await LiveHttp.liveFeedIndex(pn: page, moduleSelect: true);
     if (res.isSuccess) {
       final data = res.data;
       topState.value = Pair(

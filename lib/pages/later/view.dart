@@ -30,8 +30,8 @@ class _LaterPageState extends State<LaterPage>
 
   LaterController currCtr([int? index]) {
     final type = LaterViewType.values[index ?? _tabController.index];
-    return Get.put(
-      LaterController(type),
+    return Get.putOrFind(
+      () => LaterController(type),
       tag: type.type.toString(),
     );
   }

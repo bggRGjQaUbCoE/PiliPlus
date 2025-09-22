@@ -87,7 +87,7 @@ class LiveRoomChatPanel extends StatelessWidget {
                 liveRoomController.superChatMsg.insert(
                   0,
                   SuperChatItem.fromJson({
-                    "id": Utils.generateRandomString(8),
+                    "id": Utils.random.nextInt(2147483647),
                     "price": 66,
                     "end_time":
                         DateTime.now().millisecondsSinceEpoch ~/ 1000 + 5,

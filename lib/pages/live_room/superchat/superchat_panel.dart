@@ -1,6 +1,5 @@
 import 'package:PiliPlus/pages/live_room/controller.dart';
 import 'package:PiliPlus/pages/live_room/superchat/superchat_card.dart';
-import 'package:PiliPlus/pages/search/controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get_state_manager/get_state_manager.dart';
 
@@ -16,35 +15,28 @@ class SuperChatPanel extends StatefulWidget {
   State<SuperChatPanel> createState() => _SuperChatPanelState();
 }
 
-class _SuperChatPanelState extends DebounceStreamState<SuperChatPanel, bool>
+class _SuperChatPanelState extends State<SuperChatPanel>
     with AutomaticKeepAliveClientMixin {
-  @override
-  Duration get duration => const Duration(milliseconds: 300);
-
   @override
   Widget build(BuildContext context) {
     super.build(context);
     return Obx(
       () => ListView.separated(
-        key: const PageStorageKey('live-sc'),
         padding: const EdgeInsets.symmetric(horizontal: 12),
         physics: const ClampingScrollPhysics(),
         itemCount: widget.controller.superChatMsg.length,
         itemBuilder: (context, index) {
           final item = widget.controller.superChatMsg[index];
           return SuperChatCard(
-            key: Key(item.id.toString()),
+            key: ValueKey(item.id),
             item: item,
-            onRemove: () => ctr?.add(true),
+            onRemove: () => widget.controller.superChatMsg.removeAt(index),
           );
         },
         separatorBuilder: (_, _) => const SizedBox(height: 12),
       ),
     );
   }
-
-  @override
-  void onValueChanged(value) => widget.controller.clearSC();
 
   @override
   bool get wantKeepAlive => true;

@@ -28,39 +28,20 @@ class _SuperChatCardState extends State<SuperChatCard> {
   @override
   void initState() {
     super.initState();
-    if (widget.item.expired) {
-      _remove();
-      return;
-    }
     final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     final offset = widget.item.endTime - now;
     if (offset > 0) {
       _remains = offset.obs;
       _timer = Timer.periodic(const Duration(seconds: 1), _callback);
     } else {
-      _remove();
+      Future.delayed(const Duration(seconds: 1), widget.onRemove);
     }
   }
 
-  void _remove() {
-    WidgetsBinding.instance.addPostFrameCallback(
-      (_) => Future.delayed(const Duration(seconds: 1), _onRemove),
-    );
-  }
-
-  void _onRemove() {
-    widget
-      ..item.expired = true
-      ..onRemove();
-  }
-
   void _callback(_) {
-    final remains = _remains!.value;
-    if (remains > 0) {
-      _remains!.value = remains - 1;
-    } else {
+    if (--_remains!.value < 0) {
       _cancelTimer();
-      _onRemove();
+      widget.onRemove();
     }
   }
 

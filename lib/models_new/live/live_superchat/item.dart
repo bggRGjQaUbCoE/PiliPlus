@@ -2,8 +2,8 @@ import 'package:PiliPlus/models_new/live/live_superchat/user_info.dart';
 import 'package:PiliPlus/utils/utils.dart';
 
 class SuperChatItem {
-  dynamic id;
-  dynamic uid;
+  int id;
+  int? uid;
   int? price;
   String backgroundColor;
   String backgroundBottomColor;
@@ -12,10 +12,9 @@ class SuperChatItem {
   int endTime;
   String message;
   UserInfo userInfo;
-  bool expired = false;
 
   SuperChatItem({
-    this.id,
+    required this.id,
     required this.uid,
     this.price,
     required this.backgroundColor,
@@ -28,7 +27,7 @@ class SuperChatItem {
   });
 
   factory SuperChatItem.fromJson(Map<String, dynamic> json) => SuperChatItem(
-    id: json['id'] ?? Utils.generateRandomString(8),
+    id: json['id'] ?? Utils.random.nextInt(2147483647),
     uid: json['uid'],
     price: json['price'] as int?,
     backgroundColor: json['background_color'] ?? '#EDF5FF',

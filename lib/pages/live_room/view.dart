@@ -265,7 +265,7 @@ class _LiveRoomPageState extends State<LiveRoomPage>
               child: TextButton(
                 onPressed: () {
                   _liveRoomController.fsSC.value = SuperChatItem.fromJson({
-                    "id": Utils.generateRandomString(8),
+                    "id": Utils.random.nextInt(2147483647),
                     "price": 66,
                     "end_time":
                         DateTime.now().millisecondsSinceEpoch ~/ 1000 + 5,
@@ -300,7 +300,7 @@ class _LiveRoomPageState extends State<LiveRoomPage>
               }
               try {
                 return SizedBox(
-                  key: Key(item.id.toString()),
+                  key: ValueKey(item.id),
                   width: 255,
                   child: Stack(
                     clipBehavior: Clip.none,
@@ -330,6 +330,7 @@ class _LiveRoomPageState extends State<LiveRoomPage>
                   ),
                 );
               } catch (_) {
+                if (kDebugMode) rethrow;
                 return const SizedBox.shrink();
               }
             }),
@@ -740,7 +741,7 @@ class _LiveRoomPageState extends State<LiveRoomPage>
       liveRoomController: _liveRoomController,
     );
     return Padding(
-      padding: EdgeInsets.only(bottom: 12, top: !isPortrait ? 0 : 12),
+      padding: EdgeInsets.only(bottom: 12, top: isPortrait ? 12 : 0),
       child: _liveRoomController.showSuperChat
           ? PageView(
               key: pageKey,

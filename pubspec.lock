@@ -1138,8 +1138,8 @@ packages:
     description:
       path: "libs/android/media_kit_libs_android_video"
       ref: "version_1.2.5"
-      resolved-ref: f89452bc27af26324a83961c8286d4f41432a5f9
-      url: "https://github.com/My-Responsitories/media-kit.git"
+      resolved-ref: "902e962556c0bde4d384cd8f72b814598e5dfcf2"
+      url: "https://github.com/bggRGjQaUbCoE/media-kit.git"
     source: git
     version: "1.3.7"
   media_kit_libs_ios_video:

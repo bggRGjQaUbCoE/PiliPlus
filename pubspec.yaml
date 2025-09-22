@@ -245,7 +245,7 @@ dependency_overrides:
   font_awesome_flutter: 10.9.0
   media_kit_libs_android_video:
     git:
-      url: https://github.com/My-Responsitories/media-kit.git
+      url: https://github.com/bggRGjQaUbCoE/media-kit.git
       path: libs/android/media_kit_libs_android_video
       ref: version_1.2.5
 

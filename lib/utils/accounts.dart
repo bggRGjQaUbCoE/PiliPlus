@@ -7,9 +7,12 @@ import 'package:hive/hive.dart';
 
 abstract class Accounts {
   static late final Box<LoginAccount> account;
-  static final Map<AccountType, Account> accountMode = {};
-  static Account get main => accountMode[AccountType.main]!;
-  static Account get heartbeat => accountMode[AccountType.heartbeat]!;
+  static final List<Account> accountMode = List.filled(
+    AccountType.values.length,
+    AnonymousAccount(),
+  );
+  static Account get main => accountMode[AccountType.main.index];
+  static Account get heartbeat => accountMode[AccountType.heartbeat.index];
   static Account get history {
     final heartbeat = Accounts.heartbeat;
     if (heartbeat is AnonymousAccount) {
@@ -70,14 +73,11 @@ abstract class Accounts {
   static Future<void> refresh() async {
     for (var a in account.values) {
       for (var t in a.type) {
-        accountMode[t] = a;
+        accountMode[t.index] = a;
       }
     }
-    for (var type in AccountType.values) {
-      accountMode[type] ??= AnonymousAccount();
-    }
     await Future.wait(
-      (accountMode.values.toSet()..retainWhere((i) => !i.activited)).map(
+      (accountMode.toSet()..removeWhere((i) => i.activited)).map(
         Request.buvidActive,
       ),
     );
@@ -85,7 +85,7 @@ abstract class Accounts {
 
   static Future<void> clear() async {
     await account.clear();
-    for (var i in AccountType.values) {
+    for (int i = 0; i < AccountType.values.length; i++) {
       accountMode[i] = AnonymousAccount();
     }
     await AnonymousAccount().delete();
@@ -100,9 +100,11 @@ abstract class Accounts {
 
   static Future<void> deleteAll(Set<Account> accounts) async {
     var isloginMain = Accounts.main.isLogin;
-    Accounts.accountMode.updateAll(
-      (_, a) => accounts.contains(a) ? AnonymousAccount() : a,
-    );
+    for (int i = 0; i < AccountType.values.length; i++) {
+      if (accounts.contains(accountMode[i])) {
+        accountMode[i] = AnonymousAccount();
+      }
+    }
     await Future.wait(accounts.map((i) => i.delete()));
     if (isloginMain && !Accounts.main.isLogin) {
       await LoginUtils.onLogoutMain();
@@ -110,8 +112,8 @@ abstract class Accounts {
   }
 
   static Future<void> set(AccountType key, Account account) async {
-    await (accountMode[key]?..type.remove(key))?.onChange();
-    accountMode[key] = account..type.add(key);
+    await (accountMode[key.index]..type.remove(key)).onChange();
+    accountMode[key.index] = account..type.add(key);
     await account.onChange();
     if (!account.activited) await Request.buvidActive(account);
     switch (key) {
@@ -129,6 +131,6 @@ abstract class Accounts {
   }
 
   static Account get(AccountType key) {
-    return accountMode[key]!;
+    return accountMode[key.index];
   }
 }

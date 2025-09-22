@@ -17,7 +17,7 @@ import 'package:encrypt/encrypt.dart';
 
 class LoginHttp {
   static final String deviceId = LoginUtils.genDeviceId();
-  static final String buvid = LoginUtils.buvid;
+  static String get buvid => LoginUtils.buvid;
   static final Map<String, String> headers = {
     'buvid': buvid,
     'env': 'prod',

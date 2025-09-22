@@ -229,7 +229,8 @@ class MineController
         }
         res == true
             ? Accounts.set(AccountType.heartbeat, AnonymousAccount())
-            : Accounts.accountMode[AccountType.heartbeat] = AnonymousAccount();
+            : Accounts.accountMode[AccountType.heartbeat.index] =
+                  AnonymousAccount();
       });
     } else {
       Accounts.set(AccountType.heartbeat, Accounts.main);

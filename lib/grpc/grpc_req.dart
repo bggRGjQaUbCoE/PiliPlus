@@ -141,7 +141,7 @@ class GrpcReq {
     GeneratedMessage request,
     T Function(Uint8List) grpcParser,
   ) async {
-    final response = await Request().post(
+    final response = await Request().post<Uint8List>(
       HttpString.appBaseUrl + url,
       data: compressProtobuf(request.writeToBuffer()),
       options: options,

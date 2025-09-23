@@ -69,11 +69,19 @@ class LoginAccount extends Account {
   late final String csrf =
       cookieJar.domainCookies['bilibili.com']!['/']!['bili_jct']!.cookie.value;
 
-  @override
-  Future<void> delete() => _box.delete(_midStr);
+  bool _hasDelete = false;
 
   @override
-  Future<void> onChange() => _box.put(_midStr, this);
+  Future<void> delete() {
+    assert(_hasDelete = true);
+    return _box.delete(_midStr);
+  }
+
+  @override
+  Future<void> onChange() {
+    assert(!_hasDelete);
+    return _box.put(_midStr, this);
+  }
 
   @override
   Map<String, dynamic>? toJson() => {

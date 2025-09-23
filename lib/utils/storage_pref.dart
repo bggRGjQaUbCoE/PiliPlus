@@ -26,6 +26,7 @@ import 'package:PiliPlus/plugin/pl_player/models/play_repeat.dart';
 import 'package:PiliPlus/utils/context_ext.dart';
 import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/global_data.dart';
+import 'package:PiliPlus/utils/login_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:flutter/material.dart';
@@ -799,6 +800,15 @@ abstract class Pref {
 
   static bool get silentDownImg =>
       _setting.get(SettingBoxKey.silentDownImg, defaultValue: false);
+
+  static String get buvid {
+    String? buvid = _localCache.get(LocalCacheKey.buvid);
+    if (buvid == null) {
+      buvid = LoginUtils.generateBuvid();
+      _localCache.put(LocalCacheKey.buvid, buvid);
+    }
+    return buvid;
+  }
 
   static bool get showMemberShop =>
       _setting.get(SettingBoxKey.showMemberShop, defaultValue: false);

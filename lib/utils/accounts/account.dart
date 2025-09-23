@@ -2,7 +2,6 @@ import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/models/common/account_type.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
-import 'package:PiliPlus/utils/login_utils.dart';
 import 'package:cookie_jar/cookie_jar.dart';
 import 'package:hive/hive.dart';
 
@@ -33,8 +32,6 @@ sealed class Account {
 
   String? get refresh => throw UnimplementedError();
 
-  String get buvid => throw UnimplementedError();
-
   const Account();
 }
 
@@ -54,9 +51,6 @@ class LoginAccount extends Account {
   @override
   @HiveField(3)
   final Set<AccountType> type;
-  @override
-  @HiveField(4)
-  final String buvid;
 
   @override
   bool activited = false;
@@ -75,19 +69,11 @@ class LoginAccount extends Account {
   late final String csrf =
       cookieJar.domainCookies['bilibili.com']!['/']!['bili_jct']!.cookie.value;
 
-  bool _hasDelete = false;
+  @override
+  Future<void> delete() => _box.delete(_midStr);
 
   @override
-  Future<void> delete() {
-    assert(_hasDelete = true);
-    return _box.delete(_midStr);
-  }
-
-  @override
-  Future<void> onChange() {
-    assert(!_hasDelete);
-    return _box.put(_midStr, this);
-  }
+  Future<void> onChange() => _box.put(_midStr, this);
 
   @override
   Map<String, dynamic>? toJson() => {
@@ -95,7 +81,6 @@ class LoginAccount extends Account {
     'accessKey': accessKey,
     'refresh': refresh,
     'type': type.map((i) => i.index).toList(),
-    'buvid': buvid,
   };
 
   late final String _midStr = cookieJar
@@ -110,9 +95,7 @@ class LoginAccount extends Account {
     this.accessKey,
     this.refresh, [
     Set<AccountType>? type,
-    String? buvid,
-  ]) : type = type ?? {},
-       buvid = buvid ?? LoginUtils.generateBuvid() {
+  ]) : type = type ?? {} {
     cookieJar.setBuvid3();
   }
 
@@ -121,7 +104,6 @@ class LoginAccount extends Account {
     json['accessKey'],
     json['refresh'],
     (json['type'] as Iterable?)?.map((i) => AccountType.values[i]).toSet(),
-    json['buvid'],
   );
 
   @override
@@ -149,15 +131,12 @@ class AnonymousAccount extends Account {
   final String csrf = '';
   @override
   final Map<String, String> headers = Constants.baseHeaders;
-  @override
-  String buvid = LoginUtils.generateBuvid();
 
   @override
   bool activited = false;
 
   @override
   Future<void> delete() async {
-    buvid = LoginUtils.generateBuvid();
     await cookieJar.deleteAll();
     cookieJar.setBuvid3();
   }

@@ -221,8 +221,7 @@ abstract class LocalCacheKey {
       blackMids = 'blackMids',
       danmakuFilterRules = 'danmakuFilterRules',
       mixinKey = 'mixinKey',
-      timeStamp = 'timeStamp',
-      buvid = 'buvid';
+      timeStamp = 'timeStamp';
 }
 
 abstract class VideoBoxKey {

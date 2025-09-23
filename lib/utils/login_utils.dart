@@ -49,11 +49,12 @@ abstract class LoginUtils {
 
   static Future<void> onLoginMain() async {
     final account = Accounts.main;
-    GrpcReq.updateHeaders(account.accessKey);
-    setWebCookie(account);
-    RequestUtils.syncHistoryStatus();
     final result = await UserHttp.userInfo();
     if (result.isSuccess) {
+      GrpcReq.updateHeaders(account.accessKey, account.buvid);
+      setWebCookie(account);
+      RequestUtils.syncHistoryStatus();
+
       final UserInfoData data = result.data;
       if (data.isLogin == true) {
         Get.find<AccountService>()
@@ -114,7 +115,7 @@ abstract class LoginUtils {
       ..face.value = ''
       ..isLogin.value = false;
 
-    GrpcReq.updateHeaders(null);
+    GrpcReq.updateHeaders(null, AnonymousAccount().buvid);
 
     await Future.wait([
       if (!Platform.isWindows) web.CookieManager.instance().deleteAllCookies(),
@@ -165,8 +166,6 @@ abstract class LoginUtils {
     ).join().toUpperCase();
     return 'XY${md5Str[2]}${md5Str[12]}${md5Str[22]}$md5Str';
   }
-
-  static final buvid = Pref.buvid;
 
   // static String getUUID() {
   //   return const Uuid().v4().replaceAll('-', '');

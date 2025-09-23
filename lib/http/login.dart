@@ -17,9 +17,9 @@ import 'package:encrypt/encrypt.dart';
 
 class LoginHttp {
   static final String deviceId = LoginUtils.genDeviceId();
-  static String get buvid => LoginUtils.buvid;
+  static String get _buvid => AnonymousAccount().buvid;
   static final Map<String, String> headers = {
-    'buvid': buvid,
+    'buvid': _buvid,
     'env': 'prod',
     'app-key': 'android_hd',
     'user-agent': Constants.userAgent,
@@ -99,7 +99,7 @@ class LoginHttp {
     int timestamp = DateTime.now().millisecondsSinceEpoch;
     var data = {
       'build': '2001100',
-      'buvid': buvid,
+      'buvid': _buvid,
       'c_locale': 'zh_CN',
       'channel': 'master',
       'cid': cid,
@@ -108,10 +108,10 @@ class LoginHttp {
       'gee_challenge': ?geeChallenge,
       'gee_seccode': ?geeSeccode,
       'gee_validate': ?geeValidate,
-      'local_id': buvid,
+      'local_id': _buvid,
       // https://chinggg.github.io/post/appre/
       'login_session_id': md5
-          .convert(utf8.encode(buvid + timestamp.toString()))
+          .convert(utf8.encode(_buvid + timestamp.toString()))
           .toString(),
       'mobi_app': 'android_hd',
       'platform': 'android',
@@ -202,7 +202,7 @@ class LoginHttp {
     Map<String, String> data = {
       'bili_local_id': deviceId,
       'build': '2001100',
-      'buvid': buvid,
+      'buvid': _buvid,
       'c_locale': 'zh_CN',
       'channel': 'master',
       'device': 'phone',
@@ -221,7 +221,7 @@ class LoginHttp {
       'gee_challenge': ?geeChallenge,
       'gee_seccode': ?geeSeccode,
       'gee_validate': ?geeValidate,
-      'local_id': buvid, //LoginUtils.generateBuvid(),
+      'local_id': _buvid, //LoginUtils.generateBuvid(),
       'mobi_app': 'android_hd',
       'password': passwordEncrypted,
       'permission': 'ALL',
@@ -271,7 +271,7 @@ class LoginHttp {
     Map<String, String> data = {
       'bili_local_id': deviceId,
       'build': '2001100',
-      'buvid': buvid,
+      'buvid': _buvid,
       'c_locale': 'zh_CN',
       'captcha_key': captchaKey,
       'channel': 'master',
@@ -291,7 +291,7 @@ class LoginHttp {
       ),
       'from_pv': 'main.my-information.my-login.0.click',
       'from_url': Uri.encodeComponent('bilibili://user_center/mine'),
-      'local_id': buvid,
+      'local_id': _buvid,
       'mobi_app': 'android_hd',
       'platform': 'android',
       's_locale': 'zh_CN',
@@ -452,7 +452,7 @@ class LoginHttp {
     Map<String, String> data = {
       'appkey': Constants.appKey,
       'build': '2001100',
-      'buvid': buvid,
+      'buvid': _buvid,
       // 'c_locale': 'zh_CN',
       // 'channel': 'master',
       'code': code,
@@ -462,7 +462,7 @@ class LoginHttp {
       // 'device_platform': 'Android14vivo',
       'disable_rcmd': '0',
       'grant_type': 'authorization_code',
-      'local_id': buvid,
+      'local_id': _buvid,
       'mobi_app': 'android_hd',
       'platform': 'android',
       // 's_locale': 'zh_CN',
@@ -505,7 +505,7 @@ class LoginHttp {
 
   static Future<LoadingState<LoginDevicesData>> loginDevices() async {
     final account = Accounts.main;
-    final buvid = LoginUtils.buvid;
+    final buvid = account.buvid;
     final params = {
       'local_id': buvid,
       'buvid': buvid,

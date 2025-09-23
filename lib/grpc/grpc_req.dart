@@ -13,7 +13,6 @@ import 'package:PiliPlus/http/init.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
-import 'package:PiliPlus/utils/login_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:archive/archive.dart';
 import 'package:dio/dio.dart';
@@ -21,33 +20,44 @@ import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:protobuf/protobuf.dart' show GeneratedMessage;
 
 class GrpcReq {
-  static String? _accessKey = Accounts.main.accessKey;
   static const _build = 2001100;
   static const _versionName = '2.0.1';
   static const _biliChannel = 'master';
   static const _mobiApp = 'android_hd';
   static const _device = 'android';
 
-  static final _buvid = LoginUtils.buvid;
   static final _traceId = IdUtils.genTraceId();
   static final _sessionId = Utils.generateRandomString(8);
 
-  static void updateHeaders(String? accessKey) {
-    _accessKey = accessKey;
-    if (_accessKey != null) {
-      headers['authorization'] = 'identify_v1 $_accessKey';
+  static void updateHeaders(String? accessKey, String buvid) {
+    if (accessKey != null) {
+      headers['authorization'] = 'identify_v1 $accessKey';
     } else {
       headers.remove('authorization');
     }
     headers['x-bili-metadata-bin'] = base64Encode(
       Metadata(
-        accessKey: _accessKey ?? '',
+        accessKey: accessKey ?? '',
         mobiApp: _mobiApp,
         device: _device,
         build: _build,
         channel: _biliChannel,
-        buvid: _buvid,
+        buvid: buvid,
         platform: _device,
+      ).writeToBuffer(),
+    );
+    headers['x-bili-device-bin'] = base64Encode(
+      Device(
+        appId: 5,
+        build: _build,
+        buvid: buvid,
+        mobiApp: _mobiApp,
+        platform: _device,
+        channel: _biliChannel,
+        brand: _device,
+        model: _device,
+        osver: '15',
+        versionName: _versionName,
       ).writeToBuffer(),
     );
     options = Options(headers: headers, responseType: ResponseType.bytes);
@@ -61,8 +71,9 @@ class GrpcReq {
     'x-bili-gaia-vtoken': '',
     'x-bili-aurora-zone': '',
     'x-bili-trace-id': _traceId,
-    if (_accessKey != null) 'authorization': 'identify_v1 $_accessKey',
-    'buvid': _buvid,
+    if (Accounts.main.accessKey != null)
+      'authorization': 'identify_v1 ${Accounts.main.accessKey}',
+    'buvid': Accounts.main.buvid,
     'bili-http-engine': 'cronet',
     'te': 'trailers',
     'x-bili-fawkes-req-bin': base64Encode(
@@ -74,12 +85,12 @@ class GrpcReq {
     ),
     'x-bili-metadata-bin': base64Encode(
       Metadata(
-        accessKey: _accessKey ?? '',
+        accessKey: Accounts.main.accessKey ?? '',
         mobiApp: _mobiApp,
         device: _device,
         build: _build,
         channel: _biliChannel,
-        buvid: _buvid,
+        buvid: Accounts.main.buvid,
         platform: _device,
       ).writeToBuffer(),
     ),
@@ -87,7 +98,7 @@ class GrpcReq {
       Device(
         appId: 5,
         build: _build,
-        buvid: _buvid,
+        buvid: Accounts.main.buvid,
         mobiApp: _mobiApp,
         platform: _device,
         channel: _biliChannel,
@@ -141,7 +152,7 @@ class GrpcReq {
     GeneratedMessage request,
     T Function(Uint8List) grpcParser,
   ) async {
-    final response = await Request().post(
+    final response = await Request().post<Uint8List>(
       HttpString.appBaseUrl + url,
       data: compressProtobuf(request.writeToBuffer()),
       options: options,

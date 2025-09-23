@@ -688,6 +688,8 @@ class LoginPageController extends GetxController
       BiliCookieJar.fromList(cookieInfo),
       tokenInfo['access_token'],
       tokenInfo['refresh_token'],
+      {},
+      AnonymousAccount().buvid,
     );
     await Future.wait([account.onChange(), AnonymousAccount().delete()]);
     for (int i = 0; i < AccountType.values.length; i++) {

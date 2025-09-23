@@ -44,10 +44,10 @@ abstract class UrlUtils {
     String pathSegment,
     String redirectUrl,
   ) async {
-    final Map matchRes = IdUtils.matchAvorBv(input: pathSegment);
+    final matchRes = IdUtils.matchAvorBv(input: pathSegment);
     if (matchRes.isNotEmpty) {
-      int? aid = matchRes['AV'];
-      String? bvid = matchRes['BV'];
+      final aid = matchRes.av;
+      String? bvid = matchRes.bv;
       bvid ??= IdUtils.av2bv(aid!);
       final int? cid = await SearchHttp.ab2c(aid: aid, bvid: bvid);
       if (cid != null) {

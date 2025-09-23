@@ -15,9 +15,9 @@ abstract class IdUtils {
       'FcwAPNKTMug3GV5Lj7EJnHpWsx4tb8haYeviqBz6rkCy12mUSDQX9RdoZf';
   static final invData = {for (var (i, c) in data.codeUnits.indexed) c: i};
 
-  static final bvRegex = RegExp(r'bv[0-9a-zA-Z]{10}', caseSensitive: false);
+  static final bvRegex = RegExp(r'bv1[0-9a-zA-Z]{9}', caseSensitive: false);
   static final bvRegexExact = RegExp(
-    r'^bv[0-9a-zA-Z]{10}$',
+    r'^bv1[0-9a-zA-Z]{9}$',
     caseSensitive: false,
   );
   static final avRegex = RegExp(r'av(\d+)', caseSensitive: false);
@@ -54,26 +54,25 @@ abstract class IdUtils {
     swap(bvidArr, 4, 7);
 
     bvidArr.removeRange(0, 3);
-    int tmp = bvidArr.fold(0, (pre, char) => pre * BASE + invData[char]!);
-    return ((tmp & MASK_CODE) ^ XOR_CODE).toInt();
+    final tmp = bvidArr.reduce((pre, char) => pre * BASE + invData[char]!);
+    return (tmp & MASK_CODE) ^ XOR_CODE;
   }
 
   // 匹配
-  static Map<String, dynamic> matchAvorBv({String? input}) {
-    final Map<String, dynamic> result = {};
+  static AvBvRes matchAvorBv({String? input}) {
     if (input == null || input.isEmpty) {
-      return result;
+      return const (av: null, bv: null);
     }
     String? bvid = bvRegex.firstMatch(input)?.group(0);
 
     late String? aid = avRegex.firstMatch(input)?.group(1);
 
     if (bvid != null) {
-      result['BV'] = bvid;
+      return (av: null, bv: bvid);
     } else if (aid != null) {
-      result['AV'] = int.parse(aid);
+      return (av: int.parse(aid), bv: null);
     }
-    return result;
+    return const (av: null, bv: null);
   }
 
   static String genBuvid3() {
@@ -113,4 +112,10 @@ abstract class IdUtils {
 
     return '${randomTraceId.toString()}:${randomTraceId.toString().substring(16, 32)}:0:0';
   }
+}
+
+typedef AvBvRes = ({int? av, String? bv});
+
+extension AvBvExt on AvBvRes {
+  bool get isNotEmpty => this != const (av: null, bv: null);
 }

@@ -748,12 +748,12 @@ abstract class PiliScheme {
         return false;
       case 'video':
         // if (kDebugMode) debugPrint('投稿');
-        final Map<String, dynamic> map = IdUtils.matchAvorBv(input: path);
-        if (map.isNotEmpty) {
+        final res = IdUtils.matchAvorBv(input: path);
+        if (res.isNotEmpty) {
           final queryParameters = uri.queryParameters;
           videoPush(
-            map['AV'],
-            map['BV'],
+            res.av,
+            res.bv,
             off: off,
             progress: queryParameters['dm_progress'],
             part: queryParameters['p'],
@@ -910,11 +910,11 @@ abstract class PiliScheme {
         launchURL();
         return false;
       default:
-        Map map = IdUtils.matchAvorBv(input: area?.split('?').first);
-        if (map.isNotEmpty) {
+        final res = IdUtils.matchAvorBv(input: area?.split('?').first);
+        if (res.isNotEmpty) {
           videoPush(
-            map['AV'],
-            map['BV'],
+            res.av,
+            res.bv,
             off: off,
           );
           return true;

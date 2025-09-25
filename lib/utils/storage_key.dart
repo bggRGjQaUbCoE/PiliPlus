@@ -213,7 +213,8 @@ abstract class SettingBoxKey {
       enableGradientBg = 'enableGradientBg',
       navBarSort = 'navBarSort',
       tempPlayerConf = 'tempPlayerConf',
-      reduceLuxColor = 'reduceLuxColor';
+      reduceLuxColor = 'reduceLuxColor',
+      nativeFullscreen = 'nativeFullscreen';
 }
 
 abstract class LocalCacheKey {

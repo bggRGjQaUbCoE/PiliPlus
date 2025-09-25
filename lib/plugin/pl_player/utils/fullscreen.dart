@@ -15,7 +15,7 @@ Future<void> landScape() async {
       await document.documentElement?.requestFullscreen();
     } else if (Utils.isMobile) {
       await AutoOrientation.landscapeAutoMode(forceSensor: true);
-    } else if (Utils.isDesktop) {
+    } else if (Utils.isDesktop && Pref.nativeFullscreen) {
       await const MethodChannel(
         'com.alexmercerind/media_kit_video',
       ).invokeMethod(
@@ -94,17 +94,14 @@ Future<void> showStatusBar() async {
         mode,
         overlays: SystemUiOverlay.values,
       );
-    } else if (Utils.isDesktop) {
+    } else if (Utils.isDesktop && Pref.nativeFullscreen) {
       await const MethodChannel(
         'com.alexmercerind/media_kit_video',
       ).invokeMethod(
         'Utils.ExitNativeFullscreen',
       );
     }
-  } catch (exception, stacktrace) {
-    if (kDebugMode) {
-      debugPrint(exception.toString());
-      debugPrint(stacktrace.toString());
-    }
+  } catch (_) {
+    if (kDebugMode) rethrow;
   }
 }

@@ -309,4 +309,13 @@ List<SettingsModel> get playSettings => [
     setKey: SettingBoxKey.tempPlayerConf,
     defaultVal: false,
   ),
+  if (Utils.isDesktop)
+    const SettingsModel(
+      settingsType: SettingsType.sw1tch,
+      title: '独占全屏',
+      subtitle: '关闭为应用内全屏',
+      leading: Icon(Icons.zoom_out_map_rounded),
+      setKey: SettingBoxKey.nativeFullscreen,
+      defaultVal: true,
+    ),
 ];

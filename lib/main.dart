@@ -93,14 +93,10 @@ void main() async {
       title: Constants.appName,
     );
     windowManager.waitUntilReadyToShow(windowOptions, () async {
-      await Future.wait([
-        Utils.windowOffset.then(
-          (offset) => windowManager.setBounds(offset & Pref.windowSize),
-        ),
-        if (Pref.isWindowMaximized) windowManager.maximize(),
-        windowManager.show(),
-        windowManager.focus(),
-      ]);
+      await windowManager.setBounds(await Utils.windowOffset & Pref.windowSize);
+      if (Pref.isWindowMaximized) await windowManager.maximize();
+      await windowManager.show();
+      await windowManager.focus();
     });
   }
 

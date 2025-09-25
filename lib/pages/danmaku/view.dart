@@ -105,6 +105,7 @@ class _PlDanmakuState extends State<PlDanmaku> {
     List<DanmakuElem>? currentDanmakuList = _plDanmakuController
         .getCurrentDanmaku(currentPosition);
     if (currentDanmakuList != null) {
+      final blockColorful = playerController.blockColorful;
       for (DanmakuElem e in currentDanmakuList) {
         if (e.mode == 7) {
           try {
@@ -120,7 +121,7 @@ class _PlDanmakuState extends State<PlDanmaku> {
           _controller!.addDanmaku(
             DanmakuContentItem(
               e.content,
-              color: playerController.blockColorful
+              color: blockColorful
                   ? Colors.white
                   : DmUtils.decimalToColor(e.color),
               type: DmUtils.getPosition(e.mode),

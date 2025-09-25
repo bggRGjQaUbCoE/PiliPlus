@@ -5,6 +5,7 @@ import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/widgets/button/icon_button.dart';
 import 'package:PiliPlus/common/widgets/radio_widget.dart';
 import 'package:PiliPlus/http/init.dart';
+import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/login.dart';
 import 'package:PiliPlus/models/common/account_type.dart';
 import 'package:PiliPlus/models/login/model.dart';
@@ -26,7 +27,8 @@ class LoginPageController extends GetxController
   final TextEditingController smsCodeTextController = TextEditingController();
   final TextEditingController cookieTextController = TextEditingController();
 
-  late final RxMap<String, dynamic> codeInfo = RxMap<String, dynamic>({});
+  late final codeInfo =
+      LoadingState<({String authCode, String url})>.loading().obs;
 
   late final TabController tabController;
 
@@ -36,10 +38,7 @@ class LoginPageController extends GetxController
   late final RxInt qrCodeLeftTime = 180.obs;
   late final RxString statusQRCode = ''.obs;
 
-  late final List<Map<String, dynamic>> internationalDialingPrefix =
-      Constants.internationalDialingPrefix;
-  late Map<String, dynamic> selectedCountryCodeId =
-      internationalDialingPrefix.first;
+  late var selectedCountryCodeId = Constants.internationalDialingPrefix.first;
   late String captchaKey = '';
   late final RxInt smsSendCooldown = 0.obs;
   late int smsSendTimestamp = 0;
@@ -47,6 +46,8 @@ class LoginPageController extends GetxController
   // 定时器
   Timer? qrCodeTimer;
   Timer? smsSendCooldownTimer;
+
+  bool _isReq = false;
 
   @override
   void onInit() {
@@ -70,46 +71,47 @@ class LoginPageController extends GetxController
     super.onClose();
   }
 
-  void refreshQRCode() {
-    LoginHttp.getHDcode().then((res) {
-      if (res['status']) {
-        qrCodeTimer?.cancel();
-        codeInfo.addAll(res);
-        qrCodeTimer = Timer.periodic(const Duration(milliseconds: 1000), (t) {
-          qrCodeLeftTime.value = 180 - t.tick;
-          if (qrCodeLeftTime <= 0) {
-            t.cancel();
-            statusQRCode.value = '二维码已过期，请刷新';
-            qrCodeLeftTime.value = 0;
-            return;
-          }
+  Future<void> refreshQRCode() async {
+    final res = await LoginHttp.getHDcode();
+    if (res.isSuccess) {
+      qrCodeTimer?.cancel();
+      codeInfo.value = res;
+      qrCodeTimer = Timer.periodic(const Duration(milliseconds: 1000), (t) {
+        final left = 180 - t.tick;
+        if (left <= 0) {
+          t.cancel();
+          statusQRCode.value = '二维码已过期，请刷新';
+          qrCodeLeftTime.value = 0;
+          return;
+        }
+        qrCodeLeftTime.value = left;
+        if (_isReq || tabController.index != 2) return;
 
-          LoginHttp.codePoll(codeInfo['data']['auth_code']).then((value) async {
-            if (value['status']) {
-              t.cancel();
-              statusQRCode.value = '扫码成功';
-              await setAccount(
-                value['data'],
-                value['data']['cookie_info']['cookies'],
-              );
-              Get.back();
-            } else if (value['code'] == 86038) {
-              t.cancel();
-              qrCodeLeftTime.value = 0;
-            } else {
-              statusQRCode.value = value['msg'];
-            }
-          });
+        _isReq = true;
+        LoginHttp.codePoll(res.data.authCode).then((value) async {
+          _isReq = false;
+          if (value['status']) {
+            t.cancel();
+            statusQRCode.value = '扫码成功';
+            await setAccount(
+              value['data'],
+              value['data']['cookie_info']['cookies'],
+            );
+            Get.back();
+          } else if (value['code'] == 86038) {
+            t.cancel();
+            qrCodeLeftTime.value = 0;
+          } else {
+            statusQRCode.value = value['msg'];
+          }
         });
-      } else {
-        SmartDialog.showToast(res['msg']);
-      }
-    });
+      });
+    }
   }
 
   void _handleTabChange() {
     if (tabController.index == 2) {
-      if (qrCodeTimer == null || qrCodeTimer!.isActive == false) {
+      if (qrCodeTimer == null || !qrCodeTimer!.isActive) {
         refreshQRCode();
       }
     }
@@ -545,7 +547,7 @@ class LoginPageController extends GetxController
       tel: telTextController.text,
       code: smsCodeTextController.text,
       captchaKey: captchaKey,
-      cid: selectedCountryCodeId['country_id'],
+      cid: selectedCountryCodeId.countryId,
       key: key,
     );
     if (res['status']) {
@@ -608,7 +610,7 @@ class LoginPageController extends GetxController
 
     var res = await LoginHttp.sendSmsCode(
       tel: telTextController.text,
-      cid: selectedCountryCodeId['country_id'],
+      cid: selectedCountryCodeId.countryId,
       // deviceTouristId: guestId,
       geeValidate: captchaData.validate,
       geeSeccode: captchaData.seccode,

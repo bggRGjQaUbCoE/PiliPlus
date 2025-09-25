@@ -115,9 +115,9 @@ abstract class Update {
   static Future<void> onDownload(Map data) async {
     SmartDialog.dismiss();
     try {
-      void download(plat) {
+      void download(String plat) {
         if (data['assets'].isNotEmpty) {
-          for (dynamic i in data['assets']) {
+          for (Map<String, dynamic> i in data['assets']) {
             if (i['name'].contains(plat)) {
               PageUtils.launchURL(i['browser_download_url']);
               return;
@@ -132,14 +132,8 @@ abstract class Update {
         AndroidDeviceInfo androidInfo = await DeviceInfoPlugin().androidInfo;
         // [arm64-v8a]
         download(androidInfo.supportedAbis.first);
-      } else if (Platform.isIOS) {
-        download('ios');
-      } else if (Platform.isWindows) {
-        download('windows');
       } else {
-        throw UnsupportedError(
-          'unsupported platform: ${Platform.operatingSystem}',
-        );
+        download(Platform.operatingSystem);
       }
     } catch (e) {
       if (kDebugMode) debugPrint('download error: $e');

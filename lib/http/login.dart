@@ -30,7 +30,8 @@ class LoginHttp {
     'content-type': 'application/x-www-form-urlencoded; charset=utf-8',
   };
 
-  static Future<Map<String, dynamic>> getHDcode() async {
+  static Future<LoadingState<({String authCode, String url})>>
+  getHDcode() async {
     var params = {
       // 'local_id': 'Y952A395BB157D305D8A8340FC2AAECECE17',
       'local_id': '0',
@@ -42,9 +43,14 @@ class LoginHttp {
     var res = await Request().post(Api.getTVCode, queryParameters: params);
 
     if (res.data['code'] == 0) {
-      return {'status': true, 'data': res.data['data']};
+      try {
+        final Map<String, dynamic> data = res.data['data'];
+        return Success((authCode: data['auth_code'], url: data['url']));
+      } catch (e) {
+        return Error(e.toString());
+      }
     } else {
-      return {'status': false, 'msg': res.data['message']};
+      return Error(res.data['message']);
     }
   }
 
@@ -88,7 +94,7 @@ class LoginHttp {
   }
 
   static Future sendSmsCode({
-    required String cid,
+    required Object cid,
     required String tel,
     // String? deviceTouristId,
     String? geeChallenge,
@@ -264,11 +270,11 @@ class LoginHttp {
     required String captchaKey,
     required String tel,
     required String code,
-    required String cid,
+    required Object cid,
     required String key,
   }) async {
     dynamic publicKey = RSAKeyParser().parse(key);
-    Map<String, String> data = {
+    Map<String, Object> data = {
       'bili_local_id': deviceId,
       'build': '2001100',
       'buvid': buvid,
@@ -297,7 +303,7 @@ class LoginHttp {
       's_locale': 'zh_CN',
       'statistics': Constants.statistics,
       'tel': tel,
-      'ts': (DateTime.now().millisecondsSinceEpoch ~/ 1000).toString(),
+      'ts': DateTime.now().millisecondsSinceEpoch ~/ 1000,
     };
     AppSign.appSign(data);
     var res = await Request().post(

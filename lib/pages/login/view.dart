@@ -1,17 +1,21 @@
 import 'dart:ui';
 
 import 'package:PiliPlus/common/constants.dart';
+import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart';
+import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/pages/login/controller.dart';
 import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart' hide ContextExtensionss;
 import 'package:pretty_qr_code/pretty_qr_code.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -25,7 +29,7 @@ class _LoginPageState extends State<LoginPage> {
   // 二维码生成时间
   bool showPassword = false;
   GlobalKey globalKey = GlobalKey();
-  final isMobile = Utils.isMobile;
+  bool get isMobile => kDebugMode || Utils.isMobile;
 
   Widget loginByQRCode(ThemeData theme) {
     return Column(
@@ -70,35 +74,48 @@ class _LoginPageState extends State<LoginPage> {
               icon: const Icon(Icons.save),
               label: const Text('保存至相册'),
             ),
+            if (isMobile)
+              TextButton.icon(
+                onPressed: () => launchUrl(
+                  Uri.parse(_loginPageCtr.codeInfo.value.data.url),
+                  mode: LaunchMode.externalNonBrowserApplication,
+                ),
+                icon: const Icon(Icons.open_in_browser_outlined),
+                label: const Text('其他应用打开'),
+              ),
           ],
         ),
         RepaintBoundary(
           key: globalKey,
           child: Obx(() {
-            if (_loginPageCtr.codeInfo['data']?['url'] == null) {
-              return Container(
+            return switch (_loginPageCtr.codeInfo.value) {
+              Loading() => Container(
                 height: 200,
                 width: 200,
                 alignment: Alignment.center,
                 child: const CircularProgressIndicator(
                   semanticsLabel: '二维码加载中',
                 ),
-              );
-            }
-            return Container(
-              width: 200,
-              height: 200,
-              color: Colors.white,
-              padding: const EdgeInsets.all(8),
-              child: PrettyQrView.data(
-                data: _loginPageCtr.codeInfo['data']!['url']!,
-                decoration: const PrettyQrDecoration(
-                  shape: PrettyQrSquaresSymbol(
-                    color: Colors.black87,
+              ),
+              Success(:var response) => Container(
+                width: 200,
+                height: 200,
+                color: Colors.white,
+                padding: const EdgeInsets.all(8),
+                child: PrettyQrView.data(
+                  data: response.url,
+                  decoration: const PrettyQrDecoration(
+                    shape: PrettyQrSquaresSymbol(
+                      color: Colors.black87,
+                    ),
                   ),
                 ),
               ),
-            );
+              Error(:var errMsg) => errorWidget(
+                errMsg: errMsg,
+                onReload: _loginPageCtr.refreshQRCode,
+              ),
+            };
           }),
         ),
         const SizedBox(height: 10),
@@ -109,21 +126,27 @@ class _LoginPageState extends State<LoginPage> {
           ),
         ),
         Obx(
-          () => GestureDetector(
-            onTap: () => Utils.copyText(
-              _loginPageCtr.codeInfo['data']?['url'] ?? '',
-              toastText: '已复制到剪贴板，可粘贴至已登录的app私信处发送，然后点击已发送的链接打开',
-            ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-              child: Text(
-                _loginPageCtr.codeInfo['data']?['url'] ?? "",
-                style: theme.textTheme.labelSmall!.copyWith(
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
+          () {
+            final url = _loginPageCtr.codeInfo.value.dataOrNull?.url ?? '';
+            return GestureDetector(
+              onTap: () => Utils.copyText(
+                url,
+                toastText: '已复制到剪贴板，可粘贴至已登录的app私信处发送，然后点击已发送的链接打开',
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 20,
+                ),
+                child: Text(
+                  url,
+                  style: theme.textTheme.labelSmall!.copyWith(
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
+                  ),
                 ),
               ),
-            ),
-          ),
+            );
+          },
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -349,34 +372,31 @@ class _LoginPageState extends State<LoginPage> {
                 const SizedBox(width: 12),
                 Builder(
                   builder: (context) {
-                    return PopupMenuButton<Map<String, dynamic>>(
+                    return PopupMenuButton(
                       enabled: isMobile,
                       padding: EdgeInsets.zero,
                       tooltip:
                           '选择国际冠码，'
-                          '当前为${_loginPageCtr.selectedCountryCodeId['cname']}，'
-                          '+${_loginPageCtr.selectedCountryCodeId['country_id']}',
-                      onSelected: (Map<String, dynamic> type) {},
+                          '当前为${_loginPageCtr.selectedCountryCodeId.cname}，'
+                          '+${_loginPageCtr.selectedCountryCodeId.countryId}',
+                      onSelected: (item) {
+                        _loginPageCtr.selectedCountryCodeId = item;
+                        (context as Element).markNeedsBuild();
+                      },
                       initialValue: _loginPageCtr.selectedCountryCodeId,
-                      itemBuilder: (_) => _loginPageCtr
-                          .internationalDialingPrefix
-                          .map((Map<String, dynamic> item) {
-                            return PopupMenuItem<Map<String, dynamic>>(
-                              onTap: () {
-                                _loginPageCtr.selectedCountryCodeId = item;
-                                (context as Element).markNeedsBuild();
-                              },
+                      itemBuilder: (_) =>
+                          Constants.internationalDialingPrefix.map((item) {
+                            return PopupMenuItem(
                               value: item,
                               child: Row(
                                 children: [
-                                  Text(item['cname']),
+                                  Text(item.cname),
                                   const Spacer(),
-                                  Text("+${item['country_id']}"),
+                                  Text("+${item.countryId}"),
                                 ],
                               ),
                             );
-                          })
-                          .toList(),
+                          }).toList(),
                       child: Row(
                         children: [
                           Icon(
@@ -385,7 +405,7 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                           const SizedBox(width: 12),
                           Text(
-                            "+${_loginPageCtr.selectedCountryCodeId['country_id']}",
+                            "+${_loginPageCtr.selectedCountryCodeId.countryId}",
                           ),
                         ],
                       ),

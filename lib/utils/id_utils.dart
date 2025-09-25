@@ -54,7 +54,7 @@ abstract class IdUtils {
     swap(bvidArr, 4, 7);
 
     bvidArr.removeRange(0, 3);
-    final tmp = bvidArr.reduce((pre, char) => pre * BASE + invData[char]!);
+    final tmp = bvidArr.fold(0, (pre, char) => pre * BASE + invData[char]!);
     return (tmp & MASK_CODE) ^ XOR_CODE;
   }
 

@@ -53,7 +53,10 @@ class _SuperChatCardState extends State<SuperChatCard> {
   }
 
   void _callback(_) {
-    if (--_remains!.value < 0) {
+    final remains = _remains!.value;
+    if (remains > 0) {
+      _remains!.value = remains - 1;
+    } else {
       _cancelTimer();
       _onRemove();
     }

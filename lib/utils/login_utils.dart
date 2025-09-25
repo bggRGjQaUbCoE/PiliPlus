@@ -27,7 +27,7 @@ import 'package:get/get.dart';
 
 abstract class LoginUtils {
   static FutureOr setWebCookie([Account? account]) {
-    if (Platform.isWindows) {
+    if (Platform.isWindows || Platform.isLinux) {
       return null;
     }
     final cookies = (account ?? Accounts.main).cookieJar.toList();

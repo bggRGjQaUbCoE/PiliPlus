@@ -60,7 +60,7 @@ class _WebviewPageState extends State<WebviewPage> {
 
   @override
   Widget build(BuildContext context) {
-    if (Platform.isWindows) {
+    if (Platform.isWindows || Platform.isLinux) {
       return Scaffold(
         appBar: AppBar(),
         body: Center(

@@ -1,7 +1,7 @@
 import 'dart:io';
 
 void main() async {
-  if (Platform.isWindows) {
+  if (Platform.isWindows || Platform.isLinux) {
     updateVersion();
   }
 

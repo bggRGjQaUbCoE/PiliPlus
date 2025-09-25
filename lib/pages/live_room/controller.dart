@@ -246,6 +246,10 @@ class LiveRoomController extends GetxController {
     }
   }
 
+  void clearSC() {
+    superChatMsg.removeWhere((e) => e.expired);
+  }
+
   void startLiveMsg() {
     if (messages.isEmpty) {
       prefetch();

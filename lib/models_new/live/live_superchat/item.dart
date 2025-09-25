@@ -12,6 +12,7 @@ class SuperChatItem {
   int endTime;
   String message;
   UserInfo userInfo;
+  bool expired = false;
 
   SuperChatItem({
     required this.id,

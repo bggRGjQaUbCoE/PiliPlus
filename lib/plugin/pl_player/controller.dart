@@ -15,6 +15,7 @@ import 'package:PiliPlus/models/common/sponsor_block/skip_type.dart';
 import 'package:PiliPlus/models/common/super_resolution_type.dart';
 import 'package:PiliPlus/models/common/video/video_type.dart';
 import 'package:PiliPlus/models/user/danmaku_rule.dart';
+import 'package:PiliPlus/models/video/play/url.dart';
 import 'package:PiliPlus/models_new/video/video_shot/data.dart';
 import 'package:PiliPlus/pages/mine/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/models/bottom_progress_behavior.dart';
@@ -54,7 +55,6 @@ import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
-import 'package:universal_platform/universal_platform.dart';
 import 'package:window_manager/window_manager.dart';
 
 class PlPlayerController {
@@ -598,6 +598,7 @@ class PlPlayerController {
     int? pgcType,
     VideoType? videoType,
     VoidCallback? callback,
+    Volume? volume,
   }) async {
     try {
       _isLive = isLive;
@@ -637,6 +638,7 @@ class PlPlayerController {
         dataSource,
         _looping,
         seekTo,
+        volume,
       );
       callback?.call();
       // 获取视频时长 00:00
@@ -716,7 +718,7 @@ class PlPlayerController {
         setting.put(SettingBoxKey.superResolutionType, type.index);
       }
     }
-    pp ??= _videoPlayerController?.platform as NativePlayer;
+    pp ??= _videoPlayerController!.platform!;
     await pp.waitForPlayerInitialization;
     await pp.waitForVideoControllerInitializationIfAttached;
     switch (type) {
@@ -745,11 +747,14 @@ class PlPlayerController {
     }
   }
 
+  static final _loudnormRegExp = RegExp('loudnorm=[^,]+');
+
   // 配置播放器
   Future<Player> _createVideoController(
     DataSource dataSource,
     PlaylistMode looping,
     Duration? seekTo,
+    Volume? volume,
   ) async {
     // 每次配置时先移除监听
     removeListeners();
@@ -759,6 +764,7 @@ class PlPlayerController {
     _position.value = Duration.zero;
     // 初始化时清空弹幕，防止上次重叠
     danmakuController?.clear();
+
     Player player =
         _videoPlayerController ??
         Player(
@@ -769,20 +775,14 @@ class PlPlayerController {
                 : (isLive ? 16 * 1024 * 1024 : 4 * 1024 * 1024),
           ),
         );
-    var pp = player.platform as NativePlayer;
+    final pp = player.platform!;
     if (_videoPlayerController == null) {
       if (isAnim) {
         setShader(superResolutionType.value, pp);
       }
-      String audioNormalization = Pref.audioNormalization;
-      audioNormalization = switch (audioNormalization) {
-        '0' => '',
-        '1' => ',${AudioNormalization.dynaudnorm.param}',
-        _ => ',$audioNormalization',
-      };
       await pp.setProperty(
         "af",
-        "scaletempo2=max-speed=8$audioNormalization",
+        "scaletempo2=max-speed=8",
       );
       if (Platform.isAndroid) {
         await pp.setProperty("volume-max", "100");
@@ -804,7 +804,7 @@ class PlPlayerController {
     if (dataSource.audioSource?.isNotEmpty == true) {
       await pp.setProperty(
         'audio-files',
-        UniversalPlatform.isWindows
+        Platform.isWindows
             ? dataSource.audioSource!.replaceAll(';', '\\;')
             : dataSource.audioSource!.replaceAll(':', '\\:'),
       );
@@ -816,7 +816,7 @@ class PlPlayerController {
     if (dataSource.subFiles?.isNotEmpty == true) {
       await pp.setProperty(
         'sub-files',
-        UniversalPlatform.isWindows
+        Platform.isWindows
             ? dataSource.subFiles!.replaceAll(';', '\\;')
             : dataSource.subFiles!.replaceAll(':', '\\:'),
       );
@@ -834,13 +834,33 @@ class PlPlayerController {
       ),
     );
 
+    String audioNormalization = Pref.audioNormalization;
+    audioNormalization = switch (audioNormalization) {
+      '0' => '',
+      '1' => AudioNormalization.dynaudnorm.param,
+      '2' => AudioNormalization.loudnorm.param,
+      _ => audioNormalization,
+    };
+    if (volume != null) {
+      audioNormalization = audioNormalization.replaceFirstMapped(
+        _loudnormRegExp,
+        (i) => '${i[0]}:$volume',
+      );
+    }
+
     player.setPlaylistMode(looping);
+    final filters = {'lavfi-complex': '"[aid1] $audioNormalization [ao]"'};
     if (dataSource.type == DataSourceType.asset) {
       final assetUrl = dataSource.videoSource!.startsWith("asset://")
           ? dataSource.videoSource!
           : "asset://${dataSource.videoSource!}";
       await player.open(
-        Media(assetUrl, httpHeaders: dataSource.httpHeaders, start: seekTo),
+        Media(
+          assetUrl,
+          httpHeaders: dataSource.httpHeaders,
+          start: seekTo,
+          extras: filters,
+        ),
         play: false,
       );
     } else {
@@ -849,6 +869,7 @@ class PlPlayerController {
           dataSource.videoSource!,
           httpHeaders: dataSource.httpHeaders,
           start: seekTo,
+          extras: filters,
         ),
         play: false,
       );
@@ -874,9 +895,9 @@ class PlPlayerController {
       if (dataSource.audioSource.isNullOrEmpty) {
         SmartDialog.showToast('音频源为空');
       } else {
-        await (_videoPlayerController!.platform as NativePlayer).setProperty(
+        await (_videoPlayerController!.platform!).setProperty(
           'audio-files',
-          UniversalPlatform.isWindows
+          Platform.isWindows
               ? dataSource.audioSource!.replaceAll(';', '\\;')
               : dataSource.audioSource!.replaceAll(':', '\\:'),
         );
@@ -1658,7 +1679,7 @@ class PlPlayerController {
       // dataStatus.status.close();
 
       if (_videoPlayerController != null) {
-        var pp = _videoPlayerController!.platform as NativePlayer;
+        var pp = _videoPlayerController!.platform!;
         await pp.setProperty('audio-files', '');
         removeListeners();
         await _videoPlayerController!.dispose();

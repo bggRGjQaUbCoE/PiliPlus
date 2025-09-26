@@ -43,7 +43,6 @@ import 'package:get/get.dart';
 import 'package:hive/hive.dart';
 import 'package:intl/intl.dart' show DateFormat;
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
-import 'package:media_kit/media_kit.dart';
 
 class HeaderControl extends StatefulWidget {
   const HeaderControl({
@@ -446,8 +445,9 @@ class HeaderControlState extends State<HeaderControl> {
                       SmartDialog.showToast('播放器未初始化');
                       return;
                     }
-                    final hwdec = await (player.platform as NativePlayer)
-                        .getProperty('hwdec-current');
+                    final hwdec = await player.platform!.getProperty(
+                      'hwdec-current',
+                    );
                     if (!context.mounted) return;
                     showDialog(
                       context: context,

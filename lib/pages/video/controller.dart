@@ -1056,6 +1056,7 @@ class VideoDetailController extends GetxController
     Duration? seekToTime,
     Duration? duration,
     bool? autoplay,
+    Volume? volume,
   }) async {
     await plPlayerController.setDataSource(
       DataSource(
@@ -1095,6 +1096,7 @@ class VideoDetailController extends GetxController
       },
       width: firstVideo.width,
       height: firstVideo.height,
+      volume: volume ?? this.volume,
     );
 
     if (plPlayerController.enableSponsorBlock) {
@@ -1124,6 +1126,8 @@ class VideoDetailController extends GetxController
     currLang.value = language;
     queryVideoUrl(defaultST: playedTime);
   }
+
+  Volume? volume;
 
   // 视频链接
   Future<void> queryVideoUrl({
@@ -1163,6 +1167,8 @@ class VideoDetailController extends GetxController
 
       languages.value = data.language?.items;
       currLang.value = data.curLanguage;
+
+      volume = data.volume;
 
       if (data.acceptDesc?.contains('试看') == true) {
         SmartDialog.showToast(

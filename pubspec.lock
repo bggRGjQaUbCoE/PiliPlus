@@ -1143,10 +1143,11 @@ packages:
   media_kit:
     dependency: "direct main"
     description:
-      name: media_kit
-      sha256: "1f1deee148533d75129a6f38251ff8388e33ee05fc2d20a6a80e57d6051b7b62"
-      url: "https://pub.dev"
-    source: hosted
+      path: media_kit
+      ref: "version_1.2.5"
+      resolved-ref: "4d68e69281b44f2c8e3c444cca3d8d8dc6dcff88"
+      url: "https://github.com/My-Responsitories/media-kit.git"
+    source: git
     version: "1.1.11"
   media_kit_libs_android_video:
     dependency: "direct overridden"
@@ -1184,10 +1185,11 @@ packages:
   media_kit_libs_video:
     dependency: "direct main"
     description:
-      name: media_kit_libs_video
-      sha256: "20bb4aefa8fece282b59580e1cd8528117297083a6640c98c2e98cfc96b93288"
-      url: "https://pub.dev"
-    source: hosted
+      path: "libs/universal/media_kit_libs_video"
+      ref: "version_1.2.5"
+      resolved-ref: "4d68e69281b44f2c8e3c444cca3d8d8dc6dcff88"
+      url: "https://github.com/My-Responsitories/media-kit.git"
+    source: git
     version: "1.0.5"
   media_kit_libs_windows_video:
     dependency: transitive
@@ -1200,18 +1202,19 @@ packages:
   media_kit_native_event_loop:
     dependency: "direct overridden"
     description:
-      name: media_kit_native_event_loop
-      sha256: "7d82e3b3e9ded5c35c3146c5ba1da3118d1dd8ac3435bac7f29f458181471b40"
-      url: "https://pub.dev"
-    source: hosted
+      path: media_kit_native_event_loop
+      ref: "version_1.2.5"
+      resolved-ref: "4d68e69281b44f2c8e3c444cca3d8d8dc6dcff88"
+      url: "https://github.com/My-Responsitories/media-kit.git"
+    source: git
     version: "1.0.9"
   media_kit_video:
     dependency: "direct main"
     description:
       path: media_kit_video
       ref: "version_1.2.5"
-      resolved-ref: "902e962556c0bde4d384cd8f72b814598e5dfcf2"
-      url: "https://github.com/bggRGjQaUbCoE/media-kit.git"
+      resolved-ref: "4d68e69281b44f2c8e3c444cca3d8d8dc6dcff88"
+      url: "https://github.com/My-Responsitories/media-kit.git"
     source: git
     version: "1.2.5"
   menu_base:
@@ -1474,10 +1477,10 @@ packages:
     dependency: transitive
     description:
       name: safe_local_storage
-      sha256: ede4eb6cb7d88a116b3d3bf1df70790b9e2038bc37cb19112e381217c74d9440
+      sha256: e9a21b6fec7a8aa62cc2585ff4c1b127df42f3185adbd2aca66b47abe2e80236
       url: "https://pub.dev"
     source: hosted
-    version: "1.0.2"
+    version: "2.0.1"
   saver_gallery:
     dependency: "direct main"
     description:
@@ -1836,22 +1839,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.2.2"
-  universal_platform:
-    dependency: "direct main"
-    description:
-      name: universal_platform
-      sha256: "64e16458a0ea9b99260ceb5467a214c1f298d647c659af1bff6d3bf82536b1ec"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.1.0"
   uri_parser:
     dependency: transitive
     description:
       name: uri_parser
-      sha256: "6543c9fd86d2862fac55d800a43e67c0dcd1a41677cb69c2f8edfe73bbcf1835"
+      sha256: ff4d2c720aca3f4f7d5445e23b11b2d15ef8af5ddce5164643f38ff962dcb270
       url: "https://pub.dev"
     source: hosted
-    version: "2.0.2"
+    version: "3.0.0"
   url_launcher:
     dependency: "direct main"
     description:

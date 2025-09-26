@@ -460,14 +460,10 @@ List<SettingsModel> get extraSettings => [
     leading: const Icon(Icons.multitrack_audio),
     getSubtitle: () {
       String audioNormalization = Pref.audioNormalization;
-      // TODO: remove next version
-      if (audioNormalization == '2') {
-        GStorage.setting.put(SettingBoxKey.audioNormalization, '1');
-        audioNormalization = '1';
-      }
       audioNormalization = switch (audioNormalization) {
         '0' => AudioNormalization.disable.title,
         '1' => AudioNormalization.dynaudnorm.title,
+        '2' => AudioNormalization.loudnorm.title,
         _ => audioNormalization,
       };
       return '当前:「$audioNormalization」';
@@ -477,7 +473,7 @@ List<SettingsModel> get extraSettings => [
         context: Get.context!,
         builder: (context) {
           String audioNormalization = Pref.audioNormalization;
-          final values = {'0', '1', audioNormalization, '2'};
+          Set<String> values = {'0', '1', '2', audioNormalization, '3'};
           return SelectDialog<String>(
             title: '音量均衡',
             value: audioNormalization,
@@ -488,7 +484,8 @@ List<SettingsModel> get extraSettings => [
                     switch (e) {
                       '0' => AudioNormalization.disable.title,
                       '1' => AudioNormalization.dynaudnorm.title,
-                      '2' => AudioNormalization.custom.title,
+                      '2' => AudioNormalization.loudnorm.title,
+                      '3' => AudioNormalization.custom.title,
                       _ => e,
                     },
                   ),
@@ -498,7 +495,7 @@ List<SettingsModel> get extraSettings => [
         },
       );
       if (result != null) {
-        if (result == '2') {
+        if (result == '3') {
           String param = '';
           showDialog(
             context: Get.context!,

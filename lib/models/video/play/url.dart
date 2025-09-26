@@ -37,6 +37,7 @@ class PlayUrlModel {
   Dash? dash;
   List<Durl>? durl;
   List<FormatItem>? supportFormats;
+  Volume? volume;
   int? lastPlayTime;
   int? lastPlayCid;
   String? curLanguage;
@@ -62,6 +63,7 @@ class PlayUrlModel {
     supportFormats = (json['support_formats'] as List?)
         ?.map<FormatItem>((e) => FormatItem.fromJson(e))
         .toList();
+    volume = json['volume'] == null ? null : Volume.fromJson(json['volume']);
     lastPlayTime = json['last_play_time'];
     lastPlayCid = json['last_play_cid'];
     curLanguage = json['cur_language'];
@@ -302,5 +304,52 @@ class FormatItem {
     newDesc = json['new_description'];
     displayDesc = json['display_desc'];
     codecs = (json['codecs'] as List?)?.fromCast<String>();
+  }
+}
+
+class Volume {
+  Volume({
+    required this.measuredI,
+    required this.measuredLra,
+    required this.measuredTp,
+    required this.measuredThreshold,
+    required this.targetOffset,
+    required this.targetI,
+    required this.targetTp,
+    // required this.multiSceneArgs,
+  });
+
+  final num? measuredI;
+  final num? measuredLra;
+  final num? measuredTp;
+  final num? measuredThreshold;
+  final num? targetOffset;
+  final num? targetI;
+  final num? targetTp;
+  // final MultiSceneArgs? multiSceneArgs;
+
+  factory Volume.fromJson(Map<String, dynamic> json) {
+    return Volume(
+      measuredI: json["measured_i"],
+      measuredLra: json["measured_lra"],
+      measuredTp: json["measured_tp"],
+      measuredThreshold: json["measured_threshold"],
+      targetOffset: json["target_offset"],
+      targetI: json["target_i"],
+      targetTp: json["target_tp"],
+      // multiSceneArgs: json["multi_scene_args"] == null ? null : MultiSceneArgs.fromJson(json["multi_scene_args"]),
+    );
+  }
+
+  @override
+  String toString() {
+    final sb = StringBuffer();
+    if (measuredI != null) sb.write('measured_I=$measuredI:');
+    if (measuredLra != null) sb.write('measured_LRA=$measuredLra:');
+    if (measuredTp != null) sb.write('measured_TP=$measuredTp:');
+    if (measuredThreshold != null) {
+      sb.write('measured_thresh=$measuredThreshold:');
+    }
+    return sb.toString().substring(0, sb.length - 1);
   }
 }

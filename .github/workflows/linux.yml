@@ -8,12 +8,12 @@ on:
       - reopened
       - ready_for_review
     paths-ignore:
-      - '**.md'
+      - "**.md"
   workflow_dispatch:
     inputs:
       branch:
         required: false
-        default: 'main'
+        default: "main"
 
 jobs:
   build-linux-app:
@@ -25,7 +25,7 @@ jobs:
         with:
           ref: ${{ github.event.inputs.branch }}
           fetch-depth: 0
-      
+
       - name: Install dependencies
         run: |
           sudo apt-get update
@@ -45,7 +45,7 @@ jobs:
               unixodbc-dev libpq-dev libxxhash-dev libaom-dev \
               libgtk-3-0 libblkid1 liblzma5 libmpv-dev
         shell: bash
-      
+
       - name: Setup flutter
         uses: subosito/flutter-action@v2
         with:
@@ -63,20 +63,13 @@ jobs:
           echo "version=$VERSION" >> $GITHUB_ENV
         shell: bash
 
-        #TODO: fix it
-      - name: Fix linux build
-        run: |
-          sed -i "44a\\
-          target_compile_options(\${TARGET} PRIVATE -Wno-error=deprecated-declarations) # Allow deprecated warnings" linux/CMakeLists.txt
-        shell: bash
-
         #TODO: deb and rpm packages need to be build
       - name: Build Linux
         run: flutter build linux --release -v
-      
+
       - name: Package linux build output
         run: tar -zcvf PiliPlus_linux_${{ env.version }}_amd64.tar.gz -C build/linux/x64/release/bundle .
-      
+
       - name: Upload linux outputs
         uses: actions/upload-artifact@v4
         with:

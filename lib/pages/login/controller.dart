@@ -9,6 +9,7 @@ import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/login.dart';
 import 'package:PiliPlus/models/common/account_type.dart';
 import 'package:PiliPlus/models/login/model.dart';
+import 'package:PiliPlus/pages/login/geetest/geetest_webview_dialog.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/accounts/account.dart';
 import 'package:PiliPlus/utils/utils.dart';
@@ -118,7 +119,31 @@ class LoginPageController extends GetxController
   }
 
   // 申请极验验证码
-  void getCaptcha(String? geeGt, String? geeChallenge, VoidCallback onSuccess) {
+  Future<void> getCaptcha(
+    String geeGt,
+    String geeChallenge,
+    VoidCallback onSuccess,
+  ) async {
+    void updateCaptchaData(Map<String, dynamic> json) {
+      captchaData
+        ..validate = json['geetest_validate']
+        ..seccode = json['geetest_seccode']
+        ..geetest = GeetestData(
+          challenge: json['geetest_challenge'],
+          gt: geeGt,
+        );
+    }
+
+    if (Utils.isDesktop) {
+      final res = await Get.dialog<Map<String, dynamic>>(
+        GeetestWebviewDialog(geeGt, geeChallenge),
+      );
+      if (res != null) {
+        updateCaptchaData(res);
+        onSuccess();
+        return;
+      }
+    }
     var registerData = Gt3RegisterData(
       challenge: geeChallenge,
       gt: geeGt,
@@ -137,13 +162,7 @@ class LoginPageController extends GetxController
           if (code == "1") {
             // 发送 message["result"] 中的数据向 B 端的业务服务接口进行查询
             SmartDialog.showToast('验证成功');
-            captchaData
-              ..validate = message['result']['geetest_validate']
-              ..seccode = message['result']['geetest_seccode']
-              ..geetest = GeetestData(
-                challenge: message['result']['geetest_challenge'],
-                gt: geeGt,
-              );
+            updateCaptchaData(message['result']);
             onSuccess();
           } else {
             // 终端用户完成验证失败，自动重试 If the verification fails, it will be automatically retried.
@@ -381,8 +400,8 @@ class LoginPageController extends GetxController
                       "(${preCaptureRes['code']}) ${preCaptureRes['msg']} ${preCaptureRes['data']}",
                     );
                   }
-                  String? geeGt = preCaptureRes['data']['gee_gt'];
-                  String? geeChallenge = preCaptureRes['data']['gee_challenge'];
+                  String geeGt = preCaptureRes['data']['gee_gt'];
+                  String geeChallenge = preCaptureRes['data']['gee_challenge'];
                   captchaData.token = preCaptureRes['data']['recaptcha_token'];
                   if (!isGeeArgumentValid(geeGt, geeChallenge)) {
                     SmartDialog.showToast(
@@ -670,7 +689,7 @@ class LoginPageController extends GetxController
             return;
           }
 
-          getCaptcha(geeGt, geeChallenge, sendSmsCode);
+          getCaptcha(geeGt!, geeChallenge!, sendSmsCode);
           break;
         default:
           SmartDialog.showToast(res['msg']);

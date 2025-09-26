@@ -218,22 +218,28 @@ class AccountManager extends Interceptor {
 
   @override
   void onResponse(Response response, ResponseInterceptorHandler handler) {
-    final path = response.requestOptions.path;
-    if (path.startsWith(HttpString.appBaseUrl) || _skipCookie(path)) {
+    final options = response.requestOptions;
+    final path = options.path;
+    if (path.startsWith(HttpString.appBaseUrl) ||
+        _skipCookie(path) ||
+        options.extra['account'] is NoAccount) {
       return handler.next(response);
     } else {
-      _saveCookies(
+      final future = _saveCookies(
         response,
-      ).whenComplete(() => handler.next(response)).catchError(
-        (dynamic e, StackTrace s) {
-          final error = DioException(
-            requestOptions: response.requestOptions,
-            error: e,
-            stackTrace: s,
-          );
-          handler.reject(error, true);
-        },
-      );
+      ).whenComplete(() => handler.next(response));
+      assert(() {
+        future.catchError(
+          (Object e, StackTrace s) {
+            throw DioException(
+              requestOptions: response.requestOptions,
+              error: e,
+              stackTrace: s,
+            );
+          },
+        );
+        return true;
+      }());
     }
   }
 

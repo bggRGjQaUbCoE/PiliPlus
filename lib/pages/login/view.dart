@@ -30,7 +30,6 @@ class _LoginPageState extends State<LoginPage> {
   // 二维码生成时间
   bool showPassword = false;
   GlobalKey globalKey = GlobalKey();
-  bool get isMobile => kDebugMode || Utils.isMobile;
 
   Widget loginByQRCode(ThemeData theme) {
     return Column(
@@ -75,7 +74,7 @@ class _LoginPageState extends State<LoginPage> {
               icon: const Icon(Icons.save),
               label: const Text('保存至相册'),
             ),
-            if (isMobile)
+            if (kDebugMode || Utils.isMobile)
               TextButton.icon(
                 onPressed: () => PageUtils.launchURL(
                   _loginPageCtr.codeInfo.value.data.url,
@@ -374,7 +373,6 @@ class _LoginPageState extends State<LoginPage> {
                 Builder(
                   builder: (context) {
                     return PopupMenuButton(
-                      enabled: isMobile,
                       padding: EdgeInsets.zero,
                       tooltip:
                           '选择国际冠码，'
@@ -423,7 +421,6 @@ class _LoginPageState extends State<LoginPage> {
                 const SizedBox(width: 6),
                 Expanded(
                   child: TextField(
-                    enabled: isMobile,
                     controller: _loginPageCtr.telTextController,
                     keyboardType: TextInputType.number,
                     inputFormatters: <TextInputFormatter>[
@@ -455,7 +452,6 @@ class _LoginPageState extends State<LoginPage> {
               children: [
                 Expanded(
                   child: TextField(
-                    enabled: isMobile,
                     controller: _loginPageCtr.smsCodeTextController,
                     decoration: const InputDecoration(
                       prefixIcon: Icon(Icons.sms_outlined),
@@ -470,11 +466,9 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 Obx(
                   () => TextButton.icon(
-                    onPressed: isMobile
-                        ? (_loginPageCtr.smsSendCooldown > 0
-                              ? null
-                              : _loginPageCtr.sendSmsCode)
-                        : null,
+                    onPressed: _loginPageCtr.smsSendCooldown > 0
+                        ? null
+                        : _loginPageCtr.sendSmsCode,
                     icon: const Icon(Icons.send),
                     label: Text(
                       _loginPageCtr.smsSendCooldown > 0
@@ -489,7 +483,7 @@ class _LoginPageState extends State<LoginPage> {
         ),
         const SizedBox(height: 20),
         OutlinedButton.icon(
-          onPressed: isMobile ? _loginPageCtr.loginBySmsCode : null,
+          onPressed: _loginPageCtr.loginBySmsCode,
           icon: const Icon(Icons.login),
           label: const Text('登录'),
         ),

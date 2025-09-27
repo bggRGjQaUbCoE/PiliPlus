@@ -7,6 +7,7 @@ import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/pages/common/common_page.dart';
 import 'package:PiliPlus/pages/rcmd/controller.dart';
 import 'package:PiliPlus/utils/grid.dart';
+import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -22,35 +23,70 @@ class _RcmdPageState extends CommonPageState<RcmdPage, RcmdController>
   @override
   late RcmdController controller = Get.put(RcmdController());
 
+  bool _showBackToTopButton = false; // false = 刷新; true = 返回顶部
+
   @override
   bool get wantKeepAlive => true;
 
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return Container(
-      clipBehavior: Clip.hardEdge,
-      margin: const EdgeInsets.symmetric(horizontal: StyleString.safeSpace),
-      decoration: const BoxDecoration(borderRadius: StyleString.mdRadius),
-      child: refreshIndicator(
-        onRefresh: controller.onRefresh,
-        child: CustomScrollView(
-          controller: controller.scrollController,
-          physics: const AlwaysScrollableScrollPhysics(),
-          slivers: [
-            SliverPadding(
-              padding: const EdgeInsets.only(
-                top: StyleString.cardSpace,
-                bottom: 100,
-              ),
-              sliver: Obx(() => _buildBody(controller.loadingState.value)),
+    return Scaffold(
+      body: Container(
+        clipBehavior: Clip.hardEdge,
+        margin: const EdgeInsets.symmetric(horizontal: StyleString.safeSpace),
+        decoration: const BoxDecoration(borderRadius: StyleString.mdRadius),
+        child: NotificationListener<ScrollNotification> (
+          onNotification: (ScrollNotification notification){
+            if (Utils.isDesktop) {
+              const double threshold = 200.0; // 滚动阈值
+              final currentPixels = notification.metrics.pixels;
+              final bool shouldShowButton = currentPixels > threshold;
+
+              if (_showBackToTopButton != shouldShowButton) {
+                setState(() {
+                  _showBackToTopButton = shouldShowButton;
+                });
+              }
+            }
+            return false;
+          },
+          child: refreshIndicator(
+            onRefresh: controller.onRefresh,
+            child: CustomScrollView(
+              controller: controller.scrollController,
+              physics: const AlwaysScrollableScrollPhysics(),
+              slivers: [
+                SliverPadding(
+                  padding: const EdgeInsets.only(
+                    top: StyleString.cardSpace,
+                    bottom: 100,
+                  ),
+                  sliver: Obx(() => _buildBody(controller.loadingState.value)),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
+      floatingActionButton: Utils.isDesktop
+        ? Padding(
+          padding: const EdgeInsets.all(4.0),
+          child: FloatingActionButton(
+            onPressed: () {
+              if (_showBackToTopButton) {
+                controller.animateToTop();
+              } else {
+                controller.onRefresh();
+              }
+            },
+            child: _showBackToTopButton
+              ? const Icon(Icons.arrow_upward)
+              : const Icon(Icons.refresh),
+          ))
+        : null,
     );
   }
-
   late final gridDelegate = SliverGridDelegateWithExtentAndRatio(
     mainAxisSpacing: StyleString.cardSpace,
     crossAxisSpacing: StyleString.cardSpace,

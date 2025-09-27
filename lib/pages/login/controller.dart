@@ -141,8 +141,8 @@ class LoginPageController extends GetxController
       if (res != null) {
         updateCaptchaData(res);
         onSuccess();
-        return;
       }
+      return;
     }
     var registerData = Gt3RegisterData(
       challenge: geeChallenge,

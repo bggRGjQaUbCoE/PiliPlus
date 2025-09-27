@@ -47,8 +47,8 @@ class GeetestWebviewDialog extends StatelessWidget {
                 "challenge": challenge,
                 "offline": false,
                 "new_captcha": true,
-                "product": "popup",
-                "width": "300px",
+                "product": "bind",
+                "width": "100%",
                 "https": true,
                 "protocol": "https://",
               }),
@@ -68,8 +68,8 @@ class GeetestWebviewDialog extends StatelessWidget {
     return AlertDialog(
       title: const Text('验证码'),
       content: SizedBox(
-        width: 310,
-        height: 350,
+        width: 300,
+        height: 400,
         child: InAppWebView(
           webViewEnvironment: webViewEnvironment,
           initialSettings: InAppWebViewSettings(
@@ -112,7 +112,7 @@ class GeetestWebviewDialog extends StatelessWidget {
             if (config.isSuccess) {
               ctr.evaluateJavascript(
                 source:
-                    'let t=Geetest(${config.data}).onSuccess(()=>R("success",t.getValidate())).onError((o)=>R("error",o));t.onReady(()=>t.appendTo("body")).onNextReady(t.show);',
+                    'let t=Geetest(${config.data}).onSuccess(()=>R("success",t.getValidate())).onError((o)=>R("error",o));t.onReady(()=>t.verify());',
               );
             } else {
               config.toast();

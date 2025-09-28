@@ -342,16 +342,8 @@ class Volume {
   }
 
   @override
-  String toString() {
-    final sb = StringBuffer();
-    if (measuredI != 0) sb.write('measured_I=$measuredI:');
-    if (measuredLra != 0) sb.write('measured_LRA=$measuredLra:');
-    if (measuredTp != 0) sb.write('measured_TP=$measuredTp:');
-    if (measuredThreshold != 0) {
-      sb.write('measured_thresh=$measuredThreshold:');
-    }
-    return sb.toString().substring(0, sb.length - 1);
-  }
+  String toString() =>
+      'measured_I=$measuredI:measured_LRA=$measuredLra:measured_TP=$measuredTp:measured_thresh=$measuredThreshold';
 
   bool get isNotEmpty =>
       measuredI != 0 ||

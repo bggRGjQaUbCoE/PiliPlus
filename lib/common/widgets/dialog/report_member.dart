@@ -8,7 +8,6 @@ Future<void> showMemberReportDialog(
   required Object? name,
   required Object mid,
 }) {
-  final List<bool> reasonList = List.generate(3, (_) => false);
   final Set<int> reason = {};
   int? reasonV2;
 
@@ -44,12 +43,11 @@ Future<void> showMemberReportDialog(
                 (index) => Builder(
                   builder: (context) => CheckboxListTile(
                     dense: true,
-                    value: reasonList[index],
+                    value: reason.contains(index + 1),
                     controlAffinity: ListTileControlAffinity.leading,
                     contentPadding: EdgeInsets.zero,
                     onChanged: (value) {
-                      reasonList[index] = value!;
-                      if (value) {
+                      if (value!) {
                         reason.add(index + 1);
                       } else {
                         reason.remove(index + 1);

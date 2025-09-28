@@ -1504,22 +1504,22 @@ class VideoDetailController extends GetxController
       }
 
       if (playInfo.subtitle?.subtitles?.isNotEmpty == true) {
-        int idx = 0;
         subtitles.value = playInfo.subtitle!.subtitles!;
 
-        SubtitlePrefType preference =
-            SubtitlePrefType.values[Pref.subtitlePreferenceV2];
-        if (preference != SubtitlePrefType.off) {
-          idx = subtitles.indexWhere((i) => !i.lan!.startsWith('ai')) + 1;
-          if (idx == 0) {
-            if (preference == SubtitlePrefType.on ||
-                (Utils.isMobile &&
-                    preference == SubtitlePrefType.auto &&
-                    (await FlutterVolumeController.getVolume() ?? 0) <= 0)) {
-              idx = 1;
-            }
-          }
-        }
+        final idx = switch (SubtitlePrefType.values[Pref
+            .subtitlePreferenceV2]) {
+          SubtitlePrefType.off => 0,
+          SubtitlePrefType.on => 1,
+          SubtitlePrefType.withoutAi =>
+            subtitles.first.lan.startsWith('ai') ? 0 : 1,
+          SubtitlePrefType.auto =>
+            !subtitles.first.lan.startsWith('ai') ||
+                    (Utils.isMobile &&
+                        (await FlutterVolumeController.getVolume() ?? 0.0) <=
+                            0.0)
+                ? 1
+                : 0,
+        };
         setSubtitle(idx);
       }
     }

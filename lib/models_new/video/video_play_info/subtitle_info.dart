@@ -7,22 +7,19 @@ class SubtitleInfo {
 
   SubtitleInfo({this.lan, this.lanDoc, this.subtitles});
 
-  SubtitleInfo.fromJson(Map<String, dynamic> json) {
-    lan = json['lan'] as String?;
-    lanDoc = json['lan_doc'] as String?;
-    final List? list = json['subtitles'];
-    if (list != null && list.isNotEmpty) {
-      subtitles = <Subtitle>[];
-      int index = 0;
-      for (var e in list) {
-        final item = Subtitle.fromJson(e);
-        if (item.lan!.contains('zh')) {
-          subtitles!.insert(index, item);
-          index++;
-        } else {
-          subtitles!.add(item);
-        }
-      }
-    }
-  }
+  factory SubtitleInfo.fromJson(Map<String, dynamic> json) => SubtitleInfo(
+    lan: json['lan'] as String?,
+    lanDoc: json['lan_doc'] as String?,
+    subtitles:
+        (json['subtitles'] as List<dynamic>?)
+            ?.map((e) => Subtitle.fromJson(e as Map<String, dynamic>))
+            .toList()
+          ?..sort((a, b) {
+            final aHasZh = a.lan.contains('zh');
+            final bHasZh = b.lan.contains('zh');
+            if (aHasZh != bHasZh) return aHasZh ? -1 : 1;
+            if (a.isAi != b.isAi) return a.isAi ? 1 : -1;
+            return 0;
+          }),
+  );
 }

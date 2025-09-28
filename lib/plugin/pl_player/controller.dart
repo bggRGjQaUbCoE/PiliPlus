@@ -846,10 +846,17 @@ class PlPlayerController {
         _loudnormRegExp,
         (i) => '${i[0]}:$volume',
       );
+    } else {
+      audioNormalization = audioNormalization.replaceFirst(
+        _loudnormRegExp,
+        AudioNormalization.dynaudnorm.param,
+      );
     }
 
     player.setPlaylistMode(looping);
-    final filters = {'lavfi-complex': '"[aid1] $audioNormalization [ao]"'};
+    final filters = audioNormalization.isEmpty
+        ? null
+        : {'lavfi-complex': '"[aid1] $audioNormalization [ao]"'};
     if (dataSource.type == DataSourceType.asset) {
       final assetUrl = dataSource.videoSource!.startsWith("asset://")
           ? dataSource.videoSource!

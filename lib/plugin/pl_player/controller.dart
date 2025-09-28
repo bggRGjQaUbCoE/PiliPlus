@@ -747,7 +747,7 @@ class PlPlayerController {
     }
   }
 
-  static final _loudnormRegExp = RegExp('loudnorm=[^,]+');
+  static final loudnormRegExp = RegExp('loudnorm=[^,]+');
 
   // 配置播放器
   Future<Player> _createVideoController(
@@ -834,29 +834,34 @@ class PlPlayerController {
       ),
     );
 
-    String audioNormalization = Pref.audioNormalization;
-    audioNormalization = switch (audioNormalization) {
-      '0' => '',
-      '1' => AudioNormalization.dynaudnorm.param,
-      '2' => AudioNormalization.loudnorm.param,
-      _ => audioNormalization,
-    };
-    if (volume != null) {
-      audioNormalization = audioNormalization.replaceFirstMapped(
-        _loudnormRegExp,
-        (i) => '${i[0]}:$volume',
+    player.setPlaylistMode(looping);
+
+    final Map<String, String>? filters;
+    if (kDebugMode || Platform.isAndroid) {
+      String audioNormalization = '';
+      audioNormalization = AudioNormalization.getParamFromConfig(
+        Pref.audioNormalization,
       );
+      if (volume != null && volume.isNotEmpty) {
+        audioNormalization = audioNormalization.replaceFirstMapped(
+          loudnormRegExp,
+          (i) => '${i[0]}:$volume',
+        );
+      } else {
+        audioNormalization = audioNormalization.replaceFirst(
+          loudnormRegExp,
+          AudioNormalization.getParamFromConfig(Pref.fallbackNormalization),
+        );
+      }
+      filters = audioNormalization.isEmpty
+          ? null
+          : {'lavfi-complex': '"[aid1] $audioNormalization [ao]"'};
     } else {
-      audioNormalization = audioNormalization.replaceFirst(
-        _loudnormRegExp,
-        AudioNormalization.dynaudnorm.param,
-      );
+      filters = null;
     }
 
-    player.setPlaylistMode(looping);
-    final filters = audioNormalization.isEmpty
-        ? null
-        : {'lavfi-complex': '"[aid1] $audioNormalization [ao]"'};
+    if (kDebugMode) debugPrint(filters.toString());
+
     if (dataSource.type == DataSourceType.asset) {
       final assetUrl = dataSource.videoSource!.startsWith("asset://")
           ? dataSource.videoSource!

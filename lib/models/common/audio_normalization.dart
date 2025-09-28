@@ -8,4 +8,18 @@ enum AudioNormalization {
   final String title;
   final String param;
   const AudioNormalization(this.title, [this.param = '']);
+
+  static String getTitleFromConfig(String config) => switch (config) {
+    '0' => disable.title,
+    '1' => dynaudnorm.title,
+    '2' => loudnorm.title,
+    _ => config,
+  };
+
+  static String getParamFromConfig(String config) => switch (config) {
+    '0' => disable.param,
+    '1' => dynaudnorm.param,
+    '2' => loudnorm.param,
+    _ => config,
+  };
 }

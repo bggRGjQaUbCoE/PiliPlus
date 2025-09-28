@@ -23,6 +23,7 @@ import 'package:PiliPlus/pages/setting/models/model.dart';
 import 'package:PiliPlus/pages/setting/widgets/select_dialog.dart';
 import 'package:PiliPlus/pages/setting/widgets/slide_dialog.dart';
 import 'package:PiliPlus/pages/video/reply/widgets/reply_item_grpc.dart';
+import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/cache_manage.dart';
 import 'package:PiliPlus/utils/feed_back.dart';
@@ -32,6 +33,7 @@ import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/update.dart';
 import 'package:PiliPlus/utils/utils.dart';
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -453,91 +455,27 @@ List<SettingsModel> get extraSettings => [
       } catch (_) {}
     },
   ),
-  SettingsModel(
-    settingsType: SettingsType.normal,
-    title: '音量均衡',
-    setKey: SettingBoxKey.audioNormalization,
-    leading: const Icon(Icons.multitrack_audio),
-    getSubtitle: () {
-      String audioNormalization = Pref.audioNormalization;
-      audioNormalization = switch (audioNormalization) {
-        '0' => AudioNormalization.disable.title,
-        '1' => AudioNormalization.dynaudnorm.title,
-        '2' => AudioNormalization.loudnorm.title,
-        _ => audioNormalization,
-      };
-      return '当前:「$audioNormalization」';
-    },
-    onTap: (setState) async {
-      String? result = await showDialog(
-        context: Get.context!,
-        builder: (context) {
-          String audioNormalization = Pref.audioNormalization;
-          Set<String> values = {'0', '1', '2', audioNormalization, '3'};
-          return SelectDialog<String>(
-            title: '音量均衡',
-            value: audioNormalization,
-            values: values
-                .map(
-                  (e) => (
-                    e,
-                    switch (e) {
-                      '0' => AudioNormalization.disable.title,
-                      '1' => AudioNormalization.dynaudnorm.title,
-                      '2' => AudioNormalization.loudnorm.title,
-                      '3' => AudioNormalization.custom.title,
-                      _ => e,
-                    },
-                  ),
-                )
-                .toList(),
-          );
-        },
-      );
-      if (result != null) {
-        if (result == '3') {
-          String param = '';
-          showDialog(
-            context: Get.context!,
-            builder: (context) {
-              return AlertDialog(
-                title: const Text('自定义参数'),
-                content: TextField(
-                  autofocus: true,
-                  onChanged: (value) => param = value,
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: Get.back,
-                    child: Text(
-                      '取消',
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.outline,
-                      ),
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: () async {
-                      Get.back();
-                      await GStorage.setting.put(
-                        SettingBoxKey.audioNormalization,
-                        param,
-                      );
-                      setState();
-                    },
-                    child: const Text('确定'),
-                  ),
-                ],
-              );
-            },
-          );
+  if (kDebugMode || Platform.isAndroid)
+    SettingsModel(
+      settingsType: SettingsType.normal,
+      title: '音量均衡',
+      setKey: SettingBoxKey.audioNormalization,
+      leading: const Icon(Icons.multitrack_audio),
+      getSubtitle: () {
+        final audioNormalization = AudioNormalization.getTitleFromConfig(
+          Pref.audioNormalization,
+        );
+        String fallback = Pref.fallbackNormalization;
+        if (fallback == '0') {
+          fallback = '';
         } else {
-          await GStorage.setting.put(SettingBoxKey.audioNormalization, result);
-          setState();
+          fallback =
+              '，无参数时:「${AudioNormalization.getTitleFromConfig(fallback)}」';
         }
-      }
-    },
-  ),
+        return '当前:「$audioNormalization」$fallback';
+      },
+      onTap: audioNormalization,
+    ),
   SettingsModel(
     settingsType: SettingsType.normal,
     title: '超分辨率',
@@ -1185,3 +1123,99 @@ List<SettingsModel> get extraSettings => [
     },
   ),
 ];
+
+Future<void> audioNormalization(
+  VoidCallback setState, {
+  bool fallback = false,
+}) async {
+  final key = fallback
+      ? SettingBoxKey.fallbackNormalization
+      : SettingBoxKey.audioNormalization;
+  final result = await showDialog<String>(
+    context: Get.context!,
+    builder: (context) {
+      String audioNormalization = fallback
+          ? Pref.fallbackNormalization
+          : Pref.audioNormalization;
+      Set<String> values = {
+        '0',
+        '1',
+        if (!fallback) '2',
+        audioNormalization,
+        '3',
+      };
+      return SelectDialog<String>(
+        title: fallback ? '服务器无loudnorm配置时使用' : '音量均衡',
+        toggleable: true,
+        value: audioNormalization,
+        values: values
+            .map(
+              (e) => (
+                e,
+                switch (e) {
+                  '0' => AudioNormalization.disable.title,
+                  '1' => AudioNormalization.dynaudnorm.title,
+                  '2' => AudioNormalization.loudnorm.title,
+                  '3' => AudioNormalization.custom.title,
+                  _ => e,
+                },
+              ),
+            )
+            .toList(),
+      );
+    },
+  );
+  if (result != null) {
+    if (result == '3') {
+      String param = '';
+      await showDialog(
+        context: Get.context!,
+        builder: (context) {
+          return AlertDialog(
+            title: const Text('自定义参数'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              spacing: 16,
+              children: [
+                const Text('等同于 --lavfi-complex="[aid1] 参数 [ao]"'),
+                TextField(
+                  autofocus: true,
+                  onChanged: (value) => param = value,
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: Get.back,
+                child: Text(
+                  '取消',
+                  style: TextStyle(
+                    color: ColorScheme.of(context).outline,
+                  ),
+                ),
+              ),
+              TextButton(
+                onPressed: () async {
+                  Get.back();
+                  await GStorage.setting.put(key, param);
+                  if (!fallback &&
+                      PlPlayerController.loudnormRegExp.hasMatch(param)) {
+                    audioNormalization(setState, fallback: true);
+                  }
+                  setState();
+                },
+                child: const Text('确定'),
+              ),
+            ],
+          );
+        },
+      );
+    } else {
+      await GStorage.setting.put(key, result);
+      if (result == '2') {
+        audioNormalization(setState, fallback: true);
+      }
+      setState();
+    }
+  }
+}

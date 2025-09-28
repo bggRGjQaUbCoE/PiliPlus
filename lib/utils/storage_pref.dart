@@ -411,6 +411,9 @@ abstract class Pref {
   static String get audioNormalization =>
       _setting.get(SettingBoxKey.audioNormalization, defaultValue: '0');
 
+  static String get fallbackNormalization =>
+      _setting.get(SettingBoxKey.fallbackNormalization, defaultValue: '0');
+
   static SuperResolutionType get superResolutionType {
     SuperResolutionType? superResolutionType;
     final index = _setting.get(SettingBoxKey.superResolutionType);

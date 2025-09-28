@@ -58,7 +58,7 @@ class SettingsModel {
     SettingsType.sw1tch => SetSwitchItem(
       title: title,
       subtitle: subtitle,
-      setKey: setKey,
+      setKey: setKey!,
       defaultVal: defaultVal,
       onChanged: onChanged,
       needReboot: needReboot,

@@ -93,6 +93,7 @@ abstract class SettingBoxKey {
       refreshDisplacement = 'refreshDisplacement',
       showHotRcmd = 'showHotRcmd',
       audioNormalization = 'audioNormalization',
+      fallbackNormalization = 'fallbackNormalization',
       superResolutionType = 'superResolutionType',
       preInitPlayer = 'preInitPlayer',
       mainTabBarView = 'mainTabBarView',

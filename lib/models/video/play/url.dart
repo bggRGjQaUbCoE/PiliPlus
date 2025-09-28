@@ -319,24 +319,24 @@ class Volume {
     // required this.multiSceneArgs,
   });
 
-  final num? measuredI;
-  final num? measuredLra;
-  final num? measuredTp;
-  final num? measuredThreshold;
-  final num? targetOffset;
-  final num? targetI;
-  final num? targetTp;
+  final num measuredI;
+  final num measuredLra;
+  final num measuredTp;
+  final num measuredThreshold;
+  final num targetOffset;
+  final num targetI;
+  final num targetTp;
   // final MultiSceneArgs? multiSceneArgs;
 
   factory Volume.fromJson(Map<String, dynamic> json) {
     return Volume(
-      measuredI: json["measured_i"],
-      measuredLra: json["measured_lra"],
-      measuredTp: json["measured_tp"],
-      measuredThreshold: json["measured_threshold"],
-      targetOffset: json["target_offset"],
-      targetI: json["target_i"],
-      targetTp: json["target_tp"],
+      measuredI: json["measured_i"] ?? 0,
+      measuredLra: json["measured_lra"] ?? 0,
+      measuredTp: json["measured_tp"] ?? 0,
+      measuredThreshold: json["measured_threshold"] ?? 0,
+      targetOffset: json["target_offset"] ?? 0,
+      targetI: json["target_i"] ?? 0,
+      targetTp: json["target_tp"] ?? 0,
       // multiSceneArgs: json["multi_scene_args"] == null ? null : MultiSceneArgs.fromJson(json["multi_scene_args"]),
     );
   }
@@ -344,12 +344,18 @@ class Volume {
   @override
   String toString() {
     final sb = StringBuffer();
-    if (measuredI != null) sb.write('measured_I=$measuredI:');
-    if (measuredLra != null) sb.write('measured_LRA=$measuredLra:');
-    if (measuredTp != null) sb.write('measured_TP=$measuredTp:');
-    if (measuredThreshold != null) {
+    if (measuredI != 0) sb.write('measured_I=$measuredI:');
+    if (measuredLra != 0) sb.write('measured_LRA=$measuredLra:');
+    if (measuredTp != 0) sb.write('measured_TP=$measuredTp:');
+    if (measuredThreshold != 0) {
       sb.write('measured_thresh=$measuredThreshold:');
     }
     return sb.toString().substring(0, sb.length - 1);
   }
+
+  bool get isNotEmpty =>
+      measuredI != 0 ||
+      measuredLra != 0 ||
+      measuredTp != 0 ||
+      measuredThreshold != 0;
 }

@@ -9,7 +9,7 @@ import 'package:get/get.dart';
 class SetSwitchItem extends StatefulWidget {
   final String? title;
   final String? subtitle;
-  final String? setKey;
+  final String setKey;
   final bool defaultVal;
   final ValueChanged<bool>? onChanged;
   final bool needReboot;
@@ -21,7 +21,7 @@ class SetSwitchItem extends StatefulWidget {
   const SetSwitchItem({
     this.title,
     this.subtitle,
-    this.setKey,
+    required this.setKey,
     this.defaultVal = false,
     this.onChanged,
     this.needReboot = false,

@@ -3,7 +3,6 @@ import 'package:PiliPlus/models/dynamics/result.dart';
 import 'package:PiliPlus/pages/common/dyn/common_dyn_controller.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
-import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 
 class DynamicDetailController extends CommonDynController {
@@ -30,11 +29,11 @@ class DynamicDetailController extends CommonDynController {
       _init(commentIdStr!, commentType);
     } else {
       DynamicsHttp.dynamicDetail(id: dynItem.idStr).then((res) {
-        if (res['status']) {
-          DynamicItemModel data = res['data'];
+        if (res.isSuccess) {
+          final data = res.data;
           _init(data.basic!.commentIdStr!, data.basic!.commentType!);
         } else {
-          SmartDialog.showToast(res['msg']);
+          res.toast();
         }
       });
     }

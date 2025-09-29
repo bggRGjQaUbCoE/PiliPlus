@@ -1,6 +1,7 @@
 import 'dart:io' show Platform;
 
 import 'package:PiliPlus/build_config.dart';
+import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/http/api.dart';
 import 'package:PiliPlus/http/init.dart';
 import 'package:PiliPlus/http/ua_type.dart';
@@ -14,7 +15,7 @@ import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 
-class Update {
+abstract class Update {
   // 检查更新
   static Future<void> checkUpdate([bool isAuto = true]) async {
     if (kDebugMode) return;
@@ -24,7 +25,7 @@ class Update {
         Api.latestApp,
         options: Options(
           headers: {'user-agent': UaType.mob.ua},
-          extra: {'account': NoAccount()},
+          extra: {'account': const NoAccount()},
         ),
       );
       if (res.data is Map || res.data.isEmpty) {
@@ -61,7 +62,7 @@ class Update {
                       Text('${res.data[0]['body']}'),
                       TextButton(
                         onPressed: () => PageUtils.launchURL(
-                          'https://github.com/bggRGjQaUbCoE/PiliPlus/commits/main',
+                          '${Constants.sourceCodeUrl}/commits/main',
                         ),
                         child: Text(
                           "点此查看完整更新(即commit)内容",
@@ -111,17 +112,18 @@ class Update {
   }
 
   // 下载适用于当前系统的安装包
-  static Future<void> onDownload(data) async {
+  static Future<void> onDownload(Map data) async {
     SmartDialog.dismiss();
     try {
-      void download(plat) {
+      void download(String plat) {
         if (data['assets'].isNotEmpty) {
-          for (dynamic i in data['assets']) {
+          for (Map<String, dynamic> i in data['assets']) {
             if (i['name'].contains(plat)) {
               PageUtils.launchURL(i['browser_download_url']);
-              break;
+              return;
             }
           }
+          throw UnsupportedError('platform not found: $plat');
         }
       }
 
@@ -131,12 +133,11 @@ class Update {
         // [arm64-v8a]
         download(androidInfo.supportedAbis.first);
       } else {
-        download('ios');
+        download(Platform.operatingSystem);
       }
-    } catch (_) {
-      PageUtils.launchURL(
-        'https://github.com/bggRGjQaUbCoE/PiliPlus/releases/latest',
-      );
+    } catch (e) {
+      if (kDebugMode) debugPrint('download error: $e');
+      PageUtils.launchURL('${Constants.sourceCodeUrl}/releases/latest');
     }
   }
 }

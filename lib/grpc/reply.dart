@@ -103,8 +103,7 @@ class ReplyGrpc {
       ),
       DetailListReply.fromBuffer,
     );
-    return res
-      ..dataOrNull?.root.replies.removeWhere(needRemoveGrpc);
+    return res..dataOrNull?.root.replies.removeWhere(needRemoveGrpc);
   }
 
   static Future<LoadingState<DialogListReply>> dialogList({

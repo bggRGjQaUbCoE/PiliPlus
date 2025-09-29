@@ -33,12 +33,12 @@ class _MultiSelectDialogState<T> extends State<MultiSelectDialog<T>> {
       clipBehavior: Clip.hardEdge,
       title: Text(widget.title),
       contentPadding: const EdgeInsets.only(top: 12),
-      content: StatefulBuilder(
-        builder: (context, StateSetter setState) {
-          return SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: widget.values.entries.map((i) {
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: widget.values.entries.map((i) {
+            return Builder(
+              builder: (context) {
                 bool isChecked = _tempValues.contains(i.key);
                 return CheckboxListTile(
                   dense: true,
@@ -52,13 +52,13 @@ class _MultiSelectDialogState<T> extends State<MultiSelectDialog<T>> {
                     isChecked
                         ? _tempValues.remove(i.key)
                         : _tempValues.add(i.key);
-                    setState(() {});
+                    (context as Element).markNeedsBuild();
                   },
                 );
-              }).toList(),
-            ),
-          );
-        },
+              },
+            );
+          }).toList(),
+        ),
       ),
       actionsPadding: const EdgeInsets.only(left: 16, right: 16, bottom: 12),
       actions: [

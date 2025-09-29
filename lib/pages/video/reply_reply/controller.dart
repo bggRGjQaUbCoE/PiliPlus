@@ -7,11 +7,14 @@ import 'package:PiliPlus/pages/video/reply_new/view.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:PiliPlus/utils/request_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
+import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart';
 import 'package:fixnum/fixnum.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:get/get.dart';
 import 'package:get/get_navigation/src/dialog/dialog_route.dart';
-import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
+import 'package:super_sliver_list/super_sliver_list.dart';
 
 class VideoReplyReplyController extends ReplyController
     with GetSingleTickerProviderStateMixin {
@@ -22,23 +25,27 @@ class VideoReplyReplyController extends ReplyController
     required this.rpid,
     required this.dialog,
     required this.replyType,
-    required this.isDialogue,
   });
   final int? dialog;
-  final bool isDialogue;
-  final itemScrollCtr = ItemScrollController();
-  bool hasRoot = false;
   int? id;
   // 视频aid 请求时使用的oid
   int oid;
   // rpid 请求楼中楼回复
   int rpid;
-  int replyType; // = ReplyType.video;
+  int replyType;
 
-  ReplyInfo? firstFloor;
+  bool hasRoot = false;
+  final Rx<ReplyInfo?> firstFloor = Rx(null);
 
-  int? index;
-  AnimationController? controller;
+  final index = RxnInt();
+
+  final listController = ListController();
+
+  AnimationController? _controller;
+  AnimationController get animController => _controller ??= AnimationController(
+    duration: const Duration(milliseconds: 1000),
+    vsync: this,
+  );
 
   late final horizontalPreview = Pref.horizontalPreview;
 
@@ -54,7 +61,7 @@ class VideoReplyReplyController extends ReplyController
 
   @override
   List<ReplyInfo>? getDataList(response) {
-    return isDialogue ? response.replies : response.root.replies;
+    return dialog != null ? response.replies : response.root.replies;
   }
 
   @override
@@ -69,32 +76,11 @@ class VideoReplyReplyController extends ReplyController
     // reply2Reply // isDialogue.not
     if (data is DetailListReply) {
       count.value = data.root.count.toInt();
-      if (isRefresh && firstFloor == null) {
-        firstFloor = data.root;
+      if (isRefresh && !hasRoot) {
+        firstFloor.value ??= data.root;
       }
       if (id != null) {
-        final id64 = Int64(id!);
-        final index = data.root.replies.indexWhere((item) => item.id == id64);
-        if (index != -1) {
-          this.index = index;
-          controller = AnimationController(
-            duration: const Duration(milliseconds: 300),
-            vsync: this,
-          );
-          WidgetsBinding.instance.addPostFrameCallback((_) async {
-            try {
-              itemScrollCtr.jumpTo(
-                index: hasRoot ? index + 3 : index + 1,
-                alignment: 0.25,
-              );
-              await Future.delayed(
-                const Duration(milliseconds: 800),
-                controller?.forward,
-              );
-              this.index = null;
-            } catch (_) {}
-          });
-        }
+        setIndexById(Int64(id!), data.root.replies);
         id = null;
       }
     }
@@ -102,8 +88,41 @@ class VideoReplyReplyController extends ReplyController
     return false;
   }
 
+  bool setIndexById(Int64 id64, [List<ReplyInfo>? replies]) {
+    final index = (replies ?? loadingState.value.data!).indexWhere(
+      (item) => item.id == id64,
+    );
+    if (index != -1) {
+      this.index.value = index;
+      jumpToItem(index);
+      return true;
+    }
+    return false;
+  }
+
+  ExtendedNestedScrollController? nestedController;
+
+  void jumpToItem(int index) {
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      animController.forward(from: 0);
+      try {
+        // ignore: invalid_use_of_visible_for_testing_member
+        final offset = listController.getOffsetToReveal(index, 0.25);
+        if (offset.isFinite) {
+          if (nestedController case final nestedController?) {
+            nestedController.nestedPositions.last.localJumpTo(offset);
+          } else {
+            scrollController.jumpTo(offset);
+          }
+        }
+      } catch (_) {
+        if (kDebugMode) rethrow;
+      }
+    });
+  }
+
   @override
-  Future<LoadingState> customGetData() => isDialogue
+  Future<LoadingState> customGetData() => dialog != null
       ? ReplyGrpc.dialogList(
           type: replyType,
           oid: oid,
@@ -126,6 +145,14 @@ class VideoReplyReplyController extends ReplyController
         ? Mode.MAIN_LIST_TIME
         : Mode.MAIN_LIST_HOT;
     onReload();
+  }
+
+  @override
+  Future<void> onReload() {
+    if (loadingState.value.isSuccess) {
+      index.value = null;
+    }
+    return super.onReload();
   }
 
   @override
@@ -170,17 +197,13 @@ class VideoReplyReplyController extends ReplyController
             },
             transitionDuration: const Duration(milliseconds: 500),
             transitionBuilder: (context, animation, secondaryAnimation, child) {
-              const begin = Offset(0.0, 1.0);
-              const end = Offset.zero;
-              const curve = Curves.linear;
-
-              var tween = Tween(
-                begin: begin,
-                end: end,
-              ).chain(CurveTween(curve: curve));
-
               return SlideTransition(
-                position: animation.drive(tween),
+                position: animation.drive(
+                  Tween(
+                    begin: const Offset(0.0, 1.0),
+                    end: Offset.zero,
+                  ).chain(CurveTween(curve: Curves.linear)),
+                ),
                 child: child,
               );
             },
@@ -204,7 +227,8 @@ class VideoReplyReplyController extends ReplyController
 
   @override
   void onClose() {
-    controller?.dispose();
+    _controller?.dispose();
+    _controller = null;
     super.dispose();
   }
 }

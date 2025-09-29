@@ -1,3 +1,5 @@
+import 'package:PiliPlus/common/widgets/list_tile.dart';
+import 'package:PiliPlus/common/widgets/view_safe_area.dart';
 import 'package:PiliPlus/http/login.dart';
 import 'package:PiliPlus/models/common/setting_type.dart';
 import 'package:PiliPlus/pages/about/view.dart';
@@ -12,9 +14,8 @@ import 'package:PiliPlus/pages/setting/widgets/multi_select_dialog.dart';
 import 'package:PiliPlus/pages/webdav/view.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/accounts/account.dart';
-import 'package:PiliPlus/utils/context_ext.dart';
 import 'package:PiliPlus/utils/extension.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide ListTile;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart' hide ContextExtensionss;
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
@@ -87,17 +88,16 @@ class _SettingPageState extends State<SettingPage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    _isPortrait = context.isPortrait;
+    _isPortrait = MediaQuery.sizeOf(context).isPortrait;
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
         title: _isPortrait ? const Text('设置') : Text(_type.title),
       ),
-      body: _isPortrait
-          ? _buildList(theme)
-          : SafeArea(
-              bottom: false,
-              child: Row(
+      body: ViewSafeArea(
+        child: _isPortrait
+            ? _buildList(theme)
+            : Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
@@ -137,7 +137,7 @@ class _SettingPageState extends State<SettingPage> {
                   ),
                 ],
               ),
-            ),
+      ),
     );
   }
 
@@ -165,14 +165,13 @@ class _SettingPageState extends State<SettingPage> {
   }
 
   Widget _buildList(ThemeData theme) {
+    final padding = MediaQuery.viewPaddingOf(context);
     TextStyle titleStyle = theme.textTheme.titleMedium!;
     TextStyle subTitleStyle = theme.textTheme.labelMedium!.copyWith(
       color: theme.colorScheme.outline,
     );
     return ListView(
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.viewPaddingOf(context).bottom + 100,
-      ),
+      padding: EdgeInsets.only(bottom: padding.bottom + 100),
       children: [
         _buildSearchItem(theme),
         ..._items
@@ -280,7 +279,11 @@ class _SettingPageState extends State<SettingPage> {
   }
 
   Widget _buildSearchItem(ThemeData theme) => Padding(
-    padding: const EdgeInsets.only(left: 16, right: 16, bottom: 8),
+    padding: const EdgeInsets.only(
+      left: 16,
+      right: 16,
+      bottom: 8,
+    ),
     child: Material(
       type: MaterialType.transparency,
       child: InkWell(

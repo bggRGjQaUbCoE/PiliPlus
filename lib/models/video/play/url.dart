@@ -37,8 +37,11 @@ class PlayUrlModel {
   Dash? dash;
   List<Durl>? durl;
   List<FormatItem>? supportFormats;
+  Volume? volume;
   int? lastPlayTime;
   int? lastPlayCid;
+  String? curLanguage;
+  Language? language;
 
   PlayUrlModel.fromJson(Map<String, dynamic> json) {
     from = json['from'];
@@ -60,8 +63,54 @@ class PlayUrlModel {
     supportFormats = (json['support_formats'] as List?)
         ?.map<FormatItem>((e) => FormatItem.fromJson(e))
         .toList();
+    volume = json['volume'] == null ? null : Volume.fromJson(json['volume']);
     lastPlayTime = json['last_play_time'];
     lastPlayCid = json['last_play_cid'];
+    curLanguage = json['cur_language'];
+    language = json['language'] == null
+        ? null
+        : Language.fromJson(json['language']);
+  }
+}
+
+class Language {
+  Language({
+    this.support,
+    this.items,
+  });
+
+  bool? support;
+  List<LanguageItem>? items;
+
+  Language.fromJson(Map<String, dynamic> json) {
+    support = json['support'];
+    items = (json['items'] as List?)
+        ?.map((e) => LanguageItem.fromJson(e))
+        .toList();
+  }
+}
+
+class LanguageItem {
+  LanguageItem({
+    this.lang,
+    this.title,
+    this.subtitleLang,
+    this.videoDetext,
+    this.videoMouthShapeChange,
+  });
+
+  String? lang;
+  String? title;
+  String? subtitleLang;
+  bool? videoDetext;
+  bool? videoMouthShapeChange;
+
+  LanguageItem.fromJson(Map<String, dynamic> json) {
+    lang = json['lang'];
+    title = json['title'];
+    subtitleLang = json['subtitle_lang'];
+    videoDetext = json['video_detext'];
+    videoMouthShapeChange = json['video_mouth_shape_change'];
   }
 }
 
@@ -71,16 +120,12 @@ class Dash {
     this.minBufferTime,
     this.video,
     this.audio,
-    this.dolby,
-    this.flac,
   });
 
   int? duration;
   double? minBufferTime;
   List<VideoItem>? video;
   List<AudioItem>? audio;
-  Dolby? dolby;
-  Flac? flac;
 
   Dash.fromJson(Map<String, dynamic> json) {
     duration = json['duration'];
@@ -91,8 +136,16 @@ class Dash {
     audio = (json['audio'] as List?)
         ?.map<AudioItem>((e) => AudioItem.fromJson(e))
         .toList();
-    dolby = json['dolby'] != null ? Dolby.fromJson(json['dolby']) : null;
-    flac = json['flac'] != null ? Flac.fromJson(json['flac']) : null;
+    if (json['dolby']?['audio'] case List list) {
+      (audio ??= <AudioItem>[]).insertAll(
+        0,
+        list.map((e) => AudioItem.fromJson(e)),
+      );
+    }
+    final flacAudio = json['flac']?['audio'];
+    if (flacAudio != null) {
+      (audio ??= <AudioItem>[]).insert(0, AudioItem.fromJson(flacAudio));
+    }
   }
 }
 
@@ -254,32 +307,47 @@ class FormatItem {
   }
 }
 
-class Dolby {
-  Dolby({
-    this.type,
-    this.audio,
+class Volume {
+  Volume({
+    required this.measuredI,
+    required this.measuredLra,
+    required this.measuredTp,
+    required this.measuredThreshold,
+    required this.targetOffset,
+    required this.targetI,
+    required this.targetTp,
+    // required this.multiSceneArgs,
   });
 
-  // 1：普通杜比音效 2：全景杜比音效
-  int? type;
-  List<AudioItem>? audio;
+  final num measuredI;
+  final num measuredLra;
+  final num measuredTp;
+  final num measuredThreshold;
+  final num targetOffset;
+  final num targetI;
+  final num targetTp;
+  // final MultiSceneArgs? multiSceneArgs;
 
-  Dolby.fromJson(Map<String, dynamic> json) {
-    type = json['type'];
-    audio = (json['audio'] as List?)
-        ?.map<AudioItem>((e) => AudioItem.fromJson(e))
-        .toList();
+  factory Volume.fromJson(Map<String, dynamic> json) {
+    return Volume(
+      measuredI: json["measured_i"] ?? 0,
+      measuredLra: json["measured_lra"] ?? 0,
+      measuredTp: json["measured_tp"] ?? 0,
+      measuredThreshold: json["measured_threshold"] ?? 0,
+      targetOffset: json["target_offset"] ?? 0,
+      targetI: json["target_i"] ?? 0,
+      targetTp: json["target_tp"] ?? 0,
+      // multiSceneArgs: json["multi_scene_args"] == null ? null : MultiSceneArgs.fromJson(json["multi_scene_args"]),
+    );
   }
-}
 
-class Flac {
-  Flac({this.display, this.audio});
+  @override
+  String toString() =>
+      'measured_I=$measuredI:measured_LRA=$measuredLra:measured_TP=$measuredTp:measured_thresh=$measuredThreshold';
 
-  bool? display;
-  AudioItem? audio;
-
-  Flac.fromJson(Map<String, dynamic> json) {
-    display = json['display'];
-    audio = json['audio'] != null ? AudioItem.fromJson(json['audio']) : null;
-  }
+  bool get isNotEmpty =>
+      measuredI != 0 ||
+      measuredLra != 0 ||
+      measuredTp != 0 ||
+      measuredThreshold != 0;
 }

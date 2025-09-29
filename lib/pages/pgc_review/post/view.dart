@@ -94,12 +94,12 @@ class _PgcReviewPostPanelState extends State<PgcReviewPostPanel> {
                     return Obx(
                       () => index <= _score.value - 1
                           ? const Icon(
-                              CustomIcon.star_favorite_solid,
+                              CustomIcons.star_favorite_solid,
                               size: 50,
                               color: Color(0xFFFFAD35),
                             )
                           : const Icon(
-                              CustomIcon.star_favorite_line,
+                              CustomIcons.star_favorite_line,
                               size: 50,
                               color: Colors.grey,
                             ),
@@ -110,8 +110,7 @@ class _PgcReviewPostPanelState extends State<PgcReviewPostPanel> {
             ),
           ),
         ),
-        SizedBox(
-          width: double.infinity,
+        Center(
           child: Obx(
             () {
               final score = _score.value;
@@ -124,7 +123,6 @@ class _PgcReviewPostPanelState extends State<PgcReviewPostPanel> {
                   5 => '佳作',
                   _ => '轻触评分',
                 },
-                textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 16,
                   color: score == 0

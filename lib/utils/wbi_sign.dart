@@ -13,7 +13,7 @@ import 'package:crypto/crypto.dart';
 import 'package:hive/hive.dart';
 import 'package:synchronized/synchronized.dart';
 
-class WbiSign {
+abstract class WbiSign {
   static Box localCache = GStorage.localCache;
   static final Lock lock = Lock();
   static final RegExp chrFilter = RegExp(r"[!\'\(\)\*]");

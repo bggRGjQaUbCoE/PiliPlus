@@ -53,12 +53,6 @@ class ImSettingsItem extends StatelessWidget {
           alignment: Alignment.centerRight,
           scale: 0.8,
           child: Switch(
-            thumbIcon: WidgetStateProperty.resolveWith<Icon?>((states) {
-              if (states.isNotEmpty && states.first == WidgetState.selected) {
-                return const Icon(Icons.done);
-              }
-              return null;
-            }),
             value: item.switch_1.switchOn,
             onChanged: (value) => onChanged(),
           ),

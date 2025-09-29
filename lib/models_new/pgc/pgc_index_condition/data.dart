@@ -1,5 +1,4 @@
-import 'package:PiliPlus/models_new/pgc/pgc_index_condition/filter.dart';
-import 'package:PiliPlus/models_new/pgc/pgc_index_condition/order.dart';
+import 'package:PiliPlus/models_new/pgc/pgc_index_condition/sort.dart';
 
 class PgcIndexConditionData {
   List<PgcConditionFilter>? filter;

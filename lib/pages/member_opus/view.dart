@@ -57,7 +57,7 @@ class _MemberOpusState extends State<MemberOpus>
                   top: widget.isSingle ? 12 : 0,
                   left: StyleString.safeSpace,
                   right: StyleString.safeSpace,
-                  bottom: bottom + 90,
+                  bottom: bottom + 100,
                 ),
                 sliver: Obx(() => _buildBody(_controller.loadingState.value)),
               ),

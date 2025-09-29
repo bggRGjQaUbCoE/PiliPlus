@@ -865,6 +865,26 @@ class RichTextEditingController extends TextEditingController {
     return position;
   }
 
+  int tapOffsetSimple(int offset) {
+    for (var e in items) {
+      final range = e.range;
+      if (offset >= range.end) {
+        continue;
+      }
+      if (offset <= range.start) {
+        break;
+      }
+      if (e.isRich) {
+        if (offset * 2 > range.start + range.end) {
+          return range.end;
+        } else {
+          return range.start;
+        }
+      }
+    }
+    return offset;
+  }
+
   int tapOffset(
     int offset, {
     required TextPainter textPainter,

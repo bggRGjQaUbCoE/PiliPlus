@@ -3,63 +3,93 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
+import 'package:PiliPlus/common/constants.dart';
+import 'package:PiliPlus/utils/storage_pref.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:flutter/material.dart' show Alignment;
 import 'package:flutter/services.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:path/path.dart' as path;
+import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:window_manager/window_manager.dart';
 
-class Utils {
+abstract class Utils {
   static final Random random = Random();
 
-  static const channel = MethodChannel("PiliPlus");
+  static const channel = MethodChannel(Constants.appName);
+
+  @pragma("vm:platform-const")
+  static final bool isMobile = Platform.isAndroid || Platform.isIOS;
+
+  @pragma("vm:platform-const")
+  static final bool isDesktop =
+      Platform.isWindows || Platform.isMacOS || Platform.isLinux;
+
+  static Future<Offset> get windowOffset async {
+    final windowPosition = Pref.windowPosition;
+    if (windowPosition != null) {
+      return Offset(windowPosition[0], windowPosition[1]);
+    }
+    return await calcWindowPosition(
+      await windowManager.getSize(),
+      Alignment.center,
+    );
+  }
+
+  static Future<bool> get isWiFi async {
+    try {
+      return Utils.isMobile &&
+          (await Connectivity().checkConnectivity()).contains(
+            ConnectivityResult.wifi,
+          );
+    } catch (_) {
+      return true;
+    }
+  }
+
+  static Color parseColor(String color) =>
+      Color(int.parse(color.replaceFirst('#', 'FF'), radix: 16));
 
   static int? _sdkInt;
 
   static Future<int> get sdkInt async {
-    if (_sdkInt != null) {
-      return _sdkInt!;
-    }
-    _sdkInt = (await DeviceInfoPlugin().androidInfo).version.sdkInt;
-    return _sdkInt!;
+    return _sdkInt ??= (await DeviceInfoPlugin().androidInfo).version.sdkInt;
   }
 
   static bool? _isIpad;
 
-  static Future<bool> isIpad() async {
-    if (_isIpad != null) {
-      return _isIpad!;
-    }
-    if (!Platform.isIOS) {
-      return false;
-    }
-    DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
-    IosDeviceInfo info = await deviceInfo.iosInfo;
-    _isIpad = info.model.toLowerCase().contains("ipad");
-    return _isIpad!;
+  static Future<bool> get isIpad async {
+    if (!Platform.isIOS) return false;
+    return _isIpad ??= (await DeviceInfoPlugin().iosInfo).model
+        .toLowerCase()
+        .contains('ipad');
+  }
+
+  static String? _tempDir;
+
+  static Future<String> get temporaryDirectory async {
+    return _tempDir ??= (await getTemporaryDirectory()).path;
   }
 
   static Future<Rect?> get sharePositionOrigin async {
-    if (await Utils.isIpad()) {
+    if (await isIpad) {
       final size = Get.size;
-      return Rect.fromLTWH(
-        0,
-        0,
-        size.width,
-        size.height / 2,
-      );
+      return Rect.fromLTWH(0, 0, size.width, size.height / 2);
     }
     return null;
   }
 
   static Future<void> shareText(String text) async {
+    if (Utils.isDesktop) {
+      copyText(text);
+      return;
+    }
     try {
-      SharePlus.instance.share(
-        ShareParams(
-          text: text,
-          sharePositionOrigin: await sharePositionOrigin,
-        ),
+      await SharePlus.instance.share(
+        ShareParams(text: text, sharePositionOrigin: await sharePositionOrigin),
       );
     } catch (e) {
       SmartDialog.showToast(e.toString());
@@ -70,7 +100,9 @@ class Utils {
     String baseDirectory,
     List<String> shaders,
   ) {
-    return shaders.map((shader) => path.join(baseDirectory, shader)).join(':');
+    return shaders
+        .map((shader) => path.join(baseDirectory, shader))
+        .join(Platform.isWindows ? ';' : ':');
   }
 
   static final numericRegex = RegExp(r'^[\d\.]+$');
@@ -89,15 +121,15 @@ class Utils {
     );
   }
 
-  static void copyText(
+  static Future<void> copyText(
     String text, {
     bool needToast = true,
     String? toastText,
   }) {
-    Clipboard.setData(ClipboardData(text: text));
     if (needToast) {
       SmartDialog.showToast(toastText ?? '已复制');
     }
+    return Clipboard.setData(ClipboardData(text: text));
   }
 
   static String makeHeroTag(v) {

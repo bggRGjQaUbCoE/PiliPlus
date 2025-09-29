@@ -22,6 +22,7 @@ class LiveItem extends StatelessWidget {
           cover: liveItem.cover,
         ),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             AspectRatio(
               aspectRatio: StyleString.aspectRatio,
@@ -86,15 +87,12 @@ class LiveItem extends StatelessWidget {
                   .toList(),
             ),
           ),
-          SizedBox(
-            width: double.infinity,
-            child: Text(
-              liveItem.uname!,
-              maxLines: 1,
-              style: TextStyle(
-                fontSize: theme.textTheme.labelMedium!.fontSize,
-                color: theme.colorScheme.outline,
-              ),
+          Text(
+            liveItem.uname!,
+            maxLines: 1,
+            style: TextStyle(
+              fontSize: theme.textTheme.labelMedium!.fontSize,
+              color: theme.colorScheme.outline,
             ),
           ),
         ],

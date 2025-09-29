@@ -112,6 +112,7 @@ class _SharePanelState extends State<SharePanel> {
                   gapSize: 10,
                   itemCount: _userList.length,
                   controller: _scrollController,
+                  padding: EdgeInsets.zero,
                   childBuilder: (index) {
                     final item = _userList[index];
                     return GestureDetector(

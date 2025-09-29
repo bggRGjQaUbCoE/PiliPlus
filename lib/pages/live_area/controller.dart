@@ -36,12 +36,10 @@ class LiveAreaController
 
   @override
   Future<LoadingState<List<AreaList>?>> customGetData() =>
-      LiveHttp.liveAreaList(isLogin: accountService.isLogin.value);
+      LiveHttp.liveAreaList();
 
   Future<void> queryFavTags() async {
-    favState.value = await LiveHttp.getLiveFavTag(
-      isLogin: accountService.isLogin.value,
-    );
+    favState.value = await LiveHttp.getLiveFavTag();
   }
 
   Future<void> setFavTag() async {

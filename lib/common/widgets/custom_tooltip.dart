@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'dart:ui' show clampDouble;
 
+import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
@@ -148,11 +149,21 @@ class CustomTooltipState extends State<CustomTooltip>
   @protected
   @override
   Widget build(BuildContext context) {
-    Widget result = Listener(
-      onPointerDown: _handlePointerDown,
-      behavior: HitTestBehavior.opaque,
-      child: widget.child,
-    );
+    Widget result;
+    if (Utils.isMobile) {
+      result = Listener(
+        onPointerDown: _handlePointerDown,
+        behavior: HitTestBehavior.opaque,
+        child: widget.child,
+      );
+    } else {
+      result = MouseRegion(
+        cursor: MouseCursor.defer,
+        onEnter: (_) => _scheduleShowTooltip(),
+        onExit: (_) => _scheduleDismissTooltip(),
+        child: widget.child,
+      );
+    }
     return OverlayPortal(
       controller: _overlayController,
       overlayChildBuilder: _buildCustomTooltipOverlay,
@@ -184,30 +195,34 @@ class _CustomTooltipOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: onDismiss,
-      child: CustomMultiChildLayout(
-        delegate: _CustomMultiTooltipPositionDelegate(
-          type: type,
-          target: target,
-          verticalOffset: verticalOffset,
-          horizontslOffset: horizontslOffset,
-          preferBelow: false,
-        ),
-        children: [
-          LayoutId(
-            id: 'overlay',
-            child: overlayWidget(),
-          ),
-          if (indicator != null)
-            LayoutId(
-              id: 'indicator',
-              child: indicator!(),
-            ),
-        ],
+    Widget child = CustomMultiChildLayout(
+      delegate: _CustomMultiTooltipPositionDelegate(
+        type: type,
+        target: target,
+        verticalOffset: verticalOffset,
+        horizontslOffset: horizontslOffset,
+        preferBelow: false,
       ),
+      children: [
+        LayoutId(
+          id: 'overlay',
+          child: overlayWidget(),
+        ),
+        if (indicator != null)
+          LayoutId(
+            id: 'indicator',
+            child: indicator!(),
+          ),
+      ],
     );
+    if (Utils.isMobile) {
+      return GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: onDismiss,
+        child: child,
+      );
+    }
+    return child;
   }
 }
 

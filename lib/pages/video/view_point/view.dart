@@ -2,14 +2,15 @@ import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/widgets/button/icon_button.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/progress_bar/segment_progress_bar.dart';
-import 'package:PiliPlus/pages/common/slide/common_collapse_slide_page.dart';
+import 'package:PiliPlus/pages/common/slide/common_slide_page.dart';
 import 'package:PiliPlus/pages/video/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
-import 'package:PiliPlus/utils/duration_util.dart';
+import 'package:PiliPlus/utils/duration_utils.dart';
+import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-class ViewPointsPage extends CommonCollapseSlidePage {
+class ViewPointsPage extends CommonSlidePage {
   const ViewPointsPage({
     super.key,
     super.enableSlide,
@@ -24,21 +25,13 @@ class ViewPointsPage extends CommonCollapseSlidePage {
   State<ViewPointsPage> createState() => _ViewPointsPageState();
 }
 
-class _ViewPointsPageState
-    extends CommonCollapseSlidePageState<ViewPointsPage> {
+class _ViewPointsPageState extends State<ViewPointsPage>
+    with SingleTickerProviderStateMixin, CommonSlideMixin {
   VideoDetailController get videoDetailController =>
       widget.videoDetailController;
   PlPlayerController? get plPlayerController => widget.plPlayerController;
 
   int currentIndex = -1;
-
-  final _controller = ScrollController();
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
 
   @override
   Widget buildPage(ThemeData theme) {
@@ -60,17 +53,9 @@ class _ViewPointsPageState
               alignment: Alignment.centerLeft,
               scale: 0.8,
               child: Switch(
-                thumbIcon: WidgetStateProperty.resolveWith<Icon?>((states) {
-                  if (states.isNotEmpty &&
-                      states.first == WidgetState.selected) {
-                    return const Icon(Icons.done);
-                  }
-                  return null;
-                }),
-                value: videoDetailController.plPlayerController.showVP.value,
-                onChanged: (value) {
-                  videoDetailController.plPlayerController.showVP.value = value;
-                },
+                value: videoDetailController.showVP.value,
+                onChanged: (value) =>
+                    videoDetailController.showVP.value = value,
               ),
             ),
           ),
@@ -93,10 +78,21 @@ class _ViewPointsPageState
     );
   }
 
+  late Key _key;
+  late bool _isNested;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final controller = PrimaryScrollController.of(context);
+    _isNested = controller is ExtendedNestedScrollController;
+    _key = ValueKey(controller.hashCode);
+  }
+
   @override
   Widget buildList(ThemeData theme) {
-    return ListView.builder(
-      controller: _controller,
+    final child = ListView.builder(
+      key: _key,
       physics: const AlwaysScrollableScrollPhysics(),
       padding: EdgeInsets.only(
         top: 7,
@@ -117,6 +113,13 @@ class _ViewPointsPageState
         return _buildItem(theme, segment, isCurr);
       },
     );
+    if (_isNested) {
+      return ExtendedVisibilityDetector(
+        uniqueKey: const Key('viewpoints'),
+        child: child,
+      );
+    }
+    return child;
   }
 
   Widget _buildItem(ThemeData theme, Segment segment, bool isCurr) {
@@ -166,8 +169,8 @@ class _ViewPointsPageState
                           : null,
                     ),
                     Text(
-                      '${segment.from != null ? DurationUtil.formatDuration(segment.from) : ''} - '
-                      '${segment.to != null ? DurationUtil.formatDuration(segment.to) : ''}',
+                      '${segment.from != null ? DurationUtils.formatDuration(segment.from) : ''} - '
+                      '${segment.to != null ? DurationUtils.formatDuration(segment.to) : ''}',
                       style: TextStyle(color: theme.colorScheme.outline),
                     ),
                   ],

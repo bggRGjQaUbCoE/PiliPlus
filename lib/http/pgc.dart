@@ -62,8 +62,23 @@ class PgcHttp {
     int? indexType,
   }) async {
     var res = await Request().get(
-      Api.pgcIndex,
+      Api.pgcIndexResult,
       queryParameters: {
+        'st': 1,
+        'order': 3,
+        'season_version': -1,
+        'spoken_language_type': -1,
+        'area': -1,
+        'is_finish': -1,
+        'copyright': -1,
+        'season_status': -1,
+        'season_month': -1,
+        'year': -1,
+        'style_id': -1,
+        'sort': 0,
+        'season_type': 1,
+        'pagesize': 20,
+        'type': 1,
         'page': page,
         'index_type': ?indexType,
       },
@@ -75,7 +90,7 @@ class PgcHttp {
     }
   }
 
-  static Future<LoadingState<List<Result>?>> pgcTimeline({
+  static Future<LoadingState<List<TimelineResult>?>> pgcTimeline({
     int types = 1, // 1：`番剧`<br />3：`电影`<br />4：`国创` |
     required int before,
     required int after,

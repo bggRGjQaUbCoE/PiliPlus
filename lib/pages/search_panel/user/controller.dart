@@ -34,8 +34,7 @@ class SearchUserController
       builder: (context) {
         final theme = Theme.of(context);
         return SingleChildScrollView(
-          child: Container(
-            width: double.infinity,
+          child: Padding(
             padding: EdgeInsets.only(
               top: 20,
               left: 16,

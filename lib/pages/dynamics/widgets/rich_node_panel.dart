@@ -1,6 +1,6 @@
 import 'dart:io' show Platform;
 
-import 'package:PiliPlus/common/widgets/image/image_view.dart';
+import 'package:PiliPlus/common/widgets/image/custom_grid_view.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/http/dynamics.dart';
 import 'package:PiliPlus/http/search.dart';
@@ -19,31 +19,32 @@ import 'package:get/get.dart';
 
 // 富文本
 TextSpan? richNode(
-  ThemeData theme,
-  DynamicItemModel item,
   BuildContext context, {
+  required ThemeData theme,
+  required DynamicItemModel item,
   required double maxWidth,
 }) {
   try {
     late final style = TextStyle(color: theme.colorScheme.primary);
     List<InlineSpan> spanChildren = [];
 
+    final moduleDynamic = item.modules.moduleDynamic;
     List<RichTextNodeItem>? richTextNodes;
-    if (item.modules.moduleDynamic?.desc != null) {
-      richTextNodes = item.modules.moduleDynamic!.desc!.richTextNodes;
-    } else if (item.modules.moduleDynamic?.major != null) {
+    if (moduleDynamic?.desc case final desc?) {
+      richTextNodes = desc.richTextNodes;
+    } else if (moduleDynamic?.major?.opus case final opus?) {
       // 动态页面 richTextNodes 层级可能与主页动态层级不同
-      richTextNodes =
-          item.modules.moduleDynamic!.major!.opus?.summary?.richTextNodes;
-      if (item.modules.moduleDynamic?.major?.opus?.title != null) {
+      richTextNodes = opus.summary?.richTextNodes;
+      if (opus.title case final title?) {
         spanChildren.add(
           TextSpan(
-            text: '${item.modules.moduleDynamic!.major!.opus!.title!}\n',
+            text: '$title\n',
             style: const TextStyle(fontWeight: FontWeight.bold),
           ),
         );
       }
     }
+
     if (richTextNodes == null || richTextNodes.isEmpty) {
       return null;
     } else {
@@ -247,9 +248,9 @@ TextSpan? richNode(
                 ..add(const TextSpan(text: '\n'))
                 ..add(
                   WidgetSpan(
-                    child: imageView(
-                      maxWidth,
-                      i.pics!
+                    child: CustomGridView(
+                      maxWidth: maxWidth,
+                      picArr: i.pics!
                           .map(
                             (item) => ImageModel(
                               url: item.src ?? '',

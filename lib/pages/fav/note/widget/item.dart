@@ -4,6 +4,7 @@ import 'package:PiliPlus/common/widgets/select_mask.dart';
 import 'package:PiliPlus/models_new/fav/fav_note/list.dart';
 import 'package:PiliPlus/pages/fav/note/controller.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
+import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart';
 
 class FavNoteItem extends StatelessWidget {
@@ -17,6 +18,13 @@ class FavNoteItem extends StatelessWidget {
   final FavNoteItemModel item;
   final FavNoteController ctr;
   final VoidCallback onSelect;
+
+  void onLongPress() {
+    if (!ctr.enableMultiSelect.value) {
+      ctr.enableMultiSelect.value = true;
+      onSelect();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,12 +44,8 @@ class FavNoteItem extends StatelessWidget {
             );
           }
         },
-        onLongPress: () {
-          if (!ctr.enableMultiSelect.value) {
-            ctr.enableMultiSelect.value = true;
-            onSelect();
-          }
-        },
+        onLongPress: Utils.isMobile ? onLongPress : null,
+        onSecondaryTap: Utils.isMobile ? null : onLongPress,
         child: Padding(
           padding: const EdgeInsets.symmetric(
             horizontal: StyleString.safeSpace,

@@ -5,41 +5,52 @@ import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:cookie_jar/cookie_jar.dart';
 import 'package:hive/hive.dart';
 
-abstract class Account {
-  final bool isLogin = false;
-  late final DefaultCookieJar cookieJar;
-  String? accessKey;
-  String? refresh;
-  late final Set<AccountType> type;
+sealed class Account {
+  Map<String, dynamic>? toJson() => null;
 
-  final int mid = 0;
-  late String csrf;
-  final Map<String, String> headers = const {};
+  Future<void> onChange() => Future.value();
 
-  bool activited = false;
+  Set<AccountType> get type => const {};
 
-  Future<void> delete();
-  Future<void> onChange();
+  bool get activited => false;
 
-  Map<String, dynamic>? toJson();
+  set activited(bool value) => throw UnimplementedError();
+
+  String? get accessKey => throw UnimplementedError();
+
+  DefaultCookieJar get cookieJar => throw UnimplementedError();
+
+  String get csrf => throw UnimplementedError();
+
+  Future<void> delete() => throw UnimplementedError();
+
+  Map<String, String> get headers => throw UnimplementedError();
+
+  bool get isLogin => throw UnimplementedError();
+
+  int get mid => throw UnimplementedError();
+
+  String? get refresh => throw UnimplementedError();
+
+  const Account();
 }
 
 @HiveType(typeId: 9)
-class LoginAccount implements Account {
+class LoginAccount extends Account {
   @override
   final bool isLogin = true;
   @override
   @HiveField(0)
-  late final DefaultCookieJar cookieJar;
+  final DefaultCookieJar cookieJar;
   @override
   @HiveField(1)
-  String? accessKey;
+  final String? accessKey;
   @override
   @HiveField(2)
-  String? refresh;
+  final String? refresh;
   @override
   @HiveField(3)
-  late final Set<AccountType> type;
+  final Set<AccountType> type;
 
   @override
   bool activited = false;
@@ -55,14 +66,22 @@ class LoginAccount implements Account {
   };
 
   @override
-  late String csrf =
+  late final String csrf =
       cookieJar.domainCookies['bilibili.com']!['/']!['bili_jct']!.cookie.value;
 
-  @override
-  Future<void> delete() => _box.delete(_midStr);
+  bool _hasDelete = false;
 
   @override
-  Future<void> onChange() => _box.put(_midStr, this);
+  Future<void> delete() {
+    assert(_hasDelete = true);
+    return _box.delete(_midStr);
+  }
+
+  @override
+  Future<void> onChange() {
+    assert(!_hasDelete);
+    return _box.put(_midStr, this);
+  }
 
   @override
   Map<String, dynamic>? toJson() => {
@@ -88,16 +107,12 @@ class LoginAccount implements Account {
     cookieJar.setBuvid3();
   }
 
-  LoginAccount.fromJson(Map json) {
-    cookieJar = BiliCookieJar.fromJson(json['cookies'])..setBuvid3();
-    accessKey = json['accessKey'];
-    refresh = json['refresh'];
-    type =
-        (json['type'] as Iterable?)
-            ?.map((i) => AccountType.values[i])
-            .toSet() ??
-        {};
-  }
+  factory LoginAccount.fromJson(Map json) => LoginAccount(
+    BiliCookieJar.fromJson(json['cookies']),
+    json['accessKey'],
+    json['refresh'],
+    (json['type'] as Iterable?)?.map((i) => AccountType.values[i]).toSet(),
+  );
 
   @override
   int get hashCode => mid.hashCode;
@@ -107,21 +122,21 @@ class LoginAccount implements Account {
       identical(this, other) || (other is LoginAccount && mid == other.mid);
 }
 
-class AnonymousAccount implements Account {
+class AnonymousAccount extends Account {
   @override
   final bool isLogin = false;
   @override
-  late final DefaultCookieJar cookieJar;
+  final DefaultCookieJar cookieJar = DefaultCookieJar()..setBuvid3();
   @override
-  String? accessKey;
+  final String? accessKey = null;
   @override
-  String? refresh;
+  final String? refresh = null;
   @override
-  Set<AccountType> type = {};
+  final Set<AccountType> type = {};
   @override
   final int mid = 0;
   @override
-  String csrf = '';
+  final String csrf = '';
   @override
   final Map<String, String> headers = Constants.baseHeaders;
 
@@ -134,17 +149,9 @@ class AnonymousAccount implements Account {
     cookieJar.setBuvid3();
   }
 
-  @override
-  Future<void> onChange() async {}
-
-  @override
-  Map<String, dynamic>? toJson() => null;
-
   static final _instance = AnonymousAccount._();
 
-  AnonymousAccount._() {
-    cookieJar = DefaultCookieJar(ignoreExpires: true)..setBuvid3();
-  }
+  AnonymousAccount._();
 
   factory AnonymousAccount() => _instance;
 
@@ -179,8 +186,9 @@ extension BiliCookieJar on DefaultCookieJar {
       [];
 
   void setBuvid3() {
-    domainCookies['bilibili.com'] ??= {'/': {}};
-    domainCookies['bilibili.com']!['/']!['buvid3'] ??= SerializableCookie(
+    (domainCookies['bilibili.com'] ??= {
+      '/': {},
+    })['/']!['buvid3'] ??= SerializableCookie(
       Cookie('buvid3', IdUtils.genBuvid3())..setBiliDomain(),
     );
   }
@@ -208,52 +216,6 @@ extension BiliCookieJar on DefaultCookieJar {
         };
 }
 
-class NoAccount implements Account {
-  @override
-  String? accessKey;
-
-  @override
-  bool activited = false;
-
-  @override
-  DefaultCookieJar cookieJar = DefaultCookieJar();
-
-  @override
-  String csrf = '';
-
-  @override
-  String? refresh;
-
-  @override
-  Set<AccountType> type = const {};
-
-  @override
-  Future<void> delete() {
-    return Future.value();
-  }
-
-  @override
-  final Map<String, String> headers = const {};
-
-  @override
-  bool isLogin = false;
-
-  @override
-  int mid = 0;
-
-  @override
-  Future<void> onChange() {
-    return Future.value();
-  }
-
-  @override
-  Map<String, dynamic>? toJson() {
-    return null;
-  }
-
-  NoAccount._();
-
-  static final _instance = NoAccount._();
-
-  factory NoAccount() => _instance;
+final class NoAccount extends Account {
+  const NoAccount();
 }

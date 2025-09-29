@@ -11,7 +11,7 @@ import 'package:PiliPlus/models/common/stat_type.dart';
 import 'package:PiliPlus/models/search/result.dart';
 import 'package:PiliPlus/models_new/later/list.dart';
 import 'package:PiliPlus/pages/later/controller.dart';
-import 'package:PiliPlus/utils/duration_util.dart';
+import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -130,7 +130,7 @@ class VideoCardHLater extends StatelessWidget {
                           PBadge(
                             text: progress == -1
                                 ? '已看完'
-                                : '${DurationUtil.formatDuration(progress)}/${DurationUtil.formatDuration(videoItem.duration)}',
+                                : '${DurationUtils.formatDuration(progress)}/${DurationUtils.formatDuration(videoItem.duration)}',
                             right: 6,
                             bottom: 8,
                             type: PBadgeType.gray,
@@ -147,7 +147,7 @@ class VideoCardHLater extends StatelessWidget {
                           ),
                         ] else if (videoItem.duration! > 0)
                           PBadge(
-                            text: DurationUtil.formatDuration(
+                            text: DurationUtils.formatDuration(
                               videoItem.duration,
                             ),
                             right: 6.0,

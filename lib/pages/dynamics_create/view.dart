@@ -25,7 +25,7 @@ import 'package:PiliPlus/pages/emote/controller.dart';
 import 'package:PiliPlus/pages/emote/view.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/context_ext.dart';
-import 'package:PiliPlus/utils/date_util.dart';
+import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/grid.dart';
 import 'package:PiliPlus/utils/request_utils.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
@@ -147,7 +147,7 @@ class _CreateDynPanelState extends CommonRichTextPubPageState<CreateDynPanel> {
                                   child: Padding(
                                     padding: const EdgeInsets.only(right: 5),
                                     child: Icon(
-                                      CustomIcon.topic_tag,
+                                      CustomIcons.topic_tag,
                                       size: 18,
                                       color: hasTopic
                                           ? null
@@ -242,7 +242,6 @@ class _CreateDynPanelState extends CommonRichTextPubPageState<CreateDynPanel> {
 
   Widget _buildImageList(ThemeData theme) => SizedBox(
     height: 100,
-    width: double.infinity,
     child: SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -525,7 +524,7 @@ class _CreateDynPanelState extends CommonRichTextPubPageState<CreateDynPanel> {
             visualDensity: VisualDensity.compact,
           ),
           onPressed: () => _publishTime.value = null,
-          label: Text(DateUtil.longFormatD.format(_publishTime.value!)),
+          label: Text(DateFormatUtils.longFormatD.format(_publishTime.value!)),
           icon: const Icon(Icons.clear, size: 20),
           iconAlignment: IconAlignment.end,
         );
@@ -605,7 +604,7 @@ class _CreateDynPanelState extends CommonRichTextPubPageState<CreateDynPanel> {
         children: [
           item(
             onTap: _onReserve,
-            icon: Icon(CustomIcon.live_reserve, size: 28, color: color),
+            icon: Icon(CustomIcons.live_reserve, size: 28, color: color),
             title: '直播预约',
           ),
         ],
@@ -779,8 +778,8 @@ class _CreateDynPanelState extends CommonRichTextPubPageState<CreateDynPanel> {
           children: [
             GestureDetector(
               onTap: _onReserve,
+              behavior: HitTestBehavior.opaque,
               child: Container(
-                width: double.infinity,
                 decoration: BoxDecoration(
                   borderRadius: const BorderRadius.all(Radius.circular(8)),
                   color: theme.colorScheme.onInverseSurface,
@@ -789,11 +788,11 @@ class _CreateDynPanelState extends CommonRichTextPubPageState<CreateDynPanel> {
                 padding: const EdgeInsets.fromLTRB(12, 12, 30, 12),
                 child: Column(
                   spacing: 3,
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Text('直播预约: ${reserveCard.title}'),
                     Text(
-                      '${DateUtil.longFormatD.format(
+                      '${DateFormatUtils.longFormatD.format(
                         DateTime.fromMillisecondsSinceEpoch(reserveCard.livePlanStartTime! * 1000),
                       )} 直播',
                     ),

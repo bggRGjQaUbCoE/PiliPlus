@@ -47,6 +47,7 @@ class _WhisperSecPageState extends State<WhisperSecPage> {
                           onTap: () => e.type.action(
                             context: context,
                             controller: _controller,
+                            item: e,
                           ),
                           child: Row(
                             children: [

@@ -17,7 +17,7 @@ import 'package:PiliPlus/pages/video/member/controller.dart';
 import 'package:PiliPlus/services/account_service.dart';
 import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/grid.dart';
-import 'package:PiliPlus/utils/num_util.dart';
+import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/request_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
@@ -265,12 +265,12 @@ class _HorizontalMemberPageState extends State<HorizontalMemberPage>
                 title: const ['粉丝', '关注', '获赞'][index ~/ 2],
                 num: index == 0
                     ? _controller.userStat['follower'] != null
-                          ? NumUtil.numFormat(_controller.userStat['follower'])
+                          ? NumUtils.numFormat(_controller.userStat['follower'])
                           : ''
                     : index == 2
                     ? _controller.userStat['following'] ?? ''
                     : _controller.userStat['likes'] != null
-                    ? NumUtil.numFormat(_controller.userStat['likes'])
+                    ? NumUtils.numFormat(_controller.userStat['likes'])
                     : '',
                 onTap: () {
                   if (index == 0) {

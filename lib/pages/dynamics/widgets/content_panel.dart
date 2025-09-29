@@ -1,6 +1,6 @@
 // 内容
 import 'package:PiliPlus/common/widgets/custom_icon.dart';
-import 'package:PiliPlus/common/widgets/image/image_view.dart';
+import 'package:PiliPlus/common/widgets/image/custom_grid_view.dart';
 import 'package:PiliPlus/common/widgets/text/text.dart' as custom_text;
 import 'package:PiliPlus/models/dynamics/result.dart';
 import 'package:PiliPlus/pages/dynamics/widgets/rich_node_panel.dart';
@@ -8,19 +8,25 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 Widget content(
-  ThemeData theme,
-  bool isSave,
-  BuildContext context,
-  DynamicItemModel item,
-  bool isDetail,
-  Function(List<String>, int)? callback, {
-  floor = 1,
+  BuildContext context, {
+  required int floor,
+  required ThemeData theme,
+  required DynamicItemModel item,
+  required bool isSave,
+  required bool isDetail,
   required double maxWidth,
 }) {
   if (floor == 1) {
     maxWidth -= 24;
   }
-  TextSpan? richNodes = richNode(theme, item, context, maxWidth: maxWidth);
+  TextSpan? richNodes = richNode(
+    context,
+    theme: theme,
+    item: item,
+    maxWidth: maxWidth,
+  );
+  final moduleDynamic = item.modules.moduleDynamic;
+  final pics = moduleDynamic?.major?.opus?.pics;
   return Padding(
     padding: floor == 1
         ? const EdgeInsets.fromLTRB(12, 0, 12, 6)
@@ -28,30 +34,30 @@ Widget content(
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (item.modules.moduleDynamic?.topic != null)
+        if (moduleDynamic?.topic case final topic?)
           GestureDetector(
             onTap: () => Get.toNamed(
               '/dynTopic',
               parameters: {
-                'id': item.modules.moduleDynamic!.topic!.id!.toString(),
-                'name': item.modules.moduleDynamic!.topic!.name!,
+                'id': topic.id!.toString(),
+                'name': topic.name!,
               },
             ),
             child: Text.rich(
               TextSpan(
                 children: [
                   WidgetSpan(
-                    alignment: PlaceholderAlignment.bottom,
+                    alignment: PlaceholderAlignment.middle,
                     child: Padding(
                       padding: const EdgeInsets.only(right: 4),
                       child: Icon(
                         size: 18,
-                        CustomIcon.topic_tag,
+                        CustomIcons.topic_tag,
                         color: theme.colorScheme.primary,
                       ),
                     ),
                   ),
-                  TextSpan(text: item.modules.moduleDynamic!.topic!.name),
+                  TextSpan(text: topic.name),
                 ],
               ),
               style: TextStyle(
@@ -79,10 +85,10 @@ Widget content(
                   richNodes,
                   maxLines: isSave ? null : 6,
                 ),
-        if (item.modules.moduleDynamic?.major?.opus?.pics?.isNotEmpty == true)
-          imageView(
-            maxWidth,
-            item.modules.moduleDynamic!.major!.opus!.pics!
+        if (pics?.isNotEmpty == true)
+          CustomGridView(
+            maxWidth: maxWidth,
+            picArr: pics!
                 .map(
                   (item) => ImageModel(
                     width: item.width,
@@ -92,7 +98,7 @@ Widget content(
                   ),
                 )
                 .toList(),
-            callback: callback,
+            fullScreen: true,
           ),
       ],
     ),

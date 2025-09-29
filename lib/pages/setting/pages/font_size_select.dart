@@ -55,7 +55,6 @@ class _FontSizeSelectPageState extends State<FontSizeSelectPage> {
               ),
             ),
             Container(
-              width: double.infinity,
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 border: Border(

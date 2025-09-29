@@ -18,14 +18,13 @@ import 'package:PiliPlus/pages/emote/view.dart';
 import 'package:PiliPlus/pages/video/controller.dart';
 import 'package:PiliPlus/pages/video/reply_search_item/view.dart';
 import 'package:PiliPlus/utils/context_ext.dart';
-import 'package:PiliPlus/utils/duration_util.dart';
+import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:PiliPlus/utils/grid.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart' hide TextField;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart' hide ContextExtensionss;
-import 'package:path_provider/path_provider.dart';
 
 class ReplyPage extends CommonRichTextPubPage {
   final int oid;
@@ -82,14 +81,12 @@ class _ReplyPageState extends CommonRichTextPubPageState<ReplyPage> {
         child: Container(
           constraints: const BoxConstraints(maxWidth: 640),
           decoration: BoxDecoration(
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(12),
-              topRight: Radius.circular(12),
-            ),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
             color: themeData.colorScheme.surface,
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               ...buildInputView(),
               buildImagePreview(),
@@ -111,13 +108,11 @@ class _ReplyPageState extends CommonRichTextPubPageState<ReplyPage> {
     return Obx(
       () {
         if (pathList.isNotEmpty) {
-          return Container(
+          return SizedBox(
             height: 85,
-            width: double.infinity,
-            padding: const EdgeInsets.only(bottom: 10),
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 15),
+              padding: const EdgeInsets.fromLTRB(15, 0, 15, 10),
               child: Row(
                 spacing: 10,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -271,6 +266,7 @@ class _ReplyPageState extends CommonRichTextPubPageState<ReplyPage> {
     }) {
       return GestureDetector(
         onTap: onTap,
+        behavior: HitTestBehavior.opaque,
         child: Column(
           spacing: 5,
           mainAxisSize: MainAxisSize.min,
@@ -351,7 +347,7 @@ class _ReplyPageState extends CommonRichTextPubPageState<ReplyPage> {
                     tag: heroTag,
                   );
                   onInsertText(
-                    ' ${DurationUtil.formatDuration((plPlayerController.playedTime ?? Duration.zero).inSeconds)} ',
+                    ' ${DurationUtils.formatDuration((plPlayerController.playedTime ?? Duration.zero).inSeconds)} ',
                     RichTextType.common,
                   );
                 } catch (e) {
@@ -377,9 +373,8 @@ class _ReplyPageState extends CommonRichTextPubPageState<ReplyPage> {
                         .videoPlayerController
                         ?.screenshot(format: 'image/png');
                     if (res != null) {
-                      final tempDir = await getTemporaryDirectory();
-                      File file = File(
-                        '${tempDir.path}/${Utils.generateRandomString(8)}.png',
+                      final file = File(
+                        '${await Utils.temporaryDirectory}/${Utils.generateRandomString(8)}.png',
                       );
                       await file.writeAsBytes(res);
                       pathList.add(file.path);

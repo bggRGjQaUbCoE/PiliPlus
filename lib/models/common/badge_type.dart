@@ -8,6 +8,7 @@ enum PBadgeType {
   line_primary,
   line_secondary,
   free,
+  shop,
 }
 
 enum PBadgeSize { medium, small }

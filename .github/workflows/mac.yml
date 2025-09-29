@@ -1,0 +1,55 @@
+name: Build for Mac
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+    paths-ignore:
+      - '**.md'
+  workflow_dispatch:
+    inputs:
+      branch:
+        required: false
+        default: 'main'
+
+jobs:
+  build-mac-app:
+    name: Release Mac
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.branch }}
+          fetch-depth: 0
+
+      - name: Setup flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version-file: pubspec.yaml
+
+      - name: Build Mac
+        run: |
+          dart lib/scripts/build.dart
+          VERSION=$(cat pubspec.yaml | grep 'version:' | sed 's/version: //g' | tr -d '[:space:]')
+          echo "version=$VERSION" >> $GITHUB_ENV
+          flutter build macos --release
+
+      - name: Prepare Upload
+        run: |
+          npm install --global create-dmg
+          create-dmg build/macos/Build/Products/Release/PiliPlus.app
+        continue-on-error: true
+
+      - name: Rename DMG
+        run: mv PiliPlus*.dmg PiliPlus_macos_${{ env.version }}.dmg
+
+      - name: Upload macos release
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-release
+          path: PiliPlus*.dmg

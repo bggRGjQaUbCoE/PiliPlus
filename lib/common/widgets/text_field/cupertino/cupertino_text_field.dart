@@ -117,6 +117,7 @@ class _CupertinoTextFieldSelectionGestureDetectorBuilder
     extends TextSelectionGestureDetectorBuilder {
   _CupertinoTextFieldSelectionGestureDetectorBuilder({
     required _CupertinoRichTextFieldState state,
+    required super.controller,
   }) : _state = state,
        super(delegate: state);
 
@@ -1254,6 +1255,7 @@ class _CupertinoRichTextFieldState extends State<CupertinoRichTextField>
     _selectionGestureDetectorBuilder =
         _CupertinoTextFieldSelectionGestureDetectorBuilder(
           state: this,
+          controller: widget.controller,
         );
     // if (widget.controller == null) {
     //   _createLocalController();

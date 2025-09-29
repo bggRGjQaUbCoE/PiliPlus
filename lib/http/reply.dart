@@ -5,7 +5,6 @@ import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models_new/emote/data.dart';
 import 'package:PiliPlus/models_new/emote/package.dart';
 import 'package:PiliPlus/models_new/reply/data.dart';
-import 'package:PiliPlus/models_new/reply/reply.dart';
 import 'package:PiliPlus/models_new/reply2reply/data.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/accounts/account.dart';
@@ -14,7 +13,7 @@ import 'package:dio/dio.dart';
 class ReplyHttp {
   static final Options options = Options(
     headers: {...Constants.baseHeaders, 'cookie': ''},
-    extra: {'account': NoAccount()},
+    extra: {'account': const NoAccount()},
   );
 
   static Future<LoadingState> replyList({
@@ -24,8 +23,6 @@ class ReplyHttp {
     required int type,
     required int page,
     int sort = 1,
-    required bool antiGoodsReply,
-    bool? enableFilter,
   }) async {
     var res = !isLogin
         ? await Request().get(
@@ -52,88 +49,10 @@ class ReplyHttp {
           );
     if (res.data['code'] == 0) {
       ReplyData replyData = ReplyData.fromJson(res.data['data']);
-      // if (enableFilter != false && replyRegExp.pattern.isNotEmpty) {
-      //   // topReplies
-      //   if (replyData.topReplies?.isNotEmpty == true) {
-      //     replyData.topReplies!.removeWhere((item) {
-      //       bool hasMatch = replyRegExp.hasMatch(item.content?.message ?? '');
-      //       // remove subreplies
-      //       if (!hasMatch) {
-      //         if (item.replies?.isNotEmpty == true) {
-      //           item.replies!.removeWhere((item) =>
-      //               replyRegExp.hasMatch(item.content?.message ?? ''));
-      //         }
-      //       }
-      //       return hasMatch;
-      //     });
-      //   }
-
-      //   // replies
-      //   if (replyData.replies?.isNotEmpty == true) {
-      //     replyData.replies!.removeWhere((item) {
-      //       bool hasMatch = replyRegExp.hasMatch(item.content?.message ?? '');
-      //       // remove subreplies
-      //       if (!hasMatch) {
-      //         if (item.replies?.isNotEmpty == true) {
-      //           item.replies!.removeWhere((item) =>
-      //               replyRegExp.hasMatch(item.content?.message ?? ''));
-      //         }
-      //       }
-      //       return hasMatch;
-      //     });
-      //   }
-      // }
-
-      // // antiGoodsReply
-      // if (antiGoodsReply) {
-      //   // topReplies
-      //   if (replyData.topReplies?.isNotEmpty == true) {
-      //     replyData.topReplies!.removeWhere((item) {
-      //       bool hasMatch = needRemove(item);
-      //       // remove subreplies
-      //       if (!hasMatch) {
-      //         if (item.replies?.isNotEmpty == true) {
-      //           item.replies!.removeWhere(needRemove);
-      //         }
-      //       }
-      //       return hasMatch;
-      //     });
-      //   }
-
-      //   // replies
-      //   if (replyData.replies?.isNotEmpty == true) {
-      //     replyData.replies!.removeWhere((item) {
-      //       bool hasMatch = needRemove(item);
-      //       // remove subreplies
-      //       if (!hasMatch) {
-      //         if (item.replies?.isNotEmpty == true) {
-      //           item.replies!.removeWhere(needRemove);
-      //         }
-      //       }
-      //       return hasMatch;
-      //     });
-      //   }
-      // }
       return Success(replyData);
     } else {
       return Error(res.data['message']);
     }
-  }
-
-  static bool needRemove(ReplyItemModel reply) {
-    try {
-      if ((reply.content?.jumpUrl?.isNotEmpty == true &&
-              reply.content!.jumpUrl!.values.any((url) {
-                return url['extra'] != null &&
-                    (url['extra']['goods_cm_control'] == 1 ||
-                        url['extra']['goods_item_id'] != 0 ||
-                        url['extra']['goods_prefetched_cache'].isNotEmpty);
-              })) ||
-          reply.content?.message?.contains(Constants.goodsUrlPrefix) == true) {
-        return true;
-      }
-    } catch (_) {}
-    return false;
   }
 
   static Future<LoadingState<ReplyReplyData>> replyReplyList({
@@ -142,9 +61,7 @@ class ReplyHttp {
     required int root,
     required int pageNum,
     required int type,
-    required bool antiGoodsReply,
-    bool? isCheck,
-    bool? filterBanWord,
+    bool isCheck = false,
   }) async {
     var res = await Request().get(
       Api.replyReplyList,
@@ -160,21 +77,10 @@ class ReplyHttp {
     );
     if (res.data['code'] == 0) {
       ReplyReplyData replyData = ReplyReplyData.fromJson(res.data['data']);
-      // if (filterBanWord != false && replyRegExp.pattern.isNotEmpty) {
-      //   if (replyData.replies?.isNotEmpty == true) {
-      //     replyData.replies!.removeWhere(
-      //         (item) => replyRegExp.hasMatch(item.content?.message ?? ''));
-      //   }
-      // }
-      // if (antiGoodsReply) {
-      //   if (replyData.replies?.isNotEmpty == true) {
-      //     replyData.replies!.removeWhere(needRemove);
-      //   }
-      // }
       return Success(replyData);
     } else {
       return Error(
-        isCheck == true
+        isCheck
             ? '${res.data['code']}${res.data['message']}'
             : res.data['message'],
       );

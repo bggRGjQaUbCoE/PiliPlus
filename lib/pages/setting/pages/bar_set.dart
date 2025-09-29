@@ -68,11 +68,13 @@ class _BarSetPageState extends State<BarSetPage> {
       ),
       body: ReorderableListView(
         onReorder: onReorder,
-        footer: SizedBox(
-          height: MediaQuery.viewPaddingOf(context).bottom + 30,
+        footer: Padding(
+          padding:
+              MediaQuery.viewPaddingOf(context).copyWith(top: 0, left: 0) +
+              const EdgeInsets.only(right: 34, top: 10),
           child: const Align(
             alignment: Alignment.centerRight,
-            child: Text('*长按拖动排序        '),
+            child: Text('*长按拖动排序'),
           ),
         ),
         children: defaultBars

@@ -49,7 +49,10 @@ abstract class TextSelectionGestureDetectorBuilderDelegate {
 ///    Cupertino-specific gesture logic of an [EditableText].
 class TextSelectionGestureDetectorBuilder {
   /// Creates a [TextSelectionGestureDetectorBuilder].
-  TextSelectionGestureDetectorBuilder({required this.delegate});
+  TextSelectionGestureDetectorBuilder({
+    required this.delegate,
+    required this.controller,
+  });
 
   /// The delegate for this [TextSelectionGestureDetectorBuilder].
   ///
@@ -61,6 +64,8 @@ class TextSelectionGestureDetectorBuilder {
   /// [EditableText].
   @protected
   final TextSelectionGestureDetectorBuilderDelegate delegate;
+
+  final RichTextEditingController controller;
 
   // Shows the magnifier on supported platforms at the given offset, currently
   // only Android and iOS.
@@ -177,7 +182,7 @@ class TextSelectionGestureDetectorBuilder {
     );
     final TextSelection selection = renderEditable.selection!;
     final TextSelection nextSelection = selection.copyWith(
-      extentOffset: tappedPosition.offset,
+      extentOffset: controller.tapOffsetSimple(tappedPosition.offset),
     );
 
     editableText.userUpdateTextEditingValue(

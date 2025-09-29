@@ -41,11 +41,9 @@ List<SettingsModel> get privacySettings => [
         context: Get.context!,
         builder: (context) {
           return AlertDialog(
-            title: const Text('查看详情'),
+            title: const Text('账号模式详情'),
             content: SingleChildScrollView(
-              child: Text(
-                AccountManager.apiTypeSet[AccountType.heartbeat]!.join('\n'),
-              ),
+              child: _getAccountDetail(context),
             ),
             actions: [
               TextButton(
@@ -58,7 +56,26 @@ List<SettingsModel> get privacySettings => [
       );
     },
     leading: const Icon(Icons.flag_outlined),
-    title: '了解无痕模式',
-    subtitle: '查看无痕模式作用的API列表',
+    title: '了解账号模式',
+    subtitle: '查看各个账号模式作用的API列表',
   ),
 ];
+
+Widget _getAccountDetail(BuildContext context) {
+  final slivers = <Widget>[];
+  final theme = TextTheme.of(context);
+  for (var i in AccountType.values) {
+    final url = AccountManager.apiTypeSet[i];
+    if (url == null) continue;
+
+    slivers
+      ..add(Center(child: Text(i.title, style: theme.titleMedium)))
+      ..add(SelectableText(url.join('\n')));
+  }
+  return Column(
+    mainAxisSize: MainAxisSize.min,
+    crossAxisAlignment: CrossAxisAlignment.start,
+    spacing: 8,
+    children: slivers,
+  );
+}

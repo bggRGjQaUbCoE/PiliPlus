@@ -1,3 +1,4 @@
+import 'package:PiliPlus/common/widgets/dyn/ink_well.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/models/common/dynamic/up_panel_position.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
@@ -6,7 +7,8 @@ import 'package:PiliPlus/pages/dynamics/controller.dart';
 import 'package:PiliPlus/pages/live_follow/view.dart';
 import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
-import 'package:flutter/material.dart';
+import 'package:PiliPlus/utils/utils.dart';
+import 'package:flutter/material.dart' hide InkWell;
 import 'package:get/get.dart';
 
 class UpPanel extends StatefulWidget {
@@ -23,6 +25,8 @@ class UpPanel extends StatefulWidget {
 class _UpPanelState extends State<UpPanel> {
   late final controller = widget.dynamicsController;
   late final isTop = controller.upPanelPosition == UpPanelPosition.top;
+
+  void toFollowPage() => Get.to(const LiveFollowPage());
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +48,8 @@ class _UpPanelState extends State<UpPanel> {
             onTap: () => setState(() {
               controller.showLiveUp = !controller.showLiveUp;
             }),
-            onLongPress: () => Get.to(const LiveFollowPage()),
+            onLongPress: Utils.isMobile ? toFollowPage : null,
+            onSecondaryTap: Utils.isMobile ? null : toFollowPage,
             child: Container(
               alignment: Alignment.center,
               height: isTop ? 76 : 60,
@@ -137,6 +142,10 @@ class _UpPanelState extends State<UpPanel> {
     final currentMid = controller.currentMid;
     final isLive = data is LiveUserItem;
     bool isCurrent = isLive || currentMid == data.mid || currentMid == -1;
+
+    final isAll = data.mid == -1;
+    void toMemberPage() => Get.toNamed('/member?mid=${data.mid}');
+
     return SizedBox(
       height: 76,
       width: isTop ? 70 : null,
@@ -152,9 +161,8 @@ class _UpPanelState extends State<UpPanel> {
           }
         },
         // onDoubleTap: isLive ? () => _onSelect(data) : null,
-        onLongPress: data.mid == -1
-            ? null
-            : () => Get.toNamed('/member?mid=${data.mid}'),
+        onLongPress: !isAll && Utils.isMobile ? toMemberPage : null,
+        onSecondaryTap: !isAll && !Utils.isMobile ? toMemberPage : null,
         child: AnimatedOpacity(
           opacity: isCurrent ? 1 : 0.6,
           duration: const Duration(milliseconds: 200),

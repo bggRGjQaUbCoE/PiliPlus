@@ -482,6 +482,13 @@ class _RenderProgressBar extends RenderBox {
     }
   }
 
+  @override
+  void dispose() {
+    _drag?.dispose();
+    _clearLabelCache();
+    super.dispose();
+  }
+
   // This is the gesture recognizer used to move the thumb.
   _EagerHorizontalDragGestureRecognizer? _drag;
 
@@ -620,6 +627,8 @@ class _RenderProgressBar extends RenderBox {
   }
 
   void _clearLabelCache() {
+    _cachedLeftLabel?.dispose();
+    _cachedRightLabel?.dispose();
     _cachedLeftLabel = null;
     _cachedRightLabel = null;
   }

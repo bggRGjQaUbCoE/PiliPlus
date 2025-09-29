@@ -10,7 +10,9 @@ import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
+import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:get/get.dart';
 import 'package:stream_transform/stream_transform.dart';
 
@@ -33,8 +35,8 @@ mixin DebounceStreamMixin<T> {
   }
 }
 
-abstract class SearchState<T extends StatefulWidget> extends State<T>
-    with DebounceStreamMixin<String> {
+abstract class DebounceStreamState<T extends StatefulWidget, S> extends State<T>
+    with DebounceStreamMixin<S> {
   @override
   void dispose() {
     subDispose();
@@ -69,7 +71,6 @@ class SSearchController extends GetxController
 
   // suggestion
   final bool searchSuggestion = Pref.searchSuggestion;
-
   late final RxList<SearchSuggestItem> searchSuggestList;
 
   // trending
@@ -166,6 +167,13 @@ class SSearchController extends GetxController
       },
     );
     searchFocusNode.requestFocus();
+    if (Utils.isDesktop) {
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        controller.selection = TextSelection.collapsed(
+          offset: controller.text.length,
+        );
+      });
+    }
   }
 
   // 获取热搜关键词

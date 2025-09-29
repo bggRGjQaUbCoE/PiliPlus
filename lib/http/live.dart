@@ -4,6 +4,7 @@ import 'package:PiliPlus/http/init.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/login.dart';
 import 'package:PiliPlus/http/ua_type.dart';
+import 'package:PiliPlus/models/common/account_type.dart';
 import 'package:PiliPlus/models/common/live_search_type.dart';
 import 'package:PiliPlus/models_new/live/live_area_list/area_item.dart';
 import 'package:PiliPlus/models_new/live/live_area_list/area_list.dart';
@@ -18,13 +19,22 @@ import 'package:PiliPlus/models_new/live/live_room_info_h5/data.dart';
 import 'package:PiliPlus/models_new/live/live_room_play_info/data.dart';
 import 'package:PiliPlus/models_new/live/live_search/data.dart';
 import 'package:PiliPlus/models_new/live/live_second_list/data.dart';
+import 'package:PiliPlus/models_new/live/live_superchat/data.dart';
 import 'package:PiliPlus/utils/accounts.dart';
+import 'package:PiliPlus/utils/accounts/account.dart';
 import 'package:PiliPlus/utils/app_sign.dart';
 import 'package:PiliPlus/utils/wbi_sign.dart';
 import 'package:dio/dio.dart';
 
-class LiveHttp {
-  static Future sendLiveMsg({roomId, msg, dmType, emoticonOptions}) async {
+abstract final class LiveHttp {
+  static Account get recommend => Accounts.get(AccountType.recommend);
+
+  static Future sendLiveMsg({
+    required Object roomId,
+    required Object msg,
+    Object? dmType,
+    Object? emoticonOptions,
+  }) async {
     String csrf = Accounts.main.csrf;
     var res = await Request().post(
       Api.sendLiveMsg,
@@ -164,11 +174,10 @@ class LiveHttp {
 
   static Future<LoadingState<LiveIndexData>> liveFeedIndex({
     required int pn,
-    required bool isLogin,
-    bool? moduleSelect,
+    bool moduleSelect = false,
   }) async {
     final params = {
-      if (isLogin) 'access_key': Accounts.main.accessKey,
+      'access_key': ?recommend.accessKey,
       'appkey': Constants.appKey,
       'channel': 'master',
       'actionKey': 'appkey',
@@ -181,12 +190,12 @@ class LiveHttp {
       'fnval': 912,
       'disable_rcmd': 0,
       'https_url_req': 1,
-      if (moduleSelect == true) 'module_select': 1,
+      if (moduleSelect) 'module_select': 1,
       'mobi_app': 'android',
       'network': 'wifi',
       'page': pn,
       'platform': 'android',
-      if (isLogin) 'relation_page': 1,
+      if (recommend.isLogin) 'relation_page': 1,
       's_locale': 'zh_CN',
       'scale': 2,
       'statistics': Constants.statisticsApp,
@@ -244,13 +253,12 @@ class LiveHttp {
 
   static Future<LoadingState<LiveSecondData>> liveSecondList({
     required int pn,
-    required bool isLogin,
-    required areaId,
-    required parentAreaId,
+    required Object? areaId,
+    required Object? parentAreaId,
     String? sortType,
   }) async {
     final params = {
-      if (isLogin) 'access_key': Accounts.main.accessKey,
+      'access_key': ?recommend.accessKey,
       'appkey': Constants.appKey,
       'actionKey': 'appkey',
       'channel': 'master',
@@ -312,11 +320,9 @@ class LiveHttp {
     }
   }
 
-  static Future<LoadingState<List<AreaList>?>> liveAreaList({
-    required bool isLogin,
-  }) async {
+  static Future<LoadingState<List<AreaList>?>> liveAreaList() async {
     final params = {
-      if (isLogin) 'access_key': Accounts.main.accessKey,
+      'access_key': ?recommend.accessKey,
       'appkey': Constants.appKey,
       'actionKey': 'appkey',
       'build': 8430300,
@@ -351,11 +357,9 @@ class LiveHttp {
     }
   }
 
-  static Future<LoadingState<List<AreaItem>>> getLiveFavTag({
-    required bool isLogin,
-  }) async {
+  static Future<LoadingState<List<AreaItem>>> getLiveFavTag() async {
     final params = {
-      if (isLogin) 'access_key': Accounts.main.accessKey,
+      'access_key': ?Accounts.main.accessKey,
       'appkey': Constants.appKey,
       'actionKey': 'appkey',
       'build': 8430300,
@@ -431,11 +435,10 @@ class LiveHttp {
   }
 
   static Future<LoadingState<List<AreaItem>?>> liveRoomAreaList({
-    required bool isLogin,
-    required parentid,
+    required Object parentid,
   }) async {
     final params = {
-      if (isLogin) 'access_key': Accounts.main.accessKey,
+      'access_key': ?recommend.accessKey,
       'appkey': Constants.appKey,
       'actionKey': 'appkey',
       'build': 8430300,
@@ -472,13 +475,12 @@ class LiveHttp {
   }
 
   static Future<LoadingState<LiveSearchData>> liveSearch({
-    required bool isLogin,
     required int page,
     required String keyword,
     required LiveSearchType type,
   }) async {
     final params = {
-      if (isLogin) 'access_key': Accounts.main.accessKey,
+      'access_key': ?recommend.accessKey,
       'appkey': Constants.appKey,
       'actionKey': 'appkey',
       'build': 8430300,
@@ -640,6 +642,26 @@ class LiveHttp {
       return {'status': true};
     } else {
       return {'status': false, 'msg': res.data['message']};
+    }
+  }
+
+  static Future<LoadingState<SuperChatData>> superChatMsg(
+    dynamic roomId,
+  ) async {
+    var res = await Request().get(
+      Api.superChatMsg,
+      queryParameters: {
+        'room_id': roomId,
+      },
+    );
+    if (res.data['code'] == 0) {
+      try {
+        return Success(SuperChatData.fromJson(res.data['data']));
+      } catch (e) {
+        return Error(e.toString());
+      }
+    } else {
+      return Error(res.data['message']);
     }
   }
 }

@@ -11,11 +11,11 @@ class FollowSearchPage extends CommonSearchPage {
   const FollowSearchPage({
     super.key,
     this.mid,
-    this.isFromSelect,
+    this.isFromSelect = false,
   });
 
   final int? mid;
-  final bool? isFromSelect;
+  final bool isFromSelect;
 
   @override
   State<FollowSearchPage> createState() => _FollowSearchPageState();
@@ -40,7 +40,7 @@ class _FollowSearchPageState
         }
         return FollowItem(
           item: list[index],
-          onSelect: widget.mid != null && widget.isFromSelect != false
+          onSelect: widget.mid != null && widget.isFromSelect
               ? (userModel) => Get.back(result: userModel)
               : null,
         );

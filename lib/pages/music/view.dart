@@ -1,6 +1,6 @@
+import 'dart:io';
 import 'dart:math';
 
-import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/custom_icon.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
@@ -16,10 +16,10 @@ import 'package:PiliPlus/pages/common/dyn/common_dyn_page.dart';
 import 'package:PiliPlus/pages/music/controller.dart';
 import 'package:PiliPlus/pages/music/video/view.dart';
 import 'package:PiliPlus/utils/accounts.dart';
-import 'package:PiliPlus/utils/date_util.dart';
+import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/grid.dart';
-import 'package:PiliPlus/utils/num_util.dart';
+import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -37,9 +37,9 @@ class MusicDetailPage extends StatefulWidget {
 
 class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
   @override
-  final MusicDetailController controller = Get.put(
-    MusicDetailController(),
-    tag: Utils.generateRandomString(8),
+  late final MusicDetailController controller = Get.putOrFind(
+    MusicDetailController.new,
+    tag: Get.parameters['musicId']!,
   );
 
   @override
@@ -48,25 +48,22 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final size = MediaQuery.sizeOf(context);
-    final maxWidth = size.width;
-    isPortrait = size.height >= maxWidth;
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      appBar: _buildAppBar(isPortrait, maxWidth),
+      appBar: _buildAppBar(),
       body: Padding(
         padding: EdgeInsets.only(left: padding.left, right: padding.right),
         child: isPortrait
             ? refreshIndicator(
                 onRefresh: controller.onRefresh,
-                child: _buildBody(theme, isPortrait, maxWidth),
+                child: _buildBody(theme),
               )
-            : _buildBody(theme, isPortrait, maxWidth),
+            : _buildBody(theme),
       ),
     );
   }
 
-  PreferredSizeWidget _buildAppBar(bool isPortrait, double maxWidth) => AppBar(
+  PreferredSizeWidget _buildAppBar() => AppBar(
     title: Padding(
       padding: const EdgeInsets.only(right: 12),
       child: Obx(
@@ -84,8 +81,9 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
                       children: [
                         NetworkImgLayer(
                           src: info.data.mvCover,
-                          width: 40,
-                          height: 40,
+                          width: 36,
+                          height: 36,
+                          type: ImageType.avatar,
                         ),
                         Text(info.data.musicTitle!),
                       ],
@@ -104,11 +102,7 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
           ],
   );
 
-  Widget _buildBody(
-    ThemeData theme,
-    bool isPortrait,
-    double maxWidth,
-  ) => Obx(() {
+  Widget _buildBody(ThemeData theme) => Obx(() {
     switch (controller.infoState.value) {
       case Success(:final response):
         double padding = max(maxWidth / 2 - Grid.smallCardWidth, 0);
@@ -117,7 +111,7 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
           child = Padding(
             padding: EdgeInsets.symmetric(horizontal: padding),
             child: CustomScrollView(
-              controller: controller.scrollController,
+              controller: scrollController,
               physics: const AlwaysScrollableScrollPhysics(),
               slivers: [
                 SliverToBoxAdapter(
@@ -143,7 +137,7 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
               Expanded(
                 flex: flex,
                 child: CustomScrollView(
-                  controller: controller.scrollController,
+                  controller: scrollController,
                   physics: const AlwaysScrollableScrollPhysics(),
                   slivers: [
                     SliverPadding(
@@ -171,7 +165,6 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
                 child: Padding(
                   padding: EdgeInsets.only(right: padding),
                   child: Scaffold(
-                    key: scaffoldKey,
                     backgroundColor: Colors.transparent,
                     resizeToAvoidBottomInset: false,
                     body: refreshIndicator(
@@ -231,7 +224,7 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
           foregroundColor: outline,
         ),
         label: Text(
-          count != null ? NumUtil.numFormat(count) : text,
+          count != null ? NumUtils.numFormat(count) : text,
           style: TextStyle(color: color),
         ),
       );
@@ -242,19 +235,9 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
       right: 0,
       bottom: 0,
       child: SlideTransition(
-        position: controller.fabAnim,
+        position: fabAnim,
         child: controller.showDynActionBar
-            ? Align(
-                alignment: Alignment.bottomRight,
-                child: Padding(
-                  padding: EdgeInsets.only(
-                    right: 14,
-                    bottom: padding.bottom + 14,
-                  ),
-                  child: replyButton,
-                ),
-              )
-            : Column(
+            ? Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
@@ -303,11 +286,10 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
                         // ),
                         Expanded(
                           child: textIconButton(
-                            icon: CustomIcon.share_node,
+                            icon: CustomIcons.share_node,
                             text: '分享',
-                            onPressed: () => Utils.shareText(
-                              'https://music.bilibili.com/h5/music-detail?music_id=${controller.musicId}',
-                            ),
+                            onPressed: () =>
+                                Utils.shareText(controller.shareUrl),
                           ),
                         ),
                         Expanded(
@@ -349,6 +331,16 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
                     ),
                   ),
                 ],
+              )
+            : Align(
+                alignment: Alignment.bottomRight,
+                child: Padding(
+                  padding: EdgeInsets.only(
+                    right: 14,
+                    bottom: padding.bottom + 14,
+                  ),
+                  child: replyButton,
+                ),
               ),
       ),
     );
@@ -358,6 +350,7 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
     Widget child = Text('${artist.identity}: ${artist.name}', style: style);
     if (!artist.face.isNullOrEmpty) {
       child = Row(
+        spacing: 2,
         mainAxisSize: MainAxisSize.min,
         children: [
           NetworkImgLayer(
@@ -370,8 +363,7 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
         ],
       );
     }
-    child = InkWell(
-      borderRadius: StyleString.mdRadius,
+    child = GestureDetector(
       onTap: artist.mid == null || artist.mid == 0
           ? () => Utils.copyText(artist.name!)
           : () => Get.toNamed(
@@ -386,22 +378,39 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
   Widget _buildRank(
     int? rank,
     String name,
-    TextTheme theme, [
+    ThemeData theme, [
     VoidCallback? onTap,
   ]) {
+    final outline = theme.colorScheme.outline;
     final child = Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(NumUtil.numFormat(rank), style: theme.bodyLarge),
-        Text(name, style: theme.bodySmall),
+        Text(NumUtils.numFormat(rank)),
+        Text(
+          name,
+          style: theme.textTheme.bodySmall!.copyWith(color: outline),
+        ),
       ],
     );
     return onTap == null
         ? child
         : InkWell(
             onTap: onTap,
-            borderRadius: StyleString.mdRadius,
-            child: Padding(padding: const EdgeInsets.all(4), child: child),
+            borderRadius: const BorderRadius.all(Radius.circular(6)),
+            child: Padding(
+              padding: const EdgeInsets.all(4),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  child,
+                  Icon(
+                    size: 18,
+                    color: outline,
+                    Icons.keyboard_arrow_right,
+                  ),
+                ],
+              ),
+            ),
           );
   }
 
@@ -414,41 +423,44 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
-                spacing: 8,
+                spacing: 10,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   GestureDetector(
                     onTap: () => PageUtils.imageView(
                       imgList: [SourceModel(url: item.mvCover!)],
                     ),
-                    child: NetworkImgLayer(
-                      src: item.mvCover,
-                      width: 80,
-                      height: 80,
+                    child: Hero(
+                      tag: item.mvCover!,
+                      child: NetworkImgLayer(
+                        src: item.mvCover,
+                        width: 80,
+                        height: 80,
+                      ),
                     ),
                   ),
                   Expanded(
                     child: Column(
                       spacing: 2,
                       mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        InkWell(
-                          borderRadius: StyleString.mdRadius,
-                          // TODO: android intent ACTION_MEDIA_SEARCH
-                          onTap: () => Utils.copyText(
-                            item.musicTitle!,
-                          ),
+                        GestureDetector(
+                          onTap: () => _searchMusic(item),
+                          onLongPress: () => Utils.copyText(item.musicTitle!),
+                          behavior: HitTestBehavior.opaque,
                           child: MarqueeText(
                             item.musicTitle!,
-                            maxWidth: maxWidth - 136, // 80 + 16 + 32 + 8
+                            spacing: 30,
                             style: textTheme.titleMedium,
                           ),
                         ),
                         Wrap(
                           spacing: 8,
                           runSpacing: 2,
-                          alignment: WrapAlignment.spaceEvenly,
                           children: [
                             if (!item.artistsList.isNullOrEmpty)
                               for (var artist in item.artistsList!)
@@ -456,10 +468,13 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
                             if (!item.musicPublish.isNullOrEmpty)
                               Text(
                                 '发行日期：${item.musicPublish}',
-                                style: textTheme.bodySmall,
+                                style: textTheme.bodySmall!.copyWith(
+                                  color: theme.colorScheme.outline,
+                                ),
                               ),
                           ],
                         ),
+                        const SizedBox(height: 3),
                         Wrap(
                           spacing: 16,
                           children: [
@@ -471,22 +486,24 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
                                 fontSize: 11,
                               ),
                             if (item.mvCid != null && item.mvCid != 0)
-                              InkWell(
-                                borderRadius: const BorderRadius.all(
-                                  Radius.circular(4),
-                                ),
+                              GestureDetector(
                                 onTap: () => PageUtils.toVideoPage(
                                   bvid: item.mvBvid,
                                   cid: item.mvCid!,
                                   aid: item.mvAid,
                                 ),
-                                child: ColoredBox(
-                                  color: theme.colorScheme.secondaryContainer
-                                      .withValues(alpha: 0.5),
+                                child: DecoratedBox(
+                                  decoration: BoxDecoration(
+                                    borderRadius: const BorderRadius.all(
+                                      Radius.circular(4),
+                                    ),
+                                    color: theme.colorScheme.secondaryContainer
+                                        .withValues(alpha: 0.5),
+                                  ),
                                   child: Padding(
                                     padding: const EdgeInsets.symmetric(
-                                      vertical: 2,
-                                      horizontal: 3,
+                                      vertical: 3,
+                                      horizontal: 4,
                                     ),
                                     child: Row(
                                       mainAxisSize: MainAxisSize.min,
@@ -540,18 +557,17 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
               const Divider(),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                spacing: 8,
                 children: [
                   const Text('热歌榜排名'),
-                  _buildRank(item.hotSongHeat?.lastHeat, '热度', textTheme),
-                  _buildRank(item.listenPv, '总播放量', textTheme),
+                  _buildRank(item.hotSongHeat?.lastHeat, '热度', theme),
+                  _buildRank(item.listenPv, '总播放量', theme),
                   _buildRank(
                     item.musicRelation,
                     '使用稿件量',
-                    textTheme,
+                    theme,
                     () => Get.to(
                       const MusicRecommandPage(),
-                      arguments: {'id': controller.musicId, 'detail': item},
+                      arguments: (id: controller.musicId, item: item),
                     ),
                   ),
                 ],
@@ -612,7 +628,7 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
                             space: 8 * sqrt2,
                             meta: meta,
                             child: Text(
-                              DateUtil.shortFormat.format(
+                              DateFormatUtils.shortFormat.format(
                                 DateTime.fromMillisecondsSinceEpoch(
                                   heat[index.toInt()].date * 1000,
                                 ),
@@ -663,5 +679,19 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
         ],
       ),
     );
+  }
+
+  Future<void> _searchMusic(MusicDetail item) async {
+    final res =
+        Platform.isAndroid &&
+        (await Utils.channel.invokeMethod<bool>('music', {
+              'title': item.musicTitle,
+              'artist': item.originArtist ?? item.originArtistList,
+              'album': item.album,
+            }) ??
+            false);
+    if (!res) {
+      Utils.copyText(item.musicTitle!);
+    }
   }
 }

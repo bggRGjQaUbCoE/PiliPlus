@@ -150,10 +150,7 @@ class _SendDanmakuPanelState extends CommonTextPubPageState<SendDanmakuPanel> {
         child: Container(
           constraints: const BoxConstraints(maxWidth: 450),
           decoration: BoxDecoration(
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(12),
-              topRight: Radius.circular(12),
-            ),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
             color: themeData.colorScheme.surface,
           ),
           child: Column(
@@ -332,23 +329,24 @@ class _SendDanmakuPanelState extends CommonTextPubPageState<SendDanmakuPanel> {
       child: Row(
         children: [
           Obx(
-            () => iconButton(
-              context: context,
-              tooltip: '弹幕样式',
-              onPressed: () {
-                updatePanelType(
-                  panelType.value == PanelType.keyboard
-                      ? PanelType.emoji
-                      : PanelType.keyboard,
-                );
-              },
-              bgColor: Colors.transparent,
-              iconSize: 24,
-              icon: Icons.text_format,
-              iconColor: panelType.value == PanelType.emoji
-                  ? themeData.colorScheme.primary
-                  : themeData.colorScheme.onSurfaceVariant,
-            ),
+            () {
+              final isEmoji = panelType.value == PanelType.emoji;
+              return iconButton(
+                context: context,
+                tooltip: '弹幕样式',
+                onPressed: () {
+                  updatePanelType(
+                    isEmoji ? PanelType.keyboard : PanelType.emoji,
+                  );
+                },
+                bgColor: Colors.transparent,
+                iconSize: 24,
+                icon: Icons.text_format,
+                iconColor: isEmoji
+                    ? themeData.colorScheme.primary
+                    : themeData.colorScheme.onSurfaceVariant,
+              );
+            },
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -433,7 +431,6 @@ class _SendDanmakuPanelState extends CommonTextPubPageState<SendDanmakuPanel> {
         contentPadding: const EdgeInsets.symmetric(vertical: 16),
         title: const Text('Color Picker'),
         content: SlideColorPicker(
-          showResetBtn: false,
           color: _color.value,
           callback: (Color? color) {
             if (color != null) {
@@ -457,7 +454,7 @@ class _SendDanmakuPanelState extends CommonTextPubPageState<SendDanmakuPanel> {
       msg: editController.text,
       mode: _mode.value,
       fontsize: _fontsize.value,
-      color: isColorful ? null : _color.value.value & 0xFFFFFF,
+      color: isColorful ? null : _color.value.toARGB32() & 0xFFFFFF,
       colorful: isColorful,
     );
     SmartDialog.dismiss();

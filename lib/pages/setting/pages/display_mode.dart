@@ -62,19 +62,31 @@ class _SetDisplayModeState extends State<SetDisplayMode> {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(title: const Text('屏幕帧率设置')),
-      body: SafeArea(
-        bottom: false,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(left: 25, top: 10, bottom: 5),
-              child: Text(
-                '没有生效？重启app试试',
-                style: TextStyle(color: Theme.of(context).colorScheme.outline),
-              ),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding:
+                MediaQuery.viewPaddingOf(context).copyWith(top: 0, bottom: 0) +
+                const EdgeInsets.only(left: 25, top: 10, bottom: 5),
+            child: Text(
+              '没有生效？重启app试试',
+              style: TextStyle(color: Theme.of(context).colorScheme.outline),
             ),
-            Expanded(
+          ),
+          Expanded(
+            child: RadioGroup(
+              onChanged: (DisplayMode? newMode) {
+                FlutterDisplayMode.setPreferredMode(
+                  newMode!,
+                ).whenComplete(
+                  () => Future.delayed(
+                    const Duration(milliseconds: 100),
+                    fetchAll,
+                  ),
+                );
+              },
+              groupValue: preferred,
               child: ListView.builder(
                 itemCount: modes.length,
                 itemBuilder: (context, index) {
@@ -84,23 +96,12 @@ class _SetDisplayModeState extends State<SetDisplayMode> {
                     title: mode == DisplayMode.auto
                         ? const Text('自动')
                         : Text('$mode${mode == active ? '  [系统]' : ''}'),
-                    groupValue: preferred,
-                    onChanged: (DisplayMode? newMode) {
-                      FlutterDisplayMode.setPreferredMode(
-                        newMode!,
-                      ).whenComplete(
-                        () => Future.delayed(
-                          const Duration(milliseconds: 100),
-                          fetchAll,
-                        ),
-                      );
-                    },
                   );
                 },
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

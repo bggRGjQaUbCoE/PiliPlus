@@ -7,6 +7,7 @@ import 'package:PiliPlus/pages/member_contribute/controller.dart';
 import 'package:PiliPlus/pages/member_opus/view.dart';
 import 'package:PiliPlus/pages/member_season_series/view.dart';
 import 'package:PiliPlus/pages/member_video/view.dart';
+import 'package:PiliPlus/utils/extension.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -31,8 +32,8 @@ class _MemberContributeState extends State<MemberContribute>
   @override
   bool get wantKeepAlive => true;
 
-  late final _controller = Get.put(
-    MemberContributeCtr(
+  late final _controller = Get.putOrFind(
+    () => MemberContributeCtr(
       heroTag: widget.heroTag,
       initialIndex: widget.initialIndex,
     ),
@@ -45,38 +46,36 @@ class _MemberContributeState extends State<MemberContribute>
     final theme = Theme.of(context);
     return _controller.tabs != null
         ? Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SizedBox(
-                width: double.infinity,
-                child: TabBar(
-                  overlayColor: const WidgetStatePropertyAll(
-                    Colors.transparent,
-                  ),
-                  splashFactory: NoSplash.splashFactory,
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  isScrollable: true,
-                  tabs: _controller.tabs!,
-                  tabAlignment: TabAlignment.start,
-                  controller: _controller.tabController,
-                  dividerHeight: 0,
-                  indicatorWeight: 0,
-                  indicatorPadding: const EdgeInsets.symmetric(
-                    horizontal: 3,
-                    vertical: 8,
-                  ),
-                  indicator: BoxDecoration(
-                    color: theme.colorScheme.secondaryContainer,
-                    borderRadius: const BorderRadius.all(Radius.circular(20)),
-                  ),
-                  indicatorSize: TabBarIndicatorSize.tab,
-                  labelStyle:
-                      TabBarTheme.of(
-                        context,
-                      ).labelStyle?.copyWith(fontSize: 14) ??
-                      const TextStyle(fontSize: 14),
-                  labelColor: theme.colorScheme.onSecondaryContainer,
-                  unselectedLabelColor: theme.colorScheme.outline,
+              TabBar(
+                overlayColor: const WidgetStatePropertyAll(
+                  Colors.transparent,
                 ),
+                splashFactory: NoSplash.splashFactory,
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                isScrollable: true,
+                tabs: _controller.tabs!,
+                tabAlignment: TabAlignment.start,
+                controller: _controller.tabController,
+                dividerHeight: 0,
+                indicatorWeight: 0,
+                indicatorPadding: const EdgeInsets.symmetric(
+                  horizontal: 3,
+                  vertical: 8,
+                ),
+                indicator: BoxDecoration(
+                  color: theme.colorScheme.secondaryContainer,
+                  borderRadius: const BorderRadius.all(Radius.circular(20)),
+                ),
+                indicatorSize: TabBarIndicatorSize.tab,
+                labelStyle:
+                    TabBarTheme.of(
+                      context,
+                    ).labelStyle?.copyWith(fontSize: 14) ??
+                    const TextStyle(fontSize: 14),
+                labelColor: theme.colorScheme.onSecondaryContainer,
+                unselectedLabelColor: theme.colorScheme.outline,
               ),
               Expanded(
                 child: TabBarView(

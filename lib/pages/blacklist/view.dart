@@ -6,7 +6,7 @@ import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/models_new/blacklist/list.dart';
 import 'package:PiliPlus/pages/blacklist/controller.dart';
-import 'package:PiliPlus/utils/date_util.dart';
+import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/global_data.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:flutter/material.dart';
@@ -98,7 +98,7 @@ class _BlackListPageState extends State<BlackListPage> {
                       style: const TextStyle(fontSize: 14),
                     ),
                     subtitle: Text(
-                      '添加时间: ${DateUtil.format(item.mtime, format: DateUtil.longFormatDs)}',
+                      '添加时间: ${DateFormatUtils.format(item.mtime, format: DateFormatUtils.longFormatDs)}',
                       maxLines: 1,
                       style: style,
                       overflow: TextOverflow.ellipsis,

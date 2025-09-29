@@ -449,7 +449,6 @@ List<SettingsModel> get styleSettings => [
           contentPadding: const EdgeInsets.symmetric(vertical: 16),
           title: const Text('Color Picker'),
           content: SlideColorPicker(
-            showResetBtn: false,
             color: reduceLuxColor ?? Colors.white,
             callback: (Color? color) {
               if (color != null && color != reduceLuxColor) {
@@ -567,7 +566,7 @@ List<SettingsModel> get styleSettings => [
     setKey: SettingBoxKey.isPureBlackTheme,
     defaultVal: false,
     onChanged: (value) {
-      if (Get.theme.brightness == Brightness.dark || Pref.darkVideoPage) {
+      if (Get.isDarkMode || Pref.darkVideoPage) {
         Get.forceAppUpdate();
       }
     },
@@ -578,7 +577,7 @@ List<SettingsModel> get styleSettings => [
     leading: const Icon(Icons.color_lens_outlined),
     title: '应用主题',
     getSubtitle: () =>
-        '当前主题：${Get.put(ColorSelectController()).type.value == 0 ? '动态取色' : '指定颜色'}',
+        '当前主题：${Get.put(ColorSelectController()).dynamicColor.value ? '动态取色' : '指定颜色'}',
   ),
   SettingsModel(
     settingsType: SettingsType.normal,

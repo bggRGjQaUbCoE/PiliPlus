@@ -27,9 +27,7 @@ class _RankPageState extends State<RankPage>
         SizedBox(
           width: 64,
           child: ListView(
-            padding: EdgeInsets.only(
-              bottom: MediaQuery.viewPaddingOf(context).bottom + 100,
-            ),
+            padding: const EdgeInsets.only(bottom: 100),
             children: List.generate(
               RankType.values.length,
               (index) => IntrinsicHeight(
@@ -53,13 +51,14 @@ class _RankPageState extends State<RankPage>
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Container(
-                              height: double.infinity,
-                              width: 3,
-                              color: isCurr
-                                  ? theme.colorScheme.primary
-                                  : Colors.transparent,
-                            ),
+                            if (isCurr)
+                              Container(
+                                height: double.infinity,
+                                width: 3,
+                                color: theme.colorScheme.primary,
+                              )
+                            else
+                              const SizedBox(width: 3),
                             Expanded(
                               flex: 1,
                               child: Container(

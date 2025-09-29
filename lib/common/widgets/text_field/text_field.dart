@@ -84,9 +84,11 @@ typedef InputCounterWidgetBuilder =
 
 class _TextFieldSelectionGestureDetectorBuilder
     extends TextSelectionGestureDetectorBuilder {
-  _TextFieldSelectionGestureDetectorBuilder({required RichTextFieldState state})
-    : _state = state,
-      super(delegate: state);
+  _TextFieldSelectionGestureDetectorBuilder({
+    required RichTextFieldState state,
+    required super.controller,
+  }) : _state = state,
+       super(delegate: state);
 
   final RichTextFieldState _state;
 
@@ -1373,7 +1375,10 @@ class RichTextFieldState extends State<RichTextField>
   void initState() {
     super.initState();
     _selectionGestureDetectorBuilder =
-        _TextFieldSelectionGestureDetectorBuilder(state: this);
+        _TextFieldSelectionGestureDetectorBuilder(
+          state: this,
+          controller: widget.controller,
+        );
     // if (widget.controller == null) {
     //   _createLocalController();
     // }

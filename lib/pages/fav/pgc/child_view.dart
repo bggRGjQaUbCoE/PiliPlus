@@ -78,7 +78,6 @@ class _FavPgcChildPageState extends State<FavPgcChildPage>
                     ),
                   ),
                 ),
-                width: double.infinity,
                 child: Row(
                   children: [
                     const SizedBox(width: 16),

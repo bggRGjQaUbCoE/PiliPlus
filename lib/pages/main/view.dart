@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/tabs.dart';
 import 'package:PiliPlus/models/common/dynamic/dynamic_badge_mode.dart';
@@ -8,16 +9,21 @@ import 'package:PiliPlus/models/common/nav_bar_config.dart';
 import 'package:PiliPlus/pages/home/view.dart';
 import 'package:PiliPlus/pages/main/controller.dart';
 import 'package:PiliPlus/pages/mine/controller.dart';
+import 'package:PiliPlus/plugin/pl_player/controller.dart';
+import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
 import 'package:PiliPlus/utils/context_ext.dart';
 import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
+import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart' hide ContextExtensionss;
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:tray_manager/tray_manager.dart';
+import 'package:window_manager/window_manager.dart';
 
 class MainApp extends StatefulWidget {
   const MainApp({super.key});
@@ -27,20 +33,32 @@ class MainApp extends StatefulWidget {
 }
 
 class _MainAppState extends State<MainApp>
-    with RouteAware, WidgetsBindingObserver {
+    with RouteAware, WidgetsBindingObserver, WindowListener, TrayListener {
   final MainController _mainController = Get.put(MainController());
+  late final _setting = GStorage.setting;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    if (Utils.isDesktop) {
+      windowManager
+        ..addListener(this)
+        ..setPreventClose(true);
+      trayManager.addListener(this);
+      _handleTray();
+    }
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    final brightness = Theme.brightnessOf(context);
     NetworkImgLayer.reduce =
-        NetworkImgLayer.reduceLuxColor != null && context.isDarkMode;
+        NetworkImgLayer.reduceLuxColor != null && brightness.isDark;
+    if (Utils.isDesktop) {
+      windowManager.setBrightness(brightness);
+    }
     PageUtils.routeObserver.subscribe(
       this,
       ModalRoute.of(context) as PageRoute,
@@ -53,7 +71,7 @@ class _MainAppState extends State<MainApp>
     _mainController
       ..checkUnreadDynamic()
       ..checkDefaultSearch(true)
-      ..checkUnread(context.isPortrait);
+      ..checkUnread(useBottomNav);
     super.didPopNext();
   }
 
@@ -69,17 +87,138 @@ class _MainAppState extends State<MainApp>
       _mainController
         ..checkUnreadDynamic()
         ..checkDefaultSearch(true)
-        ..checkUnread(context.isPortrait);
+        ..checkUnread(useBottomNav);
     }
   }
 
   @override
   void dispose() {
+    if (Utils.isDesktop) {
+      trayManager.removeListener(this);
+      windowManager.removeListener(this);
+    }
     PageUtils.routeObserver.unsubscribe(this);
     WidgetsBinding.instance.removeObserver(this);
-    GStorage.close();
     PiliScheme.listener?.cancel();
+    GStorage.close();
     super.dispose();
+  }
+
+  @override
+  void onWindowMaximize() {
+    _setting.put(SettingBoxKey.isWindowMaximized, true);
+  }
+
+  @override
+  void onWindowUnmaximize() {
+    _setting.put(SettingBoxKey.isWindowMaximized, false);
+  }
+
+  @override
+  Future<void> onWindowMoved() async {
+    final Offset offset = await windowManager.getPosition();
+    _setting.put(SettingBoxKey.windowPosition, [offset.dx, offset.dy]);
+  }
+
+  @override
+  Future<void> onWindowResized() async {
+    final Rect bounds = await windowManager.getBounds();
+    _setting.putAll({
+      SettingBoxKey.windowSize: [bounds.width, bounds.height],
+      SettingBoxKey.windowPosition: [bounds.left, bounds.top],
+    });
+  }
+
+  @override
+  void onWindowClose() {
+    if (_mainController.minimizeOnExit) {
+      windowManager.hide();
+      _onHideWindow();
+    } else {
+      _onClose();
+    }
+  }
+
+  void _onClose() {
+    if (Platform.isWindows) {
+      const MethodChannel('window_control').invokeMethod('closeWindow');
+    } else {
+      exit(0);
+    }
+  }
+
+  @override
+  void onWindowMinimize() {
+    _onHideWindow();
+  }
+
+  @override
+  void onWindowRestore() {
+    _onShowWindow();
+  }
+
+  void _onHideWindow() {
+    if (_mainController.pauseOnMinimize) {
+      _mainController.isPlaying =
+          PlPlayerController.instance?.playerStatus.status.value ==
+          PlayerStatus.playing;
+      PlPlayerController.pauseIfExists();
+    }
+  }
+
+  void _onShowWindow() {
+    if (_mainController.pauseOnMinimize) {
+      if (_mainController.isPlaying) {
+        PlPlayerController.playIfExists();
+      }
+    }
+  }
+
+  @override
+  Future<void> onTrayIconMouseDown() async {
+    if (await windowManager.isVisible()) {
+      _onHideWindow();
+      windowManager.hide();
+    } else {
+      _onShowWindow();
+      windowManager.show();
+    }
+  }
+
+  @override
+  Future<void> onTrayIconRightMouseDown() async {
+    // ignore: deprecated_member_use
+    trayManager.popUpContextMenu(bringAppToFront: true);
+  }
+
+  @override
+  void onTrayMenuItemClick(MenuItem menuItem) {
+    switch (menuItem.key) {
+      case 'show':
+        windowManager.show();
+      case 'exit':
+        _onClose();
+    }
+  }
+
+  Future<void> _handleTray() async {
+    if (Platform.isWindows) {
+      await trayManager.setIcon('assets/images/logo/app_icon.ico');
+    } else {
+      await trayManager.setIcon('assets/images/logo/logo_large.png');
+    }
+    if (!Platform.isLinux) {
+      await trayManager.setToolTip(Constants.appName);
+    }
+
+    Menu trayMenu = Menu(
+      items: [
+        MenuItem(key: 'show', label: '显示窗口'),
+        MenuItem.separator(),
+        MenuItem(key: 'exit', label: '退出 ${Constants.appName}'),
+      ],
+    );
+    await trayManager.setContextMenu(trayMenu);
   }
 
   void onBack() {
@@ -90,17 +229,20 @@ class _MainAppState extends State<MainApp>
     }
   }
 
+  late bool useBottomNav;
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final padding = MediaQuery.viewPaddingOf(context);
-    final bool isPortrait = context.isPortrait;
-    final useBottomNav = isPortrait && !_mainController.useSideBar;
+    useBottomNav =
+        !_mainController.useSideBar && MediaQuery.sizeOf(context).isPortrait;
     Widget? bottomNav = useBottomNav
         ? _mainController.navigationBars.length > 1
               ? _mainController.enableMYBar
                     ? Obx(
                         () => NavigationBar(
+                          maintainBottomViewPadding: true,
                           onDestinationSelected: _mainController.setIndex,
                           selectedIndex: _mainController.selectedIndex.value,
                           destinations: _mainController.navigationBars
@@ -167,7 +309,10 @@ class _MainAppState extends State<MainApp>
           resizeToAvoidBottomInset: false,
           appBar: AppBar(toolbarHeight: 0),
           body: Padding(
-            padding: EdgeInsets.only(right: padding.right),
+            padding: EdgeInsets.only(
+              left: useBottomNav ? padding.left : 0.0,
+              right: padding.right,
+            ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -261,7 +406,7 @@ class _MainAppState extends State<MainApp>
                 Expanded(
                   child: _mainController.mainTabBarView
                       ? CustomTabBarView(
-                          scrollDirection: isPortrait
+                          scrollDirection: useBottomNav
                               ? Axis.horizontal
                               : Axis.vertical,
                           physics: const NeverScrollableScrollPhysics(),

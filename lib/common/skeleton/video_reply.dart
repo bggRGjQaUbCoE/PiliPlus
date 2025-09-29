@@ -30,9 +30,8 @@ class VideoReplySkeleton extends StatelessWidget {
               ],
             ),
           ),
-          Container(
-            width: double.infinity,
-            margin: const EdgeInsets.only(
+          Padding(
+            padding: const EdgeInsets.only(
               top: 4,
               left: 57,
               right: 6,

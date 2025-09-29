@@ -8,7 +8,7 @@ import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 
-class UrlUtils {
+abstract class UrlUtils {
   // 302重定向路由截取
   static Future<String?> parseRedirectUrl(
     String url, [
@@ -44,10 +44,10 @@ class UrlUtils {
     String pathSegment,
     String redirectUrl,
   ) async {
-    final Map matchRes = IdUtils.matchAvorBv(input: pathSegment);
+    final matchRes = IdUtils.matchAvorBv(input: pathSegment);
     if (matchRes.isNotEmpty) {
-      int? aid = matchRes['AV'];
-      String? bvid = matchRes['BV'];
+      final aid = matchRes.av;
+      String? bvid = matchRes.bv;
       bvid ??= IdUtils.av2bv(aid!);
       final int? cid = await SearchHttp.ab2c(aid: aid, bvid: bvid);
       if (cid != null) {

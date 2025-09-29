@@ -7,6 +7,7 @@ import 'package:PiliPlus/models/common/badge_type.dart';
 import 'package:PiliPlus/models_new/fav/fav_pgc/list.dart';
 import 'package:PiliPlus/pages/common/multi_select/base.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
+import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart';
 
 class FavPgcItem extends StatelessWidget {
@@ -22,6 +23,13 @@ class FavPgcItem extends StatelessWidget {
   final MultiSelectBase ctr;
   final VoidCallback onSelect;
   final VoidCallback onUpdateStatus;
+
+  void onLongPress() {
+    if (!ctr.enableMultiSelect.value) {
+      ctr.enableMultiSelect.value = true;
+      onSelect();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,12 +47,8 @@ class FavPgcItem extends StatelessWidget {
               }
               PageUtils.viewPgc(seasonId: item.seasonId);
             },
-            onLongPress: () {
-              if (!ctr.enableMultiSelect.value) {
-                ctr.enableMultiSelect.value = true;
-                onSelect();
-              }
-            },
+            onLongPress: Utils.isMobile ? onLongPress : null,
+            onSecondaryTap: Utils.isMobile ? null : onLongPress,
             child: Padding(
               padding: const EdgeInsets.symmetric(
                 horizontal: StyleString.safeSpace,

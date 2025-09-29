@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/widgets/common_btn.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
+import 'package:PiliPlus/utils/utils.dart';
 import 'package:floating/floating.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -72,11 +73,13 @@ class LiveHeaderControl extends StatelessWidget {
         children: [
           if (isFullScreen)
             ComBtn(
+              tooltip: '返回',
               icon: const Icon(FontAwesomeIcons.arrowLeft, size: 15),
               onTap: () => plPlayerController.triggerFullScreen(status: false),
             ),
           child,
           ComBtn(
+            tooltip: '发弹幕',
             icon: const Icon(
               size: 18,
               Icons.comment_outlined,
@@ -88,6 +91,7 @@ class LiveHeaderControl extends StatelessWidget {
             () {
               final onlyPlayAudio = plPlayerController.onlyPlayAudio.value;
               return ComBtn(
+                tooltip: '仅播放音频',
                 onTap: () {
                   plPlayerController.onlyPlayAudio.value = !onlyPlayAudio;
                   onPlayAudio();
@@ -106,18 +110,21 @@ class LiveHeaderControl extends StatelessWidget {
               );
             },
           ),
-          if (Platform.isAndroid)
+          if (Platform.isAndroid || Utils.isDesktop)
             ComBtn(
+              tooltip: '画中画',
               onTap: () async {
+                if (Utils.isDesktop) {
+                  plPlayerController.toggleDesktopPip();
+                  return;
+                }
                 try {
                   var floating = Floating();
                   if ((await floating.isPipAvailable) == true) {
                     plPlayerController.hiddenControls(false);
                     floating.enable(
                       plPlayerController.isVertical
-                          ? const EnableManual(
-                              aspectRatio: Rational.vertical(),
-                            )
+                          ? const EnableManual(aspectRatio: Rational.vertical())
                           : const EnableManual(),
                     );
                   }
@@ -130,11 +137,8 @@ class LiveHeaderControl extends StatelessWidget {
               ),
             ),
           ComBtn(
-            onTap: () => PageUtils.scheduleExit(
-              context,
-              plPlayerController.isFullScreen.value,
-              true,
-            ),
+            tooltip: '定时关闭',
+            onTap: () => PageUtils.scheduleExit(context, isFullScreen, true),
             icon: const Icon(
               size: 18,
               Icons.schedule,

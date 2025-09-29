@@ -14,7 +14,7 @@ class SearchAllController
     required super.tag,
   });
 
-  bool? hasJump2Video;
+  late bool hasJump2Video = false;
 
   @override
   void onInit() {
@@ -31,7 +31,7 @@ class SearchAllController
   bool customHandleResponse(bool isRefresh, Success response) {
     searchResultController?.count[searchType.index] =
         response.response.numResults ?? 0;
-    if (searchType == SearchType.video && hasJump2Video != true && isRefresh) {
+    if (searchType == SearchType.video && !hasJump2Video && isRefresh) {
       hasJump2Video = true;
       onPushDetail(response.response.list);
     }

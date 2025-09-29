@@ -227,12 +227,6 @@ class _SponsorBlockPageState extends State<SponsorBlockPage> {
           alignment: Alignment.centerRight,
           scale: 0.8,
           child: Switch(
-            thumbIcon: WidgetStateProperty.resolveWith<Icon?>((states) {
-              if (states.isNotEmpty && states.first == WidgetState.selected) {
-                return const Icon(Icons.done);
-              }
-              return null;
-            }),
             value: _blockToast,
             onChanged: (val) => update(),
           ),
@@ -268,12 +262,6 @@ class _SponsorBlockPageState extends State<SponsorBlockPage> {
           alignment: Alignment.centerRight,
           scale: 0.8,
           child: Switch(
-            thumbIcon: WidgetStateProperty.resolveWith<Icon?>((states) {
-              if (states.isNotEmpty && states.first == WidgetState.selected) {
-                return const Icon(Icons.done);
-              }
-              return null;
-            }),
             value: _blockTrack,
             onChanged: (val) => update(),
           ),
@@ -417,12 +405,13 @@ class _SponsorBlockPageState extends State<SponsorBlockPage> {
         ),
         content: SlideColorPicker(
           color: color,
+          showResetBtn: true,
           callback: (Color? color) {
             _blockColor[index] = color ?? item.first.color;
             setting.put(
               SettingBoxKey.blockColor,
               _blockColor
-                  .map((item) => item.value.toRadixString(16).substring(2))
+                  .map((item) => item.toARGB32().toRadixString(16).substring(2))
                   .toList(),
             );
             (context as Element).markNeedsBuild();

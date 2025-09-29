@@ -20,7 +20,7 @@ class AppBarAni extends StatelessWidget {
     return SlideTransition(
       position:
           Tween<Offset>(
-            begin: isTop ? const Offset(0, -1) : const Offset(0, 1.1),
+            begin: isTop ? const Offset(0, -1) : const Offset(0, 1.2),
             end: Offset.zero,
           ).animate(
             CurvedAnimation(
@@ -36,7 +36,7 @@ class AppBarAni extends StatelessWidget {
                   end: Alignment.topCenter,
                   colors: <Color>[
                     Colors.transparent,
-                    Colors.black54,
+                    Color(0xBF000000),
                   ],
                   tileMode: TileMode.mirror,
                 )
@@ -45,7 +45,7 @@ class AppBarAni extends StatelessWidget {
                   end: Alignment.bottomCenter,
                   colors: <Color>[
                     Colors.transparent,
-                    Colors.black54,
+                    Color(0xBF000000),
                   ],
                   tileMode: TileMode.mirror,
                 ),

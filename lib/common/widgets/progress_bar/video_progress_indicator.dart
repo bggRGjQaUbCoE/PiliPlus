@@ -4,10 +4,7 @@ import 'package:flutter/material.dart';
 Widget videoProgressIndicator(double progress) => ClipRect(
   clipper: ProgressClipper(),
   child: ClipRRect(
-    borderRadius: const BorderRadius.only(
-      bottomLeft: StyleString.imgRadius,
-      bottomRight: StyleString.imgRadius,
-    ),
+    borderRadius: const BorderRadius.vertical(bottom: StyleString.imgRadius),
     child: LinearProgressIndicator(
       minHeight: 10,
       value: progress,

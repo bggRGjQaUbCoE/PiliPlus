@@ -9,8 +9,8 @@ import 'package:PiliPlus/models/common/badge_type.dart';
 import 'package:PiliPlus/models/common/stat_type.dart';
 import 'package:PiliPlus/models/model_rec_video_item.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
-import 'package:PiliPlus/utils/date_util.dart';
-import 'package:PiliPlus/utils/duration_util.dart';
+import 'package:PiliPlus/utils/date_utils.dart';
+import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
@@ -67,6 +67,11 @@ class VideoCardV extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    void onLongPress() => imageSaveDialog(
+      title: videoItem.title,
+      cover: videoItem.cover,
+      bvid: videoItem.bvid,
+    );
     return Stack(
       clipBehavior: Clip.none,
       children: [
@@ -74,11 +79,8 @@ class VideoCardV extends StatelessWidget {
           clipBehavior: Clip.hardEdge,
           child: InkWell(
             onTap: () => onPushDetail(Utils.makeHeroTag(videoItem.aid)),
-            onLongPress: () => imageSaveDialog(
-              title: videoItem.title,
-              cover: videoItem.cover,
-              bvid: videoItem.bvid,
-            ),
+            onLongPress: Utils.isMobile ? onLongPress : null,
+            onSecondaryTap: Utils.isMobile ? null : onLongPress,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -103,7 +105,7 @@ class VideoCardV extends StatelessWidget {
                               right: 7,
                               size: PBadgeSize.small,
                               type: PBadgeType.gray,
-                              text: DurationUtil.formatDuration(
+                              text: DurationUtils.formatDuration(
                                 videoItem.duration,
                               ),
                             ),
@@ -233,7 +235,7 @@ class VideoCardV extends StatelessWidget {
                 fontSize: theme.textTheme.labelSmall!.fontSize,
                 color: theme.colorScheme.outline.withValues(alpha: 0.8),
               ),
-              text: DateUtil.dateFormat(
+              text: DateFormatUtils.dateFormat(
                 videoItem.pubdate,
                 short: shortFormat,
                 long: longFormat,

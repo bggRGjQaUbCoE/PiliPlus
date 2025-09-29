@@ -5,6 +5,8 @@ import 'package:PiliPlus/models_new/music/bgm_recommend_list.dart';
 import 'package:PiliPlus/pages/common/common_list_controller.dart';
 import 'package:get/get.dart';
 
+typedef MusicRecommendArgs = ({String id, MusicDetail item});
+
 class MusicRecommendController
     extends CommonListController<List<BgmRecommend>?, BgmRecommend> {
   late final String musicId;
@@ -13,9 +15,9 @@ class MusicRecommendController
   @override
   void onInit() {
     super.onInit();
-    final Map<String, dynamic> args = Get.arguments;
-    musicId = args['id'];
-    musicDetail = args['detail'];
+    final MusicRecommendArgs args = Get.arguments;
+    musicId = args.id;
+    musicDetail = args.item;
     queryData();
   }
 

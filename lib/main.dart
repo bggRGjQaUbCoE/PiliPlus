@@ -1,7 +1,9 @@
 import 'dart:io';
 
 import 'package:PiliPlus/build_config.dart';
+import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/widgets/custom_toast.dart';
+import 'package:PiliPlus/common/widgets/mouse_back.dart';
 import 'package:PiliPlus/http/init.dart';
 import 'package:PiliPlus/models/common/theme/theme_color_type.dart';
 import 'package:PiliPlus/router/app_pages.dart';
@@ -10,73 +12,117 @@ import 'package:PiliPlus/services/logger.dart';
 import 'package:PiliPlus/services/service_locator.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
 import 'package:PiliPlus/utils/cache_manage.dart';
-import 'package:PiliPlus/utils/date_util.dart';
+import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/request_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/theme_utils.dart';
+import 'package:PiliPlus/utils/utils.dart';
 import 'package:catcher_2/catcher_2.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flex_seed_scheme/flex_seed_scheme.dart';
-import 'package:flutter/foundation.dart' show kDebugMode;
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart' show PointerDeviceKind;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
-import 'package:media_kit/media_kit.dart'; // Provides [Player], [Media], [Playlist] etc.
+import 'package:media_kit/media_kit.dart';
+import 'package:path/path.dart' as path;
+import 'package:path_provider/path_provider.dart';
+import 'package:window_manager/window_manager.dart';
+
+WebViewEnvironment? webViewEnvironment;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   MediaKit.ensureInitialized();
-  await GStorage.init();
-  Get.put(AccountService());
-  if (Pref.autoClearCache) {
-    await CacheManage.clearLibraryCache();
-  } else {
-    final num maxCacheSize = Pref.maxCacheSize;
-    if (maxCacheSize != 0) {
-      final double currCache = await CacheManage().loadApplicationCache();
-      if (currCache >= maxCacheSize) {
-        await CacheManage.clearLibraryCache();
-      }
+  try {
+    await GStorage.init();
+  } catch (e) {
+    await Utils.copyText(e.toString());
+    if (kDebugMode) debugPrint('GStorage init error: $e');
+    exit(0);
+  }
+  Get.lazyPut(AccountService.new);
+  HttpOverrides.global = _CustomHttpOverrides();
+
+  CacheManage.autoClearCache();
+
+  if (Utils.isMobile) {
+    await Future.wait([
+      SystemChrome.setPreferredOrientations(
+        [
+          DeviceOrientation.portraitUp,
+          if (Pref.horizontalScreen) ...[
+            DeviceOrientation.landscapeLeft,
+            DeviceOrientation.landscapeRight,
+          ],
+        ],
+      ),
+      setupServiceLocator(),
+    ]);
+  }
+
+  if (Platform.isWindows) {
+    if (await WebViewEnvironment.getAvailableVersion() != null) {
+      final dir = await getApplicationSupportDirectory();
+      webViewEnvironment = await WebViewEnvironment.create(
+        settings: WebViewEnvironmentSettings(
+          userDataFolder: path.join(dir.path, 'flutter_inappwebview'),
+        ),
+      );
     }
   }
-  if (Pref.horizontalScreen) {
-    await SystemChrome.setPreferredOrientations(
-      //支持竖屏与横屏
-      [
-        DeviceOrientation.portraitUp,
-        // DeviceOrientation.portraitDown,
-        DeviceOrientation.landscapeLeft,
-        DeviceOrientation.landscapeRight,
-      ],
-    );
-  } else {
-    await SystemChrome.setPreferredOrientations(
-      //支持竖屏
-      [
-        DeviceOrientation.portraitUp,
-      ],
-    );
-  }
-  HttpOverrides.global = _CustomHttpOverrides();
-  await setupServiceLocator();
+
   Request();
   Request.setCookie();
+  RequestUtils.syncHistoryStatus();
+  if (Utils.isMobile) {
+    PiliScheme.init();
+  }
 
   SmartDialog.config.toast = SmartConfigToast(
     displayType: SmartToastType.onlyRefresh,
   );
 
+  if (Utils.isMobile) {
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(
+        systemNavigationBarColor: Colors.transparent,
+        systemNavigationBarDividerColor: Colors.transparent,
+        statusBarColor: Colors.transparent,
+        systemNavigationBarContrastEnforced: false,
+      ),
+    );
+  } else if (Utils.isDesktop) {
+    await windowManager.ensureInitialized();
+
+    WindowOptions windowOptions = const WindowOptions(
+      minimumSize: Size(400, 720),
+      skipTaskbar: false,
+      titleBarStyle: TitleBarStyle.normal,
+      title: Constants.appName,
+    );
+    windowManager.waitUntilReadyToShow(windowOptions, () async {
+      await windowManager.setBounds(await Utils.windowOffset & Pref.windowSize);
+      if (Pref.isWindowMaximized) await windowManager.maximize();
+      await windowManager.show();
+      await windowManager.focus();
+    });
+  }
+
   if (Pref.enableLog) {
     // 异常捕获 logo记录
     String buildConfig =
         '''\n
-Build Time: ${DateUtil.format(BuildConfig.buildTime, format: DateUtil.longFormatDs)}
+Build Time: ${DateFormatUtils.format(BuildConfig.buildTime, format: DateFormatUtils.longFormatDs)}
 Commit Hash: ${BuildConfig.commitHash}''';
     final Catcher2Options debugConfig = Catcher2Options(
       SilentReportMode(),
@@ -116,19 +162,6 @@ Commit Hash: ${BuildConfig.commitHash}''';
   } else {
     runApp(const MyApp());
   }
-
-  // 小白条、导航栏沉浸
-  SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-  SystemChrome.setSystemUIOverlayStyle(
-    const SystemUiOverlayStyle(
-      systemNavigationBarColor: Colors.transparent,
-      systemNavigationBarDividerColor: Colors.transparent,
-      statusBarColor: Colors.transparent,
-      systemNavigationBarContrastEnforced: false,
-    ),
-  );
-  RequestUtils.syncHistoryStatus();
-  PiliScheme.init();
 }
 
 class MyApp extends StatelessWidget {
@@ -147,7 +180,9 @@ class MyApp extends StatelessWidget {
       late List<DisplayMode> modes;
       FlutterDisplayMode.supported.then((value) {
         modes = value;
-        var storageDisplay = GStorage.setting.get(SettingBoxKey.displayMode);
+        final String? storageDisplay = GStorage.setting.get(
+          SettingBoxKey.displayMode,
+        );
         DisplayMode? displayMode;
         if (storageDisplay != null) {
           displayMode = modes.firstWhereOrNull(
@@ -188,8 +223,7 @@ class MyApp extends StatelessWidget {
         // 图片缓存
         // PaintingBinding.instance.imageCache.maximumSizeBytes = 1000 << 20;
         return GetMaterialApp(
-          // showSemanticsDebugger: true,
-          title: 'PiliPlus',
+          title: Constants.appName,
           theme: ThemeUtils.getThemeData(
             colorScheme: lightColorScheme,
             isDynamic: lightDynamic != null && isDynamicColor,
@@ -216,18 +250,42 @@ class MyApp extends StatelessWidget {
             toastBuilder: (String msg) => CustomToast(msg: msg),
             loadingBuilder: (msg) => LoadingWidget(msg: msg),
             builder: (context, child) {
-              return MediaQuery(
+              child = MediaQuery(
                 data: MediaQuery.of(context).copyWith(
                   textScaler: TextScaler.linear(Pref.defaultTextScale),
                 ),
                 child: child!,
               );
+              if (Utils.isDesktop) {
+                return MouseBackDetector(
+                  onTapDown: () {
+                    if (SmartDialog.checkExist()) {
+                      SmartDialog.dismiss();
+                    } else {
+                      Get.back();
+                    }
+                  },
+                  child: child,
+                );
+              }
+              return child;
             },
           ),
           navigatorObservers: [
             FlutterSmartDialog.observer,
             PageUtils.routeObserver,
           ],
+          scrollBehavior: const MaterialScrollBehavior().copyWith(
+            scrollbars: false,
+            dragDevices: {
+              PointerDeviceKind.touch,
+              PointerDeviceKind.stylus,
+              PointerDeviceKind.invertedStylus,
+              PointerDeviceKind.trackpad,
+              PointerDeviceKind.unknown,
+              if (Utils.isDesktop) PointerDeviceKind.mouse,
+            },
+          ),
         );
       }),
     );
@@ -243,8 +301,7 @@ class _CustomHttpOverrides extends HttpOverrides {
       // ..maxConnectionsPerHost = 32
       ..idleTimeout = const Duration(seconds: 15);
     if (badCertificateCallback) {
-      client.badCertificateCallback =
-          (X509Certificate cert, String host, int port) => true;
+      client.badCertificateCallback = (cert, host, port) => true;
     }
     return client;
   }

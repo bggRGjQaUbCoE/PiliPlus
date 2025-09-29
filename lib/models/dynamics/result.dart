@@ -13,6 +13,7 @@ class DynamicsDataModel {
   List<DynamicItemModel>? items;
   String? offset;
   int? total;
+  bool? loadNext;
 
   static String _getMatchText(DynamicItemModel item) {
     final moduleDynamic = item.modules.moduleDynamic;
@@ -64,7 +65,7 @@ class DynamicsDataModel {
           continue;
         }
         if (enableFilter) {
-          if (item.orig case DynamicItemModel orig) {
+          if (item.orig case final orig?) {
             if (banWordForDyn.hasMatch(_getMatchText(orig))) {
               continue;
             }
@@ -78,6 +79,10 @@ class DynamicsDataModel {
           continue;
         }
         items!.add(item);
+      }
+      // filtered all
+      if (items!.isEmpty) {
+        loadNext = hasMore;
       }
     }
 
@@ -1483,7 +1488,7 @@ class DynamicLive2Model {
     descSecond = json['desc_second'];
     id = json['id'];
     jumpUrl = json['jump_url'];
-    liveState = json['liv_state'];
+    liveState = json['live_state'];
     reserveType = json['reserve_type'];
     title = json['title'];
   }

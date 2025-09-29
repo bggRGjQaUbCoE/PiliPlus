@@ -2559,6 +2559,7 @@ class EditableTextState extends State<EditableText>
     final newValue = _value.copyWith(
       text: widget.controller.plainText,
       selection: widget.controller.newSelection,
+      composing: TextRange.empty,
     );
 
     userUpdateTextEditingValue(newValue, cause);
@@ -3393,6 +3394,10 @@ class EditableTextState extends State<EditableText>
 
   @override
   void updateEditingValueWithDeltas(List<TextEditingDelta> textEditingDeltas) {
+    if (textEditingDeltas.isEmpty) {
+      updateEditingValue(_value.copyWith(composing: TextRange.empty));
+      return;
+    }
     TextEditingValue remoteValue = _value;
     for (final TextEditingDelta delta in textEditingDeltas) {
       widget.controller.syncRichText(delta);
@@ -3402,7 +3407,7 @@ class EditableTextState extends State<EditableText>
     final newValue = _value.copyWith(
       text: widget.controller.plainText,
       selection: widget.controller.newSelection,
-      composing: textEditingDeltas.lastOrNull?.composing,
+      composing: textEditingDeltas.last.composing,
     );
 
     updateEditingValue(newValue, remoteValue: remoteValue);
@@ -5384,6 +5389,7 @@ class EditableTextState extends State<EditableText>
     final newValue = oldValue.copyWith(
       text: widget.controller.plainText,
       selection: widget.controller.newSelection,
+      composing: TextRange.empty,
     );
 
     userUpdateTextEditingValue(newValue, intent.cause);

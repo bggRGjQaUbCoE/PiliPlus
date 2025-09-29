@@ -56,17 +56,14 @@ class _ReplyPageState extends CommonRichTextPubPageState<LiveSendDmPanel> {
         child: Container(
           constraints: const BoxConstraints(maxWidth: 640),
           decoration: BoxDecoration(
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(12),
-              topRight: Radius.circular(12),
-            ),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
             color: theme.colorScheme.surface,
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               ...buildInputView(theme),
-              buildPanelContainer(theme, Colors.transparent),
+              Flexible(child: buildPanelContainer(theme, Colors.transparent)),
             ],
           ),
         ),

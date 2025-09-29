@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
+import 'package:PiliPlus/common/widgets/list_tile.dart';
 import 'package:PiliPlus/common/widgets/refresh_indicator.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
@@ -16,7 +17,7 @@ import 'package:PiliPlus/pages/mine/controller.dart';
 import 'package:PiliPlus/pages/mine/widgets/item.dart';
 import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/utils.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide ListTile;
 import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
@@ -61,6 +62,7 @@ class _MediaPageState extends CommonPageState<MinePage, MineController>
             child: refreshIndicator(
               onRefresh: controller.onRefresh,
               child: ListView(
+                padding: const EdgeInsets.only(bottom: 100),
                 controller: controller.scrollController,
                 physics: const AlwaysScrollableScrollPhysics(),
                 children: [
@@ -221,10 +223,15 @@ class _MediaPageState extends CommonPageState<MinePage, MineController>
           GestureDetector(
             behavior: HitTestBehavior.opaque,
             onTap: controller.onLogin,
-            onLongPress: () {
-              Feedback.forLongPress(context);
-              controller.onLogin(true);
-            },
+            onLongPress: Utils.isMobile
+                ? () {
+                    Feedback.forLongPress(context);
+                    controller.onLogin(true);
+                  }
+                : null,
+            onSecondaryTap: Utils.isMobile
+                ? null
+                : () => controller.onLogin(true),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -461,12 +468,7 @@ class _MediaPageState extends CommonPageState<MinePage, MineController>
             icon: const Icon(Icons.refresh, size: 20),
           ),
         ),
-        SizedBox(
-          width: double.infinity,
-          height: 200,
-          child: _buildFavBody(theme, secondary, controller.loadingState.value),
-        ),
-        const SizedBox(height: 100),
+        _buildFavBody(theme, secondary, controller.loadingState.value),
       ],
     );
   }
@@ -481,55 +483,60 @@ class _MediaPageState extends CommonPageState<MinePage, MineController>
       Success(:var response) => Builder(
         builder: (context) {
           List<FavFolderInfo>? favFolderList = response.list;
-          if (favFolderList.isNullOrEmpty) {
+          if (favFolderList == null || favFolderList.isEmpty) {
             return const SizedBox.shrink();
           }
-          bool flag = (controller.favFoldercount ?? 0) > favFolderList!.length;
-          return ListView.separated(
-            padding: const EdgeInsets.only(left: 20),
-            itemCount: response.list.length + (flag ? 1 : 0),
-            itemBuilder: (context, index) {
-              if (flag && index == favFolderList.length) {
-                return Padding(
-                  padding: const EdgeInsets.only(right: 14, bottom: 35),
-                  child: Center(
-                    child: IconButton(
-                      tooltip: '查看更多',
-                      style: ButtonStyle(
-                        padding: const WidgetStatePropertyAll(EdgeInsets.zero),
-                        backgroundColor: WidgetStatePropertyAll(
-                          theme.colorScheme.secondaryContainer.withValues(
-                            alpha: 0.5,
+          bool flag = (controller.favFoldercount ?? 0) > favFolderList.length;
+          return SizedBox(
+            height: 200,
+            child: ListView.separated(
+              padding: const EdgeInsets.only(left: 20, top: 12, right: 20),
+              itemCount: response.list.length + (flag ? 1 : 0),
+              itemBuilder: (context, index) {
+                if (flag && index == favFolderList.length) {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 35),
+                    child: Center(
+                      child: IconButton(
+                        tooltip: '查看更多',
+                        style: ButtonStyle(
+                          padding: const WidgetStatePropertyAll(
+                            EdgeInsets.zero,
+                          ),
+                          backgroundColor: WidgetStatePropertyAll(
+                            theme.colorScheme.secondaryContainer.withValues(
+                              alpha: 0.5,
+                            ),
                           ),
                         ),
-                      ),
-                      onPressed: () => Get.toNamed('/fav')?.whenComplete(
-                        () => Future.delayed(
-                          const Duration(milliseconds: 150),
-                          controller.onRefresh,
+                        onPressed: () => Get.toNamed('/fav')?.whenComplete(
+                          () => Future.delayed(
+                            const Duration(milliseconds: 150),
+                            controller.onRefresh,
+                          ),
+                        ),
+                        icon: Icon(
+                          Icons.arrow_forward_ios,
+                          size: 18,
+                          color: secondary,
                         ),
                       ),
-                      icon: Icon(
-                        Icons.arrow_forward_ios,
-                        size: 18,
-                        color: secondary,
-                      ),
                     ),
-                  ),
-                );
-              } else {
-                return FavFolderItem(
-                  heroTag: Utils.generateRandomString(8),
-                  item: response.list[index],
-                  callback: () => Future.delayed(
-                    const Duration(milliseconds: 150),
-                    controller.onRefresh,
-                  ),
-                );
-              }
-            },
-            scrollDirection: Axis.horizontal,
-            separatorBuilder: (context, index) => const SizedBox(width: 14),
+                  );
+                } else {
+                  return FavFolderItem(
+                    heroTag: Utils.generateRandomString(8),
+                    item: response.list[index],
+                    callback: () => Future.delayed(
+                      const Duration(milliseconds: 150),
+                      controller.onRefresh,
+                    ),
+                  );
+                }
+              },
+              scrollDirection: Axis.horizontal,
+              separatorBuilder: (context, index) => const SizedBox(width: 14),
+            ),
           );
         },
       ),

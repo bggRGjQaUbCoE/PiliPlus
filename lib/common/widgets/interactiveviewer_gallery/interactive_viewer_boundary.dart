@@ -43,7 +43,7 @@ class InteractiveViewerBoundary extends StatefulWidget {
   final double boundaryWidth;
 
   /// The [TransformationController] for the [InteractiveViewer].
-  final custom.TransformationController? controller;
+  final TransformationController? controller;
 
   /// Called when the scale changed after an interaction ended.
   final ScaleChanged? onScaleChanged;
@@ -68,7 +68,7 @@ class InteractiveViewerBoundary extends StatefulWidget {
 
 class InteractiveViewerBoundaryState extends State<InteractiveViewerBoundary>
     with SingleTickerProviderStateMixin {
-  custom.TransformationController? _controller;
+  TransformationController? _controller;
 
   double? _scale;
 
@@ -86,7 +86,7 @@ class InteractiveViewerBoundaryState extends State<InteractiveViewerBoundary>
   void initState() {
     super.initState();
 
-    _controller = widget.controller ?? custom.TransformationController();
+    _controller = widget.controller ?? TransformationController();
 
     _animateController = AnimationController(
       duration: const Duration(milliseconds: 300),

@@ -37,6 +37,8 @@ import 'package:PiliPlus/pages/msg_feed_top/like_me/view.dart';
 import 'package:PiliPlus/pages/msg_feed_top/reply_me/view.dart';
 import 'package:PiliPlus/pages/msg_feed_top/sys_msg/view.dart';
 import 'package:PiliPlus/pages/music/view.dart';
+import 'package:PiliPlus/pages/popular_precious/view.dart';
+import 'package:PiliPlus/pages/popular_series/view.dart';
 import 'package:PiliPlus/pages/search/view.dart';
 import 'package:PiliPlus/pages/search_result/view.dart';
 import 'package:PiliPlus/pages/search_trending/view.dart';
@@ -209,6 +211,14 @@ class Routes {
     ),
     CustomGetPage(name: '/createVote', page: () => const CreateVotePage()),
     CustomGetPage(name: '/musicDetail', page: () => const MusicDetailPage()),
+    CustomGetPage(
+      name: '/popularSeries',
+      page: () => const PopularSeriesPage(),
+    ),
+    CustomGetPage(
+      name: '/popularPrecious',
+      page: () => const PopularPreciousPage(),
+    ),
   ];
 }
 

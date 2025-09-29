@@ -18,6 +18,26 @@ class Segment {
     this.from,
     this.to,
   ]);
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) {
+      return true;
+    }
+    if (other is Segment) {
+      return start == other.start &&
+          end == other.end &&
+          color == other.color &&
+          title == other.title &&
+          url == other.url &&
+          from == other.from &&
+          to == other.to;
+    }
+    return false;
+  }
+
+  @override
+  int get hashCode => Object.hash(start, end, color, title, url, from, to);
 }
 
 class SegmentProgressBar extends CustomPainter {
@@ -126,7 +146,7 @@ class SegmentProgressBar extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    return false;
+  bool shouldRepaint(SegmentProgressBar oldDelegate) {
+    return segmentColors != oldDelegate.segmentColors;
   }
 }

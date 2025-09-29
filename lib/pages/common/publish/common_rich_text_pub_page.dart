@@ -13,8 +13,10 @@ import 'package:PiliPlus/models_new/live/live_emote/emoticon.dart';
 import 'package:PiliPlus/models_new/upload_bfs/data.dart';
 import 'package:PiliPlus/pages/common/publish/common_publish_page.dart';
 import 'package:PiliPlus/pages/dynamics_mention/view.dart';
+import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
+import 'package:PiliPlus/utils/utils.dart';
 import 'package:dio/dio.dart' show CancelToken;
 import 'package:easy_debounce/easy_throttle.dart';
 import 'package:flutter/material.dart';
@@ -59,6 +61,16 @@ abstract class CommonRichTextPubPageState<T extends CommonRichTextPubPage>
   }
 
   @override
+  void dispose() {
+    if (Utils.isMobile) {
+      for (var i in pathList) {
+        File(i).tryDel();
+      }
+    }
+    super.dispose();
+  }
+
+  @override
   void didChangeDependencies() {
     editController.richStyle = null;
     super.didChangeDependencies();
@@ -95,7 +107,8 @@ abstract class CommonRichTextPubPageState<T extends CommonRichTextPubPage>
             );
             controller.restoreChatPanel();
           },
-          onLongPress: onClear,
+          onLongPress: Utils.isMobile ? onClear : null,
+          onSecondaryTap: Utils.isMobile ? null : onClear,
           child: ClipRRect(
             borderRadius: const BorderRadius.all(Radius.circular(4)),
             child: Image(
@@ -106,18 +119,19 @@ abstract class CommonRichTextPubPageState<T extends CommonRichTextPubPage>
             ),
           ),
         ),
-        Positioned(
-          top: 34,
-          right: 5,
-          child: iconButton(
-            context: context,
-            icon: Icons.edit,
-            onPressed: () => onCropImage(index),
-            size: 24,
-            iconSize: 14,
-            bgColor: color,
+        if (Utils.isMobile)
+          Positioned(
+            top: 34,
+            right: 5,
+            child: iconButton(
+              context: context,
+              icon: Icons.edit,
+              onPressed: () => onCropImage(index),
+              size: 24,
+              iconSize: 14,
+              bgColor: color,
+            ),
           ),
-        ),
         Positioned(
           top: 5,
           right: 5,
@@ -135,18 +149,17 @@ abstract class CommonRichTextPubPageState<T extends CommonRichTextPubPage>
   }
 
   Future<void> onCropImage(int index) async {
-    final theme = Theme.of(context);
-    CroppedFile? croppedFile = await ImageCropper().cropImage(
+    late final colorScheme = ColorScheme.of(context);
+    CroppedFile? croppedFile = await ImageCropper.platform.cropImage(
       sourcePath: pathList[index],
       uiSettings: [
         AndroidUiSettings(
           toolbarTitle: '裁剪',
-          toolbarColor: theme.colorScheme.secondaryContainer,
-          toolbarWidgetColor: theme.colorScheme.onSecondaryContainer,
+          toolbarColor: colorScheme.secondaryContainer,
+          toolbarWidgetColor: colorScheme.onSecondaryContainer,
+          statusBarLight: colorScheme.isLight,
         ),
-        IOSUiSettings(
-          title: '裁剪',
-        ),
+        IOSUiSettings(title: '裁剪'),
       ],
     );
     if (croppedFile != null) {

@@ -45,7 +45,11 @@ class _LiveEmotePanelState extends State<LiveEmotePanel>
 
   Widget _buildBody(LoadingState<List<LiveEmoteDatum>?> loadingState) {
     late final theme = Theme.of(context);
-    late final color = theme.colorScheme.onInverseSurface;
+    late final color = ElevationOverlay.colorWithOverlay(
+      theme.colorScheme.surface,
+      theme.hoverColor,
+      2,
+    );
     return switch (loadingState) {
       Loading() => loadingWidget,
       Success(:var response) =>

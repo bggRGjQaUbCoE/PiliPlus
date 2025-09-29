@@ -2227,6 +2227,15 @@ class RenderEditable extends RenderBox
         lastTapDownPosition: from,
       );
       extentOffset = baseOffset;
+    } else {
+      // select
+      final isNormalized = baseOffset < extentOffset;
+      final newOffset = controller.longPressOffset(
+        isNormalized ? baseOffset : extentOffset,
+        isNormalized ? extentOffset : baseOffset,
+      );
+      baseOffset = isNormalized ? newOffset.startOffset : newOffset.endOffset;
+      extentOffset = isNormalized ? newOffset.endOffset : newOffset.startOffset;
     }
 
     final TextSelection newSelection = TextSelection(

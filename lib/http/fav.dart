@@ -78,26 +78,6 @@ class FavHttp {
     }
   }
 
-  static Future<LoadingState<SubDetailData>> favResourceList({
-    required int id,
-    required int pn,
-    required int ps,
-  }) async {
-    var res = await Request().get(
-      Api.favResourceList,
-      queryParameters: {
-        'media_id': id,
-        'ps': ps,
-        'pn': pn,
-      },
-    );
-    if (res.data['code'] == 0) {
-      return Success(SubDetailData.fromJson(res.data['data']));
-    } else {
-      return Error(res.data['message']);
-    }
-  }
-
   // 取消订阅
   static Future cancelSub({required int id, required int type}) async {
     var res = type == 11

@@ -2,9 +2,9 @@ import 'package:PiliPlus/pages/setting/models/play_settings.dart';
 import 'package:flutter/material.dart';
 
 class PlaySetting extends StatefulWidget {
-  const PlaySetting({super.key, this.showAppBar});
+  const PlaySetting({super.key, this.showAppBar = true});
 
-  final bool? showAppBar;
+  final bool showAppBar;
 
   @override
   State<PlaySetting> createState() => _PlaySettingState();
@@ -15,14 +15,16 @@ class _PlaySettingState extends State<PlaySetting> {
 
   @override
   Widget build(BuildContext context) {
+    final showAppBar = widget.showAppBar;
+    final padding = MediaQuery.viewPaddingOf(context);
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      appBar: widget.showAppBar == false
-          ? null
-          : AppBar(title: const Text('播放器设置')),
+      appBar: showAppBar ? AppBar(title: const Text('播放器设置')) : null,
       body: ListView(
         padding: EdgeInsets.only(
-          bottom: MediaQuery.viewPaddingOf(context).bottom + 100,
+          left: showAppBar ? padding.left : 0,
+          right: showAppBar ? padding.right : 0,
+          bottom: padding.bottom + 100,
         ),
         children: settings.map((item) => item.widget).toList(),
       ),

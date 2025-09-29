@@ -3,7 +3,7 @@ import 'package:PiliPlus/models_new/article/article_view/ops.dart';
 import 'package:PiliPlus/pages/dynamics/widgets/vote.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
 import 'package:PiliPlus/utils/extension.dart';
-import 'package:PiliPlus/utils/image_util.dart';
+import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -57,7 +57,7 @@ class ArticleOpus extends StatelessWidget {
                 child: ClipRRect(
                   borderRadius: StyleString.mdRadius,
                   child: CachedNetworkImage(
-                    imageUrl: ImageUtil.thumbnailUrl(card.url, 60),
+                    imageUrl: ImageUtils.thumbnailUrl(card.url, 60),
                   ),
                 ),
               );

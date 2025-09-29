@@ -41,10 +41,7 @@ class _ZonePageState extends CommonPageState<ZonePage, ZoneController>
         physics: const AlwaysScrollableScrollPhysics(),
         slivers: [
           SliverPadding(
-            padding: EdgeInsets.only(
-              top: 7,
-              bottom: MediaQuery.viewPaddingOf(context).bottom + 100,
-            ),
+            padding: const EdgeInsets.only(top: 7, bottom: 100),
             sliver: Obx(() => _buildBody(controller.loadingState.value)),
           ),
         ],

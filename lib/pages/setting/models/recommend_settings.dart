@@ -18,14 +18,6 @@ List<SettingsModel> get recommendSettings => [
     defaultVal: true,
     needReboot: true,
   ),
-  const SettingsModel(
-    settingsType: SettingsType.sw1tch,
-    title: '推荐动态',
-    subtitle: '是否在推荐内容中展示动态(仅app端)',
-    leading: Icon(Icons.motion_photos_on_outlined),
-    setKey: SettingBoxKey.enableRcmdDynamic,
-    defaultVal: true,
-  ),
   SettingsModel(
     settingsType: SettingsType.sw1tch,
     title: '保留首页推荐刷新',
@@ -35,7 +27,9 @@ List<SettingsModel> get recommendSettings => [
     defaultVal: false,
     onChanged: (value) {
       try {
-        Get.find<RcmdController>().enableSaveLastData = value;
+        Get.find<RcmdController>()
+          ..enableSaveLastData = value
+          ..lastRefreshAt = null;
       } catch (e) {
         if (kDebugMode) debugPrint('$e');
       }
@@ -50,10 +44,9 @@ List<SettingsModel> get recommendSettings => [
     defaultVal: true,
     onChanged: (value) {
       try {
-        RcmdController ctr = Get.find<RcmdController>()..savedRcmdTip = value;
-        if (!value) {
-          ctr.lastRefreshAt = null;
-        }
+        Get.find<RcmdController>()
+          ..savedRcmdTip = value
+          ..lastRefreshAt = null;
       } catch (e) {
         if (kDebugMode) debugPrint('$e');
       }

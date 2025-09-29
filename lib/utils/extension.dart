@@ -1,13 +1,17 @@
+import 'dart:io';
+
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
+import 'package:PiliPlus/grpc/bilibili/app/im/v1.pb.dart' show ThreeDotItem;
 import 'package:PiliPlus/grpc/bilibili/app/im/v1.pbenum.dart'
     show IMSettingType, ThreeDotItemType;
 import 'package:PiliPlus/pages/common/common_whisper_controller.dart';
 import 'package:PiliPlus/pages/contact/view.dart';
 import 'package:PiliPlus/pages/whisper_settings/view.dart';
+import 'package:PiliPlus/utils/app_scheme.dart';
 import 'package:floating/floating.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide ContextExtensionss;
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
 extension ImageExtension on num? {
@@ -25,14 +29,19 @@ extension IntExt on int? {
 }
 
 extension ScrollControllerExt on ScrollController {
-  void animToTop() {
+  void animToTop() => animTo(0);
+
+  void animTo(
+    double offset, {
+    Duration duration = const Duration(milliseconds: 500),
+  }) {
     if (!hasClients) return;
-    if (offset >= Get.mediaQuery.size.height * 7) {
-      jumpTo(0);
+    if ((offset - this.offset).abs() >= position.viewportDimension * 7) {
+      jumpTo(offset);
     } else {
       animateTo(
-        0,
-        duration: const Duration(milliseconds: 500),
+        offset,
+        duration: duration,
         curve: Curves.easeInOut,
       );
     }
@@ -100,6 +109,10 @@ extension ColorSchemeExt on ColorScheme {
 
   Color get freeColor =>
       brightness.isLight ? const Color(0xFFFF7F24) : const Color(0xFFD66011);
+
+  bool get isLight => brightness.isLight;
+
+  bool get isDark => brightness.isDark;
 }
 
 extension Unique<E, Id> on List<E> {
@@ -170,6 +183,7 @@ extension ThreeDotItemTypeExt on ThreeDotItemType {
   void action({
     required BuildContext context,
     required CommonWhisperController controller,
+    required ThreeDotItem item,
   }) {
     switch (this) {
       case ThreeDotItemType.THREE_DOT_ITEM_TYPE_READ_ALL:
@@ -193,19 +207,47 @@ extension ThreeDotItemTypeExt on ThreeDotItemType {
           ),
         );
       case ThreeDotItemType.THREE_DOT_ITEM_TYPE_UP_HELPER:
-        Get.toNamed(
-          '/whisperDetail',
-          arguments: {
-            'talkerId': 844424930131966,
-            'name': 'UP主小助手',
-            'face':
-                'https://message.biliimg.com/bfs/im/489a63efadfb202366c2f88853d2217b5ddc7a13.png',
-          },
-        );
+        dynamic talkerId = PiliScheme.uriDigitRegExp
+            .firstMatch(item.url)
+            ?.group(1);
+        if (talkerId != null) {
+          talkerId = int.parse(talkerId);
+          Get.toNamed(
+            '/whisperDetail',
+            arguments: {
+              'talkerId': talkerId,
+              'name': item.title,
+              'face': switch (talkerId) {
+                844424930131966 =>
+                  'https://message.biliimg.com/bfs/im/489a63efadfb202366c2f88853d2217b5ddc7a13.png',
+                844424930131964 =>
+                  'https://i0.hdslb.com/bfs/im_new/58eda511672db078466e7ab8db22a95c1503684976.png',
+                _ => item.icon,
+              },
+            },
+          );
+        }
       case ThreeDotItemType.THREE_DOT_ITEM_TYPE_CONTACTS:
         Get.to(const ContactPage(isFromSelect: false));
       default:
         SmartDialog.showToast('TODO: $name');
     }
   }
+}
+
+extension FileExt on File {
+  Future<void> tryDel({bool recursive = false}) async {
+    try {
+      await delete(recursive: recursive);
+    } catch (_) {}
+  }
+}
+
+extension SizeExt on Size {
+  bool get isPortrait => width < 600 || height >= width;
+}
+
+extension GetExt on GetInterface {
+  S putOrFind<S>(InstanceBuilderCallback<S> dep, {String? tag}) =>
+      GetInstance().putOrFind(dep, tag: tag);
 }

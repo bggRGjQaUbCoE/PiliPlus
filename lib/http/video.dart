@@ -14,6 +14,9 @@ import 'package:PiliPlus/models/model_rec_video_item.dart';
 import 'package:PiliPlus/models/pgc_lcf.dart';
 import 'package:PiliPlus/models/video/play/url.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_rank/pgc_rank_item_model.dart';
+import 'package:PiliPlus/models_new/popular/popular_precious/data.dart';
+import 'package:PiliPlus/models_new/popular/popular_series_list/list.dart';
+import 'package:PiliPlus/models_new/popular/popular_series_one/data.dart';
 import 'package:PiliPlus/models_new/triple/pgc_triple.dart';
 import 'package:PiliPlus/models_new/triple/ugc_triple.dart';
 import 'package:PiliPlus/models_new/video/video_ai_conclusion/data.dart';
@@ -34,7 +37,6 @@ import 'package:flutter/foundation.dart';
 
 /// view层根据 status 判断渲染逻辑
 class VideoHttp {
-  // static bool enableRcmdDynamic = Pref.enableRcmdDynamic;
   static RegExp zoneRegExp = RegExp(Pref.banWordForZone, caseSensitive: false);
   static bool enableFilter = zoneRegExp.pattern.isNotEmpty;
 
@@ -133,7 +135,6 @@ class VideoHttp {
         if (i['card_goto'] != 'ad_av' &&
             i['card_goto'] != 'ad_web_s' &&
             i['ad_info'] == null &&
-            // (!enableRcmdDynamic ? i['card_goto'] != 'picture' : true) &&
             (i['args'] != null &&
                 !GlobalData().blackMids.contains(i['args']['up_id']))) {
           if (enableFilter &&
@@ -195,6 +196,7 @@ class VideoHttp {
     dynamic seasonId,
     required bool tryLook,
     required VideoType videoType,
+    String? language,
   }) async {
     final params = await WbiSign.makSign({
       'avid': ?avid,
@@ -213,6 +215,7 @@ class VideoHttp {
       'web_location': 1315873,
       // 免登录查看1080p
       if (tryLook) 'try_look': 1,
+      'cur_language': ?language,
     });
 
     try {
@@ -280,7 +283,9 @@ class VideoHttp {
     }
   }
 
-  static Future videoRelation({required dynamic bvid}) async {
+  static Future<LoadingState<VideoRelation>> videoRelation({
+    required String bvid,
+  }) async {
     var res = await Request().get(
       Api.videoRelation,
       queryParameters: {
@@ -289,15 +294,9 @@ class VideoHttp {
       },
     );
     if (res.data['code'] == 0) {
-      return {
-        'status': true,
-        'data': VideoRelation.fromJson(res.data['data']),
-      };
+      return Success(VideoRelation.fromJson(res.data['data']));
     } else {
-      return {
-        'status': false,
-        'msg': res.data['message'],
-      };
+      return Error(res.data['message']);
     }
   }
 
@@ -525,7 +524,7 @@ class VideoHttp {
     int? root,
     int? parent,
     List? pictures,
-    bool? syncToDynamic,
+    bool syncToDynamic = false,
     Map<String, int>? atNameToMid,
   }) async {
     if (message == '') {
@@ -540,7 +539,7 @@ class VideoHttp {
       if (atNameToMid?.isNotEmpty == true)
         'at_name_to_mid': jsonEncode(atNameToMid), // {"name":uid}
       if (pictures != null) 'pictures': jsonEncode(pictures),
-      if (syncToDynamic == true) 'sync_to_dynamic': 1,
+      if (syncToDynamic) 'sync_to_dynamic': 1,
       'csrf': Accounts.main.csrf,
     };
     var res = await Request().post(
@@ -806,13 +805,20 @@ class VideoHttp {
       'up_mid': upMid,
     });
     var res = await Request().get(Api.aiConclusion, queryParameters: params);
-    if (res.data['code'] == 0 && res.data['data']['code'] == 0) {
+    final code = res.data['code'];
+    final dataCode = res.data['data']?['code'];
+    if (code == 0 && dataCode == 0) {
       return {
         'status': true,
         'data': AiConclusionData.fromJson(res.data['data']),
       };
     } else {
-      return {'status': false, 'msg': res.data['message']};
+      final handling = code == 0 && dataCode == 1;
+      return {
+        'status': false,
+        'msg': res.data['message'],
+        'handling': handling,
+      };
     }
   }
 
@@ -966,6 +972,62 @@ class VideoHttp {
     );
     if (res.data['code'] == 0) {
       return Success(VideoNoteData.fromJson(res.data['data']));
+    } else {
+      return Error(res.data['message']);
+    }
+  }
+
+  static Future<LoadingState<List<PopularSeriesListItem>?>>
+  popularSeriesList() async {
+    var res = await Request().get(
+      Api.popularSeriesList,
+      queryParameters: await WbiSign.makSign({
+        'web_location': 333.934,
+      }),
+    );
+    if (res.data['code'] == 0) {
+      return Success(
+        (res.data['data']?['list'] as List<dynamic>?)
+            ?.map(
+              (e) => PopularSeriesListItem.fromJson(e as Map<String, dynamic>),
+            )
+            .toList(),
+      );
+    } else {
+      return Error(res.data['message']);
+    }
+  }
+
+  static Future<LoadingState<PopularSeriesOneData>> popularSeriesOne({
+    required int number,
+  }) async {
+    var res = await Request().get(
+      Api.popularSeriesOne,
+      queryParameters: await WbiSign.makSign({
+        'number': number,
+        'web_location': 333.934,
+      }),
+    );
+    if (res.data['code'] == 0) {
+      return Success(PopularSeriesOneData.fromJson(res.data['data']));
+    } else {
+      return Error(res.data['message']);
+    }
+  }
+
+  static Future<LoadingState<PopularPreciousData>> popularPrecious({
+    required int page,
+  }) async {
+    var res = await Request().get(
+      Api.popularPrecious,
+      queryParameters: await WbiSign.makSign({
+        'page_size': 100,
+        'page': page,
+        'web_location': 333.934,
+      }),
+    );
+    if (res.data['code'] == 0) {
+      return Success(PopularPreciousData.fromJson(res.data['data']));
     } else {
       return Error(res.data['message']);
     }

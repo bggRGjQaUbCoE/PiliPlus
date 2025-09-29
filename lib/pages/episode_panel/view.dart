@@ -19,24 +19,23 @@ import 'package:PiliPlus/models/user/info.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_info_model/episode.dart' as pgc;
 import 'package:PiliPlus/models_new/video/video_detail/episode.dart' as ugc;
 import 'package:PiliPlus/models_new/video/video_detail/page.dart';
-import 'package:PiliPlus/models_new/video/video_relation/data.dart';
-import 'package:PiliPlus/pages/common/slide/common_collapse_slide_page.dart';
+import 'package:PiliPlus/pages/common/slide/common_slide_page.dart';
 import 'package:PiliPlus/pages/video/controller.dart';
 import 'package:PiliPlus/pages/video/introduction/ugc/controller.dart';
 import 'package:PiliPlus/pages/video/introduction/ugc/widgets/page.dart';
 import 'package:PiliPlus/utils/accounts.dart';
-import 'package:PiliPlus/utils/date_util.dart';
-import 'package:PiliPlus/utils/duration_util.dart';
+import 'package:PiliPlus/utils/date_utils.dart';
+import 'package:PiliPlus/utils/duration_utils.dart';
+import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
-import 'package:flutter/foundation.dart' show kDebugMode;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' hide TabBarView;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
-import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
-class EpisodePanel extends CommonCollapseSlidePage {
+class EpisodePanel extends CommonSlidePage {
   const EpisodePanel({
     super.key,
     super.enableSlide,
@@ -75,7 +74,7 @@ class EpisodePanel extends CommonCollapseSlidePage {
   final int initialTabIndex;
   final bool? isSupportReverse;
   final bool? isReversed;
-  final ValueChanged<ugc.BaseEpisodeItem> onChangeEpisode;
+  final Future<bool> Function(ugc.BaseEpisodeItem) onChangeEpisode;
   final VoidCallback? onReverse;
   final VoidCallback? onClose;
 
@@ -83,7 +82,8 @@ class EpisodePanel extends CommonCollapseSlidePage {
   State<EpisodePanel> createState() => _EpisodePanelState();
 }
 
-class _EpisodePanelState extends CommonCollapseSlidePageState<EpisodePanel> {
+class _EpisodePanelState extends State<EpisodePanel>
+    with TickerProviderStateMixin, CommonSlideMixin {
   // tab
   late final TabController _tabController = TabController(
     initialIndex: widget.initialTabIndex,
@@ -92,7 +92,10 @@ class _EpisodePanelState extends CommonCollapseSlidePageState<EpisodePanel> {
   )..addListener(listener);
   late final RxInt _currentTabIndex = _tabController.index.obs;
 
-  List get _getCurrEpisodes => widget.type == EpisodeType.season
+  late final showTitle = widget.showTitle;
+
+  List<ugc.BaseEpisodeItem> get _getCurrEpisodes =>
+      widget.type == EpisodeType.season
       ? widget.list[_currentTabIndex.value].episodes
       : widget.list[_currentTabIndex.value];
 
@@ -104,10 +107,10 @@ class _EpisodePanelState extends CommonCollapseSlidePageState<EpisodePanel> {
   );
 
   late final List<bool> _isReversed;
-  late final List<ItemScrollController> _itemScrollController;
+  late final List<ScrollController> _itemScrollController;
 
   // fav
-  Rx<LoadingState>? _favState;
+  Rx<LoadingState<bool>>? _favState;
 
   void listener() {
     _currentTabIndex.value = _tabController.index;
@@ -116,7 +119,7 @@ class _EpisodePanelState extends CommonCollapseSlidePageState<EpisodePanel> {
   @override
   void didUpdateWidget(EpisodePanel oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.showTitle) {
+    if (showTitle) {
       return;
     }
 
@@ -126,9 +129,11 @@ class _EpisodePanelState extends CommonCollapseSlidePageState<EpisodePanel> {
         _currentItemIndex = newItemIndex;
         try {
           _itemScrollController[_currentTabIndex.value].jumpTo(
-            index: newItemIndex,
+            _calcItemOffset(newItemIndex),
           );
-        } catch (_) {}
+        } catch (_) {
+          if (kDebugMode) rethrow;
+        }
       }
     }
 
@@ -147,37 +152,28 @@ class _EpisodePanelState extends CommonCollapseSlidePageState<EpisodePanel> {
   @override
   void initState() {
     super.initState();
+    _currentItemIndex = _findCurrentItemIndex;
     _itemScrollController = List.generate(
       widget.list.length,
-      (_) => ItemScrollController(),
+      (i) => ScrollController(
+        initialScrollOffset: i == widget.initialTabIndex
+            ? _calcItemOffset(_currentItemIndex)
+            : 0,
+      ),
+      growable: false,
     );
     _isReversed = List.filled(widget.list.length, false);
 
     if (widget.type == EpisodeType.season && Accounts.main.isLogin) {
-      _favState = LoadingState.loading().obs;
+      _favState = LoadingState<bool>.loading().obs;
       VideoHttp.videoRelation(bvid: widget.bvid).then(
         (result) {
-          if (result['status']) {
-            VideoRelation data = result['data'];
-            _favState!.value = Success(data.seasonFav ?? false);
+          if (result case Success(:var response)) {
+            _favState!.value = Success(response.seasonFav ?? false);
           }
         },
       );
     }
-
-    _currentItemIndex = _findCurrentItemIndex;
-  }
-
-  @override
-  void init() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        isInit = false;
-        _itemScrollController[widget.initialTabIndex].jumpTo(
-          index: _currentItemIndex,
-        );
-      }
-    });
   }
 
   @override
@@ -185,6 +181,10 @@ class _EpisodePanelState extends CommonCollapseSlidePageState<EpisodePanel> {
     _tabController
       ..removeListener(listener)
       ..dispose();
+    _favState?.close();
+    for (var e in _itemScrollController) {
+      e.dispose();
+    }
     super.dispose();
   }
 
@@ -225,8 +225,8 @@ class _EpisodePanelState extends CommonCollapseSlidePageState<EpisodePanel> {
     }
 
     return Material(
-      color: widget.showTitle ? theme.colorScheme.surface : null,
-      type: widget.showTitle ? MaterialType.canvas : MaterialType.transparency,
+      color: showTitle ? theme.colorScheme.surface : null,
+      type: showTitle ? MaterialType.canvas : MaterialType.transparency,
       child: Column(
         children: [
           _buildToolbar(theme),
@@ -257,55 +257,109 @@ class _EpisodePanelState extends CommonCollapseSlidePageState<EpisodePanel> {
     return _buildBody(theme, 0, _getCurrEpisodes);
   }
 
-  Widget _buildBody(ThemeData theme, int tabIndex, episodes) {
+  double _calcItemOffset(int index) {
+    if (showTitle) {
+      final episodes = _getCurrEpisodes;
+      double offset = 0;
+      for (var i = 0; i < index; i++) {
+        offset += _calcItemHeight(episodes[i]);
+      }
+      return offset + 7;
+    } else {
+      return index * 100 + 7;
+    }
+  }
+
+  double _calcItemHeight(ugc.BaseEpisodeItem episode) {
+    if (episode is ugc.EpisodeItem && episode.pages!.length > 1) {
+      return 145; // 98 + 2 + 10 + 35
+    }
+    return 100;
+  }
+
+  Widget _buildBody(
+    ThemeData theme,
+    int tabIndex,
+    List<ugc.BaseEpisodeItem> episodes,
+  ) {
     final isCurrTab = tabIndex == widget.initialTabIndex;
     return KeepAliveWrapper(
-      builder: (context) => ScrollablePositionedList.separated(
-        padding: EdgeInsets.only(
-          top: 7,
-          bottom: MediaQuery.viewPaddingOf(context).bottom + 100,
-        ),
+      builder: (context) => CustomScrollView(
         reverse: _isReversed[tabIndex],
-        itemCount: episodes.length,
         physics: const AlwaysScrollableScrollPhysics(),
-        itemBuilder: (BuildContext context, int itemIndex) {
-          final episode = episodes[itemIndex];
-          final isCurrItem = isCurrTab ? itemIndex == _currentItemIndex : false;
-          Widget episodeItem = _buildEpisodeItem(
-            theme: theme,
-            episode: episode,
-            index: itemIndex,
-            length: episodes.length,
-            isCurrentIndex: isCurrItem,
-          );
-          if (widget.type == EpisodeType.season &&
-              widget.showTitle &&
-              episode.pages.length > 1) {
-            return Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                episodeItem,
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 5,
+        controller: _itemScrollController[tabIndex],
+        slivers: [
+          SliverPadding(
+            padding: EdgeInsets.only(
+              top: 7,
+              bottom: MediaQuery.viewPaddingOf(context).bottom + 100,
+            ),
+            sliver: showTitle
+                ? SliverVariedExtentList.builder(
+                    itemCount: episodes.length,
+                    itemBuilder: (context, index) {
+                      final episode = episodes[index];
+                      final isCurrItem = isCurrTab
+                          ? index == _currentItemIndex
+                          : false;
+                      Widget episodeItem = _buildEpisodeItem(
+                        theme: theme,
+                        episode: episode,
+                        index: index,
+                        length: episodes.length,
+                        isCurrentIndex: isCurrItem,
+                      );
+                      if (episode is ugc.EpisodeItem &&
+                          episode.pages!.length > 1) {
+                        return Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            episodeItem, // 98
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 5,
+                              ), // 10
+                              child: PagesPanel(
+                                // 35
+                                list: isCurrTab && isCurrItem
+                                    ? null
+                                    : episode.pages,
+                                cover: episode.arc?.pic,
+                                heroTag: widget.heroTag,
+                                ugcIntroController: widget.ugcIntroController!,
+                                bvid:
+                                    episode.bvid ?? IdUtils.av2bv(episode.aid!),
+                              ),
+                            ),
+                          ],
+                        );
+                      }
+                      return episodeItem;
+                    },
+                    itemExtentBuilder: (index, _) =>
+                        _calcItemHeight(episodes[index]),
+                  )
+                : SliverFixedExtentList.builder(
+                    itemCount: episodes.length,
+                    itemBuilder: (context, index) {
+                      final episode = episodes[index];
+                      final isCurrItem = isCurrTab
+                          ? index == _currentItemIndex
+                          : false;
+                      return _buildEpisodeItem(
+                        theme: theme,
+                        episode: episode,
+                        index: index,
+                        length: episodes.length,
+                        isCurrentIndex: isCurrItem,
+                      );
+                    },
+                    itemExtent: 100,
                   ),
-                  child: PagesPanel(
-                    list: isCurrTab && isCurrItem ? null : episode.pages,
-                    cover: episode.arc?.pic,
-                    heroTag: widget.heroTag,
-                    ugcIntroController: widget.ugcIntroController!,
-                    bvid: IdUtils.av2bv(episode.aid),
-                  ),
-                ),
-              ],
-            );
-          }
-          return episodeItem;
-        },
-        itemScrollController: _itemScrollController[tabIndex],
-        separatorBuilder: (context, index) => const SizedBox(height: 2),
+          ),
+        ],
       ),
     );
   }
@@ -360,142 +414,153 @@ class _EpisodePanelState extends CommonCollapseSlidePageState<EpisodePanel> {
     }
     late final Color primary = theme.colorScheme.primary;
 
-    return SizedBox(
-      height: 98,
-      child: Material(
-        type: MaterialType.transparency,
-        child: InkWell(
-          onTap: () {
-            if (episode.badge == "会员") {
-              UserInfoData? userInfo = Pref.userInfoCache;
-              int vipStatus = userInfo?.vipStatus ?? 0;
-              if (vipStatus != 1) {
-                SmartDialog.showToast('需要大会员');
-                // return;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 2),
+      child: SizedBox(
+        height: 98,
+        child: Material(
+          type: MaterialType.transparency,
+          child: InkWell(
+            onTap: () {
+              if (episode.badge == "会员") {
+                UserInfoData? userInfo = Pref.userInfoCache;
+                int vipStatus = userInfo?.vipStatus ?? 0;
+                if (vipStatus != 1) {
+                  SmartDialog.showToast('需要大会员');
+                  // return;
+                }
               }
-            }
-            SmartDialog.showToast('切换到：$title');
-            widget.onClose?.call();
-            if (!widget.showTitle) {
-              _currentItemIndex = index;
-            }
-            widget.onChangeEpisode(episode);
-            if (widget.type == EpisodeType.season) {
-              try {
-                Get.find<VideoDetailController>(
-                  tag: widget.ugcIntroController!.heroTag,
-                ).seasonCid = episode.cid;
-              } catch (_) {}
-            }
-          },
-          onLongPress: () {
-            if (cover?.isNotEmpty == true) {
-              imageSaveDialog(title: title, cover: cover, bvid: bvid);
-            }
-          },
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: StyleString.safeSpace,
-              vertical: 5,
-            ),
-            child: Row(
-              spacing: 10,
-              children: [
-                if (cover?.isNotEmpty == true)
-                  Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      NetworkImgLayer(
-                        src: cover,
-                        width: 140.8,
-                        height: 88,
-                      ),
-                      if (duration != null && duration > 0)
-                        PBadge(
-                          text: DurationUtil.formatDuration(duration),
-                          right: 6.0,
-                          bottom: 6.0,
-                          type: PBadgeType.gray,
+              SmartDialog.showToast('切换到：$title');
+              widget.onClose?.call();
+
+              widget.onChangeEpisode(episode).then((res) {
+                if (res) {
+                  if (!showTitle) {
+                    _currentItemIndex = index;
+                  }
+                  if (widget.type == EpisodeType.season) {
+                    try {
+                      Get.find<VideoDetailController>(
+                        tag: widget.ugcIntroController!.heroTag,
+                      ).seasonCid = episode.cid;
+                    } catch (_) {
+                      if (kDebugMode) rethrow;
+                    }
+                  }
+                }
+              });
+            },
+            onLongPress: () {
+              if (cover?.isNotEmpty == true) {
+                imageSaveDialog(title: title, cover: cover, bvid: bvid);
+              }
+            },
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: StyleString.safeSpace,
+                vertical: 5,
+              ),
+              child: Row(
+                spacing: 10,
+                children: [
+                  if (cover?.isNotEmpty == true)
+                    Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        NetworkImgLayer(
+                          src: cover,
+                          width: 140.8,
+                          height: 88,
                         ),
-                      if (isCharging == true)
-                        const PBadge(
-                          text: '充电专属',
-                          top: 6,
-                          right: 6,
-                          type: PBadgeType.error,
-                        )
-                      else if (episode.badge != null)
-                        PBadge(
-                          text: episode.badge,
-                          top: 6,
-                          right: 6,
-                          type: switch (episode.badge) {
-                            '会员' => PBadgeType.primary,
-                            '限免' => PBadgeType.free,
-                            _ => PBadgeType.gray,
-                          },
-                        ),
-                    ],
-                  )
-                else if (isCurrentIndex)
-                  Image.asset(
-                    'assets/images/live.png',
-                    color: primary,
-                    height: 12,
-                    semanticLabel: "正在播放：",
-                  ),
-                Expanded(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          title,
-                          textAlign: TextAlign.start,
-                          style: TextStyle(
-                            fontSize: theme.textTheme.bodyMedium!.fontSize,
-                            height: 1.42,
-                            letterSpacing: 0.3,
-                            fontWeight: isCurrentIndex ? FontWeight.bold : null,
-                            color: isCurrentIndex ? primary : null,
+                        if (duration != null && duration > 0)
+                          PBadge(
+                            text: DurationUtils.formatDuration(duration),
+                            right: 6.0,
+                            bottom: 6.0,
+                            type: PBadgeType.gray,
                           ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      if (pubdate != null)
-                        Text(
-                          DateUtil.format(pubdate),
-                          maxLines: 1,
-                          style: TextStyle(
-                            fontSize: 12,
-                            height: 1,
-                            color: theme.colorScheme.outline,
-                            overflow: TextOverflow.clip,
+                        if (isCharging == true)
+                          const PBadge(
+                            text: '充电专属',
+                            top: 6,
+                            right: 6,
+                            type: PBadgeType.error,
+                          )
+                        else if (episode.badge != null)
+                          PBadge(
+                            text: episode.badge,
+                            top: 6,
+                            right: 6,
+                            type: switch (episode.badge) {
+                              '预告' => PBadgeType.gray,
+                              '限免' => PBadgeType.free,
+                              _ => PBadgeType.primary,
+                            },
                           ),
-                        ),
-                      if (view != null) ...[
-                        const SizedBox(height: 2),
-                        Row(
-                          spacing: 8,
-                          children: [
-                            StatWidget(
-                              value: view,
-                              type: StatType.play,
-                            ),
-                            if (danmaku != null)
-                              StatWidget(
-                                value: danmaku,
-                                type: StatType.danmaku,
-                              ),
-                          ],
-                        ),
                       ],
-                    ],
+                    )
+                  else if (isCurrentIndex)
+                    Image.asset(
+                      'assets/images/live.png',
+                      color: primary,
+                      height: 12,
+                      semanticLabel: "正在播放：",
+                    ),
+                  Expanded(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            title,
+                            textAlign: TextAlign.start,
+                            style: TextStyle(
+                              fontSize: theme.textTheme.bodyMedium!.fontSize,
+                              height: 1.42,
+                              letterSpacing: 0.3,
+                              fontWeight: isCurrentIndex
+                                  ? FontWeight.bold
+                                  : null,
+                              color: isCurrentIndex ? primary : null,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        if (pubdate != null)
+                          Text(
+                            DateFormatUtils.format(pubdate),
+                            maxLines: 1,
+                            style: TextStyle(
+                              fontSize: 12,
+                              height: 1,
+                              color: theme.colorScheme.outline,
+                              overflow: TextOverflow.clip,
+                            ),
+                          ),
+                        if (view != null) ...[
+                          const SizedBox(height: 2),
+                          Row(
+                            spacing: 8,
+                            children: [
+                              StatWidget(
+                                value: view,
+                                type: StatType.play,
+                              ),
+                              if (danmaku != null)
+                                StatWidget(
+                                  value: danmaku,
+                                  type: StatType.danmaku,
+                                ),
+                            ],
+                          ),
+                        ],
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -503,7 +568,7 @@ class _EpisodePanelState extends CommonCollapseSlidePageState<EpisodePanel> {
     );
   }
 
-  Widget _buildFavBtn(LoadingState loadingState) {
+  Widget _buildFavBtn(LoadingState<bool> loadingState) {
     return switch (loadingState) {
       Success(:var response) => mediumButton(
         tooltip: response ? '取消订阅' : '订阅',
@@ -535,9 +600,19 @@ class _EpisodePanelState extends CommonCollapseSlidePageState<EpisodePanel> {
     onPressed: () => widget.onReverse?.call(),
   );
 
+  void _animToTopOrBottom({bool top = true}) {
+    final tabIndex = _currentTabIndex.value;
+    _itemScrollController[tabIndex].animTo(
+      top ^ _isReversed[tabIndex]
+          ? 0
+          : _calcItemOffset(_getCurrEpisodes.length),
+      duration: const Duration(milliseconds: 200),
+    );
+  }
+
   Widget _buildToolbar(ThemeData theme) => Container(
     height: 45,
-    padding: EdgeInsets.symmetric(horizontal: widget.showTitle ? 14 : 6),
+    padding: EdgeInsets.symmetric(horizontal: showTitle ? 14 : 6),
     decoration: BoxDecoration(
       border: Border(
         bottom: BorderSide(
@@ -547,7 +622,7 @@ class _EpisodePanelState extends CommonCollapseSlidePageState<EpisodePanel> {
     ),
     child: Row(
       children: [
-        if (widget.showTitle)
+        if (showTitle)
           Text(
             widget.type.title,
             style: theme.textTheme.titleMedium,
@@ -556,52 +631,26 @@ class _EpisodePanelState extends CommonCollapseSlidePageState<EpisodePanel> {
         mediumButton(
           tooltip: '跳至顶部',
           icon: Icons.vertical_align_top,
-          onPressed: () {
-            try {
-              final currentTabIndex = _currentTabIndex.value;
-              _itemScrollController[currentTabIndex].scrollTo(
-                index: !_isReversed[currentTabIndex]
-                    ? 0
-                    : _getCurrEpisodes.length - 1,
-                duration: const Duration(milliseconds: 200),
-              );
-            } catch (e) {
-              if (kDebugMode) debugPrint('to top: $e');
-            }
-          },
+          onPressed: _animToTopOrBottom,
         ),
         mediumButton(
           tooltip: '跳至底部',
           icon: Icons.vertical_align_bottom,
-          onPressed: () {
-            try {
-              final currentTabIndex = _currentTabIndex.value;
-              _itemScrollController[currentTabIndex].scrollTo(
-                index: !_isReversed[currentTabIndex]
-                    ? _getCurrEpisodes.length - 1
-                    : 0,
-                duration: const Duration(milliseconds: 200),
-              );
-            } catch (e) {
-              if (kDebugMode) debugPrint('to bottom: $e');
-            }
-          },
+          onPressed: () => _animToTopOrBottom(top: false),
         ),
         mediumButton(
           tooltip: '跳至当前',
           icon: Icons.my_location,
           onPressed: () async {
-            try {
-              final currentTabIndex = _currentTabIndex.value;
-              if (currentTabIndex != widget.initialTabIndex) {
-                _tabController.animateTo(widget.initialTabIndex);
-                await Future.delayed(const Duration(milliseconds: 225));
-              }
-              _itemScrollController[widget.initialTabIndex].scrollTo(
-                index: _currentItemIndex,
-                duration: const Duration(milliseconds: 200),
-              );
-            } catch (_) {}
+            final currentTabIndex = _currentTabIndex.value;
+            if (currentTabIndex != widget.initialTabIndex) {
+              _tabController.animateTo(widget.initialTabIndex);
+              await Future.delayed(const Duration(milliseconds: 225));
+            }
+            _itemScrollController[widget.initialTabIndex].animTo(
+              _calcItemOffset(_currentItemIndex),
+              duration: const Duration(milliseconds: 200),
+            );
           },
         ),
         if (widget.isSupportReverse == true)

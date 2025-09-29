@@ -14,12 +14,12 @@ class SeasonPanel extends StatefulWidget {
     super.key,
     required this.heroTag,
     required this.showEpisodes,
-    this.onTap,
+    this.canTap = true,
     required this.ugcIntroController,
   });
   final String heroTag;
   final Function showEpisodes;
-  final bool? onTap;
+  final bool canTap;
   final UgcIntroController ugcIntroController;
 
   @override
@@ -102,16 +102,16 @@ class _SeasonPanelState extends State<SeasonPanel> {
         borderRadius: const BorderRadius.all(Radius.circular(6)),
         child: InkWell(
           borderRadius: const BorderRadius.all(Radius.circular(6)),
-          onTap: widget.onTap == false
-              ? null
-              : () => widget.showEpisodes(
+          onTap: widget.canTap
+              ? () => widget.showEpisodes(
                   _videoDetailController.seasonIndex.value,
                   videoDetail.ugcSeason,
                   null,
                   _videoDetailController.bvid,
                   null,
                   _videoDetailController.seasonCid,
-                ),
+                )
+              : null,
           child: Padding(
             padding: const EdgeInsets.fromLTRB(8, 12, 8, 12),
             child: Row(

@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:PiliPlus/http/ua_type.dart';
+import 'package:PiliPlus/main.dart';
 import 'package:PiliPlus/models/common/webview_menu_type.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
 import 'package:PiliPlus/utils/cache_manage.dart';
@@ -29,8 +30,7 @@ class WebviewPage extends StatefulWidget {
 
 class _WebviewPageState extends State<WebviewPage> {
   late final String _url = widget.url ?? Get.parameters['url'] ?? '';
-  late final UaType uaType =
-      widget.uaType ?? UaType.values.byName(Get.parameters['uaType'] ?? 'mob');
+  late final UaType uaType;
   final RxString title = ''.obs;
   final RxDouble progress = 1.0.obs;
   bool _inApp = false;
@@ -46,6 +46,10 @@ class _WebviewPageState extends State<WebviewPage> {
   @override
   void initState() {
     super.initState();
+    late final uaType = Get.parameters['uaType'];
+    this.uaType =
+        widget.uaType ??
+        (uaType != null ? UaType.values.byName(uaType) : UaType.platformUA);
     if (Get.arguments case Map map) {
       _inApp = map['inApp'] ?? false;
       _off = map['off'] ?? false;
@@ -60,6 +64,17 @@ class _WebviewPageState extends State<WebviewPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (Platform.isLinux) {
+      return Scaffold(
+        appBar: AppBar(),
+        body: Center(
+          child: TextButton(
+            onPressed: () => PageUtils.launchURL(_url),
+            child: const Text('unsupported'),
+          ),
+        ),
+      );
+    }
     return Scaffold(
       appBar: widget.url != null
           ? null
@@ -145,6 +160,7 @@ class _WebviewPageState extends State<WebviewPage> {
             ),
       body: SafeArea(
         child: InAppWebView(
+          webViewEnvironment: webViewEnvironment,
           initialSettings: InAppWebViewSettings(
             clearCache: true,
             javaScriptEnabled: true,

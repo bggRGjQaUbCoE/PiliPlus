@@ -1,25 +1,25 @@
 import 'dart:math';
 
-import 'package:PiliPlus/common/widgets/image/image_view.dart';
+import 'package:PiliPlus/common/widgets/image/custom_grid_view.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/http/constants.dart';
 import 'package:PiliPlus/models/common/image_preview_type.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/models/dynamics/article_content_model.dart'
-    show ArticleContentModel, Rich, Style, Word;
+    show ArticleContentModel, Rich, Style, Word, Node;
 import 'package:PiliPlus/models/dynamics/result.dart';
 import 'package:PiliPlus/pages/dynamics/widgets/vote.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
 import 'package:PiliPlus/utils/context_ext.dart';
 import 'package:PiliPlus/utils/extension.dart';
-import 'package:PiliPlus/utils/image_util.dart';
+import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cached_network_svg_image/cached_network_svg_image.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart' hide ContextExtensionss;
+import 'package:get/get.dart' hide ContextExtensionss, Node;
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:re_highlight/languages/all.dart';
 import 'package:re_highlight/re_highlight.dart';
@@ -28,15 +28,83 @@ import 'package:re_highlight/styles/github.dart';
 
 class OpusContent extends StatelessWidget {
   final List<ArticleContentModel> opus;
-  final void Function(List<String>, int)? callback;
   final double maxWidth;
 
   const OpusContent({
     super.key,
     required this.opus,
-    this.callback,
     required this.maxWidth,
   });
+
+  static InlineSpan _node2Widget({
+    required Node item,
+    required ColorScheme colorScheme,
+    bool isQuote = false,
+  }) {
+    switch (item.type) {
+      case 'TEXT_NODE_TYPE_RICH' when (item.rich != null):
+        Rich rich = item.rich!;
+        switch (rich.type) {
+          case 'RICH_TEXT_NODE_TYPE_EMOJI':
+            Emoji emoji = rich.emoji!;
+            final size = 20.0 * emoji.size;
+            return WidgetSpan(
+              child: NetworkImgLayer(
+                width: size,
+                height: size,
+                src: emoji.url,
+                type: ImageType.emote,
+              ),
+            );
+          default:
+            return TextSpan(
+              text:
+                  '${rich.type == 'RICH_TEXT_NODE_TYPE_WEB' ? '\u{1F517}' : ''}${item.rich!.text}',
+              style: _getStyle(
+                rich.style,
+                rich.type == 'RICH_TEXT_NODE_TYPE_TEXT'
+                    ? null
+                    : colorScheme.primary,
+              ),
+              recognizer: TapGestureRecognizer()
+                ..onTap = () {
+                  switch (rich.type) {
+                    case 'RICH_TEXT_NODE_TYPE_AT':
+                      Get.toNamed('/member?mid=${rich.rid}');
+                    // case 'RICH_TEXT_NODE_TYPE_TOPIC':
+                    default:
+                      if (rich.jumpUrl != null) {
+                        PiliScheme.routePushFromUrl(
+                          rich.jumpUrl!,
+                        );
+                      }
+                  }
+                },
+            );
+        }
+      case 'TEXT_NODE_TYPE_FORMULA' when (item.formula != null):
+        final latex = item.formula!.latexContent!;
+        return WidgetSpan(
+          child: CachedNetworkSVGImage(
+            cacheKey: latex,
+            semanticsLabel: latex,
+            height: 65,
+            '${HttpString.apiBaseUrl}/x/web-frontend/mathjax/tex?formula=${Uri.encodeComponent(latex)}',
+            colorFilter: ColorFilter.mode(
+              colorScheme.onSurfaceVariant,
+              BlendMode.srcIn,
+            ),
+            alignment: Alignment.centerLeft,
+            placeholderBuilder: (_) => Text(latex),
+          ),
+        );
+      default:
+        return _getSpan(
+          item.word,
+          isQuote ? colorScheme.onSurfaceVariant : null,
+        );
+    }
+  }
 
   static TextStyle _getStyle(Style? style, [Color? color, double? fontSize]) =>
       TextStyle(
@@ -62,7 +130,6 @@ class OpusContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // if (kDebugMode) debugPrint('opusContent');
-
     if (opus.isEmpty) {
       return const SliverToBoxAdapter();
     }
@@ -82,71 +149,12 @@ class OpusContent extends StatelessWidget {
               Widget widget = SelectableText.rich(
                 textAlign: element.align == 1 ? TextAlign.center : null,
                 TextSpan(
-                  children: element.text?.nodes?.map((item) {
-                    switch (item.type) {
-                      case 'TEXT_NODE_TYPE_RICH' when (item.rich != null):
-                        Rich rich = item.rich!;
-                        switch (rich.type) {
-                          case 'RICH_TEXT_NODE_TYPE_EMOJI':
-                            Emoji emoji = rich.emoji!;
-                            final size = 20.0 * emoji.size;
-                            return WidgetSpan(
-                              child: NetworkImgLayer(
-                                width: size,
-                                height: size,
-                                src: emoji.url,
-                                type: ImageType.emote,
-                              ),
-                            );
-                          default:
-                            return TextSpan(
-                              text:
-                                  '${rich.type == 'RICH_TEXT_NODE_TYPE_WEB' ? '\u{1F517}' : ''}${item.rich!.text}',
-                              style: _getStyle(
-                                rich.style,
-                                rich.type == 'RICH_TEXT_NODE_TYPE_TEXT'
-                                    ? null
-                                    : colorScheme.primary,
-                              ),
-                              recognizer: TapGestureRecognizer()
-                                ..onTap = () {
-                                  switch (rich.type) {
-                                    case 'RICH_TEXT_NODE_TYPE_AT':
-                                      Get.toNamed('/member?mid=${rich.rid}');
-                                    // case 'RICH_TEXT_NODE_TYPE_TOPIC':
-                                    default:
-                                      if (rich.jumpUrl != null) {
-                                        PiliScheme.routePushFromUrl(
-                                          rich.jumpUrl!,
-                                        );
-                                      }
-                                  }
-                                },
-                            );
-                        }
-                      case 'TEXT_NODE_TYPE_FORMULA' when (item.formula != null):
-                        final latex = item.formula!.latexContent!;
-                        return WidgetSpan(
-                          child: CachedNetworkSVGImage(
-                            cacheKey: latex,
-                            semanticsLabel: latex,
-                            height: 65,
-                            '${HttpString.apiBaseUrl}/x/web-frontend/mathjax/tex?formula=${Uri.encodeComponent(latex)}',
-                            colorFilter: ColorFilter.mode(
-                              colorScheme.onSurfaceVariant,
-                              BlendMode.srcIn,
-                            ),
-                            alignment: Alignment.centerLeft,
-                            placeholderBuilder: (_) => Text(latex),
-                          ),
-                        );
-                      default:
-                        return _getSpan(
-                          item.word,
-                          isQuote ? colorScheme.onSurfaceVariant : null,
-                        );
-                    }
-                  }).toList(),
+                  children: element.text?.nodes
+                      ?.map(
+                        (item) =>
+                            _node2Widget(item: item, colorScheme: colorScheme),
+                      )
+                      .toList(),
                 ),
               );
               if (isQuote) {
@@ -184,20 +192,16 @@ class OpusContent extends StatelessWidget {
                   tag: pic.url!,
                   child: GestureDetector(
                     onTap: () {
-                      if (callback != null) {
-                        callback!([pic.url!], 0);
-                      } else {
-                        PageUtils.imageView(
-                          imgList: [SourceModel(url: pic.url!)],
-                          quality: 60,
-                        );
-                      }
+                      PageUtils.imageView(
+                        imgList: [SourceModel(url: pic.url!)],
+                        quality: 60,
+                      );
                     },
                     child: Center(
                       child: CachedNetworkImage(
                         width: width,
                         height: height,
-                        imageUrl: ImageUtil.thumbnailUrl(pic.url!, 60),
+                        imageUrl: ImageUtils.thumbnailUrl(pic.url!, 60),
                         fadeInDuration: const Duration(milliseconds: 120),
                         fadeOutDuration: const Duration(milliseconds: 120),
                         placeholder: (context, url) =>
@@ -207,9 +211,9 @@ class OpusContent extends StatelessWidget {
                   ),
                 );
               } else {
-                return imageView(
-                  maxWidth,
-                  element.pic!.pics!
+                return CustomGridView(
+                  maxWidth: maxWidth,
+                  picArr: element.pic!.pics!
                       .map(
                         (e) => ImageModel(
                           width: e.width,
@@ -225,7 +229,7 @@ class OpusContent extends StatelessWidget {
                 width: maxWidth,
                 fit: BoxFit.contain,
                 height: element.line!.pic!.height?.toDouble(),
-                imageUrl: ImageUtil.thumbnailUrl(element.line!.pic!.url!),
+                imageUrl: ImageUtils.thumbnailUrl(element.line!.pic!.url!),
               );
             case 5 when (element.list != null):
               return SelectableText.rich(
@@ -241,7 +245,7 @@ class OpusContent extends StatelessWidget {
                           if (item.word != null) {
                             return _getSpan(item.word);
                           }
-                          if (item.rich case Rich rich) {
+                          if (item.rich case final rich?) {
                             final hasUrl = rich.jumpUrl?.isNotEmpty == true;
                             return TextSpan(
                               text: '${hasUrl ? '\u{1F517}' : ''}${rich.text}',
@@ -593,6 +597,16 @@ class OpusContent extends StatelessWidget {
                 width: double.infinity,
                 child: SelectableText.rich(renderer.span!),
               );
+            case 8 when (element.heading?.nodes?.isNotEmpty == true):
+              return SelectableText.rich(
+                TextSpan(
+                  children: element.heading!.nodes!
+                      .map(
+                        (e) => _node2Widget(item: e, colorScheme: colorScheme),
+                      )
+                      .toList(),
+                ),
+              );
             default:
               if (kDebugMode) debugPrint('unknown type ${element.paraType}');
               if (element.text?.nodes?.isNotEmpty == true) {
@@ -634,6 +648,8 @@ Widget moduleBlockedItem(
   ModuleBlocked moduleBlocked,
   double maxWidth,
 ) {
+  late final isDarkMode = Get.isDarkMode;
+
   BoxDecoration? bgImg() {
     return moduleBlocked.bgImg == null
         ? null
@@ -641,8 +657,8 @@ Widget moduleBlockedItem(
             image: DecorationImage(
               fit: BoxFit.fill,
               image: CachedNetworkImageProvider(
-                ImageUtil.thumbnailUrl(
-                  Get.isDarkMode
+                ImageUtils.thumbnailUrl(
+                  isDarkMode
                       ? moduleBlocked.bgImg!.imgDark
                       : moduleBlocked.bgImg!.imgDay,
                 ),
@@ -655,10 +671,8 @@ Widget moduleBlockedItem(
     return CachedNetworkImage(
       width: width,
       fit: BoxFit.contain,
-      imageUrl: ImageUtil.thumbnailUrl(
-        Get.isDarkMode
-            ? moduleBlocked.icon!.imgDark
-            : moduleBlocked.icon!.imgDay,
+      imageUrl: ImageUtils.thumbnailUrl(
+        isDarkMode ? moduleBlocked.icon!.imgDark : moduleBlocked.icon!.imgDay,
       ),
     );
   }
@@ -673,7 +687,7 @@ Widget moduleBlockedItem(
         padding: padding,
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
         visualDensity: visualDensity,
-        backgroundColor: Get.isDarkMode
+        backgroundColor: isDarkMode
             ? const Color(0xFF8F0030)
             : const Color(0xFFFF6699),
         foregroundColor: Colors.white,

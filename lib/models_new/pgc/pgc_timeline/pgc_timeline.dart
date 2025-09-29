@@ -3,7 +3,7 @@ import 'package:PiliPlus/models_new/pgc/pgc_timeline/result.dart';
 class PgcTimeline {
   int? code;
   String? message;
-  List<Result>? result;
+  List<TimelineResult>? result;
 
   PgcTimeline({this.code, this.message, this.result});
 
@@ -11,7 +11,7 @@ class PgcTimeline {
     code: json['code'] as int?,
     message: json['message'] as String?,
     result: (json['result'] as List<dynamic>?)
-        ?.map((e) => Result.fromJson(e as Map<String, dynamic>))
+        ?.map((e) => TimelineResult.fromJson(e as Map<String, dynamic>))
         .toList(),
   );
 }

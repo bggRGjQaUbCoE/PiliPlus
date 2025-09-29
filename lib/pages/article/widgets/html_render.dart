@@ -1,5 +1,5 @@
 import 'package:PiliPlus/models/common/image_preview_type.dart';
-import 'package:PiliPlus/utils/image_util.dart';
+import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
@@ -14,7 +14,6 @@ Widget htmlRender({
   int? imgCount,
   List<String>? imgList,
   required double maxWidth,
-  Function(List<String>, int)? callback,
 }) {
   // if (kDebugMode) debugPrint('htmlRender');
   final extensions = [
@@ -42,7 +41,7 @@ Widget htmlRender({
             return CachedNetworkImage(
               width: maxWidth,
               height: height != null ? double.parse(height) : null,
-              imageUrl: ImageUtil.thumbnailUrl(imgUrl),
+              imageUrl: ImageUtils.thumbnailUrl(imgUrl),
               fit: BoxFit.contain,
             );
           }
@@ -51,19 +50,15 @@ Widget htmlRender({
             tag: imgUrl,
             child: GestureDetector(
               onTap: () {
-                if (callback != null) {
-                  callback([imgUrl], 0);
-                } else {
-                  PageUtils.imageView(
-                    imgList: [SourceModel(url: imgUrl)],
-                    quality: 60,
-                  );
-                }
+                PageUtils.imageView(
+                  imgList: [SourceModel(url: imgUrl)],
+                  quality: 60,
+                );
               },
               child: CachedNetworkImage(
                 width: size,
                 height: size,
-                imageUrl: ImageUtil.thumbnailUrl(imgUrl, 60),
+                imageUrl: ImageUtils.thumbnailUrl(imgUrl, 60),
                 fadeInDuration: const Duration(milliseconds: 120),
                 fadeOutDuration: const Duration(milliseconds: 120),
                 placeholder: (context, url) =>

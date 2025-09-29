@@ -20,10 +20,11 @@ import 'package:PiliPlus/pages/article/widgets/opus_content.dart';
 import 'package:PiliPlus/pages/common/dyn/common_dyn_page.dart';
 import 'package:PiliPlus/pages/dynamics_repost/view.dart';
 import 'package:PiliPlus/pages/video/reply/widgets/reply_item_grpc.dart';
-import 'package:PiliPlus/utils/date_util.dart';
+import 'package:PiliPlus/utils/date_utils.dart';
+import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/grid.dart';
-import 'package:PiliPlus/utils/image_util.dart';
-import 'package:PiliPlus/utils/num_util.dart';
+import 'package:PiliPlus/utils/image_utils.dart';
+import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -42,9 +43,9 @@ class ArticlePage extends StatefulWidget {
 
 class _ArticlePageState extends CommonDynPageState<ArticlePage> {
   @override
-  final ArticleController controller = Get.put(
-    ArticleController(),
-    tag: Utils.generateRandomString(8),
+  final ArticleController controller = Get.putOrFind(
+    ArticleController.new,
+    tag: Get.parameters['type']! + Get.parameters['id']!,
   );
 
   @override
@@ -56,9 +57,9 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (controller.scrollController.hasClients) {
+      if (scrollController.hasClients) {
         controller.showTitle.value =
-            controller.scrollController.positions.last.pixels >= 45;
+            scrollController.positions.last.pixels >= 45;
       }
     });
   }
@@ -66,18 +67,15 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final size = MediaQuery.sizeOf(context);
-    final maxWidth = size.width;
-    isPortrait = size.height >= maxWidth;
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      appBar: _buildAppBar(isPortrait, maxWidth),
+      appBar: _buildAppBar(),
       body: Padding(
         padding: EdgeInsets.only(left: padding.left, right: padding.right),
         child: Stack(
           clipBehavior: Clip.none,
           children: [
-            _buildPage(theme, isPortrait, maxWidth),
+            _buildPage(theme),
             _buildBottom(theme),
           ],
         ),
@@ -85,13 +83,13 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
     );
   }
 
-  Widget _buildPage(ThemeData theme, bool isPortrait, double maxWidth) {
+  Widget _buildPage(ThemeData theme) {
     double padding = max(maxWidth / 2 - Grid.smallCardWidth, 0);
     if (isPortrait) {
       return Padding(
         padding: EdgeInsets.symmetric(horizontal: padding),
         child: CustomScrollView(
-          controller: controller.scrollController,
+          controller: scrollController,
           physics: const AlwaysScrollableScrollPhysics(),
           slivers: [
             _buildContent(
@@ -120,7 +118,7 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
         Expanded(
           flex: flex,
           child: CustomScrollView(
-            controller: controller.scrollController,
+            controller: scrollController,
             physics: const AlwaysScrollableScrollPhysics(),
             slivers: [
               SliverPadding(
@@ -147,13 +145,12 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
           child: Padding(
             padding: EdgeInsets.only(right: padding),
             child: Scaffold(
-              key: scaffoldKey,
               backgroundColor: Colors.transparent,
               resizeToAvoidBottomInset: false,
               body: refreshIndicator(
                 onRefresh: controller.onRefresh,
                 child: CustomScrollView(
-                  controller: controller.scrollController,
+                  controller: scrollController,
                   physics: const AlwaysScrollableScrollPhysics(),
                   slivers: [
                     buildReplyHeader(theme),
@@ -181,7 +178,6 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
             // if (kDebugMode) debugPrint('json page');
             content = OpusContent(
               opus: controller.opus!,
-              callback: imageCallback,
               maxWidth: maxWidth,
             );
           } else if (controller.opusData?.modules.moduleBlocked != null) {
@@ -203,7 +199,6 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
                   context: context,
                   html: controller.articleData!.content!,
                   maxWidth: maxWidth,
-                  callback: imageCallback,
                 ),
               );
             } else {
@@ -214,7 +209,6 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
                     context: context,
                     element: res.body!.children[index],
                     maxWidth: maxWidth,
-                    callback: imageCallback,
                   );
                 },
                 separatorBuilder: (context, index) =>
@@ -297,7 +291,7 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
                                             fit: pic.isLongPic == true
                                                 ? BoxFit.cover
                                                 : null,
-                                            imageUrl: ImageUtil.thumbnailUrl(
+                                            imageUrl: ImageUtils.thumbnailUrl(
                                               pic.url,
                                               60,
                                             ),
@@ -373,7 +367,7 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
                             ),
                             if (pubTime != null)
                               Text(
-                                DateUtil.format(pubTime),
+                                DateFormatUtils.format(pubTime),
                                 style: TextStyle(
                                   color: theme.colorScheme.outline,
                                   fontSize:
@@ -446,7 +440,6 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
                       onDelete: (item, subIndex) =>
                           controller.onRemove(index, item, subIndex),
                       upMid: controller.upMid,
-                      callback: imageCallback,
                       onCheckReply: (item) =>
                           controller.onCheckReply(item, isManual: true),
                       onToggleTop: (item) => controller.onToggleTop(
@@ -462,12 +455,12 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
             : HttpError(onReload: controller.onReload),
       Error(:var errMsg) => HttpError(
         errMsg: errMsg,
-        onReload: controller.onReload,
+        onReload: controller.isLoaded.value ? controller.onReload : null,
       ),
     };
   }
 
-  PreferredSizeWidget _buildAppBar(bool isPortrait, double maxWidth) => AppBar(
+  PreferredSizeWidget _buildAppBar() => AppBar(
     title: Obx(() {
       if (controller.isLoaded.value && controller.showTitle.value) {
         return Text(controller.summary.title ?? '');
@@ -557,7 +550,7 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
     bottom: 0,
     right: 0,
     child: SlideTransition(
-      position: controller.fabAnim,
+      position: fabAnim,
       child: Builder(
         builder: (context) {
           if (!controller.showDynActionBar) {
@@ -598,7 +591,7 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
               ),
               style: btnStyle,
               label: Text(
-                stat?.count != null ? NumUtil.numFormat(stat!.count) : text,
+                stat?.count != null ? NumUtils.numFormat(stat!.count) : text,
                 style: TextStyle(color: color),
               ),
             );
@@ -689,7 +682,7 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
                       Expanded(
                         child: textIconButton(
                           text: '分享',
-                          icon: CustomIcon.share_node,
+                          icon: CustomIcons.share_node,
                           stat: null,
                           onPressed: () => Utils.shareText(controller.url),
                         ),

@@ -12,7 +12,7 @@ import 'package:PiliPlus/pages/dynamics/controller.dart';
 import 'package:PiliPlus/pages/save_panel/view.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/context_ext.dart';
-import 'package:PiliPlus/utils/date_util.dart';
+import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
@@ -26,9 +26,9 @@ import 'package:get/get.dart' hide ContextExtensionss;
 class AuthorPanel extends StatelessWidget {
   final DynamicItemModel item;
   final Function? addBannedList;
+  final bool isSave;
   final bool isDetail;
   final ValueChanged? onRemove;
-  final bool isSave;
   final Function(bool isTop, dynamic dynId)? onSetTop;
   final VoidCallback? onBlock;
 
@@ -43,12 +43,11 @@ class AuthorPanel extends StatelessWidget {
     this.onBlock,
   });
 
-  Widget _buildAvatar() {
-    String? pendant = item.modules.moduleAuthor?.pendant?.image;
+  Widget _buildAvatar(ModuleAuthorModel moduleAuthor) {
+    String? pendant = moduleAuthor.pendant?.image;
     Widget avatar = PendantAvatar(
-      avatar: item.modules.moduleAuthor?.face,
+      avatar: moduleAuthor.face,
       size: pendant.isNullOrEmpty ? 40 : 34,
-      isVip: null,
       officialType: null, // 已被注释
       garbPendantImage: pendant,
     );
@@ -61,14 +60,15 @@ class AuthorPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final pubTime = item.modules.moduleAuthor?.pubTs != null
+    final moduleAuthor = item.modules.moduleAuthor!;
+    final pubTime = moduleAuthor.pubTs != null
         ? isSave
-              ? DateUtil.format(
-                  item.modules.moduleAuthor!.pubTs,
-                  format: DateUtil.longFormatDs,
+              ? DateFormatUtils.format(
+                  moduleAuthor.pubTs,
+                  format: DateFormatUtils.longFormatDs,
                 )
-              : DateUtil.dateFormat(item.modules.moduleAuthor!.pubTs)
-        : item.modules.moduleAuthor?.pubTime;
+              : DateFormatUtils.dateFormat(moduleAuthor.pubTs)
+        : moduleAuthor.pubTime;
     return Stack(
       clipBehavior: Clip.none,
       alignment: Alignment.center,
@@ -77,29 +77,29 @@ class AuthorPanel extends StatelessWidget {
           alignment: Alignment.centerLeft,
           child: GestureDetector(
             behavior: HitTestBehavior.opaque,
-            onTap: item.modules.moduleAuthor!.type == 'AUTHOR_TYPE_NORMAL'
+            onTap: moduleAuthor.type == 'AUTHOR_TYPE_NORMAL'
                 ? () {
                     feedBack();
                     Get.toNamed(
-                      '/member?mid=${item.modules.moduleAuthor!.mid}',
+                      '/member?mid=${moduleAuthor.mid}',
                     );
                   }
                 : null,
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                _buildAvatar(),
+                _buildAvatar(moduleAuthor),
                 const SizedBox(width: 10),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      item.modules.moduleAuthor?.name ?? '',
+                      moduleAuthor.name ?? '',
                       style: TextStyle(
                         color:
-                            item.modules.moduleAuthor!.vip != null &&
-                                item.modules.moduleAuthor!.vip!.status > 0 &&
-                                item.modules.moduleAuthor!.vip!.type == 2
+                            moduleAuthor.vip != null &&
+                                moduleAuthor.vip!.status > 0 &&
+                                moduleAuthor.vip!.type == 2
                             ? theme.colorScheme.vipColor
                             : theme.colorScheme.onSurface,
                         fontSize: theme.textTheme.titleSmall!.fontSize,
@@ -107,7 +107,7 @@ class AuthorPanel extends StatelessWidget {
                     ),
                     if (pubTime != null)
                       Text(
-                        '$pubTime${item.modules.moduleAuthor?.pubAction != null ? ' ${item.modules.moduleAuthor!.pubAction}' : ''}',
+                        '$pubTime${moduleAuthor.pubAction != null ? ' ${moduleAuthor.pubAction}' : ''}',
                         style: TextStyle(
                           color: theme.colorScheme.outline,
                           fontSize: theme.textTheme.labelSmall!.fontSize,
@@ -156,7 +156,7 @@ class AuthorPanel extends StatelessWidget {
                     _moreWidget(context),
                   ],
                 )
-              : item.modules.moduleAuthor!.decorate != null
+              : moduleAuthor.decorate != null
               ? Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -166,48 +166,24 @@ class AuthorPanel extends StatelessWidget {
                       children: [
                         CachedNetworkImage(
                           height: 32,
-                          imageUrl: item
-                              .modules
-                              .moduleAuthor!
-                              .decorate!
-                              .cardUrl
-                              .http2https,
+                          imageUrl: moduleAuthor.decorate!.cardUrl.http2https,
                         ),
-                        if (item
-                                .modules
-                                .moduleAuthor
-                                ?.decorate
-                                ?.fan
-                                ?.numStr
-                                ?.isNotEmpty ==
+                        if (moduleAuthor.decorate?.fan?.numStr?.isNotEmpty ==
                             true)
                           Padding(
                             padding: const EdgeInsets.only(right: 32),
                             child: Text(
-                              '${item.modules.moduleAuthor!.decorate!.fan!.numStr}',
+                              '${moduleAuthor.decorate!.fan!.numStr}',
                               style: TextStyle(
                                 height: 1,
                                 fontSize: 11,
                                 fontFamily: 'digital_id_num',
                                 color:
-                                    item
-                                            .modules
-                                            .moduleAuthor!
-                                            .decorate!
-                                            .fan
-                                            ?.color
+                                    moduleAuthor.decorate!.fan?.color
                                             ?.startsWith('#') ==
                                         true
-                                    ? Color(
-                                        int.parse(
-                                          item
-                                              .modules
-                                              .moduleAuthor!
-                                              .decorate!
-                                              .fan!
-                                              .color!
-                                              .replaceFirst('#', '0xFF'),
-                                        ),
+                                    ? Utils.parseColor(
+                                        moduleAuthor.decorate!.fan!.color!,
                                       )
                                     : null,
                               ),
@@ -251,7 +227,7 @@ class AuthorPanel extends StatelessWidget {
       if (bvid == null && item.orig != null) {
         bvid = getBvid(
           item.orig!.type,
-          item.orig?.modules.moduleDynamic?.major,
+          item.orig!.modules.moduleDynamic?.major,
         );
       }
     } catch (_) {}
@@ -265,6 +241,7 @@ class AuthorPanel extends StatelessWidget {
       ),
       builder: (context1) {
         final theme = Theme.of(context);
+        final moduleAuthor = item.modules.moduleAuthor!;
         return Padding(
           padding: EdgeInsets.only(
             bottom: MediaQuery.viewPaddingOf(context1).bottom,
@@ -348,32 +325,13 @@ class AuthorPanel extends StatelessWidget {
                       bool isDyn = item.basic!.commentType == 17;
                       String id = isDyn ? item.idStr : item.basic!.ridStr!;
                       int source = isDyn ? 11 : 2;
-                      String title;
-                      if (item.modules.moduleDynamic?.desc != null) {
-                        title = item.modules.moduleDynamic!.desc!.text!;
-                      } else if (item.modules.moduleDynamic?.major != null) {
-                        title = item
-                            .modules
-                            .moduleDynamic!
-                            .major!
-                            .opus!
-                            .summary!
-                            .text!;
-                      } else {
-                        throw UnsupportedError(
-                          'error getting title: {"type": ${item.basic!.commentType}, "id": $id}',
-                        );
-                      }
+                      final moduleDynamic = item.modules.moduleDynamic!;
+                      final title =
+                          moduleDynamic.desc?.text ??
+                          moduleDynamic.major!.opus!.summary!.text!;
                       String? thumb = isDyn
-                          ? item.modules.moduleAuthor?.face
-                          : item
-                                .modules
-                                .moduleDynamic
-                                ?.major
-                                ?.opus
-                                ?.pics
-                                ?.firstOrNull
-                                ?.url;
+                          ? moduleAuthor.face
+                          : moduleDynamic.major?.opus?.pics?.firstOrNull?.url;
                       PageUtils.pmShare(
                         context,
                         content: {
@@ -382,9 +340,8 @@ class AuthorPanel extends StatelessWidget {
                           "headline": "",
                           "source": source,
                           if (thumb?.isNotEmpty == true) "thumb": thumb,
-                          "author": item.modules.moduleAuthor!.name,
-                          "author_id": item.modules.moduleAuthor!.mid
-                              .toString(),
+                          "author": moduleAuthor.name,
+                          "author_id": moduleAuthor.mid.toString(),
                         },
                       );
                     } catch (e) {
@@ -395,7 +352,7 @@ class AuthorPanel extends StatelessWidget {
                 ),
               ListTile(
                 title: Text(
-                  '临时屏蔽：${item.modules.moduleAuthor?.name}',
+                  '临时屏蔽：${moduleAuthor.name}',
                   style: theme.textTheme.titleSmall,
                 ),
                 leading: const Icon(Icons.visibility_off_outlined, size: 19),
@@ -404,16 +361,16 @@ class AuthorPanel extends StatelessWidget {
                   onBlock?.call();
                   try {
                     Get.find<DynamicsController>().tempBannedList.add(
-                      item.modules.moduleAuthor!.mid!,
+                      moduleAuthor.mid!,
                     );
                     SmartDialog.showToast(
-                      '已临时屏蔽${item.modules.moduleAuthor?.name}(${item.modules.moduleAuthor!.mid!})，重启恢复',
+                      '已临时屏蔽${moduleAuthor.name}(${moduleAuthor.mid!})，重启恢复',
                     );
                   } catch (_) {}
                 },
                 minLeadingWidth: 0,
               ),
-              if (item.modules.moduleAuthor?.mid == Accounts.main.mid) ...[
+              if (moduleAuthor.mid == Accounts.main.mid) ...[
                 ListTile(
                   onTap: () {
                     Get.back();
@@ -513,15 +470,16 @@ class AuthorPanel extends StatelessWidget {
                       (reasonType, reasonDesc, banUid) {
                         if (banUid) {
                           VideoHttp.relationMod(
-                            mid: item.modules.moduleAuthor!.mid!,
+                            mid: moduleAuthor.mid!,
                             act: 5,
                             reSrc: 11,
                           );
                         }
                         return UserHttp.dynamicReport(
-                          mid: item.modules.moduleAuthor!.mid,
+                          mid: moduleAuthor.mid,
                           dynId: item.idStr,
                           reasonType: reasonType,
+                          reasonDesc: reasonType == 0 ? reasonDesc : null,
                         );
                       },
                     );

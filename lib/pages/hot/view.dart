@@ -10,7 +10,7 @@ import 'package:PiliPlus/pages/home/controller.dart';
 import 'package:PiliPlus/pages/hot/controller.dart';
 import 'package:PiliPlus/pages/rank/view.dart';
 import 'package:PiliPlus/utils/grid.dart';
-import 'package:PiliPlus/utils/image_util.dart';
+import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -44,7 +44,7 @@ class _HotPageState extends CommonPageState<HotPage, HotController>
           CachedNetworkImage(
             width: 35,
             height: 35,
-            imageUrl: ImageUtil.thumbnailUrl(iconUrl),
+            imageUrl: ImageUtils.thumbnailUrl(iconUrl),
           ),
           const SizedBox(height: 4),
           Text(
@@ -106,27 +106,15 @@ class _HotPageState extends CommonPageState<HotPage, HotController>
                           ),
                           _buildEntranceItem(
                             iconUrl:
-                                'http://i0.hdslb.com/bfs/archive/552ebe8c4794aeef30ebd1568b59ad35f15e21ad.png',
+                                'https://i0.hdslb.com/bfs/archive/552ebe8c4794aeef30ebd1568b59ad35f15e21ad.png',
                             title: '每周必看',
-                            onTap: () => Get.toNamed(
-                              '/webview',
-                              parameters: {
-                                'url':
-                                    'https://www.bilibili.com/h5/weekly-recommend',
-                              },
-                            ),
+                            onTap: () => Get.toNamed('/popularSeries'),
                           ),
                           _buildEntranceItem(
                             iconUrl:
-                                'http://i0.hdslb.com/bfs/archive/3693ec9335b78ca57353ac0734f36a46f3d179a9.png',
+                                'https://i0.hdslb.com/bfs/archive/3693ec9335b78ca57353ac0734f36a46f3d179a9.png',
                             title: '入站必刷',
-                            onTap: () => Get.toNamed(
-                              '/webview',
-                              parameters: {
-                                'url':
-                                    'https://www.bilibili.com/h5/good-history',
-                              },
-                            ),
+                            onTap: () => Get.toNamed('/popularPrecious'),
                           ),
                         ],
                       ),
@@ -135,10 +123,7 @@ class _HotPageState extends CommonPageState<HotPage, HotController>
             ),
           ),
           SliverPadding(
-            padding: EdgeInsets.only(
-              top: 7,
-              bottom: MediaQuery.viewPaddingOf(context).bottom + 100,
-            ),
+            padding: const EdgeInsets.only(top: 7, bottom: 100),
             sliver: Obx(
               () => _buildBody(controller.loadingState.value),
             ),

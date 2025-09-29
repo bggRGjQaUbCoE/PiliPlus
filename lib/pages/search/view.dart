@@ -8,8 +8,8 @@ import 'package:PiliPlus/pages/about/view.dart' show showInportExportDialog;
 import 'package:PiliPlus/pages/search/controller.dart';
 import 'package:PiliPlus/pages/search/widgets/hot_keyword.dart';
 import 'package:PiliPlus/pages/search/widgets/search_text.dart';
-import 'package:PiliPlus/utils/context_ext.dart';
 import 'package:PiliPlus/utils/em.dart' show Em;
+import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/utils.dart';
@@ -34,7 +34,7 @@ class _SearchPageState extends State<SearchPage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isPortrait = context.isPortrait;
+    final isPortrait = MediaQuery.sizeOf(context).isPortrait;
     return Scaffold(
       appBar: AppBar(
         shape: Border(
@@ -121,14 +121,13 @@ class _SearchPageState extends State<SearchPage> {
               _searchController.controller.text != ''
           ? Column(
               mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: _searchController.searchSuggestList
                   .map(
                     (item) => InkWell(
                       borderRadius: const BorderRadius.all(Radius.circular(4)),
                       onTap: () => _searchController.onClickKeyword(item.term!),
-                      child: Container(
-                        width: double.infinity,
+                      child: Padding(
                         padding: const EdgeInsets.only(
                           left: 20,
                           top: 9,

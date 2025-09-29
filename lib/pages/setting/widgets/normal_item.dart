@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+import 'package:PiliPlus/common/widgets/list_tile.dart';
+import 'package:flutter/material.dart' hide ListTile;
 
 typedef StringGetter = String Function();
 
@@ -8,9 +9,6 @@ class NormalItem extends StatefulWidget {
   final String? subtitle;
   final StringGetter? getSubtitle;
   final String? setKey;
-  final bool? defaultVal;
-  final ValueChanged<bool>? onChanged;
-  final bool? needReboot;
   final Widget? leading;
   final Widget Function()? getTrailing;
   final Function? onTap;
@@ -23,9 +21,6 @@ class NormalItem extends StatefulWidget {
     this.subtitle,
     this.getSubtitle,
     this.setKey,
-    this.defaultVal,
-    this.onChanged,
-    this.needReboot,
     this.leading,
     this.getTrailing,
     this.onTap,

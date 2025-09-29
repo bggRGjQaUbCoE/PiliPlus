@@ -4,9 +4,8 @@ import 'package:PiliPlus/common/widgets/dialog/report.dart';
 import 'package:PiliPlus/http/dynamics.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/dynamics/vote_model.dart';
-import 'package:PiliPlus/utils/context_ext.dart';
-import 'package:PiliPlus/utils/date_util.dart';
-import 'package:PiliPlus/utils/num_util.dart';
+import 'package:PiliPlus/utils/date_utils.dart';
+import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide ContextExtensionss;
 
@@ -45,7 +44,8 @@ class _VotePanelState extends State<VotePanel> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final usePortrait = context.isPortrait || context.isTablet;
+    final size = MediaQuery.sizeOf(context);
+    final usePortrait = size.width < 600 || size.shortestSide >= 600;
     final right = [
       Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -119,13 +119,13 @@ class _VotePanelState extends State<VotePanel> {
             runSpacing: 5,
             children: [
               Text(
-                '至 ${DateUtil.format(_voteInfo.endTime, format: DateUtil.longFormatDs)}',
+                '至 ${DateFormatUtils.format(_voteInfo.endTime, format: DateFormatUtils.longFormatDs)}',
               ),
               Text.rich(
                 TextSpan(
                   children: [
                     TextSpan(
-                      text: NumUtil.numFormat(_voteInfo.joinNum),
+                      text: NumUtils.numFormat(_voteInfo.joinNum),
                       style: TextStyle(color: theme.colorScheme.primary),
                     ),
                     const TextSpan(text: '人参与'),
@@ -172,9 +172,7 @@ class _VotePanelState extends State<VotePanel> {
       CheckBoxText(
         text: '匿名',
         selected: anonymity,
-        onChanged: (val) {
-          anonymity = val;
-        },
+        onChanged: (val) => anonymity = val,
       ),
     ],
   );

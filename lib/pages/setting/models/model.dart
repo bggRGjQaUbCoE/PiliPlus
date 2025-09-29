@@ -16,9 +16,9 @@ class SettingsModel {
   final String? subtitle;
   final StringGetter? getSubtitle;
   final String? setKey;
-  final bool? defaultVal;
+  final bool defaultVal;
   final ValueChanged<bool>? onChanged;
-  final bool? needReboot;
+  final bool needReboot;
   final Widget? leading;
   final Widget Function()? getTrailing;
   final Function? onTap;
@@ -32,9 +32,9 @@ class SettingsModel {
     this.subtitle,
     this.getSubtitle,
     this.setKey,
-    this.defaultVal,
+    this.defaultVal = false,
     this.onChanged,
-    this.needReboot,
+    this.needReboot = false,
     this.leading,
     this.getTrailing,
     this.onTap,
@@ -49,9 +49,6 @@ class SettingsModel {
       subtitle: subtitle,
       getSubtitle: getSubtitle,
       setKey: setKey,
-      defaultVal: defaultVal,
-      onChanged: onChanged,
-      needReboot: needReboot,
       leading: leading,
       getTrailing: getTrailing,
       onTap: onTap,
@@ -61,7 +58,7 @@ class SettingsModel {
     SettingsType.sw1tch => SetSwitchItem(
       title: title,
       subtitle: subtitle,
-      setKey: setKey,
+      setKey: setKey!,
       defaultVal: defaultVal,
       onChanged: onChanged,
       needReboot: needReboot,

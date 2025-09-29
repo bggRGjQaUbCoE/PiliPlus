@@ -44,6 +44,11 @@ class _WhisperDetailPageState
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final padding = MediaQuery.viewPaddingOf(context);
+    late final containerColor = ElevationOverlay.colorWithOverlay(
+      theme.colorScheme.surface,
+      theme.hoverColor,
+      1,
+    );
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
@@ -135,14 +140,21 @@ class _WhisperDetailPageState
                   hidePanel();
                 },
                 behavior: HitTestBehavior.opaque,
-                child: Obx(
-                  () => _buildBody(_whisperDetailController.loadingState.value),
+                child: Align(
+                  alignment: Alignment.topCenter,
+                  child: Obx(
+                    () =>
+                        _buildBody(_whisperDetailController.loadingState.value),
+                  ),
                 ),
               ),
             ),
             if (_whisperDetailController.mid != null) ...[
-              _buildInputView(theme),
-              buildPanelContainer(theme, theme.colorScheme.onInverseSurface),
+              _buildInputView(theme, containerColor),
+              buildPanelContainer(
+                theme,
+                containerColor,
+              ),
             ] else
               SizedBox(height: padding.bottom),
           ],
@@ -224,15 +236,12 @@ class _WhisperDetailPageState
     );
   }
 
-  Widget _buildInputView(ThemeData theme) {
+  Widget _buildInputView(ThemeData theme, Color containerColor) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 8),
       decoration: BoxDecoration(
-        color: theme.colorScheme.onInverseSurface,
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(16),
-          topRight: Radius.circular(16),
-        ),
+        color: containerColor,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,

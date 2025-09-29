@@ -8,8 +8,8 @@ import 'package:PiliPlus/common/widgets/video_popup_menu.dart';
 import 'package:PiliPlus/models/common/badge_type.dart';
 import 'package:PiliPlus/models/common/stat_type.dart';
 import 'package:PiliPlus/models_new/space/space_archive/item.dart';
-import 'package:PiliPlus/utils/date_util.dart';
-import 'package:PiliPlus/utils/duration_util.dart';
+import 'package:PiliPlus/utils/date_utils.dart';
+import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -45,9 +45,13 @@ class VideoCardHMemberVideo extends StatelessWidget {
             onTap:
                 onTap ??
                 () async {
-                  if (videoItem.isPgc == true &&
-                      videoItem.uri?.isNotEmpty == true) {
-                    if (PageUtils.viewPgcFromUri(videoItem.uri!)) {
+                  final isPgc = videoItem.isPgc == true;
+                  final isPugv = videoItem.isPugv == true;
+                  if ((isPgc || isPugv) && videoItem.uri?.isNotEmpty == true) {
+                    if (PageUtils.viewPgcFromUri(
+                      videoItem.uri!,
+                      isPgc: isPgc,
+                    )) {
                       return;
                     }
                   }
@@ -156,16 +160,17 @@ class VideoCardHMemberVideo extends StatelessWidget {
                                                           .history!
                                                           .duration
                                                   ? '已看完'
-                                                  : '${DurationUtil.formatDuration(videoItem.history!.progress)}/${DurationUtil.formatDuration(videoItem.history!.duration)}',
+                                                  : '${DurationUtils.formatDuration(videoItem.history!.progress)}/${DurationUtils.formatDuration(videoItem.history!.duration)}',
                                               right: 6.0,
                                               bottom: 6.0,
                                               type: PBadgeType.gray,
                                             );
                                           } catch (_) {
                                             return PBadge(
-                                              text: DurationUtil.formatDuration(
-                                                videoItem.duration,
-                                              ),
+                                              text:
+                                                  DurationUtils.formatDuration(
+                                                    videoItem.duration,
+                                                  ),
                                               right: 6.0,
                                               bottom: 6.0,
                                               type: PBadgeType.gray,
@@ -175,7 +180,7 @@ class VideoCardHMemberVideo extends StatelessWidget {
                                       ),
                                     ] else if (videoItem.duration > 0)
                                       PBadge(
-                                        text: DurationUtil.formatDuration(
+                                        text: DurationUtils.formatDuration(
                                           videoItem.duration,
                                         ),
                                         right: 6.0,
@@ -234,7 +239,7 @@ class VideoCardHMemberVideo extends StatelessWidget {
           ),
           Text(
             videoItem.season != null
-                ? DateUtil.dateFormat(videoItem.season!.mtime)
+                ? DateFormatUtils.dateFormat(videoItem.season!.mtime)
                 : videoItem.publishTimeText ?? '',
             maxLines: 1,
             style: TextStyle(

@@ -9,8 +9,9 @@ import 'package:PiliPlus/pages/dynamics/widgets/author_panel.dart';
 import 'package:PiliPlus/pages/dynamics/widgets/dynamic_panel.dart';
 import 'package:PiliPlus/pages/dynamics_detail/controller.dart';
 import 'package:PiliPlus/pages/dynamics_repost/view.dart';
+import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/grid.dart';
-import 'package:PiliPlus/utils/num_util.dart';
+import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:PiliPlus/utils/request_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart';
@@ -26,9 +27,9 @@ class DynamicDetailPage extends StatefulWidget {
 
 class _DynamicDetailPageState extends CommonDynPageState<DynamicDetailPage> {
   @override
-  final DynamicDetailController controller = Get.put(
-    DynamicDetailController(),
-    tag: Utils.generateRandomString(8),
+  final DynamicDetailController controller = Get.putOrFind(
+    DynamicDetailController.new,
+    tag: (Get.arguments['item'] as DynamicItemModel).idStr.toString(),
   );
 
   @override
@@ -40,9 +41,9 @@ class _DynamicDetailPageState extends CommonDynPageState<DynamicDetailPage> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (controller.scrollController.hasClients) {
+      if (scrollController.hasClients) {
         controller.showTitle.value =
-            controller.scrollController.positions.first.pixels > 55;
+            scrollController.positions.first.pixels > 55;
       }
     });
   }
@@ -50,25 +51,22 @@ class _DynamicDetailPageState extends CommonDynPageState<DynamicDetailPage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final size = MediaQuery.sizeOf(context);
-    final maxWidth = size.width;
-    isPortrait = size.height >= maxWidth;
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      appBar: _buildAppBar(isPortrait, maxWidth),
+      appBar: _buildAppBar(),
       body: Padding(
         padding: EdgeInsets.only(left: padding.left, right: padding.right),
         child: isPortrait
             ? refreshIndicator(
                 onRefresh: controller.onRefresh,
-                child: _buildBody(theme, isPortrait, maxWidth),
+                child: _buildBody(theme),
               )
-            : _buildBody(theme, isPortrait, maxWidth),
+            : _buildBody(theme),
       ),
     );
   }
 
-  PreferredSizeWidget _buildAppBar(bool isPortrait, double maxWidth) => AppBar(
+  PreferredSizeWidget _buildAppBar() => AppBar(
     title: Padding(
       padding: const EdgeInsets.only(right: 12),
       child: Obx(
@@ -96,22 +94,22 @@ class _DynamicDetailPageState extends CommonDynPageState<DynamicDetailPage> {
           ],
   );
 
-  Widget _buildBody(ThemeData theme, bool isPortrait, double maxWidth) {
+  Widget _buildBody(ThemeData theme) {
     double padding = max(maxWidth / 2 - Grid.smallCardWidth, 0);
     Widget child;
     if (isPortrait) {
       child = Padding(
         padding: EdgeInsets.symmetric(horizontal: padding),
         child: CustomScrollView(
-          controller: controller.scrollController,
+          controller: scrollController,
           physics: const AlwaysScrollableScrollPhysics(),
           slivers: [
             SliverToBoxAdapter(
               child: DynamicPanel(
                 item: controller.dynItem,
                 isDetail: true,
-                callback: imageCallback,
                 maxWidth: maxWidth - this.padding.horizontal - 2 * padding,
+                isDetailPortraitW: isPortrait,
               ),
             ),
             buildReplyHeader(theme),
@@ -128,7 +126,7 @@ class _DynamicDetailPageState extends CommonDynPageState<DynamicDetailPage> {
           Expanded(
             flex: flex,
             child: CustomScrollView(
-              controller: controller.scrollController,
+              controller: scrollController,
               physics: const AlwaysScrollableScrollPhysics(),
               slivers: [
                 SliverPadding(
@@ -140,11 +138,11 @@ class _DynamicDetailPageState extends CommonDynPageState<DynamicDetailPage> {
                     child: DynamicPanel(
                       item: controller.dynItem,
                       isDetail: true,
-                      callback: imageCallback,
                       maxWidth:
                           (maxWidth - this.padding.horizontal) *
                               (flex / (flex + flex1)) -
                           padding,
+                      isDetailPortraitW: isPortrait,
                     ),
                   ),
                 ),
@@ -156,13 +154,12 @@ class _DynamicDetailPageState extends CommonDynPageState<DynamicDetailPage> {
             child: Padding(
               padding: EdgeInsets.only(right: padding),
               child: Scaffold(
-                key: scaffoldKey,
                 backgroundColor: Colors.transparent,
                 resizeToAvoidBottomInset: false,
                 body: refreshIndicator(
                   onRefresh: controller.onRefresh,
                   child: CustomScrollView(
-                    controller: controller.scrollController,
+                    controller: scrollController,
                     physics: const AlwaysScrollableScrollPhysics(),
                     slivers: [
                       buildReplyHeader(theme),
@@ -193,7 +190,7 @@ class _DynamicDetailPageState extends CommonDynPageState<DynamicDetailPage> {
       right: 0,
       bottom: 0,
       child: SlideTransition(
-        position: controller.fabAnim,
+        position: fabAnim,
         child: Builder(
           builder: (context) {
             if (!controller.showDynActionBar) {
@@ -235,7 +232,7 @@ class _DynamicDetailPageState extends CommonDynPageState<DynamicDetailPage> {
                 ),
                 style: btnStyle,
                 label: Text(
-                  stat?.count != null ? NumUtil.numFormat(stat!.count) : text,
+                  stat?.count != null ? NumUtils.numFormat(stat!.count) : text,
                   style: TextStyle(color: color),
                 ),
               );
@@ -283,8 +280,8 @@ class _DynamicDetailPageState extends CommonDynPageState<DynamicDetailPage> {
                                       int count = forward.count ?? 0;
                                       forward.count = count + 1;
                                       if (btnContext.mounted) {
-                                        (btnContext as Element?)
-                                            ?.markNeedsBuild();
+                                        (btnContext as Element)
+                                            .markNeedsBuild();
                                       }
                                     }
                                   },
@@ -296,7 +293,7 @@ class _DynamicDetailPageState extends CommonDynPageState<DynamicDetailPage> {
                       ),
                       Expanded(
                         child: textIconButton(
-                          icon: CustomIcon.share_node,
+                          icon: CustomIcons.share_node,
                           text: '分享',
                           stat: null,
                           onPressed: () => Utils.shareText(
@@ -316,7 +313,7 @@ class _DynamicDetailPageState extends CommonDynPageState<DynamicDetailPage> {
                                 controller.dynItem,
                                 () {
                                   if (context.mounted) {
-                                    (context as Element?)?.markNeedsBuild();
+                                    (context as Element).markNeedsBuild();
                                   }
                                 },
                               ),

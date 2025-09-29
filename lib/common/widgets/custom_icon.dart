@@ -2,7 +2,7 @@
 
 import 'package:flutter/widgets.dart';
 
-class CustomIcon {
+class CustomIcons {
   static const IconData coin = _CustomIconData(0xe800);
   static const IconData dm_off = _CustomIconData(0xe801);
   static const IconData dm_on = _CustomIconData(0xe802);

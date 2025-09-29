@@ -8,18 +8,16 @@ import 'package:PiliPlus/http/search.dart';
 import 'package:PiliPlus/models/common/badge_type.dart';
 import 'package:PiliPlus/models/common/stat_type.dart';
 import 'package:PiliPlus/models_new/music/bgm_recommend_list.dart';
-import 'package:PiliPlus/utils/duration_util.dart';
+import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:flutter/material.dart';
 
 class MusicVideoCardH extends StatelessWidget {
   final BgmRecommend videoItem;
-  final Animation<double> animation;
 
   const MusicVideoCardH({
     super.key,
     required this.videoItem,
-    required this.animation,
   });
 
   @override
@@ -67,7 +65,9 @@ class MusicVideoCardH extends StatelessWidget {
                           height: maxHeight,
                         ),
                         PBadge(
-                          text: DurationUtil.formatDuration(videoItem.duration),
+                          text: DurationUtils.formatDuration(
+                            videoItem.duration,
+                          ),
                           right: 6.0,
                           bottom: 6.0,
                           type: PBadgeType.gray,
@@ -115,8 +115,10 @@ class MusicVideoCardH extends StatelessWidget {
               ),
             ],
           ),
-          BounceMarquee(
-            animation: animation,
+          const SizedBox(height: 3),
+          NormalMarquee(
+            velocity: 25,
+            spacing: 30,
             child: Row(
               spacing: 8,
               children: [

@@ -1,21 +1,28 @@
 import 'dart:io';
+import 'dart:math';
 import 'dart:ui';
 
+import 'package:PiliPlus/common/widgets/button/icon_button.dart';
+import 'package:PiliPlus/common/widgets/custom_icon.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
+import 'package:PiliPlus/common/widgets/keep_alive_wrapper.dart';
+import 'package:PiliPlus/common/widgets/scroll_physics.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/models_new/live/live_room_info_h5/data.dart';
+import 'package:PiliPlus/models_new/live/live_superchat/item.dart';
 import 'package:PiliPlus/pages/live_room/controller.dart';
-import 'package:PiliPlus/pages/live_room/send_danmaku/view.dart';
+import 'package:PiliPlus/pages/live_room/superchat/superchat_card.dart';
+import 'package:PiliPlus/pages/live_room/superchat/superchat_panel.dart';
 import 'package:PiliPlus/pages/live_room/widgets/bottom_control.dart';
-import 'package:PiliPlus/pages/live_room/widgets/chat.dart';
+import 'package:PiliPlus/pages/live_room/widgets/chat_panel.dart';
 import 'package:PiliPlus/pages/live_room/widgets/header_control.dart';
+import 'package:PiliPlus/pages/video/widgets/player_focus.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
 import 'package:PiliPlus/plugin/pl_player/utils/fullscreen.dart';
 import 'package:PiliPlus/plugin/pl_player/view.dart';
-import 'package:PiliPlus/plugin/pl_player/widgets/common_btn.dart';
 import 'package:PiliPlus/services/service_locator.dart';
-import 'package:PiliPlus/utils/duration_util.dart';
+import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
@@ -23,12 +30,12 @@ import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:canvas_danmaku/canvas_danmaku.dart';
-import 'package:floating/floating.dart';
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show SystemUiOverlayStyle;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart' hide ContextExtensionss;
-import 'package:screen_brightness/screen_brightness.dart';
+import 'package:screen_brightness_platform_interface/screen_brightness_platform_interface.dart';
 
 class LiveRoomPage extends StatefulWidget {
   const LiveRoomPage({super.key});
@@ -44,8 +51,10 @@ class _LiveRoomPageState extends State<LiveRoomPage>
   late final PlPlayerController plPlayerController;
   bool get isFullScreen => plPlayerController.isFullScreen.value;
 
-  final GlobalKey chatKey = GlobalKey();
-  final GlobalKey playerKey = GlobalKey();
+  late final GlobalKey pageKey = GlobalKey();
+  late final GlobalKey chatKey = GlobalKey();
+  late final GlobalKey scKey = GlobalKey();
+  late final GlobalKey playerKey = GlobalKey();
 
   @override
   void initState() {
@@ -69,6 +78,11 @@ class _LiveRoomPageState extends State<LiveRoomPage>
       this,
       ModalRoute.of(context)! as PageRoute,
     );
+    padding = MediaQuery.viewPaddingOf(context);
+    final size = MediaQuery.sizeOf(context);
+    maxWidth = size.width;
+    maxHeight = size.height;
+    isPortrait = size.isPortrait;
   }
 
   @override
@@ -125,9 +139,11 @@ class _LiveRoomPageState extends State<LiveRoomPage>
 
   @override
   void dispose() {
-    videoPlayerServiceHandler.onVideoDetailDispose(heroTag);
+    videoPlayerServiceHandler?.onVideoDetailDispose(heroTag);
     WidgetsBinding.instance.removeObserver(this);
-    ScreenBrightness.instance.resetApplicationScreenBrightness();
+    if (Utils.isMobile) {
+      ScreenBrightnessPlatform.instance.resetApplicationScreenBrightness();
+    }
     PlPlayerController.setPlayCallBack(null);
     plPlayerController
       ..removeStatusLister(playerListener)
@@ -145,7 +161,7 @@ class _LiveRoomPageState extends State<LiveRoomPage>
         if (isFullScreen && Platform.isIOS) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (!_liveRoomController.isPortrait.value) {
-              landScape();
+              landscape();
             }
           });
         }
@@ -165,23 +181,26 @@ class _LiveRoomPageState extends State<LiveRoomPage>
 
   @override
   Widget build(BuildContext context) {
-    padding = MediaQuery.viewPaddingOf(context);
-    final size = MediaQuery.sizeOf(context);
-    maxWidth = size.width;
-    maxHeight = size.height;
-    isPortrait = maxHeight >= maxWidth;
-    if (Platform.isAndroid) {
-      return Floating().isPipMode
-          ? videoPlayerPanel(
-              isFullScreen,
-              width: maxWidth,
-              height: maxHeight,
-              isPipMode: true,
-            )
-          : childWhenDisabled;
+    Widget child;
+    if (plPlayerController.isPipMode) {
+      child = videoPlayerPanel(
+        isFullScreen,
+        width: maxWidth,
+        height: maxHeight,
+        isPipMode: true,
+        needDm: !plPlayerController.pipNoDanmaku,
+      );
     } else {
-      return childWhenDisabled;
+      child = childWhenDisabled;
     }
+    if (plPlayerController.keyboardControl) {
+      child = PlayerFocus(
+        plPlayerController: plPlayerController,
+        onSendDanmaku: _liveRoomController.onSendDanmaku,
+        child: child,
+      );
+    }
+    return child;
   }
 
   Widget videoPlayerPanel(
@@ -193,19 +212,16 @@ class _LiveRoomPageState extends State<LiveRoomPage>
     Alignment? alignment,
     bool needDm = true,
   }) {
+    if (!isFullScreen && !plPlayerController.isDesktopPip) {
+      _liveRoomController.fsSC.value = null;
+    }
     _liveRoomController.isFullScreen = isFullScreen;
-    return PopScope(
-      canPop: !isFullScreen,
-      onPopInvokedWithResult: (bool didPop, Object? result) {
-        if (isFullScreen) {
-          plPlayerController.triggerFullScreen(status: false);
-        }
-      },
-      child: Obx(() {
+    Widget player = Obx(
+      key: playerKey,
+      () {
         if (_liveRoomController.isLoaded.value) {
           final roomInfoH5 = _liveRoomController.roomInfoH5.value;
           return PLVideoPlayer(
-            key: playerKey,
             maxWidth: width,
             maxHeight: height,
             fill: fill,
@@ -215,7 +231,7 @@ class _LiveRoomPageState extends State<LiveRoomPage>
               title: roomInfoH5?.roomInfo?.title,
               upName: roomInfoH5?.anchorInfo?.baseInfo?.uname,
               plPlayerController: plPlayerController,
-              onSendDanmaku: onSendDanmaku,
+              onSendDanmaku: _liveRoomController.onSendDanmaku,
               onPlayAudio: _liveRoomController.queryLiveUrl,
             ),
             bottomControl: BottomControl(
@@ -234,7 +250,102 @@ class _LiveRoomPageState extends State<LiveRoomPage>
           );
         }
         return const SizedBox.shrink();
-      }),
+      },
+    );
+    if (_liveRoomController.showSuperChat &&
+        (isFullScreen || plPlayerController.isDesktopPip)) {
+      player = Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Positioned.fill(child: player),
+          if (kDebugMode) ...[
+            Positioned(
+              top: 50,
+              right: 0,
+              child: TextButton(
+                onPressed: () {
+                  _liveRoomController.fsSC.value = SuperChatItem.fromJson({
+                    "id": Utils.random.nextInt(2147483647),
+                    "price": 66,
+                    "end_time":
+                        DateTime.now().millisecondsSinceEpoch ~/ 1000 + 5,
+                    "message": Utils.generateRandomString(55),
+                    "user_info": {
+                      "face": "",
+                      "uname": Utils.generateRandomString(8),
+                    },
+                  });
+                },
+                child: const Text('add superchat'),
+              ),
+            ),
+            Positioned(
+              right: 0,
+              top: 90,
+              child: TextButton(
+                onPressed: () {
+                  _liveRoomController.fsSC.value = null;
+                },
+                child: const Text('remove superchat'),
+              ),
+            ),
+          ],
+          Positioned(
+            left: padding.left + 25,
+            bottom: 25,
+            child: Obx(() {
+              final item = _liveRoomController.fsSC.value;
+              if (item == null) {
+                return const SizedBox.shrink();
+              }
+              try {
+                return SizedBox(
+                  key: ValueKey(item.id),
+                  width: 255,
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(right: 6, top: 6),
+                        child: SuperChatCard(
+                          item: item,
+                          onRemove: () => _liveRoomController.fsSC.value = null,
+                        ),
+                      ),
+                      Positioned(
+                        right: 0,
+                        top: 0,
+                        child: iconButton(
+                          size: 24,
+                          iconSize: 14,
+                          context: context,
+                          bgColor: const Color(0xEEFFFFFF),
+                          iconColor: Colors.black54,
+                          icon: Icons.clear,
+                          onPressed: () =>
+                              _liveRoomController.fsSC.value = null,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              } catch (_) {
+                if (kDebugMode) rethrow;
+                return const SizedBox.shrink();
+              }
+            }),
+          ),
+        ],
+      );
+    }
+    return PopScope(
+      canPop: !isFullScreen,
+      onPopInvokedWithResult: (bool didPop, Object? result) {
+        if (isFullScreen) {
+          plPlayerController.triggerFullScreen(status: false);
+        }
+      },
+      child: player,
     );
   }
 
@@ -315,6 +426,7 @@ class _LiveRoomPageState extends State<LiveRoomPage>
     final isFullScreen = this.isFullScreen;
     final height = maxWidth * 9 / 16;
     final videoHeight = isFullScreen ? maxHeight : height;
+    final bottomHeight = maxHeight - padding.top - height - kToolbarHeight;
     return Column(
       children: [
         Offstage(
@@ -334,7 +446,7 @@ class _LiveRoomPageState extends State<LiveRoomPage>
           offstage: isFullScreen,
           child: SizedBox(
             width: maxWidth,
-            height: maxHeight - padding.top - height - kToolbarHeight,
+            height: max(0, bottomHeight),
             child: _buildBottomWidget,
           ),
         ),
@@ -344,7 +456,7 @@ class _LiveRoomPageState extends State<LiveRoomPage>
 
   Widget get _buildPP {
     final isFullScreen = this.isFullScreen;
-    final bottomHeight = 80.0 + padding.bottom;
+    final bottomHeight = 70 + padding.bottom;
     final topPadding = padding.top + kToolbarHeight;
     final videoHeight = maxHeight - bottomHeight - topPadding;
     return Stack(
@@ -442,7 +554,7 @@ class _LiveRoomPageState extends State<LiveRoomPage>
                         if (text.isNotEmpty) {
                           text += '  ';
                         }
-                        final duration = DurationUtil.formatDurationBetween(
+                        final duration = DurationUtils.formatDurationBetween(
                           liveTime * 1000,
                           DateTime.now().millisecondsSinceEpoch,
                         );
@@ -561,8 +673,10 @@ class _LiveRoomPageState extends State<LiveRoomPage>
   }
 
   Widget get _buildBodyH {
-    final videoWidth =
-        clampDouble(maxHeight / maxWidth * 1.08, 0.58, 0.75) * maxWidth;
+    double videoWidth =
+        clampDouble(maxHeight / maxWidth * 1.08, 0.56, 0.7) * maxWidth;
+    final rigthWidth = min(400.0, maxWidth - videoWidth - padding.horizontal);
+    videoWidth = maxWidth - rigthWidth;
     final videoHeight = maxHeight - padding.top;
     return Obx(
       () {
@@ -596,7 +710,7 @@ class _LiveRoomPageState extends State<LiveRoomPage>
                     Offstage(
                       offstage: isFullScreen,
                       child: SizedBox(
-                        width: maxWidth - videoWidth - padding.horizontal,
+                        width: rigthWidth,
                         height: videoHeight,
                         child: _buildBottomWidget,
                       ),
@@ -619,148 +733,210 @@ class _LiveRoomPageState extends State<LiveRoomPage>
     ],
   );
 
-  Widget _buildChatWidget([bool isPP = false]) => Padding(
-    padding: EdgeInsets.only(bottom: 16, top: !isPortrait ? 0 : 16),
-    child: LiveRoomChat(
+  Widget _buildChatWidget([bool isPP = false]) {
+    Widget chat() => LiveRoomChatPanel(
       key: chatKey,
       isPP: isPP,
       roomId: _liveRoomController.roomId,
       liveRoomController: _liveRoomController,
-    ),
-  );
+    );
+    return Padding(
+      padding: EdgeInsets.only(bottom: 12, top: isPortrait ? 12 : 0),
+      child: _liveRoomController.showSuperChat
+          ? PageView(
+              key: pageKey,
+              controller: _liveRoomController.pageController,
+              physics: const CustomTabBarViewClampingScrollPhysics(),
+              onPageChanged: (value) =>
+                  _liveRoomController.pageIndex.value = value,
+              children: [
+                KeepAliveWrapper(builder: (context) => chat()),
+                SuperChatPanel(
+                  key: scKey,
+                  controller: _liveRoomController,
+                ),
+              ],
+            )
+          : chat(),
+    );
+  }
 
-  Widget get _buildInputWidget => Container(
-    padding: EdgeInsets.only(
-      top: 5,
-      left: 10,
-      right: 10,
-      bottom: 15 + padding.bottom,
-    ),
-    height: 80 + padding.bottom,
-    decoration: const BoxDecoration(
-      borderRadius: BorderRadius.only(
-        topLeft: Radius.circular(20),
-        topRight: Radius.circular(20),
+  Widget get _buildInputWidget {
+    final child = Container(
+      padding: EdgeInsets.only(
+        top: 5,
+        left: 10,
+        right: 10,
+        bottom: padding.bottom,
       ),
-      border: Border(
-        top: BorderSide(color: Color(0x1AFFFFFF)),
+      height: 70 + padding.bottom,
+      decoration: const BoxDecoration(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        border: Border(top: BorderSide(color: Color(0x1AFFFFFF))),
+        color: Color(0x1AFFFFFF),
       ),
-      color: Color(0x1AFFFFFF),
-    ),
-    child: GestureDetector(
-      onTap: onSendDanmaku,
-      behavior: HitTestBehavior.opaque,
-      child: Padding(
-        padding: const EdgeInsets.only(top: 5, bottom: 10),
-        child: Row(
-          spacing: 6,
-          children: [
-            Obx(
-              () {
-                final enableShowDanmaku =
-                    plPlayerController.enableShowDanmaku.value;
-                return ComBtn(
-                  onTap: () {
-                    final newVal = !enableShowDanmaku;
-                    plPlayerController.enableShowDanmaku.value = newVal;
-                    if (!plPlayerController.tempPlayerConf) {
-                      GStorage.setting.put(
-                        SettingBoxKey.enableShowDanmaku,
-                        newVal,
-                      );
-                    }
-                  },
-                  icon: enableShowDanmaku
-                      ? const Icon(
-                          size: 22,
-                          Icons.subtitles_outlined,
-                          color: Color(0xFFEEEEEE),
-                        )
-                      : const Icon(
-                          size: 22,
-                          Icons.subtitles_off_outlined,
-                          color: Color(0xFFEEEEEE),
+      child: GestureDetector(
+        onTap: _liveRoomController.onSendDanmaku,
+        behavior: HitTestBehavior.opaque,
+        child: Padding(
+          padding: const EdgeInsets.only(top: 5, bottom: 10),
+          child: Align(
+            alignment: Alignment.topCenter,
+            child: Row(
+              spacing: 6,
+              children: [
+                Obx(
+                  () {
+                    final enableShowLiveDanmaku =
+                        plPlayerController.enableShowLiveDanmaku.value;
+                    return SizedBox(
+                      width: 34,
+                      height: 34,
+                      child: IconButton(
+                        style: IconButton.styleFrom(
+                          padding: EdgeInsets.zero,
                         ),
-                );
-              },
-            ),
-            const Expanded(
-              child: Text(
-                '发送弹幕',
-                style: TextStyle(color: Color(0xFFEEEEEE)),
-              ),
-            ),
-            Builder(
-              builder: (context) {
-                final theme = Theme.of(context).colorScheme;
-                return Material(
-                  type: MaterialType.transparency,
-                  child: Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      InkWell(
-                        overlayColor: overlayColor(theme),
-                        customBorder: const CircleBorder(),
-                        onTapDown: _liveRoomController.onLikeTapDown,
-                        onTapUp: _liveRoomController.onLikeTapUp,
-                        onTapCancel: _liveRoomController.onLikeTapUp,
-                        child: const SizedBox.square(
-                          dimension: 34,
-                          child: Icon(
-                            size: 22,
-                            color: Color(0xFFEEEEEE),
-                            Icons.thumb_up_off_alt,
-                          ),
-                        ),
-                      ),
-                      Positioned(
-                        right: -12,
-                        top: -12,
-                        child: Obx(() {
-                          final likeClickTime =
-                              _liveRoomController.likeClickTime.value;
-                          if (likeClickTime == 0) {
-                            return const SizedBox.shrink();
+                        onPressed: () {
+                          final newVal = !enableShowLiveDanmaku;
+                          plPlayerController.enableShowLiveDanmaku.value =
+                              newVal;
+                          if (!plPlayerController.tempPlayerConf) {
+                            GStorage.setting.put(
+                              SettingBoxKey.enableShowLiveDanmaku,
+                              newVal,
+                            );
                           }
-                          return AnimatedSwitcher(
-                            duration: const Duration(milliseconds: 160),
-                            transitionBuilder: (child, animation) {
-                              return ScaleTransition(
-                                scale: animation,
-                                child: child,
-                              );
-                            },
-                            child: Text(
-                              key: ValueKey(likeClickTime),
-                              'x$likeClickTime',
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: theme.brightness.isDark
-                                    ? theme.primary
-                                    : theme.inversePrimary,
+                        },
+                        icon: enableShowLiveDanmaku
+                            ? const Icon(
+                                size: 22,
+                                CustomIcons.dm_on,
+                                color: Color(0xFFEEEEEE),
+                              )
+                            : const Icon(
+                                size: 22,
+                                CustomIcons.dm_off,
+                                color: Color(0xFFEEEEEE),
+                              ),
+                      ),
+                    );
+                  },
+                ),
+                const Expanded(
+                  child: Text(
+                    '发送弹幕',
+                    style: TextStyle(color: Color(0xFFEEEEEE)),
+                  ),
+                ),
+                Builder(
+                  builder: (context) {
+                    final colorScheme = Theme.of(context).colorScheme;
+                    return Material(
+                      type: MaterialType.transparency,
+                      child: Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          InkWell(
+                            overlayColor: overlayColor(colorScheme),
+                            customBorder: const CircleBorder(),
+                            onTapDown: _liveRoomController.onLikeTapDown,
+                            onTapUp: _liveRoomController.onLikeTapUp,
+                            onTapCancel: _liveRoomController.onLikeTapUp,
+                            child: const SizedBox.square(
+                              dimension: 34,
+                              child: Icon(
+                                size: 22,
+                                color: Color(0xFFEEEEEE),
+                                Icons.thumb_up_off_alt,
                               ),
                             ),
-                          );
-                        }),
+                          ),
+                          Positioned(
+                            right: -12,
+                            top: -12,
+                            child: Obx(() {
+                              final likeClickTime =
+                                  _liveRoomController.likeClickTime.value;
+                              if (likeClickTime == 0) {
+                                return const SizedBox.shrink();
+                              }
+                              return AnimatedSwitcher(
+                                duration: const Duration(milliseconds: 160),
+                                transitionBuilder: (child, animation) {
+                                  return ScaleTransition(
+                                    scale: animation,
+                                    child: child,
+                                  );
+                                },
+                                child: Text(
+                                  key: ValueKey(likeClickTime),
+                                  'x$likeClickTime',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: colorScheme.isDark
+                                        ? colorScheme.primary
+                                        : colorScheme.inversePrimary,
+                                  ),
+                                ),
+                              );
+                            }),
+                          ),
+                        ],
                       ),
-                    ],
+                    );
+                  },
+                ),
+                SizedBox(
+                  width: 34,
+                  height: 34,
+                  child: IconButton(
+                    style: IconButton.styleFrom(padding: EdgeInsets.zero),
+                    onPressed: () => _liveRoomController.onSendDanmaku(true),
+                    icon: const Icon(
+                      size: 22,
+                      color: Color(0xFFEEEEEE),
+                      Icons.emoji_emotions_outlined,
+                    ),
                   ),
-                );
-              },
+                ),
+              ],
             ),
-            ComBtn(
-              onTap: () => onSendDanmaku(true),
-              icon: const Icon(
-                size: 22,
-                color: Color(0xFFEEEEEE),
-                Icons.emoji_emotions_outlined,
-              ),
-            ),
-          ],
+          ),
         ),
       ),
-    ),
-  );
+    );
+    if (_liveRoomController.showSuperChat) {
+      return Stack(
+        children: [
+          Positioned(
+            left: 0,
+            top: 0,
+            right: 0,
+            child: Obx(() {
+              return ClipRect(
+                clipper: _BorderClipper(
+                  _liveRoomController.pageIndex.value == 0,
+                ),
+                child: const DecoratedBox(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(20),
+                    ),
+                    border: Border(
+                      top: BorderSide(color: Colors.white38),
+                    ),
+                  ),
+                  child: SizedBox(width: double.infinity, height: 20),
+                ),
+              );
+            }),
+          ),
+          child,
+        ],
+      );
+    }
+    return child;
+  }
 
   WidgetStateProperty<Color?>? overlayColor(ColorScheme theme) =>
       WidgetStateProperty.resolveWith((Set<WidgetState> states) {
@@ -786,45 +962,26 @@ class _LiveRoomPageState extends State<LiveRoomPage>
         }
         return Colors.transparent;
       });
+}
 
-  void onSendDanmaku([bool fromEmote = false]) {
-    if (!_liveRoomController.isLogin) {
-      SmartDialog.showToast('账号未登录');
-      return;
-    }
-    Get.generalDialog(
-      barrierLabel: '',
-      barrierDismissible: true,
-      pageBuilder: (context, animation, secondaryAnimation) {
-        return LiveSendDmPanel(
-          fromEmote: fromEmote,
-          liveRoomController: _liveRoomController,
-          items: _liveRoomController.savedDanmaku,
-          onSave: (msg) {
-            if (msg.isEmpty) {
-              _liveRoomController
-                ..savedDanmaku?.clear()
-                ..savedDanmaku = null;
-            } else {
-              _liveRoomController.savedDanmaku = msg.toList();
-            }
-          },
-        );
-      },
-      transitionDuration: fromEmote
-          ? const Duration(milliseconds: 400)
-          : const Duration(milliseconds: 500),
-      transitionBuilder: (context, animation, secondaryAnimation, child) {
-        var tween = Tween(
-          begin: const Offset(0.0, 1.0),
-          end: Offset.zero,
-        ).chain(CurveTween(curve: Curves.linear));
-        return SlideTransition(
-          position: animation.drive(tween),
-          child: child,
-        );
-      },
+class _BorderClipper extends CustomClipper<Rect> {
+  _BorderClipper(this.isLeft);
+
+  final bool isLeft;
+
+  @override
+  Rect getClip(Size size) {
+    return Rect.fromLTWH(
+      isLeft ? 0 : size.width / 2,
+      0,
+      size.width / 2,
+      size.height,
     );
+  }
+
+  @override
+  bool shouldReclip(_BorderClipper oldClipper) {
+    return isLeft != oldClipper.isLeft;
   }
 }
 
@@ -875,7 +1032,9 @@ class _LiveDanmakuState extends State<LiveDanmaku> {
     return Obx(
       () {
         return AnimatedOpacity(
-          opacity: plPlayerController.enableShowDanmaku.value ? 1 : 0,
+          opacity: plPlayerController.enableShowLiveDanmaku.value
+              ? plPlayerController.danmakuOpacity.value
+              : 0,
           duration: const Duration(milliseconds: 100),
           child: DanmakuScreen(
             createdController: (DanmakuController e) {
@@ -884,9 +1043,8 @@ class _LiveDanmakuState extends State<LiveDanmaku> {
             },
             option: DanmakuOption(
               fontSize: _fontSize,
-              fontWeight: plPlayerController.fontWeight,
+              fontWeight: plPlayerController.danmakuFontWeight,
               area: plPlayerController.showArea,
-              opacity: plPlayerController.danmakuOpacity,
               hideTop: plPlayerController.blockTypes.contains(5),
               hideScroll: plPlayerController.blockTypes.contains(2),
               hideBottom: plPlayerController.blockTypes.contains(4),
@@ -896,7 +1054,7 @@ class _LiveDanmakuState extends State<LiveDanmaku> {
               staticDuration:
                   plPlayerController.danmakuStaticDuration /
                   plPlayerController.playbackSpeed,
-              strokeWidth: plPlayerController.strokeWidth,
+              strokeWidth: plPlayerController.danmakuStrokeWidth,
               lineHeight: plPlayerController.danmakuLineHeight,
             ),
           ),

@@ -254,19 +254,25 @@ class _HistoryPageState extends State<HistoryPage>
           padding: const EdgeInsets.only(left: 16, right: 6),
           child: Row(
             children: [
-              Icon(
-                Icons.info_outline,
-                size: 18,
-                color: theme.onSecondaryContainer,
-              ),
-              const SizedBox(width: 4),
               Expanded(
-                child: Text(
-                  '历史记录功能已关闭',
+                child: Text.rich(
                   strutStyle: const StrutStyle(height: 1, leading: 0),
                   style: TextStyle(
                     height: 1,
                     color: theme.onSecondaryContainer,
+                  ),
+                  TextSpan(
+                    children: [
+                      WidgetSpan(
+                        alignment: PlaceholderAlignment.middle,
+                        child: Icon(
+                          Icons.info_outline,
+                          size: 18,
+                          color: theme.onSecondaryContainer,
+                        ),
+                      ),
+                      const TextSpan(text: ' 历史记录功能已关闭'),
+                    ],
                   ),
                 ),
               ),

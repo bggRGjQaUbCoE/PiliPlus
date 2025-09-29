@@ -10,9 +10,9 @@ import 'package:PiliPlus/pages/mine/controller.dart';
 import 'package:PiliPlus/services/account_service.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/app_sign.dart';
-import 'package:PiliPlus/utils/date_util.dart';
+import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/extension.dart';
-import 'package:PiliPlus/utils/image_util.dart';
+import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
@@ -141,7 +141,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 child: CachedNetworkImage(
                   width: 55,
                   height: 55,
-                  imageUrl: ImageUtil.thumbnailUrl(response.face),
+                  imageUrl: ImageUtils.thumbnailUrl(response.face),
                 ),
               ),
             ),
@@ -195,7 +195,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   if (res != null) {
                     _update(
                       type: ProfileType.birthday,
-                      datum: DateUtil.longFormat.format(res),
+                      datum: DateFormatUtils.longFormat.format(res),
                     );
                   }
                 }),
@@ -488,34 +488,39 @@ class _EditProfilePageState extends State<EditProfilePage> {
           SmartDialog.showToast('不能选GIF');
           return;
         }
-        CroppedFile? croppedFile = await ImageCropper().cropImage(
-          sourcePath: pickedFile.path,
-          uiSettings: [
-            AndroidUiSettings(
-              toolbarTitle: '裁剪',
-              toolbarColor: theme.colorScheme.secondaryContainer,
-              toolbarWidgetColor: theme.colorScheme.onSecondaryContainer,
-              aspectRatioPresets: [
-                CropAspectRatioPresetCustom(),
-              ],
-              lockAspectRatio: true,
-              hideBottomControls: true,
-              cropStyle: CropStyle.circle,
-              initAspectRatio: CropAspectRatioPresetCustom(),
-            ),
-            IOSUiSettings(
-              title: '裁剪',
-              aspectRatioPresets: [
-                CropAspectRatioPresetCustom(),
-              ],
-              cropStyle: CropStyle.circle,
-              aspectRatioLockEnabled: true,
-              resetAspectRatioEnabled: false,
-              aspectRatioPickerButtonHidden: true,
-            ),
-          ],
-        );
-        if (croppedFile != null) {
+        String? imagePath;
+        if (Utils.isMobile) {
+          CroppedFile? croppedFile = await ImageCropper.platform.cropImage(
+            sourcePath: pickedFile.path,
+            uiSettings: [
+              AndroidUiSettings(
+                toolbarTitle: '裁剪',
+                toolbarColor: theme.colorScheme.secondaryContainer,
+                toolbarWidgetColor: theme.colorScheme.onSecondaryContainer,
+                statusBarLight: theme.colorScheme.isLight,
+                aspectRatioPresets: [CropAspectRatioPresetCustom()],
+                lockAspectRatio: true,
+                hideBottomControls: true,
+                cropStyle: CropStyle.circle,
+                initAspectRatio: CropAspectRatioPresetCustom(),
+              ),
+              IOSUiSettings(
+                title: '裁剪',
+                aspectRatioPresets: [CropAspectRatioPresetCustom()],
+                cropStyle: CropStyle.circle,
+                aspectRatioLockEnabled: true,
+                resetAspectRatioEnabled: false,
+                aspectRatioPickerButtonHidden: true,
+              ),
+            ],
+          );
+          if (croppedFile != null) {
+            imagePath = croppedFile.path;
+          }
+        } else {
+          imagePath = pickedFile.path;
+        }
+        if (imagePath != null) {
           Request()
               .post(
                 '/x/member/web/face/update',
@@ -525,7 +530,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 data: FormData.fromMap({
                   'dopost': 'save',
                   'DisplayRank': 10000,
-                  'face': await MultipartFile.fromFile(croppedFile.path),
+                  'face': await MultipartFile.fromFile(imagePath),
                 }),
               )
               .then((res) {

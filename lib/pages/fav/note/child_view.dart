@@ -72,7 +72,6 @@ class _FavNoteChildPageState extends State<FavNoteChildPage>
                     ),
                   ),
                 ),
-                width: double.infinity,
                 child: Row(
                   children: [
                     const SizedBox(width: 16),

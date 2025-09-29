@@ -1,1 +1,3 @@
--keep class com.yalantis.ucrop.util.RectUtils { *; }
+-dontwarn javax.annotation.Nullable
+-dontwarn org.conscrypt.Conscrypt
+-dontwarn org.conscrypt.OpenSSLProvider

@@ -7,14 +7,22 @@ class DanmakuMsg {
   Map<String, BaseEmote>? emots;
   BaseEmote? uemote;
 
-  DanmakuMsg();
+  DanmakuMsg({
+    required this.name,
+    required this.uid,
+    required this.text,
+    this.emots,
+    this.uemote,
+  });
 
   DanmakuMsg.fromPrefetch(Map<String, dynamic> obj) {
     final user = obj['user'];
     name = user['base']['name'];
     uid = user['uid'];
     text = obj['text'];
-    emots = (obj['emots'] as Map<String, dynamic>?)?.map((k, v) => MapEntry(k, BaseEmote.fromJson(v)));
+    emots = (obj['emots'] as Map<String, dynamic>?)?.map(
+      (k, v) => MapEntry(k, BaseEmote.fromJson(v)),
+    );
     if ((obj['emoticon']?['emoticon_unique'] as String?)?.isNotEmpty == true) {
       uemote = BaseEmote.fromJson(obj['emoticon']);
     }

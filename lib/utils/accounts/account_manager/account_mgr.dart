@@ -10,6 +10,7 @@ import 'package:PiliPlus/utils/accounts/account.dart';
 import 'package:PiliPlus/utils/app_sign.dart';
 import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
+import 'package:PiliPlus/utils/utils.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
@@ -50,9 +51,29 @@ class AccountManager extends Interceptor {
       Api.getSeasonDetailApi,
       Api.liveRoomDmToken,
       Api.liveRoomDmPrefetch,
+      Api.superChatMsg,
       Api.searchByType,
       Api.dynSearch,
       Api.searchArchive,
+
+      // Api.memberInfo,
+      // Api.bgmDetail,
+      // Api.space,
+      // Api.spaceAudio,
+      // Api.spaceComic,
+      // Api.spaceArchive,
+      // Api.spaceChargingArchive,
+      // Api.spaceSeason,
+      // Api.spaceSeries,
+      // Api.spaceBangumi,
+      // Api.spaceOpus,
+      // Api.spaceFav,
+      // Api.seasonSeries,
+      // Api.matchInfo,
+      // Api.articleList,
+      // Api.opusDetail,
+      // Api.articleView,
+      // Api.articleInfo,
     },
     AccountType.recommend: {
       Api.recommendListWeb,
@@ -67,6 +88,23 @@ class AccountManager extends Interceptor {
       Api.liveList,
       Api.searchTrending,
       Api.searchRecommend,
+      Api.getRankApi,
+      Api.pgcRank,
+      Api.pgcSeasonRank,
+      Api.pgcIndexResult,
+      Api.popularSeriesOne,
+      Api.popularSeriesList,
+      Api.popularPrecious,
+      Api.liveAreaList,
+      Api.liveFeedIndex,
+      Api.liveSecondList,
+      Api.liveRoomAreaList,
+      Api.liveSearch,
+      Api.videoRelation,
+      Api.bgmRecommend,
+      Api.dynTopicRcmd,
+      Api.topicFeed,
+      Api.topicTop,
     },
     // progress
     AccountType.video: {
@@ -117,7 +155,7 @@ class AccountManager extends Interceptor {
 
     late final Account account = options.extra['account'] ?? _findAccount(path);
 
-    if (_skipCookie(path) || account is NoAccount) return handler.next(options);
+    if (account is NoAccount || _skipCookie(path)) return handler.next(options);
 
     if (!account.isLogin && path == Api.heartBeat) {
       return handler.reject(
@@ -180,22 +218,28 @@ class AccountManager extends Interceptor {
 
   @override
   void onResponse(Response response, ResponseInterceptorHandler handler) {
-    final path = response.requestOptions.path;
-    if (path.startsWith(HttpString.appBaseUrl) || _skipCookie(path)) {
+    final options = response.requestOptions;
+    final path = options.path;
+    if (path.startsWith(HttpString.appBaseUrl) ||
+        _skipCookie(path) ||
+        options.extra['account'] is NoAccount) {
       return handler.next(response);
     } else {
-      _saveCookies(
+      final future = _saveCookies(
         response,
-      ).whenComplete(() => handler.next(response)).catchError(
-        (dynamic e, StackTrace s) {
-          final error = DioException(
-            requestOptions: response.requestOptions,
-            error: e,
-            stackTrace: s,
-          );
-          handler.reject(error, true);
-        },
-      );
+      ).whenComplete(() => handler.next(response));
+      assert(() {
+        future.catchError(
+          (Object e, StackTrace s) {
+            throw DioException(
+              requestOptions: response.requestOptions,
+              error: e,
+              stackTrace: s,
+            );
+          },
+        );
+        return true;
+      }());
     }
   }
 
@@ -312,13 +356,19 @@ class AccountManager extends Interceptor {
       case DioExceptionType.sendTimeout:
         return '发送请求超时，请检查网络设置';
       case DioExceptionType.unknown:
-        final String res =
-            (await Connectivity().checkConnectivity()).first.title;
-        return '$res网络异常 ${error.error}';
+        String desc;
+        try {
+          desc = Utils.isMobile
+              ? (await Connectivity().checkConnectivity()).first.desc
+              : '';
+        } catch (_) {
+          desc = '';
+        }
+        return '$desc网络异常 ${error.error}';
     }
   }
 }
 
 extension _ConnectivityResultExt on ConnectivityResult {
-  String get title => const ['蓝牙', 'Wi-Fi', '局域', '流量', '无', '代理', '其他'][index];
+  String get desc => const ['蓝牙', 'Wi-Fi', '局域', '流量', '无', '代理', '其他'][index];
 }

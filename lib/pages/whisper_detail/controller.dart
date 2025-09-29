@@ -65,6 +65,7 @@ class WhisperDetailController extends CommonListController<RspSessionMsg, Msg> {
     }
   }
 
+  late bool _isSending = false;
   Future<void> sendMsg({
     String? message,
     Map? picMsg,
@@ -73,6 +74,8 @@ class WhisperDetailController extends CommonListController<RspSessionMsg, Msg> {
     int? index,
   }) async {
     assert((message != null) ^ (picMsg != null));
+    if (_isSending) return;
+    _isSending = true;
     feedBack();
     SmartDialog.dismiss();
     if (!accountService.isLogin.value) {
@@ -102,6 +105,7 @@ class WhisperDetailController extends CommonListController<RspSessionMsg, Msg> {
     } else {
       result.toast();
     }
+    _isSending = false;
   }
 
   @override

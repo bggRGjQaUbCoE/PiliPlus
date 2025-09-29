@@ -60,12 +60,27 @@ class PgcController
   ScrollController? followController;
 
   // timeline
-  late Rx<LoadingState<List<Result>?>> timelineState =
-      LoadingState<List<Result>?>.loading().obs;
+  late Rx<LoadingState<List<TimelineResult>?>> timelineState =
+      LoadingState<List<TimelineResult>?>.loading().obs;
 
   Future<void> queryPgcTimeline() async {
-    final res = await PgcHttp.pgcTimeline(types: 1, before: 6, after: 6);
-    timelineState.value = res;
+    final res = await Future.wait([
+      PgcHttp.pgcTimeline(types: 1, before: 6, after: 6),
+      PgcHttp.pgcTimeline(types: 4, before: 6, after: 6),
+    ]);
+    var list1 = res.first.dataOrNull;
+    var list2 = res[1].dataOrNull;
+    if (list1 != null &&
+        list2 != null &&
+        list1.isNotEmpty &&
+        list2.isNotEmpty) {
+      for (var i = 0; i < list1.length; i++) {
+        list1[i] + list2[i];
+      }
+    } else {
+      list1 ??= list2;
+    }
+    timelineState.value = Success(list1);
   }
 
   // 我的订阅

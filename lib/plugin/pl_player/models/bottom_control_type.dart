@@ -12,4 +12,5 @@ enum BottomControlType {
   superResolution,
   dmChart,
   qa,
+  aiTranslate,
 }

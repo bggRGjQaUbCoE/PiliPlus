@@ -1,6 +1,6 @@
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/models_new/fav/fav_folder/list.dart';
-import 'package:PiliPlus/utils/fav_util.dart';
+import 'package:PiliPlus/utils/fav_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -36,11 +36,7 @@ class FavFolderItem extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 12),
-            Container(
-              width: 180,
-              height: 110,
-              margin: const EdgeInsets.only(bottom: 8),
+            DecoratedBox(
               decoration: BoxDecoration(
                 borderRadius: const BorderRadius.all(Radius.circular(12)),
                 boxShadow: [
@@ -58,18 +54,19 @@ class FavFolderItem extends StatelessWidget {
                 tag: heroTag,
                 child: NetworkImgLayer(
                   src: item.cover,
-                  width: 176,
+                  width: 180,
                   height: 110,
                 ),
               ),
             ),
+            const SizedBox(height: 8),
             Text(
               ' ${item.title}',
               overflow: TextOverflow.fade,
               maxLines: 1,
             ),
             Text(
-              ' 共${item.mediaCount}条视频 · ${FavUtil.isPublicFavText(item.attr)}',
+              ' 共${item.mediaCount}条视频 · ${FavUtils.isPublicFavText(item.attr)}',
               style: theme.textTheme.labelSmall!.copyWith(
                 color: theme.colorScheme.outline,
               ),

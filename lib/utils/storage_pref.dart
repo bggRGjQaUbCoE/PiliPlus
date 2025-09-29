@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'dart:math' show pow, min, sqrt;
+import 'dart:math' show pow, sqrt;
 
 import 'package:PiliPlus/common/widgets/pair.dart';
 import 'package:PiliPlus/http/constants.dart';
@@ -21,6 +21,7 @@ import 'package:PiliPlus/models/user/danmaku_rule.dart';
 import 'package:PiliPlus/models/user/info.dart';
 import 'package:PiliPlus/plugin/pl_player/models/bottom_progress_behavior.dart';
 import 'package:PiliPlus/plugin/pl_player/models/fullscreen_mode.dart';
+import 'package:PiliPlus/plugin/pl_player/models/hwdec_type.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_repeat.dart';
 import 'package:PiliPlus/utils/context_ext.dart';
 import 'package:PiliPlus/utils/extension.dart';
@@ -28,12 +29,13 @@ import 'package:PiliPlus/utils/global_data.dart';
 import 'package:PiliPlus/utils/login_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
+import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide ContextExtensionss;
 import 'package:hive/hive.dart';
 import 'package:uuid/uuid.dart';
 
-class Pref {
+abstract class Pref {
   static final Box _setting = GStorage.setting;
   static final Box _video = GStorage.video;
   static final Box _localCache = GStorage.localCache;
@@ -218,17 +220,19 @@ class Pref {
 
   static String get defaultDecode => _setting.get(
     SettingBoxKey.defaultDecode,
-    defaultValue: VideoDecodeFormatType.values.last.code,
+    defaultValue: VideoDecodeFormatType.values.last.codes.first,
   );
 
   static String get secondDecode => _setting.get(
     SettingBoxKey.secondDecode,
-    defaultValue: VideoDecodeFormatType.AV1.code,
+    defaultValue: VideoDecodeFormatType.AV1.codes.first,
   );
 
   static String get hardwareDecoding => _setting.get(
     SettingBoxKey.hardwareDecoding,
-    defaultValue: Platform.isAndroid ? 'auto-safe' : 'auto',
+    defaultValue: Platform.isAndroid
+        ? HwDecType.autoSafe.hwdec
+        : HwDecType.auto.hwdec,
   );
 
   static String get videoSync =>
@@ -266,8 +270,10 @@ class Pref {
   static double get refreshDragPercentage =>
       _setting.get(SettingBoxKey.refreshDragPercentage, defaultValue: 0.25);
 
-  static double get refreshDisplacement =>
-      _setting.get(SettingBoxKey.refreshDisplacement, defaultValue: 20.0);
+  static double get refreshDisplacement => _setting.get(
+    SettingBoxKey.refreshDisplacement,
+    defaultValue: Utils.isMobile ? 20.0 : 40.0,
+  );
 
   static String get blockUserID {
     String blockUserID = _setting.get(
@@ -405,6 +411,12 @@ class Pref {
   static bool get showHotRcmd =>
       _setting.get(SettingBoxKey.showHotRcmd, defaultValue: false);
 
+  static String get audioNormalization =>
+      _setting.get(SettingBoxKey.audioNormalization, defaultValue: '0');
+
+  static String get fallbackNormalization =>
+      _setting.get(SettingBoxKey.fallbackNormalization, defaultValue: '0');
+
   static SuperResolutionType get superResolutionType {
     SuperResolutionType? superResolutionType;
     final index = _setting.get(SettingBoxKey.superResolutionType);
@@ -534,9 +546,8 @@ class Pref {
   static bool get optTabletNav =>
       _setting.get(SettingBoxKey.optTabletNav, defaultValue: true);
 
-  static bool get horizontalScreen {
-    return _setting.get(SettingBoxKey.horizontalScreen) ?? isTablet;
-  }
+  static bool get horizontalScreen =>
+      _setting.get(SettingBoxKey.horizontalScreen) ?? isTablet;
 
   static bool get isTablet {
     bool isTablet;
@@ -545,9 +556,9 @@ class Pref {
     } else {
       final view = WidgetsBinding.instance.platformDispatcher.views.first;
       final screenSize = view.physicalSize / view.devicePixelRatio;
-      final shortestSide = min(screenSize.width.abs(), screenSize.height.abs());
-      isTablet = shortestSide >= 600;
+      isTablet = screenSize.shortestSide >= 600;
     }
+    _setting.put(SettingBoxKey.horizontalScreen, isTablet);
     return isTablet;
   }
 
@@ -630,6 +641,9 @@ class Pref {
   static bool get enableShowDanmaku =>
       _setting.get(SettingBoxKey.enableShowDanmaku, defaultValue: true);
 
+  static bool get enableShowLiveDanmaku =>
+      _setting.get(SettingBoxKey.enableShowLiveDanmaku, defaultValue: true);
+
   static bool get enableQuickFav =>
       _setting.get(SettingBoxKey.enableQuickFav, defaultValue: false);
 
@@ -650,9 +664,6 @@ class Pref {
 
   static bool get enableHttp2 =>
       _setting.get(SettingBoxKey.enableHttp2, defaultValue: false);
-
-  static bool get enableRcmdDynamic =>
-      _setting.get(SettingBoxKey.enableRcmdDynamic, defaultValue: true);
 
   static int get replySortType =>
       _setting.get(SettingBoxKey.replySortType, defaultValue: 1);
@@ -804,4 +815,30 @@ class Pref {
     }
     return buvid;
   }
+
+  static bool get showMemberShop =>
+      _setting.get(SettingBoxKey.showMemberShop, defaultValue: false);
+
+  static bool get showSuperChat =>
+      _setting.get(SettingBoxKey.showSuperChat, defaultValue: true);
+
+  static bool get minimizeOnExit =>
+      _setting.get(SettingBoxKey.minimizeOnExit, defaultValue: true);
+
+  static Size get windowSize {
+    final List<double>? size = _setting.get(SettingBoxKey.windowSize);
+    return size == null ? const Size(1180.0, 720.0) : Size(size[0], size[1]);
+  }
+
+  static List<double>? get windowPosition =>
+      _setting.get(SettingBoxKey.windowPosition);
+
+  static bool get isWindowMaximized =>
+      _setting.get(SettingBoxKey.isWindowMaximized, defaultValue: false);
+
+  static bool get keyboardControl =>
+      _setting.get(SettingBoxKey.keyboardControl, defaultValue: true);
+
+  static bool get pauseOnMinimize =>
+      _setting.get(SettingBoxKey.pauseOnMinimize, defaultValue: false);
 }

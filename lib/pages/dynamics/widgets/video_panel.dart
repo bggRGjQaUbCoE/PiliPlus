@@ -4,47 +4,23 @@ import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/models/common/badge_type.dart';
 import 'package:PiliPlus/models/dynamics/result.dart';
-import 'package:PiliPlus/utils/num_util.dart';
+import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:flutter/material.dart';
 
 Widget videoSeasonWidget(
-  ThemeData theme,
-  bool isSave,
-  bool isDetail,
-  DynamicItemModel item,
-  BuildContext context,
-  Function(List<String>, int)? callback, {
-  floor = 1,
+  BuildContext context, {
+  required int floor,
+  required ThemeData theme,
+  required DynamicItemModel item,
+  required bool isSave,
+  required bool isDetail,
   required double maxWidth,
 }) {
-  if (item.modules.moduleDynamic?.major?.type == 'MAJOR_TYPE_NONE') {
-    return item.modules.moduleDynamic?.major?.none?.tips != null
-        ? Row(
-            children: [
-              Icon(
-                Icons.error,
-                size: 18,
-                color: theme.colorScheme.outline,
-              ),
-              const SizedBox(width: 5),
-              Text(
-                item.modules.moduleDynamic!.major!.none!.tips!,
-                style: TextStyle(color: theme.colorScheme.outline),
-              ),
-            ],
-          )
-        : const SizedBox.shrink();
-  }
-
   // type archive  ugcSeason
   // archive 视频/显示发布人
   // ugcSeason 合集/不显示发布人
 
-  // floor 1 2
-  // 1 投稿视频 铺满 borderRadius 0
-  // 2 转发视频 铺满 borderRadius 6
-
-  DynamicArchiveModel? itemContent = switch (item.type) {
+  DynamicArchiveModel? video = switch (item.type) {
     'DYNAMIC_TYPE_AV' => item.modules.moduleDynamic?.major?.archive,
     'DYNAMIC_TYPE_UGC_SEASON' => item.modules.moduleDynamic?.major?.ugcSeason,
     'DYNAMIC_TYPE_PGC' ||
@@ -53,121 +29,116 @@ Widget videoSeasonWidget(
     _ => null,
   };
 
-  if (itemContent == null) {
+  if (video == null) {
     return const SizedBox.shrink();
   }
 
-  Widget buildCover() {
-    if (floor == 1) {
-      maxWidth -= 24;
-    }
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        NetworkImgLayer(
-          width: maxWidth,
-          height: maxWidth / StyleString.aspectRatio,
-          src: itemContent.cover,
-          quality: 40,
-        ),
-        if (itemContent.badge?.text != null)
-          PBadge(
-            text: itemContent.badge!.text,
-            top: 8.0,
-            right: 10.0,
-            bottom: null,
-            left: null,
-            type: switch (itemContent.badge!.text) {
-              '充电专属' => PBadgeType.error,
-              _ => PBadgeType.primary,
-            },
-          ),
-        Positioned(
-          left: 0,
-          right: 0,
-          bottom: 0,
-          child: Container(
-            height: 70,
-            alignment: Alignment.bottomLeft,
-            padding: const EdgeInsets.fromLTRB(10, 0, 8, 8),
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Colors.transparent,
-                  Colors.black54,
-                ],
-              ),
-              borderRadius: BorderRadius.only(
-                bottomLeft: StyleString.imgRadius,
-                bottomRight: StyleString.imgRadius,
-              ),
-            ),
-            child: DefaultTextStyle.merge(
-              style: TextStyle(
-                fontSize: theme.textTheme.labelMedium!.fontSize,
-                color: Colors.white,
-              ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  if (itemContent.durationText != null) ...[
-                    DecoratedBox(
-                      decoration: const BoxDecoration(
-                        color: Colors.black45,
-                        borderRadius: BorderRadius.all(Radius.circular(4)),
-                      ),
-                      child: Text(' ${itemContent.durationText} '),
-                    ),
-                    const SizedBox(width: 6),
-                  ],
-                  if (itemContent.stat != null) ...[
-                    Text('${NumUtil.numFormat(itemContent.stat!.play)}次围观'),
-                    const SizedBox(width: 6),
-                    Text('${NumUtil.numFormat(itemContent.stat!.danmu)}条弹幕'),
-                  ],
-                  const Spacer(),
-                  Image.asset(
-                    'assets/images/play.png',
-                    width: 50,
-                    height: 50,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
+  EdgeInsets padding;
+  if (floor == 1) {
+    maxWidth -= 24;
+    padding = const EdgeInsets.symmetric(horizontal: 12);
+  } else {
+    padding = EdgeInsets.zero;
   }
-
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      if (itemContent.cover != null)
-        if (floor == 1)
-          Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: StyleString.safeSpace,
-            ),
-            child: buildCover(),
-          )
-        else
-          buildCover(),
-      const SizedBox(height: 6),
-      if (itemContent.title != null)
-        Padding(
-          padding: floor == 1
-              ? const EdgeInsets.only(left: 12, right: 12)
-              : EdgeInsets.zero,
-          child: Text(
-            itemContent.title!,
+  return Padding(
+    padding: padding,
+    child: Column(
+      spacing: 6,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (video.cover case final cover?)
+          Stack(
+            clipBehavior: Clip.none,
+            children: [
+              NetworkImgLayer(
+                width: maxWidth,
+                height: maxWidth / StyleString.aspectRatio,
+                src: cover,
+                quality: 40,
+              ),
+              if (video.badge?.text case final badge?)
+                PBadge(
+                  text: badge,
+                  top: 8.0,
+                  right: 10.0,
+                  bottom: null,
+                  left: null,
+                  type: switch (badge) {
+                    '充电专属' => PBadgeType.error,
+                    _ => PBadgeType.primary,
+                  },
+                ),
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: Container(
+                  height: 70,
+                  alignment: Alignment.bottomLeft,
+                  padding: const EdgeInsets.fromLTRB(10, 0, 8, 8),
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.transparent,
+                        Colors.black54,
+                      ],
+                    ),
+                    borderRadius: BorderRadius.vertical(
+                      bottom: StyleString.imgRadius,
+                    ),
+                  ),
+                  child: DefaultTextStyle.merge(
+                    style: TextStyle(
+                      fontSize: theme.textTheme.labelMedium!.fontSize,
+                      color: Colors.white,
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        if (video.durationText case final durationText?) ...[
+                          DecoratedBox(
+                            decoration: const BoxDecoration(
+                              color: Colors.black45,
+                              borderRadius: BorderRadius.all(
+                                Radius.circular(4),
+                              ),
+                            ),
+                            child: Text(' $durationText '),
+                          ),
+                          const SizedBox(width: 6),
+                        ],
+                        if (video.stat case final stat?) ...[
+                          Text(
+                            '${NumUtils.numFormat(stat.play)}次围观',
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            '${NumUtils.numFormat(stat.danmu)}条弹幕',
+                          ),
+                        ],
+                        const Spacer(),
+                        Image.asset(
+                          'assets/images/play.png',
+                          width: 50,
+                          height: 50,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        if (video.title case final title?)
+          Text(
+            title,
             maxLines: isDetail ? null : 1,
             style: const TextStyle(fontWeight: FontWeight.bold),
             overflow: isDetail ? null : TextOverflow.ellipsis,
           ),
-        ),
-    ],
+      ],
+    ),
   );
 }

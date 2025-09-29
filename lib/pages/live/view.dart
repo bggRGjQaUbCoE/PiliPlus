@@ -18,6 +18,7 @@ import 'package:PiliPlus/pages/live_follow/view.dart';
 import 'package:PiliPlus/pages/search/widgets/search_text.dart';
 import 'package:PiliPlus/utils/grid.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
+import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -51,9 +52,9 @@ class _LivePageState extends CommonPageState<LivePage, LiveController>
           physics: const AlwaysScrollableScrollPhysics(),
           slivers: [
             SliverPadding(
-              padding: EdgeInsets.only(
+              padding: const EdgeInsets.only(
                 top: StyleString.cardSpace,
-                bottom: MediaQuery.viewPaddingOf(context).bottom + 100,
+                bottom: 100,
               ),
               sliver: SliverMainAxisGroup(
                 slivers: [
@@ -287,10 +288,15 @@ class _LivePageState extends CommonPageState<LivePage, LiveController>
           child: GestureDetector(
             behavior: HitTestBehavior.opaque,
             onTap: () => PageUtils.toLiveRoom(item.roomid),
-            onLongPress: () {
-              Feedback.forLongPress(context);
-              Get.toNamed('/member?mid=${item.uid}');
-            },
+            onLongPress: Utils.isMobile
+                ? () {
+                    Feedback.forLongPress(context);
+                    Get.toNamed('/member?mid=${item.uid}');
+                  }
+                : null,
+            onSecondaryTap: Utils.isMobile
+                ? null
+                : () => Get.toNamed('/member?mid=${item.uid}'),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [

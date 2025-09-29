@@ -23,7 +23,7 @@ class _SearchResultPageState extends State<SearchResultPage>
   late SearchResultController _searchResultController;
   late TabController _tabController;
   final String _tag = DateTime.now().millisecondsSinceEpoch.toString();
-  final bool? _isFromSearch = Get.arguments?['fromSearch'];
+  final bool _isFromSearch = Get.arguments?['fromSearch'] ?? false;
   SSearchController? sSearchController;
 
   @override
@@ -40,7 +40,7 @@ class _SearchResultPageState extends State<SearchResultPage>
       length: SearchType.values.length,
     );
 
-    if (_isFromSearch == true) {
+    if (_isFromSearch) {
       try {
         sSearchController = Get.find<SSearchController>(
           tag: Get.parameters['tag'],
@@ -76,7 +76,7 @@ class _SearchResultPageState extends State<SearchResultPage>
         ),
         title: GestureDetector(
           onTap: () {
-            if (_isFromSearch == true) {
+            if (_isFromSearch) {
               Get.back();
             } else {
               Get.offNamed(
@@ -98,58 +98,56 @@ class _SearchResultPageState extends State<SearchResultPage>
       ),
       body: ViewSafeArea(
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(
-              width: double.infinity,
-              child: TabBar(
-                overlayColor: const WidgetStatePropertyAll(Colors.transparent),
-                splashFactory: NoSplash.splashFactory,
-                padding: const EdgeInsets.only(top: 4, left: 8, right: 8),
-                controller: _tabController,
-                tabs: SearchType.values
-                    .map(
-                      (item) => Obx(
-                        () {
-                          int count = _searchResultController.count[item.index];
-                          return Tab(
-                            text:
-                                '${item.label}${count != -1 ? ' ${count > 99 ? '99+' : count}' : ''}',
-                          );
-                        },
-                      ),
-                    )
-                    .toList(),
-                isScrollable: true,
-                indicatorWeight: 0,
-                indicatorPadding: const EdgeInsets.symmetric(
-                  horizontal: 3,
-                  vertical: 8,
-                ),
-                indicator: BoxDecoration(
-                  color: theme.colorScheme.secondaryContainer,
-                  borderRadius: const BorderRadius.all(Radius.circular(20)),
-                ),
-                indicatorSize: TabBarIndicatorSize.tab,
-                labelColor: theme.colorScheme.onSecondaryContainer,
-                labelStyle:
-                    TabBarTheme.of(
-                      context,
-                    ).labelStyle?.copyWith(fontSize: 13) ??
-                    const TextStyle(fontSize: 13),
-                dividerColor: Colors.transparent,
-                dividerHeight: 0,
-                unselectedLabelColor: theme.colorScheme.outline,
-                tabAlignment: TabAlignment.start,
-                onTap: (index) {
-                  if (!_tabController.indexIsChanging) {
-                    if (_searchResultController.toTopIndex.value == index) {
-                      _searchResultController.toTopIndex.refresh();
-                    } else {
-                      _searchResultController.toTopIndex.value = index;
-                    }
-                  }
-                },
+            TabBar(
+              overlayColor: const WidgetStatePropertyAll(Colors.transparent),
+              splashFactory: NoSplash.splashFactory,
+              padding: const EdgeInsets.only(top: 4, left: 8, right: 8),
+              controller: _tabController,
+              tabs: SearchType.values
+                  .map(
+                    (item) => Obx(
+                      () {
+                        int count = _searchResultController.count[item.index];
+                        return Tab(
+                          text:
+                              '${item.label}${count != -1 ? ' ${count > 99 ? '99+' : count}' : ''}',
+                        );
+                      },
+                    ),
+                  )
+                  .toList(),
+              isScrollable: true,
+              indicatorWeight: 0,
+              indicatorPadding: const EdgeInsets.symmetric(
+                horizontal: 3,
+                vertical: 8,
               ),
+              indicator: BoxDecoration(
+                color: theme.colorScheme.secondaryContainer,
+                borderRadius: const BorderRadius.all(Radius.circular(20)),
+              ),
+              indicatorSize: TabBarIndicatorSize.tab,
+              labelColor: theme.colorScheme.onSecondaryContainer,
+              labelStyle:
+                  TabBarTheme.of(
+                    context,
+                  ).labelStyle?.copyWith(fontSize: 13) ??
+                  const TextStyle(fontSize: 13),
+              dividerColor: Colors.transparent,
+              dividerHeight: 0,
+              unselectedLabelColor: theme.colorScheme.outline,
+              tabAlignment: TabAlignment.start,
+              onTap: (index) {
+                if (!_tabController.indexIsChanging) {
+                  if (_searchResultController.toTopIndex.value == index) {
+                    _searchResultController.toTopIndex.refresh();
+                  } else {
+                    _searchResultController.toTopIndex.value = index;
+                  }
+                }
+              },
             ),
             Expanded(
               child: tabBarView(

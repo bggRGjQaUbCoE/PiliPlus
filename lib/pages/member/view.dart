@@ -17,6 +17,7 @@ import 'package:PiliPlus/pages/member_dynamics/view.dart';
 import 'package:PiliPlus/pages/member_favorite/view.dart';
 import 'package:PiliPlus/pages/member_home/view.dart';
 import 'package:PiliPlus/pages/member_pgc/view.dart';
+import 'package:PiliPlus/pages/member_shop/view.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart';
 import 'package:flutter/material.dart';
@@ -57,7 +58,6 @@ class _MemberPageState extends State<MemberPage> {
           if (_userController.loadingState.value.isSuccess) {
             return ExtendedNestedScrollView(
               key: _userController.key,
-              controller: _userController.scrollController,
               onlyOneScrollInBody: true,
               pinnedHeaderSliverHeightBuilder: () =>
                   kToolbarHeight + MediaQuery.viewPaddingOf(context).top,
@@ -258,19 +258,10 @@ class _MemberPageState extends State<MemberPage> {
           ] else ...[
             const PopupMenuDivider(),
             PopupMenuItem(
-              onTap: () => showDialog(
-                context: context,
-                builder: (context) => AlertDialog(
-                  clipBehavior: Clip.hardEdge,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 16,
-                  ),
-                  content: MemberReportPanel(
-                    name: _userController.username,
-                    mid: _mid,
-                  ),
-                ),
+              onTap: () => showMemberReportDialog(
+                context,
+                name: _userController.username,
+                mid: _mid,
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -316,6 +307,10 @@ class _MemberPageState extends State<MemberPage> {
           mid: _mid,
         ),
         'cheese' => MemberCheese(
+          heroTag: _heroTag,
+          mid: _mid,
+        ),
+        'shop' => MemberShop(
           heroTag: _heroTag,
           mid: _mid,
         ),

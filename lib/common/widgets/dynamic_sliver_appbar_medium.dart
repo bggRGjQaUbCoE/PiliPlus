@@ -113,18 +113,14 @@ class _DynamicSliverAppBarMediumState extends State<DynamicSliverAppBarMedium> {
     });
   }
 
-  Orientation? _orientation;
-  late Size size;
+  double? _width;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    size = MediaQuery.sizeOf(context);
-    final orientation = size.width > size.height
-        ? Orientation.landscape
-        : Orientation.portrait;
-    if (orientation != _orientation) {
-      _orientation = orientation;
+    final width = MediaQuery.widthOf(context);
+    if (_width != width) {
+      _width = width;
       _height = 0;
       _updateHeight();
     }
@@ -139,7 +135,7 @@ class _DynamicSliverAppBarMediumState extends State<DynamicSliverAppBarMedium> {
           alignment: Alignment.topLeft,
           child: SizedBox(
             key: _childKey,
-            width: size.width,
+            width: _width,
             child: widget.flexibleSpace,
           ),
         ),

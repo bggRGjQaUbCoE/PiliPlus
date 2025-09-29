@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 
 class ForwardSeekIndicator extends StatefulWidget {
   final ValueChanged<Duration> onSubmitted;
-  final int duration;
+  final Duration duration;
 
   const ForwardSeekIndicator({
     super.key,
@@ -24,7 +24,7 @@ class ForwardSeekIndicatorState extends State<ForwardSeekIndicator> {
   @override
   void initState() {
     super.initState();
-    duration = Duration(seconds: widget.duration);
+    duration = widget.duration;
     timer = Timer(const Duration(milliseconds: 400), () {
       widget.onSubmitted(duration);
     });
@@ -42,7 +42,7 @@ class ForwardSeekIndicatorState extends State<ForwardSeekIndicator> {
       widget.onSubmitted(duration);
     });
     setState(() {
-      duration += Duration(seconds: widget.duration);
+      duration += widget.duration;
     });
   }
 

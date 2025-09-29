@@ -1,5 +1,5 @@
 import 'package:PiliPlus/models/common/stat_type.dart';
-import 'package:PiliPlus/utils/num_util.dart';
+import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:flutter/material.dart';
 
 class StatWidget extends StatelessWidget {
@@ -32,7 +32,7 @@ class StatWidget extends StatelessWidget {
           color: color,
         ),
         Text(
-          NumUtil.numFormat(value),
+          NumUtils.numFormat(value),
           style: TextStyle(fontSize: 12, color: color),
         ),
       ],

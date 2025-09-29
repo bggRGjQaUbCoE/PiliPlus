@@ -1,7 +1,7 @@
-import 'package:PiliPlus/http/pgc.dart';
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/http/pgc.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_index_condition/data.dart';
-import 'package:PiliPlus/models_new/pgc/pgc_index_condition/filter.dart';
+import 'package:PiliPlus/models_new/pgc/pgc_index_condition/sort.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_index_result/data.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_index_result/list.dart';
 import 'package:PiliPlus/pages/common/common_list_controller.dart';

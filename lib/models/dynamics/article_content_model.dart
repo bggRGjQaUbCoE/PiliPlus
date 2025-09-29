@@ -11,6 +11,7 @@ class ArticleContentModel {
   LinkCard? linkCard;
   Code? code;
   L1st? list;
+  Text? heading;
 
   ArticleContentModel.fromJson(Map<String, dynamic> json) {
     align = json['align'];
@@ -24,6 +25,7 @@ class ArticleContentModel {
         : LinkCard.fromJson(json['link_card']);
     code = json['code'] == null ? null : Code.fromJson(json['code']);
     list = json['list'] == null ? null : L1st.fromJson(json['list']);
+    heading = json['heading'] == null ? null : Text.fromJson(json['heading']);
   }
 }
 

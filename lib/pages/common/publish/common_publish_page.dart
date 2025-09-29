@@ -34,7 +34,7 @@ abstract class CommonPublishPageState<T extends CommonPublishPage>
   late final RxBool readOnly = false.obs;
   late final RxBool enablePublish = false.obs;
 
-  bool? hasPub;
+  bool hasPub = false;
   void initPubState();
 
   @override
@@ -57,7 +57,7 @@ abstract class CommonPublishPageState<T extends CommonPublishPage>
 
   @override
   void dispose() {
-    if (hasPub != true) {
+    if (!hasPub) {
       onSave();
     }
     focusNode.dispose();
@@ -99,8 +99,6 @@ abstract class CommonPublishPageState<T extends CommonPublishPage>
 
   void updatePanelType(PanelType type) {
     final isSwitchToKeyboard = PanelType.keyboard == type;
-    final isSwitchToEmojiPanel =
-        PanelType.emoji == type || PanelType.more == type;
     bool isUpdated = false;
     switch (type) {
       case PanelType.keyboard:
@@ -119,9 +117,9 @@ abstract class CommonPublishPageState<T extends CommonPublishPage>
             ? ChatBottomPanelType.keyboard
             : ChatBottomPanelType.other,
         data: type,
-        forceHandleFocus: isSwitchToEmojiPanel
+        forceHandleFocus: isSwitchToKeyboard
             ? ChatBottomHandleFocus.requestFocus
-            : ChatBottomHandleFocus.none,
+            : ChatBottomHandleFocus.unfocus,
       );
     }
 

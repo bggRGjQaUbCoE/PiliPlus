@@ -21,6 +21,7 @@ class DynamicCardSkeleton extends StatelessWidget {
           ),
         ),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
@@ -51,44 +52,36 @@ class DynamicCardSkeleton extends StatelessWidget {
                 ),
               ],
             ),
+            const SizedBox(height: 10),
             Container(
+              color: color,
               width: double.infinity,
-              margin: const EdgeInsets.only(top: 10),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    color: color,
-                    width: double.infinity,
-                    height: 13,
-                    margin: const EdgeInsets.only(bottom: 7),
-                  ),
-                  Container(
-                    color: color,
-                    width: double.infinity,
-                    height: 13,
-                    margin: const EdgeInsets.only(bottom: 7),
-                  ),
-                  Container(
-                    color: color,
-                    width: 300,
-                    height: 13,
-                    margin: const EdgeInsets.only(bottom: 7),
-                  ),
-                  Container(
-                    color: color,
-                    width: 250,
-                    height: 13,
-                    margin: const EdgeInsets.only(bottom: 7),
-                  ),
-                  Container(
-                    color: color,
-                    width: 100,
-                    height: 13,
-                    margin: const EdgeInsets.only(bottom: 7),
-                  ),
-                ],
-              ),
+              height: 13,
+              margin: const EdgeInsets.only(bottom: 7),
+            ),
+            Container(
+              color: color,
+              width: double.infinity,
+              height: 13,
+              margin: const EdgeInsets.only(bottom: 7),
+            ),
+            Container(
+              color: color,
+              width: 300,
+              height: 13,
+              margin: const EdgeInsets.only(bottom: 7),
+            ),
+            Container(
+              color: color,
+              width: 250,
+              height: 13,
+              margin: const EdgeInsets.only(bottom: 7),
+            ),
+            Container(
+              color: color,
+              width: 100,
+              height: 13,
+              margin: const EdgeInsets.only(bottom: 7),
             ),
             if (GlobalData().dynamicsWaterfallFlow) const Spacer(),
             Row(

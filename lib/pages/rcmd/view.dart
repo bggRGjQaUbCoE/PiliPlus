@@ -39,9 +39,9 @@ class _RcmdPageState extends CommonPageState<RcmdPage, RcmdController>
           physics: const AlwaysScrollableScrollPhysics(),
           slivers: [
             SliverPadding(
-              padding: EdgeInsets.only(
+              padding: const EdgeInsets.only(
                 top: StyleString.cardSpace,
-                bottom: MediaQuery.viewPaddingOf(context).bottom + 100,
+                bottom: 100,
               ),
               sliver: Obx(() => _buildBody(controller.loadingState.value)),
             ),

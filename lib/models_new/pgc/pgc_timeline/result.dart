@@ -1,13 +1,13 @@
 import 'package:PiliPlus/models_new/pgc/pgc_timeline/episode.dart';
 
-class Result {
+class TimelineResult {
   String? date;
   int? dateTs;
   int? dayOfWeek;
   List<Episode>? episodes;
   int? isToday;
 
-  Result({
+  TimelineResult({
     this.date,
     this.dateTs,
     this.dayOfWeek,
@@ -15,7 +15,7 @@ class Result {
     this.isToday,
   });
 
-  factory Result.fromJson(Map<String, dynamic> json) => Result(
+  factory TimelineResult.fromJson(Map<String, dynamic> json) => TimelineResult(
     date: json['date'] as String?,
     dateTs: json['date_ts'] as int?,
     dayOfWeek: json['day_of_week'] as int?,
@@ -24,4 +24,12 @@ class Result {
         .toList(),
     isToday: json['is_today'] as int?,
   );
+
+  void operator +(TimelineResult other) {
+    if (dateTs == other.dateTs) {
+      if (other.episodes case final list?) {
+        (episodes ??= <Episode>[]).addAll(list);
+      }
+    }
+  }
 }

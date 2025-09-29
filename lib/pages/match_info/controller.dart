@@ -17,9 +17,6 @@ class MatchInfoController extends CommonDynController {
       LoadingState<MatchContest?>.loading().obs;
 
   @override
-  double get offsetDy => 2;
-
-  @override
   void onInit() {
     super.onInit();
     getMatchInfo();

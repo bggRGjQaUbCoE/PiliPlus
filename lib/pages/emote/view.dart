@@ -42,9 +42,11 @@ class _EmotePanelState extends State<EmotePanel>
     ThemeData theme,
     LoadingState<List<Package>?> loadingState,
   ) {
-    late final color = Get.currentRoute.startsWith('/whisperDetail')
-        ? theme.colorScheme.surface
-        : theme.colorScheme.onInverseSurface;
+    late final color = ElevationOverlay.colorWithOverlay(
+      theme.colorScheme.surface,
+      theme.hoverColor,
+      Get.currentRoute.startsWith('/whisperDetail') ? 8 : 2,
+    );
     return switch (loadingState) {
       Loading() => loadingWidget,
       Success(:var response) =>

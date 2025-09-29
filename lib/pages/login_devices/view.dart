@@ -1,10 +1,11 @@
+import 'package:PiliPlus/common/widgets/list_tile.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/view_sliver_safe_area.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models_new/login_devices/device.dart';
 import 'package:PiliPlus/pages/login_devices/controller.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide ListTile;
 import 'package:get/get.dart';
 
 class LoginDevicesPage extends StatefulWidget {
@@ -30,15 +31,10 @@ class LloginDevicesPageState extends State<LoginDevicesPage> {
             child: CustomScrollView(
               slivers: [
                 ViewSliverSafeArea(
-                  sliver: MediaQuery.removeViewPadding(
-                    context: context,
-                    removeLeft: true,
-                    removeRight: true,
-                    child: Obx(
-                      () => _buildBody(
-                        colorScheme,
-                        _controller.loadingState.value,
-                      ),
+                  sliver: Obx(
+                    () => _buildBody(
+                      colorScheme,
+                      _controller.loadingState.value,
                     ),
                   ),
                 ),

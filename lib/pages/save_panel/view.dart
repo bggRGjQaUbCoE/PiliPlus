@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 import 'dart:ui';
 
+import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/widgets/button/icon_button.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
@@ -8,12 +9,13 @@ import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
 import 'package:PiliPlus/models/common/video/video_type.dart';
 import 'package:PiliPlus/models/dynamics/result.dart';
 import 'package:PiliPlus/pages/dynamics/widgets/dynamic_panel.dart';
+import 'package:PiliPlus/pages/music/controller.dart';
 import 'package:PiliPlus/pages/video/introduction/pgc/controller.dart';
 import 'package:PiliPlus/pages/video/introduction/ugc/controller.dart';
 import 'package:PiliPlus/pages/video/reply/widgets/reply_item_grpc.dart';
 import 'package:PiliPlus/utils/context_ext.dart';
-import 'package:PiliPlus/utils/date_util.dart';
-import 'package:PiliPlus/utils/image_util.dart';
+import 'package:PiliPlus/utils/date_utils.dart';
+import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
@@ -22,7 +24,6 @@ import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart' hide ContextExtensionss;
 import 'package:intl/intl.dart' show DateFormat;
 import 'package:pretty_qr_code/pretty_qr_code.dart';
-import 'package:saver_gallery/saver_gallery.dart';
 import 'package:share_plus/share_plus.dart';
 
 class SavePanel extends StatefulWidget {
@@ -48,12 +49,13 @@ class SavePanel extends StatefulWidget {
       },
       transitionDuration: const Duration(milliseconds: 255),
       transitionBuilder: (context, animation, secondaryAnimation, child) {
-        var tween = Tween<double>(
-          begin: 0,
-          end: 1,
-        ).chain(CurveTween(curve: Curves.easeInOut));
         return FadeTransition(
-          opacity: animation.drive(tween),
+          opacity: animation.drive(
+            Tween<double>(
+              begin: 0,
+              end: 1,
+            ).chain(CurveTween(curve: Curves.easeInOut)),
+          ),
           child: child,
         );
       },
@@ -68,14 +70,16 @@ class _SavePanelState extends State<SavePanel> {
   bool showBottom = true;
 
   // item
-  dynamic get _item => widget.item;
+  Object get _item => widget.item;
   late String viewType = '查看';
   late String itemType = '内容';
 
   //reply
   String? cover;
+  _CoverType coverType = _CoverType.def16_9;
   String? title;
   int? pubdate;
+  DateFormat dateFormat = DateFormatUtils.longFormatDs;
   String? uname;
 
   String uri = '';
@@ -135,8 +139,6 @@ class _SavePanelState extends State<SavePanel> {
           late final rootId = hasRoot ? reply.root : reply.id;
           late final anchor = hasRoot ? 'anchor=${reply.id}&' : '';
           late final enterUri = parseDyn(dynItem);
-          viewType = '查看';
-          itemType = '评论';
           uri = switch (type) {
             1 || 11 || 12 =>
               'bilibili://comment/detail/$type/${dynItem.basic!.ridStr}/$rootId/?${anchor}enterUri=$enterUri',
@@ -161,14 +163,42 @@ class _SavePanelState extends State<SavePanel> {
       } else if (currentRoute.startsWith('/articlePage')) {
         try {
           final type = reply.type.toInt();
-          late final oid = reply.oid;
-          late final rootId = hasRoot ? reply.root : reply.id;
-          late final anchor = hasRoot ? 'anchor=${reply.id}&' : '';
-          late final enterUri =
+          final oid = reply.oid;
+          final rootId = hasRoot ? reply.root : reply.id;
+          final anchor = hasRoot ? 'anchor=${reply.id}&' : '';
+          final enterUri =
               'bilibili://following/detail/${Get.parameters['id'] ?? Get.arguments?['id']}';
           uri =
               'bilibili://comment/detail/$type/$oid/$rootId/?${anchor}enterUri=$enterUri';
         } catch (_) {}
+      } else if (currentRoute.startsWith('/musicDetail')) {
+        final type = reply.type.toInt();
+        final oid = reply.oid;
+        final rootId = hasRoot ? reply.root : reply.id;
+        final anchor = hasRoot ? 'anchor=${reply.id}&' : '';
+        String enterUri = '';
+        try {
+          final ctr = Get.find<MusicDetailController>(
+            tag: Get.parameters['musicId'],
+          );
+          // enterUri = 'enterUri=${Uri.encodeComponent(ctr.shareUrl)}'; // official client cannot parse it
+          final data = ctr.infoState.value.dataOrNull;
+          if (data != null) {
+            coverType = _CoverType.square;
+            cover = data.mvCover;
+            title = data.musicTitle;
+            if (data.musicPublish != null) {
+              final time = DateTime.tryParse(
+                data.musicPublish!,
+              )?.millisecondsSinceEpoch;
+              if (time != null) {
+                pubdate = time ~/ 1000;
+                dateFormat = DateFormatUtils.longFormat;
+              }
+            }
+          }
+        } catch (_) {}
+        uri = 'bilibili://comment/detail/$type/$oid/$rootId/?$anchor$enterUri';
       }
 
       if (kDebugMode) debugPrint(uri);
@@ -242,8 +272,8 @@ class _SavePanelState extends State<SavePanel> {
   }
 
   Future<void> _onSaveOrSharePic([bool isShare = false]) async {
-    if (!isShare) {
-      if (mounted && !await ImageUtil.checkPermissionDependOnSdkInt(context)) {
+    if (!isShare && Utils.isMobile) {
+      if (mounted && !await ImageUtils.checkPermissionDependOnSdkInt(context)) {
         return;
       }
     }
@@ -256,7 +286,7 @@ class _SavePanelState extends State<SavePanel> {
       ByteData? byteData = await image.toByteData(format: ImageByteFormat.png);
       Uint8List pngBytes = byteData!.buffer.asUint8List();
       String picName =
-          "plpl_reply_${DateFormat('yyyyMMddHHmmss').format(DateTime.now())}";
+          "${Constants.appName}_${DateFormat('yyyyMMddHHmmss').format(DateTime.now())}";
       if (isShare) {
         Get.back();
         SmartDialog.dismiss();
@@ -273,18 +303,14 @@ class _SavePanelState extends State<SavePanel> {
           ),
         );
       } else {
-        final result = await SaverGallery.saveImage(
-          pngBytes,
-          fileName: '$picName.png',
-          androidRelativePath: "Pictures/PiliPlus",
-          skipIfExists: false,
+        final result = await ImageUtils.saveByteImg(
+          bytes: pngBytes,
+          fileName: picName,
         );
-        SmartDialog.dismiss();
-        if (result.isSuccess) {
-          Get.back();
-          SmartDialog.showToast('保存成功');
-        } else if (result.errorMessage?.isNotEmpty == true) {
-          SmartDialog.showToast(result.errorMessage!);
+        if (result != null) {
+          if (result.isSuccess) {
+            Get.back();
+          }
         }
       }
     } catch (e) {
@@ -298,6 +324,7 @@ class _SavePanelState extends State<SavePanel> {
     final theme = Theme.of(context);
     final padding = MediaQuery.viewPaddingOf(context);
     final maxWidth = context.mediaQueryShortestSide;
+    late final coverSize = MediaQuery.textScalerOf(context).scale(65);
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: Get.back,
@@ -331,19 +358,19 @@ class _SavePanelState extends State<SavePanel> {
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          if (_item is ReplyInfo)
+                          if (_item case ReplyInfo reply)
                             IgnorePointer(
                               child: ReplyItemGrpc(
-                                replyItem: _item,
+                                replyItem: reply,
                                 replyLevel: 0,
                                 needDivider: false,
                                 upMid: widget.upMid,
                               ),
                             )
-                          else if (_item is DynamicItemModel)
+                          else if (_item case DynamicItemModel dyn)
                             IgnorePointer(
                               child: DynamicPanel(
-                                item: _item,
+                                item: dyn,
                                 isDetail: true,
                                 isSave: true,
                                 maxWidth: maxWidth - 24,
@@ -369,15 +396,10 @@ class _SavePanelState extends State<SavePanel> {
                                   NetworkImgLayer(
                                     radius: 6,
                                     src: cover!,
-                                    height: MediaQuery.textScalerOf(
-                                      context,
-                                    ).scale(65),
-                                    width:
-                                        MediaQuery.textScalerOf(
-                                          context,
-                                        ).scale(65) *
-                                        16 /
-                                        9,
+                                    height: coverSize,
+                                    width: coverType == _CoverType.def16_9
+                                        ? coverSize * 16 / 9
+                                        : coverSize,
                                     quality: 100,
                                   ),
                                   const SizedBox(width: 10),
@@ -394,9 +416,9 @@ class _SavePanelState extends State<SavePanel> {
                                         if (pubdate != null) ...[
                                           const Spacer(),
                                           Text(
-                                            DateUtil.format(
+                                            DateFormatUtils.format(
                                               pubdate,
-                                              format: DateUtil.longFormatDs,
+                                              format: dateFormat,
                                             ),
                                             style: TextStyle(
                                               color: theme.colorScheme.outline,
@@ -423,9 +445,9 @@ class _SavePanelState extends State<SavePanel> {
                                                 mainAxisSize: MainAxisSize.min,
                                                 crossAxisAlignment:
                                                     CrossAxisAlignment.end,
+                                                spacing: 4,
                                                 children: [
-                                                  if (uname?.isNotEmpty ==
-                                                      true) ...[
+                                                  if (uname?.isNotEmpty == true)
                                                     Text(
                                                       '@$uname',
                                                       maxLines: 1,
@@ -437,8 +459,6 @@ class _SavePanelState extends State<SavePanel> {
                                                             .primary,
                                                       ),
                                                     ),
-                                                    const SizedBox(height: 4),
-                                                  ],
                                                   Text(
                                                     '识别二维码，$viewType$itemType',
                                                     textAlign: TextAlign.end,
@@ -448,9 +468,8 @@ class _SavePanelState extends State<SavePanel> {
                                                           .onSurfaceVariant,
                                                     ),
                                                   ),
-                                                  const SizedBox(height: 4),
                                                   Text(
-                                                    DateUtil.longFormatDs
+                                                    DateFormatUtils.longFormatDs
                                                         .format(
                                                           DateTime.now(),
                                                         ),
@@ -533,6 +552,7 @@ class _SavePanelState extends State<SavePanel> {
                   bottom: 25 + padding.bottom,
                 ),
                 child: Row(
+                  spacing: 40,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     iconButton(
@@ -544,7 +564,6 @@ class _SavePanelState extends State<SavePanel> {
                       bgColor: theme.colorScheme.onInverseSurface,
                       iconColor: theme.colorScheme.onSurfaceVariant,
                     ),
-                    const SizedBox(width: 40),
                     iconButton(
                       size: 42,
                       tooltip: showBottom ? '隐藏' : '显示',
@@ -556,15 +575,14 @@ class _SavePanelState extends State<SavePanel> {
                         showBottom = !showBottom;
                       }),
                     ),
-                    const SizedBox(width: 40),
-                    iconButton(
-                      size: 42,
-                      tooltip: '分享',
-                      context: context,
-                      icon: Icons.share,
-                      onPressed: () => _onSaveOrSharePic(true),
-                    ),
-                    const SizedBox(width: 40),
+                    if (Utils.isMobile)
+                      iconButton(
+                        size: 42,
+                        tooltip: '分享',
+                        context: context,
+                        icon: Icons.share,
+                        onPressed: () => _onSaveOrSharePic(true),
+                      ),
                     iconButton(
                       size: 42,
                       tooltip: '保存',
@@ -582,3 +600,5 @@ class _SavePanelState extends State<SavePanel> {
     );
   }
 }
+
+enum _CoverType { def16_9, square }

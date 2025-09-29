@@ -55,7 +55,7 @@ class MemberController extends CommonDataController<SpaceData, SpaceData?>
 
   @override
   bool customHandleResponse(bool isRefresh, Success<SpaceData> response) {
-    SpaceData data = response.response;
+    final data = response.response;
     username = data.card?.name ?? '';
     isFollowed = data.card?.relation?.isFollowed;
     if (data.relation == -1) {
@@ -215,11 +215,7 @@ class MemberController extends CommonDataController<SpaceData, SpaceData?>
   }
 
   Future<void> onRemoveFan() async {
-    final res = await VideoHttp.relationMod(
-      mid: mid,
-      act: 7,
-      reSrc: 11,
-    );
+    final res = await VideoHttp.relationMod(mid: mid, act: 7, reSrc: 11);
     if (res['status']) {
       isFollowed = null;
       if (relation.value == 4) {

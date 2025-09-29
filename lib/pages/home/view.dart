@@ -6,7 +6,7 @@ import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/pages/home/controller.dart';
 import 'package:PiliPlus/pages/main/controller.dart';
 import 'package:PiliPlus/pages/mine/controller.dart';
-import 'package:PiliPlus/utils/context_ext.dart';
+import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide ContextExtensionss;
@@ -33,7 +33,8 @@ class _HomePageState extends State<HomePage>
     final theme = Theme.of(context);
     return Column(
       children: [
-        if (!_homeController.useSideBar && context.isPortrait)
+        if (!_homeController.useSideBar &&
+            MediaQuery.sizeOf(context).isPortrait)
           customAppBar(theme),
         if (_homeController.tabs.length > 1)
           Material(

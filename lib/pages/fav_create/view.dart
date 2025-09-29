@@ -1,9 +1,11 @@
-import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
+import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
 import 'package:PiliPlus/http/fav.dart';
 import 'package:PiliPlus/http/msg.dart';
 import 'package:PiliPlus/models_new/fav/fav_folder/list.dart';
-import 'package:PiliPlus/utils/fav_util.dart';
-import 'package:PiliPlus/utils/image_util.dart';
+import 'package:PiliPlus/utils/extension.dart';
+import 'package:PiliPlus/utils/fav_utils.dart';
+import 'package:PiliPlus/utils/image_utils.dart';
+import 'package:PiliPlus/utils/utils.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_debounce/easy_throttle.dart';
 import 'package:flutter/material.dart';
@@ -46,7 +48,7 @@ class _CreateFavPageState extends State<CreateFavPage> {
         FavFolderInfo data = res['data'];
         _titleController.text = data.title;
         _introController.text = data.intro ?? '';
-        _isPublic = FavUtil.isPublicFav(data.attr);
+        _isPublic = FavUtils.isPublicFav(data.attr);
         _cover = data.cover;
         _attr = data.attr;
       } else {
@@ -101,17 +103,7 @@ class _CreateFavPageState extends State<CreateFavPage> {
           ? _titleController.text.isNotEmpty
                 ? _buildBody(theme)
                 : _errMsg?.isNotEmpty == true
-                ? Center(
-                    child: CustomScrollView(
-                      shrinkWrap: true,
-                      slivers: [
-                        HttpError(
-                          errMsg: _errMsg,
-                          onReload: _getFolderInfo,
-                        ),
-                      ],
-                    ),
-                  )
+                ? scrollErrorWidget(errMsg: _errMsg, onReload: _getFolderInfo)
                 : const Center(child: CircularProgressIndicator())
           : _buildBody(theme),
     );
@@ -124,47 +116,48 @@ class _CreateFavPageState extends State<CreateFavPage> {
         imageQuality: 100,
       );
       if (pickedFile != null && mounted) {
-        CroppedFile? croppedFile = await ImageCropper().cropImage(
-          sourcePath: pickedFile.path,
-          uiSettings: [
-            AndroidUiSettings(
-              toolbarTitle: '裁剪',
-              toolbarColor: theme.colorScheme.secondaryContainer,
-              toolbarWidgetColor: theme.colorScheme.onSecondaryContainer,
-              aspectRatioPresets: [
-                CropAspectRatioPreset.ratio16x9,
-              ],
-              lockAspectRatio: true,
-              hideBottomControls: true,
-              initAspectRatio: CropAspectRatioPreset.ratio16x9,
-            ),
-            IOSUiSettings(
-              title: '裁剪',
-              aspectRatioPresets: [
-                CropAspectRatioPreset.ratio16x9,
-              ],
-              aspectRatioLockEnabled: false,
-              resetAspectRatioEnabled: false,
-              aspectRatioPickerButtonHidden: true,
-            ),
-          ],
-        );
-        if (croppedFile != null) {
-          MsgHttp.uploadImage(
-            path: croppedFile.path,
-            bucket: 'medialist',
-            dir: 'cover',
-          ).then((res) {
-            if (context.mounted) {
-              if (res['status']) {
-                _cover = res['data']['location'];
-                (context as Element).markNeedsBuild();
-              } else {
-                SmartDialog.showToast(res['msg']);
-              }
-            }
-          });
+        String imgPath = pickedFile.path;
+        if (Utils.isMobile) {
+          CroppedFile? croppedFile = await ImageCropper.platform.cropImage(
+            sourcePath: pickedFile.path,
+            uiSettings: [
+              AndroidUiSettings(
+                toolbarTitle: '裁剪',
+                toolbarColor: theme.colorScheme.secondaryContainer,
+                toolbarWidgetColor: theme.colorScheme.onSecondaryContainer,
+                statusBarLight: theme.colorScheme.isLight,
+                aspectRatioPresets: [CropAspectRatioPreset.ratio16x9],
+                lockAspectRatio: true,
+                hideBottomControls: true,
+                initAspectRatio: CropAspectRatioPreset.ratio16x9,
+              ),
+              IOSUiSettings(
+                title: '裁剪',
+                // aspectRatioPresets: [CropAspectRatioPreset.ratio16x9],
+                // aspectRatioLockEnabled: false,
+                // resetAspectRatioEnabled: false,
+                // aspectRatioPickerButtonHidden: true,
+              ),
+            ],
+          );
+          if (croppedFile != null) {
+            imgPath = croppedFile.path;
+          }
         }
+        MsgHttp.uploadImage(
+          path: imgPath,
+          bucket: 'medialist',
+          dir: 'cover',
+        ).then((res) {
+          if (context.mounted) {
+            if (res['status']) {
+              _cover = res['data']['location'];
+              (context as Element).markNeedsBuild();
+            } else {
+              SmartDialog.showToast(res['msg']);
+            }
+          }
+        });
       }
     } catch (e) {
       SmartDialog.showToast(e.toString());
@@ -176,7 +169,7 @@ class _CreateFavPageState extends State<CreateFavPage> {
   Widget _buildBody(ThemeData theme) => SingleChildScrollView(
     child: Column(
       children: [
-        if (_attr == null || !FavUtil.isDefaultFav(_attr!)) ...[
+        if (_attr == null || !FavUtils.isDefaultFav(_attr!)) ...[
           Builder(
             builder: (context) {
               return ListTile(
@@ -251,7 +244,7 @@ class _CreateFavPageState extends State<CreateFavPage> {
                             Radius.circular(6),
                           ),
                           child: CachedNetworkImage(
-                            imageUrl: ImageUtil.thumbnailUrl(_cover!),
+                            imageUrl: ImageUtils.thumbnailUrl(_cover!),
                             height: 55,
                             width: 88,
                             fit: BoxFit.cover,
@@ -271,84 +264,77 @@ class _CreateFavPageState extends State<CreateFavPage> {
         ],
         ListTile(
           tileColor: theme.colorScheme.onInverseSurface,
-          leading: Text.rich(
-            style: const TextStyle(
-              height: 1,
-              fontSize: 14,
-            ),
-            TextSpan(
-              children: [
-                TextSpan(
-                  text: '*',
-                  style: TextStyle(
-                    fontSize: 14,
-                    height: 1,
-                    color: theme.colorScheme.error,
+          title: Row(
+            children: [
+              SizedBox(
+                width: 55,
+                child: Text.rich(
+                  TextSpan(
+                    children: [
+                      TextSpan(
+                        text: '*',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: theme.colorScheme.error,
+                        ),
+                      ),
+                      const TextSpan(
+                        text: '名称',
+                        style: TextStyle(fontSize: 14),
+                      ),
+                    ],
                   ),
                 ),
-                const TextSpan(
-                  text: '名称',
+              ),
+              Expanded(
+                child: TextField(
+                  autofocus: true,
+                  readOnly: _attr != null && FavUtils.isDefaultFav(_attr!),
+                  controller: _titleController,
                   style: TextStyle(
-                    height: 1,
                     fontSize: 14,
+                    color: _attr != null && FavUtils.isDefaultFav(_attr!)
+                        ? theme.colorScheme.outline
+                        : null,
+                  ),
+                  inputFormatters: [
+                    LengthLimitingTextInputFormatter(20),
+                  ],
+                  decoration: InputDecoration(
+                    isDense: true,
+                    hintText: '名称',
+                    hintStyle: TextStyle(
+                      fontSize: 14,
+                      color: theme.colorScheme.outline,
+                    ),
+                    border: const OutlineInputBorder(
+                      borderSide: BorderSide.none,
+                      gapPadding: 0,
+                    ),
+                    contentPadding: EdgeInsets.zero,
                   ),
                 ),
-              ],
-            ),
-          ),
-          title: TextField(
-            autofocus: true,
-            readOnly: _attr != null && FavUtil.isDefaultFav(_attr!),
-            controller: _titleController,
-            style: TextStyle(
-              fontSize: 14,
-              color: _attr != null && FavUtil.isDefaultFav(_attr!)
-                  ? theme.colorScheme.outline
-                  : null,
-            ),
-            inputFormatters: [
-              LengthLimitingTextInputFormatter(20),
+              ),
             ],
-            decoration: InputDecoration(
-              isDense: true,
-              hintText: '名称',
-              hintStyle: TextStyle(
-                fontSize: 14,
-                color: theme.colorScheme.outline,
-              ),
-              border: const OutlineInputBorder(
-                borderSide: BorderSide.none,
-                gapPadding: 0,
-              ),
-              contentPadding: EdgeInsets.zero,
-            ),
           ),
         ),
         const SizedBox(height: 16),
-        if (_attr == null || !FavUtil.isDefaultFav(_attr!)) ...[
+        if (_attr == null || !FavUtils.isDefaultFav(_attr!)) ...[
           ListTile(
             tileColor: theme.colorScheme.onInverseSurface,
             title: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text.rich(
-                  TextSpan(
-                    children: [
-                      TextSpan(
-                        text: '简介',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: theme.colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                      const TextSpan(
-                        text: '*',
-                        style: TextStyle(color: Colors.transparent),
-                      ),
-                    ],
+                SizedBox(
+                  width: 55,
+                  child: Text(
+                    '简介',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
                   ),
                 ),
-                const SizedBox(width: 16),
                 Expanded(
                   child: TextField(
                     minLines: 6,

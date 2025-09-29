@@ -6,13 +6,12 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 abstract class CommonSlidePage extends StatefulWidget {
-  const CommonSlidePage({super.key, this.enableSlide});
+  const CommonSlidePage({super.key, this.enableSlide = true});
 
-  final bool? enableSlide;
+  final bool enableSlide;
 }
 
-abstract class CommonSlidePageState<T extends CommonSlidePage> extends State<T>
-    with TickerProviderStateMixin {
+mixin CommonSlideMixin<T extends CommonSlidePage> on State<T>, TickerProvider {
   Offset? downPos;
   bool? isSliding;
   late double maxWidth;
@@ -26,7 +25,7 @@ abstract class CommonSlidePageState<T extends CommonSlidePage> extends State<T>
   @override
   void initState() {
     super.initState();
-    enableSlide = widget.enableSlide != false && slideDismissReplyPage;
+    enableSlide = widget.enableSlide && slideDismissReplyPage;
     if (enableSlide) {
       _animController = AnimationController(
         vsync: this,

@@ -3,7 +3,7 @@ import 'dart:math';
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/dialog/report.dart';
-import 'package:PiliPlus/common/widgets/image/image_view.dart';
+import 'package:PiliPlus/common/widgets/image/custom_grid_view.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/pendant_avatar.dart';
 import 'package:PiliPlus/common/widgets/text/text.dart' as custom_text;
@@ -19,11 +19,11 @@ import 'package:PiliPlus/pages/video/controller.dart';
 import 'package:PiliPlus/pages/video/reply/widgets/zan_grpc.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/context_ext.dart';
-import 'package:PiliPlus/utils/date_util.dart';
-import 'package:PiliPlus/utils/duration_util.dart';
+import 'package:PiliPlus/utils/date_utils.dart';
+import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/feed_back.dart';
-import 'package:PiliPlus/utils/image_util.dart';
+import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/url_utils.dart';
@@ -51,9 +51,9 @@ class ReplyItemGrpc extends StatelessWidget {
     this.getTag,
     this.onViewImage,
     this.onDismissed,
-    this.callback,
     this.onCheckReply,
     this.onToggleTop,
+    this.jumpToDialogue,
   });
   final ReplyInfo replyItem;
   final int replyLevel;
@@ -66,18 +66,37 @@ class ReplyItemGrpc extends StatelessWidget {
   final Function? getTag;
   final VoidCallback? onViewImage;
   final ValueChanged<int>? onDismissed;
-  final Function(List<String>, int)? callback;
   final ValueChanged<ReplyInfo>? onCheckReply;
   final ValueChanged<ReplyInfo>? onToggleTop;
+  final VoidCallback? jumpToDialogue;
 
   static final _voteRegExp = RegExp(r"^\{vote:\d+?\}$");
-  static final _timeRegExp = RegExp(r'^\b(?:\d+[:：])?\d+[:：]\d+\b$');
+  static final _timeRegExp = RegExp(r'^(?:\d+[:：])?\d+[:：]\d+$');
   static bool enableWordRe = Pref.enableWordRe;
   static int? replyLengthLimit = Pref.replyLengthLimit;
 
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
+
+    final isMobile = Utils.isMobile;
+    void showMore() => showModalBottomSheet(
+      context: context,
+      useSafeArea: true,
+      isScrollControlled: true,
+      constraints: BoxConstraints(
+        maxWidth: min(640, context.mediaQueryShortestSide),
+      ),
+      builder: (context) {
+        return morePanel(
+          context: context,
+          item: replyItem,
+          onDelete: () => onDelete?.call(replyItem, null),
+          isSubReply: false,
+        );
+      },
+    );
+
     return Material(
       type: MaterialType.transparency,
       child: InkWell(
@@ -85,25 +104,13 @@ class ReplyItemGrpc extends StatelessWidget {
           feedBack();
           replyReply?.call(replyItem, null);
         },
-        onLongPress: () {
-          feedBack();
-          showModalBottomSheet(
-            context: context,
-            useSafeArea: true,
-            isScrollControlled: true,
-            constraints: BoxConstraints(
-              maxWidth: min(640, context.mediaQueryShortestSide),
-            ),
-            builder: (context) {
-              return morePanel(
-                context: context,
-                item: replyItem,
-                onDelete: () => onDelete?.call(replyItem, null),
-                isSubReply: false,
-              );
-            },
-          );
-        },
+        onLongPress: isMobile
+            ? () {
+                feedBack();
+                showMore();
+              }
+            : null,
+        onSecondaryTap: isMobile ? null : showMore,
         child: _buildContent(context, theme),
       ),
     );
@@ -116,6 +123,7 @@ class ReplyItemGrpc extends StatelessWidget {
 
   Widget _buildContent(BuildContext context, ThemeData theme) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         if (PendantAvatar.showDynDecorate &&
             replyItem.member.hasGarbCardImage())
@@ -152,10 +160,7 @@ class ReplyItemGrpc extends StatelessWidget {
                   ],
                 ),
               ),
-              SizedBox(
-                width: double.infinity,
-                child: _buildAuthorPanel(context, theme),
-              ),
+              _buildAuthorPanel(context, theme),
             ],
           )
         else
@@ -240,11 +245,13 @@ class ReplyItemGrpc extends StatelessWidget {
                     children: <Widget>[
                       Text(
                         replyLevel == 0
-                            ? DateUtil.format(
+                            ? DateFormatUtils.format(
                                 replyItem.ctime.toInt(),
-                                format: DateUtil.longFormatDs,
+                                format: DateFormatUtils.longFormatDs,
                               )
-                            : DateUtil.dateFormat(replyItem.ctime.toInt()),
+                            : DateFormatUtils.dateFormat(
+                                replyItem.ctime.toInt(),
+                              ),
                         style: TextStyle(
                           fontSize: theme.textTheme.labelSmall!.fontSize,
                           color: theme.colorScheme.outline,
@@ -278,7 +285,7 @@ class ReplyItemGrpc extends StatelessWidget {
               children: [
                 if (replyItem.replyControl.isUpTop) ...[
                   const WidgetSpan(
-                    alignment: PlaceholderAlignment.top,
+                    alignment: PlaceholderAlignment.middle,
                     child: PBadge(
                       text: 'TOP',
                       size: PBadgeSize.small,
@@ -299,9 +306,9 @@ class ReplyItemGrpc extends StatelessWidget {
           Padding(
             padding: padding,
             child: LayoutBuilder(
-              builder: (context, constraints) => imageView(
-                constraints.maxWidth,
-                replyItem.content.pictures
+              builder: (context, constraints) => CustomGridView(
+                maxWidth: constraints.maxWidth,
+                picArr: replyItem.content.pictures
                     .map(
                       (item) => ImageModel(
                         width: item.imgWidth,
@@ -312,7 +319,6 @@ class ReplyItemGrpc extends StatelessWidget {
                     .toList(),
                 onViewImage: onViewImage,
                 onDismissed: onDismissed,
-                callback: callback,
               ),
             ),
           ),
@@ -416,6 +422,24 @@ class ReplyItemGrpc extends StatelessWidget {
                 ),
               ),
             ),
+          )
+        else if (replyLevel == 3 &&
+            needDivider &&
+            replyItem.parent != replyItem.root)
+          SizedBox(
+            height: 32,
+            child: TextButton(
+              onPressed: jumpToDialogue,
+              style: style,
+              child: Text(
+                '跳转回复',
+                style: TextStyle(
+                  color: theme.colorScheme.outline,
+                  fontSize: theme.textTheme.labelMedium!.fontSize,
+                  fontWeight: FontWeight.normal,
+                ),
+              ),
+            ),
           ),
         const Spacer(),
         ZanButtonGrpc(replyItem: replyItem),
@@ -439,7 +463,7 @@ class ReplyItemGrpc extends StatelessWidget {
         clipBehavior: Clip.hardEdge,
         animationDuration: Duration.zero,
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             if (replies.isNotEmpty)
               ...List.generate(replies.length, (index) {
@@ -456,30 +480,33 @@ class ReplyItemGrpc extends StatelessWidget {
                     padding = const EdgeInsets.fromLTRB(8, 4, 8, 4);
                   }
                 }
+                void showMore() => showModalBottomSheet(
+                  context: context,
+                  useSafeArea: true,
+                  isScrollControlled: true,
+                  constraints: BoxConstraints(
+                    maxWidth: min(640, context.mediaQueryShortestSide),
+                  ),
+                  builder: (context) {
+                    return morePanel(
+                      context: context,
+                      item: childReply,
+                      onDelete: () => onDelete?.call(replyItem, index),
+                      isSubReply: true,
+                    );
+                  },
+                );
                 return InkWell(
                   onTap: () =>
                       replyReply?.call(replyItem, childReply.id.toInt()),
-                  onLongPress: () {
-                    feedBack();
-                    showModalBottomSheet(
-                      context: context,
-                      useSafeArea: true,
-                      isScrollControlled: true,
-                      constraints: BoxConstraints(
-                        maxWidth: min(640, context.mediaQueryShortestSide),
-                      ),
-                      builder: (context) {
-                        return morePanel(
-                          context: context,
-                          item: childReply,
-                          onDelete: () => onDelete?.call(replyItem, index),
-                          isSubReply: true,
-                        );
-                      },
-                    );
-                  },
-                  child: Container(
-                    width: double.infinity,
+                  onLongPress: Utils.isMobile
+                      ? () {
+                          feedBack();
+                          showMore();
+                        }
+                      : null,
+                  onSecondaryTap: Utils.isMobile ? null : showMore,
+                  child: Padding(
                     padding: padding,
                     child: Text.rich(
                       style: TextStyle(
@@ -537,8 +564,7 @@ class ReplyItemGrpc extends StatelessWidget {
             if (extraRow)
               InkWell(
                 onTap: () => replyReply?.call(replyItem, null),
-                child: Container(
-                  width: double.infinity,
+                child: Padding(
                   padding: length == 1
                       ? const EdgeInsets.fromLTRB(8, 6, 8, 6)
                       : const EdgeInsets.fromLTRB(8, 5, 8, 8),
@@ -593,8 +619,8 @@ class ReplyItemGrpc extends StatelessWidget {
     ];
     String patternStr = [
       ...specialTokens.map(RegExp.escape),
-      r'(\b(?:\d+[:：])?\d+[:：]\d+\b)',
-      r'(\{vote:\d+?\})',
+      r'(?:\d+[:：])?\d+[:：]\d+',
+      r'\{vote:\d+?\}',
       Constants.urlRegex.pattern,
     ].join('|');
     final RegExp pattern = RegExp(patternStr);
@@ -620,7 +646,7 @@ class ReplyItemGrpc extends StatelessWidget {
         if (!isCv && url.hasPrefixIcon())
           WidgetSpan(
             child: CachedNetworkImage(
-              imageUrl: ImageUtil.thumbnailUrl(url.prefixIcon),
+              imageUrl: ImageUtils.thumbnailUrl(url.prefixIcon),
               height: 19,
               color: theme.colorScheme.primary,
               placeholder: (context, url) {
@@ -731,7 +757,7 @@ class ReplyItemGrpc extends StatelessWidget {
               tag: getTag?.call() ?? Get.arguments['heroTag'],
             );
             isValid =
-                DurationUtil.parseDuration(matchStr) * 1000 <=
+                DurationUtils.parseDuration(matchStr) * 1000 <=
                 ctr.data.timeLength!;
           } catch (e) {
             if (kDebugMode) debugPrint('failed to validate: $e');
@@ -752,7 +778,7 @@ class ReplyItemGrpc extends StatelessWidget {
                             tag: Get.arguments['heroTag'],
                           ).plPlayerController.seekTo(
                             Duration(
-                              seconds: DurationUtil.parseDuration(matchStr),
+                              seconds: DurationUtils.parseDuration(matchStr),
                             ),
                             isSeek: false,
                           );

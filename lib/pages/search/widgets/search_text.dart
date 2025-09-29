@@ -1,3 +1,4 @@
+import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart';
 
 class SearchText extends StatelessWidget {
@@ -25,12 +26,18 @@ class SearchText extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     late final colorScheme = Theme.of(context).colorScheme;
+    final hasLongPress = onLongPress != null;
     return Material(
       color: bgColor ?? colorScheme.onInverseSurface,
       borderRadius: const BorderRadius.all(Radius.circular(6)),
       child: InkWell(
         onTap: () => onTap?.call(text),
-        onLongPress: onLongPress != null ? () => onLongPress!(text) : null,
+        onLongPress: hasLongPress && Utils.isMobile
+            ? () => onLongPress!(text)
+            : null,
+        onSecondaryTap: hasLongPress && !Utils.isMobile
+            ? () => onLongPress!(text)
+            : null,
         borderRadius: const BorderRadius.all(Radius.circular(6)),
         child: Padding(
           padding:

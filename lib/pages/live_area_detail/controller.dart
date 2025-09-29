@@ -4,8 +4,6 @@ import 'package:PiliPlus/http/live.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models_new/live/live_area_list/area_item.dart';
 import 'package:PiliPlus/pages/common/common_list_controller.dart';
-import 'package:PiliPlus/services/account_service.dart';
-import 'package:get/get.dart';
 
 class LiveAreaDatailController
     extends CommonListController<List<AreaItem>?, AreaItem> {
@@ -14,8 +12,6 @@ class LiveAreaDatailController
   final dynamic parentAreaId;
 
   late int initialIndex = 0;
-
-  AccountService accountService = Get.find<AccountService>();
 
   @override
   void onInit() {
@@ -33,8 +29,5 @@ class LiveAreaDatailController
 
   @override
   Future<LoadingState<List<AreaItem>?>> customGetData() =>
-      LiveHttp.liveRoomAreaList(
-        isLogin: accountService.isLogin.value,
-        parentid: parentAreaId,
-      );
+      LiveHttp.liveRoomAreaList(parentid: parentAreaId);
 }

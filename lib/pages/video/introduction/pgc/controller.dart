@@ -277,7 +277,7 @@ class PgcIntroController extends CommonIntroController {
   }
 
   // 修改分P或番剧分集
-  Future<void> onChangeEpisode(BaseEpisodeItem episode) async {
+  Future<bool> onChangeEpisode(BaseEpisodeItem episode) async {
     try {
       final int epId = episode.epId ?? episode.id!;
       final String bvid = episode.bvid ?? this.bvid;
@@ -285,7 +285,7 @@ class PgcIntroController extends CommonIntroController {
       final int? cid =
           episode.cid ?? await SearchHttp.ab2c(aid: aid, bvid: bvid);
       if (cid == null) {
-        return;
+        return false;
       }
       final String? cover = episode.cover;
 
@@ -323,8 +323,10 @@ class PgcIntroController extends CommonIntroController {
       this.cid.value = cid;
       queryOnlineTotal();
       queryVideoIntro(episode as EpisodeItem);
+      return true;
     } catch (e) {
       if (kDebugMode) debugPrint('pgc onChangeEpisode: $e');
+      return false;
     }
   }
 
@@ -428,17 +430,16 @@ class PgcIntroController extends CommonIntroController {
     if (result['status']) {
       PgcTriple data = result['data'];
       late final stat = pgcItem.stat!;
-      if ((data.like == 1) != hasLike.value) {
+      if (data.like == 1 && !hasLike.value) {
         stat.like++;
         hasLike.value = true;
       }
-      final hasCoin = data.coin == 1;
-      if (this.hasCoin != hasCoin) {
+      if (data.coin == 1 && !hasCoin) {
         stat.coin += 2;
         coinNum.value = 2;
         GlobalData().afterCoin(2);
       }
-      if ((data.favorite == 1) != hasFav.value) {
+      if (data.favorite == 1 && !hasFav.value) {
         stat.favorite++;
         hasFav.value = true;
       }
@@ -484,7 +485,7 @@ class PgcIntroController extends CommonIntroController {
     videoDetail
       ..value.title = episode.showTitle
       ..refresh();
-    videoPlayerServiceHandler.onVideoDetailChange(
+    videoPlayerServiceHandler?.onVideoDetailChange(
       episode,
       cid.value,
       heroTag,

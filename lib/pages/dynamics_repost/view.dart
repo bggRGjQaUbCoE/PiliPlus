@@ -27,7 +27,6 @@ class RepostPanel extends CommonRichTextPubPage {
     this.pic,
     this.title,
     this.uname,
-    this.isMax,
   });
 
   // video
@@ -36,7 +35,6 @@ class RepostPanel extends CommonRichTextPubPage {
   final String? pic;
   final String? title;
   final String? uname;
-  final bool? isMax;
 
   final DynamicItemModel? item;
   final String? dynIdStr;
@@ -47,26 +45,38 @@ class RepostPanel extends CommonRichTextPubPage {
 }
 
 class _RepostPanelState extends CommonRichTextPubPageState<RepostPanel> {
-  late bool _isMax = widget.isMax ?? false;
-  bool? _isExpanded;
+  late bool _isMax = false;
+  late bool _isExpanded = false;
 
   late final _key = GlobalKey();
 
-  late final _pic =
-      widget.pic ??
-      widget.item?.modules.moduleDynamic?.major?.archive?.cover ??
-      widget.item?.modules.moduleDynamic?.major?.pgc?.cover ??
-      widget.item?.modules.moduleDynamic?.major?.opus?.pics?.firstOrNull?.url;
+  late final String? _pic;
+  late final String _text;
+  late final String? _uname;
 
-  late final _text =
-      widget.title ??
-      widget.item?.modules.moduleDynamic?.major?.opus?.summary?.text ??
-      widget.item?.modules.moduleDynamic?.desc?.text ??
-      widget.item?.modules.moduleDynamic?.major?.archive?.title ??
-      widget.item?.modules.moduleDynamic?.major?.pgc?.title ??
-      '';
+  @override
+  void initState() {
+    super.initState();
+    late final modules = widget.item?.modules;
+    late final moduleDynamic = modules?.moduleDynamic;
+    late final major = moduleDynamic?.major;
 
-  late final _uname = widget.uname ?? widget.item?.modules.moduleAuthor?.name;
+    _pic =
+        widget.pic ??
+        major?.archive?.cover ??
+        major?.pgc?.cover ??
+        major?.opus?.pics?.firstOrNull?.url;
+
+    _text =
+        widget.title ??
+        major?.opus?.summary?.text ??
+        major?.archive?.title ??
+        major?.pgc?.title ??
+        moduleDynamic?.desc?.text ??
+        '';
+
+    _uname = widget.uname ?? modules?.moduleAuthor?.name;
+  }
 
   @override
   void dispose() {
@@ -117,7 +127,7 @@ class _RepostPanelState extends CommonRichTextPubPageState<RepostPanel> {
           )
         : page();
 
-    return _isExpanded == true
+    return _isExpanded
         ? child()
         : AnimatedSize(
             alignment: Alignment.topCenter,

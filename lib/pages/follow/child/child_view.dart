@@ -50,7 +50,11 @@ class _FollowChildPageState extends State<FollowChildPage>
         physics: const AlwaysScrollableScrollPhysics(),
         slivers: [
           SliverPadding(
-            padding: EdgeInsets.only(bottom: padding.bottom + 100),
+            padding: EdgeInsets.only(
+              left: padding.left,
+              right: padding.right,
+              bottom: padding.bottom + 100,
+            ),
             sliver: Obx(
               () => _buildBody(_followController.loadingState.value),
             ),

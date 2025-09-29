@@ -34,7 +34,7 @@ import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart' hide ContextExtensionss;
 import 'package:url_launcher/url_launcher.dart';
 
-class PageUtils {
+abstract class PageUtils {
   static final RouteObserver<PageRoute> routeObserver =
       RouteObserver<PageRoute>();
 
@@ -44,17 +44,12 @@ class PageUtils {
     ValueChanged<int>? onDismissed,
     int? quality,
   }) {
-    final currentRoute = Get.currentRoute;
-    bool noneSet =
-        currentRoute.startsWith('/videoV') ||
-        currentRoute.startsWith('/member?');
-    return Navigator.of(Get.context!).push(
+    return Get.key.currentState!.push<void>(
       HeroDialogRoute(
         builder: (context) => InteractiveviewerGallery(
           sources: imgList,
           initIndex: initialPage,
           onDismissed: onDismissed,
-          setStatusBar: !noneSet,
           quality: quality ?? GlobalData().imgQuality,
         ),
       ),
@@ -231,17 +226,6 @@ class PageUtils {
                               alignment: Alignment.centerRight,
                               scale: 0.8,
                               child: Switch(
-                                thumbIcon:
-                                    WidgetStateProperty.resolveWith<Icon?>((
-                                      Set<WidgetState> states,
-                                    ) {
-                                      if (states.isNotEmpty &&
-                                          states.first ==
-                                              WidgetState.selected) {
-                                        return const Icon(Icons.done);
-                                      }
-                                      return null;
-                                    }),
                                 value: shutdownTimerService
                                     .waitForPlayingCompleted,
                                 onChanged: (value) {
@@ -297,14 +281,14 @@ class PageUtils {
 
   static Future<void> pushDynFromId({id, rid, bool off = false}) async {
     SmartDialog.showLoading();
-    var res = await DynamicsHttp.dynamicDetail(
+    final res = await DynamicsHttp.dynamicDetail(
       id: id,
       rid: rid,
       type: rid != null ? 2 : null,
     );
     SmartDialog.dismiss();
-    if (res['status']) {
-      DynamicItemModel data = res['data'];
+    if (res.isSuccess) {
+      final data = res.data;
       if (data.basic?.commentType == 12) {
         toDupNamed(
           '/articlePage',
@@ -318,13 +302,13 @@ class PageUtils {
         toDupNamed(
           '/dynamicDetail',
           arguments: {
-            'item': res['data'],
+            'item': data,
           },
           off: off,
         );
       }
     } else {
-      SmartDialog.showToast(res['msg']);
+      res.toast();
     }
   }
 
@@ -422,14 +406,14 @@ class PageUtils {
         // pgc
         if (archive.type == 2) {
           // jumpUrl
-          if (archive.jumpUrl case String jumpUrl) {
+          if (archive.jumpUrl case final jumpUrl?) {
             if (viewPgcFromUri(jumpUrl)) {
               return;
             }
           }
           // redirectUrl from intro
           final res = await VideoHttp.videoIntro(bvid: archive.bvid!);
-          if (res.dataOrNull?.redirectUrl case String redirectUrl) {
+          if (res.dataOrNull?.redirectUrl case final redirectUrl?) {
             if (viewPgcFromUri(redirectUrl)) {
               return;
             }
@@ -439,7 +423,7 @@ class PageUtils {
                 archive.jumpUrl.http2https,
                 false,
               )
-              case String redirectUrl) {
+              case final redirectUrl?) {
             if (viewPgcFromUri(redirectUrl)) {
               return;
             }
@@ -484,6 +468,18 @@ class PageUtils {
         toLiveRoom(liveRcmd.roomId);
         break;
 
+      case 'DYNAMIC_TYPE_SUBSCRIPTION_NEW':
+        LivePlayInfo live = item
+            .modules
+            .moduleDynamic!
+            .major!
+            .subscriptionNew!
+            .liveRcmd!
+            .content!
+            .livePlayInfo!;
+        toLiveRoom(live.roomId);
+        break;
+
       /// 合集查看
       case 'DYNAMIC_TYPE_UGC_SEASON':
         DynamicArchiveModel ugcSeason =
@@ -513,7 +509,7 @@ class PageUtils {
 
       case 'DYNAMIC_TYPE_MEDIALIST':
         if (item.modules.moduleDynamic?.major?.medialist
-            case Medialist medialist) {
+            case final medialist?) {
           final String? url = medialist.jumpUrl;
           if (url != null) {
             if (url.contains('medialist/detail/ml')) {
@@ -551,24 +547,24 @@ class PageUtils {
     }
   }
 
-  static void onHorizontalPreview(
-    GlobalKey<ScaffoldState> key,
+  static void onHorizontalPreviewState(
+    ScaffoldState state,
     TickerProvider vsync,
-    List<String> imgList,
+    List<SourceModel> imgList,
     int index,
   ) {
     final ctr = AnimationController(
       vsync: vsync,
       duration: const Duration(milliseconds: 200),
     )..forward();
-    key.currentState?.showBottomSheet(
+    state.showBottomSheet(
+      constraints: const BoxConstraints(),
       (context) {
         return FadeTransition(
           opacity: Tween<double>(begin: 0, end: 1).animate(ctr),
           child: InteractiveviewerGallery(
-            sources: imgList.map((url) => SourceModel(url: url)).toList(),
+            sources: imgList,
             initIndex: index,
-            setStatusBar: false,
             onClose: (value) async {
               if (!value) {
                 try {
@@ -587,7 +583,7 @@ class PageUtils {
         );
       },
       enableDrag: false,
-      elevation: 0,
+      elevation: 0.0,
       backgroundColor: Colors.transparent,
       sheetAnimationStyle: const AnimationStyle(duration: Duration.zero),
     );
@@ -616,13 +612,13 @@ class PageUtils {
     }
   }
 
-  static Future<void> launchURL(String url) async {
+  static Future<void> launchURL(
+    String url, {
+    LaunchMode mode = LaunchMode.externalApplication,
+  }) async {
     try {
       final Uri uri = Uri.parse(url);
-      if (!await launchUrl(
-        uri,
-        mode: LaunchMode.externalApplication,
-      )) {
+      if (!await launchUrl(uri, mode: mode)) {
         SmartDialog.showToast('Could not launch $url');
       }
     } catch (e) {

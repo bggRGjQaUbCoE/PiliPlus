@@ -29,7 +29,7 @@ class SpaceSettingController
       UserHttp.spaceSetting();
 
   Future<void> onMod() async {
-    if (hasMod == true && loadingState.value.isSuccess) {
+    if ((hasMod ?? false) && loadingState.value.isSuccess) {
       Privacy? data = loadingState.value.data;
       if (data != null) {
         var res = await UserHttp.spaceSettingMod(

@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
-import 'package:PiliPlus/common/widgets/radio_widget.dart';
 import 'package:PiliPlus/grpc/bilibili/im/type.pbenum.dart';
 import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
     show ReplyInfo;
@@ -36,7 +35,7 @@ import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart' hide ContextExtensionss;
 import 'package:gt3_flutter_plugin/gt3_flutter_plugin.dart';
 
-class RequestUtils {
+abstract class RequestUtils {
   static Future<void> syncHistoryStatus() async {
     final account = Accounts.history;
     if (!account.isLogin) {
@@ -286,19 +285,19 @@ class RequestUtils {
   static Future<void> insertCreatedDyn(dynamic id) async {
     try {
       if (id != null) {
-        await Future.delayed(const Duration(milliseconds: 200));
+        await Future.delayed(const Duration(milliseconds: 450));
         var res = await DynamicsHttp.dynamicDetail(id: id);
-        if (res['status']) {
+        if (res.isSuccess) {
           final ctr = Get.find<DynamicsTabController>(tag: 'all');
           if (ctr.loadingState.value.isSuccess) {
             List<DynamicItemModel>? list = ctr.loadingState.value.data;
             if (list != null) {
-              list.insert(0, res['data']);
+              list.insert(0, res.data);
               ctr.loadingState.refresh();
               return;
             }
           }
-          ctr.loadingState.value = Success([res['data']]);
+          ctr.loadingState.value = Success([res.data]);
         }
       }
     } catch (e) {
@@ -318,31 +317,33 @@ class RequestUtils {
             await Future.delayed(const Duration(seconds: 5));
           }
           var res = await DynamicsHttp.dynamicDetail(id: id, clearCookie: true);
-          bool isBan = !res['status'];
           Get.dialog(
+            barrierDismissible: isManual,
             AlertDialog(
               title: const Text('动态检查结果'),
               content: SelectableText(
-                '${!isBan ? '无账号状态下找到了你的动态，动态正常！' : '你的动态被shadow ban（仅自己可见）！'}${dynText != null ? ' \n\n动态内容: $dynText' : ''}',
+                '${res.isSuccess ? '无账号状态下找到了你的动态，动态正常！' : '你的动态被shadow ban（仅自己可见）！'}${dynText != null ? ' \n\n动态内容: $dynText' : ''}',
               ),
-              actions: isBan
-                  ? [
-                      TextButton(
-                        onPressed: () {
-                          Get.back();
-                          Utils.copyText('https://www.bilibili.com/opus/$id');
-                          Get.toNamed(
-                            '/webview',
-                            parameters: {
-                              'url':
-                                  'https://www.bilibili.com/h5/comment/appeal?native.theme=2&night=${Get.isDarkMode ? 1 : 0}',
-                            },
-                          );
-                        },
-                        child: const Text('申诉'),
-                      ),
-                    ]
-                  : null,
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Get.back();
+                    Utils.copyText('https://www.bilibili.com/opus/$id');
+                    Get.toNamed(
+                      '/webview',
+                      parameters: {
+                        'url':
+                            'https://www.bilibili.com/h5/comment/appeal?native.theme=2&night=${Get.isDarkMode ? 1 : 0}',
+                      },
+                    );
+                  },
+                  child: const Text('申诉'),
+                ),
+                TextButton(
+                  onPressed: Get.back,
+                  child: const Text('关闭'),
+                ),
+              ],
             ),
           );
         }
@@ -400,23 +401,20 @@ class RequestUtils {
               title: Text('${isCopy ? '复制' : '移动'}到'),
               contentPadding: const EdgeInsets.only(top: 5),
               content: SingleChildScrollView(
-                child: Builder(
-                  builder: (context) => Column(
-                    children: List.generate(list.length, (index) {
-                      final item = list[index];
-                      return RadioWidget<int>(
-                        padding: const EdgeInsets.only(left: 14),
-                        title: item.title,
-                        groupValue: checkedId,
+                child: RadioGroup(
+                  onChanged: (value) {
+                    checkedId = value;
+                    (context as Element).markNeedsBuild();
+                  },
+                  groupValue: checkedId,
+                  child: Column(
+                    children: list.map((item) {
+                      return RadioListTile<int>(
+                        dense: true,
+                        title: Text(item.title),
                         value: item.id,
-                        onChanged: (value) {
-                          checkedId = value;
-                          if (context.mounted) {
-                            (context as Element).markNeedsBuild();
-                          }
-                        },
                       );
-                    }),
+                    }).toList(),
                   ),
                 ),
               ),

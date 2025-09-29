@@ -9,6 +9,7 @@ import 'package:PiliPlus/models_new/fav/fav_folder/data.dart';
 import 'package:PiliPlus/models_new/video/video_detail/data.dart';
 import 'package:PiliPlus/models_new/video/video_detail/stat_detail.dart';
 import 'package:PiliPlus/models_new/video/video_tag/data.dart';
+import 'package:PiliPlus/pages/video/introduction/ugc/widgets/triple_mixin.dart';
 import 'package:PiliPlus/services/account_service.dart';
 import 'package:PiliPlus/utils/global_data.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
@@ -21,24 +22,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 
-abstract class CommonIntroController extends GetxController {
+abstract class CommonIntroController extends GetxController
+    with GetSingleTickerProviderStateMixin, TripleMixin {
   late final String heroTag;
   late String bvid;
 
-  // 是否点赞
-  final RxBool hasLike = false.obs;
-  // 投币数量
-  final RxNum coinNum = RxNum(0);
-  // 是否投币
-  bool get hasCoin => coinNum.value != 0;
-  // 是否收藏
-  final RxBool hasFav = false.obs;
   // 是否稍后再看
   final RxBool hasLater = false.obs;
 
   final Rx<List<VideoTagItem>?> videoTags = Rx<List<VideoTagItem>?>(null);
-
-  bool get hasTriple => hasLike.value && hasCoin && hasFav.value;
 
   bool isProcessing = false;
   Future<void> handleAction(FutureOr Function() action) async {
@@ -65,9 +57,7 @@ abstract class CommonIntroController extends GetxController {
   bool prevPlay();
   bool nextPlay();
 
-  Future<void> actionLikeVideo();
   void actionCoinVideo();
-  void actionTriple();
   void actionShareVideo(BuildContext context);
 
   // 同时观看

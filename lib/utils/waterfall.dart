@@ -56,7 +56,8 @@ mixin DynMixin {
         itemCount: 10,
       );
     }
-    return SliverList.builder(
+    return SliverPrototypeExtentList.builder(
+      prototypeItem: const DynamicCardSkeleton(),
       itemBuilder: (_, _) => const DynamicCardSkeleton(),
       itemCount: 10,
     );

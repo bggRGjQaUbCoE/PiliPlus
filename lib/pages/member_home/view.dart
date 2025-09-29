@@ -67,7 +67,7 @@ class _MemberHomeState extends State<MemberHome>
   );
 
   Widget _buildBody(LoadingState<SpaceData?> loadingState) {
-    final isVertical = context.isPortrait;
+    final isVertical = context.width < 600;
     final setting = _ctr.spaceSetting;
     final isOwner = setting != null;
     final color = Theme.of(context).colorScheme.outline;
@@ -369,7 +369,7 @@ class _MemberHomeState extends State<MemberHome>
                       style: TextStyle(color: color),
                     ),
                     WidgetSpan(
-                      alignment: PlaceholderAlignment.top,
+                      alignment: PlaceholderAlignment.middle,
                       child: Icon(
                         Icons.arrow_forward_ios,
                         size: 14,

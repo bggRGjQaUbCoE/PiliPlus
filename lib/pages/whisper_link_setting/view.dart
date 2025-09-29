@@ -92,14 +92,6 @@ class _WhisperLinkSettingPageState extends State<WhisperLinkSettingPage> {
         alignment: Alignment.centerRight,
         scale: 0.8,
         child: Switch(
-          thumbIcon: WidgetStateProperty.resolveWith<Icon?>((
-            Set<WidgetState> states,
-          ) {
-            if (states.isNotEmpty && states.first == WidgetState.selected) {
-              return const Icon(Icons.done);
-            }
-            return null;
-          }),
           value: isBlocked,
           onChanged: (value) => _controller.setBlock(isBlocked),
         ),
@@ -202,15 +194,6 @@ class _WhisperLinkSettingPageState extends State<WhisperLinkSettingPage> {
                     alignment: Alignment.centerRight,
                     scale: 0.8,
                     child: Switch(
-                      thumbIcon: WidgetStateProperty.resolveWith<Icon?>((
-                        Set<WidgetState> states,
-                      ) {
-                        if (states.isNotEmpty &&
-                            states.first == WidgetState.selected) {
-                          return const Icon(Icons.done);
-                        }
-                        return null;
-                      }),
                       value: response.pushSetting == 0,
                       onChanged: (value) =>
                           _controller.setPush(response.pushSetting == 0),
@@ -227,15 +210,6 @@ class _WhisperLinkSettingPageState extends State<WhisperLinkSettingPage> {
                     alignment: Alignment.centerRight,
                     scale: 0.8,
                     child: Switch(
-                      thumbIcon: WidgetStateProperty.resolveWith<Icon?>((
-                        Set<WidgetState> states,
-                      ) {
-                        if (states.isNotEmpty &&
-                            states.first == WidgetState.selected) {
-                          return const Icon(Icons.done);
-                        }
-                        return null;
-                      }),
                       value: _controller.isPinned.value,
                       onChanged: (value) => _controller.setPin(),
                     ),
@@ -266,15 +240,6 @@ class _WhisperLinkSettingPageState extends State<WhisperLinkSettingPage> {
                   alignment: Alignment.centerRight,
                   scale: 0.8,
                   child: Switch(
-                    thumbIcon: WidgetStateProperty.resolveWith<Icon?>((
-                      Set<WidgetState> states,
-                    ) {
-                      if (states.isNotEmpty &&
-                          states.first == WidgetState.selected) {
-                        return const Icon(Icons.done);
-                      }
-                      return null;
-                    }),
                     value: response!.first.setting == 1,
                     onChanged: (value) =>
                         _controller.setMute(response.first.setting == 1),

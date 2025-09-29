@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:PiliPlus/common/widgets/custom_icon.dart';
 import 'package:PiliPlus/models/common/settings_type.dart';
 import 'package:PiliPlus/models/common/video/subtitle_pref_type.dart';
+import 'package:PiliPlus/pages/main/controller.dart';
 import 'package:PiliPlus/pages/setting/models/model.dart';
 import 'package:PiliPlus/pages/setting/widgets/select_dialog.dart';
 import 'package:PiliPlus/plugin/pl_player/models/bottom_progress_behavior.dart';
@@ -13,6 +14,7 @@ import 'package:PiliPlus/services/service_locator.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
+import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -23,7 +25,7 @@ List<SettingsModel> get playSettings => [
     settingsType: SettingsType.sw1tch,
     title: '弹幕开关',
     subtitle: '是否展示弹幕',
-    leading: Icon(CustomIcon.dm_settings),
+    leading: Icon(CustomIcons.dm_settings),
     setKey: SettingBoxKey.enableShowDanmaku,
     defaultVal: true,
   ),
@@ -129,6 +131,32 @@ List<SettingsModel> get playSettings => [
       }
     },
   ),
+  SettingsModel(
+    settingsType: SettingsType.sw1tch,
+    title: '最小化时暂停/还原时播放',
+    leading: const Icon(Icons.pause_circle_outline),
+    setKey: SettingBoxKey.pauseOnMinimize,
+    defaultVal: false,
+    onChanged: (value) {
+      try {
+        Get.find<MainController>().pauseOnMinimize = value;
+      } catch (_) {}
+    },
+  ),
+  const SettingsModel(
+    settingsType: SettingsType.sw1tch,
+    title: '启用键盘控制',
+    leading: Icon(Icons.keyboard_alt_outlined),
+    setKey: SettingBoxKey.keyboardControl,
+    defaultVal: true,
+  ),
+  const SettingsModel(
+    settingsType: SettingsType.sw1tch,
+    title: '显示 SuperChat',
+    leading: Icon(Icons.live_tv),
+    setKey: SettingBoxKey.showSuperChat,
+    defaultVal: true,
+  ),
   const SettingsModel(
     settingsType: SettingsType.sw1tch,
     title: '竖屏扩大展示',
@@ -187,7 +215,7 @@ List<SettingsModel> get playSettings => [
       setKey: SettingBoxKey.autoPiP,
       defaultVal: false,
       onChanged: (val) {
-        if (val && !videoPlayerServiceHandler.enableBackgroundPlay) {
+        if (val && !videoPlayerServiceHandler!.enableBackgroundPlay) {
           SmartDialog.showToast('建议开启后台音频服务');
         }
       },
@@ -196,7 +224,7 @@ List<SettingsModel> get playSettings => [
       settingsType: SettingsType.sw1tch,
       title: '画中画不加载弹幕',
       subtitle: '当弹幕开关开启时，小窗屏蔽弹幕以获得较好的体验',
-      leading: Icon(Icons.subtitles_off_outlined),
+      leading: Icon(CustomIcons.dm_off),
       setKey: SettingBoxKey.pipNoDanmaku,
       defaultVal: false,
     ),
@@ -205,7 +233,7 @@ List<SettingsModel> get playSettings => [
     settingsType: SettingsType.sw1tch,
     title: '全屏手势反向',
     subtitle: '默认播放器中部向上滑动进入全屏，向下退出\n开启后向下全屏，向上退出',
-    leading: Icon(Icons.swap_vert_outlined),
+    leading: Icon(Icons.swap_vert),
     setKey: SettingBoxKey.fullScreenGestureReverse,
     defaultVal: false,
   ),
@@ -274,17 +302,18 @@ List<SettingsModel> get playSettings => [
       }
     },
   ),
-  SettingsModel(
-    settingsType: SettingsType.sw1tch,
-    title: '后台音频服务',
-    subtitle: '避免画中画没有播放暂停功能',
-    leading: const Icon(Icons.volume_up_outlined),
-    setKey: SettingBoxKey.enableBackgroundPlay,
-    defaultVal: true,
-    onChanged: (value) {
-      videoPlayerServiceHandler.enableBackgroundPlay = value;
-    },
-  ),
+  if (Utils.isMobile)
+    SettingsModel(
+      settingsType: SettingsType.sw1tch,
+      title: '后台音频服务',
+      subtitle: '避免画中画没有播放暂停功能',
+      leading: const Icon(Icons.volume_up_outlined),
+      setKey: SettingBoxKey.enableBackgroundPlay,
+      defaultVal: true,
+      onChanged: (value) {
+        videoPlayerServiceHandler!.enableBackgroundPlay = value;
+      },
+    ),
   const SettingsModel(
     settingsType: SettingsType.sw1tch,
     title: '播放器设置仅对当前生效',

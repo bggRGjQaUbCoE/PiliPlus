@@ -1,0 +1,12 @@
+diff --git a/packages/flutter/lib/src/material/bottom_sheet.dart b/packages/flutter/lib/src/material/bottom_sheet.dart
+index ec9e4270863..c850912afe1 100644
+--- a/packages/flutter/lib/src/material/bottom_sheet.dart
++++ b/packages/flutter/lib/src/material/bottom_sheet.dart
+@@ -1412,6 +1412,7 @@ class _BottomSheetGestureDetector extends StatelessWidget {
+                   ..onStart = onVerticalDragStart
+                   ..onUpdate = onVerticalDragUpdate
+                   ..onEnd = onVerticalDragEnd
++                  ..gestureSettings = MediaQuery.maybeGestureSettingsOf(context)
+                   ..onlyAcceptDragOnThreshold = true;
+               },
+             ),

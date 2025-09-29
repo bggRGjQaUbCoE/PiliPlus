@@ -11,6 +11,7 @@ import 'package:PiliPlus/pages/video/note/controller.dart';
 import 'package:PiliPlus/pages/webview/view.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/extension.dart';
+import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -20,29 +21,26 @@ class NoteListPage extends CommonSlidePage {
     super.key,
     super.enableSlide,
     required this.heroTag,
-    this.oid,
-    this.upperMid,
+    required this.oid,
     required this.isStein,
     required this.title,
   });
 
-  final dynamic heroTag;
-  final dynamic oid;
-  final dynamic upperMid;
+  final String? heroTag;
+  final int oid;
   final bool isStein;
-  final dynamic title;
+  final String? title;
 
   @override
   State<NoteListPage> createState() => _NoteListPageState();
 }
 
-class _NoteListPageState extends CommonSlidePageState<NoteListPage> {
+class _NoteListPageState extends State<NoteListPage>
+    with SingleTickerProviderStateMixin, CommonSlideMixin {
   late final _controller = Get.put(
-    NoteListPageCtr(oid: widget.oid, upperMid: widget.upperMid),
+    NoteListPageCtr(oid: widget.oid),
     tag: widget.heroTag,
   );
-
-  final _key = GlobalKey<ScaffoldState>();
 
   @override
   void dispose() {
@@ -54,7 +52,6 @@ class _NoteListPageState extends CommonSlidePageState<NoteListPage> {
   Widget buildPage(ThemeData theme) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      key: _key,
       body: Column(
         children: [
           SizedBox(
@@ -92,44 +89,62 @@ class _NoteListPageState extends CommonSlidePageState<NoteListPage> {
     );
   }
 
+  late Key _key;
+  late bool _isNested;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final controller = PrimaryScrollController.of(context);
+    _isNested = controller is ExtendedNestedScrollController;
+    _key = ValueKey(controller.hashCode);
+  }
+
   @override
   Widget buildList(ThemeData theme) {
-    return refreshIndicator(
+    Widget child = refreshIndicator(
       onRefresh: _controller.onRefresh,
-      child: Column(
-        children: [
-          Expanded(
-            child: CustomScrollView(
-              controller: _controller.scrollController,
-              physics: const AlwaysScrollableScrollPhysics(),
-              slivers: [
-                SliverPadding(
-                  padding: const EdgeInsets.only(bottom: 100),
-                  sliver: Obx(
-                    () => _buildBody(theme, _controller.loadingState.value),
-                  ),
-                ),
-              ],
+      child: CustomScrollView(
+        key: _key,
+        physics: const AlwaysScrollableScrollPhysics(),
+        slivers: [
+          SliverPadding(
+            padding: const EdgeInsets.only(bottom: 100),
+            sliver: Obx(
+              () => _buildBody(theme, _controller.loadingState.value),
             ),
           ),
-          Container(
-            padding: EdgeInsets.only(
-              left: 12,
-              right: 12,
-              top: 6,
-              bottom: MediaQuery.viewPaddingOf(context).bottom + 6,
-            ),
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: theme.colorScheme.onInverseSurface,
-              border: Border(
-                top: BorderSide(
-                  width: 0.5,
-                  color: theme.colorScheme.outline.withValues(alpha: 0.1),
-                ),
+        ],
+      ),
+    );
+    if (_isNested) {
+      child = ExtendedVisibilityDetector(
+        uniqueKey: const Key('note-list'),
+        child: child,
+      );
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Expanded(child: child),
+        Container(
+          padding: EdgeInsets.only(
+            left: 12,
+            right: 12,
+            top: 6,
+            bottom: MediaQuery.viewPaddingOf(context).bottom + 6,
+          ),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.onInverseSurface,
+            border: Border(
+              top: BorderSide(
+                width: 0.5,
+                color: theme.colorScheme.outline.withValues(alpha: 0.1),
               ),
             ),
-            child: FilledButton.tonal(
+          ),
+          child: Builder(
+            builder: (context) => FilledButton.tonal(
               style: FilledButton.styleFrom(
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 padding: EdgeInsets.zero,
@@ -142,7 +157,7 @@ class _NoteListPageState extends CommonSlidePageState<NoteListPage> {
                   SmartDialog.showToast('账号未登录');
                   return;
                 }
-                _key.currentState?.showBottomSheet(
+                Scaffold.of(context).showBottomSheet(
                   constraints: const BoxConstraints(),
                   (context) => WebviewPage(
                     oid: widget.oid,
@@ -155,8 +170,8 @@ class _NoteListPageState extends CommonSlidePageState<NoteListPage> {
               child: const Text('开始记笔记'),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -169,13 +184,10 @@ class _NoteListPageState extends CommonSlidePageState<NoteListPage> {
       color: theme.colorScheme.outline.withValues(alpha: 0.1),
     );
     return switch (loadingState) {
-      Loading() => SliverToBoxAdapter(
-        child: ListView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemBuilder: (context, index) => const VideoReplySkeleton(),
-          itemCount: 8,
-        ),
+      Loading() => SliverPrototypeExtentList.builder(
+        prototypeItem: const VideoReplySkeleton(),
+        itemBuilder: (_, _) => const VideoReplySkeleton(),
+        itemCount: 8,
       ),
       Success(:var response) =>
         response?.isNotEmpty == true

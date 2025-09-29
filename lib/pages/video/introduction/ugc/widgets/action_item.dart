@@ -1,5 +1,6 @@
 import 'dart:math' show pi;
 
+import 'package:PiliPlus/utils/extension.dart';
 import 'package:flutter/material.dart';
 
 class ActionItem extends StatelessWidget {
@@ -35,16 +36,17 @@ class ActionItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    late final primary = !expand && colorScheme.isLight
+        ? colorScheme.inversePrimary
+        : colorScheme.primary;
     Widget child = Icon(
       selectStatus ? selectIcon!.icon! : icon.icon,
       size: 18,
-      color: selectStatus
-          ? theme.colorScheme.primary
-          : icon.color ?? theme.colorScheme.outline,
+      color: selectStatus ? primary : icon.color ?? colorScheme.outline,
     );
 
     if (animation != null) {
-      final primary = theme.colorScheme.primary;
       child = Stack(
         clipBehavior: Clip.none,
         alignment: Alignment.center,
@@ -54,7 +56,7 @@ class ActionItem extends StatelessWidget {
               animation: animation!,
               builder: (context, child) => CustomPaint(
                 size: const Size.square(28),
-                painter: _ArcPainter(
+                painter: ArcPainter(
                   color: primary,
                   sweepAngle: animation!.value,
                 ),
@@ -110,13 +112,15 @@ class ActionItem extends StatelessWidget {
   }
 }
 
-class _ArcPainter extends CustomPainter {
-  const _ArcPainter({
+class ArcPainter extends CustomPainter {
+  const ArcPainter({
     required this.color,
     required this.sweepAngle,
+    this.strokeWidth = 2,
   });
   final Color color;
   final double sweepAngle;
+  final double strokeWidth;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -126,7 +130,7 @@ class _ArcPainter extends CustomPainter {
 
     final paint = Paint()
       ..color = color
-      ..strokeWidth = 2
+      ..strokeWidth = strokeWidth
       ..style = PaintingStyle.stroke;
 
     final rect = Rect.fromCircle(
@@ -140,7 +144,7 @@ class _ArcPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _ArcPainter oldDelegate) {
+  bool shouldRepaint(covariant ArcPainter oldDelegate) {
     return sweepAngle != oldDelegate.sweepAngle || color != oldDelegate.color;
   }
 }

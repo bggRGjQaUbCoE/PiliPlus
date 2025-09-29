@@ -7,7 +7,7 @@ import 'package:PiliPlus/models/common/live_dm_silent_type.dart';
 import 'package:PiliPlus/models_new/live/live_dm_block/shield_user_list.dart';
 import 'package:PiliPlus/pages/live_dm_block/controller.dart';
 import 'package:PiliPlus/pages/search/widgets/search_text.dart';
-import 'package:PiliPlus/utils/context_ext.dart';
+import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart';
 import 'package:flutter/material.dart';
@@ -31,10 +31,9 @@ class _LiveDmBlockPageState extends State<LiveDmBlockPage> {
 
   @override
   Widget build(BuildContext context) {
-    isPortrait = context.isPortrait;
+    isPortrait = MediaQuery.sizeOf(context).isPortrait;
     padding = MediaQuery.viewPaddingOf(context);
     final theme = Theme.of(context);
-
     Widget tabBar = TabBar(
       controller: _controller.tabController,
       tabs: const [

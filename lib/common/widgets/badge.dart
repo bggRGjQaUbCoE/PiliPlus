@@ -77,6 +77,9 @@ class PBadge extends StatelessWidget {
       case PBadgeType.free:
         bgColor = theme.freeColor;
         color = Colors.white;
+      case PBadgeType.shop:
+        bgColor = theme.secondaryContainer.withValues(alpha: 0.5);
+        color = theme.onSurfaceVariant;
     }
 
     late EdgeInsets paddingStyle = const EdgeInsets.symmetric(

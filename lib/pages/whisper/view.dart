@@ -38,6 +38,7 @@ class _WhisperPageState extends State<WhisperPage> {
                     onPressed: () => e.type.action(
                       context: context,
                       controller: _controller,
+                      item: e,
                     ),
                     icon: e.type.icon,
                   );
@@ -57,6 +58,7 @@ class _WhisperPageState extends State<WhisperPage> {
                           onTap: () => e.type.action(
                             context: context,
                             controller: _controller,
+                            item: e,
                           ),
                           child: Row(
                             children: [

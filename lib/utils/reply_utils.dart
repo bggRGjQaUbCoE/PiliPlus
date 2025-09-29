@@ -100,36 +100,39 @@ class ReplyUtils {
     }
     void showReplyCheckResult(String message, {bool isBan = false}) {
       Get.dialog(
+        barrierDismissible: isManual,
         AlertDialog(
           title: const Text('评论检查结果'),
           content: SelectableText(message),
-          actions: isBan
-              ? [
-                  TextButton(
-                    onPressed: () {
-                      Get.back();
-                      String? uri;
-                      switch (type) {
-                        case 1:
-                          uri = IdUtils.av2bv(oid);
-                        case 17:
-                          uri = 'https://www.bilibili.com/opus/$oid';
-                      }
-                      if (uri != null) {
-                        Utils.copyText(uri);
-                      }
-                      Get.toNamed(
-                        '/webview',
-                        parameters: {
-                          'url':
-                              'https://www.bilibili.com/h5/comment/appeal?native.theme=2&night=${Get.isDarkMode ? 1 : 0}',
-                        },
-                      );
-                    },
-                    child: const Text('申诉'),
-                  ),
-                ]
-              : null,
+          actions: [
+            TextButton(
+              onPressed: () {
+                Get.back();
+                String? uri;
+                switch (type) {
+                  case 1:
+                    uri = IdUtils.av2bv(oid);
+                  case 17:
+                    uri = 'https://www.bilibili.com/opus/$oid';
+                }
+                if (uri != null) {
+                  Utils.copyText(uri);
+                }
+                Get.toNamed(
+                  '/webview',
+                  parameters: {
+                    'url':
+                        'https://www.bilibili.com/h5/comment/appeal?native.theme=2&night=${Get.isDarkMode ? 1 : 0}',
+                  },
+                );
+              },
+              child: const Text('申诉'),
+            ),
+            TextButton(
+              onPressed: Get.back,
+              child: const Text('关闭'),
+            ),
+          ],
         ),
       );
     }
@@ -144,8 +147,6 @@ class ReplyUtils {
         type: type,
         sort: ReplySortType.time.index,
         page: 1,
-        enableFilter: false,
-        antiGoodsReply: false,
       );
 
       if (res is Error) {
@@ -168,8 +169,6 @@ class ReplyUtils {
             root: id,
             pageNum: 1,
             type: type,
-            filterBanWord: false,
-            antiGoodsReply: false,
           );
 
           if (res1 is Error) {
@@ -185,9 +184,7 @@ class ReplyUtils {
               root: id,
               pageNum: 1,
               type: type,
-              filterBanWord: false,
               isCheck: true,
-              antiGoodsReply: false,
             );
 
             if (res2 is Error) {
@@ -222,9 +219,7 @@ https://api.bilibili.com/x/v2/reply/reply?oid=$oid&pn=1&ps=20&root=$id&type=$typ
           root: root,
           pageNum: i,
           type: type,
-          filterBanWord: false,
           isCheck: true,
-          antiGoodsReply: false,
         );
         if (res3 is Error) {
           break;
@@ -251,9 +246,7 @@ https://api.bilibili.com/x/v2/reply/reply?oid=$oid&pn=1&ps=20&root=$id&type=$typ
           root: root,
           pageNum: i,
           type: type,
-          filterBanWord: false,
           isCheck: true,
-          antiGoodsReply: false,
         );
         if (res4 is Error) {
           break;

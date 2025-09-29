@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 
 class BackwardSeekIndicator extends StatefulWidget {
   final ValueChanged<Duration> onSubmitted;
-  final int duration;
+  final Duration duration;
 
   const BackwardSeekIndicator({
     super.key,
@@ -24,7 +24,7 @@ class BackwardSeekIndicatorState extends State<BackwardSeekIndicator> {
   @override
   void initState() {
     super.initState();
-    duration = Duration(seconds: widget.duration);
+    duration = widget.duration;
     timer = Timer(const Duration(milliseconds: 400), () {
       widget.onSubmitted(duration);
     });
@@ -42,7 +42,7 @@ class BackwardSeekIndicatorState extends State<BackwardSeekIndicator> {
       widget.onSubmitted(duration);
     });
     setState(() {
-      duration += Duration(seconds: widget.duration);
+      duration += widget.duration;
     });
   }
 

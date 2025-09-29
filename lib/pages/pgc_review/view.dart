@@ -41,49 +41,47 @@ class _PgcReviewPageState extends State<PgcReviewPage>
       clipBehavior: Clip.none,
       children: [
         Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(
-              width: double.infinity,
-              child: TabBar(
-                controller: _tabController,
-                isScrollable: true,
-                tabAlignment: TabAlignment.start,
-                dividerHeight: 0,
-                indicatorWeight: 0,
-                overlayColor: const WidgetStatePropertyAll(Colors.transparent),
-                splashFactory: NoSplash.splashFactory,
-                padding: const EdgeInsets.only(left: 6),
-                indicatorPadding: const EdgeInsets.symmetric(
-                  horizontal: 3,
-                  vertical: 8,
-                ),
-                indicator: BoxDecoration(
-                  color: theme.colorScheme.secondaryContainer,
-                  borderRadius: const BorderRadius.all(Radius.circular(20)),
-                ),
-                indicatorSize: TabBarIndicatorSize.tab,
-                labelColor: theme.colorScheme.onSecondaryContainer,
-                unselectedLabelColor: theme.colorScheme.outline,
-                labelStyle:
-                    TabBarTheme.of(
-                      context,
-                    ).labelStyle?.copyWith(fontSize: 13) ??
-                    const TextStyle(fontSize: 13),
-                dividerColor: Colors.transparent,
-                tabs: PgcReviewType.values
-                    .map((e) => Tab(text: e.label))
-                    .toList(),
-                onTap: (index) {
-                  try {
-                    if (!_tabController.indexIsChanging) {
-                      final item = PgcReviewType.values[index];
-                      Get.find<PgcReviewController>(
-                        tag: '${widget.mediaId}${item.name}',
-                      ).scrollController.animToTop();
-                    }
-                  } catch (_) {}
-                },
+            TabBar(
+              controller: _tabController,
+              isScrollable: true,
+              tabAlignment: TabAlignment.start,
+              dividerHeight: 0,
+              indicatorWeight: 0,
+              overlayColor: const WidgetStatePropertyAll(Colors.transparent),
+              splashFactory: NoSplash.splashFactory,
+              padding: const EdgeInsets.only(left: 6),
+              indicatorPadding: const EdgeInsets.symmetric(
+                horizontal: 3,
+                vertical: 8,
               ),
+              indicator: BoxDecoration(
+                color: theme.colorScheme.secondaryContainer,
+                borderRadius: const BorderRadius.all(Radius.circular(20)),
+              ),
+              indicatorSize: TabBarIndicatorSize.tab,
+              labelColor: theme.colorScheme.onSecondaryContainer,
+              unselectedLabelColor: theme.colorScheme.outline,
+              labelStyle:
+                  TabBarTheme.of(
+                    context,
+                  ).labelStyle?.copyWith(fontSize: 13) ??
+                  const TextStyle(fontSize: 13),
+              dividerColor: Colors.transparent,
+              tabs: PgcReviewType.values
+                  .map((e) => Tab(text: e.label))
+                  .toList(),
+              onTap: (index) {
+                try {
+                  if (!_tabController.indexIsChanging) {
+                    final item = PgcReviewType.values[index];
+                    Get.find<PgcReviewController>(
+                      tag: '${widget.mediaId}${item.name}',
+                    ).scrollController.animToTop();
+                  }
+                } catch (_) {}
+              },
             ),
             Expanded(
               child: TabBarView(

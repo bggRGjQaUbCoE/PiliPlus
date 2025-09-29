@@ -12,8 +12,8 @@ import 'package:PiliPlus/models_new/space/space/pr_info.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/context_ext.dart';
 import 'package:PiliPlus/utils/extension.dart';
-import 'package:PiliPlus/utils/image_util.dart';
-import 'package:PiliPlus/utils/num_util.dart';
+import 'package:PiliPlus/utils/image_utils.dart';
+import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -43,10 +43,14 @@ class UserInfoCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final isLight = colorScheme.brightness.isLight;
-    return context.isPortrait
-        ? _buildV(context, colorScheme, isLight)
-        : _buildH(colorScheme, isLight);
+    final isLight = colorScheme.isLight;
+    final isPortrait = context.width < 600;
+    return ViewSafeArea(
+      top: !isPortrait,
+      child: isPortrait
+          ? _buildV(context, colorScheme, isLight)
+          : _buildH(colorScheme, isLight),
+    );
   }
 
   Widget _countWidget({
@@ -62,7 +66,7 @@ class UserInfoCard extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            NumUtil.numFormat(count),
+            NumUtils.numFormat(count),
             style: const TextStyle(fontSize: 14),
           ),
           Text(
@@ -91,7 +95,7 @@ class UserInfoCard extends StatelessWidget {
       child: GestureDetector(
         onTap: () => PageUtils.imageView(imgList: [SourceModel(url: imgUrl)]),
         child: CachedNetworkImage(
-          imageUrl: ImageUtil.thumbnailUrl(imgUrl),
+          imageUrl: ImageUtils.thumbnailUrl(imgUrl),
           width: double.infinity,
           height: 135,
           imageBuilder: (context, imageProvider) => DecoratedBox(
@@ -168,7 +172,7 @@ class UserInfoCard extends StatelessWidget {
             ),
           if (card.nameplate?.imageSmall?.isNotEmpty == true)
             CachedNetworkImage(
-              imageUrl: ImageUtil.thumbnailUrl(card.nameplate!.imageSmall!),
+              imageUrl: ImageUtils.thumbnailUrl(card.nameplate!.imageSmall!),
               height: 20,
               placeholder: (context, url) {
                 return const SizedBox.shrink();
@@ -380,7 +384,7 @@ class UserInfoCard extends StatelessWidget {
                   children: [
                     if (relation != 0 && relation != 128) ...[
                       WidgetSpan(
-                        alignment: PlaceholderAlignment.top,
+                        alignment: PlaceholderAlignment.middle,
                         child: Icon(
                           Icons.sort,
                           size: 16,
@@ -474,26 +478,24 @@ class UserInfoCard extends StatelessWidget {
     bool isLight,
     SpacePrInfo prInfo,
   ) {
-    final textColor = !isLight
-        ? Color(int.parse('FF${prInfo.textColorNight.substring(1)}', radix: 16))
-        : Color(int.parse('FF${prInfo.textColor.substring(1)}', radix: 16));
+    final textColor = Utils.parseColor(
+      isLight ? prInfo.textColor : prInfo.textColorNight,
+    );
     Widget child = Container(
       margin: const EdgeInsets.only(top: 8),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      color: !isLight
-          ? Color(int.parse('FF${prInfo.bgColorNight.substring(1)}', radix: 16))
-          : Color(int.parse('FF${prInfo.bgColor.substring(1)}', radix: 16)),
+      color: Utils.parseColor(isLight ? prInfo.bgColor : prInfo.bgColorNight),
       child: Row(
         children: [
           if (!isLight && prInfo.iconNight?.isNotEmpty == true) ...[
             CachedNetworkImage(
-              imageUrl: ImageUtil.thumbnailUrl(card.prInfo!.iconNight!),
+              imageUrl: ImageUtils.thumbnailUrl(card.prInfo!.iconNight!),
               height: 20,
             ),
             const SizedBox(width: 16),
           ] else if (prInfo.icon?.isNotEmpty == true) ...[
             CachedNetworkImage(
-              imageUrl: ImageUtil.thumbnailUrl(card.prInfo!.icon!),
+              imageUrl: ImageUtils.thumbnailUrl(card.prInfo!.icon!),
               height: 20,
             ),
             const SizedBox(width: 16),
@@ -529,38 +531,35 @@ class UserInfoCard extends StatelessWidget {
     children: [
       // _buildHeader(context),
       const SizedBox(height: 56),
-      ViewSafeArea(
-        top: true,
-        child: Row(
-          children: [
-            const SizedBox(width: 20),
-            Padding(
-              padding: EdgeInsets.only(
-                top: 10,
-                bottom: card.prInfo?.content?.isNotEmpty == true ? 0 : 10,
-              ),
-              child: _buildAvatar,
+      Row(
+        children: [
+          const SizedBox(width: 20),
+          Padding(
+            padding: EdgeInsets.only(
+              top: 10,
+              bottom: card.prInfo?.content?.isNotEmpty == true ? 0 : 10,
             ),
-            const SizedBox(width: 10),
-            Expanded(
-              flex: 5,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 10),
-                  ..._buildLeft(colorScheme, isLight),
-                  const SizedBox(height: 5),
-                ],
-              ),
+            child: _buildAvatar,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            flex: 5,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 10),
+                ..._buildLeft(colorScheme, isLight),
+                const SizedBox(height: 5),
+              ],
             ),
-            Expanded(
-              flex: 3,
-              child: _buildRight(colorScheme),
-            ),
-            const SizedBox(width: 20),
-          ],
-        ),
+          ),
+          Expanded(
+            flex: 3,
+            child: _buildRight(colorScheme),
+          ),
+          const SizedBox(width: 20),
+        ],
       ),
       if (card.prInfo?.content?.isNotEmpty == true)
         buildPrInfo(colorScheme, isLight, card.prInfo!),

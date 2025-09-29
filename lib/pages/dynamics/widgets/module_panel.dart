@@ -1,36 +1,59 @@
-// 转发
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/dyn/ink_well.dart';
-import 'package:PiliPlus/common/widgets/image/image_save.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/models/dynamics/result.dart';
-import 'package:PiliPlus/pages/dynamics/widgets/additional_panel.dart';
-import 'package:PiliPlus/pages/dynamics/widgets/blocked_item.dart';
-import 'package:PiliPlus/pages/dynamics/widgets/content_panel.dart';
+import 'package:PiliPlus/pages/dynamics/widgets/forward_panel.dart';
 import 'package:PiliPlus/pages/dynamics/widgets/live_panel.dart';
 import 'package:PiliPlus/pages/dynamics/widgets/live_panel_sub.dart';
 import 'package:PiliPlus/pages/dynamics/widgets/live_rcmd_panel.dart';
 import 'package:PiliPlus/pages/dynamics/widgets/video_panel.dart';
-import 'package:PiliPlus/utils/date_util.dart';
 import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart' hide InkWell;
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
+
+Widget noneWidget(ThemeData theme, String? tips) => Row(
+  spacing: 5,
+  children: [
+    Icon(
+      Icons.error,
+      size: 18,
+      color: theme.colorScheme.outline,
+    ),
+    Text(
+      tips ?? '已失效',
+      style: TextStyle(color: theme.colorScheme.outline),
+    ),
+  ],
+);
 
 Widget module(
-  ThemeData theme,
-  bool isSave,
-  DynamicItemModel item,
-  BuildContext context,
-  bool isDetail,
-  Function(List<String>, int)? callback, {
-  floor = 1,
+  BuildContext context, {
+  required int floor,
+  required ThemeData theme,
+  required DynamicItemModel item,
+  required bool isSave,
+  required bool isDetail,
   required double maxWidth,
 }) {
+  final moduleDynamic = item.modules.moduleDynamic;
+  final major = moduleDynamic?.major;
+
+  if (major?.type == 'MAJOR_TYPE_NONE') {
+    return noneWidget(theme, major?.none?.tips);
+  }
+
   switch (item.type) {
+    case 'DYNAMIC_TYPE_NONE':
+      return Row(
+        spacing: 4,
+        children: [
+          const Icon(FontAwesomeIcons.ghost, size: 14),
+          Text(major!.none!.tips!),
+        ],
+      );
     // 图文
     case 'DYNAMIC_TYPE_DRAW':
     // 文章
@@ -44,173 +67,44 @@ Widget module(
     case 'DYNAMIC_TYPE_PGC_UNION':
     case 'DYNAMIC_TYPE_COURSES_SEASON':
       return videoSeasonWidget(
-        theme,
-        isSave,
-        isDetail,
-        item,
         context,
-        callback,
+        theme: theme,
+        item: item,
         floor: floor,
+        isSave: isSave,
+        isDetail: isDetail,
         maxWidth: maxWidth,
       );
     // 转发
     case 'DYNAMIC_TYPE_FORWARD':
-      final orig = item.orig!;
-      final isNoneMajor =
-          orig.modules.moduleDynamic?.major?.type == 'MAJOR_TYPE_NONE';
-      late final isNormalAuth =
-          orig.modules.moduleAuthor!.type == 'AUTHOR_TYPE_NORMAL';
-      if (isNoneMajor) {
-        if (orig.modules.moduleDynamic?.major?.none?.tips?.isNotEmpty == true) {
-          return Container(
-            padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
-            color: theme.dividerColor.withValues(alpha: 0.08),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.error,
-                  size: 18,
-                  color: theme.colorScheme.outline,
-                ),
-                const SizedBox(width: 5),
-                Text(
-                  orig.modules.moduleDynamic!.major!.none!.tips!,
-                  style: TextStyle(color: theme.colorScheme.outline),
-                ),
-              ],
-            ),
-          );
-        } else {
-          return const SizedBox.shrink();
-        }
-      }
-      maxWidth -= 30;
-      return InkWell(
-        onTap: () => PageUtils.pushDynDetail(orig),
-        onLongPress: () {
-          String? title, cover, bvid;
-          late var origMajor = orig.modules.moduleDynamic?.major;
-          late var major = item.modules.moduleDynamic?.major;
-          switch (orig.type) {
-            case 'DYNAMIC_TYPE_AV':
-              title = origMajor?.archive?.title;
-              cover = origMajor?.archive?.cover;
-              bvid = origMajor?.archive?.bvid;
-              break;
-            case 'DYNAMIC_TYPE_UGC_SEASON':
-              title = origMajor?.ugcSeason?.title;
-              cover = origMajor?.ugcSeason?.cover;
-              bvid = origMajor?.ugcSeason?.bvid;
-              break;
-            case 'DYNAMIC_TYPE_PGC' || 'DYNAMIC_TYPE_PGC_UNION':
-              title = origMajor?.pgc?.title;
-              cover = origMajor?.pgc?.cover;
-              break;
-            case 'DYNAMIC_TYPE_LIVE_RCMD':
-              title = major?.liveRcmd?.title;
-              cover = major?.liveRcmd?.cover;
-              break;
-            case 'DYNAMIC_TYPE_LIVE':
-              title = major?.live?.title;
-              cover = major?.live?.cover;
-              break;
-            default:
-              return;
-          }
-          imageSaveDialog(
-            title: title,
-            cover: cover,
-            bvid: bvid,
-          );
-        },
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
-          color: theme.dividerColor.withValues(alpha: 0.08),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  GestureDetector(
-                    onTap: isNormalAuth
-                        ? () => Get.toNamed(
-                            '/member?mid=${orig.modules.moduleAuthor!.mid}',
-                          )
-                        : null,
-                    child: Text(
-                      '${isNormalAuth ? '@' : ''}${orig.modules.moduleAuthor!.name}',
-                      style: TextStyle(color: theme.colorScheme.primary),
-                    ),
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    isSave
-                        ? DateUtil.format(
-                            orig.modules.moduleAuthor!.pubTs,
-                            format: DateUtil.longFormatDs,
-                          )
-                        : DateUtil.dateFormat(orig.modules.moduleAuthor!.pubTs),
-                    style: TextStyle(
-                      color: theme.colorScheme.outline,
-                      fontSize: theme.textTheme.labelSmall!.fontSize,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 5),
-              content(
-                theme,
-                isSave,
-                context,
-                orig,
-                isDetail,
-                callback,
-                floor: floor + 1,
-                maxWidth: maxWidth,
-              ),
-              module(
-                theme,
-                isSave,
-                orig,
-                context,
-                isDetail,
-                callback,
-                floor: floor + 1,
-                maxWidth: maxWidth,
-              ),
-              if (orig.modules.moduleDynamic?.additional != null)
-                addWidget(theme, orig, context, floor: floor + 1),
-              if (orig.modules.moduleDynamic?.major?.blocked != null)
-                blockedItem(
-                  theme,
-                  orig.modules.moduleDynamic!.major!.blocked!,
-                  maxWidth: maxWidth,
-                ),
-            ],
-          ),
-        ),
+      return forwardPanel(
+        context,
+        theme: theme,
+        isSave: isSave,
+        orig: item.orig!,
+        isDetail: isDetail,
+        floor: floor + 1,
+        maxWidth: maxWidth,
       );
     // 直播
     case 'DYNAMIC_TYPE_LIVE_RCMD':
       return liveRcmdPanel(
-        theme,
-        isDetail,
-        item,
         context,
+        theme: theme,
+        isDetail: isDetail,
+        item: item,
         floor: floor,
         maxWidth: maxWidth,
       );
     // 直播
     case 'DYNAMIC_TYPE_LIVE':
-      return livePanel(theme, isDetail, item, context, floor: floor);
-    case 'DYNAMIC_TYPE_NONE':
-      return Row(
-        spacing: 4,
-        children: [
-          const Icon(FontAwesomeIcons.ghost, size: 14),
-          Text(item.modules.moduleDynamic!.major!.none!.tips!),
-        ],
+      return livePanel(
+        context,
+        theme: theme,
+        item: item,
+        floor: floor,
+        isDetail: isDetail,
+        maxWidth: maxWidth,
       );
     // 活动
     case 'DYNAMIC_TYPE_COMMON_SQUARE':
@@ -225,7 +119,7 @@ Widget module(
           borderRadius: floor == 1 ? null : StyleString.mdRadius,
           onTap: () {
             try {
-              String url = item.modules.moduleDynamic!.major!.common!.jumpUrl!;
+              String url = major.common!.jumpUrl!;
               if (url.contains('bangumi/play') &&
                   PageUtils.viewPgcFromUri(url)) {
                 return;
@@ -272,7 +166,7 @@ Widget module(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        item.modules.moduleDynamic!.major!.common!.title!,
+                        major!.common!.title!,
                         style: TextStyle(color: theme.colorScheme.primary),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -286,7 +180,7 @@ Widget module(
                               ?.isNotEmpty ==
                           true)
                         Text(
-                          item.modules.moduleDynamic!.major!.common!.desc!,
+                          major.common!.desc!,
                           style: TextStyle(
                             color: theme.colorScheme.outline,
                             fontSize: theme.textTheme.labelMedium!.fontSize,
@@ -303,11 +197,10 @@ Widget module(
         ),
       );
     case 'DYNAMIC_TYPE_MUSIC':
-      final Map music = item.modules.moduleDynamic!.major!.music!;
+      final Map music = major!.music!;
       return InkWell(
         onTap: () => PageUtils.handleWebview("https:${music['jump_url']}"),
         child: Container(
-          width: double.infinity,
           padding: const EdgeInsets.only(
             left: 12,
             top: 10,
@@ -356,24 +249,22 @@ Widget module(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (floor == 1) const SizedBox(width: 12),
-          if (item.modules.moduleDynamic!.major!.medialist!.cover?.isNotEmpty ==
-              true) ...[
+          if (major?.medialist?.cover?.isNotEmpty == true) ...[
             Stack(
               clipBehavior: Clip.none,
               children: [
                 Hero(
-                  tag: item.modules.moduleDynamic!.major!.medialist!.cover!,
+                  tag: major!.medialist!.cover!,
                   child: NetworkImgLayer(
                     width: 180,
                     height: 110,
-                    src: item.modules.moduleDynamic!.major!.medialist!.cover,
+                    src: major.medialist!.cover,
                   ),
                 ),
                 PBadge(
                   right: 6,
                   top: 6,
-                  text:
-                      item.modules.moduleDynamic!.major!.medialist!.badge?.text,
+                  text: major.medialist!.badge?.text,
                 ),
               ],
             ),
@@ -388,17 +279,16 @@ Widget module(
                 children: [
                   const SizedBox(height: 4),
                   Text(
-                    item.modules.moduleDynamic!.major!.medialist!.title!,
+                    major!.medialist!.title!,
                     style: TextStyle(
                       fontSize: theme.textTheme.titleMedium!.fontSize,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  if (item.modules.moduleDynamic?.major?.medialist?.subTitle !=
-                      null) ...[
+                  if (major.medialist?.subTitle != null) ...[
                     const Spacer(),
                     Text(
-                      item.modules.moduleDynamic!.major!.medialist!.subTitle!,
+                      major.medialist!.subTitle!,
                       style: TextStyle(
                         fontSize: theme.textTheme.labelLarge!.fontSize,
                         color: theme.colorScheme.outline,
@@ -414,13 +304,12 @@ Widget module(
       );
 
     case 'DYNAMIC_TYPE_SUBSCRIPTION_NEW'
-        when item.modules.moduleDynamic?.major?.type ==
-            'MAJOR_TYPE_SUBSCRIPTION_NEW':
+        when major?.type == 'MAJOR_TYPE_SUBSCRIPTION_NEW':
       return livePanelSub(
-        theme,
-        isDetail,
-        item,
         context,
+        theme: theme,
+        isDetail: isDetail,
+        item: item,
         floor: floor,
         maxWidth: maxWidth,
       );

@@ -87,9 +87,7 @@ class _DynamicsTabPageState
         controller: controller.scrollController,
         slivers: [
           SliverPadding(
-            padding: EdgeInsets.only(
-              bottom: MediaQuery.viewPaddingOf(context).bottom + 100,
-            ),
+            padding: const EdgeInsets.only(bottom: 100),
             sliver: buildPage(
               Obx(() => _buildBody(controller.loadingState.value)),
             ),

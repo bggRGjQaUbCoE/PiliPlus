@@ -49,6 +49,7 @@ import 'package:dio/dio.dart';
 import 'package:easy_debounce/easy_throttle.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
@@ -1019,7 +1020,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     _gestureType = null;
   }
 
-  void onDoubleTapDown(TapDownDetails details) {
+  void onDoubleTapDownMobile(TapDownDetails details) {
     if (plPlayerController.controlsLock.value) {
       return;
     }
@@ -1047,11 +1048,33 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     plPlayerController.onDoubleTapCenter();
   }
 
-  void onDoubleTapDesktop([_]) {
+  void onDoubleTapDesktop() {
     if (plPlayerController.controlsLock.value) {
       return;
     }
     plPlayerController.triggerFullScreen(status: !isFullScreen);
+  }
+
+  void onTap(PointerDeviceKind? kind) {
+    switch (kind) {
+      case ui.PointerDeviceKind.mouse:
+        onTapDesktop();
+        break;
+      default:
+        plPlayerController.controls = !plPlayerController.showControls.value;
+        break;
+    }
+  }
+
+  void onDoubleTapDown(TapDownDetails details) {
+    switch (details.kind) {
+      case ui.PointerDeviceKind.mouse:
+        onDoubleTapDesktop();
+        break;
+      default:
+        onDoubleTapDownMobile(details);
+        break;
+    }
   }
 
   final isMobile = Utils.isMobile;
@@ -1095,18 +1118,17 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
               aspectRatio: videoFit.aspectRatio,
               dmWidget: widget.danmuWidget,
               transformationController: transformationController,
-              scaleEnabled: !plPlayerController.controlsLock.value,
-              enableShrinkVideoSize: plPlayerController.enableShrinkVideoSize,
+              scaleEnabled:
+                  !Utils.isDesktop && !plPlayerController.controlsLock.value,
+              enableShrinkVideoSize:
+                  !Utils.isDesktop && plPlayerController.enableShrinkVideoSize,
               onInteractionStart: _onInteractionStart,
               onInteractionUpdate: _onInteractionUpdate,
               onInteractionEnd: _onInteractionEnd,
               flipX: plPlayerController.flipX.value,
               flipY: plPlayerController.flipY.value,
-              onTap: isMobile
-                  ? () => plPlayerController.controls =
-                        !plPlayerController.showControls.value
-                  : onTapDesktop,
-              onDoubleTapDown: isMobile ? onDoubleTapDown : onDoubleTapDesktop,
+              onTap: onTap,
+              onDoubleTapDown: onDoubleTapDown,
               onLongPressStart: isLive
                   ? null
                   : (_) => plPlayerController.setLongPressStatus(true),
@@ -1750,21 +1772,28 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       ],
     );
     if (!isMobile) {
-      return Obx(
-        () => MouseRegion(
-          cursor: !plPlayerController.showControls.value && isFullScreen
-              ? SystemMouseCursors.none
-              : MouseCursor.defer,
-          onEnter: (event) {
-            plPlayerController.controls = true;
-          },
-          onHover: (event) {
-            plPlayerController.controls = true;
-          },
-          onExit: (event) {
-            plPlayerController.controls = false;
-          },
-          child: child,
+      return Listener(
+        onPointerSignal: (event) {
+          if (event is PointerScrollEvent) {
+            final offset = -event.scrollDelta.dy / 4000;
+            final volume = clampDouble(
+              plPlayerController.volume.value + offset,
+              0.0,
+              1.0,
+            );
+            plPlayerController.setVolume(volume);
+          }
+        },
+        child: Obx(
+          () => MouseRegion(
+            cursor: !plPlayerController.showControls.value && isFullScreen
+                ? SystemMouseCursors.none
+                : MouseCursor.defer,
+            onEnter: (_) => plPlayerController.controls = true,
+            onHover: (_) => plPlayerController.controls = true,
+            onExit: (_) => plPlayerController.controls = false,
+            child: child,
+          ),
         ),
       );
     }

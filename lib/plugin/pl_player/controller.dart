@@ -747,7 +747,7 @@ class PlPlayerController {
     }
   }
 
-  static final loudnormRegExp = RegExp('loudnorm=[^,]+');
+  static final loudnormRegExp = RegExp('loudnorm=([^,]+)');
 
   // 配置播放器
   Future<Player> _createVideoController(
@@ -837,7 +837,7 @@ class PlPlayerController {
     player.setPlaylistMode(looping);
 
     final Map<String, String>? filters;
-    if (kDebugMode || Platform.isAndroid) {
+    if (Platform.isAndroid) {
       String audioNormalization = '';
       audioNormalization = AudioNormalization.getParamFromConfig(
         Pref.audioNormalization,
@@ -845,7 +845,15 @@ class PlPlayerController {
       if (volume != null && volume.isNotEmpty) {
         audioNormalization = audioNormalization.replaceFirstMapped(
           loudnormRegExp,
-          (i) => '${i[0]}:$volume',
+          (i) =>
+              'loudnorm=${volume.format(
+                Map.fromEntries(
+                  i.group(1)!.split(':').map((item) {
+                    final parts = item.split('=');
+                    return MapEntry(parts[0].toLowerCase(), num.parse(parts[1]));
+                  }),
+                ),
+              )}',
         );
       } else {
         audioNormalization = audioNormalization.replaceFirst(

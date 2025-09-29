@@ -841,4 +841,7 @@ abstract class Pref {
 
   static bool get pauseOnMinimize =>
       _setting.get(SettingBoxKey.pauseOnMinimize, defaultValue: false);
+
+  static bool get showWindowTitleBar =>
+      _setting.get(SettingBoxKey.showWindowTitleBar, defaultValue: true);
 }

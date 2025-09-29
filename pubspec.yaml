@@ -205,7 +205,12 @@ dependencies:
   crclib: ^3.0.0
   web_socket_channel: ^3.0.3
   image: ^4.5.4
-  window_manager: ^0.5.1
+  # window_manager: ^0.5.1
+  window_manager:
+    git:
+      url: https://github.com/bggRGjQaUbCoE/window_manager.git
+      path: packages/window_manager
+      ref: main
   tray_manager: ^0.5.1
   file_picker: ^10.3.3
   super_sliver_list:
@@ -240,7 +245,7 @@ dependency_overrides:
       ref: version_1.2.5
   media_kit_video:
     git:
-      url: https://github.com/My-Responsitories/media-kit.git
+      url: https://github.com/bggRGjQaUbCoE/media-kit.git
       path: media_kit_video
       ref: version_1.2.5
   media_kit_libs_video:

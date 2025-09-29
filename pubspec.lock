@@ -1213,8 +1213,8 @@ packages:
     description:
       path: media_kit_video
       ref: "version_1.2.5"
-      resolved-ref: "4d68e69281b44f2c8e3c444cca3d8d8dc6dcff88"
-      url: "https://github.com/My-Responsitories/media-kit.git"
+      resolved-ref: ca662553c24e94a6b4bf587c7bf89196d0d54647
+      url: "https://github.com/bggRGjQaUbCoE/media-kit.git"
     source: git
     version: "1.2.5"
   menu_base:
@@ -2051,10 +2051,11 @@ packages:
   window_manager:
     dependency: "direct main"
     description:
-      name: window_manager
-      sha256: "7eb6d6c4164ec08e1bf978d6e733f3cebe792e2a23fb07cbca25c2872bfdbdcd"
-      url: "https://pub.dev"
-    source: hosted
+      path: "packages/window_manager"
+      ref: main
+      resolved-ref: "974ab0a71d37cfca9d9bd5b295d7bd1df80b790b"
+      url: "https://github.com/bggRGjQaUbCoE/window_manager.git"
+    source: git
     version: "0.5.1"
   xdg_directories:
     dependency: transitive

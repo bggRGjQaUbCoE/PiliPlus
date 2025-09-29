@@ -462,6 +462,11 @@ abstract class PageUtils {
         SmartDialog.showToast('暂未支持的类型，请联系开发者');
         break;
 
+      case 'DYNAMIC_TYPE_LIVE':
+        DynamicLive2Model liveRcmd = item.modules.moduleDynamic!.major!.live!;
+        toLiveRoom(liveRcmd.id);
+        break;
+
       case 'DYNAMIC_TYPE_LIVE_RCMD':
         DynamicLiveModel liveRcmd =
             item.modules.moduleDynamic!.major!.liveRcmd!;

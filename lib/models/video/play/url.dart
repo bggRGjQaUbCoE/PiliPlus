@@ -1,3 +1,5 @@
+import 'dart:math' show max, min;
+
 import 'package:PiliPlus/models/common/video/audio_quality.dart';
 import 'package:PiliPlus/models/common/video/video_quality.dart';
 import 'package:PiliPlus/utils/extension.dart';
@@ -341,9 +343,18 @@ class Volume {
     );
   }
 
-  @override
-  String toString() =>
-      'measured_I=$measuredI:measured_LRA=$measuredLra:measured_TP=$measuredTp:measured_thresh=$measuredThreshold';
+  String format(Map<String, num> config) {
+    final lra = max(config['lra'] ?? 11, measuredLra);
+    num i = config['i'] ?? targetI;
+    final tp = min(config['tp'] ?? targetTp, measuredTp);
+    final offset = config['offset'] ?? targetOffset;
+    num measuredI = this.measuredI;
+    if (measuredI > 0) {
+      i -= measuredI;
+      measuredI = 0;
+    }
+    return 'LRA=$lra:I=$i:TP=$tp:offset=$offset:linear=true:measured_I=$measuredI:measured_LRA=$measuredLra:measured_TP=$measuredTp:measured_thresh=$measuredThreshold';
+  }
 
   bool get isNotEmpty =>
       measuredI != 0 ||

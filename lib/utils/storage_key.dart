@@ -143,7 +143,8 @@ abstract class SettingBoxKey {
   static const String minimizeOnExit = 'minimizeOnExit',
       windowSize = 'windowSize',
       windowPosition = 'windowPosition',
-      isWindowMaximized = 'isWindowMaximized';
+      isWindowMaximized = 'isWindowMaximized',
+      showWindowTitleBar = 'showWindowTitleBar';
 
   static const String subtitlePreferenceV2 = 'subtitlePreferenceV2',
       enableDragSubtitle = 'enableDragSubtitle',

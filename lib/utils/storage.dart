@@ -86,24 +86,25 @@ abstract class GStorage {
       ..registerAdapter(RuleFilterAdapter());
   }
 
-  static void close() {
-    // user.compact();
-    // user.close();
-    userInfo
-      ..compact()
-      ..close();
-    historyWord
-      ..compact()
-      ..close();
-    localCache
-      ..compact()
-      ..close();
-    setting
-      ..compact()
-      ..close();
-    video
-      ..compact()
-      ..close();
-    Accounts.close();
+  static Future<void> compact() async {
+    await Future.wait([
+      userInfo.compact(),
+      historyWord.compact(),
+      localCache.compact(),
+      setting.compact(),
+      video.compact(),
+      Accounts.account.compact(),
+    ]);
+  }
+
+  static Future<void> close() async {
+    await Future.wait([
+      userInfo.close(),
+      historyWord.close(),
+      localCache.close(),
+      setting.close(),
+      video.close(),
+      Accounts.account.close(),
+    ]);
   }
 }

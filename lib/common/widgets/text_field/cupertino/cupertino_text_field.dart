@@ -1732,7 +1732,6 @@ class _CupertinoRichTextFieldState extends State<CupertinoRichTextField>
           child: EditableText(
             key: editableTextKey,
             controller: controller,
-            undoController: widget.undoController,
             readOnly: widget.readOnly || !enabled,
             toolbarOptions: widget.toolbarOptions,
             showCursor: widget.showCursor,

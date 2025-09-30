@@ -92,12 +92,6 @@ abstract class Accounts {
     Request.buvidActive(AnonymousAccount());
   }
 
-  static void close() {
-    account
-      ..compact()
-      ..close();
-  }
-
   static Future<void> deleteAll(Set<Account> accounts) async {
     var isloginMain = Accounts.main.isLogin;
     for (int i = 0; i < AccountType.values.length; i++) {

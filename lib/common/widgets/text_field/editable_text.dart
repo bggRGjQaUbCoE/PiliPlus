@@ -586,7 +586,6 @@ class EditableText extends StatefulWidget {
     this.contextMenuBuilder,
     this.spellCheckConfiguration,
     this.magnifierConfiguration = TextMagnifierConfiguration.disabled,
-    this.undoController,
   }) : assert(obscuringCharacter.length == 1),
        smartDashesType =
            smartDashesType ??
@@ -753,11 +752,6 @@ class EditableText extends StatefulWidget {
 
   /// The text style to use for the editable text.
   final TextStyle style;
-
-  /// Controls the undo state of the current editable text.
-  ///
-  /// If null, this widget will create its own [UndoHistoryController].
-  final UndoHistoryController? undoController;
 
   /// {@template flutter.widgets.editableText.strutStyle}
   /// The strut style used for the vertical layout.
@@ -1984,163 +1978,165 @@ class EditableText extends StatefulWidget {
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
-    properties.add(
-      DiagnosticsProperty<RichTextEditingController>('controller', controller),
-    );
-    properties.add(DiagnosticsProperty<FocusNode>('focusNode', focusNode));
-    properties.add(
-      DiagnosticsProperty<bool>(
-        'obscureText',
-        obscureText,
-        defaultValue: false,
-      ),
-    );
-    properties.add(
-      DiagnosticsProperty<bool>('readOnly', readOnly, defaultValue: false),
-    );
-    properties.add(
-      DiagnosticsProperty<bool>('autocorrect', autocorrect, defaultValue: true),
-    );
-    properties.add(
-      EnumProperty<SmartDashesType>(
-        'smartDashesType',
-        smartDashesType,
-        defaultValue: obscureText
-            ? SmartDashesType.disabled
-            : SmartDashesType.enabled,
-      ),
-    );
-    properties.add(
-      EnumProperty<SmartQuotesType>(
-        'smartQuotesType',
-        smartQuotesType,
-        defaultValue: obscureText
-            ? SmartQuotesType.disabled
-            : SmartQuotesType.enabled,
-      ),
-    );
-    properties.add(
-      DiagnosticsProperty<bool>(
-        'enableSuggestions',
-        enableSuggestions,
-        defaultValue: true,
-      ),
-    );
+    properties
+      ..add(
+        DiagnosticsProperty<RichTextEditingController>(
+          'controller',
+          controller,
+        ),
+      )
+      ..add(DiagnosticsProperty<FocusNode>('focusNode', focusNode))
+      ..add(
+        DiagnosticsProperty<bool>(
+          'obscureText',
+          obscureText,
+          defaultValue: false,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<bool>('readOnly', readOnly, defaultValue: false),
+      )
+      ..add(
+        DiagnosticsProperty<bool>(
+          'autocorrect',
+          autocorrect,
+          defaultValue: true,
+        ),
+      )
+      ..add(
+        EnumProperty<SmartDashesType>(
+          'smartDashesType',
+          smartDashesType,
+          defaultValue: obscureText
+              ? SmartDashesType.disabled
+              : SmartDashesType.enabled,
+        ),
+      )
+      ..add(
+        EnumProperty<SmartQuotesType>(
+          'smartQuotesType',
+          smartQuotesType,
+          defaultValue: obscureText
+              ? SmartQuotesType.disabled
+              : SmartQuotesType.enabled,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<bool>(
+          'enableSuggestions',
+          enableSuggestions,
+          defaultValue: true,
+        ),
+      );
     style.debugFillProperties(properties);
-    properties.add(
-      EnumProperty<TextAlign>('textAlign', textAlign, defaultValue: null),
-    );
-    properties.add(
-      EnumProperty<TextDirection>(
-        'textDirection',
-        textDirection,
-        defaultValue: null,
-      ),
-    );
-    properties.add(
-      DiagnosticsProperty<Locale>('locale', locale, defaultValue: null),
-    );
-    properties.add(
-      DiagnosticsProperty<TextScaler>(
-        'textScaler',
-        textScaler,
-        defaultValue: null,
-      ),
-    );
-    properties.add(IntProperty('maxLines', maxLines, defaultValue: 1));
-    properties.add(IntProperty('minLines', minLines, defaultValue: null));
-    properties.add(
-      DiagnosticsProperty<bool>('expands', expands, defaultValue: false),
-    );
-    properties.add(
-      DiagnosticsProperty<bool>('autofocus', autofocus, defaultValue: false),
-    );
-    properties.add(
-      DiagnosticsProperty<TextInputType>(
-        'keyboardType',
-        keyboardType,
-        defaultValue: null,
-      ),
-    );
-    properties.add(
-      DiagnosticsProperty<ScrollController>(
-        'scrollController',
-        scrollController,
-        defaultValue: null,
-      ),
-    );
-    properties.add(
-      DiagnosticsProperty<ScrollPhysics>(
-        'scrollPhysics',
-        scrollPhysics,
-        defaultValue: null,
-      ),
-    );
-    properties.add(
-      DiagnosticsProperty<Iterable<String>>(
-        'autofillHints',
-        autofillHints,
-        defaultValue: null,
-      ),
-    );
-    properties.add(
-      DiagnosticsProperty<TextHeightBehavior>(
-        'textHeightBehavior',
-        textHeightBehavior,
-        defaultValue: null,
-      ),
-    );
-    properties.add(
-      DiagnosticsProperty<bool>(
-        'scribbleEnabled',
-        scribbleEnabled,
-        defaultValue: true,
-      ),
-    );
-    properties.add(
-      DiagnosticsProperty<bool>(
-        'stylusHandwritingEnabled',
-        stylusHandwritingEnabled,
-        defaultValue: defaultStylusHandwritingEnabled,
-      ),
-    );
-    properties.add(
-      DiagnosticsProperty<bool>(
-        'enableIMEPersonalizedLearning',
-        enableIMEPersonalizedLearning,
-        defaultValue: true,
-      ),
-    );
-    properties.add(
-      DiagnosticsProperty<bool>(
-        'enableInteractiveSelection',
-        enableInteractiveSelection,
-        defaultValue: true,
-      ),
-    );
-    properties.add(
-      DiagnosticsProperty<UndoHistoryController>(
-        'undoController',
-        undoController,
-        defaultValue: null,
-      ),
-    );
-    properties.add(
-      DiagnosticsProperty<SpellCheckConfiguration>(
-        'spellCheckConfiguration',
-        spellCheckConfiguration,
-        defaultValue: null,
-      ),
-    );
-    properties.add(
-      DiagnosticsProperty<List<String>>(
-        'contentCommitMimeTypes',
-        contentInsertionConfiguration?.allowedMimeTypes ?? const <String>[],
-        defaultValue: contentInsertionConfiguration == null
-            ? const <String>[]
-            : kDefaultContentInsertionMimeTypes,
-      ),
-    );
+    properties
+      ..add(
+        EnumProperty<TextAlign>('textAlign', textAlign, defaultValue: null),
+      )
+      ..add(
+        EnumProperty<TextDirection>(
+          'textDirection',
+          textDirection,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<Locale>('locale', locale, defaultValue: null),
+      )
+      ..add(
+        DiagnosticsProperty<TextScaler>(
+          'textScaler',
+          textScaler,
+          defaultValue: null,
+        ),
+      )
+      ..add(IntProperty('maxLines', maxLines, defaultValue: 1))
+      ..add(IntProperty('minLines', minLines, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<bool>('expands', expands, defaultValue: false),
+      )
+      ..add(
+        DiagnosticsProperty<bool>('autofocus', autofocus, defaultValue: false),
+      )
+      ..add(
+        DiagnosticsProperty<TextInputType>(
+          'keyboardType',
+          keyboardType,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<ScrollController>(
+          'scrollController',
+          scrollController,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<ScrollPhysics>(
+          'scrollPhysics',
+          scrollPhysics,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<Iterable<String>>(
+          'autofillHints',
+          autofillHints,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<TextHeightBehavior>(
+          'textHeightBehavior',
+          textHeightBehavior,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<bool>(
+          'scribbleEnabled',
+          scribbleEnabled,
+          defaultValue: true,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<bool>(
+          'stylusHandwritingEnabled',
+          stylusHandwritingEnabled,
+          defaultValue: defaultStylusHandwritingEnabled,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<bool>(
+          'enableIMEPersonalizedLearning',
+          enableIMEPersonalizedLearning,
+          defaultValue: true,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<bool>(
+          'enableInteractiveSelection',
+          enableInteractiveSelection,
+          defaultValue: true,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<SpellCheckConfiguration>(
+          'spellCheckConfiguration',
+          spellCheckConfiguration,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<List<String>>(
+          'contentCommitMimeTypes',
+          contentInsertionConfiguration?.allowedMimeTypes ?? const <String>[],
+          defaultValue: contentInsertionConfiguration == null
+              ? const <String>[]
+              : kDefaultContentInsertionMimeTypes,
+        ),
+      );
   }
 }
 
@@ -5813,178 +5809,123 @@ class EditableTextState extends State<EditableText>
               debugLabel: kReleaseMode ? null : 'EditableText',
               child: MouseRegion(
                 cursor: widget.mouseCursor ?? SystemMouseCursors.text,
-                child: UndoHistory<TextEditingValue>(
-                  value: widget.controller,
-                  onTriggered: (TextEditingValue value) {
-                    userUpdateTextEditingValue(
-                      value,
-                      SelectionChangedCause.keyboard,
-                    );
-                  },
-                  shouldChangeUndoStack:
-                      (TextEditingValue? oldValue, TextEditingValue newValue) {
-                        if (!newValue.selection.isValid) {
-                          return false;
-                        }
-
-                        if (oldValue == null) {
-                          return true;
-                        }
-
-                        switch (defaultTargetPlatform) {
-                          case TargetPlatform.iOS:
-                          case TargetPlatform.macOS:
-                          case TargetPlatform.fuchsia:
-                          case TargetPlatform.linux:
-                          case TargetPlatform.windows:
-                            // Composing text is not counted in history coalescing.
-                            if (!widget
-                                .controller
-                                .value
-                                .composing
-                                .isCollapsed) {
-                              return false;
-                            }
-                          case TargetPlatform.android:
-                            // Gboard on Android puts non-CJK words in composing regions. Coalesce
-                            // composing text in order to allow the saving of partial words in that
-                            // case.
-                            break;
-                        }
-
-                        return oldValue.text != newValue.text ||
-                            oldValue.composing != newValue.composing;
-                      },
-                  undoStackModifier: (TextEditingValue value) {
-                    // On Android we should discard the composing region when pushing
-                    // a new entry to the undo stack. This prevents the TextInputPlugin
-                    // from restarting the input on every undo/redo when the composing
-                    // region is changed by the framework.
-                    return defaultTargetPlatform == TargetPlatform.android
-                        ? value.copyWith(composing: TextRange.empty)
-                        : value;
-                  },
+                child: Focus(
                   focusNode: widget.focusNode,
-                  controller: widget.undoController,
-                  child: Focus(
-                    focusNode: widget.focusNode,
-                    includeSemantics: false,
-                    debugLabel: kReleaseMode ? null : 'EditableText',
-                    child: NotificationListener<ScrollNotification>(
-                      onNotification: (ScrollNotification notification) {
-                        _handleContextMenuOnScroll(notification);
-                        _scribbleCacheKey = null;
-                        return false;
-                      },
-                      child: Scrollable(
-                        key: _scrollableKey,
-                        excludeFromSemantics: true,
-                        axisDirection: _isMultiline
-                            ? AxisDirection.down
-                            : AxisDirection.right,
-                        controller: _scrollController,
-                        physics: widget.scrollPhysics,
-                        dragStartBehavior: widget.dragStartBehavior,
-                        restorationId: widget.restorationId,
-                        // If a ScrollBehavior is not provided, only apply scrollbars when
-                        // multiline. The overscroll indicator should not be applied in
-                        // either case, glowing or stretching.
-                        scrollBehavior:
-                            widget.scrollBehavior ??
-                            ScrollConfiguration.of(
-                              context,
-                            ).copyWith(
-                              scrollbars: _isMultiline,
-                              overscroll: false,
-                            ),
-                        viewportBuilder:
-                            (BuildContext context, ViewportOffset offset) {
-                              return CompositedTransformTarget(
-                                link: _toolbarLayerLink,
-                                child: Semantics(
-                                  inputType: inputType,
-                                  onCopy: _semanticsOnCopy(controls),
-                                  onCut: _semanticsOnCut(controls),
-                                  onPaste: _semanticsOnPaste(controls),
-                                  child: _ScribbleFocusable(
-                                    editableKey: _editableKey,
-                                    enabled: _stylusHandwritingEnabled,
-                                    focusNode: widget.focusNode,
-                                    updateSelectionRects: () {
-                                      _openInputConnection();
-                                      _updateSelectionRects(force: true);
-                                    },
-                                    child: SizeChangedLayoutNotifier(
-                                      child: _Editable(
-                                        key: _editableKey,
-                                        controller: widget.controller,
-                                        startHandleLayerLink:
-                                            _startHandleLayerLink,
-                                        endHandleLayerLink: _endHandleLayerLink,
-                                        inlineSpan: buildTextSpan(),
-                                        value: _value,
-                                        cursorColor: _cursorColor,
-                                        backgroundCursorColor:
-                                            widget.backgroundCursorColor,
-                                        showCursor: _cursorVisibilityNotifier,
-                                        forceLine: widget.forceLine,
-                                        readOnly: widget.readOnly,
-                                        hasFocus: _hasFocus,
-                                        maxLines: widget.maxLines,
-                                        minLines: widget.minLines,
-                                        expands: widget.expands,
-                                        strutStyle: widget.strutStyle,
-                                        selectionColor:
-                                            _selectionOverlay
-                                                    ?.spellCheckToolbarIsVisible ??
-                                                false
-                                            ? _spellCheckConfiguration
-                                                      .misspelledSelectionColor ??
-                                                  widget.selectionColor
-                                            : widget.selectionColor,
-                                        textScaler: effectiveTextScaler,
-                                        textAlign: widget.textAlign,
-                                        textDirection: _textDirection,
-                                        locale: widget.locale,
-                                        textHeightBehavior:
-                                            widget.textHeightBehavior ??
-                                            DefaultTextHeightBehavior.maybeOf(
-                                              context,
-                                            ),
-                                        textWidthBasis: widget.textWidthBasis,
-                                        obscuringCharacter:
-                                            widget.obscuringCharacter,
-                                        obscureText: widget.obscureText,
-                                        offset: offset,
-                                        rendererIgnoresPointer:
-                                            widget.rendererIgnoresPointer,
-                                        cursorWidth: widget.cursorWidth,
-                                        cursorHeight: widget.cursorHeight,
-                                        cursorRadius: widget.cursorRadius,
-                                        cursorOffset:
-                                            widget.cursorOffset ?? Offset.zero,
-                                        selectionHeightStyle:
-                                            widget.selectionHeightStyle,
-                                        selectionWidthStyle:
-                                            widget.selectionWidthStyle,
-                                        paintCursorAboveText:
-                                            widget.paintCursorAboveText,
-                                        enableInteractiveSelection:
-                                            widget._userSelectionEnabled,
-                                        textSelectionDelegate: this,
-                                        devicePixelRatio: _devicePixelRatio,
-                                        promptRectRange:
-                                            _currentPromptRectRange,
-                                        promptRectColor:
-                                            widget.autocorrectionTextRectColor,
-                                        clipBehavior: widget.clipBehavior,
-                                      ),
+                  includeSemantics: false,
+                  debugLabel: kReleaseMode ? null : 'EditableText',
+                  child: NotificationListener<ScrollNotification>(
+                    onNotification: (ScrollNotification notification) {
+                      _handleContextMenuOnScroll(notification);
+                      _scribbleCacheKey = null;
+                      return false;
+                    },
+                    child: Scrollable(
+                      key: _scrollableKey,
+                      excludeFromSemantics: true,
+                      axisDirection: _isMultiline
+                          ? AxisDirection.down
+                          : AxisDirection.right,
+                      controller: _scrollController,
+                      physics: widget.scrollPhysics,
+                      dragStartBehavior: widget.dragStartBehavior,
+                      restorationId: widget.restorationId,
+                      // If a ScrollBehavior is not provided, only apply scrollbars when
+                      // multiline. The overscroll indicator should not be applied in
+                      // either case, glowing or stretching.
+                      scrollBehavior:
+                          widget.scrollBehavior ??
+                          ScrollConfiguration.of(
+                            context,
+                          ).copyWith(
+                            scrollbars: _isMultiline,
+                            overscroll: false,
+                          ),
+                      viewportBuilder:
+                          (BuildContext context, ViewportOffset offset) {
+                            return CompositedTransformTarget(
+                              link: _toolbarLayerLink,
+                              child: Semantics(
+                                inputType: inputType,
+                                onCopy: _semanticsOnCopy(controls),
+                                onCut: _semanticsOnCut(controls),
+                                onPaste: _semanticsOnPaste(controls),
+                                child: _ScribbleFocusable(
+                                  editableKey: _editableKey,
+                                  enabled: _stylusHandwritingEnabled,
+                                  focusNode: widget.focusNode,
+                                  updateSelectionRects: () {
+                                    _openInputConnection();
+                                    _updateSelectionRects(force: true);
+                                  },
+                                  child: SizeChangedLayoutNotifier(
+                                    child: _Editable(
+                                      key: _editableKey,
+                                      controller: widget.controller,
+                                      startHandleLayerLink:
+                                          _startHandleLayerLink,
+                                      endHandleLayerLink: _endHandleLayerLink,
+                                      inlineSpan: buildTextSpan(),
+                                      value: _value,
+                                      cursorColor: _cursorColor,
+                                      backgroundCursorColor:
+                                          widget.backgroundCursorColor,
+                                      showCursor: _cursorVisibilityNotifier,
+                                      forceLine: widget.forceLine,
+                                      readOnly: widget.readOnly,
+                                      hasFocus: _hasFocus,
+                                      maxLines: widget.maxLines,
+                                      minLines: widget.minLines,
+                                      expands: widget.expands,
+                                      strutStyle: widget.strutStyle,
+                                      selectionColor:
+                                          _selectionOverlay
+                                                  ?.spellCheckToolbarIsVisible ??
+                                              false
+                                          ? _spellCheckConfiguration
+                                                    .misspelledSelectionColor ??
+                                                widget.selectionColor
+                                          : widget.selectionColor,
+                                      textScaler: effectiveTextScaler,
+                                      textAlign: widget.textAlign,
+                                      textDirection: _textDirection,
+                                      locale: widget.locale,
+                                      textHeightBehavior:
+                                          widget.textHeightBehavior ??
+                                          DefaultTextHeightBehavior.maybeOf(
+                                            context,
+                                          ),
+                                      textWidthBasis: widget.textWidthBasis,
+                                      obscuringCharacter:
+                                          widget.obscuringCharacter,
+                                      obscureText: widget.obscureText,
+                                      offset: offset,
+                                      rendererIgnoresPointer:
+                                          widget.rendererIgnoresPointer,
+                                      cursorWidth: widget.cursorWidth,
+                                      cursorHeight: widget.cursorHeight,
+                                      cursorRadius: widget.cursorRadius,
+                                      cursorOffset:
+                                          widget.cursorOffset ?? Offset.zero,
+                                      selectionHeightStyle:
+                                          widget.selectionHeightStyle,
+                                      selectionWidthStyle:
+                                          widget.selectionWidthStyle,
+                                      paintCursorAboveText:
+                                          widget.paintCursorAboveText,
+                                      enableInteractiveSelection:
+                                          widget._userSelectionEnabled,
+                                      textSelectionDelegate: this,
+                                      devicePixelRatio: _devicePixelRatio,
+                                      promptRectRange: _currentPromptRectRange,
+                                      promptRectColor:
+                                          widget.autocorrectionTextRectColor,
+                                      clipBehavior: widget.clipBehavior,
                                     ),
                                   ),
                                 ),
-                              );
-                            },
-                      ),
+                              ),
+                            );
+                          },
                     ),
                   ),
                 ),

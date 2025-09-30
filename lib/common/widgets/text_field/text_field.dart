@@ -273,7 +273,6 @@ class RichTextField extends StatefulWidget {
     this.groupId = EditableText,
     required this.controller,
     this.focusNode,
-    this.undoController,
     this.decoration = const InputDecoration(),
     TextInputType? keyboardType,
     this.textInputAction,
@@ -884,9 +883,6 @@ class RichTextField extends StatefulWidget {
   /// be possible to move the focus to the text field with tab key.
   final bool canRequestFocus;
 
-  /// {@macro flutter.widgets.undoHistory.controller}
-  final UndoHistoryController? undoController;
-
   static Widget _defaultContextMenuBuilder(
     BuildContext context,
     EditableTextState editableTextState,
@@ -992,13 +988,6 @@ class RichTextField extends StatefulWidget {
         DiagnosticsProperty<FocusNode>(
           'focusNode',
           focusNode,
-          defaultValue: null,
-        ),
-      )
-      ..add(
-        DiagnosticsProperty<UndoHistoryController>(
-          'undoController',
-          undoController,
           defaultValue: null,
         ),
       )
@@ -1840,7 +1829,6 @@ class RichTextFieldState extends State<RichTextField>
           showSelectionHandles: _showSelectionHandles,
           controller: controller,
           focusNode: focusNode,
-          undoController: widget.undoController,
           keyboardType: widget.keyboardType,
           textInputAction: widget.textInputAction,
           textCapitalization: widget.textCapitalization,

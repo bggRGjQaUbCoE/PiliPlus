@@ -135,7 +135,7 @@ class _FansPageState extends State<FansPage> {
           }
           Get.toNamed('/member?mid=${item.mid}');
         },
-        onLongPress: flag && Utils.isMobile ? onRemove : null,
+        onLongPress: flag ? onRemove : null,
         onSecondaryTap: flag && !Utils.isMobile ? onRemove : null,
         child: Padding(
           padding: const EdgeInsets.symmetric(

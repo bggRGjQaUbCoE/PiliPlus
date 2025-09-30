@@ -107,7 +107,7 @@ abstract class CommonRichTextPubPageState<T extends CommonRichTextPubPage>
             );
             controller.restoreChatPanel();
           },
-          onLongPress: Utils.isMobile ? onClear : null,
+          onLongPress: onClear,
           onSecondaryTap: Utils.isMobile ? null : onClear,
           child: ClipRRect(
             borderRadius: const BorderRadius.all(Radius.circular(4)),

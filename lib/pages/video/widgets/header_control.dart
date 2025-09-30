@@ -2158,9 +2158,8 @@ class HeaderControlState extends State<HeaderControl> {
                         plPlayerController.toggleDesktopPip();
                         return;
                       }
-                      bool canUsePiP = await Floating().isPipAvailable;
-                      plPlayerController.hiddenControls(false);
-                      if (canUsePiP) {
+                      if (await Floating().isPipAvailable) {
+                        plPlayerController.hiddenControls(false);
                         if (context.mounted &&
                             !videoPlayerServiceHandler!.enableBackgroundPlay) {
                           final theme = Theme.of(context);
@@ -2236,10 +2235,7 @@ class HeaderControlState extends State<HeaderControl> {
                           await Future.delayed(const Duration(seconds: 3));
                         }
                         if (!context.mounted) return;
-                        PageUtils.enterPip(
-                          width: widget.videoDetailCtr.firstVideo.width,
-                          height: widget.videoDetailCtr.firstVideo.height,
-                        );
+                        plPlayerController.enterPip();
                       }
                     },
                     icon: const Icon(

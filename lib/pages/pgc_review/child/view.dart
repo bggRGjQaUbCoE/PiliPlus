@@ -191,7 +191,7 @@ class _PgcReviewChildPageState extends State<PgcReviewChildPage>
                 },
               )
             : null,
-        onLongPress: !isLongReview && Utils.isMobile ? showMore : null,
+        onLongPress: !isLongReview ? showMore : null,
         onSecondaryTap: !isLongReview && !Utils.isMobile ? showMore : null,
         child: Padding(
           padding: const EdgeInsets.all(12),

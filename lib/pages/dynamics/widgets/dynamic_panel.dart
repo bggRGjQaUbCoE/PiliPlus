@@ -66,7 +66,7 @@ class DynamicPanel extends StatelessWidget {
                 }.contains(item.type)
             ? null
             : () => PageUtils.pushDynDetail(item),
-        onLongPress: Utils.isMobile ? showMore : null,
+        onLongPress: showMore,
         onSecondaryTap: Utils.isMobile ? null : showMore,
         child: Column(
           mainAxisSize: MainAxisSize.min,

@@ -44,7 +44,7 @@ class FavNoteItem extends StatelessWidget {
             );
           }
         },
-        onLongPress: Utils.isMobile ? onLongPress : null,
+        onLongPress: onLongPress,
         onSecondaryTap: Utils.isMobile ? null : onLongPress,
         child: Padding(
           padding: const EdgeInsets.symmetric(

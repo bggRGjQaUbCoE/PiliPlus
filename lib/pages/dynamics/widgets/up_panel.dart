@@ -48,7 +48,7 @@ class _UpPanelState extends State<UpPanel> {
             onTap: () => setState(() {
               controller.showLiveUp = !controller.showLiveUp;
             }),
-            onLongPress: Utils.isMobile ? toFollowPage : null,
+            onLongPress: toFollowPage,
             onSecondaryTap: Utils.isMobile ? null : toFollowPage,
             child: Container(
               alignment: Alignment.center,
@@ -161,7 +161,7 @@ class _UpPanelState extends State<UpPanel> {
           }
         },
         // onDoubleTap: isLive ? () => _onSelect(data) : null,
-        onLongPress: !isAll && Utils.isMobile ? toMemberPage : null,
+        onLongPress: !isAll ? toMemberPage : null,
         onSecondaryTap: !isAll && !Utils.isMobile ? toMemberPage : null,
         child: AnimatedOpacity(
           opacity: isCurrent ? 1 : 0.6,

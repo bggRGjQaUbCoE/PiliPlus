@@ -99,7 +99,7 @@ Widget forwardPanel(
 
   return InkWell(
     onTap: () => PageUtils.pushDynDetail(orig),
-    onLongPress: Utils.isMobile ? showMore : null,
+    onLongPress: showMore,
     onSecondaryTap: Utils.isMobile ? null : showMore,
     child: child,
   );

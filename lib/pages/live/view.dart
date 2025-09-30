@@ -288,12 +288,10 @@ class _LivePageState extends CommonPageState<LivePage, LiveController>
           child: GestureDetector(
             behavior: HitTestBehavior.opaque,
             onTap: () => PageUtils.toLiveRoom(item.roomid),
-            onLongPress: Utils.isMobile
-                ? () {
-                    Feedback.forLongPress(context);
-                    Get.toNamed('/member?mid=${item.uid}');
-                  }
-                : null,
+            onLongPress: () {
+              Feedback.forLongPress(context);
+              Get.toNamed('/member?mid=${item.uid}');
+            },
             onSecondaryTap: Utils.isMobile
                 ? null
                 : () => Get.toNamed('/member?mid=${item.uid}'),

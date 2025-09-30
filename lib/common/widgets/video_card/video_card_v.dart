@@ -79,7 +79,7 @@ class VideoCardV extends StatelessWidget {
           clipBehavior: Clip.hardEdge,
           child: InkWell(
             onTap: () => onPushDetail(Utils.makeHeroTag(videoItem.aid)),
-            onLongPress: Utils.isMobile ? onLongPress : null,
+            onLongPress: onLongPress,
             onSecondaryTap: Utils.isMobile ? null : onLongPress,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

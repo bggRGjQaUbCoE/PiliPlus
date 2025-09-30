@@ -286,9 +286,7 @@ class _InteractiveviewerGalleryState extends State<InteractiveviewerGallery>
                   const Duration(milliseconds: 555),
                   onDoubleTap,
                 ),
-                onLongPress: !isFileImg && Utils.isMobile
-                    ? () => onLongPress(item)
-                    : null,
+                onLongPress: !isFileImg ? () => onLongPress(item) : null,
                 onSecondaryTap: !isFileImg && !Utils.isMobile
                     ? () => onLongPress(item)
                     : null,

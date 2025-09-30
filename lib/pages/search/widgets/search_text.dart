@@ -32,9 +32,7 @@ class SearchText extends StatelessWidget {
       borderRadius: const BorderRadius.all(Radius.circular(6)),
       child: InkWell(
         onTap: () => onTap?.call(text),
-        onLongPress: hasLongPress && Utils.isMobile
-            ? () => onLongPress!(text)
-            : null,
+        onLongPress: hasLongPress ? () => onLongPress!(text) : null,
         onSecondaryTap: hasLongPress && !Utils.isMobile
             ? () => onLongPress!(text)
             : null,

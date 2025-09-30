@@ -104,12 +104,10 @@ class ReplyItemGrpc extends StatelessWidget {
           feedBack();
           replyReply?.call(replyItem, null);
         },
-        onLongPress: isMobile
-            ? () {
-                feedBack();
-                showMore();
-              }
-            : null,
+        onLongPress: () {
+          feedBack();
+          showMore();
+        },
         onSecondaryTap: isMobile ? null : showMore,
         child: _buildContent(context, theme),
       ),
@@ -499,12 +497,10 @@ class ReplyItemGrpc extends StatelessWidget {
                 return InkWell(
                   onTap: () =>
                       replyReply?.call(replyItem, childReply.id.toInt()),
-                  onLongPress: Utils.isMobile
-                      ? () {
-                          feedBack();
-                          showMore();
-                        }
-                      : null,
+                  onLongPress: () {
+                    feedBack();
+                    showMore();
+                  },
                   onSecondaryTap: Utils.isMobile ? null : showMore,
                   child: Padding(
                     padding: padding,

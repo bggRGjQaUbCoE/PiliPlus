@@ -97,7 +97,7 @@ class _FavTopicPageState extends State<FavTopicPage>
                           'name': item.name!,
                         },
                       ),
-                      onLongPress: Utils.isMobile ? onLongPress : null,
+                      onLongPress: onLongPress,
                       onSecondaryTap: Utils.isMobile ? null : onLongPress,
                       borderRadius: const BorderRadius.all(
                         Radius.circular(6),

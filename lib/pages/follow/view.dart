@@ -106,12 +106,10 @@ class _FollowPageState extends State<FollowPage> {
                   if (_isCustomTag(item.tagid)) {
                     return GestureDetector(
                       behavior: HitTestBehavior.translucent,
-                      onLongPress: Utils.isMobile
-                          ? () {
-                              Feedback.forLongPress(context);
-                              _onHandleTag(index, item);
-                            }
-                          : null,
+                      onLongPress: () {
+                        Feedback.forLongPress(context);
+                        _onHandleTag(index, item);
+                      },
                       onSecondaryTap: Utils.isMobile
                           ? null
                           : () => _onHandleTag(index, item),

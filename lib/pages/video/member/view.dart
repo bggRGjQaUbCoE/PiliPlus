@@ -1,3 +1,4 @@
+import 'package:PiliPlus/common/skeleton/video_card_h.dart';
 import 'package:PiliPlus/common/widgets/button/icon_button.dart';
 import 'package:PiliPlus/common/widgets/custom_sliver_persistent_header_delegate.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
@@ -16,7 +17,6 @@ import 'package:PiliPlus/pages/video/introduction/ugc/controller.dart';
 import 'package:PiliPlus/pages/video/member/controller.dart';
 import 'package:PiliPlus/services/account_service.dart';
 import 'package:PiliPlus/utils/extension.dart';
-import 'package:PiliPlus/utils/grid.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/request_utils.dart';
@@ -41,11 +41,10 @@ class HorizontalMemberPage extends StatefulWidget {
   State<HorizontalMemberPage> createState() => _HorizontalMemberPageState();
 }
 
-class _HorizontalMemberPageState extends State<HorizontalMemberPage>
-    with GridMixin {
+class _HorizontalMemberPageState extends State<HorizontalMemberPage> {
   late final HorizontalMemberPageController _controller;
   AccountService accountService = Get.find<AccountService>();
-  dynamic _bvid;
+  late final String _bvid;
 
   @override
   void initState() {
@@ -58,6 +57,15 @@ class _HorizontalMemberPageState extends State<HorizontalMemberPage>
       tag: widget.videoDetailController.heroTag,
     );
     _bvid = widget.videoDetailController.bvid;
+    if (_controller.loadingState.value
+        case Success<List<SpaceArchiveItem>?> res) {
+      final index = res.response?.indexWhere((e) => e.bvid == _bvid) ?? -1;
+      if (index != -1) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _controller.scrollController.jumpTo(100.0 * index + 40);
+        });
+      }
+    }
   }
 
   @override
@@ -180,32 +188,39 @@ class _HorizontalMemberPageState extends State<HorizontalMemberPage>
     LoadingState<List<SpaceArchiveItem>?> loadingState,
   ) {
     return switch (loadingState) {
-      Loading() => gridSkeleton,
+      Loading() => SliverPrototypeExtentList.builder(
+        itemCount: 10,
+        itemBuilder: (_, _) => const VideoCardHSkeleton(),
+        prototypeItem: const VideoCardHSkeleton(),
+      ),
       Success(:var response) =>
         response?.isNotEmpty == true
-            ? SliverGrid.builder(
-                gridDelegate: gridDelegate,
+            ? SliverFixedExtentList.builder(
                 itemBuilder: (context, index) {
                   if (index == response.length - 1 && _controller.hasNext) {
                     _controller.onLoadMore();
                   }
                   final SpaceArchiveItem videoItem = response[index];
-                  return VideoCardHMemberVideo(
-                    videoItem: videoItem,
-                    bvid: _bvid,
-                    onTap: () {
-                      Get.back();
-                      widget.ugcIntroController.onChangeEpisode(
-                        BaseEpisodeItem(
-                          bvid: videoItem.bvid,
-                          cid: videoItem.cid,
-                          cover: videoItem.cover,
-                        ),
-                      );
-                    },
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 2),
+                    child: VideoCardHMemberVideo(
+                      videoItem: videoItem,
+                      bvid: _bvid,
+                      onTap: () {
+                        Get.back();
+                        widget.ugcIntroController.onChangeEpisode(
+                          BaseEpisodeItem(
+                            bvid: videoItem.bvid,
+                            cid: videoItem.cid,
+                            cover: videoItem.cover,
+                          ),
+                        );
+                      },
+                    ),
                   );
                 },
                 itemCount: response!.length,
+                itemExtent: 100,
               )
             : HttpError(onReload: _controller.onReload),
       Error(:var errMsg) => HttpError(

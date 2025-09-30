@@ -1,6 +1,6 @@
 import 'dart:io';
 
-void main() async {
+void main(Iterable<String> args) async {
   final pubspecFile = File('pubspec.yaml');
   final lines = await pubspecFile.readAsLines();
 
@@ -18,7 +18,7 @@ void main() async {
     'HEAD',
   ])).stdout.toString().trim();
 
-  if (Platform.isLinux) {
+  if (args.isNotEmpty) {
     versionName += '-${commitHash.substring(0, 9)}';
   }
 

@@ -262,14 +262,16 @@ class PlPlayerController {
   late bool isDesktopPip = false;
   late Rect _lastWindowBounds;
 
-  void exitDesktopPip() {
-    isDesktopPip = false;
+  Offset initialFocalPoint = Offset.zero;
 
-    windowManager
-      ..setTitleBarStyle(TitleBarStyle.normal)
-      ..setMinimumSize(const Size(400, 700))
-      ..setBounds(_lastWindowBounds)
-      ..setAlwaysOnTop(false);
+  Future<void> exitDesktopPip() async {
+    isDesktopPip = false;
+    await Future.wait([
+      windowManager.setTitleBarStyle(TitleBarStyle.normal),
+      windowManager.setMinimumSize(const Size(400, 700)),
+      windowManager.setBounds(_lastWindowBounds),
+      windowManager.setAlwaysOnTop(false),
+    ]);
   }
 
   Future<void> enterDesktopPip() async {
@@ -304,8 +306,12 @@ class PlPlayerController {
   }
 
   void enterPip() {
-    if (Get.currentRoute.startsWith('/video')) {
-      PageUtils.enterPip(width: width, height: height);
+    if (videoController != null) {
+      final state = videoController!.player.state;
+      PageUtils.enterPip(
+        width: state.width ?? width,
+        height: state.height ?? height,
+      );
     }
   }
 
@@ -547,7 +553,8 @@ class PlPlayerController {
     if (Platform.isAndroid && autoPiP) {
       Utils.channel.setMethodCallHandler((call) async {
         if (call.method == 'onUserLeaveHint') {
-          if (playerStatus.status.value == PlayerStatus.playing) {
+          if (playerStatus.status.value == PlayerStatus.playing &&
+              Get.currentRoute.startsWith('/video')) {
             enterPip();
           }
         }

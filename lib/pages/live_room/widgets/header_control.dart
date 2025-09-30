@@ -118,17 +118,11 @@ class LiveHeaderControl extends StatelessWidget {
                   plPlayerController.toggleDesktopPip();
                   return;
                 }
-                try {
-                  var floating = Floating();
-                  if ((await floating.isPipAvailable) == true) {
-                    plPlayerController.hiddenControls(false);
-                    floating.enable(
-                      plPlayerController.isVertical
-                          ? const EnableManual(aspectRatio: Rational.vertical())
-                          : const EnableManual(),
-                    );
-                  }
-                } catch (_) {}
+                if (await Floating().isPipAvailable) {
+                  plPlayerController
+                    ..hiddenControls(false)
+                    ..enterPip();
+                }
               },
               icon: const Icon(
                 size: 18,

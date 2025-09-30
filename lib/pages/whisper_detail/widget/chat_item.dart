@@ -84,13 +84,11 @@ class ChatItem extends StatelessWidget {
                       textColor: textColor,
                     )
                   : GestureDetector(
-                      onLongPress: onLongPress != null && Utils.isMobile
-                          ? () {
-                              Feedback.forLongPress(context);
-                              onLongPress!();
-                            }
-                          : null,
-                      onSecondaryTap: !Utils.isMobile ? onLongPress : null,
+                      onLongPress: () {
+                        Feedback.forLongPress(context);
+                        onLongPress!();
+                      },
+                      onSecondaryTap: Utils.isMobile ? null : onLongPress,
                       child: Row(
                         mainAxisAlignment: isOwner
                             ? MainAxisAlignment.end

@@ -9,6 +9,7 @@ on:
       - ready_for_review
     paths-ignore:
       - '**.md'
+  push:
   workflow_dispatch:
     inputs:
       branch:

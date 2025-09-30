@@ -258,8 +258,14 @@ abstract class Pref {
   static String get systemProxyHost =>
       _setting.get(SettingBoxKey.systemProxyHost, defaultValue: '');
 
-  static String get systemProxyPort =>
-      _setting.get(SettingBoxKey.systemProxyPort, defaultValue: '');
+  static int? get systemProxyPort {
+    // TODO: remove in next release
+    final port = _setting.get(SettingBoxKey.systemProxyPort, defaultValue: 0);
+    if (port is String) {
+      return int.tryParse(port);
+    }
+    return port;
+  }
 
   static int get defaultDynamicType =>
       _setting.get(SettingBoxKey.defaultDynamicType, defaultValue: 0);

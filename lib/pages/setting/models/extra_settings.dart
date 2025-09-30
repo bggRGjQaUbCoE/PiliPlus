@@ -970,7 +970,7 @@ List<SettingsModel> get extraSettings => [
     settingsType: SettingsType.sw1tch,
     onTap: () {
       String systemProxyHost = Pref.systemProxyHost;
-      String systemProxyPort = Pref.systemProxyPort;
+      String systemProxyPort = Pref.systemProxyPort.toString();
 
       showDialog(
         context: Get.context!,
@@ -984,7 +984,7 @@ List<SettingsModel> get extraSettings => [
                 TextField(
                   decoration: InputDecoration(
                     isDense: true,
-                    labelText: systemProxyHost != ''
+                    labelText: systemProxyHost.isNotEmpty
                         ? systemProxyHost
                         : '请输入Host，使用 . 分割',
                     border: const OutlineInputBorder(
@@ -1001,7 +1001,7 @@ List<SettingsModel> get extraSettings => [
                   keyboardType: TextInputType.number,
                   decoration: InputDecoration(
                     isDense: true,
-                    labelText: systemProxyPort != ''
+                    labelText: systemProxyPort.isNotEmpty
                         ? systemProxyPort
                         : '请输入Port',
                     border: const OutlineInputBorder(
@@ -1009,6 +1009,7 @@ List<SettingsModel> get extraSettings => [
                     ),
                     hintText: systemProxyPort,
                   ),
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                   onChanged: (e) {
                     systemProxyPort = e;
                   },
@@ -1034,7 +1035,7 @@ List<SettingsModel> get extraSettings => [
                   );
                   GStorage.setting.put(
                     SettingBoxKey.systemProxyPort,
-                    systemProxyPort,
+                    int.tryParse(systemProxyPort),
                   );
                 },
                 child: const Text('确认'),

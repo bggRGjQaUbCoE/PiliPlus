@@ -1487,29 +1487,36 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                   alignment: Alignment.bottomCenter,
                   children: [
                     IgnorePointer(
-                      child: Obx(() {
-                        final int value =
-                            plPlayerController.sliderPositionSeconds.value;
-                        final int max =
-                            plPlayerController.durationSeconds.value.inSeconds;
-                        final int buffer =
-                            plPlayerController.bufferedSeconds.value;
-                        if (value > max || max <= 0) {
-                          return const SizedBox.shrink();
-                        }
-                        return ProgressBar(
-                          progress: Duration(seconds: value),
-                          buffered: Duration(seconds: buffer),
-                          total: Duration(seconds: max),
-                          progressBarColor: primary,
-                          baseBarColor: Colors.white.withValues(alpha: 0.2),
-                          bufferedBarColor: primary.withValues(alpha: 0.4),
-                          timeLabelLocation: TimeLabelLocation.none,
-                          thumbColor: primary,
-                          barHeight: 3.5,
-                          thumbRadius: draggingFixedProgressBar.value ? 7 : 2.5,
-                        );
-                      }),
+                      child: RepaintBoundary.wrap(
+                        Obx(() {
+                          final int value =
+                              plPlayerController.sliderPositionSeconds.value;
+                          final int max = plPlayerController
+                              .durationSeconds
+                              .value
+                              .inSeconds;
+                          final int buffer =
+                              plPlayerController.bufferedSeconds.value;
+                          if (value > max || max <= 0) {
+                            return const SizedBox.shrink();
+                          }
+                          return ProgressBar(
+                            progress: Duration(seconds: value),
+                            buffered: Duration(seconds: buffer),
+                            total: Duration(seconds: max),
+                            progressBarColor: primary,
+                            baseBarColor: const Color(0x33FFFFFF),
+                            bufferedBarColor: primary.withValues(alpha: 0.4),
+                            timeLabelLocation: TimeLabelLocation.none,
+                            thumbColor: primary,
+                            barHeight: 3.5,
+                            thumbRadius: draggingFixedProgressBar.value
+                                ? 7
+                                : 2.5,
+                          );
+                        }),
+                        0,
+                      ),
                     ),
                     if (plPlayerController.enableSponsorBlock &&
                         videoDetailController.segmentProgressList.isNotEmpty)
@@ -1518,15 +1525,15 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                         right: 0,
                         bottom: 0.75,
                         child: IgnorePointer(
-                          child: RepaintBoundary(
-                            child: CustomPaint(
-                              key: const Key('segmentList'),
+                          child: RepaintBoundary.wrap(
+                            CustomPaint(
                               size: const Size(double.infinity, 3.5),
                               painter: SegmentProgressBar(
                                 segmentColors:
                                     videoDetailController.segmentProgressList,
                               ),
                             ),
+                            1,
                           ),
                         ),
                       ),
@@ -1538,15 +1545,15 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                         right: 0,
                         bottom: 0.75,
                         child: IgnorePointer(
-                          child: RepaintBoundary(
-                            child: CustomPaint(
-                              key: const Key('viewPointList'),
+                          child: RepaintBoundary.wrap(
+                            CustomPaint(
                               size: const Size(double.infinity, 3.5),
                               painter: SegmentProgressBar(
                                 segmentColors:
                                     videoDetailController.viewPointList,
                               ),
                             ),
+                            2,
                           ),
                         ),
                       ),

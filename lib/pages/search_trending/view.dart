@@ -24,10 +24,7 @@ class SearchTrendingPage extends StatefulWidget {
 }
 
 class _SearchTrendingPageState extends State<SearchTrendingPage> {
-  final _controller = Get.put(
-    SearchTrendingController(),
-    tag: Get.parameters['tag'],
-  );
+  final _controller = Get.putOrFind(SearchTrendingController.new);
 
   late double _offset;
   final RxDouble _scrollRatio = 0.0.obs;

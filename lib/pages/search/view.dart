@@ -203,10 +203,7 @@ class _SearchPageState extends State<SearchPage> {
                           SizedBox(
                             height: 34,
                             child: TextButton(
-                              onPressed: () => Get.toNamed(
-                                '/searchTrending',
-                                parameters: {'tag': _tag},
-                              ),
+                              onPressed: () => Get.toNamed('/searchTrending'),
                               child: Row(
                                 children: [
                                   Text(

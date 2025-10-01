@@ -50,6 +50,34 @@ abstract class DebounceStreamState<T extends StatefulWidget, S> extends State<T>
   }
 }
 
+class BaseSearchController extends GetxController {
+  final historyList = List<String>.from(
+    GStorage.historyWord.get('cacheList') ?? [],
+  ).obs;
+
+  late final Rx<LoadingState<SearchTrendingData>> trendingState;
+
+  final recordSearchHistory = Pref.recordSearchHistory.obs;
+  final searchSuggestion = Pref.searchSuggestion;
+  final enableTrending = Pref.enableTrending;
+  final enableSearchRcmd = Pref.enableSearchRcmd;
+
+  @override
+  void onInit() {
+    super.onInit();
+
+    if (enableTrending) {
+      trendingState = LoadingState<SearchTrendingData>.loading().obs;
+      queryTrendingList();
+    }
+  }
+
+  // 获取热搜关键词
+  Future<void> queryTrendingList() async {
+    trendingState.value = await SearchHttp.searchTrending(limit: 10);
+  }
+}
+
 class SSearchController extends GetxController
     with DebounceStreamMixin<String> {
   SSearchController(this.tag);
@@ -57,6 +85,7 @@ class SSearchController extends GetxController
 
   final searchFocusNode = FocusNode();
   final controller = TextEditingController();
+  final _baseCtr = Get.putOrFind(BaseSearchController.new);
 
   String? hintText;
 
@@ -66,20 +95,23 @@ class SSearchController extends GetxController
   final RxBool showUidBtn = false.obs;
 
   // history
-  final RxBool recordSearchHistory = Pref.recordSearchHistory.obs;
-  late final RxList<String> historyList;
+  RxBool get recordSearchHistory => _baseCtr.recordSearchHistory;
+  RxList<String> get historyList => _baseCtr.historyList;
 
   // suggestion
-  final bool searchSuggestion = Pref.searchSuggestion;
+  bool get searchSuggestion => _baseCtr.searchSuggestion;
   late final RxList<SearchSuggestItem> searchSuggestList;
 
   // trending
-  final bool enableTrending = Pref.enableTrending;
-  late final Rx<LoadingState<SearchTrendingData>> trendingState;
+  bool get enableTrending => _baseCtr.enableTrending;
+  Rx<LoadingState<SearchTrendingData>> get trendingState =>
+      _baseCtr.trendingState;
 
   // rcmd
-  final bool enableSearchRcmd = Pref.enableSearchRcmd;
+  bool get enableSearchRcmd => _baseCtr.enableSearchRcmd;
   late final Rx<LoadingState<SearchRcmdData>> recommendData;
+
+  Future<void> Function() get queryTrendingList => _baseCtr.queryTrendingList;
 
   @override
   void onInit() {
@@ -91,18 +123,9 @@ class SSearchController extends GetxController
       controller.text = text;
     }
 
-    historyList = List<String>.from(
-      GStorage.historyWord.get('cacheList') ?? [],
-    ).obs;
-
     if (searchSuggestion) {
       subInit();
       searchSuggestList = <SearchSuggestItem>[].obs;
-    }
-
-    if (enableTrending) {
-      trendingState = LoadingState<SearchTrendingData>.loading().obs;
-      queryTrendingList();
     }
 
     if (enableSearchRcmd) {
@@ -174,11 +197,6 @@ class SSearchController extends GetxController
         );
       });
     }
-  }
-
-  // 获取热搜关键词
-  Future<void> queryTrendingList() async {
-    trendingState.value = await SearchHttp.searchTrending(limit: 10);
   }
 
   Future<void> queryRecommendList() async {

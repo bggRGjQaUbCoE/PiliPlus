@@ -38,7 +38,7 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
   # 动态取色
-  dynamic_color: ^1.7.0
+  dynamic_color: ^1.8.1
 
   get: ^4.6.6
 
@@ -125,7 +125,7 @@ dependencies:
       url: https://github.com/bggRGjQaUbCoE/auto_orientation.git
       ref: master
   protobuf: ^5.0.0
-  animations: ^2.0.11
+  # animations: ^2.0.11
 
   # 获取appx信息
   package_info_plus: ^9.0.0
@@ -250,12 +250,12 @@ dependency_overrides:
       ref: version_1.2.5
   media_kit_libs_video:
     git:
-      url: https://github.com/My-Responsitories/media-kit.git
+      url: https://github.com/bggRGjQaUbCoE/media-kit.git
       path: libs/universal/media_kit_libs_video
       ref: version_1.2.5
   media_kit_native_event_loop:
     git:
-      url: https://github.com/My-Responsitories/media-kit.git
+      url: https://github.com/bggRGjQaUbCoE/media-kit.git
       path: media_kit_native_event_loop
       ref: version_1.2.5
   media_kit_libs_android_video:
@@ -280,10 +280,10 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
-  flutter_launcher_icons: ^0.14.1
-  hive_generator: ^2.0.1
-  build_runner: ^2.4.13
-  flutter_native_splash: ^2.4.3
+  flutter_launcher_icons: ^0.14.4
+  # hive_generator: ^2.0.1
+  build_runner: ^2.9.0
+  flutter_native_splash: ^2.4.6
 
 flutter_launcher_icons:
   android: true

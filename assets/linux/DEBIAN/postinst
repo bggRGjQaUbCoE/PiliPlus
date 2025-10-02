@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+ln -sf /opt/PiliPlus/piliplus /usr/bin/piliplus
+chmod +x /usr/bin/piliplus
+
+if [ $1 == "config" ] && [ -x /usr/binupdate-mime-database ]; then
+    echo "updating mime database..."
+    update-mime-database  /usr/share/mime || true
+fi
+
+if [ $1 == "config" ] && [ -x /usr/bin/gtk-update-icon-cache ]; then
+    echo "updating icon cache..."
+    gtk-update-icon-cache -q -f -t /usr/share/icons/hicolor || true
+fi
+
+if [ $1 == "config" ] && [ -x /usr/bin/update-desktop-database ]; then
+    echo "updating desktop database..."
+    update-desktop-database -q /usr/share/applications || true
+fi
+
+exit 0

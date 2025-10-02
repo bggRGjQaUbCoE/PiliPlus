@@ -67,12 +67,61 @@ jobs:
       - name: Build Linux
         run: flutter build linux --release -v
 
-      - name: Package linux build output
+      - name: Package .tar.gz
         run: tar -zcvf PiliPlus_linux_${{ env.version }}_amd64.tar.gz -C build/linux/x64/release/bundle .
 
-      - name: Upload linux outputs
+      - name: Packege deb
+        run: |
+          printf "建立构建目录...\n"
+          mkdir "PiliPlus_linux_${{ env.version }}_amd64"
+          pushd "PiliPlus_linux_${{ env.version }}_amd64"
+          mkdir -p opt/PiliPlus
+          mkdir -p usr/share/applications
+          mkdir -p usr/share/icons/hicolor/512x512/apps
+
+          printf "复制文件...\n"
+          cp -r ../build/linux/x64/release/bundle/* opt/PiliPlus
+          cp -r ../assets/linux/DEBIAN .
+          cp ../assets/linux/piliplus.desktop usr/share/applications
+          cp ../assets/images/logo/logo.png usr/share/icons/hicolor/512x512/apps/piliplus.png
+
+          printf "修改控制文件...\n"
+          # 替换版本号
+          sed -i  "2s/version_need_change/${{ env.version }}/g" DEBIAN/control
+          # 计算安装大小并替换
+          SIZE_KB=$(du -s -b --apparent-size . | awk '{print int($1)}')
+          SIZE_KB=$(($SIZE_KB - $(du -s -b --apparent-size DEBIAN | awk '{print int($1)}')))
+          SIZE_KB=$(echo $SIZE_KB | awk '{print int($1/1024 + 0.999)}')
+          printf "\t安装大小: %s KB\n" "$SIZE_KB"
+          sed -i "9s/size_need_change/${SIZE_KB}/g" DEBIAN/control
+
+          printf "生成并写入 md5sums ...\n"
+          md5sum opt/PiliPlus/piliplus >> DEBIAN/md5sums
+          md5sum opt/PiliPlus/lib/* >> DEBIAN/md5sums
+          md5sum opt/PiliPlus/data/icudtl.dat >> DEBIAN/md5sums
+
+          printf "设置权限...\n"
+          chmod 0644 DEBIAN/control
+          chmod 0644 DEBIAN/md5sums
+          chmod 0755 DEBIAN/postinst
+          chmod 0755 DEBIAN/postrm
+          chmod 0755 DEBIAN/prerm
+
+          printf "打包 deb 文件...\n"
+          popd
+          dpkg-deb --build --verbose --root-owner-group "PiliPlus_linux_${{ env.version }}_amd64"
+          printf "完成: PiliPlus_linux_%s_amd64.deb\n" "${{ env.version }}"
+        shell: bash
+
+      - name: Upload linux targz package
         uses: actions/upload-artifact@v4
         with:
-          name: linux_outputs
-          path: |
-            PiliPlus_linux_*.tar.gz
+          name: Linux_targz_packege
+          path: PiliPlus_linux_*.tar.gz
+
+      - name: Upload linux deb package
+        uses: actions/upload-artifact@v4
+        with:
+          name: Linux_deb_package
+          path: PiliPlus_linux_*.deb
+          

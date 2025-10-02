@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+rm /usr/bin/piliplus
+if [ "$1" = "remove" ] || [ "$1" = "purge" ]; then
+    if [ -x /usr/bin/update-desktop-database ]; then
+        echo "updating desktop database..."
+        update-desktop-database -q /usr/share/applications || true
+    fi
+
+    if [ -x /usr/bin/gtk-update-icon-cache ]; then
+        echo "updating icon cache..."
+        gtk-update-icon-cache -q -t /usr/share/icons/hicolor || true
+    fi
+
+    if [ -x /usr/bin/update-mime-database ]; then
+        echo "updating mime database..."
+        update-mime-database /usr/share/mime || true
+    fi
+fi
+
+if [ $1 = "purge" ]; then
+    echo "Removing user data..."
+    rm -rf /home/*/.local/share/com.example.PiliPlus || true
+    rm -rf /root/.local/share/com.example.PiliPlus || true
+fi
+
+exit 0

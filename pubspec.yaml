@@ -197,7 +197,6 @@ dependencies:
       url: https://github.com/wgh136/webdav_client.git
       ref: main
   re_highlight: ^0.0.3
-  cached_network_svg_image: ^1.2.0
   flutter_sortable_wrap:
     git:
       url: https://github.com/bggRGjQaUbCoE/flutter_sortable_wrap.git

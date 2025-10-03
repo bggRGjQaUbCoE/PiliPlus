@@ -33,8 +33,10 @@ jobs:
           flutter-version-file: pubspec.yaml
       
       - name: Add fastforge
-        run: dart pub global activate fastforge
-
+        run: |
+          dart pub global activate fastforge
+          winget install --id=JRSoftware.InnoSetup -e
+          
       - name: Build Windows
         run: |
           dart lib/scripts/build.dart

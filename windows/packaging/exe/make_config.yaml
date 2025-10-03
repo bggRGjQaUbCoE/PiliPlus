@@ -1,6 +1,6 @@
 # AppId 的值唯一标识此应用。
 # 不要在其他应用的安装程序中使用相同的 AppId 值。
-# app_id: 5B599538-42B1-4826-A479-AF079F21A65D
+app_id: 5ef970f9-2b9e-4155-b7d6-a9d4dbd6b226
 # publisher: LeanFlutter
 # publisher_url: https://github.com/fastforgedev/fastforge
 display_name: PiliPlus
@@ -8,7 +8,7 @@ display_name: PiliPlus
 # See: https://jrsoftware.org/ishelp/index.php?topic=setup_defaultdirname
 # install_dir_name: "D:\\HELLO-WORLD"
 # 这里的路径是相对于项目根目录的路径； 图标格式必须是ico格式，不能是png或其它
-# setup_icon_file: windows\runner\resources\app_icon.ico
+setup_icon_file: windows\runner\resources\app_icon.ico
 locales:
   - en
   - zh

@@ -10,15 +10,15 @@ Compression=lzma
 SolidCompression=yes
 OutputDir=.
 OutputBaseFilename=PiliPlus_Setup
-SetupIconFile=windows\runner\resources\app_icon.ico
+SetupIconFile=build\windows\x64\runner\Release\data\flutter_assets\assets\images\logo\app_icon.ico
 
 [Languages]
 Name: "chinesesimp"; MessagesFile: "compiler:Default.isl"
 
 [Files]
 ; TODO: 替换为实际构建产物路径
-Source: "build\windows\runner\Release\PiliPlus.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "build\windows\runner\Release\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "build\windows\x64\runner\Release\piliplus.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "build\windows\x64\runner\Release\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
 Name: "{group}\PiliPlus"; Filename: "{app}\PiliPlus.exe"

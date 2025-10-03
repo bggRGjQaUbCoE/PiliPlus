@@ -36,6 +36,12 @@ jobs:
         run: |
           dart pub global activate fastforge
           choco install innosetup
+      
+      - name: Add Chinese language file for Inno Setup
+        run: |
+          curl -L -o ChineseSimplified.isl "https://raw.githubusercontent.com/jrsoftware/issrc/main/Files/Languages/ChineseSimplified.isl"
+          copy ChineseSimplified.isl "C:\Program Files (x86)\Inno Setup 6\Languages\ChineseSimplified.isl"
+        shell: powershell
 
       - name: Build Windows
         run: |

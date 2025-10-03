@@ -32,14 +32,14 @@ jobs:
           channel: stable
           flutter-version-file: pubspec.yaml
       
-      - name: Add fastforge
+      - name: Add fastforge and Inno Setup
         run: |
           dart pub global activate fastforge
           choco install innosetup
       
       - name: Add Chinese language file for Inno Setup
         run: |
-          Invoke-WebRequest -Uri "https://raw.githubusercontent.com/jrsoftware/issrc/main/Files/Languages/ChineseSimplified.isl" -OutFile "ChineseSimplified.isl"
+          Invoke-WebRequest -Uri "https://github.com/jrsoftware/issrc/raw/main/Files/Languages/ChineseSimplified.isl" -OutFile "ChineseSimplified.isl"
           Copy-Item "ChineseSimplified.isl" "C:\Program Files (x86)\Inno Setup 6\Languages\ChineseSimplified.isl"
         shell: powershell
 

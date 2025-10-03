@@ -112,7 +112,7 @@ class Request {
     if (Pref.enableSystemProxy) {
       systemProxyHost = Pref.systemProxyHost;
       systemProxyPort = Pref.systemProxyPort;
-      enableSystemProxy = systemProxyPort != null && systemProxyHost.isNotEmpty;
+      enableSystemProxy = systemProxyPort != 0 && systemProxyHost.isNotEmpty;
     } else {
       enableSystemProxy = false;
     }

@@ -970,7 +970,8 @@ List<SettingsModel> get extraSettings => [
     settingsType: SettingsType.sw1tch,
     onTap: () {
       String systemProxyHost = Pref.systemProxyHost;
-      String systemProxyPort = Pref.systemProxyPort.toString();
+      final port = Pref.systemProxyPort;
+      String systemProxyPort = port == 0 ? '' : port.toString();
 
       showDialog(
         context: Get.context!,

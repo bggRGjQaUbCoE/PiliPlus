@@ -8,8 +8,10 @@ import 'package:get/get.dart';
 
 class LikeDetailController
     extends CommonListController<MsgLikeDetailData, MsgLikeDetailItem> {
-  final cardId = Get.parameters['id'];
+  final cardId = Get.parameters['id']!;
   final uri = Get.parameters['uri'];
+
+  int lastMid = 0;
 
   @override
   void onInit() {
@@ -21,17 +23,20 @@ class LikeDetailController
 
   @override
   List<MsgLikeDetailItem>? getDataList(MsgLikeDetailData response) {
-    if (response.page?.isEnd == true) {
-      isEnd = true;
+    if (response.items?.lastOrNull?.user?.mid case final mid?) {
+      lastMid = mid;
     }
     card = response.card;
     return response.items;
   }
 
   @override
+  Future<void> onRefresh() {
+    lastMid = 0;
+    return super.onRefresh();
+  }
+
+  @override
   Future<LoadingState<MsgLikeDetailData>> customGetData() =>
-      MsgHttp.msgLikeDetail(
-        cardId: cardId,
-        pn: page,
-      );
+      MsgHttp.msgLikeDetail(cardId: cardId, pn: page, lastMid: lastMid);
 }

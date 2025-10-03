@@ -19,7 +19,7 @@ migrate_working_dir/
 # The .vscode folder contains launch configuration and tasks you configure in
 # VS Code which you may wish to be included in version control, so this line
 # is commented out by default.
-#.vscode/
+.vscode/
 
 # Flutter repo-specific
 /bin/cache/
@@ -133,8 +133,12 @@ app.*.symbols
 !**/ios/**/default.perspectivev3
 !/packages/flutter_tools/test/data/dart_dependencies_test/**/.packages
 !/dev/ci/**/Gemfile.lock
-!.vscode/settings.json
+!.vscode/launch.json
+!.vscode/tasks.json
 
 /lib/build_config.dart
 
 devtools_options.yaml
+
+# FVM Version Cache
+.fvm/

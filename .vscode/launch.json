@@ -5,21 +5,44 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "piliplus",
-            "request": "launch",
-            "type": "dart"
-        },
-        {
-            "name": "piliplus (profile mode)",
+            "name": "Debug",
             "request": "launch",
             "type": "dart",
-            "flutterMode": "profile"
+            "preLaunchTask": "Update build_config"
         },
         {
-            "name": "piliplus (release mode)",
+            "name": "Profile",
             "request": "launch",
             "type": "dart",
-            "flutterMode": "release"
+            "flutterMode": "profile",
+            "preLaunchTask": "Update build_config"
+        },
+        {
+            "name": "Release",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release",
+            "preLaunchTask": "Update build_config"
+        },
+        {
+            "name": "Debug (FVM)",
+            "request": "launch",
+            "type": "dart",
+            "preLaunchTask": "Update build_config (FVM)"
+        },
+        {
+            "name": "Profile (FVM)",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile",
+            "preLaunchTask": "Update build_config (FVM)"
+        },
+        {
+            "name": "Release (FVM)",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release",
+            "preLaunchTask": "Update build_config (FVM)"
         }
     ]
 }

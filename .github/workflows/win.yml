@@ -39,8 +39,7 @@ jobs:
       
       - name: Add Chinese language file for Inno Setup
         run: |
-          Invoke-WebRequest -Uri "https://github.com/jrsoftware/issrc/raw/main/Files/Languages/ChineseSimplified.isl" -OutFile "ChineseSimplified.isl"
-          Copy-Item "ChineseSimplified.isl" "C:\Program Files (x86)\Inno Setup 6\Languages\ChineseSimplified.isl"
+          Copy-Item "windows/packaging/exe/ChineseSimplified.isl" "C:\Program Files (x86)\Inno Setup 6\Languages\ChineseSimplified.isl"
         shell: powershell
 
       - name: Build Windows

@@ -31,19 +31,41 @@ jobs:
         with:
           channel: stable
           flutter-version-file: pubspec.yaml
+      
+      - name: Install Inno Setup
+        run: choco install innosetup -y
+        shell: powershell
+      
+      - name: Set and Extract version
+        run: |
+          $version = (Select-String -Path pubspec.yaml -Pattern '^version:' | ForEach-Object { $_.Line -replace 'version:\s*', '' }).Trim()
+          echo "version=$version" | Out-File -FilePath $env:GITHUB_ENV -Append
+        shell: powershell
 
       - name: Build Windows
         run: |
           dart lib/scripts/build.dart
           flutter build windows --release
+      
+      - name: Package with Inno Setup
+        run: |
+          $env:AppVersion="${{ env.version }}"
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" windows\Inno_Setup.iss
+        shell: powershell
 
       - name: Prepare Upload
         run: |
           mkdir -p Release/PiliPlus-Win
           mv build/windows/x64/runner/Release/* Release/PiliPlus-Win/
 
-      - name: Upload windows release
+      - name: Upload windows setup installer
         uses: actions/upload-artifact@v4
         with:
-          name: windows-release
-          path: Release
+          name: windows-setup
+          path: PiliPlusSetup.exe
+
+      - name: Upload windows raw build
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-raw-build
+          path: Release/PiliPlus-Win

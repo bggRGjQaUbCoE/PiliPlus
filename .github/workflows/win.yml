@@ -35,8 +35,8 @@ jobs:
       - name: Add fastforge
         run: |
           dart pub global activate fastforge
-          winget install --id=JRSoftware.InnoSetup -e
-          
+          choco install innosetup
+
       - name: Build Windows
         run: |
           dart lib/scripts/build.dart

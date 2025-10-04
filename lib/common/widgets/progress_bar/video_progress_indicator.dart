@@ -5,10 +5,13 @@ Widget videoProgressIndicator(double progress) => ClipRect(
   clipper: ProgressClipper(),
   child: ClipRRect(
     borderRadius: const BorderRadius.vertical(bottom: StyleString.imgRadius),
-    child: LinearProgressIndicator(
-      minHeight: 10,
-      value: progress,
-      stopIndicatorColor: Colors.transparent,
+    child: ProgressIndicatorTheme(
+      data: const ProgressIndicatorThemeData(),
+      child: LinearProgressIndicator(
+        minHeight: 10,
+        value: progress,
+        stopIndicatorColor: Colors.transparent,
+      ),
     ),
   ),
 );

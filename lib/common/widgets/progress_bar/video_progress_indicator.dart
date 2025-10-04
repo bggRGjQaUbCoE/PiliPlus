@@ -19,7 +19,7 @@ Widget videoProgressIndicator(double progress) => ClipRect(
 class ProgressClipper extends CustomClipper<Rect> {
   @override
   Rect getClip(Size size) {
-    return Rect.fromLTWH(0, 6, size.width, size.height - 6);
+    return Rect.fromLTWH(0, 7.75, size.width, size.height - 7.75);
   }
 
   @override

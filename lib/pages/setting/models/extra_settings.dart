@@ -970,8 +970,7 @@ List<SettingsModel> get extraSettings => [
     settingsType: SettingsType.sw1tch,
     onTap: () {
       String systemProxyHost = Pref.systemProxyHost;
-      final port = Pref.systemProxyPort;
-      String systemProxyPort = port == 0 ? '' : port.toString();
+      String systemProxyPort = Pref.systemProxyPort;
 
       showDialog(
         context: Get.context!,
@@ -993,9 +992,7 @@ List<SettingsModel> get extraSettings => [
                     ),
                     hintText: systemProxyHost,
                   ),
-                  onChanged: (e) {
-                    systemProxyHost = e;
-                  },
+                  onChanged: (e) => systemProxyHost = e,
                 ),
                 const SizedBox(height: 10),
                 TextField(
@@ -1011,9 +1008,7 @@ List<SettingsModel> get extraSettings => [
                     hintText: systemProxyPort,
                   ),
                   inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  onChanged: (e) {
-                    systemProxyPort = e;
-                  },
+                  onChanged: (e) => systemProxyPort = e,
                 ),
               ],
             ),
@@ -1036,7 +1031,7 @@ List<SettingsModel> get extraSettings => [
                   );
                   GStorage.setting.put(
                     SettingBoxKey.systemProxyPort,
-                    int.tryParse(systemProxyPort),
+                    systemProxyPort,
                   );
                 },
                 child: const Text('确认'),

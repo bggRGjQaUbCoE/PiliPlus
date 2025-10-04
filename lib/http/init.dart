@@ -111,8 +111,8 @@ class Request {
     late final int? systemProxyPort;
     if (Pref.enableSystemProxy) {
       systemProxyHost = Pref.systemProxyHost;
-      systemProxyPort = Pref.systemProxyPort;
-      enableSystemProxy = systemProxyPort != 0 && systemProxyHost.isNotEmpty;
+      systemProxyPort = int.tryParse(Pref.systemProxyPort);
+      enableSystemProxy = systemProxyPort != null && systemProxyHost.isNotEmpty;
     } else {
       enableSystemProxy = false;
     }

@@ -88,11 +88,13 @@ class _LiveRoomPageState extends State<LiveRoomPage>
   @override
   Future<void> didPopNext() async {
     WidgetsBinding.instance.addObserver(this);
+    plPlayerController
+      ..isLive = true
+      ..danmakuController = _liveRoomController.danmakuController;
     PlPlayerController.setPlayCallBack(plPlayerController.play);
-    plPlayerController.danmakuController =
-        _liveRoomController.danmakuController;
     _liveRoomController.startLiveTimer();
-    if (plPlayerController.playerStatus.playing) {
+    if (plPlayerController.playerStatus.playing &&
+        plPlayerController.cid == null) {
       _liveRoomController
         ..danmakuController?.resume()
         ..startLiveMsg();

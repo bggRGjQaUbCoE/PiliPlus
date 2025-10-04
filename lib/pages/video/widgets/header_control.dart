@@ -1945,7 +1945,9 @@ class HeaderControlState extends State<HeaderControl> {
                       plPlayerController.exitDesktopPip();
                     } else if (isFullScreen) {
                       plPlayerController.triggerFullScreen(status: false);
-                    } else if (!horizontalScreen && !isPortrait) {
+                    } else if (Utils.isMobile &&
+                        !horizontalScreen &&
+                        !isPortrait) {
                       verticalScreenForTwoSeconds();
                     } else {
                       Get.back();

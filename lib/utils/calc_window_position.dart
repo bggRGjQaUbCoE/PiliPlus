@@ -1,34 +1,37 @@
 import 'package:PiliPlus/utils/storage_pref.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:screen_retriever/screen_retriever.dart';
 
 Future<Offset> calcWindowPosition(Size windowSize) async {
-  Display primaryDisplay = await screenRetriever.getPrimaryDisplay();
-  List<Display> allDisplays = await screenRetriever.getAllDisplays();
-  Offset cursorScreenPoint = await screenRetriever.getCursorScreenPoint();
+  final allDisplays = screenRetriever.getAllDisplays();
+  final cursorScreenPoint = await screenRetriever.getCursorScreenPoint();
 
-  Display currentDisplay = allDisplays.firstWhere(
-    (display) => Rect.fromLTWH(
-      display.visiblePosition!.dx,
-      display.visiblePosition!.dy,
-      display.size.width,
-      display.size.height,
-    ).contains(cursorScreenPoint),
-    orElse: () => primaryDisplay,
-  );
+  final currentDisplay =
+      (await allDisplays).firstWhereOrNull(
+        (display) => (display.visiblePosition! & display.size).contains(
+          cursorScreenPoint,
+        ),
+      ) ??
+      await screenRetriever.getPrimaryDisplay();
 
-  num visibleWidth = currentDisplay.size.width;
-  num visibleHeight = currentDisplay.size.height;
-  num visibleStartX = 0;
-  num visibleStartY = 0;
-
-  if (currentDisplay.visibleSize != null) {
-    visibleWidth = currentDisplay.visibleSize!.width;
-    visibleHeight = currentDisplay.visibleSize!.height;
+  final double visibleWidth;
+  final double visibleHeight;
+  if (currentDisplay.visibleSize case final size?) {
+    visibleWidth = size.width;
+    visibleHeight = size.height;
+  } else {
+    visibleWidth = currentDisplay.size.width;
+    visibleHeight = currentDisplay.size.height;
   }
-  if (currentDisplay.visiblePosition != null) {
-    visibleStartX = currentDisplay.visiblePosition!.dx;
-    visibleStartY = currentDisplay.visiblePosition!.dy;
+
+  final double visibleStartX;
+  final double visibleStartY;
+  if (currentDisplay.visiblePosition case final offset?) {
+    visibleStartX = offset.dx;
+    visibleStartY = offset.dy;
+  } else {
+    visibleStartX = visibleStartY = 0;
   }
 
   final windowPosition = Pref.windowPosition;

@@ -170,9 +170,10 @@ class _LikeMePageState extends State<LikeMePage> {
         if (item.counts! > 1) {
           Get.toNamed(
             'msgLikeDetail',
-            parameters: {
+            arguments: {
               'id': item.id!.toString(),
               if (!isInvalid) 'uri': nativeUri,
+              'counts': item.counts,
             },
           );
           return;

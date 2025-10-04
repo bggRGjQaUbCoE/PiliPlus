@@ -106,32 +106,31 @@ class Request {
       persistentConnection: true,
     );
 
-    bool enableSystemProxy = Pref.enableSystemProxy;
+    final bool enableSystemProxy;
     late final String systemProxyHost;
     late final int? systemProxyPort;
-    if (enableSystemProxy) {
+    if (Pref.enableSystemProxy) {
       systemProxyHost = Pref.systemProxyHost;
       systemProxyPort = int.tryParse(Pref.systemProxyPort);
       enableSystemProxy = systemProxyPort != null && systemProxyHost.isNotEmpty;
+    } else {
+      enableSystemProxy = false;
     }
 
     final http11Adapter = IOHttpClientAdapter(
-      createHttpClient: () {
-        final client = HttpClient()
-          ..idleTimeout = const Duration(seconds: 15)
-          ..autoUncompress = false; // Http2Adapter没有自动解压, 统一行为
-        // 设置代理
-        if (enableSystemProxy) {
-          client
-            ..findProxy = ((_) => 'PROXY $systemProxyHost:$systemProxyPort')
-            ..badCertificateCallback =
-                (X509Certificate cert, String host, int port) => true;
-        }
-        return client;
-      },
+      createHttpClient: enableSystemProxy
+          ? () => HttpClient()
+              ..idleTimeout = const Duration(seconds: 15)
+              ..autoUncompress = false
+              ..findProxy = ((_) => 'PROXY $systemProxyHost:$systemProxyPort')
+              ..badCertificateCallback =
+                  (X509Certificate cert, String host, int port) => true
+          : () => HttpClient()
+              ..idleTimeout = const Duration(seconds: 15)
+              ..autoUncompress = false, // Http2Adapter没有自动解压, 统一行为
     );
 
-    late Uri proxy;
+    late final Uri proxy;
     if (enableSystemProxy) {
       proxy = Uri(
         scheme: 'http',

@@ -984,7 +984,7 @@ List<SettingsModel> get extraSettings => [
                 TextField(
                   decoration: InputDecoration(
                     isDense: true,
-                    labelText: systemProxyHost != ''
+                    labelText: systemProxyHost.isNotEmpty
                         ? systemProxyHost
                         : '请输入Host，使用 . 分割',
                     border: const OutlineInputBorder(
@@ -992,16 +992,14 @@ List<SettingsModel> get extraSettings => [
                     ),
                     hintText: systemProxyHost,
                   ),
-                  onChanged: (e) {
-                    systemProxyHost = e;
-                  },
+                  onChanged: (e) => systemProxyHost = e,
                 ),
                 const SizedBox(height: 10),
                 TextField(
                   keyboardType: TextInputType.number,
                   decoration: InputDecoration(
                     isDense: true,
-                    labelText: systemProxyPort != ''
+                    labelText: systemProxyPort.isNotEmpty
                         ? systemProxyPort
                         : '请输入Port',
                     border: const OutlineInputBorder(
@@ -1009,9 +1007,8 @@ List<SettingsModel> get extraSettings => [
                     ),
                     hintText: systemProxyPort,
                   ),
-                  onChanged: (e) {
-                    systemProxyPort = e;
-                  },
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  onChanged: (e) => systemProxyPort = e,
                 ),
               ],
             ),

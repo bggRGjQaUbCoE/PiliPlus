@@ -1,6 +1,7 @@
 import 'dart:io';
 
 void main(Iterable<String> args) async {
+  final arg = args.firstOrNull;
   final pubspecFile = File('pubspec.yaml');
   final lines = await pubspecFile.readAsLines();
 
@@ -18,7 +19,7 @@ void main(Iterable<String> args) async {
     'HEAD',
   ])).stdout.toString().trim();
 
-  if (args.isNotEmpty) {
+  if (arg == 'android') {
     versionName += '-${commitHash.substring(0, 9)}';
   }
 
@@ -43,6 +44,8 @@ class BuildConfig {
 }
 ''';
 
-  pubspecFile.writeAsString(lines.join('\n'));
+  if (arg != 'dev') {
+    pubspecFile.writeAsString(lines.join('\n'));
+  }
   File('lib/build_config.dart').writeAsString(content);
 }

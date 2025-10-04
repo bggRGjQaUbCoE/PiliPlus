@@ -106,7 +106,7 @@ class PlPlayerController {
   final RxBool _controlsLock = false.obs;
   final RxBool _isFullScreen = false.obs;
   // 默认投稿视频格式
-  bool _isLive = false;
+  bool isLive = false;
 
   bool _isVertical = false;
 
@@ -130,7 +130,7 @@ class PlPlayerController {
   // 记录历史记录
   int? _aid;
   String? _bvid;
-  int? _cid;
+  int? cid;
   int? _epid;
   int? _seasonId;
   int? _pgcType;
@@ -152,7 +152,6 @@ class PlPlayerController {
   // final Durations durations;
 
   String get bvid => _bvid!;
-  int get cid => _cid!;
 
   /// 数据加载监听
   Stream<DataStatus> get onDataStatusChanged => dataStatus.status.stream;
@@ -248,9 +247,6 @@ class PlPlayerController {
 
   /// 全屏方向
   bool get isVertical => _isVertical;
-
-  ///
-  bool get isLive => _isLive;
 
   /// 弹幕开关
   late final RxBool enableShowDanmaku = Pref.enableShowDanmaku.obs;
@@ -574,7 +570,7 @@ class PlPlayerController {
     // 如果实例尚未创建，则创建一个新实例
     _instance ??= PlPlayerController._();
     _instance!
-      .._isLive = isLive
+      ..isLive = isLive
       .._playerCount += 1;
     return _instance!;
   }
@@ -607,7 +603,7 @@ class PlPlayerController {
     Volume? volume,
   }) async {
     try {
-      _isLive = isLive;
+      this.isLive = isLive;
       _videoType = videoType ?? VideoType.ugc;
       this.width = width;
       this.height = height;
@@ -622,7 +618,7 @@ class PlPlayerController {
       _isVertical = isVertical ?? false;
       _aid = aid;
       _bvid = bvid;
-      _cid = cid;
+      this.cid = cid;
       _epid = epid;
       _seasonId = seasonId;
       _pgcType = pgcType;
@@ -1436,9 +1432,18 @@ class PlPlayerController {
     }
   }
 
+  int _durationInSeconds(Duration duration) {
+    return (duration.inMilliseconds / 1000).round();
+  }
+
+  bool get _isCompleted =>
+      videoPlayerController!.state.completed ||
+      (_durationInSeconds(position.value) ==
+          _durationInSeconds(duration.value));
+
   // 双击播放、暂停
   Future<void> onDoubleTapCenter() async {
-    if (videoPlayerController!.state.completed) {
+    if (!isLive && _isCompleted) {
       await videoPlayerController!.seek(Duration.zero);
       videoPlayerController!.play();
     } else {
@@ -1516,48 +1521,53 @@ class PlPlayerController {
     bool status = true,
     bool inAppFullScreen = false,
   }) async {
+    if (isFullScreen.value == status) return;
+
     if (fsProcessing) {
       return;
     }
     fsProcessing = true;
 
-    if (!isFullScreen.value && status) {
-      hideStatusBar();
+    toggleFullScreen(status);
 
-      /// 按照视频宽高比决定全屏方向
-      toggleFullScreen(true);
-
-      /// 进入全屏
-      if (mode == FullScreenMode.none) {
-        fsProcessing = false;
-        return;
-      }
-      if (mode == FullScreenMode.gravity) {
-        fullAutoModeForceSensor();
-        fsProcessing = false;
-        return;
-      }
-      late final size = Get.size;
-      if (Utils.isMobile &&
-          (mode == FullScreenMode.vertical ||
-              (mode == FullScreenMode.auto && isVertical) ||
-              (mode == FullScreenMode.ratio &&
-                  (isVertical || size.height / size.width < 1.25)))) {
-        await verticalScreenForTwoSeconds();
+    if (status) {
+      if (Utils.isMobile) {
+        hideStatusBar();
+        if (mode == FullScreenMode.none) {
+          fsProcessing = false;
+          return;
+        }
+        if (mode == FullScreenMode.gravity) {
+          await fullAutoModeForceSensor();
+          fsProcessing = false;
+          return;
+        }
+        late final size = Get.mediaQuery.size;
+        if ((mode == FullScreenMode.vertical ||
+            (mode == FullScreenMode.auto && isVertical) ||
+            (mode == FullScreenMode.ratio &&
+                (isVertical || size.height / size.width < 1.25)))) {
+          await verticalScreenForTwoSeconds();
+        } else {
+          await landscape();
+        }
       } else {
-        await landscape(inAppFullScreen: inAppFullScreen);
+        await enterDesktopFullscreen(inAppFullScreen: inAppFullScreen);
       }
-    } else if (isFullScreen.value && !status) {
-      showStatusBar();
-      toggleFullScreen(false);
-      if (mode == FullScreenMode.none) {
-        fsProcessing = false;
-        return;
-      }
-      if (!horizontalScreen) {
-        await verticalScreenForTwoSeconds();
+    } else {
+      if (Utils.isMobile) {
+        showStatusBar();
+        if (mode == FullScreenMode.none) {
+          fsProcessing = false;
+          return;
+        }
+        if (!horizontalScreen) {
+          await verticalScreenForTwoSeconds();
+        } else {
+          await autoScreen();
+        }
       } else {
-        await autoScreen();
+        await exitDesktopFullscreen();
       }
     }
     fsProcessing = false;
@@ -1615,7 +1625,7 @@ class PlPlayerController {
       await VideoHttp.heartBeat(
         aid: aid ?? _aid,
         bvid: bvid ?? _bvid,
-        cid: cid ?? _cid,
+        cid: cid ?? this.cid,
         progress: isComplete ? -1 : progress,
         epid: epid ?? _epid,
         seasonId: seasonId ?? _seasonId,
@@ -1630,7 +1640,7 @@ class PlPlayerController {
       await VideoHttp.heartBeat(
         aid: aid ?? _aid,
         bvid: bvid ?? _bvid,
-        cid: cid ?? _cid,
+        cid: cid ?? this.cid,
         progress: progress,
         epid: epid ?? _epid,
         seasonId: seasonId ?? _seasonId,
@@ -1680,7 +1690,9 @@ class PlPlayerController {
     if (!isCloseAll && _playerCount > 1) {
       _playerCount -= 1;
       _heartDuration = 0;
-      if (!Get.previousRoute.startsWith('/video')) {
+      final previousRoute = Get.previousRoute;
+      if (!previousRoute.startsWith('/video') &&
+          !previousRoute.startsWith('/liveRoom')) {
         pause();
       }
       return;
@@ -1782,7 +1794,7 @@ class PlPlayerController {
         queryParameters: {
           // 'aid': IdUtils.bv2av(_bvid),
           'bvid': _bvid,
-          'cid': _cid,
+          'cid': cid,
           'index': 1,
         },
         options: Options(

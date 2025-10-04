@@ -369,7 +369,9 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     }
     PageUtils.routeObserver.unsubscribe(this);
     WidgetsBinding.instance.removeObserver(this);
-    showStatusBar();
+    if (Utils.isMobile) {
+      showStatusBar();
+    }
     super.dispose();
   }
 
@@ -413,6 +415,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
 
     WidgetsBinding.instance.addObserver(this);
 
+    plPlayerController?.isLive = false;
     if (videoDetailController.plPlayerController.playerStatus.status.value ==
             PlayerStatus.playing &&
         videoDetailController.playerStatus != PlayerStatus.playing) {
@@ -545,7 +548,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     videoDetailController.animationController
       ..removeListener(animListener)
       ..addListener(animListener);
-    if (mounted && isShowing && !isFullScreen) {
+    if (Utils.isMobile && mounted && isShowing && !isFullScreen) {
       if (isPortrait) {
         if (!videoDetailController.imageStatus) {
           showStatusBar();
@@ -2243,10 +2246,12 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
       return;
     }
     if (isFullScreen) {
-      plPlayerController!.triggerFullScreen(status: false);
+      videoDetailController.plPlayerController.triggerFullScreen(status: false);
+      return;
     }
     if (!videoDetailController.horizontalScreen && !isPortrait) {
       verticalScreenForTwoSeconds();
+      return;
     }
   }
 

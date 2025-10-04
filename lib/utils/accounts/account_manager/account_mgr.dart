@@ -100,7 +100,6 @@ class AccountManager extends Interceptor {
       Api.liveSecondList,
       Api.liveRoomAreaList,
       Api.liveSearch,
-      Api.videoRelation,
       Api.bgmRecommend,
       Api.dynTopicRcmd,
       Api.topicFeed,

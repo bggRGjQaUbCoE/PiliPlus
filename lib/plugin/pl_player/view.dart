@@ -440,7 +440,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
             return;
           }
           int? index;
-          int currentCid = plPlayerController.cid;
+          int currentCid = plPlayerController.cid!;
           String bvid = plPlayerController.bvid;
           List episodes = [];
           if (isSeason) {
@@ -1783,8 +1783,17 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       return Listener(
         behavior: HitTestBehavior.translucent,
         onPointerDown: (event) {
-          if (event.buttons == kMiddleMouseButton) {
-            plPlayerController.triggerFullScreen(status: !isFullScreen);
+          final buttons = event.buttons;
+          final isSecondaryBtn = buttons == kSecondaryMouseButton;
+          if (isSecondaryBtn || buttons == kMiddleMouseButton) {
+            plPlayerController
+                .triggerFullScreen(
+                  status: !isFullScreen,
+                  inAppFullScreen: isSecondaryBtn,
+                )
+                .whenComplete(
+                  () => plPlayerController.initialFocalPoint = Offset.zero,
+                );
           }
         },
         onPointerSignal: (event) {

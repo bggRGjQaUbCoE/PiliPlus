@@ -96,6 +96,7 @@ class ProgressBar extends LeafRenderObjectWidget {
     this.timeLabelType,
     this.timeLabelTextStyle,
     this.timeLabelPadding = 0.0,
+    this.textScaleFactor = 1.0,
   });
 
   /// The elapsed playing time of the media.
@@ -252,12 +253,13 @@ class ProgressBar extends LeafRenderObjectWidget {
   /// the progress bar and a negative number will move them closer.
   final double timeLabelPadding;
 
+  final double textScaleFactor;
+
   @override
   RenderObject createRenderObject(BuildContext context) {
     final theme = Theme.of(context);
     final primaryColor = theme.colorScheme.primary;
     final textStyle = timeLabelTextStyle ?? theme.textTheme.bodyLarge;
-    final textScaleFactor = MediaQuery.textScalerOf(context).scale(1);
     return _RenderProgressBar(
       progress: progress,
       total: total,
@@ -291,10 +293,9 @@ class ProgressBar extends LeafRenderObjectWidget {
     final theme = Theme.of(context);
     final primaryColor = theme.colorScheme.primary;
     final textStyle = timeLabelTextStyle ?? theme.textTheme.bodyLarge;
-    final textScaleFactor = MediaQuery.textScalerOf(context).scale(1);
     (renderObject as _RenderProgressBar)
-      ..progress = progress
       ..total = total
+      ..progress = progress
       ..buffered = buffered ?? Duration.zero
       ..onSeek = onSeek
       ..onDragStart = onDragStart

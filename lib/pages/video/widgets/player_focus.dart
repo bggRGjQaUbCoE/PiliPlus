@@ -155,14 +155,18 @@ class PlayerFocus extends StatelessWidget {
           return true;
 
         case LogicalKeyboardKey.keyF:
-          plPlayerController.triggerFullScreen(
-            status: !isFullScreen,
-            inAppFullScreen: HardwareKeyboard.instance.isShiftPressed,
-          );
+          plPlayerController
+            ..triggerFullScreen(
+              status: !isFullScreen,
+              inAppFullScreen: HardwareKeyboard.instance.isShiftPressed,
+            )
+            ..controlsLock.value = false;
           return true;
 
         case LogicalKeyboardKey.escape:
-          if (plPlayerController.isDesktopPip) {
+          if (plPlayerController.controlsLock.value) {
+            plPlayerController.onLockControl(false);
+          } else if (plPlayerController.isDesktopPip) {
             plPlayerController.exitDesktopPip();
           } else if (isFullScreen) {
             plPlayerController.triggerFullScreen(status: false);
@@ -189,7 +193,9 @@ class PlayerFocus extends StatelessWidget {
 
         case LogicalKeyboardKey.keyP:
           if (Utils.isDesktop && hasPlayer) {
-            plPlayerController.toggleDesktopPip();
+            plPlayerController
+              ..toggleDesktopPip()
+              ..controlsLock.value = false;
           }
           return true;
 

@@ -279,7 +279,9 @@ class MyApp extends StatelessWidget {
                     final plCtr = PlPlayerController.instance;
                     if (plCtr != null) {
                       if (plCtr.isFullScreen.value == true) {
-                        plCtr.triggerFullScreen(status: false);
+                        plCtr
+                          ..triggerFullScreen(status: false)
+                          ..controlsLock.value = false;
                         return;
                       }
 

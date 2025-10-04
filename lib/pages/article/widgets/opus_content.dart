@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:PiliPlus/common/widgets/cached_network_svg_image.dart';
 import 'package:PiliPlus/common/widgets/image/custom_grid_view.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/http/constants.dart';
@@ -15,7 +16,6 @@ import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:cached_network_svg_image/cached_network_svg_image.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -88,7 +88,6 @@ class OpusContent extends StatelessWidget {
           child: CachedNetworkSVGImage(
             cacheKey: latex,
             semanticsLabel: latex,
-            height: 65,
             '${HttpString.apiBaseUrl}/x/web-frontend/mathjax/tex?formula=${Uri.encodeComponent(latex)}',
             colorFilter: ColorFilter.mode(
               colorScheme.onSurfaceVariant,
@@ -96,6 +95,7 @@ class OpusContent extends StatelessWidget {
             ),
             alignment: Alignment.centerLeft,
             placeholderBuilder: (_) => Text(latex),
+            errorWidget: Text(latex),
           ),
         );
       default:

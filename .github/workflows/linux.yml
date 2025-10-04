@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: ${{ github.event.inputs.branch }}
           fetch-depth: 0
@@ -51,10 +51,7 @@ jobs:
         with:
           channel: stable
           flutter-version-file: pubspec.yaml
-
-      - name: Get Flutter dependencies
-        run: flutter pub get
-        shell: bash
+          cache: true
 
       - name: Set and Extract version
         run: |
@@ -65,7 +62,7 @@ jobs:
 
         #TODO: deb and rpm packages need to be build
       - name: Build Linux
-        run: flutter build linux --release -v
+        run: flutter build linux --release -v --pub
 
       - name: Package .tar.gz
         run: tar -zcvf PiliPlus_linux_${{ env.version }}_amd64.tar.gz -C build/linux/x64/release/bundle .
@@ -124,4 +121,4 @@ jobs:
         with:
           name: Linux_deb_package
           path: PiliPlus_linux_*.deb
-          
+

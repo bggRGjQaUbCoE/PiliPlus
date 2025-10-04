@@ -3,7 +3,7 @@
     "tasks": [
         {
             "label": "Update build_config",
-            "command": "dart lib/scripts/build.dart",
+            "command": "dart lib/scripts/build.dart dev",
             "type": "shell",
             "problemMatcher": [],
             "presentation": {
@@ -13,7 +13,7 @@
         },
         {
             "label": "Update build_config (FVM)",
-            "command": "fvm dart lib/scripts/build.dart",
+            "command": "fvm dart lib/scripts/build.dart dev",
             "type": "shell",
             "problemMatcher": [],
             "presentation": {

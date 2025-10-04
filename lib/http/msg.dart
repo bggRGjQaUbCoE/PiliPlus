@@ -86,15 +86,16 @@ class MsgHttp {
   }
 
   static Future<LoadingState<MsgLikeDetailData>> msgLikeDetail({
-    required dynamic cardId,
+    required Object cardId,
     required int pn,
+    Object lastMid = 0,
   }) async {
     var res = await Request().get(
       Api.msgLikeDetail,
       queryParameters: {
         'card_id': cardId,
         'pn': pn,
-        'last_view_at': 0,
+        'last_mid': lastMid,
         'platform': 'web',
         'build': 0,
         'mobi_app': 'web',

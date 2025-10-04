@@ -51,16 +51,18 @@ jobs:
       - name: Prepare Upload
         run: |
           mkdir -p Release/PiliPlus-Win
-          mv build/windows/x64/runner/Release/* Release/PiliPlus-Win/
+          mkdir -p Release/PiliPlus-Win-Setup
+          mv build/windows/x64/runner/Release/* Release/PiliPlus-Win/PiliPlus
+          mv dist/* Release/PiliPlus-Win-Setup/
 
       - name: Upload windows file release
         uses: actions/upload-artifact@v4
         with:
           name: windows-file-release
-          path: Release
+          path: Release/PiliPlus-Win
       
       - name: Upload windows setup release
         uses: actions/upload-artifact@v4
         with:
           name: windows-setup-release
-          path: dist
+          path: Release/PiliPlus-Win-Setup

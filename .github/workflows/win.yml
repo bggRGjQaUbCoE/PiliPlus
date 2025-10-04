@@ -8,12 +8,12 @@ on:
       - reopened
       - ready_for_review
     paths-ignore:
-      - '**.md'
+      - "**.md"
   workflow_dispatch:
     inputs:
       branch:
         required: false
-        default: 'main'
+        default: "main"
 
 jobs:
   build-windows-app:
@@ -31,12 +31,12 @@ jobs:
         with:
           channel: stable
           flutter-version-file: pubspec.yaml
-      
+
       - name: Add fastforge and Inno Setup
         run: |
           dart pub global activate fastforge
           choco install innosetup
-      
+
       - name: Add Chinese language file for Inno Setup
         run: |
           Copy-Item "windows/packaging/exe/ChineseSimplified.isl" "C:\Program Files (x86)\Inno Setup 6\Languages\ChineseSimplified.isl"
@@ -51,18 +51,18 @@ jobs:
       - name: Prepare Upload
         run: |
           mkdir -p Release/PiliPlus-Win
-          mkdir -p Release/PiliPlus-Win-Setup
-          mv build/windows/x64/runner/Release/* Release/PiliPlus-Win/PiliPlus
-          mv dist/* Release/PiliPlus-Win-Setup/
+          mkdir -p PiliPlus-Win-Setup
+          mv build/windows/x64/runner/Release/* Release/PiliPlus-Win/
+          mv dist/**/*.exe PiliPlus-Win-Setup/
 
       - name: Upload windows file release
         uses: actions/upload-artifact@v4
         with:
           name: windows-file-release
-          path: Release/PiliPlus-Win
-      
+          path: Release
+
       - name: Upload windows setup release
         uses: actions/upload-artifact@v4
         with:
           name: windows-setup-release
-          path: Release/PiliPlus-Win-Setup
+          path: PiliPlus-Win-Setup

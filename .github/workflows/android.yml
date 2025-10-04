@@ -26,7 +26,7 @@ jobs:
         with:
           distribution: "zulu"
           java-version: "17"
-          cache: 'gradle'
+          cache: "gradle"
           cache-dependency-path: |
             android/*.gradle*
             android/**/gradle-wrapper.properties
@@ -40,7 +40,6 @@ jobs:
           cache: true
 
       - name: apply bottom sheet patch
-        if: steps.flutter-action.outputs.CACHE-HIT != 'true'
         working-directory: ${{ env.FLUTTER_ROOT }}
         run: git apply $GITHUB_WORKSPACE/lib/scripts/bottom_sheet_patch.diff
 

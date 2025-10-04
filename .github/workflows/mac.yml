@@ -8,12 +8,12 @@ on:
       - reopened
       - ready_for_review
     paths-ignore:
-      - '**.md'
+      - "**.md"
   workflow_dispatch:
     inputs:
       branch:
         required: false
-        default: 'main'
+        default: "main"
 
 jobs:
   build-mac-app:
@@ -21,7 +21,7 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: ${{ github.event.inputs.branch }}
           fetch-depth: 0

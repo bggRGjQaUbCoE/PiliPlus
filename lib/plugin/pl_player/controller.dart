@@ -1514,6 +1514,7 @@ class PlPlayerController {
 
   late final FullScreenMode mode = FullScreenMode.values[Pref.fullScreenMode];
   late final horizontalScreen = Pref.horizontalScreen;
+  late final useInAppFullscreen = Pref.useInAppFullscreen;
 
   // 全屏
   bool fsProcessing = false;
@@ -1552,7 +1553,8 @@ class PlPlayerController {
           await landscape();
         }
       } else {
-        await enterDesktopFullscreen(inAppFullScreen: inAppFullScreen);
+        // 根据设置决定使用窗口内全屏还是铺满屏幕全屏
+        await enterDesktopFullscreen(inAppFullScreen: inAppFullScreen || useInAppFullscreen);
       }
     } else {
       if (Utils.isMobile) {

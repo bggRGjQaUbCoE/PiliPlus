@@ -33,6 +33,7 @@ abstract class SettingBoxKey {
       enableLongShowControl = 'enableLongShowControl',
       allowRotateScreen = 'allowRotateScreen',
       horizontalScreen = 'horizontalScreen',
+      useInAppFullscreen = 'useInAppFullscreen',
       CDNService = 'CDNService',
       disableAudioCDN = 'disableAudioCDN',
       autoPiP = 'autoPiP',

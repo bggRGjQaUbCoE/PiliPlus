@@ -200,6 +200,14 @@ List<SettingsModel> get playSettings => [
   ),
   const SettingsModel(
     settingsType: SettingsType.sw1tch,
+    title: '窗口内全屏',
+    subtitle: '开启后全屏功能将铺满窗口而不是铺满屏幕',
+    leading: Icon(Icons.fit_screen_outlined),
+    setKey: SettingBoxKey.useInAppFullscreen,
+    defaultVal: false,
+  ),
+  const SettingsModel(
+    settingsType: SettingsType.sw1tch,
     title: '后台播放',
     subtitle: '进入后台时继续播放',
     leading: Icon(Icons.motion_photos_pause_outlined),

@@ -181,6 +181,11 @@ abstract class Pref {
     SettingBoxKey.fullScreenMode,
     defaultValue: FullScreenMode.auto.index,
   );
+  
+  static bool get useInAppFullscreen => _setting.get(
+    SettingBoxKey.useInAppFullscreen,
+    defaultValue: false,
+  );
 
   static int get btmProgressBehavior => _setting.get(
     SettingBoxKey.btmProgressBehavior,

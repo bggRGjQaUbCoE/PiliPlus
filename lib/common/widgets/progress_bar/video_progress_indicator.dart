@@ -8,6 +8,8 @@ Widget videoProgressIndicator(double progress) => ClipRect(
     child: LinearProgressIndicator(
       minHeight: 10,
       value: progress,
+      // ignore: deprecated_member_use
+      year2023: true,
       stopIndicatorColor: Colors.transparent,
     ),
   ),

@@ -11,7 +11,6 @@ import 'package:PiliPlus/models_new/live/live_danmaku/live_emote.dart';
 import 'package:PiliPlus/models_new/live/live_dm_info/data.dart';
 import 'package:PiliPlus/models_new/live/live_room_info_h5/data.dart';
 import 'package:PiliPlus/models_new/live/live_room_play_info/codec.dart';
-import 'package:PiliPlus/models_new/live/live_room_play_info/data.dart';
 import 'package:PiliPlus/models_new/live/live_superchat/item.dart';
 import 'package:PiliPlus/pages/live_room/send_danmaku/view.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
@@ -135,10 +134,14 @@ class LiveRoomController extends GetxController {
       qn: currentQn,
       onlyAudio: plPlayerController.onlyPlayAudio.value,
     );
-    if (res['status']) {
-      RoomPlayInfoData data = res['data'];
+    if (res.isSuccess) {
+      final data = res.data;
       if (data.liveStatus != 1) {
         _showDialog('当前直播间未开播');
+        return;
+      }
+      if (data.playurlInfo?.playurl == null) {
+        _showDialog('无法获取播放地址');
         return;
       }
       if (data.roomId != null) {
@@ -163,6 +166,8 @@ class LiveRoomController extends GetxController {
       videoUrl = VideoUtils.getCdnUrl(item);
       await playerInit();
       isLoaded.value = true;
+    } else {
+      _showDialog(res.toString());
     }
   }
 

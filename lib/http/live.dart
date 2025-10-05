@@ -76,7 +76,11 @@ abstract final class LiveHttp {
     }
   }
 
-  static Future liveRoomInfo({roomId, qn, bool onlyAudio = false}) async {
+  static Future<LoadingState<RoomPlayInfoData>> liveRoomInfo({
+    roomId,
+    qn,
+    bool onlyAudio = false,
+  }) async {
     var res = await Request().get(
       Api.liveRoomInfo,
       queryParameters: {
@@ -93,12 +97,9 @@ abstract final class LiveHttp {
       },
     );
     if (res.data['code'] == 0) {
-      return {
-        'status': true,
-        'data': RoomPlayInfoData.fromJson(res.data['data']),
-      };
+      return Success(RoomPlayInfoData.fromJson(res.data['data']));
     } else {
-      return {'status': false, 'msg': res.data['message']};
+      return Error(res.data['message']);
     }
   }
 

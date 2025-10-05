@@ -833,17 +833,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       if (cumulativeDelta.distance < 1) return;
       if (cumulativeDelta.dx.abs() > 3 * cumulativeDelta.dy.abs()) {
         _gestureType = GestureType.horizontal;
-        if (Utils.isMobile) {
-          late final isFullScreen = this.isFullScreen;
-          final progressType = plPlayerController.progressType;
-          if (progressType == BtmProgressBehavior.alwaysHide ||
-              (isFullScreen &&
-                  progressType == BtmProgressBehavior.onlyHideFullScreen) ||
-              (!isFullScreen &&
-                  progressType == BtmProgressBehavior.onlyShowFullScreen)) {
-            plPlayerController.controls = true;
-          }
-        }
+        _showControlsIfNeeded();
       } else if (cumulativeDelta.dy.abs() > 3 * cumulativeDelta.dx.abs()) {
         if (!plPlayerController.enableSlideVolumeBrightness &&
             !plPlayerController.enableSlideFS) {
@@ -1090,12 +1080,27 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     }
   }
 
+  void _showControlsIfNeeded() {
+    if (plPlayerController.isLive) return;
+    late final isFullScreen = this.isFullScreen;
+    final progressType = plPlayerController.progressType;
+    if (progressType == BtmProgressBehavior.alwaysHide ||
+        (isFullScreen &&
+            progressType == BtmProgressBehavior.onlyHideFullScreen) ||
+        (!isFullScreen &&
+            progressType == BtmProgressBehavior.onlyShowFullScreen)) {
+      plPlayerController.controls = true;
+    }
+  }
+
   void onPointerPanZoomUpdate(PointerPanZoomUpdateEvent event) {
+    if (plPlayerController.controlsLock.value) return;
     if (_gestureType == null) {
       final pan = event.pan;
       if (pan.distance < 1) return;
       if (pan.dx.abs() > 3 * pan.dy.abs()) {
         _gestureType = GestureType.horizontal;
+        _showControlsIfNeeded();
       } else if (pan.dy.abs() > 3 * pan.dx.abs()) {
         _gestureType = GestureType.right;
       }
@@ -2100,7 +2105,7 @@ Widget buildSeekPreviewWidget(
 
         final double scale =
             plPlayerController.isFullScreen.value &&
-                !plPlayerController.isVertical
+                (Utils.isDesktop || !plPlayerController.isVertical)
             ? 4
             : 3;
         double height = 27 * scale;

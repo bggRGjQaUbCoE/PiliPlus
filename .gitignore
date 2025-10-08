@@ -137,8 +137,6 @@ app.*.symbols
 !.vscode/launch.json
 !.vscode/tasks.json
 
-/lib/build_config.dart
-
 devtools_options.yaml
 
 # FVM Version Cache

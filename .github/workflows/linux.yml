@@ -54,15 +54,12 @@ jobs:
           cache: true
 
       - name: Set and Extract version
-        run: |
-          dart lib/scripts/build.dart
-          VERSION=$(cat pubspec.yaml | grep 'version:' | sed 's/version: //g' | tr -d '[:space:]')
-          echo "version=$VERSION" >> $GITHUB_ENV
-        shell: bash
+        shell: pwsh
+        run: lib/scripts/build.ps1
 
         #TODO: deb and rpm packages need to be build
       - name: Build Linux
-        run: flutter build linux --release -v --pub
+        run: flutter build linux --release -v --pub --dart-define-from-file=pili_release.json --build-name="${{ env.version }}" --build-number="${{ env.number }}"
 
       - name: Package .tar.gz
         run: tar -zcvf PiliPlus_linux_${{ env.version }}_amd64.tar.gz -C build/linux/x64/release/bundle .

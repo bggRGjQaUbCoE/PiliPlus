@@ -40,12 +40,15 @@ jobs:
       - name: Add Chinese language file for Inno Setup
         run: |
           Copy-Item "windows/packaging/exe/ChineseSimplified.isl" "C:\Program Files (x86)\Inno Setup 6\Languages\ChineseSimplified.isl"
-        shell: powershell
+        shell: pwsh
+
+      - name: Set and Extract version
+        shell: pwsh
+        run: lib/scripts/build.ps1 android
 
       - name: Build Windows
         run: |
-          dart lib/scripts/build.dart
-          flutter build windows --release
+          flutter build windows --release --dart-define-from-file=pili_release.json --build-name="${{ env.version }}" --build-number="${{ env.number }}"
           fastforge package --platform windows --targets exe
 
       - name: Prepare Upload

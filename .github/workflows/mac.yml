@@ -32,12 +32,12 @@ jobs:
           channel: stable
           flutter-version-file: pubspec.yaml
 
+      - name: Set and Extract version
+        shell: pwsh
+        run: lib/scripts/build.ps1
+
       - name: Build Mac
-        run: |
-          dart lib/scripts/build.dart
-          VERSION=$(cat pubspec.yaml | grep 'version:' | sed 's/version: //g' | tr -d '[:space:]')
-          echo "version=$VERSION" >> $GITHUB_ENV
-          flutter build macos --release
+        run: flutter build macos --release --dart-define-from-file=pili_release.json --build-name="${{ env.version }}" --build-number="${{ env.number }}"
 
       - name: Prepare Upload
         run: |

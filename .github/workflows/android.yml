@@ -57,10 +57,12 @@ jobs:
             echo keyPassword='${{ secrets.KEY_PASSWORD }}' >> android/key.properties
           fi
 
+      - name: Set and Extract version
+        shell: pwsh
+        run: lib/scripts/build.ps1 andro
+
       - name: flutter build apk
-        run: |
-          dart lib/scripts/build.dart "android"
-          flutter build apk --release --split-per-abi --pub
+        run: flutter build apk --release --split-per-abi --dart-define-from-file=pili_release.json --build-name="${{ env.version }}" --build-number="${{ env.number }}" --pub
 
       - name: 上传
         uses: actions/upload-artifact@v4

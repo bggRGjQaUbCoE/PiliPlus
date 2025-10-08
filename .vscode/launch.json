@@ -1,48 +1,25 @@
 {
-    // 使用 IntelliSense 了解相关属性。 
+    // 使用 IntelliSense 了解相关属性。
     // 悬停以查看现有属性的描述。
     // 欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Debug",
+            "name": "PiliPlus",
             "request": "launch",
-            "type": "dart",
-            "preLaunchTask": "Update build_config"
+            "type": "dart"
         },
         {
-            "name": "Profile",
+            "name": "PiliPlus (profile mode)",
             "request": "launch",
             "type": "dart",
-            "flutterMode": "profile",
-            "preLaunchTask": "Update build_config"
+            "flutterMode": "profile"
         },
         {
-            "name": "Release",
+            "name": "PiliPlus (release mode)",
             "request": "launch",
             "type": "dart",
-            "flutterMode": "release",
-            "preLaunchTask": "Update build_config"
-        },
-        {
-            "name": "Debug (FVM)",
-            "request": "launch",
-            "type": "dart",
-            "preLaunchTask": "Update build_config (FVM)"
-        },
-        {
-            "name": "Profile (FVM)",
-            "request": "launch",
-            "type": "dart",
-            "flutterMode": "profile",
-            "preLaunchTask": "Update build_config (FVM)"
-        },
-        {
-            "name": "Release (FVM)",
-            "request": "launch",
-            "type": "dart",
-            "flutterMode": "release",
-            "preLaunchTask": "Update build_config (FVM)"
+            "flutterMode": "release"
         }
     ]
 }

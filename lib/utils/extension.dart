@@ -14,12 +14,12 @@ import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart' hide ContextExtensionss;
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
-extension ImageExtension on num? {
+extension ImageExtension on num {
   int? cacheSize(BuildContext context) {
-    if (this == null || this == 0) {
+    if (this == 0) {
       return null;
     }
-    return (this! * MediaQuery.devicePixelRatioOf(context)).round();
+    return (this * MediaQuery.devicePixelRatioOf(context)).round();
   }
 }
 
@@ -57,13 +57,43 @@ extension IterableExt<T> on Iterable<T>? {
   bool get isNullOrEmpty => this == null || this!.isEmpty;
 }
 
+extension NonNullIterableExt<T> on Iterable<T> {
+  T? reduceOrNull(T Function(T value, T element) combine) {
+    Iterator<T> iterator = this.iterator;
+    if (!iterator.moveNext()) {
+      return null;
+    }
+    T value = iterator.current;
+    while (iterator.moveNext()) {
+      value = combine(value, iterator.current);
+    }
+    return value;
+  }
+}
+
 extension MapExt<K, V> on Map<K, V> {
   Map<RK, RV> fromCast<RK, RV>() {
     return Map<RK, RV>.from(this);
   }
 }
 
-extension NonNullListExt<T> on List<T> {
+extension ListExt<T> on List<T> {
+  T? getOrNull(int index) {
+    if (index < 0 || index >= length) {
+      return null;
+    }
+    return this[index];
+  }
+
+  bool removeFirstWhere(bool Function(T) test) {
+    final index = indexWhere(test);
+    if (index != -1) {
+      removeAt(index);
+      return true;
+    }
+    return false;
+  }
+
   List<R> fromCast<R>() {
     return List<R>.from(this);
   }
@@ -72,34 +102,7 @@ extension NonNullListExt<T> on List<T> {
     bool Function(T) test,
     T Function(T, T) combine,
   ) {
-    final filters = where(test).toList();
-    return filters.isNotEmpty ? filters.reduce(combine) : reduce(combine);
-  }
-}
-
-extension ListExt<T> on List<T>? {
-  T? getOrNull(int index) {
-    if (isNullOrEmpty) {
-      return null;
-    }
-    if (index < 0 || index >= this!.length) {
-      return null;
-    }
-    return this![index];
-  }
-
-  T getOrElse(int index, {required T Function() orElse}) {
-    return getOrNull(index) ?? orElse();
-  }
-
-  bool removeFirstWhere(bool Function(T) test) {
-    if (this == null) return false;
-    final index = this!.indexWhere(test);
-    if (index != -1) {
-      this!.removeAt(index);
-      return true;
-    }
-    return false;
+    return where(test).reduceOrNull(combine) ?? reduce(combine);
   }
 }
 

@@ -59,7 +59,7 @@ jobs:
 
       - name: Set and Extract version
         shell: pwsh
-        run: lib/scripts/build.ps1 andro
+        run: lib/scripts/build.ps1 android
 
       - name: flutter build apk
         run: flutter build apk --release --split-per-abi --dart-define-from-file=pili_release.json --build-name="${{ env.version }}" --build-number="${{ env.number }}" --pub

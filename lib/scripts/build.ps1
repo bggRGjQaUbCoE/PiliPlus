@@ -3,7 +3,7 @@ param(
 )
 
 try {
-    $versionName = (Get-Content pubspec.yaml | Select-String 'version:\s*([\d.]+)').Matches[0].Groups[1].Value
+    $versionName = (Get-Content pubspec.yaml | Select-String 'version:\s*([\d\.]+)').Matches[0].Groups[1].Value
 
     $commitHash = (git rev-parse HEAD).Trim()
 

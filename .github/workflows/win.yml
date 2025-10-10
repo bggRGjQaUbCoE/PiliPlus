@@ -44,11 +44,11 @@ jobs:
 
       - name: Set and Extract version
         shell: pwsh
-        run: lib/scripts/build.ps1 android
+        run: lib/scripts/build.ps1
 
       - name: Build Windows
         run: |
-          flutter build windows --release --dart-define-from-file=pili_release.json --build-name="${{ env.version }}" --build-number="${{ env.number }}"
+          flutter build windows --release --dart-define-from-file=pili_release.json
           fastforge package --platform windows --targets exe
 
       - name: Prepare Upload

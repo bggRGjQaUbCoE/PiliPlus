@@ -38,7 +38,7 @@ jobs:
 
       - name: Build iOS
         run: |
-          flutter build ios --release --no-codesign --dart-define-from-file=pili_release.json --build-name="${{ env.version }}" --build-number="${{ env.number }}"
+          flutter build ios --release --no-codesign --dart-define-from-file=pili_release.json
           ln -sf ./build/ios/iphoneos Payload
           zip -r9 ios-release-no-sign.ipa Payload/runner.app
 

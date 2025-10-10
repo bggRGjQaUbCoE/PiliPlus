@@ -37,7 +37,7 @@ jobs:
         run: lib/scripts/build.ps1
 
       - name: Build Mac
-        run: flutter build macos --release --dart-define-from-file=pili_release.json --build-name="${{ env.version }}" --build-number="${{ env.number }}"
+        run: flutter build macos --release --dart-define-from-file=pili_release.json
 
       - name: Prepare Upload
         run: |

@@ -62,7 +62,7 @@ jobs:
         run: lib/scripts/build.ps1 android
 
       - name: flutter build apk
-        run: flutter build apk --release --split-per-abi --dart-define-from-file=pili_release.json --build-name="${{ env.version }}" --build-number="${{ env.number }}" --pub
+        run: flutter build apk --release --split-per-abi --dart-define-from-file=pili_release.json --pub
 
       - name: 上传
         uses: actions/upload-artifact@v4

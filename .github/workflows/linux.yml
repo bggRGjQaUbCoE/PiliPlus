@@ -59,7 +59,7 @@ jobs:
 
         #TODO: deb and rpm packages need to be build
       - name: Build Linux
-        run: flutter build linux --release -v --pub --dart-define-from-file=pili_release.json --build-name="${{ env.version }}" --build-number="${{ env.number }}"
+        run: flutter build linux --release -v --pub --dart-define-from-file=pili_release.json
 
       - name: Package .tar.gz
         run: tar -zcvf PiliPlus_linux_${{ env.version }}_amd64.tar.gz -C build/linux/x64/release/bundle .

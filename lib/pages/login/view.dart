@@ -78,7 +78,7 @@ class _LoginPageState extends State<LoginPage> {
             if (kDebugMode || Utils.isMobile)
               TextButton.icon(
                 onPressed: () => PageUtils.launchURL(
-                  _loginPageCtr.codeInfo.value.data.url,
+                  'bilibili://browser?url=${Uri.encodeComponent(_loginPageCtr.codeInfo.value.data.url)}',
                   mode: LaunchMode.externalNonBrowserApplication,
                 ),
                 icon: const Icon(Icons.open_in_browser_outlined),

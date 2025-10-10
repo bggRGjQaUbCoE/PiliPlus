@@ -143,3 +143,5 @@ devtools_options.yaml
 .fvm/
 
 pili_release.json
+
+dist

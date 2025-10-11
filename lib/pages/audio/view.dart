@@ -19,7 +19,6 @@ import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/utils.dart';
-import 'package:fixnum/fixnum.dart' show Int64;
 import 'package:flutter/gestures.dart' show TapGestureRecognizer;
 import 'package:flutter/material.dart' hide DraggableScrollableSheet;
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -104,11 +103,7 @@ class _AudioPageState extends State<AudioPage> {
                 spacing: 12,
                 children: [
                   Expanded(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [_buildInfo(colorScheme, isPortrait)],
-                    ),
+                    child: _buildInfo(colorScheme, isPortrait),
                   ),
                   Expanded(
                     child: Column(
@@ -574,7 +569,6 @@ class _AudioPageState extends State<AudioPage> {
             ),
           ),
           if (audioItem.associatedItem.hasOid() &&
-              audioItem.associatedItem.oid != Int64.ZERO &&
               audioItem.associatedItem.subId.isNotEmpty)
             ActionItem(
               icon: const Icon(Icons.play_circle_outline_outlined),
@@ -715,90 +709,104 @@ class _AudioPageState extends State<AudioPage> {
       if (audioItem != null) {
         final cover = audioItem.arc.cover.http2https;
         return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Center(
-              child: GestureDetector(
-                onTap: () => PageUtils.imageView(
-                  imgList: [SourceModel(url: cover)],
-                ),
-                child: Hero(
-                  tag: cover,
-                  child: NetworkImgLayer(
-                    src: cover,
-                    width: 200,
-                    height: 200,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-            SelectableText(
-              audioItem.arc.title,
-              style: const TextStyle(
-                height: 1.7,
-                fontSize: 15,
-              ),
-            ),
-            const SizedBox(height: 20),
-            Row(
-              children: [
-                Icon(
-                  size: 14,
-                  Icons.headphones_outlined,
-                  color: colorScheme.outline,
-                ),
-                Text.rich(
-                  TextSpan(
-                    children: [
-                      TextSpan(
-                        text:
-                            ' ${NumUtils.numFormat(audioItem.stat.view)}   '
-                            '${DateFormatUtils.dateFormat(audioItem.arc.publish.toInt(), long: DateFormatUtils.longFormatD)}   ',
+            Expanded(
+              child: Center(
+                child: CustomScrollView(
+                  key: const PageStorageKey(_AudioPageState),
+                  shrinkWrap: true,
+                  slivers: [
+                    SliverToBoxAdapter(
+                      child: Center(
+                        child: GestureDetector(
+                          onTap: () => PageUtils.imageView(
+                            imgList: [SourceModel(url: cover)],
+                          ),
+                          child: Hero(
+                            tag: cover,
+                            child: NetworkImgLayer(
+                              src: cover,
+                              width: 200,
+                              height: 200,
+                            ),
+                          ),
+                        ),
                       ),
-                      TextSpan(
-                        text: audioItem.arc.displayedOid,
-                        style: TextStyle(color: colorScheme.primary),
-                        recognizer: TapGestureRecognizer()
-                          ..onTap = () =>
-                              Utils.copyText(audioItem.arc.displayedOid),
-                      ),
-                    ],
-                  ),
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: colorScheme.outline,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            SelectableText(audioItem.arc.desc),
-            const SizedBox(height: 10),
-            if (audioItem.owner.hasName())
-              Row(
-                spacing: 6,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (audioItem.owner.hasAvatar())
-                    NetworkImgLayer(
-                      src: audioItem.owner.avatar,
-                      width: 22,
-                      height: 22,
-                      type: ImageType.avatar,
                     ),
-                  Text(
-                    audioItem.owner.name,
-                  ),
-                ],
-              ),
-            if (isPortrait)
-              Expanded(
-                child: Align(
-                  alignment: Alignment.bottomCenter,
-                  child: _buildActions(audioItem),
+                    const SliverToBoxAdapter(child: SizedBox(height: 12)),
+                    SliverToBoxAdapter(
+                      child: SelectableText(
+                        audioItem.arc.title,
+                        style: const TextStyle(
+                          height: 1.7,
+                          fontSize: 15,
+                        ),
+                      ),
+                    ),
+                    const SliverToBoxAdapter(child: SizedBox(height: 20)),
+                    SliverToBoxAdapter(
+                      child: Row(
+                        children: [
+                          Icon(
+                            size: 14,
+                            Icons.headphones_outlined,
+                            color: colorScheme.outline,
+                          ),
+                          Text.rich(
+                            TextSpan(
+                              children: [
+                                TextSpan(
+                                  text:
+                                      ' ${NumUtils.numFormat(audioItem.stat.view)}   '
+                                      '${DateFormatUtils.dateFormat(audioItem.arc.publish.toInt(), long: DateFormatUtils.longFormatD)}   ',
+                                ),
+                                TextSpan(
+                                  text: audioItem.arc.displayedOid,
+                                  style: TextStyle(color: colorScheme.primary),
+                                  recognizer: TapGestureRecognizer()
+                                    ..onTap = () => Utils.copyText(
+                                      audioItem.arc.displayedOid,
+                                    ),
+                                ),
+                              ],
+                            ),
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: colorScheme.outline,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SliverToBoxAdapter(child: SizedBox(height: 20)),
+                    SliverToBoxAdapter(
+                      child: SelectableText(audioItem.arc.desc),
+                    ),
+                    const SliverToBoxAdapter(child: SizedBox(height: 10)),
+                    if (audioItem.owner.hasName())
+                      SliverToBoxAdapter(
+                        child: Row(
+                          spacing: 6,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (audioItem.owner.hasAvatar())
+                              NetworkImgLayer(
+                                src: audioItem.owner.avatar,
+                                width: 22,
+                                height: 22,
+                                type: ImageType.avatar,
+                              ),
+                            Text(
+                              audioItem.owner.name,
+                            ),
+                          ],
+                        ),
+                      ),
+                  ],
                 ),
               ),
+            ),
+            if (isPortrait) _buildActions(audioItem),
           ],
         );
       }

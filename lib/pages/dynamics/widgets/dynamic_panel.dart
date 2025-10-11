@@ -162,30 +162,49 @@ class DynamicPanel extends StatelessWidget {
     late final major = item.modules.moduleDynamic?.major;
     switch (item.type) {
       case 'DYNAMIC_TYPE_AV':
-        title = major?.archive?.title;
-        cover = major?.archive?.cover;
-        bvid = major?.archive?.bvid;
+        if (major?.archive case final archive?) {
+          title = archive.title;
+          cover = archive.cover;
+          bvid = archive.bvid;
+        }
         break;
       case 'DYNAMIC_TYPE_UGC_SEASON':
-        title = major?.ugcSeason?.title;
-        cover = major?.ugcSeason?.cover;
-        bvid = major?.ugcSeason?.bvid;
+        if (major?.ugcSeason case final ugcSeason?) {
+          title = ugcSeason.title;
+          cover = ugcSeason.cover;
+          bvid = ugcSeason.bvid;
+        }
         break;
       case 'DYNAMIC_TYPE_PGC' || 'DYNAMIC_TYPE_PGC_UNION':
-        title = major?.pgc?.title;
-        cover = major?.pgc?.cover;
+        if (major?.pgc case final pgc?) {
+          title = pgc.title;
+          cover = pgc.cover;
+        }
         break;
       case 'DYNAMIC_TYPE_LIVE_RCMD':
-        title = major?.liveRcmd?.title;
-        cover = major?.liveRcmd?.cover;
+        if (major?.liveRcmd case final liveRcmd?) {
+          title = liveRcmd.title;
+          cover = liveRcmd.cover;
+        }
         break;
       case 'DYNAMIC_TYPE_LIVE':
-        title = major?.live?.title;
-        cover = major?.live?.cover;
+        if (major?.live case final live?) {
+          title = live.title;
+          cover = live.cover;
+        }
         break;
       case 'DYNAMIC_TYPE_COURSES_SEASON':
-        title = major?.courses?.title;
-        cover = major?.courses?.cover;
+        if (major?.courses case final courses?) {
+          title = courses.title;
+          cover = courses.cover;
+        }
+        break;
+      case 'DYNAMIC_TYPE_SUBSCRIPTION_NEW':
+        if (major?.subscriptionNew?.liveRcmd?.content?.livePlayInfo
+            case final livePlayInfo?) {
+          title = livePlayInfo.title;
+          cover = livePlayInfo.cover;
+        }
         break;
       default:
         morePanel(context);

@@ -2,7 +2,10 @@ import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/dyn/ink_well.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
+import 'package:PiliPlus/grpc/bilibili/app/listener/v1.pbenum.dart'
+    show PlaylistSource;
 import 'package:PiliPlus/models/dynamics/result.dart';
+import 'package:PiliPlus/pages/audio/view.dart';
 import 'package:PiliPlus/pages/dynamics/widgets/forward_panel.dart';
 import 'package:PiliPlus/pages/dynamics/widgets/live_panel.dart';
 import 'package:PiliPlus/pages/dynamics/widgets/live_panel_sub.dart';
@@ -197,50 +200,64 @@ Widget module(
         ),
       );
     case 'DYNAMIC_TYPE_MUSIC':
-      final Map music = major!.music!;
-      return InkWell(
-        onTap: () => PageUtils.handleWebview("https:${music['jump_url']}"),
-        child: Container(
-          padding: const EdgeInsets.only(
-            left: 12,
-            top: 10,
-            right: 12,
-            bottom: 10,
+      final music = major!.music!;
+      final borderRadius = floor == 1 ? null : StyleString.mdRadius;
+      final Color bgColor = floor == 1
+          ? theme.dividerColor.withValues(alpha: 0.08)
+          : theme.colorScheme.surface;
+      return Material(
+        color: bgColor,
+        borderRadius: borderRadius,
+        child: InkWell(
+          borderRadius: borderRadius,
+          onTap: () => AudioPage.toAudioPage(
+            oid: music.id!,
+            itemType: 3,
+            from: PlaylistSource.AUDIO_CARD,
           ),
-          color: theme.dividerColor.withValues(alpha: 0.08),
-          child: Row(
-            children: [
-              NetworkImgLayer(
-                radius: 8,
-                width: 45,
-                height: 45,
-                src: music['cover'],
-              ),
-              const SizedBox(width: 10),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    music['title'],
-                    style: TextStyle(
-                      color: theme.colorScheme.primary,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+          child: Padding(
+            padding: const EdgeInsets.only(
+              left: 12,
+              top: 10,
+              right: 12,
+              bottom: 10,
+            ),
+            child: Row(
+              spacing: 10,
+              children: [
+                NetworkImgLayer(
+                  radius: 8,
+                  width: 45,
+                  height: 45,
+                  src: music.cover,
+                ),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        music.title!,
+                        style: TextStyle(
+                          color: theme.colorScheme.primary,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        music.label!,
+                        style: TextStyle(
+                          color: theme.colorScheme.outline,
+                          fontSize: theme.textTheme.labelMedium!.fontSize,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 2),
-                  Text(
-                    music['label'],
-                    style: TextStyle(
-                      color: theme.colorScheme.outline,
-                      fontSize: theme.textTheme.labelMedium!.fontSize,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-            ],
+                ),
+              ],
+            ),
           ),
         ),
       );

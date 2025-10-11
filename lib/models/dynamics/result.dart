@@ -989,7 +989,7 @@ class DynamicMajorModel {
   String? type;
   DynamicArchiveModel? courses;
   Common? common;
-  Map? music;
+  Music? music;
   ModuleBlocked? blocked;
   Medialist? medialist;
 
@@ -1025,7 +1025,7 @@ class DynamicMajorModel {
         ? null
         : DynamicArchiveModel.fromJson(json['courses']);
     common = json['common'] == null ? null : Common.fromJson(json['common']);
-    music = json['music'];
+    music = json['music'] == null ? null : Music.fromJson(json['music']);
     blocked = json['blocked'] == null
         ? null
         : ModuleBlocked.fromJson(json['blocked']);
@@ -1035,6 +1035,22 @@ class DynamicMajorModel {
     subscriptionNew = json['subscription_new'] == null
         ? null
         : SubscriptionNew.fromJson(json['subscription_new']);
+  }
+}
+
+class Music {
+  int? id;
+  String? cover;
+  String? title;
+  String? jumpUrl;
+  String? label;
+
+  Music.fromJson(Map<String, dynamic> json) {
+    id = json['id'];
+    cover = json['cover'];
+    title = json['title'];
+    label = json['label'];
+    jumpUrl = json['jump_url'];
   }
 }
 

@@ -19,6 +19,7 @@ import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/utils.dart';
+import 'package:flutter/gestures.dart' show TapGestureRecognizer;
 import 'package:flutter/material.dart' hide DraggableScrollableSheet;
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
@@ -60,6 +61,12 @@ class _AudioPageState extends State<AudioPage> {
   );
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _controller.didChangeDependencies(context);
+  }
+
+  @override
   Widget build(BuildContext context) {
     final colorScheme = ColorScheme.of(context);
     final isPortrait = MediaQuery.sizeOf(context).isPortrait;
@@ -96,11 +103,7 @@ class _AudioPageState extends State<AudioPage> {
                 spacing: 12,
                 children: [
                   Expanded(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [_buildInfo(colorScheme, isPortrait)],
-                    ),
+                    child: _buildInfo(colorScheme, isPortrait),
                   ),
                   Expanded(
                     child: Column(
@@ -565,6 +568,18 @@ class _AudioPageState extends State<AudioPage> {
               audioItem.stat.share,
             ),
           ),
+          if (audioItem.associatedItem.hasOid() &&
+              audioItem.associatedItem.subId.isNotEmpty)
+            ActionItem(
+              icon: const Icon(Icons.play_circle_outline_outlined),
+              onTap: () => PageUtils.toVideoPage(
+                cid: audioItem.associatedItem.subId.first.toInt(),
+                aid: audioItem.associatedItem.oid.toInt(),
+              ),
+              selectStatus: false,
+              semanticsLabel: '看MV',
+              text: '看MV',
+            ),
         ],
       ),
     );
@@ -694,158 +709,109 @@ class _AudioPageState extends State<AudioPage> {
       if (audioItem != null) {
         final cover = audioItem.arc.cover.http2https;
         return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Center(
-              child: GestureDetector(
-                onTap: () => PageUtils.imageView(
-                  imgList: [SourceModel(url: cover)],
-                ),
-                child: Hero(
-                  tag: cover,
-                  child: NetworkImgLayer(
-                    src: cover,
-                    width: 150,
-                    height: 150,
-                  ),
+            Expanded(
+              child: Center(
+                child: CustomScrollView(
+                  key: const PageStorageKey(_AudioPageState),
+                  shrinkWrap: true,
+                  slivers: [
+                    SliverToBoxAdapter(
+                      child: Center(
+                        child: GestureDetector(
+                          onTap: () => PageUtils.imageView(
+                            imgList: [SourceModel(url: cover)],
+                          ),
+                          child: Hero(
+                            tag: cover,
+                            child: NetworkImgLayer(
+                              src: cover,
+                              width: 200,
+                              height: 200,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SliverToBoxAdapter(child: SizedBox(height: 12)),
+                    SliverToBoxAdapter(
+                      child: SelectableText(
+                        audioItem.arc.title,
+                        style: const TextStyle(
+                          height: 1.7,
+                          fontSize: 15,
+                        ),
+                      ),
+                    ),
+                    const SliverToBoxAdapter(child: SizedBox(height: 20)),
+                    SliverToBoxAdapter(
+                      child: Row(
+                        children: [
+                          Icon(
+                            size: 14,
+                            Icons.headphones_outlined,
+                            color: colorScheme.outline,
+                          ),
+                          Text.rich(
+                            TextSpan(
+                              children: [
+                                TextSpan(
+                                  text:
+                                      ' ${NumUtils.numFormat(audioItem.stat.view)}   '
+                                      '${DateFormatUtils.dateFormat(audioItem.arc.publish.toInt(), long: DateFormatUtils.longFormatD)}   ',
+                                ),
+                                TextSpan(
+                                  text: audioItem.arc.displayedOid,
+                                  style: TextStyle(color: colorScheme.primary),
+                                  recognizer: TapGestureRecognizer()
+                                    ..onTap = () => Utils.copyText(
+                                      audioItem.arc.displayedOid,
+                                    ),
+                                ),
+                              ],
+                            ),
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: colorScheme.outline,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SliverToBoxAdapter(child: SizedBox(height: 20)),
+                    SliverToBoxAdapter(
+                      child: SelectableText(audioItem.arc.desc),
+                    ),
+                    const SliverToBoxAdapter(child: SizedBox(height: 10)),
+                    if (audioItem.owner.hasName())
+                      SliverToBoxAdapter(
+                        child: Row(
+                          spacing: 6,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (audioItem.owner.hasAvatar())
+                              NetworkImgLayer(
+                                src: audioItem.owner.avatar,
+                                width: 22,
+                                height: 22,
+                                type: ImageType.avatar,
+                              ),
+                            Text(
+                              audioItem.owner.name,
+                            ),
+                          ],
+                        ),
+                      ),
+                  ],
                 ),
               ),
             ),
-            const SizedBox(height: 12),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: SelectableText(
-                    audioItem.arc.title,
-                    style: const TextStyle(
-                      height: 1.7,
-                      fontSize: 15,
-                    ),
-                  ),
-                ),
-                iconButton(
-                  context: context,
-                  icon: Icons.keyboard_arrow_down,
-                  onPressed: () => _showIntro(audioItem),
-                  bgColor: Colors.transparent,
-                  iconColor: colorScheme.outline,
-                  size: 26,
-                  iconSize: 18,
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            if (audioItem.owner.hasName())
-              Row(
-                spacing: 6,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (audioItem.owner.hasAvatar())
-                    NetworkImgLayer(
-                      src: audioItem.owner.avatar,
-                      width: 22,
-                      height: 22,
-                      type: ImageType.avatar,
-                    ),
-                  Text(
-                    audioItem.owner.name,
-                  ),
-                ],
-              ),
-            if (isPortrait)
-              Expanded(
-                child: Align(
-                  alignment: Alignment.bottomCenter,
-                  child: _buildActions(audioItem),
-                ),
-              ),
+            if (isPortrait) _buildActions(audioItem),
           ],
         );
       }
       return const SizedBox.shrink();
     });
-  }
-
-  void _showIntro(DetailItem audioItem) {
-    final arc = audioItem.arc;
-    showModalBottomSheet(
-      context: context,
-      useSafeArea: true,
-      constraints: BoxConstraints(
-        maxWidth: min(640, context.mediaQueryShortestSide),
-      ),
-      builder: (context) {
-        final colorScheme = ColorScheme.of(context);
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            InkWell(
-              onTap: Get.back,
-              borderRadius: StyleString.bottomSheetRadius,
-              child: SizedBox(
-                height: 35,
-                child: Center(
-                  child: Container(
-                    width: 32,
-                    height: 3,
-                    decoration: BoxDecoration(
-                      color: colorScheme.outline,
-                      borderRadius: const BorderRadius.all(
-                        Radius.circular(3),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            Padding(
-              padding: EdgeInsets.only(
-                top: 12,
-                left: 20,
-                right: 20,
-                bottom: MediaQuery.viewPaddingOf(context).bottom + 20,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('简介', style: TextStyle(fontSize: 15)),
-                  const SizedBox(height: 20),
-                  Text(
-                    arc.title,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Row(
-                    children: [
-                      Icon(
-                        size: 14,
-                        Icons.headphones_outlined,
-                        color: colorScheme.outline,
-                      ),
-                      Text(
-                        ' ${NumUtils.numFormat(audioItem.stat.view)}   '
-                        '${DateFormatUtils.dateFormat(arc.publish.toInt(), long: DateFormatUtils.longFormatD)}   '
-                        '${arc.displayedOid}',
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: colorScheme.outline,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                  SelectableText(arc.desc),
-                ],
-              ),
-            ),
-          ],
-        );
-      },
-    );
   }
 }
 

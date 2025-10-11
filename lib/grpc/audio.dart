@@ -41,7 +41,7 @@ class AudioGrpc {
     int? itemType,
     PageOption? pageOpt,
     Int64? extraId,
-    Pagination? pagination,
+    String? next,
     int qn = 80,
     int fnval = 4048,
   }) {
@@ -64,7 +64,7 @@ class AudioGrpc {
         ),
         extraId: extraId,
         sortOpt: SortOption(order: ListOrder.ORDER_NORMAL),
-        pagination: pagination,
+        pagination: Pagination(pageSize: 20, next: next),
       ),
       PlaylistResp.fromBuffer,
     );

@@ -10,7 +10,6 @@ import 'package:PiliPlus/grpc/bilibili/app/listener/v1.pb.dart'
         PlaylistSource,
         PlayInfo,
         ThumbUpReq_ThumbType;
-import 'package:PiliPlus/grpc/bilibili/pagination.pb.dart';
 import 'package:PiliPlus/http/constants.dart';
 import 'package:PiliPlus/http/ua_type.dart';
 import 'package:PiliPlus/pages/common/common_intro_controller.dart'
@@ -120,10 +119,10 @@ class AudioController extends GetxController
       subId: isInit ? subId : null,
       itemType: isInit ? itemType : null,
       from: isInit ? from : null,
-      pagination: isLoadPrev
-          ? Pagination(next: _prev)
+      next: isLoadPrev
+          ? _prev
           : isLoadNext
-          ? Pagination(next: _next)
+          ? _next
           : null,
     );
     if (res.isSuccess) {

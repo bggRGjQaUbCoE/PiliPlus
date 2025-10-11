@@ -134,8 +134,14 @@ class HistoryItem extends StatelessWidget {
                                 bottom: 8.0,
                                 type: PBadgeType.gray,
                               ),
-                            // 右上角
-                            if (item.badge?.isNotEmpty == true)
+                            if (item.isFav == 1)
+                              const PBadge(
+                                text: '已收藏',
+                                top: 6.0,
+                                right: 6.0,
+                                type: PBadgeType.gray,
+                              )
+                            else if (item.badge?.isNotEmpty == true)
                               PBadge(
                                 text: item.badge,
                                 top: 6.0,

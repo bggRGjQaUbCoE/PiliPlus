@@ -70,19 +70,19 @@ class _MainReplyPageState extends State<MainReplyPage> {
         },
         child: refreshIndicator(
           onRefresh: _controller.onRefresh,
-          child: CustomScrollView(
-            slivers: [
-              buildReplyHeader(colorScheme),
-              SliverPadding(
-                padding: EdgeInsets.only(
-                  left: padding.left,
-                  right: padding.right,
-                ),
-                sliver: Obx(
+          child: Padding(
+            padding: EdgeInsets.only(
+              left: padding.left,
+              right: padding.right,
+            ),
+            child: CustomScrollView(
+              slivers: [
+                buildReplyHeader(colorScheme),
+                Obx(
                   () => _buildBody(colorScheme, _controller.loadingState.value),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

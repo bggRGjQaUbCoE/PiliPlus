@@ -6,15 +6,12 @@ import 'dart:typed_data';
 import 'package:PiliPlus/common/widgets/button/icon_button.dart';
 import 'package:PiliPlus/common/widgets/custom_icon.dart';
 import 'package:PiliPlus/common/widgets/marquee.dart';
-import 'package:PiliPlus/grpc/bilibili/app/listener/v1.pbenum.dart'
-    show PlaylistSource;
 import 'package:PiliPlus/models/common/super_resolution_type.dart';
 import 'package:PiliPlus/models/common/video/audio_quality.dart';
 import 'package:PiliPlus/models/common/video/cdn_type.dart';
 import 'package:PiliPlus/models/common/video/video_decode_type.dart';
 import 'package:PiliPlus/models/common/video/video_quality.dart';
 import 'package:PiliPlus/models/video/play/url.dart';
-import 'package:PiliPlus/pages/audio/view.dart';
 import 'package:PiliPlus/pages/common/common_intro_controller.dart';
 import 'package:PiliPlus/pages/setting/widgets/select_dialog.dart';
 import 'package:PiliPlus/pages/setting/widgets/switch_item.dart';
@@ -1918,9 +1915,8 @@ class HeaderControlState extends State<HeaderControl> {
   @override
   Widget build(BuildContext context) {
     final isFullScreen = this.isFullScreen;
-    final showFSActionItem =
-        plPlayerController.showFSActionItem &&
-        (isFullScreen || plPlayerController.isDesktopPip);
+    final isFSOrPip = isFullScreen || plPlayerController.isDesktopPip;
+    final showFSActionItem = plPlayerController.showFSActionItem && isFSOrPip;
     return AppBar(
       elevation: 0,
       scrolledUnderElevation: 0,
@@ -2055,7 +2051,7 @@ class HeaderControlState extends State<HeaderControl> {
                   return const SizedBox.shrink();
                 },
               ),
-              if (!isFullScreen)
+              if (!isFSOrPip && videoDetailCtr.isUgc)
                 SizedBox(
                   width: 42,
                   height: 34,
@@ -2064,15 +2060,7 @@ class HeaderControlState extends State<HeaderControl> {
                     style: const ButtonStyle(
                       padding: WidgetStatePropertyAll(EdgeInsets.zero),
                     ),
-                    onPressed: () => AudioPage.toAudioPage(
-                      itemType: 1,
-                      oid: videoDetailCtr.aid,
-                      subId: [videoDetailCtr.cid.value],
-                      from: PlaylistSource.UP_ARCHIVE,
-                      heroTag: videoDetailCtr.heroTag,
-                      start: videoDetailCtr.playedTime,
-                      audioUrl: videoDetailCtr.audioUrl,
-                    ),
+                    onPressed: videoDetailCtr.toAudioPage,
                     icon: const Icon(
                       Icons.headphones_outlined,
                       size: 19,
@@ -2128,7 +2116,7 @@ class HeaderControlState extends State<HeaderControl> {
                       )
                     : const SizedBox.shrink(),
               ),
-              if (isFullScreen) ...[
+              if (isFSOrPip) ...[
                 SizedBox(
                   width: 42,
                   height: 34,

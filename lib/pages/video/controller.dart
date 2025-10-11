@@ -3,6 +3,8 @@ import 'dart:ui';
 
 import 'package:PiliPlus/common/widgets/pair.dart';
 import 'package:PiliPlus/common/widgets/progress_bar/segment_progress_bar.dart';
+import 'package:PiliPlus/grpc/bilibili/app/listener/v1.pbenum.dart'
+    show PlaylistSource;
 import 'package:PiliPlus/http/constants.dart';
 import 'package:PiliPlus/http/fav.dart';
 import 'package:PiliPlus/http/init.dart';
@@ -31,6 +33,7 @@ import 'package:PiliPlus/models_new/video/video_pbp/data.dart';
 import 'package:PiliPlus/models_new/video/video_play_info/data.dart';
 import 'package:PiliPlus/models_new/video/video_play_info/subtitle.dart';
 import 'package:PiliPlus/models_new/video/video_stein_edgeinfo/data.dart';
+import 'package:PiliPlus/pages/audio/view.dart';
 import 'package:PiliPlus/pages/search/widgets/search_text.dart';
 import 'package:PiliPlus/pages/video/introduction/ugc/controller.dart';
 import 'package:PiliPlus/pages/video/medialist/view.dart';
@@ -1745,5 +1748,17 @@ class VideoDetailController extends GetxController
       if (kDebugMode) rethrow;
     }
     return false;
+  }
+
+  void toAudioPage() {
+    AudioPage.toAudioPage(
+      itemType: 1,
+      oid: aid,
+      subId: [cid.value],
+      from: PlaylistSource.UP_ARCHIVE,
+      heroTag: heroTag,
+      start: playedTime,
+      audioUrl: audioUrl,
+    );
   }
 }

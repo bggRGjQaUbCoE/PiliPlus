@@ -14,7 +14,7 @@ class FavPanel extends StatefulWidget {
     this.scrollController,
   });
 
-  final CommonIntroController ctr;
+  final FavMixin ctr;
   final ScrollController? scrollController;
 
   @override

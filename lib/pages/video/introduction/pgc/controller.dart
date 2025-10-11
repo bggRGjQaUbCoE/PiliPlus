@@ -46,7 +46,7 @@ class PgcIntroController extends CommonIntroController {
   late final PgcInfoModel pgcItem;
 
   @override
-  (Object, int) getFavRidType() => (epId!, 24);
+  (Object, int) get getFavRidType => (epId!, 24);
 
   @override
   StatDetail? getStat() => pgcItem.stat;
@@ -175,17 +175,18 @@ class PgcIntroController extends CommonIntroController {
                   PageUtils.launchURL(videoUrl);
                 },
               ),
-              ListTile(
-                dense: true,
-                title: const Text(
-                  '分享视频',
-                  style: TextStyle(fontSize: 14),
+              if (Utils.isMobile)
+                ListTile(
+                  dense: true,
+                  title: const Text(
+                    '分享视频',
+                    style: TextStyle(fontSize: 14),
+                  ),
+                  onTap: () {
+                    Get.back();
+                    Utils.shareText(videoUrl);
+                  },
                 ),
-                onTap: () {
-                  Get.back();
-                  Utils.shareText(videoUrl);
-                },
-              ),
               ListTile(
                 dense: true,
                 title: const Text(

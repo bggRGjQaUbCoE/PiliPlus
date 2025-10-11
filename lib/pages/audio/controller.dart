@@ -12,6 +12,9 @@ import 'package:PiliPlus/grpc/bilibili/app/listener/v1.pb.dart'
         ThumbUpReq_ThumbType;
 import 'package:PiliPlus/http/constants.dart';
 import 'package:PiliPlus/http/ua_type.dart';
+import 'package:PiliPlus/pages/common/common_intro_controller.dart'
+    show FavMixin;
+import 'package:PiliPlus/pages/dynamics_repost/view.dart';
 import 'package:PiliPlus/pages/main_reply/view.dart';
 import 'package:PiliPlus/pages/video/controller.dart';
 import 'package:PiliPlus/pages/video/introduction/ugc/widgets/triple_mixin.dart';
@@ -20,6 +23,8 @@ import 'package:PiliPlus/plugin/pl_player/models/play_repeat.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/global_data.dart';
+import 'package:PiliPlus/utils/id_utils.dart';
+import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:fixnum/fixnum.dart' show Int64;
@@ -29,7 +34,7 @@ import 'package:get/get.dart';
 import 'package:media_kit/media_kit.dart';
 
 class AudioController extends GetxController
-    with GetTickerProviderStateMixin, TripleMixin {
+    with GetTickerProviderStateMixin, TripleMixin, FavMixin {
   late Int64 id;
   late Int64 oid;
   late List<Int64> subId;
@@ -327,20 +332,20 @@ class AudioController extends GetxController
     }
   }
 
+  @override
   void showFavBottomSheet(BuildContext context, {bool isLongPress = false}) {
-    // TODO
     if (!isLogin) {
       SmartDialog.showToast('账号未登录');
       return;
     }
     if (enableQuickFav) {
       if (!isLongPress) {
-        // actionFavVideo(isQuick: true);
+        actionFavVideo(isQuick: true);
       } else {
-        // PageUtils.showFavBottomSheet(context: context, ctr: this);
+        PageUtils.showFavBottomSheet(context: context, ctr: this);
       }
     } else if (!isLongPress) {
-      // PageUtils.showFavBottomSheet(context: context, ctr: this);
+      PageUtils.showFavBottomSheet(context: context, ctr: this);
     }
   }
 
@@ -352,7 +357,116 @@ class AudioController extends GetxController
   }
 
   void actionShareVideo(BuildContext context) {
-    // TODO
+    showDialog(
+      context: context,
+      builder: (_) {
+        final audioUrl = itemType == 1
+            ? '${HttpString.baseUrl}/video/${IdUtils.av2bv(oid.toInt())}'
+            : '${HttpString.baseUrl}/audio/au$oid';
+        return AlertDialog(
+          clipBehavior: Clip.hardEdge,
+          contentPadding: const EdgeInsets.symmetric(vertical: 12),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                dense: true,
+                title: const Text(
+                  '复制链接',
+                  style: TextStyle(fontSize: 14),
+                ),
+                onTap: () {
+                  Get.back();
+                  Utils.copyText(audioUrl);
+                },
+              ),
+              ListTile(
+                dense: true,
+                title: const Text(
+                  '其它app打开',
+                  style: TextStyle(fontSize: 14),
+                ),
+                onTap: () {
+                  Get.back();
+                  PageUtils.launchURL(audioUrl);
+                },
+              ),
+              if (Utils.isMobile)
+                ListTile(
+                  dense: true,
+                  title: const Text(
+                    '分享视频',
+                    style: TextStyle(fontSize: 14),
+                  ),
+                  onTap: () {
+                    Get.back();
+                    if (audioItem.value case final audioItem?) {
+                      Utils.shareText(
+                        '${audioItem.arc.title} '
+                        'UP主: ${audioItem.owner.name}'
+                        ' - $audioUrl',
+                      );
+                    }
+                  },
+                ),
+              ListTile(
+                dense: true,
+                title: const Text(
+                  '分享至动态',
+                  style: TextStyle(fontSize: 14),
+                ),
+                onTap: () {
+                  Get.back();
+                  if (audioItem.value case final audioItem?) {
+                    showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      useSafeArea: true,
+                      builder: (context) => RepostPanel(
+                        rid: oid.toInt(),
+                        dynType: itemType == 1 ? 8 : 256,
+                        pic: audioItem.arc.cover,
+                        title: audioItem.arc.title,
+                        uname: audioItem.owner.name,
+                      ),
+                    );
+                  }
+                },
+              ),
+              if (itemType == 1)
+                ListTile(
+                  dense: true,
+                  title: const Text(
+                    '分享至消息',
+                    style: TextStyle(fontSize: 14),
+                  ),
+                  onTap: () {
+                    Get.back();
+                    if (audioItem.value case final audioItem?) {
+                      try {
+                        PageUtils.pmShare(
+                          context,
+                          content: {
+                            "id": oid.toString(),
+                            "title": audioItem.arc.title,
+                            "headline": audioItem.arc.title,
+                            "source": 5,
+                            "thumb": audioItem.arc.cover,
+                            "author": audioItem.owner.name,
+                            "author_id": audioItem.owner.mid.toString(),
+                          },
+                        );
+                      } catch (e) {
+                        SmartDialog.showToast(e.toString());
+                      }
+                    }
+                  },
+                ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   void playOrPause() {
@@ -409,8 +523,30 @@ class AudioController extends GetxController
     }
   }
 
+  Timer? _timer;
+
+  void _cancelTimer() {
+    _timer?.cancel();
+    _timer = null;
+  }
+
+  void showTimerDialog() {
+    // TODO
+  }
+
+  @override
+  (Object, int) get getFavRidType => (oid, itemType == 1 ? 2 : 12);
+
+  @override
+  void updateFavCount(int count) {
+    audioItem
+      ..value?.stat.favourite += count
+      ..refresh();
+  }
+
   @override
   void onClose() {
+    _cancelTimer();
     _subscriptions?.forEach((e) => e.cancel());
     _subscriptions = null;
     player?.dispose();

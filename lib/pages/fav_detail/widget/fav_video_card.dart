@@ -5,9 +5,12 @@ import 'package:PiliPlus/common/widgets/image/image_save.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/select_mask.dart';
 import 'package:PiliPlus/common/widgets/stat/stat.dart';
+import 'package:PiliPlus/grpc/bilibili/app/listener/v1.pbenum.dart'
+    show PlaylistSource;
 import 'package:PiliPlus/models/common/badge_type.dart';
 import 'package:PiliPlus/models/common/stat_type.dart';
 import 'package:PiliPlus/models_new/fav/fav_detail/media.dart';
+import 'package:PiliPlus/pages/audio/view.dart';
 import 'package:PiliPlus/pages/fav_detail/controller.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/duration_utils.dart';
@@ -64,16 +67,24 @@ class FavVideoCardH extends StatelessWidget {
                   return;
                 }
 
-                // pgc
-                if (item.type == 24) {
-                  PageUtils.viewPgc(
-                    seasonId: item.ogv!.seasonId,
-                    epId: item.id,
-                  );
-                  return;
+                switch (item.type) {
+                  case 12:
+                    AudioPage.toAudioPage(
+                      oid: item.id!,
+                      itemType: 3,
+                      from: PlaylistSource.AUDIO_CARD,
+                    );
+                    break;
+                  case 24:
+                    PageUtils.viewPgc(
+                      seasonId: item.ogv!.seasonId,
+                      epId: item.id,
+                    );
+                    break;
+                  default:
+                    ctr!.onViewFav(item, index);
+                    break;
                 }
-
-                ctr!.onViewFav(item, index);
               },
         onLongPress: onLongPress,
         onSecondaryTap: Utils.isMobile ? null : onLongPress,

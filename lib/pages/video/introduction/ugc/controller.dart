@@ -298,7 +298,7 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
   }
 
   @override
-  (Object, int) getFavRidType() => (IdUtils.bv2av(bvid), 2);
+  (Object, int) get getFavRidType => (IdUtils.bv2av(bvid), 2);
 
   @override
   StatDetail? getStat() => videoDetail.value.stat;
@@ -339,21 +339,22 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
                   PageUtils.launchURL(videoUrl);
                 },
               ),
-              ListTile(
-                dense: true,
-                title: const Text(
-                  '分享视频',
-                  style: TextStyle(fontSize: 14),
+              if (Utils.isMobile)
+                ListTile(
+                  dense: true,
+                  title: const Text(
+                    '分享视频',
+                    style: TextStyle(fontSize: 14),
+                  ),
+                  onTap: () {
+                    Get.back();
+                    Utils.shareText(
+                      '${videoDetail.title} '
+                      'UP主: ${videoDetail.owner!.name!}'
+                      ' - $videoUrl',
+                    );
+                  },
                 ),
-                onTap: () {
-                  Get.back();
-                  Utils.shareText(
-                    '${videoDetail.title} '
-                    'UP主: ${videoDetail.owner!.name!}'
-                    ' - $videoUrl',
-                  );
-                },
-              ),
               ListTile(
                 dense: true,
                 title: const Text(

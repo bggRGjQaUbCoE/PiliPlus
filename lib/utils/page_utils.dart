@@ -314,7 +314,7 @@ abstract class PageUtils {
 
   static void showFavBottomSheet({
     required BuildContext context,
-    required CommonIntroController ctr,
+    required FavMixin ctr,
   }) {
     showModalBottomSheet(
       context: context,

@@ -342,10 +342,11 @@ abstract class RequestUtils {
                     },
                     child: const Text('申诉'),
                   ),
-                TextButton(
-                  onPressed: Get.back,
-                  child: const Text('关闭'),
-                ),
+                if (!isManual)
+                  TextButton(
+                    onPressed: Get.back,
+                    child: const Text('关闭'),
+                  ),
               ],
             ),
           );

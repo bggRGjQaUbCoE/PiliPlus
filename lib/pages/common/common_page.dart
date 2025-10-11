@@ -48,6 +48,7 @@ abstract class CommonPageState<
   }
 
   bool onNotification(UserScrollNotification notification) {
+    if (notification.metrics.axis == Axis.horizontal) return false;
     final direction = notification.direction;
     if (direction == ScrollDirection.forward) {
       mainStream?.add(true);

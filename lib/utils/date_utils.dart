@@ -38,7 +38,7 @@ abstract class DateFormatUtils {
     }
     final DateFormat sdf = now.year == date.year
         ? short ?? shortFormat
-        : long ?? DateFormatUtils.longFormat;
+        : long ?? longFormat;
     return sdf.format(date);
   }
 

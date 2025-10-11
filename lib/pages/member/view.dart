@@ -141,7 +141,7 @@ class _MemberPageState extends State<MemberPage> {
             ),
         ],
         PopupMenuItem(
-          onTap: () => _userController.shareUser(),
+          onTap: _userController.shareUser,
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [

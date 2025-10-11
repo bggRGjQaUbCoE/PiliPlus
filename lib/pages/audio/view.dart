@@ -11,6 +11,7 @@ import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/pages/audio/controller.dart';
 import 'package:PiliPlus/pages/video/introduction/ugc/widgets/action_item.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_repeat.dart';
+import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
@@ -432,20 +433,21 @@ class _AudioPageState extends State<AudioPage> {
                 ),
                 onTap: () {
                   Get.back();
-                  // TODO
+                  _controller.showTimerDialog();
                 },
               ),
-              ListTile(
-                dense: true,
-                title: const Text(
-                  '举报',
-                  style: TextStyle(fontSize: 14),
+              if (_controller.itemType == 1)
+                ListTile(
+                  dense: true,
+                  title: const Text(
+                    '举报',
+                    style: TextStyle(fontSize: 14),
+                  ),
+                  onTap: () {
+                    Get.back();
+                    PageUtils.reportVideo(_controller.oid.toInt());
+                  },
                 ),
-                onTap: () {
-                  Get.back();
-                  // TODO
-                },
-              ),
             ],
           ),
         );
@@ -686,9 +688,7 @@ class _AudioPageState extends State<AudioPage> {
                 iconButton(
                   context: context,
                   icon: Icons.keyboard_arrow_down,
-                  onPressed: () {
-                    // TODO: show intro
-                  },
+                  onPressed: () => _showIntro(audioItem),
                   bgColor: Colors.transparent,
                   iconColor: colorScheme.outline,
                   size: 26,
@@ -726,6 +726,87 @@ class _AudioPageState extends State<AudioPage> {
       }
       return const SizedBox.shrink();
     });
+  }
+
+  void _showIntro(DetailItem audioItem) {
+    final arc = audioItem.arc;
+    showModalBottomSheet(
+      context: context,
+      useSafeArea: true,
+      constraints: BoxConstraints(
+        maxWidth: min(640, context.mediaQueryShortestSide),
+      ),
+      builder: (context) {
+        final colorScheme = ColorScheme.of(context);
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            InkWell(
+              onTap: Get.back,
+              borderRadius: StyleString.bottomSheetRadius,
+              child: SizedBox(
+                height: 35,
+                child: Center(
+                  child: Container(
+                    width: 32,
+                    height: 3,
+                    decoration: BoxDecoration(
+                      color: colorScheme.outline,
+                      borderRadius: const BorderRadius.all(
+                        Radius.circular(3),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.only(
+                top: 12,
+                left: 20,
+                right: 20,
+                bottom: MediaQuery.viewPaddingOf(context).bottom + 20,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('简介', style: TextStyle(fontSize: 15)),
+                  const SizedBox(height: 20),
+                  Text(
+                    arc.title,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Icon(
+                        size: 14,
+                        Icons.headphones_outlined,
+                        color: colorScheme.outline,
+                      ),
+                      Text(
+                        ' ${NumUtils.numFormat(audioItem.stat.view)}   '
+                        '${DateFormatUtils.dateFormat(arc.publish.toInt(), long: DateFormatUtils.longFormatD)}   '
+                        '${arc.displayedOid}',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: colorScheme.outline,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  SelectableText(arc.desc),
+                ],
+              ),
+            ),
+          ],
+        );
+      },
+    );
   }
 }
 

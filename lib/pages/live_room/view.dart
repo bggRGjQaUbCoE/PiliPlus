@@ -601,21 +601,22 @@ class _LiveRoomPageState extends State<LiveRoomPage>
                   ],
                 ),
               ),
-              PopupMenuItem(
-                onTap: () => Utils.shareText(liveUrl),
-                child: Row(
-                  spacing: 10,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.share,
-                      size: 19,
-                      color: color,
-                    ),
-                    const Text('分享直播间'),
-                  ],
+              if (Utils.isMobile)
+                PopupMenuItem(
+                  onTap: () => Utils.shareText(liveUrl),
+                  child: Row(
+                    spacing: 10,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.share,
+                        size: 19,
+                        color: color,
+                      ),
+                      const Text('分享直播间'),
+                    ],
+                  ),
                 ),
-              ),
               PopupMenuItem(
                 onTap: () => PageUtils.inAppWebview(liveUrl, off: true),
                 child: Row(

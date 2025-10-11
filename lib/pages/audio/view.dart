@@ -2,9 +2,9 @@ import 'dart:math' show min;
 
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/widgets/button/icon_button.dart';
-import 'package:PiliPlus/common/widgets/draggable_sheet/draggable_scrollable_sheet_topic.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/progress_bar/audio_video_progress_bar.dart';
+import 'package:PiliPlus/common/widgets/refresh_indicator.dart';
 import 'package:PiliPlus/grpc/bilibili/app/listener/v1.pb.dart';
 import 'package:PiliPlus/models/common/image_preview_type.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
@@ -129,7 +129,10 @@ class _AudioPageState extends State<AudioPage> {
 
   void _showPlaylist() {
     if (_controller.playlist case final playlist?) {
-      final initialScrollOffset = 40.0 * _controller.index!;
+      final initialScrollOffset = 45.0 * _controller.index!;
+      final scrollController = ScrollController(
+        initialScrollOffset: initialScrollOffset,
+      );
       showModalBottomSheet(
         context: context,
         useSafeArea: true,
@@ -138,122 +141,158 @@ class _AudioPageState extends State<AudioPage> {
           maxWidth: min(640, context.mediaQueryShortestSide),
         ),
         builder: (context) {
-          return DraggableScrollableSheet(
-            expand: false,
-            snap: true,
-            snapSizes: const [0.7],
-            minChildSize: 0.0,
-            maxChildSize: 0.7,
-            initialChildSize: 0.7,
-            initialScrollOffset: initialScrollOffset,
-            builder: (context, scrollController) {
-              final colorScheme = ColorScheme.of(context);
-              return CustomScrollView(
-                controller: scrollController,
-                slivers: [
-                  SliverToBoxAdapter(
-                    child: InkWell(
-                      onTap: Get.back,
-                      borderRadius: StyleString.bottomSheetRadius,
-                      child: SizedBox(
-                        height: 35,
-                        child: Center(
-                          child: Container(
-                            width: 32,
-                            height: 3,
-                            decoration: BoxDecoration(
-                              color: colorScheme.outline,
-                              borderRadius: const BorderRadius.all(
-                                Radius.circular(3),
-                              ),
-                            ),
+          final colorScheme = ColorScheme.of(context);
+          return FractionallySizedBox(
+            heightFactor: !context.mediaQuerySize.isPortrait && Utils.isMobile
+                ? 1.0
+                : 0.7,
+            alignment: Alignment.bottomCenter,
+            child: Column(
+              children: [
+                InkWell(
+                  onTap: Get.back,
+                  borderRadius: StyleString.bottomSheetRadius,
+                  child: SizedBox(
+                    height: 35,
+                    child: Center(
+                      child: Container(
+                        width: 32,
+                        height: 3,
+                        decoration: BoxDecoration(
+                          color: colorScheme.outline,
+                          borderRadius: const BorderRadius.all(
+                            Radius.circular(3),
                           ),
                         ),
                       ),
                     ),
                   ),
-                  SliverPadding(
-                    padding: EdgeInsets.only(
-                      bottom: MediaQuery.paddingOf(context).bottom + 100,
-                    ),
-                    sliver: SliverList.builder(
-                      itemCount: playlist.length,
-                      itemBuilder: (_, index) {
-                        // TODO: load next/prev
-                        final isCurr = index == _controller.index;
-                        final item = playlist[index];
-                        return ListTile(
-                          dense: true,
-                          minTileHeight: 40,
-                          onTap: () {
-                            Get.back();
-                            if (!isCurr) {
-                              _controller.playIndex(index);
-                            }
-                          },
-                          title: Text.rich(
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: isCurr
-                                ? TextStyle(
-                                    height: 1,
-                                    fontSize: 14,
-                                    color: colorScheme.primary,
-                                    fontWeight: FontWeight.bold,
-                                  )
-                                : const TextStyle(height: 1, fontSize: 14),
-                            strutStyle: const StrutStyle(
-                              height: 1,
-                              leading: 0,
-                              fontSize: 14,
+                ),
+                Expanded(
+                  child: Material(
+                    type: MaterialType.transparency,
+                    child: refreshIndicator(
+                      onRefresh: () => _controller.loadPrev(context),
+                      child: CustomScrollView(
+                        controller: scrollController,
+                        slivers: [
+                          SliverPadding(
+                            padding: EdgeInsets.only(
+                              bottom:
+                                  MediaQuery.paddingOf(context).bottom + 100,
                             ),
-                            TextSpan(
-                              children: [
-                                if (isCurr) ...[
-                                  WidgetSpan(
-                                    alignment: PlaceholderAlignment.bottom,
-                                    child: Image.asset(
-                                      'assets/images/live.gif',
-                                      width: 16,
-                                      height: 16,
-                                      color: colorScheme.primary,
+                            sliver: SliverList.builder(
+                              itemCount: playlist.length,
+                              itemBuilder: (_, index) {
+                                if (index == playlist.length - 1) {
+                                  _controller.loadNext(context);
+                                }
+                                final isCurr = index == _controller.index;
+                                final item = playlist[index];
+                                return ListTile(
+                                  dense: true,
+                                  minTileHeight: 45,
+                                  onTap: () {
+                                    Get.back();
+                                    if (!isCurr) {
+                                      _controller.playIndex(index);
+                                    }
+                                  },
+                                  title: Text.rich(
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: isCurr
+                                        ? TextStyle(
+                                            height: 1,
+                                            fontSize: 14,
+                                            color: colorScheme.primary,
+                                            fontWeight: FontWeight.bold,
+                                          )
+                                        : const TextStyle(
+                                            height: 1,
+                                            fontSize: 14,
+                                          ),
+                                    strutStyle: const StrutStyle(
+                                      height: 1,
+                                      leading: 0,
+                                      fontSize: 14,
+                                    ),
+                                    TextSpan(
+                                      children: [
+                                        if (isCurr) ...[
+                                          WidgetSpan(
+                                            alignment:
+                                                PlaceholderAlignment.bottom,
+                                            child: Image.asset(
+                                              'assets/images/live.gif',
+                                              width: 16,
+                                              height: 16,
+                                              color: colorScheme.primary,
+                                            ),
+                                          ),
+                                          const TextSpan(text: '  '),
+                                        ],
+                                        TextSpan(
+                                          text: item.arc.title,
+                                        ),
+                                      ],
                                     ),
                                   ),
-                                  const TextSpan(text: '  '),
-                                ],
-                                TextSpan(
-                                  text: item.arc.title,
-                                ),
-                              ],
+                                  trailing: isCurr
+                                      ? null
+                                      : iconButton(
+                                          context: context,
+                                          icon: Icons.clear,
+                                          onPressed: () {
+                                            if (index < _controller.index!) {
+                                              _controller.index -= 1;
+                                            }
+                                            _controller.playlist!.removeAt(
+                                              index,
+                                            );
+                                            (context as Element)
+                                                .markNeedsBuild();
+                                          },
+                                          bgColor: Colors.transparent,
+                                          iconColor: colorScheme.outline,
+                                          size: 28,
+                                          iconSize: 18,
+                                        ),
+                                );
+                              },
                             ),
                           ),
-                          trailing: isCurr
-                              ? null
-                              : iconButton(
-                                  context: context,
-                                  icon: Icons.clear,
-                                  onPressed: () {
-                                    if (index < _controller.index!) {
-                                      _controller.index -= 1;
-                                    }
-                                    _controller.playlist!.removeAt(index);
-                                    (context as Element).markNeedsBuild();
-                                  },
-                                  bgColor: Colors.transparent,
-                                  iconColor: colorScheme.outline,
-                                  size: 28,
-                                  iconSize: 18,
-                                ),
-                        );
-                      },
+                        ],
+                      ),
                     ),
                   ),
-                ],
-              );
-            },
+                ),
+                Divider(
+                  height: 1,
+                  color: colorScheme.outline.withValues(alpha: 0.1),
+                ),
+                Padding(
+                  padding: EdgeInsets.only(
+                    bottom: MediaQuery.viewPaddingOf(context).bottom,
+                  ),
+                  child: InkWell(
+                    onTap: Get.back,
+                    child: SizedBox(
+                      height: 45,
+                      child: Center(
+                        child: Text(
+                          '关闭',
+                          style: TextStyle(color: colorScheme.outline),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           );
         },
-      );
+      ).whenComplete(scrollController.dispose);
     }
   }
 
@@ -425,17 +464,17 @@ class _AudioPageState extends State<AudioPage> {
                   ),
                 ),
               ),
-              ListTile(
-                dense: true,
-                title: const Text(
-                  '定时关闭',
-                  style: TextStyle(fontSize: 14),
-                ),
-                onTap: () {
-                  Get.back();
-                  _controller.showTimerDialog();
-                },
-              ),
+              // ListTile(
+              //   dense: true,
+              //   title: const Text(
+              //     '定时关闭',
+              //     style: TextStyle(fontSize: 14),
+              //   ),
+              //   onTap: () {
+              //     Get.back();
+              //     _controller.showTimerDialog();
+              //   },
+              // ),
               if (_controller.itemType == 1)
                 ListTile(
                   dense: true,

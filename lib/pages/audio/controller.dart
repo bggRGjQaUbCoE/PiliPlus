@@ -10,6 +10,7 @@ import 'package:PiliPlus/grpc/bilibili/app/listener/v1.pb.dart'
         PlaylistSource,
         PlayInfo,
         ThumbUpReq_ThumbType;
+import 'package:PiliPlus/grpc/bilibili/pagination.pb.dart';
 import 'package:PiliPlus/http/constants.dart';
 import 'package:PiliPlus/http/ua_type.dart';
 import 'package:PiliPlus/pages/common/common_intro_controller.dart'
@@ -65,10 +66,12 @@ class AudioController extends GetxController
   late final Rx<PlayRepeat> playMode = Pref.audioPlayMode.obs;
 
   late final isLogin = Accounts.main.isLogin;
-  late final enableQuickFav = Pref.enableQuickFav;
 
   Duration? _start;
   VideoDetailController? _videoDetailController;
+
+  String? _prev;
+  String? _next;
 
   @override
   void onInit() {
@@ -87,7 +90,7 @@ class AudioController extends GetxController
       } catch (_) {}
     }
 
-    _queryPlayList();
+    _queryPlayList(isInit: true);
 
     final String? audioUrl = args['audioUrl'];
     final hasAudioUrl = audioUrl != null;
@@ -106,25 +109,50 @@ class AudioController extends GetxController
     });
   }
 
-  Future<void> _queryPlayList() async {
+  Future<void> _queryPlayList({
+    bool isInit = false,
+    bool isLoadPrev = false,
+    bool isLoadNext = false,
+  }) async {
     final res = await AudioGrpc.audioPlayList(
       id: id,
-      oid: oid,
-      subId: subId,
-      itemType: itemType,
-      from: from,
+      oid: isInit ? oid : null,
+      subId: isInit ? subId : null,
+      itemType: isInit ? itemType : null,
+      from: isInit ? from : null,
+      pagination: isLoadPrev
+          ? Pagination(next: _prev)
+          : isLoadNext
+          ? Pagination(next: _next)
+          : null,
     );
     if (res.isSuccess) {
       final PlaylistResp data = res.data;
-      final index = data.list.indexWhere((e) => e.item.oid == oid);
-      if (index != -1) {
-        this.index = index;
-        final item = data.list[index];
-        audioItem.value = item;
-        hasLike.value = item.stat.hasLike_7;
-        coinNum.value = item.stat.hasCoin_8 ? 2 : 0;
-        hasFav.value = item.stat.hasFav;
-        playlist = data.list;
+      if (isInit) {
+        late final paginationReply = data.paginationReply;
+        _prev = data.reachStart ? null : paginationReply.prev;
+        _next = data.reachEnd ? null : paginationReply.next;
+        final index = data.list.indexWhere((e) => e.item.oid == oid);
+        if (index != -1) {
+          this.index = index;
+          final item = data.list[index];
+          audioItem.value = item;
+          hasLike.value = item.stat.hasLike_7;
+          coinNum.value = item.stat.hasCoin_8 ? 2 : 0;
+          hasFav.value = item.stat.hasFav;
+          playlist = data.list;
+        }
+      } else if (isLoadPrev) {
+        _prev = data.reachStart ? null : data.paginationReply.prev;
+        if (data.list.isNotEmpty) {
+          index += data.list.length;
+          playlist?.insertAll(0, data.list);
+        }
+      } else if (isLoadNext) {
+        _next = data.reachEnd ? null : data.paginationReply.next;
+        if (data.list.isNotEmpty) {
+          playlist?.addAll(data.list);
+        }
       }
     } else {
       res.toast();
@@ -523,16 +551,16 @@ class AudioController extends GetxController
     }
   }
 
-  Timer? _timer;
+  // Timer? _timer;
 
-  void _cancelTimer() {
-    _timer?.cancel();
-    _timer = null;
-  }
+  // void _cancelTimer() {
+  //   _timer?.cancel();
+  //   _timer = null;
+  // }
 
-  void showTimerDialog() {
-    // TODO
-  }
+  // void showTimerDialog() {
+  //   // TODO
+  // }
 
   @override
   (Object, int) get getFavRidType => (oid, itemType == 1 ? 2 : 12);
@@ -544,9 +572,27 @@ class AudioController extends GetxController
       ..refresh();
   }
 
+  Future<void> loadPrev(BuildContext context) async {
+    if (_prev == null) return;
+    final length = playlist!.length;
+    await _queryPlayList(isLoadPrev: true);
+    if (length != playlist!.length && context.mounted) {
+      (context as Element).markNeedsBuild();
+    }
+  }
+
+  Future<void> loadNext(BuildContext context) async {
+    if (_next == null) return;
+    final length = playlist!.length;
+    await _queryPlayList(isLoadNext: true);
+    if (length != playlist!.length && context.mounted) {
+      (context as Element).markNeedsBuild();
+    }
+  }
+
   @override
   void onClose() {
-    _cancelTimer();
+    // _cancelTimer();
     _subscriptions?.forEach((e) => e.cancel());
     _subscriptions = null;
     player?.dispose();

@@ -34,11 +34,11 @@ class AudioGrpc {
   }
 
   static Future<LoadingState<PlaylistResp>> audioPlayList({
-    required PlaylistSource from,
+    PlaylistSource? from,
     required Int64 id,
-    required Int64 oid,
-    required List<Int64> subId,
-    required int itemType,
+    Int64? oid,
+    List<Int64>? subId,
+    int? itemType,
     PageOption? pageOpt,
     Int64? extraId,
     Pagination? pagination,

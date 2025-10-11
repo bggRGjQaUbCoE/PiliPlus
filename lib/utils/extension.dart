@@ -67,6 +67,14 @@ extension NonNullListExt<T> on List<T> {
   List<R> fromCast<R>() {
     return List<R>.from(this);
   }
+
+  T findClosestTarget(
+    bool Function(T) test,
+    T Function(T, T) combine,
+  ) {
+    final filters = where(test).toList();
+    return filters.isNotEmpty ? filters.reduce(combine) : reduce(combine);
+  }
 }
 
 extension ListExt<T> on List<T>? {

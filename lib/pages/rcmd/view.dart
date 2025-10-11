@@ -28,24 +28,26 @@ class _RcmdPageState extends CommonPageState<RcmdPage, RcmdController>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return Container(
-      clipBehavior: Clip.hardEdge,
-      margin: const EdgeInsets.symmetric(horizontal: StyleString.safeSpace),
-      decoration: const BoxDecoration(borderRadius: StyleString.mdRadius),
-      child: refreshIndicator(
-        onRefresh: controller.onRefresh,
-        child: CustomScrollView(
-          controller: controller.scrollController,
-          physics: const AlwaysScrollableScrollPhysics(),
-          slivers: [
-            SliverPadding(
-              padding: const EdgeInsets.only(
-                top: StyleString.cardSpace,
-                bottom: 100,
+    return onBuild(
+      Container(
+        clipBehavior: Clip.hardEdge,
+        margin: const EdgeInsets.symmetric(horizontal: StyleString.safeSpace),
+        decoration: const BoxDecoration(borderRadius: StyleString.mdRadius),
+        child: refreshIndicator(
+          onRefresh: controller.onRefresh,
+          child: CustomScrollView(
+            controller: controller.scrollController,
+            physics: const AlwaysScrollableScrollPhysics(),
+            slivers: [
+              SliverPadding(
+                padding: const EdgeInsets.only(
+                  top: StyleString.cardSpace,
+                  bottom: 100,
+                ),
+                sliver: Obx(() => _buildBody(controller.loadingState.value)),
               ),
-              sliver: Obx(() => _buildBody(controller.loadingState.value)),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

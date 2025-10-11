@@ -37,10 +37,21 @@ class _MediaPageState extends CommonPageState<MinePage, MineController>
   @override
   bool get wantKeepAlive => true;
 
+  bool get checkPage =>
+      _mainController.navigationBars[0] != NavigationBarType.mine &&
+      _mainController.selectedIndex.value == 0;
+
+  @override
+  bool onNotification(UserScrollNotification notification) {
+    if (checkPage) {
+      return false;
+    }
+    return super.onNotification(notification);
+  }
+
   @override
   void listener() {
-    if (_mainController.navigationBars[0] != NavigationBarType.mine &&
-        _mainController.selectedIndex.value == 0) {
+    if (checkPage) {
       return;
     }
     super.listener();
@@ -51,34 +62,36 @@ class _MediaPageState extends CommonPageState<MinePage, MineController>
     super.build(context);
     final theme = Theme.of(context);
     final secondary = theme.colorScheme.secondary;
-    return Column(
-      children: [
-        const SizedBox(height: 10),
-        _buildHeaderActions,
-        const SizedBox(height: 10),
-        Expanded(
-          child: Material(
-            type: MaterialType.transparency,
-            child: refreshIndicator(
-              onRefresh: controller.onRefresh,
-              child: ListView(
-                padding: const EdgeInsets.only(bottom: 100),
-                controller: controller.scrollController,
-                physics: const AlwaysScrollableScrollPhysics(),
-                children: [
-                  _buildUserInfo(theme, secondary),
-                  _buildActions(secondary),
-                  Obx(
-                    () => controller.loadingState.value is Loading
-                        ? const SizedBox.shrink()
-                        : _buildFav(theme, secondary),
-                  ),
-                ],
+    return onBuild(
+      Column(
+        children: [
+          const SizedBox(height: 10),
+          _buildHeaderActions,
+          const SizedBox(height: 10),
+          Expanded(
+            child: Material(
+              type: MaterialType.transparency,
+              child: refreshIndicator(
+                onRefresh: controller.onRefresh,
+                child: ListView(
+                  padding: const EdgeInsets.only(bottom: 100),
+                  controller: controller.scrollController,
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  children: [
+                    _buildUserInfo(theme, secondary),
+                    _buildActions(secondary),
+                    Obx(
+                      () => controller.loadingState.value is Loading
+                          ? const SizedBox.shrink()
+                          : _buildFav(theme, secondary),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 

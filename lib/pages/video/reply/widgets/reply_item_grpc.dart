@@ -884,9 +884,8 @@ class ReplyItemGrpc extends StatelessWidget {
           InkWell(
             onTap: Get.back,
             borderRadius: StyleString.bottomSheetRadius,
-            child: Container(
+            child: SizedBox(
               height: 35,
-              padding: const EdgeInsets.only(bottom: 2),
               child: Center(
                 child: Container(
                   width: 32,

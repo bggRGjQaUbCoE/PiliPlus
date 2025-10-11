@@ -1,9 +1,12 @@
 import 'dart:async';
 
 import 'package:PiliPlus/common/widgets/view_safe_area.dart';
+import 'package:PiliPlus/grpc/bilibili/app/listener/v1.pbenum.dart'
+    show PlaylistSource;
 import 'package:PiliPlus/http/search.dart';
 import 'package:PiliPlus/models/common/fav_type.dart';
 import 'package:PiliPlus/models/common/video/source_type.dart';
+import 'package:PiliPlus/pages/audio/view.dart';
 import 'package:PiliPlus/pages/live/view.dart';
 import 'package:PiliPlus/pages/rank/view.dart';
 import 'package:PiliPlus/pages/subscription_detail/view.dart';
@@ -911,6 +914,19 @@ abstract class PiliScheme {
         // https://www.bilibili.com/cheese/play/ss123456
         bool hasMatch = PageUtils.viewPgcFromUri(path, isPgc: false);
         if (hasMatch) {
+          return true;
+        }
+        launchURL();
+        return false;
+      case 'audio':
+        // https://www.bilibili.com/audio/au123456
+        String? oid = RegExp(r'/au(\d+)').firstMatch(path)?.group(1);
+        if (oid != null) {
+          AudioPage.toAudioPage(
+            itemType: 3,
+            oid: int.parse(oid),
+            from: PlaylistSource.AUDIO_CARD,
+          );
           return true;
         }
         launchURL();

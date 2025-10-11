@@ -34,17 +34,19 @@ class _ZonePageState extends CommonPageState<ZonePage, ZoneController>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return refreshIndicator(
-      onRefresh: controller.onRefresh,
-      child: CustomScrollView(
-        controller: controller.scrollController,
-        physics: const AlwaysScrollableScrollPhysics(),
-        slivers: [
-          SliverPadding(
-            padding: const EdgeInsets.only(top: 7, bottom: 100),
-            sliver: Obx(() => _buildBody(controller.loadingState.value)),
-          ),
-        ],
+    return onBuild(
+      refreshIndicator(
+        onRefresh: controller.onRefresh,
+        child: CustomScrollView(
+          controller: controller.scrollController,
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: [
+            SliverPadding(
+              padding: const EdgeInsets.only(top: 7, bottom: 100),
+              sliver: Obx(() => _buildBody(controller.loadingState.value)),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -56,7 +56,6 @@ import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart';
 import 'package:floating/floating.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart' show SystemUiOverlayStyle;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -144,13 +143,6 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
 
     videoSourceInit();
     autoScreen();
-
-    if (videoDetailController.showReply) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        videoDetailController.scrollKey.currentState?.innerController
-            .addListener(innerScrollListener);
-      });
-    }
 
     WidgetsBinding.instance.addObserver(this);
   }
@@ -332,13 +324,6 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
       tag: videoDetailController.heroTag,
     );
 
-    try {
-      if (videoDetailController.showReply) {
-        videoDetailController.scrollKey.currentState?.innerController
-            .removeListener(innerScrollListener);
-      }
-    } catch (_) {}
-
     if (!Get.previousRoute.startsWith('/video')) {
       if (Utils.isMobile) {
         ScreenBrightnessPlatform.instance.resetApplicationScreenBrightness();
@@ -517,25 +502,6 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
         videoDetailController.minVideoHeight,
         videoDetailController.maxVideoHeight,
       );
-    }
-  }
-
-  void innerScrollListener() {
-    final ScrollDirection? direction = videoDetailController
-        .scrollKey
-        .currentState
-        ?.innerController
-        .positions
-        .firstOrNull
-        ?.userScrollDirection;
-    if (direction == ScrollDirection.forward) {
-      if (mounted) {
-        _videoReplyController.showFab();
-      }
-    } else if (direction == ScrollDirection.reverse) {
-      if (mounted) {
-        _videoReplyController.hideFab();
-      }
     }
   }
 

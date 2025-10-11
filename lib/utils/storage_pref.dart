@@ -851,4 +851,8 @@ abstract class Pref {
   static SkipType get pgcSkipType =>
       SkipType.values[_setting.get(SettingBoxKey.pgcSkipType) ??
           SkipType.skipOnce.index];
+
+  static PlayRepeat get audioPlayMode =>
+      PlayRepeat.values[_setting.get(SettingBoxKey.audioPlayMode) ??
+          PlayRepeat.listOrder.index];
 }

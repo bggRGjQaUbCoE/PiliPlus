@@ -30,9 +30,8 @@ class _AiDetailState extends State<AiConclusionPanel>
         children: [
           GestureDetector(
             onTap: Get.back,
-            child: Container(
+            child: SizedBox(
               height: 35,
-              padding: const EdgeInsets.only(bottom: 2),
               child: Center(
                 child: Container(
                   width: 32,

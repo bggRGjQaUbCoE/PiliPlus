@@ -21,6 +21,7 @@ abstract class CommonPageState<
   double? _lastScrollPosition; // 记录上次滚动位置
   final _enableScrollThreshold = Pref.enableScrollThreshold;
   late final double _scrollThreshold = Pref.scrollThreshold; // 滚动阈值
+  late final scrollController = controller.scrollController;
 
   @override
   void initState() {
@@ -29,25 +30,37 @@ abstract class CommonPageState<
       mainStream = Get.find<MainController>().bottomBarStream;
       searchBarStream = Get.find<HomeController>().searchBarStream;
     } catch (_) {}
-    if (mainStream != null || searchBarStream != null) {
+    if (_enableScrollThreshold &&
+        (mainStream != null || searchBarStream != null)) {
       controller.scrollController.addListener(listener);
     }
   }
 
-  void listener() {
-    final scrollController = controller.scrollController;
-    final direction = scrollController.position.userScrollDirection;
-
-    if (!_enableScrollThreshold) {
-      if (direction == ScrollDirection.forward) {
-        mainStream?.add(true);
-        searchBarStream?.add(true);
-      } else if (direction == ScrollDirection.reverse) {
-        mainStream?.add(false);
-        searchBarStream?.add(false);
-      }
-      return;
+  Widget onBuild(Widget child) {
+    if (!_enableScrollThreshold &&
+        (mainStream != null || searchBarStream != null)) {
+      return NotificationListener<UserScrollNotification>(
+        onNotification: onNotification,
+        child: child,
+      );
     }
+    return child;
+  }
+
+  bool onNotification(UserScrollNotification notification) {
+    final direction = notification.direction;
+    if (direction == ScrollDirection.forward) {
+      mainStream?.add(true);
+      searchBarStream?.add(true);
+    } else if (direction == ScrollDirection.reverse) {
+      mainStream?.add(false);
+      searchBarStream?.add(false);
+    }
+    return false;
+  }
+
+  void listener() {
+    final direction = scrollController.position.userScrollDirection;
 
     final double currentPosition = scrollController.position.pixels;
 

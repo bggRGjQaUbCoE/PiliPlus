@@ -27,7 +27,8 @@ abstract class SettingBoxKey {
       showSuperChat = 'showSuperChat',
       keyboardControl = 'keyboardControl',
       pauseOnMinimize = 'pauseOnMinimize',
-      pgcSkipType = 'pgcSkipType';
+      pgcSkipType = 'pgcSkipType',
+      audioPlayMode = 'audioPlayMode';
 
   static const String enableVerticalExpand = 'enableVerticalExpand',
       feedBackEnable = 'feedBackEnable',

@@ -46,4 +46,12 @@ class GrpcUrl {
   // view
   static const viewunite = '/bilibili.app.viewunite.v1.View';
   static const view = '$viewunite/View';
+
+  // audio
+  static const audio = '/bilibili.app.listener.v1.Listener';
+  static const audioPlayUrl = '$audio/PlayURL';
+  static const audioPlayList = '$audio/Playlist';
+  static const audioThumbUp = '$audio/ThumbUp';
+  static const audioTripleLike = '$audio/TripleLike';
+  static const audioCoinAdd = '$audio/CoinAdd';
 }

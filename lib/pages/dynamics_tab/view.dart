@@ -44,10 +44,21 @@ class _DynamicsTabPageState
   @override
   bool get wantKeepAlive => true;
 
+  bool get checkPage =>
+      _mainController.navigationBars[0] != NavigationBarType.dynamics &&
+      _mainController.selectedIndex.value == 0;
+
+  @override
+  bool onNotification(UserScrollNotification notification) {
+    if (checkPage) {
+      return false;
+    }
+    return super.onNotification(notification);
+  }
+
   @override
   void listener() {
-    if (_mainController.navigationBars[0] != NavigationBarType.dynamics &&
-        _mainController.selectedIndex.value == 0) {
+    if (checkPage) {
       return;
     }
     super.listener();
@@ -77,22 +88,24 @@ class _DynamicsTabPageState
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return refreshIndicator(
-      onRefresh: () {
-        dynamicsController.queryFollowUp();
-        return controller.onRefresh();
-      },
-      child: CustomScrollView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        controller: controller.scrollController,
-        slivers: [
-          SliverPadding(
-            padding: const EdgeInsets.only(bottom: 100),
-            sliver: buildPage(
-              Obx(() => _buildBody(controller.loadingState.value)),
+    return onBuild(
+      refreshIndicator(
+        onRefresh: () {
+          dynamicsController.queryFollowUp();
+          return controller.onRefresh();
+        },
+        child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          controller: controller.scrollController,
+          slivers: [
+            SliverPadding(
+              padding: const EdgeInsets.only(bottom: 100),
+              sliver: buildPage(
+                Obx(() => _buildBody(controller.loadingState.value)),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

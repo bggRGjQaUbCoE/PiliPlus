@@ -41,29 +41,31 @@ class _LivePageState extends CommonPageState<LivePage, LiveController>
   Widget build(BuildContext context) {
     super.build(context);
     final ThemeData theme = Theme.of(context);
-    return Container(
-      clipBehavior: Clip.hardEdge,
-      margin: const EdgeInsets.symmetric(horizontal: StyleString.safeSpace),
-      decoration: const BoxDecoration(borderRadius: StyleString.mdRadius),
-      child: refreshIndicator(
-        onRefresh: controller.onRefresh,
-        child: CustomScrollView(
-          controller: controller.scrollController,
-          physics: const AlwaysScrollableScrollPhysics(),
-          slivers: [
-            SliverPadding(
-              padding: const EdgeInsets.only(
-                top: StyleString.cardSpace,
-                bottom: 100,
+    return onBuild(
+      Container(
+        clipBehavior: Clip.hardEdge,
+        margin: const EdgeInsets.symmetric(horizontal: StyleString.safeSpace),
+        decoration: const BoxDecoration(borderRadius: StyleString.mdRadius),
+        child: refreshIndicator(
+          onRefresh: controller.onRefresh,
+          child: CustomScrollView(
+            controller: controller.scrollController,
+            physics: const AlwaysScrollableScrollPhysics(),
+            slivers: [
+              SliverPadding(
+                padding: const EdgeInsets.only(
+                  top: StyleString.cardSpace,
+                  bottom: 100,
+                ),
+                sliver: SliverMainAxisGroup(
+                  slivers: [
+                    Obx(() => _buildTop(theme, controller.topState.value)),
+                    Obx(() => _buildBody(theme, controller.loadingState.value)),
+                  ],
+                ),
               ),
-              sliver: SliverMainAxisGroup(
-                slivers: [
-                  Obx(() => _buildTop(theme, controller.topState.value)),
-                  Obx(() => _buildBody(theme, controller.loadingState.value)),
-                ],
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

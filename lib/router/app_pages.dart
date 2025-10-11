@@ -1,6 +1,7 @@
 import 'package:PiliPlus/pages/about/view.dart';
 import 'package:PiliPlus/pages/article/view.dart';
 import 'package:PiliPlus/pages/article_list/view.dart';
+import 'package:PiliPlus/pages/audio/view.dart';
 import 'package:PiliPlus/pages/blacklist/view.dart';
 import 'package:PiliPlus/pages/danmaku_block/view.dart';
 import 'package:PiliPlus/pages/dynamics/view.dart';
@@ -25,6 +26,7 @@ import 'package:PiliPlus/pages/live_dm_block/view.dart';
 import 'package:PiliPlus/pages/live_room/view.dart';
 import 'package:PiliPlus/pages/login/view.dart';
 import 'package:PiliPlus/pages/main/view.dart';
+import 'package:PiliPlus/pages/main_reply/view.dart';
 import 'package:PiliPlus/pages/match_info/view.dart';
 import 'package:PiliPlus/pages/member/view.dart';
 import 'package:PiliPlus/pages/member_dynamics/view.dart';
@@ -219,6 +221,8 @@ class Routes {
       name: '/popularPrecious',
       page: () => const PopularPreciousPage(),
     ),
+    CustomGetPage(name: '/audio', page: () => const AudioPage()),
+    CustomGetPage(name: '/mainReply', page: () => const MainReplyPage()),
   ];
 }
 

@@ -273,7 +273,7 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
 
   // 投币
   @override
-  Future<void> actionCoinVideo() async {
+  void actionCoinVideo() {
     if (!accountService.isLogin.value) {
       SmartDialog.showToast('账号未登录');
       return;

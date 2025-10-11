@@ -361,6 +361,7 @@ class _RenderProgressBar extends RenderBox {
        _thumbColor = thumbColor,
        _thumbGlowColor = thumbGlowColor,
        _thumbGlowRadius = thumbGlowRadius,
+       _paintThumbGlow = thumbGlowRadius > thumbRadius,
        _thumbCanPaintOutsideBar = thumbCanPaintOutsideBar {
     _drag = _EagerHorizontalDragGestureRecognizer()
       ..onStart = _onDragStart
@@ -621,11 +622,13 @@ class _RenderProgressBar extends RenderBox {
   }
 
   /// The length of the radius of the pressed-down effect of the moveable thumb.
+  bool _paintThumbGlow;
   double get thumbGlowRadius => _thumbGlowRadius;
   double _thumbGlowRadius;
   set thumbGlowRadius(double value) {
     if (_thumbGlowRadius == value) return;
     _thumbGlowRadius = value;
+    _paintThumbGlow = value > _thumbRadius;
     markNeedsLayout();
   }
 
@@ -773,7 +776,7 @@ class _RenderProgressBar extends RenderBox {
       thumbDx = thumbDx.clamp(_thumbRadius, localSize.width - _thumbRadius);
     }
     final center = Offset(thumbDx, localSize.height / 2);
-    if (_userIsDraggingThumb) {
+    if (_userIsDraggingThumb && _paintThumbGlow) {
       final thumbGlowPaint = Paint()..color = thumbGlowColor;
       canvas.drawCircle(center, thumbGlowRadius, thumbGlowPaint);
     }

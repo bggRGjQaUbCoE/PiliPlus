@@ -51,26 +51,28 @@ class _PgcPageState extends CommonPageState<PgcPage, PgcController>
   Widget build(BuildContext context) {
     super.build(context);
     final ThemeData theme = Theme.of(context);
-    return refreshIndicator(
-      onRefresh: controller.onRefresh,
-      child: CustomScrollView(
-        controller: controller.scrollController,
-        physics: const AlwaysScrollableScrollPhysics(),
-        slivers: [
-          _buildFollow(theme),
-          if (controller.showPgcTimeline)
-            SliverToBoxAdapter(
-              child: SizedBox(
-                height:
-                    Grid.smallCardWidth / 2 / 0.75 +
-                    MediaQuery.textScalerOf(context).scale(96),
-                child: Obx(
-                  () => _buildTimeline(theme, controller.timelineState.value),
+    return onBuild(
+      refreshIndicator(
+        onRefresh: controller.onRefresh,
+        child: CustomScrollView(
+          controller: controller.scrollController,
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: [
+            _buildFollow(theme),
+            if (controller.showPgcTimeline)
+              SliverToBoxAdapter(
+                child: SizedBox(
+                  height:
+                      Grid.smallCardWidth / 2 / 0.75 +
+                      MediaQuery.textScalerOf(context).scale(96),
+                  child: Obx(
+                    () => _buildTimeline(theme, controller.timelineState.value),
+                  ),
                 ),
               ),
-            ),
-          ..._buildRcmd(theme),
-        ],
+            ..._buildRcmd(theme),
+          ],
+        ),
       ),
     );
   }

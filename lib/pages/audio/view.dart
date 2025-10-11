@@ -177,6 +177,7 @@ class _AudioPageState extends State<AudioPage> {
                     child: refreshIndicator(
                       onRefresh: () => _controller.loadPrev(context),
                       child: CustomScrollView(
+                        physics: const ClampingScrollPhysics(),
                         controller: scrollController,
                         slivers: [
                           SliverPadding(
@@ -785,21 +786,25 @@ class _AudioPageState extends State<AudioPage> {
                     const SliverToBoxAdapter(child: SizedBox(height: 10)),
                     if (audioItem.owner.hasName())
                       SliverToBoxAdapter(
-                        child: Row(
-                          spacing: 6,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            if (audioItem.owner.hasAvatar())
-                              NetworkImgLayer(
-                                src: audioItem.owner.avatar,
-                                width: 22,
-                                height: 22,
-                                type: ImageType.avatar,
+                        child: GestureDetector(
+                          onTap: () =>
+                              Get.toNamed('/member?mid=${audioItem.owner.mid}'),
+                          child: Row(
+                            spacing: 6,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (audioItem.owner.hasAvatar())
+                                NetworkImgLayer(
+                                  src: audioItem.owner.avatar,
+                                  width: 22,
+                                  height: 22,
+                                  type: ImageType.avatar,
+                                ),
+                              Text(
+                                audioItem.owner.name,
                               ),
-                            Text(
-                              audioItem.owner.name,
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                   ],

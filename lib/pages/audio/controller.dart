@@ -27,6 +27,7 @@ import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
+import 'package:PiliPlus/utils/video_utils.dart';
 import 'package:fixnum/fixnum.dart' show Int64;
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -173,7 +174,7 @@ class AudioController extends GetxController
     }
   }
 
-  Future<void> _onPlay(PlayURLResp data) async {
+  void _onPlay(PlayURLResp data) {
     final PlayInfo? playInfo = data.playerInfo.values.firstOrNull;
     if (playInfo != null) {
       if (playInfo.hasPlayDash()) {
@@ -187,7 +188,7 @@ class AudioController extends GetxController
           (e) => e.id <= cacheAudioQa,
           (a, b) => a.id > b.id ? a : b,
         );
-        _onOpenMedia(audio.baseUrl);
+        _onOpenMedia(VideoUtils.getCdnUrl(audio.baseUrl));
       } else if (playInfo.hasPlayUrl()) {
         final playUrl = playInfo.playUrl;
         final durls = playUrl.durl;
@@ -196,7 +197,7 @@ class AudioController extends GetxController
         }
         final durl = durls.first;
         position.value = Duration.zero;
-        _onOpenMedia(durl.url);
+        _onOpenMedia(VideoUtils.getDurlCdnUrl(durl));
       }
     }
   }

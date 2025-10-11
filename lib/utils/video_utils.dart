@@ -1,10 +1,11 @@
+import 'package:PiliPlus/grpc/bilibili/app/listener/v1.pb.dart' as audio;
 import 'package:PiliPlus/models/common/video/cdn_type.dart';
 import 'package:PiliPlus/models/video/play/url.dart';
 import 'package:PiliPlus/models_new/live/live_room_play_info/codec.dart';
 import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 
-abstract class VideoUtils {
+abstract final class VideoUtils {
   static String cdnService = Pref.defaultCDNService;
   static bool disableAudioCDN = Pref.disableAudioCDN;
 
@@ -29,6 +30,8 @@ abstract class VideoUtils {
           (item.urlInfo?.first.host)! +
           item.baseUrl! +
           item.urlInfo!.first.extra!;
+    } else if (item is audio.DashItem) {
+      backupUrl = item.backupUrl.lastOrNull;
     } else {
       backupUrl = item.backupUrl;
     }
@@ -92,5 +95,17 @@ abstract class VideoUtils {
     // }
 
     return videoUrl;
+  }
+
+  static String getDurlCdnUrl(audio.ResponseUrl item) {
+    if (disableAudioCDN || cdnService == CDNService.backupUrl.code) {
+      return item.backupUrl.lastOrNull ?? item.url;
+    }
+    if (cdnService == CDNService.baseUrl.code) {
+      return item.url;
+    }
+    return Uri.parse(
+      item.backupUrl.lastOrNull ?? item.url,
+    ).replace(host: CDNService.fromCode(cdnService).host, port: 443).toString();
   }
 }

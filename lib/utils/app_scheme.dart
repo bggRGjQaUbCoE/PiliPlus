@@ -920,7 +920,10 @@ abstract class PiliScheme {
         return false;
       case 'audio':
         // https://www.bilibili.com/audio/au123456
-        String? oid = RegExp(r'/au(\d+)').firstMatch(path)?.group(1);
+        String? oid = RegExp(
+          r'/au(\d+)',
+          caseSensitive: false,
+        ).firstMatch(path)?.group(1);
         if (oid != null) {
           AudioPage.toAudioPage(
             itemType: 3,

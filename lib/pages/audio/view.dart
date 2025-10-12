@@ -721,6 +721,7 @@ class _AudioPageState extends State<AudioPage> {
                 child: ListView(
                   key: const PageStorageKey(_AudioPageState),
                   shrinkWrap: true,
+                  physics: const ClampingScrollPhysics(),
                   children: [
                     Center(
                       child: GestureDetector(

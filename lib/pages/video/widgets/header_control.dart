@@ -65,6 +65,76 @@ class HeaderControl extends StatefulWidget {
 
   @override
   State<HeaderControl> createState() => HeaderControlState();
+
+  static Future<bool> likeDanmaku(VideoDanmaku extra, int cid) async {
+    if (!Accounts.main.isLogin) {
+      SmartDialog.showToast('请先登录');
+      return false;
+    }
+    final res = await DanmakuHttp.danmakuLike(
+      isLike: extra.isLike,
+      cid: cid,
+      id: extra.id,
+    );
+    if (res.isSuccess) {
+      extra.isLike = !extra.isLike;
+      return true;
+    } else {
+      res.toast();
+      return false;
+    }
+  }
+
+  static Future<bool> deleteDanmaku(int id, int cid) async {
+    final res = await DanmakuHttp.danmakuRecall(
+      cid: cid,
+      id: id,
+    );
+    if (res.isSuccess) {
+      SmartDialog.showToast('删除成功');
+      return true;
+    } else {
+      res.toast();
+      return false;
+    }
+  }
+
+  static Future<void> reportDanmaku(
+    VideoDanmaku extra,
+    BuildContext context,
+    PlPlayerController ctr,
+  ) {
+    if (Accounts.main.isLogin) {
+      return autoWrapReportDialog(
+        context,
+        ReportOptions.danmakuReport,
+        (reasonType, reasonDesc, banUid) {
+          if (banUid) {
+            final filter = ctr.filters;
+            if (filter.dmUid.add(extra.mid)) {
+              filter.count++;
+              GStorage.localCache.put(
+                LocalCacheKey.danmakuFilterRules,
+                filter,
+              );
+            }
+            DanmakuFilterHttp.danmakuFilterAdd(
+              filter: extra.mid,
+              type: 2,
+            );
+          }
+          return DanmakuHttp.danmakuReport(
+            reason: reasonType == 0 ? 11 : reasonType,
+            cid: ctr.cid!,
+            id: extra.id,
+            content: reasonDesc,
+          );
+        },
+      );
+    } else {
+      return SmartDialog.showToast('请先登录');
+    }
+  }
 }
 
 class HeaderControlState extends State<HeaderControl> {
@@ -1868,34 +1938,34 @@ class HeaderControlState extends State<HeaderControl> {
           clipBehavior: Clip.hardEdge,
           color: theme.colorScheme.surface,
           borderRadius: const BorderRadius.all(Radius.circular(12)),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 14),
-            child: CustomScrollView(
-              slivers: [
-                SliverPersistentHeader(
-                  pinned: true,
-                  delegate: CustomSliverPersistentHeaderDelegate(
-                    child: Padding(
-                      padding: const EdgeInsets.all(6),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text('弹幕列表'),
-                          IconButton(
-                            onPressed: () => setState(() {}),
-                            icon: const Icon(Icons.refresh),
-                          ),
-                        ],
-                      ),
+          child: CustomScrollView(
+            slivers: [
+              SliverPersistentHeader(
+                pinned: true,
+                delegate: CustomSliverPersistentHeaderDelegate(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 7,
                     ),
-                    bgColor: theme.colorScheme.surface,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text('弹幕列表'),
+                        IconButton(
+                          onPressed: () => setState(() {}),
+                          icon: const Icon(Icons.refresh),
+                        ),
+                      ],
+                    ),
                   ),
+                  bgColor: theme.colorScheme.surface,
                 ),
-                ?_buildDanmakuList(ctr.staticDanmaku),
-                ?_buildDanmakuList(ctr.scrollDanmaku),
-                ?_buildDanmakuList(ctr.specialDanmaku),
-              ],
-            ),
+              ),
+              ?_buildDanmakuList(ctr.staticDanmaku),
+              ?_buildDanmakuList(ctr.scrollDanmaku),
+              ?_buildDanmakuList(ctr.specialDanmaku),
+            ],
           ),
         ),
       );
@@ -1913,83 +1983,43 @@ class HeaderControlState extends State<HeaderControl> {
         final extra = item.content.extra! as VideoDanmaku;
         return ListTile(
           dense: true,
-          contentPadding: const EdgeInsets.only(left: 6),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 14),
           onLongPress: () => Utils.copyText(item.content.text),
-          title: Text(item.content.text * 10),
+          title: Text(item.content.text),
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               Builder(
                 builder: (context) => IconButton(
                   onPressed: () async {
-                    if (!Accounts.main.isLogin) {
-                      SmartDialog.showToast('请先登录');
-                      return;
-                    }
-                    final res = await DanmakuHttp.danmakuLike(
-                      isLike: extra.isLike,
-                      cid: plPlayerController.cid!,
-                      id: extra.id,
-                    );
-                    if (res.isSuccess) {
-                      extra.isLike = !extra.isLike;
-                      if (context.mounted) {
-                        (context as Element).markNeedsBuild();
-                      }
-                    } else {
-                      res.toast();
+                    if (await HeaderControl.likeDanmaku(
+                          extra,
+                          plPlayerController.cid!,
+                        ) &&
+                        context.mounted) {
+                      (context as Element).markNeedsBuild();
                     }
                   },
                   icon: extra.isLike
-                      ? const Icon(Icons.thumb_up)
-                      : const Icon(Icons.thumb_up_outlined),
+                      ? const Icon(Icons.thumb_up_off_alt_sharp)
+                      : const Icon(Icons.thumb_up_off_alt_rounded),
                 ),
               ),
               if (item.content.selfSend)
                 IconButton(
-                  onPressed: () async {
-                    final res = await DanmakuHttp.danmakuRecall(
-                      cid: plPlayerController.cid!,
-                      id: extra.id,
-                    );
-                    if (res.isSuccess) {
-                      SmartDialog.showToast('删除成功');
-                    } else {
-                      res.toast();
-                    }
-                  },
+                  onPressed: () => HeaderControl.deleteDanmaku(
+                    extra.id,
+                    plPlayerController.cid!,
+                  ),
                   icon: const Icon(Icons.delete_outline),
                 )
               else
                 IconButton(
-                  onPressed: () {
-                    autoWrapReportDialog(
-                      context,
-                      ReportOptions.danmakuReport,
-                      (reasonType, reasonDesc, banUid) {
-                        if (banUid) {
-                          final filter = plPlayerController.filters;
-                          if (filter.dmUid.add(extra.mid)) {
-                            filter.count++;
-                            GStorage.localCache.put(
-                              LocalCacheKey.danmakuFilterRules,
-                              filter,
-                            );
-                          }
-                          DanmakuFilterHttp.danmakuFilterAdd(
-                            filter: extra.mid,
-                            type: 2,
-                          );
-                        }
-                        return DanmakuHttp.danmakuReport(
-                          reason: reasonType == 0 ? 11 : reasonType,
-                          cid: plPlayerController.cid!,
-                          id: extra.id,
-                          content: reasonDesc,
-                        );
-                      },
-                    );
-                  },
+                  onPressed: () => HeaderControl.reportDanmaku(
+                    extra,
+                    context,
+                    plPlayerController,
+                  ),
                   icon: const Icon(Icons.report_problem_outlined),
                 ),
             ],

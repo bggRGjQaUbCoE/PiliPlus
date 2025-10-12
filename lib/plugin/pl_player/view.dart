@@ -21,10 +21,12 @@ import 'package:PiliPlus/models_new/video/video_detail/section.dart';
 import 'package:PiliPlus/models_new/video/video_detail/ugc_season.dart';
 import 'package:PiliPlus/models_new/video/video_shot/data.dart';
 import 'package:PiliPlus/pages/common/common_intro_controller.dart';
+import 'package:PiliPlus/pages/danmaku/dnamaku_model.dart';
 import 'package:PiliPlus/pages/video/controller.dart';
 import 'package:PiliPlus/pages/video/introduction/pgc/controller.dart';
 import 'package:PiliPlus/pages/video/post_panel/popup_menu_text.dart';
 import 'package:PiliPlus/pages/video/post_panel/view.dart';
+import 'package:PiliPlus/pages/video/widgets/header_control.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/models/bottom_control_type.dart';
 import 'package:PiliPlus/plugin/pl_player/models/bottom_progress_behavior.dart';
@@ -46,6 +48,7 @@ import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/utils.dart';
+import 'package:canvas_danmaku/canvas_danmaku.dart';
 import 'package:dio/dio.dart';
 import 'package:easy_debounce/easy_throttle.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -1051,12 +1054,27 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     plPlayerController.triggerFullScreen(status: !isFullScreen);
   }
 
-  void onTap(PointerDeviceKind? kind) {
-    switch (kind) {
-      case ui.PointerDeviceKind.mouse when Utils.isDesktop:
+  void onTapUp(TapDownDetails? event) {
+    switch (event?.kind) {
+      case ui.PointerDeviceKind.mouse when (!kDebugMode && Utils.isDesktop):
         onTapDesktop();
         break;
       default:
+        if (kDebugMode || Utils.isMobile) {
+          final ctr = plPlayerController.danmakuController;
+          if (ctr != null) {
+            final item = ctr.findSingleDanmaku(event!.globalPosition);
+            if (item == null) {
+              if (_suspendedDM != null) {
+                _removeOverlay();
+                break;
+              }
+            } else if (item != _suspendedDM) {
+              _showOverlay(item, event, ctr);
+              break;
+            }
+          }
+        }
         plPlayerController.controls = !plPlayerController.showControls.value;
         break;
     }
@@ -1175,8 +1193,6 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     }
   }
 
-  final isMobile = Utils.isMobile;
-
   @override
   Widget build(BuildContext context) {
     maxWidth = widget.maxWidth;
@@ -1223,12 +1239,12 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                   !Utils.isDesktop && !plPlayerController.controlsLock.value,
               enableShrinkVideoSize:
                   !Utils.isDesktop && plPlayerController.enableShrinkVideoSize,
-              onInteractionStart: _onInteractionStart,
+              onInteractionStart: _onInteractionStart, // TODO: refa gesture
               onInteractionUpdate: _onInteractionUpdate,
               onInteractionEnd: _onInteractionEnd,
               flipX: plPlayerController.flipX.value,
               flipY: plPlayerController.flipY.value,
-              onTap: onTap,
+              onTap: onTapUp,
               onDoubleTapDown: onDoubleTapDown,
               onLongPressStart: isLive
                   ? null
@@ -1656,7 +1672,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                           ),
                         ),
                       ),
-                      if (isMobile)
+                      if (Utils.isMobile)
                         buildViewPointWidget(
                           videoDetailController,
                           plPlayerController,
@@ -1878,7 +1894,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
           }),
       ],
     );
-    if (!isMobile) {
+    if (!kDebugMode && !Utils.isMobile) {
       return Listener(
         behavior: HitTestBehavior.translucent,
         onPointerDown: onPointerDown,
@@ -2043,6 +2059,154 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
         }
         if (isPlay) ctr.play();
       },
+    );
+  }
+
+  static const overlaySpacing = 10.0;
+  static const overlayWidth = 130.0;
+  static const overlayHeight = 35.0;
+
+  DanmakuItem? _suspendedDM;
+  OverlayEntry? _overlayEntry;
+
+  @override
+  void deactivate() {
+    _removeOverlay();
+    super.deactivate();
+  }
+
+  void _removeOverlay() {
+    _suspendedDM?.suspend = false;
+    _suspendedDM = null;
+    _overlayEntry?.remove();
+    _overlayEntry = null;
+  }
+
+  Widget _overlayItem(Widget child, {required VoidCallback onTap}) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: SizedBox(
+        height: overlayHeight,
+        width: overlayWidth / 3,
+        child: Center(
+          child: child,
+        ),
+      ),
+    );
+  }
+
+  void _showOverlay(
+    DanmakuItem<DanmakuExtra> item,
+    PositionedGestureDetails event,
+    DanmakuController<DanmakuExtra> ctr,
+  ) {
+    _removeOverlay();
+    item.suspend = true;
+    _suspendedDM = item;
+
+    final dy = item.content.type == DanmakuItemType.bottom
+        ? ctr.viewHeight - item.yPosition - item.height
+        : item.yPosition;
+    final extra = item.content.extra as VideoDanmaku;
+
+    final theme = Theme.of(context);
+
+    Overlay.of(context).insert(
+      _overlayEntry = OverlayEntry(
+        builder: (context) {
+          return Positioned(
+            top: dy + item.height + 4,
+            left: clampDouble(
+              event.globalPosition.dx - overlayWidth / 2,
+              overlaySpacing,
+              ctr.viewWidth - overlayWidth - overlaySpacing,
+            ),
+            child: Column(
+              children: [
+                CustomPaint(
+                  painter: _TrianglePainter(
+                    theme.colorScheme.onSurface.withValues(alpha: 0.8),
+                  ),
+                  size: const Size(12, 6),
+                ),
+                Container(
+                  width: overlayWidth,
+                  height: overlayHeight,
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
+                    borderRadius: const BorderRadius.all(Radius.circular(18)),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      _overlayItem(
+                        Icon(
+                          size: 20,
+                          extra.isLike
+                              ? Icons.thumb_up_off_alt_sharp
+                              : Icons.thumb_up_off_alt_outlined,
+                          color: theme.colorScheme.surface,
+                        ),
+                        onTap: () {
+                          _removeOverlay();
+                          HeaderControl.likeDanmaku(
+                            extra,
+                            plPlayerController.cid!,
+                          );
+                        },
+                      ),
+                      _overlayItem(
+                        Icon(
+                          size: 20,
+                          Icons.copy,
+                          color: theme.colorScheme.surface,
+                        ),
+                        onTap: () {
+                          _removeOverlay();
+                          Utils.copyText(item.content.text);
+                        },
+                      ),
+                      if (item.content.selfSend)
+                        _overlayItem(
+                          Icon(
+                            size: 20,
+                            Icons.delete,
+                            color: theme.colorScheme.surface,
+                          ),
+                          onTap: () {
+                            _removeOverlay();
+                            HeaderControl.deleteDanmaku(
+                              extra.id,
+                              plPlayerController.cid!,
+                            );
+                          },
+                        )
+                      else
+                        _overlayItem(
+                          Icon(
+                            size: 20,
+                            Icons.report_problem_outlined,
+                            color: theme.colorScheme.surface,
+                          ),
+                          onTap: () {
+                            _removeOverlay();
+                            HeaderControl.reportDanmaku(
+                              extra,
+                              context,
+                              plPlayerController,
+                            );
+                          },
+                        ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
 }
@@ -2388,4 +2552,28 @@ Widget buildViewPointWidget(
       },
     ),
   );
+}
+
+class _TrianglePainter extends CustomPainter {
+  const _TrianglePainter(this.color);
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.fill;
+
+    final path = Path()
+      ..moveTo(0, size.height)
+      ..lineTo(size.width, size.height)
+      ..lineTo(size.width / 2, 0)
+      ..close();
+
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _TrianglePainter oldDelegate) =>
+      color != oldDelegate.color;
 }

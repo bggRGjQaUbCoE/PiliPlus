@@ -116,13 +116,21 @@ class FavVideoCardH extends StatelessWidget {
                           bottom: 6.0,
                           type: PBadgeType.gray,
                         ),
-                        PBadge(
-                          text: item.ogv?.typeName,
-                          top: 6.0,
-                          right: 6.0,
-                          bottom: null,
-                          left: null,
-                        ),
+                        if (item.type == 12)
+                          const PBadge(
+                            text: '音频',
+                            top: 6.0,
+                            right: 6.0,
+                            type: PBadgeType.gray,
+                          )
+                        else
+                          PBadge(
+                            text: item.ogv?.typeName,
+                            top: 6.0,
+                            right: 6.0,
+                            bottom: null,
+                            left: null,
+                          ),
                         if (!isSort)
                           Positioned.fill(
                             child: selectMask(

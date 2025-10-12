@@ -12,6 +12,7 @@ import 'package:PiliPlus/models_new/live/live_dm_info/data.dart';
 import 'package:PiliPlus/models_new/live/live_room_info_h5/data.dart';
 import 'package:PiliPlus/models_new/live/live_room_play_info/codec.dart';
 import 'package:PiliPlus/models_new/live/live_superchat/item.dart';
+import 'package:PiliPlus/pages/danmaku/dnamaku_model.dart';
 import 'package:PiliPlus/pages/live_room/send_danmaku/view.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/models/data_source.dart';
@@ -36,7 +37,7 @@ class LiveRoomController extends GetxController {
   final String heroTag;
 
   int roomId = Get.arguments;
-  DanmakuController? danmakuController;
+  DanmakuController<DanmakuExtra>? danmakuController;
   PlPlayerController plPlayerController = PlPlayerController.getInstance(
     isLive: true,
   );
@@ -340,7 +341,9 @@ class LiveRoomController extends GetxController {
                   final info = obj['info'];
                   final first = info[0];
                   final content = first[15];
-                  final extra = jsonDecode(content['extra']);
+                  final Map<String, dynamic> extra = jsonDecode(
+                    content['extra'],
+                  );
                   final user = content['user'];
                   final uid = user['uid'];
                   BaseEmote? uemote;
@@ -368,6 +371,11 @@ class LiveRoomController extends GetxController {
                             : DmUtils.decimalToColor(extra['color']),
                         type: DmUtils.getPosition(extra['mode']),
                         selfSend: extra['send_from_me'] ?? false,
+                        extra: LiveDanmaku(
+                          id: extra['id_str'],
+                          mid: uid,
+                          uname: user['base']['name'],
+                        ),
                       ),
                     );
                     if (!disableAutoScroll.value) {

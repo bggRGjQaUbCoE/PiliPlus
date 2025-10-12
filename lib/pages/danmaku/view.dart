@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:PiliPlus/grpc/bilibili/community/service/dm/v1.pb.dart';
 import 'package:PiliPlus/pages/danmaku/controller.dart';
+import 'package:PiliPlus/pages/danmaku/dnamaku_model.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
 import 'package:PiliPlus/utils/danmaku_utils.dart';
@@ -32,7 +33,7 @@ class _PlDanmakuState extends State<PlDanmaku> {
   PlPlayerController get playerController => widget.playerController;
 
   late PlDanmakuController _plDanmakuController;
-  DanmakuController? _controller;
+  DanmakuController<DanmakuExtra>? _controller;
   int latestAddedPosition = -1;
 
   @override
@@ -130,6 +131,7 @@ class _PlDanmakuState extends State<PlDanmaku> {
                   e.colorful == DmColorfulType.VipGradualColor,
               count: e.hasCount() ? e.count : null,
               selfSend: e.isSelf,
+              extra: VideoDanmaku(id: e.id.toInt(), mid: e.midHash),
             ),
           );
         }
@@ -154,8 +156,8 @@ class _PlDanmakuState extends State<PlDanmaku> {
             ? playerController.danmakuOpacity.value
             : 0,
         duration: const Duration(milliseconds: 100),
-        child: DanmakuScreen(
-          createdController: (DanmakuController e) {
+        child: DanmakuScreen<DanmakuExtra>(
+          createdController: (e) {
             playerController.danmakuController = _controller = e;
           },
           option: DanmakuOption(

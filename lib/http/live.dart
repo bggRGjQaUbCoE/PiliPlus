@@ -666,4 +666,41 @@ abstract final class LiveHttp {
       return Error(res.data['message']);
     }
   }
+
+  static Future<LoadingState<Null>> liveDmReport({
+    required Object roomId,
+    required int mid,
+    required String msg,
+    required String reason,
+    required int reasonId,
+    required String id,
+  }) async {
+    final csrf = Accounts.main.csrf;
+    final data = {
+      'id': 0,
+      'roomid': roomId,
+      'tuid': mid,
+      'msg': msg,
+      'reason': reason,
+      'sign': '',
+      'reason_id': reasonId,
+      'token': '',
+      'dm_type': '0',
+      'id_str': id,
+      'csrf_token': csrf,
+      'csrf': csrf,
+      'visit_id': '',
+      'ts': DateTime.now().millisecondsSinceEpoch ~/ 1000,
+    };
+    final res = await Request().post(
+      Api.liveDmReport,
+      data: data,
+      options: Options(contentType: Headers.formUrlEncodedContentType),
+    );
+    if (res.data['code'] == 0) {
+      return const Success(null); // {"id": num}
+    } else {
+      return Error(res.data['message']);
+    }
+  }
 }

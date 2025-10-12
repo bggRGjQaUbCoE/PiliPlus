@@ -10,6 +10,7 @@ import 'package:PiliPlus/common/widgets/scroll_physics.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/models_new/live/live_room_info_h5/data.dart';
 import 'package:PiliPlus/models_new/live/live_superchat/item.dart';
+import 'package:PiliPlus/pages/danmaku/dnamaku_model.dart';
 import 'package:PiliPlus/pages/live_room/controller.dart';
 import 'package:PiliPlus/pages/live_room/superchat/superchat_card.dart';
 import 'package:PiliPlus/pages/live_room/superchat/superchat_panel.dart';
@@ -1039,8 +1040,8 @@ class _LiveDanmakuState extends State<LiveDanmaku> {
               ? plPlayerController.danmakuOpacity.value
               : 0,
           duration: const Duration(milliseconds: 100),
-          child: DanmakuScreen(
-            createdController: (DanmakuController e) {
+          child: DanmakuScreen<DanmakuExtra>(
+            createdController: (e) {
               widget.liveRoomController.danmakuController =
                   plPlayerController.danmakuController = e;
             },

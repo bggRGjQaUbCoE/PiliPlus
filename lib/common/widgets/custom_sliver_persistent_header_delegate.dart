@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 
 class CustomSliverPersistentHeaderDelegate
     extends SliverPersistentHeaderDelegate {
-  CustomSliverPersistentHeaderDelegate({
+  const CustomSliverPersistentHeaderDelegate({
     required this.child,
     required this.bgColor,
     double extent = 45,

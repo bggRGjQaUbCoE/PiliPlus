@@ -5,7 +5,11 @@ import 'dart:typed_data';
 
 import 'package:PiliPlus/common/widgets/button/icon_button.dart';
 import 'package:PiliPlus/common/widgets/custom_icon.dart';
+import 'package:PiliPlus/common/widgets/custom_sliver_persistent_header_delegate.dart';
+import 'package:PiliPlus/common/widgets/dialog/report.dart';
 import 'package:PiliPlus/common/widgets/marquee.dart';
+import 'package:PiliPlus/http/danmaku.dart';
+import 'package:PiliPlus/http/danmaku_block.dart';
 import 'package:PiliPlus/models/common/super_resolution_type.dart';
 import 'package:PiliPlus/models/common/video/audio_quality.dart';
 import 'package:PiliPlus/models/common/video/cdn_type.dart';
@@ -13,6 +17,7 @@ import 'package:PiliPlus/models/common/video/video_decode_type.dart';
 import 'package:PiliPlus/models/common/video/video_quality.dart';
 import 'package:PiliPlus/models/video/play/url.dart';
 import 'package:PiliPlus/pages/common/common_intro_controller.dart';
+import 'package:PiliPlus/pages/danmaku/dnamaku_model.dart';
 import 'package:PiliPlus/pages/setting/widgets/select_dialog.dart';
 import 'package:PiliPlus/pages/setting/widgets/switch_item.dart';
 import 'package:PiliPlus/pages/video/controller.dart';
@@ -406,6 +411,15 @@ class HeaderControlState extends State<HeaderControl> {
                     plPlayerController.playRepeat.desc,
                     style: subTitleStyle,
                   ),
+                ),
+                ListTile(
+                  dense: true,
+                  onTap: () {
+                    Get.back();
+                    showDanmakuPool();
+                  },
+                  leading: const Icon(CustomIcons.dm_on, size: 20),
+                  title: const Text('弹幕列表', style: titleStyle),
                 ),
                 ListTile(
                   dense: true,
@@ -1337,7 +1351,7 @@ class HeaderControlState extends State<HeaderControl> {
     int danmakuFontWeight = plPlayerController.danmakuFontWeight;
     bool massiveMode = plPlayerController.massiveMode;
 
-    final DanmakuController? danmakuController =
+    final DanmakuController<DanmakuExtra>? danmakuController =
         plPlayerController.danmakuController;
 
     showBottomSheet(
@@ -1837,6 +1851,146 @@ class HeaderControlState extends State<HeaderControl> {
                 ],
               ),
             ),
+          ),
+        );
+      },
+    );
+  }
+
+  void showDanmakuPool() {
+    final ctr = plPlayerController.danmakuController;
+    if (ctr == null) return;
+    showBottomSheet((context, setState) {
+      final theme = Theme.of(context);
+      return Padding(
+        padding: const EdgeInsets.all(12),
+        child: Material(
+          clipBehavior: Clip.hardEdge,
+          color: theme.colorScheme.surface,
+          borderRadius: const BorderRadius.all(Radius.circular(12)),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14),
+            child: CustomScrollView(
+              slivers: [
+                SliverPersistentHeader(
+                  pinned: true,
+                  delegate: CustomSliverPersistentHeaderDelegate(
+                    child: Padding(
+                      padding: const EdgeInsets.all(6),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text('弹幕列表'),
+                          IconButton(
+                            onPressed: () => setState(() {}),
+                            icon: const Icon(Icons.refresh),
+                          ),
+                        ],
+                      ),
+                    ),
+                    bgColor: null,
+                  ),
+                ),
+                ?_buildDanmakuList(ctr.staticDanmaku),
+                ?_buildDanmakuList(ctr.scrollDanmaku),
+                ?_buildDanmakuList(ctr.specialDanmaku),
+              ],
+            ),
+          ),
+        ),
+      );
+    });
+  }
+
+  Widget? _buildDanmakuList(List<DanmakuItem<DanmakuExtra>> list) {
+    if (list.isEmpty) return null;
+    list = List.of(list);
+
+    return SliverList.builder(
+      itemCount: list.length,
+      itemBuilder: (context, index) {
+        final item = list[index];
+        final extra = item.content.extra! as VideoDanmaku;
+        return ListTile(
+          onLongPress: () => Utils.copyText(item.content.text),
+          subtitle: Text(item.content.text),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Builder(
+                builder: (context) => IconButton(
+                  onPressed: () async {
+                    if (!Accounts.main.isLogin) {
+                      SmartDialog.showToast('请先登录');
+                      return;
+                    }
+                    final res = await DanmakuHttp.danmakuLike(
+                      isLike: extra.isLike,
+                      cid: plPlayerController.cid!,
+                      id: extra.id,
+                    );
+                    if (res.isSuccess) {
+                      extra.isLike = !extra.isLike;
+                      if (context.mounted) {
+                        (context as Element).markNeedsBuild();
+                      }
+                    } else {
+                      res.toast();
+                    }
+                  },
+                  icon: extra.isLike
+                      ? const Icon(Icons.thumb_up)
+                      : const Icon(Icons.thumb_up_outlined),
+                ),
+              ),
+              if (item.content.selfSend)
+                IconButton(
+                  onPressed: () async {
+                    final res = await DanmakuHttp.danmakuRecall(
+                      cid: plPlayerController.cid!,
+                      id: extra.id,
+                    );
+                    if (res.isSuccess) {
+                      SmartDialog.showToast('删除成功');
+                    } else {
+                      res.toast();
+                    }
+                  },
+                  icon: const Icon(Icons.delete_outline),
+                )
+              else
+                IconButton(
+                  onPressed: () {
+                    autoWrapReportDialog(
+                      context,
+                      ReportOptions.danmakuReport,
+                      (reasonType, reasonDesc, banUid) {
+                        if (banUid) {
+                          final filter = plPlayerController.filters;
+                          if (filter.dmUid.add(extra.mid)) {
+                            filter.count++;
+                            GStorage.localCache.put(
+                              LocalCacheKey.danmakuFilterRules,
+                              filter,
+                            );
+                          }
+                          DanmakuFilterHttp.danmakuFilterAdd(
+                            filter: extra.mid,
+                            type: 2,
+                          );
+                        }
+                        return DanmakuHttp.danmakuReport(
+                          reason: reasonType == 0 ? 11 : reasonType,
+                          cid: plPlayerController.cid!,
+                          id: extra.id,
+                          content: reasonDesc,
+                        );
+                      },
+                    );
+                  },
+                  icon: const Icon(Icons.report_problem_outlined),
+                ),
+            ],
           ),
         );
       },

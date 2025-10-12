@@ -955,4 +955,15 @@ class Api {
   static const String popularPrecious = '/x/web-interface/popular/precious';
 
   static const String userRealName = '/x/member/app/up/realname';
+
+  static const String liveDmReport =
+      '${HttpString.liveBaseUrl}/xlive/web-ucenter/v1/dMReport/Report';
+
+  static const String danmakuLike = '/x/v2/dm/thumbup/add';
+
+  static const String danmakuReport = '/x/dm/report/add';
+
+  static const String danmakuRecall = '/x/dm/recall';
+
+  static const String danmakuEditState = '/x/v2/dm/edit/state';
 }

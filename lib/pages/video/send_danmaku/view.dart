@@ -6,7 +6,9 @@ import 'package:PiliPlus/http/danmaku.dart';
 import 'package:PiliPlus/main.dart';
 import 'package:PiliPlus/models/common/publish_panel_type.dart';
 import 'package:PiliPlus/pages/common/publish/common_text_pub_page.dart';
+import 'package:PiliPlus/pages/danmaku/dnamaku_model.dart';
 import 'package:PiliPlus/pages/setting/slide_color_picker.dart';
+import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:canvas_danmaku/models/danmaku_content_item.dart';
 import 'package:flutter/material.dart';
@@ -20,7 +22,7 @@ class SendDanmakuPanel extends CommonTextPubPage {
   final dynamic bvid;
   final dynamic progress;
 
-  final ValueChanged<DanmakuContentItem> callback;
+  final ValueChanged<DanmakuContentItem<DanmakuExtra>> callback;
   final bool darkVideoPage;
 
   // config
@@ -473,6 +475,10 @@ class _SendDanmakuPanelState extends CommonTextPubPageState<SendDanmakuPanel> {
           },
           selfSend: true,
           isColorful: isColorful,
+          extra: VideoDanmaku(
+            id: res['dmid'],
+            mid: PlPlayerController.instance!.midHash,
+          ),
         ),
       );
     } else {

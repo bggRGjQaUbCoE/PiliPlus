@@ -41,6 +41,7 @@ class AudioController extends GetxController
   late List<Int64> subId;
   late int itemType;
   late final PlaylistSource from;
+  late final isVideo = itemType == 1;
 
   final Rx<DetailItem?> audioItem = Rx<DetailItem?>(null);
 
@@ -380,7 +381,7 @@ class AudioController extends GetxController
   void showReply() {
     MainReplyPage.toMainReplyPage(
       oid: oid.toInt(),
-      replyType: itemType == 1 ? 1 : 14,
+      replyType: isVideo ? 1 : 14,
     );
   }
 
@@ -388,7 +389,7 @@ class AudioController extends GetxController
     showDialog(
       context: context,
       builder: (_) {
-        final audioUrl = itemType == 1
+        final audioUrl = isVideo
             ? '${HttpString.baseUrl}/video/${IdUtils.av2bv(oid.toInt())}'
             : '${HttpString.baseUrl}/audio/au$oid';
         return AlertDialog(
@@ -452,7 +453,7 @@ class AudioController extends GetxController
                       useSafeArea: true,
                       builder: (context) => RepostPanel(
                         rid: oid.toInt(),
-                        dynType: itemType == 1 ? 8 : 256,
+                        dynType: isVideo ? 8 : 256,
                         pic: audioItem.arc.cover,
                         title: audioItem.arc.title,
                         uname: audioItem.owner.name,
@@ -461,7 +462,7 @@ class AudioController extends GetxController
                   }
                 },
               ),
-              if (itemType == 1)
+              if (isVideo)
                 ListTile(
                   dense: true,
                   title: const Text(
@@ -563,7 +564,7 @@ class AudioController extends GetxController
   // }
 
   @override
-  (Object, int) get getFavRidType => (oid, itemType == 1 ? 2 : 12);
+  (Object, int) get getFavRidType => (oid, isVideo ? 2 : 12);
 
   @override
   void updateFavCount(int count) {

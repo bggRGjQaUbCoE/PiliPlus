@@ -73,17 +73,18 @@ class _AudioPageState extends State<AudioPage> {
     final padding = MediaQuery.viewPaddingOf(context);
     return Scaffold(
       appBar: AppBar(
-        actions: [
-          IconButton(
-            onPressed: _showMore,
-            icon: const Icon(Icons.more_vert),
-          ),
-          const SizedBox(width: 5),
-        ],
+        actions: _controller.isVideo
+            ? [
+                IconButton(
+                  onPressed: _showMore,
+                  icon: const Icon(Icons.more_vert),
+                ),
+                const SizedBox(width: 5),
+              ]
+            : null,
       ),
       body: Padding(
         padding: EdgeInsets.only(
-          top: 20,
           left: 20 + padding.left,
           right: 20 + padding.right,
           bottom: 30 + padding.bottom,
@@ -177,8 +178,10 @@ class _AudioPageState extends State<AudioPage> {
                     child: refreshIndicator(
                       onRefresh: () => _controller.loadPrev(context),
                       child: CustomScrollView(
-                        physics: const ClampingScrollPhysics(),
                         controller: scrollController,
+                        physics: const AlwaysScrollableScrollPhysics(
+                          parent: ClampingScrollPhysics(),
+                        ),
                         slivers: [
                           SliverPadding(
                             padding: EdgeInsets.only(
@@ -479,18 +482,17 @@ class _AudioPageState extends State<AudioPage> {
               //     _controller.showTimerDialog();
               //   },
               // ),
-              if (_controller.itemType == 1)
-                ListTile(
-                  dense: true,
-                  title: const Text(
-                    '举报',
-                    style: TextStyle(fontSize: 14),
-                  ),
-                  onTap: () {
-                    Get.back();
-                    PageUtils.reportVideo(_controller.oid.toInt());
-                  },
+              ListTile(
+                dense: true,
+                title: const Text(
+                  '举报',
+                  style: TextStyle(fontSize: 14),
                 ),
+                onTap: () {
+                  Get.back();
+                  PageUtils.reportVideo(_controller.oid.toInt());
+                },
+              ),
             ],
           ),
         );
@@ -572,11 +574,14 @@ class _AudioPageState extends State<AudioPage> {
           if (audioItem.associatedItem.hasOid() &&
               audioItem.associatedItem.subId.isNotEmpty)
             ActionItem(
-              icon: const Icon(Icons.play_circle_outline_outlined),
-              onTap: () => PageUtils.toVideoPage(
-                cid: audioItem.associatedItem.subId.first.toInt(),
-                aid: audioItem.associatedItem.oid.toInt(),
-              ),
+              icon: const Icon(FontAwesomeIcons.circlePlay),
+              onTap: () {
+                _controller.player?.pause();
+                PageUtils.toVideoPage(
+                  cid: audioItem.associatedItem.subId.first.toInt(),
+                  aid: audioItem.associatedItem.oid.toInt(),
+                );
+              },
               selectStatus: false,
               semanticsLabel: '看MV',
               text: '看MV',
@@ -713,105 +718,104 @@ class _AudioPageState extends State<AudioPage> {
           children: [
             Expanded(
               child: Center(
-                child: CustomScrollView(
+                child: ListView(
                   key: const PageStorageKey(_AudioPageState),
                   shrinkWrap: true,
-                  slivers: [
-                    SliverToBoxAdapter(
-                      child: Center(
-                        child: GestureDetector(
-                          onTap: () => PageUtils.imageView(
-                            imgList: [SourceModel(url: cover)],
-                          ),
-                          child: Hero(
-                            tag: cover,
-                            child: NetworkImgLayer(
-                              src: cover,
-                              width: 200,
-                              height: 200,
-                            ),
+                  children: [
+                    Center(
+                      child: GestureDetector(
+                        onTap: () => PageUtils.imageView(
+                          imgList: [SourceModel(url: cover)],
+                        ),
+                        child: Hero(
+                          tag: cover,
+                          child: NetworkImgLayer(
+                            src: cover,
+                            width: 170,
+                            height: 170,
                           ),
                         ),
                       ),
                     ),
-                    const SliverToBoxAdapter(child: SizedBox(height: 12)),
-                    SliverToBoxAdapter(
-                      child: SelectableText(
-                        audioItem.arc.title,
-                        style: const TextStyle(
-                          height: 1.7,
-                          fontSize: 15,
+                    const SizedBox(height: 12),
+                    SelectableText(
+                      audioItem.arc.title,
+                      style: const TextStyle(
+                        height: 1.7,
+                        fontSize: 16,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    if (audioItem.owner.hasName()) ...[
+                      GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () {
+                          _controller.player?.pause();
+                          Get.toNamed('/member?mid=${audioItem.owner.mid}');
+                        },
+                        child: Row(
+                          spacing: 6,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (audioItem.owner.hasAvatar())
+                              NetworkImgLayer(
+                                src: audioItem.owner.avatar,
+                                width: 22,
+                                height: 22,
+                                type: ImageType.avatar,
+                              ),
+                            Text(
+                              audioItem.owner.name,
+                            ),
+                          ],
                         ),
                       ),
-                    ),
-                    const SliverToBoxAdapter(child: SizedBox(height: 20)),
-                    SliverToBoxAdapter(
-                      child: Row(
-                        children: [
-                          Icon(
-                            size: 14,
-                            Icons.headphones_outlined,
-                            color: colorScheme.outline,
-                          ),
-                          Text.rich(
-                            TextSpan(
-                              children: [
-                                TextSpan(
-                                  text:
-                                      ' ${NumUtils.numFormat(audioItem.stat.view)}   '
-                                      '${DateFormatUtils.dateFormat(audioItem.arc.publish.toInt(), long: DateFormatUtils.longFormatD)}   ',
-                                ),
-                                TextSpan(
-                                  text: audioItem.arc.displayedOid,
-                                  style: TextStyle(color: colorScheme.primary),
-                                  recognizer: TapGestureRecognizer()
-                                    ..onTap = () => Utils.copyText(
-                                      audioItem.arc.displayedOid,
-                                    ),
-                                ),
-                              ],
-                            ),
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: colorScheme.outline,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SliverToBoxAdapter(child: SizedBox(height: 20)),
-                    SliverToBoxAdapter(
-                      child: SelectableText(audioItem.arc.desc),
-                    ),
-                    const SliverToBoxAdapter(child: SizedBox(height: 10)),
-                    if (audioItem.owner.hasName())
-                      SliverToBoxAdapter(
-                        child: GestureDetector(
-                          onTap: () =>
-                              Get.toNamed('/member?mid=${audioItem.owner.mid}'),
-                          child: Row(
-                            spacing: 6,
-                            mainAxisSize: MainAxisSize.min,
+                      const SizedBox(height: 10),
+                    ],
+                    Row(
+                      children: [
+                        Icon(
+                          size: 14,
+                          Icons.headphones_outlined,
+                          color: colorScheme.outline,
+                        ),
+                        Text.rich(
+                          TextSpan(
                             children: [
-                              if (audioItem.owner.hasAvatar())
-                                NetworkImgLayer(
-                                  src: audioItem.owner.avatar,
-                                  width: 22,
-                                  height: 22,
-                                  type: ImageType.avatar,
-                                ),
-                              Text(
-                                audioItem.owner.name,
+                              TextSpan(
+                                text:
+                                    ' ${NumUtils.numFormat(audioItem.stat.view)}   '
+                                    '${DateFormatUtils.dateFormat(audioItem.arc.publish.toInt(), long: DateFormatUtils.longFormatD)}   ',
+                              ),
+                              TextSpan(
+                                text: audioItem.arc.displayedOid,
+                                style: TextStyle(color: colorScheme.secondary),
+                                recognizer: TapGestureRecognizer()
+                                  ..onTap = () => Utils.copyText(
+                                    audioItem.arc.displayedOid,
+                                  ),
                               ),
                             ],
                           ),
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: colorScheme.outline,
+                          ),
                         ),
-                      ),
+                      ],
+                    ),
+                    if (audioItem.arc.hasDesc()) ...[
+                      const SizedBox(height: 10),
+                      SelectableText(audioItem.arc.desc),
+                    ],
                   ],
                 ),
               ),
             ),
-            if (isPortrait) _buildActions(audioItem),
+            if (isPortrait) ...[
+              const SizedBox(height: 10),
+              _buildActions(audioItem),
+            ],
           ],
         );
       }

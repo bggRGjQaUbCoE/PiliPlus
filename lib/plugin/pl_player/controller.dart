@@ -119,10 +119,6 @@ class PlPlayerController {
   late final RxBool _continuePlayInBackground =
       Pref.continuePlayInBackground.obs;
 
-  late final RxBool _flipX = false.obs;
-
-  late final RxBool _flipY = false.obs;
-
   ///
   final RxBool _isSliderMoving = false.obs;
   PlaylistMode _looping = PlaylistMode.none;
@@ -231,9 +227,9 @@ class PlPlayerController {
   late final RxBool onlyPlayAudio = false.obs;
 
   /// 镜像
-  RxBool get flipX => _flipX;
+  late final RxBool flipX = false.obs;
 
-  RxBool get flipY => _flipY;
+  late final RxBool flipY = false.obs;
 
   /// 是否长按倍速
   RxBool get longPressStatus => _longPressStatus;

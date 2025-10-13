@@ -48,12 +48,11 @@ jobs:
           cache: true
 
       - name: Set and Extract version
-        shell: pwsh
-        run: lib/scripts/build.ps1
+        run: lib/scripts/pre-build.sh gen-build-info --ci
 
-      - name: Apply Patch
-        shell: pwsh
-        run: lib/scripts/patch.ps1 Linux
+      - name: Apply Patches
+        run: lib/scripts/pre-build.sh apply-patches --platform linux
+        continue-on-error: true
 
         #TODO: deb and rpm packages need to be build
       - name: Build Linux

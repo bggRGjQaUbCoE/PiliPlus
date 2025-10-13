@@ -8,6 +8,7 @@ import 'package:flutter/foundation.dart' show clampDouble;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/physics.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:vector_math/vector_math_64.dart' show Quad, Vector3;
 
@@ -21,6 +22,9 @@ class MouseInteractiveViewer extends StatefulWidget {
     this.maxScale = 2.5,
     this.minScale = 0.8,
     this.interactionEndFrictionCoefficient = _kDrag,
+    this.pointerSignalFallback,
+    this.onPointerPanZoomUpdate,
+    this.onPointerPanZoomEnd,
     this.onPointerDown,
     this.onInteractionEnd,
     this.onInteractionStart,
@@ -52,6 +56,9 @@ class MouseInteractiveViewer extends StatefulWidget {
   final double maxScale;
   final double minScale;
   final double interactionEndFrictionCoefficient;
+  final PointerSignalEventListener? pointerSignalFallback;
+  final PointerPanZoomUpdateEventListener? onPointerPanZoomUpdate;
+  final PointerPanZoomEndEventListener? onPointerPanZoomEnd;
   final PointerDownEventListener? onPointerDown;
   final GestureScaleEndCallback? onInteractionEnd;
   final GestureScaleStartCallback? onInteractionStart;
@@ -566,6 +573,8 @@ class _MouseInteractiveViewerState extends State<MouseInteractiveViewer>
       } else if (shift || HardwareKeyboard.instance.isAltPressed) {
         _handleMouseWheelPanAsScale(event, local, global, shift);
         return;
+      } else {
+        widget.pointerSignalFallback?.call(event);
       }
     }
     widget.onInteractionUpdate?.call(
@@ -723,6 +732,8 @@ class _MouseInteractiveViewerState extends State<MouseInteractiveViewer>
       onPointerSignal: _receivedPointerSignal,
       onPointerDown: _onPointerDown,
       onPointerPanZoomStart: _scaleGestureRecognizer.addPointerPanZoom,
+      onPointerPanZoomUpdate: widget.onPointerPanZoomUpdate,
+      onPointerPanZoomEnd: widget.onPointerPanZoomEnd,
       child: _InteractiveViewerBuilt(
         childKey: widget.childKey,
         clipBehavior: widget.clipBehavior,

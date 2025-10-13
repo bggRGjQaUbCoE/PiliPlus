@@ -1097,8 +1097,8 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
   late final TapGestureRecognizer _tapGestureRecognizer;
   late final DoubleTapGestureRecognizer _doubleTapGestureRecognizer;
 
-  void onPointerDown(PointerDownEvent event) {
-    if (kDebugMode || Utils.isMobile) {
+  void _onPointerDown(PointerDownEvent event) {
+    if (Utils.isMobile) {
       final ctr = plPlayerController.danmakuController;
       if (ctr != null) {
         final pos = event.localPosition;
@@ -1151,7 +1151,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     }
   }
 
-  void onPointerPanZoomUpdate(PointerPanZoomUpdateEvent event) {
+  void _onPointerPanZoomUpdate(PointerPanZoomUpdateEvent event) {
     if (plPlayerController.controlsLock.value) return;
     if (_gestureType == null) {
       final pan = event.pan;
@@ -1209,11 +1209,11 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     }
   }
 
-  void onPointerPanZoomEnd(PointerPanZoomEndEvent event) {
+  void _onPointerPanZoomEnd(PointerPanZoomEndEvent event) {
     _gestureType = null;
   }
 
-  void onPointerSignal(PointerSignalEvent event) {
+  void _onPointerSignal(PointerSignalEvent event) {
     if (event is PointerScrollEvent) {
       final offset = -event.scrollDelta.dy / 4000;
       final volume = clampDouble(
@@ -1972,7 +1972,10 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
         child: Obx(
           () => MouseInteractiveViewer(
             scaleEnabled: !plPlayerController.controlsLock.value,
-            onPointerDown: onPointerDown,
+            pointerSignalFallback: _onPointerSignal,
+            onPointerPanZoomUpdate: _onPointerPanZoomUpdate,
+            onPointerPanZoomEnd: _onPointerPanZoomEnd,
+            onPointerDown: _onPointerDown,
             onInteractionStart: _onInteractionStart,
             onInteractionUpdate: _onInteractionUpdate,
             onInteractionEnd: _onInteractionEnd,

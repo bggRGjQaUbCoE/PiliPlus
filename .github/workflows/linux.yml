@@ -137,8 +137,16 @@ jobs:
           mkdir -p %{buildroot}/opt/PiliPlus
           cp -r * %{buildroot}/opt/PiliPlus
 
+          mkdir -p %{buildroot}/usr/share/applications
+          cp ../assets/linux/piliplus.desktop %{buildroot}/usr/share/applications/
+
+          mkdir -p %{buildroot}/usr/share/icons/hicolor/512x512/apps
+          cp ../assets/images/logo/logo.png %{buildroot}/usr/share/icons/hicolor/512x512/apps/piliplus.png
+
           %files
           /opt/PiliPlus
+          /usr/share/applications/piliplus.desktop
+          /usr/share/icons/hicolor/512x512/apps/piliplus.png
 
           %changelog
           * $(date "+%a %b %d %Y") - ${{ env.version }}-1

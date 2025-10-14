@@ -1158,12 +1158,12 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
               ? maxHeight - item.yPosition - item.height
               : item.yPosition;
           final top = dy + item.height + 4;
-          final left = clampDouble(
-            pos.dx - _overlayWidth / 2,
-            _overlaySpacing,
-            maxWidth - _overlayWidth - _overlaySpacing,
+          final right = clampDouble(
+            pos.dx + _overlayWidth / 2,
+            _overlaySpacing + _overlayWidth,
+            maxWidth - _overlaySpacing,
           );
-          _danmakuActionOffset.value = Offset(left, top);
+          _danmakuActionOffset.value = Offset(right, top);
           return;
         }
       }
@@ -2206,7 +2206,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
 
     final extra = item.content.extra as VideoDanmaku;
     return Positioned(
-      left: offset.dx,
+      right: maxWidth - offset.dx,
       top: offset.dy,
       child: Column(
         children: [

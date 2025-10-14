@@ -1248,59 +1248,24 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       children: <Widget>[
         _videoWidget,
 
-        Positioned.fill(
-          child: IgnorePointer(
-            ignoring: !plPlayerController.enableDragSubtitle,
-            // TODO: refa Subtitle
-            child: SubtitleView(
-              controller: videoController,
-              configuration: isLive
-                  ? const SubtitleViewConfiguration()
-                  : plPlayerController.subtitleConfig.value,
-              enableDragSubtitle: plPlayerController.enableDragSubtitle,
-              onUpdatePadding: plPlayerController.onUpdatePadding,
+        if (!isLive)
+          Positioned.fill(
+            child: IgnorePointer(
+              ignoring: !plPlayerController.enableDragSubtitle,
+              child: Obx(
+                () => SubtitleView(
+                  controller: videoController,
+                  configuration: plPlayerController.subtitleConfig.value,
+                  enableDragSubtitle: plPlayerController.enableDragSubtitle,
+                  onUpdatePadding: plPlayerController.onUpdatePadding,
+                ),
+              ),
             ),
           ),
-        ),
 
-        if (widget.danmuWidget != null)
-          Positioned.fill(child: widget.danmuWidget!),
+        if (widget.danmuWidget case final danmaku?)
+          Positioned.fill(child: danmaku),
 
-        // Obx(
-        //   () {
-        //     // final fit = plPlayerController.videoFit.value;
-        //     return Video(
-        //       // width: maxWidth,
-        //       // height: maxHeight,
-        //       // fill: widget.fill ?? Colors.black,
-        //       // alignment: widget.alignment ?? Alignment.center,
-        //       // controller: videoController,
-        //       // controls: NoVideoControls,
-        //       pauseUponEnteringBackgroundMode:
-        //           !plPlayerController.continuePlayInBackground.value,
-        //       resumeUponEnteringForegroundMode: true,
-        //       // // 字幕尺寸调节
-        //       // subtitleViewConfiguration: isLive
-        //       //     ? const SubtitleViewConfiguration()
-        //       //     : plPlayerController.subtitleConfig.value,
-        //       // fit: fit.boxFit,
-        //       // aspectRatio: fit.aspectRatio,
-        //       // dmWidget: widget.danmuWidget,
-        //       // transformationController: transformationController,
-        //       // scaleEnabled: !Utils.isDesktop && !plPlayerController.controlsLock.value,
-        //       // enableShrinkVideoSize:
-        //       //     !Utils.isDesktop &&
-        //       //     plPlayerController.enableShrinkVideoSize,
-        //       // onInteractionStart: _onInteractionStart,
-        //       // onInteractionUpdate: _onInteractionUpdate,
-        //       // onInteractionEnd: _onInteractionEnd,
-        //       // flipX: plPlayerController.flipX.value,
-        //       // flipY: plPlayerController.flipY.value,
-        //       // enableDragSubtitle: plPlayerController.enableDragSubtitle,
-        //       // onUpdatePadding: plPlayerController.onUpdatePadding,
-        //     );
-        //   },
-        // ),
         Obx(() {
           if (_danmakuActionOffset.value case final pos?) {
             return _buildDmAction(_suspendedDM!, pos);

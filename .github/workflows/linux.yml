@@ -123,7 +123,7 @@ jobs:
           Release:        1%{?dist}
           Summary:        PiliPlus Linux Version
           License:        GPL-3.0
-          Source0:        PiliPlus_linux_${{ env.version }}.tar.gz
+          Source0:        piliplus-${{ env.version }}.tar.gz
 
           %description
           使用Flutter开发的BiliBili第三方客户端

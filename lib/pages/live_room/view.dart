@@ -211,8 +211,8 @@ class _LiveRoomPageState extends State<LiveRoomPage>
     required double width,
     required double height,
     bool isPipMode = false,
-    Color? fill,
-    Alignment? alignment,
+    Color fill = Colors.black,
+    Alignment alignment = Alignment.center,
     bool needDm = true,
   }) {
     if (!isFullScreen && !plPlayerController.isDesktopPip) {
@@ -472,7 +472,7 @@ class _LiveRoomPageState extends State<LiveRoomPage>
             height: videoHeight,
             isFullScreen,
             needDm: isFullScreen,
-            alignment: isFullScreen ? null : Alignment.topCenter,
+            alignment: isFullScreen ? Alignment.center : Alignment.topCenter,
           ),
         ),
         Positioned(

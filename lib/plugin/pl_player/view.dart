@@ -1326,10 +1326,11 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
 
         Obx(() {
           if (_danmakuActionOffset.value case final pos?) {
-            return _buildDmAction(_suspendedDm!, pos);
-          } else {
-            return const SizedBox.shrink();
+            if (_suspendedDm case final dm?) {
+              return _buildDmAction(dm, pos);
+            }
           }
+          return const SizedBox.shrink();
         }),
 
         /// 长按倍速 toast

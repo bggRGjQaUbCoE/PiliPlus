@@ -115,6 +115,8 @@ jobs:
           # 构建带顶层目录的源码包
           mkdir -p "$PWD/piliplus-${{ env.version }}"
           cp -r build/linux/x64/release/bundle/* "$PWD/piliplus-${{ env.version }}/"
+          cp assets/linux/piliplus.desktop "$PWD/piliplus-${{ env.version }}/"
+          cp assets/images/logo/logo.png "$PWD/piliplus-${{ env.version }}/"
           tar -zcvf "$RPM_BUILD_ROOT/SOURCES/piliplus-${{ env.version }}.tar.gz" -C "$PWD" "piliplus-${{ env.version }}"
           # 创建 spec 文件
           cat > "$RPM_BUILD_ROOT/SPECS/piliplus.spec" <<EOF
@@ -138,10 +140,10 @@ jobs:
           cp -r * %{buildroot}/opt/PiliPlus
 
           mkdir -p %{buildroot}/usr/share/applications
-          cp ../assets/linux/piliplus.desktop %{buildroot}/usr/share/applications/
+          cp piliplus.desktop %{buildroot}/usr/share/applications/
 
           mkdir -p %{buildroot}/usr/share/icons/hicolor/512x512/apps
-          cp ../assets/images/logo/logo.png %{buildroot}/usr/share/icons/hicolor/512x512/apps/piliplus.png
+          cp logo.png %{buildroot}/usr/share/icons/hicolor/512x512/apps/piliplus.png
 
           %files
           /opt/PiliPlus

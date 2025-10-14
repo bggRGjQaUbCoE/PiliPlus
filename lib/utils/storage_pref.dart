@@ -858,4 +858,7 @@ abstract class Pref {
 
   static bool get enablePlayAll =>
       _setting.get(SettingBoxKey.enablePlayAll, defaultValue: true);
+
+  static bool get enableTapDm =>
+      _setting.get(SettingBoxKey.enableTapDm, defaultValue: false);
 }

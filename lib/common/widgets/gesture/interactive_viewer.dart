@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'dart:io' show Platform;
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart' show clampDouble;
@@ -90,6 +91,10 @@ class _MouseInteractiveViewerState extends State<MouseInteractiveViewer>
   double _currentRotation = 0.0;
   _GestureType? _gestureType;
 
+  static final gestureSettings = DeviceGestureSettings(
+    touchSlop: Platform.isIOS ? 9 : 4,
+  );
+
   late final _scaleGestureRecognizer =
       ScaleGestureRecognizer(
           debugOwner: this,
@@ -97,6 +102,7 @@ class _MouseInteractiveViewerState extends State<MouseInteractiveViewer>
           trackpadScrollToScaleFactor: Offset(0, -1 / widget.scaleFactor),
           trackpadScrollCausesScale: widget.trackpadScrollCausesScale,
         )
+        ..gestureSettings = gestureSettings
         ..onStart = _onScaleStart
         ..onUpdate = _onScaleUpdate
         ..onEnd = _onScaleEnd;

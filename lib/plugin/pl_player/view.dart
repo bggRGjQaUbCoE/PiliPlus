@@ -42,6 +42,7 @@ import 'package:PiliPlus/plugin/pl_player/widgets/common_btn.dart';
 import 'package:PiliPlus/plugin/pl_player/widgets/forward_seek.dart';
 import 'package:PiliPlus/plugin/pl_player/widgets/mpv_convert_webp.dart';
 import 'package:PiliPlus/plugin/pl_player/widgets/play_pause_btn.dart';
+import 'package:PiliPlus/plugin/pl_player/widgets/video.dart';
 import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
@@ -1988,29 +1989,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
             panAxis: PanAxis.aligned,
             transformationController: transformationController,
             childKey: _videoKey,
-            child: RepaintBoundary(
-              key: _videoKey,
-              child: Obx(
-                () {
-                  final ctr = plPlayerController;
-                  final videoFit = ctr.videoFit.value;
-                  return Transform.flip(
-                    flipX: ctr.flipX.value,
-                    flipY: ctr.flipY.value,
-                    filterQuality: FilterQuality.low,
-                    child: FittedBox(
-                      fit: videoFit.boxFit,
-                      alignment: widget.alignment ?? Alignment.center,
-                      child: SimpleVideo(
-                        controller: videoController,
-                        fill: widget.fill ?? Colors.black,
-                        aspectRatio: videoFit.aspectRatio,
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
+            child: PlVideo(key: _videoKey, controller: plPlayerController),
           ),
         ),
       ),

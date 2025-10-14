@@ -836,8 +836,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
   }
 
   void _onInteractionUpdate(ScaleUpdateDetails details) {
-    showRestoreScaleBtn.value =
-        transformationController.value.row0.x.abs() != 1.0;
+    showRestoreScaleBtn.value = transformationController.value.row0.x != 1.0;
     if (interacting || plPlayerController.initialFocalPoint == Offset.zero) {
       return;
     }
@@ -1067,7 +1066,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
 
   void onTapUp(TapUpDetails details) {
     switch (details.kind) {
-      case ui.PointerDeviceKind.mouse when (Utils.isDesktop):
+      case ui.PointerDeviceKind.mouse when Utils.isDesktop:
         onTapDesktop();
         break;
       default:
@@ -1078,7 +1077,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
 
   void onDoubleTapDown(TapDownDetails details) {
     switch (details.kind) {
-      case ui.PointerDeviceKind.mouse when !isMobile:
+      case ui.PointerDeviceKind.mouse when Utils.isDesktop:
         onDoubleTapDesktop();
         break;
       default:
@@ -1091,14 +1090,19 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
   LongPressGestureRecognizer? _longPressRecognizer;
   LongPressGestureRecognizer get longPressRecognizer =>
       _longPressRecognizer ??= LongPressGestureRecognizer()
-        ..onLongPressStart = ((_) =>
-            plPlayerController.setLongPressStatus(true))
-        ..onLongPressEnd = ((_) =>
-            plPlayerController.setLongPressStatus(false));
+        ..onLongPressStart = (_) {
+          _removeDmAction();
+          plPlayerController.setLongPressStatus(true);
+        }
+        ..onLongPressEnd = (_) => plPlayerController.setLongPressStatus(false);
   late final TapGestureRecognizer _tapGestureRecognizer;
   late final DoubleTapGestureRecognizer _doubleTapGestureRecognizer;
 
   void _onPointerDown(PointerDownEvent event) {
+    if (!plPlayerController.isLive) {
+      longPressRecognizer.addPointer(event);
+    }
+
     if (Utils.isMobile) {
       final ctr = plPlayerController.danmakuController;
       if (ctr != null) {
@@ -1132,9 +1136,6 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       }
     }
 
-    if (!plPlayerController.isLive) {
-      longPressRecognizer.addPointer(event);
-    }
     _tapGestureRecognizer.addPointer(event);
     _doubleTapGestureRecognizer.addPointer(event);
   }

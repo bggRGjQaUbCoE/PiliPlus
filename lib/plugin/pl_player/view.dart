@@ -266,6 +266,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     WakelockPlus.enabled.then((i) {
       if (i) WakelockPlus.disable();
     });
+    _stopDmTimer();
     _tapGestureRecognizer.dispose();
     _longPressRecognizer?.dispose();
     _doubleTapGestureRecognizer.dispose();
@@ -1114,6 +1115,8 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
   }
 
   void onDoubleTapDown(TapDownDetails details) {
+    _stopDmTimer();
+    _removeDmAction();
     switch (details.kind) {
       case ui.PointerDeviceKind.mouse when Utils.isDesktop:
         onDoubleTapDesktop();
@@ -1126,9 +1129,10 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
 
   final isMobile = Utils.isMobile;
   LongPressGestureRecognizer? _longPressRecognizer;
-  LongPressGestureRecognizer get longPressRecognizer =>
-      _longPressRecognizer ??= LongPressGestureRecognizer()
+  LongPressGestureRecognizer get longPressRecognizer => _longPressRecognizer ??=
+      LongPressGestureRecognizer(duration: const Duration(milliseconds: 300))
         ..onLongPressStart = (_) {
+          _stopDmTimer();
           _removeDmAction();
           plPlayerController.setLongPressStatus(true);
         }
@@ -1137,6 +1141,22 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
   late final DoubleTapGestureRecognizer _doubleTapGestureRecognizer;
 
   void _onPointerDown(PointerDownEvent event) {
+    if (!isMobile) {
+      final buttons = event.buttons;
+      final isSecondaryBtn = buttons == kSecondaryMouseButton;
+      if (isSecondaryBtn || buttons == kMiddleMouseButton) {
+        plPlayerController
+            .triggerFullScreen(
+              status: !isFullScreen,
+              inAppFullScreen: isSecondaryBtn,
+            )
+            .whenComplete(
+              () => plPlayerController.initialFocalPoint = Offset.zero,
+            );
+        return;
+      }
+    }
+
     if (!plPlayerController.isLive) {
       longPressRecognizer.addPointer(event);
     }
@@ -1163,23 +1183,13 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
             _overlaySpacing + _overlayWidth,
             maxWidth - _overlaySpacing,
           );
-          _danmakuActionOffset.value = Offset(right, top);
+          _stopDmTimer();
+          _doubleTapGestureRecognizer.addPointer(event);
+          _dmActionTimer = Timer(const Duration(milliseconds: 350), () {
+            _danmakuActionOffset.value = Offset(right, top);
+          });
           return;
         }
-      }
-    } else {
-      final buttons = event.buttons;
-      final isSecondaryBtn = buttons == kSecondaryMouseButton;
-      if (isSecondaryBtn || buttons == kMiddleMouseButton) {
-        plPlayerController
-            .triggerFullScreen(
-              status: !isFullScreen,
-              inAppFullScreen: isSecondaryBtn,
-            )
-            .whenComplete(
-              () => plPlayerController.initialFocalPoint = Offset.zero,
-            );
-        return;
       }
     }
 
@@ -2178,6 +2188,12 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     _suspendedDm?.suspend = false;
     _suspendedDm = null;
     _danmakuActionOffset.value = null;
+  }
+
+  Timer? _dmActionTimer;
+  void _stopDmTimer() {
+    _dmActionTimer?.cancel();
+    _dmActionTimer = null;
   }
 
   Widget _dmActionItem(Widget child, {required VoidCallback onTap}) {

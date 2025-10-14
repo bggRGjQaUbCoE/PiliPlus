@@ -117,7 +117,7 @@ jobs:
           # 创建 spec 文件
           cat > "$RPM_BUILD_ROOT/SPECS/piliplus.spec" <<EOF
           Name:           piliplus
-          Version:        ${VERSION}
+          Version:        ${{ env.version }}
           Release:        1%{?dist}
           Summary:        PiliPlus Linux Version
           License:        GPL-3.0
@@ -139,7 +139,7 @@ jobs:
           /opt/PiliPlus
 
           %changelog
-          * $(date "+%a %b %d %Y") - ${VERSION}-1
+          * $(date "+%a %b %d %Y") - ${{ env.version }}-1
           - Initial RPM release
           EOF
           # 构建 RPM 包

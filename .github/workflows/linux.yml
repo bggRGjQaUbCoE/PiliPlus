@@ -29,7 +29,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y clang cmake libgtk-3-dev ninja-build libayatana-appindicator3-dev unzip webkit2gtk-4.1 libasound2-dev
+          sudo apt-get install -y clang cmake libgtk-3-dev ninja-build libayatana-appindicator3-dev unzip webkit2gtk-4.1 libasound2-dev rpm patchelf
           sudo apt-get install -y gcc g++ autoconf automake debhelper glslang-dev ladspa-sdk xutils-dev libasound2-dev \
               libarchive-dev libbluray-dev libbs2b-dev libcaca-dev libcdio-paranoia-dev libdrm-dev \
               libdav1d-dev libdvdnav-dev libegl1-mesa-dev libepoxy-dev libfontconfig-dev libfreetype6-dev \
@@ -106,6 +106,48 @@ jobs:
           dpkg-deb --build --verbose --root-owner-group "PiliPlus_linux_${{ env.version }}_amd64"
           printf "完成: PiliPlus_linux_%s_amd64.deb\n" "${{ env.version }}"
         shell: bash
+      
+      - name: Packege rpm
+        run: |
+          printf "建立 RPM 构建目录...\n"
+          RPM_BUILD_ROOT="$PWD/rpm_build"
+          mkdir -p "$RPM_BUILD_ROOT/BUILD" "$RPM_BUILD_ROOT/RPMS" "$RPM_BUILD_ROOT/SOURCES" "$RPM_BUILD_ROOT/SPECS" "$RPM_BUILD_ROOT/SRPMS"
+          # 复制文件到 SOURCES
+          tar -zcvf "$RPM_BUILD_ROOT/SOURCES/PiliPlus_linux_${{ env.version }}.tar.gz" -C build/linux/x64/release/bundle .
+          # 创建 spec 文件
+          cat > "$RPM_BUILD_ROOT/SPECS/piliplus.spec" <<EOF
+          Name:           piliplus
+          Version:        ${VERSION}
+          Release:        1%{?dist}
+          Summary:        PiliPlus Linux Version
+          License:        GPL-3.0
+          Source0:        PiliPlus_linux_${{ env.version }}.tar.gz
+
+          %description
+          使用Flutter开发的BiliBili第三方客户端
+
+          %prep
+          %setup -q
+
+          %build
+
+          %install
+          mkdir -p %{buildroot}/opt/PiliPlus
+          cp -r * %{buildroot}/opt/PiliPlus
+
+          %files
+          /opt/PiliPlus
+
+          %changelog
+          * $(date "+%a %b %d %Y") - ${VERSION}-1
+          - Initial RPM release
+          EOF
+          # 构建 RPM 包
+          rpmbuild --define "_topdir $RPM_BUILD_ROOT" -bb "$RPM_BUILD_ROOT/SPECS/piliplus.spec"
+          # 移动生成的 rpm 包到工作目录
+          find "$RPM_BUILD_ROOT/RPMS" -name "*.rpm" -exec mv {} . \;
+          printf "完成: PiliPlus_linux_%s_amd64.rpm\n" "${{ env.version }}"
+        shell: bash
 
       - name: Upload linux targz package
         uses: actions/upload-artifact@v4
@@ -118,3 +160,9 @@ jobs:
         with:
           name: Linux_deb_package
           path: PiliPlus_linux_*.deb
+      
+      - name: Upload linux rpm package
+        uses: actions/upload-artifact@v4
+        with:
+          name: Linux_rpm_package
+          path: PiliPlus_linux_*.rpm

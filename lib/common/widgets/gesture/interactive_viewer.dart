@@ -90,12 +90,16 @@ class _MouseInteractiveViewerState extends State<MouseInteractiveViewer>
   double _currentRotation = 0.0;
   _GestureType? _gestureType;
 
-  late final _scaleGestureRecognizer = ScaleGestureRecognizer(debugOwner: this)
-    ..trackpadScrollCausesScale = widget.trackpadScrollCausesScale
-    ..trackpadScrollToScaleFactor = Offset(0, -1 / widget.scaleFactor)
-    ..onStart = _onScaleStart
-    ..onUpdate = _onScaleUpdate
-    ..onEnd = _onScaleEnd;
+  late final _scaleGestureRecognizer =
+      ScaleGestureRecognizer(
+          debugOwner: this,
+          allowedButtonsFilter: (buttons) => buttons == kPrimaryButton,
+          trackpadScrollToScaleFactor: Offset(0, -1 / widget.scaleFactor),
+          trackpadScrollCausesScale: widget.trackpadScrollCausesScale,
+        )
+        ..onStart = _onScaleStart
+        ..onUpdate = _onScaleUpdate
+        ..onEnd = _onScaleEnd;
 
   final bool _rotateEnabled = false;
 

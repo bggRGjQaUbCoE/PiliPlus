@@ -39,7 +39,7 @@ class _GroupPanelState extends State<GroupPanel> {
   void _query() {
     MemberHttp.followUpTags().then((res) {
       if (mounted) {
-        loadingState = res..dataOrNull.removeFirstWhere((e) => e.tagid == 0);
+        loadingState = res..dataOrNull?.removeFirstWhere((e) => e.tagid == 0);
         showDefaultBtn.value = tags.isEmpty;
         setState(() {});
       }

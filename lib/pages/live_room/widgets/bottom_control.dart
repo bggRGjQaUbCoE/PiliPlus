@@ -185,6 +185,10 @@ class BottomControl extends StatelessWidget {
                   ),
             onTap: () =>
                 plPlayerController.triggerFullScreen(status: !isFullScreen),
+            onSecondaryTap: () => plPlayerController.triggerFullScreen(
+              status: !isFullScreen,
+              inAppFullScreen: true,
+            ),
           ),
         ],
       ),

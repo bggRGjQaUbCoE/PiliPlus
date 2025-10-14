@@ -131,7 +131,6 @@ class _PlDanmakuState extends State<PlDanmaku> {
                   e.colorful == DmColorfulType.VipGradualColor,
               count: e.hasCount() ? e.count : null,
               selfSend: e.isSelf,
-              extra: VideoDanmaku(id: e.id.toInt(), mid: e.midHash),
             ),
           );
         }

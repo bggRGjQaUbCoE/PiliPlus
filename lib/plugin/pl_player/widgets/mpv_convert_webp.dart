@@ -68,7 +68,7 @@ class MpvConvertWebp {
       _observeProperty('time-pos');
     }
     final level = (kDebugMode ? 'info' : 'error').toNativeUtf8();
-    _mpv.mpv_request_log_messages(_ctx, level.cast());
+    _mpv.mpv_request_log_messages(_ctx, level);
     calloc.free(level);
   }
 
@@ -124,7 +124,7 @@ class MpvConvertWebp {
       arr[i] = pointers[i];
     }
 
-    _mpv.mpv_command(_ctx, arr.cast());
+    _mpv.mpv_command(_ctx, arr);
 
     calloc.free(arr);
     pointers.forEach(calloc.free);
@@ -135,7 +135,7 @@ class MpvConvertWebp {
     _mpv.mpv_observe_property(
       _ctx,
       property.hashCode,
-      name.cast(),
+      name,
       generated.mpv_format.MPV_FORMAT_DOUBLE,
     );
 

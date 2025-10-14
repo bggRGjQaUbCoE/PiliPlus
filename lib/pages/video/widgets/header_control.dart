@@ -10,6 +10,7 @@ import 'package:PiliPlus/common/widgets/dialog/report.dart';
 import 'package:PiliPlus/common/widgets/marquee.dart';
 import 'package:PiliPlus/http/danmaku.dart';
 import 'package:PiliPlus/http/danmaku_block.dart';
+import 'package:PiliPlus/http/init.dart';
 import 'package:PiliPlus/models/common/super_resolution_type.dart';
 import 'package:PiliPlus/models/common/video/audio_quality.dart';
 import 'package:PiliPlus/models/common/video/cdn_type.dart';
@@ -30,6 +31,7 @@ import 'package:PiliPlus/plugin/pl_player/models/play_repeat.dart';
 import 'package:PiliPlus/plugin/pl_player/utils/fullscreen.dart';
 import 'package:PiliPlus/services/service_locator.dart';
 import 'package:PiliPlus/utils/accounts.dart';
+import 'package:PiliPlus/utils/accounts/account.dart';
 import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
@@ -987,16 +989,19 @@ class HeaderControlState extends State<HeaderControl> {
                       onTap: () async {
                         Get.back();
                         try {
-                          final res = await Dio().get(
+                          final res = await Request.dio.get<Uint8List>(
                             item.subtitleUrl!.http2https,
-                            options: Options(responseType: ResponseType.bytes),
+                            options: Options(
+                              responseType: ResponseType.bytes,
+                              extra: {'account': const NoAccount()},
+                            ),
                           );
                           if (res.statusCode == 200) {
-                            final Uint8List bytes = res.data;
+                            final bytes = res.data!;
                             final name =
                                 '${introController.videoDetail.value.title}-${videoDetailCtr.bvid}-${videoDetailCtr.cid.value}-${item.lanDoc}.json';
                             final path = await FilePicker.platform.saveFile(
-                              allowedExtensions: ['json'],
+                              allowedExtensions: const ['json'],
                               type: FileType.custom,
                               fileName: name,
                               bytes: Utils.isDesktop ? null : bytes,

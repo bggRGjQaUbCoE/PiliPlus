@@ -12,6 +12,7 @@ import 'package:PiliPlus/models_new/search/search_rcmd/data.dart';
 import 'package:PiliPlus/models_new/search/search_trending/data.dart';
 import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/wbi_sign.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 
@@ -53,6 +54,7 @@ class SearchHttp {
     int? categoryId,
     int? pubBegin,
     int? pubEnd,
+    required String qvId,
   }) async {
     var params = await WbiSign.makSign({
       'search_type': searchType.name,
@@ -66,10 +68,29 @@ class SearchHttp {
       'category_id': ?categoryId,
       'pubtime_begin_s': ?pubBegin,
       'pubtime_end_s': ?pubEnd,
+      'ad_resource': 5654,
+      '__refresh__': true,
+      '_extra': '',
+      'context': '',
+      'page_size': 20,
+      'from_source': '',
+      'from_spmid': 333.337,
+      'platform': 'pc',
+      'source_tag': 3,
+      'gaia_vtoken': '',
+      'qv_id': qvId,
+      'web_location': 1430654,
     });
     var res = await Request().get(
       Api.searchByType,
       queryParameters: params,
+      options: Options(
+        headers: {
+          'origin': 'https://search.bilibili.com',
+          'referer':
+              'https://search.bilibili.com/${searchType.name}?keyword=$keyword',
+        },
+      ),
     );
     if (res.data is! Map) {
       return const Error('没有相关数据');

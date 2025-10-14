@@ -4,6 +4,7 @@ import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:PiliPlus/common/constants.dart';
+import 'package:PiliPlus/common/widgets/gesture/interactive_viewer.dart';
 import 'package:PiliPlus/common/widgets/loading_widget.dart';
 import 'package:PiliPlus/common/widgets/pair.dart';
 import 'package:PiliPlus/common/widgets/progress_bar/audio_video_progress_bar.dart';
@@ -21,12 +22,10 @@ import 'package:PiliPlus/models_new/video/video_detail/section.dart';
 import 'package:PiliPlus/models_new/video/video_detail/ugc_season.dart';
 import 'package:PiliPlus/models_new/video/video_shot/data.dart';
 import 'package:PiliPlus/pages/common/common_intro_controller.dart';
-import 'package:PiliPlus/pages/danmaku/dnamaku_model.dart';
 import 'package:PiliPlus/pages/video/controller.dart';
 import 'package:PiliPlus/pages/video/introduction/pgc/controller.dart';
 import 'package:PiliPlus/pages/video/post_panel/popup_menu_text.dart';
 import 'package:PiliPlus/pages/video/post_panel/view.dart';
-import 'package:PiliPlus/pages/video/widgets/header_control.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/models/bottom_control_type.dart';
 import 'package:PiliPlus/plugin/pl_player/models/bottom_progress_behavior.dart';
@@ -48,7 +47,6 @@ import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/utils.dart';
-import 'package:canvas_danmaku/canvas_danmaku.dart';
 import 'package:dio/dio.dart';
 import 'package:easy_debounce/easy_throttle.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -64,6 +62,7 @@ import 'package:get/get.dart' hide ContextExtensionss;
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 import 'package:screen_brightness_platform_interface/screen_brightness_platform_interface.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 import 'package:window_manager/window_manager.dart';
 
 class PLVideoPlayer extends StatefulWidget {
@@ -76,12 +75,10 @@ class PLVideoPlayer extends StatefulWidget {
     required this.headerControl,
     this.bottomControl,
     this.danmuWidget,
-    this.customWidget,
-    this.customWidgets,
     this.showEpisodes,
     this.showViewPoints,
-    this.fill,
-    this.alignment,
+    this.fill = Colors.black,
+    this.alignment = Alignment.center,
     super.key,
   });
 
@@ -93,31 +90,26 @@ class PLVideoPlayer extends StatefulWidget {
   final Widget headerControl;
   final Widget? bottomControl;
   final Widget? danmuWidget;
-
-  // List<Widget> or Widget
-
-  final Widget? customWidget;
-  final List<Widget>? customWidgets;
   final void Function([int?, UgcSeason?, dynamic, String?, int?, int?])?
   showEpisodes;
   final VoidCallback? showViewPoints;
-  final Color? fill;
-  final Alignment? alignment;
+  final Color fill;
+  final Alignment alignment;
 
   @override
   State<PLVideoPlayer> createState() => _PLVideoPlayerState();
 }
 
 class _PLVideoPlayerState extends State<PLVideoPlayer>
-    with TickerProviderStateMixin {
+    with WidgetsBindingObserver, TickerProviderStateMixin {
   late AnimationController animationController;
   late VideoController videoController;
   late final CommonIntroController introController = widget.introController!;
   late final VideoDetailController videoDetailController =
       widget.videoDetailController!;
 
-  final GlobalKey _playerKey = GlobalKey();
-  final GlobalKey<VideoState> key = GlobalKey<VideoState>();
+  final _playerKey = GlobalKey();
+  final _videoKey = GlobalKey();
 
   final RxDouble _brightnessValue = 0.0.obs;
   final RxBool _brightnessIndicator = false.obs;
@@ -139,19 +131,28 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
   StreamSubscription? _listener;
   StreamSubscription? _controlsListener;
 
-  @override
-  void didUpdateWidget(PLVideoPlayer oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (plPlayerController.enableTapDm &&
-        (widget.maxWidth != oldWidget.maxWidth ||
-            widget.maxHeight != maxHeight)) {
-      _removeOverlay();
-    }
-  }
+  bool _pauseDueToPauseUponEnteringBackgroundMode = false;
+  StreamSubscription<bool>? wakeLock;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+
+    late final player = plPlayerController.videoController?.player;
+    if (player != null && player.state.playing) {
+      WakelockPlus.enable();
+    }
+    wakeLock = player?.stream.playing.listen(
+      (value) {
+        if (value) {
+          WakelockPlus.enable();
+        } else {
+          WakelockPlus.disable();
+        }
+      },
+    );
+
     _controlsListener = plPlayerController.showControls.listen((bool val) {
       final visible = val && !plPlayerController.controlsLock.value;
       if (widget.videoDetailController?.headerCtrKey.currentState?.provider
@@ -218,6 +219,27 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       ..onDoubleTapDown = onDoubleTapDown;
   }
 
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (!plPlayerController.continuePlayInBackground.value) {
+      late final player = plPlayerController.videoController?.player;
+      if (const [
+        AppLifecycleState.paused,
+        AppLifecycleState.detached,
+      ].contains(state)) {
+        if (player != null && player.state.playing) {
+          _pauseDueToPauseUponEnteringBackgroundMode = true;
+          player.pause();
+        }
+      } else {
+        if (_pauseDueToPauseUponEnteringBackgroundMode) {
+          _pauseDueToPauseUponEnteringBackgroundMode = false;
+          player?.play();
+        }
+      }
+    }
+  }
+
   Future<void> setBrightness(double value) async {
     try {
       await ScreenBrightnessPlatform.instance.setApplicationScreenBrightness(
@@ -236,6 +258,11 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    wakeLock?.cancel();
+    WakelockPlus.enabled.then((i) {
+      if (i) WakelockPlus.disable();
+    });
     _tapGestureRecognizer.dispose();
     _longPressRecognizer?.dispose();
     _doubleTapGestureRecognizer.dispose();
@@ -831,7 +858,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     if (details.localFocalPoint.dx < 40) return;
     if (details.localFocalPoint.dx > maxWidth - 40) return;
     if (details.localFocalPoint.dy > maxHeight - 40) return;
-    if (details.pointerCount == 2) {
+    if (details.pointerCount > 1) {
       interacting = true;
     }
     plPlayerController.initialFocalPoint = details.localFocalPoint;
@@ -848,7 +875,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     }
     Offset cumulativeDelta =
         details.localFocalPoint - plPlayerController.initialFocalPoint;
-    if (details.pointerCount == 2 && cumulativeDelta.distance < 1.5) {
+    if (details.pointerCount > 1 && cumulativeDelta.distance < 1.5) {
       interacting = true;
       _gestureType = null;
       return;
@@ -1072,25 +1099,10 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
 
   void onTapUp(TapUpDetails details) {
     switch (details.kind) {
-      case ui.PointerDeviceKind.mouse when (Utils.isDesktop):
+      case ui.PointerDeviceKind.mouse when Utils.isDesktop:
         onTapDesktop();
         break;
       default:
-        if (kDebugMode && isMobile) {
-          final ctr = plPlayerController.danmakuController;
-          if (ctr != null) {
-            final item = ctr.findSingleDanmaku(details.localPosition);
-            if (item == null) {
-              if (_suspendedDm.value != null) {
-                _removeOverlay();
-                break;
-              }
-            } else if (item != _suspendedDm.value?.item) {
-              _showOverlay(item, details, ctr);
-              break;
-            }
-          }
-        }
         plPlayerController.controls = !plPlayerController.showControls.value;
         break;
     }
@@ -1098,7 +1110,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
 
   void onDoubleTapDown(TapDownDetails details) {
     switch (details.kind) {
-      case ui.PointerDeviceKind.mouse when !isMobile:
+      case ui.PointerDeviceKind.mouse when Utils.isDesktop:
         onDoubleTapDesktop();
         break;
       default:
@@ -1113,12 +1125,11 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       _longPressRecognizer ??= LongPressGestureRecognizer()
         ..onLongPressStart = ((_) =>
             plPlayerController.setLongPressStatus(true))
-        ..onLongPressEnd = ((_) =>
-            plPlayerController.setLongPressStatus(false));
+        ..onLongPressEnd = (_) => plPlayerController.setLongPressStatus(false);
   late final TapGestureRecognizer _tapGestureRecognizer;
   late final DoubleTapGestureRecognizer _doubleTapGestureRecognizer;
 
-  void onPointerDown(PointerDownEvent event) {
+  void _onPointerDown(PointerDownEvent event) {
     if (!isMobile) {
       final buttons = event.buttons;
       final isSecondaryBtn = buttons == kSecondaryMouseButton;
@@ -1135,11 +1146,11 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       }
     }
 
+    _tapGestureRecognizer.addPointer(event);
+    _doubleTapGestureRecognizer.addPointer(event);
     if (!plPlayerController.isLive) {
       longPressRecognizer.addPointer(event);
     }
-    _tapGestureRecognizer.addPointer(event);
-    _doubleTapGestureRecognizer.addPointer(event);
   }
 
   void _showControlsIfNeeded() {
@@ -1155,7 +1166,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     }
   }
 
-  void onPointerPanZoomUpdate(PointerPanZoomUpdateEvent event) {
+  void _onPointerPanZoomUpdate(PointerPanZoomUpdateEvent event) {
     if (plPlayerController.controlsLock.value) return;
     if (_gestureType == null) {
       final pan = event.pan;
@@ -1213,11 +1224,11 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     }
   }
 
-  void onPointerPanZoomEnd(PointerPanZoomEndEvent event) {
+  void _onPointerPanZoomEnd(PointerPanZoomEndEvent event) {
     _gestureType = null;
   }
 
-  void onPointerSignal(PointerSignalEvent event) {
+  void _onPointerSignal(PointerSignalEvent event) {
     if (event is PointerScrollEvent) {
       final offset = -event.scrollDelta.dy / 4000;
       final volume = clampDouble(
@@ -1245,58 +1256,29 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     final isFullScreen = this.isFullScreen;
     final isLive = plPlayerController.isLive;
 
-    final gestureWidget = Listener(
-      behavior: HitTestBehavior.translucent,
-      onPointerDown: onPointerDown,
-      onPointerPanZoomUpdate: isMobile ? null : onPointerPanZoomUpdate,
-      onPointerPanZoomEnd: isMobile ? null : onPointerPanZoomEnd,
-      onPointerSignal: isMobile ? null : onPointerSignal,
-    );
-
     final child = Stack(
       fit: StackFit.passthrough,
       key: _playerKey,
       children: <Widget>[
-        Obx(
-          () {
-            final videoFit = plPlayerController.videoFit.value;
-            return Video(
-              key: key,
-              width: maxWidth,
-              height: maxHeight,
-              fill: widget.fill ?? Colors.black,
-              alignment: widget.alignment ?? Alignment.center,
-              controller: videoController,
-              controls: NoVideoControls,
-              pauseUponEnteringBackgroundMode:
-                  !plPlayerController.continuePlayInBackground.value,
-              resumeUponEnteringForegroundMode: true,
-              // 字幕尺寸调节
-              subtitleViewConfiguration: isLive
-                  ? const SubtitleViewConfiguration()
-                  : plPlayerController.subtitleConfig.value,
-              fit: videoFit.boxFit,
-              aspectRatio: videoFit.aspectRatio,
-              dmWidget: widget.danmuWidget,
-              transformationController: transformationController,
-              scaleEnabled: isMobile && !plPlayerController.controlsLock.value,
-              enableShrinkVideoSize:
-                  isMobile && plPlayerController.enableShrinkVideoSize,
-              onInteractionStart: _onInteractionStart, // TODO: refa gesture
-              onInteractionUpdate: _onInteractionUpdate,
-              onInteractionEnd: _onInteractionEnd,
-              flipX: plPlayerController.flipX.value,
-              flipY: plPlayerController.flipY.value,
-              gestureWidget: gestureWidget,
-              enableDragSubtitle: plPlayerController.enableDragSubtitle,
-              onUpdatePadding: plPlayerController.onUpdatePadding,
-            );
-          },
-        ),
+        _videoWidget,
 
-        // /// 弹幕面板
-        // if (widget.danmuWidget != null)
-        //   Positioned.fill(top: 4, child: widget.danmuWidget!),
+        if (widget.danmuWidget case final danmaku?)
+          Positioned.fill(child: danmaku),
+
+        if (!isLive)
+          Positioned.fill(
+            child: IgnorePointer(
+              ignoring: !plPlayerController.enableDragSubtitle,
+              child: Obx(
+                () => SubtitleView(
+                  controller: videoController,
+                  configuration: plPlayerController.subtitleConfig.value,
+                  enableDragSubtitle: plPlayerController.enableDragSubtitle,
+                  onUpdatePadding: plPlayerController.onUpdatePadding,
+                ),
+              ),
+            ),
+          ),
 
         /// 长按倍速 toast
         if (!isLive)
@@ -1928,102 +1910,9 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                   )
                 : const SizedBox.shrink();
           }),
-
-        Obx(() {
-          if (_suspendedDm.value case final suspendedDm?) {
-            final offset = suspendedDm.offset;
-            final item = suspendedDm.item;
-            final extra = item.content.extra as VideoDanmaku;
-            return Positioned(
-              left: offset.dx,
-              top: offset.dy,
-              child: Column(
-                children: [
-                  const CustomPaint(
-                    painter: _TrianglePainter(Colors.black54),
-                    size: Size(12, 6),
-                  ),
-                  Container(
-                    width: overlayWidth,
-                    height: overlayHeight,
-                    decoration: const BoxDecoration(
-                      color: Colors.black54,
-                      borderRadius: BorderRadius.all(Radius.circular(18)),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        _overlayItem(
-                          Icon(
-                            size: 20,
-                            extra.isLike
-                                ? Icons.thumb_up_off_alt_sharp
-                                : Icons.thumb_up_off_alt_outlined,
-                            color: Colors.white,
-                          ),
-                          onTap: () {
-                            _removeOverlay();
-                            HeaderControl.likeDanmaku(
-                              extra,
-                              plPlayerController.cid!,
-                            );
-                          },
-                        ),
-                        _overlayItem(
-                          const Icon(
-                            size: 20,
-                            Icons.copy,
-                            color: Colors.white,
-                          ),
-                          onTap: () {
-                            _removeOverlay();
-                            Utils.copyText(item.content.text);
-                          },
-                        ),
-                        if (item.content.selfSend)
-                          _overlayItem(
-                            const Icon(
-                              size: 20,
-                              Icons.delete,
-                              color: Colors.white,
-                            ),
-                            onTap: () {
-                              _removeOverlay();
-                              HeaderControl.deleteDanmaku(
-                                extra.id,
-                                plPlayerController.cid!,
-                              );
-                            },
-                          )
-                        else
-                          _overlayItem(
-                            const Icon(
-                              size: 20,
-                              Icons.report_problem_outlined,
-                              color: Colors.white,
-                            ),
-                            onTap: () {
-                              _removeOverlay();
-                              HeaderControl.reportDanmaku(
-                                extra,
-                                context,
-                                plPlayerController,
-                              );
-                            },
-                          ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }
-          return const SizedBox.shrink();
-        }),
       ],
     );
-    if (!isMobile) {
+    if (Utils.isDesktop) {
       return Obx(
         () => MouseRegion(
           cursor: !plPlayerController.showControls.value && isFullScreen
@@ -2038,6 +1927,58 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       );
     }
     return child;
+  }
+
+  Widget get _videoWidget {
+    return Container(
+      clipBehavior: Clip.none,
+      width: maxWidth,
+      height: maxHeight,
+      color: widget.fill,
+      child: Obx(
+        () => MouseInteractiveViewer(
+          scaleEnabled: !plPlayerController.controlsLock.value,
+          pointerSignalFallback: _onPointerSignal,
+          onPointerPanZoomUpdate: _onPointerPanZoomUpdate,
+          onPointerPanZoomEnd: _onPointerPanZoomEnd,
+          onPointerDown: _onPointerDown,
+          onInteractionStart: _onInteractionStart,
+          onInteractionUpdate: _onInteractionUpdate,
+          onInteractionEnd: _onInteractionEnd,
+          panEnabled: false,
+          minScale: plPlayerController.enableShrinkVideoSize ? 0.75 : 1,
+          maxScale: 2.0,
+          boundaryMargin: plPlayerController.enableShrinkVideoSize
+              ? const EdgeInsets.all(double.infinity)
+              : EdgeInsets.zero,
+          panAxis: PanAxis.aligned,
+          transformationController: transformationController,
+          childKey: _videoKey,
+          child: RepaintBoundary(
+            key: _videoKey,
+            child: Obx(
+              () {
+                final videoFit = plPlayerController.videoFit.value;
+                return Transform.flip(
+                  flipX: plPlayerController.flipX.value,
+                  flipY: plPlayerController.flipY.value,
+                  filterQuality: FilterQuality.low,
+                  child: FittedBox(
+                    fit: videoFit.boxFit,
+                    alignment: widget.alignment,
+                    child: SimpleVideo(
+                      controller: plPlayerController.videoController!,
+                      fill: widget.fill,
+                      aspectRatio: videoFit.aspectRatio,
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   late final segment = Pair(
@@ -2182,54 +2123,6 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
         if (isPlay) ctr.play();
       },
     );
-  }
-
-  static const overlaySpacing = 10.0;
-  static const overlayWidth = 130.0;
-  static const overlayHeight = 35.0;
-
-  final Rx<({Offset offset, DanmakuItem item})?> _suspendedDm =
-      Rx<({Offset offset, DanmakuItem item})?>(null);
-
-  void _removeOverlay() {
-    _suspendedDm
-      ..value?.item.suspend = false
-      ..value = null;
-  }
-
-  Widget _overlayItem(Widget child, {required VoidCallback onTap}) {
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: onTap,
-      child: SizedBox(
-        height: overlayHeight,
-        width: overlayWidth / 3,
-        child: Center(
-          child: child,
-        ),
-      ),
-    );
-  }
-
-  void _showOverlay(
-    DanmakuItem<DanmakuExtra> item,
-    TapUpDetails event,
-    DanmakuController<DanmakuExtra> ctr,
-  ) {
-    _removeOverlay();
-    item.suspend = true;
-
-    final dy = item.content.type == DanmakuItemType.bottom
-        ? ctr.viewHeight - item.yPosition - item.height
-        : item.yPosition;
-
-    final top = dy + item.height;
-    final left = clampDouble(
-      event.localPosition.dx - overlayWidth / 2,
-      overlaySpacing,
-      ctr.viewWidth - overlayWidth - overlaySpacing,
-    );
-    _suspendedDm.value = (offset: Offset(left, top), item: item);
   }
 }
 
@@ -2574,28 +2467,4 @@ Widget buildViewPointWidget(
       },
     ),
   );
-}
-
-class _TrianglePainter extends CustomPainter {
-  const _TrianglePainter(this.color);
-  final Color color;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.fill;
-
-    final path = Path()
-      ..moveTo(0, size.height)
-      ..lineTo(size.width, size.height)
-      ..lineTo(size.width / 2, 0)
-      ..close();
-
-    canvas.drawPath(path, paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant _TrianglePainter oldDelegate) =>
-      color != oldDelegate.color;
 }

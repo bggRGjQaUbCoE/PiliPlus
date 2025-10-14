@@ -57,7 +57,7 @@ abstract class CacheManage {
       value = value / 1024;
     }
     String size = value.toStringAsFixed(2);
-    return size + unitArr.getOrElse(index, orElse: () => '');
+    return size + (unitArr.getOrNull(index) ?? '');
   }
 
   // 清除 Library/Caches 目录及文件缓存

@@ -165,17 +165,18 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
+    late final ctr = videoDetailController.plPlayerController;
     if (state == AppLifecycleState.resumed) {
-      if (!videoDetailController.plPlayerController.showDanmaku) {
+      if (!ctr.showDanmaku) {
         introController.startTimer();
-        videoDetailController.plPlayerController.showDanmaku = true;
+        ctr.showDanmaku = true;
 
         // 修复从后台恢复时全屏状态下屏幕方向错误的问题
         if (isFullScreen && Platform.isIOS) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             // 根据视频方向重新设置屏幕方向
             final isVertical = videoDetailController.isVertical.value;
-            final mode = plPlayerController?.mode;
+            final mode = ctr.mode;
 
             if (!(mode == FullScreenMode.vertical ||
                 (mode == FullScreenMode.auto && isVertical) ||
@@ -188,7 +189,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
       }
     } else if (state == AppLifecycleState.paused) {
       introController.canelTimer();
-      videoDetailController.plPlayerController.showDanmaku = false;
+      ctr.showDanmaku = false;
     }
   }
 

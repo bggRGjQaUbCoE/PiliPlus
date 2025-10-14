@@ -141,8 +141,7 @@ abstract class SettingBoxKey {
       showFsLockBtn = 'showFsLockBtn',
       silentDownImg = 'silentDownImg',
       showMemberShop = 'showMemberShop',
-      enablePlayAll = 'enablePlayAll',
-      enableTapDm = 'enableTapDm';
+      enablePlayAll = 'enablePlayAll';
 
   static const String minimizeOnExit = 'minimizeOnExit',
       windowSize = 'windowSize',

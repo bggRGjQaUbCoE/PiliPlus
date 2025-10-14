@@ -154,134 +154,132 @@ class SearchVideoController
           }
 
           return SingleChildScrollView(
-            child: Padding(
-              padding: EdgeInsets.only(
-                top: 20,
-                left: 16,
-                right: 16,
-                bottom: 100 + MediaQuery.viewPaddingOf(context).bottom,
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 10),
-                  const Text('发布时间', style: TextStyle(fontSize: 16)),
-                  const SizedBox(height: 10),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: VideoPubTimeType.values.map(
-                      (e) {
-                        final isCurr = e == pubTimeType;
-                        return SearchText(
-                          text: e.label,
-                          onTap: (text) {
-                            pubTimeType = e;
-                            DateTime now = DateTime.now();
-                            if (e == VideoPubTimeType.all) {
-                              pubBegin = null;
-                              pubEnd = null;
-                            } else {
-                              pubBegin =
-                                  DateTime(
-                                    now.year,
-                                    now.month,
-                                    now.day -
-                                        (e == VideoPubTimeType.day
-                                            ? 0
-                                            : e == VideoPubTimeType.week
-                                            ? 6
-                                            : 179),
-                                    0,
-                                    0,
-                                    0,
-                                  ).millisecondsSinceEpoch ~/
-                                  1000;
-                              pubEnd =
-                                  DateTime(
-                                    now.year,
-                                    now.month,
-                                    now.day,
-                                    23,
-                                    59,
-                                    59,
-                                  ).millisecondsSinceEpoch ~/
-                                  1000;
-                            }
-                            onSortSearch();
-                          },
-                          bgColor: isCurr
-                              ? theme.colorScheme.secondaryContainer
-                              : null,
-                          textColor: isCurr
-                              ? theme.colorScheme.onSecondaryContainer
-                              : null,
-                        );
-                      },
-                    ).toList(),
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    spacing: 8,
-                    children: [
-                      Expanded(child: dateWidget()),
-                      const Text('至', style: TextStyle(fontSize: 13)),
-                      Expanded(child: dateWidget(false)),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                  const Text('内容时长', style: TextStyle(fontSize: 16)),
-                  const SizedBox(height: 10),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: VideoDurationType.values.map(
-                      (e) {
-                        final isCurr = e == videoDurationType;
-                        return SearchText(
-                          text: e.label,
-                          onTap: (_) {
-                            videoDurationType = e;
-                            onSortSearch(label: e.label);
-                          },
-                          bgColor: isCurr
-                              ? theme.colorScheme.secondaryContainer
-                              : null,
-                          textColor: isCurr
-                              ? theme.colorScheme.onSecondaryContainer
-                              : null,
-                        );
-                      },
-                    ).toList(),
-                  ),
-                  const SizedBox(height: 20),
-                  const Text('内容分区', style: TextStyle(fontSize: 16)),
-                  const SizedBox(height: 10),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: VideoZoneType.values.map(
-                      (e) {
-                        final isCurr = e == videoZoneType;
-                        return SearchText(
-                          text: e.label,
-                          onTap: (_) {
-                            videoZoneType = e;
-                            onSortSearch(label: e.label);
-                          },
-                          bgColor: isCurr
-                              ? theme.colorScheme.secondaryContainer
-                              : null,
-                          textColor: isCurr
-                              ? theme.colorScheme.onSecondaryContainer
-                              : null,
-                        );
-                      },
-                    ).toList(),
-                  ),
-                ],
-              ),
+            padding: EdgeInsets.only(
+              top: 20,
+              left: 16,
+              right: 16,
+              bottom: 100 + MediaQuery.viewPaddingOf(context).bottom,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const SizedBox(height: 10),
+                const Text('发布时间', style: TextStyle(fontSize: 16)),
+                const SizedBox(height: 10),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: VideoPubTimeType.values.map(
+                    (e) {
+                      final isCurr = e == pubTimeType;
+                      return SearchText(
+                        text: e.label,
+                        onTap: (text) {
+                          pubTimeType = e;
+                          DateTime now = DateTime.now();
+                          if (e == VideoPubTimeType.all) {
+                            pubBegin = null;
+                            pubEnd = null;
+                          } else {
+                            pubBegin =
+                                DateTime(
+                                  now.year,
+                                  now.month,
+                                  now.day -
+                                      (e == VideoPubTimeType.day
+                                          ? 0
+                                          : e == VideoPubTimeType.week
+                                          ? 6
+                                          : 179),
+                                  0,
+                                  0,
+                                  0,
+                                ).millisecondsSinceEpoch ~/
+                                1000;
+                            pubEnd =
+                                DateTime(
+                                  now.year,
+                                  now.month,
+                                  now.day,
+                                  23,
+                                  59,
+                                  59,
+                                ).millisecondsSinceEpoch ~/
+                                1000;
+                          }
+                          onSortSearch();
+                        },
+                        bgColor: isCurr
+                            ? theme.colorScheme.secondaryContainer
+                            : null,
+                        textColor: isCurr
+                            ? theme.colorScheme.onSecondaryContainer
+                            : null,
+                      );
+                    },
+                  ).toList(),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  spacing: 8,
+                  children: [
+                    Expanded(child: dateWidget()),
+                    const Text('至', style: TextStyle(fontSize: 13)),
+                    Expanded(child: dateWidget(false)),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                const Text('内容时长', style: TextStyle(fontSize: 16)),
+                const SizedBox(height: 10),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: VideoDurationType.values.map(
+                    (e) {
+                      final isCurr = e == videoDurationType;
+                      return SearchText(
+                        text: e.label,
+                        onTap: (_) {
+                          videoDurationType = e;
+                          onSortSearch(label: e.label);
+                        },
+                        bgColor: isCurr
+                            ? theme.colorScheme.secondaryContainer
+                            : null,
+                        textColor: isCurr
+                            ? theme.colorScheme.onSecondaryContainer
+                            : null,
+                      );
+                    },
+                  ).toList(),
+                ),
+                const SizedBox(height: 20),
+                const Text('内容分区', style: TextStyle(fontSize: 16)),
+                const SizedBox(height: 10),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: VideoZoneType.values.map(
+                    (e) {
+                      final isCurr = e == videoZoneType;
+                      return SearchText(
+                        text: e.label,
+                        onTap: (_) {
+                          videoZoneType = e;
+                          onSortSearch(label: e.label);
+                        },
+                        bgColor: isCurr
+                            ? theme.colorScheme.secondaryContainer
+                            : null,
+                        textColor: isCurr
+                            ? theme.colorScheme.onSecondaryContainer
+                            : null,
+                      );
+                    },
+                  ).toList(),
+                ),
+              ],
             ),
           );
         },

@@ -226,7 +226,7 @@ class LiveMessageStream {
               }
               _processingData(decompressedData);
             } catch (e) {
-              if (kDebugMode) logger.i(e);
+              if (kDebugMode) rethrow;
             }
           }
         },
@@ -256,7 +256,7 @@ class LiveMessageStream {
         }
       }
     } catch (e) {
-      if (kDebugMode) logger.i('ParseHeader错误: $e');
+      if (kDebugMode) rethrow;
     }
   }
 

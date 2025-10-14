@@ -8,6 +8,7 @@ import 'package:PiliPlus/models/search/result.dart';
 import 'package:PiliPlus/pages/common/common_list_controller.dart';
 import 'package:PiliPlus/pages/search_result/controller.dart';
 import 'package:PiliPlus/utils/extension.dart';
+import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 
@@ -74,6 +75,8 @@ class SearchPanelController<R extends SearchNumData<T>, T>
     return response.list;
   }
 
+  final qvId = Utils.generateRandomString(32);
+
   @override
   Future<LoadingState<R>> customGetData() => SearchHttp.searchByType<R>(
     searchType: searchType,
@@ -87,6 +90,7 @@ class SearchPanelController<R extends SearchNumData<T>, T>
     categoryId: articleZoneType?.value.categoryId,
     pubBegin: pubBegin,
     pubEnd: pubEnd,
+    qvId: qvId,
   );
 
   @override

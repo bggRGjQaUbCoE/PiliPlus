@@ -174,7 +174,6 @@ jobs:
           - Initial RPM release
           EOF
 
-          sed -i "s/\${{ env.version }}/${{ env.version }}/g" "$RPM_BUILD_ROOT/SPECS/piliplus.spec"
           sed -i "s/DATE/${DATE}/g" "$RPM_BUILD_ROOT/SPECS/piliplus.spec"
 
           printf "构建 RPM 包...\n"

@@ -112,53 +112,78 @@ jobs:
           printf "建立 RPM 构建目录...\n"
           RPM_BUILD_ROOT="$PWD/rpm_build"
           mkdir -p "$RPM_BUILD_ROOT/BUILD" "$RPM_BUILD_ROOT/RPMS" "$RPM_BUILD_ROOT/SOURCES" "$RPM_BUILD_ROOT/SPECS" "$RPM_BUILD_ROOT/SRPMS"
-          # 构建带顶层目录的源码包
-          mkdir -p "$PWD/piliplus-${{ env.version }}"
-          cp -r build/linux/x64/release/bundle/* "$PWD/piliplus-${{ env.version }}/"
-          cp assets/linux/piliplus.desktop "$PWD/piliplus-${{ env.version }}/"
-          cp assets/images/logo/logo.png "$PWD/piliplus-${{ env.version }}/"
+          
+          printf "准备源码归档（仅包含运行时与元数据）...\n"
+          DATE="$(date '+%a %b %d %Y')"
+          SRC_DIR="$PWD/piliplus-${{ env.version }}"
+          mkdir -p "$SRC_DIR/bundle" "$SRC_DIR/assets"
+          cp -r build/linux/x64/release/bundle/* "$SRC_DIR/bundle/"
+          cp assets/linux/piliplus.desktop "$SRC_DIR/assets/piliplus.desktop"
+          cp assets/images/logo/logo.png "$SRC_DIR/assets/piliplus.png"
           tar -zcvf "$RPM_BUILD_ROOT/SOURCES/piliplus-${{ env.version }}.tar.gz" -C "$PWD" "piliplus-${{ env.version }}"
-          # 创建 spec 文件
+
+          printf "生成 spec 文件...\n"
           cat > "$RPM_BUILD_ROOT/SPECS/piliplus.spec" <<EOF
           Name:           piliplus
           Version:        ${{ env.version }}
           Release:        1%{?dist}
-          Summary:        PiliPlus Linux Version
           License:        GPL-3.0
           Source0:        piliplus-${{ env.version }}.tar.gz
+          Requires:       desktop-file-utils, hicolor-icon-theme
 
           %description
-          使用Flutter开发的BiliBili第三方客户端
+          使用 Flutter 开发的 BiliBili 第三方客户端
 
           %prep
-          %setup -q
+          %setup -q -n piliplus-${{ env.version }}
 
           %build
 
           %install
           mkdir -p %{buildroot}/opt/PiliPlus
-          cp -r * %{buildroot}/opt/PiliPlus
+          cp -r bundle/* %{buildroot}/opt/PiliPlus/
 
+          # 二进制权限与命令行入口
+          chmod 755 %{buildroot}/opt/PiliPlus/piliplus
+          mkdir -p %{buildroot}/usr/bin
+          ln -sf /opt/PiliPlus/piliplus %{buildroot}/usr/bin/piliplus
+
+          # 桌面集成
           mkdir -p %{buildroot}/usr/share/applications
-          cp piliplus.desktop %{buildroot}/usr/share/applications/
+          install -m 644 assets/piliplus.desktop %{buildroot}/usr/share/applications/piliplus.desktop
 
           mkdir -p %{buildroot}/usr/share/icons/hicolor/512x512/apps
-          cp logo.png %{buildroot}/usr/share/icons/hicolor/512x512/apps/piliplus.png
+          install -m 644 assets/piliplus.png %{buildroot}/usr/share/icons/hicolor/512x512/apps/piliplus.png
+
+          %post
+          update-desktop-database -q || true
+          gtk-update-icon-cache -q -t -f %{_datadir}/icons/hicolor || true
+
+          %postun
+          update-desktop-database -q || true
+          gtk-update-icon-cache -q -t -f %{_datadir}/icons/hicolor || true
 
           %files
           /opt/PiliPlus
+          /usr/bin/piliplus
           /usr/share/applications/piliplus.desktop
           /usr/share/icons/hicolor/512x512/apps/piliplus.png
 
           %changelog
-          * $(date "+%a %b %d %Y") - ${{ env.version }}-1
+          * DATE - ${{ env.version }}-1
           - Initial RPM release
           EOF
-          # 构建 RPM 包
+
+          sed -i "s/\${{ env.version }}/${{ env.version }}/g" "$RPM_BUILD_ROOT/SPECS/piliplus.spec"
+          sed -i "s/DATE/${DATE}/g" "$RPM_BUILD_ROOT/SPECS/piliplus.spec"
+
+          printf "构建 RPM 包...\n"
           rpmbuild --define "_topdir $RPM_BUILD_ROOT" -bb "$RPM_BUILD_ROOT/SPECS/piliplus.spec"
-          # 移动生成的 rpm 包到工作目录
-          find "$RPM_BUILD_ROOT/RPMS" -name "*.rpm" -exec mv {} "PiliPlus_linux_${{ env.version }}_amd64.rpm" \;
-          printf "完成: PiliPlus_linux_%s_amd64.rpm\n" "${{ env.version }}"
+
+          printf "移动生成的 RPM...\n"
+          find "$RPM_BUILD_ROOT/RPMS" -name "*.rpm" -exec mv {} "PiliPlus_linux_${{ env.version }}.rpm" \;
+
+          printf "完成: PiliPlus_linux_%s.rpm\n" "${{ env.version }}"
         shell: bash
 
       - name: Upload linux targz package

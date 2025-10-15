@@ -371,6 +371,11 @@ class LiveRoomController extends GetxController {
                             : DmUtils.decimalToColor(extra['color']),
                         type: DmUtils.getPosition(extra['mode']),
                         selfSend: extra['send_from_me'] ?? false,
+                        extra: LiveDanmaku(
+                          id: extra['id_str'],
+                          mid: uid,
+                          uname: user['base']['name'],
+                        ),
                       ),
                     );
                     if (!disableAutoScroll.value) {

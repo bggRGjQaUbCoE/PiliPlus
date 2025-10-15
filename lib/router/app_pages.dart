@@ -16,6 +16,8 @@ import 'package:PiliPlus/pages/fav_detail/view.dart';
 import 'package:PiliPlus/pages/fav_search/view.dart';
 import 'package:PiliPlus/pages/follow/view.dart';
 import 'package:PiliPlus/pages/follow_search/view.dart';
+import 'package:PiliPlus/pages/follow_type/follow_same/view.dart';
+import 'package:PiliPlus/pages/follow_type/followed/view.dart';
 import 'package:PiliPlus/pages/history/view.dart';
 import 'package:PiliPlus/pages/history_search/view.dart';
 import 'package:PiliPlus/pages/home/view.dart';
@@ -223,6 +225,8 @@ class Routes {
     ),
     CustomGetPage(name: '/audio', page: () => const AudioPage()),
     CustomGetPage(name: '/mainReply', page: () => const MainReplyPage()),
+    CustomGetPage(name: '/followed', page: () => const FollowedPage()),
+    CustomGetPage(name: '/sameFollowing', page: () => const FollowSamePage()),
   ];
 }
 

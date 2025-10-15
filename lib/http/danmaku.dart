@@ -125,27 +125,18 @@ abstract final class DanmakuHttp {
       data: data,
       options: Options(contentType: Headers.formUrlEncodedContentType),
     );
-    if (res.data['code'] == 0) {
-      return {
-        'status': true,
-        'data': res.data['data']['block'],
-      };
-    } else {
-      return {
-        'status': false,
-        'msg': res.data['message'],
-      };
+    return res.data as Map<String, dynamic>;
 
-      /// {
-      ///       0: "举报已提交",
-      ///       "-1": "举报失败，请先激活账号。",
-      ///       "-2": "举报失败，系统拒绝受理您的举报请求。",
-      ///       "-3": "举报失败，您已经被禁言。",
-      ///       "-4": "您的操作过于频繁，请稍后再试。",
-      ///       "-5": "您已经举报过这条弹幕了。",
-      ///       "-6": "举报失败，系统错误。"
-      /// }
-    }
+    /// res.data['data']['block']
+    /// {
+    ///       0: "举报已提交",
+    ///       "-1": "举报失败，请先激活账号。",
+    ///       "-2": "举报失败，系统拒绝受理您的举报请求。",
+    ///       "-3": "举报失败，您已经被禁言。",
+    ///       "-4": "您的操作过于频繁，请稍后再试。",
+    ///       "-5": "您已经举报过这条弹幕了。",
+    ///       "-6": "举报失败，系统错误。"
+    /// }
   }
 
   static Future<LoadingState<String?>> danmakuRecall({

@@ -328,7 +328,9 @@ class MemberHttp {
     }
   }
 
-  static Future memberCardInfo({int? mid}) async {
+  static Future<LoadingState<MemberCardInfoData>> memberCardInfo({
+    int? mid,
+  }) async {
     var res = await Request().get(
       Api.memberCardInfo,
       queryParameters: {
@@ -337,12 +339,9 @@ class MemberHttp {
       },
     );
     if (res.data['code'] == 0) {
-      return {
-        'status': true,
-        'data': MemberCardInfoData.fromJson(res.data['data']),
-      };
+      return Success(MemberCardInfoData.fromJson(res.data['data']));
     } else {
-      return {'status': false, 'msg': res.data['message']};
+      return Error(res.data['message']);
     }
   }
 

@@ -31,9 +31,13 @@ class _FollowPageState extends State<FollowPage> {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
-        title: Text(
-          _followController.isOwner ? '我的关注' : '${_followController.name}的关注',
-        ),
+        title: _followController.isOwner
+            ? const Text('我的关注')
+            : Obx(() {
+                final name = _followController.name.value;
+                if (name != null) return Text('$name的关注');
+                return const SizedBox.shrink();
+              }),
         actions: _followController.isOwner
             ? [
                 IconButton(

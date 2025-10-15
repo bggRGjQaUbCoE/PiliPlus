@@ -1,6 +1,7 @@
 import 'package:PiliPlus/http/follow.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/member.dart';
+import 'package:PiliPlus/http/user.dart';
 import 'package:PiliPlus/models/common/follow_order_type.dart';
 import 'package:PiliPlus/models_new/follow/data.dart';
 import 'package:PiliPlus/models_new/follow/list.dart';
@@ -14,6 +15,11 @@ class FollowChildController
   final FollowController? controller;
   final int? tagid;
   final int mid;
+  int? total;
+
+  late final loadSameFollow = controller?.isOwner == false;
+  late final Rx<LoadingState<List<FollowItemModel>?>> sameState =
+      LoadingState<List<FollowItemModel>?>.loading().obs;
 
   late final Rx<FollowOrderType> orderType = FollowOrderType.def.obs;
 
@@ -21,11 +27,22 @@ class FollowChildController
   void onInit() {
     super.onInit();
     queryData();
+    if (loadSameFollow) {
+      _loadSameFollow();
+    }
   }
 
   @override
   List<FollowItemModel>? getDataList(FollowData response) {
+    total = response.total;
     return response.list;
+  }
+
+  @override
+  void checkIsEnd(int length) {
+    if (total != null && length >= total!) {
+      isEnd = true;
+    }
   }
 
   @override
@@ -56,5 +73,12 @@ class FollowChildController
       pn: page,
       orderType: orderType.value.type,
     );
+  }
+
+  Future<void> _loadSameFollow() async {
+    final res = await UserHttp.sameFollowing(mid: mid);
+    if (res.isSuccess) {
+      sameState.value = Success(res.data.list);
+    }
   }
 }

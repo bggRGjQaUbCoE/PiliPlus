@@ -49,11 +49,11 @@ abstract class CommonSearchPanelState<
     );
   }
 
-  Widget get builLoading;
+  Widget get buildLoading;
 
   Widget _buildBody(ThemeData theme, LoadingState<List<T>?> loadingState) {
     return switch (loadingState) {
-      Loading() => builLoading,
+      Loading() => buildLoading,
       Success(:var response) =>
         response?.isNotEmpty == true
             ? SliverPadding(

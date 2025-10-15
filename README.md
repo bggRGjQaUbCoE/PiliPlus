@@ -43,8 +43,12 @@
 
 ## feat
 
+- [x] 移动端支持点击弹幕悬停，点赞、复制、举报 by [@My-Responsitories](https://github.com/My-Responsitories)
+- [x] 播放音频
+- [x] 跳过番剧片头/片尾
+- [x] 安卓端 `loudnorm` 适配 by [@My-Responsitories](https://github.com/My-Responsitories)
 - [x] Win/Mac 支持极验、短信登录 by [@My-Responsitories](https://github.com/My-Responsitories)
-- [x] 视频截取 GIF by [@My-Responsitories](https://github.com/My-Responsitories)
+- [x] 视频截取动图 by [@My-Responsitories](https://github.com/My-Responsitories)
 - [x] AI 原声翻译
 - [x] SuperChat
 - [x] 播放课堂视频

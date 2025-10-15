@@ -157,8 +157,8 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
         return;
       }
       var result = await MemberHttp.memberCardInfo(mid: mid);
-      if (result['status']) {
-        userStat.value = result['data'];
+      if (result.isSuccess) {
+        userStat.value = result.data;
       }
     }
   }

@@ -5,6 +5,7 @@ import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/user/info.dart';
 import 'package:PiliPlus/models/user/stat.dart';
 import 'package:PiliPlus/models_new/coin_log/data.dart';
+import 'package:PiliPlus/models_new/follow/data.dart';
 import 'package:PiliPlus/models_new/history/data.dart';
 import 'package:PiliPlus/models_new/later/data.dart';
 import 'package:PiliPlus/models_new/login_log/data.dart';
@@ -492,6 +493,50 @@ class UserHttp {
     );
     if (res.data['code'] == 0) {
       return Success(UserRealNameData.fromJson(res.data['data']));
+    } else {
+      return Error(res.data['message']);
+    }
+  }
+
+  static Future<LoadingState<FollowData>> followedUp({
+    required Object mid,
+    required int pn,
+  }) async {
+    final res = await Request().get(
+      Api.followedUp,
+      queryParameters: {
+        'csrf': Accounts.main.csrf,
+        'pn': pn,
+        'vmid': mid,
+        'web_location': 333.789,
+        'x-bili-device-req-json':
+            '{"platform":"web","device":"pc","spmid":"333.789"}',
+      },
+    );
+    if (res.data['code'] == 0) {
+      return Success(FollowData.fromJson(res.data['data']));
+    } else {
+      return Error(res.data['message']);
+    }
+  }
+
+  static Future<LoadingState<FollowData>> sameFollowing({
+    required Object mid,
+    int? pn,
+  }) async {
+    final res = await Request().get(
+      Api.sameFollowing,
+      queryParameters: {
+        'csrf': Accounts.main.csrf,
+        'pn': ?pn,
+        'vmid': mid,
+        'web_location': 333.789,
+        'x-bili-device-req-json':
+            '{"platform":"web","device":"pc","spmid":"333.789"}',
+      },
+    );
+    if (res.data['code'] == 0) {
+      return Success(FollowData.fromJson(res.data['data']));
     } else {
       return Error(res.data['message']);
     }

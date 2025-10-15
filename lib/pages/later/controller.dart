@@ -178,7 +178,7 @@ class LaterController extends MultiSelectController<LaterData, LaterItemModel>
               'count': baseCtr.counts[LaterViewType.all],
               'favTitle': '稍后再看',
               'mediaId': accountService.mid,
-              'desc': false,
+              'desc': asc.value,
             },
           );
           break;

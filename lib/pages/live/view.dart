@@ -1,6 +1,7 @@
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/skeleton/video_card_v.dart';
 import 'package:PiliPlus/common/widgets/button/icon_button.dart';
+import 'package:PiliPlus/common/widgets/button/more_btn.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/pair.dart';
@@ -251,25 +252,9 @@ class _LivePageState extends CommonPageState<LivePage, LiveController>
               ),
             ),
             const Spacer(),
-            GestureDetector(
-              behavior: HitTestBehavior.opaque,
+            moreTextButton(
               onTap: () => Get.to(const LiveFollowPage()),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    '查看更多',
-                    style: TextStyle(
-                      color: theme.colorScheme.outline,
-                    ),
-                  ),
-                  Icon(
-                    size: 20,
-                    Icons.keyboard_arrow_right_outlined,
-                    color: theme.colorScheme.outline,
-                  ),
-                ],
-              ),
+              color: theme.colorScheme.outline,
             ),
           ],
         ),

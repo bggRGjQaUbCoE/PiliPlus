@@ -68,7 +68,7 @@ class SearchHttp {
       'category_id': ?categoryId,
       'pubtime_begin_s': ?pubBegin,
       'pubtime_end_s': ?pubEnd,
-      'ad_resource': 5654,
+      // 'ad_resource': 5654,
       '__refresh__': true,
       '_extra': '',
       'context': '',

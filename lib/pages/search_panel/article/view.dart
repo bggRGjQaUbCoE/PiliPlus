@@ -104,5 +104,5 @@ class _SearchArticlePanelState
   }
 
   @override
-  Widget get builLoading => gridSkeleton;
+  Widget get buildLoading => gridSkeleton;
 }

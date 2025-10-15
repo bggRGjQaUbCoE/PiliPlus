@@ -633,16 +633,53 @@ abstract class PiliScheme {
       launchURL();
       return false;
     } else if (host.contains('space.bilibili.com')) {
-      String? sid =
-          uri.queryParameters['sid'] ??
+      void toType({
+        required String mid,
+        required String? type,
+      }) {
+        switch (type) {
+          case 'follow':
+            Get.toNamed('/follow?mid=$mid');
+            break;
+          case 'fans':
+            Get.toNamed('/fan?mid=$mid');
+            break;
+          case 'followed':
+            Get.toNamed('/followed?mid=$mid');
+            break;
+          default:
+            PageUtils.toDupNamed('/member?mid=$mid', off: off);
+        }
+      }
+
+      late final queryParameters = uri.queryParameters;
+
+      // space.bilibili.com/h5/follow?mid={{mid}}&type={{type}}
+      if (path.startsWith('/h5/follow')) {
+        final mid = queryParameters['mid'];
+        final type = queryParameters['type'];
+        if (mid != null) {
+          toType(mid: mid, type: type);
+          return true;
+        }
+      }
+
+      // space.bilibili.com/{{uid}}/lists/{{season_id}}
+      // space.bilibili.com/{{uid}}/lists?sid={{season_id}}
+      // space.bilibili.com/{{uid}}/channel/collectiondetail?sid={{season_id}}
+      final sid =
+          queryParameters['sid'] ??
           RegExp(r'lists/(\d+)').firstMatch(path)?.group(1);
       if (sid != null) {
         SubDetailPage.toSubDetailPage(int.parse(sid));
         return true;
       }
-      String? mid = uriDigitRegExp.firstMatch(path)?.group(1);
+
+      // space.bilibili.com/{{mid}}/relation/{{type}}
+      final mid = uriDigitRegExp.firstMatch(path)?.group(1);
+      final type = RegExp(r'relation/([a-z]+)').firstMatch(path)?.group(1);
       if (mid != null) {
-        PageUtils.toDupNamed('/member?mid=$mid', off: off);
+        toType(mid: mid, type: type);
         return true;
       }
       launchURL();

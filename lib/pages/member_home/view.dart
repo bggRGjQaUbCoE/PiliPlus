@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:PiliPlus/common/constants.dart';
+import 'package:PiliPlus/common/widgets/button/more_btn.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models_new/space/space/data.dart';
@@ -301,7 +302,7 @@ class _MemberHomeState extends State<MemberHome>
                 ],
               ),
             ),
-            GestureDetector(
+            moreTextButton(
               onTap: () {
                 int index = _ctr.tab2!.indexWhere(
                   (item) => item.param == param,
@@ -361,25 +362,7 @@ class _MemberHomeState extends State<MemberHome>
                   SmartDialog.showToast('view $param');
                 }
               },
-              child: Text.rich(
-                TextSpan(
-                  children: [
-                    TextSpan(
-                      text: '查看更多',
-                      style: TextStyle(color: color),
-                    ),
-                    WidgetSpan(
-                      alignment: PlaceholderAlignment.middle,
-                      child: Icon(
-                        Icons.arrow_forward_ios,
-                        size: 14,
-                        color: color,
-                      ),
-                      style: TextStyle(fontSize: 13, color: color),
-                    ),
-                  ],
-                ),
-              ),
+              color: color,
             ),
           ],
         ),

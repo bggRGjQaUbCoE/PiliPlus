@@ -102,7 +102,7 @@ class Request {
       headers: {
         'user-agent': 'Dart/3.6 (dart:io)', // Http2Adapter不会自动添加标头
       },
-      responseDecoder: responseDecoder, // Http2Adapter没有自动解压
+      responseDecoder: _responseDecoder, // Http2Adapter没有自动解压
       persistentConnection: true,
     );
 
@@ -269,24 +269,21 @@ class Request {
     }
   }
 
-  static String responseDecoder(
+  static List<int> responseBytesDecoder(
+    List<int> responseBytes,
+    Map<String, List<String>> headers,
+  ) => switch (headers['content-encoding']?.firstOrNull) {
+    'gzip' => _gzipDecoder.decodeBytes(responseBytes),
+    'br' => _brotilDecoder.convert(responseBytes),
+    _ => responseBytes,
+  };
+
+  static String _responseDecoder(
     List<int> responseBytes,
     RequestOptions options,
     ResponseBody responseBody,
-  ) {
-    switch (responseBody.headers['content-encoding']?.firstOrNull) {
-      case 'gzip':
-        return utf8.decode(
-          _gzipDecoder.decodeBytes(responseBytes),
-          allowMalformed: true,
-        );
-      case 'br':
-        return utf8.decode(
-          _brotilDecoder.convert(responseBytes),
-          allowMalformed: true,
-        );
-      default:
-        return utf8.decode(responseBytes, allowMalformed: true);
-    }
-  }
+  ) => utf8.decode(
+    responseBytesDecoder(responseBytes, responseBody.headers),
+    allowMalformed: true,
+  );
 }

@@ -1,16 +1,15 @@
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/member.dart';
 import 'package:PiliPlus/models/member/tags.dart';
-import 'package:PiliPlus/services/account_service.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 
 class FollowController extends GetxController with GetTickerProviderStateMixin {
-  late int mid;
-  String? name;
-  late bool isOwner;
+  late final int mid;
+  late final RxnString name;
+  late final bool isOwner;
 
   late final Rx<LoadingState> followState = LoadingState.loading().obs;
   late final RxList<MemberTagItemModel> tabs = <MemberTagItemModel>[].obs;
@@ -19,14 +18,24 @@ class FollowController extends GetxController with GetTickerProviderStateMixin {
   @override
   void onInit() {
     super.onInit();
-    int ownerMid = Accounts.main.mid;
+    final ownerMid = Accounts.main.mid;
     final mid = Get.parameters['mid'];
     this.mid = mid != null ? int.parse(mid) : ownerMid;
     isOwner = ownerMid == this.mid;
-    name = Get.parameters['name'] ?? Get.find<AccountService>().name.value;
     if (isOwner) {
       queryFollowUpTags();
+    } else {
+      final name = Get.parameters['name'];
+      this.name = RxnString(name);
+      if (name == null) {
+        _queryUserName();
+      }
     }
+  }
+
+  Future<void> _queryUserName() async {
+    final res = await MemberHttp.memberCardInfo(mid: mid);
+    name.value = res.dataOrNull?.card?.name;
   }
 
   Future<void> queryFollowUpTags() async {

@@ -320,6 +320,7 @@ class PlPlayerController {
   }
 
   /// 弹幕权重
+  late final enableTapDm = Utils.isMobile && Pref.enableTapDm;
   late int danmakuWeight = Pref.danmakuWeight;
   late RuleFilter filters = Pref.danmakuFilterRule;
   // 关联弹幕控制器
@@ -1252,12 +1253,14 @@ class PlPlayerController {
 
   /// 暂停播放
   Future<void> pause({bool notify = true, bool isInterrupt = false}) async {
-    await _videoPlayerController?.pause();
-    playerStatus.status.value = PlayerStatus.paused;
+    if (videoPlayerController?.state.playing ?? false) {
+      _videoPlayerController!.playOrPause();
+      playerStatus.status.value = PlayerStatus.paused;
 
-    // 主动暂停时让出音频焦点
-    if (!isInterrupt) {
-      audioSessionHandler?.setActive(false);
+      // 主动暂停时让出音频焦点
+      if (!isInterrupt) {
+        audioSessionHandler?.setActive(false);
+      }
     }
   }
 

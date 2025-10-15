@@ -87,7 +87,7 @@ class _LaterViewChildPageState extends State<LaterViewChildPage>
                                     .counts[LaterViewType.all],
                                 'favTitle': '稍后再看',
                                 'mediaId': _laterController.accountService.mid,
-                                'desc': false,
+                                'desc': _laterController.asc.value,
                                 'isContinuePlaying': index != 0,
                               }
                             : null,

@@ -966,4 +966,8 @@ class Api {
   static const String danmakuRecall = '/x/dm/recall';
 
   static const String danmakuEditState = '/x/v2/dm/edit/state';
+
+  static const String followedUp = '/x/relation/followings/followed_upper';
+
+  static const String sameFollowing = '/x/relation/same/followings';
 }

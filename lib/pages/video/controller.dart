@@ -3,8 +3,6 @@ import 'dart:ui';
 
 import 'package:PiliPlus/common/widgets/pair.dart';
 import 'package:PiliPlus/common/widgets/progress_bar/segment_progress_bar.dart';
-import 'package:PiliPlus/grpc/bilibili/app/listener/v1.pbenum.dart'
-    show PlaylistSource;
 import 'package:PiliPlus/http/constants.dart';
 import 'package:PiliPlus/http/fav.dart';
 import 'package:PiliPlus/http/init.dart';
@@ -1753,12 +1751,14 @@ class VideoDetailController extends GetxController
   void toAudioPage() {
     AudioPage.toAudioPage(
       itemType: 1,
+      id: args['mediaId'],
       oid: aid,
       subId: [cid.value],
-      from: PlaylistSource.UP_ARCHIVE,
+      from: sourceType.playlistSource,
       heroTag: autoPlay.value ? heroTag : null,
       start: playedTime,
       audioUrl: audioUrl,
+      extraId: sourceType.extraId,
     );
   }
 }

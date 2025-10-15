@@ -652,17 +652,9 @@ class UserInfoCard extends StatelessWidget {
         const SizedBox(width: 10),
       ],
     );
-    if (item.jumpUrl?.isNotEmpty == true) {
-      return GestureDetector(
-        onTap: () {
-          final isDark = Get.isDarkMode;
-          PageUtils.handleWebview(
-            '${item.jumpUrl}&native.theme=${isDark ? 2 : 1}&night=${isDark ? 1 : 0}',
-          );
-        },
-        child: child,
-      );
-    }
-    return child;
+    return GestureDetector(
+      onTap: () => Get.toNamed('/followed?mid=${card.mid}&name=${card.name}'),
+      child: child,
+    );
   }
 }

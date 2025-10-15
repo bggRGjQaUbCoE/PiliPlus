@@ -7,12 +7,8 @@ class FollowItemModel extends UpItem {
   dynamic tag;
   int? special;
   String? sign;
-  int? faceNft;
   BaseOfficialVerify? officialVerify;
   Vip? vip;
-  String? nftIcon;
-  String? recReason;
-  String? trackId;
   String? followTime;
 
   FollowItemModel({
@@ -24,12 +20,8 @@ class FollowItemModel extends UpItem {
     super.uname,
     super.face,
     this.sign,
-    this.faceNft,
     this.officialVerify,
     this.vip,
-    this.nftIcon,
-    this.recReason,
-    this.trackId,
     this.followTime,
   });
 
@@ -43,7 +35,6 @@ class FollowItemModel extends UpItem {
         uname: json['uname'] as String?,
         face: json['face'] as String?,
         sign: json['sign'] as String?,
-        faceNft: json['face_nft'] as int?,
         officialVerify: json['official_verify'] == null
             ? null
             : BaseOfficialVerify.fromJson(
@@ -52,9 +43,6 @@ class FollowItemModel extends UpItem {
         vip: json['vip'] == null
             ? null
             : Vip.fromJson(json['vip'] as Map<String, dynamic>),
-        nftIcon: json['nft_icon'] as String?,
-        recReason: json['rec_reason'] as String?,
-        trackId: json['track_id'] as String?,
         followTime: json['follow_time'] as String?,
       );
 }

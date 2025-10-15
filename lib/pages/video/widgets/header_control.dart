@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:math';
-import 'dart:typed_data';
 
+import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/widgets/button/icon_button.dart';
 import 'package:PiliPlus/common/widgets/custom_icon.dart';
 import 'package:PiliPlus/common/widgets/custom_sliver_persistent_header_delegate.dart';
@@ -43,6 +43,7 @@ import 'package:canvas_danmaku/canvas_danmaku.dart';
 import 'package:dio/dio.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:floating/floating.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -993,11 +994,17 @@ class HeaderControlState extends State<HeaderControl> {
                             item.subtitleUrl!.http2https,
                             options: Options(
                               responseType: ResponseType.bytes,
+                              headers: Constants.baseHeaders,
                               extra: {'account': const NoAccount()},
                             ),
                           );
                           if (res.statusCode == 200) {
-                            final bytes = res.data!;
+                            final bytes = Uint8List.fromList(
+                              Request.responseBytesDecoder(
+                                res.data!,
+                                res.headers.map,
+                              ),
+                            );
                             final name =
                                 '${introController.videoDetail.value.title}-${videoDetailCtr.bvid}-${videoDetailCtr.cid.value}-${item.lanDoc}.json';
                             final path = await FilePicker.platform.saveFile(
@@ -1016,6 +1023,7 @@ class HeaderControlState extends State<HeaderControl> {
                             SmartDialog.showToast("已保存");
                           }
                         } catch (e) {
+                          if (kDebugMode) rethrow;
                           SmartDialog.showToast(e.toString());
                         }
                       },

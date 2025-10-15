@@ -72,7 +72,7 @@ class _ContactPageState extends State<ContactPage>
             onSelect: widget.isFromSelect ? onSelect : null,
           ),
           FansPage(
-            mid: accountService.mid,
+            showName: false,
             onSelect: widget.isFromSelect ? onSelect : null,
           ),
         ],

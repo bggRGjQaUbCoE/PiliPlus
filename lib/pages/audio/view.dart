@@ -39,6 +39,7 @@ class AudioPage extends StatefulWidget {
     String? heroTag,
     Duration? start,
     String? audioUrl,
+    int? extraId,
   }) => Get.toNamed(
     '/audio',
     arguments: {
@@ -50,6 +51,7 @@ class AudioPage extends StatefulWidget {
       'heroTag': ?heroTag,
       'start': ?start,
       'audioUrl': ?audioUrl,
+      'extraId': ?extraId,
     },
   );
 }
@@ -591,6 +593,22 @@ class _AudioPageState extends State<AudioPage> {
     );
   }
 
+  void _onDragStart(ThumbDragDetails details) {
+    // do nothing
+  }
+
+  void _onDragUpdate(ThumbDragDetails details) {
+    _controller
+      ..isDragging = true
+      ..position.value = details.timeStamp;
+  }
+
+  void _onSeek(Duration value) {
+    _controller
+      ..player?.platform?.seek(value)
+      ..isDragging = false;
+  }
+
   Widget _buildProgressBar(ColorScheme colorScheme) {
     final primary = colorScheme.primary;
     final thumbGlowColor = primary.withAlpha(80);
@@ -609,17 +627,9 @@ class _AudioPageState extends State<AudioPage> {
         thumbGlowColor: thumbGlowColor,
         thumbGlowRadius: 0,
         thumbRadius: 6,
-        onDragStart: (_) {},
-        onDragUpdate: (details) {
-          _controller
-            ..isDragging = true
-            ..position.value = details.timeStamp;
-        },
-        onSeek: (value) {
-          _controller
-            ..player?.platform?.seek(value)
-            ..isDragging = false;
-        },
+        onDragStart: _onDragStart,
+        onDragUpdate: _onDragUpdate,
+        onSeek: _onSeek,
       );
       if (Utils.isDesktop) {
         return MouseRegion(

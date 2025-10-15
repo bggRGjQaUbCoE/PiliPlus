@@ -1,4 +1,5 @@
 import 'package:PiliPlus/common/skeleton/msg_feed_top.dart';
+import 'package:PiliPlus/common/widgets/button/more_btn.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/refresh_indicator.dart';
 import 'package:PiliPlus/http/loading_state.dart';
@@ -42,7 +43,24 @@ class _FollowChildPageState extends State<FollowChildPage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    final colorScheme = ColorScheme.of(context);
     final padding = MediaQuery.viewPaddingOf(context);
+    Widget sliver = Obx(
+      () => _buildBody(_followController.loadingState.value),
+    );
+    if (_followController.loadSameFollow) {
+      sliver = SliverMainAxisGroup(
+        slivers: [
+          Obx(
+            () => _buildSameFollowing(
+              colorScheme,
+              _followController.sameState.value,
+            ),
+          ),
+          sliver,
+        ],
+      );
+    }
     Widget child = refreshIndicator(
       onRefresh: _followController.onRefresh,
       child: CustomScrollView(
@@ -55,9 +73,7 @@ class _FollowChildPageState extends State<FollowChildPage>
               right: padding.right,
               bottom: padding.bottom + 100,
             ),
-            sliver: Obx(
-              () => _buildBody(_followController.loadingState.value),
-            ),
+            sliver: sliver,
           ),
         ],
       ),
@@ -119,6 +135,68 @@ class _FollowChildPageState extends State<FollowChildPage>
         errMsg: errMsg,
         onReload: _followController.onReload,
       ),
+    };
+  }
+
+  Widget _buildSameFollowing(
+    ColorScheme colorScheme,
+    LoadingState<List<FollowItemModel>?> state,
+  ) {
+    return switch (state) {
+      Success(:var response) =>
+        response?.isNotEmpty == true
+            ? SliverMainAxisGroup(
+                slivers: [
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.only(
+                        left: 16,
+                        right: 16,
+                        bottom: 6,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            '我们的共同关注',
+                            style: TextStyle(
+                              color: colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                          moreTextButton(
+                            onTap: () => Get.toNamed(
+                              '/sameFollowing?mid=${_followController.mid}&name=${widget.controller?.name.value}',
+                            ),
+                            color: colorScheme.outline,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  SliverList.builder(
+                    itemCount: response!.length,
+                    itemBuilder: (_, index) =>
+                        FollowItem(item: response[index]),
+                  ),
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.only(
+                        left: 16,
+                        top: 16,
+                        bottom: 6,
+                      ),
+                      child: Text(
+                        '全部关注',
+                        style: TextStyle(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              )
+            : const SliverToBoxAdapter(),
+      _ => const SliverToBoxAdapter(),
     };
   }
 

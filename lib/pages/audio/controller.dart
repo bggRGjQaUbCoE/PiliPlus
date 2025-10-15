@@ -40,6 +40,7 @@ class AudioController extends GetxController
   late Int64 oid;
   late List<Int64> subId;
   late int itemType;
+  Int64? extraId;
   late final PlaylistSource from;
   late final isVideo = itemType == 1;
 
@@ -86,6 +87,10 @@ class AudioController extends GetxController
     itemType = args['itemType'];
     from = args['from'];
     _start = args['start'];
+    final int? extraId = args['extraId'];
+    if (extraId != null) {
+      this.extraId = Int64(extraId);
+    }
     if (args['heroTag'] case String heroTag) {
       try {
         _videoDetailController = Get.find<VideoDetailController>(tag: heroTag);
@@ -134,6 +139,7 @@ class AudioController extends GetxController
           : isLoadNext
           ? _next
           : null,
+      extraId: extraId,
     );
     if (res.isSuccess) {
       final PlaylistResp data = res.data;
@@ -193,7 +199,7 @@ class AudioController extends GetxController
           (e) => e.id <= cacheAudioQa,
           (a, b) => a.id > b.id ? a : b,
         );
-        _onOpenMedia(VideoUtils.getCdnUrl(audio.baseUrl));
+        _onOpenMedia(VideoUtils.getCdnUrl(audio));
       } else if (playInfo.hasPlayUrl()) {
         final playUrl = playInfo.playUrl;
         final durls = playUrl.durl;

@@ -29,6 +29,14 @@ List<SettingsModel> get playSettings => [
     setKey: SettingBoxKey.enableShowDanmaku,
     defaultVal: true,
   ),
+  if (Utils.isMobile)
+    const SettingsModel(
+      settingsType: SettingsType.sw1tch,
+      title: '启用点击弹幕',
+      leading: Icon(Icons.touch_app_outlined),
+      setKey: SettingBoxKey.enableTapDm,
+      defaultVal: true,
+    ),
   SettingsModel(
     settingsType: SettingsType.normal,
     onTap: (setState) => Get.toNamed('/playSpeedSet'),

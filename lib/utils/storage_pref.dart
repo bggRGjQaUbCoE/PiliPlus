@@ -861,4 +861,7 @@ abstract class Pref {
 
   static bool get enableTapDm =>
       _setting.get(SettingBoxKey.enableTapDm, defaultValue: true);
+
+  static bool get showTrayIcon =>
+      _setting.get(SettingBoxKey.showTrayIcon, defaultValue: true);
 }

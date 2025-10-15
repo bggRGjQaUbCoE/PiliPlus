@@ -1,6 +1,6 @@
 import 'package:PiliPlus/pages/follow_type/follow_same/controller.dart';
 import 'package:PiliPlus/pages/follow_type/view.dart';
-import 'package:PiliPlus/utils/utils.dart';
+import 'package:PiliPlus/utils/extension.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -13,9 +13,9 @@ class FollowSamePage extends StatefulWidget {
 
 class _FollowSamePageState extends FollowTypePageState<FollowSamePage> {
   @override
-  final controller = Get.put(
-    FollowSameController(),
-    tag: Utils.generateRandomString(8),
+  final controller = Get.putOrFind(
+    FollowSameController.new,
+    tag: Get.parameters['mid'],
   );
 
   @override

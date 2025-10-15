@@ -25,7 +25,7 @@ abstract class FollowTypePageState<T extends StatefulWidget> extends State<T> {
         onRefresh: controller.onRefresh,
         child: CustomScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
-          controller: controller.scrollController,
+          // controller: controller.scrollController,
           slivers: [
             ViewSliverSafeArea(
               sliver: Obx(

@@ -127,6 +127,7 @@ jobs:
           Name:           piliplus
           Version:        ${{ env.version }}
           Release:        1%{?dist}
+          Summary:        PiliPlus Linux Version
           License:        GPL-3.0
           Source0:        piliplus-${{ env.version }}.tar.gz
           Requires:       desktop-file-utils, hicolor-icon-theme

@@ -36,7 +36,7 @@ import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
 List<SettingsModel> get styleSettings => [
-  if (Utils.isDesktop)
+  if (Utils.isDesktop) ...[
     const SettingsModel(
       settingsType: SettingsType.sw1tch,
       title: '显示窗口标题栏',
@@ -45,6 +45,15 @@ List<SettingsModel> get styleSettings => [
       defaultVal: true,
       needReboot: true,
     ),
+    const SettingsModel(
+      settingsType: SettingsType.sw1tch,
+      title: '显示托盘图标',
+      leading: Icon(Icons.donut_large_rounded),
+      setKey: SettingBoxKey.showTrayIcon,
+      defaultVal: true,
+      needReboot: true,
+    ),
+  ],
   SettingsModel(
     settingsType: SettingsType.sw1tch,
     title: '横屏适配',

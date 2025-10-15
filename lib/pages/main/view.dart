@@ -45,8 +45,10 @@ class _MainAppState extends State<MainApp>
       windowManager
         ..addListener(this)
         ..setPreventClose(true);
-      trayManager.addListener(this);
-      _handleTray();
+      if (_mainController.showTrayIcon) {
+        trayManager.addListener(this);
+        _handleTray();
+      }
     }
   }
 
@@ -131,7 +133,7 @@ class _MainAppState extends State<MainApp>
 
   @override
   void onWindowClose() {
-    if (_mainController.minimizeOnExit) {
+    if (_mainController.showTrayIcon && _mainController.minimizeOnExit) {
       windowManager.hide();
       _onHideWindow();
     } else {

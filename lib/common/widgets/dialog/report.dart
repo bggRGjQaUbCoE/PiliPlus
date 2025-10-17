@@ -260,7 +260,7 @@ class ReportOptions {
       4: '辱骂引战',
       5: '政治敏感',
       6: '青少年不良信息',
-      7: '其他 ', // avoid show form
+      7: '其他', // avoid show form
     },
   };
 }

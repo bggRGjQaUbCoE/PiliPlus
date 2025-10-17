@@ -21,7 +21,17 @@ class LiveDanmaku extends DanmakuExtra {
   final Object id;
   @override
   final Object mid;
-  final String uname;
 
-  const LiveDanmaku({required this.id, required this.mid, required this.uname});
+  final int dmType;
+
+  final Object ts;
+  final Object ct;
+
+  const LiveDanmaku({
+    required this.id,
+    required this.mid,
+    required this.dmType,
+    required this.ts,
+    required this.ct,
+  });
 }

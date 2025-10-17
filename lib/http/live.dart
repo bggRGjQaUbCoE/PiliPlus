@@ -667,13 +667,16 @@ abstract final class LiveHttp {
     }
   }
 
-  static Future<LoadingState<Null>> liveDmReport({
-    required Object roomId,
-    required int mid,
+  static Future<Map<String, dynamic>> liveDmReport({
+    required int roomId,
+    required Object mid,
     required String msg,
     required String reason,
     required int reasonId,
-    required String id,
+    required int dmType,
+    required Object idStr,
+    required Object ts,
+    required Object sign,
   }) async {
     final csrf = Accounts.main.csrf;
     final data = {
@@ -682,25 +685,21 @@ abstract final class LiveHttp {
       'tuid': mid,
       'msg': msg,
       'reason': reason,
-      'sign': '',
+      'ts': ts,
+      'sign': sign,
       'reason_id': reasonId,
       'token': '',
-      'dm_type': '0',
-      'id_str': id,
+      'dm_type': dmType,
+      'id_str': idStr,
       'csrf_token': csrf,
       'csrf': csrf,
       'visit_id': '',
-      'ts': DateTime.now().millisecondsSinceEpoch ~/ 1000,
     };
     final res = await Request().post(
       Api.liveDmReport,
       data: data,
       options: Options(contentType: Headers.formUrlEncodedContentType),
     );
-    if (res.data['code'] == 0) {
-      return const Success(null); // {"id": num}
-    } else {
-      return Error(res.data['message']);
-    }
+    return res.data as Map<String, dynamic>;
   }
 }

@@ -345,16 +345,19 @@ class LiveRoomController extends GetxController {
                     content['extra'],
                   );
                   final user = content['user'];
+                  // final midHash = first[7];
                   final uid = user['uid'];
+                  final name = user['base']['name'];
+                  final msg = info[1];
                   BaseEmote? uemote;
                   if (first[13] case Map<String, dynamic> map) {
                     uemote = BaseEmote.fromJson(map);
                   }
                   messages.add(
                     DanmakuMsg(
-                      name: user['base']['name'],
+                      name: name,
                       uid: uid,
-                      text: info[1],
+                      text: msg,
                       emots: (extra['emots'] as Map<String, dynamic>?)?.map(
                         (k, v) => MapEntry(k, BaseEmote.fromJson(v)),
                       ),
@@ -363,9 +366,10 @@ class LiveRoomController extends GetxController {
                   );
 
                   if (plPlayerController.showDanmaku) {
-                    plPlayerController.danmakuController?.addDanmaku(
+                    final checkInfo = info[9];
+                    danmakuController?.addDanmaku(
                       DanmakuContentItem(
-                        extra['content'],
+                        msg,
                         color: plPlayerController.blockColorful
                             ? Colors.white
                             : DmUtils.decimalToColor(extra['color']),
@@ -374,7 +378,9 @@ class LiveRoomController extends GetxController {
                         extra: LiveDanmaku(
                           id: extra['id_str'],
                           mid: uid,
-                          uname: user['base']['name'],
+                          dmType: extra['dm_type'],
+                          ts: checkInfo['ts'],
+                          ct: checkInfo['ct'],
                         ),
                       ),
                     );

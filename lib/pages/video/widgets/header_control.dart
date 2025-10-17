@@ -11,6 +11,7 @@ import 'package:PiliPlus/common/widgets/marquee.dart';
 import 'package:PiliPlus/http/danmaku.dart';
 import 'package:PiliPlus/http/danmaku_block.dart';
 import 'package:PiliPlus/http/init.dart';
+import 'package:PiliPlus/http/live.dart';
 import 'package:PiliPlus/models/common/super_resolution_type.dart';
 import 'package:PiliPlus/models/common/video/audio_quality.dart';
 import 'package:PiliPlus/models/common/video/cdn_type.dart';
@@ -105,10 +106,10 @@ class HeaderControl extends StatefulWidget {
   }
 
   static Future<void> reportDanmaku(
-    VideoDanmaku extra,
-    BuildContext context,
-    PlPlayerController ctr,
-  ) {
+    BuildContext context, {
+    required VideoDanmaku extra,
+    required PlPlayerController ctr,
+  }) {
     if (Accounts.main.isLogin) {
       return autoWrapReportDialog(
         context,
@@ -132,7 +133,51 @@ class HeaderControl extends StatefulWidget {
             reason: reasonType == 0 ? 11 : reasonType,
             cid: ctr.cid!,
             id: extra.id,
-            content: reasonDesc,
+            content: reasonType == 0 ? reasonDesc : null,
+          );
+        },
+      );
+    } else {
+      return SmartDialog.showToast('请先登录');
+    }
+  }
+
+  static Future<void> reportLiveDanmaku(
+    BuildContext context, {
+    required int roomId,
+    required String msg,
+    required LiveDanmaku extra,
+    required PlPlayerController ctr,
+  }) {
+    if (Accounts.main.isLogin) {
+      return autoWrapReportDialog(
+        context,
+        ReportOptions.liveDanmakuReport,
+        (reasonType, reasonDesc, banUid) {
+          // if (banUid) {
+          //   final filter = ctr.filters;
+          //   if (filter.dmUid.add(extra.mid)) {
+          //     filter.count++;
+          //     GStorage.localCache.put(
+          //       LocalCacheKey.danmakuFilterRules,
+          //       filter,
+          //     );
+          //   }
+          //   DanmakuFilterHttp.danmakuFilterAdd(
+          //     filter: extra.mid,
+          //     type: 2,
+          //   );
+          // }
+          return LiveHttp.liveDmReport(
+            roomId: roomId,
+            mid: extra.mid,
+            msg: msg,
+            reason: ReportOptions.liveDanmakuReport['']![reasonType]!,
+            reasonId: reasonType,
+            dmType: extra.dmType,
+            idStr: extra.id,
+            ts: extra.ts,
+            sign: extra.ct,
           );
         },
       );
@@ -2040,9 +2085,9 @@ class HeaderControlState extends State<HeaderControl> {
               else
                 iconButton(
                   onPressed: () => HeaderControl.reportDanmaku(
-                    extra,
                     context,
-                    plPlayerController,
+                    extra: extra,
+                    ctr: plPlayerController,
                   ),
                   icon: const Icon(Icons.report_problem_outlined),
                 ),
@@ -2326,7 +2371,7 @@ class HeaderControlState extends State<HeaderControl> {
                       )
                     : const SizedBox.shrink(),
               ),
-              if (isFSOrPip) ...[
+              if (isFSOrPip || Utils.isDesktop) ...[
                 SizedBox(
                   width: 42,
                   height: 34,

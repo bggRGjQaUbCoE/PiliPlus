@@ -33,6 +33,7 @@ List<SettingsModel> get playSettings => [
     const SettingsModel(
       settingsType: SettingsType.sw1tch,
       title: '启用点击弹幕',
+      subtitle: '点击弹幕悬停，支持点赞、复制、举报操作',
       leading: Icon(Icons.touch_app_outlined),
       setKey: SettingBoxKey.enableTapDm,
       defaultVal: true,

@@ -1244,8 +1244,9 @@ class PlPlayerController {
       await seekTo(Duration.zero, isSeek: false);
     }
 
-    await audioSessionHandler?.setActive(true);
     await _videoPlayerController?.play();
+
+    audioSessionHandler?.setActive(true);
 
     playerStatus.status.value = PlayerStatus.playing;
     // screenManager.setOverlays(false);

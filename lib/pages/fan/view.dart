@@ -11,11 +11,11 @@ import 'package:get/get.dart';
 class FansPage extends StatefulWidget {
   const FansPage({
     super.key,
-    this.showName,
+    this.showName = true,
     this.onSelect,
   });
 
-  final bool? showName;
+  final bool showName;
   final ValueChanged<UserModel>? onSelect;
 
   @override
@@ -25,15 +25,14 @@ class FansPage extends StatefulWidget {
 class _FansPageState extends FollowTypePageState<FansPage> {
   @override
   late final FansController controller = Get.put(
-    FansController(widget.showName ?? true),
-    tag: Utils.generateRandomString(8),
+    FansController(widget.showName),
+    tag: Get.parameters['mid'],
   );
   late final flag = widget.onSelect == null && controller.isOwner;
 
   @override
-  PreferredSizeWidget? get appBar => widget.showName == false
-      ? null
-      : AppBar(
+  PreferredSizeWidget? get appBar => widget.showName
+      ? AppBar(
           title: controller.isOwner
               ? const Text('我的粉丝')
               : Obx(() {
@@ -41,7 +40,8 @@ class _FansPageState extends FollowTypePageState<FansPage> {
                   if (name != null) return Text('$name的粉丝');
                   return const SizedBox.shrink();
                 }),
-        );
+        )
+      : null;
 
   @override
   Widget buildItem(int index, FollowItemModel item) {

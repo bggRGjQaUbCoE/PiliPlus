@@ -458,6 +458,13 @@ class _SendDanmakuPanelState extends CommonTextPubPageState<SendDanmakuPanel> {
       hasPub = true;
       Get.back();
       SmartDialog.showToast('发送成功');
+      VideoDanmaku? extra;
+      if (res['dmid'] case int dmid) {
+        extra = VideoDanmaku(
+          id: dmid,
+          mid: PlPlayerController.instance!.midHash,
+        );
+      }
       widget.callback(
         DanmakuContentItem(
           editController.text,
@@ -469,10 +476,7 @@ class _SendDanmakuPanelState extends CommonTextPubPageState<SendDanmakuPanel> {
           },
           selfSend: true,
           isColorful: isColorful,
-          extra: VideoDanmaku(
-            id: res['dmid'],
-            mid: PlPlayerController.instance!.midHash,
-          ),
+          extra: extra,
         ),
       );
     } else {

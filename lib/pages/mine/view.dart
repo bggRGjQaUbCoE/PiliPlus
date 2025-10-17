@@ -22,7 +22,9 @@ import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
 class MinePage extends StatefulWidget {
-  const MinePage({super.key});
+  const MinePage({super.key, this.showBackBtn = false});
+
+  final bool showBackBtn;
 
   @override
   State<MinePage> createState() => _MediaPageState();
@@ -138,6 +140,16 @@ class _MediaPageState extends CommonPageState<MinePage, MineController>
       spacing: 5,
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
+        if (widget.showBackBtn)
+          const Expanded(
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Padding(
+                padding: EdgeInsets.only(left: 8),
+                child: BackButton(),
+              ),
+            ),
+          ),
         if (!_mainController.hasHome) ...[
           IconButton(
             iconSize: 22,

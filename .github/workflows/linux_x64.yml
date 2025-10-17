@@ -1,4 +1,4 @@
-name: Build for Linux X64
+name: Build for Linux x64
 
 on:
   pull_request:

@@ -42,7 +42,7 @@ class SearchHttp {
   }
 
   // 分类搜索
-  static Future<LoadingState<R>> searchByType<R>({
+  static Future<LoadingState<R>> searchByType<R extends SearchNumData>({
     required SearchType searchType,
     required String keyword,
     required page,
@@ -92,38 +92,41 @@ class SearchHttp {
         },
       ),
     );
-    if (res.data is! Map) {
-      return const Error('没有相关数据');
-    }
-    if (res.data['code'] == 0) {
-      dynamic data;
-      try {
-        switch (searchType) {
-          case SearchType.video:
-            data = SearchVideoData.fromJson(res.data['data']);
-            break;
-          case SearchType.live_room:
-            data = SearchLiveData.fromJson(res.data['data']);
-            break;
-          case SearchType.bili_user:
-            data = SearchUserData.fromJson(res.data['data']);
-            break;
-          case SearchType.media_bangumi || SearchType.media_ft:
-            data = SearchPgcData.fromJson(res.data['data']);
-            break;
-          case SearchType.article:
-            data = SearchArticleData.fromJson(res.data['data']);
-            break;
-          // default:
-          //   break;
+    final resData = res.data;
+    if (resData is Map) {
+      if (resData['code'] == 0) {
+        if (resData.containsKey('v_voucher')) return const Error('触发风控');
+        dynamic data;
+        try {
+          switch (searchType) {
+            case SearchType.video:
+              data = SearchVideoData.fromJson(res.data['data']);
+              break;
+            case SearchType.live_room:
+              data = SearchLiveData.fromJson(res.data['data']);
+              break;
+            case SearchType.bili_user:
+              data = SearchUserData.fromJson(res.data['data']);
+              break;
+            case SearchType.media_bangumi || SearchType.media_ft:
+              data = SearchPgcData.fromJson(res.data['data']);
+              break;
+            case SearchType.article:
+              data = SearchArticleData.fromJson(res.data['data']);
+              break;
+            // default:
+            //   break;
+          }
+          return Success(data);
+        } catch (err) {
+          debugPrint(err.toString());
+          return Error(err.toString());
         }
-        return Success(data);
-      } catch (err) {
-        debugPrint(err.toString());
-        return Error(err.toString());
+      } else {
+        return Error(res.data['message'], code: resData['code']);
       }
     } else {
-      return Error(res.data['message'] ?? '没有相关数据');
+      return const Error('服务器错误');
     }
   }
 

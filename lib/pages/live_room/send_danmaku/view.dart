@@ -20,6 +20,7 @@ class LiveSendDmPanel extends CommonRichTextPubPage {
     super.key,
     super.items,
     super.onSave,
+    super.autofocus = true,
     this.fromEmote = false,
     required this.liveRoomController,
   });

@@ -42,6 +42,7 @@ jobs:
       - name: apply bottom sheet patch
         working-directory: ${{ env.FLUTTER_ROOT }}
         run: git apply $GITHUB_WORKSPACE/lib/scripts/bottom_sheet_patch.diff
+        continue-on-error: true
 
       # - name: 下载项目依赖
       #   run: flutter pub get

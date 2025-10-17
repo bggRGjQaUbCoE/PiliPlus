@@ -860,7 +860,7 @@ abstract class Pref {
       _setting.get(SettingBoxKey.enablePlayAll, defaultValue: true);
 
   static bool get enableTapDm =>
-      _setting.get(SettingBoxKey.enableTapDm, defaultValue: true);
+      _setting.get(SettingBoxKey.enableTapDm, defaultValue: Utils.isMobile);
 
   static bool get showTrayIcon =>
       _setting.get(SettingBoxKey.showTrayIcon, defaultValue: true);

@@ -30,7 +30,7 @@ abstract class CommonPublishPageState<T extends CommonPublishPage>
   late final controller = ChatBottomPanelContainerController<PanelType>();
   TextEditingController get editController;
 
-  Rx<PanelType> panelType = PanelType.none.obs;
+  final Rx<PanelType> panelType = PanelType.none.obs;
   late final RxBool readOnly = false.obs;
   late final RxBool enablePublish = false.obs;
 

@@ -295,10 +295,15 @@ class MyApp extends StatelessWidget {
                   Get.back();
                 }
 
-                return Shortcuts(
-                  shortcuts: {
-                    LogicalKeySet(LogicalKeyboardKey.escape):
-                        VoidCallbackIntent(onBack),
+                return Focus(
+                  canRequestFocus: false,
+                  onKeyEvent: (_, event) {
+                    if (event.logicalKey == LogicalKeyboardKey.escape &&
+                        event is KeyDownEvent) {
+                      onBack();
+                      return KeyEventResult.handled;
+                    }
+                    return KeyEventResult.ignored;
                   },
                   child: MouseBackDetector(
                     onTapDown: onBack,

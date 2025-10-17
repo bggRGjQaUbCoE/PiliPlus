@@ -462,6 +462,7 @@ class LiveRoomController extends GetxController {
           fromEmote: fromEmote,
           liveRoomController: this,
           items: savedDanmaku,
+          autofocus: !fromEmote,
           onSave: (msg) {
             if (msg.isEmpty) {
               savedDanmaku?.clear();

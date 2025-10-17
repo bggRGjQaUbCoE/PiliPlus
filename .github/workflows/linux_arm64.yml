@@ -49,8 +49,7 @@ jobs:
       - name: Setup flutter
         uses: subosito/flutter-action@v2
         with:
-          channel: stable
-          architecture: Arm64
+          channel: master
           flutter-version-file: pubspec.yaml
           cache: true
 

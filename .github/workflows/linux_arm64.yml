@@ -189,17 +189,17 @@ jobs:
       - name: Upload linux targz package
         uses: actions/upload-artifact@v4
         with:
-          name: Linux_targz_packege
+          name: Linux_targz_arm64_packege
           path: PiliPlus_linux_*.tar.gz
 
       - name: Upload linux deb package
         uses: actions/upload-artifact@v4
         with:
-          name: Linux_deb_package
+          name: Linux_deb_arm64_package
           path: PiliPlus_linux_*.deb
       
       - name: Upload linux rpm package
         uses: actions/upload-artifact@v4
         with:
-          name: Linux_rpm_package
+          name: Linux_rpm_arm64_package
           path: PiliPlus_linux_*.rpm

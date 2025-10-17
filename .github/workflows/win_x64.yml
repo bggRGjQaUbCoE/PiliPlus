@@ -1,4 +1,4 @@
-name: Build for Windows
+name: Build for Windows x64
 
 on:
   pull_request:
@@ -55,16 +55,16 @@ jobs:
           mkdir -p Release/PiliPlus-Win
           mkdir -p PiliPlus-Win-Setup
           mv build/windows/x64/runner/Release/* Release/PiliPlus-Win/
-          mv dist/**/*.exe PiliPlus-Win-Setup/
+          mv dist/**/*.exe PiliPlus-Win-Setup/PiliPlus-${{env.version}}-Windows-x64-Setup.exe
 
       - name: Upload windows file release
         uses: actions/upload-artifact@v4
         with:
-          name: windows-amd64-release
+          name: windows-x64-release
           path: Release
 
       - name: Upload windows setup release
         uses: actions/upload-artifact@v4
         with:
-          name: windows-setup-amd64-release
+          name: windows-setup-x64-release
           path: PiliPlus-Win-Setup

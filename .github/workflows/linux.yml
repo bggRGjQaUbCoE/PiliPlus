@@ -181,9 +181,9 @@ jobs:
           rpmbuild --define "_topdir $RPM_BUILD_ROOT" -bb "$RPM_BUILD_ROOT/SPECS/piliplus.spec"
 
           printf "移动生成的 RPM...\n"
-          find "$RPM_BUILD_ROOT/RPMS" -name "*.rpm" -exec mv {} "PiliPlus_linux_${{ env.version }}.rpm" \;
+          find "$RPM_BUILD_ROOT/RPMS" -name "*.rpm" -exec mv {} "PiliPlus_linux_${{ env.version }}_amd64.rpm" \;
 
-          printf "完成: PiliPlus_linux_%s.rpm\n" "${{ env.version }}"
+          printf "完成: PiliPlus_linux_%s_amd64.rpm\n" "${{ env.version }}"
         shell: bash
 
       - name: Upload linux targz package

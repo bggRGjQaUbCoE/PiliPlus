@@ -60,11 +60,11 @@ jobs:
       - name: Upload windows file release
         uses: actions/upload-artifact@v4
         with:
-          name: windows-release
+          name: windows-amd64-release
           path: Release
 
       - name: Upload windows setup release
         uses: actions/upload-artifact@v4
         with:
-          name: windows-setup-release
+          name: windows-setup-amd64-release
           path: PiliPlus-Win-Setup

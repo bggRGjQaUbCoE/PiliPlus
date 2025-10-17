@@ -62,7 +62,7 @@ jobs:
         run: flutter build linux --release -v --pub --dart-define-from-file=pili_release.json
 
       - name: Package .tar.gz
-        run: tar -zcvf PiliPlus_linux_${{ env.version }}_arm64.tar.gz -C build/linux/x64/release/bundle .
+        run: tar -zcvf PiliPlus_linux_${{ env.version }}_arm64.tar.gz -C build/linux/arm64/release/bundle .
 
       - name: Packege deb
         run: |

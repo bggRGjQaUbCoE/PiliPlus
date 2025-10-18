@@ -221,6 +221,8 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       });
     }
 
+    final DeviceGestureSettings? gestureSettings =
+        MediaQuery.maybeGestureSettingsOf(Get.context!);
     _tapGestureRecognizer = plPlayerController.enableTapDm
         ? ImmediateTapGestureRecognizer(
             onTapDown: _onTapDown,
@@ -228,8 +230,11 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
             onTapCancel: _removeDmAction,
             allowedButtonsFilter: (buttons) => buttons == kPrimaryButton,
           )
-        : (TapGestureRecognizer()..onTapUp = _onTapUp);
+        : (TapGestureRecognizer()
+            ..gestureSettings = gestureSettings
+            ..onTapUp = _onTapUp);
     _doubleTapGestureRecognizer = DoubleTapGestureRecognizer()
+      ..gestureSettings = gestureSettings
       ..onDoubleTapDown = _onDoubleTapDown;
   }
 
@@ -1174,7 +1179,8 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       LongPressGestureRecognizer(duration: const Duration(milliseconds: 300))
         ..onLongPressStart = ((_) =>
             plPlayerController.setLongPressStatus(true))
-        ..onLongPressEnd = (_) => plPlayerController.setLongPressStatus(false);
+        ..onLongPressEnd = ((_) => plPlayerController.setLongPressStatus(false))
+        ..gestureSettings = MediaQuery.maybeGestureSettingsOf(context);
   late final OneSequenceGestureRecognizer _tapGestureRecognizer;
   late final DoubleTapGestureRecognizer _doubleTapGestureRecognizer;
 

@@ -224,12 +224,12 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     final DeviceGestureSettings? gestureSettings =
         MediaQuery.maybeGestureSettingsOf(Get.context!);
     _tapGestureRecognizer = plPlayerController.enableTapDm
-        ? ImmediateTapGestureRecognizer(
+        ? (ImmediateTapGestureRecognizer(
             onTapDown: _onTapDown,
             onTapUp: _onTapUp,
             onTapCancel: _removeDmAction,
             allowedButtonsFilter: (buttons) => buttons == kPrimaryButton,
-          )
+          )..gestureSettings = gestureSettings)
         : (TapGestureRecognizer()
             ..gestureSettings = gestureSettings
             ..onTapUp = _onTapUp);

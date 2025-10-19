@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 Widget iconButton({
   BuildContext? context,
   String? tooltip,
-  required Icon icon,
+  required Widget icon,
   required VoidCallback? onPressed,
   double size = 36,
   double? iconSize,

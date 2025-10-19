@@ -11,9 +11,16 @@ class VideoDanmaku extends DanmakuExtra {
   @override
   final String mid;
 
+  int like;
+
   bool isLike;
 
-  VideoDanmaku({required this.id, required this.mid, this.isLike = false});
+  VideoDanmaku({
+    required this.id,
+    required this.mid,
+    this.like = 0,
+    this.isLike = false,
+  });
 }
 
 class LiveDanmaku extends DanmakuExtra {

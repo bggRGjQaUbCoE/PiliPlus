@@ -623,6 +623,7 @@ const DanmakuElem$json = {
     {'1': 'pool', '3': 11, '4': 1, '5': 5, '10': 'pool'},
     {'1': 'id_str', '3': 12, '4': 1, '5': 9, '10': 'idStr'},
     {'1': 'attr', '3': 13, '4': 1, '5': 5, '10': 'attr'},
+    {'1': 'like', '3': 15, '4': 1, '5': 3, '10': 'like'},
     {'1': 'animation', '3': 22, '4': 1, '5': 9, '10': 'animation'},
     {'1': 'extra', '3': 23, '4': 1, '5': 9, '10': 'extra'},
     {
@@ -643,40 +644,8 @@ const DanmakuElem$json = {
       '6': '.bilibili.community.service.dm.v1.DmFromType',
       '10': 'dmFrom'
     },
-    {'1': 'count', '3': 28, '4': 1, '5': 5, '9': 0, '10': 'count', '17': true},
-    {
-      '1': 'isSelf',
-      '3': 29,
-      '4': 1,
-      '5': 8,
-      '9': 1,
-      '10': 'isSelf',
-      '17': true
-    },
-    {
-      '1': 'filterVer',
-      '3': 30,
-      '4': 1,
-      '5': 5,
-      '9': 2,
-      '10': 'filterVer',
-      '17': true
-    },
-    {
-      '1': 'shouldRemove',
-      '3': 31,
-      '4': 1,
-      '5': 8,
-      '9': 3,
-      '10': 'shouldRemove',
-      '17': true
-    },
-  ],
-  '8': [
-    {'1': '_count'},
-    {'1': '_isSelf'},
-    {'1': '_filterVer'},
-    {'1': '_shouldRemove'},
+    {'1': 'count', '3': 28, '4': 1, '5': 5, '10': 'count'},
+    {'1': 'is_self', '3': 29, '4': 1, '5': 8, '10': 'isSelf'},
   ],
 };
 
@@ -687,15 +656,13 @@ final $typed_data.Uint8List danmakuElemDescriptor = $convert.base64Decode(
     'bG9yGAUgASgNUgVjb2xvchIZCghtaWRfaGFzaBgGIAEoCVIHbWlkSGFzaBIYCgdjb250ZW50GA'
     'cgASgJUgdjb250ZW50EhQKBWN0aW1lGAggASgDUgVjdGltZRIWCgZ3ZWlnaHQYCSABKAVSBndl'
     'aWdodBIWCgZhY3Rpb24YCiABKAlSBmFjdGlvbhISCgRwb29sGAsgASgFUgRwb29sEhUKBmlkX3'
-    'N0chgMIAEoCVIFaWRTdHISEgoEYXR0chgNIAEoBVIEYXR0chIcCglhbmltYXRpb24YFiABKAlS'
-    'CWFuaW1hdGlvbhIUCgVleHRyYRgXIAEoCVIFZXh0cmESTAoIY29sb3JmdWwYGCABKA4yMC5iaW'
-    'xpYmlsaS5jb21tdW5pdHkuc2VydmljZS5kbS52MS5EbUNvbG9yZnVsVHlwZVIIY29sb3JmdWwS'
-    'EgoEdHlwZRgZIAEoBVIEdHlwZRIQCgNvaWQYGiABKANSA29pZBJFCgdkbV9mcm9tGBsgASgOMi'
-    'wuYmlsaWJpbGkuY29tbXVuaXR5LnNlcnZpY2UuZG0udjEuRG1Gcm9tVHlwZVIGZG1Gcm9tEhkK'
-    'BWNvdW50GBwgASgFSABSBWNvdW50iAEBEhsKBmlzU2VsZhgdIAEoCEgBUgZpc1NlbGaIAQESIQ'
-    'oJZmlsdGVyVmVyGB4gASgFSAJSCWZpbHRlclZlcogBARInCgxzaG91bGRSZW1vdmUYHyABKAhI'
-    'A1IMc2hvdWxkUmVtb3ZliAEBQggKBl9jb3VudEIJCgdfaXNTZWxmQgwKCl9maWx0ZXJWZXJCDw'
-    'oNX3Nob3VsZFJlbW92ZQ==');
+    'N0chgMIAEoCVIFaWRTdHISEgoEYXR0chgNIAEoBVIEYXR0chISCgRsaWtlGA8gASgDUgRsaWtl'
+    'EhwKCWFuaW1hdGlvbhgWIAEoCVIJYW5pbWF0aW9uEhQKBWV4dHJhGBcgASgJUgVleHRyYRJMCg'
+    'hjb2xvcmZ1bBgYIAEoDjIwLmJpbGliaWxpLmNvbW11bml0eS5zZXJ2aWNlLmRtLnYxLkRtQ29s'
+    'b3JmdWxUeXBlUghjb2xvcmZ1bBISCgR0eXBlGBkgASgFUgR0eXBlEhAKA29pZBgaIAEoA1IDb2'
+    'lkEkUKB2RtX2Zyb20YGyABKA4yLC5iaWxpYmlsaS5jb21tdW5pdHkuc2VydmljZS5kbS52MS5E'
+    'bUZyb21UeXBlUgZkbUZyb20SFAoFY291bnQYHCABKAVSBWNvdW50EhcKB2lzX3NlbGYYHSABKA'
+    'hSBmlzU2VsZg==');
 
 @$core.Deprecated('Use danmakuFlagDescriptor instead')
 const DanmakuFlag$json = {

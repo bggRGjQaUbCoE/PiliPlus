@@ -83,6 +83,11 @@ class HeaderControl extends StatefulWidget {
     );
     if (res.isSuccess) {
       extra.isLike = isLike;
+      if (isLike) {
+        extra.like++;
+      } else {
+        extra.like--;
+      }
       SmartDialog.showToast('${isLike ? '' : '取消'}点赞成功');
       return true;
     } else {
@@ -2059,19 +2064,37 @@ class HeaderControlState extends State<HeaderControl> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Builder(
-                builder: (context) => iconButton(
-                  onPressed: () async {
-                    if (await HeaderControl.likeDanmaku(
-                          extra,
-                          plPlayerController.cid!,
-                        ) &&
-                        context.mounted) {
-                      (context as Element).markNeedsBuild();
-                    }
-                  },
-                  icon: extra.isLike
-                      ? const Icon(Icons.thumb_up_off_alt_sharp)
-                      : const Icon(Icons.thumb_up_off_alt_outlined),
+                builder: (context) => Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    iconButton(
+                      onPressed: () async {
+                        if (await HeaderControl.likeDanmaku(
+                              extra,
+                              plPlayerController.cid!,
+                            ) &&
+                            context.mounted) {
+                          (context as Element).markNeedsBuild();
+                        }
+                      },
+                      icon: extra.isLike
+                          ? const Icon(Icons.thumb_up_off_alt_sharp)
+                          : const Icon(Icons.thumb_up_off_alt_outlined),
+                    ),
+                    if (extra.like > 0)
+                      Positioned(
+                        left: 24.5,
+                        top: 1.5,
+                        child: Text(
+                          extra.like.toString(),
+                          style: const TextStyle(
+                            fontSize: 10.5,
+                            letterSpacing: 0,
+                            // fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
               ),
               if (item.content.selfSend)

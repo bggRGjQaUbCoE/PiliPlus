@@ -2210,12 +2210,15 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     _refreshDmCallback?.call();
   }
 
-  Widget _dmActionItem(Widget child, {required VoidCallback onTap}) {
+  Widget _dmActionItem(
+    Widget child, {
+    required FutureOr<void> Function() onTap,
+  }) {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onTap: () {
+      onTap: () async {
+        await onTap();
         _removeDmAction();
-        onTap();
       },
       child: SizedBox(
         width: _actionItemWidth,
@@ -2289,23 +2292,41 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
             children: switch (extra) {
               null => throw UnimplementedError(),
               VideoDanmaku() => [
-                _dmActionItem(
-                  extra.isLike
-                      ? const Icon(
-                          size: 20,
-                          CustomIcons.player_dm_tip_like_solid,
-                          color: Colors.white,
-                        )
-                      : const Icon(
-                          size: 20,
-                          CustomIcons.player_dm_tip_like,
-                          color: Colors.white,
+                Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    _dmActionItem(
+                      extra.isLike
+                          ? const Icon(
+                              size: 20,
+                              CustomIcons.player_dm_tip_like_solid,
+                              color: Colors.white,
+                            )
+                          : const Icon(
+                              size: 20,
+                              CustomIcons.player_dm_tip_like,
+                              color: Colors.white,
+                            ),
+                      onTap: () => HeaderControl.likeDanmaku(
+                        extra,
+                        plPlayerController.cid!,
+                      ),
+                    ),
+                    if (extra.like > 0)
+                      Positioned(
+                        left: _actionItemWidth - 10.5,
+                        top: 0,
+                        child: Text(
+                          extra.like.toString(),
+                          style: const TextStyle(
+                            fontSize: 10.5,
+                            color: Colors.white,
+                          ),
                         ),
-                  onTap: () => HeaderControl.likeDanmaku(
-                    extra,
-                    plPlayerController.cid!,
-                  ),
+                      ),
+                  ],
                 ),
+
                 _dmActionItem(
                   const Icon(
                     size: 19,

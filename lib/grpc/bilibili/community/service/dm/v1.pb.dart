@@ -1240,6 +1240,7 @@ class DanmakuElem extends $pb.GeneratedMessage {
     $core.int? pool,
     $core.String? idStr,
     $core.int? attr,
+    $fixnum.Int64? like,
     $core.String? animation,
     $core.String? extra,
     DmColorfulType? colorful,
@@ -1248,8 +1249,6 @@ class DanmakuElem extends $pb.GeneratedMessage {
     DmFromType? dmFrom,
     $core.int? count,
     $core.bool? isSelf,
-    $core.int? filterVer,
-    $core.bool? shouldRemove,
   }) {
     final result = create();
     if (id != null) result.id = id;
@@ -1265,6 +1264,7 @@ class DanmakuElem extends $pb.GeneratedMessage {
     if (pool != null) result.pool = pool;
     if (idStr != null) result.idStr = idStr;
     if (attr != null) result.attr = attr;
+    if (like != null) result.like = like;
     if (animation != null) result.animation = animation;
     if (extra != null) result.extra = extra;
     if (colorful != null) result.colorful = colorful;
@@ -1273,8 +1273,6 @@ class DanmakuElem extends $pb.GeneratedMessage {
     if (dmFrom != null) result.dmFrom = dmFrom;
     if (count != null) result.count = count;
     if (isSelf != null) result.isSelf = isSelf;
-    if (filterVer != null) result.filterVer = filterVer;
-    if (shouldRemove != null) result.shouldRemove = shouldRemove;
     return result;
   }
 
@@ -1305,6 +1303,7 @@ class DanmakuElem extends $pb.GeneratedMessage {
     ..aI(11, _omitFieldNames ? '' : 'pool')
     ..aOS(12, _omitFieldNames ? '' : 'idStr')
     ..aI(13, _omitFieldNames ? '' : 'attr')
+    ..aInt64(15, _omitFieldNames ? '' : 'like')
     ..aOS(22, _omitFieldNames ? '' : 'animation')
     ..aOS(23, _omitFieldNames ? '' : 'extra')
     ..aE<DmColorfulType>(24, _omitFieldNames ? '' : 'colorful',
@@ -1314,9 +1313,7 @@ class DanmakuElem extends $pb.GeneratedMessage {
     ..aE<DmFromType>(27, _omitFieldNames ? '' : 'dmFrom',
         enumValues: DmFromType.values)
     ..aI(28, _omitFieldNames ? '' : 'count')
-    ..aOB(29, _omitFieldNames ? '' : 'isSelf', protoName: 'isSelf')
-    ..aI(30, _omitFieldNames ? '' : 'filterVer', protoName: 'filterVer')
-    ..aOB(31, _omitFieldNames ? '' : 'shouldRemove', protoName: 'shouldRemove')
+    ..aOB(29, _omitFieldNames ? '' : 'isSelf')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -1456,95 +1453,86 @@ class DanmakuElem extends $pb.GeneratedMessage {
   @$pb.TagNumber(13)
   void clearAttr() => $_clearField(13);
 
+  @$pb.TagNumber(15)
+  $fixnum.Int64 get like => $_getI64(13);
+  @$pb.TagNumber(15)
+  set like($fixnum.Int64 value) => $_setInt64(13, value);
+  @$pb.TagNumber(15)
+  $core.bool hasLike() => $_has(13);
+  @$pb.TagNumber(15)
+  void clearLike() => $_clearField(15);
+
   @$pb.TagNumber(22)
-  $core.String get animation => $_getSZ(13);
+  $core.String get animation => $_getSZ(14);
   @$pb.TagNumber(22)
-  set animation($core.String value) => $_setString(13, value);
+  set animation($core.String value) => $_setString(14, value);
   @$pb.TagNumber(22)
-  $core.bool hasAnimation() => $_has(13);
+  $core.bool hasAnimation() => $_has(14);
   @$pb.TagNumber(22)
   void clearAnimation() => $_clearField(22);
 
   @$pb.TagNumber(23)
-  $core.String get extra => $_getSZ(14);
+  $core.String get extra => $_getSZ(15);
   @$pb.TagNumber(23)
-  set extra($core.String value) => $_setString(14, value);
+  set extra($core.String value) => $_setString(15, value);
   @$pb.TagNumber(23)
-  $core.bool hasExtra() => $_has(14);
+  $core.bool hasExtra() => $_has(15);
   @$pb.TagNumber(23)
   void clearExtra() => $_clearField(23);
 
   @$pb.TagNumber(24)
-  DmColorfulType get colorful => $_getN(15);
+  DmColorfulType get colorful => $_getN(16);
   @$pb.TagNumber(24)
   set colorful(DmColorfulType value) => $_setField(24, value);
   @$pb.TagNumber(24)
-  $core.bool hasColorful() => $_has(15);
+  $core.bool hasColorful() => $_has(16);
   @$pb.TagNumber(24)
   void clearColorful() => $_clearField(24);
 
   @$pb.TagNumber(25)
-  $core.int get type => $_getIZ(16);
+  $core.int get type => $_getIZ(17);
   @$pb.TagNumber(25)
-  set type($core.int value) => $_setSignedInt32(16, value);
+  set type($core.int value) => $_setSignedInt32(17, value);
   @$pb.TagNumber(25)
-  $core.bool hasType() => $_has(16);
+  $core.bool hasType() => $_has(17);
   @$pb.TagNumber(25)
   void clearType() => $_clearField(25);
 
   @$pb.TagNumber(26)
-  $fixnum.Int64 get oid => $_getI64(17);
+  $fixnum.Int64 get oid => $_getI64(18);
   @$pb.TagNumber(26)
-  set oid($fixnum.Int64 value) => $_setInt64(17, value);
+  set oid($fixnum.Int64 value) => $_setInt64(18, value);
   @$pb.TagNumber(26)
-  $core.bool hasOid() => $_has(17);
+  $core.bool hasOid() => $_has(18);
   @$pb.TagNumber(26)
   void clearOid() => $_clearField(26);
 
   @$pb.TagNumber(27)
-  DmFromType get dmFrom => $_getN(18);
+  DmFromType get dmFrom => $_getN(19);
   @$pb.TagNumber(27)
   set dmFrom(DmFromType value) => $_setField(27, value);
   @$pb.TagNumber(27)
-  $core.bool hasDmFrom() => $_has(18);
+  $core.bool hasDmFrom() => $_has(19);
   @$pb.TagNumber(27)
   void clearDmFrom() => $_clearField(27);
 
   @$pb.TagNumber(28)
-  $core.int get count => $_getIZ(19);
+  $core.int get count => $_getIZ(20);
   @$pb.TagNumber(28)
-  set count($core.int value) => $_setSignedInt32(19, value);
+  set count($core.int value) => $_setSignedInt32(20, value);
   @$pb.TagNumber(28)
-  $core.bool hasCount() => $_has(19);
+  $core.bool hasCount() => $_has(20);
   @$pb.TagNumber(28)
   void clearCount() => $_clearField(28);
 
   @$pb.TagNumber(29)
-  $core.bool get isSelf => $_getBF(20);
+  $core.bool get isSelf => $_getBF(21);
   @$pb.TagNumber(29)
-  set isSelf($core.bool value) => $_setBool(20, value);
+  set isSelf($core.bool value) => $_setBool(21, value);
   @$pb.TagNumber(29)
-  $core.bool hasIsSelf() => $_has(20);
+  $core.bool hasIsSelf() => $_has(21);
   @$pb.TagNumber(29)
   void clearIsSelf() => $_clearField(29);
-
-  @$pb.TagNumber(30)
-  $core.int get filterVer => $_getIZ(21);
-  @$pb.TagNumber(30)
-  set filterVer($core.int value) => $_setSignedInt32(21, value);
-  @$pb.TagNumber(30)
-  $core.bool hasFilterVer() => $_has(21);
-  @$pb.TagNumber(30)
-  void clearFilterVer() => $_clearField(30);
-
-  @$pb.TagNumber(31)
-  $core.bool get shouldRemove => $_getBF(22);
-  @$pb.TagNumber(31)
-  set shouldRemove($core.bool value) => $_setBool(22, value);
-  @$pb.TagNumber(31)
-  $core.bool hasShouldRemove() => $_has(22);
-  @$pb.TagNumber(31)
-  void clearShouldRemove() => $_clearField(31);
 }
 
 class DanmakuFlag extends $pb.GeneratedMessage {

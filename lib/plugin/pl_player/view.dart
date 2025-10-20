@@ -221,14 +221,25 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       });
     }
 
-    _tapGestureRecognizer = plPlayerController.enableTapDm
-        ? ImmediateTapGestureRecognizer(
-            onTapDown: _onTapDown,
-            onTapUp: _onTapUp,
-            onTapCancel: _removeDmAction,
-            allowedButtonsFilter: (buttons) => buttons == kPrimaryButton,
-          )
-        : (TapGestureRecognizer()..onTapUp = _onTapUp);
+    if (plPlayerController.enableTapDm) {
+      _tapGestureRecognizer = ImmediateTapGestureRecognizer(
+        onTapDown: plPlayerController.enableShowDanmaku.value
+            ? _onTapDown
+            : null,
+        onTapUp: _onTapUp,
+        onTapCancel: _removeDmAction,
+        allowedButtonsFilter: (buttons) => buttons == kPrimaryButton,
+      );
+
+      _danmakuListener = plPlayerController.enableShowDanmaku.listen((value) {
+        if (!value) _removeDmAction();
+        (_tapGestureRecognizer as ImmediateTapGestureRecognizer).onTapDown =
+            value ? _onTapDown : null;
+      });
+    } else {
+      _tapGestureRecognizer = TapGestureRecognizer()..onTapUp = _onTapUp;
+    }
+
     _doubleTapGestureRecognizer = DoubleTapGestureRecognizer()
       ..onDoubleTapDown = _onDoubleTapDown;
   }
@@ -277,6 +288,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     WakelockPlus.enabled.then((i) {
       if (i) WakelockPlus.disable();
     });
+    _danmakuListener?.cancel();
     _tapGestureRecognizer.dispose();
     _longPressRecognizer?.dispose();
     _doubleTapGestureRecognizer.dispose();
@@ -1136,10 +1148,6 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
   }
 
   void _onTapDown(TapDownDetails details) {
-    if (!plPlayerController.enableShowDanmaku.value) {
-      _removeDmAction();
-      return;
-    }
     final ctr = plPlayerController.danmakuController;
     if (ctr != null) {
       final pos = details.localPosition;
@@ -1148,6 +1156,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
         _removeDmAction();
       } else if (item != _suspendedDm) {
         if (item.content.extra == null) {
+          assert(false, 'empty extra: $item');
           _removeDmAction();
           return;
         }
@@ -1180,6 +1189,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
         ..onLongPressEnd = (_) => plPlayerController.setLongPressStatus(false);
   late final OneSequenceGestureRecognizer _tapGestureRecognizer;
   late final DoubleTapGestureRecognizer _doubleTapGestureRecognizer;
+  StreamSubscription<bool>? _danmakuListener;
 
   void _onPointerDown(PointerDownEvent event) {
     if (Utils.isDesktop) {
@@ -1338,7 +1348,6 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
           Obx(
             () {
               if (!plPlayerController.enableShowDanmaku.value) {
-                _removeDmAction();
                 return const SizedBox.shrink();
               }
               final dmOffset = _dmOffset.value;

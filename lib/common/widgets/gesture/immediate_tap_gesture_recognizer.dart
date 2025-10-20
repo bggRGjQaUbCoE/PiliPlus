@@ -6,13 +6,13 @@ class ImmediateTapGestureRecognizer extends OneSequenceGestureRecognizer {
     super.debugOwner,
     super.supportedDevices,
     super.allowedButtonsFilter,
-    required this.onTapDown,
+    this.onTapDown,
     required this.onTapUp,
     required this.onTapCancel,
     this.onTap,
   });
 
-  final GestureTapDownCallback onTapDown;
+  GestureTapDownCallback? onTapDown;
 
   final GestureTapUpCallback onTapUp;
 
@@ -35,10 +35,7 @@ class ImmediateTapGestureRecognizer extends OneSequenceGestureRecognizer {
   @override
   void addAllowedPointer(PointerDownEvent event) {
     super.addAllowedPointer(event);
-
-    _activePointer = event.pointer;
-    _sentTapDown = false;
-    _wonArena = false;
+    _reset(event.pointer);
   }
 
   @override
@@ -63,13 +60,15 @@ class ImmediateTapGestureRecognizer extends OneSequenceGestureRecognizer {
   void _handleTapDown(PointerDownEvent event) {
     if (_sentTapDown) return;
 
-    _sentTapDown = true;
-    final details = TapDownDetails(
-      globalPosition: event.position,
-      localPosition: event.localPosition,
-      kind: event.kind,
-    );
-    invokeCallback<void>('onTapDown', () => onTapDown(details));
+    if (onTapDown != null) {
+      _sentTapDown = true;
+      final details = TapDownDetails(
+        globalPosition: event.position,
+        localPosition: event.localPosition,
+        kind: event.kind,
+      );
+      invokeCallback<void>('onTapDown', () => onTapDown!(details));
+    }
   }
 
   void _handlePointerMove(PointerMoveEvent event) {
@@ -80,23 +79,21 @@ class ImmediateTapGestureRecognizer extends OneSequenceGestureRecognizer {
   }
 
   void _handlePointerUp(PointerUpEvent event) {
-    if (_wonArena && _sentTapDown) {
+    if (_wonArena) {
       _handleTapUp(event);
     }
   }
 
   void _handleTapUp(PointerUpEvent event) {
-    if (_sentTapDown) {
-      final details = TapUpDetails(
-        globalPosition: event.position,
-        localPosition: event.localPosition,
-        kind: event.kind,
-      );
-      invokeCallback<void>('onTapUp', () => onTapUp(details));
+    final details = TapUpDetails(
+      globalPosition: event.position,
+      localPosition: event.localPosition,
+      kind: event.kind,
+    );
+    invokeCallback<void>('onTapUp', () => onTapUp(details));
 
-      if (onTap != null) {
-        invokeCallback<void>('onTap', onTap!);
-      }
+    if (onTap != null) {
+      invokeCallback<void>('onTap', onTap!);
     }
 
     _reset();
@@ -109,8 +106,8 @@ class ImmediateTapGestureRecognizer extends OneSequenceGestureRecognizer {
     _reset();
   }
 
-  void _reset() {
-    _activePointer = 0;
+  void _reset([int pointer = 0]) {
+    _activePointer = pointer;
     _up = null;
     _sentTapDown = false;
     _wonArena = false;
@@ -123,7 +120,7 @@ class ImmediateTapGestureRecognizer extends OneSequenceGestureRecognizer {
     if (pointer == _activePointer) {
       _wonArena = true;
 
-      if (_up != null && _sentTapDown) {
+      if (_up != null) {
         _handleTapUp(_up!);
       }
     }
@@ -146,10 +143,7 @@ class ImmediateTapGestureRecognizer extends OneSequenceGestureRecognizer {
 
   @override
   void dispose() {
-    if (_sentTapDown) {
-      _cancelGesture('disposed');
-    }
-    _reset();
+    _cancelGesture('disposed');
     super.dispose();
   }
 

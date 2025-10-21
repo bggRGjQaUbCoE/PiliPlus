@@ -1140,8 +1140,10 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       default:
         if (_suspendedDm == null) {
           plPlayerController.controls = !plPlayerController.showControls.value;
-        } else {
+        } else if (_suspendedDm!.suspend) {
           _dmOffset.value = details.localPosition;
+        } else {
+          _suspendedDm = null;
         }
         break;
     }
@@ -1153,13 +1155,14 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       final pos = details.localPosition;
       final item = ctr.findSingleDanmaku(pos);
       if (item == null) {
-        _removeDmAction();
+        _suspendedDm?.suspend = false;
+        _dmOffset.value = null;
       } else if (item != _suspendedDm) {
+        _suspendedDm?.suspend = false;
         if (item.content.extra == null) {
-          _removeDmAction();
+          _dmOffset.value = null;
           return;
         }
-        _suspendedDm?.suspend = false;
         _suspendedDm = item..suspend = true;
       }
     }

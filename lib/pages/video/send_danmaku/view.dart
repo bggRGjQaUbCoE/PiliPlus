@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:PiliPlus/common/widgets/button/icon_button.dart';
 import 'package:PiliPlus/common/widgets/view_safe_area.dart';
 import 'package:PiliPlus/http/danmaku.dart';
+import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/main.dart';
 import 'package:PiliPlus/models/common/publish_panel_type.dart';
 import 'package:PiliPlus/pages/common/publish/common_text_pub_page.dart';
@@ -454,12 +455,12 @@ class _SendDanmakuPanelState extends CommonTextPubPageState<SendDanmakuPanel> {
       colorful: isColorful,
     );
     SmartDialog.dismiss();
-    if (res['status']) {
+    if (res case Success(:final response)) {
       hasPub = true;
       Get.back();
       SmartDialog.showToast('发送成功');
       VideoDanmaku? extra;
-      if (res['dmid'] case int dmid) {
+      if (response.dmid case final dmid?) {
         extra = VideoDanmaku(
           id: dmid,
           mid: PlPlayerController.instance!.midHash,
@@ -480,7 +481,7 @@ class _SendDanmakuPanelState extends CommonTextPubPageState<SendDanmakuPanel> {
         ),
       );
     } else {
-      SmartDialog.showToast('发送失败: ${res['msg']}');
+      res.toast();
     }
   }
 }

@@ -1,11 +1,12 @@
 import 'package:PiliPlus/http/api.dart';
 import 'package:PiliPlus/http/init.dart';
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/models_new/danmaku/post.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:dio/dio.dart';
 
 abstract final class DanmakuHttp {
-  static Future shootDanmaku({
+  static Future<LoadingState<DanmakuPost>> shootDanmaku({
     int type = 1, //弹幕类选择(1：视频弹幕 2：漫画弹幕)
     required int oid, // 视频cid
     required String msg, //弹幕文本(长度小于 100 字符)
@@ -46,27 +47,16 @@ abstract final class DanmakuHttp {
       // 'access_key': access_key,
     };
 
-    var response = await Request().post(
+    final res = await Request().post(
       Api.shootDanmaku,
       data: data,
       options: Options(contentType: Headers.formUrlEncodedContentType),
     );
-    if (response.statusCode != 200) {
-      return {
-        'status': false,
-        'msg': '弹幕发送失败，状态码:${response.statusCode}',
-      };
-    }
-    if (response.data['code'] == 0) {
-      return {
-        'status': true,
-        'data': response.data['data'],
-      };
+
+    if (res.data['code'] == 0) {
+      return Success(DanmakuPost.fromJson(res.data['data']));
     } else {
-      return {
-        'status': false,
-        'msg': "${response.data['code']}: ${response.data['message']}",
-      };
+      return Error(res.data['message'], code: res.data['code']);
     }
   }
 

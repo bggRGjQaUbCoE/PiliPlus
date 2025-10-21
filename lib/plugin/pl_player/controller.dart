@@ -69,7 +69,7 @@ class PlPlayerController {
   StreamSubscription? _playerEventSubs;
 
   /// [playerStatus] has a [status] observable
-  final PlPlayerStatus playerStatus = PlPlayerStatus();
+  final playerStatus = PlPlayerStatus(PlayerStatus.playing);
 
   ///
   final PlPlayerDataStatus dataStatus = PlPlayerDataStatus();
@@ -154,7 +154,7 @@ class PlPlayerController {
   Stream<DataStatus> get onDataStatusChanged => dataStatus.status.stream;
 
   /// 播放状态监听
-  Stream<PlayerStatus> get onPlayerStatusChanged => playerStatus.status.stream;
+  Stream<PlayerStatus> get onPlayerStatusChanged => playerStatus.stream;
 
   /// 视频时长
   Rx<Duration> get duration => _duration;
@@ -551,14 +551,14 @@ class PlPlayerController {
 
   // try to get PlayerStatus
   static PlayerStatus? getPlayerStatusIfExists() {
-    return _instance?.playerStatus.status.value;
+    return _instance?.playerStatus.value;
   }
 
   static Future<void> pauseIfExists({
     bool notify = true,
     bool isInterrupt = false,
   }) async {
-    if (_instance?.playerStatus.status.value == PlayerStatus.playing) {
+    if (_instance?.playerStatus.value == PlayerStatus.playing) {
       await _instance?.pause(notify: notify, isInterrupt: isInterrupt);
     }
   }
@@ -1046,13 +1046,13 @@ class PlPlayerController {
               disableAutoEnterPip();
             }
           }
-          playerStatus.status.value = PlayerStatus.playing;
+          playerStatus.value = PlayerStatus.playing;
         } else {
           disableAutoEnterPip();
-          playerStatus.status.value = PlayerStatus.paused;
+          playerStatus.value = PlayerStatus.paused;
         }
         videoPlayerServiceHandler?.onStatusChange(
-          playerStatus.status.value,
+          playerStatus.value,
           isBuffering.value,
           isLive,
         );
@@ -1067,14 +1067,14 @@ class PlPlayerController {
       }),
       videoPlayerController!.stream.completed.listen((event) {
         if (event) {
-          playerStatus.status.value = PlayerStatus.completed;
+          playerStatus.value = PlayerStatus.completed;
 
           /// 触发回调事件
           for (var element in _statusListeners) {
             element(PlayerStatus.completed);
           }
         } else {
-          // playerStatus.status.value = PlayerStatus.playing;
+          // playerStatus.value = PlayerStatus.playing;
         }
         makeHeartBeat(positionSeconds.value, type: HeartBeatType.completed);
       }),
@@ -1102,7 +1102,7 @@ class PlPlayerController {
       videoPlayerController!.stream.buffering.listen((bool event) {
         isBuffering.value = event;
         videoPlayerServiceHandler?.onStatusChange(
-          playerStatus.status.value,
+          playerStatus.value,
           event,
           isLive,
         );
@@ -1237,7 +1237,7 @@ class PlPlayerController {
           } catch (e) {
             if (kDebugMode) debugPrint('seek failed: $e');
           }
-          // if (playerStatus.status.value == PlayerStatus.paused) {
+          // if (playerStatus.value == PlayerStatus.paused) {
           //   play();
           // }
           t.cancel();
@@ -1294,14 +1294,14 @@ class PlPlayerController {
 
     audioSessionHandler?.setActive(true);
 
-    playerStatus.status.value = PlayerStatus.playing;
+    playerStatus.value = PlayerStatus.playing;
     // screenManager.setOverlays(false);
   }
 
   /// 暂停播放
   Future<void> pause({bool notify = true, bool isInterrupt = false}) async {
     await _videoPlayerController?.pause();
-    playerStatus.status.value = PlayerStatus.paused;
+    playerStatus.value = PlayerStatus.paused;
 
     // 主动暂停时让出音频焦点
     if (!isInterrupt) {
@@ -1465,7 +1465,7 @@ class PlPlayerController {
       return;
     }
     if (val) {
-      if (playerStatus.status.value == PlayerStatus.playing) {
+      if (playerStatus.value == PlayerStatus.playing) {
         _longPressStatus.value = val;
         HapticFeedback.lightImpact();
         await setPlaybackSpeed(
@@ -1655,13 +1655,13 @@ class PlPlayerController {
     }
     if (!enableHeart || MineController.anonymity.value || progress == 0) {
       return;
-    } else if (playerStatus.status.value == PlayerStatus.paused) {
+    } else if (playerStatus.value == PlayerStatus.paused) {
       if (!isManual) {
         return;
       }
     }
     bool isComplete =
-        playerStatus.status.value == PlayerStatus.completed ||
+        playerStatus.value == PlayerStatus.completed ||
         type == HeartBeatType.completed;
     if ((durationSeconds.value - position.value).inMilliseconds > 1000) {
       isComplete = false;
@@ -1761,7 +1761,7 @@ class PlPlayerController {
     // _showControls.close();
     // _controlsLock.close();
 
-    // playerStatus.status.close();
+    // playerStatus.close();
     // dataStatus.status.close();
 
     await removeListeners();

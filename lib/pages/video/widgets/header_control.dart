@@ -2102,7 +2102,7 @@ class HeaderControlState extends State<HeaderControl> {
                   onPressed: () => HeaderControl.deleteDanmaku(
                     extra.id,
                     plPlayerController.cid!,
-                  ),
+                  ).then((_) => item.expired = true),
                   icon: const Icon(CustomIcons.player_dm_tip_recall),
                 )
               else

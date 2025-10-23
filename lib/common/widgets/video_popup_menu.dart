@@ -6,6 +6,8 @@ import 'package:PiliPlus/models/model_video.dart';
 import 'package:PiliPlus/models_new/space/space_archive/item.dart';
 import 'package:PiliPlus/pages/mine/controller.dart';
 import 'package:PiliPlus/pages/search/widgets/search_text.dart';
+import 'package:PiliPlus/pages/video/ai_conclusion/view.dart';
+import 'package:PiliPlus/pages/video/introduction/ugc/controller.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart';
@@ -14,11 +16,10 @@ import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
 class VideoCustomAction {
-  String title;
-  String value;
-  Widget icon;
-  VoidCallback? onTap;
-  VideoCustomAction(this.title, this.value, this.icon, this.onTap);
+  final String title;
+  final Widget icon;
+  final VoidCallback? onTap;
+  const VideoCustomAction(this.title, this.icon, this.onTap);
 }
 
 class VideoCustomActions {
@@ -32,7 +33,6 @@ class VideoCustomActions {
       if (videoItem.bvid?.isNotEmpty == true) ...[
         VideoCustomAction(
           videoItem.bvid!,
-          'copy',
           const Stack(
             clipBehavior: Clip.none,
             children: [
@@ -44,25 +44,72 @@ class VideoCustomActions {
         ),
         VideoCustomAction(
           '稍后再看',
-          'pause',
           const Icon(MdiIcons.clockTimeEightOutline, size: 16),
           () async {
             var res = await UserHttp.toViewLater(bvid: videoItem.bvid);
             SmartDialog.showToast(res['msg']);
           },
         ),
+        VideoCustomAction(
+          'AI总结',
+          const Stack(
+            alignment: Alignment.center,
+            clipBehavior: Clip.none,
+            children: [
+              Icon(Icons.circle_outlined, size: 16),
+              ExcludeSemantics(
+                child: Text(
+                  'AI',
+                  style: TextStyle(
+                    fontSize: 8,
+                    height: 1,
+                    fontWeight: FontWeight.w900,
+                  ),
+                  textScaler: TextScaler.noScaling,
+                ),
+              ),
+            ],
+          ),
+          () async {
+            final res = await UgcIntroController.getAiConclusion(
+              videoItem.bvid!,
+              videoItem.cid!,
+              videoItem.owner.mid,
+            );
+            if (res != null && context.mounted) {
+              showDialog(
+                context: context,
+                builder: (context) {
+                  final theme = Theme.of(context);
+                  return Dialog(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 420),
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 14),
+                        child: AiConclusionPanel.buildContent(
+                          context,
+                          theme,
+                          res,
+                          tap: false,
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              );
+            }
+          },
+        ),
       ],
       if (videoItem is! SpaceArchiveItem)
         VideoCustomAction(
           '访问：${videoItem.owner.name}',
-          'visit',
           const Icon(MdiIcons.accountCircleOutline, size: 16),
           () => Get.toNamed('/member?mid=${videoItem.owner.mid}'),
         ),
       if (videoItem is! SpaceArchiveItem)
         VideoCustomAction(
           '不感兴趣',
-          'dislike',
           const Icon(MdiIcons.thumbDownOutline, size: 16),
           () {
             String? accessKey = Accounts.get(AccountType.recommend).accessKey;
@@ -229,7 +276,6 @@ class VideoCustomActions {
       if (videoItem is! SpaceArchiveItem)
         VideoCustomAction(
           '拉黑：${videoItem.owner.name}',
-          'block',
           const Icon(MdiIcons.cancel, size: 16),
           () => showDialog(
             context: context,
@@ -272,7 +318,6 @@ class VideoCustomActions {
         ),
       VideoCustomAction(
         "${MineController.anonymity.value ? '退出' : '进入'}无痕模式",
-        'anonymity',
         MineController.anonymity.value
             ? const Icon(MdiIcons.incognitoOff, size: 16)
             : const Icon(MdiIcons.incognito, size: 16),
@@ -312,11 +357,9 @@ class VideoPopupMenu extends StatelessWidget {
             size: iconSize,
           ),
           position: PopupMenuPosition.under,
-          onSelected: (String type) {},
           itemBuilder: (BuildContext context) =>
               VideoCustomActions(videoItem, context, onRemove).actions.map((e) {
-                return PopupMenuItem<String>(
-                  value: e.value,
+                return PopupMenuItem<Never>(
                   height: menuItemHeight,
                   onTap: e.onTap,
                   child: Row(

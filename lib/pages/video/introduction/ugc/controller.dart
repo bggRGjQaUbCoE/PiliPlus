@@ -753,25 +753,38 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
   }
 
   // ai总结
-  Future aiConclusion() async {
+  static Future<AiConclusionResult?> getAiConclusion(
+    String bvid,
+    int cid,
+    int? mid,
+  ) async {
     if (!Accounts.heartbeat.isLogin) {
       SmartDialog.showToast("账号未登录");
-      return;
+      return null;
     }
     SmartDialog.showLoading(msg: '正在获取AI总结');
     final res = await VideoHttp.aiConclusion(
       bvid: bvid,
-      cid: cid.value,
-      upMid: videoDetail.value.owner?.mid,
+      cid: cid,
+      upMid: mid,
     );
     SmartDialog.dismiss();
     if (res['status']) {
       AiConclusionData data = res['data'];
-      aiConclusionResult = data.modelResult;
+      return data.modelResult;
     } else if (res['handling']) {
       SmartDialog.showToast("AI处理中，请稍后再试");
     } else {
       SmartDialog.showToast("当前视频暂不支持AI视频总结");
     }
+    return null;
+  }
+
+  Future<void> aiConclusion() async {
+    aiConclusionResult = await getAiConclusion(
+      bvid,
+      cid.value,
+      videoDetail.value.owner?.mid,
+    );
   }
 }

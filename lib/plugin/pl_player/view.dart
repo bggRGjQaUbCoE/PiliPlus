@@ -122,6 +122,9 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
   final RxBool _brightnessIndicator = false.obs;
   Timer? _brightnessTimer;
 
+  Timer? _holdToTripleTimer;
+  int? _holdToTriplePointer;
+
   late FullScreenMode mode;
 
   late final RxBool showRestoreScaleBtn = false.obs;
@@ -290,13 +293,17 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     });
     _danmakuListener?.cancel();
     _tapGestureRecognizer.dispose();
-    _longPressRecognizer?.dispose();
     _doubleTapGestureRecognizer.dispose();
     _listener?.cancel();
     _controlsListener?.cancel();
     animationController.dispose();
     if (Utils.isMobile) {
       FlutterVolumeController.removeListener();
+    }
+    _holdToTripleTimer?.cancel();
+    if (plPlayerController.longPressStatus.value) {
+      // ignore: discarded_futures
+      plPlayerController.setLongPressStatus(false);
     }
     transformationController.dispose();
     _removeDmAction();
@@ -882,7 +889,71 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     colorScheme = ColorScheme.of(context);
   }
 
+  Duration get _holdToTripleDelay => plPlayerController.enableTapDm
+      ? const Duration(milliseconds: 300)
+      : kLongPressTimeout;
+
+  void _scheduleHoldToTriple(PointerDownEvent event) {
+    if (plPlayerController.isLive || plPlayerController.controlsLock.value) {
+      return;
+    }
+    if (_holdToTriplePointer != null) {
+      return;
+    }
+    if (event.kind == ui.PointerDeviceKind.mouse &&
+        event.buttons != kPrimaryButton) {
+      return;
+    }
+    _holdToTriplePointer = event.pointer;
+    _holdToTripleTimer?.cancel();
+    _holdToTripleTimer = Timer(_holdToTripleDelay, () {
+      if (!mounted || _holdToTriplePointer != event.pointer) {
+        return;
+      }
+      plPlayerController.setLongPressStatus(true);
+    });
+  }
+
+  void _finishHoldToTriple() {
+    _holdToTripleTimer?.cancel();
+    _holdToTripleTimer = null;
+    _holdToTriplePointer = null;
+    if (plPlayerController.longPressStatus.value) {
+      plPlayerController.setLongPressStatus(false);
+    }
+  }
+
+  void _cancelHoldToTripleDueToGesture() {
+    if (_holdToTriplePointer != null) {
+      _holdToTripleTimer?.cancel();
+      _holdToTripleTimer = null;
+      _holdToTriplePointer = null;
+    }
+    if (plPlayerController.longPressStatus.value) {
+      plPlayerController.setLongPressStatus(false);
+    }
+  }
+
+  void _handleHoldPointerDown(PointerDownEvent event) {
+    _scheduleHoldToTriple(event);
+  }
+
+  void _handleHoldPointerUp(PointerUpEvent event) {
+    if (event.pointer == _holdToTriplePointer) {
+      _finishHoldToTriple();
+    }
+  }
+
+  void _handleHoldPointerCancel(PointerCancelEvent event) {
+    if (event.pointer == _holdToTriplePointer) {
+      _finishHoldToTriple();
+    }
+  }
+
   void _onInteractionStart(ScaleStartDetails details) {
+    if (details.pointerCount > 1) {
+      _cancelHoldToTripleDueToGesture();
+    }
     if (plPlayerController.controlsLock.value) return;
     // 如果起点太靠上则屏蔽
     final localFocalPoint = details.localFocalPoint;
@@ -922,6 +993,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       final dy = cumulativeDelta.dy.abs();
       if (dx > 3 * dy) {
         _gestureType = GestureType.horizontal;
+        _cancelHoldToTripleDueToGesture();
         _showControlsIfNeeded();
       } else if (dy > 3 * dx) {
         if (!plPlayerController.enableSlideVolumeBrightness &&
@@ -940,18 +1012,21 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
           }
           // 左边区域
           _gestureType = GestureType.left;
+          _cancelHoldToTripleDueToGesture();
         } else if (tapPosition < sectionWidth * 2) {
           if (!plPlayerController.enableSlideFS) {
             return;
           }
           // 全屏
           _gestureType = GestureType.center;
+          _cancelHoldToTripleDueToGesture();
         } else {
           if (!plPlayerController.enableSlideVolumeBrightness) {
             return;
           }
           // 右边区域
           _gestureType = GestureType.right;
+          _cancelHoldToTripleDueToGesture();
         }
       } else {
         return;
@@ -1076,6 +1151,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
   }
 
   void _onInteractionEnd(ScaleEndDetails details) {
+    _cancelHoldToTripleDueToGesture();
     if (plPlayerController.showSeekPreview) {
       plPlayerController.showPreview.value = false;
     }
@@ -1176,16 +1252,6 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     }
   }
 
-  LongPressGestureRecognizer? _longPressRecognizer;
-  LongPressGestureRecognizer get longPressRecognizer => _longPressRecognizer ??=
-      LongPressGestureRecognizer(
-          duration: plPlayerController.enableTapDm
-              ? const Duration(milliseconds: 300)
-              : null,
-        )
-        ..onLongPressStart = ((_) =>
-            plPlayerController.setLongPressStatus(true))
-        ..onLongPressEnd = (_) => plPlayerController.setLongPressStatus(false);
   late final OneSequenceGestureRecognizer _tapGestureRecognizer;
   late final DoubleTapGestureRecognizer _doubleTapGestureRecognizer;
   StreamSubscription<bool>? _danmakuListener;
@@ -1209,9 +1275,6 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
 
     _tapGestureRecognizer.addPointer(event);
     _doubleTapGestureRecognizer.addPointer(event);
-    if (!plPlayerController.isLive) {
-      longPressRecognizer.addPointer(event);
-    }
   }
 
   void _showControlsIfNeeded() {
@@ -1228,6 +1291,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
   }
 
   void _onPointerPanZoomUpdate(PointerPanZoomUpdateEvent event) {
+    _cancelHoldToTripleDueToGesture();
     if (plPlayerController.controlsLock.value) return;
     if (_gestureType == null) {
       final pan = event.pan;
@@ -1288,6 +1352,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
   }
 
   void _onPointerPanZoomEnd(PointerPanZoomEndEvent event) {
+    _cancelHoldToTripleDueToGesture();
     _gestureType = null;
   }
 
@@ -2013,44 +2078,50 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       height: maxHeight,
       color: widget.fill,
       child: Obx(
-        () => MouseInteractiveViewer(
-          scaleEnabled: !plPlayerController.controlsLock.value,
-          pointerSignalFallback: _onPointerSignal,
-          onPointerPanZoomUpdate: _onPointerPanZoomUpdate,
-          onPointerPanZoomEnd: _onPointerPanZoomEnd,
-          onPointerDown: _onPointerDown,
-          onInteractionStart: _onInteractionStart,
-          onInteractionUpdate: _onInteractionUpdate,
-          onInteractionEnd: _onInteractionEnd,
-          panEnabled: false,
-          minScale: plPlayerController.enableShrinkVideoSize ? 0.75 : 1,
-          maxScale: 2.0,
-          boundaryMargin: plPlayerController.enableShrinkVideoSize
-              ? const EdgeInsets.all(double.infinity)
-              : EdgeInsets.zero,
-          panAxis: PanAxis.aligned,
-          transformationController: transformationController,
-          childKey: _videoKey,
-          child: RepaintBoundary(
-            key: _videoKey,
-            child: Obx(
-              () {
-                final videoFit = plPlayerController.videoFit.value;
-                return Transform.flip(
-                  flipX: plPlayerController.flipX.value,
-                  flipY: plPlayerController.flipY.value,
-                  filterQuality: FilterQuality.low,
-                  child: FittedBox(
-                    fit: videoFit.boxFit,
-                    alignment: widget.alignment,
-                    child: SimpleVideo(
-                      controller: plPlayerController.videoController!,
-                      fill: widget.fill,
-                      aspectRatio: videoFit.aspectRatio,
+        () => Listener(
+          behavior: HitTestBehavior.opaque,
+          onPointerDown: _handleHoldPointerDown,
+          onPointerUp: _handleHoldPointerUp,
+          onPointerCancel: _handleHoldPointerCancel,
+          child: MouseInteractiveViewer(
+            scaleEnabled: !plPlayerController.controlsLock.value,
+            pointerSignalFallback: _onPointerSignal,
+            onPointerPanZoomUpdate: _onPointerPanZoomUpdate,
+            onPointerPanZoomEnd: _onPointerPanZoomEnd,
+            onPointerDown: _onPointerDown,
+            onInteractionStart: _onInteractionStart,
+            onInteractionUpdate: _onInteractionUpdate,
+            onInteractionEnd: _onInteractionEnd,
+            panEnabled: false,
+            minScale: plPlayerController.enableShrinkVideoSize ? 0.75 : 1,
+            maxScale: 2.0,
+            boundaryMargin: plPlayerController.enableShrinkVideoSize
+                ? const EdgeInsets.all(double.infinity)
+                : EdgeInsets.zero,
+            panAxis: PanAxis.aligned,
+            transformationController: transformationController,
+            childKey: _videoKey,
+            child: RepaintBoundary(
+              key: _videoKey,
+              child: Obx(
+                () {
+                  final videoFit = plPlayerController.videoFit.value;
+                  return Transform.flip(
+                    flipX: plPlayerController.flipX.value,
+                    flipY: plPlayerController.flipY.value,
+                    filterQuality: FilterQuality.low,
+                    child: FittedBox(
+                      fit: videoFit.boxFit,
+                      alignment: widget.alignment,
+                      child: SimpleVideo(
+                        controller: plPlayerController.videoController!,
+                        fill: widget.fill,
+                        aspectRatio: videoFit.aspectRatio,
+                      ),
                     ),
-                  ),
-                );
-              },
+                  );
+                },
+              ),
             ),
           ),
         ),

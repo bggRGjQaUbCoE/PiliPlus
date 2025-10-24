@@ -1910,4 +1910,40 @@ class PlPlayerController {
       }
     });
   }
+
+  bool _isWindowTransitioning = false;
+  bool _isFullscreen = false;
+  bool _isSmallWindow = false;
+
+  Future<void> toggleSmallWindow() async {
+    if (_isWindowTransitioning) return;
+    _isWindowTransitioning = true;
+    try {
+      if (_isFullscreen) {
+        await windowManager.setFullScreen(false);
+        if (Platform.isLinux) {
+          await Future.delayed(const Duration(milliseconds: 250));
+        }
+        _isFullscreen = false;
+      }
+
+      if (_isSmallWindow) {
+        await windowManager.setAlwaysOnTop(false);
+        if (Platform.isLinux) {
+          await Future.delayed(const Duration(milliseconds: 120));
+        }
+        await windowManager.setSize(const Size(1280, 720));
+        _isSmallWindow = false;
+      } else {
+        await windowManager.setSize(const Size(400, 225));
+        if (Platform.isLinux) {
+          await Future.delayed(const Duration(milliseconds: 120));
+        }
+        await windowManager.setAlwaysOnTop(true);
+        _isSmallWindow = true;
+      }
+    } finally {
+      _isWindowTransitioning = false;
+    }
+  }
 }

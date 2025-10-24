@@ -255,97 +255,52 @@ class PlPlayerController {
   bool get isPipMode =>
       (Platform.isAndroid && Floating().isPipMode) ||
       (Utils.isDesktop && isDesktopPip);
-  /// 桌面小窗相关
   late bool isDesktopPip = false;
   late Rect _lastWindowBounds;
-  bool _isWindowTransitioning = false; // 添加窗口转换锁
+
+  Offset initialFocalPoint = Offset.zero;
 
   Future<void> exitDesktopPip() async {
-    if (_isWindowTransitioning) {
-      debugPrint('[PlPlayer] 窗口正在切换中，忽略退出小窗操作');
-      return;
-    }
-    
-    try {
-      _isWindowTransitioning = true;
-      isDesktopPip = false;
-      
-      await Future.wait([
-        windowManager.setTitleBarStyle(TitleBarStyle.normal),
-        windowManager.setMinimumSize(const Size(400, 700)),
-        windowManager.setBounds(_lastWindowBounds),
-        windowManager.setAlwaysOnTop(false),
-        setting.putAll({
-          SettingBoxKey.windowSize: [
-            _lastWindowBounds.width,
-            _lastWindowBounds.height,
-          ],
-          SettingBoxKey.windowPosition: [
-            _lastWindowBounds.left,
-            _lastWindowBounds.top,
-          ],
-        }),
-      ]);
-    } finally {
-      _isWindowTransitioning = false;
-    }
+    isDesktopPip = false;
+    await Future.wait([
+      windowManager.setTitleBarStyle(TitleBarStyle.normal),
+      windowManager.setMinimumSize(const Size(400, 700)),
+      windowManager.setBounds(_lastWindowBounds),
+      windowManager.setAlwaysOnTop(false),
+      setting.putAll({
+        SettingBoxKey.windowSize: [
+          _lastWindowBounds.width,
+          _lastWindowBounds.height,
+        ],
+        SettingBoxKey.windowPosition: [
+          _lastWindowBounds.left,
+          _lastWindowBounds.top,
+        ],
+      }),
+    ]);
   }
 
   Future<void> enterDesktopPip() async {
-    if (_isWindowTransitioning) {
-      debugPrint('[PlPlayer] 窗口正在切换中，忽略进入小窗操作');
-      return;
+    isDesktopPip = true;
+
+    _lastWindowBounds = await windowManager.getBounds();
+
+    windowManager.setTitleBarStyle(TitleBarStyle.hidden);
+
+    late final Size size;
+    final state = videoController!.player.state;
+    final width = state.width ?? this.width ?? 16;
+    final height = state.height ?? this.height ?? 9;
+    if (height > width) {
+      size = Size(280.0, 280.0 * height / width);
+    } else {
+      size = Size(280.0 * width / height, 280.0);
     }
 
-    try {
-      _isWindowTransitioning = true;
-
-      // 如果当前是全屏，必须先退出全屏
-      if (_isFullScreen.value) {
-        debugPrint('[PlPlayer] 检测到全屏状态，先退出全屏');
-        await windowManager.setFullScreen(false);
-        _isFullScreen.value = false;
-        
-        // Linux 平台需要更长的等待时间让窗口管理器响应
-        if (Platform.isLinux) {
-          await Future.delayed(const Duration(milliseconds: 300));
-        } else {
-          await Future.delayed(const Duration(milliseconds: 150));
-        }
-      }
-
-      _lastWindowBounds = await windowManager.getBounds();
-
-      await windowManager.setTitleBarStyle(TitleBarStyle.hidden);
-
-      late final Size size;
-      final state = videoController!.player.state;
-      final width = state.width ?? this.width ?? 16;
-      final height = state.height ?? this.height ?? 9;
-      if (height > width) {
-        size = Size(280.0, 280.0 * height / width);
-      } else {
-        size = Size(280.0 * width / height, 280.0);
-      }
-
-      await windowManager.setMinimumSize(size);
-      
-      // Linux 平台分步设置，避免窗口管理器冲突
-      if (Platform.isLinux) {
-        await windowManager.setSize(size);
-        await Future.delayed(const Duration(milliseconds: 100));
-        await windowManager.setAlwaysOnTop(true);
-      } else {
-        await Future.wait([
-          windowManager.setSize(size),
-          windowManager.setAlwaysOnTop(true),
-        ]);
-      }
-
-      isDesktopPip = true;
-    } finally {
-      _isWindowTransitioning = false;
-    }
+    await windowManager.setMinimumSize(size);
+    windowManager
+      ..setSize(size)
+      ..setAlwaysOnTop(true);
   }
 
   void toggleDesktopPip() {
@@ -1613,30 +1568,16 @@ class PlPlayerController {
   }) async {
     if (isFullScreen.value == status) return;
 
-    if (fsProcessing || _isWindowTransitioning) {
-      debugPrint('[PlPlayer] 窗口正在处理中，忽略全屏操作');
+    if (fsProcessing) {
       return;
     }
     fsProcessing = true;
 
     mode ??= this.mode;
     this.isManualFS = isManualFS;
+    toggleFullScreen(status);
 
     if (status) {
-      // 进入全屏前，如果是小窗模式，先退出小窗
-      if (Utils.isDesktop && isDesktopPip) {
-        debugPrint('[PlPlayer] 检测到小窗状态，先退出小窗');
-        await windowManager.setAlwaysOnTop(false);
-        
-        if (Platform.isLinux) {
-          await Future.delayed(const Duration(milliseconds: 200));
-        }
-        
-        isDesktopPip = false;
-      }
-      
-      toggleFullScreen(status);
-
       if (Utils.isMobile) {
         hideStatusBar();
         if (mode == FullScreenMode.none) {
@@ -1661,8 +1602,6 @@ class PlPlayerController {
         await enterDesktopFullscreen(inAppFullScreen: inAppFullScreen);
       }
     } else {
-      toggleFullScreen(status);
-      
       if (Utils.isMobile) {
         showStatusBar();
         if (mode == FullScreenMode.none) {
@@ -1970,5 +1909,41 @@ class PlPlayerController {
         SmartDialog.showToast('截图失败');
       }
     });
+  }
+
+  bool _isWindowTransitioning = false;
+  bool _isFullscreen = false;
+  bool _isSmallWindow = false;
+
+  Future<void> toggleSmallWindow() async {
+    if (_isWindowTransitioning) return;
+    _isWindowTransitioning = true;
+    try {
+      if (_isFullscreen) {
+        await windowManager.setFullScreen(false);
+        if (Platform.isLinux) {
+          await Future.delayed(const Duration(milliseconds: 250));
+        }
+        _isFullscreen = false;
+      }
+
+      if (_isSmallWindow) {
+        await windowManager.setAlwaysOnTop(false);
+        if (Platform.isLinux) {
+          await Future.delayed(const Duration(milliseconds: 120));
+        }
+        await windowManager.setSize(const Size(1280, 720));
+        _isSmallWindow = false;
+      } else {
+        await windowManager.setSize(const Size(400, 225));
+        if (Platform.isLinux) {
+          await Future.delayed(const Duration(milliseconds: 120));
+        }
+        await windowManager.setAlwaysOnTop(true);
+        _isSmallWindow = true;
+      }
+    } finally {
+      _isWindowTransitioning = false;
+    }
   }
 }

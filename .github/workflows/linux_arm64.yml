@@ -253,4 +253,8 @@ jobs:
           name: Linux_rpm_arm64_package
           path: PiliPlus_linux_*.rpm
       
-      
+      - name: Upload linux AppImage package
+        uses: actions/upload-artifact@v4
+        with:
+          name: Linux_AppImage_arm64_package
+          path: PiliPlus_linux_*.AppImage

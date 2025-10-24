@@ -179,6 +179,49 @@ jobs:
 
           printf "完成: PiliPlus_linux_%s_arm64.rpm\n" "${{ env.version }}"
         shell: bash
+      
+      - name: Package AppImage
+        run: |
+          printf "下载 appimagetool (ARM64)...\n"
+          wget -q https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-aarch64.AppImage
+          chmod +x appimagetool-aarch64.AppImage
+
+          printf "建立 AppDir 目录结构...\n"
+          APPDIR="PiliPlus.AppDir"
+          mkdir -p "$APPDIR/usr/bin"
+          mkdir -p "$APPDIR/usr/lib"
+          mkdir -p "$APPDIR/usr/share/applications"
+          mkdir -p "$APPDIR/usr/share/icons/hicolor/512x512/apps"
+
+          printf "复制应用文件...\n"
+          cp -r build/linux/arm64/release/bundle/* "$APPDIR/usr/bin/"
+          
+          printf "复制桌面文件和图标...\n"
+          cp assets/linux/piliplus.desktop "$APPDIR/piliplus.desktop"
+          cp assets/linux/piliplus.desktop "$APPDIR/usr/share/applications/piliplus.desktop"
+          cp assets/images/logo/logo.png "$APPDIR/piliplus.png"
+          cp assets/images/logo/logo.png "$APPDIR/usr/share/icons/hicolor/512x512/apps/piliplus.png"
+          
+          printf "创建 AppRun 启动脚本...\n"
+          cat > "$APPDIR/AppRun" <<'APPRUN_EOF'
+          #!/bin/bash
+          SELF=$(readlink -f "$0")
+          HERE=${SELF%/*}
+          export PATH="${HERE}/usr/bin:${PATH}"
+          export LD_LIBRARY_PATH="${HERE}/usr/lib:${LD_LIBRARY_PATH}"
+          exec "${HERE}/usr/bin/piliplus" "$@"
+          APPRUN_EOF
+          chmod +x "$APPDIR/AppRun"
+
+          printf "修改桌面文件中的 Exec 路径...\n"
+          sed -i 's|Exec=piliplus|Exec=piliplus|g' "$APPDIR/piliplus.desktop"
+          sed -i 's|Icon=piliplus|Icon=piliplus|g' "$APPDIR/piliplus.desktop"
+
+          printf "打包 AppImage...\n"
+          ARCH=aarch64 ./appimagetool-aarch64.AppImage "$APPDIR" "PiliPlus_linux_${{ env.version }}_arm64.AppImage"
+          
+          printf "完成: PiliPlus_linux_%s_arm64.AppImage\n" "${{ env.version }}"
+        shell: bash
 
       - name: Release
         if: ${{ github.event.inputs.tag != '' }}
@@ -190,6 +233,7 @@ jobs:
             PiliPlus_linux_*.tar.gz
             PiliPlus_linux_*.deb
             PiliPlus_linux_*.rpm
+            PiliPlus_linux_*.AppImage
 
       - name: Upload linux targz package
         uses: actions/upload-artifact@v4
@@ -208,3 +252,9 @@ jobs:
         with:
           name: Linux_rpm_arm64_package
           path: PiliPlus_linux_*.rpm
+      
+      - name: Upload linux AppImage package
+        uses: actions/upload-artifact@v4
+        with:
+          name: Linux_AppImage_arm64_package
+          path: PiliPlus_linux_*.AppImage

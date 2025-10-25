@@ -8,7 +8,7 @@ class ImmediateTapGestureRecognizer extends OneSequenceGestureRecognizer {
     super.allowedButtonsFilter,
     this.onTapDown,
     required this.onTapUp,
-    required this.onTapCancel,
+    this.onTapCancel,
     this.onTap,
   });
 
@@ -16,7 +16,7 @@ class ImmediateTapGestureRecognizer extends OneSequenceGestureRecognizer {
 
   final GestureTapUpCallback onTapUp;
 
-  final GestureTapCancelCallback onTapCancel;
+  final GestureTapCancelCallback? onTapCancel;
 
   final GestureTapCallback? onTap;
 
@@ -100,8 +100,8 @@ class ImmediateTapGestureRecognizer extends OneSequenceGestureRecognizer {
   }
 
   void _cancelGesture(String reason) {
-    if (_sentTapDown) {
-      invokeCallback<void>('onTapCancel: $reason', onTapCancel);
+    if (_sentTapDown && onTapCancel != null) {
+      invokeCallback<void>('onTapCancel: $reason', onTapCancel!);
     }
     _reset();
   }

@@ -92,7 +92,7 @@ class _PlDanmakuState extends State<PlDanmaku> {
       return;
     }
 
-    if (playerController.playerStatus.status.value != PlayerStatus.playing) {
+    if (!playerController.playerStatus.playing) {
       return;
     }
 

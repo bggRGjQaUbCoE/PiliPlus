@@ -628,7 +628,7 @@ abstract class Pref {
       _setting.get(SettingBoxKey.scrollThreshold, defaultValue: 50.0);
 
   static bool get enableSearchWord =>
-      _setting.get(SettingBoxKey.enableSearchWord, defaultValue: true);
+      _setting.get(SettingBoxKey.enableSearchWord, defaultValue: false);
 
   static bool get useSideBar =>
       _setting.get(SettingBoxKey.useSideBar, defaultValue: false);

@@ -24,7 +24,7 @@ class HomeController extends GetxController
   final bool useSideBar = Pref.useSideBar;
 
   bool enableSearchWord = Pref.enableSearchWord;
-  late RxString defaultSearch = ''.obs;
+  late final RxString defaultSearch = ''.obs;
   late int lateCheckSearchAt = 0;
 
   ScrollOrRefreshMixin get controller => tabs[tabController.index].ctr();

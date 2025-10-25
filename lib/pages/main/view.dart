@@ -165,7 +165,7 @@ class _MainAppState extends State<MainApp>
   void _onHideWindow() {
     if (_mainController.pauseOnMinimize) {
       _mainController.isPlaying =
-          PlPlayerController.instance?.playerStatus.status.value ==
+          PlPlayerController.instance?.playerStatus.value ==
           PlayerStatus.playing;
       PlPlayerController.pauseIfExists();
     }

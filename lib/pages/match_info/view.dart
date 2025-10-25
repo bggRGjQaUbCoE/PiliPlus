@@ -1,9 +1,6 @@
-import 'package:PiliPlus/common/skeleton/video_reply.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
-import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/view_safe_area.dart';
-import 'package:PiliPlus/common/widgets/view_sliver_safe_area.dart';
 import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
     show ReplyInfo;
 import 'package:PiliPlus/http/loading_state.dart';
@@ -12,7 +9,6 @@ import 'package:PiliPlus/models_new/match/match_info/contest.dart';
 import 'package:PiliPlus/models_new/match/match_info/team.dart';
 import 'package:PiliPlus/pages/common/dyn/common_dyn_page.dart';
 import 'package:PiliPlus/pages/match_info/controller.dart';
-import 'package:PiliPlus/pages/video/reply/widgets/reply_item_grpc.dart';
 import 'package:PiliPlus/pages/video/reply_reply/view.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/extension.dart';
@@ -48,19 +44,18 @@ class _MatchInfoPageState extends CommonDynPageState<MatchInfoPage> {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(title: const Text('比赛详情')),
-      body: refreshIndicator(
-        onRefresh: controller.onRefresh,
-        child: CustomScrollView(
-          controller: scrollController,
-          physics: const AlwaysScrollableScrollPhysics(),
-          slivers: [
-            Obx(() => _buildInfo(theme, controller.infoState.value)),
-            ViewSliverSafeArea(
-              sliver: Obx(
-                () => _buildReply(theme, controller.loadingState.value),
-              ),
-            ),
-          ],
+      body: ViewSafeArea(
+        child: refreshIndicator(
+          onRefresh: controller.onRefresh,
+          child: CustomScrollView(
+            controller: scrollController,
+            physics: const AlwaysScrollableScrollPhysics(),
+            slivers: [
+              Obx(() => _buildInfo(theme, controller.infoState.value)),
+              buildReplyHeader(theme),
+              Obx(() => replyList(theme, controller.loadingState.value)),
+            ],
+          ),
         ),
       ),
       floatingActionButton: SlideTransition(
@@ -192,59 +187,6 @@ class _MatchInfoPageState extends CommonDynPageState<MatchInfoPage> {
       }
     }
     return const SliverToBoxAdapter();
-  }
-
-  Widget _buildReply(
-    ThemeData theme,
-    LoadingState<List<ReplyInfo>?> loadingState,
-  ) {
-    return switch (loadingState) {
-      Loading() => SliverList.builder(
-        itemBuilder: (context, index) => const VideoReplySkeleton(),
-        itemCount: 8,
-      ),
-      Success(:var response) =>
-        response?.isNotEmpty == true
-            ? SliverMainAxisGroup(
-                slivers: [
-                  buildReplyHeader(theme),
-                  SliverList.builder(
-                    itemCount: response!.length,
-                    itemBuilder: (context, index) {
-                      if (index == response.length - 1) {
-                        controller.onLoadMore();
-                      }
-                      return ReplyItemGrpc(
-                        replyItem: response[index],
-                        replyLevel: 1,
-                        replyReply: (replyItem, id) =>
-                            replyReply(context, replyItem, id, theme),
-                        onReply: (replyItem) => controller.onReply(
-                          context,
-                          replyItem: replyItem,
-                        ),
-                        onDelete: (item, subIndex) =>
-                            controller.onRemove(index, item, subIndex),
-                        upMid: controller.upMid,
-                        onCheckReply: (item) =>
-                            controller.onCheckReply(item, isManual: true),
-                        onToggleTop: (item) => controller.onToggleTop(
-                          item,
-                          index,
-                          controller.oid,
-                          controller.replyType,
-                        ),
-                      );
-                    },
-                  ),
-                ],
-              )
-            : HttpError(onReload: controller.onReload),
-      Error(:var errMsg) => HttpError(
-        errMsg: errMsg,
-        onReload: controller.onReload,
-      ),
-    };
   }
 
   @override

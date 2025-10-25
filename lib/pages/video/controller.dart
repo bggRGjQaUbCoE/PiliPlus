@@ -993,8 +993,7 @@ class VideoDetailController extends GetxController
       SmartDialog.showToast('UP主已关闭弹幕');
       return;
     }
-    bool isPlaying =
-        plPlayerController.playerStatus.status.value == PlayerStatus.playing;
+    final isPlaying = plPlayerController.playerStatus.playing;
     if (isPlaying) {
       await plPlayerController.pause();
     }
@@ -1580,8 +1579,7 @@ class VideoDetailController extends GetxController
 
   void makeHeartBeat() {
     if (plPlayerController.enableHeart &&
-        plPlayerController.playerStatus.status.value !=
-            PlayerStatus.completed &&
+        !plPlayerController.playerStatus.completed &&
         playedTime != null) {
       try {
         plPlayerController.makeHeartBeat(

@@ -2,12 +2,14 @@ import 'package:PiliPlus/common/skeleton/video_reply.dart';
 import 'package:PiliPlus/common/widgets/custom_sliver_persistent_header_delegate.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/refresh_indicator.dart';
+import 'package:PiliPlus/common/widgets/view_safe_area.dart';
 import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
     show ReplyInfo, Mode;
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/pages/common/slide/common_slide_page.dart';
 import 'package:PiliPlus/pages/video/reply/widgets/reply_item_grpc.dart';
 import 'package:PiliPlus/pages/video/reply_reply/controller.dart';
+import 'package:PiliPlus/utils/app_scheme.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart';
@@ -44,6 +46,51 @@ class VideoReplyReplyPanel extends CommonSlidePage {
 
   @override
   State<VideoReplyReplyPanel> createState() => _VideoReplyReplyPanelState();
+
+  static Future<void>? toReply(
+    int oid,
+    int rootId,
+    String? rpIdStr,
+    int type,
+    Uri? uri,
+  ) {
+    final rpId = rpIdStr == null ? null : int.tryParse(rpIdStr);
+    return Get.to(
+      arguments: {
+        'oid': oid,
+        'rpid': rootId,
+        'id': ?rpId,
+        'type': type,
+        'enterUri': ?uri, // save panel
+      },
+      () => Scaffold(
+        resizeToAvoidBottomInset: false,
+        appBar: AppBar(
+          title: const Text('评论详情'),
+          actions: [
+            IconButton(
+              tooltip: '前往',
+              onPressed: uri == null
+                  ? null
+                  : () => PiliScheme.routePush(uri, businessId: type),
+              icon: const Icon(Icons.open_in_new),
+            ),
+          ],
+        ),
+        body: ViewSafeArea(
+          child: VideoReplyReplyPanel(
+            enableSlide: false,
+            oid: oid,
+            rpid: rootId,
+            isVideoDetail: false,
+            replyType: type,
+            firstFloor: null,
+            id: rpId,
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>

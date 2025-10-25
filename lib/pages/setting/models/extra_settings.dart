@@ -774,7 +774,7 @@ List<SettingsModel> get extraSettings => [
     subtitle: '是否展示搜索框默认词',
     leading: const Icon(Icons.whatshot_outlined),
     setKey: SettingBoxKey.enableSearchWord,
-    defaultVal: true,
+    defaultVal: false,
     onChanged: (val) {
       try {
         final controller = Get.find<HomeController>()..enableSearchWord = val;

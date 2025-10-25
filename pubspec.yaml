@@ -21,7 +21,7 @@ version: 1.1.4+1
 
 environment:
   sdk: ">=3.9.0 <4.0.0"
-  flutter: 3.35.6 # update `.fvmrc` config
+  flutter: 3.35.7 # update `.fvmrc` config
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions

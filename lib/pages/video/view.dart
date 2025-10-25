@@ -379,7 +379,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     introController.canelTimer();
 
     videoDetailController
-      ..playerStatus = plPlayerController?.playerStatus.status.value
+      ..playerStatus = plPlayerController?.playerStatus.value
       ..brightness = plPlayerController?.brightness.value;
     if (plPlayerController != null) {
       videoDetailController.makeHeartBeat();
@@ -406,8 +406,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     WidgetsBinding.instance.addObserver(this);
 
     plPlayerController?.isLive = false;
-    if (videoDetailController.plPlayerController.playerStatus.status.value ==
-            PlayerStatus.playing &&
+    if (videoDetailController.plPlayerController.playerStatus.playing &&
         videoDetailController.playerStatus != PlayerStatus.playing) {
       videoDetailController.plPlayerController.pause();
     }
@@ -608,7 +607,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                         videoDetailController.isCollapsing
                   ? animHeight
                   : videoDetailController.isCollapsing ||
-                        plPlayerController?.playerStatus.status.value ==
+                        plPlayerController?.playerStatus.value ==
                             PlayerStatus.playing
                   ? videoDetailController.minVideoHeight
                   : kToolbarHeight;
@@ -724,7 +723,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                                           Text(
                                             '${videoDetailController.playedTime == null
                                                 ? '立即'
-                                                : plPlayerController!.playerStatus.status.value == PlayerStatus.completed
+                                                : plPlayerController!.playerStatus.completed
                                                 ? '重新'
                                                 : '继续'}播放',
                                             style: TextStyle(

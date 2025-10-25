@@ -24,5 +24,7 @@ abstract class CommonDynController extends ReplyController<MainListReply> {
   );
 
   @override
-  List<ReplyInfo>? getDataList(MainListReply response) => response.replies;
+  List<ReplyInfo>? getDataList(MainListReply response) {
+    return response.replies;
+  }
 }

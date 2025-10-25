@@ -281,11 +281,27 @@ class PlPlayerController {
   }
 
   Future<void> enterDesktopPip() async {
+    // 【新增】如果当前是全屏,先退出全屏
+    if (isFullScreen.value) {
+      await exitDesktopFullscreen();
+      // 等待窗口状态稳定
+      await Future.delayed(const Duration(milliseconds: 100));
+    }
+    
     isDesktopPip = true;
-
     _lastWindowBounds = await windowManager.getBounds();
+    
+    // 【新增】确保获取到有效的窗口边界
+    if (_lastWindowBounds.width < 100 || _lastWindowBounds.height < 100) {
+      // 使用默认值或设置中的值
+      _lastWindowBounds = Rect.fromLTWH(
+        100, 100, 
+        setting.get(SettingBoxKey.windowSize)?[0] ?? 900,
+        setting.get(SettingBoxKey.windowSize)?[1] ?? 700,
+      );
+    }
 
-    windowManager.setTitleBarStyle(TitleBarStyle.hidden);
+    await windowManager.setTitleBarStyle(TitleBarStyle.hidden);
 
     late final Size size;
     final state = videoController!.player.state;

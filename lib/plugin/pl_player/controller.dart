@@ -1607,6 +1607,21 @@ class PlPlayerController {
 
     mode ??= this.mode;
     this.isManualFS = isManualFS;
+    
+    // 【新增】进入全屏时,如果当前是小窗状态,先退出小窗
+    if (status && Utils.isDesktop && isDesktopPip) {
+      isDesktopPip = false;
+      // 恢复窗口到正常大小,准备进入全屏
+      await Future.wait([
+        windowManager.setTitleBarStyle(TitleBarStyle.normal),
+        windowManager.setMinimumSize(const Size(400, 700)),
+        windowManager.setBounds(_lastWindowBounds),
+        windowManager.setAlwaysOnTop(false),
+      ]);
+      // 等待窗口状态稳定
+      await Future.delayed(const Duration(milliseconds: 200));
+    }
+  
     toggleFullScreen(status);
 
     if (status) {

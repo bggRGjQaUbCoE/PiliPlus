@@ -61,7 +61,7 @@ class VideoReplyReplyPanel extends CommonSlidePage {
         'rpid': rootId,
         'id': ?rpId,
         'type': type,
-        'enterUri': ?uri, // save panel
+        'enterUri': ?uri?.toString(), // save panel
       },
       () => Scaffold(
         resizeToAvoidBottomInset: false,

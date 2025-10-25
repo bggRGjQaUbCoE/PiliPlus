@@ -644,16 +644,14 @@ abstract final class PiliScheme {
         if (res.isNotEmpty) {
           final queryParameters = uri.queryParameters;
           final rootIdStr = queryParameters['comment_root_id'];
+          final part = queryParameters['p'];
           if (rootIdStr != null) {
             VideoReplyReplyPanel.toReply(
               res.av ?? IdUtils.bv2av(res.bv!),
               int.parse(rootIdStr),
               queryParameters['comment_secondary_id'],
               1,
-              uri.replace(
-                queryParameters: Map.of(queryParameters)
-                  ..remove('comment_root_id'),
-              ),
+              uri.replace(query: part != null ? 'p=$part' : ''),
             );
             return true;
           }
@@ -662,7 +660,7 @@ abstract final class PiliScheme {
             res.bv,
             off: off,
             progress: queryParameters['dm_progress'],
-            part: queryParameters['p'],
+            part: part,
           );
           return true;
         }

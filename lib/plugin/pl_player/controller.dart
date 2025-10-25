@@ -281,9 +281,11 @@ class PlPlayerController {
   }
 
   Future<void> enterDesktopPip() async {
-    // 【新增】如果当前是全屏,先退出全屏
+    // 如果当前是全屏,先退出全屏
     if (isFullScreen.value) {
       await exitDesktopFullscreen();
+      // 【重要】更新全屏状态
+      toggleFullScreen(false);
       // 等待窗口状态稳定
       await Future.delayed(const Duration(milliseconds: 100));
     }
@@ -291,7 +293,7 @@ class PlPlayerController {
     isDesktopPip = true;
     _lastWindowBounds = await windowManager.getBounds();
     
-    // 【新增】确保获取到有效的窗口边界
+    // 确保获取到有效的窗口边界
     if (_lastWindowBounds.width < 100 || _lastWindowBounds.height < 100) {
       // 使用默认值或设置中的值
       _lastWindowBounds = Rect.fromLTWH(

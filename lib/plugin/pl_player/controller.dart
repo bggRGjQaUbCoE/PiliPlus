@@ -281,14 +281,26 @@ class PlPlayerController {
   }
 
   Future<void> enterDesktopPip() async {
+    // 【新增】取消自动全屏监听器
+    try {
+      _dataListenerForEnterFullscreen.cancel();
+    } catch (_) {}
+    
     // 如果当前是全屏,先退出全屏
     if (isFullScreen.value) {
-      await exitDesktopFullscreen();
-      // 【重要】直接设置状态，不触发监听器
+      // 【重要】先更新状态，阻止其他地方触发全屏
       _isFullScreen.value = false;
+      
+      await exitDesktopFullscreen();
       updateSubtitleStyle();
+      
+      // 【新增】确保窗口完全退出全屏状态
+      if (await windowManager.isFullScreen()) {
+        await windowManager.setFullScreen(false);
+      }
+      
       // 等待窗口状态稳定
-      await Future.delayed(const Duration(milliseconds: 200));
+      await Future.delayed(const Duration(milliseconds: 300));
     }
     
     isDesktopPip = true;
@@ -296,7 +308,6 @@ class PlPlayerController {
     
     // 确保获取到有效的窗口边界
     if (_lastWindowBounds.width < 100 || _lastWindowBounds.height < 100) {
-      // 使用默认值或设置中的值
       _lastWindowBounds = Rect.fromLTWH(
         100, 100, 
         setting.get(SettingBoxKey.windowSize)?[0] ?? 900,
@@ -316,8 +327,11 @@ class PlPlayerController {
       size = Size(280.0 * width / height, 280.0);
     }
 
+    // 【修改】确保每个操作都完成
     await windowManager.setMinimumSize(size);
+    await Future.delayed(const Duration(milliseconds: 50));
     await windowManager.setSize(size);
+    await Future.delayed(const Duration(milliseconds: 50));
     await windowManager.setAlwaysOnTop(true);
   }
 

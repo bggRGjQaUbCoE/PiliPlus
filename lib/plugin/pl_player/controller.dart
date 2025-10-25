@@ -284,10 +284,11 @@ class PlPlayerController {
     // 如果当前是全屏,先退出全屏
     if (isFullScreen.value) {
       await exitDesktopFullscreen();
-      // 【重要】更新全屏状态
-      toggleFullScreen(false);
+      // 【重要】直接设置状态，不触发监听器
+      _isFullScreen.value = false;
+      updateSubtitleStyle();
       // 等待窗口状态稳定
-      await Future.delayed(const Duration(milliseconds: 100));
+      await Future.delayed(const Duration(milliseconds: 200));
     }
     
     isDesktopPip = true;
@@ -316,9 +317,8 @@ class PlPlayerController {
     }
 
     await windowManager.setMinimumSize(size);
-    windowManager
-      ..setSize(size)
-      ..setAlwaysOnTop(true);
+    await windowManager.setSize(size);
+    await windowManager.setAlwaysOnTop(true);
   }
 
   void toggleDesktopPip() {

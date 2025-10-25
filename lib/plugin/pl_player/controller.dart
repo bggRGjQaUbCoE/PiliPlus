@@ -261,49 +261,50 @@ class PlPlayerController {
   Offset initialFocalPoint = Offset.zero;
 
   Future<void> exitDesktopPip() async {
-    isDesktopPip = false;
-    await Future.wait([
-      windowManager.setTitleBarStyle(TitleBarStyle.normal),
-      windowManager.setMinimumSize(const Size(400, 700)),
-      windowManager.setBounds(_lastWindowBounds),
-      windowManager.setAlwaysOnTop(false),
-      setting.putAll({
-        SettingBoxKey.windowSize: [
-          _lastWindowBounds.width,
-          _lastWindowBounds.height,
-        ],
-        SettingBoxKey.windowPosition: [
-          _lastWindowBounds.left,
-          _lastWindowBounds.top,
-        ],
-      }),
-    ]);
-  }
+  isDesktopPip = false;
+  await Future.wait([
+    windowManager.setTitleBarStyle(TitleBarStyle.normal),
+    windowManager.setMinimumSize(const Size(400, 700)),
+    windowManager.setBounds(_lastWindowBounds),
+    windowManager.setAlwaysOnTop(false),
+    setting.putAll({
+      SettingBoxKey.windowSize: [
+        _lastWindowBounds.width,
+        _lastWindowBounds.height,
+      ],
+      SettingBoxKey.windowPosition: [
+        _lastWindowBounds.left,
+        _lastWindowBounds.top,
+      ],
+    }),
+  ]);
+}
 
-  Future<void> enterDesktopPip() async {
-    // 【新增】取消自动全屏监听器
-    try {
-      _dataListenerForEnterFullscreen.cancel();
-    } catch (_) {}
+Future<void> enterDesktopPip() async {
+  // 取消自动全屏监听器
+  try {
+    _dataListenerForEnterFullscreen.cancel();
+  } catch (_) {}
+  
+  // 如果当前是全屏,先退出全屏
+  if (isFullScreen.value) {
+    _isFullScreen.value = false;
     
-    // 如果当前是全屏,先退出全屏
-    if (isFullScreen.value) {
-      // 【重要】先更新状态，阻止其他地方触发全屏
-      _isFullScreen.value = false;
-      
-      await exitDesktopFullscreen();
-      updateSubtitleStyle();
-      
-      // 【新增】确保窗口完全退出全屏状态
-      if (await windowManager.isFullScreen()) {
-        await windowManager.setFullScreen(false);
-      }
-      
-      // 等待窗口状态稳定
-      await Future.delayed(const Duration(milliseconds: 300));
+    await exitDesktopFullscreen();
+    updateSubtitleStyle();
+    
+    if (await windowManager.isFullScreen()) {
+      await windowManager.setFullScreen(false);
     }
     
-    isDesktopPip = true;
+    // 【修改】减少等待时间,加快转换
+    await Future.delayed(const Duration(milliseconds: 100));
+  }
+  
+  isDesktopPip = true;
+  
+  // 【新增】如果不是从全屏转换过来,才保存当前窗口边界
+  if (!isFullScreen.value) {
     _lastWindowBounds = await windowManager.getBounds();
     
     // 确保获取到有效的窗口边界
@@ -314,26 +315,28 @@ class PlPlayerController {
         setting.get(SettingBoxKey.windowSize)?[1] ?? 700,
       );
     }
-
-    await windowManager.setTitleBarStyle(TitleBarStyle.hidden);
-
-    late final Size size;
-    final state = videoController!.player.state;
-    final width = state.width ?? this.width ?? 16;
-    final height = state.height ?? this.height ?? 9;
-    if (height > width) {
-      size = Size(280.0, 280.0 * height / width);
-    } else {
-      size = Size(280.0 * width / height, 280.0);
-    }
-
-    // 【修改】确保每个操作都完成
-    await windowManager.setMinimumSize(size);
-    await Future.delayed(const Duration(milliseconds: 50));
-    await windowManager.setSize(size);
-    await Future.delayed(const Duration(milliseconds: 50));
-    await windowManager.setAlwaysOnTop(true);
   }
+
+  late final Size size;
+  final state = videoController!.player.state;
+  final width = state.width ?? this.width ?? 16;
+  final height = state.height ?? this.height ?? 9;
+  if (height > width) {
+    size = Size(280.0, 280.0 * height / width);
+  } else {
+    size = Size(280.0 * width / height, 280.0);
+  }
+
+  // 【优化】批量执行操作,减少视觉闪烁
+  await Future.wait([
+    windowManager.setTitleBarStyle(TitleBarStyle.hidden),
+    windowManager.setMinimumSize(size),
+    windowManager.setAlwaysOnTop(true),
+  ]);
+  
+  // 【修改】最后设置大小,减少等待
+  await windowManager.setSize(size);
+}
 
   void toggleDesktopPip() {
     if (isDesktopPip) {
@@ -1608,18 +1611,22 @@ class PlPlayerController {
     mode ??= this.mode;
     this.isManualFS = isManualFS;
     
-    // 【新增】进入全屏时,如果当前是小窗状态,先退出小窗
+    // 进入全屏时,如果当前是小窗状态,先退出小窗
     if (status && Utils.isDesktop && isDesktopPip) {
       isDesktopPip = false;
-      // 恢复窗口到正常大小,准备进入全屏
+      
+      // 【优化】批量执行恢复操作
       await Future.wait([
         windowManager.setTitleBarStyle(TitleBarStyle.normal),
         windowManager.setMinimumSize(const Size(400, 700)),
-        windowManager.setBounds(_lastWindowBounds),
         windowManager.setAlwaysOnTop(false),
       ]);
-      // 等待窗口状态稳定
-      await Future.delayed(const Duration(milliseconds: 200));
+      
+      // 【新增】先恢复窗口大小,但不等待太久
+      windowManager.setBounds(_lastWindowBounds); // 不 await
+    
+      // 【修改】减少等待时间
+      await Future.delayed(const Duration(milliseconds: 50));
     }
   
     toggleFullScreen(status);

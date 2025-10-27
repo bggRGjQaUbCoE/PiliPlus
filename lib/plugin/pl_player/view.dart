@@ -1156,12 +1156,10 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       final item = ctr.findSingleDanmaku(pos);
       if (item == null) {
         _suspendedDm?.suspend = false;
-        _suspendedDm = null;
         _dmOffset.value = null;
       } else if (item != _suspendedDm) {
         _suspendedDm?.suspend = false;
         if (item.content.extra == null) {
-          _suspendedDm = null;
           _dmOffset.value = null;
           return;
         }

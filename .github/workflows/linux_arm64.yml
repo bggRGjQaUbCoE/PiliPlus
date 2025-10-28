@@ -76,6 +76,8 @@ jobs:
           printf "修改控制文件...\n"
           # 替换版本号
           sed -i  "2s/version_need_change/${{ env.version }}/g" DEBIAN/control
+          # 替换架构为 arm64
+          sed -i  "3s/Architecture: amd64/Architecture: arm64/g" DEBIAN/control
           # 计算安装大小并替换
           SIZE_KB=$(du -s -b --apparent-size . | awk '{print int($1)}')
           SIZE_KB=$(($SIZE_KB - $(du -s -b --apparent-size DEBIAN | awk '{print int($1)}')))

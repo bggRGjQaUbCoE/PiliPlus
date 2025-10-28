@@ -385,6 +385,7 @@ class _LiveRoomPageState extends State<LiveRoomPage>
               },
             ),
           Scaffold(
+            resizeToAvoidBottomInset: false,
             backgroundColor: Colors.transparent,
             appBar: _buildAppBar(isFullScreen),
             body: isPortrait

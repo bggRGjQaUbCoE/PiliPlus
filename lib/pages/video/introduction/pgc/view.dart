@@ -145,10 +145,8 @@ class _PgcIntroPageState extends State<PgcIntroPage> {
       children: [
         GestureDetector(
           onTap: () {
-            videoDetailCtr.onViewImage();
             PageUtils.imageView(
               imgList: [SourceModel(url: item.cover!)],
-              onDismissed: videoDetailCtr.onDismissed,
             );
           },
           child: Hero(

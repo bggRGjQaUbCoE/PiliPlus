@@ -125,11 +125,11 @@ abstract final class PiliScheme {
               int? rpid = int.tryParse(queryParameters['comment_root_id']!);
               if (oid != null && rpid != null) {
                 VideoReplyReplyPanel.toReply(
-                  int.parse(oid),
-                  rpid,
-                  queryParameters['comment_secondary_id'],
-                  1,
-                  uri.replace(query: ''),
+                  oid: int.parse(oid),
+                  rootId: rpid,
+                  rpIdStr: queryParameters['comment_secondary_id'],
+                  type: 1,
+                  uri: uri.replace(query: ''),
                 );
                 return true;
               }
@@ -225,11 +225,12 @@ abstract final class PiliScheme {
               // int.parse(queryParameters['extraIntentId'] ?? '0');
               final enterUri = queryParameters['enterUri'];
               VideoReplyReplyPanel.toReply(
-                oid,
-                rootId,
-                queryParameters['anchor'], // source_id
-                type,
-                enterUri != null
+                oid: oid,
+                rootId: rootId,
+                rpIdStr:
+                    queryParameters['anchor'] ?? pathSegments[3], // source_id
+                type: type,
+                uri: enterUri != null
                     ? Uri.parse(enterUri)
                     : const [11, 16, 17].contains(type)
                     ? Uri(
@@ -270,11 +271,11 @@ abstract final class PiliScheme {
                 int? rpid = int.tryParse(commentRootId);
                 if (dynId != null && rpid != null) {
                   VideoReplyReplyPanel.toReply(
-                    oid ?? int.parse(dynId),
-                    rpid,
-                    queryParameters['comment_secondary_id'],
-                    businessId ?? 17,
-                    uri.replace(query: ''),
+                    oid: oid ?? int.parse(dynId),
+                    rootId: rpid,
+                    rpIdStr: queryParameters['comment_secondary_id'],
+                    type: businessId ?? 17,
+                    uri: uri.replace(query: ''),
                   );
                   return true;
                 }
@@ -644,16 +645,14 @@ abstract final class PiliScheme {
         if (res.isNotEmpty) {
           final queryParameters = uri.queryParameters;
           final rootIdStr = queryParameters['comment_root_id'];
+          final part = queryParameters['p'];
           if (rootIdStr != null) {
             VideoReplyReplyPanel.toReply(
-              res.av ?? IdUtils.bv2av(res.bv!),
-              int.parse(rootIdStr),
-              queryParameters['comment_secondary_id'],
-              1,
-              uri.replace(
-                queryParameters: Map.of(queryParameters)
-                  ..remove('comment_root_id'),
-              ),
+              oid: res.av ?? IdUtils.bv2av(res.bv!),
+              rootId: int.parse(rootIdStr),
+              rpIdStr: queryParameters['comment_secondary_id'],
+              type: 1,
+              uri: uri.replace(query: part != null ? 'p=$part' : ''),
             );
             return true;
           }
@@ -662,7 +661,7 @@ abstract final class PiliScheme {
             res.bv,
             off: off,
             progress: queryParameters['dm_progress'],
-            part: queryParameters['p'],
+            part: part,
           );
           return true;
         }
@@ -750,11 +749,11 @@ abstract final class PiliScheme {
         final pageType = queryParameters['pageType'];
         if (oid != null && root != null && pageType != null) {
           VideoReplyReplyPanel.toReply(
-            int.parse(oid),
-            int.parse(root),
-            queryParameters['comment_secondary_id'],
-            int.parse(pageType),
-            Uri(scheme: 'bilibili', host: 'video', path: oid),
+            oid: int.parse(oid),
+            rootId: int.parse(root),
+            rpIdStr: queryParameters['comment_secondary_id'],
+            type: int.parse(pageType),
+            uri: Uri(scheme: 'bilibili', host: 'video', path: oid),
           );
           return true;
         }

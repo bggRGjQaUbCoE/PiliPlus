@@ -50,7 +50,6 @@ class ReplyItemGrpc extends StatelessWidget {
     this.showDialogue,
     this.getTag,
     this.onViewImage,
-    this.onDismissed,
     this.onCheckReply,
     this.onToggleTop,
     this.jumpToDialogue,
@@ -65,7 +64,6 @@ class ReplyItemGrpc extends StatelessWidget {
   final VoidCallback? showDialogue;
   final Function? getTag;
   final VoidCallback? onViewImage;
-  final ValueChanged<int>? onDismissed;
   final ValueChanged<ReplyInfo>? onCheckReply;
   final ValueChanged<ReplyInfo>? onToggleTop;
   final VoidCallback? jumpToDialogue;
@@ -317,7 +315,6 @@ class ReplyItemGrpc extends StatelessWidget {
                     )
                     .toList(),
                 onViewImage: onViewImage,
-                onDismissed: onDismissed,
               ),
             ),
           ),

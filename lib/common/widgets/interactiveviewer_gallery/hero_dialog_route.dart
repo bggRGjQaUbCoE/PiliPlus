@@ -8,10 +8,10 @@ import 'package:flutter/material.dart';
 /// show a [Hero] animation.
 class HeroDialogRoute<T> extends PageRoute<T> {
   HeroDialogRoute({
-    required this.builder,
+    required this.pageBuilder,
   });
 
-  final WidgetBuilder builder;
+  final RoutePageBuilder pageBuilder;
 
   @override
   bool get opaque => false;
@@ -50,12 +50,10 @@ class HeroDialogRoute<T> extends PageRoute<T> {
     Animation<double> animation,
     Animation<double> secondaryAnimation,
   ) {
-    final Widget child = builder(context);
-    final Widget result = Semantics(
+    return Semantics(
       scopesRoute: true,
       explicitChildNodes: true,
-      child: child,
+      child: pageBuilder(context, animation, secondaryAnimation),
     );
-    return result;
   }
 }

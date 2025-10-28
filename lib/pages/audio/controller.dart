@@ -299,14 +299,14 @@ class AudioController extends GetxController
               playNext();
               break;
             case PlayRepeat.singleCycle:
-              player?.play();
+              _replay();
               break;
             case PlayRepeat.listCycle:
               if (!playNext()) {
                 if (index != null && index != 0 && playlist != null) {
                   playIndex(0);
                 } else {
-                  player?.play();
+                  _replay();
                 }
               }
               break;
@@ -316,6 +316,10 @@ class AudioController extends GetxController
         }
       }),
     };
+  }
+
+  void _replay() {
+    player?.seek(Duration.zero).whenComplete(player!.play);
   }
 
   @override

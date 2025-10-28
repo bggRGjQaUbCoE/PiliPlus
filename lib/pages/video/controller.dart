@@ -98,7 +98,7 @@ class VideoDetailController extends GetxController
   final Rx<LoadingState> videoState = LoadingState.loading().obs;
 
   /// 播放器配置 画质 音质 解码格式
-  late Rx<VideoQuality> currentVideoQa;
+  final Rxn<VideoQuality> currentVideoQa = Rxn<VideoQuality>();
   AudioQuality? currentAudioQa;
   late VideoDecodeFormatType currentDecodeFormats;
 
@@ -239,15 +239,7 @@ class VideoDetailController extends GetxController
     }
   }
 
-  bool imageStatus = false;
-
-  void onViewImage() {
-    imageStatus = true;
-  }
-
-  void onDismissed(int _) {
-    imageStatus = false;
-  }
+  bool imageview = false;
 
   final isLoginVideo = Accounts.get(AccountType.video).isLogin;
 
@@ -993,7 +985,7 @@ class VideoDetailController extends GetxController
       SmartDialog.showToast('UP主已关闭弹幕');
       return;
     }
-    final isPlaying = plPlayerController.playerStatus.playing;
+    final isPlaying = autoPlay.value && plPlayerController.playerStatus.playing;
     if (isPlaying) {
       await plPlayerController.pause();
     }
@@ -1063,6 +1055,8 @@ class VideoDetailController extends GetxController
 
   /// 更新画质、音质
   void updatePlayer() {
+    final currentVideoQa = this.currentVideoQa.value;
+    if (currentVideoQa == null) return;
     autoPlay.value = true;
     playedTime = plPlayerController.position.value;
     plPlayerController
@@ -1070,7 +1064,7 @@ class VideoDetailController extends GetxController
       ..isBuffering.value = false
       ..buffered.value = Duration.zero;
 
-    final video = findVideoByQa(currentVideoQa.value.code);
+    final video = findVideoByQa(currentVideoQa.code);
     if (firstVideo.codecs != video.codecs) {
       currentDecodeFormats = VideoDecodeFormatType.fromString(video.codecs!);
     }
@@ -1087,6 +1081,15 @@ class VideoDetailController extends GetxController
     }
 
     playerInit();
+  }
+
+  FutureOr<void> _initPlayerIfNeeded() {
+    if ((autoPlay.value ||
+            (plPlayerController.preInitPlayer &&
+                !plPlayerController.processing)) &&
+        childKey.currentState?.mounted == true) {
+      return playerInit();
+    }
   }
 
   Future<void> playerInit({
@@ -1248,10 +1251,8 @@ class VideoDetailController extends GetxController
         );
         setVideoHeight();
         currentDecodeFormats = VideoDecodeFormatType.fromString('avc1');
-        currentVideoQa = Rx(VideoQuality.fromCode(data.quality!));
-        if (autoPlay.value || plPlayerController.preInitPlayer) {
-          await playerInit();
-        }
+        currentVideoQa.value = VideoQuality.fromCode(data.quality!);
+        await _initPlayerIfNeeded();
         isQuerying = false;
         return;
       }
@@ -1282,7 +1283,7 @@ class VideoDetailController extends GetxController
           numbers,
         );
       }
-      currentVideoQa = Rx(VideoQuality.fromCode(resVideoQa));
+      currentVideoQa.value = VideoQuality.fromCode(resVideoQa);
 
       /// 取出符合当前画质的videoList
       final List<VideoItem> videosList = allVideosList
@@ -1354,9 +1355,7 @@ class VideoDetailController extends GetxController
         firstAudio = AudioItem();
         audioUrl = '';
       }
-      if (autoPlay.value || plPlayerController.preInitPlayer) {
-        await playerInit();
-      }
+      await _initPlayerIfNeeded();
     } else {
       autoPlay.value = false;
       videoState.value = result..toast();

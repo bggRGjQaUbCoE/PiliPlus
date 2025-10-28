@@ -29,8 +29,6 @@ class VideoReplyReplyPanel extends CommonSlidePage {
     this.firstFloor,
     required this.isVideoDetail,
     required this.replyType,
-    this.onViewImage,
-    this.onDismissed,
     this.isNested = false,
   });
   final int? id;
@@ -40,20 +38,18 @@ class VideoReplyReplyPanel extends CommonSlidePage {
   final ReplyInfo? firstFloor;
   final bool isVideoDetail;
   final int replyType;
-  final VoidCallback? onViewImage;
-  final ValueChanged<int>? onDismissed;
   final bool isNested;
 
   @override
   State<VideoReplyReplyPanel> createState() => _VideoReplyReplyPanelState();
 
-  static Future<void>? toReply(
-    int oid,
-    int rootId,
+  static Future<void>? toReply({
+    required int oid,
+    required int rootId,
     String? rpIdStr,
-    int type,
+    required int type,
     Uri? uri,
-  ) {
+  }) {
     final rpId = rpIdStr == null ? null : int.tryParse(rpIdStr);
     return Get.to(
       arguments: {
@@ -61,7 +57,7 @@ class VideoReplyReplyPanel extends CommonSlidePage {
         'rpid': rootId,
         'id': ?rpId,
         'type': type,
-        'enterUri': ?uri, // save panel
+        'enterUri': ?uri?.toString(), // save panel
       },
       () => Scaffold(
         resizeToAvoidBottomInset: false,
@@ -231,8 +227,6 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
               index: -1,
             ),
             upMid: _controller.upMid,
-            onViewImage: widget.onViewImage,
-            onDismissed: widget.onDismissed,
             onCheckReply: (item) =>
                 _controller.onCheckReply(item, isManual: true),
           ),
@@ -390,8 +384,6 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
           SmartDialog.showToast('评论可能已被删除');
         }
       },
-      onViewImage: widget.onViewImage,
-      onDismissed: widget.onDismissed,
       onCheckReply: (item) => _controller.onCheckReply(item, isManual: true),
     );
   }

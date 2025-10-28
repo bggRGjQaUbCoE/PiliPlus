@@ -493,7 +493,7 @@ class HeaderControlState extends State<HeaderControl> {
                   leading: const Icon(Icons.play_circle_outline, size: 20),
                   title: const Text('选择画质', style: titleStyle),
                   subtitle: Text(
-                    '当前画质 ${videoDetailCtr.currentVideoQa.value.desc}',
+                    '当前画质 ${videoDetailCtr.currentVideoQa.value?.desc}',
                     style: subTitleStyle,
                   ),
                 ),
@@ -759,7 +759,8 @@ class HeaderControlState extends State<HeaderControl> {
       return;
     }
     final List<FormatItem> videoFormat = videoInfo.supportFormats!;
-    final VideoQuality currentVideoQa = videoDetailCtr.currentVideoQa.value;
+    final VideoQuality? currentVideoQa = videoDetailCtr.currentVideoQa.value;
+    if (currentVideoQa == null) return;
 
     /// 总质量分类
     final int totalQaSam = videoFormat.length;

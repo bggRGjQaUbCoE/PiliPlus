@@ -44,15 +44,11 @@ class InteractiveviewerGallery extends StatefulWidget {
     this.itemBuilder,
     this.maxScale = 8,
     this.minScale = 1.0,
-    this.onPageChanged,
-    this.onDismissed,
-    this.onClose,
     required this.quality,
+    this.onClose,
   });
 
   final int quality;
-
-  final ValueChanged<bool>? onClose;
 
   /// The sources to show.
   final List<SourceModel> sources;
@@ -67,9 +63,7 @@ class InteractiveviewerGallery extends StatefulWidget {
 
   final double minScale;
 
-  final ValueChanged<int>? onPageChanged;
-
-  final ValueChanged<int>? onDismissed;
+  final VoidCallback? onClose;
 
   @override
   State<InteractiveviewerGallery> createState() =>
@@ -121,7 +115,7 @@ class _InteractiveviewerGalleryState extends State<InteractiveviewerGallery>
 
   @override
   void dispose() {
-    widget.onClose?.call(true);
+    widget.onClose?.call();
     _player?.dispose();
     _pageController.dispose();
     _animationController
@@ -206,7 +200,6 @@ class _InteractiveviewerGalleryState extends State<InteractiveviewerGallery>
     if (item.sourceType == SourceType.livePhoto) {
       _onPlay(item.liveUrl!);
     }
-    widget.onPageChanged?.call(page);
     if (_transformationController.value != Matrix4.identity()) {
       // animate the reset for the transformation of the interactive viewer
 
@@ -228,15 +221,6 @@ class _InteractiveviewerGalleryState extends State<InteractiveviewerGallery>
         : url.http2https;
   }
 
-  void onClose() {
-    if (widget.onClose != null) {
-      widget.onClose!(false);
-    } else {
-      Get.back();
-      widget.onDismissed?.call(_pageController.page!.floor());
-    }
-  }
-
   Player? _player;
   VideoController? _videoController;
 
@@ -254,7 +238,7 @@ class _InteractiveviewerGalleryState extends State<InteractiveviewerGallery>
           onNoBoundaryHit: _onNoBoundaryHit,
           maxScale: widget.maxScale,
           minScale: widget.minScale,
-          onDismissed: onClose,
+          onDismissed: Get.back,
           onReset: () {
             if (!_enablePageView) {
               setState(() {
@@ -277,7 +261,7 @@ class _InteractiveviewerGalleryState extends State<InteractiveviewerGallery>
                 onTap: () => EasyThrottle.throttle(
                   'preview',
                   const Duration(milliseconds: 555),
-                  onClose,
+                  Get.back,
                 ),
                 onDoubleTapDown: (TapDownDetails details) {
                   _doubleTapLocalPosition = details.localPosition;

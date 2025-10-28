@@ -162,7 +162,7 @@ List<SettingsModel> get playSettings => [
   ),
   const SettingsModel(
     settingsType: SettingsType.sw1tch,
-    title: '显示 SuperChat',
+    title: '显示 SuperChat (醒目留言)',
     leading: Icon(Icons.live_tv),
     setKey: SettingBoxKey.showSuperChat,
     defaultVal: true,

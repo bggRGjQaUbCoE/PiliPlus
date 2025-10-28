@@ -21,7 +21,6 @@ import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/custom_layout.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
-import 'package:PiliPlus/common/widgets/marquee.dart' show ContextSingleTicker;
 import 'package:PiliPlus/models/common/badge_type.dart';
 import 'package:PiliPlus/models/common/image_preview_type.dart';
 import 'package:PiliPlus/utils/context_ext.dart';
@@ -65,7 +64,6 @@ class CustomGridView extends StatelessWidget {
     required this.maxWidth,
     required this.picArr,
     this.onViewImage,
-    this.onDismissed,
     this.fullScreen = false,
   });
 
@@ -73,7 +71,6 @@ class CustomGridView extends StatelessWidget {
   final double space;
   final List<ImageModel> picArr;
   final VoidCallback? onViewImage;
-  final ValueChanged<int>? onDismissed;
   final bool fullScreen;
 
   static bool horizontalPreview = Pref.horizontalPreview;
@@ -96,20 +93,18 @@ class CustomGridView extends StatelessWidget {
         !context.mediaQuerySize.isPortrait) {
       final scaffoldState = Scaffold.maybeOf(context);
       if (scaffoldState != null) {
+        onViewImage?.call();
         PageUtils.onHorizontalPreviewState(
           scaffoldState,
-          ContextSingleTicker(scaffoldState.context),
           imgList,
           index,
         );
         return;
       }
     }
-    onViewImage?.call();
     PageUtils.imageView(
       initialPage: index,
       imgList: imgList,
-      onDismissed: onDismissed,
     );
   }
 

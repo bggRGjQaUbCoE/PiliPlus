@@ -41,17 +41,16 @@ abstract class PageUtils {
   static Future<void> imageView({
     int initialPage = 0,
     required List<SourceModel> imgList,
-    ValueChanged<int>? onDismissed,
     int? quality,
   }) {
     return Get.key.currentState!.push<void>(
       HeroDialogRoute(
-        builder: (context) => InteractiveviewerGallery(
-          sources: imgList,
-          initIndex: initialPage,
-          onDismissed: onDismissed,
-          quality: quality ?? GlobalData().imgQuality,
-        ),
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            InteractiveviewerGallery(
+              sources: imgList,
+              initIndex: initialPage,
+              quality: quality ?? GlobalData().imgQuality,
+            ),
       ),
     );
   }
@@ -555,42 +554,28 @@ abstract class PageUtils {
 
   static void onHorizontalPreviewState(
     ScaffoldState state,
-    TickerProvider vsync,
     List<SourceModel> imgList,
     int index,
   ) {
-    final ctr = AnimationController(
-      vsync: vsync,
-      duration: const Duration(milliseconds: 200),
+    final animController = AnimationController(
+      vsync: state,
+      duration: Duration.zero,
+      reverseDuration: Duration.zero,
     )..forward();
     state.showBottomSheet(
       constraints: const BoxConstraints(),
       (context) {
-        return FadeTransition(
-          opacity: Tween<double>(begin: 0, end: 1).animate(ctr),
-          child: InteractiveviewerGallery(
-            sources: imgList,
-            initIndex: index,
-            onClose: (value) async {
-              if (!value) {
-                try {
-                  await ctr.reverse();
-                } catch (_) {}
-              }
-              try {
-                ctr.dispose();
-              } catch (_) {}
-              if (!value) {
-                Get.back();
-              }
-            },
-            quality: GlobalData().imgQuality,
-          ),
+        return InteractiveviewerGallery(
+          sources: imgList,
+          initIndex: index,
+          quality: GlobalData().imgQuality,
+          onClose: animController.dispose,
         );
       },
       enableDrag: false,
       elevation: 0.0,
       backgroundColor: Colors.transparent,
+      transitionAnimationController: animController,
       sheetAnimationStyle: const AnimationStyle(duration: Duration.zero),
     );
   }

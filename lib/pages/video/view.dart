@@ -6,6 +6,7 @@ import 'dart:ui';
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/widgets/custom_icon.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
+import 'package:PiliPlus/common/widgets/interactiveviewer_gallery/hero_dialog_route.dart';
 import 'package:PiliPlus/common/widgets/keep_alive_wrapper.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart';
 import 'package:PiliPlus/http/loading_state.dart';
@@ -364,7 +365,8 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
   @override
   // 离开当前页面时
   Future<void> didPushNext() async {
-    if (videoDetailController.imageStatus) {
+    if (Get.routing.route is HeroDialogRoute) {
+      videoDetailController.imageview = true;
       return;
     }
 
@@ -395,7 +397,8 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
   @override
   // 返回当前页面时
   Future<void> didPopNext() async {
-    if (videoDetailController.imageStatus) {
+    if (videoDetailController.imageview) {
+      videoDetailController.imageview = false;
       return;
     }
 
@@ -519,7 +522,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
       ..addListener(animListener);
     if (Utils.isMobile && mounted && isShowing && !isFullScreen) {
       if (isPortrait) {
-        if (!videoDetailController.imageStatus) {
+        if (!videoDetailController.imageview) {
           showStatusBar();
         }
       } else if (!videoDetailController.horizontalScreen) {
@@ -1370,7 +1373,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
       child = plPlayer(width: maxWidth, height: maxHeight, isPipMode: true);
     } else if (!videoDetailController.horizontalScreen) {
       child = childWhenDisabled;
-    } else if (maxWidth > maxHeight * kScreenRatio) {
+    } else if (maxWidth / maxHeight >= kScreenRatio) {
       child = childWhenDisabledLandscape;
     } else if (maxWidth * (9 / 16) < (2 / 5) * maxHeight) {
       child = childWhenDisabled;
@@ -1742,7 +1745,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                 showEpisodes: showEpisodes,
                 onShowMemberPage: onShowMemberPage,
                 isPortrait: isPortrait,
-                isHorizontal: isHorizontal ?? width! > height! * kScreenRatio,
+                isHorizontal: isHorizontal ?? width! / height! >= kScreenRatio,
               ),
               if (needRelated &&
                   videoDetailController
@@ -1944,8 +1947,6 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     key: videoReplyPanelKey,
     isNested: isNested,
     heroTag: heroTag,
-    onViewImage: videoDetailController.onViewImage,
-    onDismissed: videoDetailController.onDismissed,
   );
 
   // ai总结

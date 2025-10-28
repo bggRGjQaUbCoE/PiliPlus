@@ -653,6 +653,9 @@ class PlPlayerController {
     return _instance!;
   }
 
+  bool _processing = false;
+  bool get processing => _processing;
+
   // 初始化资源
   Future<void> setDataSource(
     DataSource dataSource, {
@@ -681,6 +684,7 @@ class PlPlayerController {
     Volume? volume,
   }) async {
     try {
+      _processing = true;
       this.isLive = isLive;
       _videoType = videoType ?? VideoType.ugc;
       this.width = width;
@@ -741,6 +745,8 @@ class PlPlayerController {
         debugPrint(stackTrace.toString());
         debugPrint('plPlayer err:  $err');
       }
+    } finally {
+      _processing = false;
     }
   }
 

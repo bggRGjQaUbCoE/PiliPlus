@@ -28,6 +28,7 @@ void imageSaveDialog({
         return iconButton(
           icon: icon,
           iconSize: 20,
+          tooltip: tooltip,
           onPressed: onPressed,
         );
       }
@@ -57,19 +58,19 @@ void imageSaveDialog({
                 Positioned(
                   right: 8,
                   top: 8,
-                  child: Container(
+                  child: SizedBox(
                     width: 30,
                     height: 30,
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.3),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const IconButton(
+                    child: IconButton(
+                      tooltip: '关闭',
                       style: ButtonStyle(
-                        padding: WidgetStatePropertyAll(EdgeInsets.zero),
+                        backgroundColor: WidgetStatePropertyAll(
+                          Colors.black.withValues(alpha: 0.3),
+                        ),
+                        padding: const WidgetStatePropertyAll(EdgeInsets.zero),
                       ),
                       onPressed: SmartDialog.dismiss,
-                      icon: Icon(
+                      icon: const Icon(
                         Icons.close,
                         size: 18,
                         color: Colors.white,

@@ -119,7 +119,7 @@ class _MemberVideoState extends State<MemberVideo>
           Obx(
             () => !_controller.isLocating.value
                 ? Positioned(
-                    right: kFloatingActionButtonMargin + padding.right,
+                    right: kFloatingActionButtonMargin,
                     bottom: kFloatingActionButtonMargin + padding.bottom,
                     child: FloatingActionButton.extended(
                       onPressed: () {

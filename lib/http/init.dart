@@ -70,8 +70,7 @@ class Request {
 
       String jsonData = json.encode({
         '3064': 1,
-        '39c8':
-            '${account is AnonymousAccount ? '333.1365' : '333.788'}.fp.risk',
+        '39c8': '333.1387.fp.risk',
         '3c43': {
           'adca': 'Linux',
           'bfe9': randPngEnd.substring(randPngEnd.length - 50),

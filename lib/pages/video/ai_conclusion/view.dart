@@ -28,6 +28,7 @@ class AiConclusionPanel extends CommonSlidePage {
   }) {
     return CustomScrollView(
       key: key,
+      shrinkWrap: !tap,
       physics: const AlwaysScrollableScrollPhysics(),
       slivers: [
         if (res.summary?.isNotEmpty == true) ...[
@@ -57,7 +58,7 @@ class AiConclusionPanel extends CommonSlidePage {
             padding: EdgeInsets.only(
               left: 14,
               right: 14,
-              bottom: MediaQuery.viewPaddingOf(context).bottom + 100,
+              bottom: !tap ? 0 : MediaQuery.viewPaddingOf(context).bottom + 100,
             ),
             sliver: SliverList.builder(
               itemCount: res.outline!.length,

@@ -3,9 +3,12 @@ import 'dart:math';
 import 'package:PiliPlus/common/widgets/pair.dart';
 import 'package:PiliPlus/http/constants.dart';
 import 'package:PiliPlus/http/init.dart';
+import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/sponsor_block/segment_type.dart';
 import 'package:PiliPlus/models/common/sponsor_block/skip_type.dart';
 import 'package:PiliPlus/pages/setting/slide_color_picker.dart';
+import 'package:PiliPlus/utils/duration_utils.dart';
+import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
@@ -35,7 +38,8 @@ class _SponsorBlockPageState extends State<SponsorBlockPage> {
   bool _blockToast = Pref.blockToast;
   String _blockServer = Pref.blockServer;
   bool _blockTrack = Pref.blockTrack;
-  final Rx<bool?> _serverStatus = Rx<bool?>(null);
+  final _serverStatus = Rxn<bool>();
+  final _userInfo = LoadingState<_UserInfo>.loading().obs;
 
   Box setting = GStorage.setting;
 
@@ -43,6 +47,7 @@ class _SponsorBlockPageState extends State<SponsorBlockPage> {
   void initState() {
     super.initState();
     _checkServerStatus();
+    _getUserInfo();
   }
 
   @override
@@ -58,6 +63,22 @@ class _SponsorBlockPageState extends State<SponsorBlockPage> {
           res.data is String &&
           Utils.isStringNumeric(res.data);
     });
+  }
+
+  Future<void> _getUserInfo() async {
+    final params = {
+      'userID': _userId,
+      'values': '["viewCount","minutesSaved","segmentCount"]',
+    };
+    final res = await Request().get(
+      '$_blockServer/api/userInfo',
+      queryParameters: params,
+    );
+    if (res.statusCode == 200) {
+      _userInfo.value = Success(_UserInfo.fromJson(res.data));
+    } else {
+      _userInfo.value = Error(res.data['message']);
+    }
   }
 
   Widget _blockLimitItem(
@@ -270,6 +291,37 @@ class _SponsorBlockPageState extends State<SponsorBlockPage> {
     },
   );
 
+  Widget _blockUserInfo(
+    ThemeData theme,
+    TextStyle titleStyle,
+    TextStyle subTitleStyle,
+  ) => Obx(
+    () {
+      return ListTile(
+        dense: true,
+        onTap: () {
+          _userInfo.value = LoadingState.loading();
+          _getUserInfo();
+        },
+        title: Text(
+          '您的信息',
+          style: titleStyle,
+        ),
+        subtitle: switch (_userInfo.value) {
+          Loading() => const SizedBox.shrink(),
+          Success<_UserInfo>(:final response) => Text(
+            response.toString(),
+            style: subTitleStyle,
+          ),
+          Error(:final errMsg) => Text(
+            errMsg ?? '服务器错误',
+            style: subTitleStyle.copyWith(color: theme.colorScheme.error),
+          ),
+        },
+      );
+    },
+  );
+
   Widget _blockServerItem(
     ThemeData theme,
     TextStyle titleStyle,
@@ -316,6 +368,8 @@ class _SponsorBlockPageState extends State<SponsorBlockPage> {
                       _blockServer = _textController.text;
                       setting.put(SettingBoxKey.blockServer, _blockServer);
                       Request.accountManager.blockServer = _blockServer;
+                      _checkServerStatus();
+                      _getUserInfo();
                       (context as Element).markNeedsBuild();
                     },
                     child: const Text('确定'),
@@ -461,6 +515,10 @@ class _SponsorBlockPageState extends State<SponsorBlockPage> {
           SliverToBoxAdapter(child: _blockToastItem(titleStyle)),
           sliverDivider,
           SliverToBoxAdapter(child: _blockTrackItem(titleStyle, subTitleStyle)),
+          sliverDivider,
+          SliverToBoxAdapter(
+            child: _blockUserInfo(theme, titleStyle, subTitleStyle),
+          ),
           dividerL,
           SliverList.separated(
             itemCount: _blockSettings.length,
@@ -597,5 +655,36 @@ class _SponsorBlockPageState extends State<SponsorBlockPage> {
         );
       },
     );
+  }
+}
+
+class _UserInfo {
+  final int viewCount;
+  final double minutesSaved;
+  final int segmentCount;
+
+  const _UserInfo({
+    required this.viewCount,
+    required this.minutesSaved,
+    required this.segmentCount,
+  });
+
+  factory _UserInfo.fromJson(Map<String, dynamic> json) => _UserInfo(
+    viewCount: json['viewCount'],
+    minutesSaved: (json['minutesSaved'] as num).toDouble(),
+    segmentCount: json['segmentCount'],
+  );
+
+  @override
+  String toString() {
+    String minutes = DurationUtils.formatTimeDuration(
+      Duration(minutes: minutesSaved.round()),
+    );
+    if (minutes.isEmpty) {
+      minutes = '0分钟';
+    }
+    return ('您提交了 ${NumUtils.formatPositiveDecimal(segmentCount)} 片段\n'
+        '您为大家节省了 ${NumUtils.formatPositiveDecimal(viewCount)} 片段\n'
+        '($minutes 的生命)');
   }
 }

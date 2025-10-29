@@ -1,6 +1,6 @@
 import 'dart:math' show pow;
 
-abstract class DurationUtils {
+abstract final class DurationUtils {
   static String formatDuration(num? seconds) {
     if (seconds == null || seconds == 0) {
       return '00:00';
@@ -30,10 +30,10 @@ abstract class DurationUtils {
     return duration;
   }
 
-  static String formatDurationBetween(int startMillis, int endMillis) {
-    int diffMillis = endMillis - startMillis;
-    final duration = Duration(milliseconds: diffMillis);
+  static String formatDurationBetween(int startMillis, int endMillis) =>
+      formatTimeDuration(Duration(milliseconds: endMillis - startMillis));
 
+  static String formatTimeDuration(Duration duration) {
     final inDays = duration.inDays;
     final daysLeft = inDays % 365;
     final years = inDays ~/ 365;
@@ -42,14 +42,14 @@ abstract class DurationUtils {
     final hours = duration.inHours % 24;
     final minutes = duration.inMinutes % 60;
 
-    var format = '';
+    final format = StringBuffer();
 
-    if (years > 0) format += '$years年';
-    if (months > 0) format += '$months月';
-    if (days > 0) format += '$days天';
-    if (hours > 0) format += '$hours小时';
-    if (minutes > 0) format += '$minutes分钟';
+    if (years > 0) format.write('$years年');
+    if (months > 0) format.write('$months月');
+    if (days > 0) format.write('$days天');
+    if (hours > 0) format.write('$hours小时');
+    if (minutes > 0) format.write('$minutes分钟');
 
-    return format;
+    return format.toString();
   }
 }

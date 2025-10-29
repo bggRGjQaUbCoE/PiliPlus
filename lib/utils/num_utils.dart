@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart' show kDebugMode, debugPrint;
 import 'package:get/get_utils/get_utils.dart';
 
-abstract class NumUtils {
+abstract final class NumUtils {
   static final _numRegExp = RegExp(r'([\d\.]+)([千万亿])?');
 
   static int _getUnit(String? unit) {
@@ -58,5 +58,25 @@ abstract class NumUtils {
     } else {
       return number.toString();
     }
+  }
+
+  static String formatPositiveDecimal(int number) {
+    if (number < 1000) return number.toString();
+
+    final numStr = number.toString();
+    final length = numStr.length;
+    final sb = StringBuffer();
+
+    int firstLength = length % 3;
+    if (firstLength == 0) firstLength = 3;
+
+    sb.write(numStr.substring(0, firstLength));
+    for (int i = firstLength; i < length; i += 3) {
+      sb
+        ..write(',')
+        ..write(numStr.substring(i, i + 3));
+    }
+
+    return sb.toString();
   }
 }

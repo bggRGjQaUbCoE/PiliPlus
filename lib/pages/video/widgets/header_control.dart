@@ -644,8 +644,8 @@ class HeaderControlState extends State<HeaderControl> {
                                 lanDoc: name.split('.').firstOrNull ?? name,
                               ),
                             )
-                            ..vttSubtitles[length] = sub
-                            ..setSubtitle(length + 1);
+                            ..vttSubtitles[length] = sub;
+                          await videoDetailCtr.setSubtitle(length + 1);
                         }
                       }
                     } catch (e) {

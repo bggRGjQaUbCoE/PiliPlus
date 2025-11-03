@@ -121,7 +121,7 @@ class VideoDetailController extends GetxController
   final videoPlayerKey = GlobalKey();
   final childKey = GlobalKey<ScaffoldState>();
 
-  PlPlayerController plPlayerController = PlPlayerController.getInstance()
+  final plPlayerController = PlPlayerController.getInstance()
     ..setCurrBrightness(-1.0);
   bool get setSystemBrightness => plPlayerController.setSystemBrightness;
 
@@ -755,7 +755,7 @@ class VideoDetailController extends GetxController
   Future<void> handleSBData(List<SegmentItemModel> list) async {
     if (list.isNotEmpty) {
       try {
-        Completer? completer;
+        Future? future;
         final duration = list.first.videoDuration ?? data.timeLength!;
         // segmentList
         segmentList.addAll(
@@ -813,21 +813,20 @@ class VideoDetailController extends GetxController
                         case SkipType.alwaysSkip:
                         case SkipType.skipOnce:
                           segmentModel.hasSkipped = true;
-                          completer = Completer();
                           final videoPlayerController =
                               plPlayerController.videoPlayerController!;
                           if (videoPlayerController.state.playing) {
-                            onSkip(
+                            future = onSkip(
                               segmentModel,
-                            ).whenComplete(completer!.complete);
+                            );
                           } else {
                             videoPlayerController.stream.playing.firstWhere((
                               e,
                             ) {
                               if (e) {
-                                onSkip(
+                                future = onSkip(
                                   segmentModel,
-                                ).whenComplete(completer!.complete);
+                                );
                                 return true;
                               }
                               return false;
@@ -860,7 +859,7 @@ class VideoDetailController extends GetxController
 
         if (positionSubscription == null &&
             (autoPlay.value || plPlayerController.preInitPlayer)) {
-          await completer?.future;
+          await future;
           initSkip();
         }
       } catch (e) {
@@ -1190,11 +1189,11 @@ class VideoDetailController extends GetxController
       seasonId: isUgc ? null : seasonId,
       pgcType: isUgc ? null : pgcType,
       videoType: videoType,
-      callback: () {
+      callback: () async {
         if (videoState.value is! Success) {
           videoState.value = const Success(null);
         }
-        setSubtitle(vttSubtitlesIndex.value);
+        await setSubtitle(vttSubtitlesIndex.value);
       },
       width: firstVideo.width,
       height: firstVideo.height,
@@ -1486,16 +1485,16 @@ class VideoDetailController extends GetxController
   // 设定字幕轨道
   Future<void> setSubtitle(int index) async {
     if (index <= 0) {
-      plPlayerController.videoPlayerController?.setSubtitleTrack(
+      await plPlayerController.videoPlayerController?.setSubtitleTrack(
         SubtitleTrack.no(),
       );
       vttSubtitlesIndex.value = index;
       return;
     }
 
-    void setSub(String subtitle) {
+    Future<void> setSub(String subtitle) async {
       final sub = subtitles[index - 1];
-      plPlayerController.videoPlayerController?.setSubtitleTrack(
+      await plPlayerController.videoPlayerController?.setSubtitleTrack(
         SubtitleTrack.data(
           subtitle,
           title: sub.lanDoc,
@@ -1507,14 +1506,14 @@ class VideoDetailController extends GetxController
 
     String? subtitle = vttSubtitles[index - 1];
     if (subtitle != null) {
-      setSub(subtitle);
+      await setSub(subtitle);
     } else {
       var result = await VideoHttp.vttSubtitles(
         subtitles[index - 1].subtitleUrl!,
       );
       if (result != null) {
         vttSubtitles[index - 1] = result;
-        setSub(result);
+        await setSub(result);
       }
     }
   }
@@ -1634,7 +1633,7 @@ class VideoDetailController extends GetxController
                 ? 1
                 : 0,
         };
-        setSubtitle(idx);
+        await setSubtitle(idx);
       }
     }
   }

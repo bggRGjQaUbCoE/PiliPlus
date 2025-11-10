@@ -1,5 +1,6 @@
 // mpv --hwdec=help
 enum HwDecType {
+  yes('yes', '默认，启用其他需要关闭该选项'),
   no('no', '启用软解'),
   auto('auto', '启用任意可用解码器'),
   autoSafe('auto-safe', '启用最佳解码器'),

@@ -1,7 +1,8 @@
 import 'dart:async';
-import 'dart:convert' show jsonDecode, utf8;
-import 'dart:io' show Directory, File, FileSystemEntity;
+import 'dart:convert' show jsonDecode, jsonEncode;
+import 'dart:io' show Directory, File, FileSystemEntity, gzip;
 
+import 'package:PiliPlus/grpc/dm.dart';
 import 'package:PiliPlus/http/download.dart';
 import 'package:PiliPlus/http/init.dart';
 import 'package:PiliPlus/models/common/video/video_quality.dart';
@@ -12,13 +13,12 @@ import 'package:PiliPlus/models_new/pgc/pgc_info_model/result.dart';
 import 'package:PiliPlus/models_new/video/video_detail/data.dart';
 import 'package:PiliPlus/models_new/video/video_detail/episode.dart' as ugc;
 import 'package:PiliPlus/models_new/video/video_detail/page.dart';
+import 'package:PiliPlus/pages/danmaku/controller.dart';
 import 'package:PiliPlus/services/download/download_manager.dart';
 import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:PiliPlus/utils/path_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
-import 'package:archive/archive.dart' show Inflate;
-import 'package:dio/dio.dart' show Options, ResponseType;
 import 'package:flutter/foundation.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -30,7 +30,7 @@ import 'package:synchronized/synchronized.dart';
 class DownloadService extends GetxService {
   static const _entryFile = 'entry.json';
   static const _indexFile = 'index.json';
-  static const _danmakuFile = 'danmaku.xml';
+  static const danmakuFile = 'danmaku.pb.gz';
   static const _coverFile = 'cover.jpg';
 
   final _lock = Lock();
@@ -234,8 +234,8 @@ class DownloadService extends GetxService {
   Future<void> _createDownload(BiliDownloadEntryInfo entry) async {
     final entryDir = await _getDownloadEntryDir(entry);
     final entryJsonFile = File(path.join(entryDir.path, _entryFile));
-    final entryJsonStr = Utils.jsonEncoder.convert(entry.toJson());
-    await entryJsonFile.writeAsBytes(utf8.encode(entryJsonStr));
+    final entryJsonStr = jsonEncode(entry.toJson());
+    await entryJsonFile.writeAsString(entryJsonStr);
     entry
       ..pageDirPath = entryDir.parent.path
       ..entryDirPath = entryDir.path
@@ -301,26 +301,34 @@ class DownloadService extends GetxService {
     if (cid == null) {
       return false;
     }
-    final danmakuXMLFile = File(path.join(entry.entryDirPath, _danmakuFile));
-    if (isUpdate || !danmakuXMLFile.existsSync()) {
+    final danmakuFile = File(
+      path.join(entry.entryDirPath, DownloadService.danmakuFile),
+    );
+    if (isUpdate || !danmakuFile.existsSync()) {
       try {
         if (!isUpdate) {
           _updateCurStatus(DownloadStatus.getDanmaku);
         }
-        final res = await Request().get(
-          'https://comment.bilibili.com/$cid.xml',
-          options: Options(responseType: ResponseType.bytes),
-        );
-        final xmlBytes = Inflate((res.data as Uint8List)).getBytes();
-        await danmakuXMLFile.writeAsBytes(xmlBytes);
+        final seg = PlDanmakuController.calcSegment(entry.totalTimeMilli) + 1;
+
+        final res = await Future.wait([
+          for (var i = 1; i <= seg; i++)
+            DmGrpc.dmSegMobile(cid: cid, segmentIndex: i),
+        ]);
+
+        final danmaku = res.removeAt(0).data;
+        for (var i in res) {
+          danmaku.elems.addAll(i.data.elems);
+        }
+        res.clear();
+        danmakuFile.writeAsBytes(gzip.encode(danmaku.writeToBuffer()));
+
         return true;
       } catch (e) {
         if (!isUpdate) {
           _updateCurStatus(DownloadStatus.failDanmaku);
         }
-        if (kDebugMode) {
-          SmartDialog.showToast(e.toString());
-        }
+        if (kDebugMode) SmartDialog.showToast(e.toString());
         return false;
       }
     }

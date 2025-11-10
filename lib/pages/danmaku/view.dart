@@ -48,10 +48,10 @@ class _PlDanmakuState extends State<PlDanmaku> {
     );
     if (playerController.enableShowDanmaku.value) {
       if (widget.isFileSource) {
-        _plDanmakuController.initXmlDmIfNeeded();
+        _plDanmakuController.initFileDmIfNeeded();
       } else {
         _plDanmakuController.queryDanmaku(
-          _plDanmakuController.calcSegment(
+          PlDanmakuController.calcSegment(
             playerController.position.value.inMilliseconds,
           ),
         );

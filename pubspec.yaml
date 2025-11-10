@@ -220,7 +220,6 @@ dependencies:
     git:
       url: https://github.com/bggRGjQaUbCoE/super_sliver_list.git
       ref: mod
-  xml: ^6.6.1
 
   vector_math: any
   fixnum: any

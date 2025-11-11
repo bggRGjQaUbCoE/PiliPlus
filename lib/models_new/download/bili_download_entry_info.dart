@@ -119,66 +119,69 @@ class BiliDownloadEntryInfo {
     required DownloadService downloadService,
     required bool isPage,
   }) {
-    return Obx(() {
-      final curDownload = downloadService.curDownload.value;
-      final isCurr =
-          curDownload != null &&
-          (isPage ? curDownload.pageId == pageId : curDownload.cid == cid);
-      late final status = curDownload?.status;
-      late final isDownloading = status == DownloadStatus.downloading;
-      late final color = isCurr && status != DownloadStatus.pause
-          ? theme.colorScheme.primary
-          : theme.colorScheme.outline;
-      return Column(
-        spacing: 6,
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                isCurr ? status!.message : '暂停中',
-                style: TextStyle(
-                  fontSize: 12,
-                  height: 1,
-                  color: color,
+    return RepaintBoundary(
+      // TODO: refresh `downloadedBytes` only cause unnecessary repaint
+      child: Obx(() {
+        final curDownload = downloadService.curDownload.value;
+        final isCurr =
+            curDownload != null &&
+            (isPage ? curDownload.pageId == pageId : curDownload.cid == cid);
+        late final status = curDownload?.status;
+        late final isDownloading = status == DownloadStatus.downloading;
+        late final color = isCurr && status != DownloadStatus.pause
+            ? theme.colorScheme.primary
+            : theme.colorScheme.outline;
+        return Column(
+          spacing: 6,
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  isCurr ? status!.message : '暂停中',
+                  style: TextStyle(
+                    fontSize: 12,
+                    height: 1,
+                    color: color,
+                  ),
                 ),
-              ),
-              Text(
-                isCurr
-                    ? isDownloading || status == DownloadStatus.pause
-                          ? '  ${CacheManager.formatSize(curDownload.downloadedBytes)}/${CacheManager.formatSize(curDownload.totalBytes)}'
-                          : ''
-                    : totalBytes == 0
-                    ? ''
-                    : '  ${CacheManager.formatSize(downloadedBytes)}/${CacheManager.formatSize(totalBytes)}',
-                style: TextStyle(
-                  fontSize: 12,
-                  height: 1,
-                  color: color,
+                Text(
+                  isCurr
+                      ? isDownloading || status == DownloadStatus.pause
+                            ? '  ${CacheManager.formatSize(curDownload.downloadedBytes)}/${CacheManager.formatSize(curDownload.totalBytes)}'
+                            : ''
+                      : totalBytes == 0
+                      ? ''
+                      : '  ${CacheManager.formatSize(downloadedBytes)}/${CacheManager.formatSize(totalBytes)}',
+                  style: TextStyle(
+                    fontSize: 12,
+                    height: 1,
+                    color: color,
+                  ),
                 ),
-              ),
-            ],
-          ),
-          LinearProgressIndicator(
-            // ignore: deprecated_member_use
-            year2023: true,
-            minHeight: 2.5,
-            borderRadius: StyleString.mdRadius,
-            color: color,
-            backgroundColor: theme.highlightColor,
-            value: isCurr
-                ? curDownload.totalBytes == 0
-                      ? 0
-                      : curDownload.downloadedBytes / curDownload.totalBytes
-                : totalBytes == 0
-                ? 0
-                : downloadedBytes / totalBytes,
-          ),
-        ],
-      );
-    });
+              ],
+            ),
+            LinearProgressIndicator(
+              // ignore: deprecated_member_use
+              year2023: true,
+              minHeight: 2.5,
+              borderRadius: StyleString.mdRadius,
+              color: color,
+              backgroundColor: theme.highlightColor,
+              value: isCurr
+                  ? curDownload.totalBytes == 0
+                        ? 0
+                        : curDownload.downloadedBytes / curDownload.totalBytes
+                  : totalBytes == 0
+                  ? 0
+                  : downloadedBytes / totalBytes,
+            ),
+          ],
+        );
+      }),
+    );
   }
 
   BiliDownloadEntryInfo({

@@ -4,8 +4,8 @@ import 'dart:typed_data';
 import 'package:PiliPlus/grpc/bilibili/community/service/dm/v1.pb.dart';
 import 'package:PiliPlus/grpc/dm.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
-import 'package:PiliPlus/services/download/download_service.dart';
 import 'package:PiliPlus/utils/accounts.dart';
+import 'package:PiliPlus/utils/path_utils.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:path/path.dart' as path;
 
@@ -125,7 +125,7 @@ class PlDanmakuController {
   Future<void> _initFileDm() async {
     try {
       final file = File(
-        path.join(plPlayerController.dirPath!, DownloadService.danmakuFile),
+        path.join(plPlayerController.dirPath!, PathUtils.danmakuName),
       );
       if (!file.existsSync() || file.lengthSync() == 0) return;
       final bytes = await gzip.decoder

@@ -6,7 +6,6 @@ import 'package:get/get.dart';
 
 class DownloadPageController extends GetxController {
   final _downloadService = Get.find<DownloadService>();
-  late final StreamSubscription _sub;
   final pages = RxList<DownloadPageInfo>();
   final flag = RxInt(0);
 
@@ -14,14 +13,12 @@ class DownloadPageController extends GetxController {
   void onInit() {
     super.onInit();
     _loadList();
-    _sub = _downloadService.downloaFlag.listen((_) {
-      _loadList();
-    });
+    _downloadService.flagNotifier.add(_loadList);
   }
 
   @override
   void onClose() {
-    _sub.cancel();
+    _downloadService.flagNotifier.remove(_loadList);
     super.onClose();
   }
 

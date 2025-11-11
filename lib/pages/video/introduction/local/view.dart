@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
@@ -6,8 +8,10 @@ import 'package:PiliPlus/models/common/video/video_quality.dart';
 import 'package:PiliPlus/models_new/download/bili_download_entry_info.dart';
 import 'package:PiliPlus/pages/video/introduction/local/controller.dart';
 import 'package:PiliPlus/utils/duration_utils.dart';
+import 'package:PiliPlus/utils/path_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:path/path.dart' as path;
 
 class LocalIntroPanel extends StatefulWidget {
   const LocalIntroPanel({super.key, required this.heroTag});
@@ -49,6 +53,7 @@ class _LocalIntroPanelState extends State<LocalIntroPanel>
     BiliDownloadEntryInfo entry,
   ) {
     final outline = theme.colorScheme.outline;
+    final cover = File(path.join(entry.entryDirPath, PathUtils.coverName));
     return Padding(
       padding: const EdgeInsets.only(bottom: 2),
       child: SizedBox(
@@ -73,11 +78,17 @@ class _LocalIntroPanelState extends State<LocalIntroPanel>
                   Stack(
                     clipBehavior: Clip.none,
                     children: [
-                      NetworkImgLayer(
-                        src: entry.cover,
-                        width: 140.8,
-                        height: 88,
-                      ),
+                      cover.existsSync()
+                          ? Image.file(
+                              cover,
+                              width: 140.8,
+                              height: 88,
+                            )
+                          : NetworkImgLayer(
+                              src: entry.cover,
+                              width: 140.8,
+                              height: 88,
+                            ),
                       PBadge(
                         text: DurationUtils.formatDuration(
                           entry.totalTimeMilli ~/ 1000,

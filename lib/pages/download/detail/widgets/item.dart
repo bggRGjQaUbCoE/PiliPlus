@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
@@ -11,11 +13,13 @@ import 'package:PiliPlus/services/download/download_service.dart';
 import 'package:PiliPlus/utils/cache_manager.dart';
 import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
+import 'package:PiliPlus/utils/path_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
+import 'package:path/path.dart' as path;
 
 class DetailItem extends StatelessWidget {
   const DetailItem({
@@ -141,11 +145,22 @@ class DetailItem extends StatelessWidget {
                   AspectRatio(
                     aspectRatio: StyleString.aspectRatio,
                     child: LayoutBuilder(
-                      builder: (context, constraints) => NetworkImgLayer(
-                        src: entry.cover,
-                        width: constraints.maxWidth,
-                        height: constraints.maxHeight,
-                      ),
+                      builder: (context, constraints) {
+                        final cover = File(
+                          path.join(entry.entryDirPath, PathUtils.coverName),
+                        );
+                        return cover.existsSync()
+                            ? Image.file(
+                                cover,
+                                width: constraints.maxWidth,
+                                height: constraints.maxHeight,
+                              )
+                            : NetworkImgLayer(
+                                src: entry.cover,
+                                width: constraints.maxWidth,
+                                height: constraints.maxHeight,
+                              );
+                      },
                     ),
                   ),
                   if (entry.videoQuality case final videoQuality?)

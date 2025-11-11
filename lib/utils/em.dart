@@ -1,5 +1,6 @@
 abstract class Em {
   static final _exp = RegExp('<[^>]*>([^<]*)</[^>]*>');
+  static final _htmlRegExp = RegExp(r'&(lt|gt|quot|apos|nbsp|amp);');
 
   static String regCate(String origin) {
     Iterable<Match> matches = _exp.allMatches(origin);
@@ -17,14 +18,21 @@ abstract class Em {
       },
       onNonMatch: (String str) {
         if (str != '') {
-          str = str
-              .replaceAll('&lt;', '<')
-              .replaceAll('&gt;', '>')
-              .replaceAll('&quot;', '"')
-              .replaceAll('&apos;', "'")
-              .replaceAll('&nbsp;', " ")
-              .replaceAll('&amp;', "&");
-          res.add((isEm: false, text: str));
+          res.add((
+            isEm: false,
+            text: str.replaceAllMapped(
+              _htmlRegExp,
+              (m) => switch (m.group(1)) {
+                'lt' => '<',
+                'gt' => '>',
+                'quot' => '"',
+                'apos' => "'",
+                'nbsp' => ' ',
+                'amp' => '&',
+                _ => m.group(0)!,
+              },
+            ),
+          ));
         }
         return '';
       },

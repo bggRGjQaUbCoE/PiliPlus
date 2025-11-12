@@ -260,6 +260,14 @@ extension DirectoryExt on Directory {
       await delete(recursive: recursive);
     } catch (_) {}
   }
+
+  Future<bool> lengthGte(int length) async {
+    int count = 0;
+    await for (var _ in list()) {
+      if (++count == length) return true;
+    }
+    return false;
+  }
 }
 
 extension SizeExt on Size {

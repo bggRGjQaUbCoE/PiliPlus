@@ -270,8 +270,8 @@ class DownloadService extends GetxService {
 
   Future<void> startDownload(BiliDownloadEntryInfo entry) {
     return _lock.synchronized(() async {
-      _downloadManager?.cancel(isDelete: false);
-      _audioDownloadManager?.cancel(isDelete: false);
+      await _downloadManager?.cancel(isDelete: false);
+      await _audioDownloadManager?.cancel(isDelete: false);
       _downloadManager = null;
       _audioDownloadManager = null;
       final prevStatus = curDownload.value?.status?.index;
@@ -506,7 +506,7 @@ class DownloadService extends GetxService {
     }
     final downloadDir = Directory(entry.pageDirPath);
     if (downloadDir.existsSync()) {
-      if (downloadDir.listSync().length <= 1) {
+      if (!await downloadDir.lengthGte(2)) {
         await downloadDir.tryDel(recursive: true);
       } else {
         final entryDir = Directory(entry.entryDirPath);
@@ -530,8 +530,8 @@ class DownloadService extends GetxService {
     required bool isDelete,
     bool downloadNext = true,
   }) async {
-    _downloadManager?.cancel(isDelete: isDelete);
-    _audioDownloadManager?.cancel(isDelete: isDelete);
+    await _downloadManager?.cancel(isDelete: isDelete);
+    await _audioDownloadManager?.cancel(isDelete: isDelete);
     _downloadManager = null;
     _audioDownloadManager = null;
     if (!isDelete) {

@@ -124,6 +124,7 @@ abstract class Accounts {
     }
   }
 
+  @pragma("vm:prefer-inline")
   static Account get(AccountType key) {
     return accountMode[key.index];
   }

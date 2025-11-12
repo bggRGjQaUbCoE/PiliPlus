@@ -1068,11 +1068,10 @@ class VideoHttp {
     required int playurlType, // ugc 1, pgc 2
     int? qn,
   }) async {
-    final accessKey = Accounts.accountMode[AccountType.video.index].accessKey;
+    final accessKey = Accounts.get(AccountType.video).accessKey;
     final params = {
       'access_key': ?accessKey,
       'actionKey': 'appkey',
-      'appkey': Constants.appKey,
       'cid': cid,
       'fourk': 1,
       'is_proj': 1,

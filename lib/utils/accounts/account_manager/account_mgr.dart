@@ -110,6 +110,7 @@ class AccountManager extends Interceptor {
       Api.ugcUrl,
       Api.pgcUrl,
       Api.pugvUrl,
+      Api.tvPlayUrl,
     },
   };
 

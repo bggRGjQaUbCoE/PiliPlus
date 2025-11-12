@@ -1,5 +1,4 @@
-import 'dart:io' show File, gzip;
-import 'dart:typed_data';
+import 'dart:io' show File;
 
 import 'package:PiliPlus/grpc/bilibili/community/service/dm/v1.pb.dart';
 import 'package:PiliPlus/grpc/dm.dart';
@@ -127,11 +126,9 @@ class PlDanmakuController {
       final file = File(
         path.join(plPlayerController.dirPath!, PathUtils.danmakuName),
       );
-      if (!file.existsSync() || file.lengthSync() == 0) return;
-      final bytes = await gzip.decoder
-          .bind(file.openRead())
-          .fold(BytesBuilder(), (bb, bytes) => bb..add(bytes))
-          .then((e) => e.toBytes());
+      if (!file.existsSync()) return;
+      final bytes = await file.readAsBytes();
+      if (bytes.isEmpty) return;
       final elem = DmSegMobileReply.fromBuffer(bytes).elems;
       handleDanmaku(elem);
     } catch (_) {

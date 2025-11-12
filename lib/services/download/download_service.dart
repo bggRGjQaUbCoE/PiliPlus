@@ -29,6 +29,7 @@ import 'package:synchronized/synchronized.dart';
 
 class DownloadService extends GetxService {
   static const _entryFile = 'entry.json';
+  static const _indexFile = 'index.json';
 
   final _lock = Lock();
 
@@ -367,7 +368,11 @@ class DownloadService extends GetxService {
       if (!await downloadDanmaku(entry: entry)) {
         return;
       }
-      await coverTask;
+      final mediaJsonFile = File(path.join(videoDir.path, _indexFile));
+      await Future.wait([
+        mediaJsonFile.writeAsString(jsonEncode(mediaFileInfo.toJson())),
+        coverTask,
+      ]);
 
       if (curDownload.value?.cid != entry.cid) {
         return;

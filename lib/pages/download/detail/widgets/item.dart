@@ -12,6 +12,7 @@ import 'package:PiliPlus/models_new/download/bili_download_entry_info.dart';
 import 'package:PiliPlus/services/download/download_service.dart';
 import 'package:PiliPlus/utils/cache_manager.dart';
 import 'package:PiliPlus/utils/duration_utils.dart';
+import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/path_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
@@ -150,10 +151,23 @@ class DetailItem extends StatelessWidget {
                           path.join(entry.entryDirPath, PathUtils.coverName),
                         );
                         return cover.existsSync()
-                            ? Image.file(
-                                cover,
-                                width: constraints.maxWidth,
-                                height: constraints.maxHeight,
+                            ? ClipRRect(
+                                borderRadius: StyleString.mdRadius,
+                                child: Image.file(
+                                  cover,
+                                  width: constraints.maxWidth,
+                                  height: constraints.maxHeight,
+                                  fit: BoxFit.cover,
+                                  cacheHeight: constraints.maxWidth.cacheSize(
+                                    context,
+                                  ),
+                                  colorBlendMode: NetworkImgLayer.reduce
+                                      ? BlendMode.modulate
+                                      : null,
+                                  color: NetworkImgLayer.reduce
+                                      ? NetworkImgLayer.reduceLuxColor
+                                      : null,
+                                ),
                               )
                             : NetworkImgLayer(
                                 src: entry.cover,

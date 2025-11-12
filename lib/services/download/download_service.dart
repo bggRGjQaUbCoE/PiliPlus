@@ -49,15 +49,19 @@ class DownloadService extends GetxService {
   DownloadManager? _downloadManager;
   DownloadManager? _audioDownloadManager;
 
-  late final Future<void> waitForInitialization;
+  late Future<void> waitForInitialization;
 
   @override
   void onInit() {
     super.onInit();
-    waitForInitialization = readDownloadList();
+    initDownloadList();
   }
 
-  Future<void> readDownloadList() async {
+  void initDownloadList() {
+    waitForInitialization = _readDownloadList();
+  }
+
+  Future<void> _readDownloadList() async {
     final downloadDir = Directory(await _getDownloadPath());
     final list = <BiliDownloadEntryInfo>[];
     await for (final dir in downloadDir.list()) {
@@ -89,7 +93,7 @@ class DownloadService extends GetxService {
               ..entryDirPath = entryDir.path;
             result.add(entry);
             if (!entry.isCompleted) {
-              waitDownloadQueue.add(entry);
+              waitDownloadQueue.add(entry..status = DownloadStatus.wait);
             }
           } catch (_) {
             if (kDebugMode) rethrow;
@@ -301,7 +305,8 @@ class DownloadService extends GetxService {
         if (!isUpdate) {
           _updateCurStatus(DownloadStatus.getDanmaku);
         }
-        final seg = PlDanmakuController.calcSegment(entry.totalTimeMilli) + 1;
+        final seg = (entry.totalTimeMilli / PlDanmakuController.segmentLength)
+            .ceil();
 
         final res = await Future.wait([
           for (var i = 1; i <= seg; i++)
@@ -310,10 +315,13 @@ class DownloadService extends GetxService {
 
         final danmaku = res.removeAt(0).data;
         for (var i in res) {
+          if (!i.isSuccess) {
+            throw i.toString();
+          }
           danmaku.elems.addAll(i.data.elems);
         }
         res.clear();
-        danmakuFile.writeAsBytes(danmaku.writeToBuffer());
+        await danmakuFile.writeAsBytes(danmaku.writeToBuffer());
 
         return true;
       } catch (e) {
@@ -331,10 +339,13 @@ class DownloadService extends GetxService {
     required BiliDownloadEntryInfo entry,
   }) async {
     try {
+      final filePath = path.join(entry.entryDirPath, PathUtils.coverName);
+      if (File(filePath).existsSync()) {
+        return true;
+      }
       final file = (await DefaultCacheManager().getFileFromCache(
         entry.cover,
       ))?.file;
-      final filePath = path.join(entry.entryDirPath, PathUtils.coverName);
       if (file != null) {
         await file.copy(filePath);
       } else {
@@ -495,7 +506,7 @@ class DownloadService extends GetxService {
   void _nextDownload() {
     if (waitDownloadQueue.isNotEmpty) {
       final next = waitDownloadQueue.removeAt(0);
-      if (downloadList.contains(next)) {
+      if (!next.isCompleted && downloadList.contains(next)) {
         startDownload(next);
       } else {
         _nextDownload();

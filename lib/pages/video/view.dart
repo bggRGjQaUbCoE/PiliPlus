@@ -1308,7 +1308,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
         ),
       if (!videoDetailController.isFileSource)
         PopupMenuItem(
-          onTap: () => videoDetailController.onDownload(context),
+          onTap: () => videoDetailController.onDownload(this.context),
           child: const Text('缓存视频'),
         ),
       if (videoDetailController.cover.value.isNotEmpty)

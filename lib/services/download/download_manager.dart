@@ -72,19 +72,17 @@ class DownloadManager {
       return;
     }
     final data = response.data!;
+    final contentLength = data.contentLength + received;
 
     if (received == 0) {
-      onReceiveProgress?.call(0, data.contentLength);
+      onReceiveProgress?.call(0, contentLength);
     }
 
     try {
       await for (final chunk in data.stream) {
         sink.add(chunk);
         received += chunk.length;
-        onReceiveProgress?.call(
-          received,
-          data.contentLength,
-        );
+        onReceiveProgress?.call(received, contentLength);
       }
       await sink.close();
       _status = DownloadStatus.completed;

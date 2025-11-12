@@ -89,7 +89,7 @@ List<SettingsModel> get extraSettings => [
                       if (downloadPath == defPath) return;
                       downloadPath = defPath;
                       setState();
-                      Get.find<DownloadService>().readDownloadList();
+                      Get.find<DownloadService>().initDownloadList();
                       GStorage.setting.delete(SettingBoxKey.downloadPath);
                     },
                     dense: true,
@@ -102,7 +102,7 @@ List<SettingsModel> get extraSettings => [
                       if (path == null || path == downloadPath) return;
                       downloadPath = path;
                       setState();
-                      Get.find<DownloadService>().readDownloadList();
+                      Get.find<DownloadService>().initDownloadList();
                       GStorage.setting.put(SettingBoxKey.downloadPath, path);
                     },
                     dense: true,

@@ -8,6 +8,7 @@ import 'package:PiliPlus/models/common/video/video_quality.dart';
 import 'package:PiliPlus/models_new/download/bili_download_entry_info.dart';
 import 'package:PiliPlus/pages/video/introduction/local/controller.dart';
 import 'package:PiliPlus/utils/duration_utils.dart';
+import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/path_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -79,10 +80,21 @@ class _LocalIntroPanelState extends State<LocalIntroPanel>
                     clipBehavior: Clip.none,
                     children: [
                       cover.existsSync()
-                          ? Image.file(
-                              cover,
-                              width: 140.8,
-                              height: 88,
+                          ? ClipRRect(
+                              borderRadius: StyleString.mdRadius,
+                              child: Image.file(
+                                cover,
+                                width: 140.8,
+                                height: 88,
+                                fit: BoxFit.cover,
+                                cacheHeight: 140.8.cacheSize(context),
+                                colorBlendMode: NetworkImgLayer.reduce
+                                    ? BlendMode.modulate
+                                    : null,
+                                color: NetworkImgLayer.reduce
+                                    ? NetworkImgLayer.reduceLuxColor
+                                    : null,
+                              ),
                             )
                           : NetworkImgLayer(
                               src: entry.cover,

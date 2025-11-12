@@ -5,10 +5,10 @@ import 'package:crypto/crypto.dart';
 
 abstract class AppSign {
   static void appSign(
-    Map<String, dynamic> params, [
+    Map<String, dynamic> params, {
     String appkey = Constants.appKey,
     String appsec = Constants.appSec,
-  ]) {
+  }) {
     params['appkey'] = appkey;
     var searchParams = Uri(
       queryParameters: params.map(

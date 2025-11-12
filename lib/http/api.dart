@@ -24,6 +24,8 @@ class Api {
 
   static const String pugvUrl = '/pugv/player/web/playurl';
 
+  static const String tvPlayUrl = '/x/tv/playurl';
+
   // 字幕
   // aid, cid
   static const String playInfo = '/x/player/wbi/v2';

@@ -204,11 +204,7 @@ abstract final class LiveHttp {
       'statistics': Constants.statisticsApp,
       'ts': DateTime.now().millisecondsSinceEpoch ~/ 1000,
     };
-    AppSign.appSign(
-      params,
-      Constants.appKey,
-      Constants.appSec,
-    );
+    AppSign.appSign(params);
     var res = await Request().get(
       Api.liveFeedIndex,
       queryParameters: params,
@@ -290,11 +286,7 @@ abstract final class LiveHttp {
       'statistics': Constants.statisticsApp,
       'ts': DateTime.now().millisecondsSinceEpoch ~/ 1000,
     };
-    AppSign.appSign(
-      params,
-      Constants.appKey,
-      Constants.appSec,
-    );
+    AppSign.appSign(params);
     var res = await Request().get(
       Api.liveSecondList,
       queryParameters: params,
@@ -340,11 +332,7 @@ abstract final class LiveHttp {
       'statistics': Constants.statisticsApp,
       'ts': DateTime.now().millisecondsSinceEpoch ~/ 1000,
     };
-    AppSign.appSign(
-      params,
-      Constants.appKey,
-      Constants.appSec,
-    );
+    AppSign.appSign(params);
     var res = await Request().get(
       Api.liveAreaList,
       queryParameters: params,
@@ -377,11 +365,7 @@ abstract final class LiveHttp {
       'statistics': Constants.statisticsApp,
       'ts': DateTime.now().millisecondsSinceEpoch ~/ 1000,
     };
-    AppSign.appSign(
-      params,
-      Constants.appKey,
-      Constants.appSec,
-    );
+    AppSign.appSign(params);
     var res = await Request().get(
       Api.getLiveFavTag,
       queryParameters: params,
@@ -419,11 +403,7 @@ abstract final class LiveHttp {
       'statistics': Constants.statisticsApp,
       'ts': DateTime.now().millisecondsSinceEpoch ~/ 1000,
     };
-    AppSign.appSign(
-      data,
-      Constants.appKey,
-      Constants.appSec,
-    );
+    AppSign.appSign(data);
     var res = await Request().post(
       Api.setLiveFavTag,
       data: data,
@@ -459,11 +439,7 @@ abstract final class LiveHttp {
       'statistics': Constants.statisticsApp,
       'ts': DateTime.now().millisecondsSinceEpoch ~/ 1000,
     };
-    AppSign.appSign(
-      params,
-      Constants.appKey,
-      Constants.appSec,
-    );
+    AppSign.appSign(params);
     var res = await Request().get(
       Api.liveRoomAreaList,
       queryParameters: params,
@@ -502,11 +478,7 @@ abstract final class LiveHttp {
       'ts': DateTime.now().millisecondsSinceEpoch ~/ 1000,
       'type': type.name,
     };
-    AppSign.appSign(
-      params,
-      Constants.appKey,
-      Constants.appSec,
-    );
+    AppSign.appSign(params);
     var res = await Request().get(
       Api.liveSearch,
       queryParameters: params,

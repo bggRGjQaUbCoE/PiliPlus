@@ -420,6 +420,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.1"
+  dlna_dart:
+    dependency: "direct main"
+    description:
+      name: dlna_dart
+      sha256: "8a4f0e4f378615c99f2af679dc9f0c72fe4a0fb2f3eea96b637fe691dfcf0649"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.0"
   dynamic_color:
     dependency: "direct main"
     description:
@@ -506,10 +514,10 @@ packages:
     description:
       path: "."
       ref: mod
-      resolved-ref: "4b7dd4b85328f9ed0b369cc77c5c8e87957a9d18"
+      resolved-ref: "16ad5fca37acf52df6b61ecea587a4f80f9cb04c"
       url: "https://github.com/bggRGjQaUbCoE/flutter_file_picker.git"
     source: git
-    version: "10.3.5"
+    version: "10.3.6"
   file_selector_linux:
     dependency: transitive
     description:

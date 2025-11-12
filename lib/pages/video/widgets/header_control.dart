@@ -2413,23 +2413,41 @@ class HeaderControlState extends State<HeaderControl> {
                 },
               ),
               if (!isFileSource) ...[
-                if ((!isFSOrPip && videoDetailCtr.isUgc))
+                if (!isFSOrPip) ...[
+                  if (videoDetailCtr.isUgc)
+                    SizedBox(
+                      width: 42,
+                      height: 34,
+                      child: IconButton(
+                        tooltip: '听音频',
+                        style: const ButtonStyle(
+                          padding: WidgetStatePropertyAll(EdgeInsets.zero),
+                        ),
+                        onPressed: videoDetailCtr.toAudioPage,
+                        icon: const Icon(
+                          Icons.headphones_outlined,
+                          size: 19,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
                   SizedBox(
                     width: 42,
                     height: 34,
                     child: IconButton(
-                      tooltip: '听音频',
+                      tooltip: '投屏',
                       style: const ButtonStyle(
                         padding: WidgetStatePropertyAll(EdgeInsets.zero),
                       ),
-                      onPressed: videoDetailCtr.toAudioPage,
+                      onPressed: videoDetailCtr.onCast,
                       icon: const Icon(
-                        Icons.headphones_outlined,
+                        Icons.cast,
                         size: 19,
                         color: Colors.white,
                       ),
                     ),
                   ),
+                ],
                 if (plPlayerController.enableSponsorBlock == true)
                   SizedBox(
                     width: 42,

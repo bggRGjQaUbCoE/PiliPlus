@@ -77,7 +77,7 @@ abstract class PageUtils {
       );
     } else if (context.mounted) {
       UserModel? userModel = await Navigator.of(context).push(
-        GetPageRoute(page: ContactPage.new),
+        GetPageRoute(page: () => const ContactPage()),
       );
       if (userModel != null) {
         selectedIndex = 0;
@@ -710,7 +710,7 @@ abstract class PageUtils {
     }
   }
 
-  static Future? toVideoPage({
+  static Future<void>? toVideoPage({
     VideoType videoType = VideoType.ugc,
     int? aid,
     String? bvid,

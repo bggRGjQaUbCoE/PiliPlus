@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'dart:convert' show jsonDecode, jsonEncode;
-import 'dart:io' show Directory, File, gzip;
+import 'dart:io' show Directory, File;
 
 import 'package:PiliPlus/grpc/dm.dart';
 import 'package:PiliPlus/http/download.dart';
@@ -312,7 +312,7 @@ class DownloadService extends GetxService {
           danmaku.elems.addAll(i.data.elems);
         }
         res.clear();
-        danmakuFile.writeAsBytes(gzip.encode(danmaku.writeToBuffer()));
+        danmakuFile.writeAsBytes(danmaku.writeToBuffer());
 
         return true;
       } catch (e) {
@@ -381,7 +381,7 @@ class DownloadService extends GetxService {
             path: path.join(videoDir.path, PathUtils.videoNameType1),
             onReceiveProgress: _onReceive,
             onDone: _onDone,
-          )..start();
+          );
           break;
         case Type2 mediaFileInfo:
           _downloadManager = DownloadManager(
@@ -389,7 +389,7 @@ class DownloadService extends GetxService {
             path: path.join(videoDir.path, PathUtils.videoNameType2),
             onReceiveProgress: _onReceive,
             onDone: _onDone,
-          )..start();
+          );
           final audio = mediaFileInfo.audio;
           if (audio != null && audio.isNotEmpty) {
             _audioDownloadManager = DownloadManager(
@@ -397,7 +397,7 @@ class DownloadService extends GetxService {
               path: path.join(videoDir.path, PathUtils.audioNameType2),
               onReceiveProgress: null,
               onDone: _onAudioDone,
-            )..start();
+            );
           }
           late final first = mediaFileInfo.video.first;
           entry.pageData

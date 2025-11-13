@@ -101,6 +101,7 @@ abstract class SettingBoxKey {
       mainTabBarView = 'mainTabBarView',
       searchSuggestion = 'searchSuggestion',
       showDynDecorate = 'showDynDecorate',
+      showMoreDownloadButtons = 'showMoreDownloadButtons',
       enableLivePhoto = 'enableLivePhoto',
       showSeekPreview = 'showSeekPreview',
       showDmChart = 'showDmChart',

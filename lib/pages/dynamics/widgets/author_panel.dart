@@ -20,6 +20,7 @@ import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/request_utils.dart';
+import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
@@ -291,7 +292,7 @@ class AuthorPanel extends StatelessWidget {
                     style: theme.textTheme.titleSmall,
                   ),
                 ),
-              if (bvid != null)
+              if (bvid != null && Pref.showMoreDownloadButtons)
                 ListTile(
                   dense: true,
                   onTap: () async {
@@ -299,7 +300,6 @@ class AuthorPanel extends StatelessWidget {
                     try {
                       // Extractor: returns a Dart record (bvid, aid, cover, title, totalTimeMilli)
                       (
-                        String? bvid,
                         int? aid,
                         String? cover,
                         String? title,
@@ -313,7 +313,6 @@ class AuthorPanel extends StatelessWidget {
                         if (major.archive != null) {
                           final a = major.archive!;
                           return (
-                            a.bvid,
                             a.aid,
                             a.cover,
                             a.title,
@@ -323,7 +322,6 @@ class AuthorPanel extends StatelessWidget {
                         if (major.ugcSeason != null) {
                           final u = major.ugcSeason!;
                           return (
-                            u.bvid,
                             u.aid,
                             u.cover,
                             u.title,
@@ -333,7 +331,6 @@ class AuthorPanel extends StatelessWidget {
                         if (major.pgc != null) {
                           final p = major.pgc!;
                           return (
-                            p.bvid,
                             p.aid,
                             p.cover,
                             p.title,
@@ -352,22 +349,18 @@ class AuthorPanel extends StatelessWidget {
                             item.orig?.modules.moduleDynamic?.major,
                           );
 
-                      String? bid = extracted?.$1;
-                      int? aid = extracted?.$2;
-                      String? cover = extracted?.$3;
-                      String? title = extracted?.$4;
-                      int totalTimeMilli = extracted?.$5 ?? 0;
-                      if (bid == null) {
-                        SmartDialog.showToast('无法获取视频 bvid');
-                        return;
-                      }
+                      int? aid = extracted?.$1;
+                      String? cover = extracted?.$2;
+                      String? title = extracted?.$3;
+                      int totalTimeMilli = extracted?.$4 ?? 0;
+
                       if (totalTimeMilli <= 0) {
                         SmartDialog.showToast('视频时长错误');
                         return;
                       }
 
                       SmartDialog.showLoading(msg: '任务创建中');
-                      final cid = await SearchHttp.ab2c(aid: aid, bvid: bid);
+                      final cid = await SearchHttp.ab2c(aid: aid, bvid: bvid);
                       SmartDialog.dismiss();
                       if (cid == null) {
                         SmartDialog.showToast('无法解析播放分片 cid');
@@ -376,7 +369,7 @@ class AuthorPanel extends StatelessWidget {
 
                       Get.find<DownloadService>().downloadByIdentifiers(
                         cid: cid,
-                        bvid: bid,
+                        bvid: bvid!,
                         totalTimeMilli: totalTimeMilli,
                         aid: aid,
                         title: title,

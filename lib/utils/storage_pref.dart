@@ -156,6 +156,11 @@ abstract class Pref {
         defaultValue: DynamicBadgeMode.number.index,
       )];
 
+  static bool get showMoreDownloadButtons => _setting.get(
+    SettingBoxKey.showMoreDownloadButtons,
+    defaultValue: false,
+  );
+
   static Set<MsgUnReadType> get msgUnReadTypeV2 =>
       (_setting.get(SettingBoxKey.msgUnReadTypeV2) as List?)
           ?.map((index) => MsgUnReadType.values[index])

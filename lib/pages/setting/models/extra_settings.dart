@@ -247,6 +247,14 @@ List<SettingsModel> get extraSettings => [
   ),
   const SettingsModel(
     settingsType: SettingsType.sw1tch,
+    title: '显示更多离线缓存按钮',
+    subtitle: '控制是否在首页、动态卡片、稍后再看、历史记录和收藏列表显示离线缓存按钮',
+    leading: Icon(MdiIcons.folderDownloadOutline),
+    setKey: SettingBoxKey.showMoreDownloadButtons,
+    defaultVal: false,
+  ),
+  const SettingsModel(
+    settingsType: SettingsType.sw1tch,
     title: '视频页显示相关视频',
     leading: Icon(MdiIcons.motionPlayOutline),
     setKey: SettingBoxKey.showRelatedVideo,

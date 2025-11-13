@@ -10,6 +10,7 @@ import 'package:PiliPlus/pages/later/controller.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/request_utils.dart';
+import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
@@ -200,21 +201,22 @@ class _LaterPageState extends State<LaterPage>
             ),
           ),
         ),
-        TextButton(
-          style: TextButton.styleFrom(
-            visualDensity: VisualDensity.compact,
-          ),
-          onPressed: () async {
-            final ctr = currCtr();
-            await ctr.batchDownloadSelected();
-          },
-          child: Text(
-            '缓存',
-            style: TextStyle(
-              color: theme.colorScheme.onSurfaceVariant,
+        if (Pref.showMoreDownloadButtons)
+          TextButton(
+            style: TextButton.styleFrom(
+              visualDensity: VisualDensity.compact,
+            ),
+            onPressed: () async {
+              final ctr = currCtr();
+              await ctr.batchDownloadSelected();
+            },
+            child: Text(
+              '缓存',
+              style: TextStyle(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
             ),
           ),
-        ),
       ],
       child: AppBar(
         title: const Text('稍后再看'),

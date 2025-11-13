@@ -15,6 +15,7 @@ import 'package:PiliPlus/pages/fav_detail/widget/fav_video_card.dart';
 import 'package:PiliPlus/utils/fav_utils.dart';
 import 'package:PiliPlus/utils/grid.dart';
 import 'package:PiliPlus/utils/request_utils.dart';
+import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -348,20 +349,21 @@ class _FavDetailPageState extends State<FavDetailPage> with GridMixin {
         ),
       ),
     ),
-    TextButton(
-      style: TextButton.styleFrom(
-        visualDensity: VisualDensity.compact,
-      ),
-      onPressed: () async {
-        await _favDetailController.batchDownloadSelected();
-      },
-      child: Text(
-        '缓存',
-        style: TextStyle(
-          color: theme.colorScheme.onSurfaceVariant,
+    if (Pref.showMoreDownloadButtons)
+      TextButton(
+        style: TextButton.styleFrom(
+          visualDensity: VisualDensity.compact,
+        ),
+        onPressed: () async {
+          await _favDetailController.batchDownloadSelected();
+        },
+        child: Text(
+          '缓存',
+          style: TextStyle(
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
         ),
       ),
-    ),
     TextButton(
       style: TextButton.styleFrom(
         visualDensity: VisualDensity.compact,

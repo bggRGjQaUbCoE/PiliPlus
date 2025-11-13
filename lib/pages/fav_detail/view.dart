@@ -352,6 +352,20 @@ class _FavDetailPageState extends State<FavDetailPage> with GridMixin {
       style: TextButton.styleFrom(
         visualDensity: VisualDensity.compact,
       ),
+      onPressed: () async {
+        await _favDetailController.batchDownloadSelected();
+      },
+      child: Text(
+        '缓存',
+        style: TextStyle(
+          color: theme.colorScheme.onSurfaceVariant,
+        ),
+      ),
+    ),
+    TextButton(
+      style: TextButton.styleFrom(
+        visualDensity: VisualDensity.compact,
+      ),
       onPressed: _favDetailController.onRemove,
       child: Text(
         '删除',

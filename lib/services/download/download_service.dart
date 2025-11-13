@@ -18,6 +18,7 @@ import 'package:PiliPlus/services/download/download_manager.dart';
 import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:PiliPlus/utils/path_utils.dart';
+import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -228,6 +229,66 @@ class DownloadService extends GetxService {
     _createDownload(entry);
   }
 
+  /// 直接通过已知标识（cid/aid/bvid/title/cover）创建并入列下载项，适用于动态/稍后再看等场景
+  Future<void> downloadByIdentifiers({
+    required int cid,
+    required String bvid,
+    required int totalTimeMilli,
+    int? aid,
+    String? title,
+    String? cover,
+    int? ownerId,
+    String? ownerName,
+  }) async {
+    if (downloadList.indexWhere((e) => e.cid == cid) != -1) {
+      return;
+    }
+    final currentTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    final preferQ = VideoQuality.fromCode(Pref.defaultVideoQa);
+    final entry = BiliDownloadEntryInfo(
+      mediaType: 2,
+      hasDashAudio: true,
+      isCompleted: false,
+      totalBytes: 0,
+      downloadedBytes: 0,
+      title: title ?? bvid,
+      typeTag: preferQ.code.toString(),
+      cover: cover ?? '',
+      preferedVideoQuality: preferQ.code,
+      qualityPithyDescription: preferQ.desc,
+      guessedTotalBytes: 0,
+      totalTimeMilli: totalTimeMilli,
+      danmakuCount: 0,
+      timeUpdateStamp: currentTime,
+      timeCreateStamp: currentTime,
+      canPlayInAdvance: true,
+      interruptTransformTempFile: false,
+      avid: aid ?? 0,
+      spid: 0,
+      seasonId: null,
+      ep: null,
+      source: null,
+      bvid: bvid,
+      ownerId: ownerId,
+      ownerName: ownerName,
+      pageData: PageInfo(
+        cid: cid,
+        page: 1,
+        from: null,
+        part: null,
+        vid: null,
+        hasAlias: false,
+        tid: 0,
+        width: 0,
+        height: 0,
+        rotate: 0,
+        downloadTitle: '视频已缓存完成',
+        downloadSubtitle: title,
+      ),
+    );
+    _createDownload(entry);
+  }
+
   Future<void> _createDownload(BiliDownloadEntryInfo entry) async {
     final entryDir = await _getDownloadEntryDir(entry);
     final entryJsonFile = File(path.join(entryDir.path, _entryFile));
@@ -294,7 +355,7 @@ class DownloadService extends GetxService {
     bool isUpdate = false,
   }) async {
     final cid = entry.pageData?.cid ?? entry.source?.cid;
-    if (cid == null) {
+    if (cid == null || entry.totalTimeMilli == 0) {
       return false;
     }
     final danmakuFile = File(

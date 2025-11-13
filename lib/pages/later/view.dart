@@ -200,6 +200,21 @@ class _LaterPageState extends State<LaterPage>
             ),
           ),
         ),
+        TextButton(
+          style: TextButton.styleFrom(
+            visualDensity: VisualDensity.compact,
+          ),
+          onPressed: () async {
+            final ctr = currCtr();
+            await ctr.batchDownloadSelected();
+          },
+          child: Text(
+            '缓存',
+            style: TextStyle(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ),
       ],
       child: AppBar(
         title: const Text('稍后再看'),

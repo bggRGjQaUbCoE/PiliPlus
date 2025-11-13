@@ -1,3 +1,4 @@
+import 'package:PiliPlus/http/search.dart';
 import 'package:PiliPlus/http/user.dart';
 import 'package:PiliPlus/http/video.dart';
 import 'package:PiliPlus/models/common/account_type.dart';
@@ -8,6 +9,7 @@ import 'package:PiliPlus/pages/mine/controller.dart';
 import 'package:PiliPlus/pages/search/widgets/search_text.dart';
 import 'package:PiliPlus/pages/video/ai_conclusion/view.dart';
 import 'package:PiliPlus/pages/video/introduction/ugc/controller.dart';
+import 'package:PiliPlus/services/download/download_service.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
@@ -75,6 +77,51 @@ class VideoPopupMenu extends StatelessWidget {
                             bvid: videoItem.bvid,
                           );
                           SmartDialog.showToast(res['msg']);
+                        },
+                      ),
+                      _VideoCustomAction(
+                        '离线缓存',
+                        const Icon(MdiIcons.folderDownloadOutline, size: 16),
+                        () async {
+                          try {
+                            SmartDialog.showLoading(msg: '任务创建中');
+                            if (videoItem.duration <= 0) {
+                              SmartDialog.showToast('视频时长错误');
+                              return;
+                            }
+                            int? cid = videoItem.cid;
+                            if (cid == null) {
+                              int? aid;
+                              if (videoItem is BaseVideoItemModel) {
+                                aid = (videoItem as BaseVideoItemModel).aid;
+                              }
+                              cid = await SearchHttp.ab2c(
+                                aid: aid,
+                                bvid: videoItem.bvid,
+                              );
+                            }
+                            SmartDialog.dismiss();
+                            if (cid == null || videoItem.bvid == null) {
+                              SmartDialog.showToast('无法解析播放分片 cid');
+                              return;
+                            }
+                            Get.find<DownloadService>().downloadByIdentifiers(
+                              cid: cid,
+                              bvid: videoItem.bvid!,
+                              totalTimeMilli: videoItem.duration * 1000,
+                              aid: videoItem is BaseVideoItemModel
+                                  ? (videoItem as BaseVideoItemModel).aid
+                                  : null,
+                              title: videoItem.title,
+                              cover: videoItem.cover,
+                              ownerId: videoItem.owner.mid,
+                              ownerName: videoItem.owner.name,
+                            );
+                            SmartDialog.showToast('已加入下载队列');
+                          } catch (e) {
+                            SmartDialog.dismiss();
+                            SmartDialog.showToast(e.toString());
+                          }
                         },
                       ),
                       if (videoItem.cid != null && Pref.enableAi)

@@ -1,6 +1,7 @@
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
 import 'package:PiliPlus/http/fav.dart';
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/http/search.dart';
 import 'package:PiliPlus/models/common/fav_order_type.dart';
 import 'package:PiliPlus/models/common/video/source_type.dart';
 import 'package:PiliPlus/models_new/fav/fav_detail/data.dart';
@@ -10,6 +11,7 @@ import 'package:PiliPlus/pages/common/common_list_controller.dart';
 import 'package:PiliPlus/pages/common/multi_select/base.dart';
 import 'package:PiliPlus/pages/common/multi_select/multi_select_controller.dart';
 import 'package:PiliPlus/pages/fav_sort/view.dart';
+import 'package:PiliPlus/services/download/download_service.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
@@ -208,6 +210,42 @@ class FavDetailController
       }
       Get.to(FavSortPage(favDetailController: this));
     }
+  }
+
+  /// 批量缓存当前选中的收藏夹条目
+  Future<void> batchDownloadSelected() async {
+    final selected = allChecked.toList();
+    if (selected.isEmpty) {
+      SmartDialog.showToast('未选择条目');
+      return;
+    }
+    SmartDialog.showLoading(msg: '正在加入下载队列');
+    final ds = Get.find<DownloadService>();
+    for (final item in selected) {
+      try {
+        final bvid = item.bvid;
+        // FavDetailItemModel doesn't expose aid/cid directly; try to use ugc.firstCid or bvid
+        int? cid = item.ugc?.firstCid;
+        if (bvid == null && cid == null) continue;
+        cid ??= await SearchHttp.ab2c(aid: null, bvid: bvid);
+        final int totalTimeMilli = (item.duration ?? 0) * 1000;
+        if (cid == null || totalTimeMilli <= 0) continue;
+        await ds.downloadByIdentifiers(
+          cid: cid,
+          bvid: bvid ?? '',
+          totalTimeMilli: totalTimeMilli,
+          aid: null,
+          title: item.title,
+          cover: item.cover,
+          ownerId: item.upper?.mid,
+          ownerName: item.upper?.name,
+        );
+      } catch (_) {}
+    }
+    SmartDialog.dismiss();
+    SmartDialog.showToast('已加入下载队列（如需查看请前往离线缓存）');
+    // 关闭多选
+    handleSelect(checked: false);
   }
 
   @override

@@ -5,14 +5,17 @@ import 'package:PiliPlus/common/widgets/dialog/report.dart';
 import 'package:PiliPlus/common/widgets/dyn/ink_well.dart';
 import 'package:PiliPlus/common/widgets/pendant_avatar.dart';
 import 'package:PiliPlus/http/constants.dart';
+import 'package:PiliPlus/http/search.dart';
 import 'package:PiliPlus/http/user.dart';
 import 'package:PiliPlus/http/video.dart';
 import 'package:PiliPlus/models/dynamics/result.dart';
 import 'package:PiliPlus/pages/dynamics/controller.dart';
 import 'package:PiliPlus/pages/save_panel/view.dart';
+import 'package:PiliPlus/services/download/download_service.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/context_ext.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
+import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
@@ -23,6 +26,7 @@ import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart' hide InkWell;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart' hide ContextExtensionss;
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
 class AuthorPanel extends StatelessWidget {
   final DynamicItemModel item;
@@ -286,6 +290,112 @@ class AuthorPanel extends StatelessWidget {
                     '稍后再看',
                     style: theme.textTheme.titleSmall,
                   ),
+                ),
+              if (bvid != null)
+                ListTile(
+                  dense: true,
+                  onTap: () async {
+                    Get.back();
+                    try {
+                      // Extractor: returns a Dart record (bvid, aid, cover, title, totalTimeMilli)
+                      (
+                        String? bvid,
+                        int? aid,
+                        String? cover,
+                        String? title,
+                        int totalTimeMilli,
+                      )?
+                      extractFromMajor(
+                        DynamicMajorModel? major,
+                      ) {
+                        if (major == null) return null;
+
+                        if (major.archive != null) {
+                          final a = major.archive!;
+                          return (
+                            a.bvid,
+                            a.aid,
+                            a.cover,
+                            a.title,
+                            DurationUtils.parseDuration(a.durationText) * 1000,
+                          );
+                        }
+                        if (major.ugcSeason != null) {
+                          final u = major.ugcSeason!;
+                          return (
+                            u.bvid,
+                            u.aid,
+                            u.cover,
+                            u.title,
+                            DurationUtils.parseDuration(u.durationText) * 1000,
+                          );
+                        }
+                        if (major.pgc != null) {
+                          final p = major.pgc!;
+                          return (
+                            p.bvid,
+                            p.aid,
+                            p.cover,
+                            p.title,
+                            DurationUtils.parseDuration(p.durationText) * 1000,
+                          );
+                        }
+
+                        return null;
+                      }
+
+                      // try to extract aid/cover/title from the dynamic major
+                      final major = item.modules.moduleDynamic?.major;
+                      final extracted =
+                          extractFromMajor(major) ??
+                          extractFromMajor(
+                            item.orig?.modules.moduleDynamic?.major,
+                          );
+
+                      String? bid = extracted?.$1;
+                      int? aid = extracted?.$2;
+                      String? cover = extracted?.$3;
+                      String? title = extracted?.$4;
+                      int totalTimeMilli = extracted?.$5 ?? 0;
+                      if (bid == null) {
+                        SmartDialog.showToast('无法获取视频 bvid');
+                        return;
+                      }
+                      if (totalTimeMilli <= 0) {
+                        SmartDialog.showToast('视频时长错误');
+                        return;
+                      }
+
+                      SmartDialog.showLoading(msg: '任务创建中');
+                      final cid = await SearchHttp.ab2c(aid: aid, bvid: bid);
+                      SmartDialog.dismiss();
+                      if (cid == null) {
+                        SmartDialog.showToast('无法解析播放分片 cid');
+                        return;
+                      }
+
+                      Get.find<DownloadService>().downloadByIdentifiers(
+                        cid: cid,
+                        bvid: bid,
+                        totalTimeMilli: totalTimeMilli,
+                        aid: aid,
+                        title: title,
+                        cover: cover,
+                        ownerId: moduleAuthor.mid,
+                        ownerName: moduleAuthor.name,
+                      );
+                      SmartDialog.showToast('已加入下载队列');
+                    } catch (e) {
+                      SmartDialog.dismiss();
+                      SmartDialog.showToast(e.toString());
+                    }
+                  },
+                  minLeadingWidth: 0,
+                  leading: const Icon(
+                    MdiIcons.folderDownloadOutline,
+                    size: 19,
+                  ),
+                  title: Text('离线缓存', style: theme.textTheme.titleSmall!),
                 ),
               ListTile(
                 onTap: () {

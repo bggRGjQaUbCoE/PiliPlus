@@ -201,7 +201,10 @@ class Durl {
 final _ipRegExp = RegExp(r'^https?://\d{1,3}\.\d{1,3}');
 
 bool _isMCDNorPCDN(String url) {
-  return url.contains("szbdyd.com") ||
+  return url.contains("upos-sz-302") ||
+      url.contains("nexusedgeio.com") ||
+      url.contains("ahdohpiechei.com") ||
+      url.contains("szbdyd.com") ||
       url.contains(".mcdn.bilivideo") ||
       _ipRegExp.hasMatch(url);
 }
@@ -339,6 +342,7 @@ class Volume {
   final num targetOffset;
   final num targetI;
   final num targetTp;
+
   // final MultiSceneArgs? multiSceneArgs;
 
   factory Volume.fromJson(Map<String, dynamic> json) {

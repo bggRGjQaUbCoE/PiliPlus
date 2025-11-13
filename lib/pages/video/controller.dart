@@ -1126,7 +1126,7 @@ class VideoDetailController extends GetxController
       currentDecodeFormats = VideoDecodeFormatType.fromString(video.codecs!);
     }
     firstVideo = video;
-    videoUrl = video.baseUrl!;
+    videoUrl = VideoUtils.getCdnUrl(firstVideo);
 
     /// 根据currentAudioQa 重新设置audioUrl
     if (currentAudioQa != null) {
@@ -1134,7 +1134,7 @@ class VideoDetailController extends GetxController
         (i) => i.id == currentAudioQa!.code,
         orElse: () => data.dash!.audio!.first,
       );
-      audioUrl = firstAudio.baseUrl ?? '';
+      audioUrl = VideoUtils.getCdnUrl(firstAudio);
     }
 
     playerInit();

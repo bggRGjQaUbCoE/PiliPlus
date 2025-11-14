@@ -703,7 +703,6 @@ class PlPlayerController {
         seekTo,
         volume,
       );
-      callback?.call();
       // 获取视频时长 00:00
       _duration.value = duration ?? _videoPlayerController!.state.duration;
       _position.value = _buffered.value = _sliderPosition.value =
@@ -718,6 +717,7 @@ class PlPlayerController {
       // listen the video player events
       startListeners();
       await _initializePlayer();
+      callback?.call();
     } catch (err, stackTrace) {
       dataStatus.status.value = DataStatus.error;
       if (kDebugMode) {

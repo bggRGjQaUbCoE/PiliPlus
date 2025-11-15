@@ -2,6 +2,7 @@ enum LiveQuality {
   dolby(30000, '杜比'),
   origin4K(25000, '4K 原画'),
   super4K(20000, '4K'),
+  super2K(15000, '2K'),
   origin(10000, '原画'),
   bluRay(400, '蓝光'),
   superHD(250, '超清'),

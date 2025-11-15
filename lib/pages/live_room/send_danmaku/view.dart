@@ -111,6 +111,7 @@ class _ReplyPageState extends CommonRichTextPubPageState<LiveSendDmPanel> {
                 autofocus: false,
                 readOnly: readOnly.value,
                 onChanged: onChanged,
+                onSubmitted: onSubmitted,
                 focusNode: focusNode,
                 decoration: const InputDecoration(
                   hintText: "输入弹幕内容",

@@ -274,6 +274,7 @@ class _WhisperDetailPageState
                   minLines: 1,
                   maxLines: 4,
                   onChanged: onChanged,
+                  onSubmitted: onSubmitted,
                   textInputAction: TextInputAction.newline,
                   decoration: InputDecoration(
                     filled: true,

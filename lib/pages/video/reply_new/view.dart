@@ -159,6 +159,7 @@ class _ReplyPageState extends CommonRichTextPubPageState<ReplyPage> {
                 autofocus: false,
                 readOnly: readOnly.value,
                 onChanged: onChanged,
+                onSubmitted: onSubmitted,
                 focusNode: focusNode,
                 decoration: InputDecoration(
                   hintText: widget.hint ?? "输入回复内容",

@@ -387,11 +387,7 @@ class _SendDanmakuPanelState extends CommonTextPubPageState<SendDanmakuPanel> {
                     ],
                     onChanged: onChanged,
                     textInputAction: TextInputAction.send,
-                    onSubmitted: (value) {
-                      if (value.trim().isNotEmpty) {
-                        onPublish();
-                      }
-                    },
+                    onSubmitted: onSubmitted,
                     focusNode: focusNode,
                     decoration: InputDecoration(
                       hintText: "输入弹幕内容",

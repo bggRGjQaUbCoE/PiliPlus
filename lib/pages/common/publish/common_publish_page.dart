@@ -200,6 +200,12 @@ abstract class CommonPublishPageState<T extends CommonPublishPage>
     );
   }
 
+  void onSubmitted(String value) {
+    if (enablePublish.value) {
+      onPublish();
+    }
+  }
+
   Future<void> onPublish();
 
   Future<void> onCustomPublish({List? pictures});

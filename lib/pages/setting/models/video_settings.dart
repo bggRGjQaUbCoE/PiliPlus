@@ -69,6 +69,56 @@ List<SettingsModel> get videoSettings => [
       }
     },
   ),
+  SettingsModel(
+    settingsType: SettingsType.normal,
+    title: '直播 CDN 设置',
+    leading: const Icon(MdiIcons.cloudPlusOutline),
+    getSubtitle: () => '当前使用：${Pref.liveCdnUrl ?? "默认"}',
+    onTap: (setState) async {
+      String? result = await showDialog<String>(
+        context: Get.context!,
+        builder: (context) {
+          String host = Pref.liveCdnUrl ?? '';
+          return AlertDialog(
+            title: const Text('输入CDN host'),
+            content: TextFormField(
+              initialValue: host,
+              autofocus: true,
+              onChanged: (value) => host = value,
+            ),
+            actions: [
+              TextButton(
+                onPressed: Get.back,
+                child: Text(
+                  '取消',
+                  style: TextStyle(
+                    color: ColorScheme.of(context).outline,
+                  ),
+                ),
+              ),
+              TextButton(
+                onPressed: () => Get.back(result: host),
+                child: const Text('确定'),
+              ),
+            ],
+          );
+        },
+      );
+      if (result != null) {
+        if (result.isEmpty) {
+          result = null;
+          await GStorage.setting.delete(SettingBoxKey.liveCdnUrl);
+        } else {
+          if (!result.startsWith('http')) {
+            result = 'https://${result}';
+          }
+          await GStorage.setting.put(SettingBoxKey.liveCdnUrl, result);
+        }
+        VideoUtils.liveCdnUrl = result;
+        setState();
+      }
+    },
+  ),
   const SettingsModel(
     settingsType: SettingsType.sw1tch,
     title: 'CDN 测速',

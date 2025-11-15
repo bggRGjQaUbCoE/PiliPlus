@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 
 abstract final class VideoUtils {
   static String cdnService = Pref.defaultCDNService;
+  static String? liveCdnUrl = Pref.liveCdnUrl;
   static bool disableAudioCDN = Pref.disableAudioCDN;
 
   static const _proxyTf = 'proxy-tf-all-ws.bilivideo.com';
@@ -92,6 +93,8 @@ abstract final class VideoUtils {
   }
 
   static String getLiveCdnUrl(CodecItem e) {
-    return e.urlInfo!.first.host! + e.baseUrl! + e.urlInfo!.first.extra!;
+    return (liveCdnUrl ?? e.urlInfo!.first.host!) +
+        e.baseUrl! +
+        e.urlInfo!.first.extra!;
   }
 }

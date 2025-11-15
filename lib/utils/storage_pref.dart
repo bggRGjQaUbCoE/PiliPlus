@@ -870,4 +870,6 @@ abstract class Pref {
       _setting.get(SettingBoxKey.setSystemBrightness, defaultValue: false);
 
   static String? get downloadPath => _setting.get(SettingBoxKey.downloadPath);
+
+  static String? get liveCdnUrl => _setting.get(SettingBoxKey.liveCdnUrl);
 }

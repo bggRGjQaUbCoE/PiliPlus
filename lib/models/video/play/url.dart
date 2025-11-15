@@ -198,21 +198,10 @@ class Durl {
   }
 }
 
-final _ipRegExp = RegExp(r'^https?://\d{1,3}\.\d{1,3}');
-
-bool _isMCDNorPCDN(String url) {
-  return url.contains("upos-sz-302") ||
-      url.contains("nexusedgeio.com") ||
-      url.contains("ahdohpiechei.com") ||
-      url.contains("szbdyd.com") ||
-      url.contains(".mcdn.bilivideo") ||
-      _ipRegExp.hasMatch(url);
-}
-
 abstract class BaseItem {
   int? id;
   String? baseUrl;
-  String? backupUrl;
+  List<String>? backupUrl;
   int? bandWidth;
   String? mimeType;
   String? codecs;
@@ -243,14 +232,8 @@ abstract class BaseItem {
   BaseItem.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     baseUrl = json['baseUrl'] ?? json['base_url'];
-    final backupUrls = ((json['backupUrl'] ?? json['backup_url']) as List?)
+    backupUrl = ((json['backupUrl'] ?? json['backup_url']) as List?)
         ?.fromCast<String>();
-    backupUrl = backupUrls != null && backupUrls.isNotEmpty
-        ? backupUrls.firstWhere(
-            (i) => !_isMCDNorPCDN(i),
-            orElse: () => backupUrls.first,
-          )
-        : null;
     bandWidth = json['bandWidth'] ?? json['bandwidth'];
     mimeType = json['mime_type'];
     codecs = json['codecs'];
@@ -261,6 +244,11 @@ abstract class BaseItem {
     startWithSap = json['startWithSap'] ?? json['start_with_sap'];
     segmentBase = json['segmentBase'] ?? json['segment_base'];
     codecid = json['codecid'];
+  }
+
+  Iterable<String> get playUrls sync* {
+    if (baseUrl?.isNotEmpty == true) yield baseUrl!;
+    if (backupUrl?.isNotEmpty == true) yield* backupUrl!;
   }
 }
 

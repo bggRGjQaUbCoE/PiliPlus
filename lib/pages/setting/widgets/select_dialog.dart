@@ -68,7 +68,7 @@ class SelectDialog<T> extends StatelessWidget {
 }
 
 class CdnSelectDialog extends StatefulWidget {
-  final VideoItem? sample;
+  final BaseItem? sample;
 
   const CdnSelectDialog({
     super.key,
@@ -113,7 +113,7 @@ class _CdnSelectDialogState extends State<CdnSelectDialog> {
     super.dispose();
   }
 
-  Future<VideoItem> _getSampleUrl() async {
+  Future<BaseItem> _getSampleUrl() async {
     final result = await VideoHttp.videoUrl(
       cid: 196018899,
       bvid: 'BV1fK4y1t7hj',
@@ -134,16 +134,19 @@ class _CdnSelectDialogState extends State<CdnSelectDialog> {
     }
   }
 
-  Future<void> _testAllCdnServices(VideoItem videoItem) async {
+  Future<void> _testAllCdnServices(BaseItem videoItem) async {
     for (final item in CDNService.values) {
       if (!mounted) break;
       await _testSingleCdn(item, videoItem);
     }
   }
 
-  Future<void> _testSingleCdn(CDNService item, VideoItem videoItem) async {
+  Future<void> _testSingleCdn(CDNService item, BaseItem videoItem) async {
     try {
-      final cdnUrl = VideoUtils.getCdnUrl(videoItem, item.code);
+      final cdnUrl = VideoUtils.getCdnUrl(
+        videoItem.playUrls,
+        defaultCDNService: item.code,
+      );
       await _measureDownloadSpeed(cdnUrl, item.index);
     } catch (e) {
       _handleSpeedTestError(e, item.index);
@@ -211,7 +214,17 @@ class _CdnSelectDialogState extends State<CdnSelectDialog> {
 
     if (kDebugMode) debugPrint('CDN speed test error: $error');
     if (!mounted) return;
-    var message = error.toString();
+    String message;
+    if (error is DioException) {
+      final statusCode = error.response?.statusCode;
+      if (statusCode != null && 400 <= statusCode && statusCode < 500) {
+        message = '此视频可能无法替换为该CDN';
+      } else {
+        message = error.toString();
+      }
+    } else {
+      message = error.toString();
+    }
     if (message.isEmpty) {
       message = '测速失败';
     }

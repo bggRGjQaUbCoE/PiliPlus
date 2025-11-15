@@ -436,7 +436,7 @@ class HeaderControlState extends State<HeaderControl> {
                         context: context,
                         builder: (context) {
                           return CdnSelectDialog(
-                            sample: videoInfo.dash?.video?.first,
+                            sample: videoInfo.dash?.video?.firstOrNull,
                           );
                         },
                       );

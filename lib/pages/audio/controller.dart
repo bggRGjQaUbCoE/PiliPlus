@@ -10,7 +10,9 @@ import 'package:PiliPlus/grpc/bilibili/app/listener/v1.pb.dart'
         PlaylistSource,
         PlayInfo,
         ThumbUpReq_ThumbType,
-        ListOrder;
+        ListOrder,
+        DashItem,
+        ResponseUrl;
 import 'package:PiliPlus/http/constants.dart';
 import 'package:PiliPlus/http/ua_type.dart';
 import 'package:PiliPlus/pages/common/common_intro_controller.dart'
@@ -226,7 +228,7 @@ class AudioController extends GetxController
           (e) => e.id <= cacheAudioQa,
           (a, b) => a.id > b.id ? a : b,
         );
-        _onOpenMedia(VideoUtils.getCdnUrl(audio));
+        _onOpenMedia(VideoUtils.getCdnUrl(audio.playUrls));
       } else if (playInfo.hasPlayUrl()) {
         final playUrl = playInfo.playUrl;
         final durls = playUrl.durl;
@@ -235,7 +237,7 @@ class AudioController extends GetxController
         }
         final durl = durls.first;
         position.value = Duration.zero;
-        _onOpenMedia(VideoUtils.getDurlCdnUrl(durl));
+        _onOpenMedia(VideoUtils.getCdnUrl(durl.playUrls));
       }
     }
   }
@@ -706,5 +708,19 @@ class AudioController extends GetxController
     player = null;
     animController.dispose();
     super.onClose();
+  }
+}
+
+extension on DashItem {
+  Iterable<String> get playUrls sync* {
+    yield baseUrl;
+    yield* backupUrl;
+  }
+}
+
+extension on ResponseUrl {
+  Iterable<String> get playUrls sync* {
+    yield url;
+    yield* backupUrl;
   }
 }

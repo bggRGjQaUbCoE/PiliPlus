@@ -164,7 +164,7 @@ class LiveRoomController extends GetxController {
       }).toList();
       currentQnDesc.value =
           LiveQuality.fromCode(currentQn)?.desc ?? currentQn.toString();
-      videoUrl = VideoUtils.getCdnUrl(item);
+      videoUrl = VideoUtils.getLiveCdnUrl(item);
       await playerInit();
       isLoaded.value = true;
     } else {

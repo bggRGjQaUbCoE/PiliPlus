@@ -1125,7 +1125,7 @@ class VideoDetailController extends GetxController
       currentDecodeFormats = VideoDecodeFormatType.fromString(video.codecs!);
     }
     firstVideo = video;
-    videoUrl = VideoUtils.getCdnUrl(firstVideo);
+    videoUrl = VideoUtils.getCdnUrl(firstVideo.playUrls);
 
     /// 根据currentAudioQa 重新设置audioUrl
     if (currentAudioQa != null) {
@@ -1133,7 +1133,7 @@ class VideoDetailController extends GetxController
         (i) => i.id == currentAudioQa!.code,
         orElse: () => data.dash!.audio!.first,
       );
-      audioUrl = VideoUtils.getCdnUrl(firstAudio);
+      audioUrl = VideoUtils.getCdnUrl(firstAudio.playUrls, isAudio: true);
     }
 
     playerInit();
@@ -1395,7 +1395,7 @@ class VideoDetailController extends GetxController
       );
       setVideoHeight();
 
-      videoUrl = VideoUtils.getCdnUrl(firstVideo);
+      videoUrl = VideoUtils.getCdnUrl(firstVideo.playUrls);
 
       /// 优先顺序 设置中指定质量 -> 当前可选的最高质量
       AudioItem? firstAudio;
@@ -1414,7 +1414,7 @@ class VideoDetailController extends GetxController
           (e) => e.id == closestNumber,
           orElse: () => audioList.first,
         );
-        audioUrl = VideoUtils.getCdnUrl(firstAudio);
+        audioUrl = VideoUtils.getCdnUrl(firstAudio.playUrls, isAudio: true);
         if (firstAudio.id case final int id?) {
           currentAudioQa = AudioQuality.fromCode(id);
         }

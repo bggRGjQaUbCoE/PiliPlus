@@ -27,13 +27,10 @@ enum CDNService {
   hk_bcache('hk_bcache（Bilibili海外）', 'cn-hk-eq-bcache-01.bilivideo.com')
   ;
 
-  String get code => name;
-  static final fromCode = values.byName;
-
   final String desc;
-  final String host;
+  final String? host;
 
-  const CDNService(this.desc, [this.host = '']);
+  const CDNService(this.desc, [this.host]);
 }
 // from https://rec.danmuji.org/dev/cdn-info/
 // {

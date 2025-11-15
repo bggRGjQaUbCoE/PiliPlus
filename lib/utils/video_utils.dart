@@ -4,7 +4,7 @@ import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:flutter/foundation.dart';
 
 abstract final class VideoUtils {
-  static String cdnService = Pref.defaultCDNService;
+  static CDNService cdnService = Pref.defaultCDNService;
   static String? liveCdnUrl = Pref.liveCdnUrl;
   static bool disableAudioCDN = Pref.disableAudioCDN;
 
@@ -20,13 +20,12 @@ abstract final class VideoUtils {
 
   static String getCdnUrl(
     Iterable<String> urls, {
-    String? defaultCDNService,
+    CDNService? defaultCDNService,
     bool isAudio = false,
   }) {
     defaultCDNService ??= cdnService;
-    late final defaultCDNHost = CDNService.fromCode(defaultCDNService!).host;
 
-    if (defaultCDNService == CDNService.baseUrl.code) {
+    if (defaultCDNService == CDNService.baseUrl) {
       return urls.first;
     }
 
@@ -42,11 +41,11 @@ abstract final class VideoUtils {
           // upos-sz-mirrorcoso1.bilivideo.com os=mcdn
           mcdnUpgcxcode = url;
         } else {
-          if (defaultCDNService == CDNService.backupUrl.code ||
+          if (defaultCDNService == CDNService.backupUrl ||
               (isAudio && disableAudioCDN)) {
             return url;
           }
-          return uri.replace(host: defaultCDNHost).toString();
+          return uri.replace(host: defaultCDNService.host).toString();
         }
       }
 
@@ -64,7 +63,8 @@ abstract final class VideoUtils {
       // may be deprecated
       if (url.contains('szbdyd.com')) {
         final uri = Uri.parse(url);
-        final hostname = uri.queryParameters['xy_usource'] ?? defaultCDNHost;
+        final hostname =
+            uri.queryParameters['xy_usource'] ?? defaultCDNService.host;
         return uri
             .replace(scheme: 'https', host: hostname, port: 443)
             .toString();
@@ -84,11 +84,7 @@ abstract final class VideoUtils {
                   queryParameters: {'url': mcdnTf},
                 ).toString()
         : Uri.parse(mcdnUpgcxcode)
-              .replace(
-                host: defaultCDNService.isEmpty
-                    ? CDNService.ali.host
-                    : defaultCDNService,
-              )
+              .replace(host: defaultCDNService.host ?? CDNService.ali.host)
               .toString();
   }
 

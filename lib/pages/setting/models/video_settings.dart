@@ -54,9 +54,9 @@ List<SettingsModel> get videoSettings => [
     title: 'CDN 设置',
     leading: const Icon(MdiIcons.cloudPlusOutline),
     getSubtitle: () =>
-        '当前使用：${CDNService.fromCode(VideoUtils.cdnService).desc}，部分 CDN 可能失效，如无法播放请尝试切换',
+        '当前使用：${VideoUtils.cdnService.desc}，部分 CDN 可能失效，如无法播放请尝试切换',
     onTap: (setState) async {
-      String? result = await showDialog(
+      CDNService? result = await showDialog(
         context: Get.context!,
         builder: (context) {
           return const CdnSelectDialog();
@@ -64,7 +64,7 @@ List<SettingsModel> get videoSettings => [
       );
       if (result != null) {
         VideoUtils.cdnService = result;
-        await GStorage.setting.put(SettingBoxKey.CDNService, result);
+        await GStorage.setting.put(SettingBoxKey.CDNService, result.name);
         setState();
       }
     },

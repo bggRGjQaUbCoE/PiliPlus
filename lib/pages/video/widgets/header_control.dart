@@ -427,12 +427,12 @@ class HeaderControlState extends State<HeaderControl> {
                     title: const Text('CDN 设置', style: titleStyle),
                     leading: const Icon(MdiIcons.cloudPlusOutline, size: 20),
                     subtitle: Text(
-                      '当前：${CDNService.fromCode(VideoUtils.cdnService).desc}，无法播放请切换',
+                      '当前：${VideoUtils.cdnService.desc}，无法播放请切换',
                       style: subTitleStyle,
                     ),
                     onTap: () async {
                       Get.back();
-                      String? result = await showDialog(
+                      CDNService? result = await showDialog(
                         context: context,
                         builder: (context) {
                           return CdnSelectDialog(
@@ -442,10 +442,8 @@ class HeaderControlState extends State<HeaderControl> {
                       );
                       if (result != null) {
                         VideoUtils.cdnService = result;
-                        setting.put(SettingBoxKey.CDNService, result);
-                        SmartDialog.showToast(
-                          '已设置为 ${CDNService.fromCode(result).desc}，正在重载视频',
-                        );
+                        setting.put(SettingBoxKey.CDNService, result.name);
+                        SmartDialog.showToast('已设置为 ${result.desc}，正在重载视频');
                         videoDetailCtr.queryVideoUrl(
                           defaultST: videoDetailCtr.playedTime,
                           fromReset: true,

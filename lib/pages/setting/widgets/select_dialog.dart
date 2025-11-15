@@ -145,7 +145,7 @@ class _CdnSelectDialogState extends State<CdnSelectDialog> {
     try {
       final cdnUrl = VideoUtils.getCdnUrl(
         videoItem.playUrls,
-        defaultCDNService: item.code,
+        defaultCDNService: item,
       );
       await _measureDownloadSpeed(cdnUrl, item.index);
     } catch (e) {
@@ -233,9 +233,9 @@ class _CdnSelectDialogState extends State<CdnSelectDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return SelectDialog<String>(
+    return SelectDialog<CDNService>(
       title: 'CDN 设置',
-      values: CDNService.values.map((i) => (i.code, i.desc)).toList(),
+      values: CDNService.values.map((i) => (i, i.desc)).toList(),
       value: VideoUtils.cdnService,
       subtitleBuilder: _cdnSpeedTest
           ? (context, index) {

@@ -196,6 +196,11 @@ class Durl {
       backupUrl: (json['backup_url'] as List?)?.fromCast<String>(),
     );
   }
+
+  Iterable<String> get playUrls sync* {
+    if (url?.isNotEmpty == true) yield url!;
+    if (backupUrl?.isNotEmpty == true) yield* backupUrl!;
+  }
 }
 
 abstract class BaseItem {

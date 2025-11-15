@@ -107,6 +107,7 @@ class LiveRoomController extends GetxController {
 
   late final bool isLogin;
   late final int mid;
+  late final int mainMid = Accounts.main.mid;
 
   String? videoUrl;
   bool? isPlaying;
@@ -432,7 +433,8 @@ class LiveRoomController extends GetxController {
                     ? Colors.white
                     : DmUtils.decimalToColor(extra['color']),
                 type: DmUtils.getPosition(extra['mode']),
-                selfSend: extra['send_from_me'] ?? false,
+                // extra['send_from_me'] is invalid
+                selfSend: uid == mainMid,
                 extra: LiveDanmaku(
                   id: extra['id_str'],
                   mid: uid,

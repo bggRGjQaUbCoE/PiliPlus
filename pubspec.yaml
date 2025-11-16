@@ -55,7 +55,7 @@ dependencies:
   # 图片
   cached_network_image: ^3.4.1
   # extended_image: ^9.0.7
-  saver_gallery: ^4.0.1
+  saver_gallery: ^4.1.0
 
   # QRCode
   # qr_flutter: ^4.1.0
@@ -291,7 +291,7 @@ dev_dependencies:
   flutter_lints: ^6.0.0
   flutter_launcher_icons: ^0.14.4
   # hive_generator: ^2.0.1
-  build_runner: ^2.9.0
+  build_runner: ^2.10.3
   flutter_native_splash: ^2.4.6
 
 flutter_launcher_icons:

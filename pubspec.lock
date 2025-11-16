@@ -174,10 +174,10 @@ packages:
     dependency: "direct dev"
     description:
       name: build_runner
-      sha256: "04f69b1502f66e22ae7990bbd01eb552b7f12793c4d3ea6e715d0ac5e98bcdac"
+      sha256: "7b5b569f3df370590a85029148d6fc66c7d0201fc6f1847c07dd85d365ae9fcd"
       url: "https://pub.dev"
     source: hosted
-    version: "2.10.2"
+    version: "2.10.3"
   built_collection:
     dependency: transitive
     description:
@@ -1448,10 +1448,10 @@ packages:
     dependency: "direct main"
     description:
       name: saver_gallery
-      sha256: bf59475e50b73d666630bed7a5fdb621fed92d637f64e3c61ce81653ec6a833c
+      sha256: "1d942bd7f4fedc162d9a751e156ebac592e4b81fc2e757af82de9077f3437003"
       url: "https://pub.dev"
     source: hosted
-    version: "4.0.1"
+    version: "4.1.0"
   screen_brightness_android:
     dependency: "direct overridden"
     description:

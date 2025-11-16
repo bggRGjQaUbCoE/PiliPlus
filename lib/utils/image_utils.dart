@@ -189,23 +189,11 @@ abstract class ImageUtils {
 
         if (file == null) {
           final String filePath = '$tmpDirPath/$name';
-
           final response = await Request().downloadFile(
             url.http2https,
             filePath,
             cancelToken: cancelToken,
           );
-
-          if (Platform.isAndroid) {
-            if (response.statusCode == 200) {
-              await SaverGallery.saveFile(
-                filePath: filePath,
-                fileName: name,
-                androidRelativePath: "Pictures/${Constants.appName}",
-                skipIfExists: false,
-              ).whenComplete(File(filePath).tryDel);
-            }
-          }
           return (
             filePath: filePath,
             name: name,
@@ -213,20 +201,30 @@ abstract class ImageUtils {
             del: true,
           );
         } else {
-          if (Platform.isAndroid) {
-            await SaverGallery.saveFile(
-              filePath: file.path,
-              fileName: name,
-              androidRelativePath: "Pictures/${Constants.appName}",
-              skipIfExists: false,
-            );
-          }
-
           return (filePath: file.path, name: name, statusCode: 200, del: false);
         }
       });
       final result = await Future.wait(futures, eagerError: true);
-      if (!Platform.isAndroid) {
+      if (Platform.isAndroid) {
+        final delList = <String>[];
+        final saveList = <SaveFileData>[];
+        for (var i in result) {
+          if (i.del) delList.add(i.filePath);
+          if (i.statusCode == 200) {
+            saveList.add(
+              SaveFileData(
+                filePath: i.filePath,
+                fileName: i.name,
+                androidRelativePath: 'Pictures/${Constants.appName}',
+              ),
+            );
+          }
+        }
+        await SaverGallery.saveFiles(saveList, skipIfExists: false);
+        for (var i in delList) {
+          File(i).tryDel();
+        }
+      } else {
         for (var res in result) {
           if (res.statusCode == 200) {
             await saveFileImg(

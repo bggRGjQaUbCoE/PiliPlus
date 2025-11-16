@@ -9,7 +9,7 @@
 /// @docImport 'text_field.dart';
 library;
 
-import 'package:PiliPlus/common/widgets/text_field/editable_text.dart';
+import 'package:PiliPlus/common/widgets/flutter/text_field/editable_text.dart';
 import 'package:flutter/cupertino.dart' hide EditableText, EditableTextState;
 import 'package:flutter/material.dart' hide EditableText, EditableTextState;
 import 'package:flutter/rendering.dart';

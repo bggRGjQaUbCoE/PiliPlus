@@ -12,7 +12,7 @@ import 'package:flutter/painting.dart';
 import 'package:flutter/services.dart'
     show SpellCheckResults, SpellCheckService, SuggestionSpan, TextEditingValue;
 
-import 'package:PiliPlus/common/widgets/text_field/editable_text.dart'
+import 'package:PiliPlus/common/widgets/flutter/text_field/editable_text.dart'
     show EditableTextContextMenuBuilder;
 
 /// Controls how spell check is performed for text input.

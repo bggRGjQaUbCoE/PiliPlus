@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:PiliPlus/common/widgets/text_field/text_field.dart';
+import 'package:PiliPlus/common/widgets/flutter/text_field/text_field.dart';
 import 'package:PiliPlus/common/widgets/view_safe_area.dart';
 import 'package:PiliPlus/http/live.dart';
 import 'package:PiliPlus/models/common/publish_panel_type.dart';

@@ -10,7 +10,7 @@
 /// @docImport 'text.dart';
 library;
 
-import 'package:PiliPlus/common/widgets/page/scrollable.dart';
+import 'package:PiliPlus/common/widgets/flutter/page/scrollable.dart';
 import 'package:flutter/gestures.dart' show DragStartBehavior;
 import 'package:flutter/material.dart' hide Scrollable, ScrollableState;
 import 'package:flutter/rendering.dart';

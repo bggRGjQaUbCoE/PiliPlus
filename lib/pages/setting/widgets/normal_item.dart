@@ -1,4 +1,4 @@
-import 'package:PiliPlus/common/widgets/list_tile.dart';
+import 'package:PiliPlus/common/widgets/flutter/list_tile.dart';
 import 'package:flutter/material.dart' hide ListTile;
 
 typedef StringGetter = String Function();

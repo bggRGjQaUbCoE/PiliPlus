@@ -1,6 +1,6 @@
 import 'dart:ui' as ui;
 
-import 'package:PiliPlus/common/widgets/text/paragraph.dart';
+import 'package:PiliPlus/common/widgets/flutter/text/paragraph.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart' hide RenderParagraph;
 

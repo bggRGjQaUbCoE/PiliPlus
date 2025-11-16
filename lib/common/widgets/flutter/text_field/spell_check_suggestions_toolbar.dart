@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'package:PiliPlus/common/widgets/text_field/editable_text.dart';
+import 'package:PiliPlus/common/widgets/flutter/text_field/editable_text.dart';
 import 'package:flutter/cupertino.dart' hide EditableText, EditableTextState;
 import 'package:flutter/material.dart' hide EditableText, EditableTextState;
 import 'package:flutter/scheduler.dart';

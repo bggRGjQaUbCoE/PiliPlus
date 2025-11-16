@@ -110,7 +110,7 @@ List<SettingsModel> get videoSettings => [
           await GStorage.setting.delete(SettingBoxKey.liveCdnUrl);
         } else {
           if (!result.startsWith('http')) {
-            result = 'https://${result}';
+            result = 'https://$result';
           }
           await GStorage.setting.put(SettingBoxKey.liveCdnUrl, result);
         }

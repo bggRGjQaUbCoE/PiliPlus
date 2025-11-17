@@ -4,7 +4,6 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:PiliPlus/services/logger.dart';
-import 'package:PiliPlus/utils/utils.dart';
 import 'package:brotli/brotli.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -211,7 +210,6 @@ class LiveMessageStream {
     }
   }
 
-  @pragma('vm:notify-debugger-on-exception')
   void _processingData(List<int> data) {
     try {
       final subHeader = PackageHeaderRes.fromBytesData(
@@ -228,8 +226,8 @@ class LiveMessageStream {
           _processingData(data.sublist(subHeader.totalSize));
         }
       }
-    } catch (e, s) {
-      Utils.reportError(e, s);
+    } catch (_) {
+      if (kDebugMode) rethrow;
     }
   }
 
@@ -269,10 +267,8 @@ class LiveMessageStream {
     _eventListeners.add(func);
   }
 
-  @pragma('vm:notify-debugger-on-exception')
   void onData(dynamic data) {
-    data as Uint8List;
-    final header = PackageHeaderRes.fromBytesData(data);
+    final header = PackageHeaderRes.fromBytesData(data as Uint8List);
     if (header != null) {
       List<int> decompressedData = [];
       //心跳包回复不用处理
@@ -296,8 +292,8 @@ class LiveMessageStream {
           //debugPrint('Body: ${utf8.decode()}');
         }
         _processingData(decompressedData);
-      } catch (e, s) {
-        Utils.reportError(e, s);
+      } catch (_) {
+        if (kDebugMode) rethrow;
       }
     }
   }

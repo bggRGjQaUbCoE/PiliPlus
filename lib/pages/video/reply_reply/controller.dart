@@ -102,7 +102,6 @@ class VideoReplyReplyController extends ReplyController
 
   ExtendedNestedScrollController? nestedController;
 
-  @pragma('vm:notify-debugger-on-exception')
   void jumpToItem(int index) {
     SchedulerBinding.instance.addPostFrameCallback((_) {
       animController.forward(from: 0);
@@ -116,8 +115,8 @@ class VideoReplyReplyController extends ReplyController
             scrollController.jumpTo(offset);
           }
         }
-      } catch (e, s) {
-        Utils.reportError(e, s);
+      } catch (_) {
+        if (kDebugMode) rethrow;
       }
     });
   }

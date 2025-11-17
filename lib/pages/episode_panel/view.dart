@@ -449,9 +449,8 @@ class _EpisodePanelState extends State<EpisodePanel>
                       Get.find<VideoDetailController>(
                         tag: widget.ugcIntroController!.heroTag,
                       ).seasonCid = episode.cid;
-                    } catch (e, s) {
+                    } catch (_) {
                       if (kDebugMode) rethrow;
-                      Utils.reportError(e, s);
                     }
                   }
                 }

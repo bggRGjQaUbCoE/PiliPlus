@@ -18,7 +18,6 @@ import 'package:PiliPlus/services/download/download_manager.dart';
 import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:PiliPlus/utils/path_utils.dart';
-import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -74,7 +73,6 @@ class DownloadService extends GetxService {
       ..sort((a, b) => b.timeUpdateStamp.compareTo(a.timeUpdateStamp));
   }
 
-  @pragma('vm:notify-debugger-on-exception')
   Future<List<BiliDownloadEntryInfo>> _readDownloadDirectory(
     Directory pageDir,
   ) async {
@@ -97,8 +95,8 @@ class DownloadService extends GetxService {
             if (!entry.isCompleted) {
               waitDownloadQueue.add(entry..status = DownloadStatus.wait);
             }
-          } catch (e, s) {
-            Utils.reportError(e, s);
+          } catch (_) {
+            if (kDebugMode) rethrow;
           }
         }
       }

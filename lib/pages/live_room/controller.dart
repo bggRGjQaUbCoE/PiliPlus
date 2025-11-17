@@ -333,12 +333,11 @@ class LiveRoomController extends GetxController {
                 .map((host) => 'wss://${host.host}:${host.wssPort}/sub')
                 .toList(),
           )
-          ..addEventListener(_danmakuListenet)
+          ..addEventListener(_danmakuListener)
           ..init();
   }
 
-  @pragma('vm:notify-debugger-on-exception')
-  void _danmakuListenet(dynamic obj) {
+  void _danmakuListener(dynamic obj) {
     try {
       // logger.i(' 原始弹幕消息 ======> ${jsonEncode(obj)}');
       switch (obj['cmd']) {
@@ -408,8 +407,8 @@ class LiveRoomController extends GetxController {
           }
           break;
       }
-    } catch (e, s) {
-      Utils.reportError(e, s);
+    } catch (_) {
+      if (kDebugMode) rethrow;
     }
   }
 

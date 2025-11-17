@@ -123,10 +123,10 @@ class LocalIntroController extends CommonIntroController {
     return false;
   }
 
-  Future<void> playIndex(
+  void playIndex(
     int index, {
     BiliDownloadEntryInfo? entry,
-  }) async {
+  }) {
     entry ??= list[index];
     videoDetailCtr
       ..onReset()

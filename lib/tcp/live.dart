@@ -210,6 +210,7 @@ class LiveMessageStream {
     }
   }
 
+  @pragma('vm:notify-debugger-on-exception')
   void _processingData(List<int> data) {
     try {
       final subHeader = PackageHeaderRes.fromBytesData(
@@ -226,9 +227,7 @@ class LiveMessageStream {
           _processingData(data.sublist(subHeader.totalSize));
         }
       }
-    } catch (_) {
-      if (kDebugMode) rethrow;
-    }
+    } catch (_) {}
   }
 
   Future<void> _heartBeat() async {
@@ -267,6 +266,7 @@ class LiveMessageStream {
     _eventListeners.add(func);
   }
 
+  @pragma('vm:notify-debugger-on-exception')
   void onData(dynamic data) {
     final header = PackageHeaderRes.fromBytesData(data as Uint8List);
     if (header != null) {
@@ -292,9 +292,7 @@ class LiveMessageStream {
           //debugPrint('Body: ${utf8.decode()}');
         }
         _processingData(decompressedData);
-      } catch (_) {
-        if (kDebugMode) rethrow;
-      }
+      } catch (_) {}
     }
   }
 

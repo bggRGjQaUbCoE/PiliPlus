@@ -14,7 +14,6 @@ import 'package:PiliPlus/utils/utils.dart';
 import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
 import 'package:encrypt/encrypt.dart';
-import 'package:flutter/foundation.dart' show kDebugMode;
 
 class LoginHttp {
   static final String deviceId = LoginUtils.genDeviceId();
@@ -31,6 +30,7 @@ class LoginHttp {
     'content-type': 'application/x-www-form-urlencoded; charset=utf-8',
   };
 
+  @pragma('vm:notify-debugger-on-exception')
   static Future<LoadingState<({String authCode, String url})>>
   getHDcode() async {
     var params = {
@@ -48,9 +48,6 @@ class LoginHttp {
         final Map<String, dynamic> data = res.data['data'];
         return Success((authCode: data['auth_code'], url: data['url']));
       } catch (e, s) {
-        if (kDebugMode) {
-          rethrow;
-        }
         return Error('$e\n\n$s');
       }
     } else {

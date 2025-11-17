@@ -23,9 +23,9 @@ import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:PiliPlus/utils/wbi_sign.dart';
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart' show kDebugMode;
 
 class DynamicsHttp {
+  @pragma('vm:notify-debugger-on-exception')
   static Future<LoadingState<DynamicsDataModel>> followDynamic({
     DynamicsTabType type = DynamicsTabType.all,
     String? offset,
@@ -61,9 +61,6 @@ class DynamicsHttp {
         }
         return Success(data);
       } catch (e, s) {
-        if (kDebugMode) {
-          rethrow;
-        }
         return Error('$e\n\n$s');
       }
     } else {
@@ -246,6 +243,7 @@ class DynamicsHttp {
   }
 
   //
+  @pragma('vm:notify-debugger-on-exception')
   static Future<LoadingState<DynamicItemModel>> dynamicDetail({
     dynamic id,
     dynamic rid,
@@ -272,9 +270,6 @@ class DynamicsHttp {
       try {
         return Success(DynamicItemModel.fromJson(res.data['data']['item']));
       } catch (e, s) {
-        if (kDebugMode) {
-          rethrow;
-        }
         return Error('$e\n\n$s');
       }
     } else {

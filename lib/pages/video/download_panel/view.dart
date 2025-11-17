@@ -209,6 +209,7 @@ class _DownloadPanelState extends State<DownloadPanel> {
   }
 
   late final int? vipStatus = Pref.userInfoCache?.vipStatus;
+  @pragma('vm:notify-debugger-on-exception')
   bool _onDownload({
     required int index,
     required ugc.BaseEpisodeItem episode,

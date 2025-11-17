@@ -25,7 +25,6 @@ import 'package:PiliPlus/utils/accounts/account.dart';
 import 'package:PiliPlus/utils/app_sign.dart';
 import 'package:PiliPlus/utils/wbi_sign.dart';
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart' show kDebugMode;
 
 abstract final class LiveHttp {
   static Account get recommend => Accounts.get(AccountType.recommend);
@@ -620,8 +619,9 @@ abstract final class LiveHttp {
     }
   }
 
+  @pragma('vm:notify-debugger-on-exception')
   static Future<LoadingState<SuperChatData>> superChatMsg(
-    dynamic roomId,
+    Object roomId,
   ) async {
     var res = await Request().get(
       Api.superChatMsg,
@@ -633,9 +633,6 @@ abstract final class LiveHttp {
       try {
         return Success(SuperChatData.fromJson(res.data['data']));
       } catch (e, s) {
-        if (kDebugMode) {
-          rethrow;
-        }
         return Error('$e\n\n$s');
       }
     } else {

@@ -73,6 +73,7 @@ class DownloadService extends GetxService {
       ..sort((a, b) => b.timeUpdateStamp.compareTo(a.timeUpdateStamp));
   }
 
+  @pragma('vm:notify-debugger-on-exception')
   Future<List<BiliDownloadEntryInfo>> _readDownloadDirectory(
     Directory pageDir,
   ) async {
@@ -95,9 +96,7 @@ class DownloadService extends GetxService {
             if (!entry.isCompleted) {
               waitDownloadQueue.add(entry..status = DownloadStatus.wait);
             }
-          } catch (_) {
-            if (kDebugMode) rethrow;
-          }
+          } catch (_) {}
         }
       }
     }

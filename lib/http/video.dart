@@ -34,7 +34,7 @@ import 'package:PiliPlus/utils/recommend_filter.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/wbi_sign.dart';
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart' show kDebugMode, compute;
+import 'package:flutter/foundation.dart' show compute;
 
 /// view层根据 status 判断渲染逻辑
 class VideoHttp {
@@ -188,6 +188,7 @@ class VideoHttp {
   }
 
   // 视频流
+  @pragma('vm:notify-debugger-on-exception')
   static Future<LoadingState<PlayUrlModel>> videoUrl({
     int? avid,
     String? bvid,
@@ -259,9 +260,6 @@ class VideoHttp {
       }
       return Error(_parseVideoErr(res.data['code'], res.data['message']));
     } catch (e, s) {
-      if (kDebugMode) {
-        rethrow;
-      }
       return Error('$e\n\n$s');
     }
   }

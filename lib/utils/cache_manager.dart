@@ -4,11 +4,11 @@ import 'dart:io';
 import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
-import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:path_provider/path_provider.dart';
 
 abstract class CacheManager {
   // 获取缓存目录
+  @pragma('vm:notify-debugger-on-exception')
   static Future<int> loadApplicationCache([
     final num maxSize = double.infinity,
   ]) async {
@@ -25,13 +25,12 @@ abstract class CacheManager {
       if (tempDirectory.existsSync()) {
         return await getTotalSizeOfFilesInDir(tempDirectory, maxSize);
       }
-    } catch (_) {
-      if (kDebugMode) rethrow;
-    }
+    } catch (_) {}
     return 0;
   }
 
   // 循环计算文件的大小
+  @pragma('vm:notify-debugger-on-exception')
   static Future<int> getTotalSizeOfFilesInDir(
     final Directory file, [
     final num maxSize = double.infinity,
@@ -76,9 +75,7 @@ abstract class CacheManager {
           await file.delete(recursive: true);
         }
       }
-    } catch (_) {
-      if (kDebugMode) rethrow;
-    }
+    } catch (_) {}
   }
 
   static Future<void> autoClearCache() async {

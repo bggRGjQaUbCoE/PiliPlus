@@ -1,10 +1,10 @@
 import 'package:PiliPlus/models_new/download/bili_download_entry_info.dart';
-import 'package:PiliPlus/models_new/video/video_detail/page.dart';
 import 'package:PiliPlus/models_new/video/video_detail/stat_detail.dart';
 import 'package:PiliPlus/pages/common/common_intro_controller.dart';
 import 'package:PiliPlus/pages/download/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_repeat.dart';
 import 'package:PiliPlus/services/service_locator.dart';
+import 'package:PiliPlus/utils/utils.dart';
 import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/scheduler.dart' show SchedulerBinding;
@@ -43,6 +43,7 @@ class LocalIntroController extends CommonIntroController {
   @override
   void onClose() {
     aidSet.clear();
+    videoPlayerServiceHandler?.onVideoDetailDispose(heroTag);
     super.onClose();
   }
 
@@ -64,24 +65,9 @@ class LocalIntroController extends CommonIntroController {
     final currCid = videoDetailCtr.cid.value;
     final index = list.indexWhere((e) => e.cid == currCid);
     this.index.value = index;
-    // set media notification for current offline video
-    try {
-      if (index >= 0 && index < list.length) {
-        final entry = list[index];
-        final part = Part(
-          cid: entry.cid,
-          part: entry.pageData?.part ?? entry.showTitle,
-          duration: entry.totalTimeMilli ~/ 1000,
-        );
-        videoPlayerServiceHandler?.onVideoDetailChange(
-          part,
-          entry.cid,
-          heroTag,
-          artist: entry.ownerName,
-          cover: entry.cover,
-        );
-      }
-    } catch (_) {}
+    if (Utils.isMobile) {
+      onVideoDetailChange(list[index]);
+    }
     if (index != 0) {
       SchedulerBinding.instance.addPostFrameCallback((_) {
         try {
@@ -155,20 +141,12 @@ class LocalIntroController extends CommonIntroController {
       ..value.title = entry.showTitle
       ..refresh();
     this.index.value = index;
-    // Update media notification / system media controls for offline videos
-    try {
-      final part = Part(
-        cid: entry.cid,
-        part: entry.pageData?.part ?? entry.showTitle,
-        duration: entry.totalTimeMilli ~/ 1000,
-      );
-      videoPlayerServiceHandler?.onVideoDetailChange(
-        part,
-        entry.cid,
-        heroTag,
-        artist: entry.ownerName,
-        cover: entry.cover,
-      );
-    } catch (_) {}
-  } // end playIndex
+    if (Utils.isMobile) {
+      onVideoDetailChange(entry);
+    }
+  }
+
+  void onVideoDetailChange(BiliDownloadEntryInfo entry) {
+    videoPlayerServiceHandler?.onVideoDetailChange(entry, entry.cid, heroTag);
+  }
 }

@@ -7,9 +7,9 @@ import 'package:PiliPlus/pages/video/reply_new/view.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:PiliPlus/utils/request_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
+import 'package:PiliPlus/utils/utils.dart';
 import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart';
 import 'package:fixnum/fixnum.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:get/get.dart';
@@ -102,6 +102,7 @@ class VideoReplyReplyController extends ReplyController
 
   ExtendedNestedScrollController? nestedController;
 
+  @pragma('vm:notify-debugger-on-exception')
   void jumpToItem(int index) {
     SchedulerBinding.instance.addPostFrameCallback((_) {
       animController.forward(from: 0);
@@ -115,8 +116,8 @@ class VideoReplyReplyController extends ReplyController
             scrollController.jumpTo(offset);
           }
         }
-      } catch (_) {
-        if (kDebugMode) rethrow;
+      } catch (e, s) {
+        Utils.reportError(e, s);
       }
     });
   }

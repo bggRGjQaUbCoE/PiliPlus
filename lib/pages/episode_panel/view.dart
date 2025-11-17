@@ -123,6 +123,7 @@ class _EpisodePanelState extends State<EpisodePanel>
       return;
     }
 
+    @pragma('vm:notify-debugger-on-exception')
     void jumpToCurrent() {
       final newItemIndex = _findCurrentItemIndex;
       if (_currentItemIndex != newItemIndex) {
@@ -131,8 +132,8 @@ class _EpisodePanelState extends State<EpisodePanel>
           _itemScrollController[_currentTabIndex.value].jumpTo(
             _calcItemOffset(newItemIndex),
           );
-        } catch (_) {
-          if (kDebugMode) rethrow;
+        } catch (e, s) {
+          Utils.reportError(e, s);
         }
       }
     }
@@ -448,8 +449,9 @@ class _EpisodePanelState extends State<EpisodePanel>
                       Get.find<VideoDetailController>(
                         tag: widget.ugcIntroController!.heroTag,
                       ).seasonCid = episode.cid;
-                    } catch (_) {
+                    } catch (e, s) {
                       if (kDebugMode) rethrow;
+                      Utils.reportError(e, s);
                     }
                   }
                 }

@@ -190,6 +190,7 @@ class VideoDetailController extends GetxController
     }
   }
 
+  @pragma('vm:notify-debugger-on-exception')
   void setVideoHeight() {
     try {
       final isVertical = firstVideo.width != null && firstVideo.height != null
@@ -243,8 +244,8 @@ class VideoDetailController extends GetxController
           animationController.forward(from: 1 - scrollCtr.offset / videoHeight);
         }
       }
-    } catch (_) {
-      if (kDebugMode) rethrow;
+    } catch (e, s) {
+      Utils.reportError(e, s);
     }
   }
 
@@ -1815,6 +1816,7 @@ class VideoDetailController extends GetxController
     }
   }
 
+  @pragma('vm:notify-debugger-on-exception')
   bool onSkipSegment() {
     try {
       if (plPlayerController.enableSponsorBlock) {
@@ -1824,8 +1826,8 @@ class VideoDetailController extends GetxController
           return true;
         }
       }
-    } catch (_) {
-      if (kDebugMode) rethrow;
+    } catch (e, s) {
+      Utils.reportError(e, s);
     }
     return false;
   }
@@ -1991,6 +1993,7 @@ class VideoDetailController extends GetxController
     );
   }
 
+  @pragma('vm:notify-debugger-on-exception')
   Future<void> onCast() async {
     SmartDialog.showLoading();
     final res = await VideoHttp.tvPlayUrl(
@@ -2020,8 +2023,8 @@ class VideoDetailController extends GetxController
             tag: heroTag,
           ).videoDetail.value.title;
         }
-      } catch (_) {
-        if (kDebugMode) rethrow;
+      } catch (e, s) {
+        Utils.reportError(e, s);
       }
       if (kDebugMode) {
         debugPrint(title);

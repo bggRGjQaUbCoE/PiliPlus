@@ -3,6 +3,7 @@ import 'package:PiliPlus/models_new/video/video_detail/stat_detail.dart';
 import 'package:PiliPlus/pages/common/common_intro_controller.dart';
 import 'package:PiliPlus/pages/download/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_repeat.dart';
+import 'package:PiliPlus/utils/utils.dart';
 import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/scheduler.dart' show SchedulerBinding;
@@ -74,8 +75,9 @@ class LocalIntroController extends CommonIntroController {
           } else if (videoDetailCtr.introScrollCtr?.hasClients ?? false) {
             videoDetailCtr.introScrollCtr!.jumpTo(_offset);
           }
-        } catch (_) {
+        } catch (e, s) {
           if (kDebugMode) rethrow;
+          Utils.reportError(e, s);
         }
       });
     }

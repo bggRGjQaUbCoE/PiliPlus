@@ -330,8 +330,9 @@ class _LiveRoomPageState extends State<LiveRoomPage>
                     ],
                   ),
                 );
-              } catch (_) {
+              } catch (e, s) {
                 if (kDebugMode) rethrow;
+                Utils.reportError(e, s);
                 return const SizedBox.shrink();
               }
             }),

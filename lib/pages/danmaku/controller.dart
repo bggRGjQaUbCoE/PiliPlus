@@ -5,7 +5,7 @@ import 'package:PiliPlus/grpc/dm.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/path_utils.dart';
-import 'package:flutter/foundation.dart' show kDebugMode;
+import 'package:PiliPlus/utils/utils.dart';
 import 'package:path/path.dart' as path;
 
 class PlDanmakuController {
@@ -121,6 +121,7 @@ class PlDanmakuController {
     _initFileDm();
   }
 
+  @pragma('vm:notify-debugger-on-exception')
   Future<void> _initFileDm() async {
     try {
       final file = File(
@@ -131,8 +132,8 @@ class PlDanmakuController {
       if (bytes.isEmpty) return;
       final elem = DmSegMobileReply.fromBuffer(bytes).elems;
       handleDanmaku(elem);
-    } catch (_) {
-      if (kDebugMode) rethrow;
+    } catch (e, s) {
+      Utils.reportError(e, s);
     }
   }
 }

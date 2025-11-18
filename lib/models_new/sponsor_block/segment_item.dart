@@ -7,6 +7,7 @@ class SegmentItemModel {
   List<int> segment;
   String uuid;
   num? videoDuration;
+  int votes;
 
   SegmentItemModel({
     this.cid,
@@ -15,6 +16,7 @@ class SegmentItemModel {
     required this.segment,
     required this.uuid,
     this.videoDuration,
+    this.votes = 0,
   });
 
   factory SegmentItemModel.fromJson(Map<String, dynamic> json) =>
@@ -29,6 +31,7 @@ class SegmentItemModel {
         videoDuration: json["videoDuration"] == null
             ? null
             : (json["videoDuration"] as num) * 1000,
+        votes: json["votes"],
       );
 
   factory SegmentItemModel.fromPgcJson(

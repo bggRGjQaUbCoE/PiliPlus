@@ -1,22 +1,19 @@
 import 'dart:math';
 
-import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/widgets/button/icon_button.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
 import 'package:PiliPlus/common/widgets/pair.dart';
-import 'package:PiliPlus/http/init.dart';
+import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/http/sponsor_block.dart';
 import 'package:PiliPlus/models/common/sponsor_block/action_type.dart';
 import 'package:PiliPlus/models/common/sponsor_block/post_segment_model.dart';
 import 'package:PiliPlus/models/common/sponsor_block/segment_type.dart';
-import 'package:PiliPlus/models_new/sponsor_block/segment_item.dart';
 import 'package:PiliPlus/pages/common/slide/common_slide_page.dart';
 import 'package:PiliPlus/pages/video/controller.dart';
 import 'package:PiliPlus/pages/video/post_panel/popup_menu_text.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:PiliPlus/utils/extension.dart';
-import 'package:PiliPlus/utils/storage_pref.dart';
-import 'package:dio/dio.dart';
 import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
@@ -310,67 +307,24 @@ class _PostPanelState extends State<PostPanel>
 
   Future<void> _onPost() async {
     Get.back();
-    final res = await Request().post(
-      '${widget.videoDetailController.blockServer}/api/skipSegments',
-      data: {
-        'videoID': videoDetailController.bvid,
-        'cid': videoDetailController.cid.value.toString(),
-        'userID': Pref.blockUserID.toString(),
-        'userAgent': Constants.userAgent,
-        'videoDuration': videoDuration,
-        'segments': list
-            .map(
-              (item) => {
-                'segment': [
-                  item.segment.first,
-                  item.segment.second,
-                ],
-                'category': item.category.name,
-                'actionType': item.actionType.name,
-              },
-            )
-            .toList(),
-      },
-      options: Options(
-        followRedirects: true, // Defaults to true.
-        validateStatus: (int? status) {
-          return (status! >= 200 && status < 300) ||
-              const [400, 403, 429, 409] // reduce extra toast
-                  .contains(status);
-        },
-      ),
+    final res = await SponsorBlock.postSkipSegments(
+      bvid: videoDetailController.bvid,
+      cid: videoDetailController.cid.value,
+      videoDuration: videoDuration,
+      segments: list,
     );
 
-    if (res.statusCode == 200) {
+    if (res case Success(:final response)) {
       Get.back();
       SmartDialog.showToast('提交成功');
       list.clear();
-      if (res.data case List list) {
-        videoDetailController.handleSBData(
-          list.map((e) => SegmentItemModel.fromJson(e)).toList(),
-        );
-      }
+      videoDetailController.handleSBData(response);
       if (videoDetailController.positionSubscription == null) {
         videoDetailController.initSkip();
       }
     } else {
-      SmartDialog.showToast('提交失败: ${_errMsg(res)}');
+      SmartDialog.showToast('提交失败: $res');
     }
-  }
-
-  String _errMsg(Response res) {
-    if (res.data case String e) {
-      if (e.isNotEmpty) {
-        return e;
-      }
-    }
-    return switch (res.statusCode) {
-      400 => '参数错误',
-      403 => '被自动审核机制拒绝',
-      429 => '重复提交太快',
-      409 => '重复提交',
-      _ => '${res.data}(${res.statusCode})',
-    };
   }
 
   Widget _buildItem(ThemeData theme, int index, PostSegmentModel item) {

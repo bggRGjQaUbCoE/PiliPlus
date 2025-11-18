@@ -4,16 +4,15 @@ import 'package:PiliPlus/common/widgets/pair.dart';
 import 'package:PiliPlus/http/constants.dart';
 import 'package:PiliPlus/http/init.dart';
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/http/sponsor_block.dart';
 import 'package:PiliPlus/models/common/sponsor_block/segment_type.dart';
 import 'package:PiliPlus/models/common/sponsor_block/skip_type.dart';
+import 'package:PiliPlus/models_new/sponsor_block/user_info.dart';
 import 'package:PiliPlus/pages/setting/slide_color_picker.dart';
-import 'package:PiliPlus/utils/duration_utils.dart';
-import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
-import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show FilteringTextInputFormatter;
 import 'package:get/get.dart';
@@ -39,7 +38,7 @@ class _SponsorBlockPageState extends State<SponsorBlockPage> {
   String _blockServer = Pref.blockServer;
   bool _blockTrack = Pref.blockTrack;
   final _serverStatus = Rxn<bool>();
-  final _userInfo = LoadingState<_UserInfo>.loading().obs;
+  final _userInfo = LoadingState<UserInfo>.loading().obs;
 
   Box setting = GStorage.setting;
 
@@ -56,29 +55,16 @@ class _SponsorBlockPageState extends State<SponsorBlockPage> {
     super.dispose();
   }
 
-  void _checkServerStatus() {
-    Request().get('$_blockServer/api/status/uptime').then((res) {
-      _serverStatus.value =
-          res.statusCode == 200 &&
-          res.data is String &&
-          Utils.isStringNumeric(res.data);
-    });
+  Future<void> _checkServerStatus() async {
+    _serverStatus.value = (await SponsorBlock.uptimeStatus()).isSuccess;
   }
 
   Future<void> _getUserInfo() async {
-    final params = {
-      'userID': _userId,
-      'values': '["viewCount","minutesSaved","segmentCount"]',
-    };
-    final res = await Request().get(
-      '$_blockServer/api/userInfo',
-      queryParameters: params,
-    );
-    if (res.statusCode == 200) {
-      _userInfo.value = Success(_UserInfo.fromJson(res.data));
-    } else {
-      _userInfo.value = Error(res.data['message']);
-    }
+    _userInfo.value = await SponsorBlock.userInfo(const [
+      'viewCount',
+      'minutesSaved',
+      'segmentCount',
+    ], userId: _userId);
   }
 
   Widget _blockLimitItem(
@@ -309,7 +295,7 @@ class _SponsorBlockPageState extends State<SponsorBlockPage> {
         ),
         subtitle: switch (_userInfo.value) {
           Loading() => const SizedBox.shrink(),
-          Success<_UserInfo>(:final response) => Text(
+          Success<UserInfo>(:final response) => Text(
             response.toString(),
             style: subTitleStyle,
           ),
@@ -655,36 +641,5 @@ class _SponsorBlockPageState extends State<SponsorBlockPage> {
         );
       },
     );
-  }
-}
-
-class _UserInfo {
-  final int viewCount;
-  final double minutesSaved;
-  final int segmentCount;
-
-  const _UserInfo({
-    required this.viewCount,
-    required this.minutesSaved,
-    required this.segmentCount,
-  });
-
-  factory _UserInfo.fromJson(Map<String, dynamic> json) => _UserInfo(
-    viewCount: json['viewCount'],
-    minutesSaved: (json['minutesSaved'] as num).toDouble(),
-    segmentCount: json['segmentCount'],
-  );
-
-  @override
-  String toString() {
-    String minutes = DurationUtils.formatTimeDuration(
-      Duration(minutes: minutesSaved.round()),
-    );
-    if (minutes.isEmpty) {
-      minutes = '0分钟';
-    }
-    return ('您提交了 ${NumUtils.formatPositiveDecimal(segmentCount)} 片段\n'
-        '您为大家节省了 ${NumUtils.formatPositiveDecimal(viewCount)} 片段\n'
-        '($minutes 的生命)');
   }
 }

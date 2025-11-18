@@ -102,8 +102,9 @@ class Request {
       receiveTimeout: const Duration(milliseconds: 10000),
       //Http请求头.
       headers: {
-        'user-agent': 'Dart/3.6 (dart:io)', // Http2Adapter不会自动添加标头
-        'connection': 'keep-alive',
+        'user-agent':
+            'Dart/${_getHttpVersion()} (dart:io)', // Http2Adapter不会自动添加标头
+        if (!Pref.enableHttp2) 'connection': 'keep-alive',
         'accept-encoding': 'br,gzip',
       },
       responseDecoder: _responseDecoder, // Http2Adapter没有自动解压
@@ -291,4 +292,12 @@ class Request {
     responseBytesDecoder(responseBytes, responseBody.headers),
     allowMalformed: true,
   );
+}
+
+String _getHttpVersion() {
+  var version = Platform.version;
+  // Only include major and minor version numbers.
+  final index = version.indexOf('.', version.indexOf('.') + 1);
+  version = version.substring(0, index);
+  return 'Dart/$version (dart:io)';
 }

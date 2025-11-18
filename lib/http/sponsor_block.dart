@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:PiliPlus/build_config.dart';
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/http/init.dart';
@@ -93,7 +95,10 @@ abstract final class SponsorBlock {
   }
 
   static Future<LoadingState<Null>> uptimeStatus() async {
-    final res = await Request().get(_api(SponsorBlockApi.uptimeStatus));
+    final res = await Request().get(
+      _api(SponsorBlockApi.uptimeStatus),
+      options: options,
+    );
     if (res.statusCode == 200 &&
         res.data is String &&
         Utils.isStringNumeric(res.data)) {
@@ -110,8 +115,9 @@ abstract final class SponsorBlock {
       _api(SponsorBlockApi.userInfo),
       queryParameters: {
         'userID': userId ?? Pref.blockUserID,
-        'values': query,
+        'values': jsonEncode(query),
       },
+      options: options,
     );
     if (res.statusCode == 200) {
       return Success(UserInfo.fromJson(res.data));

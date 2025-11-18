@@ -725,10 +725,12 @@ class VideoDetailController extends GetxController
       bvid: bvid,
       cid: cid.value,
     );
-    if (result case Success(:final response)) {
-      handleSBData(response);
-    } else {
-      result.toast();
+    switch (result) {
+      case Success<List<SegmentItemModel>>(:final response):
+        handleSBData(response);
+      case Error(:final code) when code != 404:
+        result.toast();
+      default:
     }
   }
 

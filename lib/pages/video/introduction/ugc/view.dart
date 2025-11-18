@@ -1,8 +1,10 @@
 import 'package:PiliPlus/common/constants.dart';
+import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/pendant_avatar.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart';
 import 'package:PiliPlus/common/widgets/stat/stat.dart';
+import 'package:PiliPlus/http/sponsor_block.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/models/common/stat_type.dart';
 import 'package:PiliPlus/models_new/video/video_detail/data.dart';
@@ -603,6 +605,11 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
     caseSensitive: false,
   );
 
+  static final youtubeRegExp = RegExp(
+    r'(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-z0-9_\-]{11})',
+    caseSensitive: false,
+  );
+
   TextSpan buildContent(ThemeData theme, VideoDetailData content) {
     if (content.descV2.isNullOrEmpty) {
       return const TextSpan();
@@ -625,12 +632,54 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
                     text: matchStr,
                     style: TextStyle(color: theme.colorScheme.primary),
                     recognizer: TapGestureRecognizer()
-                      ..onTap = () {
-                        try {
-                          PageUtils.handleWebview(matchStr);
-                        } catch (err) {
-                          SmartDialog.showToast(err.toString());
+                      ..onTap = () async {
+                        final duration =
+                            videoDetailCtr.data.timeLength ??
+                            videoDetailCtr
+                                .plPlayerController
+                                .duration
+                                .value
+                                .inMilliseconds;
+                        if (videoDetailCtr
+                                .plPlayerController
+                                .enableSponsorBlock &&
+                            duration > 0) {
+                          final ytbId = youtubeRegExp
+                              .firstMatch(matchStr)
+                              ?.group(1);
+                          if (ytbId != null) {
+                            final bvid = videoDetailCtr.bvid;
+                            final cid = videoDetailCtr.cid.value;
+
+                            final hasPortVideo =
+                                (await SponsorBlock.getPortVideo(
+                                  bvid: bvid,
+                                  cid: cid,
+                                )).dataOrNull ==
+                                ytbId;
+                            if (!mounted) return;
+
+                            final confirmed = await showConfirmDialog(
+                              context: context,
+                              title: '空降助手：搬运视频同步',
+                              content:
+                                  '${hasPortVideo ? "" : "是否将"}该视频${hasPortVideo ? "已" : ""}绑定到此YouTube视频($ytbId)',
+                            );
+                            if (!hasPortVideo && confirmed) {
+                              final res = await SponsorBlock.postPortVideo(
+                                bvid: bvid,
+                                cid: cid,
+                                ytbId: ytbId,
+                                videoDuration: (duration / 1000).round(),
+                              );
+                              SmartDialog.showToast(
+                                '提交搬运视频${res.isSuccess ? "成功" : "失败: $res"}',
+                              );
+                              return;
+                            }
+                          }
                         }
+                        PageUtils.handleWebview(matchStr);
                       },
                   ),
                 );

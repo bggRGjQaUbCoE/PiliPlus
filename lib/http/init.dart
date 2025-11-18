@@ -103,6 +103,8 @@ class Request {
       //Http请求头.
       headers: {
         'user-agent': 'Dart/3.6 (dart:io)', // Http2Adapter不会自动添加标头
+        'connection': 'keep-alive',
+        'accept-encoding': 'br,gzip',
       },
       responseDecoder: _responseDecoder, // Http2Adapter没有自动解压
       persistentConnection: true,

@@ -19,17 +19,27 @@ abstract final class SponsorBlock {
     validateStatus: (status) => true,
   );
 
-  static Error getErrMsg(Response res) => Error(switch (res.statusCode) {
-    200 => '意料之外的响应: ${res.data}',
-    400 => '参数错误',
-    403 => '被自动审核机制拒绝',
-    404 => '未找到数据',
-    409 => '重复提交',
-    429 => '提交太快（触发速率控制）',
-    500 => '服务器无法获取信息',
-    -1 => res.data?['message'].toString(), // DioException
-    _ => '${res.statusCode}: ${res.data}',
-  });
+  static Error getErrMsg(Response res) {
+    String statusMessage = switch (res.statusCode) {
+      200 => '意料之外的响应',
+      400 => '参数错误',
+      403 => '被自动审核机制拒绝',
+      404 => '未找到数据',
+      409 => '重复提交',
+      429 => '提交太快（触发速率控制）',
+      500 => '服务器无法获取信息',
+      -1 => res.data['message'].toString(), // DioException
+      _ => res.statusMessage ?? res.statusCode.toString(),
+    };
+    if (res.statusCode != null && res.statusCode != -1) {
+      final data = res.data;
+      if (res.statusCode == 200 ||
+          (data is String && data.isNotEmpty && data.length < 200)) {
+        statusMessage = '$statusMessage：$data';
+      }
+    }
+    return Error(statusMessage, code: res.statusCode);
+  }
 
   static String _api(String url) => '$blockServer/api/$url';
 
@@ -144,7 +154,39 @@ abstract final class SponsorBlock {
     return getErrMsg(res);
   }
 
-  static Future<LoadingState<String>> portVideo({
+  /// {
+  ///   "bvID": string,     // B站视频BVID
+  ///   "cid": string,      // 视频CID
+  ///   "ytbID": string,    // YouTube视频ID
+  ///   "UUID": string,     // 绑定记录的UUID（不是视频中片段的UUID，是绑定记录本身的UUID）
+  ///   "votes": int,       // 绑定记录的投票数
+  ///   "locked": int,      // 绑定记录是否锁定
+  /// }
+  /// TODO: show port video info dialog
+  static Future<LoadingState<String>> getPortVideo({
+    required String bvid,
+    required int cid,
+  }) async {
+    final res = await Request().get(
+      _api(SponsorBlockApi.portVideo),
+      queryParameters: {
+        'videoID': bvid,
+        'cid': cid.toString(),
+      },
+      options: options,
+    );
+
+    if (res.statusCode == 200) {
+      if (res.data case Map<String, dynamic> data) {
+        if (data['ytbID'] case String ytbId) {
+          return Success(ytbId);
+        }
+      }
+    }
+    return getErrMsg(res);
+  }
+
+  static Future<LoadingState<String>> postPortVideo({
     required String bvid,
     required int cid,
     required String ytbId,

@@ -729,7 +729,9 @@ class VideoDetailController extends GetxController
       case Success<List<SegmentItemModel>>(:final response):
         handleSBData(response);
       case Error(:final code) when code != 404:
-        result.toast();
+        if (kDebugMode) {
+          result.toast();
+        }
       default:
     }
   }

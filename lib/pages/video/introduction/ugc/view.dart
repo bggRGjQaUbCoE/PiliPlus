@@ -633,49 +633,52 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
                     style: TextStyle(color: theme.colorScheme.primary),
                     recognizer: TapGestureRecognizer()
                       ..onTap = () async {
-                        final duration =
-                            videoDetailCtr.data.timeLength ??
-                            videoDetailCtr
-                                .plPlayerController
-                                .duration
-                                .value
-                                .inMilliseconds;
                         if (videoDetailCtr
-                                .plPlayerController
-                                .enableSponsorBlock &&
-                            duration > 0) {
-                          final ytbId = youtubeRegExp
-                              .firstMatch(matchStr)
-                              ?.group(1);
-                          if (ytbId != null) {
-                            final bvid = videoDetailCtr.bvid;
-                            final cid = videoDetailCtr.cid.value;
+                            .plPlayerController
+                            .enableSponsorBlock) {
+                          final duration =
+                              videoDetailCtr.data.timeLength ??
+                              videoDetailCtr
+                                  .plPlayerController
+                                  .duration
+                                  .value
+                                  .inMilliseconds;
+                          if (duration > 0) {
+                            final ytbId = youtubeRegExp
+                                .firstMatch(matchStr)
+                                ?.group(1);
+                            if (ytbId != null) {
+                              final bvid = videoDetailCtr.bvid;
+                              final cid = videoDetailCtr.cid.value;
 
-                            final hasPortVideo =
-                                (await SponsorBlock.getPortVideo(
+                              SmartDialog.showLoading();
+                              final hasPortVideo =
+                                  (await SponsorBlock.getPortVideo(
+                                    bvid: bvid,
+                                    cid: cid,
+                                  )).dataOrNull ==
+                                  ytbId;
+                              SmartDialog.dismiss();
+
+                              if (!mounted) return;
+                              final confirmed = await showConfirmDialog(
+                                context: context,
+                                title: '空降助手：搬运视频同步',
+                                content:
+                                    '${hasPortVideo ? "" : "是否将"}该视频${hasPortVideo ? "已" : ""}绑定到此YouTube视频($ytbId)',
+                              );
+                              if (!hasPortVideo && confirmed) {
+                                final res = await SponsorBlock.postPortVideo(
                                   bvid: bvid,
                                   cid: cid,
-                                )).dataOrNull ==
-                                ytbId;
-                            if (!mounted) return;
-
-                            final confirmed = await showConfirmDialog(
-                              context: context,
-                              title: '空降助手：搬运视频同步',
-                              content:
-                                  '${hasPortVideo ? "" : "是否将"}该视频${hasPortVideo ? "已" : ""}绑定到此YouTube视频($ytbId)',
-                            );
-                            if (!hasPortVideo && confirmed) {
-                              final res = await SponsorBlock.postPortVideo(
-                                bvid: bvid,
-                                cid: cid,
-                                ytbId: ytbId,
-                                videoDuration: (duration / 1000).round(),
-                              );
-                              SmartDialog.showToast(
-                                '提交搬运视频${res.isSuccess ? "成功" : "失败: $res"}',
-                              );
-                              return;
+                                  ytbId: ytbId,
+                                  videoDuration: (duration / 1000).round(),
+                                );
+                                SmartDialog.showToast(
+                                  '提交搬运视频${res.isSuccess ? "成功" : "失败: $res"}',
+                                );
+                                return;
+                              }
                             }
                           }
                         }

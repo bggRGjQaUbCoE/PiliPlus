@@ -855,7 +855,7 @@ class RenderParagraph extends RenderBox
     }
 
     assert(() {
-      _textPainter.debugPaintTextLayoutBoxes = debugPaintTextLayoutBoxes;
+      // _textPainter.debugPaintTextLayoutBoxes = debugPaintTextLayoutBoxes;
       return true;
     }());
 

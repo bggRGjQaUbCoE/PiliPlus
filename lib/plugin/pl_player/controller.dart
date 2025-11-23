@@ -1084,7 +1084,7 @@ class PlPlayerController {
       if (kDebugMode)
         videoPlayerController!.stream.log.listen(((PlayerLog log) {
           if (log.level == 'error' || log.level == 'fatal') {
-            Utils.reportError(log.text, null, log.prefix);
+            Utils.reportError('${log.prefix}: ${log.text}', null);
           } else {
             debugPrint(log.toString());
           }

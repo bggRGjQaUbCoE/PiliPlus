@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:PiliPlus/utils/json_file_handler.dart';
+import 'package:catcher_2/catcher_2.dart';
 import 'package:logger/logger.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
@@ -10,33 +12,28 @@ class PiliLogger extends Logger {
   PiliLogger() : super();
 
   @override
-  Future<void> log(
+  void log(
     Level level,
     dynamic message, {
     Object? error,
     StackTrace? stackTrace,
     DateTime? time,
-  }) async {
+  }) {
     if (level == Level.error || level == Level.fatal) {
-      // 添加至文件末尾
-      File logFile = await LoggerUtils.getLogsPath();
-      logFile.writeAsString(
-        "**${DateTime.now()}** \n $message \n $stackTrace",
-        mode: FileMode.writeOnlyAppend,
-      );
+      Catcher2.reportCheckedError(error, stackTrace);
     }
-    super.log(level, "$message", error: error, stackTrace: stackTrace);
+    super.log(level, message, error: error, stackTrace: stackTrace, time: time);
   }
 }
 
-class LoggerUtils {
+abstract final class LoggerUtils {
   static File? _logFile;
 
   static Future<File> getLogsPath() async {
     if (_logFile != null) return _logFile!;
 
     String dir = (await getApplicationDocumentsDirectory()).path;
-    final String filename = p.join(dir, ".pili_logs");
+    final String filename = p.join(dir, ".pili_logs.json");
     final File file = File(filename);
     if (!file.existsSync()) {
       await file.create(recursive: true);
@@ -47,7 +44,16 @@ class LoggerUtils {
   static Future<bool> clearLogs() async {
     final file = await getLogsPath();
     try {
-      await file.writeAsBytes(const [], flush: true);
+      final sink = JsonFileHandler.sink;
+      if (sink != null) {
+        JsonFileHandler.sink = null;
+        await sink.close();
+        JsonFileHandler.sink = file.openWrite(mode: FileMode.writeOnly)
+          ..add(const [])
+          ..flush();
+      } else {
+        await file.writeAsBytes(const [], flush: true);
+      }
     } catch (e) {
       // if (kDebugMode) debugPrint('Error clearing file: $e');
       return false;

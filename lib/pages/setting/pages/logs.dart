@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'dart:convert';
 
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
@@ -8,7 +8,8 @@ import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
-import 'package:flutter/foundation.dart' show kDebugMode;
+import 'package:catcher_2/model/platform_type.dart';
+import 'package:catcher_2/model/report.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 
@@ -19,13 +20,9 @@ class LogsPage extends StatefulWidget {
   State<LogsPage> createState() => _LogsPageState();
 }
 
-typedef _LogInfo = ({Object? date, String body});
-
 class _LogsPageState extends State<LogsPage> {
-  late File logsPath;
-  late String fileContent;
-  List<_LogInfo> logsContent = [];
-  DateTime? latestLog;
+  List<Report> logsContent = [];
+  Report? latestLog;
   late bool enableLog = Pref.enableLog;
 
   @override
@@ -37,7 +34,8 @@ class _LogsPageState extends State<LogsPage> {
   @override
   void dispose() {
     if (latestLog != null) {
-      if (DateTime.now().difference(latestLog!) >= const Duration(days: 14)) {
+      final time = latestLog!.dateTime;
+      if (DateTime.now().difference(time) >= const Duration(days: 14)) {
         LoggerUtils.clearLogs();
       }
     }
@@ -45,56 +43,31 @@ class _LogsPageState extends State<LogsPage> {
   }
 
   Future<void> getLog() async {
-    logsPath = await LoggerUtils.getLogsPath();
-    fileContent = await logsPath.readAsString();
-    logsContent = parseLogs(fileContent);
+    final logsPath = await LoggerUtils.getLogsPath();
+    logsContent = (await logsPath.readAsLines()).reversed.map((i) {
+      try {
+        final log = _parseReportJson(jsonDecode(i));
+        latestLog ??= log;
+        return log;
+      } catch (e, s) {
+        return Report(
+          'Parse log failed: $e\n\n\n$i',
+          s,
+          DateTime.now(),
+          const {},
+          const {},
+          const {},
+          null,
+          PlatformType.unknown,
+          null,
+        );
+      }
+    }).toList();
     setState(() {});
   }
 
-  List<_LogInfo> parseLogs(String fileContent) {
-    const String splitToken =
-        '======================================================================';
-    List contentList = fileContent.split(splitToken).map((item) {
-      return item
-          .replaceAll(
-            '============================== CATCHER 2 LOG ==============================',
-            '${Constants.appName}错误日志\n********************',
-          )
-          .replaceAll('DEVICE INFO', '设备信息')
-          .replaceAll('APP INFO', '应用信息')
-          .replaceAll('ERROR', '错误信息')
-          .replaceAll('STACK TRACE', '错误堆栈');
-    }).toList();
-    List<_LogInfo> result = [];
-    for (String i in contentList) {
-      Object? date;
-      String body = i
-          .split("\n")
-          .map((l) {
-            if (l.startsWith("Crash occurred on")) {
-              try {
-                date = DateTime.parse(
-                  l.split("Crash occurred on")[1].trim(),
-                );
-              } catch (e) {
-                if (kDebugMode) debugPrint(e.toString());
-                date = l.toString();
-              }
-              return "";
-            }
-            return l;
-          })
-          .where((l) => l.replaceAll("\n", "").trim().isNotEmpty)
-          .join("\n");
-      if (date != null || body != '') {
-        result.add((date: date, body: body));
-      }
-    }
-    return result.reversed.toList();
-  }
-
   void copyLogs() {
-    Utils.copyText('```\n$fileContent\n```', needToast: false);
+    Utils.copyText(jsonEncode(logsContent), needToast: false);
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('复制成功')),
@@ -165,78 +138,140 @@ class _LogsPageState extends State<LogsPage> {
         ],
       ),
       body: logsContent.isNotEmpty
-          ? ListView.separated(
-              padding: EdgeInsets.only(
-                left: padding.left,
-                right: padding.right,
-                bottom: padding.bottom + 100,
-              ),
-              itemCount: logsContent.length,
-              itemBuilder: (context, index) {
-                final log = logsContent[index];
-                if (log.date case DateTime date) {
-                  latestLog ??= date;
-                }
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    mainAxisSize: MainAxisSize.min,
-                    spacing: 5,
-                    children: [
-                      Row(
-                        spacing: 10,
-                        children: [
-                          Text(
-                            log.date.toString(),
-                            style: TextStyle(
-                              fontSize: Theme.of(
-                                context,
-                              ).textTheme.titleMedium!.fontSize,
-                            ),
+          ? CustomScrollView(
+              slivers: [
+                if (latestLog != null)
+                  SliverPadding(
+                    padding: EdgeInsets.only(
+                      left: padding.left + 16,
+                      right: padding.right + 16,
+                    ),
+                    sliver: SliverList.list(
+                      children: [
+                        Card(
+                          child: Padding(
+                            padding: const EdgeInsets.all(12.0),
+                            child: SelectableText(_getDeviceString(latestLog!)),
                           ),
-                          TextButton.icon(
-                            style: TextButton.styleFrom(
-                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                              visualDensity: VisualDensity.compact,
-                            ),
-                            onPressed: () {
-                              Utils.copyText(
-                                '```\n${log.body}\n```',
-                                needToast: false,
-                              );
-                              if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      '已将 ${log.date} 复制至剪贴板',
-                                    ),
-                                  ),
-                                );
-                              }
-                            },
-                            icon: const Icon(Icons.copy_outlined, size: 16),
-                            label: const Text('复制'),
-                          ),
-                        ],
-                      ),
-                      Card(
-                        child: Padding(
-                          padding: const EdgeInsets.all(12.0),
-                          child: SelectableText(log.body),
                         ),
-                      ),
-                    ],
+                        const Divider(
+                          indent: 12,
+                          endIndent: 12,
+                          height: 24,
+                        ),
+                      ],
+                    ),
                   ),
-                );
-              },
-              separatorBuilder: (context, index) => const Divider(
-                indent: 12,
-                endIndent: 12,
-                height: 24,
-              ),
+                SliverPadding(
+                  padding: EdgeInsets.only(
+                    left: padding.left,
+                    right: padding.right,
+                    bottom: padding.bottom + 100,
+                  ),
+                  sliver: SliverList.separated(
+                    itemCount: logsContent.length,
+                    itemBuilder: (context, index) {
+                      final log = logsContent[index];
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          mainAxisSize: MainAxisSize.min,
+                          spacing: 5,
+                          children: [
+                            Row(
+                              spacing: 10,
+                              children: [
+                                Text(
+                                  log.dateTime.toString(),
+                                  style: TextStyle(
+                                    fontSize: Theme.of(
+                                      context,
+                                    ).textTheme.titleMedium!.fontSize,
+                                  ),
+                                ),
+                                TextButton.icon(
+                                  style: TextButton.styleFrom(
+                                    tapTargetSize:
+                                        MaterialTapTargetSize.shrinkWrap,
+                                    visualDensity: VisualDensity.compact,
+                                  ),
+                                  onPressed: () {
+                                    Utils.copyText(
+                                      Utils.jsonEncoder.convert(log.toJson()),
+                                      needToast: false,
+                                    );
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            '已将 ${log.dateTime} 复制至剪贴板',
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                  },
+                                  icon: const Icon(
+                                    Icons.copy_outlined,
+                                    size: 16,
+                                  ),
+                                  label: const Text('复制'),
+                                ),
+                              ],
+                            ),
+                            Card(
+                              child: Padding(
+                                padding: const EdgeInsets.all(12.0),
+                                child: SelectableText(
+                                  '---------- 错误信息 ----------\n${log.error}\n\n---------- 错误堆栈 ----------\n${log.stackTrace}',
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                    separatorBuilder: (context, index) => const Divider(
+                      indent: 12,
+                      endIndent: 12,
+                      height: 24,
+                    ),
+                  ),
+                ),
+              ],
             )
           : scrollErrorWidget(),
     );
+  }
+}
+
+String _getDeviceString(Report report) {
+  final sb = StringBuffer()
+    ..writeln('---------- 设备信息 ----------')
+    ..writeMapln(report.deviceParameters)
+    ..writeln('---------- 应用信息 ----------')
+    ..writeMapln(report.applicationParameters)
+    ..writeln('---------- 编译信息 ----------')
+    ..writeMapln(report.customParameters);
+  return sb.toString();
+}
+
+Report _parseReportJson(Map<String, dynamic> json) => Report(
+  json['error'],
+  json['stackTrace'],
+  DateTime.tryParse(json['dateTime'] ?? '') ?? DateTime(1970),
+  json['deviceParameters'] ?? const {},
+  json['applicationParameters'] ?? const {},
+  json['customParameters'] ?? const {},
+  null,
+  PlatformType.values.byName(json['platformType']),
+  null,
+);
+
+extension on StringBuffer {
+  void writeMapln(Map map) {
+    map.forEach((k, v) => writeln('$k: $v'));
   }
 }

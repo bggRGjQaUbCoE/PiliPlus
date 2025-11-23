@@ -16,6 +16,7 @@ import 'package:PiliPlus/utils/app_scheme.dart';
 import 'package:PiliPlus/utils/cache_manager.dart';
 import 'package:PiliPlus/utils/calc_window_position.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
+import 'package:PiliPlus/utils/json_file_handler.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/path_utils.dart';
 import 'package:PiliPlus/utils/request_utils.dart';
@@ -173,13 +174,14 @@ void main() async {
 
   if (Pref.enableLog) {
     // 异常捕获 logo记录
+    JsonFileHandler.file = await LoggerUtils.getLogsPath();
     final customParameters = {
       'BuildConfig':
           '''\n
 Build Time: ${DateFormatUtils.format(BuildConfig.buildTime, format: DateFormatUtils.longFormatDs)}
 Commit Hash: ${BuildConfig.commitHash}''',
     };
-    final fileHandler = FileHandler(await LoggerUtils.getLogsPath());
+    final fileHandler = JsonFileHandler();
     final Catcher2Options debugConfig = Catcher2Options(
       SilentReportMode(),
       [
@@ -205,7 +207,7 @@ Commit Hash: ${BuildConfig.commitHash}''',
     Catcher2(
       debugConfig: debugConfig,
       releaseConfig: releaseConfig,
-      runAppFunction: () => runApp(const MyApp()),
+      rootWidget: const MyApp(),
     );
   } else {
     runApp(const MyApp());

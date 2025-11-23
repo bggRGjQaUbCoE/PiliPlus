@@ -4,10 +4,10 @@ import 'dart:io';
 import 'dart:math' show Random;
 
 import 'package:PiliPlus/common/constants.dart';
+import 'package:catcher_2/catcher_2.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -163,19 +163,7 @@ abstract class Utils {
   /// containing the `catch` block with
   /// `@pragma('vm:notify-debugger-on-exception')` to allow an attached debugger
   /// to treat the exception as unhandled.
-  static void reportError(
-    Object exception, [
-    StackTrace? stack,
-    String? library = Constants.appName,
-    bool silent = false,
-  ]) {
-    FlutterError.reportError(
-      FlutterErrorDetails(
-        exception: exception,
-        stack: stack,
-        library: library,
-        silent: silent,
-      ),
-    );
+  static void reportError(Object exception, [StackTrace? stack]) {
+    Catcher2.reportCheckedError(exception, stack);
   }
 }

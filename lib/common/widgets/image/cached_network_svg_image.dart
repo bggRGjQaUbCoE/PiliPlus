@@ -124,12 +124,10 @@ class _CachedNetworkSVGImageState extends State<CachedNetworkSVGImage> {
 
   Future<void> _loadImage() async {
     try {
-      var file = (await widget._cacheManager.getFileFromCache(_cacheKey))?.file;
-
-      file ??= await widget._cacheManager.getSingleFile(
+      final file = await widget._cacheManager.getSingleFile(
         widget._url,
         key: _cacheKey,
-        headers: widget._headers ?? {},
+        headers: widget._headers ?? const {},
       );
       final svg = await file.readAsString();
       _svgString = svg;

@@ -1779,7 +1779,7 @@ class PlPlayerController {
     );
   }
 
-  Map<String, WeakReference<ui.Image>>? previewCache;
+  final Map<String, ui.Image?> previewCache = {};
   LoadingState<VideoShotData>? videoShot;
   late final RxBool showPreview = false.obs;
   late final showSeekPreview = Pref.showSeekPreview;
@@ -1807,14 +1807,10 @@ class PlPlayerController {
     showPreview.value = false;
     previewIndex.value = null;
     videoShot = null;
-    previewCache
-      ?..forEach((_, ref) {
-        try {
-          ref.target?.dispose();
-        } catch (_) {}
-      })
-      ..clear();
-    previewCache = null;
+    for (var i in previewCache.values) {
+      i?.dispose();
+    }
+    previewCache.clear();
   }
 
   Future<void> getVideoShot() async {

@@ -12,7 +12,6 @@ import 'package:PiliPlus/common/widgets/pair.dart';
 import 'package:PiliPlus/common/widgets/progress_bar/audio_video_progress_bar.dart';
 import 'package:PiliPlus/common/widgets/progress_bar/segment_progress_bar.dart';
 import 'package:PiliPlus/common/widgets/view_safe_area.dart';
-import 'package:PiliPlus/http/init.dart';
 import 'package:PiliPlus/models/common/sponsor_block/action_type.dart';
 import 'package:PiliPlus/models/common/sponsor_block/post_segment_model.dart';
 import 'package:PiliPlus/models/common/sponsor_block/segment_type.dart';
@@ -23,7 +22,6 @@ import 'package:PiliPlus/models_new/video/video_detail/episode.dart' as ugc;
 import 'package:PiliPlus/models_new/video/video_detail/episode.dart';
 import 'package:PiliPlus/models_new/video/video_detail/section.dart';
 import 'package:PiliPlus/models_new/video/video_detail/ugc_season.dart';
-import 'package:PiliPlus/models_new/video/video_shot/data.dart';
 import 'package:PiliPlus/pages/common/common_intro_controller.dart';
 import 'package:PiliPlus/pages/danmaku/danmaku_model.dart';
 import 'package:PiliPlus/pages/live_room/widgets/bottom_control.dart'
@@ -59,7 +57,6 @@ import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:canvas_danmaku/canvas_danmaku.dart';
 import 'package:collection/collection.dart';
-import 'package:dio/dio.dart';
 import 'package:easy_debounce/easy_throttle.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/foundation.dart';
@@ -2548,7 +2545,7 @@ Widget buildSeekPreviewWidget(
       }
 
       try {
-        VideoShotData data = plPlayerController.videoShot!.data;
+        final data = plPlayerController.videoShot!.data;
 
         final double scale =
             plPlayerController.isFullScreen.value &&
@@ -2590,10 +2587,7 @@ Widget buildSeekPreviewWidget(
                   imgXSize: imgXSize,
                   imgYSize: imgYSize,
                   height: height,
-                  image: plPlayerController.previewCache?[url]?.target,
-                  onCacheImg: (img) =>
-                      (plPlayerController.previewCache ??= {})[url] ??=
-                          WeakReference(img),
+                  imageCache: plPlayerController.previewCache,
                   onSetSize: (xSize, ySize) => data
                     ..imgXSize = imgXSize = xSize
                     ..imgYSize = imgYSize = ySize,
@@ -2603,7 +2597,7 @@ Widget buildSeekPreviewWidget(
           ),
         );
       } catch (e) {
-        if (kDebugMode) debugPrint('seek preview: $e');
+        if (kDebugMode) rethrow;
         return const SizedBox.shrink();
       }
     },
@@ -2613,25 +2607,23 @@ Widget buildSeekPreviewWidget(
 class VideoShotImage extends StatefulWidget {
   const VideoShotImage({
     super.key,
-    this.image,
+    required this.imageCache,
     required this.url,
     required this.x,
     required this.y,
     required this.imgXSize,
     required this.imgYSize,
     required this.height,
-    required this.onCacheImg,
     required this.onSetSize,
   });
 
-  final ui.Image? image;
+  final Map<String, ui.Image?> imageCache;
   final String url;
   final int x;
   final int y;
   final double imgXSize;
   final double imgYSize;
   final double height;
-  final ValueChanged<ui.Image> onCacheImg;
   final Function(double imgXSize, double imgYSize) onSetSize;
 
   @override
@@ -2641,26 +2633,22 @@ class VideoShotImage extends StatefulWidget {
 Future<ui.Image?> _getImg(String url) async {
   final cacheManager = DefaultCacheManager();
   final cacheKey = Utils.getFileName(url, fileExt: false);
-  final fileInfo = await cacheManager.getFileFromCache(cacheKey);
-  if (fileInfo != null) {
-    final bytes = await fileInfo.file.readAsBytes();
-    return _loadImg(bytes);
-  } else {
-    final res = await Request().get<Uint8List>(
+  try {
+    final fileInfo = await cacheManager.getSingleFile(
       url,
-      options: Options(responseType: ResponseType.bytes),
+      key: cacheKey,
+      headers: Constants.baseHeaders,
     );
-    if (res.statusCode == 200) {
-      final Uint8List data = res.data;
-      cacheManager.putFile(cacheKey, data, fileExtension: 'jpg');
-      return _loadImg(data);
-    }
+    return _loadImg(fileInfo.path);
+  } catch (_) {
+    return null;
   }
-  return null;
 }
 
-Future<ui.Image?> _loadImg(Uint8List bytes) async {
-  final codec = await ui.instantiateImageCodec(bytes);
+Future<ui.Image?> _loadImg(String path) async {
+  final codec = await ui.instantiateImageCodecFromBuffer(
+    await ImmutableBuffer.fromFilePath(path),
+  );
   final frame = await codec.getNextFrame();
   codec.dispose();
   return frame.image;
@@ -2710,19 +2698,25 @@ class _VideoShotImageState extends State<VideoShotImage> {
     _rrect = RRect.fromRectAndRadius(_dstRect, const Radius.circular(10));
   }
 
-  Future<void> _loadImg() async {
-    _image = widget.image;
+  void _loadImg() {
+    final url = widget.url;
+    _image = widget.imageCache[url];
     if (_image != null) {
       _initSizeIfNeeded();
-      setState(() {});
-    } else {
-      final image = await _getImg(widget.url);
-      if (mounted && image != null) {
-        _image = image;
-        widget.onCacheImg(image);
-        _initSizeIfNeeded();
-        setState(() {});
-      }
+    } else if (!widget.imageCache.containsKey(url)) {
+      widget.imageCache[url] = null;
+      _getImg(url).then((image) {
+        if (image != null) {
+          widget.imageCache[url] = image;
+          if (mounted) {
+            _image = image;
+            _initSizeIfNeeded();
+            setState(() {});
+          }
+        } else {
+          widget.imageCache.remove(url);
+        }
+      });
     }
   }
 
@@ -2821,7 +2815,7 @@ Widget buildViewPointWidget(
           }
           // if (kDebugMode) debugPrint('${item.title},,${item.from}');
         } catch (e) {
-          if (kDebugMode) debugPrint('$e');
+          if (kDebugMode) rethrow;
         }
       },
     ),

@@ -67,7 +67,7 @@ class PlPlayerController {
   static PlPlayerController? _instance;
 
   // 流事件  监听播放状态变化
-  StreamSubscription? _playerEventSubs;
+  // StreamSubscription? _playerEventSubs;
 
   /// [playerStatus] has a [status] observable
   final playerStatus = PlPlayerStatus(PlayerStatus.playing);
@@ -80,15 +80,21 @@ class PlPlayerController {
   /// 响应数据
   /// 带有Seconds的变量只在秒数更新时更新，以避免频繁触发重绘
   // 播放位置
-  final Rx<Duration> _position = Rx(Duration.zero);
+  final Rx<Duration> position = Rx(Duration.zero);
   final RxInt positionSeconds = 0.obs;
-  final Rx<Duration> _sliderPosition = Rx(Duration.zero);
+
+  /// 进度条位置
+  final Rx<Duration> sliderPosition = Rx(Duration.zero);
   final RxInt sliderPositionSeconds = 0.obs;
   // 展示使用
-  final Rx<Duration> _sliderTempPosition = Rx(Duration.zero);
-  final Rx<Duration> _duration = Rx(Duration.zero);
+  final Rx<Duration> sliderTempPosition = Rx(Duration.zero);
+
+  /// 视频时长
+  final Rx<Duration> duration = Rx(Duration.zero);
   final Rx<Duration> durationSeconds = Duration.zero.obs;
-  final Rx<Duration> _buffered = Rx(Duration.zero);
+
+  /// 视频缓冲
+  final Rx<Duration> buffered = Rx(Duration.zero);
   final RxInt bufferedSeconds = 0.obs;
 
   int _playerCount = 0;
@@ -96,33 +102,49 @@ class PlPlayerController {
   late double lastPlaybackSpeed = 1.0;
   final RxDouble _playbackSpeed = Pref.playSpeedDefault.obs;
   late final RxDouble _longPressSpeed = Pref.longPressSpeedDefault.obs;
-  final RxDouble _currentVolume = RxDouble(
+
+  /// 音量控制条
+  final RxDouble volume = RxDouble(
     Utils.isDesktop ? Pref.desktopVolume : 1.0,
   );
   final setSystemBrightness = Pref.setSystemBrightness;
-  final RxDouble _currentBrightness = (-1.0).obs;
 
-  final RxBool _showControls = false.obs;
-  final RxBool _showVolumeStatus = false.obs;
-  final RxBool _showBrightnessStatus = false.obs;
-  final RxBool _longPressStatus = false.obs;
-  final RxBool _controlsLock = false.obs;
-  final RxBool _isFullScreen = false.obs;
+  /// 亮度控制条
+  final RxDouble brightness = (-1.0).obs;
+
+  /// 是否展示控制条
+  final RxBool showControls = false.obs;
+
+  /// 音量控制条展示/隐藏
+  final RxBool showVolumeStatus = false.obs;
+
+  /// 亮度控制条展示/隐藏
+  final RxBool showBrightnessStatus = false.obs;
+
+  /// 是否长按倍速
+  final RxBool longPressStatus = false.obs;
+
+  /// 屏幕锁 为true时，关闭控制栏
+  final RxBool controlsLock = false.obs;
+
+  /// 全屏状态
+  final RxBool isFullScreen = false.obs;
   // 默认投稿视频格式
   bool isLive = false;
 
   bool _isVertical = false;
 
-  final Rx<VideoFitType> _videoFit = Rx(VideoFitType.contain);
-  late StreamSubscription<DataStatus> _dataListenerForVideoFit;
-  late StreamSubscription<DataStatus> _dataListenerForEnterFullscreen;
+  /// 视频比例
+  final Rx<VideoFitType> videoFit = Rx(VideoFitType.contain);
 
   /// 后台播放
-  late final RxBool _continuePlayInBackground =
+  late final RxBool continuePlayInBackground =
       Pref.continuePlayInBackground.obs;
 
   ///
-  final RxBool _isSliderMoving = false.obs;
+  final RxBool isSliderMoving = false.obs;
+
+  /// 是否循环
   PlaylistMode _looping = PlaylistMode.none;
   bool _autoPlay = false;
 
@@ -152,29 +174,11 @@ class PlPlayerController {
 
   String get bvid => _bvid!;
 
-  /// 数据加载监听
-  Stream<DataStatus> get onDataStatusChanged => dataStatus.status.stream;
-
-  /// 播放状态监听
-  Stream<PlayerStatus> get onPlayerStatusChanged => playerStatus.stream;
-
-  /// 视频时长
-  Rx<Duration> get duration => _duration;
-  Stream<Duration> get onDurationChanged => _duration.stream;
-
-  /// 视频当前播放位置
-  Rx<Duration> get position => _position;
-  Stream<Duration> get onPositionChanged => _position.stream;
-
   /// 视频播放速度
   double get playbackSpeed => _playbackSpeed.value;
 
   // 长按倍速
   double get longPressSpeed => _longPressSpeed.value;
-
-  /// 视频缓冲
-  Rx<Duration> get buffered => _buffered;
-  Stream<Duration> get onBufferedChanged => _buffered.stream;
 
   /// [videoPlayerController] instance of Player
   Player? get videoPlayerController => _videoPlayerController;
@@ -182,48 +186,7 @@ class PlPlayerController {
   /// [videoController] instance of Player
   VideoController? get videoController => _videoController;
 
-  RxBool get isSliderMoving => _isSliderMoving;
-
-  /// 进度条位置及监听
-  Rx<Duration> get sliderPosition => _sliderPosition;
-  Stream<Duration> get onSliderPositionChanged => _sliderPosition.stream;
-
-  Rx<Duration> get sliderTempPosition => _sliderTempPosition;
-  // Stream<Duration> get onSliderPositionChanged => _sliderPosition.stream;
-
-  /// 是否展示控制条及监听
-  RxBool get showControls => _showControls;
-  Stream<bool> get onShowControlsChanged => _showControls.stream;
-
-  /// 音量控制条展示/隐藏
-  RxBool get showVolumeStatus => _showVolumeStatus;
-  Stream<bool> get onShowVolumeStatusChanged => _showVolumeStatus.stream;
-
-  /// 亮度控制条展示/隐藏
-  RxBool get showBrightnessStatus => _showBrightnessStatus;
-  Stream<bool> get onShowBrightnessStatusChanged =>
-      _showBrightnessStatus.stream;
-
-  /// 音量控制条
-  RxDouble get volume => _currentVolume;
-  Stream<double> get onVolumeChanged => _currentVolume.stream;
-  late bool isMuted = false;
-
-  /// 亮度控制条
-  RxDouble get brightness => _currentBrightness;
-  Stream<double> get onBrightnessChanged => _currentBrightness.stream;
-
-  /// 是否循环
-  PlaylistMode get looping => _looping;
-
-  /// 是否自动播放
-  bool get autoplay => _autoPlay;
-
-  /// 视频比例
-  Rx<VideoFitType> get videoFit => _videoFit;
-
-  /// 后台播放
-  RxBool get continuePlayInBackground => _continuePlayInBackground;
+  bool isMuted = false;
 
   /// 听视频
   late final RxBool onlyPlayAudio = false.obs;
@@ -233,16 +196,7 @@ class PlPlayerController {
 
   late final RxBool flipY = false.obs;
 
-  /// 是否长按倍速
-  RxBool get longPressStatus => _longPressStatus;
-
-  RxBool isBuffering = true.obs;
-
-  /// 屏幕锁 为true时，关闭控制栏
-  RxBool get controlsLock => _controlsLock;
-
-  /// 全屏状态
-  RxBool get isFullScreen => _isFullScreen;
+  final RxBool isBuffering = true.obs;
 
   /// 全屏方向
   bool get isVertical => _isVertical;
@@ -512,27 +466,27 @@ class PlPlayerController {
   }
 
   void updateSliderPositionSecond() {
-    int newSecond = _sliderPosition.value.inSeconds;
+    int newSecond = sliderPosition.value.inSeconds;
     if (sliderPositionSeconds.value != newSecond) {
       sliderPositionSeconds.value = newSecond;
     }
   }
 
   void updatePositionSecond() {
-    int newSecond = _position.value.inSeconds;
+    int newSecond = position.value.inSeconds;
     if (positionSeconds.value != newSecond) {
       positionSeconds.value = newSecond;
     }
   }
 
   void updateDurationSecond() {
-    if (durationSeconds.value != _duration.value) {
-      durationSeconds.value = _duration.value;
+    if (durationSeconds.value != duration.value) {
+      durationSeconds.value = duration.value;
     }
   }
 
   void updateBufferedSecond() {
-    int newSecond = _buffered.value.inSeconds;
+    int newSecond = buffered.value.inSeconds;
     if (bufferedSeconds.value != newSecond) {
       bufferedSeconds.value = newSecond;
     }
@@ -704,8 +658,8 @@ class PlPlayerController {
         volume,
       );
       // 获取视频时长 00:00
-      _duration.value = duration ?? _videoPlayerController!.state.duration;
-      _position.value = _buffered.value = _sliderPosition.value =
+      this.duration.value = duration ?? _videoPlayerController!.state.duration;
+      position.value = buffered.value = sliderPosition.value =
           seekTo ?? Duration.zero;
       updateDurationSecond();
       updatePositionSecond();
@@ -818,7 +772,7 @@ class PlPlayerController {
     isBuffering.value = false;
     buffered.value = Duration.zero;
     _heartDuration = 0;
-    _position.value = Duration.zero;
+    position.value = Duration.zero;
     // 初始化时清空弹幕，防止上次重叠
     danmakuController?.clear();
 
@@ -982,7 +936,7 @@ class PlPlayerController {
       Media(
         dataSource.videoSource!,
         httpHeaders: dataSource.httpHeaders,
-        start: _position.value,
+        start: position.value,
       ),
       play: true,
     );
@@ -1023,9 +977,10 @@ class PlPlayerController {
     if (enableAutoEnter) {
       Future.delayed(const Duration(milliseconds: 500), () {
         if (dataStatus.status.value != DataStatus.loaded) {
-          _dataListenerForEnterFullscreen = dataStatus.status.listen((status) {
+          late StreamSubscription<DataStatus> dataListenerForEnterFullscreen;
+          dataListenerForEnterFullscreen = dataStatus.status.listen((status) {
             if (status == DataStatus.loaded) {
-              _dataListenerForEnterFullscreen.cancel();
+              dataListenerForEnterFullscreen.cancel();
               triggerFullScreen(status: true);
             }
           });
@@ -1086,10 +1041,10 @@ class PlPlayerController {
         makeHeartBeat(positionSeconds.value, type: HeartBeatType.completed);
       }),
       videoPlayerController!.stream.position.listen((event) {
-        _position.value = event;
+        position.value = event;
         updatePositionSecond();
         if (!isSliderMoving.value) {
-          _sliderPosition.value = event;
+          sliderPosition.value = event;
           updateSliderPositionSecond();
         }
 
@@ -1103,7 +1058,7 @@ class PlPlayerController {
         duration.value = event;
       }),
       videoPlayerController!.stream.buffer.listen((Duration event) {
-        _buffered.value = event;
+        buffered.value = event;
         updateBufferedSecond();
       }),
       videoPlayerController!.stream.buffering.listen((bool event) {
@@ -1150,7 +1105,7 @@ class PlPlayerController {
                 // if (kDebugMode) {
                 //   debugPrint("_buffered.value: ${_buffered.value}");
                 // }
-                if (isBuffering.value && _buffered.value == Duration.zero) {
+                if (isBuffering.value && buffered.value == Duration.zero) {
                   SmartDialog.showToast(
                     '视频链接打开失败，重试中',
                     displayTime: const Duration(milliseconds: 500),
@@ -1181,14 +1136,14 @@ class PlPlayerController {
       // }),
       // 媒体通知监听
       if (videoPlayerServiceHandler != null) ...[
-        onPlayerStatusChanged.listen((PlayerStatus event) {
+        playerStatus.listen((PlayerStatus event) {
           videoPlayerServiceHandler!.onStatusChange(
             event,
             isBuffering.value,
             isLive,
           );
         }),
-        onPositionChanged.listen((Duration event) {
+        position.listen((Duration event) {
           EasyThrottle.throttle(
             'mediaServicePosition',
             const Duration(seconds: 1),
@@ -1215,7 +1170,7 @@ class PlPlayerController {
     if (position < Duration.zero) {
       position = Duration.zero;
     }
-    _position.value = position;
+    this.position.value = position;
     updatePositionSecond();
     _heartDuration = position.inSeconds;
     if (duration.value.inSeconds != 0) {
@@ -1337,23 +1292,23 @@ class PlPlayerController {
 
   /// 调整播放时间
   void onChangedSlider(double v) {
-    _sliderPosition.value = Duration(seconds: v.floor());
+    sliderPosition.value = Duration(seconds: v.floor());
     updateSliderPositionSecond();
   }
 
   void onChangedSliderStart([Duration? value]) {
     if (value != null) {
-      _sliderTempPosition.value = value;
+      sliderTempPosition.value = value;
     }
-    _isSliderMoving.value = true;
+    isSliderMoving.value = true;
   }
 
   bool? cancelSeek;
   bool? hasToast;
 
   void onUpdatedSliderProgress(Duration value) {
-    _sliderTempPosition.value = value;
-    _sliderPosition.value = value;
+    sliderTempPosition.value = value;
+    sliderPosition.value = value;
     updateSliderPositionSecond();
   }
 
@@ -1363,7 +1318,7 @@ class PlPlayerController {
     }
     cancelSeek = null;
     hasToast = null;
-    _isSliderMoving.value = false;
+    isSliderMoving.value = false;
     hideTaskControls();
   }
 
@@ -1405,14 +1360,10 @@ class PlPlayerController {
     });
   }
 
-  void setCurrBrightness(double brightness) {
-    _currentBrightness.value = brightness;
-  }
-
   /// Toggle Change the videofit accordingly
   void toggleVideoFit(VideoFitType value) {
-    _videoFit.value = value;
-    video.put(VideoBoxKey.cacheVideoFit, _videoFit.value.index);
+    videoFit.value = value;
+    video.put(VideoBoxKey.cacheVideoFit, videoFit.value.index);
   }
 
   /// 读取fit
@@ -1423,12 +1374,13 @@ class PlPlayerController {
     if (attr == VideoFitType.none || attr == VideoFitType.scaleDown) {
       if (buffered.value == Duration.zero) {
         attr = VideoFitType.contain;
-        _dataListenerForVideoFit = dataStatus.status.listen((status) {
+        late StreamSubscription<DataStatus> dataListenerForVideoFit;
+        dataListenerForVideoFit = dataStatus.status.listen((status) {
           if (status == DataStatus.loaded) {
-            _dataListenerForVideoFit.cancel();
+            dataListenerForVideoFit.cancel();
             var attr = VideoFitType.values[fitValue];
             if (attr == VideoFitType.none || attr == VideoFitType.scaleDown) {
-              _videoFit.value = attr;
+              videoFit.value = attr;
             }
           }
         });
@@ -1437,7 +1389,7 @@ class PlPlayerController {
     } else if (attr == VideoFitType.fill && isVertical) {
       attr = VideoFitType.contain;
     }
-    _videoFit.value = attr;
+    videoFit.value = attr;
   }
 
   /// 设置后台播放
@@ -1449,7 +1401,7 @@ class PlPlayerController {
   }
 
   set controls(bool visible) {
-    _showControls.value = visible;
+    showControls.value = visible;
     _timer?.cancel();
     if (visible) {
       hideTaskControls();
@@ -1470,12 +1422,12 @@ class PlPlayerController {
     if (controlsLock.value) {
       return;
     }
-    if (_longPressStatus.value == val) {
+    if (longPressStatus.value == val) {
       return;
     }
     if (val) {
       if (playerStatus.value == PlayerStatus.playing) {
-        _longPressStatus.value = val;
+        longPressStatus.value = val;
         HapticFeedback.lightImpact();
         await setPlaybackSpeed(
           enableAutoLongPressSpeed ? playbackSpeed * 2 : longPressSpeed,
@@ -1483,7 +1435,7 @@ class PlPlayerController {
       }
     } else {
       // if (kDebugMode) debugPrint('$playbackSpeed');
-      _longPressStatus.value = val;
+      longPressStatus.value = val;
       await setPlaybackSpeed(lastPlaybackSpeed);
     }
   }
@@ -1514,11 +1466,11 @@ class PlPlayerController {
   }
 
   void onForward(Duration duration) {
-    onForwardBackward(_position.value + duration);
+    onForwardBackward(position.value + duration);
   }
 
   void onBackward(Duration duration) {
-    onForwardBackward(_position.value - duration);
+    onForwardBackward(position.value - duration);
   }
 
   void onForwardBackward(Duration duration) {
@@ -1551,15 +1503,15 @@ class PlPlayerController {
   /// 关闭控制栏
   void onLockControl(bool val) {
     feedBack();
-    _controlsLock.value = val;
-    if (!val && _showControls.value) {
-      _showControls.refresh();
+    controlsLock.value = val;
+    if (!val && showControls.value) {
+      showControls.refresh();
     }
     controls = !val;
   }
 
   void toggleFullScreen(bool val) {
-    _isFullScreen.value = val;
+    isFullScreen.value = val;
     updateSubtitleStyle();
   }
 
@@ -1582,52 +1534,51 @@ class PlPlayerController {
       return;
     }
     fsProcessing = true;
+    try {
+      mode ??= this.mode;
+      this.isManualFS = isManualFS;
 
-    mode ??= this.mode;
-    this.isManualFS = isManualFS;
-    toggleFullScreen(status);
-
-    if (status) {
-      if (Utils.isMobile) {
-        hideStatusBar();
-        if (mode == FullScreenMode.none) {
-          fsProcessing = false;
-          return;
-        }
-        if (mode == FullScreenMode.gravity) {
-          await fullAutoModeForceSensor();
-          fsProcessing = false;
-          return;
-        }
-        late final size = Get.mediaQuery.size;
-        if ((mode == FullScreenMode.vertical ||
-            (mode == FullScreenMode.auto && isVertical) ||
-            (mode == FullScreenMode.ratio &&
-                (isVertical || size.height / size.width < kScreenRatio)))) {
-          await verticalScreenForTwoSeconds();
+      if (status) {
+        if (Utils.isMobile) {
+          hideStatusBar();
+          if (mode == FullScreenMode.none) {
+            return;
+          }
+          if (mode == FullScreenMode.gravity) {
+            await fullAutoModeForceSensor();
+            return;
+          }
+          late final size = Get.mediaQuery.size;
+          if ((mode == FullScreenMode.vertical ||
+              (mode == FullScreenMode.auto && isVertical) ||
+              (mode == FullScreenMode.ratio &&
+                  (isVertical || size.height / size.width < kScreenRatio)))) {
+            await verticalScreenForTwoSeconds();
+          } else {
+            await landscape();
+          }
         } else {
-          await landscape();
+          await enterDesktopFullscreen(inAppFullScreen: inAppFullScreen);
         }
       } else {
-        await enterDesktopFullscreen(inAppFullScreen: inAppFullScreen);
-      }
-    } else {
-      if (Utils.isMobile) {
-        showStatusBar();
-        if (mode == FullScreenMode.none) {
-          fsProcessing = false;
-          return;
-        }
-        if (!horizontalScreen) {
-          await verticalScreenForTwoSeconds();
+        if (Utils.isMobile) {
+          showStatusBar();
+          if (mode == FullScreenMode.none) {
+            return;
+          }
+          if (!horizontalScreen) {
+            await verticalScreenForTwoSeconds();
+          } else {
+            await autoScreen();
+          }
         } else {
-          await autoScreen();
+          await exitDesktopFullscreen();
         }
-      } else {
-        await exitDesktopFullscreen();
       }
+    } finally {
+      toggleFullScreen(status);
+      fsProcessing = false;
     }
-    fsProcessing = false;
   }
 
   void addPositionListener(Function(Duration position) listener) =>
@@ -1762,7 +1713,7 @@ class PlPlayerController {
     _timerForSeek?.cancel();
     _timerForShowingVolume?.cancel();
     // _position.close();
-    _playerEventSubs?.cancel();
+    // _playerEventSubs?.cancel();
     // _sliderPosition.close();
     // _sliderTempPosition.close();
     // _isSliderMoving.close();
@@ -1794,11 +1745,11 @@ class PlPlayerController {
   }
 
   void setContinuePlayInBackground() {
-    _continuePlayInBackground.value = !_continuePlayInBackground.value;
+    continuePlayInBackground.value = !continuePlayInBackground.value;
     if (!tempPlayerConf) {
       setting.put(
         SettingBoxKey.continuePlayInBackground,
-        _continuePlayInBackground.value,
+        continuePlayInBackground.value,
       );
     }
   }
@@ -1814,7 +1765,7 @@ class PlPlayerController {
   LoadingState<VideoShotData>? videoShot;
   late final RxBool showPreview = false.obs;
   late final showSeekPreview = Pref.showSeekPreview;
-  late final Rx<int?> previewIndex = Rx<int?>(null);
+  late final previewIndex = RxnInt();
 
   void updatePreviewIndex(int seconds) {
     if (videoShot == null) {

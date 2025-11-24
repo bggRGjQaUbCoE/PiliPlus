@@ -122,7 +122,7 @@ class VideoDetailController extends GetxController
   final childKey = GlobalKey<ScaffoldState>();
 
   final plPlayerController = PlPlayerController.getInstance()
-    ..setCurrBrightness(-1.0);
+    ..brightness.value = -1;
   bool get setSystemBrightness => plPlayerController.setSystemBrightness;
 
   late VideoItem firstVideo;

@@ -431,9 +431,8 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
         Platform.isAndroid &&
         !videoDetailController.setSystemBrightness) {
       if (videoDetailController.brightness != null) {
-        plPlayerController?.setCurrBrightness(
-          videoDetailController.brightness!,
-        );
+        plPlayerController?.brightness.value =
+            videoDetailController.brightness!;
         if (videoDetailController.brightness != -1.0) {
           ScreenBrightnessPlatform.instance.setApplicationScreenBrightness(
             videoDetailController.brightness!,

@@ -59,8 +59,8 @@ Future<void> autoScreen() async {
   }
 }
 
-Future<void> fullAutoModeForceSensor() async {
-  await AutoOrientation.fullAutoMode(forceSensor: true);
+Future<void> fullAutoModeForceSensor() {
+  return AutoOrientation.fullAutoMode(forceSensor: true);
 }
 
 bool _showStatusBar = true;

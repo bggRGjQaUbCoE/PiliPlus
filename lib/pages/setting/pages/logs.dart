@@ -148,96 +148,22 @@ class _LogsPageState extends State<LogsPage> {
                     ),
                     sliver: SliverList.list(
                       children: [
-                        Card(
-                          child: Padding(
-                            padding: const EdgeInsets.all(12.0),
-                            child: SelectableText(_getDeviceString(latestLog!)),
-                          ),
-                        ),
-                        const Divider(
-                          indent: 12,
-                          endIndent: 12,
-                          height: 24,
-                        ),
+                        InfoCard(report: latestLog!),
+                        _divider,
                       ],
                     ),
                   ),
                 SliverPadding(
                   padding: EdgeInsets.only(
-                    left: padding.left,
-                    right: padding.right,
+                    left: padding.left + 16,
+                    right: padding.right + 16,
                     bottom: padding.bottom + 100,
                   ),
                   sliver: SliverList.separated(
                     itemCount: logsContent.length,
-                    itemBuilder: (context, index) {
-                      final log = logsContent[index];
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          mainAxisSize: MainAxisSize.min,
-                          spacing: 5,
-                          children: [
-                            Row(
-                              spacing: 10,
-                              children: [
-                                Text(
-                                  log.dateTime.toString(),
-                                  style: TextStyle(
-                                    fontSize: Theme.of(
-                                      context,
-                                    ).textTheme.titleMedium!.fontSize,
-                                  ),
-                                ),
-                                TextButton.icon(
-                                  style: TextButton.styleFrom(
-                                    tapTargetSize:
-                                        MaterialTapTargetSize.shrinkWrap,
-                                    visualDensity: VisualDensity.compact,
-                                  ),
-                                  onPressed: () {
-                                    Utils.copyText(
-                                      Utils.jsonEncoder.convert(log.toJson()),
-                                      needToast: false,
-                                    );
-                                    if (context.mounted) {
-                                      ScaffoldMessenger.of(
-                                        context,
-                                      ).showSnackBar(
-                                        SnackBar(
-                                          content: Text(
-                                            '已将 ${log.dateTime} 复制至剪贴板',
-                                          ),
-                                        ),
-                                      );
-                                    }
-                                  },
-                                  icon: const Icon(
-                                    Icons.copy_outlined,
-                                    size: 16,
-                                  ),
-                                  label: const Text('复制'),
-                                ),
-                              ],
-                            ),
-                            Card(
-                              child: Padding(
-                                padding: const EdgeInsets.all(12.0),
-                                child: SelectableText(
-                                  '---------- 错误信息 ----------\n${log.error}\n\n---------- 错误堆栈 ----------\n${log.stackTrace}',
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                    separatorBuilder: (context, index) => const Divider(
-                      indent: 12,
-                      endIndent: 12,
-                      height: 24,
-                    ),
+                    itemBuilder: (context, index) =>
+                        ReportCard(report: logsContent[index]),
+                    separatorBuilder: (_, _) => _divider,
                   ),
                 ),
               ],
@@ -247,15 +173,282 @@ class _LogsPageState extends State<LogsPage> {
   }
 }
 
-String _getDeviceString(Report report) {
-  final sb = StringBuffer()
-    ..writeln('---------- 设备信息 ----------')
-    ..writeMapln(report.deviceParameters)
-    ..writeln('---------- 应用信息 ----------')
-    ..writeMapln(report.applicationParameters)
-    ..writeln('---------- 编译信息 ----------')
-    ..writeMapln(report.customParameters);
-  return sb.toString();
+class InfoCard extends StatefulWidget {
+  final Report report;
+
+  const InfoCard({super.key, required this.report});
+
+  @override
+  State<InfoCard> createState() => _InfoCardState();
+}
+
+class _InfoCardState extends State<InfoCard> {
+  bool _isExpanded = false;
+
+  Widget _buildMapSection(
+    Color color,
+    String title,
+    Map<String, dynamic> map,
+  ) {
+    if (map.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      spacing: 4,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: color,
+            fontSize: 16,
+          ),
+        ),
+        const SizedBox(height: 8),
+        ...map.entries.map(
+          (entry) => Text.rich(
+            TextSpan(
+              children: [
+                TextSpan(
+                  text: '• ${entry.key}: ',
+                  style: const TextStyle(fontWeight: FontWeight.w500),
+                ),
+                TextSpan(
+                  text: entry.value.toString(),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+      ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = ColorScheme.of(context);
+    return _card([
+      Row(
+        spacing: 8,
+        children: [
+          Icon(
+            Icons.info_outline,
+            size: 24,
+            color: colorScheme.primary,
+          ),
+          const Expanded(
+            child: Text(
+              '相关信息',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          IconButton(
+            style: IconButton.styleFrom(
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              visualDensity: VisualDensity.compact,
+            ),
+            icon: Icon(
+              _isExpanded ? Icons.expand_less : Icons.expand_more,
+            ),
+            onPressed: () {
+              setState(() {
+                _isExpanded = !_isExpanded;
+              });
+            },
+          ),
+        ],
+      ),
+      if (_isExpanded) ...[
+        const SizedBox(height: 16),
+        _buildMapSection(
+          colorScheme.primary,
+          '设备信息',
+          widget.report.deviceParameters,
+        ),
+        _buildMapSection(
+          colorScheme.primary,
+          '应用信息',
+          widget.report.applicationParameters,
+        ),
+        _buildMapSection(
+          colorScheme.primary,
+          '编译信息',
+          widget.report.customParameters,
+        ),
+      ],
+    ]);
+  }
+}
+
+class ReportCard extends StatefulWidget {
+  final Report report;
+
+  const ReportCard({super.key, required this.report});
+
+  @override
+  State<ReportCard> createState() => _ReportCardState();
+}
+
+class _ReportCardState extends State<ReportCard> {
+  bool _isExpanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final log = widget.report;
+    final colorScheme = ColorScheme.of(context);
+    late final stackTrace = log.stackTrace.toString();
+
+    return _card([
+      Row(
+        children: [
+          Icon(Icons.error_outline, color: colorScheme.error, size: 24),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              log.error.toString(),
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          TextButton.icon(
+            style: TextButton.styleFrom(
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              visualDensity: VisualDensity.compact,
+            ),
+            onPressed: () {
+              Utils.copyText(
+                Utils.jsonEncoder.convert(log.toJson()),
+                needToast: false,
+              );
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('已将 ${log.dateTime} 复制至剪贴板')),
+              );
+            },
+            icon: const Icon(
+              Icons.copy_outlined,
+              size: 16,
+            ),
+            label: const Text('复制'),
+          ),
+          IconButton(
+            style: IconButton.styleFrom(
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              visualDensity: VisualDensity.compact,
+            ),
+            icon: Icon(
+              _isExpanded ? Icons.expand_less : Icons.expand_more,
+            ),
+            onPressed: () {
+              setState(() {
+                _isExpanded = !_isExpanded;
+              });
+            },
+          ),
+        ],
+      ),
+      const SizedBox(height: 8),
+      Row(
+        spacing: 4,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          const Icon(Icons.access_time, size: 16),
+          Text(
+            log.dateTime.toString(),
+            style: const TextStyle(height: 1.2),
+          ),
+        ],
+      ),
+      if (_isExpanded) ...[
+        const SizedBox(height: 16),
+        _divider,
+        const SizedBox(height: 16),
+
+        Text(
+          '错误详情:',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: colorScheme.error,
+            fontSize: 16,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: colorScheme.surfaceContainerHighest,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: colorScheme.outline),
+          ),
+          child: SelectableText(
+            log.error.toString(),
+            style: TextStyle(
+              fontFamily: 'Monospace',
+              color: colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+        // stackTrace may be null or String("null") or blank
+        if (stackTrace.trim().isNotEmpty && stackTrace != 'null') ...[
+          Text(
+            '堆栈跟踪:',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: colorScheme.error,
+              fontSize: 16,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: colorScheme.surfaceContainerHighest,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: colorScheme.outline),
+            ),
+            child: SelectableText(
+              log.stackTrace.toString(),
+              style: TextStyle(
+                fontFamily: 'Monospace',
+                fontSize: 12,
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+        ],
+      ],
+    ]);
+  }
+}
+
+const Widget _divider = Divider(indent: 12, endIndent: 12, height: 24);
+
+Widget _card(List<Widget> contents) {
+  return Card(
+    margin: const EdgeInsets.all(8),
+    elevation: 2,
+    child: Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: contents,
+      ),
+    ),
+  );
 }
 
 Report _parseReportJson(Map<String, dynamic> json) => Report(
@@ -269,9 +462,3 @@ Report _parseReportJson(Map<String, dynamic> json) => Report(
   PlatformType.values.byName(json['platformType']),
   null,
 );
-
-extension on StringBuffer {
-  void writeMapln(Map map) {
-    map.forEach((k, v) => writeln('$k: $v'));
-  }
-}

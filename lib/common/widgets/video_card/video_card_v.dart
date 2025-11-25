@@ -5,6 +5,7 @@ import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/stat/stat.dart';
 import 'package:PiliPlus/common/widgets/video_popup_menu.dart';
 import 'package:PiliPlus/http/search.dart';
+import 'package:PiliPlus/http/user.dart';
 import 'package:PiliPlus/models/common/badge_type.dart';
 import 'package:PiliPlus/models/common/stat_type.dart';
 import 'package:PiliPlus/models/model_rec_video_item.dart';
@@ -19,7 +20,7 @@ import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:intl/intl.dart';
 
 // 视频卡片 - 垂直布局
-class VideoCardV extends StatelessWidget {
+class VideoCardV extends StatefulWidget {
   final BaseRecVideoItemModel videoItem;
   final VoidCallback? onRemove;
 
@@ -28,6 +29,20 @@ class VideoCardV extends StatelessWidget {
     required this.videoItem,
     this.onRemove,
   });
+
+  static final shortFormat = DateFormat('M-d');
+  static final longFormat = DateFormat('yy-M-d');
+
+  @override
+  State<VideoCardV> createState() => _VideoCardVState();
+}
+
+class _VideoCardVState extends State<VideoCardV> {
+  bool _isHovering = false;
+  bool _isInWatchLater = false;
+
+  BaseRecVideoItemModel get videoItem => widget.videoItem;
+  VoidCallback? get onRemove => widget.onRemove;
 
   Future<void> onPushDetail(String heroTag) async {
     String? goto = videoItem.goto;
@@ -77,45 +92,56 @@ class VideoCardV extends StatelessWidget {
       children: [
         Card(
           clipBehavior: Clip.hardEdge,
-          child: InkWell(
-            onTap: () => onPushDetail(Utils.makeHeroTag(videoItem.aid)),
-            onLongPress: onLongPress,
-            onSecondaryTap: Utils.isMobile ? null : onLongPress,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                AspectRatio(
-                  aspectRatio: StyleString.aspectRatio,
-                  child: LayoutBuilder(
-                    builder: (context, boxConstraints) {
-                      double maxWidth = boxConstraints.maxWidth;
-                      double maxHeight = boxConstraints.maxHeight;
-                      return Stack(
-                        clipBehavior: Clip.none,
-                        children: [
-                          NetworkImgLayer(
-                            src: videoItem.cover,
-                            width: maxWidth,
-                            height: maxHeight,
-                            radius: 0,
-                          ),
-                          if (videoItem.duration > 0)
-                            PBadge(
-                              bottom: 6,
-                              right: 7,
-                              size: PBadgeSize.small,
-                              type: PBadgeType.gray,
-                              text: DurationUtils.formatDuration(
-                                videoItem.duration,
-                              ),
+          child: MouseRegion(
+            onEnter: Utils.isMobile ? null : (_) => setState(() => _isHovering = true),
+            onExit: Utils.isMobile ? null : (_) => setState(() => _isHovering = false),
+            child: InkWell(
+              onTap: () => onPushDetail(Utils.makeHeroTag(videoItem.aid)),
+              onLongPress: onLongPress,
+              onSecondaryTap: Utils.isMobile ? null : onLongPress,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  AspectRatio(
+                    aspectRatio: StyleString.aspectRatio,
+                    child: LayoutBuilder(
+                      builder: (context, boxConstraints) {
+                        double maxWidth = boxConstraints.maxWidth;
+                        double maxHeight = boxConstraints.maxHeight;
+                        return Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            NetworkImgLayer(
+                              src: videoItem.cover,
+                              width: maxWidth,
+                              height: maxHeight,
+                              radius: 0,
                             ),
-                        ],
-                      );
-                    },
+                            if (videoItem.duration > 0)
+                              PBadge(
+                                bottom: 6,
+                                right: 7,
+                                size: PBadgeSize.small,
+                                type: PBadgeType.gray,
+                                text: DurationUtils.formatDuration(
+                                  videoItem.duration,
+                                ),
+                              ),
+                            // 桌面端悬停显示稍后再看按钮
+                            if (!Utils.isMobile && _isHovering && videoItem.goto == 'av' && videoItem.bvid != null)
+                              Positioned(
+                                top: 4,
+                                right: 4,
+                                child: _buildWatchLaterButton(context),
+                              ),
+                          ],
+                        );
+                      },
+                    ),
                   ),
-                ),
-                content(context),
-              ],
+                  content(context),
+                ],
+              ),
             ),
           ),
         ),
@@ -131,6 +157,41 @@ class VideoCardV extends StatelessWidget {
             ),
           ),
       ],
+    );
+  }
+
+  Widget _buildWatchLaterButton(BuildContext context) {
+    return Material(
+      color: _isInWatchLater ? Colors.green.withValues(alpha: 0.8) : Colors.black54,
+      borderRadius: BorderRadius.circular(4),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(4),
+        onTap: () async {
+          if (_isInWatchLater) {
+            // 取消稍后再看
+            var res = await UserHttp.toViewDel(aids: videoItem.aid.toString());
+            SmartDialog.showToast(res['msg']);
+            if (res['status'] == true) {
+              setState(() => _isInWatchLater = false);
+            }
+          } else {
+            // 添加稍后再看
+            var res = await UserHttp.toViewLater(bvid: videoItem.bvid);
+            SmartDialog.showToast(res['msg']);
+            if (res['status'] == true) {
+              setState(() => _isInWatchLater = true);
+            }
+          }
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(4),
+          child: Icon(
+            _isInWatchLater ? Icons.check : Icons.watch_later_outlined,
+            size: 18,
+            color: Colors.white,
+          ),
+        ),
+      ),
     );
   }
 
@@ -209,9 +270,6 @@ class VideoCardV extends StatelessWidget {
     );
   }
 
-  static final shortFormat = DateFormat('M-d');
-  static final longFormat = DateFormat('yy-M-d');
-
   Widget videoStat(BuildContext context, ThemeData theme) {
     return Row(
       children: [
@@ -237,8 +295,8 @@ class VideoCardV extends StatelessWidget {
               ),
               text: DateFormatUtils.dateFormat(
                 videoItem.pubdate,
-                short: shortFormat,
-                long: longFormat,
+                short: VideoCardV.shortFormat,
+                long: VideoCardV.longFormat,
               ),
             ),
           ),

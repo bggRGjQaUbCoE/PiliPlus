@@ -6,6 +6,7 @@ import 'package:PiliPlus/common/widgets/progress_bar/video_progress_indicator.da
 import 'package:PiliPlus/common/widgets/stat/stat.dart';
 import 'package:PiliPlus/common/widgets/video_popup_menu.dart';
 import 'package:PiliPlus/http/search.dart';
+import 'package:PiliPlus/http/user.dart';
 import 'package:PiliPlus/models/common/badge_type.dart';
 import 'package:PiliPlus/models/common/stat_type.dart';
 import 'package:PiliPlus/models/model_hot_video_item.dart';
@@ -19,7 +20,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 
 // 视频卡片 - 水平布局
-class VideoCardH extends StatelessWidget {
+class VideoCardH extends StatefulWidget {
   const VideoCardH({
     super.key,
     required this.videoItem,
@@ -31,6 +32,18 @@ class VideoCardH extends StatelessWidget {
   final VoidCallback? onTap;
   final ValueChanged<int>? onViewLater;
   final VoidCallback? onRemove;
+
+  @override
+  State<VideoCardH> createState() => _VideoCardHState();
+}
+
+class _VideoCardHState extends State<VideoCardH> {
+  bool _isHovering = false;
+  bool _isInWatchLater = false;
+
+  BaseVideoItemModel get videoItem => widget.videoItem;
+  VoidCallback? get onTap => widget.onTap;
+  VoidCallback? get onRemove => widget.onRemove;
 
   @override
   Widget build(BuildContext context) {
@@ -65,13 +78,16 @@ class VideoCardH extends StatelessWidget {
     );
     return Material(
       type: MaterialType.transparency,
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          InkWell(
-            onLongPress: onLongPress,
-            onSecondaryTap: Utils.isMobile ? null : onLongPress,
-            onTap:
+      child: MouseRegion(
+        onEnter: Utils.isMobile ? null : (_) => setState(() => _isHovering = true),
+        onExit: Utils.isMobile ? null : (_) => setState(() => _isHovering = false),
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            InkWell(
+              onLongPress: onLongPress,
+              onSecondaryTap: Utils.isMobile ? null : onLongPress,
+              onTap:
                 onTap ??
                 () async {
                   if (type == 'ketang') {
@@ -181,6 +197,13 @@ class VideoCardH extends StatelessWidget {
                                 bottom: 6.0,
                                 type: PBadgeType.gray,
                               ),
+                            // 桌面端悬停显示稍后再看按钮
+                            if (!Utils.isMobile && _isHovering && videoItem.bvid != null)
+                              Positioned(
+                                top: 4,
+                                right: 4,
+                                child: _buildWatchLaterButton(),
+                              ),
                           ],
                         );
                       },
@@ -203,6 +226,42 @@ class VideoCardH extends StatelessWidget {
             ),
           ),
         ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWatchLaterButton() {
+    return Material(
+      color: _isInWatchLater ? Colors.green.withValues(alpha: 0.8) : Colors.black54,
+      borderRadius: BorderRadius.circular(4),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(4),
+        onTap: () async {
+          if (_isInWatchLater) {
+            // 取消稍后再看
+            var res = await UserHttp.toViewDel(aids: videoItem.aid.toString());
+            SmartDialog.showToast(res['msg']);
+            if (res['status'] == true) {
+              setState(() => _isInWatchLater = false);
+            }
+          } else {
+            // 添加稍后再看
+            var res = await UserHttp.toViewLater(bvid: videoItem.bvid);
+            SmartDialog.showToast(res['msg']);
+            if (res['status'] == true) {
+              setState(() => _isInWatchLater = true);
+            }
+          }
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(4),
+          child: Icon(
+            _isInWatchLater ? Icons.check : Icons.watch_later_outlined,
+            size: 18,
+            color: Colors.white,
+          ),
+        ),
       ),
     );
   }

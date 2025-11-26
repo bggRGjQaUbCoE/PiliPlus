@@ -85,7 +85,7 @@ abstract final class DanmakuHttp {
     if (res.data['code'] == 0) {
       return const Success(null);
     } else {
-      return Error(res.data['message']);
+      return Error(res.data['message'], code: res.data['code']);
     }
   }
 

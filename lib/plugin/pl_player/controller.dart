@@ -137,6 +137,19 @@ class PlPlayerController {
   /// 视频比例
   final Rx<VideoFitType> videoFit = Rx(VideoFitType.contain);
 
+  StreamSubscription<DataStatus>? _dataListenerForVideoFit;
+  StreamSubscription<DataStatus>? _dataListenerForEnterFullScreen;
+
+  void _stopListenerForVideoFit() {
+    _dataListenerForVideoFit?.cancel();
+    _dataListenerForVideoFit = null;
+  }
+
+  void _stopListenerForEnterFullScreen() {
+    _dataListenerForEnterFullScreen?.cancel();
+    _dataListenerForEnterFullScreen = null;
+  }
+
   /// 后台播放
   late final RxBool continuePlayInBackground =
       Pref.continuePlayInBackground.obs;
@@ -977,10 +990,10 @@ class PlPlayerController {
     if (enableAutoEnter) {
       Future.delayed(const Duration(milliseconds: 500), () {
         if (dataStatus.status.value != DataStatus.loaded) {
-          late StreamSubscription<DataStatus> dataListenerForEnterFullscreen;
-          dataListenerForEnterFullscreen = dataStatus.status.listen((status) {
+          _stopListenerForEnterFullScreen();
+          _dataListenerForEnterFullScreen = dataStatus.status.listen((status) {
             if (status == DataStatus.loaded) {
-              dataListenerForEnterFullscreen.cancel();
+              _stopListenerForEnterFullScreen();
               triggerFullScreen(status: true);
             }
           });
@@ -1363,7 +1376,7 @@ class PlPlayerController {
   /// Toggle Change the videofit accordingly
   void toggleVideoFit(VideoFitType value) {
     videoFit.value = value;
-    video.put(VideoBoxKey.cacheVideoFit, videoFit.value.index);
+    video.put(VideoBoxKey.cacheVideoFit, value.index);
   }
 
   /// 读取fit
@@ -1374,10 +1387,10 @@ class PlPlayerController {
     if (attr == VideoFitType.none || attr == VideoFitType.scaleDown) {
       if (buffered.value == Duration.zero) {
         attr = VideoFitType.contain;
-        late StreamSubscription<DataStatus> dataListenerForVideoFit;
-        dataListenerForVideoFit = dataStatus.status.listen((status) {
+        _stopListenerForVideoFit();
+        _dataListenerForVideoFit = dataStatus.status.listen((status) {
           if (status == DataStatus.loaded) {
-            dataListenerForVideoFit.cancel();
+            _stopListenerForVideoFit();
             var attr = VideoFitType.values[fitValue];
             if (attr == VideoFitType.none || attr == VideoFitType.scaleDown) {
               videoFit.value = attr;
@@ -1704,6 +1717,8 @@ class PlPlayerController {
       return;
     }
     _playerCount = 0;
+    _stopListenerForVideoFit();
+    _stopListenerForEnterFullScreen();
     disableAutoEnterPip();
     setPlayCallBack(null);
     dmState.clear();

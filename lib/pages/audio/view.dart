@@ -5,6 +5,7 @@ import 'package:PiliPlus/common/widgets/button/icon_button.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/progress_bar/audio_video_progress_bar.dart';
+import 'package:PiliPlus/common/widgets/progress_bar/segment_progress_bar.dart';
 import 'package:PiliPlus/grpc/bilibili/app/listener/v1.pb.dart';
 import 'package:PiliPlus/models/common/image_preview_type.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
@@ -735,7 +736,7 @@ class _AudioPageState extends State<AudioPage> {
     final baseBarColor = colorScheme.brightness.isDark
         ? const Color(0x33FFFFFF)
         : const Color(0x33999999);
-    final child = Obx(
+    final progressBar = Obx(
       () => ProgressBar(
         progress: _controller.position.value,
         total: _controller.duration.value,
@@ -750,6 +751,34 @@ class _AudioPageState extends State<AudioPage> {
         onDragUpdate: _onDragUpdate,
         onSeek: _onSeek,
       ),
+    );
+    // 使用 Stack 叠加空降助手片段标注
+    final child = Stack(
+      alignment: Alignment.center,
+      children: [
+        progressBar,
+        // 空降助手片段标注
+        Obx(() {
+          if (_controller.segmentProgressList.isEmpty) {
+            return const SizedBox.shrink();
+          }
+          return Positioned(
+            left: 0,
+            right: 12, // thumbRadius * 2
+            child: IgnorePointer(
+              child: RepaintBoundary(
+                child: CustomPaint(
+                  key: const Key('audioSegmentList'),
+                  size: const Size(double.infinity, 3.5),
+                  painter: SegmentProgressBar(
+                    segmentColors: _controller.segmentProgressList,
+                  ),
+                ),
+              ),
+            ),
+          );
+        }),
+      ],
     );
     if (Utils.isDesktop) {
       return MouseRegion(

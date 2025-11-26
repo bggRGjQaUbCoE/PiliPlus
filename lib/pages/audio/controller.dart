@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:PiliPlus/common/constants.dart';
+import 'package:PiliPlus/common/widgets/pair.dart';
+import 'package:PiliPlus/common/widgets/progress_bar/segment_progress_bar.dart';
 import 'package:PiliPlus/grpc/audio.dart';
 import 'package:PiliPlus/grpc/bilibili/app/listener/v1.pb.dart'
     show
@@ -14,7 +16,13 @@ import 'package:PiliPlus/grpc/bilibili/app/listener/v1.pb.dart'
         DashItem,
         ResponseUrl;
 import 'package:PiliPlus/http/constants.dart';
+import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/http/sponsor_block.dart';
 import 'package:PiliPlus/http/ua_type.dart';
+import 'package:PiliPlus/models/common/sponsor_block/segment_model.dart';
+import 'package:PiliPlus/models/common/sponsor_block/segment_type.dart';
+import 'package:PiliPlus/models/common/sponsor_block/skip_type.dart';
+import 'package:PiliPlus/models_new/sponsor_block/segment_item.dart';
 import 'package:PiliPlus/pages/common/common_intro_controller.dart'
     show FavMixin;
 import 'package:PiliPlus/pages/dynamics_repost/view.dart';
@@ -34,6 +42,7 @@ import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:PiliPlus/utils/video_utils.dart';
 import 'package:fixnum/fixnum.dart' show Int64;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -83,6 +92,14 @@ class AudioController extends GetxController
 
   ListOrder order = ListOrder.ORDER_NORMAL;
 
+  // 空降助手相关
+  late final bool enableSponsorBlock = Pref.enableSponsorBlock;
+  final List<SegmentModel> segmentList = [];
+  final RxList<Segment> segmentProgressList = <Segment>[].obs;
+  late final List<Color> blockColor = Pref.blockColor;
+  StreamSubscription<Duration>? _sponsorBlockSubscription;
+  int _lastPos = -1;
+
   @override
   void onInit() {
     super.onInit();
@@ -114,6 +131,10 @@ class AudioController extends GetxController
         ua: UaType.pc.ua,
         referer: HttpString.baseUrl,
       );
+      // 有 audioUrl 时也需要查询空降助手
+      if (enableSponsorBlock && isVideo) {
+        _querySponsorBlock();
+      }
     }
     Utils.isWiFi.then((isWiFi) {
       cacheAudioQa = isWiFi ? Pref.defaultAudioQa : Pref.defaultAudioQaCellular;
@@ -200,6 +221,11 @@ class AudioController extends GetxController
   }
 
   Future<bool> _queryPlayUrl() async {
+    // 查询空降助手
+    if (enableSponsorBlock && isVideo) {
+      _querySponsorBlock();
+    }
+
     final res = await AudioGrpc.audioPlayUrl(
       itemType: itemType,
       oid: oid,
@@ -259,6 +285,13 @@ class AudioController extends GetxController
       ),
     );
     _start = null;
+    // player 已准备好，初始化空降助手跳过监听
+    if (enableSponsorBlock && segmentList.isNotEmpty) {
+      if (kDebugMode) {
+        debugPrint('AudioController: _onOpenMedia 中初始化空降助手');
+      }
+      _initSponsorBlockSkip();
+    }
   }
 
   void _initPlayerIfNeeded() {
@@ -274,6 +307,8 @@ class AudioController extends GetxController
       }),
       player!.stream.duration.listen((duration) {
         this.duration.value = duration;
+        // 当 duration 更新且有空降助手片段时，更新进度条片段
+        _updateSegmentProgressList();
       }),
       player!.stream.playing.listen((playing) {
         PlayerStatus playerStatus;
@@ -322,6 +357,172 @@ class AudioController extends GetxController
 
   void _replay() {
     player?.seek(Duration.zero).whenComplete(player!.play);
+  }
+
+  // 空降助手：查询跳过片段
+  Future<void> _querySponsorBlock() async {
+    if (!isVideo) return; // 只对视频类型生效
+
+    _sponsorBlockSubscription?.cancel();
+    _sponsorBlockSubscription = null;
+    _lastPos = -1;
+    segmentList.clear();
+    segmentProgressList.clear();
+
+    final bvid = IdUtils.av2bv(oid.toInt());
+    final cid = (subId.firstOrNull ?? oid).toInt();
+
+    final result = await SponsorBlock.getSkipSegments(
+      bvid: bvid,
+      cid: cid,
+    );
+    switch (result) {
+      case Success<List<SegmentItemModel>>(:final response):
+        _handleSBData(response);
+      case Error(:final code) when code != 404:
+        result.toast();
+      default:
+        break;
+    }
+  }
+
+  void _handleSBData(List<SegmentItemModel> list) {
+    if (list.isEmpty) return;
+
+    try {
+      final blockSettings = Pref.blockSettings;
+      final enableList = blockSettings
+          .where((item) => item.second != SkipType.disable)
+          .map((item) => item.first.name)
+          .toSet();
+      final blockLimit = Pref.blockLimit;
+
+      segmentList.addAll(
+        list
+            .where(
+              (item) =>
+                  enableList.contains(item.category) &&
+                  item.segment[1] >= item.segment[0],
+            )
+            .map(
+              (item) {
+                final segmentType = SegmentType.values.byName(item.category);
+                SkipType skipType = blockSettings[segmentType.index].second;
+                if (skipType != SkipType.showOnly) {
+                  if (item.segment[1] == item.segment[0] ||
+                      item.segment[1] - item.segment[0] < blockLimit) {
+                    skipType = SkipType.showOnly;
+                  }
+                }
+
+                return SegmentModel(
+                  UUID: item.uuid,
+                  segmentType: segmentType,
+                  segment: Pair(
+                    first: item.segment[0], // 已经是毫秒
+                    second: item.segment[1], // 已经是毫秒
+                  ),
+                  skipType: skipType,
+                );
+              },
+            ),
+      );
+
+      if (segmentList.isNotEmpty) {
+        _updateSegmentProgressList();
+        _initSponsorBlockSkip();
+      }
+    } catch (e) {
+      if (kDebugMode) debugPrint('failed to parse sponsorblock: $e');
+    }
+  }
+
+  void _updateSegmentProgressList() {
+    if (segmentList.isEmpty) return;
+    final durationMs = duration.value.inMilliseconds;
+    if (durationMs <= 0) return;
+
+    segmentProgressList..clear()
+    ..addAll(
+      segmentList.map((e) {
+        double start = (e.segment.first / durationMs).clamp(0.0, 1.0);
+        double end = (e.segment.second / durationMs).clamp(0.0, 1.0);
+        return Segment(start, end, _getColor(e.segmentType));
+      }),
+    );
+  }
+
+  Color _getColor(SegmentType segment) => blockColor[segment.index];
+
+  void _initSponsorBlockSkip() {
+    if (segmentList.isEmpty) {
+      if (kDebugMode) {
+        debugPrint('AudioController: segmentList 为空，跳过初始化');
+      }
+      return;
+    }
+    if (player == null) {
+      if (kDebugMode) {
+        debugPrint('AudioController: player 为空，跳过初始化');
+      }
+      return;
+    }
+
+    if (kDebugMode) {
+      debugPrint('AudioController: 初始化空降助手跳过监听');
+    }
+
+    _sponsorBlockSubscription?.cancel();
+    _sponsorBlockSubscription = player!.stream.position.listen((position) {
+      int currentPos = position.inSeconds;
+      if (currentPos != _lastPos) {
+        _lastPos = currentPos;
+        final msPos = currentPos * 1000;
+        for (SegmentModel item in segmentList) {
+          if (msPos <= item.segment.first &&
+              item.segment.first <= msPos + 1000) {
+            switch (item.skipType) {
+              case SkipType.alwaysSkip:
+                _onSkip(item);
+                break;
+              case SkipType.skipOnce:
+                if (!item.hasSkipped) {
+                  item.hasSkipped = true;
+                  _onSkip(item);
+                }
+                break;
+              case SkipType.skipManually:
+                // 听视频页不支持手动跳过 UI，直接跳过
+                _onSkip(item);
+                break;
+              default:
+                break;
+            }
+            break;
+          }
+        }
+      }
+    });
+  }
+
+  Future<void> _onSkip(SegmentModel item) async {
+    try {
+      if (kDebugMode) {
+        debugPrint(
+          'AudioController: 跳过片段 ${item.segmentType.shortTitle} 到 ${item.segment.second}ms',
+        );
+      }
+      await player?.seek(Duration(milliseconds: item.segment.second));
+      if (Pref.blockToast) {
+        SmartDialog.showToast('已跳过${item.segmentType.shortTitle}片段');
+      }
+      if (Pref.blockTrack) {
+        SponsorBlock.viewedVideoSponsorTime(item.UUID);
+      }
+    } catch (e) {
+      if (kDebugMode) debugPrint('failed to skip: $e');
+      SmartDialog.showToast('${item.segmentType.shortTitle}片段跳过失败');
+    }
   }
 
   @override
@@ -704,6 +905,8 @@ class AudioController extends GetxController
       ..onVideoDetailDispose(hashCode.toString());
     _subscriptions?.forEach((e) => e.cancel());
     _subscriptions = null;
+    _sponsorBlockSubscription?.cancel();
+    _sponsorBlockSubscription = null;
     player?.dispose();
     player = null;
     animController.dispose();

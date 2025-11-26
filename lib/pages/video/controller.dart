@@ -64,6 +64,7 @@ import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:PiliPlus/utils/video_utils.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:easy_debounce/easy_throttle.dart';
 import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
@@ -738,6 +739,16 @@ class VideoDetailController extends GetxController
     }
   }
 
+  /// 离线播放时检查网络后再查询空降助手
+  Future<void> _querySponsorBlockIfOnline() async {
+    try {
+      final connectivityResult = await Connectivity().checkConnectivity();
+      if (!connectivityResult.contains(ConnectivityResult.none)) {
+        _querySponsorBlock();
+      }
+    } catch (_) {}
+  }
+
   Future<void> handleSBData(List<SegmentItemModel> list) async {
     if (list.isNotEmpty) {
       try {
@@ -1225,6 +1236,10 @@ class VideoDetailController extends GetxController
     bool fromReset = false,
   }) async {
     if (isFileSource) {
+      // 离线播放也支持空降助手（需要有网络）
+      if (plPlayerController.enableSponsorBlock && _isBlock && !fromReset) {
+        _querySponsorBlockIfOnline();
+      }
       return _initPlayerIfNeeded();
     }
     if (isQuerying) {

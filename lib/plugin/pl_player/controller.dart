@@ -359,7 +359,6 @@ class PlPlayerController {
   late int subtitlePaddingB = Pref.subtitlePaddingB;
   late double subtitleBgOpaticy = Pref.subtitleBgOpaticy;
   final bool showVipDanmaku = Pref.showVipDanmaku; // loop unswitching
-  final bool showSpecialDanmaku = Pref.showSpecialDanmaku;
   late double subtitleStrokeWidth = Pref.subtitleStrokeWidth;
   late int subtitleFontWeight = Pref.subtitleFontWeight;
 

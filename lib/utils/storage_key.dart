@@ -183,7 +183,6 @@ abstract class SettingBoxKey {
       enableShowLiveDanmaku = 'enableShowLiveDanmaku',
       pipNoDanmaku = 'pipNoDanmaku',
       showVipDanmaku = 'showVipDanmaku',
-      showSpecialDanmaku = 'showSpecialDanmaku',
       mergeDanmaku = 'mergeDanmaku',
       danmakuWeight = 'danmakuWeight',
       danmakuBlockType = 'danmakuBlockType',

@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:io' show File;
 
 import 'package:PiliPlus/grpc/bilibili/community/service/dm/v1.pb.dart';
@@ -10,28 +11,27 @@ import 'package:path/path.dart' as path;
 
 class PlDanmakuController {
   PlDanmakuController(
-    this.cid,
-    this.plPlayerController,
-    this.isFileSource,
-  ) : mergeDanmaku = plPlayerController.mergeDanmaku;
+    this._cid,
+    this._plPlayerController,
+    this._isFileSource,
+  ) : _mergeDanmaku = _plPlayerController.mergeDanmaku;
 
-  final int cid;
-  final PlPlayerController plPlayerController;
-  final bool mergeDanmaku;
-  final bool isFileSource;
+  final int _cid;
+  final PlPlayerController _plPlayerController;
+  final bool _mergeDanmaku;
+  final bool _isFileSource;
 
-  late final isLogin = Accounts.main.isLogin;
+  late final _isLogin = Accounts.main.isLogin;
 
-  Map<int, List<DanmakuElem>> dmSegMap = {};
+  final Map<int, List<DanmakuElem>> _dmSegMap = {};
   // 已请求的段落标记
-  late final Set<int> requestedSeg = {};
+  late final Set<int> _requestedSeg = {};
 
   static const int segmentLength = 60 * 6 * 1000;
 
   void dispose() {
-    closed = true;
-    dmSegMap.clear();
-    requestedSeg.clear();
+    _dmSegMap.clear();
+    _requestedSeg.clear();
   }
 
   static int calcSegment(int progress) {
@@ -39,79 +39,74 @@ class PlDanmakuController {
   }
 
   Future<void> queryDanmaku(int segmentIndex) async {
-    if (isFileSource) {
+    if (_isFileSource) {
       return;
     }
-    if (requestedSeg.contains(segmentIndex)) {
+    if (_requestedSeg.contains(segmentIndex)) {
       return;
     }
-    requestedSeg.add(segmentIndex);
+    _requestedSeg.add(segmentIndex);
     final result = await DmGrpc.dmSegMobile(
-      cid: cid,
+      cid: _cid,
       segmentIndex: segmentIndex + 1,
     );
 
     if (result.isSuccess) {
       final data = result.data;
       if (data.state == 1) {
-        plPlayerController.dmState.add(cid);
+        _plPlayerController.dmState.add(_cid);
       }
       handleDanmaku(data.elems);
     } else {
-      requestedSeg.remove(segmentIndex);
+      _requestedSeg.remove(segmentIndex);
     }
   }
 
   void handleDanmaku(List<DanmakuElem> elems) {
     if (elems.isEmpty) return;
-    late final Map<String, int> counts = {};
-    if (mergeDanmaku) {
-      elems.retainWhere((item) {
-        int? count = counts[item.content];
-        counts[item.content] = count != null ? count + 1 : 1;
-        return count == null;
-      });
-    }
+    final uniques = HashMap<String, DanmakuElem>();
 
-    final shouldFilter = plPlayerController.filters.count != 0;
+    final shouldFilter = _plPlayerController.filters.count != 0;
+    final danmakuWeight = _plPlayerController.danmakuWeight;
     for (final element in elems) {
-      if (element.mode == 7 && !plPlayerController.showSpecialDanmaku) {
-        continue;
+      if (_isLogin) {
+        element.isSelf = element.midHash == _plPlayerController.midHash;
       }
-      if (isLogin) {
-        element.isSelf = element.midHash == plPlayerController.midHash;
-      }
+
       if (!element.isSelf) {
-        if (element.weight < plPlayerController.danmakuWeight ||
-            (shouldFilter && plPlayerController.filters.remove(element))) {
+        if (_mergeDanmaku) {
+          final elem = uniques[element.content];
+          if (elem == null) {
+            uniques[element.content] = element..count = 1;
+          } else {
+            elem.count++;
+            continue;
+          }
+        }
+
+        if (element.weight < danmakuWeight ||
+            (shouldFilter && _plPlayerController.filters.remove(element))) {
           continue;
         }
       }
-      if (mergeDanmaku) {
-        final count = counts[element.content];
-        if (count != 1) {
-          element.count = count!;
-        }
-      }
+
       final int pos = element.progress ~/ 100; //每0.1秒存储一次
-      (dmSegMap[pos] ??= []).add(element);
+      (_dmSegMap[pos] ??= []).add(element);
     }
   }
 
   List<DanmakuElem>? getCurrentDanmaku(int progress) {
-    if (isFileSource) {
+    if (_isFileSource) {
       initFileDmIfNeeded();
     } else {
       final int segmentIndex = calcSegment(progress);
-      if (!requestedSeg.contains(segmentIndex)) {
+      if (!_requestedSeg.contains(segmentIndex)) {
         queryDanmaku(segmentIndex);
         return null;
       }
     }
-    return dmSegMap[progress ~/ 100];
+    return _dmSegMap[progress ~/ 100];
   }
-
-  bool closed = false;
 
   bool _fileDmLoaded = false;
 
@@ -125,7 +120,7 @@ class PlDanmakuController {
   Future<void> _initFileDm() async {
     try {
       final file = File(
-        path.join(plPlayerController.dirPath!, PathUtils.danmakuName),
+        path.join(_plPlayerController.dirPath!, PathUtils.danmakuName),
       );
       if (!file.existsSync()) return;
       final bytes = await file.readAsBytes();

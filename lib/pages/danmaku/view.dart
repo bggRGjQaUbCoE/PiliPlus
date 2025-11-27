@@ -34,7 +34,7 @@ class PlDanmaku extends StatefulWidget {
 class _PlDanmakuState extends State<PlDanmaku> {
   PlPlayerController get playerController => widget.playerController;
 
-  late PlDanmakuController _plDanmakuController;
+  late final PlDanmakuController _plDanmakuController;
   DanmakuController<DanmakuExtra>? _controller;
   int latestAddedPosition = -1;
 
@@ -90,6 +90,7 @@ class _PlDanmakuState extends State<PlDanmaku> {
     }
   }
 
+  @pragma('vm:notify-debugger-on-exception')
   void videoPositionListen(Duration position) {
     if (_controller == null || !playerController.enableShowDanmaku.value) {
       return;
@@ -141,7 +142,7 @@ class _PlDanmakuState extends State<PlDanmaku> {
               isColorful:
                   playerController.showVipDanmaku &&
                   e.colorful == DmColorfulType.VipGradualColor,
-              count: e.hasCount() ? e.count : null,
+              count: e.count > 1 ? e.count : null,
               selfSend: e.isSelf,
               extra: VideoDanmaku(
                 id: e.id.toInt(),

@@ -1885,9 +1885,10 @@ class VideoDetailController extends GetxController
       if (!context.mounted) {
         return;
       }
-      final Set<int?> cidSet = downloadService.downloadList
-          .map((e) => e.cid)
-          .toSet();
+      final Set<int?> cidSet =
+          (downloadService.downloadList + downloadService.waitDownloadQueue)
+              .map((e) => e.cid)
+              .toSet();
       final index = episodes!.indexWhere(
         (e) => e.cid == (seasonCid ?? cid.value),
       );

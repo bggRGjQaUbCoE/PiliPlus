@@ -1,13 +1,11 @@
-import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/models/common/video/video_type.dart';
-import 'package:PiliPlus/services/download/download_service.dart';
-import 'package:PiliPlus/utils/cache_manager.dart';
+import 'package:PiliPlus/pages/common/multi_select/base.dart'
+    show MultiSelectData;
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
 import 'package:get/route_manager.dart';
 
-class BiliDownloadEntryInfo {
+class BiliDownloadEntryInfo with MultiSelectData {
   int mediaType;
   final bool hasDashAudio;
   bool isCompleted;
@@ -113,76 +111,6 @@ class BiliDownloadEntryInfo {
       ],
     ),
   );
-
-  Widget progressWidget({
-    required ThemeData theme,
-    required DownloadService downloadService,
-    required bool isPage,
-  }) {
-    return RepaintBoundary(
-      // TODO: refresh `downloadedBytes` only cause unnecessary repaint
-      child: Obx(() {
-        final curDownload = downloadService.curDownload.value;
-        final isCurr =
-            curDownload != null &&
-            (isPage ? curDownload.pageId == pageId : curDownload.cid == cid);
-        late final status = curDownload?.status;
-        late final isDownloading = status == DownloadStatus.downloading;
-        late final color = isCurr && status != DownloadStatus.pause
-            ? theme.colorScheme.primary
-            : theme.colorScheme.outline;
-        return Column(
-          spacing: 6,
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  isCurr ? status!.message : '暂停中',
-                  style: TextStyle(
-                    fontSize: 12,
-                    height: 1,
-                    color: color,
-                  ),
-                ),
-                Text(
-                  isCurr
-                      ? isDownloading || status == DownloadStatus.pause
-                            ? '  ${CacheManager.formatSize(curDownload.downloadedBytes)}/${CacheManager.formatSize(curDownload.totalBytes)}'
-                            : ''
-                      : totalBytes == 0
-                      ? ''
-                      : '  ${CacheManager.formatSize(downloadedBytes)}/${CacheManager.formatSize(totalBytes)}',
-                  style: TextStyle(
-                    fontSize: 12,
-                    height: 1,
-                    color: color,
-                  ),
-                ),
-              ],
-            ),
-            LinearProgressIndicator(
-              // ignore: deprecated_member_use
-              year2023: true,
-              minHeight: 2.5,
-              borderRadius: StyleString.mdRadius,
-              color: color,
-              backgroundColor: theme.highlightColor,
-              value: isCurr
-                  ? curDownload.totalBytes == 0
-                        ? 0
-                        : curDownload.downloadedBytes / curDownload.totalBytes
-                  : totalBytes == 0
-                  ? 0
-                  : downloadedBytes / totalBytes,
-            ),
-          ],
-        );
-      }),
-    );
-  }
 
   BiliDownloadEntryInfo({
     this.mediaType = 1,

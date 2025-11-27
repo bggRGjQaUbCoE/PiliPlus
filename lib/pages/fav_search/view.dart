@@ -9,7 +9,7 @@ import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-class FavSearchPage extends CommonSearchPage {
+class FavSearchPage extends StatefulWidget {
   const FavSearchPage({super.key});
 
   @override

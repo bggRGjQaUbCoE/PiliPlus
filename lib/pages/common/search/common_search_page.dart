@@ -7,11 +7,7 @@ import 'package:PiliPlus/pages/common/search/common_search_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-abstract class CommonSearchPage extends StatefulWidget {
-  const CommonSearchPage({super.key});
-}
-
-abstract class CommonSearchPageState<S extends CommonSearchPage, R, T>
+abstract class CommonSearchPageState<S extends StatefulWidget, R, T>
     extends State<S> {
   CommonSearchController<R, T> get controller;
 

@@ -10,7 +10,7 @@ import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-class LaterSearchPage extends CommonSearchPage {
+class LaterSearchPage extends StatefulWidget {
   const LaterSearchPage({super.key});
 
   @override

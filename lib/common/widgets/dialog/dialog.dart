@@ -5,7 +5,7 @@ Future<bool> showConfirmDialog({
   required BuildContext context,
   required String title,
   Object? content,
-  @Deprecated('use `bool result = await showConfirmDialog()` instead')
+  // @Deprecated('use `bool result = await showConfirmDialog()` instead')
   VoidCallback? onConfirm,
 }) async {
   assert(content is String? || content is Widget);

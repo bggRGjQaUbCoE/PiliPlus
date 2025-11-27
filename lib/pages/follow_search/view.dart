@@ -7,7 +7,7 @@ import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-class FollowSearchPage extends CommonSearchPage {
+class FollowSearchPage extends StatefulWidget {
   const FollowSearchPage({
     super.key,
     this.mid,

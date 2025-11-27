@@ -8,7 +8,7 @@ import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-class HistorySearchPage extends CommonSearchPage {
+class HistorySearchPage extends StatefulWidget {
   const HistorySearchPage({super.key});
 
   @override

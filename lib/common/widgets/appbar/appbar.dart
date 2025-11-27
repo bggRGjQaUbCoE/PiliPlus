@@ -41,7 +41,12 @@ class MultiSelectAppBarWidget extends StatelessWidget
             style: TextButton.styleFrom(
               visualDensity: VisualDensity.compact,
             ),
-            onPressed: ctr.onRemove,
+            onPressed: () {
+              if (ctr.checkedCount == 0) {
+                return;
+              }
+              ctr.onRemove();
+            },
             child: Text(
               '移除',
               style: TextStyle(color: Get.theme.colorScheme.error),

@@ -85,6 +85,20 @@ class LocalIntroController extends CommonIntroController {
         }
       });
     }
+
+    // 设置媒体通知列表控制模式
+    _updateListControlMode();
+  }
+
+  /// 更新媒体通知列表控制模式
+  void _updateListControlMode() {
+    final hasMultiItems = list.length > 1;
+
+    videoPlayerServiceHandler?.setListControlMode(
+      enabled: hasMultiItems,
+      onNext: hasMultiItems ? () => nextPlay() : null,
+      onPrevious: hasMultiItems ? () => prevPlay() : null,
+    );
   }
 
   final index = (-1).obs;

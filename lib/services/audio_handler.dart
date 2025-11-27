@@ -35,6 +35,60 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
   Function? onPause;
   Function(Duration position)? onSeek;
 
+  // 列表播放相关回调
+  Function? onSkipToNext;
+  Function? onSkipToPrevious;
+
+  // 是否启用列表控制（上一个/下一个）
+  bool _enableListControl = false;
+  bool _isLive = false;
+  bool _lastPlaying = false;
+
+  /// 设置列表控制模式
+  void setListControlMode({
+    bool enabled = false,
+    Function? onNext,
+    Function? onPrevious,
+  }) {
+    _enableListControl = enabled;
+    onSkipToNext = onNext;
+    onSkipToPrevious = onPrevious;
+
+    // 刷新播放状态以更新通知控件
+    _refreshPlaybackControls();
+  }
+
+  /// 刷新播放状态控件
+  void _refreshPlaybackControls() {
+    if (!enableBackgroundPlay || _item.isEmpty) return;
+
+    playbackState.add(
+      playbackState.value.copyWith(
+        controls: _buildMediaControls(_lastPlaying, _isLive),
+      ),
+    );
+  }
+
+  @override
+  Future<void> skipToNext() async {
+    if (_enableListControl && onSkipToNext != null) {
+      onSkipToNext!.call();
+    } else {
+      // 默认快进10秒
+      await fastForward();
+    }
+  }
+
+  @override
+  Future<void> skipToPrevious() async {
+    if (_enableListControl && onSkipToPrevious != null) {
+      onSkipToPrevious!.call();
+    } else {
+      // 默认快退10秒
+      await rewind();
+    }
+  }
+
   @override
   Future<void> play() async {
     onPlay?.call() ?? PlPlayerController.playIfExists();
@@ -91,28 +145,53 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
       processingState = AudioProcessingState.ready;
     }
 
+    // 保存状态用于刷新控件
+    _isLive = isLive;
+    _lastPlaying = playing;
+
     playbackState.add(
       playbackState.value.copyWith(
         processingState: isBuffering
             ? AudioProcessingState.buffering
             : processingState,
-        controls: [
-          if (!isLive)
-            MediaControl.rewind.copyWith(
-              androidIcon: 'drawable/ic_baseline_replay_10_24',
-            ),
-          if (playing) MediaControl.pause else MediaControl.play,
-          if (!isLive)
-            MediaControl.fastForward.copyWith(
-              androidIcon: 'drawable/ic_baseline_forward_10_24',
-            ),
-        ],
+        controls: _buildMediaControls(playing, isLive),
         playing: playing,
         systemActions: const {
           MediaAction.seek,
         },
       ),
     );
+  }
+
+  /// 构建媒体控制按钮列表
+  List<MediaControl> _buildMediaControls(bool playing, bool isLive) {
+    if (_enableListControl) {
+      // 列表播放模式：显示上一个/下一个
+      return [
+        if (!isLive && onSkipToPrevious != null)
+          MediaControl.skipToPrevious.copyWith(
+            androidIcon: 'drawable/ic_baseline_skip_previous_24',
+          ),
+        if (playing) MediaControl.pause else MediaControl.play,
+        if (!isLive && onSkipToNext != null)
+          MediaControl.skipToNext.copyWith(
+            androidIcon: 'drawable/ic_baseline_skip_next_24',
+          ),
+      ];
+    } else {
+      // 普通模式：显示快退/快进
+      return [
+        if (!isLive)
+          MediaControl.rewind.copyWith(
+            androidIcon: 'drawable/ic_baseline_replay_10_24',
+          ),
+        if (playing) MediaControl.pause else MediaControl.play,
+        if (!isLive)
+          MediaControl.fastForward.copyWith(
+            androidIcon: 'drawable/ic_baseline_forward_10_24',
+          ),
+      ];
+    }
   }
 
   void onStatusChange(PlayerStatus status, bool isBuffering, isLive) {

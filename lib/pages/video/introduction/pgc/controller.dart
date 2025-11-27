@@ -71,6 +71,21 @@ class PgcIntroController extends CommonIntroController {
       }
       queryVideoTags();
     }
+
+    // 设置媒体通知列表控制模式
+    _updateListControlMode();
+  }
+
+  /// 更新媒体通知列表控制模式
+  void _updateListControlMode() {
+    // PGC 内容通常有多集
+    final hasMultiEpisodes = (pgcItem.episodes?.length ?? 0) > 1;
+
+    videoPlayerServiceHandler?.setListControlMode(
+      enabled: hasMultiEpisodes,
+      onNext: hasMultiEpisodes ? () => nextPlay() : null,
+      onPrevious: hasMultiEpisodes ? () => prevPlay() : null,
+    );
   }
 
   // 获取点赞/投币/收藏状态

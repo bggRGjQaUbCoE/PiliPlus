@@ -120,6 +120,9 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
         cid.value = pages.first.cid!;
       }
       queryUserStat(data.staff);
+
+      // 更新媒体通知列表控制模式
+      _updateListControlMode();
     } else {
       res.toast();
       status.value = false;
@@ -129,6 +132,23 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
       queryAllStatus();
       queryFollowStatus();
     }
+  }
+
+  /// 更新媒体通知列表控制模式
+  void _updateListControlMode() {
+    final data = videoDetail.value;
+    // 检查是否有多P、合集或播放列表
+    final hasMultiParts = (data.pages?.length ?? 0) > 1;
+    final hasSeason = data.ugcSeason != null;
+    final isPlayAll = videoDetailCtr.isPlayAll;
+
+    final enableListControl = hasMultiParts || hasSeason || isPlayAll;
+
+    videoPlayerServiceHandler?.setListControlMode(
+      enabled: enableListControl,
+      onNext: enableListControl ? () => nextPlay() : null,
+      onPrevious: enableListControl ? () => prevPlay() : null,
+    );
   }
 
   // 获取up主粉丝数

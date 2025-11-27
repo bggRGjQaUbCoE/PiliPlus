@@ -355,6 +355,8 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     shutdownTimerService.handleWaitingFinished();
     if (!videoDetailController.plPlayerController.isCloseAll) {
       videoPlayerServiceHandler?.onVideoDetailDispose(heroTag);
+      // 清除媒体通知列表控制模式
+      videoPlayerServiceHandler?.setListControlMode(enabled: false);
       if (plPlayerController != null) {
         videoDetailController.makeHeartBeat();
         plPlayerController!.dispose();

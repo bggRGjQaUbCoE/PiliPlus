@@ -27,7 +27,7 @@ class DownloadDetailPage extends StatefulWidget {
 
   final String pageId;
   final String title;
-  final ValueNotifier progress;
+  final ChangeNotifier progress;
 
   @override
   State<DownloadDetailPage> createState() => _DownloadDetailPageState();

@@ -78,7 +78,6 @@ class DownloadPageController extends GetxController
       title: '确定删除选中视频？',
       onConfirm: () async {
         SmartDialog.showLoading();
-        final allChecked = this.allChecked.toSet();
         final watchProgress = GStorage.watchProgress;
         for (var page in allChecked) {
           await watchProgress.deleteAll(

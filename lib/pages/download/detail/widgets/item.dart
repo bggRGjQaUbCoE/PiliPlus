@@ -41,7 +41,7 @@ class DetailItem extends StatelessWidget {
   });
 
   final BiliDownloadEntryInfo entry;
-  final ValueNotifier? progress;
+  final ChangeNotifier? progress;
   final DownloadService downloadService;
   final VoidCallback? onDelete;
   final bool showTitle;
@@ -210,9 +210,9 @@ class DetailItem extends StatelessWidget {
                       type: PBadgeType.gray,
                     ),
                   if (progress != null)
-                    ValueListenableBuilder(
-                      valueListenable: progress!,
-                      builder: (_, _, _) {
+                    ListenableBuilder(
+                      listenable: progress!,
+                      builder: (_, _) {
                         final progress = GStorage.watchProgress.get(
                           cid.toString(),
                         );

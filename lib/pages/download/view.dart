@@ -33,7 +33,7 @@ class DownloadPage extends StatefulWidget {
 class _DownloadPageState extends State<DownloadPage> {
   final _downloadService = Get.find<DownloadService>();
   final _controller = Get.put(DownloadPageController());
-  final _progress = ValueNotifier(null);
+  final _progress = ChangeNotifier();
 
   @override
   void dispose() {

@@ -86,7 +86,7 @@ class LoginPageController extends GetxController
           return;
         }
         qrCodeLeftTime.value = left;
-        if (_isReq || tabController.index != 2) return;
+        if (_isReq || tabController.index != 0) return;
 
         _isReq = true;
         LoginHttp.codePoll(res.data.authCode).then((value) async {
@@ -111,7 +111,7 @@ class LoginPageController extends GetxController
   }
 
   void _handleTabChange() {
-    if (tabController.index == 2) {
+    if (tabController.index == 0) {
       if (qrCodeTimer == null || !qrCodeTimer!.isActive) {
         refreshQRCode();
       }

@@ -2,6 +2,7 @@ import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/widgets/custom_toast.dart';
 import 'package:PiliPlus/common/widgets/mouse_back.dart';
 import 'package:PiliPlus/models/common/theme/theme_color_type.dart';
+import 'package:PiliPlus/models/common/video/source_type.dart';
 import 'package:PiliPlus/models/common/video/video_type.dart';
 import 'package:PiliPlus/pages/video/view.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
@@ -296,6 +297,18 @@ class _PlayerEntryState extends State<PlayerEntry> with WindowListener {
       }
     }
 
+    // Get extraArguments and convert sourceType if needed
+    final extraArgs = args['extraArguments'] as Map<String, dynamic>? ?? {};
+    SourceType? sourceType;
+    final sourceTypeArg = extraArgs['sourceType'];
+    if (sourceTypeArg is SourceType) {
+      sourceType = sourceTypeArg;
+    } else if (sourceTypeArg is int) {
+      sourceType = SourceType.values[sourceTypeArg.clamp(0, SourceType.values.length - 1)];
+    } else if (sourceTypeArg is String) {
+      sourceType = SourceType.values.firstWhereOrNull((e) => e.name == sourceTypeArg);
+    }
+
     Get.offAllNamed(
       '/videoV',
       arguments: {
@@ -309,7 +322,9 @@ class _PlayerEntryState extends State<PlayerEntry> with WindowListener {
         if (args['cover'] != null) 'pic': args['cover'],
         'heroTag': 'playerWindow_${args['bvid'] ?? args['aid']}',
         if (args['progress'] != null) 'progress': args['progress'],
-        ...?(args['extraArguments'] as Map<String, dynamic>?),
+        // Include converted sourceType and other extraArguments
+        if (sourceType != null) 'sourceType': sourceType,
+        ...extraArgs..remove('sourceType'),
       },
     );
   }

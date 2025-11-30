@@ -876,4 +876,18 @@ abstract class Pref {
     SettingBoxKey.showBatteryLevel,
     defaultValue: Utils.isMobile,
   );
+
+  static bool get usePlayerWindow =>
+      _setting.get(SettingBoxKey.usePlayerWindow, defaultValue: false);
+
+  static Size get playerWindowSize {
+    final List<double>? size =
+        (_setting.get(SettingBoxKey.playerWindowSize) as List?)
+            ?.fromCast<double>();
+    return size == null ? const Size(1280.0, 720.0) : Size(size[0], size[1]);
+  }
+
+  static List<double>? get playerWindowPosition =>
+      (_setting.get(SettingBoxKey.playerWindowPosition) as List?)
+          ?.fromCast<double>();
 }

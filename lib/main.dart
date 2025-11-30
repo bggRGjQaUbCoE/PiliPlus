@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:convert';
 
 import 'package:PiliPlus/build_config.dart';
 import 'package:PiliPlus/common/constants.dart';
@@ -40,11 +41,57 @@ import 'package:media_kit/media_kit.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 import 'package:window_manager/window_manager.dart' hide calcWindowPosition;
+import 'package:desktop_multi_window/desktop_multi_window.dart';
+import 'package:PiliPlus/window/player_entry.dart';
+import 'package:PiliPlus/plugin/player_window_manager.dart';
 
 WebViewEnvironment? webViewEnvironment;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // Determine if this engine was launched for a sub-window (player)
+  String? startupWindowType;
+  Map<String, dynamic>? windowArgs;
+  try {
+    final windowController = await WindowController.fromCurrentEngine();
+    final raw = windowController.arguments;
+    if (raw.isNotEmpty) {
+      try {
+        final parsed = jsonDecode(raw) as Map<String, dynamic>?;
+        // Check for 'businessId' (our format) or 'type' (legacy)
+        startupWindowType =
+            parsed?['businessId'] as String? ??
+                           parsed?['type'] as String?;
+        windowArgs = parsed;
+      } catch (_) {}
+    }
+  } catch (_) {}
+
+  // If this is a player sub-window, skip most initialization and run directly
+  if (startupWindowType == 'player') {
+    MediaKit.ensureInitialized();
+
+    // Initialize paths for sub-window
+    tmpDirPath = (await getTemporaryDirectory()).path;
+    appSupportDirPath = (await getApplicationSupportDirectory()).path;
+
+    // Initialize storage for sub-window (uses separate Hive path)
+    try {
+      // Get settings from window args
+      final settings = windowArgs?['settings'] as Map<String, dynamic>?;
+      final allSettings = settings?['allSettings'] as Map<String, dynamic>?;
+      // This also initializes Accounts.initForSubWindow() internally
+      await GStorage.initForSubWindow(appSupportDirPath, allSettings);
+      // Initialize HTTP client after storage is ready
+      Request();
+    } catch (e) {
+      if (kDebugMode) debugPrint('Sub-window init error: $e');
+    }
+
+    runApp(PlayerEntry(args: windowArgs));
+    return;
+  }
+
   MediaKit.ensureInitialized();
   tmpDirPath = (await getTemporaryDirectory()).path;
   appSupportDirPath = (await getApplicationSupportDirectory()).path;
@@ -194,9 +241,7 @@ Commit Hash: ${BuildConfig.commitHash}''';
     Catcher2(
       debugConfig: debugConfig,
       releaseConfig: releaseConfig,
-      runAppFunction: () {
-        runApp(const MyApp());
-      },
+      runAppFunction: () => runApp(const MyApp()),
     );
   } else {
     runApp(const MyApp());
@@ -207,6 +252,8 @@ class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   static ThemeData? darkThemeData;
+
+  static bool _playerChannelInited = false;
 
   @override
   Widget build(BuildContext context) {
@@ -249,7 +296,6 @@ class MyApp extends StatelessWidget {
             variant: variant,
             // dynamicSchemeVariant: dynamicSchemeVariant,
             // tones: FlexTones.soft(Brightness.light),
-            useExpressiveOnContainerColors: false,
           );
           darkColorScheme = SeedColorScheme.fromSeeds(
             primaryKey: brandColor,
@@ -257,7 +303,6 @@ class MyApp extends StatelessWidget {
             variant: variant,
             // dynamicSchemeVariant: dynamicSchemeVariant,
             // tones: FlexTones.soft(Brightness.dark),
-            useExpressiveOnContainerColors: false,
           );
         }
 
@@ -287,10 +332,54 @@ class MyApp extends StatelessWidget {
           fallbackLocale: const Locale("zh", "CN"),
           getPages: Routes.getPages,
           initialRoute: '/',
-          builder: FlutterSmartDialog.init(
+            builder: FlutterSmartDialog.init(
             toastBuilder: (String msg) => CustomToast(msg: msg),
             loadingBuilder: (msg) => LoadingWidget(msg: msg),
             builder: (context, child) {
+                // Register channel handler once to accept openInMain requests from player window
+                if (!_playerChannelInited) {
+                  try {
+                    const channel = WindowMethodChannel(PlayerWindowManager.channelName);
+                    channel.setMethodCallHandler((call) async {
+                      switch (call.method) {
+                        case 'openInMain':
+                          final data = call.arguments as Map?;
+                          if (data != null) {
+                            final route = data['route'] as String?;
+                            final args = data['arguments'];
+                            if (route != null && route.isNotEmpty) {
+                              // Navigate in main window
+                              Future.microtask(() => Get.toNamed(route, arguments: args));
+                              return 'ok';
+                            }
+
+                            // fallback: if data contains video params, open video page
+                            if (data.containsKey('cid')) {
+                              Future.microtask(() => PageUtils.toVideoPage(
+                                    videoType: data['videoType'] ?? 0,
+                                    aid: data['aid'] as int?,
+                                    bvid: data['bvid'] as String?,
+                                    cid: data['cid'] as int? ?? 0,
+                                    seasonId: data['seasonId'] as int?,
+                                    epId: data['epId'] as int?,
+                                    pgcType: data['pgcType'] as int?,
+                                    cover: data['cover'] as String?,
+                                    title: data['title'] as String?,
+                                    progress: data['progress'] as int?,
+                                    extraArguments: data['extraArguments'] as Map?,
+                                  ));
+                              return 'ok';
+                            }
+                          }
+                          break;
+                        default:
+                          break;
+                      }
+                      return null;
+                    });
+                    _playerChannelInited = true;
+                  } catch (_) {}
+                }
               child = MediaQuery(
                 data: MediaQuery.of(context).copyWith(
                   textScaler: TextScaler.linear(Pref.defaultTextScale),
@@ -314,18 +403,14 @@ class MyApp extends StatelessWidget {
                     if (plCtr.isFullScreen.value) {
                       plCtr
                         ..triggerFullScreen(status: false)
-                        ..controlsLock.value = false
-                        ..showControls.value = false;
+                        ..controlsLock.value = false;
                       return;
                     }
 
                     if (plCtr.isDesktopPip) {
-                      plCtr
-                        ..exitDesktopPip().whenComplete(
-                          () => plCtr.initialFocalPoint = Offset.zero,
-                        )
-                        ..controlsLock.value = false
-                        ..showControls.value = false;
+                      plCtr.exitDesktopPip().whenComplete(
+                        () => plCtr.initialFocalPoint = Offset.zero,
+                      );
                       return;
                     }
                   }
@@ -374,12 +459,14 @@ class MyApp extends StatelessWidget {
 }
 
 class _CustomHttpOverrides extends HttpOverrides {
+  final badCertificateCallback = kDebugMode || Pref.badCertificateCallback;
+
   @override
   HttpClient createHttpClient(SecurityContext? context) {
     final client = super.createHttpClient(context)
       // ..maxConnectionsPerHost = 32
       ..idleTimeout = const Duration(seconds: 15);
-    if (kDebugMode || Pref.badCertificateCallback) {
+    if (badCertificateCallback) {
       client.badCertificateCallback = (cert, host, port) => true;
     }
     return client;

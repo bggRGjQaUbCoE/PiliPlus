@@ -153,7 +153,10 @@ abstract class SettingBoxKey {
       isWindowMaximized = 'isWindowMaximized',
       showWindowTitleBar = 'showWindowTitleBar',
       desktopVolume = 'desktopVolume',
-      showTrayIcon = 'showTrayIcon';
+      showTrayIcon = 'showTrayIcon',
+      usePlayerWindow = 'usePlayerWindow',
+      playerWindowSize = 'playerWindowSize',
+      playerWindowPosition = 'playerWindowPosition';
 
   static const String subtitlePreferenceV2 = 'subtitlePreferenceV2',
       enableDragSubtitle = 'enableDragSubtitle',

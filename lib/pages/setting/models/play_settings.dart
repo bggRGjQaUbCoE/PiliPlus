@@ -155,7 +155,15 @@ List<SettingsModel> get playSettings => [
       }
     },
   ),
-  if (Utils.isDesktop)
+  if (Utils.isDesktop) ...[
+    const SettingsModel(
+      settingsType: SettingsType.sw1tch,
+      title: '新窗口播放',
+      subtitle: '在独立窗口中打开播放器',
+      leading: Icon(Icons.open_in_new_outlined),
+      setKey: SettingBoxKey.usePlayerWindow,
+      defaultVal: false,
+    ),
     SettingsModel(
       settingsType: SettingsType.sw1tch,
       title: '最小化时暂停/还原时播放',
@@ -168,6 +176,7 @@ List<SettingsModel> get playSettings => [
         } catch (_) {}
       },
     ),
+  ],
   const SettingsModel(
     settingsType: SettingsType.sw1tch,
     title: '启用键盘控制',

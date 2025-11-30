@@ -214,6 +214,7 @@ dependencies:
       url: https://github.com/bggRGjQaUbCoE/window_manager.git
       path: packages/window_manager
       ref: main
+  desktop_multi_window: ^0.3.0
   tray_manager: ^0.5.1
   # file_picker: ^10.3.3
   file_picker:

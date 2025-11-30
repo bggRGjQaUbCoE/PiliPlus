@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:math';
 
 import 'package:PiliPlus/common/widgets/interactiveviewer_gallery/hero_dialog_route.dart';
@@ -16,6 +17,7 @@ import 'package:PiliPlus/pages/contact/view.dart';
 import 'package:PiliPlus/pages/fav_panel/view.dart';
 import 'package:PiliPlus/pages/share/view.dart';
 import 'package:PiliPlus/pages/video/introduction/ugc/widgets/menu_row.dart';
+import 'package:PiliPlus/plugin/player_window_manager.dart';
 import 'package:PiliPlus/services/shutdown_timer_service.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
 import 'package:PiliPlus/utils/context_ext.dart';
@@ -26,6 +28,7 @@ import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/url_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
+import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:floating/floating.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
@@ -42,7 +45,7 @@ abstract class PageUtils {
     int initialPage = 0,
     required List<SourceModel> imgList,
     int? quality,
-  }) {
+  }) async {
     return Get.key.currentState!.push<void>(
       HeroDialogRoute(
         pageBuilder: (context, animation, secondaryAnimation) =>
@@ -644,7 +647,7 @@ abstract class PageUtils {
   static void showVideoBottomSheet(
     BuildContext context, {
     required Widget child,
-    required bool Function() isFullScreen,
+    required Function isFullScreen,
     double? padding,
   }) {
     if (!context.mounted) {
@@ -723,21 +726,42 @@ abstract class PageUtils {
     int? progress,
     Map? extraArguments,
     bool off = false,
-  }) {
-    final arguments = {
+  }) async {
+    final Map<String, dynamic> arguments = {
       'aid': aid ?? IdUtils.bv2av(bvid!),
       'bvid': bvid ?? IdUtils.av2bv(aid!),
       'cid': cid,
-      'seasonId': ?seasonId,
-      'epId': ?epId,
-      'pgcType': ?pgcType,
-      'cover': ?cover,
-      'title': ?title,
-      'progress': ?progress,
+      'seasonId': seasonId,
+      'epId': epId,
+      'pgcType': pgcType,
+      'cover': cover,
+      'title': title,
+      'progress': progress,
       'videoType': videoType,
       'heroTag': Utils.makeHeroTag(cid),
       ...?extraArguments,
     };
+    // If desktop preference is to open player in new window, delegate to window manager
+    if (Utils.isDesktop && Pref.usePlayerWindow) {
+      try {
+        PlayerWindowManager.openPlayerWindow(arguments);
+        return Future.value();
+      } catch (e) {
+        // fallback to in-app navigation on error
+      }
+    }
+    // Avoid opening a new player window if current engine is already a player window
+    try {
+      final controller = await WindowController.fromCurrentEngine();
+      final raw = controller.arguments;
+      if (raw.isNotEmpty) {
+        final parsed = jsonDecode(raw) as Map<String, dynamic>?;
+        if (parsed != null && parsed['type'] == 'player') {
+          // in player window, continue with in-window navigation
+        }
+      }
+    } catch (_) {}
+
     if (off) {
       return Get.offNamed(
         '/videoV',

@@ -6,7 +6,7 @@ import 'package:PiliPlus/utils/login_utils.dart';
 import 'package:hive/hive.dart';
 
 abstract class Accounts {
-  static late final Box<LoginAccount> account;
+  static late Box<LoginAccount> account;
   static final List<Account> accountMode = List.filled(
     AccountType.values.length,
     AnonymousAccount(),
@@ -30,6 +30,11 @@ abstract class Accounts {
       },
     );
     // await _migrate();
+  }
+
+  /// Initialize for sub-window with in-memory box
+  static Future<void> initForSubWindow() async {
+    account = await Hive.openBox<LoginAccount>('account_subwindow');
   }
 
   // static Future<void> _migrate() async {

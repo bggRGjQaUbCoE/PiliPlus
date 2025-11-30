@@ -14,12 +14,15 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:path/path.dart' as path;
 
 abstract class GStorage {
-  static late final Box<UserInfoData> userInfo;
-  static late final Box<dynamic> historyWord;
-  static late final Box<dynamic> localCache;
-  static late final Box<dynamic> setting;
-  static late final Box<dynamic> video;
-  static late final Box<int> watchProgress;
+  static late Box<UserInfoData> userInfo;
+  static late Box<dynamic> historyWord;
+  static late Box<dynamic> localCache;
+  static late Box<dynamic> setting;
+  static late Box<dynamic> video;
+  static late Box<int> watchProgress;
+
+  /// Whether this is a sub-window with in-memory storage
+  static bool isSubWindow = false;
 
   static Future<void> init() async {
     await Hive.initFlutter(path.join(appSupportDirPath, 'hive'));
@@ -59,6 +62,35 @@ abstract class GStorage {
         },
       ).then((res) => watchProgress = res),
     ]);
+  }
+
+  /// Initialize in-memory storage for sub-windows (player window)
+  /// This avoids Hive lock conflicts with main window
+  static Future<void> initForSubWindow(
+    String appSupportPath,
+    Map<String, dynamic>? initialSettings,
+  ) async {
+    isSubWindow = true;
+
+    // Initialize Hive with a separate path for sub-window to avoid lock conflicts
+    await Hive.initFlutter(path.join(appSupportPath, 'hive_subwindow'));
+    regAdapter();
+
+    // Open boxes (separate Hive instance, no name conflicts)
+    setting = await Hive.openBox('setting');
+    video = await Hive.openBox('video');
+    localCache = await Hive.openBox('localCache');
+    watchProgress = await Hive.openBox<int>('watchProgress');
+    historyWord = await Hive.openBox('historyWord');
+    userInfo = await Hive.openBox<UserInfoData>('userInfo');
+
+    // Initialize accounts for sub-window
+    await Accounts.initForSubWindow();
+
+    // Pre-populate settings from main window
+    if (initialSettings != null) {
+      await setting.putAll(initialSettings);
+    }
   }
 
   static String exportAllSettings() {

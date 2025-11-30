@@ -2,6 +2,7 @@ import 'dart:ui' as ui;
 
 import 'package:PiliPlus/services/multi_window/window_arguments.dart';
 import 'package:PiliPlus/services/multi_window/window_controller_extension.dart';
+import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
@@ -106,7 +107,25 @@ class PlayerWindowService {
       'playerWindowPosition': Pref.playerWindowPosition,
       // Export all settings for sub-window in-memory storage
       'allSettings': _exportAllSettingsAsJson(),
+      // Export account data for sub-window
+      'accountData': _exportAccountData(),
     };
+  }
+
+  /// Export account data as JSON for sub-window
+  Map<String, dynamic>? _exportAccountData() {
+    final account = Accounts.main;
+    if (kDebugMode) {
+      debugPrint(
+        '[PlayerWindowService] Exporting account, isLogin: ${account.isLogin}',
+      );
+    }
+    if (!account.isLogin) return null;
+    final json = account.toJson();
+    if (kDebugMode) {
+      debugPrint('[PlayerWindowService] Exported account data: $json');
+    }
+    return json;
   }
 
   /// Export all GStorage.setting entries as JSON-safe Map

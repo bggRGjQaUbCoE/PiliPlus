@@ -1,5 +1,5 @@
-import 'dart:io';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:PiliPlus/build_config.dart';
 import 'package:PiliPlus/common/constants.dart';
@@ -8,11 +8,13 @@ import 'package:PiliPlus/common/widgets/mouse_back.dart';
 import 'package:PiliPlus/http/init.dart';
 import 'package:PiliPlus/models/common/theme/theme_color_type.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
+import 'package:PiliPlus/plugin/player_window_manager.dart';
 import 'package:PiliPlus/router/app_pages.dart';
 import 'package:PiliPlus/services/account_service.dart';
 import 'package:PiliPlus/services/download/download_service.dart';
 import 'package:PiliPlus/services/logger.dart';
 import 'package:PiliPlus/services/service_locator.dart';
+import 'package:PiliPlus/utils/accounts/account_manager/account_mgr.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
 import 'package:PiliPlus/utils/cache_manager.dart';
 import 'package:PiliPlus/utils/calc_window_position.dart';
@@ -25,7 +27,9 @@ import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/theme_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
+import 'package:PiliPlus/window/player_entry.dart';
 import 'package:catcher_2/catcher_2.dart';
+import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flex_seed_scheme/flex_seed_scheme.dart';
 import 'package:flutter/foundation.dart';
@@ -41,9 +45,6 @@ import 'package:media_kit/media_kit.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 import 'package:window_manager/window_manager.dart' hide calcWindowPosition;
-import 'package:desktop_multi_window/desktop_multi_window.dart';
-import 'package:PiliPlus/window/player_entry.dart';
-import 'package:PiliPlus/plugin/player_window_manager.dart';
 
 WebViewEnvironment? webViewEnvironment;
 
@@ -80,10 +81,18 @@ void main() async {
       // Get settings from window args
       final settings = windowArgs?['settings'] as Map<String, dynamic>?;
       final allSettings = settings?['allSettings'] as Map<String, dynamic>?;
+      final accountData = settings?['accountData'] as Map<String, dynamic>?;
       // This also initializes Accounts.initForSubWindow() internally
-      await GStorage.initForSubWindow(appSupportDirPath, allSettings);
+      await GStorage.initForSubWindow(
+        appSupportDirPath,
+        allSettings,
+        accountData: accountData,
+      );
       // Initialize HTTP client after storage is ready
       Request();
+      // Set up AccountManager interceptor for sub-window (without full setCookie)
+      Request.accountManager = AccountManager();
+      Request.dio.interceptors.add(Request.accountManager);
     } catch (e) {
       if (kDebugMode) debugPrint('Sub-window init error: $e');
     }

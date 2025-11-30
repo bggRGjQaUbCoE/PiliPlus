@@ -3,6 +3,7 @@ import 'package:PiliPlus/models/common/account_type.dart';
 import 'package:PiliPlus/pages/mine/controller.dart';
 import 'package:PiliPlus/utils/accounts/account.dart';
 import 'package:PiliPlus/utils/login_utils.dart';
+import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
 
 abstract class Accounts {
@@ -33,8 +34,35 @@ abstract class Accounts {
   }
 
   /// Initialize for sub-window with in-memory box
-  static Future<void> initForSubWindow() async {
+  static Future<void> initForSubWindow(
+    Map<String, dynamic>? accountData,
+  ) async {
     account = await Hive.openBox<LoginAccount>('account_subwindow');
+
+    // Restore account data from main window
+    if (accountData != null) {
+      try {
+        debugPrint('[SubWindow] Restoring account data: $accountData');
+        final loginAccount = LoginAccount.fromJson(accountData);
+        debugPrint(
+          '[SubWindow] Created LoginAccount, mid: ${loginAccount.mid}, isLogin: ${loginAccount.isLogin}',
+        );
+        // Set as main account for sub-window
+        accountMode[AccountType.main.index] = loginAccount;
+        // Also set for other account types if needed
+        for (final type in loginAccount.type) {
+          accountMode[type.index] = loginAccount;
+        }
+        debugPrint(
+          '[SubWindow] Account restored successfully, Accounts.main.isLogin: ${Accounts.main.isLogin}',
+        );
+      } catch (e, s) {
+        // If restore fails, use anonymous account
+        debugPrint('[SubWindow] Failed to restore account: $e\\n$s');
+      }
+    } else {
+      debugPrint('[SubWindow] No account data provided');
+    }
   }
 
   // static Future<void> _migrate() async {

@@ -68,8 +68,9 @@ abstract class GStorage {
   /// This avoids Hive lock conflicts with main window
   static Future<void> initForSubWindow(
     String appSupportPath,
-    Map<String, dynamic>? initialSettings,
-  ) async {
+    Map<String, dynamic>? initialSettings, {
+    Map<String, dynamic>? accountData,
+  }) async {
     isSubWindow = true;
 
     // Initialize Hive with a separate path for sub-window to avoid lock conflicts
@@ -84,8 +85,8 @@ abstract class GStorage {
     historyWord = await Hive.openBox('historyWord');
     userInfo = await Hive.openBox<UserInfoData>('userInfo');
 
-    // Initialize accounts for sub-window
-    await Accounts.initForSubWindow();
+    // Initialize accounts for sub-window with account data from main window
+    await Accounts.initForSubWindow(accountData);
 
     // Pre-populate settings from main window
     if (initialSettings != null) {

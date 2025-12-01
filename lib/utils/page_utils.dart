@@ -18,6 +18,7 @@ import 'package:PiliPlus/pages/fav_panel/view.dart';
 import 'package:PiliPlus/pages/share/view.dart';
 import 'package:PiliPlus/pages/video/introduction/ugc/widgets/menu_row.dart';
 import 'package:PiliPlus/plugin/player_window_manager.dart';
+import 'package:PiliPlus/services/multi_window/player_window_service.dart';
 import 'package:PiliPlus/services/shutdown_timer_service.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
 import 'package:PiliPlus/utils/context_ext.dart';
@@ -741,6 +742,24 @@ abstract class PageUtils {
       'heroTag': Utils.makeHeroTag(cid),
       ...?extraArguments,
     };
+
+    // If already in player window, navigate within this window
+    if (PlayerWindowService.isPlayerWindow) {
+      if (off) {
+        return Get.offNamed(
+          '/videoV',
+          arguments: arguments,
+          preventDuplicates: false,
+        );
+      } else {
+        return Get.toNamed(
+          '/videoV',
+          arguments: arguments,
+          preventDuplicates: false,
+        );
+      }
+    }
+
     // If desktop preference is to open player in new window, delegate to window manager
     if (Utils.isDesktop && Pref.usePlayerWindow) {
       try {

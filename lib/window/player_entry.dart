@@ -7,6 +7,7 @@ import 'package:PiliPlus/models/common/video/video_type.dart';
 import 'package:PiliPlus/pages/video/view.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/plugin/player_window_manager.dart';
+import 'package:PiliPlus/services/multi_window/player_window_service.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:desktop_multi_window/desktop_multi_window.dart';
@@ -76,6 +77,8 @@ class _PlayerEntryState extends State<PlayerEntry> with WindowListener {
   @override
   void initState() {
     super.initState();
+    // Mark that we are in a player sub-window
+    PlayerWindowService.isPlayerWindow = true;
     _parseSettings();
     _initWindow();
     _setupPlayerChannel();

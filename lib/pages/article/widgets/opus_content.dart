@@ -302,8 +302,8 @@ class OpusContent extends StatelessWidget {
                                     element.linkCard!.card!.music!.jumpUrl,
                                   _ => null,
                                 };
-                            if (url?.isNotEmpty == true) {
-                              PiliScheme.routePushFromUrl(url!);
+                            if (url != null && url.isNotEmpty) {
+                              PiliScheme.routePushFromUrl(url);
                             }
                           } catch (_) {}
                         },

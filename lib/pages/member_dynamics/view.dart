@@ -80,7 +80,7 @@ class _MemberDynamicsPageState extends State<MemberDynamicsPage>
     return switch (loadingState) {
       Loading() => dynSkeleton,
       Success(:var response) =>
-        response?.isNotEmpty == true
+        response != null && response.isNotEmpty
             ? GlobalData().dynamicsWaterfallFlow
                   ? SliverWaterfallFlow(
                       gridDelegate: dynGridDelegate,
@@ -96,7 +96,7 @@ class _MemberDynamicsPageState extends State<MemberDynamicsPage>
                             maxWidth: maxWidth,
                           );
                         },
-                        childCount: response!.length,
+                        childCount: response.length,
                       ),
                     )
                   : SliverList.builder(
@@ -111,7 +111,7 @@ class _MemberDynamicsPageState extends State<MemberDynamicsPage>
                           maxWidth: maxWidth,
                         );
                       },
-                      itemCount: response!.length,
+                      itemCount: response.length,
                     )
             : HttpError(onReload: _memberDynamicController.onReload),
       Error(:var errMsg) => HttpError(

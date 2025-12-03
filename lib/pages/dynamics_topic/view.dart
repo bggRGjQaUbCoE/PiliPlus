@@ -348,7 +348,7 @@ class _DynTopicPageState extends State<DynTopicPage> with DynMixin {
     return switch (loadingState) {
       Loading() => dynSkeleton,
       Success(:var response) =>
-        response?.isNotEmpty == true
+        response != null && response.isNotEmpty
             ? GlobalData().dynamicsWaterfallFlow
                   ? SliverWaterfallFlow(
                       gridDelegate: dynGridDelegate,
@@ -368,7 +368,7 @@ class _DynTopicPageState extends State<DynTopicPage> with DynMixin {
 
                           return Text(item.topicType ?? 'err');
                         },
-                        childCount: response!.length,
+                        childCount: response.length,
                       ),
                     )
                   : SliverList.builder(
@@ -386,7 +386,7 @@ class _DynTopicPageState extends State<DynTopicPage> with DynMixin {
                           return Text(item.topicType ?? 'err');
                         }
                       },
-                      itemCount: response!.length,
+                      itemCount: response.length,
                     )
             : HttpError(onReload: _controller.onReload),
       Error(:var errMsg) => HttpError(

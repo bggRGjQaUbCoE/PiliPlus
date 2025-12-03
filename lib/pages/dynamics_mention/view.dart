@@ -237,9 +237,9 @@ class _DynMentionPanelState
         sliver: linearLoading,
       ),
       Success<List<MentionGroup>?>(:var response) =>
-        response?.isNotEmpty == true
+        response != null && response.isNotEmpty
             ? SliverMainAxisGroup(
-                slivers: response!.map((group) {
+                slivers: response.map((group) {
                   if (group.items.isNullOrEmpty) {
                     return const SliverToBoxAdapter();
                   }

@@ -70,7 +70,7 @@ class _MemberFavoriteState extends State<MemberFavorite>
         ),
       ),
       Success(:final response) =>
-        response?.isNotEmpty == true
+        response != null && response.isNotEmpty
             ? SliverMainAxisGroup(
                 slivers: [
                   _buildItem(

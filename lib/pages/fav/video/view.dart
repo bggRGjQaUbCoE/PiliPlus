@@ -50,7 +50,7 @@ class _FavVideoPageState extends State<FavVideoPage>
     return switch (loadingState) {
       Loading() => gridSkeleton,
       Success(:var response) =>
-        response?.isNotEmpty == true
+        response != null && response.isNotEmpty
             ? SliverGrid.builder(
                 gridDelegate: gridDelegate,
                 itemBuilder: (BuildContext context, int index) {
@@ -79,7 +79,7 @@ class _FavVideoPageState extends State<FavVideoPage>
                     },
                   );
                 },
-                itemCount: response!.length,
+                itemCount: response.length,
               )
             : HttpError(onReload: _favController.onReload),
       Error(:var errMsg) => HttpError(

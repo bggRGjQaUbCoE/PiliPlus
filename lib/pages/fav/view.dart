@@ -67,8 +67,8 @@ class _FavPageState extends State<FavPage> with SingleTickerProviderStateMixin {
                               _favController.loadingState.value.isSuccess
                               ? _favController.loadingState.value.data
                               : null;
-                          if (list?.isNotEmpty == true) {
-                            list!.insert(1, data);
+                          if (list != null && list.isNotEmpty) {
+                            list.insert(1, data);
                             _favController.loadingState.refresh();
                           } else {
                             _favController.loadingState.value = Success([data]);

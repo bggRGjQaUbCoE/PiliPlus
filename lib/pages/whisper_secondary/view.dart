@@ -38,10 +38,10 @@ class _WhisperSecPageState extends State<WhisperSecPage> {
         actions: [
           Obx(() {
             final threeDotItems = _controller.threeDotItems.value;
-            if (threeDotItems?.isNotEmpty == true) {
+            if (threeDotItems != null && threeDotItems.isNotEmpty) {
               return PopupMenuButton(
                 itemBuilder: (context) {
-                  return threeDotItems!
+                  return threeDotItems
                       .map(
                         (e) => PopupMenuItem(
                           onTap: () => e.type.action(
@@ -95,9 +95,9 @@ class _WhisperSecPageState extends State<WhisperSecPage> {
         itemBuilder: (context, index) => const WhisperItemSkeleton(),
       ),
       Success(:var response) =>
-        response?.isNotEmpty == true
+        response != null && response.isNotEmpty
             ? SliverList.separated(
-                itemCount: response!.length,
+                itemCount: response.length,
                 itemBuilder: (context, index) {
                   if (index == response.length - 1) {
                     _controller.onLoadMore();

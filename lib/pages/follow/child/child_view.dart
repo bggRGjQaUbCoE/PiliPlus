@@ -106,9 +106,9 @@ class _FollowChildPageState extends State<FollowChildPage>
         itemBuilder: (context, index) => const MsgFeedTopSkeleton(),
       ),
       Success(:var response) =>
-        response?.isNotEmpty == true
+        response != null && response.isNotEmpty
             ? SliverList.builder(
-                itemCount: response!.length,
+                itemCount: response.length,
                 itemBuilder: (context, index) {
                   if (index == response.length - 1) {
                     _followController.onLoadMore();
@@ -139,7 +139,7 @@ class _FollowChildPageState extends State<FollowChildPage>
   ) {
     return switch (state) {
       Success(:var response) =>
-        response?.isNotEmpty == true
+        response != null && response.isNotEmpty
             ? SliverMainAxisGroup(
                 slivers: [
                   SliverToBoxAdapter(
@@ -170,7 +170,7 @@ class _FollowChildPageState extends State<FollowChildPage>
                     ),
                   ),
                   SliverList.builder(
-                    itemCount: min(3, response!.length),
+                    itemCount: min(3, response.length),
                     itemBuilder: (_, index) =>
                         FollowItem(item: response[index]),
                   ),

@@ -376,12 +376,12 @@ class _LiveRoomPageState extends State<LiveRoomPage>
                     ?.roomInfo
                     ?.appBackground;
                 Widget child;
-                if (appBackground?.isNotEmpty == true) {
+                if (appBackground != null && appBackground.isNotEmpty) {
                   child = CachedNetworkImage(
                     fit: BoxFit.cover,
                     width: maxWidth,
                     height: maxHeight,
-                    imageUrl: appBackground!.http2https,
+                    imageUrl: appBackground.http2https,
                   );
                 } else {
                   child = Image.asset(

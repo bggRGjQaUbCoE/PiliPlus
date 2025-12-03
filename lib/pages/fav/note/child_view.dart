@@ -141,7 +141,7 @@ class _FavNoteChildPageState extends State<FavNoteChildPage>
     return switch (loadingState) {
       Loading() => gridSkeleton,
       Success(:var response) =>
-        response?.isNotEmpty == true
+        response != null && response.isNotEmpty
             ? SliverGrid.builder(
                 gridDelegate: gridDelegate,
                 itemBuilder: (context, index) {
@@ -155,7 +155,7 @@ class _FavNoteChildPageState extends State<FavNoteChildPage>
                     onSelect: () => _favNoteController.onSelect(item),
                   );
                 },
-                itemCount: response!.length,
+                itemCount: response.length,
               )
             : HttpError(onReload: _favNoteController.onReload),
       Error(:var errMsg) => HttpError(

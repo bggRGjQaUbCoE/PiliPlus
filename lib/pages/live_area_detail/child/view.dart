@@ -117,7 +117,7 @@ class _LiveAreaChildPageState extends State<LiveAreaChildPage>
                 ),
               ),
             ),
-          response?.isNotEmpty == true
+          response != null && response.isNotEmpty
               ? SliverGrid.builder(
                   gridDelegate: gridDelegate,
                   itemBuilder: (context, index) {
@@ -126,7 +126,7 @@ class _LiveAreaChildPageState extends State<LiveAreaChildPage>
                     }
                     return LiveCardVApp(item: response[index]);
                   },
-                  itemCount: response!.length,
+                  itemCount: response.length,
                 )
               : HttpError(onReload: _controller.onReload),
         ],

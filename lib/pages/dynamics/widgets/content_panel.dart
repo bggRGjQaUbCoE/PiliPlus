@@ -88,10 +88,10 @@ Widget content(
                   onShowMore: () => PageUtils.pushDynDetail(item, isPush: true),
                   primary: theme.colorScheme.primary,
                 ),
-        if (pics?.isNotEmpty == true)
+        if (pics != null && pics.isNotEmpty)
           CustomGridView(
             maxWidth: maxWidth,
-            picArr: pics!
+            picArr: pics
                 .map(
                   (item) => ImageModel(
                     width: item.width,

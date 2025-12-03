@@ -44,7 +44,7 @@ class _SubPageState extends State<SubPage> with GridMixin {
     return switch (loadingState) {
       Loading() => gridSkeleton,
       Success(:var response) =>
-        response?.isNotEmpty == true
+        response != null && response.isNotEmpty
             ? SliverGrid.builder(
                 gridDelegate: gridDelegate,
                 itemBuilder: (context, index) {
@@ -57,7 +57,7 @@ class _SubPageState extends State<SubPage> with GridMixin {
                     cancelSub: () => _subController.cancelSub(item),
                   );
                 },
-                itemCount: response!.length,
+                itemCount: response.length,
               )
             : HttpError(onReload: _subController.onReload),
       Error(:var errMsg) => HttpError(

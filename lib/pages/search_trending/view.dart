@@ -153,9 +153,9 @@ class _SearchTrendingPageState extends State<SearchTrendingPage> {
     return switch (loadingState) {
       Loading() => linearLoading,
       Success(:var response) =>
-        response?.isNotEmpty == true
+        response != null && response.isNotEmpty
             ? SliverList.separated(
-                itemCount: response!.length,
+                itemCount: response.length,
                 itemBuilder: (context, index) {
                   final item = response[index];
                   return ListTile(

@@ -70,7 +70,7 @@ class _MemberSearchChildPageState extends State<MemberSearchChildPage>
     return switch (loadingState) {
       Loading() => _buildLoading,
       Success(:var response) =>
-        response?.isNotEmpty == true
+        response != null && response.isNotEmpty
             ? Builder(
                 builder: (context) {
                   return switch (widget.searchType) {
@@ -84,7 +84,7 @@ class _MemberSearchChildPageState extends State<MemberSearchChildPage>
                           videoItem: response[index],
                         );
                       },
-                      itemCount: response!.length,
+                      itemCount: response.length,
                     ),
                     MemberSearchType.dynamic =>
                       GlobalData().dynamicsWaterfallFlow
@@ -100,7 +100,7 @@ class _MemberSearchChildPageState extends State<MemberSearchChildPage>
                                     maxWidth: maxWidth,
                                   );
                                 },
-                                childCount: response!.length,
+                                childCount: response.length,
                               ),
                             )
                           : SliverList.builder(
@@ -113,7 +113,7 @@ class _MemberSearchChildPageState extends State<MemberSearchChildPage>
                                   maxWidth: maxWidth,
                                 );
                               },
-                              itemCount: response!.length,
+                              itemCount: response.length,
                             ),
                   };
                 },

@@ -53,13 +53,13 @@ class _LiveEmotePanelState extends State<LiveEmotePanel>
     return switch (loadingState) {
       Loading() => loadingWidget,
       Success(:var response) =>
-        response?.isNotEmpty == true
+        response != null && response.isNotEmpty
             ? Column(
                 children: [
                   Expanded(
                     child: tabBarView(
                       controller: _emotePanelController.tabController,
-                      children: response!.map(
+                      children: response.map(
                         (item) {
                           final emote = item.emoticons;
                           if (emote == null || emote.isEmpty) {

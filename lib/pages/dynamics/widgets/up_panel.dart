@@ -94,9 +94,9 @@ class _UpPanelState extends State<UpPanel> {
             ),
           ),
         ),
-        if (controller.showLiveUp && liveList?.isNotEmpty == true)
+        if (controller.showLiveUp && liveList != null && liveList.isNotEmpty)
           SliverList.builder(
-            itemCount: liveList!.length,
+            itemCount: liveList.length,
             itemBuilder: (context, index) {
               return upItemBuild(theme, liveList[index]);
             },

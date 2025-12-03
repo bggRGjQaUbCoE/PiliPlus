@@ -72,7 +72,7 @@ class _MemberBangumiState extends State<MemberBangumi>
     return switch (loadingState) {
       Loading() => const SliverToBoxAdapter(),
       Success(:var response) =>
-        response?.isNotEmpty == true
+        response != null && response.isNotEmpty
             ? SliverGrid.builder(
                 gridDelegate: gridDelegate,
                 itemBuilder: (context, index) {
@@ -83,7 +83,7 @@ class _MemberBangumiState extends State<MemberBangumi>
                     item: response[index],
                   );
                 },
-                itemCount: response!.length,
+                itemCount: response.length,
               )
             : HttpError(onReload: _controller.onReload),
       Error(:var errMsg) => HttpError(

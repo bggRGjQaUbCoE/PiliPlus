@@ -30,9 +30,9 @@ class _WhisperPageState extends State<WhisperPage> {
         actions: [
           Obx(() {
             final outsideItem = _controller.outsideItem.value;
-            if (outsideItem?.isNotEmpty == true) {
+            if (outsideItem != null && outsideItem.isNotEmpty) {
               return Row(
-                children: outsideItem!.map((e) {
+                children: outsideItem.map((e) {
                   return IconButton(
                     tooltip: e.hasTitle() ? e.title : null,
                     onPressed: () => e.type.action(
@@ -49,10 +49,10 @@ class _WhisperPageState extends State<WhisperPage> {
           }),
           Obx(() {
             final threeDotItems = _controller.threeDotItems.value;
-            if (threeDotItems?.isNotEmpty == true) {
+            if (threeDotItems != null && threeDotItems.isNotEmpty) {
               return PopupMenuButton(
                 itemBuilder: (context) {
-                  return threeDotItems!
+                  return threeDotItems
                       .map(
                         (e) => PopupMenuItem(
                           onTap: () => e.type.action(
@@ -105,9 +105,9 @@ class _WhisperPageState extends State<WhisperPage> {
         itemBuilder: (context, index) => const WhisperItemSkeleton(),
       ),
       Success(:var response) =>
-        response?.isNotEmpty == true
+        response != null && response.isNotEmpty
             ? SliverList.separated(
-                itemCount: response!.length,
+                itemCount: response.length,
                 itemBuilder: (context, index) {
                   if (index == response.length - 1) {
                     _controller.onLoadMore();

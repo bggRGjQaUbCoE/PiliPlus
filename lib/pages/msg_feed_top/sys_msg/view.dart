@@ -71,9 +71,9 @@ class _SysMsgPageState extends State<SysMsgPage> {
         ),
       ),
       Success(:var response) =>
-        response?.isNotEmpty == true
+        response != null && response.isNotEmpty
             ? SliverList.separated(
-                itemCount: response!.length,
+                itemCount: response.length,
                 itemBuilder: (context, int index) {
                   if (index == response.length - 1) {
                     _sysMsgController.onLoadMore();

@@ -75,9 +75,9 @@ class _BlackListPageState extends State<BlackListPage> {
         itemBuilder: (context, index) => const MsgFeedTopSkeleton(),
       ),
       Success(:var response) =>
-        response?.isNotEmpty == true
+        response != null && response.isNotEmpty
             ? SliverList.builder(
-                itemCount: response!.length,
+                itemCount: response.length,
                 itemBuilder: (BuildContext context, int index) {
                   if (index == response.length - 1) {
                     _blackListController.onLoadMore();

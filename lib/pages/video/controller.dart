@@ -1879,17 +1879,17 @@ class VideoDetailController extends GetxController
         }
       }
     }
-    if (episodes?.isNotEmpty == true) {
+    if (episodes != null && episodes.isNotEmpty) {
       final downloadService = Get.find<DownloadService>();
       await downloadService.waitForInitialization;
       if (!context.mounted) {
         return;
       }
-      final Set<int?> cidSet =
-          (downloadService.downloadList + downloadService.waitDownloadQueue)
-              .map((e) => e.cid)
-              .toSet();
-      final index = episodes!.indexWhere(
+      final Set<int> cidSet = downloadService.downloadList
+          .followedBy(downloadService.waitDownloadQueue)
+          .map((e) => e.cid)
+          .toSet();
+      final index = episodes.indexWhere(
         (e) => e.cid == (seasonCid ?? cid.value),
       );
       final size = context.mediaQuerySize;

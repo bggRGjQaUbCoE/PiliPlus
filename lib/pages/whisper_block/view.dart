@@ -39,7 +39,7 @@ class _WhisperBlockPageState extends State<WhisperBlockPage> {
     return switch (loadingState) {
       Loading() => loadingWidget,
       Success(:var response) =>
-        response?.isNotEmpty == true
+        response != null && response.isNotEmpty
             ? Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -75,7 +75,7 @@ class _WhisperBlockPageState extends State<WhisperBlockPage> {
                         child: Wrap(
                           spacing: 12,
                           runSpacing: 12,
-                          children: response!
+                          children: response
                               .map(
                                 (e) => SearchText(
                                   text: e.keyword,

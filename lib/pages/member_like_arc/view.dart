@@ -79,10 +79,10 @@ class _MemberLikeArcPageState extends State<MemberLikeArcPage> {
         itemBuilder: (context, index) => const VideoCardVSkeleton(),
       ),
       Success(:var response) =>
-        response?.isNotEmpty == true
+        response != null && response.isNotEmpty
             ? SliverGrid.builder(
                 gridDelegate: gridDelegate,
-                itemCount: response!.length,
+                itemCount: response.length,
                 itemBuilder: (context, index) {
                   if (index == response.length - 1) {
                     _ctr.onLoadMore();

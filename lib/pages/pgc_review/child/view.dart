@@ -89,7 +89,7 @@ class _PgcReviewChildPageState extends State<PgcReviewChildPage>
         itemCount: 8,
       ),
       Success(:var response) =>
-        response?.isNotEmpty == true
+        response != null && response.isNotEmpty
             ? SliverList.separated(
                 itemBuilder: (context, index) {
                   if (index == response.length - 1) {
@@ -97,7 +97,7 @@ class _PgcReviewChildPageState extends State<PgcReviewChildPage>
                   }
                   return _itemWidget(theme, index, response[index]);
                 },
-                itemCount: response!.length,
+                itemCount: response.length,
                 separatorBuilder: (context, index) => divider,
               )
             : HttpError(onReload: _controller.onReload),

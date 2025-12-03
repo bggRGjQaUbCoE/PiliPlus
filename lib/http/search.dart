@@ -63,7 +63,7 @@ class SearchHttp {
       'search_type': searchType.name,
       'keyword': keyword,
       'page': page,
-      if (order?.isNotEmpty == true) 'order': order,
+      if (order != null && order.isNotEmpty) 'order': order,
       'duration': ?duration,
       'tids': ?tids,
       'order_sort': ?orderSort,
@@ -146,7 +146,7 @@ class SearchHttp {
     var params = await WbiSign.makSign({
       'keyword': keyword,
       'page': page,
-      if (order?.isNotEmpty == true) 'order': order,
+      if (order != null && order.isNotEmpty) 'order': order,
       'duration': ?duration,
       'tids': ?tids,
       'order_sort': ?orderSort,

@@ -85,9 +85,9 @@ class _AtMePageState extends State<AtMePage> {
         itemBuilder: (context, index) => const MsgFeedTopSkeleton(),
       ),
       Success(:var response) =>
-        response?.isNotEmpty == true
+        response != null && response.isNotEmpty
             ? SliverList.separated(
-                itemCount: response!.length,
+                itemCount: response.length,
                 itemBuilder: (context, int index) {
                   if (index == response.length - 1) {
                     _atMeController.onLoadMore();

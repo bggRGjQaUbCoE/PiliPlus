@@ -25,8 +25,9 @@ class DynamicDetailController extends CommonDynController {
     var commentIdStr = dynItem.basic?.commentIdStr;
     if (commentType != null &&
         commentType != 0 &&
-        commentIdStr?.isNotEmpty == true) {
-      _init(commentIdStr!, commentType);
+        commentIdStr != null &&
+        commentIdStr.isNotEmpty) {
+      _init(commentIdStr, commentType);
     } else {
       DynamicsHttp.dynamicDetail(id: dynItem.idStr).then((res) {
         if (res.isSuccess) {

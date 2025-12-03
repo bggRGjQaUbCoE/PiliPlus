@@ -185,7 +185,7 @@ class DynamicsHttp {
                 },
               ...?extraContent,
             ],
-            if (title?.isNotEmpty == true) 'title': title,
+            if (title != null && title.isNotEmpty) 'title': title,
           },
           if (privatePub != null || replyOption != null || publishTime != null)
             "option": {
@@ -552,7 +552,7 @@ class DynamicsHttp {
     final res = await Request().get(
       Api.dynMention,
       queryParameters: {
-        if (keyword?.isNotEmpty == true) 'keyword': keyword,
+        if (keyword != null && keyword.isNotEmpty) 'keyword': keyword,
         'web_location': 333.1365,
       },
     );

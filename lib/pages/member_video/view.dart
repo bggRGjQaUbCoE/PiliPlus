@@ -164,7 +164,7 @@ class _MemberVideoState extends State<MemberVideo>
     return switch (loadingState) {
       Loading() => gridSkeleton,
       Success(:var response) =>
-        response?.isNotEmpty == true
+        response != null && response.isNotEmpty
             ? SliverMainAxisGroup(
                 slivers: [
                   SliverPersistentHeader(
@@ -267,7 +267,7 @@ class _MemberVideoState extends State<MemberVideo>
                         fromViewAid: _controller.fromViewAid,
                       );
                     },
-                    itemCount: response!.length,
+                    itemCount: response.length,
                   ),
                 ],
               )

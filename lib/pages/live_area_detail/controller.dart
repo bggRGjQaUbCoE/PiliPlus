@@ -21,8 +21,8 @@ class LiveAreaDatailController
 
   @override
   List<AreaItem>? getDataList(List<AreaItem>? response) {
-    if (response?.isNotEmpty == true) {
-      initialIndex = max(0, response!.indexWhere((e) => e.id == areaId));
+    if (response != null && response.isNotEmpty) {
+      initialIndex = max(0, response.indexWhere((e) => e.id == areaId));
     }
     return response;
   }

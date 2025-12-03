@@ -133,11 +133,11 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
 
   // 获取up主粉丝数
   Future<void> queryUserStat(List<Staff>? staff) async {
-    if (staff?.isNotEmpty == true) {
+    if (staff != null && staff.isNotEmpty) {
       Request()
           .get(
             Api.relations,
-            queryParameters: {'fids': staff!.map((item) => item.mid).join(',')},
+            queryParameters: {'fids': staff.map((item) => item.mid).join(',')},
           )
           .then((res) {
             if (res.data['code'] == 0) {

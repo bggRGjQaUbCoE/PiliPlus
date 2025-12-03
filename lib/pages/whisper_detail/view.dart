@@ -170,11 +170,11 @@ class _WhisperDetailPageState
     return switch (loadingState) {
       Loading() => loadingWidget,
       Success(:var response) =>
-        response?.isNotEmpty == true
+        response != null && response.isNotEmpty
             ? ListView.separated(
                 shrinkWrap: true,
                 reverse: true,
-                itemCount: response!.length,
+                itemCount: response.length,
                 padding: const EdgeInsets.all(14),
                 physics: const AlwaysScrollableScrollPhysics(
                   parent: ClampingScrollPhysics(),

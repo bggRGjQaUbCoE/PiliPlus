@@ -93,8 +93,8 @@ mixin CommonMultiSelectMixin<T extends MultiSelectData>
   void handleSelect({bool checked = false, bool disableSelect = true}) {
     if (loadingState.value.isSuccess) {
       final list = loadingState.value.data;
-      if (list?.isNotEmpty == true) {
-        for (var item in list!) {
+      if (list != null && list.isNotEmpty) {
+        for (var item in list) {
           item.checked = checked;
         }
         loadingState.refresh();
@@ -165,7 +165,7 @@ mixin DeleteItemMixin<R, T extends MultiSelectData>
 //   void handleSelect([bool checked = false, bool disableSelect = true]) {
 //     if (loadingState.value.isSuccess) {
 //       final list = loadingState.value.data;
-//       if (list?.isNotEmpty == true) {
+//       if (list != null && list.isNotEmpty) {
 //         if (checked) {
 //           selected.addAll(list!.map(getId));
 //         } else {

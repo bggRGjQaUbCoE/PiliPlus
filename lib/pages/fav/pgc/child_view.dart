@@ -170,7 +170,7 @@ class _FavPgcChildPageState extends State<FavPgcChildPage>
         itemCount: 10,
       ),
       Success(:var response) =>
-        response?.isNotEmpty == true
+        response != null && response.isNotEmpty
             ? SliverGrid.builder(
                 gridDelegate: gridDelegate,
                 itemBuilder: (context, index) {
@@ -203,7 +203,7 @@ class _FavPgcChildPageState extends State<FavPgcChildPage>
                     ),
                   );
                 },
-                itemCount: response!.length,
+                itemCount: response.length,
               )
             : HttpError(onReload: _favPgcController.onReload),
       Error(:var errMsg) => HttpError(

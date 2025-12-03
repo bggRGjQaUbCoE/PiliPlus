@@ -67,8 +67,8 @@ abstract class CommonWhisperController<R>
     if (res.isSuccess) {
       if (loadingState.value.isSuccess) {
         List<Session>? list = loadingState.value.data;
-        if (list?.isNotEmpty == true) {
-          for (var item in list!) {
+        if (list != null && list.isNotEmpty) {
+          for (var item in list) {
             if (item.hasUnread()) {
               item.clearUnread();
             }

@@ -45,7 +45,7 @@ class _LogPageState<T> extends State<LogPage<T>> {
     return switch (loadingState) {
       Loading() => linearLoading,
       Success(:var response) =>
-        response?.isNotEmpty == true
+        response != null && response.isNotEmpty
             ? Builder(
                 builder: (context) {
                   final them = Theme.of(context);
@@ -78,7 +78,7 @@ class _LogPageState<T> extends State<LogPage<T>> {
                       ),
                       sliverDivider,
                       SliverList.separated(
-                        itemCount: response!.length,
+                        itemCount: response.length,
                         itemBuilder: (context, index) {
                           return _item(response[index], dividerV);
                         },

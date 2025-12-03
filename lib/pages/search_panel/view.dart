@@ -60,8 +60,8 @@ abstract class CommonSearchPanelState<
     return switch (loadingState) {
       Loading() => buildLoading,
       Success(:var response) =>
-        response?.isNotEmpty == true
-            ? buildList(theme, response!)
+        response != null && response.isNotEmpty
+            ? buildList(theme, response)
             : HttpError(onReload: controller.onReload),
       Error(:var errMsg) => HttpError(
         errMsg: errMsg,

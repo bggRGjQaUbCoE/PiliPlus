@@ -187,7 +187,7 @@ class _NoteListPageState extends State<NoteListPage>
         itemCount: 8,
       ),
       Success(:var response) =>
-        response?.isNotEmpty == true
+        response != null && response.isNotEmpty
             ? SliverList.separated(
                 itemBuilder: (context, index) {
                   if (index == response.length - 1) {
@@ -195,7 +195,7 @@ class _NoteListPageState extends State<NoteListPage>
                   }
                   return _itemWidget(theme, response[index]);
                 },
-                itemCount: response!.length,
+                itemCount: response.length,
                 separatorBuilder: (context, index) => divider,
               )
             : HttpError(onReload: _controller.onReload),

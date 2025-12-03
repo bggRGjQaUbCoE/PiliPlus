@@ -196,7 +196,7 @@ class _HorizontalMemberPageState extends State<HorizontalMemberPage> {
         itemExtent: 100,
       ),
       Success(:var response) =>
-        response?.isNotEmpty == true
+        response != null && response.isNotEmpty
             ? SliverFixedExtentList.builder(
                 itemBuilder: (context, index) {
                   if (index == response.length - 1 && _controller.hasNext) {
@@ -221,7 +221,7 @@ class _HorizontalMemberPageState extends State<HorizontalMemberPage> {
                     ),
                   );
                 },
-                itemCount: response!.length,
+                itemCount: response.length,
                 itemExtent: 100,
               )
             : HttpError(onReload: _controller.onReload),

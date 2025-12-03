@@ -57,12 +57,12 @@ class LloginDevicesPageState extends State<LoginDevicesPage> {
     return switch (loadingState) {
       Loading() => const SliverToBoxAdapter(),
       Success<List<LoginDevice>?>(:var response) =>
-        response?.isNotEmpty == true
+        response != null && response.isNotEmpty
             ? SliverList.separated(
                 itemBuilder: (context, index) {
                   return _buildItem(colorScheme, response[index]);
                 },
-                itemCount: response!.length,
+                itemCount: response.length,
                 separatorBuilder: (_, _) => divider,
               )
             : HttpError(onReload: _controller.onReload),

@@ -36,8 +36,8 @@ class VideoCardHLater extends StatelessWidget {
     String type = 'video';
     if (videoItem case SearchVideoItemModel item) {
       var typeOrNull = item.type;
-      if (typeOrNull?.isNotEmpty == true) {
-        type = typeOrNull!;
+      if (typeOrNull != null && typeOrNull.isNotEmpty) {
+        type = typeOrNull;
       }
     }
     final theme = Theme.of(context);

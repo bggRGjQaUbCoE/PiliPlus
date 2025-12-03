@@ -104,13 +104,13 @@ void imageSaveDialog({
                       },
                       icon: const Icon(Icons.watch_later_outlined),
                     ),
-                  if (cover?.isNotEmpty == true) ...[
+                  if (cover != null && cover.isNotEmpty) ...[
                     if (Utils.isMobile)
                       iconBtn(
                         tooltip: '分享',
                         onPressed: () {
                           SmartDialog.dismiss();
-                          ImageUtils.onShareImg(cover!);
+                          ImageUtils.onShareImg(cover);
                         },
                         icon: const Icon(Icons.share),
                       ),
@@ -119,7 +119,7 @@ void imageSaveDialog({
                       onPressed: () async {
                         bool saveStatus = await ImageUtils.downloadImg(
                           context,
-                          [cover!],
+                          [cover],
                         );
                         if (saveStatus) {
                           SmartDialog.dismiss();

@@ -95,8 +95,8 @@ abstract class CommonSearchPageState<S extends StatefulWidget, R, T>
     return switch (loadingState) {
       Loading() => const HttpError(),
       Success(:var response) =>
-        response?.isNotEmpty == true
-            ? buildList(response!)
+        response != null && response.isNotEmpty
+            ? buildList(response)
             : HttpError(onReload: controller.onReload),
       Error(:var errMsg) => HttpError(
         errMsg: errMsg,

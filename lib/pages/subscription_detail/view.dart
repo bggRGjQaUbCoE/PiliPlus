@@ -74,7 +74,7 @@ class _SubDetailPageState extends State<SubDetailPage> with GridMixin {
     return switch (loadingState) {
       Loading() => gridSkeleton,
       Success(:var response) =>
-        response?.isNotEmpty == true
+        response != null && response.isNotEmpty
             ? SliverGrid.builder(
                 gridDelegate: gridDelegate,
                 itemBuilder: (context, index) {
@@ -85,7 +85,7 @@ class _SubDetailPageState extends State<SubDetailPage> with GridMixin {
                     videoItem: response[index],
                   );
                 },
-                itemCount: response!.length,
+                itemCount: response.length,
               )
             : HttpError(onReload: _subDetailController.onReload),
       Error(:var errMsg) => HttpError(

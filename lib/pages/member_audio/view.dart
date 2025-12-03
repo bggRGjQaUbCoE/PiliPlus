@@ -71,7 +71,7 @@ class _MemberAudioState extends State<MemberAudio>
     return switch (loadingState) {
       Loading() => linearLoading,
       Success(:var response) =>
-        response?.isNotEmpty == true
+        response != null && response.isNotEmpty
             ? SliverMainAxisGroup(
                 slivers: [
                   SliverPersistentHeader(
@@ -125,7 +125,7 @@ class _MemberAudioState extends State<MemberAudio>
                         item: response[index],
                       );
                     },
-                    itemCount: response!.length,
+                    itemCount: response.length,
                   ),
                 ],
               )

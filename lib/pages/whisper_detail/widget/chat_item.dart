@@ -696,7 +696,7 @@ class ChatItem extends StatelessWidget {
             behavior: HitTestBehavior.opaque,
             onTap: () => PiliScheme.routePushFromUrl(uri),
             child: Text(
-              text?.isNotEmpty == true ? text! : '查看详情',
+              text != null && text.isNotEmpty ? text : '查看详情',
             ),
           ),
         ];
@@ -724,9 +724,9 @@ class ChatItem extends StatelessWidget {
             Divider(color: theme.colorScheme.primary.withValues(alpha: 0.05)),
             if ((content['text'] as String?)?.isNotEmpty == true)
               SelectableText(content['text']),
-            if (modules?.isNotEmpty == true) ...[
+            if (modules != null && modules.isNotEmpty) ...[
               const SizedBox(height: 4),
-              ...modules!.map(
+              ...modules.map(
                 (e) => Row(
                   spacing: 10,
                   crossAxisAlignment: CrossAxisAlignment.start,

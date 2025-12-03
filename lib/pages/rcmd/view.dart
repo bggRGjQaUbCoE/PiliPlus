@@ -65,7 +65,7 @@ class _RcmdPageState extends CommonPageState<RcmdPage, RcmdController>
     return switch (loadingState) {
       Loading() => _buildSkeleton,
       Success(:var response) =>
-        response?.isNotEmpty == true
+        response != null && response.isNotEmpty
             ? SliverGrid.builder(
                 gridDelegate: gridDelegate,
                 itemBuilder: (context, index) {
@@ -125,8 +125,8 @@ class _RcmdPageState extends CommonPageState<RcmdPage, RcmdController>
                   }
                 },
                 itemCount: controller.lastRefreshAt != null
-                    ? response!.length + 1
-                    : response!.length,
+                    ? response.length + 1
+                    : response.length,
               )
             : HttpError(onReload: controller.onReload),
       Error(:var errMsg) => HttpError(

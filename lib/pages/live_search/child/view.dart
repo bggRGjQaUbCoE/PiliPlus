@@ -86,7 +86,7 @@ class _LiveSearchChildPageState extends State<LiveSearchChildPage>
     return switch (loadingState) {
       Loading() => _buildLoading,
       Success(:var response) =>
-        response?.isNotEmpty == true
+        response != null && response.isNotEmpty
             ? Builder(
                 builder: (context) {
                   return switch (widget.searchType) {
@@ -100,7 +100,7 @@ class _LiveSearchChildPageState extends State<LiveSearchChildPage>
                           item: response[index],
                         );
                       },
-                      itemCount: response!.length,
+                      itemCount: response.length,
                     ),
                     LiveSearchType.user => SliverGrid.builder(
                       gridDelegate: userDelegate,
@@ -112,7 +112,7 @@ class _LiveSearchChildPageState extends State<LiveSearchChildPage>
                           item: response[index],
                         );
                       },
-                      itemCount: response!.length,
+                      itemCount: response.length,
                     ),
                   };
                 },

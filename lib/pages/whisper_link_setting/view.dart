@@ -107,14 +107,14 @@ class _WhisperLinkSettingPageState extends State<WhisperLinkSettingPage> {
     return switch (loadingState) {
       Loading() => const SizedBox.shrink(),
       Success(:var response) =>
-        response?.isNotEmpty == true
+        response != null && response.isNotEmpty
             ? Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Builder(
                     builder: (context) {
-                      final ImUserInfosData item = response!.first;
+                      final ImUserInfosData item = response.first;
                       return ListTile(
                         onTap: () => Get.toNamed('/member?mid=${item.mid}'),
                         leading: PendantAvatar(
@@ -231,7 +231,7 @@ class _WhisperLinkSettingPageState extends State<WhisperLinkSettingPage> {
     return switch (loadingState) {
       Loading() => const SizedBox.shrink(),
       Success(:var response) =>
-        response?.isNotEmpty == true
+        response != null && response.isNotEmpty
             ? ListTile(
                 dense: true,
                 onTap: () => _controller.setMute(response.first.setting == 1),
@@ -240,7 +240,7 @@ class _WhisperLinkSettingPageState extends State<WhisperLinkSettingPage> {
                   alignment: Alignment.centerRight,
                   scale: 0.8,
                   child: Switch(
-                    value: response!.first.setting == 1,
+                    value: response.first.setting == 1,
                     onChanged: (value) =>
                         _controller.setMute(response.first.setting == 1),
                   ),

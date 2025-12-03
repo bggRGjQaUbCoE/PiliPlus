@@ -149,9 +149,9 @@ abstract class CommonDynPageState<T extends StatefulWidget> extends State<T>
         itemBuilder: (context, index) => const VideoReplySkeleton(),
       ),
       Success(:var response) =>
-        response?.isNotEmpty == true
+        response != null && response.isNotEmpty
             ? SliverList.builder(
-                itemCount: response!.length + 1,
+                itemCount: response.length + 1,
                 itemBuilder: (context, index) {
                   if (index == response.length) {
                     controller.onLoadMore();

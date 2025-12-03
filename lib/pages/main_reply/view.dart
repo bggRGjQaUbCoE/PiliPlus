@@ -118,9 +118,9 @@ class _MainReplyPageState extends State<MainReplyPage> {
         prototypeItem: const VideoReplySkeleton(),
       ),
       Success(:var response) =>
-        response?.isNotEmpty == true
+        response != null && response.isNotEmpty
             ? SliverList.builder(
-                itemCount: response!.length + 1,
+                itemCount: response.length + 1,
                 itemBuilder: (context, index) {
                   if (index == response.length) {
                     _controller.onLoadMore();

@@ -179,43 +179,44 @@ class _LivePageState extends CommonPageState<LivePage, LiveController>
       ),
       Success(:var response) => SliverMainAxisGroup(
         slivers: [
-          if (controller.newTags?.isNotEmpty == true)
-            SliverToBoxAdapter(
-              child: SelfSizedHorizontalList(
-                gapSize: 12,
-                padding: const EdgeInsets.only(bottom: 8),
-                childBuilder: (index) {
-                  late final item = controller.newTags![index];
-                  return Obx(
-                    () {
-                      final isCurr = index == controller.tagIndex.value;
-                      return SearchText(
-                        fontSize: 13,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 3,
-                        ),
-                        text: '${item.name}',
-                        bgColor: isCurr
-                            ? theme.colorScheme.secondaryContainer
-                            : Colors.transparent,
-                        textColor: isCurr
-                            ? theme.colorScheme.onSecondaryContainer
-                            : null,
-                        onTap: (value) {
-                          controller.onSelectTag(
-                            index,
-                            item.sortType,
-                          );
-                        },
-                      );
-                    },
-                  );
-                },
-                itemCount: controller.newTags!.length,
+          if (controller.newTags case final newTags?)
+            if (newTags.isNotEmpty)
+              SliverToBoxAdapter(
+                child: SelfSizedHorizontalList(
+                  gapSize: 12,
+                  padding: const EdgeInsets.only(bottom: 8),
+                  childBuilder: (index) {
+                    late final item = newTags[index];
+                    return Obx(
+                      () {
+                        final isCurr = index == controller.tagIndex.value;
+                        return SearchText(
+                          fontSize: 13,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 3,
+                          ),
+                          text: '${item.name}',
+                          bgColor: isCurr
+                              ? theme.colorScheme.secondaryContainer
+                              : Colors.transparent,
+                          textColor: isCurr
+                              ? theme.colorScheme.onSecondaryContainer
+                              : null,
+                          onTap: (value) {
+                            controller.onSelectTag(
+                              index,
+                              item.sortType,
+                            );
+                          },
+                        );
+                      },
+                    );
+                  },
+                  itemCount: newTags.length,
+                ),
               ),
-            ),
-          response?.isNotEmpty == true
+          response != null && response.isNotEmpty == true
               ? SliverGrid.builder(
                   gridDelegate: gridDelegate,
                   itemBuilder: (context, index) {
@@ -230,7 +231,7 @@ class _LivePageState extends CommonPageState<LivePage, LiveController>
                     }
                     return LiveCardVApp(item: item);
                   },
-                  itemCount: response!.length,
+                  itemCount: response.length,
                 )
               : HttpError(onReload: controller.onReload),
         ],

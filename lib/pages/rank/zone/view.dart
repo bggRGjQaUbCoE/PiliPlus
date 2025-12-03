@@ -55,7 +55,7 @@ class _ZonePageState extends CommonPageState<ZonePage, ZoneController>
     return switch (loadingState) {
       Loading() => gridSkeleton,
       Success(:var response) =>
-        response?.isNotEmpty == true
+        response != null && response.isNotEmpty
             ? SliverGrid.builder(
                 gridDelegate: gridDelegate,
                 itemBuilder: (context, index) {
@@ -70,7 +70,7 @@ class _ZonePageState extends CommonPageState<ZonePage, ZoneController>
                   }
                   return PgcRankItem(item: item);
                 },
-                itemCount: response!.length,
+                itemCount: response.length,
               )
             : HttpError(onReload: controller.onReload),
       Error(:var errMsg) => HttpError(

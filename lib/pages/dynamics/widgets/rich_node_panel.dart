@@ -294,8 +294,8 @@ TextSpan? richNode(
                           } else {
                             i.dynPic = list;
                           }
-                          if (list?.isNotEmpty == true) {
-                            onView(list!);
+                          if (list != null && list.isNotEmpty) {
+                            onView(list);
                           }
                         } else {
                           res.toast();

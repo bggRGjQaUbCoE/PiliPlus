@@ -60,7 +60,7 @@ class _LaterViewChildPageState extends State<LaterViewChildPage>
     return switch (loadingState) {
       Loading() => gridSkeleton,
       Success(:var response) =>
-        response?.isNotEmpty == true
+        response != null && response.isNotEmpty
             ? SliverGrid.builder(
                 gridDelegate: gridDelegate,
                 itemBuilder: (context, index) {
@@ -95,7 +95,7 @@ class _LaterViewChildPageState extends State<LaterViewChildPage>
                     },
                   );
                 },
-                itemCount: response!.length,
+                itemCount: response.length,
               )
             : HttpError(onReload: _laterController.onReload),
       Error(:var errMsg) => HttpError(

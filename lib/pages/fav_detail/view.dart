@@ -486,7 +486,7 @@ class _FavDetailPageState extends State<FavDetailPage> with GridMixin {
     return switch (loadingState) {
       Loading() => gridSkeleton,
       Success(:var response) =>
-        response?.isNotEmpty == true
+        response != null && response.isNotEmpty
             ? SliverGrid.builder(
                 gridDelegate: gridDelegate,
                 itemBuilder: (context, index) {
@@ -511,7 +511,7 @@ class _FavDetailPageState extends State<FavDetailPage> with GridMixin {
                     ctr: _favDetailController,
                   );
                 },
-                itemCount: response!.length + 1,
+                itemCount: response.length + 1,
               )
             : HttpError(onReload: _favDetailController.onReload),
       Error(:var errMsg) => HttpError(

@@ -84,12 +84,12 @@ class _PgcPageState extends CommonPageState<PgcPage, PgcController>
   ) => switch (loadingState) {
     Loading() => loadingWidget,
     Success(:var response) =>
-      response?.isNotEmpty == true
+      response != null && response.isNotEmpty
           ? Builder(
               builder: (context) {
                 final initialIndex = max(
                   0,
-                  response!.indexWhere((item) => item.isToday == 1),
+                  response.indexWhere((item) => item.isToday == 1),
                 );
                 return DefaultTabController(
                   initialIndex: initialIndex,
@@ -311,7 +311,7 @@ class _PgcPageState extends CommonPageState<PgcPage, PgcController>
     return switch (loadingState) {
       Loading() => const SliverToBoxAdapter(),
       Success(:var response) =>
-        response?.isNotEmpty == true
+        response != null && response.isNotEmpty
             ? SliverGrid.builder(
                 gridDelegate: gridDelegate,
                 itemBuilder: (context, index) {
@@ -320,7 +320,7 @@ class _PgcPageState extends CommonPageState<PgcPage, PgcController>
                   }
                   return PgcCardVPgcIndex(item: response[index]);
                 },
-                itemCount: response!.length,
+                itemCount: response.length,
               )
             : HttpError(onReload: controller.onReload),
       Error(:var errMsg) => HttpError(
@@ -398,11 +398,11 @@ class _PgcPageState extends CommonPageState<PgcPage, PgcController>
     return switch (loadingState) {
       Loading() => loadingWidget,
       Success(:var response) =>
-        response?.isNotEmpty == true
+        response != null && response.isNotEmpty
             ? ListView.builder(
                 controller: controller.followController,
                 scrollDirection: Axis.horizontal,
-                itemCount: response!.length,
+                itemCount: response.length,
                 padding: EdgeInsets.zero,
                 itemBuilder: (context, index) {
                   if (index == response.length - 1) {

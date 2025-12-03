@@ -184,9 +184,9 @@ class _UpowerRankPageState extends State<UpowerRankPage>
         ),
       ),
       Success<List<UpowerRankInfo>?>(:var response) =>
-        response?.isNotEmpty == true
+        response != null && response.isNotEmpty
             ? SliverList.builder(
-                itemCount: response!.length,
+                itemCount: response.length,
                 itemBuilder: (context, index) {
                   if (index == response.length - 1) {
                     _controller.onLoadMore();

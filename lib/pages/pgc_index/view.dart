@@ -177,7 +177,7 @@ class _PgcIndexPageState extends State<PgcIndexPage>
                     ? data.order
                     : data.filter![index - 1].values
               : data.filter![index].values;
-          return item?.isNotEmpty == true
+          return item != null && item.isNotEmpty
               ? Padding(
                   padding: index == 0
                       ? EdgeInsets.zero
@@ -193,7 +193,7 @@ class _PgcIndexPageState extends State<PgcIndexPage>
                         item[childIndex],
                       );
                     },
-                    itemCount: item!.length,
+                    itemCount: item.length,
                   ),
                 )
               : const SizedBox.shrink();
@@ -241,7 +241,7 @@ class _PgcIndexPageState extends State<PgcIndexPage>
     return switch (loadingState) {
       Loading() => linearLoading,
       Success(:var response) =>
-        response?.isNotEmpty == true
+        response != null && response.isNotEmpty
             ? SliverGrid.builder(
                 gridDelegate: gridDelegate,
                 itemBuilder: (context, index) {
@@ -250,7 +250,7 @@ class _PgcIndexPageState extends State<PgcIndexPage>
                   }
                   return PgcCardVPgcIndex(item: response[index]);
                 },
-                itemCount: response!.length,
+                itemCount: response.length,
               )
             : HttpError(onReload: _ctr.onReload),
       Error(:var errMsg) => HttpError(

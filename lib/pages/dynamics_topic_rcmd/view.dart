@@ -42,9 +42,9 @@ class _DynTopicRcmdPageState extends State<DynTopicRcmdPage> {
     return switch (loadingState) {
       Loading() => linearLoading,
       Success(:var response) =>
-        response?.isNotEmpty == true
+        response != null && response.isNotEmpty
             ? SliverList.builder(
-                itemCount: response!.length,
+                itemCount: response.length,
                 itemBuilder: (context, index) {
                   return DynTopicItem(
                     item: response[index],

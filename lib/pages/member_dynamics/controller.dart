@@ -27,7 +27,7 @@ class MemberDynamicsController
   @override
   Future<void> queryData([bool isRefresh = true]) {
     if (!isRefresh && (isEnd || offset == '-1')) {
-      return Future.value();
+      return Future.syncValue(null);
     }
     return super.queryData(isRefresh);
   }

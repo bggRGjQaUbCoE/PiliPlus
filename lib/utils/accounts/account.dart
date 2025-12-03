@@ -8,7 +8,7 @@ import 'package:hive/hive.dart';
 sealed class Account {
   Map<String, dynamic>? toJson() => null;
 
-  Future<void> onChange() => Future.value();
+  Future<void> onChange() => Future.syncValue(null);
 
   Set<AccountType> get type => const {};
 

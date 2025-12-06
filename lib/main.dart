@@ -175,9 +175,8 @@ void main() async {
     // 异常捕获 logo记录
     final customParameters = {
       'BuildConfig':
-          '''\n
-Build Time: ${DateFormatUtils.format(BuildConfig.buildTime, format: DateFormatUtils.longFormatDs)}
-Commit Hash: ${BuildConfig.commitHash}''',
+          '\nBuild Time: ${DateFormatUtils.format(BuildConfig.buildTime, format: DateFormatUtils.longFormatDs)}\n'
+          'Commit Hash: ${BuildConfig.commitHash}',
     };
     final fileHandler = await JsonFileHandler.init();
     final Catcher2Options debugConfig = Catcher2Options(

@@ -4,13 +4,13 @@ import 'dart:convert';
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
 import 'package:PiliPlus/services/logger.dart';
+import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:catcher_2/model/platform_type.dart';
-import 'package:catcher_2/model/report.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -48,8 +48,8 @@ class _LogsPageState extends State<LogsPage> {
     final logsPath = await LoggerUtils.getLogsPath();
     logsContent = (await logsPath.readAsLines()).reversed.map((i) {
       try {
-        final log = _parseReportJson(jsonDecode(i));
-        latestLog ??= log;
+        final log = Report.fromJson(jsonDecode(i));
+        latestLog ??= log.copyWith();
         return log;
       } catch (e, s) {
         return Report(
@@ -61,15 +61,19 @@ class _LogsPageState extends State<LogsPage> {
           const {},
           null,
           PlatformType.unknown,
-          null,
         );
       }
     }).toList();
-    setState(() {});
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   void copyLogs() {
-    Utils.copyText(jsonEncode(logsContent), needToast: false);
+    Utils.copyText(
+      '```\n${logsContent.join('\n\n')}```',
+      needToast: false,
+    );
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('复制成功')),
@@ -127,6 +131,11 @@ class _LogsPageState extends State<LogsPage> {
               }
             },
             itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+              if (kDebugMode)
+                const PopupMenuItem<String>(
+                  value: 'assert',
+                  child: Text('引发错误'),
+                ),
               PopupMenuItem<String>(
                 value: 'log',
                 child: Text('${enableLog ? '关闭' : '开启'}日志'),
@@ -143,63 +152,47 @@ class _LogsPageState extends State<LogsPage> {
                 value: 'clear',
                 child: Text('清空日志'),
               ),
-              if (kDebugMode)
-                const PopupMenuItem<String>(
-                  value: 'assert',
-                  child: Text('引发错误'),
-                ),
             ],
           ),
           const SizedBox(width: 6),
         ],
       ),
       body: logsContent.isNotEmpty
-          ? CustomScrollView(
-              slivers: [
-                if (latestLog != null)
+          ? Padding(
+              padding: EdgeInsets.only(
+                left: padding.left + 12,
+                right: padding.right + 12,
+              ),
+              child: CustomScrollView(
+                slivers: [
+                  if (latestLog != null)
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const .only(bottom: 12),
+                        child: InfoCard(report: latestLog!),
+                      ),
+                    ),
                   SliverPadding(
-                    padding: EdgeInsets.only(
-                      left: padding.left + 16,
-                      right: padding.right + 16,
-                    ),
-                    sliver: SliverList.list(
-                      children: [
-                        InfoCard(report: latestLog!),
-                        _divider,
-                      ],
+                    padding: EdgeInsets.only(bottom: padding.bottom + 100),
+                    sliver: SliverList.separated(
+                      itemCount: logsContent.length,
+                      itemBuilder: (context, index) =>
+                          ReportCard(report: logsContent[index]),
+                      separatorBuilder: (_, _) => const SizedBox(height: 12),
                     ),
                   ),
-                SliverPadding(
-                  padding: EdgeInsets.only(
-                    left: padding.left + 16,
-                    right: padding.right + 16,
-                    bottom: padding.bottom + 100,
-                  ),
-                  sliver: SliverList.separated(
-                    itemCount: logsContent.length,
-                    itemBuilder: (context, index) =>
-                        ReportCard(report: logsContent[index]),
-                    separatorBuilder: (_, _) => _divider,
-                  ),
-                ),
-              ],
+                ],
+              ),
             )
           : scrollErrorWidget(),
     );
   }
 }
 
-class InfoCard extends StatefulWidget {
+class InfoCard extends StatelessWidget {
   final Report report;
 
   const InfoCard({super.key, required this.report});
-
-  @override
-  State<InfoCard> createState() => _InfoCardState();
-}
-
-class _InfoCardState extends State<InfoCard> {
-  bool _isExpanded = false;
 
   Widget _buildMapSection(
     Color color,
@@ -214,6 +207,7 @@ class _InfoCardState extends State<InfoCard> {
       spacing: 4,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        const SizedBox(height: 8),
         Text(
           title,
           style: TextStyle(
@@ -222,7 +216,6 @@ class _InfoCardState extends State<InfoCard> {
             fontSize: 16,
           ),
         ),
-        const SizedBox(height: 8),
         ...map.entries.map(
           (entry) => Text.rich(
             TextSpan(
@@ -238,7 +231,6 @@ class _InfoCardState extends State<InfoCard> {
             ),
           ),
         ),
-        const SizedBox(height: 8),
       ],
     );
   }
@@ -252,7 +244,7 @@ class _InfoCardState extends State<InfoCard> {
         children: [
           Icon(
             Icons.info_outline,
-            size: 24,
+            size: 22,
             color: colorScheme.primary,
           ),
           const Expanded(
@@ -272,64 +264,54 @@ class _InfoCardState extends State<InfoCard> {
               visualDensity: VisualDensity.compact,
             ),
             icon: Icon(
-              _isExpanded ? Icons.expand_less : Icons.expand_more,
+              report.isExpanded ? Icons.expand_less : Icons.expand_more,
             ),
             onPressed: () {
-              setState(() {
-                _isExpanded = !_isExpanded;
-              });
+              report.isExpanded = !report.isExpanded;
+              (context as Element).markNeedsBuild();
             },
           ),
         ],
       ),
-      if (_isExpanded) ...[
-        const SizedBox(height: 16),
+      if (report.isExpanded) ...[
         _buildMapSection(
           colorScheme.primary,
           '设备信息',
-          widget.report.deviceParameters,
+          report.deviceParameters,
         ),
         _buildMapSection(
           colorScheme.primary,
           '应用信息',
-          widget.report.applicationParameters,
+          report.applicationParameters,
         ),
         _buildMapSection(
           colorScheme.primary,
           '编译信息',
-          widget.report.customParameters,
+          report.customParameters,
         ),
       ],
     ]);
   }
 }
 
-class ReportCard extends StatefulWidget {
+class ReportCard extends StatelessWidget {
   final Report report;
 
   const ReportCard({super.key, required this.report});
 
   @override
-  State<ReportCard> createState() => _ReportCardState();
-}
-
-class _ReportCardState extends State<ReportCard> {
-  bool _isExpanded = false;
-
-  @override
   Widget build(BuildContext context) {
-    final log = widget.report;
     final colorScheme = ColorScheme.of(context);
-    late final stackTrace = log.stackTrace.toString();
-
+    late final stackTrace = report.stackTrace.toString().trim();
+    final dateTime = DateFormatUtils.longFormatDs.format(report.dateTime);
     return _card([
       Row(
         children: [
-          Icon(Icons.error_outline, color: colorScheme.error, size: 24),
+          Icon(Icons.error_outline, color: colorScheme.error, size: 22),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              log.error.toString(),
+              report.error.toString(),
               style: const TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 16,
@@ -342,14 +324,12 @@ class _ReportCardState extends State<ReportCard> {
             style: TextButton.styleFrom(
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               visualDensity: VisualDensity.compact,
+              foregroundColor: colorScheme.secondary,
             ),
             onPressed: () {
-              Utils.copyText(
-                Utils.jsonEncoder.convert(log.toJson()),
-                needToast: false,
-              );
+              Utils.copyText('```\n$report```', needToast: false);
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('已将 ${log.dateTime} 复制至剪贴板')),
+                SnackBar(content: Text('已将 $dateTime 复制至剪贴板')),
               );
             },
             icon: const Icon(
@@ -364,12 +344,11 @@ class _ReportCardState extends State<ReportCard> {
               visualDensity: VisualDensity.compact,
             ),
             icon: Icon(
-              _isExpanded ? Icons.expand_less : Icons.expand_more,
+              report.isExpanded ? Icons.expand_less : Icons.expand_more,
             ),
             onPressed: () {
-              setState(() {
-                _isExpanded = !_isExpanded;
-              });
+              report.isExpanded = !report.isExpanded;
+              (context as Element).markNeedsBuild();
             },
           ),
         ],
@@ -377,22 +356,25 @@ class _ReportCardState extends State<ReportCard> {
       const SizedBox(height: 8),
       Row(
         spacing: 4,
-        crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          const Icon(Icons.access_time, size: 16),
+          Icon(
+            Icons.access_time,
+            size: 16,
+            color: colorScheme.outline,
+          ),
           Text(
-            log.dateTime.toString(),
-            style: const TextStyle(height: 1.2),
+            dateTime,
+            style: TextStyle(
+              height: 1.2,
+              color: colorScheme.outline,
+            ),
           ),
         ],
       ),
-      if (_isExpanded) ...[
+      if (report.isExpanded) ...[
         const SizedBox(height: 16),
-        _divider,
-        const SizedBox(height: 16),
-
         Text(
-          '错误详情:',
+          '错误详情',
           style: TextStyle(
             fontWeight: FontWeight.bold,
             color: colorScheme.error,
@@ -401,26 +383,27 @@ class _ReportCardState extends State<ReportCard> {
         ),
         const SizedBox(height: 8),
         Container(
-          width: double.infinity,
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: colorScheme.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: colorScheme.outline),
+            color: colorScheme.surface,
+            borderRadius: const BorderRadius.all(Radius.circular(8)),
+            border: Border.all(
+              color: colorScheme.outline.withValues(alpha: 0.5),
+            ),
           ),
           child: SelectableText(
-            log.error.toString(),
+            report.error.toString(),
             style: TextStyle(
               fontFamily: 'Monospace',
               color: colorScheme.onSurfaceVariant,
             ),
           ),
         ),
-        const SizedBox(height: 16),
         // stackTrace may be null or String("null") or blank
-        if (stackTrace.trim().isNotEmpty && stackTrace != 'null') ...[
+        if (stackTrace.isNotEmpty && stackTrace != 'null') ...[
+          const SizedBox(height: 16),
           Text(
-            '堆栈跟踪:',
+            '堆栈跟踪',
             style: TextStyle(
               fontWeight: FontWeight.bold,
               color: colorScheme.error,
@@ -429,18 +412,19 @@ class _ReportCardState extends State<ReportCard> {
           ),
           const SizedBox(height: 8),
           Container(
-            width: double.infinity,
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: colorScheme.surfaceContainerHighest,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: colorScheme.outline),
+              color: colorScheme.surface,
+              borderRadius: const BorderRadius.all(Radius.circular(8)),
+              border: Border.all(
+                color: colorScheme.outline.withValues(alpha: 0.5),
+              ),
             ),
             child: SelectableText(
-              log.stackTrace.toString(),
+              stackTrace,
               style: TextStyle(
                 fontFamily: 'Monospace',
-                fontSize: 12,
+                fontSize: 13,
                 color: colorScheme.onSurfaceVariant,
               ),
             ),
@@ -451,30 +435,93 @@ class _ReportCardState extends State<ReportCard> {
   }
 }
 
-const Widget _divider = Divider(indent: 12, endIndent: 12, height: 24);
-
 Widget _card(List<Widget> contents) {
   return Card(
-    margin: const EdgeInsets.all(8),
-    elevation: 2,
     child: Padding(
-      padding: const EdgeInsets.all(16),
+      padding: const .all(12),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: .stretch,
         children: contents,
       ),
     ),
   );
 }
 
-Report _parseReportJson(Map<String, dynamic> json) => Report(
-  json['error'],
-  json['stackTrace'],
-  DateTime.tryParse(json['dateTime'] ?? '') ?? DateTime(1970),
-  json['deviceParameters'] ?? const {},
-  json['applicationParameters'] ?? const {},
-  json['customParameters'] ?? const {},
-  null,
-  PlatformType.values.byName(json['platformType']),
-  null,
-);
+class Report {
+  Report(
+    this.error,
+    this.stackTrace,
+    this.dateTime,
+    this.deviceParameters,
+    this.applicationParameters,
+    this.customParameters,
+    this.errorDetails,
+    this.platformType,
+  );
+
+  final dynamic error;
+
+  final dynamic stackTrace;
+
+  final DateTime dateTime;
+
+  final Map<String, dynamic> deviceParameters;
+
+  final Map<String, dynamic> applicationParameters;
+
+  final Map<String, dynamic> customParameters;
+
+  final FlutterErrorDetails? errorDetails;
+
+  final PlatformType platformType;
+
+  bool isExpanded = false;
+
+  factory Report.fromJson(Map<String, dynamic> json) => Report(
+    json['error'],
+    json['stackTrace'],
+    DateTime.tryParse(json['dateTime'] ?? '') ?? DateTime(1970),
+    json['deviceParameters'] ?? const {},
+    json['applicationParameters'] ?? const {},
+    json['customParameters'] ?? const {},
+    null,
+    PlatformType.values.byName(json['platformType']),
+  );
+
+  Report copyWith({
+    dynamic error,
+    dynamic stackTrace,
+    DateTime? dateTime,
+    Map<String, dynamic>? deviceParameters,
+    Map<String, dynamic>? applicationParameters,
+    Map<String, dynamic>? customParameters,
+    FlutterErrorDetails? errorDetails,
+    PlatformType? platformType,
+  }) {
+    return Report(
+      error ?? this.error,
+      stackTrace ?? this.stackTrace,
+      dateTime ?? this.dateTime,
+      deviceParameters ?? this.deviceParameters,
+      applicationParameters ?? this.applicationParameters,
+      customParameters ?? this.customParameters,
+      errorDetails ?? this.errorDetails,
+      platformType ?? this.platformType,
+    );
+  }
+
+  String _params2String(Map<String, dynamic> params) {
+    return params.entries
+        .map((entry) => '${entry.key}: ${entry.value}\n')
+        .join();
+  }
+
+  @override
+  String toString() {
+    return '------- DEVICE INFO -------\n${_params2String(deviceParameters)}'
+        '------- APP INFO -------\n${_params2String(applicationParameters)}'
+        '------- ERROR -------\n$error\n'
+        '------- STACK TRACE -------\n${stackTrace.toString().trim()}\n'
+        '------- CUSTOM INFO -------\n${_params2String(customParameters)}';
+  }
+}

@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:PiliPlus/utils/extension.dart';
 import 'package:PiliPlus/utils/json_file_handler.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:catcher_2/catcher_2.dart';
@@ -34,10 +35,13 @@ abstract final class LoggerUtils {
     if (_logFile != null) return _logFile!;
 
     String dir = (await getApplicationDocumentsDirectory()).path;
-    final String filename = p.join(dir, ".pili_logs.json");
+    final String filename = p.join(dir, '.pili_logs.json');
     final File file = File(filename);
     if (!file.existsSync()) {
       await file.create(recursive: true);
+      // TODO: remove after next two versions
+      final oldFile = File(p.join(dir, '.pili_logs'));
+      if (oldFile.existsSync()) oldFile.tryDel();
     }
     return _logFile = file;
   }

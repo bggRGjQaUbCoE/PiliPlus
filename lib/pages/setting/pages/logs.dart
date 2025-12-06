@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:PiliPlus/common/constants.dart';
@@ -10,6 +11,7 @@ import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:catcher_2/model/platform_type.dart';
 import 'package:catcher_2/model/report.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 
@@ -113,6 +115,15 @@ class _LogsPageState extends State<LogsPage> {
                   clearLogsHandle();
                   break;
                 default:
+                  if (kDebugMode) {
+                    Timer.periodic(const Duration(milliseconds: 3500), (timer) {
+                      Utils.reportError('Manual');
+                      if (timer.tick > 3) {
+                        timer.cancel();
+                        if (mounted) getLog();
+                      }
+                    });
+                  }
               }
             },
             itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
@@ -132,6 +143,11 @@ class _LogsPageState extends State<LogsPage> {
                 value: 'clear',
                 child: Text('清空日志'),
               ),
+              if (kDebugMode)
+                const PopupMenuItem<String>(
+                  value: 'assert',
+                  child: Text('引发错误'),
+                ),
             ],
           ),
           const SizedBox(width: 6),

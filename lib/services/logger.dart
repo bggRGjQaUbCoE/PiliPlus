@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:PiliPlus/utils/json_file_handler.dart';
+import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:catcher_2/catcher_2.dart';
 import 'package:logger/logger.dart';
 import 'package:path/path.dart' as p;
@@ -42,16 +43,13 @@ abstract final class LoggerUtils {
   }
 
   static Future<bool> clearLogs() async {
-    final file = await getLogsPath();
     try {
-      final sink = JsonFileHandler.sink;
-      if (sink != null) {
-        JsonFileHandler.sink = null;
-        await sink.close();
-        JsonFileHandler.sink = file.openWrite(mode: FileMode.writeOnly)
-          ..add(const [])
-          ..flush();
+      if (Pref.enableLog) {
+        await JsonFileHandler.add(
+          (raf) => raf.setPosition(0).then((raf) => raf.truncate(0)),
+        );
       } else {
+        final file = await getLogsPath();
         await file.writeAsBytes(const [], flush: true);
       }
     } catch (e) {

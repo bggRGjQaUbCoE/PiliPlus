@@ -10,7 +10,6 @@ import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/router/app_pages.dart';
 import 'package:PiliPlus/services/account_service.dart';
 import 'package:PiliPlus/services/download/download_service.dart';
-import 'package:PiliPlus/services/logger.dart';
 import 'package:PiliPlus/services/service_locator.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
 import 'package:PiliPlus/utils/cache_manager.dart';
@@ -174,18 +173,17 @@ void main() async {
 
   if (Pref.enableLog) {
     // 异常捕获 logo记录
-    JsonFileHandler.file = await LoggerUtils.getLogsPath();
     final customParameters = {
       'BuildConfig':
           '''\n
 Build Time: ${DateFormatUtils.format(BuildConfig.buildTime, format: DateFormatUtils.longFormatDs)}
 Commit Hash: ${BuildConfig.commitHash}''',
     };
-    final fileHandler = JsonFileHandler();
+    final fileHandler = await JsonFileHandler.init();
     final Catcher2Options debugConfig = Catcher2Options(
       SilentReportMode(),
       [
-        fileHandler,
+        ?fileHandler,
         ConsoleHandler(
           enableDeviceParameters: false,
           enableApplicationParameters: false,
@@ -198,7 +196,7 @@ Commit Hash: ${BuildConfig.commitHash}''',
     final Catcher2Options releaseConfig = Catcher2Options(
       SilentReportMode(),
       [
-        fileHandler,
+        ?fileHandler,
         ConsoleHandler(enableCustomParameters: true),
       ],
       customParameters: customParameters,

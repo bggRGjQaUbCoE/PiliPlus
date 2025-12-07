@@ -64,5 +64,13 @@ linter:
     - use_null_aware_elements
     - unnecessary_lambdas
     - use_is_even_rather_than_modulo
+    - unnecessary_async
+    - unnecessary_await_in_return
+    - unnecessary_getters_setters
+    - prefer_const_literals_to_create_immutables
+    - no_literal_bool_comparisons
+    - use_truncating_division
+    - use_string_buffers
+    - unnecessary_statements
 # Additional information about this file can be found at
 # https://dart.dev/guides/language/analysis-options

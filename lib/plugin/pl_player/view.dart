@@ -655,7 +655,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
 
       /// 字幕
       BottomControlType.subtitle => Obx(
-        () => videoDetailController.subtitles.isEmpty == true
+        () => videoDetailController.subtitles.isEmpty
             ? const SizedBox.shrink()
             : PopupMenuButton<int>(
                 tooltip: '字幕',

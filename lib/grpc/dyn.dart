@@ -36,7 +36,7 @@ class DynGrpc {
   static Future<LoadingState<OpusDetailResp>> opusDetail({
     OpusType? opusType,
     required int oid,
-  }) async {
+  }) {
     return GrpcReq.request(
       GrpcUrl.opusDetail,
       OpusDetailReq(

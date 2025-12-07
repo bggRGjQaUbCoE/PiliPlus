@@ -290,9 +290,7 @@ class _MemberHomeState extends State<MemberHome>
                       child: Padding(
                         padding: const EdgeInsets.only(left: 10),
                         child: Icon(
-                          visible == true
-                              ? Icons.visibility
-                              : Icons.visibility_off,
+                          visible ? Icons.visibility : Icons.visibility_off,
                           size: 17,
                           color: color,
                         ),

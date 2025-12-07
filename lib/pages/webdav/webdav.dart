@@ -64,7 +64,7 @@ class WebDav {
   Future<void> backup() async {
     if (_client == null) {
       final res = await init();
-      if (res.first == false) {
+      if (!res.first) {
         SmartDialog.showToast('备份失败，请检查配置: ${res.second}');
         return;
       }
@@ -86,7 +86,7 @@ class WebDav {
   Future<void> restore() async {
     if (_client == null) {
       final res = await init();
-      if (res.first == false) {
+      if (!res.first) {
         SmartDialog.showToast('恢复失败，请检查配置: ${res.second}');
         return;
       }

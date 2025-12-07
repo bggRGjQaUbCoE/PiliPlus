@@ -63,9 +63,9 @@ class _ReplySearchPageState extends State<ReplySearchPage> {
           children: [
             TabBar(
               controller: _controller.tabController,
-              tabs: [
-                const Tab(text: '视频'),
-                const Tab(text: '专栏'),
+              tabs: const [
+                Tab(text: '视频'),
+                Tab(text: '专栏'),
               ],
               onTap: (index) {
                 if (!_controller.tabController.indexIsChanging) {

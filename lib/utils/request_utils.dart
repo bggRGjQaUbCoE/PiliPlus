@@ -568,7 +568,7 @@ abstract class RequestUtils {
         onClose: (Map<String, dynamic> message) {
           SmartDialog.showToast('关闭验证');
         },
-        onResult: (Map<String, dynamic> message) async {
+        onResult: (Map<String, dynamic> message) {
           if (kDebugMode) debugPrint("Captcha result: $message");
           String code = message["code"];
           if (code == "1") {

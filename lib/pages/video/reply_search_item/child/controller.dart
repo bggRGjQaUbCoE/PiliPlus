@@ -15,7 +15,7 @@ class ReplySearchChildController
 
   @override
   List<SearchItem>? getDataList(SearchItemReply response) {
-    if (response.cursor.hasNext == false) {
+    if (!response.cursor.hasNext) {
       isEnd = true;
     }
     return response.items;

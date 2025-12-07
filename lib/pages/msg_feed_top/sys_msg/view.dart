@@ -186,7 +186,7 @@ class _SysMsgPageState extends State<SysMsgPage> {
           }
         } else if (matchStr.startsWith('（')) {
           try {
-            match[4]; // dynId
+            // match[4]; // dynId
             spanChildren
               ..add(const TextSpan(text: '（'))
               ..add(

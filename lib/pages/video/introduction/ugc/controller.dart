@@ -581,7 +581,7 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
       (e) =>
           e.cid ==
           (skipPart
-              ? videoDetail.isPageReversed == true
+              ? videoDetail.isPageReversed
                     ? videoDetail.pages!.last.cid
                     : videoDetail.pages!.first.cid
               : this.cid.value),
@@ -663,7 +663,7 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
         (e) =>
             e.cid ==
             (skipPart
-                ? videoDetail.isPageReversed == true
+                ? videoDetail.isPageReversed
                       ? videoDetail.pages!.last.cid
                       : videoDetail.pages!.first.cid
                 : this.cid.value),

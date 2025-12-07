@@ -164,8 +164,9 @@ class GrpcReq {
         int? code;
         String msg = response.headers.value('Grpc-Status-Details-Bin') ?? '';
         if (msg.isNotEmpty) {
-          while (msg.length % 4 != 0) {
-            msg += '=';
+          final padding = -msg.length & 3;
+          if (padding != 0) {
+            msg += '=' * padding;
           }
           final msgBytes = base64Decode(msg);
           try {

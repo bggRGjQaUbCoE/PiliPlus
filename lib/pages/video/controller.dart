@@ -1719,7 +1719,7 @@ class VideoDetailController extends GetxController
       }
 
       // interactive video
-      if (isStein != true) {
+      if (!isStein) {
         graphVersion = null;
       }
       steinEdgeInfo = null;

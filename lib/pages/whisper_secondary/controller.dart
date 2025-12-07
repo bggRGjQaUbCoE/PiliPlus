@@ -31,7 +31,7 @@ class WhisperSecController
 
   @override
   List<Session>? getDataList(SessionSecondaryReply response) {
-    if (response.paginationParams.hasMore == false) {
+    if (!response.paginationParams.hasMore) {
       isEnd = true;
     }
     offset = response.paginationParams.offsets;

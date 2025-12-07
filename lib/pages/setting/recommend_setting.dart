@@ -21,9 +21,7 @@ class _RecommendSettingState extends State<RecommendSetting> {
     final theme = Theme.of(context);
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      appBar: widget.showAppBar == false
-          ? null
-          : AppBar(title: const Text('推荐流设置')),
+      appBar: widget.showAppBar ? AppBar(title: const Text('推荐流设置')) : null,
       body: ListView(
         padding: EdgeInsets.only(
           left: showAppBar ? padding.left : 0,

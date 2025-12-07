@@ -216,7 +216,7 @@ class _LivePageState extends CommonPageState<LivePage, LiveController>
                   itemCount: newTags.length,
                 ),
               ),
-          response != null && response.isNotEmpty == true
+          response != null && response.isNotEmpty
               ? SliverGrid.builder(
                   gridDelegate: gridDelegate,
                   itemBuilder: (context, index) {

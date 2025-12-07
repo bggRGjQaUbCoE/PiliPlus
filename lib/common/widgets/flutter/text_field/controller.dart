@@ -704,7 +704,7 @@ class RichTextEditingController extends TextEditingController {
         }
     }
 
-    if (addIndex != null && toAdd != null && toAdd.isNotEmpty == true) {
+    if (addIndex != null && toAdd != null && toAdd.isNotEmpty) {
       items.insertAll(addIndex, toAdd);
     }
     if (toDel != null && toDel.isNotEmpty) {

@@ -75,7 +75,7 @@ class PgcController
         list1.isNotEmpty &&
         list2.isNotEmpty) {
       for (var i = 0; i < list1.length; i++) {
-        list1[i] + list2[i];
+        list1[i].addAll(list2[i]);
       }
     } else {
       list1 ??= list2;

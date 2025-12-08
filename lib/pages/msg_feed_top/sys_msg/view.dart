@@ -137,29 +137,38 @@ class _SysMsgPageState extends State<SysMsgPage> {
     content.splitMapJoin(
       urlRegExp,
       onMatch: (Match match) {
-        String matchStr = match[0]!;
+        final matchStr = match[0]!;
         if (matchStr.startsWith('#')) {
-          spanChildren.add(
-            TextSpan(
-              text: match[1],
-              style: TextStyle(color: theme.colorScheme.primary),
-              recognizer: TapGestureRecognizer()
-                ..onTap = () {
-                  try {
-                    PiliScheme.routePushFromUrl(match[2]!.replaceAll('"', ''));
-                  } catch (err) {
-                    SmartDialog.showToast(err.toString());
-                  }
-                },
-            ),
-          );
+          try {
+            final url = match[2]!.replaceAll('"', '');
+            spanChildren.add(
+              TextSpan(
+                text: match[1],
+                style: TextStyle(color: theme.colorScheme.primary),
+                recognizer: TapGestureRecognizer()
+                  ..onTap = () {
+                    try {
+                      PiliScheme.routePushFromUrl(url);
+                    } catch (err) {
+                      SmartDialog.showToast(err.toString());
+                    }
+                  },
+              ),
+            );
+          } catch (e) {
+            spanChildren.add(TextSpan(text: matchStr));
+          }
         } else if (matchStr.startsWith('【')) {
           try {
-            bool isBV = match[3]?.startsWith('BV') == true;
+            final isBV = match[3]!.startsWith('BV');
+            final int validAv;
+            final String validBv;
             if (isBV) {
-              IdUtils.bv2av(match[3]!);
+              validBv = match[3]!;
+              validAv = IdUtils.bv2av(validBv);
             } else {
-              IdUtils.av2bv(int.parse(match[3]!));
+              validAv = int.parse(match[3]!);
+              validBv = IdUtils.av2bv(validAv);
             }
             spanChildren
               ..add(const TextSpan(text: '【'))
@@ -169,24 +178,17 @@ class _SysMsgPageState extends State<SysMsgPage> {
                   style: TextStyle(color: theme.colorScheme.primary),
                   recognizer: TapGestureRecognizer()
                     ..onTap = () {
-                      try {
-                        PiliScheme.videoPush(
-                          isBV ? null : int.parse(match[3]!),
-                          isBV ? match[3]! : null,
-                        );
-                      } catch (err) {
-                        SmartDialog.showToast(err.toString());
-                      }
+                      PiliScheme.videoPush(validAv, validBv);
                     },
                 ),
               )
               ..add(const TextSpan(text: '】'));
           } catch (e) {
-            spanChildren.add(TextSpan(text: match[0]));
+            spanChildren.add(TextSpan(text: matchStr));
           }
         } else if (matchStr.startsWith('（')) {
           try {
-            match[4]; // dynId
+            final dynId = match[4]!; // check dynId
             spanChildren
               ..add(const TextSpan(text: '（'))
               ..add(
@@ -195,17 +197,15 @@ class _SysMsgPageState extends State<SysMsgPage> {
                   style: TextStyle(color: theme.colorScheme.primary),
                   recognizer: TapGestureRecognizer()
                     ..onTap = () {
-                      try {
-                        PageUtils.pushDynFromId(id: match[4]);
-                      } catch (err) {
-                        SmartDialog.showToast(err.toString());
-                      }
+                      PageUtils.pushDynFromId(id: dynId).catchError(
+                        (err) => SmartDialog.showToast(err.toString()),
+                      );
                     },
                 ),
               )
               ..add(const TextSpan(text: '）'));
           } catch (e) {
-            spanChildren.add(TextSpan(text: match[0]));
+            spanChildren.add(TextSpan(text: matchStr));
           }
         } else {
           spanChildren.add(
@@ -214,12 +214,7 @@ class _SysMsgPageState extends State<SysMsgPage> {
               style: TextStyle(color: theme.colorScheme.primary),
               recognizer: TapGestureRecognizer()
                 ..onTap = () {
-                  try {
-                    PiliScheme.routePushFromUrl(match[0]!);
-                  } catch (err) {
-                    SmartDialog.showToast(err.toString());
-                    Utils.copyText(match[0] ?? '');
-                  }
+                  PiliScheme.routePushFromUrl(matchStr);
                 },
             ),
           );

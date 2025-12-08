@@ -25,7 +25,7 @@ class TimelineResult {
     isToday: json['is_today'] as int?,
   );
 
-  void operator +(TimelineResult other) {
+  void addAll(TimelineResult other) {
     if (dateTs == other.dateTs) {
       if (other.episodes case final list?) {
         (episodes ??= <Episode>[]).addAll(list);

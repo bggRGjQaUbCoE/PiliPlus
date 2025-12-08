@@ -278,7 +278,12 @@ abstract class PageUtils {
     );
   }
 
-  static Future<void> pushDynFromId({id, rid, bool off = false}) async {
+  static Future<void> pushDynFromId({
+    String? id,
+    Object? rid,
+    bool off = false,
+  }) async {
+    assert(id != null || rid != null);
     SmartDialog.showLoading();
     final res = await DynamicsHttp.dynamicDetail(
       id: id,
@@ -292,7 +297,7 @@ abstract class PageUtils {
         toDupNamed(
           '/articlePage',
           parameters: {
-            'id': id,
+            'id': id!,
             'type': 'opus',
           },
           off: off,

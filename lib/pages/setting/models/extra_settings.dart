@@ -888,6 +888,14 @@ List<SettingsModel> get extraSettings => [
     },
     defaultVal: false,
   ),
+  const SettingsModel(
+    settingsType: SettingsType.sw1tch,
+    title: '长按直接添加到稍后再看',
+    subtitle: '开启后长按视频卡片直接添加到稍后再看，关闭则显示弹框',
+    leading: Icon(Icons.watch_later_outlined),
+    setKey: SettingBoxKey.longPressToWatchLater,
+    defaultVal: false,
+  ),
   SettingsModel(
     settingsType: SettingsType.sw1tch,
     title: '评论区搜索关键词',

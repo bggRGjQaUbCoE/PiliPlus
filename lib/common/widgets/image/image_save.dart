@@ -3,6 +3,7 @@ import 'package:PiliPlus/common/widgets/button/icon_button.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/http/user.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
+import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -14,6 +15,13 @@ void imageSaveDialog({
   dynamic aid,
   String? bvid,
 }) {
+  if (Pref.longPressToWatchLater && (aid != null || bvid != null)) {
+    UserHttp.toViewLater(aid: aid, bvid: bvid).then((res) {
+      SmartDialog.showToast(res['msg']);
+    });
+    return;
+  }
+
   final double imgWidth = Get.mediaQuery.size.shortestSide - 8 * 2;
   SmartDialog.show(
     animationType: SmartAnimationType.centerScale_otherSlide,

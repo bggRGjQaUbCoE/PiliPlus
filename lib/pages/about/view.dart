@@ -247,6 +247,7 @@ Commit Hash: ${BuildConfig.commitHash}''',
                 final res = json.map(
                   (key, value) => MapEntry(key, LoginAccount.fromJson(value)),
                 );
+                await Accounts.clear();
                 await Accounts.account.putAll(res);
                 await Accounts.refresh();
                 MineController.anonymity.value = !Accounts.heartbeat.isLogin;
@@ -424,6 +425,70 @@ Future<void> showImportExportDialog<T>(
                           }
                         } catch (e) {
                           SmartDialog.showToast('导入失败：$e');
+                        }
+                      },
+                      child: const Text('确定'),
+                    ),
+                  ],
+                );
+              },
+            );
+          },
+        ),
+        ListTile(
+          dense: true,
+          title: Text('输入$title', style: style),
+          onTap: () {
+            Get.back();
+            final key = GlobalKey<FormFieldState<String>>();
+            late T json;
+            String? forceErrorText;
+
+            showDialog(
+              context: context,
+              builder: (context) {
+                return AlertDialog(
+                  title: Text('输入$title'),
+                  content: TextFormField(
+                    key: key,
+                    minLines: null,
+                    maxLines: null,
+                    expands: true,
+                    validator: (value) {
+                      if (forceErrorText != null) return forceErrorText;
+                      try {
+                        json = jsonDecode(value!) as T;
+                        return null;
+                      } catch (e) {
+                        if (e is FormatException) {}
+                        return '解析json失败：$e';
+                      }
+                    },
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: Get.back,
+                      child: Text(
+                        '取消',
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.outline,
+                        ),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () async {
+                        if (key.currentState?.validate() == true) {
+                          try {
+                            if (await fromJson(json)) {
+                              Get.back();
+                              SmartDialog.showToast('导入成功');
+                              return;
+                            }
+                          } catch (e) {
+                            forceErrorText = '导入失败：$e';
+                          }
+                          key.currentState?.validate();
+                          forceErrorText = null;
                         }
                       },
                       child: const Text('确定'),

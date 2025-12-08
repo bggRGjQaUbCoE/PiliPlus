@@ -72,10 +72,10 @@ abstract class GStorage {
       importAllJsonSettings(jsonDecode(data));
 
   static Future<bool> importAllJsonSettings(Map<String, dynamic> map) async {
-    await setting.clear();
-    await video.clear();
-    await setting.putAll(map[setting.name]);
-    await video.putAll(map[video.name]);
+    await Future.wait([
+      setting.clear().then((_) => setting.putAll(map[setting.name])),
+      video.clear().then((_) => video.putAll(map[video.name])),
+    ]);
     return true;
   }
 

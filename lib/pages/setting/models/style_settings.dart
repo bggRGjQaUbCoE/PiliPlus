@@ -18,6 +18,7 @@ import 'package:PiliPlus/pages/mine/controller.dart';
 import 'package:PiliPlus/pages/setting/models/model.dart';
 import 'package:PiliPlus/pages/setting/pages/color_select.dart';
 import 'package:PiliPlus/pages/setting/slide_color_picker.dart';
+import 'package:PiliPlus/pages/setting/widgets/dual_slide_dialog.dart';
 import 'package:PiliPlus/pages/setting/widgets/multi_select_dialog.dart';
 import 'package:PiliPlus/pages/setting/widgets/select_dialog.dart';
 import 'package:PiliPlus/pages/setting/widgets/slide_dialog.dart';
@@ -153,12 +154,15 @@ List<SettingsModel> get styleSettings => [
   SettingsModel(
     settingsType: SettingsType.normal,
     onTap: (setState) async {
-      final result = await showDialog<double>(
+      final result = await showDialog<(double,double)>(
         context: Get.context!,
         builder: (context) {
-          return SlideDialog(
+          return DualSlideDialog(
             title: '列表最大列宽度（默认240dp）',
-            value: Pref.smallCardWidth,
+            value1: Pref.recommendCardWidth,
+            value2: Pref.smallCardWidth,
+            description1: '主页推荐流',
+            description2: '其他',
             min: 150.0,
             max: 500.0,
             divisions: 35,
@@ -167,7 +171,8 @@ List<SettingsModel> get styleSettings => [
         },
       );
       if (result != null) {
-        await GStorage.setting.put(SettingBoxKey.smallCardWidth, result);
+        await GStorage.setting.put(SettingBoxKey.recommendCardWidth, result.$1);
+        await GStorage.setting.put(SettingBoxKey.smallCardWidth, result.$2);
         SmartDialog.showToast('重启生效');
         setState();
       }
@@ -175,7 +180,7 @@ List<SettingsModel> get styleSettings => [
     leading: const Icon(Icons.calendar_view_week_outlined),
     title: '列表宽度（dp）限制',
     getSubtitle: () =>
-        '当前:${Pref.smallCardWidth.toInt()}dp，屏幕宽度:${Get.mediaQuery.size.width.toPrecision(2)}dp。宽度越小列数越多。',
+        '当前: 主页${Pref.recommendCardWidth.toInt()}dp 其他${Pref.smallCardWidth.toInt()}dp，屏幕宽度:${Get.mediaQuery.size.width.toPrecision(2)}dp。宽度越小列数越多。',
   ),
   SettingsModel(
     settingsType: SettingsType.sw1tch,

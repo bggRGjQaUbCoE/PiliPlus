@@ -208,6 +208,7 @@ abstract class SettingBoxKey {
       enableSingleRow = 'enableSingleRow',
       displayMode = 'displayMode',
       smallCardWidth = 'smallCardWidth',
+      recommendCardWidth = 'recommendCardWidth',
       dynamicsWaterfallFlow = 'dynamicsWaterfallFlow',
       upPanelPosition = 'upPanelPosition',
       dynamicsShowAllFollowedUp = 'dynamicsShowAllFollowedUp',

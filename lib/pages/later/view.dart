@@ -40,11 +40,13 @@ class _LaterPageState extends State<LaterPage>
   final sortKey = GlobalKey();
   void listener() {
     (sortKey.currentContext as Element?)?.markNeedsBuild();
+    _baseCtr.currentTabIndex.value = _tabController.index;
   }
 
   @override
   void initState() {
     super.initState();
+    _baseCtr.currentTabIndex.value = _tabController.index;
     _tabController.addListener(listener);
   }
 
@@ -120,7 +122,8 @@ class _LaterPageState extends State<LaterPage>
                         text: '${item.title}${count != -1 ? '($count)' : ''}',
                       );
                     }).toList(),
-                    onTap: (_) {
+                    onTap: (index) {
+                      _baseCtr.currentTabIndex.value = index;
                       if (!_tabController.indexIsChanging) {
                         currCtr().scrollController.animToTop();
                       } else {
@@ -153,6 +156,10 @@ class _LaterPageState extends State<LaterPage>
   PreferredSizeWidget _buildAppbar(bool enableMultiSelect) {
     final theme = Theme.of(context);
     Color color = theme.colorScheme.secondary;
+
+    // Hide title when used as bottom navigation tab (no back button)
+    // Show title when navigated from other pages (has back button)
+    final bool showTitle = Navigator.canPop(context);
 
     return MultiSelectAppBarWidget(
       visible: enableMultiSelect,
@@ -202,7 +209,7 @@ class _LaterPageState extends State<LaterPage>
         ),
       ],
       child: AppBar(
-        title: const Text('稍后再看'),
+        title: showTitle ? const Text('稍后再看') : null,
         actions: [
           IconButton(
             tooltip: '搜索',

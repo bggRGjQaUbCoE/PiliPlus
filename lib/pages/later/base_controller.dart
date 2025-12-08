@@ -14,6 +14,9 @@ class LaterBaseController extends GetxController {
 
   late double dx = 0;
   late final RxBool isPlayAll = Pref.enablePlayAll.obs;
+  
+  // 当前激活的 tab 索引
+  RxInt currentTabIndex = 0.obs;
 
   void setIsPlayAll(bool isPlayAll) {
     if (this.isPlayAll.value == isPlayAll) return;

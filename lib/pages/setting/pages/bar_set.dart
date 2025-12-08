@@ -1,5 +1,6 @@
 import 'package:PiliPlus/models/common/enum_with_label.dart';
 import 'package:PiliPlus/utils/storage.dart';
+import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -28,14 +29,22 @@ class _BarSetPageState extends State<BarSetPage> {
     if (bars != null) {
       barIndex = {for (var (k, v) in bars.indexed) v: k};
 
-      // 对 tabData 进行排序
+      // Sort tabData
       defaultBars.sort((a, b) {
         final indexA = barIndex[a.index] ?? barIndex.length;
         final indexB = barIndex[b.index] ?? barIndex.length;
         return indexA.compareTo(indexB);
       });
     } else {
-      barIndex = {for (var (k, v) in defaultBars.indexed) v.index: k};
+      // For navbar settings, exclude 'later' by default
+      if (key == SettingBoxKey.navBarSort) {
+        barIndex = {
+          for (var (k, v) in defaultBars.indexed)
+            if (v.label != '稍后再看') v.index: k
+        };
+      } else {
+        barIndex = {for (var (k, v) in defaultBars.indexed) v.index: k};
+      }
     }
   }
 

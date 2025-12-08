@@ -212,7 +212,7 @@
 
 ## 下载
 
-可以通过右侧release进行下载或拉取代码到本地进行编译
+可以通过右侧release进行下载或拉取代码到本地进行编译<br/>
 linux用户请使用[flutter_3.35.7](https://github.com/bggRGjQaUbCoE/PiliPlus/tree/flutter_3.35.7)分支,问题详见https://github.com/bggRGjQaUbCoE/PiliPlus/pull/1752
 
 <br/>

@@ -1561,7 +1561,7 @@ class PlPlayerController {
             await fullAutoModeForceSensor();
             return;
           }
-          late final size = Get.mediaQuery.size;
+          late final size = MediaQuery.sizeOf(Get.context!);
           if ((mode == FullScreenMode.vertical ||
               (mode == FullScreenMode.auto && isVertical) ||
               (mode == FullScreenMode.ratio &&

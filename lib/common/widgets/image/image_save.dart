@@ -14,7 +14,7 @@ void imageSaveDialog({
   dynamic aid,
   String? bvid,
 }) {
-  final double imgWidth = Get.mediaQuery.size.shortestSide - 8 * 2;
+  final double imgWidth = MediaQuery.sizeOf(Get.context!).shortestSide - 8 * 2;
   SmartDialog.show(
     animationType: SmartAnimationType.centerScale_otherSlide,
     builder: (context) {

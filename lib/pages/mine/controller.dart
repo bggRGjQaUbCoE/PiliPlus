@@ -27,9 +27,9 @@ class MineController extends CommonDataController<FavFolderData, FavFolderData>
   int? favFolderCount;
 
   // 用户信息 头像、昵称、lv
-  Rx<UserInfoData> userInfo = UserInfoData().obs;
+  final Rx<UserInfoData> userInfo = UserInfoData().obs;
   // 用户状态 动态、关注、粉丝
-  Rx<UserStat> userStat = const UserStat().obs;
+  final Rx<UserStat> userStat = const UserStat().obs;
 
   Rx<ThemeType> themeType = Pref.themeType.obs;
 

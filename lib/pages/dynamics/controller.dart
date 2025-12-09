@@ -195,7 +195,8 @@ class DynamicsController extends GetxController
       _upPage = 1;
       _cacheUpList = null;
     }
-    return Future.wait([queryFollowUp(), ?controller?.onRefresh()]);
+    queryFollowUp();
+    return controller!.onRefresh();
   }
 
   @override

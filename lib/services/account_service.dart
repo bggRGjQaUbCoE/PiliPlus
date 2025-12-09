@@ -27,16 +27,12 @@ mixin AccountMixin on GetLifeCycleBase {
 
   AccountService get accountService => Get.find<AccountService>();
 
-  final needListen = true;
-
   void onChangeAccount(bool isLogin);
 
   @override
   void onInit() {
     super.onInit();
-    if (needListen) {
-      _listener = accountService.isLogin.listen(onChangeAccount);
-    }
+    _listener = accountService.isLogin.listen(onChangeAccount);
   }
 
   @override

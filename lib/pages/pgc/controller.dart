@@ -145,12 +145,6 @@ class PgcController
   }
 
   @override
-  bool get needListen => switch (tabType) {
-    .bangumi || .cinema => true,
-    _ => false,
-  };
-
-  @override
   void onChangeAccount(bool isLogin) {
     if (isLogin) {
       followPage = 1;

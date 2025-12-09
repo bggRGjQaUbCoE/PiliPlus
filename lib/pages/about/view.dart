@@ -247,7 +247,6 @@ Commit Hash: ${BuildConfig.commitHash}''',
                 final res = json.map(
                   (key, value) => MapEntry(key, LoginAccount.fromJson(value)),
                 );
-                await Accounts.clear();
                 await Accounts.account.putAll(res);
                 await Accounts.refresh();
                 MineController.anonymity.value = !Accounts.heartbeat.isLogin;
@@ -449,11 +448,19 @@ Future<void> showImportExportDialog<T>(
               builder: (context) {
                 return AlertDialog(
                   title: Text('输入$title'),
+                  constraints: const BoxConstraints(
+                    minWidth: 420,
+                    maxWidth: 420,
+                  ),
                   content: TextFormField(
                     key: key,
-                    minLines: null,
-                    maxLines: null,
-                    expands: true,
+                    minLines: 4,
+                    maxLines: 12,
+                    autofocus: true,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      errorMaxLines: 3,
+                    ),
                     validator: (value) {
                       if (forceErrorText != null) return forceErrorText;
                       try {

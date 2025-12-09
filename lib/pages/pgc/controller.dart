@@ -14,14 +14,16 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class PgcController
-    extends CommonListController<List<PgcIndexItem>?, PgcIndexItem> {
+    extends CommonListController<List<PgcIndexItem>?, PgcIndexItem>
+    with AccountMixin {
   PgcController({required this.tabType});
   final HomeTabType tabType;
 
   late final showPgcTimeline =
       tabType == HomeTabType.bangumi && Pref.showPgcTimeline;
 
-  AccountService accountService = Get.find<AccountService>();
+  @override
+  final accountService = Get.find<AccountService>();
 
   @override
   void onInit() {
@@ -92,7 +94,6 @@ class PgcController
     }
     followLoading = true;
     var res = await FavHttp.favPgc(
-      mid: accountService.mid,
       type: tabType == HomeTabType.bangumi ? 1 : 2,
       pn: followPage,
     );
@@ -141,5 +142,22 @@ class PgcController
   void onClose() {
     followController?.dispose();
     super.onClose();
+  }
+
+  @override
+  bool get needListen => switch (tabType) {
+    .bangumi || .cinema => true,
+    _ => false,
+  };
+
+  @override
+  void onChangeAccount(bool isLogin) {
+    if (isLogin) {
+      followPage = 1;
+      followEnd = false;
+      queryPgcFollow();
+    } else {
+      followState.value = LoadingState.loading();
+    }
   }
 }

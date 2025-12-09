@@ -106,9 +106,9 @@ abstract class Accounts {
   }
 
   static Future<void> set(AccountType key, Account account) async {
-    await (accountMode[key.index]..type.remove(key)).onChange();
+    final oldAccount = accountMode[key.index]..type.remove(key);
     accountMode[key.index] = account..type.add(key);
-    await account.onChange();
+    await Future.wait([account.onChange(), oldAccount.onChange()]);
     if (!account.activated) await Request.buvidActive(account);
     switch (key) {
       case AccountType.main:

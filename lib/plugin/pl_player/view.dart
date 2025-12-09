@@ -57,6 +57,7 @@ import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:canvas_danmaku/canvas_danmaku.dart';
+import 'package:collection/collection.dart';
 import 'package:dio/dio.dart';
 import 'package:easy_debounce/easy_throttle.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -2132,9 +2133,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
   Future<void> screenshotWebp() async {
     final videoInfo = videoDetailController.data;
     final ids = videoInfo.dash!.video!.map((i) => i.id!).toSet();
-    final video = videoDetailController.findVideoByQa(
-      ids.reduce((p, n) => p < n ? p : n),
-    );
+    final video = videoDetailController.findVideoByQa(ids.min);
 
     VideoQuality qa = video.quality;
     String? url = video.baseUrl;
@@ -2513,7 +2512,7 @@ Widget buildDmChart(
           minX: 0,
           maxX: (dmTrend.length - 1).toDouble(),
           minY: 0,
-          maxY: dmTrend.reduce((a, b) => a > b ? a : b).toDouble(),
+          maxY: dmTrend.max,
           lineBarsData: [
             LineChartBarData(
               spots: List.generate(

@@ -4,22 +4,22 @@ part 'stat.g.dart';
 
 @HiveType(typeId: 1)
 class UserStat {
-  UserStat({
+  const UserStat({
     this.following,
     this.follower,
     this.dynamicCount,
   });
 
   @HiveField(0)
-  int? following;
+  final int? following;
   @HiveField(1)
-  int? follower;
+  final int? follower;
   @HiveField(2)
-  int? dynamicCount;
+  final int? dynamicCount;
 
-  UserStat.fromJson(Map<String, dynamic> json) {
-    following = json['following'];
-    follower = json['follower'];
-    dynamicCount = json['dynamic_count'];
-  }
+  factory UserStat.fromJson(Map<String, dynamic> json) => UserStat(
+    following: json['following'],
+    follower: json['follower'],
+    dynamicCount: json['dynamic_count'],
+  );
 }

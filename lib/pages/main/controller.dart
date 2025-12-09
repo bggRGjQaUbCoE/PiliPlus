@@ -19,22 +19,24 @@ import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/update.dart';
+import 'package:collection/collection.dart';
 import 'package:easy_debounce/easy_throttle.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class MainController extends GetxController
-    with GetSingleTickerProviderStateMixin {
-  AccountService accountService = Get.find<AccountService>();
+    with GetSingleTickerProviderStateMixin, AccountMixin {
+  @override
+  final AccountService accountService = Get.find<AccountService>();
 
   List<NavigationBarType> navigationBars = <NavigationBarType>[];
 
   StreamController<bool>? bottomBarStream;
   late bool hideTabBar = Pref.hideTabBar;
   late dynamic controller;
-  RxInt selectedIndex = 0.obs;
+  final RxInt selectedIndex = 0.obs;
 
-  RxInt dynCount = 0.obs;
+  final RxInt dynCount = 0.obs;
   late DynamicBadgeMode dynamicBadgeMode;
   late bool checkDynamic = Pref.checkDynamic;
   late int dynamicPeriod = Pref.dynamicPeriod * 60 * 1000;
@@ -165,7 +167,7 @@ class MainController extends GetxController
 
     var res = await Future.wait([_msgUnread(), _msgFeedUnread()]);
 
-    int count = res.fold(0, (prev, e) => prev + e);
+    final count = res.sum;
 
     final countStr = count == 0
         ? ''
@@ -331,5 +333,14 @@ class MainController extends GetxController
     bottomBarStream?.close();
     controller.dispose();
     super.onClose();
+  }
+
+  @override
+  void onChangeAccount(bool isLogin) {
+    if (isLogin) {
+      getUnreadDynamic();
+    } else {
+      setDynCount();
+    }
   }
 }

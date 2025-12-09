@@ -367,15 +367,15 @@ class FavHttp {
   }
 
   static Future<LoadingState<FavPgcData>> favPgc({
-    required dynamic mid,
     required int type,
     required int pn,
     int? followStatus,
+    Object? mid,
   }) async {
     var res = await Request().get(
       Api.favPgc,
       queryParameters: {
-        'vmid': mid,
+        'vmid': mid ?? Accounts.main.mid,
         'type': type,
         'follow_status': ?followStatus,
         'pn': pn,

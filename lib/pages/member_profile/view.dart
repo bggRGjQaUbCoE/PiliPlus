@@ -89,9 +89,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   res.data['data'],
                 );
                 _loadingState = Success(data);
-                accountService
-                  ..name.value = data.name!
-                  ..face.value = data.face!;
+                accountService.face.value = data.face!;
                 try {
                   UserInfoData userInfo = Pref.userInfoCache!
                     ..uname = data.name
@@ -388,7 +386,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
               data
                 ..name = _textController.text
                 ..coins = data.coins! - 6;
-              accountService.name.value = _textController.text;
               try {
                 UserInfoData userInfo = Pref.userInfoCache!
                   ..uname = _textController.text;

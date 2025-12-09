@@ -19,8 +19,9 @@ import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
-class MineController
-    extends CommonDataController<FavFolderData, FavFolderData> {
+class MineController extends CommonDataController<FavFolderData, FavFolderData>
+    with AccountMixin {
+  @override
   AccountService accountService = Get.find<AccountService>();
 
   int? favFolderCount;
@@ -28,7 +29,7 @@ class MineController
   // 用户信息 头像、昵称、lv
   Rx<UserInfoData> userInfo = UserInfoData().obs;
   // 用户状态 动态、关注、粉丝
-  Rx<UserStat> userStat = UserStat().obs;
+  Rx<UserStat> userStat = const UserStat().obs;
 
   Rx<ThemeType> themeType = Pref.themeType.obs;
 
@@ -107,8 +108,6 @@ class MineController
           GStorage.userInfo.put('userInfoCache', data);
         }
         accountService
-          ..mid = data.mid!
-          ..name.value = data.uname!
           ..face.value = data.face!
           ..isLogin.value = true;
       } else {
@@ -145,7 +144,7 @@ class MineController
     return FavHttp.userfavFolder(
       pn: 1,
       ps: 20,
-      mid: accountService.mid,
+      mid: Accounts.main.mid,
     );
   }
 
@@ -292,5 +291,16 @@ class MineController
     }
     queryUserInfo();
     return super.onRefresh();
+  }
+
+  @override
+  void onChangeAccount(bool isLogin) {
+    if (isLogin) {
+      onRefresh();
+    } else {
+      userInfo.value = UserInfoData();
+      userStat.value = const UserStat();
+      loadingState.value = LoadingState.loading();
+    }
   }
 }

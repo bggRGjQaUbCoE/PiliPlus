@@ -75,7 +75,7 @@ jobs:
               id: flutter-action
               with:
                   channel: stable
-                                    flutter-version-file: .fvmrc
+                  flutter-version-file: pubspec.yaml
                   cache: true
 
             - name: apply bottom sheet patch

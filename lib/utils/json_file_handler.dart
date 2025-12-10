@@ -40,7 +40,7 @@ class JsonFileHandler extends ReportHandler {
       );
       await raf.writeFrom(const []);
       await raf.flush();
-      _future = Future.syncValue(raf);
+      _future = Future.value(raf);
       return JsonFileHandler._(
         enableDeviceParameters: enableDeviceParameters,
         enableApplicationParameters: enableApplicationParameters,

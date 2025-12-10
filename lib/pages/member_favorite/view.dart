@@ -1,5 +1,4 @@
 import 'package:PiliPlus/common/skeleton/video_card_h.dart';
-import 'package:PiliPlus/common/widgets/custom_sliver_persistent_header_delegate.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/http/loading_state.dart';
@@ -25,7 +24,7 @@ class MemberFavorite extends StatefulWidget {
 }
 
 class _MemberFavoriteState extends State<MemberFavorite>
-    with AutomaticKeepAliveClientMixin, GridMixin {
+    with AutomaticKeepAliveClientMixin {
   @override
   bool get wantKeepAlive => true;
 
@@ -41,7 +40,7 @@ class _MemberFavoriteState extends State<MemberFavorite>
     return refreshIndicator(
       onRefresh: _controller.onRefresh,
       child: CustomScrollView(
-        physics: _FavScrollPhysics(controller: _controller),
+        physics: const AlwaysScrollableScrollPhysics(),
         slivers: [
           SliverPadding(
             padding: EdgeInsets.only(
@@ -56,10 +55,7 @@ class _MemberFavoriteState extends State<MemberFavorite>
     );
   }
 
-  Widget _buildBody(
-    ThemeData theme,
-    LoadingState<List<SpaceFavData>?> loadingState,
-  ) {
+  Widget _buildBody(ThemeData theme, LoadingState loadingState) {
     return switch (loadingState) {
       Loading() => SliverPadding(
         padding: const EdgeInsets.only(top: 7),
@@ -69,21 +65,19 @@ class _MemberFavoriteState extends State<MemberFavorite>
           itemCount: 10,
         ),
       ),
-      Success(:final response) =>
-        response != null && response.isNotEmpty
+      Success(:var response) =>
+        (response as List?)?.isNotEmpty == true
             ? SliverMainAxisGroup(
                 slivers: [
-                  _buildItem(
-                    theme,
-                    data: _controller.favState,
-                    isEnd: _controller.favEnd,
-                    isFav: true,
+                  SliverToBoxAdapter(
+                    child: Obx(
+                      () => _buildItem(theme, _controller.first.value, true),
+                    ),
                   ),
-                  _buildItem(
-                    theme,
-                    data: _controller.subState,
-                    isEnd: _controller.subEnd,
-                    isFav: false,
+                  SliverToBoxAdapter(
+                    child: Obx(
+                      () => _buildItem(theme, _controller.second.value, false),
+                    ),
                   ),
                 ],
               )
@@ -95,160 +89,78 @@ class _MemberFavoriteState extends State<MemberFavorite>
     };
   }
 
-  Widget _buildItem(
-    ThemeData theme, {
-    required Rx<SpaceFavData> data,
-    required RxBool isEnd,
-    required bool isFav,
-  }) {
-    return SliverMainAxisGroup(
-      slivers: [
-        SliverPersistentHeader(
-          pinned: true,
-          delegate: CustomSliverPersistentHeaderDelegate(
-            child: Material(
-              color: theme.colorScheme.surface,
-              child: Builder(
-                builder: (context) {
-                  return InkWell(
-                    onTap: () {
-                      _controller.setExpand(isFav);
-                      (context as Element).markNeedsBuild();
-                      data.refresh();
-                      if (!isEnd.value) {
-                        isEnd.refresh();
-                      }
-                    },
-                    child: Container(
-                      height: 45,
-                      alignment: .centerLeft,
-                      padding: const .only(left: 12),
-                      child: Text.rich(
-                        TextSpan(
-                          children: [
-                            WidgetSpan(
-                              alignment: .middle,
-                              child: Icon(
-                                _controller.isExpand(isFav)
-                                    ? Icons.expand_less
-                                    : Icons.expand_more,
-                                color: theme.colorScheme.outline,
-                              ),
-                            ),
-                            TextSpan(
-                              text: ' ${data.value.name}',
-                              style: const TextStyle(fontSize: 14),
-                            ),
-                            TextSpan(
-                              text: ' ${data.value.mediaListResponse?.count}',
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: theme.colorScheme.outline,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  );
+  Theme _buildItem(ThemeData theme, SpaceFavData data, bool isFirst) {
+    return Theme(
+      data: theme.copyWith(
+        dividerColor: Colors.transparent,
+      ),
+      child: ExpansionTile(
+        dense: true,
+        initiallyExpanded: true,
+        title: Text.rich(
+          TextSpan(
+            children: [
+              TextSpan(
+                text: data.name,
+                style: const TextStyle(fontSize: 14),
+              ),
+              TextSpan(
+                text: ' ${data.mediaListResponse?.count}',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: theme.colorScheme.outline,
+                ),
+              ),
+            ],
+          ),
+        ),
+        controlAffinity: ListTileControlAffinity.leading,
+        children: [
+          ...?data.mediaListResponse?.list?.map(
+            (item) => SizedBox(
+              height: 98,
+              child: MemberFavItem(
+                item: item,
+                callback: (res) {
+                  if (res == true) {
+                    _controller
+                      ..first.value.mediaListResponse?.list?.remove(item)
+                      ..first.refresh();
+                  }
                 },
               ),
             ),
-            bgColor: null,
           ),
-        ),
-        Obx(() {
-          final list = data.value.mediaListResponse?.list;
-          if (!_controller.isExpand(isFav)) {
-            return const SliverToBoxAdapter();
-          }
-          if (list != null && list.isNotEmpty) {
-            return SliverGrid.builder(
-              gridDelegate: gridDelegate,
-              itemCount: list.length,
-              itemBuilder: (context, index) {
-                final item = list[index];
-                return SizedBox(
-                  height: 98,
-                  child: MemberFavItem(
-                    item: item,
-                    callback: (res) {
-                      if (res == true) {
-                        _controller.favState
-                          ..value.mediaListResponse?.list?.remove(item)
-                          ..refresh();
-                      }
-                    },
-                  ),
-                );
-              },
-            );
-          }
-          return const SliverToBoxAdapter();
-        }),
-        Obx(
-          () => isEnd.value || !_controller.isExpand(isFav)
-              ? const SliverToBoxAdapter()
-              : SliverToBoxAdapter(child: _buildLoadMoreItem(theme, isFav)),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildLoadMoreItem(ThemeData theme, bool isFav) {
-    return Padding(
-      padding: const .only(top: 7),
-      child: InkWell(
-        onTap: () {
-          if (isFav) {
-            _controller.userFavFolder();
-          } else {
-            _controller.userSubFolder();
-          }
-        },
-        child: Container(
-          height: 40,
-          alignment: .center,
-          child: Text(
-            '查看更多内容',
-            textAlign: TextAlign.center,
-            style: TextStyle(color: theme.colorScheme.primary),
+          Obx(
+            () =>
+                (isFirst
+                    ? _controller.firstEnd.value
+                    : _controller.secondEnd.value)
+                ? const SizedBox.shrink()
+                : _buildLoadMoreItem(theme, isFirst),
           ),
-        ),
+        ],
       ),
     );
   }
-}
 
-class _FavScrollPhysics extends AlwaysScrollableScrollPhysics {
-  const _FavScrollPhysics({super.parent, required this.controller});
-
-  final MemberFavoriteCtr controller;
-
-  @override
-  _FavScrollPhysics applyTo(ScrollPhysics? ancestor) {
-    return _FavScrollPhysics(
-      parent: buildParent(ancestor),
-      controller: controller,
-    );
-  }
-
-  @override
-  double adjustPositionForNewDimensions({
-    required ScrollMetrics oldPosition,
-    required ScrollMetrics newPosition,
-    required bool isScrolling,
-    required double velocity,
-  }) {
-    if (controller.flag) {
-      controller.flag = false;
-      return 0;
-    }
-    return super.adjustPositionForNewDimensions(
-      oldPosition: oldPosition,
-      newPosition: newPosition,
-      isScrolling: isScrolling,
-      velocity: velocity,
+  ListTile _buildLoadMoreItem(ThemeData theme, bool isFirst) {
+    return ListTile(
+      dense: true,
+      onTap: () {
+        if (isFirst) {
+          _controller.userfavFolder();
+        } else {
+          _controller.userSubFolder();
+        }
+      },
+      title: Text(
+        '查看更多内容',
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          color: theme.colorScheme.primary,
+        ),
+      ),
     );
   }
 }

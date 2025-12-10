@@ -1,4 +1,6 @@
 import 'package:PiliPlus/common/skeleton/video_card_h.dart';
+import 'package:PiliPlus/common/widgets/button/icon_button.dart';
+import 'package:PiliPlus/common/widgets/custom_sliver_persistent_header_delegate.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
@@ -6,7 +8,6 @@ import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/image_preview_type.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
-import 'package:PiliPlus/models/common/member/user_info_type.dart';
 import 'package:PiliPlus/models/member/info.dart';
 import 'package:PiliPlus/models_new/space/space_archive/item.dart';
 import 'package:PiliPlus/models_new/video/video_detail/episode.dart';
@@ -63,7 +64,7 @@ class _HorizontalMemberPageState extends State<HorizontalMemberPage> {
       final index = res.response?.indexWhere((e) => e.bvid == _bvid) ?? -1;
       if (index != -1) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          _controller.scrollController.jumpTo(100.0 * index);
+          _controller.scrollController.jumpTo(100.0 * index + 40);
         });
       }
     }
@@ -82,8 +83,21 @@ class _HorizontalMemberPageState extends State<HorizontalMemberPage> {
       Loading() => loadingWidget,
       Success(:var response) => Column(
         children: [
+          const SizedBox(height: 4),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              iconButton(
+                context: context,
+                onPressed: Get.back,
+                tooltip: '关闭',
+                icon: const Icon(Icons.clear),
+                size: 32,
+              ),
+              const SizedBox(width: 16),
+            ],
+          ),
           _buildUserInfo(theme, response),
-          _buildHeader(theme),
           Expanded(
             child: refreshIndicator(
               onRefresh: _controller.onRefresh,
@@ -91,6 +105,7 @@ class _HorizontalMemberPageState extends State<HorizontalMemberPage> {
                 controller: _controller.scrollController,
                 physics: const AlwaysScrollableScrollPhysics(),
                 slivers: [
+                  _buildSliverHeader(theme),
                   SliverPadding(
                     padding: EdgeInsets.only(
                       bottom: MediaQuery.viewPaddingOf(context).bottom + 100,
@@ -119,45 +134,53 @@ class _HorizontalMemberPageState extends State<HorizontalMemberPage> {
     };
   }
 
-  Widget _buildHeader(ThemeData theme) {
-    return Container(
-      height: 40,
-      padding: const EdgeInsets.fromLTRB(12, 0, 6, 0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Obx(
-            () {
-              final count = _controller.count.value;
-              return Text(
-                count != -1 ? '共$count视频' : '',
-                style: const TextStyle(fontSize: 13),
-              );
-            },
-          ),
-          SizedBox(
-            height: 35,
-            child: TextButton.icon(
-              onPressed: () => _controller
-                ..lastAid = widget.videoDetailController.aid.toString()
-                ..queryBySort(),
-              icon: Icon(
-                Icons.sort,
-                size: 16,
-                color: theme.colorScheme.secondary,
+  Widget _buildSliverHeader(ThemeData theme) {
+    return SliverPersistentHeader(
+      pinned: false,
+      floating: true,
+      delegate: CustomSliverPersistentHeaderDelegate(
+        extent: 40,
+        bgColor: theme.colorScheme.surface,
+        child: Container(
+          height: 40,
+          padding: const EdgeInsets.fromLTRB(12, 0, 6, 0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Obx(
+                () {
+                  final count = _controller.count.value;
+                  return Text(
+                    count != -1 ? '共$count视频' : '',
+                    style: const TextStyle(fontSize: 13),
+                  );
+                },
               ),
-              label: Obx(
-                () => Text(
-                  _controller.order.value == 'pubdate' ? '最新发布' : '最多播放',
-                  style: TextStyle(
-                    fontSize: 13,
+              SizedBox(
+                height: 35,
+                child: TextButton.icon(
+                  onPressed: () => _controller
+                    ..lastAid = widget.videoDetailController.aid.toString()
+                    ..queryBySort(),
+                  icon: Icon(
+                    Icons.sort,
+                    size: 16,
                     color: theme.colorScheme.secondary,
+                  ),
+                  label: Obx(
+                    () => Text(
+                      _controller.order.value == 'pubdate' ? '最新发布' : '最多播放',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: theme.colorScheme.secondary,
+                      ),
+                    ),
                   ),
                 ),
               ),
-            ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -173,7 +196,7 @@ class _HorizontalMemberPageState extends State<HorizontalMemberPage> {
         itemExtent: 100,
       ),
       Success(:var response) =>
-        response != null && response.isNotEmpty
+        response?.isNotEmpty == true
             ? SliverFixedExtentList.builder(
                 itemBuilder: (context, index) {
                   if (index == response.length - 1 && _controller.hasNext) {
@@ -198,7 +221,7 @@ class _HorizontalMemberPageState extends State<HorizontalMemberPage> {
                     ),
                   );
                 },
-                itemCount: response.length,
+                itemCount: response!.length,
                 itemExtent: 100,
               )
             : HttpError(onReload: _controller.onReload),
@@ -210,15 +233,14 @@ class _HorizontalMemberPageState extends State<HorizontalMemberPage> {
   }
 
   Widget _buildUserInfo(ThemeData theme, MemberInfoModel memberInfoModel) {
-    return Padding(
-      padding: const .only(left: 16, top: 10, right: 16, bottom: 3),
-      child: Row(
-        spacing: 10,
-        children: [
-          _buildAvatar(memberInfoModel.face!),
-          Expanded(child: _buildInfo(theme, memberInfoModel)),
-        ],
-      ),
+    return Row(
+      children: [
+        const SizedBox(width: 16),
+        _buildAvatar(memberInfoModel.face!),
+        const SizedBox(width: 10),
+        Expanded(child: _buildInfo(theme, memberInfoModel)),
+        const SizedBox(width: 16),
+      ],
     );
   }
 
@@ -250,36 +272,52 @@ class _HorizontalMemberPageState extends State<HorizontalMemberPage> {
           ),
         ],
       ),
-      const SizedBox(height: 4),
+      const SizedBox(height: 2),
       Obx(
         () => Row(
-          children: UserInfoType.values
-              .map(
-                (e) => _buildChildInfo(
-                  theme: theme,
-                  type: e,
-                  userStat: _controller.userStat,
-                  memberInfoModel: memberInfoModel,
+          children: List.generate(5, (index) {
+            if (index.isEven) {
+              return _buildChildInfo(
+                theme: theme,
+                title: const ['粉丝', '关注', '获赞'][index ~/ 2],
+                num: index == 0
+                    ? _controller.userStat['follower'] != null
+                          ? NumUtils.numFormat(_controller.userStat['follower'])
+                          : ''
+                    : index == 2
+                    ? _controller.userStat['following'] ?? ''
+                    : _controller.userStat['likes'] != null
+                    ? NumUtils.numFormat(_controller.userStat['likes'])
+                    : '',
+                onTap: () {
+                  if (index == 0) {
+                    FansPage.toFansPage(
+                      mid: widget.mid,
+                      name: memberInfoModel.name,
+                    );
+                  } else if (index == 2) {
+                    FollowPage.toFollowPage(
+                      mid: widget.mid,
+                      name: memberInfoModel.name,
+                    );
+                  }
+                },
+              );
+            } else {
+              return SizedBox(
+                height: 10,
+                width: 20,
+                child: VerticalDivider(
+                  width: 1,
+                  color: theme.colorScheme.outline,
                 ),
-              )
-              .expand((child) sync* {
-                yield SizedBox(
-                  height: 10,
-                  width: 20,
-                  child: VerticalDivider(
-                    width: 1,
-                    color: theme.colorScheme.outline,
-                  ),
-                );
-                yield child;
-              })
-              .skip(1)
-              .toList(),
+              );
+            }
+          }),
         ),
       ),
-      const SizedBox(height: 8),
+      const SizedBox(height: 2),
       Row(
-        spacing: 8,
         children: [
           Expanded(
             child: FilledButton.tonal(
@@ -291,7 +329,6 @@ class _HorizontalMemberPageState extends State<HorizontalMemberPage> {
                     ? theme.colorScheme.outline
                     : null,
                 padding: EdgeInsets.zero,
-                tapTargetSize: .shrinkWrap,
                 visualDensity: const VisualDensity(vertical: -2),
               ),
               onPressed: () {
@@ -325,11 +362,11 @@ class _HorizontalMemberPageState extends State<HorizontalMemberPage> {
               ),
             ),
           ),
+          const SizedBox(width: 8),
           Expanded(
             child: OutlinedButton(
               style: OutlinedButton.styleFrom(
                 padding: EdgeInsets.zero,
-                tapTargetSize: .shrinkWrap,
                 visualDensity: const VisualDensity(vertical: -2),
               ),
               onPressed: () => Get.toNamed('/member?mid=${widget.mid}'),
@@ -347,36 +384,14 @@ class _HorizontalMemberPageState extends State<HorizontalMemberPage> {
 
   Widget _buildChildInfo({
     required ThemeData theme,
-    required UserInfoType type,
-    required Map userStat,
-    required MemberInfoModel memberInfoModel,
+    required String title,
+    required dynamic num,
+    required VoidCallback onTap,
   }) {
-    dynamic num;
-    VoidCallback? onTap;
-    switch (type) {
-      case UserInfoType.fan:
-        num = userStat['follower'] != null
-            ? NumUtils.numFormat(userStat['follower'])
-            : '';
-        onTap = () => FansPage.toFansPage(
-          mid: widget.mid,
-          name: memberInfoModel.name,
-        );
-      case UserInfoType.follow:
-        num = userStat['following'] ?? '';
-        onTap = () => FollowPage.toFollowPage(
-          mid: widget.mid,
-          name: memberInfoModel.name,
-        );
-      case UserInfoType.like:
-        num = userStat['likes'] != null
-            ? NumUtils.numFormat(userStat['likes'])
-            : '';
-    }
     return GestureDetector(
       onTap: onTap,
       child: Text(
-        '$num${type.title}',
+        '$num$title',
         style: TextStyle(
           fontSize: 14,
           color: theme.colorScheme.outline,

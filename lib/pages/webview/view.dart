@@ -137,7 +137,7 @@ class _WebviewPageState extends State<WebviewPage> {
                   },
                   itemBuilder: (context) => <PopupMenuEntry<WebviewMenuItem>>[
                     ...WebviewMenuItem.values
-                        .take(WebviewMenuItem.values.length - 1)
+                        .sublist(0, WebviewMenuItem.values.length - 1)
                         .map(
                           (item) => PopupMenuItem(
                             value: item,
@@ -324,7 +324,6 @@ class _WebviewPageState extends State<WebviewPage> {
                 SnackBar snackBar = SnackBar(
                   content: const Text('当前网页将要打开外部链接，是否打开'),
                   showCloseIcon: true,
-                  persist: false,
                   action: SnackBarAction(
                     label: '打开',
                     onPressed: () => PageUtils.launchURL(url),

@@ -33,34 +33,31 @@ class _MultiSelectDialogState<T> extends State<MultiSelectDialog<T>> {
       clipBehavior: Clip.hardEdge,
       title: Text(widget.title),
       contentPadding: const EdgeInsets.only(top: 12),
-      content: Material(
-        type: .transparency,
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: widget.values.entries.map((i) {
-              return Builder(
-                builder: (context) {
-                  bool isChecked = _tempValues.contains(i.key);
-                  return CheckboxListTile(
-                    dense: true,
-                    value: isChecked,
-                    controlAffinity: ListTileControlAffinity.leading,
-                    title: Text(
-                      i.value,
-                      style: theme.textTheme.titleMedium!,
-                    ),
-                    onChanged: (value) {
-                      isChecked
-                          ? _tempValues.remove(i.key)
-                          : _tempValues.add(i.key);
-                      (context as Element).markNeedsBuild();
-                    },
-                  );
-                },
-              );
-            }).toList(),
-          ),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: widget.values.entries.map((i) {
+            return Builder(
+              builder: (context) {
+                bool isChecked = _tempValues.contains(i.key);
+                return CheckboxListTile(
+                  dense: true,
+                  value: isChecked,
+                  controlAffinity: ListTileControlAffinity.leading,
+                  title: Text(
+                    i.value,
+                    style: theme.textTheme.titleMedium!,
+                  ),
+                  onChanged: (value) {
+                    isChecked
+                        ? _tempValues.remove(i.key)
+                        : _tempValues.add(i.key);
+                    (context as Element).markNeedsBuild();
+                  },
+                );
+              },
+            );
+          }).toList(),
         ),
       ),
       actionsPadding: const EdgeInsets.only(left: 16, right: 16, bottom: 12),

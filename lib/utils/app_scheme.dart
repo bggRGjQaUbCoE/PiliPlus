@@ -48,7 +48,7 @@ abstract final class PiliScheme {
     Map? parameters,
     int? businessId,
     int? oid,
-  }) {
+  }) async {
     try {
       if (url.startsWith('//')) {
         url = 'https:$url';
@@ -64,7 +64,7 @@ abstract final class PiliScheme {
         oid: oid,
       );
     } catch (_) {
-      return Future.syncValue(false);
+      return false;
     }
   }
 

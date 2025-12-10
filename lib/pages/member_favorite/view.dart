@@ -71,12 +71,12 @@ class _MemberFavoriteState extends State<MemberFavorite>
                 slivers: [
                   SliverToBoxAdapter(
                     child: Obx(
-                      () => _buildItem(theme, _controller.first.value, true),
+                      () => _buildItem(theme, _controller.favState.value, true),
                     ),
                   ),
                   SliverToBoxAdapter(
                     child: Obx(
-                      () => _buildItem(theme, _controller.second.value, false),
+                      () => _buildItem(theme, _controller.subState.value, false),
                     ),
                   ),
                 ],
@@ -123,9 +123,11 @@ class _MemberFavoriteState extends State<MemberFavorite>
                 item: item,
                 callback: (res) {
                   if (res == true) {
-                    _controller
-                      ..first.value.mediaListResponse?.list?.remove(item)
-                      ..first.refresh();
+                    final target =
+                        isFirst ? _controller.favState : _controller.subState;
+                    target
+                      ..value.mediaListResponse?.list?.remove(item)
+                      ..refresh();
                   }
                 },
               ),
@@ -134,8 +136,8 @@ class _MemberFavoriteState extends State<MemberFavorite>
           Obx(
             () =>
                 (isFirst
-                    ? _controller.firstEnd.value
-                    : _controller.secondEnd.value)
+                  ? _controller.favEnd.value
+                  : _controller.subEnd.value)
                 ? const SizedBox.shrink()
                 : _buildLoadMoreItem(theme, isFirst),
           ),
@@ -149,7 +151,7 @@ class _MemberFavoriteState extends State<MemberFavorite>
       dense: true,
       onTap: () {
         if (isFirst) {
-          _controller.userfavFolder();
+          _controller.userFavFolder();
         } else {
           _controller.userSubFolder();
         }

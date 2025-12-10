@@ -1,4 +1,3 @@
-import 'package:PiliPlus/models/common/settings_type.dart';
 import 'package:PiliPlus/pages/setting/widgets/normal_item.dart';
 import 'package:PiliPlus/pages/setting/widgets/select_dialog.dart';
 import 'package:PiliPlus/pages/setting/widgets/switch_item.dart';
@@ -9,80 +8,117 @@ import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 
 @immutable
-class SettingsModel {
-  final SettingsType settingsType;
-  final String? title;
-  final StringGetter? getTitle;
+sealed class SettingsModel {
   final String? subtitle;
-  final StringGetter? getSubtitle;
-  final String? setKey;
-  final bool defaultVal;
-  final ValueChanged<bool>? onChanged;
-  final bool needReboot;
   final Widget? leading;
-  final Widget Function()? getTrailing;
-  final Function? onTap;
   final EdgeInsetsGeometry? contentPadding;
   final TextStyle? titleStyle;
 
+  String? get title;
+  Widget get widget;
+  String get effectiveTitle;
+  String? get effectiveSubtitle;
+
   const SettingsModel({
-    required this.settingsType,
+    this.subtitle,
+    this.leading,
+    this.contentPadding,
+    this.titleStyle,
+  });
+}
+
+class NormalModel extends SettingsModel {
+  @override
+  final String? title;
+  final StringGetter? getTitle;
+  final StringGetter? getSubtitle;
+  final Widget Function()? getTrailing;
+  final void Function(BuildContext context, void Function() setState)? onTap;
+
+  const NormalModel({
+    super.subtitle,
+    super.leading,
+    super.contentPadding,
+    super.titleStyle,
     this.title,
     this.getTitle,
-    this.subtitle,
     this.getSubtitle,
-    this.setKey,
+    this.getTrailing,
+    this.onTap,
+  }) : assert(title != null || getTitle != null);
+
+  @override
+  String get effectiveTitle => title ?? getTitle!();
+  @override
+  String? get effectiveSubtitle => subtitle ?? getSubtitle?.call();
+
+  @override
+  Widget get widget => NormalItem(
+    title: title,
+    getTitle: getTitle,
+    subtitle: subtitle,
+    getSubtitle: getSubtitle,
+    leading: leading,
+    getTrailing: getTrailing,
+    onTap: onTap,
+    contentPadding: contentPadding,
+    titleStyle: titleStyle,
+  );
+}
+
+class SwitchModel extends SettingsModel {
+  @override
+  final String title;
+  final String setKey;
+  final bool defaultVal;
+  final ValueChanged<bool>? onChanged;
+  final bool needReboot;
+  final void Function(BuildContext context)? onTap;
+
+  const SwitchModel({
+    super.subtitle,
+    super.leading,
+    super.contentPadding,
+    super.titleStyle,
+    required this.title,
+    required this.setKey,
     this.defaultVal = false,
     this.onChanged,
     this.needReboot = false,
-    this.leading,
-    this.getTrailing,
     this.onTap,
-    this.contentPadding,
-    this.titleStyle,
-  }) : assert(title != null || getTitle != null);
+  });
 
-  Widget get widget => switch (settingsType) {
-    SettingsType.normal => NormalItem(
-      title: title,
-      getTitle: getTitle,
-      subtitle: subtitle,
-      getSubtitle: getSubtitle,
-      setKey: setKey,
-      leading: leading,
-      getTrailing: getTrailing,
-      onTap: onTap,
-      contentPadding: contentPadding,
-      titleStyle: titleStyle,
-    ),
-    SettingsType.sw1tch => SetSwitchItem(
-      title: title,
-      subtitle: subtitle,
-      setKey: setKey!,
-      defaultVal: defaultVal,
-      onChanged: onChanged,
-      needReboot: needReboot,
-      leading: leading,
-      onTap: onTap,
-      contentPadding: contentPadding,
-      titleStyle: titleStyle,
-    ),
-  };
+  @override
+  String get effectiveTitle => title;
+  @override
+  String? get effectiveSubtitle => subtitle;
+
+  @override
+  Widget get widget => SetSwitchItem(
+    title: title,
+    subtitle: subtitle,
+    setKey: setKey,
+    defaultVal: defaultVal,
+    onChanged: onChanged,
+    needReboot: needReboot,
+    leading: leading,
+    onTap: onTap,
+    contentPadding: contentPadding,
+    titleStyle: titleStyle,
+  );
 }
 
 SettingsModel getBanwordModel({
-  required BuildContext context,
   required String title,
   required String key,
   required ValueChanged<RegExp> onChanged,
 }) {
   String banWord = GStorage.setting.get(key, defaultValue: '');
-  return SettingsModel(
-    settingsType: SettingsType.normal,
+  return NormalModel(
     leading: const Icon(Icons.filter_alt_outlined),
     title: title,
     getSubtitle: () => banWord.isEmpty ? "点击添加" : banWord,
-    onTap: (setState) {
+    onTap: (context, setState) {
       showDialog(
         context: context,
         builder: (context) {
@@ -132,7 +168,6 @@ SettingsModel getBanwordModel({
 }
 
 SettingsModel getVideoFilterSelectModel({
-  required BuildContext context,
   required String title,
   String? subtitle,
   String? suffix,
@@ -144,8 +179,7 @@ SettingsModel getVideoFilterSelectModel({
 }) {
   assert(!isFilter || onChanged != null);
   int value = GStorage.setting.get(key, defaultValue: defaultValue);
-  return SettingsModel(
-    settingsType: SettingsType.normal,
+  return NormalModel(
     title: '$title${isFilter ? '过滤' : ''}',
     leading: const Icon(Icons.timelapse_outlined),
     subtitle: subtitle,
@@ -154,7 +188,7 @@ SettingsModel getVideoFilterSelectModel({
               ? '过滤掉$title小于「$value${suffix ?? ""}」的视频'
               : '当前$title:「$value${suffix ?? ""}」'
         : null,
-    onTap: (setState) async {
+    onTap: (context, setState) async {
       var result = await showDialog<int>(
         context: context,
         builder: (context) {

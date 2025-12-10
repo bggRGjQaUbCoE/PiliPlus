@@ -44,13 +44,8 @@ class _SettingsSearchPageState
       _list.value = _settings
           .where(
             (item) =>
-                (item.title ?? item.getTitle!()).toLowerCase().contains(
-                  value,
-                ) ||
-                (item.subtitle ?? item.getSubtitle?.call())
-                        ?.toLowerCase()
-                        .contains(value) ==
-                    true,
+                item.effectiveTitle.toLowerCase().contains(value) ||
+                item.effectiveSubtitle?.toLowerCase().contains(value) == true,
           )
           .toList();
     }

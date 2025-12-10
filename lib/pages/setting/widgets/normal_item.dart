@@ -8,10 +8,9 @@ class NormalItem extends StatefulWidget {
   final StringGetter? getTitle;
   final String? subtitle;
   final StringGetter? getSubtitle;
-  final String? setKey;
   final Widget? leading;
   final Widget Function()? getTrailing;
-  final Function? onTap;
+  final void Function(BuildContext context, void Function() setState)? onTap;
   final EdgeInsetsGeometry? contentPadding;
   final TextStyle? titleStyle;
 
@@ -20,7 +19,6 @@ class NormalItem extends StatefulWidget {
     this.getTitle,
     this.subtitle,
     this.getSubtitle,
-    this.setKey,
     this.leading,
     this.getTrailing,
     this.onTap,
@@ -36,27 +34,32 @@ class NormalItem extends StatefulWidget {
 class _NormalItemState extends State<NormalItem> {
   @override
   Widget build(BuildContext context) {
+    late final theme = Theme.of(context);
     return ListTile(
       contentPadding: widget.contentPadding,
-      onTap: () => widget.onTap?.call(() {
-        if (mounted) {
-          setState(() {});
-        }
-      }),
+      onTap: widget.onTap == null
+          ? null
+          : () => widget.onTap!(context, refresh),
       title: Text(
         widget.title ?? widget.getTitle!(),
-        style: widget.titleStyle ?? Theme.of(context).textTheme.titleMedium!,
+        style: widget.titleStyle ?? theme.textTheme.titleMedium!,
       ),
       subtitle: widget.subtitle != null || widget.getSubtitle != null
           ? Text(
               widget.subtitle ?? widget.getSubtitle!(),
-              style: Theme.of(context).textTheme.labelMedium!.copyWith(
-                color: Theme.of(context).colorScheme.outline,
+              style: theme.textTheme.labelMedium!.copyWith(
+                color: theme.colorScheme.outline,
               ),
             )
           : null,
       leading: widget.leading,
       trailing: widget.getTrailing?.call(),
     );
+  }
+
+  void refresh() {
+    if (mounted) {
+      setState(() {});
+    }
   }
 }

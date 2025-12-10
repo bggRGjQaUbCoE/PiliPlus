@@ -1,25 +1,25 @@
+import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
 import 'package:PiliPlus/common/widgets/flutter/list_tile.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:flutter/material.dart' hide ListTile;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
-import 'package:get/get.dart';
 
 class SetSwitchItem extends StatefulWidget {
-  final String? title;
+  final String title;
   final String? subtitle;
   final String setKey;
   final bool defaultVal;
   final ValueChanged<bool>? onChanged;
   final bool needReboot;
   final Widget? leading;
-  final Function? onTap;
+  final void Function(BuildContext context)? onTap;
   final EdgeInsetsGeometry? contentPadding;
   final TextStyle? titleStyle;
 
   const SetSwitchItem({
-    this.title,
+    required this.title,
     this.subtitle,
     required this.setKey,
     this.defaultVal = false,
@@ -64,46 +64,16 @@ class _SetSwitchItemState extends State<SetSwitchItem> {
     setVal();
   }
 
-  Future<void> switchChange(ThemeData theme, value) async {
-    if (widget.setKey == SettingBoxKey.badCertificateCallback &&
-        (value ?? !val)) {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('确定禁用 SSL 证书验证？'),
-          content: const Text('禁用容易受到中间人攻击'),
-          actions: [
-            TextButton(
-              onPressed: Get.back,
-              child: Text(
-                '取消',
-                style: TextStyle(
-                  color: theme.colorScheme.outline,
-                ),
-              ),
-            ),
-            TextButton(
-              onPressed: () async {
-                Get.back();
-                await GStorage.setting.put(
-                  SettingBoxKey.badCertificateCallback,
-                  true,
-                );
-                val = true;
-                SmartDialog.showToast('重启生效');
-                if (mounted) {
-                  setState(() {});
-                }
-              },
-              child: const Text('确认'),
-            ),
-          ],
-        ),
-      );
-      return;
-    }
-
+  Future<void> switchChange([bool? value]) async {
     val = value ?? !val;
+
+    if (widget.setKey == SettingBoxKey.badCertificateCallback && val) {
+      val = await showConfirmDialog(
+        context: context,
+        title: '确定禁用 SSL 证书验证？',
+        content: '禁用容易受到中间人攻击',
+      );
+    }
 
     if (widget.setKey == SettingBoxKey.appFontWeight) {
       await GStorage.setting.put(SettingBoxKey.appFontWeight, val ? 4 : -1);
@@ -135,10 +105,9 @@ class _SetSwitchItemState extends State<SetSwitchItem> {
     );
     return ListTile(
       contentPadding: widget.contentPadding,
-      enabled: widget.onTap != null ? val : true,
-      onTap: () =>
-          widget.onTap != null ? widget.onTap!() : switchChange(theme, null),
-      title: Text(widget.title!, style: titleStyle),
+      enabled: widget.onTap == null ? true : val,
+      onTap: widget.onTap == null ? switchChange : () => widget.onTap!(context),
+      title: Text(widget.title, style: titleStyle),
       subtitle: widget.subtitle != null
           ? Text(widget.subtitle!, style: subTitleStyle)
           : null,
@@ -148,7 +117,7 @@ class _SetSwitchItemState extends State<SetSwitchItem> {
         scale: 0.8,
         child: Switch(
           value: val,
-          onChanged: (value) => switchChange(theme, value),
+          onChanged: switchChange,
         ),
       ),
     );

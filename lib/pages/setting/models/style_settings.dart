@@ -11,7 +11,6 @@ import 'package:PiliPlus/models/common/dynamic/up_panel_position.dart';
 import 'package:PiliPlus/models/common/home_tab_type.dart';
 import 'package:PiliPlus/models/common/msg/msg_unread_type.dart';
 import 'package:PiliPlus/models/common/nav_bar_config.dart';
-import 'package:PiliPlus/models/common/settings_type.dart';
 import 'package:PiliPlus/models/common/theme/theme_type.dart';
 import 'package:PiliPlus/pages/main/controller.dart';
 import 'package:PiliPlus/pages/mine/controller.dart';
@@ -37,16 +36,14 @@ import 'package:material_design_icons_flutter/material_design_icons_flutter.dart
 
 List<SettingsModel> get styleSettings => [
   if (Utils.isDesktop) ...[
-    const SettingsModel(
-      settingsType: SettingsType.sw1tch,
+    const SwitchModel(
       title: '显示窗口标题栏',
       leading: Icon(Icons.window),
       setKey: SettingBoxKey.showWindowTitleBar,
       defaultVal: true,
       needReboot: true,
     ),
-    const SettingsModel(
-      settingsType: SettingsType.sw1tch,
+    const SwitchModel(
       title: '显示托盘图标',
       leading: Icon(Icons.donut_large_rounded),
       setKey: SettingBoxKey.showTrayIcon,
@@ -54,8 +51,7 @@ List<SettingsModel> get styleSettings => [
       needReboot: true,
     ),
   ],
-  SettingsModel(
-    settingsType: SettingsType.sw1tch,
+  SwitchModel(
     title: '横屏适配',
     subtitle: '启用横屏布局与逻辑，平板、折叠屏等可开启；建议全屏方向设为【不改变当前方向】',
     leading: const Icon(Icons.phonelink_outlined),
@@ -69,8 +65,7 @@ List<SettingsModel> get styleSettings => [
       }
     },
   ),
-  const SettingsModel(
-    settingsType: SettingsType.sw1tch,
+  const SwitchModel(
     title: '改用侧边栏',
     subtitle: '开启后底栏与顶栏被替换，且相关设置失效',
     leading: Icon(Icons.chrome_reader_mode_outlined),
@@ -78,15 +73,14 @@ List<SettingsModel> get styleSettings => [
     defaultVal: false,
     needReboot: true,
   ),
-  SettingsModel(
-    settingsType: SettingsType.sw1tch,
+  SwitchModel(
     title: 'App字体字重',
     subtitle: '点击设置',
     setKey: SettingBoxKey.appFontWeight,
     defaultVal: false,
-    onTap: () {
+    onTap: (context) {
       showDialog<double>(
-        context: Get.context!,
+        context: context,
         builder: (context) {
           return SlideDialog(
             title: 'App字体字重',
@@ -111,14 +105,13 @@ List<SettingsModel> get styleSettings => [
       Get.forceAppUpdate();
     },
   ),
-  SettingsModel(
-    settingsType: SettingsType.normal,
+  NormalModel(
     title: '页面过渡动画',
     leading: const Icon(Icons.animation),
     getSubtitle: () => '当前：${Pref.pageTransition.name}',
-    onTap: (setState) async {
+    onTap: (context, setState) async {
       final result = await showDialog<Transition>(
-        context: Get.context!,
+        context: context,
         builder: (context) {
           return SelectDialog<Transition>(
             title: '页面过渡动画',
@@ -134,16 +127,14 @@ List<SettingsModel> get styleSettings => [
       }
     },
   ),
-  const SettingsModel(
-    settingsType: SettingsType.sw1tch,
+  const SwitchModel(
     title: '优化平板导航栏',
     leading: Icon(MdiIcons.soundbar),
     setKey: SettingBoxKey.optTabletNav,
     defaultVal: true,
     needReboot: true,
   ),
-  const SettingsModel(
-    settingsType: SettingsType.sw1tch,
+  const SwitchModel(
     title: 'MD3样式底栏',
     subtitle: 'Material You设计规范底栏，关闭可变窄',
     leading: Icon(Icons.design_services_outlined),
@@ -151,11 +142,10 @@ List<SettingsModel> get styleSettings => [
     defaultVal: true,
     needReboot: true,
   ),
-  SettingsModel(
-    settingsType: SettingsType.normal,
-    onTap: (setState) async {
+  NormalModel(
+    onTap: (context, setState) async {
       final result = await showDialog<(double, double)>(
-        context: Get.context!,
+        context: context,
         builder: (context) {
           return DualSlideDialog(
             title: '列表最大列宽度（默认240dp）',
@@ -184,8 +174,7 @@ List<SettingsModel> get styleSettings => [
     getSubtitle: () =>
         '当前: 主页${Pref.recommendCardWidth.toInt()}dp 其他${Pref.smallCardWidth.toInt()}dp，屏幕宽度:${MediaQuery.widthOf(Get.context!).toPrecision(2)}dp。宽度越小列数越多。',
   ),
-  SettingsModel(
-    settingsType: SettingsType.sw1tch,
+  SwitchModel(
     title: '视频播放页使用深色主题',
     leading: const Icon(Icons.dark_mode_outlined),
     setKey: SettingBoxKey.darkVideoPage,
@@ -196,8 +185,7 @@ List<SettingsModel> get styleSettings => [
       }
     },
   ),
-  const SettingsModel(
-    settingsType: SettingsType.sw1tch,
+  const SwitchModel(
     title: '动态页启用瀑布流',
     subtitle: '关闭会显示为单列',
     leading: Icon(Icons.view_array_outlined),
@@ -205,14 +193,13 @@ List<SettingsModel> get styleSettings => [
     defaultVal: true,
     needReboot: true,
   ),
-  SettingsModel(
-    settingsType: SettingsType.normal,
+  NormalModel(
     title: '动态页UP主显示位置',
     leading: const Icon(Icons.person_outlined),
     getSubtitle: () => '当前：${Pref.upPanelPosition.label}',
-    onTap: (setState) async {
+    onTap: (context, setState) async {
       final result = await showDialog<UpPanelPosition>(
-        context: Get.context!,
+        context: context,
         builder: (context) {
           return SelectDialog<UpPanelPosition>(
             title: '动态页UP主显示位置',
@@ -228,25 +215,22 @@ List<SettingsModel> get styleSettings => [
       }
     },
   ),
-  const SettingsModel(
-    settingsType: SettingsType.sw1tch,
+  const SwitchModel(
     title: '动态页显示所有已关注UP主',
     leading: Icon(Icons.people_alt_outlined),
     setKey: SettingBoxKey.dynamicsShowAllFollowedUp,
     defaultVal: false,
   ),
-  const SettingsModel(
-    settingsType: SettingsType.sw1tch,
+  const SwitchModel(
     title: '动态页展开正在直播UP列表',
     leading: Icon(Icons.live_tv),
     setKey: SettingBoxKey.expandDynLivePanel,
     defaultVal: false,
   ),
-  SettingsModel(
-    settingsType: SettingsType.normal,
-    onTap: (setState) async {
+  NormalModel(
+    onTap: (context, setState) async {
       final result = await showDialog<DynamicBadgeMode>(
-        context: Get.context!,
+        context: context,
         builder: (context) {
           return SelectDialog<DynamicBadgeMode>(
             title: '动态未读标记',
@@ -273,11 +257,10 @@ List<SettingsModel> get styleSettings => [
     leading: const Icon(Icons.motion_photos_on_outlined),
     getSubtitle: () => '当前标记样式：${Pref.dynamicBadgeType.desc}',
   ),
-  SettingsModel(
-    settingsType: SettingsType.normal,
-    onTap: (setState) async {
+  NormalModel(
+    onTap: (context, setState) async {
       final result = await showDialog<DynamicBadgeMode>(
-        context: Get.context!,
+        context: context,
         builder: (context) {
           return SelectDialog<DynamicBadgeMode>(
             title: '消息未读标记',
@@ -303,11 +286,10 @@ List<SettingsModel> get styleSettings => [
     leading: const Icon(MdiIcons.bellBadgeOutline),
     getSubtitle: () => '当前标记样式：${Pref.msgBadgeMode.desc}',
   ),
-  SettingsModel(
-    settingsType: SettingsType.normal,
-    onTap: (setState) async {
+  NormalModel(
+    onTap: (context, setState) async {
       final result = await showDialog<Set<MsgUnReadType>>(
-        context: Get.context!,
+        context: context,
         builder: (context) {
           return MultiSelectDialog<MsgUnReadType>(
             title: '消息未读类型',
@@ -335,8 +317,7 @@ List<SettingsModel> get styleSettings => [
     getSubtitle: () =>
         '当前消息类型：${Pref.msgUnReadTypeV2.map((item) => item.title).join('、')}',
   ),
-  const SettingsModel(
-    settingsType: SettingsType.sw1tch,
+  const SwitchModel(
     title: '首页顶栏收起',
     subtitle: '首页列表滑动时，收起顶栏',
     leading: Icon(Icons.vertical_align_top_outlined),
@@ -344,8 +325,7 @@ List<SettingsModel> get styleSettings => [
     defaultVal: true,
     needReboot: true,
   ),
-  const SettingsModel(
-    settingsType: SettingsType.sw1tch,
+  const SwitchModel(
     title: '首页底栏收起',
     subtitle: '首页列表滑动时，收起底栏',
     leading: Icon(Icons.vertical_align_bottom_outlined),
@@ -353,18 +333,17 @@ List<SettingsModel> get styleSettings => [
     defaultVal: true,
     needReboot: true,
   ),
-  SettingsModel(
-    settingsType: SettingsType.sw1tch,
+  SwitchModel(
     title: '顶/底栏滚动阈值',
     subtitle: '滚动多少像素后收起/展开顶底栏，默认50像素',
     leading: const Icon(Icons.swipe_vertical),
     defaultVal: false,
     setKey: SettingBoxKey.enableScrollThreshold,
     needReboot: true,
-    onTap: () {
+    onTap: (context) {
       String scrollThreshold = Pref.scrollThreshold.toString();
       showDialog(
-        context: Get.context!,
+        context: context,
         builder: (context) {
           return AlertDialog(
             title: const Text('滚动阈值'),
@@ -412,11 +391,10 @@ List<SettingsModel> get styleSettings => [
       );
     },
   ),
-  SettingsModel(
-    settingsType: SettingsType.normal,
-    onTap: (setState) {
+  NormalModel(
+    onTap: (context, setState) {
       _showQualityDialog(
-        context: Get.context!,
+        context: context,
         title: '图片质量',
         initValue: Pref.picQuality,
         callback: (picQuality) async {
@@ -438,11 +416,10 @@ List<SettingsModel> get styleSettings => [
     ),
   ),
   // preview quality
-  SettingsModel(
-    settingsType: SettingsType.normal,
-    onTap: (setState) {
+  NormalModel(
+    onTap: (context, setState) {
       _showQualityDialog(
-        context: Get.context!,
+        context: context,
         title: '查看大图质量',
         initValue: Pref.previewQ,
         callback: (picQuality) async {
@@ -462,12 +439,11 @@ List<SettingsModel> get styleSettings => [
       ),
     ),
   ),
-  SettingsModel(
-    settingsType: SettingsType.normal,
-    onTap: (setState) {
+  NormalModel(
+    onTap: (context, setState) {
       final reduceLuxColor = Pref.reduceLuxColor;
       showDialog(
-        context: Get.context!,
+        context: context,
         builder: (context) => AlertDialog(
           clipBehavior: Clip.hardEdge,
           contentPadding: const EdgeInsets.symmetric(vertical: 16),
@@ -523,11 +499,10 @@ List<SettingsModel> get styleSettings => [
       ),
     ),
   ),
-  SettingsModel(
-    settingsType: SettingsType.normal,
-    onTap: (setState) async {
+  NormalModel(
+    onTap: (context, setState) async {
       final result = await showDialog<double>(
-        context: Get.context!,
+        context: context,
         builder: (context) {
           return SlideDialog(
             title: 'Toast不透明度',
@@ -556,11 +531,10 @@ List<SettingsModel> get styleSettings => [
       ),
     ),
   ),
-  SettingsModel(
-    settingsType: SettingsType.normal,
-    onTap: (setState) async {
+  NormalModel(
+    onTap: (context, setState) async {
       final result = await showDialog<ThemeType>(
-        context: Get.context!,
+        context: context,
         builder: (context) {
           return SelectDialog<ThemeType>(
             title: '主题模式',
@@ -583,8 +557,7 @@ List<SettingsModel> get styleSettings => [
     title: '主题模式',
     getSubtitle: () => '当前模式：${Pref.themeType.desc}',
   ),
-  SettingsModel(
-    settingsType: SettingsType.sw1tch,
+  SwitchModel(
     leading: const Icon(Icons.invert_colors),
     title: '纯黑主题',
     setKey: SettingBoxKey.isPureBlackTheme,
@@ -595,19 +568,17 @@ List<SettingsModel> get styleSettings => [
       }
     },
   ),
-  SettingsModel(
-    settingsType: SettingsType.normal,
-    onTap: (setState) => Get.toNamed('/colorSetting'),
+  NormalModel(
+    onTap: (context, setState) => Get.toNamed('/colorSetting'),
     leading: const Icon(Icons.color_lens_outlined),
     title: '应用主题',
     getSubtitle: () =>
         '当前主题：${Get.put(ColorSelectController()).dynamicColor.value ? '动态取色' : '指定颜色'}',
   ),
-  SettingsModel(
-    settingsType: SettingsType.normal,
-    onTap: (setState) async {
+  NormalModel(
+    onTap: (context, setState) async {
       final result = await showDialog<int>(
-        context: Get.context!,
+        context: context,
         builder: (context) {
           return SelectDialog<int>(
             title: '首页启动页',
@@ -629,16 +600,15 @@ List<SettingsModel> get styleSettings => [
     getSubtitle: () =>
         '当前启动页：${NavigationBarType.values.firstWhere((e) => e.index == Pref.defaultHomePage).label}',
   ),
-  SettingsModel(
-    settingsType: SettingsType.normal,
+  NormalModel(
     title: '滑动动画弹簧参数',
     leading: const Icon(Icons.chrome_reader_mode_outlined),
-    onTap: (setState) {
+    onTap: (context, setState) {
       List<String> springDescription = CustomSpringDescription.springDescription
           .map((i) => i.toString())
           .toList();
       showDialog(
-        context: Get.context!,
+        context: context,
         builder: (context) {
           return AlertDialog(
             title: const Text('弹簧参数'),
@@ -697,9 +667,8 @@ List<SettingsModel> get styleSettings => [
       );
     },
   ),
-  SettingsModel(
-    settingsType: SettingsType.normal,
-    onTap: (setState) async {
+  NormalModel(
+    onTap: (context, setState) async {
       var result = await Get.toNamed('/fontSizeSetting');
       if (result != null) {
         Get.put(ColorSelectController()).currentTextScale.value = result;
@@ -712,9 +681,8 @@ List<SettingsModel> get styleSettings => [
         ? '默认'
         : Get.put(ColorSelectController()).currentTextScale.value.toString(),
   ),
-  SettingsModel(
-    settingsType: SettingsType.normal,
-    onTap: (setState) => Get.toNamed(
+  NormalModel(
+    onTap: (context, setState) => Get.toNamed(
       '/barSetting',
       arguments: {
         'key': SettingBoxKey.tabBarSort,
@@ -726,9 +694,8 @@ List<SettingsModel> get styleSettings => [
     subtitle: '删除或调换首页标签页',
     leading: const Icon(Icons.toc_outlined),
   ),
-  SettingsModel(
-    settingsType: SettingsType.normal,
-    onTap: (setState) => Get.toNamed(
+  NormalModel(
+    onTap: (context, setState) => Get.toNamed(
       '/barSetting',
       arguments: {
         'key': SettingBoxKey.navBarSort,
@@ -740,8 +707,7 @@ List<SettingsModel> get styleSettings => [
     subtitle: '删除或调换Navbar',
     leading: const Icon(Icons.toc_outlined),
   ),
-  SettingsModel(
-    settingsType: SettingsType.sw1tch,
+  SwitchModel(
     title: '返回时直接退出',
     subtitle: '开启后在主页任意tab按返回键都直接退出，关闭则先回到Navbar的第一个tab',
     leading: const Icon(Icons.exit_to_app_outlined),
@@ -752,9 +718,8 @@ List<SettingsModel> get styleSettings => [
     },
   ),
   if (Platform.isAndroid)
-    SettingsModel(
-      settingsType: SettingsType.normal,
-      onTap: (setState) => Get.toNamed('/displayModeSetting'),
+    NormalModel(
+      onTap: (context, setState) => Get.toNamed('/displayModeSetting'),
       title: '屏幕帧率',
       leading: const Icon(Icons.autofps_select_outlined),
     ),

@@ -20,7 +20,7 @@ publish_to: "none" # Remove this line if you wish to publish to pub.dev
 version: 1.1.5+1
 
 environment:
-  sdk: ">=3.9.2"
+  sdk: ">=3.9.0 <4.0.0"
   flutter: 3.35.7 # update `.fvmrc` config
 
 # Dependencies specify other packages that your package needs in order to work.
@@ -40,11 +40,7 @@ dependencies:
   # 动态取色
   dynamic_color: ^1.8.1
 
-  # get: ^4.7.2
-  get:
-    git:
-      url: https://github.com/bggRGjQaUbCoE/getx.git
-      ref: version_4.7.2
+  get: ^4.7.2
 
   # 网络
   dio: ^5.7.0
@@ -139,7 +135,7 @@ dependencies:
   # 高帧率
   flutter_displaymode: ^0.7.0
   # scheme跳转
-  app_links: ^7.0.0
+  app_links: ^6.3.2
   # 弹幕
   # ns_danmaku:
   #   git:
@@ -190,7 +186,7 @@ dependencies:
   #解压直播消息
   brotli: ^0.6.0
   expandable: ^5.0.1
-  flex_seed_scheme: ^4.0.1
+  flex_seed_scheme: ^3.4.1
   live_photo_maker: ^0.0.6
   fl_chart: ^1.0.0
   synchronized: ^3.3.0

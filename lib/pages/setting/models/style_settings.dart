@@ -154,7 +154,7 @@ List<SettingsModel> get styleSettings => [
   SettingsModel(
     settingsType: SettingsType.normal,
     onTap: (setState) async {
-      final result = await showDialog<(double,double)>(
+      final result = await showDialog<(double, double)>(
         context: Get.context!,
         builder: (context) {
           return DualSlideDialog(
@@ -171,8 +171,10 @@ List<SettingsModel> get styleSettings => [
         },
       );
       if (result != null) {
-        await GStorage.setting.put(SettingBoxKey.recommendCardWidth, result.$1);
-        await GStorage.setting.put(SettingBoxKey.smallCardWidth, result.$2);
+        await GStorage.setting.putAll({
+          SettingBoxKey.recommendCardWidth: result.$1,
+          SettingBoxKey.smallCardWidth: result.$2,
+        });
         SmartDialog.showToast('重启生效');
         setState();
       }

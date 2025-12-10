@@ -52,40 +52,44 @@ class _DualSlideDialogState extends State<DualSlideDialog> {
         right: 8,
         bottom: 8,
       ),
-      content: SizedBox(
-        height: 140,
-        child: Column(
-          children: [
-            Text(widget.description1),
-            Slider(
-              value: _tempValue1,
-              min: widget.min,
-              max: widget.max,
-              divisions: widget.divisions,
-              label:
-              '${_tempValue1.toStringAsFixed(widget.precise)}${widget.suffix}',
-              onChanged: (double value) {
-                setState(() {
+      content: Column(
+        mainAxisSize: .min,
+        children: [
+          Text(widget.description1),
+          Builder(
+            builder: (context) {
+              return Slider(
+                value: _tempValue1,
+                min: widget.min,
+                max: widget.max,
+                divisions: widget.divisions,
+                label:
+                    '${_tempValue1.toStringAsFixed(widget.precise)}${widget.suffix}',
+                onChanged: (double value) {
                   _tempValue1 = value.toPrecision(widget.precise);
-                });
-              },
-            ),
-            Text(widget.description2),
-            Slider(
-              value: _tempValue2,
-              min: widget.min,
-              max: widget.max,
-              divisions: widget.divisions,
-              label:
-              '${_tempValue2.toStringAsFixed(widget.precise)}${widget.suffix}',
-              onChanged: (double value) {
-                setState(() {
+                  (context as Element).markNeedsBuild();
+                },
+              );
+            },
+          ),
+          Text(widget.description2),
+          Builder(
+            builder: (context) {
+              return Slider(
+                value: _tempValue2,
+                min: widget.min,
+                max: widget.max,
+                divisions: widget.divisions,
+                label:
+                    '${_tempValue2.toStringAsFixed(widget.precise)}${widget.suffix}',
+                onChanged: (double value) {
                   _tempValue2 = value.toPrecision(widget.precise);
-                });
-              },
-            ),
-          ]
-        ),
+                  (context as Element).markNeedsBuild();
+                },
+              );
+            },
+          ),
+        ],
       ),
       actions: [
         TextButton(

@@ -222,11 +222,11 @@ class _PgcReviewPostPanelState extends State<PgcReviewPostPanel> {
         content: _controller.text,
         reviewId: widget.reviewId,
       );
-      if (res['status']) {
+      if (res.isSuccess) {
         Get.back();
         SmartDialog.showToast('编辑成功');
       } else {
-        SmartDialog.showToast(res['msg']);
+        res.toast();
       }
       return;
     }
@@ -240,11 +240,11 @@ class _PgcReviewPostPanelState extends State<PgcReviewPostPanel> {
       content: _controller.text,
       shareFeed: _isMod ? false : _shareFeed.value,
     );
-    if (res['status']) {
+    if (res.isSuccess) {
       Get.back();
       SmartDialog.showToast('点评成功');
     } else {
-      SmartDialog.showToast(res['msg']);
+      res.toast();
     }
   }
 }

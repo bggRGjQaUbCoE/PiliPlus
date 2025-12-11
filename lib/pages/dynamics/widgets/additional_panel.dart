@@ -2,22 +2,21 @@ import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/widgets/flutter/dyn/ink_well.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/http/dynamics.dart';
+import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/dynamics/result.dart';
-import 'package:PiliPlus/models_new/dynamic/dyn_reserve/data.dart';
 import 'package:PiliPlus/pages/dynamics/widgets/vote.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart' hide InkWell;
-import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 
 Widget addWidget(
   BuildContext context, {
   required int floor,
   required ThemeData theme,
-  required dynamic idStr,
+  required Object idStr,
   required DynamicAddModel additional,
 }) {
   final type = additional.type;
@@ -185,19 +184,17 @@ Widget addWidget(
                                     dynamicIdStr: idStr,
                                     reserveTotal: reserve.reserveTotal,
                                   );
-                                  if (res['status']) {
-                                    DynReserveData data = res['data'];
+                                  if (res case Success(:final response)) {
                                     reserve
-                                      ..desc2?.text = data.descUpdate
-                                      ..reserveTotal = data.reserveUpdate
-                                      ..button!.status = data.finalBtnStatus;
+                                      ..desc2?.text = response.descUpdate
+                                      ..reserveTotal = response.reserveUpdate
+                                      ..button!.status =
+                                          response.finalBtnStatus;
                                     if (context.mounted) {
                                       (context as Element?)?.markNeedsBuild();
                                     }
                                   } else {
-                                    SmartDialog.showToast(
-                                      res['msg'],
-                                    );
+                                    res.toast();
                                   }
                                 },
                           child: Text(

@@ -30,7 +30,7 @@ import 'package:PiliPlus/utils/utils.dart';
 import 'package:PiliPlus/utils/wbi_sign.dart';
 import 'package:dio/dio.dart';
 
-class MemberHttp {
+abstract final class MemberHttp {
   static Future reportMember(
     dynamic mid, {
     String? reason,
@@ -206,13 +206,13 @@ class MemberHttp {
   }
 
   static Future<LoadingState> spaceStory({
-    required mid,
-    required aid,
-    required beforeSize,
-    required afterSize,
-    required cid,
-    required contain,
-    required index,
+    required Object mid,
+    required Object aid,
+    required Object beforeSize,
+    required Object afterSize,
+    required Object cid,
+    required Object contain,
+    required Object index,
   }) async {
     final params = {
       'aid': aid,
@@ -281,8 +281,8 @@ class MemberHttp {
     }
   }
 
-  static Future memberInfo({
-    int? mid,
+  static Future<LoadingState<MemberInfoModel>> memberInfo({
+    required int mid,
     String token = '',
   }) async {
     String dmImgStr = Utils.base64EncodeRandomString(16, 64);
@@ -309,12 +309,9 @@ class MemberHttp {
       ),
     );
     if (res.data['code'] == 0) {
-      return {
-        'status': true,
-        'data': MemberInfoModel.fromJson(res.data['data']),
-      };
+      return Success(MemberInfoModel.fromJson(res.data['data']));
     } else {
-      return {'status': false, 'msg': res.data['message']};
+      return Error(res.data['message']);
     }
   }
 
@@ -345,7 +342,7 @@ class MemberHttp {
   }
 
   static Future<LoadingState<SearchArchiveData>> searchArchive({
-    required mid,
+    required Object mid,
     int ps = 30,
     int tid = 0,
     int? pn,
@@ -480,7 +477,7 @@ class MemberHttp {
     }
   }
 
-  static Future specialAction({
+  static Future<LoadingState<Null>> specialAction({
     int? fid,
     bool isAdd = true,
   }) async {
@@ -493,17 +490,14 @@ class MemberHttp {
       options: Options(contentType: Headers.formUrlEncodedContentType),
     );
     if (res.data['code'] == 0) {
-      return {'status': true};
+      return const Success(null);
     } else {
-      return {
-        'status': false,
-        'msg': res.data['message'],
-      };
+      return Error(res.data['message']);
     }
   }
 
   // 设置分组
-  static Future addUsers(String fids, String tagids) async {
+  static Future<LoadingState<Null>> addUsers(String fids, String tagids) async {
     var res = await Request().post(
       Api.addUsers,
       queryParameters: {
@@ -519,9 +513,9 @@ class MemberHttp {
       options: Options(contentType: Headers.formUrlEncodedContentType),
     );
     if (res.data['code'] == 0) {
-      return {'status': true, 'msg': '操作成功'};
+      return const Success(null);
     } else {
-      return {'status': false, 'msg': res.data['message']};
+      return Error(res.data['message']);
     }
   }
 
@@ -556,7 +550,7 @@ class MemberHttp {
     }
   }
 
-  static Future createFollowTag(tagName) async {
+  static Future<LoadingState<Null>> createFollowTag(Object tagName) async {
     var res = await Request().post(
       Api.createFollowTag,
       queryParameters: {
@@ -570,13 +564,16 @@ class MemberHttp {
       options: Options(contentType: Headers.formUrlEncodedContentType),
     );
     if (res.data['code'] == 0) {
-      return {'status': true};
+      return const Success(null);
     } else {
-      return {'status': false, 'msg': res.data['message']};
+      return Error(res.data['message']);
     }
   }
 
-  static Future updateFollowTag(tagid, name) async {
+  static Future<LoadingState<Null>> updateFollowTag(
+    Object tagid,
+    Object name,
+  ) async {
     var res = await Request().post(
       Api.updateFollowTag,
       queryParameters: {
@@ -591,13 +588,13 @@ class MemberHttp {
       options: Options(contentType: Headers.formUrlEncodedContentType),
     );
     if (res.data['code'] == 0) {
-      return {'status': true};
+      return const Success(null);
     } else {
-      return {'status': false, 'msg': res.data['message']};
+      return Error(res.data['message']);
     }
   }
 
-  static Future delFollowTag(tagid) async {
+  static Future<LoadingState<Null>> delFollowTag(Object tagid) async {
     var res = await Request().post(
       Api.delFollowTag,
       queryParameters: {
@@ -611,24 +608,23 @@ class MemberHttp {
       options: Options(contentType: Headers.formUrlEncodedContentType),
     );
     if (res.data['code'] == 0) {
-      return {'status': true};
+      return const Success(null);
     } else {
-      return {'status': false, 'msg': res.data['message']};
+      return Error(res.data['message']);
     }
   }
 
   // 获取up置顶
-  static Future getTopVideo(String? vmid) async {
+  static Future<LoadingState<List<MemberTagItemModel>?>> getTopVideo() async {
     var res = await Request().get(Api.getTopVideoApi);
     if (res.data['code'] == 0) {
-      return {
-        'status': true,
-        'data': res.data['data']
-            .map<MemberTagItemModel>((e) => MemberTagItemModel.fromJson(e))
+      return Success(
+        (res.data['data'] as List?)
+            ?.map<MemberTagItemModel>((e) => MemberTagItemModel.fromJson(e))
             .toList(),
-      };
+      );
     } else {
-      return {'status': false, 'msg': res.data['message']};
+      return Error(res.data['message']);
     }
   }
 
@@ -702,7 +698,7 @@ class MemberHttp {
   }
 
   static Future<LoadingState<UpowerRankData>> upowerRank({
-    required upMid,
+    required Object upMid,
     required int page,
     int? privilegeType,
   }) async {

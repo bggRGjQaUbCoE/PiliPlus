@@ -42,13 +42,13 @@ class FansController extends FollowTypeController {
       act: 7,
       reSrc: 11,
     );
-    if (res['status']) {
+    if (res.isSuccess) {
       loadingState
         ..value.data!.removeAt(index)
         ..refresh();
       SmartDialog.showToast('移除成功');
     } else {
-      SmartDialog.showToast(res['msg']);
+      res.toast();
     }
   }
 }

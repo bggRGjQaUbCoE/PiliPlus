@@ -57,9 +57,11 @@ class _GroupPanelState extends State<GroupPanel> {
       widget.mid.toString(),
       tags.isEmpty ? '0' : tags.join(','),
     );
-    SmartDialog.showToast(res['msg']);
-    if (res['status']) {
+    if (res.isSuccess) {
+      SmartDialog.showToast('操作成功');
       Get.back(result: tags);
+    } else {
+      res.toast();
     }
   }
 

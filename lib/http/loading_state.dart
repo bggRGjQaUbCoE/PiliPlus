@@ -17,7 +17,7 @@ sealed class LoadingState<T> {
     _ => null,
   };
 
-  void toast() => SmartDialog.showToast(toString());
+  Future<void> toast() => SmartDialog.showToast(toString());
 }
 
 class Loading extends LoadingState<Never> {

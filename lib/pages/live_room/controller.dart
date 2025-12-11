@@ -230,16 +230,14 @@ class LiveRoomController extends GetxController {
 
   Future<void> queryLiveInfoH5() async {
     var res = await LiveHttp.liveRoomInfoH5(roomId: roomId);
-    if (res['status']) {
-      RoomInfoH5Data data = res['data'];
+    if (res.isSuccess) {
+      final data = res.data;
       roomInfoH5.value = data;
       title.value = data.roomInfo?.title ?? '';
       watchedShow.value = data.watchedShow?.textLarge;
       videoPlayerServiceHandler?.onVideoDetailChange(data, roomId, heroTag);
     } else {
-      if (res['msg'] != null) {
-        _showDialog(res['msg']);
-      }
+      res.toast();
     }
   }
 
@@ -328,9 +326,8 @@ class LiveRoomController extends GetxController {
       return;
     }
     LiveHttp.liveRoomGetDanmakuToken(roomId: roomId).then((res) {
-      if (res['status']) {
-        dmInfo = res['data'];
-        initDm(dmInfo!);
+      if (res.isSuccess) {
+        initDm(dmInfo = res.data);
       }
     });
   }
@@ -508,10 +505,10 @@ class LiveRoomController extends GetxController {
       uid: mid,
       anchorId: roomInfoH5.value?.roomInfo?.uid,
     );
-    if (res['status']) {
+    if (res.isSuccess) {
       SmartDialog.showToast('点赞成功');
     } else {
-      SmartDialog.showToast(res['msg']);
+      res.toast();
     }
     likeClickTime.value = 0;
   }

@@ -278,11 +278,11 @@ class _FavDetailPageState extends State<FavDetailPage> with GridMixin {
                     title: '确定删除该收藏夹?',
                     onConfirm: () =>
                         FavHttp.deleteFolder(mediaIds: mediaId).then((res) {
-                          if (res['status']) {
+                          if (res.isSuccess) {
                             SmartDialog.showToast('删除成功');
                             Get.back(result: true);
                           } else {
-                            SmartDialog.showToast(res['msg']);
+                            res.toast();
                           }
                         }),
                   ),

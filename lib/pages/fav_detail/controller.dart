@@ -36,14 +36,14 @@ mixin BaseFavController
       resources: '$id:$type',
       delIds: mediaId.toString(),
     );
-    if (result['status']) {
+    if (result.isSuccess) {
       loadingState
         ..value.data!.removeAt(index)
         ..refresh();
       updateCount?.call(1);
       SmartDialog.showToast('取消收藏');
     } else {
-      SmartDialog.showToast(result['msg']);
+      result.toast();
     }
   }
 
@@ -61,12 +61,12 @@ mixin BaseFavController
               .join(','),
           delIds: mediaId.toString(),
         );
-        if (result['status']) {
+        if (result.isSuccess) {
           updateCount?.call(removeList.length);
           afterDelete(removeList);
           SmartDialog.showToast('取消收藏');
         } else {
-          SmartDialog.showToast(result['msg']);
+          result.toast();
         }
       },
     );
@@ -181,21 +181,21 @@ class FavDetailController
         ? await FavHttp.unfavFavFolder(mediaId)
         : await FavHttp.favFavFolder(mediaId);
 
-    if (res['status']) {
+    if (res.isSuccess) {
       folderInfo
         ..value.favState = isFav ? 0 : 1
         ..refresh();
     }
-    SmartDialog.showToast(res['msg']);
+    res.toast();
   }
 
   Future<void> cleanFav() async {
     var res = await FavHttp.cleanFav(mediaId: mediaId);
-    if (res['status']) {
+    if (res.isSuccess) {
       SmartDialog.showToast('清除成功');
       Future.delayed(const Duration(milliseconds: 200), onReload);
     } else {
-      SmartDialog.showToast(res['msg']);
+      res.toast();
     }
   }
 

@@ -10,7 +10,6 @@ import 'package:PiliPlus/models/common/publish_panel_type.dart';
 import 'package:PiliPlus/models_new/dynamic/dyn_mention/item.dart';
 import 'package:PiliPlus/models_new/emote/emote.dart' as e;
 import 'package:PiliPlus/models_new/live/live_emote/emoticon.dart';
-import 'package:PiliPlus/models_new/upload_bfs/data.dart';
 import 'package:PiliPlus/pages/common/publish/common_publish_page.dart';
 import 'package:PiliPlus/pages/dynamics_mention/view.dart';
 import 'package:PiliPlus/utils/extension.dart';
@@ -462,14 +461,13 @@ abstract class CommonRichTextPubPageState<T extends CommonRichTextPubPage>
       try {
         pictures = await Future.wait<Map<String, dynamic>>(
           pathList.map((path) async {
-            Map result = await MsgHttp.uploadBfs(
+            final result = await MsgHttp.uploadBfs(
               path: path,
               category: 'daily',
               biz: 'new_dyn',
               cancelToken: cancelToken,
             );
-            if (!result['status']) throw HttpException(result['msg']);
-            UploadBfsResData data = result['data'];
+            final data = result.data;
             return {
               'img_width': data.imageWidth,
               'img_height': data.imageHeight,

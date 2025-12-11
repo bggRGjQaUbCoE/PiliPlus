@@ -123,7 +123,7 @@ class DynamicsHttp {
   // }
 
   // 动态点赞
-  static Future thumbDynamic({
+  static Future<LoadingState<Null>> thumbDynamic({
     required String? dynamicId,
     required int? up,
   }) async {
@@ -144,9 +144,9 @@ class DynamicsHttp {
       ),
     );
     if (res.data['code'] == 0) {
-      return {'status': true, 'data': res.data['data']};
+      return const Success(null);
     } else {
-      return {'status': false, 'msg': res.data['message']};
+      return Error(res.data['message']);
     }
   }
 
@@ -277,8 +277,8 @@ class DynamicsHttp {
     }
   }
 
-  static Future setTop({
-    required dynamic dynamicId,
+  static Future<LoadingState<Null>> setTop({
+    required Object dynamicId,
   }) async {
     var res = await Request().post(
       Api.setTopDyn,
@@ -290,14 +290,14 @@ class DynamicsHttp {
       },
     );
     if (res.data['code'] == 0) {
-      return {'status': true};
+      return const Success(null);
     } else {
-      return {'status': false, 'msg': res.data['message']};
+      return Error(res.data['message']);
     }
   }
 
-  static Future rmTop({
-    required dynamic dynamicId,
+  static Future<LoadingState<Null>> rmTop({
+    required Object dynamicId,
   }) async {
     var res = await Request().post(
       Api.rmTopDyn,
@@ -309,14 +309,14 @@ class DynamicsHttp {
       },
     );
     if (res.data['code'] == 0) {
-      return {'status': true};
+      return const Success(null);
     } else {
-      return {'status': false, 'msg': res.data['message']};
+      return Error(res.data['message']);
     }
   }
 
-  static Future articleInfo({
-    required dynamic cvId,
+  static Future<LoadingState<ArticleInfoData>> articleInfo({
+    required Object cvId,
   }) async {
     var res = await Request().get(
       Api.articleInfo,
@@ -328,12 +328,9 @@ class DynamicsHttp {
       }),
     );
     if (res.data['code'] == 0) {
-      return {
-        'status': true,
-        'data': ArticleInfoData.fromJson(res.data['data']),
-      };
+      return Success(ArticleInfoData.fromJson(res.data['data']));
     } else {
-      return {'status': false, 'msg': res.data['message']};
+      return Error(res.data['message']);
     }
   }
 
@@ -415,7 +412,9 @@ class DynamicsHttp {
     }
   }
 
-  static Future<LoadingState<TopDetails?>> topicTop({required topicId}) async {
+  static Future<LoadingState<TopDetails?>> topicTop({
+    required Object topicId,
+  }) async {
     final res = await Request().get(
       Api.topicTop,
       queryParameters: {
@@ -434,7 +433,7 @@ class DynamicsHttp {
   }
 
   static Future<LoadingState<TopicCardList?>> topicFeed({
-    required topicId,
+    required Object topicId,
     required String offset,
     required int sortBy,
   }) async {
@@ -461,7 +460,7 @@ class DynamicsHttp {
   }
 
   static Future<LoadingState<ArticleListData>> articleList({
-    required id,
+    required Object id,
   }) async {
     final res = await Request().get(
       Api.articleList,
@@ -477,11 +476,11 @@ class DynamicsHttp {
     }
   }
 
-  static Future dynReserve({
-    required reserveId,
-    required curBtnStatus,
-    required dynamicIdStr,
-    required reserveTotal,
+  static Future<LoadingState<DynReserveData>> dynReserve({
+    required Object? reserveId,
+    required Object? curBtnStatus,
+    required Object dynamicIdStr,
+    required Object? reserveTotal,
   }) async {
     var res = await Request().post(
       Api.dynReserve,
@@ -489,19 +488,16 @@ class DynamicsHttp {
         'csrf': Accounts.main.csrf,
       },
       data: {
-        'reserve_id': reserveId,
-        'cur_btn_status': curBtnStatus,
+        'reserve_id': ?reserveId,
+        'cur_btn_status': ?curBtnStatus,
         'dynamic_id_str': dynamicIdStr,
-        'reserve_total': reserveTotal,
+        'reserve_total': ?reserveTotal,
       },
     );
     if (res.data['code'] == 0) {
-      return {
-        'status': true,
-        'data': DynReserveData.fromJson(res.data['data']),
-      };
+      return Success(DynReserveData.fromJson(res.data['data']));
     } else {
-      return {'status': false, 'msg': res.data['message']};
+      return Error(res.data['message']);
     }
   }
 

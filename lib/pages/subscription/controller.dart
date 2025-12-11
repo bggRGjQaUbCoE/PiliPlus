@@ -48,13 +48,13 @@ class SubController extends CommonListController<SubData, SubItemModel> {
                 id: subFolderItem.id!,
                 type: subFolderItem.type!,
               );
-              if (res['status']) {
+              if (res.isSuccess) {
                 loadingState
                   ..value.data!.remove(subFolderItem)
                   ..refresh();
                 SmartDialog.showToast('取消订阅成功');
               } else {
-                SmartDialog.showToast(res['msg']);
+                res.toast();
               }
               Get.back();
             },

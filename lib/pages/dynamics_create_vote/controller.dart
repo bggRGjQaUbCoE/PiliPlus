@@ -2,10 +2,8 @@ import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
 import 'package:PiliPlus/http/dynamics.dart';
 import 'package:PiliPlus/http/msg.dart';
 import 'package:PiliPlus/models/dynamics/vote_model.dart';
-import 'package:PiliPlus/models_new/upload_bfs/data.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/utils.dart';
-import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 
 class CreateVoteController extends GetxController {
@@ -97,9 +95,9 @@ class CreateVoteController extends GetxController {
       votePublisher: Accounts.main.mid,
       voteId: voteId,
     );
-    var res = voteId == null
-        ? await DynamicsHttp.createVote(voteInfo)
-        : await DynamicsHttp.updateVote(voteInfo);
+    var res = await (voteId == null
+        ? DynamicsHttp.createVote(voteInfo)
+        : DynamicsHttp.updateVote(voteInfo));
     if (res.isSuccess) {
       voteInfo.voteId = res.data;
       Get.back(result: voteInfo);
@@ -114,14 +112,13 @@ class CreateVoteController extends GetxController {
       category: 'daily',
       biz: 'vote',
     );
-    if (res['status']) {
-      UploadBfsResData data = res['data'];
+    if (res.isSuccess) {
       options
-        ..[index].imgUrl = data.imageUrl
+        ..[index].imgUrl = res.data.imageUrl
         ..refresh();
       updateCanCreate();
     } else {
-      SmartDialog.showToast(res['msg']);
+      res.toast();
     }
   }
 }

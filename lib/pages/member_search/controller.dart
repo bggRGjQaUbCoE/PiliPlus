@@ -11,7 +11,7 @@ class MemberSearchController extends GetxController
   final editingController = TextEditingController();
   final focusNode = FocusNode();
 
-  final mid = Get.parameters['mid'];
+  final mid = Get.parameters['mid']!;
   final uname = Get.parameters['uname'];
 
   final RxBool hasData = false.obs;

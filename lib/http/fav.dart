@@ -17,8 +17,8 @@ import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/app_sign.dart';
 import 'package:dio/dio.dart';
 
-class FavHttp {
-  static Future favFavFolder(mediaId) async {
+abstract final class FavHttp {
+  static Future<LoadingState<Null>> favFavFolder(Object mediaId) async {
     var res = await Request().post(
       Api.favFavFolder,
       data: {
@@ -28,13 +28,13 @@ class FavHttp {
       options: Options(contentType: Headers.formUrlEncodedContentType),
     );
     if (res.data['code'] == 0) {
-      return const {'status': true, 'msg': '收藏成功'};
+      return const Success(null);
     } else {
-      return {'status': false, 'msg': res.data['message']};
+      return Error(res.data['message']);
     }
   }
 
-  static Future unfavFavFolder(mediaId) async {
+  static Future<LoadingState<Null>> unfavFavFolder(Object mediaId) async {
     var res = await Request().post(
       Api.unfavFavFolder,
       data: {
@@ -44,9 +44,9 @@ class FavHttp {
       options: Options(contentType: Headers.formUrlEncodedContentType),
     );
     if (res.data['code'] == 0) {
-      return const {'status': true, 'msg': '取消收藏成功'};
+      return const Success(null);
     } else {
-      return {'status': false, 'msg': res.data['message']};
+      return Error(res.data['message']);
     }
   }
 
@@ -79,7 +79,10 @@ class FavHttp {
   }
 
   // 取消订阅
-  static Future cancelSub({required int id, required int type}) async {
+  static Future<LoadingState<Null>> cancelSub({
+    required int id,
+    required int type,
+  }) async {
     var res = type == 11
         ? await Request().post(
             Api.unfavFolder,
@@ -99,9 +102,9 @@ class FavHttp {
             options: Options(contentType: Headers.formUrlEncodedContentType),
           );
     if (res.data['code'] == 0) {
-      return {'status': true};
+      return const Success(null);
     } else {
-      return {'status': false, 'msg': res.data['message']};
+      return Error(res.data['message']);
     }
   }
 
@@ -145,7 +148,7 @@ class FavHttp {
     }
   }
 
-  static Future addFavPugv(seasonId) async {
+  static Future<LoadingState<Null>> addFavPugv(Object seasonId) async {
     var res = await Request().post(
       Api.addFavPugv,
       data: {
@@ -155,13 +158,13 @@ class FavHttp {
       options: Options(contentType: Headers.formUrlEncodedContentType),
     );
     if (res.data['code'] == 0) {
-      return {'status': true};
+      return const Success(null);
     } else {
-      return {'status': false, 'msg': res.data['message']};
+      return Error(res.data['message']);
     }
   }
 
-  static Future delFavPugv(seasonId) async {
+  static Future<LoadingState<Null>> delFavPugv(Object seasonId) async {
     var res = await Request().post(
       Api.delFavPugv,
       data: {
@@ -171,9 +174,9 @@ class FavHttp {
       options: Options(contentType: Headers.formUrlEncodedContentType),
     );
     if (res.data['code'] == 0) {
-      return {'status': true};
+      return const Success(null);
     } else {
-      return {'status': false, 'msg': res.data['message']};
+      return Error(res.data['message']);
     }
   }
 
@@ -195,7 +198,7 @@ class FavHttp {
     }
   }
 
-  static Future addFavTopic(topicId) async {
+  static Future<LoadingState<Null>> addFavTopic(Object topicId) async {
     var res = await Request().post(
       Api.addFavTopic,
       data: {
@@ -205,13 +208,13 @@ class FavHttp {
       options: Options(contentType: Headers.formUrlEncodedContentType),
     );
     if (res.data['code'] == 0) {
-      return {'status': true};
+      return const Success(null);
     } else {
-      return {'status': false, 'msg': res.data['message']};
+      return Error(res.data['message']);
     }
   }
 
-  static Future delFavTopic(topicId) async {
+  static Future<LoadingState<Null>> delFavTopic(Object topicId) async {
     var res = await Request().post(
       Api.delFavTopic,
       data: {
@@ -221,13 +224,16 @@ class FavHttp {
       options: Options(contentType: Headers.formUrlEncodedContentType),
     );
     if (res.data['code'] == 0) {
-      return {'status': true};
+      return const Success(null);
     } else {
-      return {'status': false, 'msg': res.data['message']};
+      return Error(res.data['message']);
     }
   }
 
-  static Future likeTopic(topicId, bool isLike) async {
+  static Future<LoadingState<Null>> likeTopic(
+    Object topicId,
+    bool isLike,
+  ) async {
     var res = await Request().post(
       Api.likeTopic,
       data: {
@@ -240,9 +246,9 @@ class FavHttp {
       options: Options(contentType: Headers.formUrlEncodedContentType),
     );
     if (res.data['code'] == 0) {
-      return {'status': true};
+      return const Success(null);
     } else {
-      return {'status': false, 'msg': res.data['message']};
+      return Error(res.data['message']);
     }
   }
 
@@ -263,8 +269,8 @@ class FavHttp {
     }
   }
 
-  static Future addFavArticle({
-    required dynamic id,
+  static Future<LoadingState<Null>> addFavArticle({
+    required Object id,
   }) async {
     var res = await Request().post(
       Api.addFavArticle,
@@ -277,14 +283,14 @@ class FavHttp {
       ),
     );
     if (res.data['code'] == 0) {
-      return {'status': true};
+      return const Success(null);
     } else {
-      return {'status': false, 'msg': res.data['message']};
+      return Error(res.data['message']);
     }
   }
 
-  static Future delFavArticle({
-    required dynamic id,
+  static Future<LoadingState<Null>> delFavArticle({
+    required Object id,
   }) async {
     var res = await Request().post(
       Api.delFavArticle,
@@ -297,9 +303,9 @@ class FavHttp {
       ),
     );
     if (res.data['code'] == 0) {
-      return {'status': true};
+      return const Success(null);
     } else {
-      return {'status': false, 'msg': res.data['message']};
+      return Error(res.data['message']);
     }
   }
 
@@ -345,7 +351,7 @@ class FavHttp {
     }
   }
 
-  static Future delNote({
+  static Future<LoadingState<Null>> delNote({
     required bool isPublish,
     required String noteIds,
   }) async {
@@ -360,9 +366,9 @@ class FavHttp {
       ),
     );
     if (res.data['code'] == 0) {
-      return {'status': true};
+      return const Success(null);
     } else {
-      return {'status': false, 'msg': res.data['message']};
+      return Error(res.data['message']);
     }
   }
 
@@ -409,7 +415,7 @@ class FavHttp {
     }
   }
 
-  static Future sortFavFolder({
+  static Future<LoadingState<Null>> sortFavFolder({
     required String sort,
   }) async {
     Map<String, dynamic> data = {
@@ -425,14 +431,14 @@ class FavHttp {
       ),
     );
     if (res.data['code'] == 0) {
-      return {'status': true, 'data': res.data['data']};
+      return const Success(null);
     } else {
-      return {'status': false, 'msg': res.data['message']};
+      return Error(res.data['message']);
     }
   }
 
-  static Future sortFav({
-    required dynamic mediaId,
+  static Future<LoadingState<Null>> sortFav({
+    required Object mediaId,
     required String sort,
   }) async {
     Map<String, dynamic> data = {
@@ -449,14 +455,14 @@ class FavHttp {
       ),
     );
     if (res.data['code'] == 0) {
-      return {'status': true, 'data': res.data['data']};
+      return const Success(null);
     } else {
-      return {'status': false, 'msg': res.data['message']};
+      return Error(res.data['message']);
     }
   }
 
-  static Future cleanFav({
-    required dynamic mediaId,
+  static Future<LoadingState<Null>> cleanFav({
+    required Object mediaId,
   }) async {
     var res = await Request().post(
       Api.cleanFav,
@@ -470,13 +476,13 @@ class FavHttp {
       ),
     );
     if (res.data['code'] == 0) {
-      return {'status': true, 'data': res.data['data']};
+      return const Success(null);
     } else {
-      return {'status': false, 'msg': res.data['message']};
+      return Error(res.data['message']);
     }
   }
 
-  static Future deleteFolder({
+  static Future<LoadingState<Null>> deleteFolder({
     required String mediaIds,
   }) async {
     var res = await Request().post(
@@ -491,13 +497,13 @@ class FavHttp {
       ),
     );
     if (res.data['code'] == 0) {
-      return {'status': true, 'data': res.data['data']};
+      return const Success(null);
     } else {
-      return {'status': false, 'msg': res.data['message']};
+      return Error(res.data['message']);
     }
   }
 
-  static Future addOrEditFolder({
+  static Future<LoadingState<FavFolderInfo>> addOrEditFolder({
     required bool isAdd,
     dynamic mediaId,
     required String title,
@@ -520,14 +526,14 @@ class FavHttp {
       ),
     );
     if (res.data['code'] == 0) {
-      return {'status': true, 'data': FavFolderInfo.fromJson(res.data['data'])};
+      return Success(FavFolderInfo.fromJson(res.data['data']));
     } else {
-      return {'status': false, 'msg': res.data['message']};
+      return Error(res.data['message']);
     }
   }
 
-  static Future favFolderInfo({
-    dynamic mediaId,
+  static Future<LoadingState<FavFolderInfo>> favFolderInfo({
+    required Object mediaId,
   }) async {
     var res = await Request().get(
       Api.favFolderInfo,
@@ -536,13 +542,13 @@ class FavHttp {
       },
     );
     if (res.data['code'] == 0) {
-      return {'status': true, 'data': FavFolderInfo.fromJson(res.data['data'])};
+      return Success(FavFolderInfo.fromJson(res.data['data']));
     } else {
-      return {'status': false, 'msg': res.data['message']};
+      return Error(res.data['message']);
     }
   }
 
-  static Future seasonFav({
+  static Future<LoadingState<Null>> seasonFav({
     required bool isFav,
     required dynamic seasonId,
   }) async {
@@ -558,14 +564,9 @@ class FavHttp {
       ),
     );
     if (res.data['code'] == 0) {
-      return {
-        'status': true,
-      };
+      return const Success(null);
     } else {
-      return {
-        'status': false,
-        'msg': res.data['message'],
-      };
+      return Error(res.data['message']);
     }
   }
 
@@ -604,9 +605,9 @@ class FavHttp {
     }
   }
 
-  static Future communityAction({
-    required dynamic opusId,
-    required dynamic action,
+  static Future<LoadingState<Null>> communityAction({
+    required Object opusId,
+    required Object action,
   }) async {
     var res = await Request().post(
       Api.communityAction,
@@ -622,14 +623,14 @@ class FavHttp {
       },
     );
     if (res.data['code'] == 0) {
-      return {'status': true};
+      return const Success(null);
     } else {
-      return {'status': false, 'msg': res.data['message']};
+      return Error(res.data['message']);
     }
   }
 
   // （取消）收藏
-  static Future favVideo({
+  static Future<LoadingState<Null>> favVideo({
     required String resources,
     String? addIds,
     String? delIds,
@@ -645,16 +646,16 @@ class FavHttp {
       options: Options(contentType: Headers.formUrlEncodedContentType),
     );
     if (res.data['code'] == 0) {
-      return {'status': true, 'data': res.data['data']};
+      return const Success(null);
     } else {
-      return {'status': false, 'msg': res.data['message']};
+      return Error(res.data['message']);
     }
   }
 
   // （取消）收藏
-  static Future unfavAll({
-    required rid,
-    required type,
+  static Future<LoadingState<Null>> unfavAll({
+    required Object rid,
+    required Object type,
   }) async {
     var res = await Request().post(
       Api.unfavAll,
@@ -666,9 +667,9 @@ class FavHttp {
       options: Options(contentType: Headers.formUrlEncodedContentType),
     );
     if (res.data['code'] == 0) {
-      return {'status': true, 'data': res.data['data']};
+      return const Success(null);
     } else {
-      return {'status': false, 'msg': res.data['message']};
+      return Error(res.data['message']);
     }
   }
 

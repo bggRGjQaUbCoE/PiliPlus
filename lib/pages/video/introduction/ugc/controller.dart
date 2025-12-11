@@ -12,8 +12,6 @@ import 'package:PiliPlus/http/user.dart';
 import 'package:PiliPlus/http/video.dart';
 import 'package:PiliPlus/models/common/video/source_type.dart';
 import 'package:PiliPlus/models_new/member_card_info/data.dart';
-import 'package:PiliPlus/models_new/triple/ugc_triple.dart';
-import 'package:PiliPlus/models_new/video/video_ai_conclusion/data.dart';
 import 'package:PiliPlus/models_new/video/video_ai_conclusion/model_result.dart';
 import 'package:PiliPlus/models_new/video/video_detail/data.dart';
 import 'package:PiliPlus/models_new/video/video_detail/episode.dart';
@@ -190,19 +188,18 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
       return;
     }
     var result = await VideoHttp.ugcTriple(bvid: bvid);
-    if (result['status']) {
-      UgcTriple data = result['data'];
+    if (result case Success(:final response)) {
       late final stat = videoDetail.value.stat!;
-      if (data.like == true && !hasLike.value) {
+      if (response.like == true && !hasLike.value) {
         stat.like++;
         hasLike.value = true;
       }
-      if (data.coin == true && !hasCoin) {
+      if (response.coin == true && !hasCoin) {
         stat.coin += 2;
         coinNum.value = 2;
         GlobalData().afterCoin(2);
       }
-      if (data.fav == true && !hasFav.value) {
+      if (response.fav == true && !hasFav.value) {
         stat.favorite++;
         hasFav.value = true;
       }
@@ -213,7 +210,7 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
         SmartDialog.showToast('三连成功');
       }
     } else {
-      SmartDialog.showToast(result['msg']);
+      result.toast();
     }
   }
 
@@ -229,15 +226,15 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
     }
     final newVal = !hasLike.value;
     var result = await VideoHttp.likeVideo(bvid: bvid, type: newVal);
-    if (result['status']) {
-      SmartDialog.showToast(newVal ? result['data']['toast'] : '取消赞');
+    if (result case Success(:final response)) {
+      SmartDialog.showToast(newVal ? response : '取消赞');
       videoDetail.value.stat!.like += newVal ? 1 : -1;
       hasLike.value = newVal;
       if (newVal) {
         hasDislike.value = false;
       }
     } else {
-      SmartDialog.showToast(result['msg']);
+      result.toast();
     }
   }
 
@@ -250,7 +247,7 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
       bvid: bvid,
       type: !hasDislike.value,
     );
-    if (result['status']) {
+    if (result.isSuccess) {
       if (!hasDislike.value) {
         SmartDialog.showToast('点踩成功');
         hasDislike.value = true;
@@ -263,7 +260,7 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
         hasDislike.value = false;
       }
     } else {
-      SmartDialog.showToast(result['msg']);
+      result.toast();
     }
   }
 
@@ -441,7 +438,7 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
         act: 6,
         reSrc: 11,
       );
-      if (res['status']) {
+      if (res.isSuccess) {
         followStatus['attribute'] = 0;
       }
       return;
@@ -762,10 +759,9 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
       upMid: mid,
     );
     SmartDialog.dismiss();
-    if (res['status']) {
-      AiConclusionData data = res['data'];
-      return data.modelResult;
-    } else if (res['handling']) {
+    if (res case Success(:final response)) {
+      return response.modelResult;
+    } else if (res is Error && res.code == 1) {
       SmartDialog.showToast("AI处理中，请稍后再试");
     } else {
       SmartDialog.showToast("当前视频暂不支持AI视频总结");

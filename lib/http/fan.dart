@@ -3,7 +3,7 @@ import 'package:PiliPlus/http/init.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models_new/follow/data.dart';
 
-class FanHttp {
+abstract final class FanHttp {
   static Future<LoadingState<FollowData>> fans({
     int? vmid,
     int? pn,

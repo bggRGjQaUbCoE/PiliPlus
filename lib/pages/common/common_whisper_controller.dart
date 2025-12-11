@@ -12,15 +12,15 @@ abstract class CommonWhisperController<R>
     extends CommonListController<R, Session> {
   SessionPageType get sessionPageType;
 
-  Future<void> onRemove(int index, int? talkerId) async {
+  Future<void> onRemove(int index, int talkerId) async {
     var res = await MsgHttp.removeMsg(talkerId);
-    if (res['status']) {
+    if (res.isSuccess) {
       loadingState
         ..value.data!.removeAt(index)
         ..refresh();
       SmartDialog.showToast('删除成功');
     } else {
-      SmartDialog.showToast(res['msg']);
+      res.toast();
     }
   }
 
@@ -53,12 +53,12 @@ abstract class CommonWhisperController<R>
       setting: isMuted ? 0 : 1,
       dndUid: talkerUid,
     );
-    if (res['status']) {
+    if (res.isSuccess) {
       item.isMuted = !isMuted;
       loadingState.refresh();
       SmartDialog.showToast('操作成功');
     } else {
-      SmartDialog.showToast(res['msg']);
+      res.toast();
     }
   }
 

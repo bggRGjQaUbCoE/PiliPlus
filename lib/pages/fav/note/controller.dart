@@ -42,11 +42,11 @@ class FavNoteController
           .map((item) => isPublish ? item.cvid : item.noteId)
           .join(','),
     );
-    if (res['status']) {
+    if (res.isSuccess) {
       afterDelete(removeList);
       SmartDialog.showToast('删除成功');
     } else {
-      SmartDialog.showToast(res['msg']);
+      res.toast();
     }
   }
 

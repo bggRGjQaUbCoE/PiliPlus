@@ -184,7 +184,7 @@ class MemberController extends CommonDataController<SpaceData, SpaceData?>
       act: isBlocked ? 6 : 5,
       reSrc: 11,
     );
-    if (res['status']) {
+    if (res.isSuccess) {
       relation.value = isBlocked ? 0 : 128;
     }
   }
@@ -216,14 +216,14 @@ class MemberController extends CommonDataController<SpaceData, SpaceData?>
 
   Future<void> onRemoveFan() async {
     final res = await VideoHttp.relationMod(mid: mid, act: 7, reSrc: 11);
-    if (res['status']) {
+    if (res.isSuccess) {
       isFollowed = null;
       if (relation.value == 4) {
         relation.value = 2;
       }
       SmartDialog.showToast('移除成功');
     } else {
-      SmartDialog.showToast(res['msg']);
+      res.toast();
     }
   }
 
@@ -240,10 +240,10 @@ class MemberController extends CommonDataController<SpaceData, SpaceData?>
 
   Future<void> vipExpAdd() async {
     var res = await UserHttp.vipExpAdd();
-    if (res['status']) {
+    if (res.isSuccess) {
       SmartDialog.showToast('领取成功');
     } else {
-      SmartDialog.showToast(res['msg']);
+      res.toast();
     }
   }
 }

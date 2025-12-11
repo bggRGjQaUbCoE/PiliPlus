@@ -19,7 +19,9 @@ import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 
 class SearchHttp {
   // 获取搜索建议
-  static Future searchSuggest({required String term}) async {
+  static Future<LoadingState<SearchSuggestModel>> searchSuggest({
+    required String term,
+  }) async {
     var res = await Request().get(
       Api.searchSuggest,
       queryParameters: {
@@ -32,14 +34,11 @@ class SearchHttp {
       Map<String, dynamic> resultMap = json.decode(res.data);
       if (resultMap['code'] == 0) {
         if (resultMap['result'] is Map) {
-          return {
-            'status': true,
-            'data': SearchSuggestModel.fromJson(resultMap['result']),
-          };
+          return Success(SearchSuggestModel.fromJson(resultMap['result']));
         }
       }
     }
-    return {'status': false, 'msg': '请求错误'};
+    return const Error(null);
   }
 
   // 分类搜索

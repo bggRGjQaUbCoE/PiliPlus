@@ -29,7 +29,6 @@ import 'package:PiliPlus/models/common/video/video_quality.dart';
 import 'package:PiliPlus/models/common/video/video_type.dart';
 import 'package:PiliPlus/models/video/play/url.dart';
 import 'package:PiliPlus/models_new/download/bili_download_entry_info.dart';
-import 'package:PiliPlus/models_new/media_list/data.dart';
 import 'package:PiliPlus/models_new/media_list/media_list.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_info_model/result.dart';
 import 'package:PiliPlus/models_new/sponsor_block/segment_item.dart';
@@ -37,7 +36,6 @@ import 'package:PiliPlus/models_new/video/video_detail/data.dart';
 import 'package:PiliPlus/models_new/video/video_detail/episode.dart' as ugc;
 import 'package:PiliPlus/models_new/video/video_detail/page.dart';
 import 'package:PiliPlus/models_new/video/video_pbp/data.dart';
-import 'package:PiliPlus/models_new/video/video_play_info/data.dart';
 import 'package:PiliPlus/models_new/video/video_play_info/subtitle.dart';
 import 'package:PiliPlus/models_new/video/video_stein_edgeinfo/data.dart';
 import 'package:PiliPlus/pages/audio/view.dart';
@@ -379,11 +377,10 @@ class VideoDetailController extends GetxController
           ? true
           : false,
     );
-    if (res['status']) {
-      MediaListData data = res['data'];
-      if (data.mediaList.isNotEmpty) {
+    if (res case Success(:final response)) {
+      if (response.mediaList.isNotEmpty) {
         if (isReverse) {
-          mediaList.value = data.mediaList;
+          mediaList.value = response.mediaList;
           for (var item in mediaList) {
             if (item.cid != null) {
               try {
@@ -395,13 +392,13 @@ class VideoDetailController extends GetxController
             }
           }
         } else if (isLoadPrevious) {
-          mediaList.insertAll(0, data.mediaList);
+          mediaList.insertAll(0, response.mediaList);
         } else {
-          mediaList.addAll(data.mediaList);
+          mediaList.addAll(response.mediaList);
         }
       }
     } else {
-      SmartDialog.showToast(res['msg']);
+      res.toast();
     }
   }
 
@@ -444,11 +441,11 @@ class VideoDetailController extends GetxController
                     resources: '${item.aid}:${item.type}',
                     delIds: '${args['mediaId']}',
                   );
-                  if (res['status']) {
+                  if (res.isSuccess) {
                     mediaList.removeAt(index);
                     SmartDialog.showToast('取消收藏');
                   } else {
-                    SmartDialog.showToast(res['msg']);
+                    res.toast();
                   }
                 }
               }
@@ -1543,14 +1540,13 @@ class VideoDetailController extends GetxController
       seasonId: seasonId,
       epId: epId,
     );
-    if (res['status']) {
-      PlayInfoData playInfo = res['data'];
+    if (res case Success(:final response)) {
       // interactive video
       if (isUgc && graphVersion == null) {
         try {
           final introCtr = Get.find<UgcIntroController>(tag: heroTag);
           if (introCtr.videoDetail.value.rights?.isSteinGate == 1) {
-            graphVersion = playInfo.interaction?.graphVersion;
+            graphVersion = response.interaction?.graphVersion;
             getSteinEdgeInfo();
           }
         } catch (e) {
@@ -1565,11 +1561,11 @@ class VideoDetailController extends GetxController
             tag: heroTag,
           );
           if ((ugcIntroController.videoDetail.value.pages?.length ?? 0) > 1 &&
-              playInfo.lastPlayCid != null &&
-              playInfo.lastPlayCid != 0) {
-            if (playInfo.lastPlayCid != cid.value) {
+              response.lastPlayCid != null &&
+              response.lastPlayCid != 0) {
+            if (response.lastPlayCid != cid.value) {
               int index = ugcIntroController.videoDetail.value.pages!
-                  .indexWhere((item) => item.cid == playInfo.lastPlayCid);
+                  .indexWhere((item) => item.cid == response.lastPlayCid);
               if (index != -1) {
                 onAddItem(index);
               }
@@ -1579,9 +1575,9 @@ class VideoDetailController extends GetxController
       }
 
       if (plPlayerController.showViewPoints &&
-          playInfo.viewPoints?.firstOrNull?.type == 2) {
+          response.viewPoints?.firstOrNull?.type == 2) {
         try {
-          viewPointList.value = playInfo.viewPoints!.map((item) {
+          viewPointList.value = response.viewPoints!.map((item) {
             double start = (item.to! / (data.timeLength! / 1000)).clamp(
               0.0,
               1.0,
@@ -1599,8 +1595,8 @@ class VideoDetailController extends GetxController
         } catch (_) {}
       }
 
-      if (playInfo.subtitle?.subtitles?.isNotEmpty == true) {
-        subtitles.value = playInfo.subtitle!.subtitles!;
+      if (response.subtitle?.subtitles?.isNotEmpty == true) {
+        subtitles.value = response.subtitle!.subtitles!;
 
         final idx = switch (SubtitlePrefType.values[Pref
             .subtitlePreferenceV2]) {

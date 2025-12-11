@@ -30,7 +30,7 @@ class AuthorPanel extends StatelessWidget {
   final bool isSave;
   final bool isDetail;
   final ValueChanged? onRemove;
-  final Function(bool isTop, dynamic dynId)? onSetTop;
+  final void Function(bool isTop, Object dynId)? onSetTop;
   final VoidCallback? onBlock;
 
   const AuthorPanel({

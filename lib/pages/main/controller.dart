@@ -3,12 +3,11 @@ import 'dart:math' show max;
 
 import 'package:PiliPlus/common/widgets/view_safe_area.dart';
 import 'package:PiliPlus/grpc/dyn.dart';
+import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/msg.dart';
 import 'package:PiliPlus/models/common/dynamic/dynamic_badge_mode.dart';
 import 'package:PiliPlus/models/common/msg/msg_unread_type.dart';
 import 'package:PiliPlus/models/common/nav_bar_config.dart';
-import 'package:PiliPlus/models_new/msgfeed_unread/data.dart';
-import 'package:PiliPlus/models_new/single_unread/data.dart';
 import 'package:PiliPlus/pages/dynamics/controller.dart';
 import 'package:PiliPlus/pages/home/controller.dart';
 import 'package:PiliPlus/pages/mine/view.dart';
@@ -112,14 +111,13 @@ class MainController extends GetxController
   Future<int> _msgUnread() async {
     if (msgUnReadTypes.contains(MsgUnReadType.pm)) {
       var res = await MsgHttp.msgUnread();
-      if (res['status']) {
-        SingleUnreadData data = res['data'];
-        return data.followUnread +
-            data.unfollowUnread +
-            data.bizMsgFollowUnread +
-            data.bizMsgUnfollowUnread +
-            data.unfollowPushMsg +
-            data.customUnread;
+      if (res case Success(:final response)) {
+        return response.followUnread +
+            response.unfollowUnread +
+            response.bizMsgFollowUnread +
+            response.bizMsgUnfollowUnread +
+            response.unfollowPushMsg +
+            response.customUnread;
       }
     }
     return 0;
@@ -131,23 +129,22 @@ class MainController extends GetxController
       ..remove(MsgUnReadType.pm);
     if (remainTypes.isNotEmpty) {
       var res = await MsgHttp.msgFeedUnread();
-      if (res['status']) {
-        MsgFeedUnreadData data = res['data'];
+      if (res case Success(:final response)) {
         for (var item in remainTypes) {
           switch (item) {
             case MsgUnReadType.pm:
               break;
             case MsgUnReadType.reply:
-              count += data.reply;
+              count += response.reply;
               break;
             case MsgUnReadType.at:
-              count += data.at;
+              count += response.at;
               break;
             case MsgUnReadType.like:
-              count += data.like;
+              count += response.like;
               break;
             case MsgUnReadType.sysMsg:
-              count += data.sysMsg;
+              count += response.sysMsg;
               break;
           }
         }

@@ -27,13 +27,11 @@ class HorizontalMemberPageController
   }
 
   Future<void> getUserInfo() async {
-    var res = await MemberHttp.memberInfo(mid: mid);
-    if (res['status']) {
-      userState.value = Success(res['data']);
+    final res = await MemberHttp.memberInfo(mid: mid);
+    userState.value = res;
+    if (res.isSuccess) {
       getMemberStat();
       getMemberView();
-    } else {
-      userState.value = Error(res['msg']);
     }
   }
 

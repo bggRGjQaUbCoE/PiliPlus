@@ -6,7 +6,6 @@ import 'package:PiliPlus/models/dynamics/article_content_model.dart'
     show ArticleContentModel;
 import 'package:PiliPlus/models/dynamics/result.dart';
 import 'package:PiliPlus/models/model_avatar.dart';
-import 'package:PiliPlus/models_new/article/article_info/data.dart';
 import 'package:PiliPlus/models_new/article/article_view/data.dart';
 import 'package:PiliPlus/pages/common/dyn/common_dyn_controller.dart';
 import 'package:PiliPlus/utils/accounts.dart';
@@ -134,28 +133,27 @@ class ArticleController extends CommonDynController {
   // stats
   Future<bool> getArticleInfo([bool isGetCover = false]) async {
     final res = await DynamicsHttp.articleInfo(cvId: commentId);
-    if (res['status']) {
-      ArticleInfoData data = res['data'];
+    if (res case Success(:final response)) {
       summary
-        ..cover ??= data.originImageUrls?.firstOrNull
-        ..title ??= data.title;
+        ..cover ??= response.originImageUrls?.firstOrNull
+        ..title ??= response.title;
 
       stats.value ??= ModuleStatModel(
-        comment: DynamicStat(count: data.stats?.reply),
-        forward: DynamicStat(count: data.stats?.share),
+        comment: DynamicStat(count: response.stats?.reply),
+        forward: DynamicStat(count: response.stats?.share),
         like: DynamicStat(
-          count: data.stats?.like,
-          status: data.stats?.like == 1,
+          count: response.stats?.like,
+          status: response.stats?.like == 1,
         ),
         favorite: DynamicStat(
-          count: data.stats?.favorite,
-          status: data.favorite,
+          count: response.stats?.favorite,
+          status: response.favorite,
         ),
       );
       return true;
     }
     if (isGetCover) {
-      SmartDialog.showToast(res['msg']);
+      res.toast();
     }
     return false;
   }
@@ -185,7 +183,7 @@ class ArticleController extends CommonDynController {
               ? await FavHttp.delFavArticle(id: commentId)
               : await FavHttp.addFavArticle(id: commentId)
         : await FavHttp.communityAction(opusId: id, action: isFav ? 4 : 3);
-    if (res['status']) {
+    if (res.isSuccess) {
       favorite?.status = !isFav;
       if (isFav) {
         favorite?.count--;
@@ -195,7 +193,7 @@ class ArticleController extends CommonDynController {
       stats.refresh();
       SmartDialog.showToast('${isFav ? '取消' : ''}收藏成功');
     } else {
-      SmartDialog.showToast(res['msg']);
+      res.toast();
     }
   }
 
@@ -206,7 +204,7 @@ class ArticleController extends CommonDynController {
       dynamicId: opusData?.idStr ?? articleData?.dynIdStr,
       up: isLike ? 2 : 1,
     );
-    if (res['status']) {
+    if (res.isSuccess) {
       like?.status = !isLike;
       if (isLike) {
         like?.count--;
@@ -216,7 +214,7 @@ class ArticleController extends CommonDynController {
       stats.refresh();
       SmartDialog.showToast(!isLike ? '点赞成功' : '取消赞');
     } else {
-      SmartDialog.showToast(res['msg']);
+      res.toast();
     }
   }
 

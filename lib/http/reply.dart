@@ -16,7 +16,7 @@ class ReplyHttp {
     extra: {'account': const NoAccount()},
   );
 
-  static Future<LoadingState> replyList({
+  static Future<LoadingState<ReplyData>> replyList({
     required bool isLogin,
     required int oid,
     required String nextOffset,
@@ -48,8 +48,7 @@ class ReplyHttp {
             options: !isLogin ? options : null,
           );
     if (res.data['code'] == 0) {
-      ReplyData replyData = ReplyData.fromJson(res.data['data']);
-      return Success(replyData);
+      return Success(ReplyData.fromJson(res.data['data']));
     } else {
       return Error(res.data['message']);
     }
@@ -87,7 +86,7 @@ class ReplyHttp {
     }
   }
 
-  static Future hateReply({
+  static Future<LoadingState<Null>> hateReply({
     required int type,
     required int action,
     required int oid,
@@ -105,14 +104,14 @@ class ReplyHttp {
       options: Options(contentType: Headers.formUrlEncodedContentType),
     );
     if (res.data['code'] == 0) {
-      return {'status': true, 'data': res.data['data']};
+      return const Success(null);
     } else {
-      return {'status': false, 'msg': res.data['message']};
+      return Error(res.data['message']);
     }
   }
 
   // 评论点赞
-  static Future likeReply({
+  static Future<LoadingState<Null>> likeReply({
     required int type,
     required int oid,
     required int rpid,
@@ -130,9 +129,9 @@ class ReplyHttp {
       options: Options(contentType: Headers.formUrlEncodedContentType),
     );
     if (res.data['code'] == 0) {
-      return {'status': true, 'data': res.data['data']};
+      return const Success(null);
     } else {
-      return {'status': false, 'msg': res.data['message']};
+      return Error(res.data['message']);
     }
   }
 
@@ -153,10 +152,10 @@ class ReplyHttp {
     }
   }
 
-  static Future replyTop({
-    required oid,
-    required type,
-    required rpid,
+  static Future<LoadingState<Null>> replyTop({
+    required Object oid,
+    required Object type,
+    required Object rpid,
     required bool isUpTop,
   }) async {
     var res = await Request().post(
@@ -171,9 +170,9 @@ class ReplyHttp {
       options: Options(contentType: Headers.formUrlEncodedContentType),
     );
     if (res.data['code'] == 0) {
-      return {'status': true};
+      return const Success(null);
     } else {
-      return {'status': false, 'msg': res.data['message']};
+      return Error(res.data['message']);
     }
   }
 }

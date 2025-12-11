@@ -36,9 +36,11 @@ class HistoryBaseController extends GetxController {
                 SmartDialog.showLoading(msg: '请求中');
                 var res = await UserHttp.clearHistory(account: account);
                 SmartDialog.dismiss();
-                if (res.data['code'] == 0) {
+                if (res.isSuccess) {
                   SmartDialog.showToast('清空观看历史');
                   onSuccess();
+                } else {
+                  res.toast();
                 }
               },
               child: const Text('确认清空'),
@@ -74,13 +76,15 @@ class HistoryBaseController extends GetxController {
                   account: account,
                 );
                 SmartDialog.dismiss();
-                if (res.data['code'] == 0) {
+                if (res.isSuccess) {
                   SmartDialog.showToast(pauseStatus ? '暂停观看历史' : '恢复观看历史');
                   this.pauseStatus.value = pauseStatus;
                   GStorage.localCache.put(
                     LocalCacheKey.historyPause,
                     pauseStatus,
                   );
+                } else {
+                  res.toast();
                 }
                 Get.back();
               },

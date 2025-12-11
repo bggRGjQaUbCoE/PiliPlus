@@ -168,7 +168,7 @@ class _ReplyPageState extends CommonRichTextPubPageState<LiveSendDmPanel> {
       dmType: dmType,
       emoticonOptions: emoticonOptions,
     );
-    if (res['status']) {
+    if (res.isSuccess) {
       hasPub = true;
       Get.back();
       liveRoomController
@@ -176,7 +176,7 @@ class _ReplyPageState extends CommonRichTextPubPageState<LiveSendDmPanel> {
         ..savedDanmaku = null;
       SmartDialog.showToast('发送成功');
     } else {
-      SmartDialog.showToast(res['msg']);
+      res.toast();
     }
   }
 

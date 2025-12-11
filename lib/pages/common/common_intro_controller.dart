@@ -107,8 +107,8 @@ abstract class CommonIntroController extends GetxController
       bvid: bvid,
       cid: cid.value,
     );
-    if (result['status']) {
-      total.value = result['data'];
+    if (result case Success(:final response)) {
+      total.value = response;
     }
   }
 
@@ -128,7 +128,7 @@ abstract class CommonIntroController extends GetxController
       multiply: coin,
       selectLike: selectLike ? 1 : 0,
     );
-    if (res['status']) {
+    if (res.isSuccess) {
       SmartDialog.showToast('投币成功');
       coinNum.value += coin;
       GlobalData().afterCoin(coin);
@@ -138,7 +138,7 @@ abstract class CommonIntroController extends GetxController
         hasLike.value = true;
       }
     } else {
-      SmartDialog.showToast(res['msg']);
+      res.toast();
     }
   }
 
@@ -150,7 +150,7 @@ abstract class CommonIntroController extends GetxController
   Future<void> viewLater() async {
     var res = await (hasLater.value
         ? UserHttp.toViewDel(aids: IdUtils.bv2av(bvid).toString())
-        : await UserHttp.toViewLater(bvid: bvid));
+        : UserHttp.toViewLater(bvid: bvid));
     if (res['status']) hasLater.value = !hasLater.value;
     SmartDialog.showToast(res['msg']);
   }
@@ -236,12 +236,12 @@ mixin FavMixin on TripleMixin {
                   addIds: favFolderId.toString(),
                 );
           SmartDialog.dismiss();
-          if (result['status']) {
+          if (result.isSuccess) {
             updateFavCount(hasFav ? -1 : 1);
             this.hasFav.value = !hasFav;
             SmartDialog.showToast('✅ 快速收藏/取消收藏成功');
           } else {
-            SmartDialog.showToast(result['msg']);
+            res.toast();
           }
         } else {
           SmartDialog.dismiss();
@@ -275,7 +275,7 @@ mixin FavMixin on TripleMixin {
       delIds: delMediaIdsNew.join(','),
     );
     SmartDialog.dismiss();
-    if (result['status']) {
+    if (result.isSuccess) {
       Get.back();
       final newVal =
           addMediaIdsNew.isNotEmpty || favIds?.length != delMediaIdsNew.length;
@@ -285,7 +285,7 @@ mixin FavMixin on TripleMixin {
       }
       SmartDialog.showToast('操作成功');
     } else {
-      SmartDialog.showToast(result['msg']);
+      result.toast();
     }
   }
 }

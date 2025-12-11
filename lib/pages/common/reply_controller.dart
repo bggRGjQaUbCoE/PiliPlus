@@ -252,7 +252,7 @@ abstract class ReplyController<R> extends CommonListController<R, ReplyInfo> {
       rpid: item.id,
       isUpTop: isUpTop,
     );
-    if (res['status']) {
+    if (res.isSuccess) {
       List<ReplyInfo> list = loadingState.value.data!;
       item.replyControl.isUpTop = !isUpTop;
       if (!isUpTop && index != 0) {
@@ -263,7 +263,7 @@ abstract class ReplyController<R> extends CommonListController<R, ReplyInfo> {
       loadingState.refresh();
       SmartDialog.showToast('${isUpTop ? '取消' : ''}置顶成功');
     } else {
-      SmartDialog.showToast(res['msg']);
+      res.toast();
     }
   }
 

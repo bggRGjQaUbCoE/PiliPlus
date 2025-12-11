@@ -60,8 +60,8 @@ class WhisperDetailController extends CommonListController<RspSessionMsg, Msg> {
       talkerId: talkerId,
       ackSeqno: msgSeqno,
     );
-    if (!res['status']) {
-      SmartDialog.showToast(res['msg']);
+    if (!res.isSuccess) {
+      res.toast();
     }
   }
 

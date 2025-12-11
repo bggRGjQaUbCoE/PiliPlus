@@ -38,7 +38,7 @@ class BlackListController
       title: '确定将 $name 移出黑名单？',
       onConfirm: () async {
         var result = await VideoHttp.relationMod(mid: mid, act: 6, reSrc: 11);
-        if (result['status']) {
+        if (result.isSuccess) {
           loadingState
             ..value.data!.removeAt(index)
             ..refresh();

@@ -9,7 +9,6 @@ import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/msg.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/models/common/publish_panel_type.dart';
-import 'package:PiliPlus/models_new/upload_bfs/data.dart';
 import 'package:PiliPlus/pages/common/publish/common_rich_text_pub_page.dart';
 import 'package:PiliPlus/pages/emote/view.dart';
 import 'package:PiliPlus/pages/whisper_detail/controller.dart';
@@ -318,18 +317,17 @@ class _WhisperDetailPageState
                           path: path,
                           biz: 'im',
                         );
-                        if (result['status']) {
-                          String mimeType =
+                        if (result case Success(:final response)) {
+                          final mimeType =
                               lookupMimeType(path)?.split('/').getOrNull(1) ??
                               'jpg';
-                          UploadBfsResData data = result['data'];
-                          Map picMsg = {
-                            'url': data.imageUrl,
-                            'height': data.imageHeight,
-                            'width': data.imageWidth,
+                          final picMsg = {
+                            'url': response.imageUrl,
+                            'height': response.imageHeight,
+                            'width': response.imageWidth,
                             'imageType': mimeType,
                             'original': 1,
-                            'size': data.imgSize,
+                            'size': response.imgSize,
                           };
                           SmartDialog.showLoading(msg: '正在发送');
                           await _whisperDetailController
@@ -344,7 +342,7 @@ class _WhisperDetailPageState
                               });
                         } else {
                           SmartDialog.dismiss();
-                          SmartDialog.showToast(result['msg']);
+                          result.toast();
                           return;
                         }
                       }

@@ -3,7 +3,6 @@ import 'package:PiliPlus/http/user.dart';
 import 'package:PiliPlus/models_new/space_setting/data.dart';
 import 'package:PiliPlus/models_new/space_setting/privacy.dart';
 import 'package:PiliPlus/pages/common/common_data_controller.dart';
-import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 
 class SpaceSettingController
     extends CommonDataController<SpaceSettingData, Privacy?> {
@@ -39,8 +38,8 @@ class SpaceSettingController
             for (var e in data.list3) e.key: e.value,
           },
         );
-        if (!res['status']) {
-          SmartDialog.showToast(res['msg']);
+        if (!res.isSuccess) {
+          res.toast();
         }
       }
     }

@@ -584,11 +584,11 @@ class _EpisodePanelState extends State<EpisodePanel>
             isFav: response,
             seasonId: widget.seasonId,
           );
-          if (result['status']) {
+          if (result.isSuccess) {
             SmartDialog.showToast('${response ? '取消' : ''}订阅成功');
             _favState!.value = Success(!response);
           } else {
-            SmartDialog.showToast(result['msg']);
+            result.toast();
           }
         },
       ),

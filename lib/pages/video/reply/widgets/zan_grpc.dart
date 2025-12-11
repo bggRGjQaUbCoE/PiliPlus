@@ -39,7 +39,7 @@ class ZanButtonGrpc extends StatelessWidget {
       rpid: rpid,
     );
     // SmartDialog.dismiss();
-    if (res['status']) {
+    if (res.isSuccess) {
       SmartDialog.showToast(isDislike ? '取消踩' : '点踩成功');
       if (action == 2) {
         if (isLike) replyItem.like -= $fixnum.Int64.ONE;
@@ -51,7 +51,7 @@ class ZanButtonGrpc extends StatelessWidget {
         (context as Element?)?.markNeedsBuild();
       }
     } else {
-      SmartDialog.showToast(res['msg']);
+      res.toast();
     }
     onDone();
   }
@@ -79,7 +79,7 @@ class ZanButtonGrpc extends StatelessWidget {
       rpid: rpid,
       action: action,
     );
-    if (res['status']) {
+    if (res.isSuccess) {
       SmartDialog.showToast(isLike ? '取消赞' : '点赞成功');
       if (action == 1) {
         replyItem
@@ -94,7 +94,7 @@ class ZanButtonGrpc extends StatelessWidget {
         (context as Element?)?.markNeedsBuild();
       }
     } else {
-      SmartDialog.showToast(res['msg']);
+      res.toast();
     }
     onDone();
   }

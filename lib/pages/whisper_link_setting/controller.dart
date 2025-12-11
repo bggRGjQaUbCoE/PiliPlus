@@ -12,7 +12,6 @@ import 'package:PiliPlus/models_new/msg/msg_dnd/uid_setting.dart';
 import 'package:PiliPlus/models_new/msg/session_ss/data.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:fixnum/fixnum.dart';
-import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 
 class WhisperLinkSettingController extends GetxController {
@@ -80,12 +79,12 @@ class WhisperLinkSettingController extends GetxController {
       setting: setting,
       talkerUid: talkerUid,
     );
-    if (res['status']) {
+    if (res.isSuccess) {
       sessionSs
         ..value.data.pushSetting = setting
         ..refresh();
     } else {
-      SmartDialog.showToast(res['msg']);
+      res.toast();
     }
   }
 
@@ -107,12 +106,12 @@ class WhisperLinkSettingController extends GetxController {
       setting: setting,
       dndUid: talkerUid,
     );
-    if (res['status']) {
+    if (res.isSuccess) {
       msgDnd
         ..value.data!.first.setting = setting
         ..refresh();
     } else {
-      SmartDialog.showToast(res['msg']);
+      res.toast();
     }
   }
 
@@ -123,12 +122,12 @@ class WhisperLinkSettingController extends GetxController {
         act: 6,
         reSrc: 11,
       );
-      if (res['status']) {
+      if (res.isSuccess) {
         sessionSs
           ..value.data.followStatus = null
           ..refresh();
       } else {
-        SmartDialog.showToast(res['msg']);
+        res.toast();
       }
     } else {
       showConfirmDialog(
@@ -141,12 +140,12 @@ class WhisperLinkSettingController extends GetxController {
             act: 5,
             reSrc: 11,
           );
-          if (res['status']) {
+          if (res.isSuccess) {
             sessionSs
               ..value.data.followStatus = 128
               ..refresh();
           } else {
-            SmartDialog.showToast(res['msg']);
+            res.toast();
           }
         },
       );

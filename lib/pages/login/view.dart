@@ -32,6 +32,12 @@ class _LoginPageState extends State<LoginPage> {
   bool showPassword = false;
   GlobalKey globalKey = GlobalKey();
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _loginPageCtr.didChangeDependencies(context);
+  }
+
   Widget loginByQRCode(ThemeData theme) {
     return Column(
       children: [

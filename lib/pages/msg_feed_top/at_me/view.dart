@@ -96,7 +96,7 @@ class _AtMePageState extends State<AtMePage> {
                   void onLongPress() => showConfirmDialog(
                     context: context,
                     title: '确定删除该通知?',
-                    onConfirm: () => _atMeController.onRemove(item.id, index),
+                    onConfirm: () => _atMeController.onRemove(item.id!, index),
                   );
                   return ListTile(
                     safeArea: true,

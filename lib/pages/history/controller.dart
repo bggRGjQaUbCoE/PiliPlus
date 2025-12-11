@@ -78,11 +78,11 @@ class HistoryController
   // 观看历史暂停状态
   Future<void> historyStatus() async {
     var res = await UserHttp.historyStatus(account: account);
-    if (res['status']) {
-      baseCtr.pauseStatus.value = res['data'];
-      GStorage.localCache.put(LocalCacheKey.historyPause, res['data']);
+    if (res case Success(:final response)) {
+      baseCtr.pauseStatus.value = response;
+      GStorage.localCache.put(LocalCacheKey.historyPause, response);
     } else {
-      SmartDialog.showToast(res['msg']);
+      res.toast();
     }
   }
 
@@ -111,11 +111,13 @@ class HistoryController
           .join(','),
       account: account,
     );
-    if (response['status']) {
-      afterDelete(removeList);
-    }
     SmartDialog.dismiss();
-    SmartDialog.showToast(response['msg']);
+    if (response.isSuccess) {
+      afterDelete(removeList);
+      SmartDialog.showToast('已删除');
+    } else {
+      response.toast();
+    }
   }
 
   // 删除选中的记录

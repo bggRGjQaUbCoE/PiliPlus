@@ -951,11 +951,11 @@ class ReplyItemGrpc extends StatelessWidget {
                   rpid: item.id.toInt(),
                 );
                 SmartDialog.dismiss();
-                if (result['status']) {
+                if (result.isSuccess) {
                   SmartDialog.showToast('删除成功');
                   onDelete();
                 } else {
-                  SmartDialog.showToast('删除失败, ${result["msg"]}');
+                  SmartDialog.showToast('删除失败, $result');
                 }
               },
               minLeadingWidth: 0,

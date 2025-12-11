@@ -14,7 +14,7 @@ class DynamicPanel extends StatelessWidget {
   final bool isDetail;
   final ValueChanged? onRemove;
   final bool isSave;
-  final Function(bool isTop, dynamic dynId)? onSetTop;
+  final void Function(bool isTop, Object dynId)? onSetTop;
   final VoidCallback? onBlock;
   final VoidCallback? onUnfold;
   final bool isDetailPortraitW;

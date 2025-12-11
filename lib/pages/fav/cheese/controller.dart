@@ -26,15 +26,15 @@ class FavCheeseController
   Future<LoadingState<SpaceCheeseData>> customGetData() =>
       FavHttp.favPugv(mid: mid, page: page);
 
-  Future<void> onRemove(int index, int? sid) async {
+  Future<void> onRemove(int index, int sid) async {
     var res = await FavHttp.delFavPugv(sid);
-    if (res['status']) {
+    if (res.isSuccess) {
       loadingState
         ..value.data!.removeAt(index)
         ..refresh();
       SmartDialog.showToast('已取消收藏');
     } else {
-      SmartDialog.showToast(res['msg']);
+      res.toast();
     }
   }
 }

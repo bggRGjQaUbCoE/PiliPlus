@@ -11,7 +11,7 @@ import 'package:PiliPlus/models_new/pgc/pgc_timeline/result.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:dio/dio.dart';
 
-class PgcHttp {
+abstract final class PgcHttp {
   static Future<LoadingState<PgcIndexResult>> pgcIndexResult({
     required int page,
     required Map<String, dynamic> params,
@@ -38,15 +38,15 @@ class PgcHttp {
   }
 
   static Future<LoadingState<PgcIndexConditionData>> pgcIndexCondition({
-    seasonType,
-    type,
-    indexType,
+    Object? seasonType,
+    required Object type,
+    Object? indexType,
   }) async {
     var res = await Request().get(
       Api.pgcIndexCondition,
       queryParameters: {
         'season_type': ?seasonType,
-        'type': ?type,
+        'type': type,
         'index_type': ?indexType,
       },
     );
@@ -133,9 +133,9 @@ class PgcHttp {
     }
   }
 
-  static Future pgcReviewLike({
-    required mediaId,
-    required reviewId,
+  static Future<LoadingState<Null>> pgcReviewLike({
+    required Object mediaId,
+    required Object reviewId,
   }) async {
     var res = await Request().post(
       Api.pgcReviewLike,
@@ -148,15 +148,15 @@ class PgcHttp {
       options: Options(contentType: Headers.formUrlEncodedContentType),
     );
     if (res.data['code'] == 0) {
-      return {'status': true};
+      return const Success(null);
     } else {
-      return {'status': false, 'msg': res.data['message']};
+      return Error(res.data['message']);
     }
   }
 
-  static Future pgcReviewDislike({
-    required mediaId,
-    required reviewId,
+  static Future<LoadingState<Null>> pgcReviewDislike({
+    required Object mediaId,
+    required Object reviewId,
   }) async {
     var res = await Request().post(
       Api.pgcReviewDislike,
@@ -169,14 +169,14 @@ class PgcHttp {
       options: Options(contentType: Headers.formUrlEncodedContentType),
     );
     if (res.data['code'] == 0) {
-      return {'status': true};
+      return const Success(null);
     } else {
-      return {'status': false, 'msg': res.data['message']};
+      return Error(res.data['message']);
     }
   }
 
-  static Future pgcReviewPost({
-    required mediaId,
+  static Future<LoadingState<Null>> pgcReviewPost({
+    required Object mediaId,
     required int score,
     required String content,
     bool shareFeed = false,
@@ -193,14 +193,14 @@ class PgcHttp {
       options: Options(contentType: Headers.formUrlEncodedContentType),
     );
     if (res.data['code'] == 0) {
-      return {'status': true};
+      return const Success(null);
     } else {
-      return {'status': false, 'msg': res.data['message']};
+      return Error(res.data['message']);
     }
   }
 
-  static Future pgcReviewMod({
-    required mediaId,
+  static Future<LoadingState<Null>> pgcReviewMod({
+    required Object mediaId,
     required int score,
     required String content,
     required reviewId,
@@ -217,15 +217,15 @@ class PgcHttp {
       options: Options(contentType: Headers.formUrlEncodedContentType),
     );
     if (res.data['code'] == 0) {
-      return {'status': true};
+      return const Success(null);
     } else {
-      return {'status': false, 'msg': res.data['message']};
+      return Error(res.data['message']);
     }
   }
 
-  static Future pgcReviewDel({
-    required mediaId,
-    required reviewId,
+  static Future<LoadingState<Null>> pgcReviewDel({
+    required Object mediaId,
+    required Object reviewId,
   }) async {
     var res = await Request().post(
       Api.pgcReviewDel,
@@ -237,18 +237,16 @@ class PgcHttp {
       options: Options(contentType: Headers.formUrlEncodedContentType),
     );
     if (res.data['code'] == 0) {
-      return {'status': true};
+      return const Success(null);
     } else {
-      return {'status': false, 'msg': res.data['message']};
+      return Error(res.data['message']);
     }
   }
 
-  static Future seasonStatus(dynamic seasonId) async {
+  static Future seasonStatus(Object seasonId) async {
     var res = await Request().get(
       Api.seasonStatus,
-      queryParameters: {
-        'season_id': seasonId,
-      },
+      queryParameters: {'season_id': seasonId},
     );
     if (res.data['code'] == 0) {
       return {'status': true, 'data': res.data['result']};

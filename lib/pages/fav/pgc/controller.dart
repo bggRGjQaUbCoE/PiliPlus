@@ -53,12 +53,14 @@ class FavPgcController
   // 取消追番
   Future<void> pgcDel(int index, seasonId) async {
     var result = await VideoHttp.pgcDel(seasonId: seasonId);
-    if (result['status']) {
+    if (result case Success(:final response)) {
       loadingState
         ..value.data!.removeAt(index)
         ..refresh();
+      SmartDialog.showToast(response);
+    } else {
+      result.toast();
     }
-    SmartDialog.showToast(result['msg']);
   }
 
   @override
@@ -72,7 +74,7 @@ class FavPgcController
       seasonId: removeList.map((item) => item.seasonId).join(','),
       status: followStatus,
     );
-    if (res['status']) {
+    if (res case Success(:final response)) {
       try {
         final ctr = Get.find<FavPgcController>(tag: '$type$followStatus');
         if (ctr.loadingState.value.isSuccess) {
@@ -88,8 +90,10 @@ class FavPgcController
         if (kDebugMode) debugPrint('fav pgc onUpdate: $e');
       }
       afterDelete(removeList);
+      SmartDialog.showToast(response);
+    } else {
+      res.toast();
     }
-    SmartDialog.showToast(res['msg']);
   }
 
   Future<void> onUpdate(int index, int followStatus, int? seasonId) async {
@@ -97,7 +101,7 @@ class FavPgcController
       seasonId: seasonId.toString(),
       status: followStatus,
     );
-    if (result['status']) {
+    if (result case Success(:final response)) {
       List<FavPgcItemModel> list = loadingState.value.data!;
       final item = list.removeAt(index);
       loadingState.refresh();
@@ -112,7 +116,9 @@ class FavPgcController
       } catch (e) {
         if (kDebugMode) debugPrint('fav pgc pgcUpdate: $e');
       }
+      SmartDialog.showToast(response);
+    } else {
+      result.toast();
     }
-    SmartDialog.showToast(result['msg']);
   }
 }

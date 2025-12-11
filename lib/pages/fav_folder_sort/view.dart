@@ -36,12 +36,12 @@ class _FavFolderSortPageState extends State<FavFolderSortPage> {
               var res = await FavHttp.sortFavFolder(
                 sort: sortList.map((item) => item.id).join(','),
               );
-              if (res['status']) {
+              if (res.isSuccess) {
                 SmartDialog.showToast('排序完成');
                 _favController.loadingState.value = Success(sortList);
                 Get.back();
               } else {
-                SmartDialog.showToast(res['msg']);
+                res.toast();
               }
             },
             child: const Text('完成'),

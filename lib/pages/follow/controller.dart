@@ -69,34 +69,34 @@ class FollowController extends GetxController with GetTickerProviderStateMixin {
 
   Future<void> onCreateTag(String tagName) async {
     final res = await MemberHttp.createFollowTag(tagName);
-    if (res['status']) {
+    if (res.isSuccess) {
       followState.value = LoadingState.loading();
       queryFollowUpTags();
       SmartDialog.showToast('创建成功');
     } else {
-      SmartDialog.showToast(res['msg']);
+      res.toast();
     }
   }
 
   Future<void> onUpdateTag(MemberTagItemModel item, String tagName) async {
-    final res = await MemberHttp.updateFollowTag(item.tagid, tagName);
-    if (res['status']) {
+    final res = await MemberHttp.updateFollowTag(item.tagid!, tagName);
+    if (res.isSuccess) {
       item.name = tagName;
       tabs.refresh();
       SmartDialog.showToast('修改成功');
     } else {
-      SmartDialog.showToast(res['msg']);
+      res.toast();
     }
   }
 
-  Future<void> onDelTag(int? tagid) async {
+  Future<void> onDelTag(int tagid) async {
     final res = await MemberHttp.delFollowTag(tagid);
-    if (res['status']) {
+    if (res.isSuccess) {
       followState.value = LoadingState.loading();
       queryFollowUpTags();
       SmartDialog.showToast('删除成功');
     } else {
-      SmartDialog.showToast(res['msg']);
+      res.toast();
     }
   }
 }

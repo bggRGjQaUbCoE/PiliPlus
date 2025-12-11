@@ -66,7 +66,7 @@ class LikeMeController
   Future<void> onRemove(dynamic id, int index, bool isLatest) async {
     try {
       var res = await MsgHttp.delMsgfeed(0, id);
-      if (res['status']) {
+      if (res.isSuccess) {
         Pair<List<MsgLikeItem>, List<MsgLikeItem>> pair =
             loadingState.value.data;
         if (isLatest) {
@@ -77,20 +77,23 @@ class LikeMeController
         loadingState.refresh();
         SmartDialog.showToast('删除成功');
       } else {
-        SmartDialog.showToast(res['msg']);
+        res.toast();
       }
     } catch (_) {}
   }
 
   Future<void> onSetNotice(MsgLikeItem item, bool isNotice) async {
     int noticeState = isNotice ? 1 : 0;
-    var res = await MsgHttp.msgSetNotice(id: item.id, noticeState: noticeState);
-    if (res['status']) {
+    var res = await MsgHttp.msgSetNotice(
+      id: item.id!,
+      noticeState: noticeState,
+    );
+    if (res.isSuccess) {
       item.noticeState = noticeState;
       loadingState.refresh();
       SmartDialog.showToast('操作成功');
     } else {
-      SmartDialog.showToast(res['msg']);
+      res.toast();
     }
   }
 }

@@ -39,6 +39,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   # 动态取色
   dynamic_color: ^1.8.1
+  shared_preferences: ^2.2.0
 
   # get: ^4.7.2
   get:

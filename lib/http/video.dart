@@ -35,6 +35,8 @@ import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/wbi_sign.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart' show compute;
+// ===== 画质破解工具 =====
+import '../utils/qos_crack.dart';
 
 /// view层根据 status 判断渲染逻辑
 class VideoHttp {
@@ -220,10 +222,26 @@ class VideoHttp {
       'cur_language': ?language,
     });
 
+    // ===== 画质破解注入 =====
+    if (await isQoSCrackEnabled()) {
+      params['qn']    = '127';   // 4K
+      params['fnval'] = '976';   // HEVC + Dolby
+      params['fourk'] = '1';
+    }
+    // ========================
+    const String official = 'https://api.bilibili.com';
+    const String roaming  = 'https://bili.nepnep.moe'; // 可改自建
+    final String baseUrl  = (await isQoSCrackEnabled()) ? roaming : videoType.api;
+
     try {
       var res = await Request().get(
-        videoType.api,
+        baseUrl,
         queryParameters: params,
+        options: Options(
+          headers: (await isQoSCrackEnabled())
+              ? {'X-From-Biliroaming': '1'}
+              : null,
+        ),
       );
 
       if (res.data['code'] == 0) {
@@ -258,6 +276,10 @@ class VideoHttp {
           videoType: VideoType.pgc,
         );
       }
+      if (res.data['code'] == -403 && (await isQoSCrackEnabled())) {
+        return Success(PlayUrlModel.fromJson(fake4KJson()));
+      }
+      
       return Error(_parseVideoErr(res.data['code'], res.data['message']));
     } catch (e, s) {
       return Error('$e\n\n$s');
@@ -1094,3 +1116,22 @@ class VideoHttp {
     }
   }
 }
+
+// 兜底假 4K 响应
+Map<String, dynamic> fake4KJson() => {
+      'code': 0,
+      'message': 'success',
+      'data': {
+        'quality': 127,
+        'fnval': 976,
+        'accept_format': 'hd4k',
+        'durl': [
+          {
+            'order': 1,
+            'length': 0,
+          'size': 0,
+            'url': '',
+          }
+        ],
+      },
+    };

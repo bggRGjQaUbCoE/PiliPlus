@@ -19,8 +19,10 @@ import 'package:PiliPlus/services/download/download_service.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
+import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart' show kDebugMode, kReleaseMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -97,6 +99,7 @@ class _DownloadPanelState extends State<DownloadPanel> {
   }
 
   Widget _buildHeader(ThemeData theme) {
+    final textStyle = TextStyle(color: theme.colorScheme.onSurfaceVariant);
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 12, 0, 12),
       child: Row(
@@ -104,7 +107,7 @@ class _DownloadPanelState extends State<DownloadPanel> {
         children: [
           Text(
             '最高画质',
-            style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
+            style: textStyle,
           ),
           Builder(
             builder: (context) => PopupMenuButton<VideoQuality>(
@@ -141,6 +144,22 @@ class _DownloadPanelState extends State<DownloadPanel> {
               ),
             ),
           ),
+          if (kDebugMode || PlatformUtils.isMobile) ...[
+            const Spacer(),
+            StreamBuilder(
+              stream: Connectivity().onConnectivityChanged,
+              builder: (context, snapshot) {
+                if (snapshot.data case final data?) {
+                  final network = data.contains(ConnectivityResult.wifi)
+                      ? 'WIFI'
+                      : '数据';
+                  return Text('当前网络：$network', style: textStyle);
+                }
+                return const SizedBox.shrink();
+              },
+            ),
+            const SizedBox(width: 4),
+          ],
         ],
       ),
     );
@@ -240,21 +259,24 @@ class _DownloadPanelState extends State<DownloadPanel> {
       }
     }
 
-    if (episode is ugc.EpisodeItem && episode.pages!.length > 1) {
-      if (isFromList && kDebugMode) {
-        SmartDialog.showToast('hasParts');
-      }
-      if (isDownloadAll) {
-        for (int i = 0; i < episode.pages!.length; i++) {
-          _onDownload(
-            index: i,
-            episode: episode.pages![i],
-            parent: episode,
-          );
+    if (episode is ugc.EpisodeItem) {
+      final pages = episode.pages!;
+      if (pages.length > 1) {
+        if (isFromList && kDebugMode) {
+          SmartDialog.showToast('hasParts');
         }
-        return true;
+        if (isDownloadAll) {
+          for (int i = 0; i < pages.length; i++) {
+            _onDownload(
+              index: i,
+              episode: pages[i],
+              parent: episode,
+            );
+          }
+          return true;
+        }
+        return false;
       }
-      return false;
     }
 
     try {
@@ -516,7 +538,7 @@ class _DownloadPanelState extends State<DownloadPanel> {
                       isDownloadAll: true,
                     );
                   }
-                  setState(() {});
+                  if (mounted) setState(() {});
                 },
               );
             },

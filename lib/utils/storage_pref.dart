@@ -114,8 +114,11 @@ abstract class Pref {
     }
     return SegmentType.values
         .map(
-          (item) =>
-              Pair(first: item, second: SkipType.values[list[item.index]]),
+          (item) => Pair(
+            first: item,
+            second: SkipType
+                .values[list.getOrNull(item.index) ?? SkipType.skipOnce.index],
+          ),
         )
         .toList();
   }

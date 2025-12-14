@@ -8,7 +8,7 @@ enum SegmentType {
   sponsor(
     '赞助/恰饭',
     '赞助',
-    '付费推广、付费推荐和直接广告。不是自我推广或免费提及他们喜欢的商品/创作者/网站/产品。',
+    '付费推广、推荐和直接广告。不是自我推广或免费提及他们喜欢的商品/创作者/网站/产品。',
     Color(0xFF00d400),
     [
       ActionType.skip,
@@ -81,13 +81,6 @@ enum SegmentType {
       ActionType.mute,
     ],
   ),
-  music_offtopic(
-    '音乐:非音乐部分',
-    '非音乐',
-    '仅用于音乐视频。此分类只能用于音乐视频中未包括于其他分类的部分。',
-    Color(0xFFff9900),
-    [ActionType.skip],
-  ),
   padding(
     '填充内容/前黑/后黑',
     '填充内容',
@@ -104,7 +97,14 @@ enum SegmentType {
       ActionType.skip,
       ActionType.mute,
     ],
-  )
+  ),
+  music_offtopic(
+    '音乐:非音乐部分',
+    '非音乐',
+    '仅用于音乐视频。此分类只能用于音乐视频中未包括于其他分类的部分。',
+    Color(0xFFff9900),
+    [ActionType.skip],
+  ),
   ;
 
   /// from https://github.com/hanydd/BilibiliSponsorBlock/blob/master/public/_locales/zh_CN/messages.json

@@ -63,6 +63,9 @@ class PlPlayerController {
   Player? _videoPlayerController;
   VideoController? _videoController;
 
+  // 记录锁定前的 allowRotateScreen 状态
+  bool? _prevAllowRotateScreen;
+
   // 添加一个私有静态变量来保存实例
   static PlPlayerController? _instance;
 
@@ -1513,6 +1516,30 @@ class PlPlayerController {
   void onLockControl(bool val) {
     feedBack();
     controlsLock.value = val;
+
+    // 屏幕锁逻辑：锁定时禁用重力感应旋转，解锁时恢复
+    if (val) {
+      // 记录原始 allowRotateScreen 状态并禁用
+      if (_prevAllowRotateScreen == null) {
+        _prevAllowRotateScreen = allowRotateScreen;
+      }
+      allowRotateScreen = false;
+      // 锁定当前屏幕方向
+      final currentOrientation =
+          WidgetsBinding.instance.window.physicalSize.aspectRatio > 1
+          ? [DeviceOrientation.landscapeLeft, DeviceOrientation.landscapeRight]
+          : [DeviceOrientation.portraitUp];
+      SystemChrome.setPreferredOrientations(currentOrientation);
+    } else {
+      // 恢复 allowRotateScreen
+      if (_prevAllowRotateScreen != null) {
+        allowRotateScreen = _prevAllowRotateScreen!;
+        _prevAllowRotateScreen = null;
+      }
+      // 恢复自动旋转
+      autoScreen();
+    }
+
     if (!val && showControls.value) {
       showControls.refresh();
     }

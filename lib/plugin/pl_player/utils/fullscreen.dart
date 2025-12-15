@@ -47,6 +47,7 @@ Future<void> verticalScreenForTwoSeconds() async {
 }
 
 //全向
+/// 允许重力感应旋转的全局变量，可被动态修改
 bool allowRotateScreen = Pref.allowRotateScreen;
 Future<void> autoScreen() async {
   if (Utils.isMobile && allowRotateScreen) {

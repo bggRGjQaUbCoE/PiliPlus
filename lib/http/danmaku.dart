@@ -89,7 +89,7 @@ abstract final class DanmakuHttp {
     }
   }
 
-  static Future<Map<String, dynamic>> danmakuReport({
+  static Future<LoadingState<Null>> danmakuReport({
     required int reason,
     required int cid,
     required int id,
@@ -115,7 +115,12 @@ abstract final class DanmakuHttp {
       data: data,
       options: Options(contentType: Headers.formUrlEncodedContentType),
     );
-    return res.data as Map<String, dynamic>;
+
+    if (res.data['code'] == 0) {
+      return const Success(null);
+    } else {
+      return Error(res.data['message']);
+    }
 
     /// res.data['data']['block']
     /// {

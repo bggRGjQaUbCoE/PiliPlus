@@ -383,9 +383,9 @@ class UserHttp {
     }
   }
 
-  static Future<Map> dynamicReport({
-    required dynamic mid,
-    required dynamic dynId,
+  static Future<LoadingState<Null>> dynamicReport({
+    required Object mid,
+    required Object dynId,
     required int reasonType,
     String? reasonDesc,
   }) async {
@@ -402,7 +402,11 @@ class UserHttp {
       },
       options: Options(contentType: Headers.formUrlEncodedContentType),
     );
-    return res.data as Map;
+    if (res.data['code'] == 0) {
+      return const Success(null);
+    } else {
+      return Error(res.data['message']);
+    }
   }
 
   static Future<LoadingState<SpaceSettingData>> spaceSetting() async {

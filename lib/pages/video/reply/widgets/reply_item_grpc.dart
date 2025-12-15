@@ -9,7 +9,7 @@ import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/pendant_avatar.dart';
 import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
     show ReplyInfo, ReplyControl, Content, Url;
-import 'package:PiliPlus/http/init.dart';
+import 'package:PiliPlus/http/reply.dart';
 import 'package:PiliPlus/http/video.dart';
 import 'package:PiliPlus/models/common/badge_type.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
@@ -31,7 +31,6 @@ import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/url_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:dio/dio.dart';
 import 'package:fixnum/fixnum.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/gestures.dart';
@@ -938,28 +937,17 @@ class ReplyItemGrpc extends StatelessWidget {
                   context,
                   ReportOptions.commentReport,
                   (reasonType, reasonDesc, banUid) async {
-                    final res = await Request().post(
-                      '/x/v2/reply/report',
-                      data: {
-                        'add_blacklist': banUid,
-                        'csrf': Accounts.main.csrf,
-                        'gaia_source': 'main_h5',
-                        'oid': item.oid,
-                        'platform': 'android',
-                        'reason': reasonType,
-                        'rpid': item.id,
-                        'scene': 'main',
-                        'type': 1,
-                        if (reasonType == 0) 'content': reasonDesc!,
-                      },
-                      options: Options(
-                        contentType: Headers.formUrlEncodedContentType,
-                      ),
+                    final res = await ReplyHttp.report(
+                      rpid: item.id,
+                      oid: item.oid,
+                      reasonType: reasonType,
+                      reasonDesc: reasonDesc,
+                      banUid: banUid,
                     );
-                    if (res.data['code'] == 0) {
+                    if (res.isSuccess) {
                       onDelete();
                     }
-                    return res.data as Map;
+                    return res;
                   },
                 );
               },

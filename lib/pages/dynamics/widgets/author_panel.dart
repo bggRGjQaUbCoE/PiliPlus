@@ -477,7 +477,7 @@ class AuthorPanel extends StatelessWidget {
                           );
                         }
                         return UserHttp.dynamicReport(
-                          mid: moduleAuthor.mid,
+                          mid: moduleAuthor.mid!,
                           dynId: item.idStr,
                           reasonType: reasonType,
                           reasonDesc: reasonType == 0 ? reasonDesc : null,

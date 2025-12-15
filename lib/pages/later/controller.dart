@@ -120,13 +120,13 @@ class LaterController extends MultiSelectController<LaterData, LaterItemModel>
 
   @override
   List<LaterItemModel>? getDataList(response) {
-    baseCtr.counts[laterViewType] = response.count ?? 0;
+    baseCtr.counts[laterViewType.index] = response.count ?? 0;
     return response.list;
   }
 
   @override
   void checkIsEnd(int length) {
-    if (length >= baseCtr.counts[laterViewType]!) {
+    if (length >= baseCtr.counts[laterViewType.index]) {
       isEnd = true;
     }
   }
@@ -144,7 +144,7 @@ class LaterController extends MultiSelectController<LaterData, LaterItemModel>
       content: content,
       onConfirm: () async {
         var res = await UserHttp.toViewClear(cleanType);
-        if (res['status']) {
+        if (res.isSuccess) {
           onReload();
           final restTypes = List<LaterViewType>.from(LaterViewType.values)
             ..remove(laterViewType);
@@ -153,8 +153,10 @@ class LaterController extends MultiSelectController<LaterData, LaterItemModel>
               Get.find<LaterController>(tag: item.type.toString()).onReload();
             } catch (_) {}
           }
+          SmartDialog.showToast('操作成功');
+        } else {
+          res.toast();
         }
-        SmartDialog.showToast(res['msg']);
       },
     );
   }
@@ -176,7 +178,7 @@ class LaterController extends MultiSelectController<LaterData, LaterItemModel>
             title: item.title,
             extraArguments: {
               'sourceType': SourceType.watchLater,
-              'count': baseCtr.counts[LaterViewType.all],
+              'count': baseCtr.counts[LaterViewType.all.index],
               'favTitle': '稍后再看',
               'mediaId': mid,
               'desc': asc.value,
@@ -190,8 +192,7 @@ class LaterController extends MultiSelectController<LaterData, LaterItemModel>
 
   @override
   ValueChanged<int>? get updateCount =>
-      (count) => baseCtr.counts[laterViewType] =
-          baseCtr.counts[laterViewType]! - count;
+      (count) => baseCtr.counts[laterViewType.index] -= count;
 
   @override
   Future<void> onReload() {

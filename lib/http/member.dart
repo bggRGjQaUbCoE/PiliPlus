@@ -37,7 +37,7 @@ abstract final class MemberHttp {
     int? reasonV2,
   }) async {
     var res = await Request().post(
-      HttpString.spaceBaseUrl + Api.reportMember,
+      Api.reportMember,
       data: {
         'mid': mid,
         'reason': reason,

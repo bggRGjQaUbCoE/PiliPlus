@@ -45,9 +45,9 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
-List<SettingsModel> get extraSettings => [
+List<SettingsItem> get extraSettings => [
   if (PlatformUtils.isDesktop) ...[
-    SwitchModel(
+    SetSwitchItem(
       title: '退出时最小化',
       leading: const Icon(Icons.exit_to_app),
       setKey: SettingBoxKey.minimizeOnExit,
@@ -58,7 +58,7 @@ List<SettingsModel> get extraSettings => [
         } catch (_) {}
       },
     ),
-    NormalModel(
+    NormalItem(
       title: '缓存路径',
       getSubtitle: () => downloadPath,
       leading: const Icon(Icons.storage),
@@ -114,7 +114,7 @@ List<SettingsModel> get extraSettings => [
       },
     ),
   ],
-  SwitchModel(
+  SetSwitchItem(
     title: '空降助手',
     subtitle: '点击配置',
     setKey: SettingBoxKey.enableSponsorBlock,
@@ -129,7 +129,7 @@ List<SettingsModel> get extraSettings => [
       ],
     ),
   ),
-  NormalModel(
+  NormalItem(
     leading: const Icon(MdiIcons.debugStepOver),
     title: '番剧片头/片尾跳过类型',
     getTrailing: () => Builder(
@@ -176,7 +176,7 @@ List<SettingsModel> get extraSettings => [
       },
     ),
   ),
-  SwitchModel(
+  SetSwitchItem(
     title: '检查未读动态',
     subtitle: '点击设置检查周期(min)',
     leading: const Icon(Icons.notifications_none),
@@ -230,7 +230,7 @@ List<SettingsModel> get extraSettings => [
       );
     },
   ),
-  SwitchModel(
+  SetSwitchItem(
     title: '显示视频分段信息',
     leading: Transform.rotate(
       angle: pi / 2,
@@ -239,56 +239,56 @@ List<SettingsModel> get extraSettings => [
     setKey: SettingBoxKey.showViewPoints,
     defaultVal: true,
   ),
-  const SwitchModel(
+  const SetSwitchItem(
     title: '视频页显示相关视频',
     leading: Icon(MdiIcons.motionPlayOutline),
     setKey: SettingBoxKey.showRelatedVideo,
     defaultVal: true,
   ),
-  const SwitchModel(
+  const SetSwitchItem(
     title: '显示视频评论',
     leading: Icon(MdiIcons.commentTextOutline),
     setKey: SettingBoxKey.showVideoReply,
     defaultVal: true,
   ),
-  const SwitchModel(
+  const SetSwitchItem(
     title: '显示番剧评论',
     leading: Icon(MdiIcons.commentTextOutline),
     setKey: SettingBoxKey.showBangumiReply,
     defaultVal: true,
   ),
-  const SwitchModel(
+  const SetSwitchItem(
     title: '默认展开视频简介',
     leading: Icon(Icons.expand_more),
     setKey: SettingBoxKey.alwaysExpandIntroPanel,
     defaultVal: false,
   ),
-  const SwitchModel(
+  const SetSwitchItem(
     title: '横屏自动展开视频简介',
     leading: Icon(Icons.expand_more),
     setKey: SettingBoxKey.expandIntroPanelH,
     defaultVal: false,
   ),
-  const SwitchModel(
+  const SetSwitchItem(
     title: '横屏分P/合集列表显示在Tab栏',
     leading: Icon(Icons.format_list_numbered_rtl_sharp),
     setKey: SettingBoxKey.horizontalSeasonPanel,
     defaultVal: false,
   ),
-  const SwitchModel(
+  const SetSwitchItem(
     title: '横屏播放页在侧栏打开UP主页',
     leading: Icon(Icons.account_circle_outlined),
     setKey: SettingBoxKey.horizontalMemberPage,
     defaultVal: false,
   ),
-  SwitchModel(
+  SetSwitchItem(
     title: '横屏在侧栏打开图片预览',
     leading: const Icon(Icons.photo_outlined),
     setKey: SettingBoxKey.horizontalPreview,
     defaultVal: false,
     onChanged: (value) => CustomGridView.horizontalPreview = value,
   ),
-  NormalModel(
+  NormalItem(
     title: '评论折叠行数',
     subtitle: '0行为不折叠',
     leading: const Icon(Icons.compress),
@@ -342,7 +342,7 @@ List<SettingsModel> get extraSettings => [
       );
     },
   ),
-  NormalModel(
+  NormalItem(
     title: '弹幕行高',
     subtitle: '默认1.6',
     leading: const Icon(CustomIcons.dm_settings),
@@ -400,27 +400,27 @@ List<SettingsModel> get extraSettings => [
       );
     },
   ),
-  const SwitchModel(
+  const SetSwitchItem(
     title: '显示视频警告/争议信息',
     leading: Icon(Icons.warning_amber_rounded),
     setKey: SettingBoxKey.showArgueMsg,
     defaultVal: true,
   ),
-  const SwitchModel(
+  const SetSwitchItem(
     title: '分P/合集：倒序播放从首集开始播放',
     subtitle: '开启则自动切换为倒序首集，否则保持当前集',
     leading: Icon(MdiIcons.sort),
     setKey: SettingBoxKey.reverseFromFirst,
     defaultVal: true,
   ),
-  const SwitchModel(
+  const SetSwitchItem(
     title: '禁用 SSL 证书验证',
     subtitle: '谨慎开启，禁用容易受到中间人攻击',
     leading: Icon(Icons.security),
     needReboot: true,
     setKey: SettingBoxKey.badCertificateCallback,
   ),
-  const SwitchModel(
+  const SetSwitchItem(
     title: '显示继续播放分P提示',
     leading: Icon(Icons.local_parking),
     setKey: SettingBoxKey.continuePlayingPart,
@@ -442,13 +442,13 @@ List<SettingsModel> get extraSettings => [
       DynamicsDataModel.enableFilter = value.pattern.isNotEmpty;
     },
   ),
-  const SwitchModel(
+  const SetSwitchItem(
     title: '使用外部浏览器打开链接',
     leading: Icon(Icons.open_in_browser),
     setKey: SettingBoxKey.openInBrowser,
     defaultVal: false,
   ),
-  NormalModel(
+  NormalItem(
     title: '刷新滑动距离',
     leading: const Icon(Icons.refresh),
     getSubtitle: () => '当前滑动距离: ${Pref.refreshDragPercentage}x',
@@ -475,7 +475,7 @@ List<SettingsModel> get extraSettings => [
       }
     },
   ),
-  NormalModel(
+  NormalItem(
     title: '刷新指示器高度',
     leading: const Icon(Icons.height),
     getSubtitle: () => '当前指示器高度: ${Pref.refreshDisplacement}',
@@ -500,20 +500,20 @@ List<SettingsModel> get extraSettings => [
       }
     },
   ),
-  const SwitchModel(
+  const SetSwitchItem(
     title: '显示会员彩色弹幕',
     leading: Icon(MdiIcons.gradientHorizontal),
     setKey: SettingBoxKey.showVipDanmaku,
     defaultVal: true,
   ),
-  const SwitchModel(
+  const SetSwitchItem(
     title: '合并弹幕',
     subtitle: '合并一段时间内获取到的相同弹幕',
     leading: Icon(Icons.merge),
     setKey: SettingBoxKey.mergeDanmaku,
     defaultVal: false,
   ),
-  SwitchModel(
+  SetSwitchItem(
     title: '显示热门推荐',
     subtitle: '热门页面显示每周必看等推荐内容入口',
     leading: const Icon(Icons.local_fire_department_outlined),
@@ -526,7 +526,7 @@ List<SettingsModel> get extraSettings => [
     },
   ),
   if (kDebugMode || Platform.isAndroid)
-    NormalModel(
+    NormalItem(
       title: '音量均衡',
       leading: const Icon(Icons.multitrack_audio),
       getSubtitle: () {
@@ -544,7 +544,7 @@ List<SettingsModel> get extraSettings => [
       },
       onTap: audioNormalization,
     ),
-  NormalModel(
+  NormalItem(
     title: '超分辨率',
     leading: const Icon(Icons.stay_current_landscape_outlined),
     getSubtitle: () =>
@@ -571,40 +571,40 @@ List<SettingsModel> get extraSettings => [
       }
     },
   ),
-  const SwitchModel(
+  const SetSwitchItem(
     title: '提前初始化播放器',
     subtitle: '相对减少手动播放加载时间',
     leading: Icon(Icons.play_circle_outlined),
     setKey: SettingBoxKey.preInitPlayer,
     defaultVal: false,
   ),
-  const SwitchModel(
+  const SetSwitchItem(
     title: '首页切换页面动画',
     leading: Icon(Icons.home_outlined),
     setKey: SettingBoxKey.mainTabBarView,
     defaultVal: false,
     needReboot: true,
   ),
-  const SwitchModel(
+  const SetSwitchItem(
     title: '搜索建议',
     leading: Icon(Icons.search),
     setKey: SettingBoxKey.searchSuggestion,
     defaultVal: true,
   ),
-  const SwitchModel(
+  const SetSwitchItem(
     title: '记录搜索历史',
     leading: Icon(Icons.history),
     setKey: SettingBoxKey.recordSearchHistory,
     defaultVal: true,
   ),
-  SwitchModel(
+  SetSwitchItem(
     title: '展示头像/评论/动态装饰',
     leading: const Icon(MdiIcons.stickerCircleOutline),
     setKey: SettingBoxKey.showDynDecorate,
     defaultVal: true,
     onChanged: (value) => PendantAvatar.showDynDecorate = value,
   ),
-  SwitchModel(
+  SetSwitchItem(
     title: '预览 Live Photo',
     subtitle: '开启则以视频形式预览 Live Photo，否则预览静态图片',
     leading: const Icon(Icons.image_outlined),
@@ -612,20 +612,20 @@ List<SettingsModel> get extraSettings => [
     defaultVal: true,
     onChanged: (value) => ImageModel.enableLivePhoto = value,
   ),
-  const SwitchModel(
+  const SetSwitchItem(
     title: '滑动跳转预览视频缩略图',
     leading: Icon(Icons.preview_outlined),
     setKey: SettingBoxKey.showSeekPreview,
     defaultVal: true,
   ),
-  const SwitchModel(
+  const SetSwitchItem(
     title: '显示高能进度条',
     subtitle: '高能进度条反应了在时域上，单位时间内弹幕发送量的变化趋势',
     leading: Icon(Icons.show_chart),
     setKey: SettingBoxKey.showDmChart,
     defaultVal: false,
   ),
-  const SwitchModel(
+  const SetSwitchItem(
     title: '发评反诈',
     subtitle: '发送评论后检查评论是否可见',
     leading: Stack(
@@ -639,7 +639,7 @@ List<SettingsModel> get extraSettings => [
     setKey: SettingBoxKey.enableCommAntifraud,
     defaultVal: false,
   ),
-  const SwitchModel(
+  const SetSwitchItem(
     title: '使用「哔哩发评反诈」检查评论',
     subtitle: '仅对Android生效',
     leading: Icon(
@@ -649,7 +649,7 @@ List<SettingsModel> get extraSettings => [
     setKey: SettingBoxKey.biliSendCommAntifraud,
     defaultVal: false,
   ),
-  const SwitchModel(
+  const SetSwitchItem(
     title: '发布/转发动态反诈',
     subtitle: '发布/转发动态后检查动态是否可见',
     leading: Stack(
@@ -663,7 +663,7 @@ List<SettingsModel> get extraSettings => [
     setKey: SettingBoxKey.enableCreateDynAntifraud,
     defaultVal: false,
   ),
-  SwitchModel(
+  SetSwitchItem(
     title: '屏蔽带货动态',
     leading: const Stack(
       clipBehavior: Clip.none,
@@ -679,7 +679,7 @@ List<SettingsModel> get extraSettings => [
       DynamicsDataModel.antiGoodsDyn = value;
     },
   ),
-  SwitchModel(
+  SetSwitchItem(
     title: '屏蔽带货评论',
     leading: const Stack(
       clipBehavior: Clip.none,
@@ -695,7 +695,7 @@ List<SettingsModel> get extraSettings => [
       ReplyGrpc.antiGoodsReply = value;
     },
   ),
-  SwitchModel(
+  SetSwitchItem(
     title: '侧滑关闭二级页面',
     leading: Transform.rotate(
       angle: pi * 1.5,
@@ -707,32 +707,32 @@ List<SettingsModel> get extraSettings => [
       CommonSlideMixin.slideDismissReplyPage = value;
     },
   ),
-  const SwitchModel(
+  const SetSwitchItem(
     title: '启用双指缩小视频',
     leading: Icon(Icons.pinch),
     setKey: SettingBoxKey.enableShrinkVideoSize,
     defaultVal: true,
   ),
-  const SwitchModel(
+  const SetSwitchItem(
     title: '动态/专栏详情页展示底部操作栏',
     leading: Icon(Icons.more_horiz),
     setKey: SettingBoxKey.showDynActionBar,
     defaultVal: true,
   ),
-  const SwitchModel(
+  const SetSwitchItem(
     title: '启用拖拽字幕调整底部边距',
     leading: Icon(MdiIcons.dragVariant),
     setKey: SettingBoxKey.enableDragSubtitle,
     defaultVal: false,
   ),
-  const SwitchModel(
+  const SetSwitchItem(
     title: '展示追番时间表',
     leading: Icon(MdiIcons.chartTimelineVariantShimmer),
     setKey: SettingBoxKey.showPgcTimeline,
     defaultVal: true,
     needReboot: true,
   ),
-  SwitchModel(
+  SetSwitchItem(
     title: '静默下载图片',
     subtitle: '不显示下载 Loading 弹窗',
     leading: const Icon(Icons.download_for_offline_outlined),
@@ -740,7 +740,7 @@ List<SettingsModel> get extraSettings => [
     defaultVal: false,
     onChanged: (value) => ImageUtils.silentDownImg = value,
   ),
-  SwitchModel(
+  SetSwitchItem(
     setKey: SettingBoxKey.feedBackEnable,
     onChanged: (value) {
       enableFeedback = value;
@@ -750,21 +750,21 @@ List<SettingsModel> get extraSettings => [
     title: '震动反馈',
     subtitle: '请确定手机设置中已开启震动反馈',
   ),
-  const SwitchModel(
+  const SetSwitchItem(
     title: '大家都在搜',
     subtitle: '是否展示「大家都在搜」',
     leading: Icon(Icons.data_thresholding_outlined),
     setKey: SettingBoxKey.enableHotKey,
     defaultVal: true,
   ),
-  const SwitchModel(
+  const SetSwitchItem(
     title: '搜索发现',
     subtitle: '是否展示「搜索发现」',
     leading: Icon(Icons.search_outlined),
     setKey: SettingBoxKey.enableSearchRcmd,
     defaultVal: true,
   ),
-  SwitchModel(
+  SetSwitchItem(
     title: '搜索默认词',
     subtitle: '是否展示搜索框默认词',
     leading: const Icon(Icons.whatshot_outlined),
@@ -781,7 +781,7 @@ List<SettingsModel> get extraSettings => [
       } catch (_) {}
     },
   ),
-  SwitchModel(
+  SetSwitchItem(
     title: '快速收藏',
     subtitle: '点击设置默认收藏夹\n点按收藏至默认，长按选择文件夹',
     leading: const Icon(Icons.bookmark_add_outlined),
@@ -829,7 +829,7 @@ List<SettingsModel> get extraSettings => [
     },
     defaultVal: false,
   ),
-  SwitchModel(
+  SetSwitchItem(
     title: '评论区搜索关键词',
     subtitle: '展示评论区搜索关键词',
     leading: const Icon(Icons.search_outlined),
@@ -839,35 +839,35 @@ List<SettingsModel> get extraSettings => [
       ReplyItemGrpc.enableWordRe = value;
     },
   ),
-  const SwitchModel(
+  const SetSwitchItem(
     title: '启用AI总结',
     subtitle: '视频详情页开启AI总结',
     leading: Icon(Icons.engineering_outlined),
     setKey: SettingBoxKey.enableAi,
     defaultVal: false,
   ),
-  const SwitchModel(
+  const SetSwitchItem(
     title: '消息页禁用"收到的赞"功能',
     subtitle: '禁止打开入口，降低网络社交依赖',
     leading: Icon(Icons.beach_access_outlined),
     setKey: SettingBoxKey.disableLikeMsg,
     defaultVal: false,
   ),
-  const SwitchModel(
+  const SetSwitchItem(
     title: '默认展示评论区',
     subtitle: '在视频详情页默认切换至评论区页（仅Tab型布局）',
     leading: Icon(Icons.mode_comment_outlined),
     setKey: SettingBoxKey.defaultShowComment,
     defaultVal: false,
   ),
-  const SwitchModel(
+  const SetSwitchItem(
     title: '启用HTTP/2',
     leading: Icon(Icons.swap_horizontal_circle_outlined),
     setKey: SettingBoxKey.enableHttp2,
     defaultVal: false,
     needReboot: true,
   ),
-  NormalModel(
+  NormalItem(
     title: '连接重试次数',
     subtitle: '为0时禁用',
     leading: const Icon(Icons.repeat),
@@ -892,7 +892,7 @@ List<SettingsModel> get extraSettings => [
       }
     },
   ),
-  NormalModel(
+  NormalItem(
     title: '连接重试间隔',
     subtitle: '实际间隔 = 间隔 * 第x次重试',
     leading: const Icon(Icons.more_time_outlined),
@@ -918,7 +918,7 @@ List<SettingsModel> get extraSettings => [
       }
     },
   ),
-  NormalModel(
+  NormalItem(
     title: '评论展示',
     leading: const Icon(Icons.whatshot_outlined),
     getSubtitle: () =>
@@ -942,7 +942,7 @@ List<SettingsModel> get extraSettings => [
       }
     },
   ),
-  NormalModel(
+  NormalItem(
     title: '动态展示',
     leading: const Icon(Icons.dynamic_feed_rounded),
     getSubtitle: () =>
@@ -967,7 +967,7 @@ List<SettingsModel> get extraSettings => [
       }
     },
   ),
-  NormalModel(
+  NormalItem(
     title: '用户页默认展示TAB',
     leading: const Icon(Icons.tab),
     getSubtitle: () => '当前优先展示「${Pref.memberTab.title}」',
@@ -988,14 +988,14 @@ List<SettingsModel> get extraSettings => [
       }
     },
   ),
-  SwitchModel(
+  SetSwitchItem(
     title: '显示UP主页小店TAB',
     leading: const Icon(Icons.shop_outlined),
     setKey: SettingBoxKey.showMemberShop,
     defaultVal: false,
     onChanged: (value) => MemberTabType.showMemberShop = value,
   ),
-  SwitchModel(
+  SetSwitchItem(
     onTap: (context) {
       String systemProxyHost = Pref.systemProxyHost;
       String systemProxyPort = Pref.systemProxyPort;
@@ -1070,14 +1070,14 @@ List<SettingsModel> get extraSettings => [
     subtitle: '设置代理 host:port',
     setKey: SettingBoxKey.enableSystemProxy,
   ),
-  const SwitchModel(
+  const SetSwitchItem(
     title: '自动清除缓存',
     subtitle: '每次启动时清除缓存',
     leading: Icon(Icons.auto_delete_outlined),
     setKey: SettingBoxKey.autoClearCache,
     defaultVal: false,
   ),
-  NormalModel(
+  NormalItem(
     title: '最大缓存大小',
     getSubtitle: () {
       final num = Pref.maxCacheSize;
@@ -1128,7 +1128,7 @@ List<SettingsModel> get extraSettings => [
     },
     leading: const Icon(Icons.delete_outlined),
   ),
-  SwitchModel(
+  SetSwitchItem(
     title: '检查更新',
     subtitle: '每次启动时检查是否需要更新',
     leading: const Icon(Icons.system_update_alt),

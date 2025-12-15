@@ -26,7 +26,7 @@ class _VideoSettingState extends State<VideoSetting> {
           right: showAppBar ? padding.right : 0,
           bottom: padding.bottom + 100,
         ),
-        children: settings.map((item) => item.widget).toList(),
+        children: settings,
       ),
     );
   }

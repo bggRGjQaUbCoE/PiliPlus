@@ -25,7 +25,7 @@ class SettingsSearchPage extends StatefulWidget {
 class _SettingsSearchPageState
     extends DebounceStreamState<SettingsSearchPage, String> {
   final _textEditingController = TextEditingController();
-  final RxList<SettingsModel> _list = <SettingsModel>[].obs;
+  final RxList<SettingsItem> _list = <SettingsItem>[].obs;
   late final _settings = [
     ...extraSettings,
     ...privacySettings,
@@ -66,7 +66,7 @@ class _SettingsSearchPageState
             onPressed: () {
               if (_textEditingController.text.isNotEmpty) {
                 _textEditingController.clear();
-                _list.value = <SettingsModel>[];
+                _list.value = <SettingsItem>[];
               } else {
                 Get.back();
               }
@@ -99,7 +99,7 @@ class _SettingsSearchPageState
                             maxCrossAxisExtent: Grid.smallCardWidth * 2,
                           ),
                       delegate: SliverChildBuilderDelegate(
-                        (_, index) => _list[index].widget,
+                        (_, index) => _list[index],
                         childCount: _list.length,
                       ),
                     ),

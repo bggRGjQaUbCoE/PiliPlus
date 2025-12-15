@@ -7,8 +7,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-List<SettingsModel> get recommendSettings => [
-  const SwitchModel(
+List<SettingsItem> get recommendSettings => [
+  const SetSwitchItem(
     title: '首页使用app端推荐',
     subtitle: '若web端推荐不太符合预期，可尝试切换至app端推荐',
     leading: Icon(Icons.model_training_outlined),
@@ -16,7 +16,7 @@ List<SettingsModel> get recommendSettings => [
     defaultVal: true,
     needReboot: true,
   ),
-  SwitchModel(
+  SetSwitchItem(
     title: '保留首页推荐刷新',
     subtitle: '下拉刷新时保留上次内容',
     leading: const Icon(Icons.refresh),
@@ -32,7 +32,7 @@ List<SettingsModel> get recommendSettings => [
       }
     },
   ),
-  SwitchModel(
+  SetSwitchItem(
     title: '显示上次看到位置提示',
     subtitle: '保留上次推荐时，在上次刷新位置显示提示',
     leading: const Icon(Icons.tips_and_updates_outlined),
@@ -84,7 +84,7 @@ List<SettingsModel> get recommendSettings => [
     values: [0, 50, 100, 500, 1000],
     onChanged: (value) => RecommendFilter.minPlayForRcmd = value,
   ),
-  SwitchModel(
+  SetSwitchItem(
     title: '已关注UP豁免推荐过滤',
     subtitle: '推荐中已关注用户发布的内容不会被过滤',
     leading: const Icon(Icons.favorite_border_outlined),
@@ -94,7 +94,7 @@ List<SettingsModel> get recommendSettings => [
       RecommendFilter.exemptFilterForFollowed = value;
     },
   ),
-  SwitchModel(
+  SetSwitchItem(
     title: '过滤器也应用于相关视频',
     subtitle: '视频详情页的相关视频也进行过滤¹',
     leading: const Icon(Icons.explore_outlined),

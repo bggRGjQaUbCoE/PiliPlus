@@ -2,7 +2,7 @@ import 'dart:math';
 
 import 'package:PiliPlus/common/widgets/flutter/list_tile.dart';
 import 'package:PiliPlus/common/widgets/view_safe_area.dart';
-import 'package:PiliPlus/pages/setting/widgets/switch_item.dart';
+import 'package:PiliPlus/pages/setting/models/model.dart';
 import 'package:PiliPlus/utils/extension/context_ext.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';

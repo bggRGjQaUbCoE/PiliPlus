@@ -1,28 +1,29 @@
-import 'package:PiliPlus/common/widgets/flutter/list_tile.dart';
-import 'package:flutter/material.dart' hide ListTile;
+part of '../models/model.dart';
 
-class NormalItem extends StatefulWidget {
+class NormalItem extends SettingsItem {
+  @override
   final String? title;
   final ValueGetter<String>? getTitle;
-  final String? subtitle;
   final ValueGetter<String>? getSubtitle;
-  final Widget? leading;
   final ValueGetter<Widget?>? getTrailing;
   final void Function(BuildContext context, void Function() setState)? onTap;
-  final EdgeInsetsGeometry? contentPadding;
-  final TextStyle? titleStyle;
+
+  @override
+  String get effectiveTitle => title ?? getTitle!();
+  @override
+  String? get effectiveSubtitle => subtitle ?? getSubtitle?.call();
 
   const NormalItem({
+    super.key,
     this.title,
     this.getTitle,
-    this.subtitle,
+    super.subtitle,
     this.getSubtitle,
-    this.leading,
+    super.leading,
     this.getTrailing,
     this.onTap,
-    this.contentPadding,
-    this.titleStyle,
-    super.key,
+    super.contentPadding,
+    super.titleStyle,
   }) : assert(title != null || getTitle != null);
 
   @override

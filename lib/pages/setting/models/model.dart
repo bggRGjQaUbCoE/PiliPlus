@@ -1,26 +1,30 @@
 import 'package:PiliPlus/common/constants.dart';
-import 'package:PiliPlus/pages/setting/widgets/normal_item.dart';
+import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
 import 'package:PiliPlus/pages/setting/widgets/select_dialog.dart';
-import 'package:PiliPlus/pages/setting/widgets/switch_item.dart';
 import 'package:PiliPlus/utils/storage.dart';
+import 'package:PiliPlus/utils/storage_key.dart';
+import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show FilteringTextInputFormatter;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 
+part '../widgets/normal_item.dart';
+part '../widgets/switch_item.dart';
+
 @immutable
-sealed class SettingsModel {
+sealed class SettingsItem extends StatefulWidget {
   final String? subtitle;
   final Widget? leading;
   final EdgeInsetsGeometry? contentPadding;
   final TextStyle? titleStyle;
 
   String? get title;
-  Widget get widget;
   String get effectiveTitle;
   String? get effectiveSubtitle;
 
-  const SettingsModel({
+  const SettingsItem({
+    super.key,
     this.subtitle,
     this.leading,
     this.contentPadding,
@@ -28,94 +32,13 @@ sealed class SettingsModel {
   });
 }
 
-class NormalModel extends SettingsModel {
-  @override
-  final String? title;
-  final ValueGetter<String>? getTitle;
-  final ValueGetter<String>? getSubtitle;
-  final Widget Function()? getTrailing;
-  final void Function(BuildContext context, void Function() setState)? onTap;
-
-  const NormalModel({
-    super.subtitle,
-    super.leading,
-    super.contentPadding,
-    super.titleStyle,
-    this.title,
-    this.getTitle,
-    this.getSubtitle,
-    this.getTrailing,
-    this.onTap,
-  }) : assert(title != null || getTitle != null);
-
-  @override
-  String get effectiveTitle => title ?? getTitle!();
-  @override
-  String? get effectiveSubtitle => subtitle ?? getSubtitle?.call();
-
-  @override
-  Widget get widget => NormalItem(
-    title: title,
-    getTitle: getTitle,
-    subtitle: subtitle,
-    getSubtitle: getSubtitle,
-    leading: leading,
-    getTrailing: getTrailing,
-    onTap: onTap,
-    contentPadding: contentPadding,
-    titleStyle: titleStyle,
-  );
-}
-
-class SwitchModel extends SettingsModel {
-  @override
-  final String title;
-  final String setKey;
-  final bool defaultVal;
-  final ValueChanged<bool>? onChanged;
-  final bool needReboot;
-  final void Function(BuildContext context)? onTap;
-
-  const SwitchModel({
-    super.subtitle,
-    super.leading,
-    super.contentPadding,
-    super.titleStyle,
-    required this.title,
-    required this.setKey,
-    this.defaultVal = false,
-    this.onChanged,
-    this.needReboot = false,
-    this.onTap,
-  });
-
-  @override
-  String get effectiveTitle => title;
-  @override
-  String? get effectiveSubtitle => subtitle;
-
-  @override
-  Widget get widget => SetSwitchItem(
-    title: title,
-    subtitle: subtitle,
-    setKey: setKey,
-    defaultVal: defaultVal,
-    onChanged: onChanged,
-    needReboot: needReboot,
-    leading: leading,
-    onTap: onTap,
-    contentPadding: contentPadding,
-    titleStyle: titleStyle,
-  );
-}
-
-SettingsModel getBanWordModel({
+SettingsItem getBanWordModel({
   required String title,
   required String key,
   required ValueChanged<RegExp> onChanged,
 }) {
   String banWord = GStorage.setting.get(key, defaultValue: '');
-  return NormalModel(
+  return NormalItem(
     leading: const Icon(Icons.filter_alt_outlined),
     title: title,
     getSubtitle: () => banWord.isEmpty ? "点击添加" : banWord,
@@ -171,7 +94,7 @@ SettingsModel getBanWordModel({
   );
 }
 
-SettingsModel getVideoFilterSelectModel({
+SettingsItem getVideoFilterSelectModel({
   required String title,
   String? subtitle,
   String? suffix,
@@ -183,7 +106,7 @@ SettingsModel getVideoFilterSelectModel({
 }) {
   assert(!isFilter || onChanged != null);
   int value = GStorage.setting.get(key, defaultValue: defaultValue);
-  return NormalModel(
+  return NormalItem(
     title: '$title${isFilter ? '过滤' : ''}',
     leading: const Icon(Icons.timelapse_outlined),
     subtitle: subtitle,

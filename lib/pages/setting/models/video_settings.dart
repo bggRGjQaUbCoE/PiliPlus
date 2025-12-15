@@ -17,22 +17,22 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
-List<SettingsModel> get videoSettings => [
-  const SwitchModel(
+List<SettingsItem> get videoSettings => [
+  const SetSwitchItem(
     title: '开启硬解',
     subtitle: '以较低功耗播放视频，若异常卡死请关闭',
     leading: Icon(Icons.flash_on_outlined),
     setKey: SettingBoxKey.enableHA,
     defaultVal: true,
   ),
-  const SwitchModel(
+  const SetSwitchItem(
     title: '免登录1080P',
     subtitle: '免登录查看1080P视频',
     leading: Icon(Icons.hd_outlined),
     setKey: SettingBoxKey.p1080,
     defaultVal: true,
   ),
-  NormalModel(
+  NormalItem(
     title: 'B站定向流量支持',
     subtitle: '若套餐含B站定向流量，则会自动使用。可查阅运营商的流量记录确认。',
     leading: const Icon(Icons.perm_data_setting_outlined),
@@ -47,7 +47,7 @@ List<SettingsModel> get videoSettings => [
       ),
     ),
   ),
-  NormalModel(
+  NormalItem(
     title: 'CDN 设置',
     leading: const Icon(MdiIcons.cloudPlusOutline),
     getSubtitle: () =>
@@ -66,7 +66,7 @@ List<SettingsModel> get videoSettings => [
       }
     },
   ),
-  NormalModel(
+  NormalItem(
     title: '直播 CDN 设置',
     leading: const Icon(MdiIcons.cloudPlusOutline),
     getSubtitle: () => '当前使用：${Pref.liveCdnUrl ?? "默认"}',
@@ -115,14 +115,14 @@ List<SettingsModel> get videoSettings => [
       }
     },
   ),
-  const SwitchModel(
+  const SetSwitchItem(
     title: 'CDN 测速',
     leading: Icon(Icons.speed),
     subtitle: '测速通过模拟加载视频实现，注意流量消耗，结果仅供参考',
     setKey: SettingBoxKey.cdnSpeedTest,
     defaultVal: true,
   ),
-  SwitchModel(
+  SetSwitchItem(
     title: '音频不跟随 CDN 设置',
     subtitle: '直接采用备用 URL，可解决部分视频无声',
     leading: const Icon(MdiIcons.musicNotePlus),
@@ -132,7 +132,7 @@ List<SettingsModel> get videoSettings => [
       VideoUtils.disableAudioCDN = value;
     },
   ),
-  NormalModel(
+  NormalItem(
     title: '默认画质',
     leading: const Icon(Icons.video_settings_outlined),
     getSubtitle: () =>
@@ -154,7 +154,7 @@ List<SettingsModel> get videoSettings => [
       }
     },
   ),
-  NormalModel(
+  NormalItem(
     title: '蜂窝网络画质',
     leading: const Icon(Icons.video_settings_outlined),
     getSubtitle: () =>
@@ -179,7 +179,7 @@ List<SettingsModel> get videoSettings => [
       }
     },
   ),
-  NormalModel(
+  NormalItem(
     title: '默认音质',
     leading: const Icon(Icons.music_video_outlined),
     getSubtitle: () =>
@@ -201,7 +201,7 @@ List<SettingsModel> get videoSettings => [
       }
     },
   ),
-  NormalModel(
+  NormalItem(
     title: '蜂窝网络音质',
     leading: const Icon(Icons.music_video_outlined),
     getSubtitle: () =>
@@ -226,7 +226,7 @@ List<SettingsModel> get videoSettings => [
       }
     },
   ),
-  NormalModel(
+  NormalItem(
     title: '直播默认画质',
     leading: const Icon(Icons.video_settings_outlined),
     getSubtitle: () => '当前画质：${LiveQuality.fromCode(Pref.liveQuality)?.desc}',
@@ -247,7 +247,7 @@ List<SettingsModel> get videoSettings => [
       }
     },
   ),
-  NormalModel(
+  NormalItem(
     title: '蜂窝网络直播默认画质',
     leading: const Icon(Icons.video_settings_outlined),
     getSubtitle: () =>
@@ -269,7 +269,7 @@ List<SettingsModel> get videoSettings => [
       }
     },
   ),
-  NormalModel(
+  NormalItem(
     title: '首选解码格式',
     leading: const Icon(Icons.movie_creation_outlined),
     getSubtitle: () =>
@@ -293,7 +293,7 @@ List<SettingsModel> get videoSettings => [
       }
     },
   ),
-  NormalModel(
+  NormalItem(
     title: '次选解码格式',
     getSubtitle: () =>
         '非杜比视频次选：${VideoDecodeFormatType.fromCode(Pref.secondDecode).description}，仍无则选择首个提供的解码格式',
@@ -318,14 +318,14 @@ List<SettingsModel> get videoSettings => [
     },
   ),
   if (Platform.isAndroid)
-    const SwitchModel(
+    const SetSwitchItem(
       title: '优先使用 OpenSL ES 输出音频',
       leading: Icon(Icons.speaker_outlined),
       subtitle: '关闭则优先使用AudioTrack输出音频（此项即mpv的--ao），若遇系统音效丢失、无声、音画不同步等问题请尝试关闭。',
       setKey: SettingBoxKey.useOpenSLES,
       defaultVal: true,
     ),
-  const SwitchModel(
+  const SetSwitchItem(
     title: '扩大缓冲区',
     leading: Icon(Icons.storage_outlined),
     subtitle: '默认缓冲区为视频4MB/直播16MB，开启后为32MB/64MB，加载时间变长',
@@ -333,7 +333,7 @@ List<SettingsModel> get videoSettings => [
     defaultVal: false,
   ),
   //video-sync
-  NormalModel(
+  NormalItem(
     title: '视频同步',
     leading: const Icon(Icons.view_timeline_outlined),
     getSubtitle: () => '当前：${Pref.videoSync}（此项即mpv的--video-sync）',
@@ -364,7 +364,7 @@ List<SettingsModel> get videoSettings => [
       }
     },
   ),
-  NormalModel(
+  NormalItem(
     title: '硬解模式',
     leading: const Icon(Icons.memory_outlined),
     getSubtitle: () => '当前：${Pref.hardwareDecoding}（此项即mpv的--hwdec）',

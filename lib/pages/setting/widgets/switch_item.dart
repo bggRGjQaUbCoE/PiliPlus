@@ -1,42 +1,38 @@
-import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
-import 'package:PiliPlus/common/widgets/flutter/list_tile.dart';
-import 'package:PiliPlus/utils/storage.dart';
-import 'package:PiliPlus/utils/storage_key.dart';
-import 'package:PiliPlus/utils/storage_pref.dart';
-import 'package:flutter/material.dart' hide ListTile;
-import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
+part of '../models/model.dart';
 
-class SetSwitchItem extends StatefulWidget {
+class SetSwitchItem extends SettingsItem {
+  @override
   final String title;
-  final String? subtitle;
   final String setKey;
   final bool defaultVal;
   final ValueChanged<bool>? onChanged;
   final bool needReboot;
-  final Widget? leading;
   final void Function(BuildContext context)? onTap;
-  final EdgeInsetsGeometry? contentPadding;
-  final TextStyle? titleStyle;
+
+  @override
+  String get effectiveTitle => title;
+  @override
+  String? get effectiveSubtitle => subtitle;
 
   const SetSwitchItem({
+    super.key,
     required this.title,
-    this.subtitle,
+    super.subtitle,
     required this.setKey,
     this.defaultVal = false,
     this.onChanged,
     this.needReboot = false,
-    this.leading,
+    super.leading,
     this.onTap,
-    this.contentPadding,
-    this.titleStyle,
-    super.key,
+    super.contentPadding,
+    super.titleStyle,
   });
 
   @override
-  State<SetSwitchItem> createState() => _SetSwitchItemState();
+  State<SetSwitchItem> createState() => _SetSetSwitchItemState();
 }
 
-class _SetSwitchItemState extends State<SetSwitchItem> {
+class _SetSetSwitchItemState extends State<SetSwitchItem> {
   late bool val;
 
   void setVal() {

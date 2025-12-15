@@ -29,9 +29,9 @@ class _RecommendSettingState extends State<RecommendSetting> {
           bottom: padding.bottom + 100,
         ),
         children: [
-          ...list.take(4).map((item) => item.widget),
+          ...list.take(4),
           const Divider(height: 1),
-          ...list.skip(4).map((item) => item.widget),
+          ...list.skip(4),
           ListTile(
             dense: true,
             subtitle: Text(

@@ -211,11 +211,12 @@ class LiveMessageStream {
   }
 
   @pragma('vm:notify-debugger-on-exception')
-  void _processingData(List<int> data) {
+  void _processingData(List<int> value) {
     try {
-      final subHeader = PackageHeaderRes.fromBytesData(
-        Uint8List.fromList(data),
-      );
+      final Uint8List data = value is Uint8List
+          ? value
+          : Uint8List.fromList(value);
+      final subHeader = PackageHeaderRes.fromBytesData(data);
       if (subHeader != null) {
         final msgBody = utf8.decode(
           data.sublist(subHeader.headerSize, subHeader.totalSize),
@@ -270,7 +271,7 @@ class LiveMessageStream {
   void onData(dynamic data) {
     final header = PackageHeaderRes.fromBytesData(data as Uint8List);
     if (header != null) {
-      List<int> decompressedData = [];
+      List<int> decompressedData = const [];
       //心跳包回复不用处理
       if (header.operationCode == 3) return;
       if (header.operationCode == 8) {
@@ -283,11 +284,13 @@ class LiveMessageStream {
             _processingData(data);
             return;
           case 2:
-            decompressedData = ZLibDecoder().convert(data.sublist(0x10));
+            decompressedData = ZLibDecoder().convert(
+              Uint8List.sublistView(data, 0x10),
+            );
             break;
           case 3:
             decompressedData = const BrotliDecoder().convert(
-              data.sublist(0x10),
+              Uint8List.sublistView(data, 0x10),
             );
           //debugPrint('Body: ${utf8.decode()}');
         }

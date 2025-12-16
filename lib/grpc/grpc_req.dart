@@ -118,20 +118,21 @@ class GrpcReq {
 
   static Uint8List compressProtobuf(Uint8List proto) {
     proto = const GZipEncoder().encodeBytes(proto);
-    var byteLength = ByteData(4)..setInt32(0, proto.length, Endian.big);
     return Uint8List(5 + proto.length)
       ..[0] = 1
-      ..setRange(1, 5, byteLength.buffer.asUint8List())
+      ..buffer.asByteData(1, 4).setInt32(0, proto.length, Endian.big)
       ..setAll(5, proto);
   }
 
   static Uint8List decompressProtobuf(Uint8List data) {
-    var length = ByteData.sublistView(data, 1, 5).getInt32(0, Endian.big);
+    final length = ByteData.sublistView(data, 1, 5).getInt32(0, Endian.big);
 
     if (data[0] == 1) {
-      return const GZipDecoder().decodeBytes(data.sublist(5, length + 5));
+      return const GZipDecoder().decodeBytes(
+        Uint8List.sublistView(data, 5, length + 5),
+      );
     } else {
-      return data.sublist(5, length + 5);
+      return Uint8List.sublistView(data, 5, length + 5);
     }
   }
 

@@ -42,10 +42,8 @@ class SharePanel extends StatefulWidget {
     super.key,
     required this.content,
     this.userList,
-    this.selected = false,
   });
 
-  final bool selected;
   final Map content;
   final List<UserModel>? userList;
 
@@ -73,9 +71,6 @@ class _SharePanelState extends State<SharePanel> {
     super.initState();
     if (widget.userList?.isNotEmpty == true) {
       _userList.addAll(widget.userList!);
-    }
-    if (widget.selected) {
-      _userList[0].selected = true;
     }
   }
 

@@ -1,4 +1,4 @@
-import 'dart:math';
+import 'dart:math' as math;
 
 import 'package:PiliPlus/common/widgets/image/cached_network_svg_image.dart';
 import 'package:PiliPlus/common/widgets/image/custom_grid_view.dart';
@@ -40,7 +40,7 @@ class OpusContent extends StatelessWidget {
     required Node item,
     required ColorScheme colorScheme,
     bool isQuote = false,
-    required double surfaceLuminance,
+    required ValueGetter<double> surfaceLuminance,
   }) {
     switch (item.type) {
       case 'TEXT_NODE_TYPE_RICH' when (item.rich != null):
@@ -123,12 +123,21 @@ class OpusContent extends StatelessWidget {
   static TextSpan _getSpan(
     Word? word, {
     Color? defaultColor,
-    required double surfaceLuminance,
+    required ValueGetter<double> surfaceLuminance,
   }) {
     Color? color;
     if (word?.color case final c?) {
       final tmpColor = Color(c);
-      if ((surfaceLuminance - tmpColor.computeLuminance()).abs() > 0.1) {
+      double max = tmpColor.computeLuminance();
+      double min = surfaceLuminance();
+      if (max < min) {
+        final tmp = max;
+        max = min;
+        min = tmp;
+      }
+
+      // WCAG AA : (max + 0.05) / (min + 0.05) > 3.0
+      if (max > 3.0 * min + 0.1) {
         color = tmpColor;
       }
     }
@@ -151,7 +160,9 @@ class OpusContent extends StatelessWidget {
 
     final colorScheme = Theme.of(context).colorScheme;
     late final isDarkMode = colorScheme.isDark;
-    late final surfaceLuminance = colorScheme.surface.computeLuminance();
+    double? surfaceLuminance;
+    double getSurfaceLuminance() =>
+        surfaceLuminance ??= colorScheme.surface.computeLuminance();
 
     late final highlight = Highlight()..registerLanguages(builtinAllLanguages);
 
@@ -171,7 +182,7 @@ class OpusContent extends StatelessWidget {
                         (item) => _node2Widget(
                           item: item,
                           colorScheme: colorScheme,
-                          surfaceLuminance: surfaceLuminance,
+                          surfaceLuminance: getSurfaceLuminance,
                         ),
                       )
                       .toList(),
@@ -204,7 +215,7 @@ class OpusContent extends StatelessWidget {
                 final pic = element.pic!.pics!.first;
                 final width = pic.width == null
                     ? null
-                    : min(maxWidth.toDouble(), pic.width!);
+                    : math.min(maxWidth.toDouble(), pic.width!);
                 final height = width == null || pic.height == null
                     ? null
                     : width * pic.height! / pic.width!;
@@ -263,7 +274,7 @@ class OpusContent extends StatelessWidget {
                           if (item.word != null) {
                             return _getSpan(
                               item.word,
-                              surfaceLuminance: surfaceLuminance,
+                              surfaceLuminance: getSurfaceLuminance,
                             );
                           }
                           if (item.rich case final rich?) {
@@ -626,7 +637,7 @@ class OpusContent extends StatelessWidget {
                         (e) => _node2Widget(
                           item: e,
                           colorScheme: colorScheme,
-                          surfaceLuminance: surfaceLuminance,
+                          surfaceLuminance: getSurfaceLuminance,
                         ),
                       )
                       .toList(),
@@ -642,7 +653,7 @@ class OpusContent extends StatelessWidget {
                         .map<TextSpan>(
                           (item) => _getSpan(
                             item.word,
-                            surfaceLuminance: surfaceLuminance,
+                            surfaceLuminance: getSurfaceLuminance,
                           ),
                         )
                         .toList(),
@@ -744,7 +755,7 @@ Widget moduleBlockedItem(
   }
 
   if (moduleBlocked.blockedType == 1) {
-    maxWidth = maxWidth <= 255 ? maxWidth : min(400, maxWidth * 0.8);
+    maxWidth = maxWidth <= 255 ? maxWidth : math.min(400, maxWidth * 0.8);
     return UnconstrainedBox(
       alignment: Alignment.centerLeft,
       child: Container(
@@ -755,7 +766,7 @@ Widget moduleBlockedItem(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            if (moduleBlocked.icon != null) icon(max(40, maxWidth / 7)),
+            if (moduleBlocked.icon != null) icon(math.max(40, maxWidth / 7)),
             if (moduleBlocked.hintMessage?.isNotEmpty == true) ...[
               const SizedBox(height: 5),
               Text(

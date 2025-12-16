@@ -11,7 +11,7 @@ import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 
 class UserModel {
-  const UserModel({
+  UserModel({
     required this.mid,
     required this.name,
     required this.avatar,
@@ -20,6 +20,7 @@ class UserModel {
   final int mid;
   final String name;
   final String avatar;
+  bool selected = false;
 
   @override
   bool operator ==(Object other) {
@@ -41,11 +42,11 @@ class SharePanel extends StatefulWidget {
     super.key,
     required this.content,
     this.userList,
-    this.selectedIndex,
+    this.selected = false,
   });
 
+  final bool selected;
   final Map content;
-  final int? selectedIndex;
   final List<UserModel>? userList;
 
   @override
@@ -53,11 +54,11 @@ class SharePanel extends StatefulWidget {
 }
 
 class _SharePanelState extends State<SharePanel> {
-  int _selectedIndex = -1;
   final List<UserModel> _userList = <UserModel>[];
   final ScrollController _scrollController = ScrollController();
   final FocusNode _focusNode = FocusNode();
   final TextEditingController _controller = TextEditingController();
+  bool sending = false;
 
   @override
   void dispose() {
@@ -72,9 +73,9 @@ class _SharePanelState extends State<SharePanel> {
     super.initState();
     if (widget.userList?.isNotEmpty == true) {
       _userList.addAll(widget.userList!);
-      if (widget.selectedIndex != null) {
-        _selectedIndex = widget.selectedIndex!;
-      }
+    }
+    if (widget.selected) {
+      _userList[0].selected = true;
     }
   }
 
@@ -116,7 +117,7 @@ class _SharePanelState extends State<SharePanel> {
                     final item = _userList[index];
                     return GestureDetector(
                       onTap: () {
-                        _selectedIndex = index;
+                        item.selected = !item.selected;
                         setState(() {});
                       },
                       behavior: HitTestBehavior.opaque,
@@ -146,7 +147,7 @@ class _SharePanelState extends State<SharePanel> {
                                 ),
                               ],
                             ),
-                            if (index == _selectedIndex)
+                            if (item.selected)
                               Container(
                                 width: 50,
                                 height: 50,
@@ -183,7 +184,7 @@ class _SharePanelState extends State<SharePanel> {
                     _userList
                       ..remove(userModel)
                       ..insert(0, userModel);
-                    _selectedIndex = 0;
+                    _userList[0].selected = true;
                     _scrollController.jumpToTop();
                     setState(() {});
                   }
@@ -249,15 +250,25 @@ class _SharePanelState extends State<SharePanel> {
               const SizedBox(width: 12),
               FilledButton.tonal(
                 onPressed: () {
-                  if (_selectedIndex == -1) {
+                  if(sending) return;// prevent multiple clicks
+                  if (_userList.every((user) => !user.selected)) {
                     SmartDialog.showToast('请选择分享的用户');
                     return;
                   }
-                  RequestUtils.pmShare(
-                    receiverId: _userList[_selectedIndex].mid,
-                    content: widget.content,
-                    message: _controller.text,
-                  );
+                  setState(() {
+                    sending = true;
+                  });
+                  Future.forEach(_userList.where((user) => user.selected), (user) async {
+                    await RequestUtils.pmShare(
+                      receiverId: user.mid,
+                      content: widget.content,
+                      message: _controller.text,
+                    );
+                  }).whenComplete(() {
+                    setState(() {
+                      sending = false;
+                    });
+                  });
                 },
                 style: FilledButton.styleFrom(
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -266,7 +277,7 @@ class _SharePanelState extends State<SharePanel> {
                     vertical: -1,
                   ),
                 ),
-                child: const Text('发送'),
+                child: sending ? const CircularProgressIndicator() : const Text('发送'),
               ),
             ],
           ),

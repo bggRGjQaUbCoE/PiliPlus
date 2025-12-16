@@ -61,7 +61,7 @@ abstract class PageUtils {
   }) async {
     // if (kDebugMode) debugPrint(content.toString());
 
-    int? selectedIndex;
+    bool selected = false;
     List<UserModel> userList = <UserModel>[];
 
     final shareListRes = await ImGrpc.shareList(size: 3);
@@ -80,7 +80,7 @@ abstract class PageUtils {
         GetPageRoute(page: () => const ContactPage()),
       );
       if (userModel != null) {
-        selectedIndex = 0;
+        selected = true;
         userList.add(userModel);
       }
     }
@@ -91,7 +91,7 @@ abstract class PageUtils {
         builder: (context) => SharePanel(
           content: content,
           userList: userList,
-          selectedIndex: selectedIndex,
+          selected: selected,
         ),
         useSafeArea: true,
         enableDrag: false,

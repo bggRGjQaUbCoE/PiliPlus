@@ -56,6 +56,14 @@ void main() async {
     if (kDebugMode) debugPrint('GStorage init error: $e');
     exit(0);
   }
+
+  final Future<void>? dynamicColorFuture;
+  if (!Platform.isIOS && Pref.dynamicColor) {
+    dynamicColorFuture = MyApp._initPlatformState();
+  } else {
+    dynamicColorFuture = null;
+  }
+
   if (PlatformUtils.isDesktop) {
     final customDownPath = Pref.downloadPath;
     if (customDownPath != null && customDownPath.isNotEmpty) {
@@ -135,15 +143,13 @@ void main() async {
       ),
     );
     if (Platform.isAndroid) {
-      late List<DisplayMode> modes;
-      FlutterDisplayMode.supported.then((value) {
-        modes = value;
+      FlutterDisplayMode.supported.then((mode) {
         final String? storageDisplay = GStorage.setting.get(
           SettingBoxKey.displayMode,
         );
         DisplayMode? displayMode;
         if (storageDisplay != null) {
-          displayMode = modes.firstWhereOrNull(
+          displayMode = mode.firstWhereOrNull(
             (e) => e.toString() == storageDisplay,
           );
         }
@@ -153,7 +159,7 @@ void main() async {
   } else if (PlatformUtils.isDesktop) {
     await windowManager.ensureInitialized();
 
-    WindowOptions windowOptions = WindowOptions(
+    final windowOptions = WindowOptions(
       minimumSize: const Size(400, 720),
       skipTaskbar: false,
       titleBarStyle: Pref.showWindowTitleBar
@@ -171,6 +177,8 @@ void main() async {
       await windowManager.focus();
     });
   }
+
+  await dynamicColorFuture;
 
   if (Pref.enableLog) {
     // 异常捕获 logo记录
@@ -215,6 +223,8 @@ void main() async {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
+  static ColorScheme? _light, _dark;
+
   static ThemeData? darkThemeData;
 
   static void _onBack() {
@@ -252,36 +262,34 @@ class MyApp extends StatelessWidget {
     Get.back();
   }
 
-  static Widget _build({
-    ColorScheme? lightColorScheme,
-    ColorScheme? darkColorScheme,
-  }) {
+  @override
+  Widget build(BuildContext context) {
     late final brandColor = colorThemeTypes[Pref.customColor].color;
     late final variant = FlexSchemeVariant.values[Pref.schemeVariant];
     return GetMaterialApp(
       title: Constants.appName,
       theme: ThemeUtils.getThemeData(
         colorScheme:
-            lightColorScheme ??
+            _light ??
             SeedColorScheme.fromSeeds(
               variant: variant,
               primaryKey: brandColor,
               brightness: Brightness.light,
               useExpressiveOnContainerColors: false,
             ),
-        isDynamic: lightColorScheme != null,
+        isDynamic: _light != null,
       ),
       darkTheme: ThemeUtils.getThemeData(
         isDark: true,
         colorScheme:
-            darkColorScheme ??
+            _dark ??
             SeedColorScheme.fromSeeds(
               variant: variant,
               primaryKey: brandColor,
               brightness: Brightness.dark,
               useExpressiveOnContainerColors: false,
             ),
-        isDynamic: darkColorScheme != null,
+        isDynamic: _dark != null,
       ),
       themeMode: Pref.themeMode,
       localizationsDelegates: const [
@@ -343,23 +351,51 @@ class MyApp extends StatelessWidget {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    if (!Platform.isIOS && Pref.dynamicColor) {
-      return DynamicColorBuilder(
-        builder: ((ColorScheme? lightDynamic, ColorScheme? darkDynamic) {
-          if (lightDynamic != null && darkDynamic != null) {
-            return _build(
-              lightColorScheme: lightDynamic.harmonized(),
-              darkColorScheme: darkDynamic.harmonized(),
-            );
-          } else {
-            return _build();
-          }
-        }),
-      );
+  /// from [DynamicColorBuilderState.initPlatformState]
+  static Future<void> _initPlatformState() async {
+    // Platform messages may fail, so we use a try/catch PlatformException.
+    try {
+      final corePalette = await DynamicColorPlugin.getCorePalette();
+
+      if (corePalette != null) {
+        if (kDebugMode) {
+          debugPrint('dynamic_color: Core palette detected.');
+        }
+        _light = corePalette.toColorScheme();
+        _dark = corePalette.toColorScheme(brightness: Brightness.dark);
+        return;
+      }
+    } on PlatformException {
+      if (kDebugMode) {
+        debugPrint('dynamic_color: Failed to obtain core palette.');
+      }
     }
-    return _build();
+
+    try {
+      final Color? accentColor = await DynamicColorPlugin.getAccentColor();
+
+      if (accentColor != null) {
+        if (kDebugMode) {
+          debugPrint('dynamic_color: Accent color detected.');
+        }
+        _light = ColorScheme.fromSeed(
+          seedColor: accentColor,
+          brightness: Brightness.light,
+        );
+        _dark = ColorScheme.fromSeed(
+          seedColor: accentColor,
+          brightness: Brightness.dark,
+        );
+        return;
+      }
+    } on PlatformException {
+      if (kDebugMode) {
+        debugPrint('dynamic_color: Failed to obtain accent color.');
+      }
+    }
+    if (kDebugMode) {
+      debugPrint('dynamic_color: Dynamic color not detected on this device.');
+    }
   }
 }
 

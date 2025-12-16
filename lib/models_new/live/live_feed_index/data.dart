@@ -2,19 +2,13 @@ import 'package:PiliPlus/models_new/live/live_feed_index/card_list.dart';
 
 class LiveIndexData {
   List<LiveCardList>? cardList;
-  int? isRollback;
   int? hasMore;
-  int? triggerTime;
-  int? isNeedRefresh;
   LiveCardList? followItem;
   LiveCardList? areaItem;
 
   LiveIndexData({
     this.cardList,
-    this.isRollback,
     this.hasMore,
-    this.triggerTime,
-    this.isNeedRefresh,
   });
 
   LiveIndexData.fromJson(Map<String, dynamic> json) {
@@ -38,9 +32,6 @@ class LiveIndexData {
         }
       }
     }
-    isRollback = json['is_rollback'] as int?;
     hasMore = json['has_more'] as int?;
-    triggerTime = json['trigger_time'] as int?;
-    isNeedRefresh = json['is_need_refresh'] as int?;
   }
 }

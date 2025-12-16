@@ -13,9 +13,13 @@ import 'package:PiliPlus/pages/video/introduction/ugc/widgets/action_item.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_repeat.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/duration_utils.dart';
-import 'package:PiliPlus/utils/extension.dart';
+import 'package:PiliPlus/utils/extension/num_ext.dart';
+import 'package:PiliPlus/utils/extension/size_ext.dart';
+import 'package:PiliPlus/utils/extension/string_ext.dart';
+import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
+import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/utils.dart';
@@ -78,6 +82,7 @@ class _AudioPageState extends State<AudioPage> {
     final isPortrait = MediaQuery.sizeOf(context).isPortrait;
     final padding = MediaQuery.viewPaddingOf(context);
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         actions: [
           Builder(
@@ -169,7 +174,8 @@ class _AudioPageState extends State<AudioPage> {
           final theme = Theme.of(context);
           final colorScheme = theme.colorScheme;
           return FractionallySizedBox(
-            heightFactor: Utils.isMobile && !context.mediaQuerySize.isPortrait
+            heightFactor:
+                PlatformUtils.isMobile && !context.mediaQuerySize.isPortrait
                 ? 1.0
                 : 0.7,
             alignment: Alignment.bottomCenter,
@@ -751,7 +757,7 @@ class _AudioPageState extends State<AudioPage> {
         onSeek: _onSeek,
       ),
     );
-    if (Utils.isDesktop) {
+    if (PlatformUtils.isDesktop) {
       return MouseRegion(
         cursor: SystemMouseCursors.click,
         child: child,

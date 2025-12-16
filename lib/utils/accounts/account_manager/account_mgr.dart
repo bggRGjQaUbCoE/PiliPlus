@@ -8,9 +8,9 @@ import 'package:PiliPlus/models/common/account_type.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/accounts/account.dart';
 import 'package:PiliPlus/utils/app_sign.dart';
-import 'package:PiliPlus/utils/extension.dart';
+import 'package:PiliPlus/utils/extension/string_ext.dart';
+import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
-import 'package:PiliPlus/utils/utils.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
@@ -363,7 +363,7 @@ class AccountManager extends Interceptor {
       case DioExceptionType.unknown:
         String desc;
         try {
-          desc = Utils.isMobile
+          desc = PlatformUtils.isMobile
               ? (await Connectivity().checkConnectivity()).first.desc
               : '';
         } catch (_) {

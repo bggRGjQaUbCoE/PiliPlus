@@ -54,10 +54,12 @@ import 'package:PiliPlus/plugin/pl_player/models/heart_beat_type.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
 import 'package:PiliPlus/services/download/download_service.dart';
 import 'package:PiliPlus/utils/accounts.dart';
-import 'package:PiliPlus/utils/context_ext.dart';
 import 'package:PiliPlus/utils/duration_utils.dart';
-import 'package:PiliPlus/utils/extension.dart';
+import 'package:PiliPlus/utils/extension/context_ext.dart';
+import 'package:PiliPlus/utils/extension/iterable_ext.dart';
+import 'package:PiliPlus/utils/extension/size_ext.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
+import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
@@ -1606,7 +1608,7 @@ class VideoDetailController extends GetxController
             subtitles.first.lan.startsWith('ai') ? 0 : 1,
           SubtitlePrefType.auto =>
             !subtitles.first.lan.startsWith('ai') ||
-                    (Utils.isMobile &&
+                    (PlatformUtils.isMobile &&
                         (await FlutterVolumeController.getVolume() ?? 0.0) <=
                             0.0)
                 ? 1
@@ -1889,7 +1891,9 @@ class VideoDetailController extends GetxController
         (e) => e.cid == (seasonCid ?? cid.value),
       );
       final size = context.mediaQuerySize;
-      final maxChildSize = Utils.isMobile && !size.isPortrait ? 1.0 : 0.7;
+      final maxChildSize = PlatformUtils.isMobile && !size.isPortrait
+          ? 1.0
+          : 0.7;
       showModalBottomSheet(
         context: context,
         useSafeArea: true,

@@ -239,7 +239,7 @@ packages:
     description:
       path: "."
       ref: main
-      resolved-ref: e13ec72d2406b1ede94bbeec64dd0941a7dd9ac2
+      resolved-ref: "75704a77d287607d00742f7fd6e0fbccf8e89425"
       url: "https://github.com/bggRGjQaUbCoE/canvas_danmaku.git"
     source: git
     version: "0.2.6"
@@ -1798,10 +1798,10 @@ packages:
     dependency: transitive
     description:
       name: uri_parser
-      sha256: "380c6c96c52a8de82c84c627d0a79cfb2e1697c3fe3eda78fbb9b87af0dcee08"
+      sha256: "051c62e5f693de98ca9f130ee707f8916e2266945565926be3ff20659f7853ce"
       url: "https://pub.dev"
     source: hosted
-    version: "3.0.1"
+    version: "3.0.2"
   url_launcher:
     dependency: "direct main"
     description:

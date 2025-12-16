@@ -3,7 +3,7 @@ import 'package:PiliPlus/common/widgets/button/icon_button.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/http/user.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
-import 'package:PiliPlus/utils/utils.dart';
+import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -105,7 +105,7 @@ void imageSaveDialog({
                       icon: const Icon(Icons.watch_later_outlined),
                     ),
                   if (cover != null && cover.isNotEmpty) ...[
-                    if (Utils.isMobile)
+                    if (PlatformUtils.isMobile)
                       iconBtn(
                         tooltip: '分享',
                         onPressed: () {

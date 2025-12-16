@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:PiliPlus/utils/extension.dart';
+import 'package:PiliPlus/utils/extension/iterable_ext.dart';
+import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
-import 'package:PiliPlus/utils/utils.dart';
 import 'package:path_provider/path_provider.dart';
 
 abstract class CacheManager {
@@ -14,7 +14,7 @@ abstract class CacheManager {
   ]) async {
     try {
       final Directory tempDirectory = await getTemporaryDirectory();
-      if (Utils.isDesktop) {
+      if (PlatformUtils.isDesktop) {
         final dir = Directory('${tempDirectory.path}/libCachedImageData');
         if (dir.existsSync()) {
           return await getTotalSizeOfFilesInDir(dir, maxSize);
@@ -62,7 +62,7 @@ abstract class CacheManager {
   static Future<void> clearLibraryCache() async {
     try {
       final Directory tempDirectory = await getTemporaryDirectory();
-      if (Utils.isDesktop) {
+      if (PlatformUtils.isDesktop) {
         final dir = Directory('${tempDirectory.path}/libCachedImageData');
         if (dir.existsSync()) {
           await dir.delete(recursive: true);

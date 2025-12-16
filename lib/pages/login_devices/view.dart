@@ -5,6 +5,7 @@ import 'package:PiliPlus/common/widgets/view_sliver_safe_area.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models_new/login_devices/device.dart';
 import 'package:PiliPlus/pages/login_devices/controller.dart';
+import 'package:PiliPlus/utils/extension/widget_ext.dart';
 import 'package:flutter/material.dart' hide ListTile;
 import 'package:get/get.dart';
 
@@ -22,27 +23,20 @@ class LoginDevicesPageState extends State<LoginDevicesPage> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(title: const Text('登录设备')),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 650),
-          child: refreshIndicator(
-            onRefresh: _controller.onRefresh,
-            child: CustomScrollView(
-              slivers: [
-                ViewSliverSafeArea(
-                  sliver: Obx(
-                    () => _buildBody(
-                      colorScheme,
-                      _controller.loadingState.value,
-                    ),
-                  ),
-                ),
-              ],
+      body: refreshIndicator(
+        onRefresh: _controller.onRefresh,
+        child: CustomScrollView(
+          slivers: [
+            ViewSliverSafeArea(
+              sliver: Obx(
+                () => _buildBody(colorScheme, _controller.loadingState.value),
+              ),
             ),
-          ),
+          ],
         ),
-      ),
+      ).constraintWidth(),
     );
   }
 

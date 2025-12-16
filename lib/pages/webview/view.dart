@@ -67,6 +67,7 @@ class _WebviewPageState extends State<WebviewPage> {
     if (Platform.isLinux) {
       return Scaffold(
         appBar: AppBar(),
+        resizeToAvoidBottomInset: false,
         body: Center(
           child: TextButton(
             onPressed: () => PageUtils.launchURL(_url),

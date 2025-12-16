@@ -14,8 +14,11 @@ import 'package:PiliPlus/pages/emote/view.dart';
 import 'package:PiliPlus/pages/whisper_detail/controller.dart';
 import 'package:PiliPlus/pages/whisper_detail/widget/chat_item.dart';
 import 'package:PiliPlus/pages/whisper_link_setting/view.dart';
-import 'package:PiliPlus/utils/extension.dart';
+import 'package:PiliPlus/utils/extension/file_ext.dart';
+import 'package:PiliPlus/utils/extension/iterable_ext.dart';
+import 'package:PiliPlus/utils/extension/widget_ext.dart';
 import 'package:PiliPlus/utils/feed_back.dart';
+import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart' hide TextField;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -130,10 +133,7 @@ class _WhisperDetailPageState
         ],
       ),
       body: Padding(
-        padding: EdgeInsets.only(
-          left: padding.left,
-          right: padding.right,
-        ),
+        padding: EdgeInsets.only(left: padding.left, right: padding.right),
         child: Column(
           children: [
             Expanded(
@@ -161,7 +161,7 @@ class _WhisperDetailPageState
               SizedBox(height: padding.bottom),
           ],
         ),
-      ),
+      ).constraintWidth(),
     );
   }
 
@@ -336,7 +336,7 @@ class _WhisperDetailPageState
                                 onClearText: editController.clear,
                               )
                               .whenComplete(() {
-                                if (Utils.isMobile) {
+                                if (PlatformUtils.isMobile) {
                                   File(path).tryDel();
                                 }
                               });

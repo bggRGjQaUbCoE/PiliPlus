@@ -6,7 +6,6 @@ class History {
   int? cid;
   String? part;
   String? business;
-  int? dt;
 
   History({
     this.oid,
@@ -16,7 +15,6 @@ class History {
     this.cid,
     this.part,
     this.business,
-    this.dt,
   });
 
   factory History.fromJson(Map<String, dynamic> json) => History(
@@ -27,6 +25,5 @@ class History {
     cid: json['cid'] == 0 ? null : json['cid'],
     part: json['part'],
     business: json['business'],
-    dt: json['dt'],
   );
 }

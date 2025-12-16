@@ -4,10 +4,11 @@ import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
 import 'package:PiliPlus/http/fav.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/msg.dart';
-import 'package:PiliPlus/utils/extension.dart';
+import 'package:PiliPlus/utils/extension/file_ext.dart';
+import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/fav_utils.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
-import 'package:PiliPlus/utils/utils.dart';
+import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_debounce/easy_throttle.dart';
 import 'package:flutter/material.dart';
@@ -118,7 +119,7 @@ class _CreateFavPageState extends State<CreateFavPage> {
       );
       if (pickedFile != null && mounted) {
         String imgPath = pickedFile.path;
-        if (Utils.isMobile) {
+        if (PlatformUtils.isMobile) {
           final croppedFile = await ImageCropper.platform.cropImage(
             sourcePath: imgPath,
             uiSettings: [
@@ -159,7 +160,7 @@ class _CreateFavPageState extends State<CreateFavPage> {
               SmartDialog.showToast(res['msg']);
             }
           }
-          if (Utils.isMobile) {
+          if (PlatformUtils.isMobile) {
             File(imgPath).tryDel();
           }
         });

@@ -6,8 +6,6 @@ class LiveSearchRoomItemModel {
   String? title;
   String? name;
   String? face;
-  int? online;
-  String? link;
   WatchedShow? watchedShow;
 
   LiveSearchRoomItemModel({
@@ -16,8 +14,6 @@ class LiveSearchRoomItemModel {
     this.title,
     this.name,
     this.face,
-    this.online,
-    this.link,
     this.watchedShow,
   });
 
@@ -28,8 +24,6 @@ class LiveSearchRoomItemModel {
         title: json['title'] as String?,
         name: json['name'] as String?,
         face: json['face'] as String?,
-        online: json['online'] as int?,
-        link: json['link'] as String?,
         watchedShow: json['watched_show'] == null
             ? null
             : WatchedShow.fromJson(

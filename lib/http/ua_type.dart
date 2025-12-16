@@ -1,4 +1,4 @@
-import 'package:PiliPlus/utils/utils.dart';
+import 'package:PiliPlus/utils/platform_utils.dart';
 
 enum UaType {
   mob(
@@ -9,7 +9,7 @@ enum UaType {
   )
   ;
 
-  static UaType get platformUA => Utils.isMobile ? mob : pc;
+  static UaType get platformUA => PlatformUtils.isMobile ? mob : pc;
 
   final String ua;
   const UaType(this.ua);

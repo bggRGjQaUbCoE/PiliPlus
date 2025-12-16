@@ -8,6 +8,7 @@ import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/models_new/upower_rank/rank_info.dart';
 import 'package:PiliPlus/pages/member_upower_rank/controller.dart';
+import 'package:PiliPlus/utils/extension/widget_ext.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart' hide ListTile;
 import 'package:get/get.dart';
@@ -93,76 +94,71 @@ class _UpowerRankPageState extends State<UpowerRankPage>
         ),
         body: Padding(
           padding: EdgeInsets.only(left: padding.left, right: padding.right),
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 625),
-              child: Obx(
-                () {
-                  final tabs = _controller.tabs.value;
-                  return tabs != null
-                      ? DefaultTabController(
-                          length: tabs.length,
-                          child: Builder(
-                            builder: (context) {
-                              return Column(
-                                children: [
-                                  TabBar(
-                                    isScrollable: true,
-                                    tabAlignment: TabAlignment.start,
-                                    tabs: tabs
-                                        .map(
-                                          (e) => Tab(
-                                            text:
-                                                '${e.name!}(${e.memberTotal ?? 0})',
-                                          ),
-                                        )
-                                        .toList(),
-                                    onTap: (index) {
-                                      if (!DefaultTabController.of(
-                                        context,
-                                      ).indexIsChanging) {
-                                        try {
-                                          if (index == 0) {
-                                            _controller.animateToTop();
-                                          } else {
-                                            Get.find<UpowerRankController>(
-                                              tag:
-                                                  '$_tag${tabs[index].privilegeType}',
-                                            ).animateToTop();
-                                          }
-                                        } catch (_) {}
+          child: Obx(
+            () {
+              final tabs = _controller.tabs.value;
+              return tabs != null
+                  ? DefaultTabController(
+                      length: tabs.length,
+                      child: Builder(
+                        builder: (context) {
+                          return Column(
+                            children: [
+                              TabBar(
+                                isScrollable: true,
+                                tabAlignment: TabAlignment.start,
+                                tabs: tabs
+                                    .map(
+                                      (e) => Tab(
+                                        text:
+                                            '${e.name!}(${e.memberTotal ?? 0})',
+                                      ),
+                                    )
+                                    .toList(),
+                                onTap: (index) {
+                                  if (!DefaultTabController.of(
+                                    context,
+                                  ).indexIsChanging) {
+                                    try {
+                                      if (index == 0) {
+                                        _controller.animateToTop();
+                                      } else {
+                                        Get.find<UpowerRankController>(
+                                          tag:
+                                              '$_tag${tabs[index].privilegeType}',
+                                        ).animateToTop();
                                       }
-                                    },
-                                  ),
-                                  Expanded(
-                                    child: tabBarView(
-                                      children: [
-                                        KeepAliveWrapper(
-                                          builder: (context) => child,
-                                        ),
-                                        ...tabs
-                                            .skip(1)
-                                            .map(
-                                              (e) => UpowerRankPage(
-                                                upMid: _upMid,
-                                                tag: _tag,
-                                                privilegeType: e.privilegeType,
-                                              ),
-                                            ),
-                                      ],
+                                    } catch (_) {}
+                                  }
+                                },
+                              ),
+                              Expanded(
+                                child: tabBarView(
+                                  children: [
+                                    KeepAliveWrapper(
+                                      builder: (context) => child,
                                     ),
-                                  ),
-                                ],
-                              );
-                            },
-                          ),
-                        )
-                      : child;
-                },
-              ),
-            ),
+                                    ...tabs
+                                        .skip(1)
+                                        .map(
+                                          (e) => UpowerRankPage(
+                                            upMid: _upMid,
+                                            tag: _tag,
+                                            privilegeType: e.privilegeType,
+                                          ),
+                                        ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                    )
+                  : child;
+            },
           ),
-        ),
+        ).constraintWidth(),
       );
     } else {
       return child;

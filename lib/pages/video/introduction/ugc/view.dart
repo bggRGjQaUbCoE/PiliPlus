@@ -21,11 +21,15 @@ import 'package:PiliPlus/pages/video/introduction/ugc/widgets/selectable_text.da
 import 'package:PiliPlus/utils/app_scheme.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/duration_utils.dart';
-import 'package:PiliPlus/utils/extension.dart';
+import 'package:PiliPlus/utils/extension/get_ext.dart';
+import 'package:PiliPlus/utils/extension/iterable_ext.dart';
+import 'package:PiliPlus/utils/extension/string_ext.dart';
+import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
+import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/request_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:expandable/expandable.dart';
@@ -174,7 +178,7 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
                   const SizedBox(height: 8),
                   if (isLoading)
                     _buildVideoTitle(theme, videoDetail)
-                  else if (isHorizontal && Utils.isDesktop)
+                  else if (isHorizontal && PlatformUtils.isDesktop)
                     SelectionArea(
                       child: _buildVideoTitle(
                         theme,
@@ -223,7 +227,7 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
                       ),
                     ),
                   ],
-                  if (isHorizontal && Utils.isDesktop)
+                  if (isHorizontal && PlatformUtils.isDesktop)
                     ..._infos(theme, videoDetail)
                   else
                     ExpandablePanel(

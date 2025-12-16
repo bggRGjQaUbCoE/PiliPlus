@@ -2,7 +2,8 @@ import 'dart:async';
 import 'dart:math' as math;
 import 'dart:math' show max;
 
-import 'package:PiliPlus/utils/extension.dart';
+import 'package:PiliPlus/utils/extension/size_ext.dart';
+import 'package:PiliPlus/utils/extension/widget_ext.dart';
 import 'package:PiliPlus/utils/global_data.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
@@ -227,12 +228,9 @@ class _PayCoinsPageState extends State<PayCoinsPage>
     final isPortrait = size.isPortrait;
     return isPortrait
         ? _buildBody(isPortrait)
-        : Center(
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                maxWidth: math.min(525, size.width * 0.6),
-              ),
-              child: _buildBody(isPortrait),
+        : _buildBody(isPortrait).constraintWidth(
+            constraints: BoxConstraints(
+              maxWidth: math.min(525, size.width * 0.6),
             ),
           );
   }

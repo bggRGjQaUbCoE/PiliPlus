@@ -5,7 +5,7 @@ import 'package:PiliPlus/pages/dynamics/widgets/action_panel.dart';
 import 'package:PiliPlus/pages/dynamics/widgets/author_panel.dart';
 import 'package:PiliPlus/pages/dynamics/widgets/dyn_content.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
-import 'package:PiliPlus/utils/utils.dart';
+import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:flutter/material.dart' hide InkWell;
 
 class DynamicPanel extends StatelessWidget {
@@ -67,7 +67,7 @@ class DynamicPanel extends StatelessWidget {
             ? null
             : () => PageUtils.pushDynDetail(item),
         onLongPress: showMore,
-        onSecondaryTap: Utils.isMobile ? null : showMore,
+        onSecondaryTap: PlatformUtils.isMobile ? null : showMore,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,

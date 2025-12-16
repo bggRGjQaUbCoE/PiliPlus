@@ -10,10 +10,10 @@ import 'package:PiliPlus/plugin/pl_player/models/fullscreen_mode.dart';
 import 'package:PiliPlus/plugin/pl_player/utils/fullscreen.dart'
     show allowRotateScreen;
 import 'package:PiliPlus/services/service_locator.dart';
+import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
-import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -27,7 +27,7 @@ List<SettingsModel> get playSettings => [
     setKey: SettingBoxKey.enableShowDanmaku,
     defaultVal: true,
   ),
-  if (Utils.isMobile)
+  if (PlatformUtils.isMobile)
     const SwitchModel(
       title: '启用点击弹幕',
       subtitle: '点击弹幕悬停，支持点赞、复制、举报操作',
@@ -64,7 +64,7 @@ List<SettingsModel> get playSettings => [
     title: '全屏显示电池电量',
     leading: const Icon(Icons.battery_3_bar),
     setKey: SettingBoxKey.showBatteryLevel,
-    defaultVal: Utils.isMobile,
+    defaultVal: PlatformUtils.isMobile,
   ),
   const SwitchModel(
     title: '双击快退/快进',
@@ -139,7 +139,7 @@ List<SettingsModel> get playSettings => [
       }
     },
   ),
-  if (Utils.isDesktop)
+  if (PlatformUtils.isDesktop)
     SwitchModel(
       title: '最小化时暂停/还原时播放',
       leading: const Icon(Icons.pause_circle_outline),
@@ -295,7 +295,7 @@ List<SettingsModel> get playSettings => [
       }
     },
   ),
-  if (Utils.isMobile)
+  if (PlatformUtils.isMobile)
     SwitchModel(
       title: '后台音频服务',
       subtitle: '避免画中画没有播放暂停功能',

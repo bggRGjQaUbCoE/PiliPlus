@@ -5,7 +5,7 @@ import 'package:PiliPlus/models_new/article/article_view/ops.dart';
 import 'package:PiliPlus/models_new/article/article_view/opus.dart';
 import 'package:PiliPlus/models_new/article/article_view/stats.dart';
 import 'package:PiliPlus/models_new/article/article_view/tag.dart';
-import 'package:PiliPlus/utils/extension.dart';
+import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 
 class ArticleViewData {
   int? id;

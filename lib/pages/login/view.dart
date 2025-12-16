@@ -6,9 +6,11 @@ import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/pages/login/controller.dart';
-import 'package:PiliPlus/utils/extension.dart';
+import 'package:PiliPlus/utils/extension/size_ext.dart';
+import 'package:PiliPlus/utils/extension/widget_ext.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
+import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -81,7 +83,7 @@ class _LoginPageState extends State<LoginPage> {
               icon: const Icon(Icons.save),
               label: const Text('保存至相册'),
             ),
-            if (kDebugMode || Utils.isMobile)
+            if (kDebugMode || PlatformUtils.isMobile)
               TextButton.icon(
                 onPressed: () => PageUtils.launchURL(
                   'bilibili://browser?url=${Uri.encodeComponent(_loginPageCtr.codeInfo.value.data.url)}',
@@ -612,13 +614,7 @@ class _LoginPageState extends State<LoginPage> {
   Widget tabViewOuter(Widget child) {
     return SingleChildScrollView(
       padding: padding,
-      child: Align(
-        alignment: Alignment.topCenter,
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 600),
-          child: child,
-        ),
-      ),
+      child: child.constraintWidth(),
     );
   }
 }

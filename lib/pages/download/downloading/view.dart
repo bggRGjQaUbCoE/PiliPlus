@@ -41,6 +41,7 @@ class _DownloadingPageState extends State<DownloadingPage>
           }
         },
         child: Scaffold(
+          resizeToAvoidBottomInset: false,
           appBar: MultiSelectAppBarWidget(
             ctr: this,
             child: AppBar(

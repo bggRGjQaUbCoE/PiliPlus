@@ -12,7 +12,7 @@ import 'package:PiliPlus/models/login/model.dart';
 import 'package:PiliPlus/pages/login/geetest/geetest_webview_dialog.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/accounts/account.dart';
-import 'package:PiliPlus/utils/utils.dart';
+import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
@@ -136,7 +136,7 @@ class LoginPageController extends GetxController
       onSuccess();
     }
 
-    if (Utils.isDesktop) {
+    if (PlatformUtils.isDesktop) {
       Get.dialog<Map<String, dynamic>>(
         GeetestWebviewDialog(geeGt, geeChallenge),
       ).then((res) {

@@ -4,8 +4,6 @@ class Bangumi {
   int? epId;
   String? title;
   String? longTitle;
-  int? episodeStatus;
-  int? follow;
   String? cover;
   Season? season;
 
@@ -13,8 +11,6 @@ class Bangumi {
     this.epId,
     this.title,
     this.longTitle,
-    this.episodeStatus,
-    this.follow,
     this.cover,
     this.season,
   });
@@ -23,8 +19,6 @@ class Bangumi {
     epId: json['ep_id'] as int?,
     title: json['title'] as String?,
     longTitle: json['long_title'] as String?,
-    episodeStatus: json['episode_status'] as int?,
-    follow: json['follow'] as int?,
     cover: json['cover'] as String?,
     season: json['season'] == null
         ? null

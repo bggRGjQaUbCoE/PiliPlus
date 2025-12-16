@@ -7,6 +7,7 @@ import 'package:PiliPlus/models/member/tags.dart';
 import 'package:PiliPlus/pages/follow/child/child_controller.dart';
 import 'package:PiliPlus/pages/follow/child/child_view.dart';
 import 'package:PiliPlus/pages/follow/controller.dart';
+import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show LengthLimitingTextInputFormatter;
@@ -125,7 +126,7 @@ class _FollowPageState extends State<FollowPage> {
                         Feedback.forLongPress(context);
                         _onHandleTag(index, item);
                       },
-                      onSecondaryTap: Utils.isMobile
+                      onSecondaryTap: PlatformUtils.isMobile
                           ? null
                           : () => _onHandleTag(index, item),
                       child: Tab(

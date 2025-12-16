@@ -8,7 +8,7 @@ import 'package:PiliPlus/pages/live_follow/view.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
-import 'package:PiliPlus/utils/utils.dart';
+import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:flutter/material.dart' hide InkWell;
 import 'package:get/get.dart';
 
@@ -51,7 +51,7 @@ class _UpPanelState extends State<UpPanel> {
               controller.showLiveUp = !controller.showLiveUp;
             }),
             onLongPress: toFollowPage,
-            onSecondaryTap: Utils.isMobile ? null : toFollowPage,
+            onSecondaryTap: PlatformUtils.isMobile ? null : toFollowPage,
             child: Container(
               alignment: Alignment.center,
               height: isTop ? 76 : 60,
@@ -201,7 +201,7 @@ class _UpPanelState extends State<UpPanel> {
         },
         // onDoubleTap: isLive ? () => _onSelect(data) : null,
         onLongPress: !isAll ? toMemberPage : null,
-        onSecondaryTap: !isAll && !Utils.isMobile ? toMemberPage : null,
+        onSecondaryTap: !isAll && !PlatformUtils.isMobile ? toMemberPage : null,
         child: Opacity(
           opacity: isCurrent ? 1 : 0.6,
           child: Column(

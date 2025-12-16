@@ -71,6 +71,7 @@ class _DLNAPageState extends State<DLNAPage> {
   Widget build(BuildContext context) {
     final colorScheme = ColorScheme.of(context);
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         title: const Text('投屏'),
         actions: [

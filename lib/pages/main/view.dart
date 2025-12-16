@@ -12,9 +12,11 @@ import 'package:PiliPlus/pages/mine/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
-import 'package:PiliPlus/utils/context_ext.dart';
-import 'package:PiliPlus/utils/extension.dart';
+import 'package:PiliPlus/utils/extension/context_ext.dart';
+import 'package:PiliPlus/utils/extension/size_ext.dart';
+import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
+import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/utils.dart';
@@ -41,7 +43,7 @@ class _MainAppState extends State<MainApp>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    if (Utils.isDesktop) {
+    if (PlatformUtils.isDesktop) {
       windowManager
         ..addListener(this)
         ..setPreventClose(true);
@@ -58,7 +60,7 @@ class _MainAppState extends State<MainApp>
     final brightness = Theme.brightnessOf(context);
     NetworkImgLayer.reduce =
         NetworkImgLayer.reduceLuxColor != null && brightness.isDark;
-    if (Utils.isDesktop) {
+    if (PlatformUtils.isDesktop) {
       windowManager.setBrightness(brightness);
     }
     PageUtils.routeObserver.subscribe(
@@ -95,7 +97,7 @@ class _MainAppState extends State<MainApp>
 
   @override
   void dispose() {
-    if (Utils.isDesktop) {
+    if (PlatformUtils.isDesktop) {
       trayManager.removeListener(this);
       windowManager.removeListener(this);
     }

@@ -1,4 +1,4 @@
-import 'package:PiliPlus/utils/utils.dart';
+import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:flutter/material.dart';
 
 class SearchText extends StatelessWidget {
@@ -33,7 +33,7 @@ class SearchText extends StatelessWidget {
       child: InkWell(
         onTap: () => onTap?.call(text),
         onLongPress: hasLongPress ? () => onLongPress!(text) : null,
-        onSecondaryTap: hasLongPress && !Utils.isMobile
+        onSecondaryTap: hasLongPress && !PlatformUtils.isMobile
             ? () => onLongPress!(text)
             : null,
         borderRadius: const BorderRadius.all(Radius.circular(6)),

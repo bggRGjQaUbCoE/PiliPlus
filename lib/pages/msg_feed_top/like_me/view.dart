@@ -14,7 +14,7 @@ import 'package:PiliPlus/pages/msg_feed_top/like_me/controller.dart';
 import 'package:PiliPlus/pages/whisper_settings/view.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
-import 'package:PiliPlus/utils/utils.dart';
+import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:flutter/material.dart' hide ListTile;
 import 'package:get/get.dart';
 
@@ -271,7 +271,7 @@ class _LikeMePageState extends State<LikeMePage> {
         PiliScheme.routePushFromUrl(nativeUri);
       },
       onLongPress: onLongPress,
-      onSecondaryTap: Utils.isMobile ? null : onLongPress,
+      onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
       leading: avatar,
       title: Text.rich(
         TextSpan(

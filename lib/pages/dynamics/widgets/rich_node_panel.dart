@@ -32,6 +32,9 @@ TextSpan? richNode(
     List<RichTextNodeItem>? richTextNodes;
     if (moduleDynamic?.desc case final desc?) {
       richTextNodes = desc.richTextNodes;
+      if (richTextNodes == null || richTextNodes.isEmpty) {
+        return TextSpan(text: desc.text);
+      }
     } else if (moduleDynamic?.major?.opus case final opus?) {
       // 动态页面 richTextNodes 层级可能与主页动态层级不同
       richTextNodes = opus.summary?.richTextNodes;
@@ -249,6 +252,7 @@ TextSpan? richNode(
                 ..add(
                   WidgetSpan(
                     child: CustomGridView(
+                      fullScreen: true,
                       maxWidth: maxWidth,
                       picArr: i.pics!
                           .map(

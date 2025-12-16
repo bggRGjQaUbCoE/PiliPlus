@@ -6,7 +6,7 @@ import 'package:PiliPlus/models_new/popular/popular_series_list/list.dart';
 import 'package:PiliPlus/models_new/popular/popular_series_one/config.dart';
 import 'package:PiliPlus/models_new/popular/popular_series_one/data.dart';
 import 'package:PiliPlus/pages/common/common_list_controller.dart';
-import 'package:PiliPlus/utils/extension.dart';
+import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:get/get.dart';
 
 class PopularSeriesController

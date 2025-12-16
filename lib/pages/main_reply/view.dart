@@ -9,6 +9,7 @@ import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/pages/main_reply/controller.dart';
 import 'package:PiliPlus/pages/video/reply/widgets/reply_item_grpc.dart';
 import 'package:PiliPlus/pages/video/reply_reply/view.dart';
+import 'package:PiliPlus/utils/extension/widget_ext.dart';
 import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
@@ -55,9 +56,8 @@ class _MainReplyPageState extends State<MainReplyPage> {
   Widget build(BuildContext context) {
     final colorScheme = ColorScheme.of(context);
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('查看评论'),
-      ),
+      resizeToAvoidBottomInset: false,
+      appBar: AppBar(title: const Text('查看评论')),
       body: NotificationListener<UserScrollNotification>(
         onNotification: (notification) {
           final direction = notification.direction;
@@ -84,7 +84,7 @@ class _MainReplyPageState extends State<MainReplyPage> {
               ],
             ),
           ),
-        ),
+        ).constraintWidth(),
       ),
       floatingActionButton: SlideTransition(
         position: _controller.fabAnim,
@@ -247,7 +247,7 @@ class _MainReplyPageState extends State<MainReplyPage> {
               replyType: _controller.replyType,
               firstFloor: replyItem,
             ),
-          ),
+          ).constraintWidth(),
         ),
         routeName: 'dynamicDetail-Copy',
       );

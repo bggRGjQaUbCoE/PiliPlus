@@ -13,9 +13,10 @@ import 'package:PiliPlus/pages/music/controller.dart';
 import 'package:PiliPlus/pages/video/introduction/pgc/controller.dart';
 import 'package:PiliPlus/pages/video/introduction/ugc/controller.dart';
 import 'package:PiliPlus/pages/video/reply/widgets/reply_item_grpc.dart';
-import 'package:PiliPlus/utils/context_ext.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
+import 'package:PiliPlus/utils/extension/context_ext.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
+import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
@@ -286,7 +287,7 @@ class _SavePanelState extends State<SavePanel> {
   }
 
   Future<void> _onSaveOrSharePic([bool isShare = false]) async {
-    if (!isShare && Utils.isMobile) {
+    if (!isShare && PlatformUtils.isMobile) {
       if (mounted && !await ImageUtils.checkPermissionDependOnSdkInt(context)) {
         return;
       }
@@ -589,7 +590,7 @@ class _SavePanelState extends State<SavePanel> {
                         showBottom = !showBottom;
                       }),
                     ),
-                    if (Utils.isMobile)
+                    if (PlatformUtils.isMobile)
                       iconButton(
                         size: 42,
                         tooltip: '分享',

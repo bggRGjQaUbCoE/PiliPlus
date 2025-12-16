@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 import 'dart:ui' show clampDouble;
 
-import 'package:PiliPlus/utils/utils.dart';
+import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
@@ -150,7 +150,7 @@ class CustomTooltipState extends State<CustomTooltip>
   @override
   Widget build(BuildContext context) {
     Widget result;
-    if (Utils.isMobile) {
+    if (PlatformUtils.isMobile) {
       result = Listener(
         onPointerDown: _handlePointerDown,
         behavior: HitTestBehavior.opaque,
@@ -215,7 +215,7 @@ class _CustomTooltipOverlay extends StatelessWidget {
           ),
       ],
     );
-    if (Utils.isMobile) {
+    if (PlatformUtils.isMobile) {
       return GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: onDismiss,

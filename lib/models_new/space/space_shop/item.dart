@@ -5,7 +5,7 @@ import 'package:PiliPlus/models_new/space/space_shop/net_price.dart';
 import 'package:PiliPlus/models_new/space/space_shop/report_params.dart';
 import 'package:PiliPlus/models_new/space/space_shop/source_desc.dart';
 import 'package:PiliPlus/models_new/space/space_shop/source_front_tag.dart';
-import 'package:PiliPlus/utils/extension.dart';
+import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 
 class SpaceShopItem {
   String? contentId;

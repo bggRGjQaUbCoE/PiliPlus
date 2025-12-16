@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:math' show pi;
 
-import 'package:PiliPlus/utils/utils.dart';
+import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -45,7 +45,7 @@ mixin TripleMixin on GetxController, TickerProvider {
     _timer = null;
   }
 
-  static final _duration = Utils.isMobile
+  static final _duration = PlatformUtils.isMobile
       ? const Duration(milliseconds: 200)
       : const Duration(milliseconds: 255);
 

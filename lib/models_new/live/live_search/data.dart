@@ -7,9 +7,6 @@ class LiveSearchData {
   int? pagesize;
   Room? room;
   User? user;
-  String? trackId;
-  String? abtestId;
-  String? query;
 
   LiveSearchData({
     this.type,
@@ -17,9 +14,6 @@ class LiveSearchData {
     this.pagesize,
     this.room,
     this.user,
-    this.trackId,
-    this.abtestId,
-    this.query,
   });
 
   factory LiveSearchData.fromJson(Map<String, dynamic> json) => LiveSearchData(
@@ -32,8 +26,5 @@ class LiveSearchData {
     user: json['user'] == null
         ? null
         : User.fromJson(json['user'] as Map<String, dynamic>),
-    trackId: json['track_id'] as String?,
-    abtestId: json['abtest_id'] as String?,
-    query: json['query'] as String?,
   );
 }

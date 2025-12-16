@@ -12,6 +12,7 @@ import 'package:PiliPlus/models_new/dynamic/dyn_topic_top/top_details.dart';
 import 'package:PiliPlus/pages/dynamics/widgets/dynamic_panel.dart';
 import 'package:PiliPlus/pages/dynamics_create/view.dart';
 import 'package:PiliPlus/pages/dynamics_topic/controller.dart';
+import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/global_data.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
@@ -325,9 +326,8 @@ class _DynTopicPageState extends State<DynTopicPage> with DynMixin {
                         SmartDialog.showToast('账号未登录');
                         return;
                       }
-                      final isDark = Get.isDarkMode;
                       PageUtils.inAppWebview(
-                        'https://www.bilibili.com/h5/topic-active/topic-report?topic_id=${_controller.topicId}&topic_name=${_controller.topicName}&native.theme=${isDark ? 2 : 1}&night=${isDark ? 1 : 0}',
+                        'https://www.bilibili.com/h5/topic-active/topic-report?topic_id=${_controller.topicId}&topic_name=${_controller.topicName}&${Utils.themeUrl(theme.colorScheme.isDark)}',
                       );
                     },
                   ),

@@ -1,11 +1,11 @@
-import 'package:PiliPlus/utils/utils.dart';
+import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:flutter/material.dart';
 
 Widget selectableText(
   String text, {
   TextStyle? style,
 }) {
-  if (Utils.isDesktop) {
+  if (PlatformUtils.isDesktop) {
     return SelectionArea(
       child: Text(
         style: style,
@@ -23,7 +23,7 @@ Widget selectableRichText(
   TextSpan textSpan, {
   TextStyle? style,
 }) {
-  if (Utils.isDesktop) {
+  if (PlatformUtils.isDesktop) {
     return SelectionArea(
       child: Text.rich(
         style: style,

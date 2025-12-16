@@ -5,7 +5,6 @@ class LiveSearchUserItemModel {
   String? areaName;
   int? fansNum;
   int? roomid;
-  String? link;
 
   LiveSearchUserItemModel({
     this.face,
@@ -14,7 +13,6 @@ class LiveSearchUserItemModel {
     this.areaName,
     this.fansNum,
     this.roomid,
-    this.link,
   });
 
   factory LiveSearchUserItemModel.fromJson(Map<String, dynamic> json) =>
@@ -25,6 +23,5 @@ class LiveSearchUserItemModel {
         areaName: json['areaName'] as String?,
         fansNum: json['fansNum'] as int?,
         roomid: json['roomid'] as int?,
-        link: json['link'] as String?,
       );
 }

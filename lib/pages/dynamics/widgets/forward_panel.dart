@@ -5,7 +5,7 @@ import 'package:PiliPlus/pages/dynamics/widgets/dyn_content.dart';
 import 'package:PiliPlus/pages/dynamics/widgets/module_panel.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
-import 'package:PiliPlus/utils/utils.dart';
+import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:flutter/material.dart' hide InkWell;
 import 'package:get/get.dart';
 
@@ -100,7 +100,7 @@ Widget forwardPanel(
   return InkWell(
     onTap: () => PageUtils.pushDynDetail(orig),
     onLongPress: showMore,
-    onSecondaryTap: Utils.isMobile ? null : showMore,
+    onSecondaryTap: PlatformUtils.isMobile ? null : showMore,
     child: child,
   );
 }

@@ -6,9 +6,7 @@ class LiveFollowData {
   int? totalPage;
   List<LiveFollowItem>? list;
   int? count;
-  int? neverLivedCount;
   int? liveCount;
-  List<dynamic>? neverLivedFaces;
 
   LiveFollowData({
     this.title,
@@ -16,9 +14,7 @@ class LiveFollowData {
     this.totalPage,
     this.list,
     this.count,
-    this.neverLivedCount,
     this.liveCount,
-    this.neverLivedFaces,
   });
 
   LiveFollowData.fromJson(Map<String, dynamic> json) {
@@ -34,8 +30,6 @@ class LiveFollowData {
       }
     }
     count = json['count'] as int?;
-    neverLivedCount = json['never_lived_count'] as int?;
     liveCount = json['live_count'] as int?;
-    neverLivedFaces = json['never_lived_faces'] as List<dynamic>?;
   }
 }

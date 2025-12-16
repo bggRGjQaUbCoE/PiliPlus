@@ -1,20 +1,16 @@
 import 'package:PiliPlus/models_new/live/live_dm_block/shield_rules.dart';
 import 'package:PiliPlus/models_new/live/live_dm_block/shield_user_list.dart';
-import 'package:PiliPlus/utils/extension.dart';
+import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 
 class ShieldInfo {
   List<ShieldUserList>? shieldUserList;
   List<String>? keywordList;
   ShieldRules? shieldRules;
-  bool? isBlock;
-  int? blockExpired;
 
   ShieldInfo({
     this.shieldUserList,
     this.keywordList,
     this.shieldRules,
-    this.isBlock,
-    this.blockExpired,
   });
 
   factory ShieldInfo.fromJson(Map<String, dynamic> json) => ShieldInfo(
@@ -25,7 +21,5 @@ class ShieldInfo {
     shieldRules: json['shield_rules'] == null
         ? null
         : ShieldRules.fromJson(json['shield_rules'] as Map<String, dynamic>),
-    isBlock: json['is_block'] as bool?,
-    blockExpired: json['block_expired'] as int?,
   );
 }

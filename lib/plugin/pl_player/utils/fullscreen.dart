@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:auto_orientation/auto_orientation.dart';
@@ -49,7 +50,7 @@ Future<void> verticalScreenForTwoSeconds() async {
 //全向
 bool allowRotateScreen = Pref.allowRotateScreen;
 Future<void> autoScreen() async {
-  if (Utils.isMobile && allowRotateScreen) {
+  if (PlatformUtils.isMobile && allowRotateScreen) {
     await SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
       // DeviceOrientation.portraitDown,

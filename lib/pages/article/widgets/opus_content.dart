@@ -11,8 +11,8 @@ import 'package:PiliPlus/models/dynamics/article_content_model.dart'
 import 'package:PiliPlus/models/dynamics/result.dart';
 import 'package:PiliPlus/pages/dynamics/widgets/vote.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
-import 'package:PiliPlus/utils/context_ext.dart';
-import 'package:PiliPlus/utils/extension.dart';
+import 'package:PiliPlus/utils/extension/context_ext.dart';
+import 'package:PiliPlus/utils/extension/string_ext.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -40,6 +40,7 @@ class OpusContent extends StatelessWidget {
     required Node item,
     required ColorScheme colorScheme,
     bool isQuote = false,
+    required double surfaceLuminance,
   }) {
     switch (item.type) {
       case 'TEXT_NODE_TYPE_RICH' when (item.rich != null):
@@ -101,7 +102,8 @@ class OpusContent extends StatelessWidget {
       default:
         return _getSpan(
           item.word,
-          isQuote ? colorScheme.onSurfaceVariant : null,
+          surfaceLuminance: surfaceLuminance,
+          defaultColor: isQuote ? colorScheme.onSurfaceVariant : null,
         );
     }
   }
@@ -118,14 +120,27 @@ class OpusContent extends StatelessWidget {
         fontSize: fontSize,
       );
 
-  static TextSpan _getSpan(Word? word, [Color? defaultColor]) => TextSpan(
-    text: word?.words,
-    style: _getStyle(
-      word?.style,
-      word?.color != null ? Color(word!.color!) : defaultColor,
-      word?.fontSize,
-    ),
-  );
+  static TextSpan _getSpan(
+    Word? word, {
+    Color? defaultColor,
+    required double surfaceLuminance,
+  }) {
+    Color? color;
+    if (word?.color case final c?) {
+      final tmpColor = Color(c);
+      if ((surfaceLuminance - tmpColor.computeLuminance()).abs() > 0.1) {
+        color = tmpColor;
+      }
+    }
+    return TextSpan(
+      text: word?.words,
+      style: _getStyle(
+        word?.style,
+        color ?? defaultColor,
+        word?.fontSize,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -138,6 +153,9 @@ class OpusContent extends StatelessWidget {
     late final isDarkMode = context.isDarkMode;
 
     final colorScheme = Theme.of(context).colorScheme;
+
+    late final surfaceLuminance = colorScheme.surface.computeLuminance();
+
     return SliverList.separated(
       itemCount: opus.length,
       itemBuilder: (context, index) {
@@ -151,8 +169,11 @@ class OpusContent extends StatelessWidget {
                 TextSpan(
                   children: element.text?.nodes
                       ?.map(
-                        (item) =>
-                            _node2Widget(item: item, colorScheme: colorScheme),
+                        (item) => _node2Widget(
+                          item: item,
+                          colorScheme: colorScheme,
+                          surfaceLuminance: surfaceLuminance,
+                        ),
                       )
                       .toList(),
                 ),
@@ -241,7 +262,10 @@ class OpusContent extends StatelessWidget {
                         ),
                         ...entry.$2.nodes!.map((item) {
                           if (item.word != null) {
-                            return _getSpan(item.word);
+                            return _getSpan(
+                              item.word,
+                              surfaceLuminance: surfaceLuminance,
+                            );
                           }
                           if (item.rich case final rich?) {
                             final hasUrl = rich.jumpUrl?.isNotEmpty == true;
@@ -600,7 +624,11 @@ class OpusContent extends StatelessWidget {
                 TextSpan(
                   children: element.heading!.nodes!
                       .map(
-                        (e) => _node2Widget(item: e, colorScheme: colorScheme),
+                        (e) => _node2Widget(
+                          item: e,
+                          colorScheme: colorScheme,
+                          surfaceLuminance: surfaceLuminance,
+                        ),
                       )
                       .toList(),
                 ),
@@ -612,7 +640,12 @@ class OpusContent extends StatelessWidget {
                   textAlign: element.align == 1 ? TextAlign.center : null,
                   TextSpan(
                     children: element.text!.nodes!
-                        .map<TextSpan>((item) => _getSpan(item.word))
+                        .map<TextSpan>(
+                          (item) => _getSpan(
+                            item.word,
+                            surfaceLuminance: surfaceLuminance,
+                          ),
+                        )
                         .toList(),
                   ),
                 );

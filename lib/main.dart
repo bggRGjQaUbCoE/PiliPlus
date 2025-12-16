@@ -18,6 +18,7 @@ import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/json_file_handler.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/path_utils.dart';
+import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/request_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
@@ -55,7 +56,7 @@ void main() async {
     if (kDebugMode) debugPrint('GStorage init error: $e');
     exit(0);
   }
-  if (Utils.isDesktop) {
+  if (PlatformUtils.isDesktop) {
     final customDownPath = Pref.downloadPath;
     if (customDownPath != null && customDownPath.isNotEmpty) {
       try {
@@ -89,7 +90,7 @@ void main() async {
 
   CacheManager.autoClearCache();
 
-  if (Utils.isMobile) {
+  if (PlatformUtils.isMobile) {
     await Future.wait([
       SystemChrome.setPreferredOrientations(
         [
@@ -122,7 +123,7 @@ void main() async {
     displayType: SmartToastType.onlyRefresh,
   );
 
-  if (Utils.isMobile) {
+  if (PlatformUtils.isMobile) {
     PiliScheme.init();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     SystemChrome.setSystemUIOverlayStyle(
@@ -149,7 +150,7 @@ void main() async {
         FlutterDisplayMode.setPreferredMode(displayMode ?? DisplayMode.auto);
       });
     }
-  } else if (Utils.isDesktop) {
+  } else if (PlatformUtils.isDesktop) {
     await windowManager.ensureInitialized();
 
     WindowOptions windowOptions = WindowOptions(
@@ -304,7 +305,7 @@ class MyApp extends StatelessWidget {
             ),
             child: child!,
           );
-          if (Utils.isDesktop) {
+          if (PlatformUtils.isDesktop) {
             return Focus(
               canRequestFocus: false,
               onKeyEvent: (_, event) {
@@ -336,7 +337,7 @@ class MyApp extends StatelessWidget {
           PointerDeviceKind.invertedStylus,
           PointerDeviceKind.trackpad,
           PointerDeviceKind.unknown,
-          if (Utils.isDesktop) PointerDeviceKind.mouse,
+          if (PlatformUtils.isDesktop) PointerDeviceKind.mouse,
         },
       ),
     );

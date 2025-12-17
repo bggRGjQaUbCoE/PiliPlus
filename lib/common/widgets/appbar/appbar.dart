@@ -21,6 +21,7 @@ class MultiSelectAppBarWidget extends StatelessWidget
   Widget build(BuildContext context) {
     if (visible ?? ctr.enableMultiSelect.value) {
       final style = TextButton.styleFrom(visualDensity: VisualDensity.compact);
+      final colorScheme = ColorScheme.of(context);
       return AppBar(
         bottom: child.bottom,
         leading: IconButton(
@@ -48,7 +49,7 @@ class MultiSelectAppBarWidget extends StatelessWidget
             },
             child: Text(
               '移除',
-              style: TextStyle(color: Get.theme.colorScheme.error),
+              style: TextStyle(color: colorScheme.error),
             ),
           ),
           const SizedBox(width: 6),

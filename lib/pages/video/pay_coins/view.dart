@@ -32,7 +32,7 @@ class PayCoinsPage extends StatefulWidget {
     int copyright = 1,
     bool hasCoin = false,
   }) {
-    Navigator.of(Get.context!).push(
+    Get.key.currentState!.push(
       GetDialogRoute(
         pageBuilder: (buildContext, animation, secondaryAnimation) {
           return PayCoinsPage(

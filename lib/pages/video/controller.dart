@@ -1027,7 +1027,7 @@ class VideoDetailController extends GetxController
     if (isPlaying) {
       await plPlayerController.pause();
     }
-    await Navigator.of(Get.context!).push(
+    await Get.key.currentState!.push(
       GetDialogRoute(
         pageBuilder: (buildContext, animation, secondaryAnimation) {
           return SendDanmakuPanel(

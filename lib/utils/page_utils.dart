@@ -653,8 +653,8 @@ abstract class PageUtils {
     Get.generalDialog(
       barrierLabel: '',
       barrierDismissible: true,
-      pageBuilder: (buildContext, animation, secondaryAnimation) {
-        if (Get.context!.isPortrait) {
+      pageBuilder: (context, animation, secondaryAnimation) {
+        if (context.isPortrait) {
           return SafeArea(
             child: FractionallySizedBox(
               heightFactor: 0.7,
@@ -680,7 +680,7 @@ abstract class PageUtils {
       },
       transitionDuration: const Duration(milliseconds: 350),
       transitionBuilder: (context, animation, secondaryAnimation, child) {
-        Offset begin = Get.context!.isPortrait
+        Offset begin = context.isPortrait
             ? const Offset(0.0, 1.0)
             : const Offset(1.0, 0.0);
         var tween = Tween(

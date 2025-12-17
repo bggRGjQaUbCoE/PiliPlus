@@ -57,13 +57,6 @@ void main() async {
     exit(0);
   }
 
-  final Future<void>? dynamicColorFuture;
-  if (Pref.dynamicColor) {
-    dynamicColorFuture = MyApp.initPlatformState();
-  } else {
-    dynamicColorFuture = null;
-  }
-
   if (PlatformUtils.isDesktop) {
     final customDownPath = Pref.downloadPath;
     if (customDownPath != null && customDownPath.isNotEmpty) {
@@ -178,7 +171,9 @@ void main() async {
     });
   }
 
-  await dynamicColorFuture;
+  if (Pref.dynamicColor) {
+    await MyApp.initPlatformState();
+  }
 
   if (Pref.enableLog) {
     // 异常捕获 logo记录

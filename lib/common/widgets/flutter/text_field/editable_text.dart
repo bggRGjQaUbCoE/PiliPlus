@@ -3402,12 +3402,6 @@ class EditableTextState extends State<EditableText>
         if (!_isMultiline) {
           _finalizeEditing(action, shouldUnfocus: true);
         } else if (HardwareKeyboard.instance.isControlPressed) {
-          final ctr = widget.controller;
-          final length = ctr.text.length;
-          ctr.value = ctr.value.copyWith(
-            text: ctr.text.substring(0, length - 1),
-            selection: TextSelection.collapsed(offset: length - 1),
-          );
           _finalizeEditing(action, shouldUnfocus: true);
         }
       case TextInputAction.done:

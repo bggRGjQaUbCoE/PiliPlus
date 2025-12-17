@@ -173,12 +173,12 @@ class _ColorSelectPageState extends State<ColorSelectPage> {
                 controlAffinity: ListTileControlAffinity.leading,
                 value: ctr.dynamicColor.value,
                 onChanged: (val) async {
-                  if (val!) {
+                  ctr
+                    ..dynamicColor.value = val!
+                    ..setting.put(SettingBoxKey.dynamicColor, val);
+                  if (val) {
                     await MyApp.initPlatformState();
                   }
-                  ctr
-                    ..dynamicColor.value = val
-                    ..setting.put(SettingBoxKey.dynamicColor, val);
                   Get.forceAppUpdate();
                 },
               ),

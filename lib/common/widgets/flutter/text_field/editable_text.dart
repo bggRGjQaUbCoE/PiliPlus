@@ -3402,6 +3402,17 @@ class EditableTextState extends State<EditableText>
         if (!_isMultiline) {
           _finalizeEditing(action, shouldUnfocus: true);
         } else if (HardwareKeyboard.instance.isControlPressed) {
+          final ctr = widget.controller;
+          final length = ctr.text.length;
+          // delete newline
+          ctr.syncRichText(
+            TextEditingDeltaDeletion(
+              composing: TextRange.empty,
+              selection: const TextSelection(baseOffset: 0, extentOffset: 0),
+              deletedRange: TextRange(start: length - 1, end: length),
+              oldText: ctr.text,
+            ),
+          );
           _finalizeEditing(action, shouldUnfocus: true);
         }
       case TextInputAction.done:

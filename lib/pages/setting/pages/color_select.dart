@@ -13,6 +13,7 @@ import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:flex_seed_scheme/flex_seed_scheme.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:hive/hive.dart';
 
@@ -177,9 +178,15 @@ class _ColorSelectPageState extends State<ColorSelectPage> {
                     ..dynamicColor.value = val!
                     ..setting.put(SettingBoxKey.dynamicColor, val);
                   if (val) {
-                    await MyApp.initPlatformState();
+                    if (await MyApp.initPlatformState()) {
+                      Get.forceAppUpdate();
+                    } else {
+                      SmartDialog.showToast('该设备可能不支持动态取色');
+                      ctr.dynamicColor.value = false;
+                    }
+                  } else {
+                    Get.forceAppUpdate();
                   }
-                  Get.forceAppUpdate();
                 },
               ),
             ),

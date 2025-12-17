@@ -149,30 +149,28 @@ class _HomePageState extends State<HomePage>
   }
 
   Widget customAppBar(ThemeData theme) {
-    if (!_homeController.hideSearchBar) {
+    if (_homeController.searchBar case final searchBar?) {
+      return Obx(() {
+        final showSearchBar = searchBar.value;
+        return AnimatedOpacity(
+          opacity: showSearchBar ? 1 : 0,
+          duration: const Duration(milliseconds: 300),
+          child: AnimatedContainer(
+            curve: Curves.easeInOutCubicEmphasized,
+            duration: const Duration(milliseconds: 500),
+            height: showSearchBar ? 52 : 0,
+            padding: const EdgeInsets.fromLTRB(14, 6, 14, 0),
+            child: searchBarAndUser(theme),
+          ),
+        );
+      });
+    } else {
       return Container(
         height: 52,
         padding: const EdgeInsets.fromLTRB(14, 6, 14, 0),
         child: searchBarAndUser(theme),
       );
     }
-    return StreamBuilder(
-      stream: _homeController.searchBarStream?.stream.distinct(),
-      initialData: true,
-      builder: (BuildContext context, AsyncSnapshot snapshot) {
-        return AnimatedOpacity(
-          opacity: snapshot.data ? 1 : 0,
-          duration: const Duration(milliseconds: 300),
-          child: AnimatedContainer(
-            curve: Curves.easeInOutCubicEmphasized,
-            duration: const Duration(milliseconds: 500),
-            height: snapshot.data ? 52 : 0,
-            padding: const EdgeInsets.fromLTRB(14, 6, 14, 0),
-            child: searchBarAndUser(theme),
-          ),
-        );
-      },
-    );
   }
 
   Widget searchBar(ThemeData theme) {

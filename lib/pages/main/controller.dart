@@ -30,8 +30,7 @@ class MainController extends GetxController
 
   List<NavigationBarType> navigationBars = <NavigationBarType>[];
 
-  StreamController<bool>? bottomBarStream;
-  late bool hideTabBar = Pref.hideTabBar;
+  RxBool? bottomBar;
   late dynamic controller;
   final RxInt selectedIndex = 0.obs;
 
@@ -84,8 +83,8 @@ class MainController extends GetxController
           )
         : PageController(initialPage: selectedIndex.value);
 
-    if (navigationBars.length > 1 && hideTabBar) {
-      bottomBarStream = StreamController<bool>.broadcast();
+    if (navigationBars.length > 1 && Pref.hideTabBar) {
+      bottomBar = true.obs;
     }
     dynamicBadgeMode = DynamicBadgeMode.values[Pref.dynamicBadgeMode];
 
@@ -321,13 +320,13 @@ class MainController extends GetxController
 
   void setSearchBar() {
     if (hasHome) {
-      homeController.searchBarStream?.add(true);
+      homeController.searchBar?.value = true;
     }
   }
 
   @override
   void onClose() {
-    bottomBarStream?.close();
+    bottomBar?.close();
     controller.dispose();
     super.onClose();
   }

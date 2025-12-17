@@ -1,4 +1,3 @@
-abstract class EnumWithLabel {
+mixin EnumWithLabel on Enum {
   String get label;
-  int get index;
 }

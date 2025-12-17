@@ -185,23 +185,30 @@ class _SharePanelState extends State<SharePanel> {
                   );
                 },
               ),
-              ActionButton(
-                icon: Icons.person_add_alt,
-                onPressed: () async {
-                  _focusNode.unfocus();
-                  final UserModel? userModel = await Navigator.of(context).push(
-                    GetPageRoute(page: () => const ContactPage()),
-                  );
-                  if (userModel != null) {
-                    _userList
-                      ..remove(userModel)
-                      ..insert(0, userModel);
-                    _scrollController.jumpToTop();
-                    setState(() {});
-                  }
-                },
-                text: "更多",
-              ),
+              DecoratedBox(
+                decoration: BoxDecoration(gradient: LinearGradient(
+                  colors: [theme.colorScheme.surfaceContainer.withAlpha(0), theme.colorScheme.surfaceContainer],
+                  stops: const [0.0,0.4]
+                )),
+                child: ActionButton(
+                  icon: Icons.person_add_alt,
+                  onPressed: () async {
+                    _focusNode.unfocus();
+                    final UserModel? userModel = await Navigator.of(context).push(
+                      GetPageRoute(page: () => const ContactPage()),
+                    );
+                    if (userModel != null) {
+                      _userList
+                        ..remove(userModel)
+                        ..insert(0, userModel);
+                      _scrollController.jumpToTop();
+                      setState(() {});
+                    }
+                  },
+                  text: "更多",
+                ),
+                )
+
             ],
           ),
           const Divider(),

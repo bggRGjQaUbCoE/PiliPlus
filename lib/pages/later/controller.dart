@@ -11,7 +11,6 @@ import 'package:PiliPlus/pages/common/multi_select/base.dart';
 import 'package:PiliPlus/pages/common/multi_select/multi_select_controller.dart';
 import 'package:PiliPlus/pages/later/base_controller.dart';
 import 'package:PiliPlus/utils/accounts.dart';
-import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:PiliPlus/utils/extension/scroll_controller_ext.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:flutter/material.dart';
@@ -163,11 +162,10 @@ class LaterController extends MultiSelectController<LaterData, LaterItemModel>
 
   // 稍后再看播放全部
   void toViewPlayAll() {
-    if (loadingState.value.isSuccess) {
-      List<LaterItemModel>? list = loadingState.value.data;
-      if (list.isNullOrEmpty) return;
+    if (loadingState.value case Success(:final response)) {
+      if (response == null || response.isEmpty) return;
 
-      for (LaterItemModel item in list!) {
+      for (LaterItemModel item in response) {
         if (item.cid == null || item.pgcLabel?.isNotEmpty == true) {
           continue;
         } else {

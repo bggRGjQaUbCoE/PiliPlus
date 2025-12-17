@@ -11,7 +11,6 @@ import 'package:PiliPlus/pages/common/multi_select/base.dart';
 import 'package:PiliPlus/pages/common/multi_select/multi_select_controller.dart';
 import 'package:PiliPlus/pages/fav_sort/view.dart';
 import 'package:PiliPlus/utils/accounts.dart';
-import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:PiliPlus/utils/extension/scroll_controller_ext.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
@@ -152,11 +151,10 @@ class FavDetailController
       );
 
   void toViewPlayAll() {
-    if (loadingState.value.isSuccess) {
-      List<FavDetailItemModel>? list = loadingState.value.data;
-      if (list.isNullOrEmpty) return;
+    if (loadingState.value case Success(:final response)) {
+      if (response == null || response.isEmpty) return;
 
-      for (FavDetailItemModel element in list!) {
+      for (FavDetailItemModel element in response) {
         if (element.ugc?.firstCid == null) {
           continue;
         } else {

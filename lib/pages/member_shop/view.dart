@@ -6,7 +6,6 @@ import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models_new/space/space_shop/item.dart';
 import 'package:PiliPlus/pages/member_shop/controller.dart';
 import 'package:PiliPlus/pages/member_shop/widgets/item.dart';
-import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:PiliPlus/utils/grid.dart';
 import 'package:PiliPlus/utils/waterfall.dart';
 import 'package:flutter/material.dart';
@@ -80,7 +79,7 @@ class _MemberShopState extends State<MemberShop>
           ),
         );
       case Success(:var response):
-        if (response.isNullOrEmpty) {
+        if (response == null || response.isEmpty) {
           return HttpError(onReload: _controller.onReload);
         }
         Widget sliver = SliverWaterfallFlow(
@@ -92,7 +91,7 @@ class _MemberShopState extends State<MemberShop>
                 maxWidth: _maxWidth,
               );
             },
-            childCount: response!.length,
+            childCount: response.length,
           ),
         );
         if (_controller.showMoreTab == true) {

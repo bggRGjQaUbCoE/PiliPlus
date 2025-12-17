@@ -2,28 +2,27 @@ import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/models_new/article/article_view/ops.dart';
 import 'package:PiliPlus/pages/dynamics/widgets/vote.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
-import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class ArticleOpus extends StatelessWidget {
-  const ArticleOpus({super.key, required this.ops});
+  const ArticleOpus({super.key, required List<ArticleOps>? ops}) : _ops = ops;
 
-  final List<ArticleOps>? ops;
+  final List<ArticleOps>? _ops;
 
   @override
   Widget build(BuildContext context) {
-    if (ops.isNullOrEmpty) {
+    if ((_ops == null || _ops.isEmpty)) {
       return const SliverToBoxAdapter();
     }
 
     return SliverList.separated(
-      itemCount: ops!.length,
+      itemCount: _ops.length,
       itemBuilder: (context, index) {
         try {
-          final item = ops![index];
+          final item = _ops[index];
           if (item.insert is String) {
             return SelectableText(item.insert);
           }

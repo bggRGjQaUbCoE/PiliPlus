@@ -369,36 +369,33 @@ class _SendDanmakuPanelState extends CommonTextPubPageState<SendDanmakuPanel> {
           ),
           const SizedBox(width: 12),
           Expanded(
-            child: Form(
-              autovalidateMode: AutovalidateMode.onUserInteraction,
-              child: Listener(
-                onPointerUp: (event) {
-                  if (readOnly.value) {
-                    updatePanelType(PanelType.keyboard);
-                  }
-                },
-                child: Obx(
-                  () => TextField(
-                    controller: editController,
-                    autofocus: false,
-                    readOnly: readOnly.value,
-                    inputFormatters: [
-                      LengthLimitingTextInputFormatter(100),
-                    ],
-                    onChanged: onChanged,
-                    textInputAction: TextInputAction.send,
-                    onSubmitted: onSubmitted,
-                    focusNode: focusNode,
-                    decoration: InputDecoration(
-                      hintText: "输入弹幕内容",
-                      border: InputBorder.none,
-                      hintStyle: TextStyle(
-                        fontSize: 15,
-                        color: themeData.colorScheme.outline,
-                      ),
+            child: Listener(
+              onPointerUp: (event) {
+                if (readOnly.value) {
+                  updatePanelType(PanelType.keyboard);
+                }
+              },
+              child: Obx(
+                () => TextField(
+                  controller: editController,
+                  autofocus: false,
+                  readOnly: readOnly.value,
+                  inputFormatters: [
+                    LengthLimitingTextInputFormatter(100),
+                  ],
+                  onChanged: onChanged,
+                  textInputAction: TextInputAction.send,
+                  onSubmitted: onSubmitted,
+                  focusNode: focusNode,
+                  decoration: InputDecoration(
+                    hintText: "输入弹幕内容",
+                    border: InputBorder.none,
+                    hintStyle: TextStyle(
+                      fontSize: 15,
+                      color: themeData.colorScheme.outline,
                     ),
-                    style: themeData.textTheme.bodyLarge,
                   ),
+                  style: themeData.textTheme.bodyLarge,
                 ),
               ),
             ),

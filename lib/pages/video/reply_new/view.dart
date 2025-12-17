@@ -142,32 +142,29 @@ class _ReplyPageState extends CommonRichTextPubPageState<ReplyPage> {
           left: 15,
           bottom: 10,
         ),
-        child: Form(
-          autovalidateMode: AutovalidateMode.onUserInteraction,
-          child: Listener(
-            onPointerUp: (event) {
-              if (readOnly.value) {
-                updatePanelType(PanelType.keyboard);
-              }
-            },
-            child: Obx(
-              () => RichTextField(
-                key: key,
-                controller: editController,
-                minLines: 4,
-                maxLines: 8,
-                autofocus: false,
-                readOnly: readOnly.value,
-                onChanged: onChanged,
-                onSubmitted: onSubmitted,
-                focusNode: focusNode,
-                decoration: InputDecoration(
-                  hintText: widget.hint ?? "输入回复内容",
-                  border: InputBorder.none,
-                  hintStyle: const TextStyle(fontSize: 14),
-                ),
-                style: themeData.textTheme.bodyLarge,
+        child: Listener(
+          onPointerUp: (event) {
+            if (readOnly.value) {
+              updatePanelType(PanelType.keyboard);
+            }
+          },
+          child: Obx(
+            () => RichTextField(
+              key: key,
+              controller: editController,
+              minLines: 4,
+              maxLines: 8,
+              autofocus: false,
+              readOnly: readOnly.value,
+              onChanged: onChanged,
+              onSubmitted: onSubmitted,
+              focusNode: focusNode,
+              decoration: InputDecoration(
+                hintText: widget.hint ?? "输入回复内容",
+                border: InputBorder.none,
+                hintStyle: const TextStyle(fontSize: 14),
               ),
+              style: themeData.textTheme.bodyLarge,
             ),
           ),
         ),

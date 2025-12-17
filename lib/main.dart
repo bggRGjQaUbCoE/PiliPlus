@@ -58,8 +58,8 @@ void main() async {
   }
 
   final Future<void>? dynamicColorFuture;
-  if (!Platform.isIOS && Pref.dynamicColor) {
-    dynamicColorFuture = MyApp._initPlatformState();
+  if (Pref.dynamicColor) {
+    dynamicColorFuture = MyApp.initPlatformState();
   } else {
     dynamicColorFuture = null;
   }
@@ -264,32 +264,33 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final dynamicColor = Pref.dynamicColor && _light != null && _dark != null;
     late final brandColor = colorThemeTypes[Pref.customColor].color;
     late final variant = FlexSchemeVariant.values[Pref.schemeVariant];
     return GetMaterialApp(
       title: Constants.appName,
       theme: ThemeUtils.getThemeData(
-        colorScheme:
-            _light ??
-            SeedColorScheme.fromSeeds(
-              variant: variant,
-              primaryKey: brandColor,
-              brightness: Brightness.light,
-              useExpressiveOnContainerColors: false,
-            ),
-        isDynamic: _light != null,
+        colorScheme: dynamicColor
+            ? _light!
+            : SeedColorScheme.fromSeeds(
+                variant: variant,
+                primaryKey: brandColor,
+                brightness: Brightness.light,
+                useExpressiveOnContainerColors: false,
+              ),
+        isDynamic: dynamicColor,
       ),
       darkTheme: ThemeUtils.getThemeData(
         isDark: true,
-        colorScheme:
-            _dark ??
-            SeedColorScheme.fromSeeds(
-              variant: variant,
-              primaryKey: brandColor,
-              brightness: Brightness.dark,
-              useExpressiveOnContainerColors: false,
-            ),
-        isDynamic: _dark != null,
+        colorScheme: dynamicColor
+            ? _dark!
+            : SeedColorScheme.fromSeeds(
+                variant: variant,
+                primaryKey: brandColor,
+                brightness: Brightness.dark,
+                useExpressiveOnContainerColors: false,
+              ),
+        isDynamic: dynamicColor,
       ),
       themeMode: Pref.themeMode,
       localizationsDelegates: const [
@@ -351,17 +352,9 @@ class MyApp extends StatelessWidget {
     );
   }
 
-  static Future<void> updateDynamicColor(bool value) {
-    if (value) {
-      return _initPlatformState();
-    } else {
-      _light = _dark = null;
-      return Future.syncValue(null);
-    }
-  }
-
   /// from [DynamicColorBuilderState.initPlatformState]
-  static Future<void> _initPlatformState() async {
+  static Future<void> initPlatformState() async {
+    if (_light != null || _dark != null) return;
     // Platform messages may fail, so we use a try/catch PlatformException.
     try {
       final corePalette = await DynamicColorPlugin.getCorePalette();

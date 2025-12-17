@@ -446,9 +446,11 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
                     }
                   }
                   if (mounted) {
-                    PageUtils.pmShare(
+                    final forward = controller.stats.value?.forward;
+                    final summary = controller.summary;
+                    PageUtils.share(
                       this.context,
-                      content: {
+                      pmContent: {
                         "id": controller.commentId,
                         "title": "- 哔哩哔哩专栏",
                         "headline": summary.title!, // throw
@@ -457,6 +459,20 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
                         "author": summary.author!.name,
                         "author_id": summary.author!.mid.toString(),
                       },
+                      link: controller.url,
+                      repostPanel:RepostPanel(
+                        item: controller.opusData,
+                        dynIdStr: controller.articleData?.dynIdStr,
+                        pic: summary.cover,
+                        title: summary.title,
+                        uname: summary.author?.name,
+                        callback: () {
+                          if (forward != null) {
+                            int count = forward.count ?? 0;
+                            forward.count = count + 1;
+                          }
+                        },
+                      ),
                     );
                   }
                 } catch (e) {

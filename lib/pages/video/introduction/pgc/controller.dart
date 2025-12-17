@@ -139,138 +139,63 @@ class PgcIntroController extends CommonIntroController {
   // 分享视频
   @override
   void actionShareVideo(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (_) {
-        String videoUrl = '${HttpString.baseUrl}/bangumi/play/ep$epId';
-        return AlertDialog(
-          clipBehavior: Clip.hardEdge,
-          contentPadding: const EdgeInsets.symmetric(vertical: 12),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                dense: true,
-                title: const Text(
-                  '复制链接',
-                  style: TextStyle(fontSize: 14),
-                ),
-                onTap: () {
-                  Get.back();
-                  Utils.copyText(videoUrl);
-                },
-              ),
-              ListTile(
-                dense: true,
-                title: const Text(
-                  '其它app打开',
-                  style: TextStyle(fontSize: 14),
-                ),
-                onTap: () {
-                  Get.back();
-                  PageUtils.launchURL(videoUrl);
-                },
-              ),
-              if (PlatformUtils.isMobile)
-                ListTile(
-                  dense: true,
-                  title: const Text(
-                    '分享视频',
-                    style: TextStyle(fontSize: 14),
-                  ),
-                  onTap: () {
-                    Get.back();
-                    Utils.shareText(videoUrl);
-                  },
-                ),
-              ListTile(
-                dense: true,
-                title: const Text(
-                  '分享至动态',
-                  style: TextStyle(fontSize: 14),
-                ),
-                onTap: () {
-                  Get.back();
-                  EpisodeItem? item = pgcItem.episodes?.firstWhereOrNull(
-                    (item) => item.epId == epId,
-                  );
-                  showModalBottomSheet(
-                    context: context,
-                    isScrollControlled: true,
-                    useSafeArea: true,
-                    builder: (context) => RepostPanel(
-                      rid: epId,
-                      /**
-                         *  1：番剧 // 4097
-                            2：电影 // 4098
-                            3：纪录片 // 4101
-                            4：国创 // 4100
-                            5：电视剧 // 4099
-                            6：漫画
-                            7：综艺 // 4099
-                         */
-                      dynType: switch (pgcItem.type) {
-                        1 => 4097,
-                        2 => 4098,
-                        3 => 4101,
-                        4 => 4100,
-                        5 || 7 => 4099,
-                        _ => -1,
-                      },
-                      pic: pgcItem.cover,
-                      title:
-                          '${pgcItem.title}${item != null ? '\n${item.showTitle}' : ''}',
-                      uname: '',
-                    ),
-                  );
-                },
-              ),
-              ListTile(
-                dense: true,
-                title: const Text(
-                  '分享至消息',
-                  style: TextStyle(fontSize: 14),
-                ),
-                onTap: () {
-                  Get.back();
-                  try {
-                    EpisodeItem item = pgcItem.episodes!.firstWhere(
-                      (item) => item.epId == epId,
-                    );
-                    final title =
-                        item.shareCopy ??
-                        '${pgcItem.title} ${item.showTitle ?? item.longTitle}';
-                    PageUtils.pmShare(
-                      context,
-                      content: {
-                        "id": epId!.toString(),
-                        "title": title,
-                        "url": item.shareUrl,
-                        "headline": title,
-                        "source": 16,
-                        "thumb": item.cover,
-                        "source_desc": switch (pgcItem.type) {
-                          1 => '番剧',
-                          2 => '电影',
-                          3 => '纪录片',
-                          4 => '国创',
-                          5 => '电视剧',
-                          6 => '漫画',
-                          7 => '综艺',
-                          _ => null,
-                        },
-                      },
-                    );
-                  } catch (e) {
-                    SmartDialog.showToast(e.toString());
-                  }
-                },
-              ),
-            ],
-          ),
-        );
-      },
-    );
+    final videoUrl = '${HttpString.baseUrl}/bangumi/play/ep$epId';
+    try {
+      EpisodeItem item = pgcItem.episodes!.firstWhere(
+        (item) => item.epId == epId,
+      );
+      final title =
+          item.shareCopy ??
+          '${pgcItem.title} ${item.showTitle ?? item.longTitle}';
+      PageUtils.share(
+        context,
+        pmContent: {
+          "id": epId!.toString(),
+          "title": title,
+          "url": item.shareUrl,
+          "headline": title,
+          "source": 16,
+          "thumb": item.cover,
+          "source_desc": switch (pgcItem.type) {
+            1 => '番剧',
+            2 => '电影',
+            3 => '纪录片',
+            4 => '国创',
+            5 => '电视剧',
+            6 => '漫画',
+            7 => '综艺',
+            _ => null,
+          },
+        },
+        link: videoUrl,
+        repostPanel: RepostPanel(
+          rid: epId,
+          /**
+             *  1：番剧 // 4097
+                2：电影 // 4098
+                3：纪录片 // 4101
+                4：国创 // 4100
+                5：电视剧 // 4099
+                6：漫画
+                7：综艺 // 4099
+             */
+          dynType: switch (pgcItem.type) {
+            1 => 4097,
+            2 => 4098,
+            3 => 4101,
+            4 => 4100,
+            5 || 7 => 4099,
+            _ => -1,
+          },
+          pic: pgcItem.cover,
+          title:
+              '${pgcItem.title}\n$title',
+          uname: '',
+        ),
+      );
+    } catch (e) {
+      SmartDialog.showToast(e.toString());
+    }
   }
 
   // 修改分P或番剧分集

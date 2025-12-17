@@ -585,22 +585,6 @@ class _LiveRoomPageState extends State<LiveRoomPage>
                   ],
                 ),
               ),
-              if (PlatformUtils.isMobile)
-                PopupMenuItem(
-                  onTap: () => Utils.shareText(liveUrl),
-                  child: Row(
-                    spacing: 10,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.share,
-                        size: 19,
-                        color: color,
-                      ),
-                      const Text('分享直播间'),
-                    ],
-                  ),
-                ),
               PopupMenuItem(
                 onTap: () => PageUtils.inAppWebview(liveUrl, off: true),
                 child: Row(
@@ -622,9 +606,9 @@ class _LiveRoomPageState extends State<LiveRoomPage>
                     try {
                       RoomInfoH5Data roomInfo =
                           _liveRoomController.roomInfoH5.value!;
-                      PageUtils.pmShare(
+                      PageUtils.share(
                         this.context,
-                        content: {
+                        pmContent: {
                           "cover": roomInfo.roomInfo!.cover!,
                           "sourceID": _liveRoomController.roomId.toString(),
                           "title": roomInfo.roomInfo!.title!,
@@ -634,6 +618,7 @@ class _LiveRoomPageState extends State<LiveRoomPage>
                           "desc": roomInfo.roomInfo!.title!,
                           "author": roomInfo.anchorInfo!.baseInfo!.uname,
                         },
+                        link: liveUrl
                       );
                     } catch (e) {
                       SmartDialog.showToast(e.toString());
@@ -644,11 +629,11 @@ class _LiveRoomPageState extends State<LiveRoomPage>
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(
-                        Icons.forward_to_inbox,
+                        Icons.share,
                         size: 19,
                         color: color,
                       ),
-                      const Text('分享至消息'),
+                      const Text('分享直播间'),
                     ],
                   ),
                 ),

@@ -475,12 +475,45 @@ class AudioController extends GetxController
   }
 
   void actionShareVideo(BuildContext context) {
+    final audioUrl = isVideo
+        ? '${HttpString.baseUrl}/video/${IdUtils.av2bv(oid.toInt())}'
+        : '${HttpString.baseUrl}/audio/au$oid';
+
+    if (isVideo) {
+      try {
+        if (audioItem.value case final audioItem?) {
+          PageUtils.share(
+            context,
+            pmContent: {
+              "id": oid.toString(),
+              "title": audioItem.arc.title,
+              "headline": audioItem.arc.title,
+              "source": 5,
+              "thumb": audioItem.arc.cover,
+              "author": audioItem.owner.name,
+              "author_id": audioItem.owner.mid.toString(),
+            },
+            link: audioUrl,
+            shareText:
+                '${audioItem.arc.title}\nUP主: ${audioItem.owner.name}\n- $audioUrl',
+            repostPanel: RepostPanel(
+              rid: oid.toInt(),
+              dynType: isVideo ? 8 : 256,
+              pic: audioItem.arc.cover,
+              title: audioItem.arc.title,
+              uname: audioItem.owner.name,
+            )
+          );
+        }
+      } catch (e) {
+        SmartDialog.showToast(e.toString());
+      }
+      return;
+    }
+
     showDialog(
       context: context,
       builder: (_) {
-        final audioUrl = isVideo
-            ? '${HttpString.baseUrl}/video/${IdUtils.av2bv(oid.toInt())}'
-            : '${HttpString.baseUrl}/audio/au$oid';
         return AlertDialog(
           clipBehavior: Clip.hardEdge,
           contentPadding: const EdgeInsets.symmetric(vertical: 12),
@@ -551,35 +584,6 @@ class AudioController extends GetxController
                   }
                 },
               ),
-              if (isVideo)
-                ListTile(
-                  dense: true,
-                  title: const Text(
-                    '分享至消息',
-                    style: TextStyle(fontSize: 14),
-                  ),
-                  onTap: () {
-                    Get.back();
-                    if (audioItem.value case final audioItem?) {
-                      try {
-                        PageUtils.pmShare(
-                          context,
-                          content: {
-                            "id": oid.toString(),
-                            "title": audioItem.arc.title,
-                            "headline": audioItem.arc.title,
-                            "source": 5,
-                            "thumb": audioItem.arc.cover,
-                            "author": audioItem.owner.name,
-                            "author_id": audioItem.owner.mid.toString(),
-                          },
-                        );
-                      } catch (e) {
-                        SmartDialog.showToast(e.toString());
-                      }
-                    }
-                  },
-                ),
             ],
           ),
         );

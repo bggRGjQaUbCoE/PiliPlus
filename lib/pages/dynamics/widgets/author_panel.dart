@@ -17,6 +17,7 @@ import 'package:PiliPlus/utils/extension/string_ext.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
+import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/request_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -297,29 +298,15 @@ class AuthorPanel extends StatelessWidget {
                 leading: const Icon(Icons.save_alt, size: 19),
                 title: Text('保存动态', style: theme.textTheme.titleSmall!),
               ),
-              ListTile(
-                title: Text(
-                  '分享动态',
-                  style: theme.textTheme.titleSmall,
-                ),
-                leading: const Icon(Icons.share_outlined, size: 19),
-                onTap: () {
-                  Get.back();
-                  Utils.shareText(
-                    '${HttpString.dynamicShareBaseUrl}/${item.idStr}',
-                  );
-                },
-                minLeadingWidth: 0,
-              ),
               if ((item.basic!.commentType == 17 ||
                       item.basic!.commentType == 11) &&
                   item.modules.moduleDynamic?.major?.blocked == null)
                 ListTile(
                   title: Text(
-                    '分享至消息',
+                    '分享动态',
                     style: theme.textTheme.titleSmall,
                   ),
-                  leading: const Icon(Icons.forward_to_inbox, size: 19),
+                  leading: const Icon(Icons.share, size: 19),
                   onTap: () {
                     Get.back();
                     try {
@@ -333,9 +320,9 @@ class AuthorPanel extends StatelessWidget {
                       String? thumb = isDyn
                           ? moduleAuthor.face
                           : moduleDynamic.major?.opus?.pics?.firstOrNull?.url;
-                      PageUtils.pmShare(
+                      PageUtils.share(
                         context,
-                        content: {
+                        pmContent: {
                           "id": id,
                           "title": title,
                           "headline": "",
@@ -344,10 +331,26 @@ class AuthorPanel extends StatelessWidget {
                           "author": moduleAuthor.name,
                           "author_id": moduleAuthor.mid.toString(),
                         },
+                        link: '${HttpString.dynamicShareBaseUrl}/${item.idStr}',
                       );
                     } catch (e) {
                       SmartDialog.showToast(e.toString());
                     }
+                  },
+                  minLeadingWidth: 0,
+                )
+              else if (PlatformUtils.isMobile)
+                ListTile(
+                  title: Text(
+                    '分享动态',
+                    style: theme.textTheme.titleSmall,
+                  ),
+                  leading: const Icon(Icons.share_outlined, size: 19),
+                  onTap: () {
+                    Get.back();
+                    Utils.shareText(
+                      '${HttpString.dynamicShareBaseUrl}/${item.idStr}',
+                    );
                   },
                   minLeadingWidth: 0,
                 ),

@@ -56,9 +56,12 @@ abstract class PageUtils {
     );
   }
 
-  static Future<void> pmShare(
+  static Future<void> share(
     BuildContext context, {
-    required Map content,
+    required Map pmContent,
+    Widget? repostPanel,
+    required String link,
+    String? shareText,
   }) async {
     // if (kDebugMode) debugPrint(content.toString());
 
@@ -88,16 +91,17 @@ abstract class PageUtils {
       showModalBottomSheet(
         context: context,
         builder: (context) => SharePanel(
-          content: content,
+          content: pmContent,
           userList: userList,
+          link: link,
+          repostPanel:repostPanel,
+          shareText:shareText,
         ),
         useSafeArea: true,
-        enableDrag: false,
         isScrollControlled: true,
       );
     }
   }
-
   static void scheduleExit(
     BuildContext context,
     isFullScreen, [

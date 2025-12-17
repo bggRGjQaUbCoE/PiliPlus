@@ -18,6 +18,7 @@ abstract final class DmGrpc {
         type: type,
       ),
       DmSegMobileReply.fromBuffer,
+      isolate: true,
     );
   }
 }

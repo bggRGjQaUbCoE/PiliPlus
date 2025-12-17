@@ -17,10 +17,11 @@ import 'package:PiliPlus/utils/login_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:archive/archive.dart';
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart' show kDebugMode;
+import 'package:flutter/foundation.dart' show kDebugMode, compute;
 import 'package:protobuf/protobuf.dart' show GeneratedMessage;
 
 abstract final class GrpcReq {
+  static const _isolateSize = 256 * 1024;
   static String? _accessKey = Accounts.main.accessKey;
   static const _build = 2001100;
   static const _versionName = '2.0.1';
@@ -136,11 +137,22 @@ abstract final class GrpcReq {
     }
   }
 
+  static LoadingState<T> _parse<T>((Uint8List, T Function(Uint8List)) args) {
+    try {
+      final data = decompressProtobuf(args.$1);
+      final grpcResponse = args.$2(data);
+      return Success(grpcResponse);
+    } catch (e) {
+      return Error(e.toString());
+    }
+  }
+
   static Future<LoadingState<T>> request<T>(
     String url,
     GeneratedMessage request,
-    T Function(Uint8List) grpcParser,
-  ) async {
+    T Function(Uint8List) grpcParser, {
+    bool isolate = false,
+  }) async {
     final response = await Request().post<Uint8List>(
       HttpString.appBaseUrl + url,
       data: compressProtobuf(request.writeToBuffer()),
@@ -152,13 +164,13 @@ abstract final class GrpcReq {
     }
 
     if (response.headers.value('Grpc-Status') == '0') {
-      try {
-        Uint8List data = response.data;
-        data = decompressProtobuf(data);
-        final grpcResponse = grpcParser(data);
-        return Success(grpcResponse);
-      } catch (e) {
-        return Error(e.toString());
+      final data = response.data;
+      if (data is Uint8List) {
+        return isolate && data.length > _isolateSize
+            ? compute(_parse, (data, grpcParser))
+            : _parse((data, grpcParser));
+      } else {
+        return Error('grpc: ${data.runtimeType} is not Uint8List');
       }
     } else {
       try {

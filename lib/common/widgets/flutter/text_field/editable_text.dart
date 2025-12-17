@@ -3403,13 +3403,13 @@ class EditableTextState extends State<EditableText>
           _finalizeEditing(action, shouldUnfocus: true);
         } else if (HardwareKeyboard.instance.isControlPressed) {
           final ctr = widget.controller;
-          final length = ctr.text.length;
+          final offset = ctr.selection.end;
           // delete newline
           ctr.syncRichText(
             TextEditingDeltaDeletion(
               composing: TextRange.empty,
-              selection: const TextSelection(baseOffset: 0, extentOffset: 0),
-              deletedRange: TextRange(start: length - 1, end: length),
+              selection: TextSelection.collapsed(offset: offset - 1),
+              deletedRange: TextRange(start: offset - 1, end: offset),
               oldText: ctr.text,
             ),
           );

@@ -287,7 +287,7 @@ class MineController extends CommonDataController<FavFolderData, FavFolderData>
   @override
   Future<void> onRefresh() {
     if (!accountService.isLogin.value) {
-      return Future.value();
+      return Future.syncValue(null);
     }
     queryUserInfo();
     return super.onRefresh();

@@ -3,6 +3,7 @@ import 'package:PiliPlus/pages/pgc_review/child/controller.dart';
 import 'package:PiliPlus/pages/pgc_review/child/view.dart';
 import 'package:PiliPlus/pages/pgc_review/post/view.dart';
 import 'package:PiliPlus/utils/extension/scroll_controller_ext.dart';
+import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -147,7 +148,7 @@ class _PgcReviewPageState extends State<PgcReviewPage>
                           '/webview',
                           parameters: {
                             'url':
-                                'https://member.bilibili.com/article-text/mobile?theme=${Get.isDarkMode ? 1 : 0}&media_id=${widget.mediaId}',
+                                'https://member.bilibili.com/article-text/mobile?theme=${theme.brightness.isDark ? 1 : 0}&media_id=${widget.mediaId}',
                           },
                         ),
                     ),

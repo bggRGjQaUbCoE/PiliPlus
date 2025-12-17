@@ -633,7 +633,7 @@ abstract final class LiveHttp {
     }
   }
 
-  static Future<Map<String, dynamic>> liveDmReport({
+  static Future<LoadingState<Null>> liveDmReport({
     required int roomId,
     required Object mid,
     required String msg,
@@ -666,6 +666,10 @@ abstract final class LiveHttp {
       data: data,
       options: Options(contentType: Headers.formUrlEncodedContentType),
     );
-    return res.data as Map<String, dynamic>;
+    if (res.data['code'] == 0) {
+      return const Success(null);
+    } else {
+      return Error(res.data['message']);
+    }
   }
 }

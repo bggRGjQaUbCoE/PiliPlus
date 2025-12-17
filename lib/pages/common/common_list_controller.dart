@@ -1,6 +1,5 @@
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/pages/common/common_controller.dart';
-import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:get/get.dart';
 
 abstract class CommonListController<R, T> extends CommonController<R, T> {
@@ -27,8 +26,8 @@ abstract class CommonListController<R, T> extends CommonController<R, T> {
     LoadingState<R> response = await customGetData();
     if (response is Success<R>) {
       if (!customHandleResponse(isRefresh, response)) {
-        List<T>? dataList = getDataList(response.response);
-        if (dataList.isNullOrEmpty) {
+        final dataList = getDataList(response.response);
+        if (dataList == null || dataList.isEmpty) {
           isEnd = true;
           if (isRefresh) {
             loadingState.value = Success(dataList);
@@ -38,7 +37,7 @@ abstract class CommonListController<R, T> extends CommonController<R, T> {
           isLoading = false;
           return;
         }
-        handleListResponse(dataList!);
+        handleListResponse(dataList);
         if (isRefresh) {
           checkIsEnd(dataList.length);
           loadingState.value = Success(dataList);

@@ -33,7 +33,7 @@ class DownloadPage extends StatefulWidget {
 class _DownloadPageState extends State<DownloadPage> {
   final _downloadService = Get.find<DownloadService>();
   final _controller = Get.put(DownloadPageController());
-  final _progress = ValueNotifier(null);
+  final _progress = ChangeNotifier();
 
   @override
   void dispose() {
@@ -197,7 +197,7 @@ class _DownloadPageState extends State<DownloadPage> {
                                     entry.cid.toString(),
                                   );
                                 },
-                                checked: item.checked ?? false,
+                                checked: item.checked,
                                 onSelect: (_) => _controller.onSelect(item),
                                 controller: _controller,
                               );
@@ -354,7 +354,7 @@ class _DownloadPageState extends State<DownloadPage> {
                       top: 6.0,
                     ),
                   Positioned.fill(
-                    child: selectMask(theme, pageInfo.checked ?? false),
+                    child: selectMask(theme, pageInfo.checked),
                   ),
                 ],
               ),

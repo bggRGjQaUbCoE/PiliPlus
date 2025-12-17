@@ -1,3 +1,4 @@
+import 'package:PiliPlus/models/common/super_chat_type.dart';
 import 'package:PiliPlus/pages/live_room/controller.dart';
 import 'package:PiliPlus/pages/live_room/superchat/superchat_card.dart';
 import 'package:PiliPlus/pages/search/controller.dart';
@@ -21,6 +22,9 @@ class _SuperChatPanelState extends DebounceStreamState<SuperChatPanel, bool>
   @override
   Duration get duration => const Duration(milliseconds: 300);
 
+  late final persistentSC =
+      widget.controller.superChatType == SuperChatType.persist;
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -42,6 +46,7 @@ class _SuperChatPanelState extends DebounceStreamState<SuperChatPanel, bool>
             key: ValueKey(item.id),
             item: item,
             onRemove: () => ctr?.add(true),
+            persistentSC: persistentSC,
           );
         },
         separatorBuilder: (_, _) => const SizedBox(height: 12),

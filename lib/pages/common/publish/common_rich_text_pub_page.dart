@@ -273,14 +273,14 @@ abstract class CommonRichTextPubPageState<T extends CommonRichTextPubPage>
     final res = await DynMentionPanel.onDynMention(
       context,
       offset: _mentionOffset,
-      callback: (offset) => _mentionOffset = offset,
+      onCachePos: (offset) => _mentionOffset = offset,
     );
     if (res != null) {
       if (res is MentionItem) {
         _onInsertUser(res, fromClick);
       } else if (res is Set<MentionItem>) {
         for (var e in res) {
-          e.checked = null;
+          e.checked = false;
           _onInsertUser(e, fromClick);
         }
         res.clear();

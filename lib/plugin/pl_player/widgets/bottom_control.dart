@@ -59,9 +59,6 @@ class BottomControl extends StatelessWidget {
       final child = Obx(() {
         final int value = controller.sliderPositionSeconds.value;
         final int max = controller.durationSeconds.value.inSeconds;
-        if (value > max || max <= 0) {
-          return const SizedBox.shrink();
-        }
         return ProgressBar(
           progress: Duration(seconds: value),
           buffered: Duration(seconds: controller.bufferedSeconds.value),

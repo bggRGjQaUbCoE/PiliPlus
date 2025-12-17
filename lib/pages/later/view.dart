@@ -116,7 +116,7 @@ class _LaterPageState extends State<LaterPage>
                     // tabAlignment: TabAlignment.start,
                     controller: _tabController,
                     tabs: LaterViewType.values.map((item) {
-                      final count = _baseCtr.counts[item];
+                      final count = _baseCtr.counts[item.index];
                       return Tab(
                         text: '${item.title}${count != -1 ? '($count)' : ''}',
                       );
@@ -216,7 +216,7 @@ class _LaterPageState extends State<LaterPage>
                   'mediaId': mid,
                   'mid': mid,
                   'title': '稍后再看',
-                  'count': _baseCtr.counts[LaterViewType.all],
+                  'count': _baseCtr.counts[LaterViewType.all.index],
                 },
               );
             },

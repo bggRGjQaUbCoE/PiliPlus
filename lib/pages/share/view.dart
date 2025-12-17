@@ -19,6 +19,7 @@ class UserModel {
     required this.mid,
     required this.name,
     required this.avatar,
+    this.selected = false,
   });
 
   final int mid;
@@ -188,14 +189,13 @@ class _SharePanelState extends State<SharePanel> {
                 icon: Icons.person_add_alt,
                 onPressed: () async {
                   _focusNode.unfocus();
-                  UserModel? userModel = await Navigator.of(context).push(
+                  final UserModel? userModel = await Navigator.of(context).push(
                     GetPageRoute(page: () => const ContactPage()),
                   );
                   if (userModel != null) {
                     _userList
                       ..remove(userModel)
                       ..insert(0, userModel);
-                    _userList[0].selected = true;
                     _scrollController.jumpToTop();
                     setState(() {});
                   }
@@ -323,5 +323,32 @@ class _SharePanelState extends State<SharePanel> {
         ],
       ),
     );
+  }
+
+  Future<void> _onSend() async {
+    final list = _userList.where((user) => user.selected);
+    if (list.isEmpty) {
+      SmartDialog.showToast('请选择分享的用户');
+      return;
+    }
+    SmartDialog.showLoading();
+    final res = await Future.wait(
+      list.map(
+        (user) => RequestUtils.pmShare(
+          receiverId: user.mid,
+          content: widget.content,
+          message: _controller.text,
+        ),
+      ),
+    );
+    SmartDialog.dismiss();
+    if (res.every((e) => e)) {
+      Get.back();
+      SmartDialog.showToast('分享成功');
+    } else if (res.every((e) => !e)) {
+      SmartDialog.showToast('分享失败');
+    } else {
+      SmartDialog.showToast('部分分享失败');
+    }
   }
 }

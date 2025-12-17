@@ -18,12 +18,12 @@ import 'package:get/get.dart' hide ContextExtensionss;
 
 class VotePanel extends StatefulWidget {
   final VoteInfo voteInfo;
-  final FutureOr<LoadingState<VoteInfo>> Function(Set<int>, bool) callback;
+  final FutureOr<LoadingState<VoteInfo>> Function(Set<int>, bool) onVote;
 
   const VotePanel({
     super.key,
     required this.voteInfo,
-    required this.callback,
+    required this.onVote,
   });
 
   @override
@@ -112,7 +112,7 @@ class _VotePanelState extends State<VotePanel> {
             () => OutlinedButton(
               onPressed: groupValue.isNotEmpty
                   ? () async {
-                      final res = await widget.callback(
+                      final res = await widget.onVote(
                         groupValue.toSet(),
                         anonymous,
                       );
@@ -597,7 +597,7 @@ Future showVoteDialog(
             padding: const EdgeInsets.all(24),
             child: VotePanel(
               voteInfo: voteInfo.data,
-              callback: (votes, anonymous) => DynamicsHttp.doVote(
+              onVote: (votes, anonymous) => DynamicsHttp.doVote(
                 voteId: voteId,
                 votes: votes.toList(),
                 anonymous: anonymous,

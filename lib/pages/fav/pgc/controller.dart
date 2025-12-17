@@ -81,7 +81,7 @@ class FavPgcController
           ctr.loadingState
             ..value.data!.insertAll(
               0,
-              removeList.map((item) => item..checked = null),
+              removeList.map((item) => item..checked = false),
             )
             ..refresh();
           ctr.allSelected.value = false;

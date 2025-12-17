@@ -6,7 +6,6 @@ import 'package:PiliPlus/http/api.dart';
 import 'package:PiliPlus/http/init.dart';
 import 'package:PiliPlus/http/ua_type.dart';
 import 'package:PiliPlus/utils/accounts/account.dart';
-import 'package:PiliPlus/utils/extension/string_ext.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
@@ -131,7 +130,7 @@ abstract class Update {
           for (Map<String, dynamic> i in data['assets']) {
             final String name = i['name'];
             if (name.contains(plat) &&
-                (ext.isNullOrEmpty ? true : name.endsWith(ext!))) {
+                (ext == null || ext.isEmpty ? true : name.endsWith(ext))) {
               PageUtils.launchURL(i['browser_download_url']);
               return;
             }

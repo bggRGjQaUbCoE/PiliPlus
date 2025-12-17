@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:PiliPlus/common/widgets/custom_icon.dart';
+import 'package:PiliPlus/models/common/super_chat_type.dart';
 import 'package:PiliPlus/models/common/video/subtitle_pref_type.dart';
 import 'package:PiliPlus/pages/main/controller.dart';
 import 'package:PiliPlus/pages/setting/models/model.dart';
@@ -157,11 +158,26 @@ List<SettingsModel> get playSettings => [
     setKey: SettingBoxKey.keyboardControl,
     defaultVal: true,
   ),
-  const SwitchModel(
-    title: '显示 SuperChat (醒目留言)',
-    leading: Icon(Icons.live_tv),
-    setKey: SettingBoxKey.showSuperChat,
-    defaultVal: true,
+  NormalModel(
+    title: 'SuperChat (醒目留言) 显示类型',
+    leading: const Icon(Icons.live_tv),
+    getSubtitle: () => '当前:「${Pref.superChatType.title}」',
+    onTap: (context, setState) async {
+      final result = await showDialog<SuperChatType>(
+        context: context,
+        builder: (context) {
+          return SelectDialog<SuperChatType>(
+            title: 'SuperChat (醒目留言) 显示类型',
+            value: Pref.superChatType,
+            values: SuperChatType.values.map((e) => (e, e.title)).toList(),
+          );
+        },
+      );
+      if (result != null) {
+        await GStorage.setting.put(SettingBoxKey.superChatType, result.index);
+        setState();
+      }
+    },
   ),
   const SwitchModel(
     title: '竖屏扩大展示',

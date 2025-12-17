@@ -11,7 +11,6 @@ import 'package:PiliPlus/pages/common/multi_select/base.dart';
 import 'package:PiliPlus/pages/common/multi_select/multi_select_controller.dart';
 import 'package:PiliPlus/pages/later/base_controller.dart';
 import 'package:PiliPlus/utils/accounts.dart';
-import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:PiliPlus/utils/extension/scroll_controller_ext.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:flutter/material.dart';
@@ -120,13 +119,13 @@ class LaterController extends MultiSelectController<LaterData, LaterItemModel>
 
   @override
   List<LaterItemModel>? getDataList(response) {
-    baseCtr.counts[laterViewType] = response.count ?? 0;
+    baseCtr.counts[laterViewType.index] = response.count ?? 0;
     return response.list;
   }
 
   @override
   void checkIsEnd(int length) {
-    if (length >= baseCtr.counts[laterViewType]!) {
+    if (length >= baseCtr.counts[laterViewType.index]) {
       isEnd = true;
     }
   }
@@ -144,7 +143,7 @@ class LaterController extends MultiSelectController<LaterData, LaterItemModel>
       content: content,
       onConfirm: () async {
         var res = await UserHttp.toViewClear(cleanType);
-        if (res['status']) {
+        if (res.isSuccess) {
           onReload();
           final restTypes = List<LaterViewType>.from(LaterViewType.values)
             ..remove(laterViewType);
@@ -153,19 +152,20 @@ class LaterController extends MultiSelectController<LaterData, LaterItemModel>
               Get.find<LaterController>(tag: item.type.toString()).onReload();
             } catch (_) {}
           }
+          SmartDialog.showToast('操作成功');
+        } else {
+          res.toast();
         }
-        SmartDialog.showToast(res['msg']);
       },
     );
   }
 
   // 稍后再看播放全部
   void toViewPlayAll() {
-    if (loadingState.value.isSuccess) {
-      List<LaterItemModel>? list = loadingState.value.data;
-      if (list.isNullOrEmpty) return;
+    if (loadingState.value case Success(:final response)) {
+      if (response == null || response.isEmpty) return;
 
-      for (LaterItemModel item in list!) {
+      for (LaterItemModel item in response) {
         if (item.cid == null || item.pgcLabel?.isNotEmpty == true) {
           continue;
         } else {
@@ -176,7 +176,7 @@ class LaterController extends MultiSelectController<LaterData, LaterItemModel>
             title: item.title,
             extraArguments: {
               'sourceType': SourceType.watchLater,
-              'count': baseCtr.counts[LaterViewType.all],
+              'count': baseCtr.counts[LaterViewType.all.index],
               'favTitle': '稍后再看',
               'mediaId': mid,
               'desc': asc.value,
@@ -190,8 +190,7 @@ class LaterController extends MultiSelectController<LaterData, LaterItemModel>
 
   @override
   ValueChanged<int>? get updateCount =>
-      (count) => baseCtr.counts[laterViewType] =
-          baseCtr.counts[laterViewType]! - count;
+      (count) => baseCtr.counts[laterViewType.index] -= count;
 
   @override
   Future<void> onReload() {

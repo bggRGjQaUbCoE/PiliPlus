@@ -8,12 +8,12 @@ class SlideColorPicker extends StatefulWidget {
   const SlideColorPicker({
     super.key,
     required this.color,
-    required this.callback,
+    required this.onChanged,
     this.showResetBtn = false,
   });
 
   final Color color;
-  final Function(Color? color) callback;
+  final Function(Color? color) onChanged;
   final bool showResetBtn;
 
   @override
@@ -150,7 +150,7 @@ class _SlideColorPickerState extends State<SlideColorPicker> {
                 TextButton(
                   onPressed: () {
                     Get.back();
-                    widget.callback(null);
+                    widget.onChanged(null);
                   },
                   child: const Text('重置'),
                 ),
@@ -168,7 +168,7 @@ class _SlideColorPickerState extends State<SlideColorPicker> {
               TextButton(
                 onPressed: () {
                   Get.back();
-                  widget.callback(DmUtils.decimalToColor(_rgb));
+                  widget.onChanged(DmUtils.decimalToColor(_rgb));
                 },
                 child: const Text('确定'),
               ),

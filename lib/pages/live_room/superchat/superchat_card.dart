@@ -13,10 +13,12 @@ class SuperChatCard extends StatefulWidget {
     super.key,
     required this.item,
     required this.onRemove,
+    this.persistentSC = false,
   });
 
   final SuperChatItem item;
   final VoidCallback onRemove;
+  final bool persistentSC;
 
   @override
   State<SuperChatCard> createState() => _SuperChatCardState();
@@ -29,17 +31,19 @@ class _SuperChatCardState extends State<SuperChatCard> {
   @override
   void initState() {
     super.initState();
-    if (widget.item.expired) {
-      _remove();
-      return;
-    }
-    final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-    final offset = widget.item.endTime - now;
-    if (offset > 0) {
-      _remains = offset.obs;
-      _timer = Timer.periodic(const Duration(seconds: 1), _callback);
-    } else {
-      _remove();
+    if (!widget.persistentSC) {
+      if (widget.item.expired) {
+        _remove();
+        return;
+      }
+      final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+      final offset = widget.item.endTime - now;
+      if (offset > 0) {
+        _remains = offset.obs;
+        _timer = Timer.periodic(const Duration(seconds: 1), _callback);
+      } else {
+        _remove();
+      }
     }
   }
 

@@ -2,7 +2,6 @@ import 'package:PiliPlus/models/common/badge_type.dart';
 import 'package:PiliPlus/utils/extension/string_ext.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 
 class PBadge extends StatelessWidget {
   final String? text;
@@ -60,7 +59,7 @@ class PBadge extends StatelessWidget {
         bgColor = Colors.black45;
         color = Colors.white;
       case PBadgeType.error:
-        if (Get.isDarkMode) {
+        if (theme.isDark) {
           bgColor = theme.errorContainer;
           color = theme.onErrorContainer;
         } else {

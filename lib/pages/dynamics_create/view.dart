@@ -665,34 +665,32 @@ class _CreateDynPanelState extends CommonRichTextPubPageState<CreateDynPanel> {
     selected: false,
   );
 
-  Widget _buildEditWidget(ThemeData theme) => Form(
-    autovalidateMode: AutovalidateMode.onUserInteraction,
-    child: Listener(
-      onPointerUp: (event) {
-        if (readOnly.value) {
-          updatePanelType(PanelType.keyboard);
-        }
-      },
-      child: Obx(
-        () => RichTextField(
-          key: key,
-          controller: editController,
-          minLines: 4,
-          maxLines: null,
-          focusNode: focusNode,
-          readOnly: readOnly.value,
-          onChanged: onChanged,
-          decoration: InputDecoration(
-            hintText: '说点什么吧',
-            hintStyle: TextStyle(color: theme.colorScheme.outline),
-            border: const OutlineInputBorder(
-              borderSide: BorderSide.none,
-              gapPadding: 0,
-            ),
-            contentPadding: EdgeInsets.zero,
+  Widget _buildEditWidget(ThemeData theme) => Listener(
+    onPointerUp: (event) {
+      if (readOnly.value) {
+        updatePanelType(PanelType.keyboard);
+      }
+    },
+    child: Obx(
+      () => RichTextField(
+        key: key,
+        controller: editController,
+        minLines: 4,
+        maxLines: null,
+        focusNode: focusNode,
+        readOnly: readOnly.value,
+        onChanged: onChanged,
+        onSubmitted: onSubmitted,
+        decoration: InputDecoration(
+          hintText: '说点什么吧',
+          hintStyle: TextStyle(color: theme.colorScheme.outline),
+          border: const OutlineInputBorder(
+            borderSide: BorderSide.none,
+            gapPadding: 0,
           ),
-          // inputFormatters: [LengthLimitingTextInputFormatter(1000)],
+          contentPadding: EdgeInsets.zero,
         ),
+        // inputFormatters: [LengthLimitingTextInputFormatter(1000)],
       ),
     ),
   );
@@ -754,7 +752,7 @@ class _CreateDynPanelState extends CommonRichTextPubPageState<CreateDynPanel> {
     TopicItem? res = await SelectTopicPanel.onSelectTopic(
       context,
       offset: _topicOffset,
-      callback: (offset) => _topicOffset = offset,
+      onCachePos: (offset) => _topicOffset = offset,
     );
     if (res != null) {
       topic.value = Pair(first: res.id, second: res.name);

@@ -278,7 +278,7 @@ class _DynamicDetailPageState extends CommonDynPageState<DynamicDetailPage> {
                                 useSafeArea: true,
                                 builder: (context) => RepostPanel(
                                   item: controller.dynItem,
-                                  callback: () {
+                                  onSuccess: () {
                                     if (forward != null) {
                                       int count = forward.count ?? 0;
                                       forward.count = count + 1;

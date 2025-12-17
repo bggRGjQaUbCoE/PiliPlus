@@ -87,8 +87,7 @@ abstract final class PiliScheme {
       case 'bilibili':
         switch (host) {
           case 'root':
-            Navigator.popUntil(
-              Get.context!,
+            Get.key.currentState!.popUntil(
               (Route<dynamic> route) => route.isFirst,
             );
             return true;

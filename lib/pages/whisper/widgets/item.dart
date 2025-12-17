@@ -98,7 +98,7 @@ class WhisperSessionItem extends StatelessWidget {
       safeArea: true,
       tileColor: item.isPinned
           ? theme.colorScheme.onInverseSurface.withValues(
-              alpha: Get.isDarkMode ? 0.4 : 0.8,
+              alpha: theme.brightness.isDark ? 0.4 : 0.8,
             )
           : null,
       onLongPress: onLongPress,

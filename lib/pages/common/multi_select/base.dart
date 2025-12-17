@@ -3,10 +3,10 @@ import 'package:PiliPlus/pages/common/common_list_controller.dart';
 import 'package:get/get.dart';
 
 mixin MultiSelectData {
-  bool? checked;
+  bool checked = false;
 }
 
-mixin MultiSelectBase<T extends MultiSelectData> {
+abstract interface class MultiSelectBase<T extends MultiSelectData> {
   RxBool get enableMultiSelect;
 
   int get checkedCount;
@@ -28,7 +28,7 @@ mixin BaseMultiSelectMixin<T extends MultiSelectData>
   RxObjectMixin get state;
   List<T> get list;
 
-  Iterable<T> get allChecked => list.where((v) => v.checked == true);
+  Iterable<T> get allChecked => list.where((v) => v.checked);
 
   @override
   void handleSelect({bool checked = false, bool disableSelect = true}) {
@@ -44,8 +44,8 @@ mixin BaseMultiSelectMixin<T extends MultiSelectData>
 
   @override
   void onSelect(T item) {
-    item.checked = !(item.checked ?? false);
-    if (item.checked!) {
+    item.checked = !item.checked;
+    if (item.checked) {
       rxCount.value++;
     } else {
       rxCount.value--;
@@ -70,13 +70,13 @@ mixin CommonMultiSelectMixin<T extends MultiSelectData>
   int get checkedCount => rxCount.value;
 
   Iterable<T> get allChecked =>
-      loadingState.value.data!.where((v) => v.checked == true);
+      loadingState.value.data!.where((v) => v.checked);
 
   @override
   void onSelect(T item) {
     List<T> list = loadingState.value.data!;
-    item.checked = !(item.checked ?? false);
-    if (item.checked!) {
+    item.checked = !item.checked;
+    if (item.checked) {
       rxCount.value++;
     } else {
       rxCount.value--;

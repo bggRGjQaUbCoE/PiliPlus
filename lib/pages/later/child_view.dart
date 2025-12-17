@@ -84,7 +84,7 @@ class _LaterViewChildPageState extends State<LaterViewChildPage>
                                 'sourceType': SourceType.watchLater,
                                 'count': _laterController
                                     .baseCtr
-                                    .counts[LaterViewType.all],
+                                    .counts[LaterViewType.all.index],
                                 'favTitle': '稍后再看',
                                 'mediaId': _laterController.mid,
                                 'desc': _laterController.asc.value,

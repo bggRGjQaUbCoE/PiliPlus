@@ -306,7 +306,7 @@ class _HorizontalMemberPageState extends State<HorizontalMemberPage> {
                     context: context,
                     mid: widget.mid,
                     isFollow: memberInfoModel.isFollowed ?? false,
-                    callback: (attribute) {
+                    afterMod: (attribute) {
                       _controller
                         ..userState.value.data.isFollowed = attribute != 0
                         ..userState.refresh();

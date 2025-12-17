@@ -40,9 +40,9 @@ class DynMentionItem extends StatelessWidget {
         ),
         trailing: Checkbox(
           tristate: false,
-          value: item.checked ?? false,
+          value: item.checked,
           onChanged: (value) {
-            item.checked = value;
+            item.checked = value!;
             (context as Element).markNeedsBuild();
             onCheck(value);
           },

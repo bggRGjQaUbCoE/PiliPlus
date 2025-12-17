@@ -38,7 +38,7 @@ class ActionPanel extends StatelessWidget {
               useSafeArea: true,
               builder: (_) => RepostPanel(
                 item: item,
-                callback: () {
+                onSuccess: () {
                   int count = forward.count ?? 0;
                   forward.count = count + 1;
                   if (context.mounted) {

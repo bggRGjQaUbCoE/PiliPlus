@@ -20,6 +20,8 @@ class MultiSelectAppBarWidget extends StatelessWidget
   @override
   Widget build(BuildContext context) {
     if (visible ?? ctr.enableMultiSelect.value) {
+      final style = TextButton.styleFrom(visualDensity: VisualDensity.compact);
+      final colorScheme = ColorScheme.of(context);
       return AppBar(
         bottom: child.bottom,
         leading: IconButton(
@@ -30,17 +32,13 @@ class MultiSelectAppBarWidget extends StatelessWidget
         title: Obx(() => Text('已选: ${ctr.checkedCount}')),
         actions: [
           TextButton(
-            style: TextButton.styleFrom(
-              visualDensity: VisualDensity.compact,
-            ),
+            style: style,
             onPressed: () => ctr.handleSelect(checked: true),
             child: const Text('全选'),
           ),
           ...?actions,
           TextButton(
-            style: TextButton.styleFrom(
-              visualDensity: VisualDensity.compact,
-            ),
+            style: style,
             onPressed: () {
               if (ctr.checkedCount == 0) {
                 return;
@@ -49,7 +47,7 @@ class MultiSelectAppBarWidget extends StatelessWidget
             },
             child: Text(
               '移除',
-              style: TextStyle(color: Get.theme.colorScheme.error),
+              style: TextStyle(color: colorScheme.error),
             ),
           ),
           const SizedBox(width: 6),

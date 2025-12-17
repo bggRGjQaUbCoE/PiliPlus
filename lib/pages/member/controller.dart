@@ -203,7 +203,7 @@ class MemberController extends CommonDataController<SpaceData, SpaceData?>
         context: context,
         mid: mid,
         isFollow: isFollow,
-        callback: (attribute) => relation.value = attribute,
+        afterMod: (attribute) => relation.value = attribute,
       );
     }
   }

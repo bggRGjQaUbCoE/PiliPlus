@@ -8,12 +8,12 @@ class FavFolderItem extends StatelessWidget {
   const FavFolderItem({
     super.key,
     required this.item,
-    required this.callback,
+    required this.onPop,
     required this.heroTag,
   });
 
   final FavFolderInfo item;
-  final VoidCallback callback;
+  final VoidCallback onPop;
   final String heroTag;
 
   @override
@@ -30,7 +30,7 @@ class FavFolderItem extends StatelessWidget {
               'mediaId': item.id.toString(),
               'heroTag': heroTag,
             },
-          )?.whenComplete(callback);
+          )?.whenComplete(onPop);
         },
         behavior: HitTestBehavior.opaque,
         child: Column(

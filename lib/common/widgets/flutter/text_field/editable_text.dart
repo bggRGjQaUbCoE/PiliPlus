@@ -3401,6 +3401,8 @@ class EditableTextState extends State<EditableText>
         // editing.
         if (!_isMultiline) {
           _finalizeEditing(action, shouldUnfocus: true);
+        } else if (HardwareKeyboard.instance.isControlPressed) {
+          _finalizeEditing(action, shouldUnfocus: true);
         }
       case TextInputAction.done:
       case TextInputAction.go:

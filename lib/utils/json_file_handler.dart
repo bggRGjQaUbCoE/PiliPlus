@@ -15,7 +15,10 @@ class JsonFileHandler extends ReportHandler {
   final bool printLogs;
   final bool handleWhenRejected;
 
-  static late Future<RandomAccessFile> _future;
+  static Future<RandomAccessFile> _future = LoggerUtils.getLogsPath()
+      .then((file) => file.open(mode: FileMode.writeOnlyAppend))
+      .then((raf) => raf.writeFrom(const []))
+      .then(_flush);
 
   JsonFileHandler._({
     this.enableDeviceParameters = true,
@@ -35,12 +38,7 @@ class JsonFileHandler extends ReportHandler {
     bool handleWhenRejected = false,
   }) async {
     try {
-      final raf = await (await LoggerUtils.getLogsPath()).open(
-        mode: FileMode.writeOnlyAppend,
-      );
-      await raf.writeFrom(const []);
-      await raf.flush();
-      _future = Future.syncValue(raf);
+      await _future;
       return JsonFileHandler._(
         enableDeviceParameters: enableDeviceParameters,
         enableApplicationParameters: enableApplicationParameters,
@@ -55,10 +53,12 @@ class JsonFileHandler extends ReportHandler {
     }
   }
 
+  static Future<RandomAccessFile> _flush(RandomAccessFile raf) => raf.flush();
+
   static Future<RandomAccessFile> add(
     Future<RandomAccessFile> Function(RandomAccessFile) onValue,
   ) {
-    return _future = _future.then(onValue);
+    return _future = _future.then(onValue).then(_flush);
   }
 
   @override

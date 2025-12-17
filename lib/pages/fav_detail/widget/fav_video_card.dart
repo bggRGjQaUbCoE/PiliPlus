@@ -135,7 +135,7 @@ class FavVideoCardH extends StatelessWidget {
                           Positioned.fill(
                             child: selectMask(
                               theme,
-                              item.checked == true,
+                              item.checked,
                             ),
                           ),
                       ],

@@ -397,7 +397,7 @@ List<SettingsModel> get styleSettings => [
         context: context,
         title: '图片质量',
         initValue: Pref.picQuality,
-        callback: (picQuality) async {
+        onChanged: (picQuality) async {
           GlobalData().imgQuality = picQuality;
           await GStorage.setting.put(SettingBoxKey.defaultPicQa, picQuality);
           setState();
@@ -422,7 +422,7 @@ List<SettingsModel> get styleSettings => [
         context: context,
         title: '查看大图质量',
         initValue: Pref.previewQ,
-        callback: (picQuality) async {
+        onChanged: (picQuality) async {
           await GStorage.setting.put(SettingBoxKey.previewQuality, picQuality);
           setState();
         },
@@ -450,7 +450,7 @@ List<SettingsModel> get styleSettings => [
           title: const Text('Color Picker'),
           content: SlideColorPicker(
             color: reduceLuxColor ?? Colors.white,
-            callback: (Color? color) {
+            onChanged: (Color? color) {
               if (color != null && color != reduceLuxColor) {
                 if (color == Colors.white) {
                   NetworkImgLayer.reduceLuxColor = null;
@@ -669,7 +669,7 @@ List<SettingsModel> get styleSettings => [
   ),
   NormalModel(
     onTap: (context, setState) async {
-      final double? result = await Get.toNamed('/fontSizeSetting');
+      final result = await Get.toNamed('/fontSizeSetting');
       if (result != null) {
         Get.put(ColorSelectController()).currentTextScale.value = result;
       }
@@ -729,7 +729,7 @@ void _showQualityDialog({
   required BuildContext context,
   required String title,
   required int initValue,
-  required ValueChanged<int> callback,
+  required ValueChanged<int> onChanged,
 }) {
   showDialog<double>(
     context: context,
@@ -745,7 +745,7 @@ void _showQualityDialog({
   ).then((result) {
     if (result != null) {
       SmartDialog.showToast('设置成功');
-      callback(result.toInt());
+      onChanged(result.toInt());
     }
   });
 }

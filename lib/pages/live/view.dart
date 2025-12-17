@@ -6,9 +6,7 @@ import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/pair.dart';
-import 'package:PiliPlus/common/widgets/self_sized_horizontal_list.dart';
 import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/models_new/live/live_feed_index/card_data_list_item.dart';
 import 'package:PiliPlus/models_new/live/live_feed_index/card_list.dart';
 import 'package:PiliPlus/pages/common/common_page.dart';
@@ -39,6 +37,14 @@ class _LivePageState extends CommonPageState<LivePage, LiveController>
 
   @override
   bool get wantKeepAlive => true;
+
+  late TextScaler textScaler;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    textScaler = MediaQuery.textScalerOf(context);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -77,85 +83,85 @@ class _LivePageState extends CommonPageState<LivePage, LiveController>
   Widget _buildTop(ThemeData theme, Pair<LiveCardList?, LiveCardList?> data) {
     return SliverMainAxisGroup(
       slivers: [
-        if (data.first != null)
-          SliverToBoxAdapter(child: _buildFollowList(theme, data.first!)),
-        if (data.second?.cardData?.areaEntranceV3?.list?.isNotEmpty == true)
-          SliverToBoxAdapter(
-            child: Row(
-              children: [
-                Expanded(
-                  child: SelfSizedHorizontalList(
-                    gapSize: 12,
-                    padding: const EdgeInsets.only(
-                      top: 10,
-                      bottom: 10,
-                      right: 12,
+        if (data.first != null) ..._buildFollowList(theme, data.first!),
+        if (data.second?.cardData?.areaEntranceV3?.list case final list?)
+          if (list.isNotEmpty)
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const .only(bottom: 8.0),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: SizedBox(
+                        // 10+14*textScaler
+                        height: 10.0 + textScaler.scale(14),
+                        child: ListView.separated(
+                          scrollDirection: .horizontal,
+                          padding: const .only(right: 8),
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          separatorBuilder: (_, _) => const SizedBox(width: 12),
+                          itemBuilder: (context, index) {
+                            late final item = list[index - 1];
+                            return Obx(
+                              () {
+                                final isCurr =
+                                    index == controller.areaIndex.value;
+                                return SearchText(
+                                  fontSize: 14,
+                                  height: 1,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 5,
+                                  ),
+                                  text: index == 0 ? '推荐' : '${item.title}',
+                                  bgColor: isCurr
+                                      ? theme.colorScheme.secondaryContainer
+                                      : Colors.transparent,
+                                  textColor: isCurr
+                                      ? theme.colorScheme.onSecondaryContainer
+                                      : null,
+                                  onTap: (value) {
+                                    controller.onSelectArea(
+                                      index,
+                                      index == 0 ? null : item,
+                                    );
+                                  },
+                                );
+                              },
+                            );
+                          },
+                          itemCount: list.length + 1,
+                        ),
+                      ),
                     ),
-                    childBuilder: (index) {
-                      late final item = data
-                          .second!
-                          .cardData!
-                          .areaEntranceV3!
-                          .list![index - 1];
-                      return Obx(
-                        () {
-                          final isCurr = index == controller.areaIndex.value;
-                          return SearchText(
-                            fontSize: 14,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 3,
-                            ),
-                            text: index == 0 ? '推荐' : '${item.title}',
-                            bgColor: isCurr
-                                ? theme.colorScheme.secondaryContainer
-                                : Colors.transparent,
-                            textColor: isCurr
-                                ? theme.colorScheme.onSecondaryContainer
-                                : null,
-                            onTap: (value) {
-                              controller.onSelectArea(
-                                index,
-                                index == 0 ? null : item,
-                              );
-                            },
-                          );
+                    iconButton(
+                      size: 26,
+                      iconSize: 16,
+                      context: context,
+                      tooltip: '游戏赛事',
+                      icon: const Icon(Icons.gamepad),
+                      onPressed: () => Get.toNamed(
+                        '/webview',
+                        parameters: {
+                          'uaType': 'mob',
+                          'url':
+                              'https://www.bilibili.com/h5/match/data/home?navhide=1&${Utils.themeUrl(theme.brightness.isDark)}',
                         },
-                      );
-                    },
-                    itemCount:
-                        data.second!.cardData!.areaEntranceV3!.list!.length + 1,
-                  ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    iconButton(
+                      size: 26,
+                      iconSize: 16,
+                      context: context,
+                      tooltip: '全部标签',
+                      icon: const Icon(Icons.widgets),
+                      onPressed: () => Get.to(const LiveAreaPage()),
+                    ),
+                  ],
                 ),
-                iconButton(
-                  size: 26,
-                  iconSize: 16,
-                  context: context,
-                  tooltip: '游戏赛事',
-                  icon: const Icon(Icons.gamepad),
-                  onPressed: () => Get.toNamed(
-                    '/webview',
-                    parameters: {
-                      'uaType': 'mob',
-                      'url':
-                          'https://www.bilibili.com/h5/match/data/home?navhide=1&${Utils.themeUrl(theme.brightness.isDark)}',
-                    },
-                  ),
-                ),
-                const SizedBox(width: 8),
-                iconButton(
-                  size: 26,
-                  iconSize: 16,
-                  context: context,
-                  tooltip: '全部标签',
-                  icon: const Icon(Icons.widgets),
-                  onPressed: () => Get.to(const LiveAreaPage()),
-                ),
-              ],
+              ),
             ),
-          )
-        else
-          const SliverToBoxAdapter(child: SizedBox(height: 10)),
       ],
     );
   }
@@ -165,7 +171,7 @@ class _LivePageState extends CommonPageState<LivePage, LiveController>
     crossAxisSpacing: StyleString.cardSpace,
     maxCrossAxisExtent: Grid.smallCardWidth,
     childAspectRatio: StyleString.aspectRatio,
-    mainAxisExtent: MediaQuery.textScalerOf(context).scale(90),
+    mainAxisExtent: textScaler.scale(90),
   );
 
   Widget _buildBody(ThemeData theme, LoadingState<List?> loadingState) {
@@ -180,38 +186,45 @@ class _LivePageState extends CommonPageState<LivePage, LiveController>
           if (controller.newTags case final newTags?)
             if (newTags.isNotEmpty)
               SliverToBoxAdapter(
-                child: SelfSizedHorizontalList(
-                  gapSize: 12,
-                  padding: const EdgeInsets.only(bottom: 8),
-                  childBuilder: (index) {
-                    late final item = newTags[index];
-                    return Obx(
-                      () {
-                        final isCurr = index == controller.tagIndex.value;
-                        return SearchText(
-                          fontSize: 13,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 3,
-                          ),
-                          text: '${item.name}',
-                          bgColor: isCurr
-                              ? theme.colorScheme.secondaryContainer
-                              : Colors.transparent,
-                          textColor: isCurr
-                              ? theme.colorScheme.onSecondaryContainer
-                              : null,
-                          onTap: (value) {
-                            controller.onSelectTag(
-                              index,
-                              item.sortType,
-                            );
-                          },
-                        );
-                      },
-                    );
-                  },
-                  itemCount: newTags.length,
+                child: SizedBox(
+                  // 8+10+13*textScaler
+                  height: 18.0 + textScaler.scale(13),
+                  child: ListView.separated(
+                    scrollDirection: .horizontal,
+                    padding: const .only(bottom: 8),
+                    separatorBuilder: (_, _) => const SizedBox(width: 12),
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    itemBuilder: (context, index) {
+                      late final item = newTags[index];
+                      return Obx(
+                        () {
+                          final isCurr = index == controller.tagIndex.value;
+                          return SearchText(
+                            height: 1,
+                            fontSize: 13,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 5,
+                            ),
+                            text: '${item.name}',
+                            bgColor: isCurr
+                                ? theme.colorScheme.secondaryContainer
+                                : Colors.transparent,
+                            textColor: isCurr
+                                ? theme.colorScheme.onSecondaryContainer
+                                : null,
+                            onTap: (value) {
+                              controller.onSelectTag(
+                                index,
+                                item.sortType,
+                              );
+                            },
+                          );
+                        },
+                      );
+                    },
+                    itemCount: newTags.length,
+                  ),
                 ),
               ),
           response != null && response.isNotEmpty
@@ -241,102 +254,115 @@ class _LivePageState extends CommonPageState<LivePage, LiveController>
     };
   }
 
-  Widget _buildFollowList(ThemeData theme, LiveCardList item) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Text.rich(
-              TextSpan(
-                children: [
-                  const TextSpan(text: '我的关注  '),
-                  TextSpan(
-                    text:
-                        '${item.cardData?.myIdolV1?.extraInfo?.totalCount ?? 0}',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: theme.colorScheme.primary,
+  List<Widget> _buildFollowList(ThemeData theme, LiveCardList item) {
+    return [
+      SliverToBoxAdapter(
+        child: Padding(
+          padding: const .only(bottom: 8.0),
+          child: Row(
+            children: [
+              Text.rich(
+                TextSpan(
+                  children: [
+                    const TextSpan(text: '我的关注  '),
+                    TextSpan(
+                      text:
+                          '${item.cardData?.myIdolV1?.extraInfo?.totalCount ?? 0}',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: theme.colorScheme.primary,
+                      ),
                     ),
-                  ),
-                  TextSpan(
-                    text: '人正在直播',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: theme.colorScheme.outline,
+                    TextSpan(
+                      text: '人正在直播',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: theme.colorScheme.outline,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            const Spacer(),
-            moreTextButton(
-              onTap: () => Get.to(const LiveFollowPage()),
-              color: theme.colorScheme.outline,
-            ),
-          ],
+              const Spacer(),
+              moreTextButton(
+                onTap: () => Get.to(const LiveFollowPage()),
+                color: theme.colorScheme.outline,
+              ),
+            ],
+          ),
         ),
-        if (item.cardData?.myIdolV1?.list?.isNotEmpty == true)
-          _buildFollowBody(theme, item.cardData!.myIdolV1!.list!),
-      ],
-    );
+      ),
+      if (item.cardData?.myIdolV1?.list case final list?)
+        if (list.isNotEmpty) _buildFollowBody(theme, list),
+    ];
   }
 
   Widget _buildFollowBody(ThemeData theme, List<CardLiveItem> followList) {
-    return SelfSizedHorizontalList(
-      gapSize: 5,
-      padding: EdgeInsets.zero,
-      childBuilder: (index) {
-        final item = followList[index];
-        return SizedBox(
-          width: 65,
-          child: GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: () => PageUtils.toLiveRoom(item.roomid),
-            onLongPress: () {
-              Feedback.forLongPress(context);
-              Get.toNamed('/member?mid=${item.uid}');
-            },
-            onSecondaryTap: PlatformUtils.isMobile
-                ? null
-                : () => Get.toNamed('/member?mid=${item.uid}'),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const SizedBox(height: 8),
-                Container(
-                  margin: const EdgeInsets.all(2),
-                  padding: const EdgeInsets.all(2),
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      width: 1.5,
-                      color: theme.colorScheme.primary,
-                      strokeAlign: BorderSide.strokeAlignOutside,
+    return SliverToBoxAdapter(
+      child: SizedBox(
+        // 3+4+45+6+10+12*textScaler
+        height: 68.0 + textScaler.scale(12),
+        child: CustomScrollView(
+          scrollDirection: Axis.horizontal,
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: [
+            SliverFixedExtentList.builder(
+              itemExtent: 70,
+              itemCount: followList.length,
+              itemBuilder: (context, index) {
+                final item = followList[index];
+                return Padding(
+                  padding: const .only(right: 5),
+                  child: SizedBox(
+                    width: 65,
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: () => PageUtils.toLiveRoom(item.roomid),
+                      onLongPress: () {
+                        Feedback.forLongPress(context);
+                        Get.toNamed('/member?mid=${item.uid}');
+                      },
+                      onSecondaryTap: PlatformUtils.isMobile
+                          ? null
+                          : () => Get.toNamed('/member?mid=${item.uid}'),
+                      child: Column(
+                        mainAxisSize: .min,
+                        children: [
+                          Container(
+                            padding: const .all(2),
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                width: 1.5,
+                                color: theme.colorScheme.primary,
+                                strokeAlign: BorderSide.strokeAlignInside,
+                              ),
+                              shape: .circle,
+                            ),
+                            child: NetworkImgLayer(
+                              type: .avatar,
+                              width: 45,
+                              height: 45,
+                              src: item.face,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            item.uname!,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(fontSize: 12, height: 1),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
                     ),
-                    shape: BoxShape.circle,
                   ),
-                  child: NetworkImgLayer(
-                    type: ImageType.avatar,
-                    width: 45,
-                    height: 45,
-                    src: item.face,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  item.uname!,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 12),
-                  textAlign: TextAlign.center,
-                ),
-              ],
+                );
+              },
             ),
-          ),
-        );
-      },
-      itemCount: followList.length,
+          ],
+        ),
+      ),
     );
   }
 }

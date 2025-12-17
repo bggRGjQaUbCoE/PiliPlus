@@ -178,12 +178,10 @@ class MemberVideoCtr
       return;
     }
 
-    if (loadingState.value.isSuccess) {
-      List<SpaceArchiveItem>? list = loadingState.value.data;
+    if (loadingState.value case Success(:final response)) {
+      if (response == null || response.isEmpty) return;
 
-      if (list.isNullOrEmpty) return;
-
-      for (SpaceArchiveItem element in list!) {
+      for (SpaceArchiveItem element in response) {
         if (element.cid == null) {
           continue;
         } else {

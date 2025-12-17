@@ -94,32 +94,30 @@ class _ReplyPageState extends CommonRichTextPubPageState<LiveSendDmPanel> {
           left: 15,
           bottom: 10,
         ),
-        child: Form(
-          autovalidateMode: AutovalidateMode.onUserInteraction,
-          child: Listener(
-            onPointerUp: (event) {
-              if (readOnly.value) {
-                updatePanelType(PanelType.keyboard);
-              }
-            },
-            child: Obx(
-              () => RichTextField(
-                key: key,
-                controller: editController,
-                minLines: 1,
-                maxLines: 2,
-                autofocus: false,
-                readOnly: readOnly.value,
-                onChanged: onChanged,
-                focusNode: focusNode,
-                decoration: const InputDecoration(
-                  hintText: "输入弹幕内容",
-                  border: InputBorder.none,
-                  hintStyle: TextStyle(fontSize: 14),
-                ),
-                style: theme.textTheme.bodyLarge,
-                // inputFormatters: [LengthLimitingTextInputFormatter(20)],
+        child: Listener(
+          onPointerUp: (event) {
+            if (readOnly.value) {
+              updatePanelType(PanelType.keyboard);
+            }
+          },
+          child: Obx(
+            () => RichTextField(
+              key: key,
+              controller: editController,
+              minLines: 1,
+              maxLines: 2,
+              autofocus: false,
+              readOnly: readOnly.value,
+              onChanged: onChanged,
+              onSubmitted: onSubmitted,
+              focusNode: focusNode,
+              decoration: const InputDecoration(
+                hintText: "输入弹幕内容",
+                border: InputBorder.none,
+                hintStyle: TextStyle(fontSize: 14),
               ),
+              style: theme.textTheme.bodyLarge,
+              // inputFormatters: [LengthLimitingTextInputFormatter(20)],
             ),
           ),
         ),
@@ -182,6 +180,6 @@ class _ReplyPageState extends CommonRichTextPubPageState<LiveSendDmPanel> {
 
   @override
   Future<void> onMention([bool fromClick = false]) {
-    return Future.value();
+    return Future.syncValue(null);
   }
 }

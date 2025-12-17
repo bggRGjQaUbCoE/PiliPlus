@@ -164,7 +164,7 @@ class HistoryItem extends StatelessWidget {
                                 ),
                               ),
                             Positioned.fill(
-                              child: selectMask(theme, item.checked == true),
+                              child: selectMask(theme, item.checked),
                             ),
                           ],
                         );

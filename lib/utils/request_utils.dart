@@ -99,7 +99,7 @@ abstract final class RequestUtils {
     required BuildContext context,
     required dynamic mid,
     required bool isFollow,
-    required ValueChanged<int>? callback,
+    required ValueChanged<int>? afterMod,
     Map? followStatus,
   }) async {
     if (mid == null) {
@@ -114,7 +114,7 @@ abstract final class RequestUtils {
       );
       if (res.isSuccess) {
         SmartDialog.showToast('关注成功');
-        callback?.call(2);
+        afterMod?.call(2);
       } else {
         res.toast();
       }
@@ -151,7 +151,7 @@ abstract final class RequestUtils {
                       );
                       if (res.isSuccess) {
                         SmartDialog.showToast('$text成功');
-                        callback?.call(isSpecialFollowed ? 2 : -10);
+                        afterMod?.call(isSpecialFollowed ? 2 : -10);
                       } else {
                         res.toast();
                       }
@@ -196,7 +196,7 @@ abstract final class RequestUtils {
                       );
                       followStatus!['tag'] = result?.toList();
                       if (result != null) {
-                        callback?.call(result.contains(-10) ? -10 : 2);
+                        afterMod?.call(result.contains(-10) ? -10 : 2);
                       }
                     },
                     title: const Text(
@@ -215,7 +215,7 @@ abstract final class RequestUtils {
                       );
                       if (res.isSuccess) {
                         SmartDialog.showToast('取消关注成功');
-                        callback?.call(0);
+                        afterMod?.call(0);
                       } else {
                         res.toast();
                       }

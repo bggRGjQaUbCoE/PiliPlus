@@ -8,7 +8,7 @@ import 'package:hive/hive.dart';
 sealed class Account {
   Map<String, dynamic>? toJson() => null;
 
-  Future<void> onChange() => Future.value();
+  Future<void> onChange() => Future.syncValue(null);
 
   Set<AccountType> get type => const {};
 
@@ -74,7 +74,7 @@ class LoginAccount extends Account {
   @override
   Future<void> delete() {
     assert(_hasDelete = true);
-    return _box.delete(_midStr);
+    return Future.wait([cookieJar.deleteAll(), _box.delete(_midStr)]);
   }
 
   @override
@@ -144,10 +144,8 @@ class AnonymousAccount extends Account {
   bool activated = false;
 
   @override
-  Future<void> delete() async {
-    await cookieJar.deleteAll();
-    cookieJar.setBuvid3();
-  }
+  Future<void> delete() =>
+      cookieJar.deleteAll().whenComplete(cookieJar.setBuvid3);
 
   static final _instance = AnonymousAccount._();
 
@@ -166,16 +164,15 @@ class AnonymousAccount extends Account {
 
 extension BiliCookie on Cookie {
   void setBiliDomain([String domain = '.bilibili.com']) {
-    this
-      ..domain = domain
-      ..httpOnly = false
-      ..path = '/';
+    this.domain = domain;
+    httpOnly = false;
+    path = '/';
   }
 }
 
 extension BiliCookieJar on DefaultCookieJar {
   Map<String, String> toJson() {
-    final cookies = domainCookies['bilibili.com']?['/'] ?? {};
+    final cookies = domainCookies['bilibili.com']?['/'] ?? const {};
     return {for (var i in cookies.values) i.cookie.name: i.cookie.value};
   }
 

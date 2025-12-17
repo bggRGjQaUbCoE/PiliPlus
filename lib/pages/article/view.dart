@@ -613,7 +613,7 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
                                     pic: summary.cover,
                                     title: summary.title,
                                     uname: summary.author?.name,
-                                    callback: () {
+                                    onSuccess: () {
                                       if (forward != null) {
                                         int count = forward.count ?? 0;
                                         forward.count = count + 1;

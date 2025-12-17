@@ -34,7 +34,7 @@ class DownloadService extends GetxService {
 
   final _lock = Lock();
 
-  final flagNotifier = <VoidCallback>{};
+  final flagNotifier = SetNotifier();
   final waitDownloadQueue = RxList<BiliDownloadEntryInfo>();
   final downloadList = <BiliDownloadEntryInfo>[];
 
@@ -592,7 +592,9 @@ class DownloadService extends GetxService {
   }
 }
 
-extension SetExt on Set<void Function()> {
+typedef SetNotifier = Set<VoidCallback>;
+
+extension SetNotifierExt on SetNotifier {
   void refresh() {
     for (var i in this) {
       i();

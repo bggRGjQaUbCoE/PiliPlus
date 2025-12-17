@@ -1,4 +1,7 @@
+import 'dart:io' show Platform;
+
 import 'package:PiliPlus/common/widgets/color_palette.dart';
+import 'package:PiliPlus/main.dart' show MyApp;
 import 'package:PiliPlus/models/common/nav_bar_config.dart';
 import 'package:PiliPlus/models/common/theme/theme_color_type.dart';
 import 'package:PiliPlus/models/common/theme/theme_type.dart';
@@ -163,19 +166,23 @@ class _ColorSelectPageState extends State<ColorSelectPage> {
               ),
             ),
           ),
-          Obx(
-            () => CheckboxListTile(
-              title: const Text('动态取色'),
-              controlAffinity: ListTileControlAffinity.leading,
-              value: ctr.dynamicColor.value,
-              onChanged: (val) {
-                ctr
-                  ..dynamicColor.value = val!
-                  ..setting.put(SettingBoxKey.dynamicColor, val);
-                Get.forceAppUpdate();
-              },
+          if (!Platform.isIOS)
+            Obx(
+              () => CheckboxListTile(
+                title: const Text('动态取色'),
+                controlAffinity: ListTileControlAffinity.leading,
+                value: ctr.dynamicColor.value,
+                onChanged: (val) async {
+                  ctr
+                    ..dynamicColor.value = val!
+                    ..setting.put(SettingBoxKey.dynamicColor, val);
+                  if (val) {
+                    await MyApp.initPlatformState();
+                  }
+                  Get.forceAppUpdate();
+                },
+              ),
             ),
-          ),
           Padding(
             padding: padding,
             child: AnimatedSize(

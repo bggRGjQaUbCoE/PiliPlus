@@ -47,14 +47,15 @@ class AuthorPanel extends StatelessWidget {
   });
 
   Widget _buildAvatar(ModuleAuthorModel moduleAuthor) {
-    String? pendant = moduleAuthor.pendant?.image;
+    final pendant = moduleAuthor.pendant?.image;
+    final hasPendant = pendant != null && pendant.isNotEmpty;
     Widget avatar = PendantAvatar(
       avatar: moduleAuthor.face,
-      size: pendant.isNullOrEmpty ? 40 : 34,
+      size: hasPendant ? 34 : 40,
       officialType: null, // 已被注释
       garbPendantImage: pendant,
     );
-    if (!pendant.isNullOrEmpty) {
+    if (hasPendant) {
       avatar = Padding(padding: const EdgeInsets.all(3), child: avatar);
     }
     return avatar;
@@ -480,7 +481,7 @@ class AuthorPanel extends StatelessWidget {
                           );
                         }
                         return UserHttp.dynamicReport(
-                          mid: moduleAuthor.mid,
+                          mid: moduleAuthor.mid!,
                           dynId: item.idStr,
                           reasonType: reasonType,
                           reasonDesc: reasonType == 0 ? reasonDesc : null,

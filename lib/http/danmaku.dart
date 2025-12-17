@@ -17,7 +17,7 @@ abstract final class DanmakuHttp {
     required String bvid,
     int? progress, // 弹幕出现在视频内的时间（单位为毫秒，默认为0）
     int? color, // 弹幕颜色(默认白色，16777215）
-    int? fontsize, // 弹幕字号（默认25）
+    int? fontSize, // 弹幕字号（默认25）
     int? pool, // 弹幕池选择（0：普通池 1：字幕池 2：特殊池（代码/BAS弹幕）默认普通池，0）
     //int? rnd,// 当前时间戳*1000000（若无此项，则发送弹幕冷却时间限制为90s；若有此项，则发送弹幕冷却时间限制为5s）
     bool colorful = false, //60001：专属渐变彩色（需要会员）
@@ -38,7 +38,7 @@ abstract final class DanmakuHttp {
       'bvid': bvid,
       'progress': ?progress,
       'color': ?colorful ? 16777215 : color,
-      'fontsize': ?fontsize,
+      'fontsize': ?fontSize,
       'pool': ?pool,
       'rnd': DateTime.now().microsecondsSinceEpoch,
       'colorful': ?colorful ? 60001 : null,
@@ -89,7 +89,7 @@ abstract final class DanmakuHttp {
     }
   }
 
-  static Future<Map<String, dynamic>> danmakuReport({
+  static Future<LoadingState<Null>> danmakuReport({
     required int reason,
     required int cid,
     required int id,
@@ -115,7 +115,12 @@ abstract final class DanmakuHttp {
       data: data,
       options: Options(contentType: Headers.formUrlEncodedContentType),
     );
-    return res.data as Map<String, dynamic>;
+
+    if (res.data['code'] == 0) {
+      return const Success(null);
+    } else {
+      return Error(res.data['message']);
+    }
 
     /// res.data['data']['block']
     /// {

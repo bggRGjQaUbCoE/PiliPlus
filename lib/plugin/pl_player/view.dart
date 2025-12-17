@@ -1116,7 +1116,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
           final double volume = clampDouble(
             plPlayerController.volume.value - delta.dy / level,
             0.0,
-            1.0,
+            PlPlayerController.maxVolume,
           );
           plPlayerController.setVolume(volume);
         },
@@ -1340,7 +1340,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
           final double volume = clampDouble(
             plPlayerController.volume.value - event.localPanDelta.dy / level,
             0.0,
-            1.0,
+            PlPlayerController.maxVolume,
           );
           plPlayerController.setVolume(volume);
         },
@@ -1358,7 +1358,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       final volume = clampDouble(
         plPlayerController.volume.value + offset,
         0.0,
-        1.0,
+        PlPlayerController.maxVolume,
       );
       plPlayerController.setVolume(volume);
     }
@@ -1770,9 +1770,6 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                               .inSeconds;
                           final int buffer =
                               plPlayerController.bufferedSeconds.value;
-                          if (value > max || max <= 0) {
-                            return const SizedBox.shrink();
-                          }
                           return ProgressBar(
                             progress: Duration(seconds: value),
                             buffered: Duration(seconds: buffer),

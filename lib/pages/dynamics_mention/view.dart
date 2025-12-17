@@ -21,16 +21,16 @@ class DynMentionPanel extends StatefulWidget {
   const DynMentionPanel({
     super.key,
     this.scrollController,
-    this.callback,
+    this.onCachePos,
   });
 
   final ScrollController? scrollController;
-  final ValueChanged<double>? callback;
+  final ValueChanged<double>? onCachePos;
 
   static Future onDynMention(
     BuildContext context, {
     double offset = 0,
-    ValueChanged<double>? callback,
+    ValueChanged<double>? onCachePos,
   }) {
     return showModalBottomSheet(
       context: Get.context!,
@@ -49,7 +49,7 @@ class DynMentionPanel extends StatefulWidget {
         snapSizes: const [0.65],
         builder: (context, scrollController) => DynMentionPanel(
           scrollController: scrollController,
-          callback: callback,
+          onCachePos: onCachePos,
         ),
       ),
     );
@@ -179,7 +179,7 @@ class _DynMentionPanelState
                       _controller.focusNode.unfocus();
                     }
                   } else if (notification is ScrollEndNotification) {
-                    widget.callback?.call(notification.metrics.pixels);
+                    widget.onCachePos?.call(notification.metrics.pixels);
                   }
                   return false;
                 },

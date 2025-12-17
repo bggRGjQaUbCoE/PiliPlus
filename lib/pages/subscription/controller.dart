@@ -22,7 +22,7 @@ class SubController extends CommonListController<SubData, SubItemModel> {
   Future<void> queryData([bool isRefresh = true]) {
     if (!account.isLogin) {
       loadingState.value = const Error('账号未登录');
-      return Future.value();
+      return Future.syncValue(null);
     }
     return super.queryData(isRefresh);
   }

@@ -88,7 +88,7 @@ class FavPgcItem extends StatelessWidget {
                                 Positioned.fill(
                                   child: selectMask(
                                     theme,
-                                    item.checked == true,
+                                    item.checked,
                                     borderRadius: const BorderRadius.all(
                                       Radius.circular(4),
                                     ),

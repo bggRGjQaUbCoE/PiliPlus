@@ -5,6 +5,7 @@ import 'package:PiliPlus/common/widgets/flutter/text_field/controller.dart';
 import 'package:PiliPlus/http/constants.dart';
 import 'package:PiliPlus/http/live.dart';
 import 'package:PiliPlus/http/video.dart';
+import 'package:PiliPlus/models/common/super_chat_type.dart';
 import 'package:PiliPlus/models/common/video/live_quality.dart';
 import 'package:PiliPlus/models_new/live/live_danmaku/danmaku_msg.dart';
 import 'package:PiliPlus/models_new/live/live_danmaku/live_emote.dart';
@@ -107,12 +108,14 @@ class LiveRoomController extends GetxController {
 
   late final bool isLogin;
   late final int mid;
+  late final int mainMid = Accounts.main.mid;
 
   String? videoUrl;
   bool? isPlaying;
   late bool isFullScreen = false;
 
-  final showSuperChat = Pref.showSuperChat;
+  final superChatType = Pref.superChatType;
+  late final showSuperChat = superChatType != SuperChatType.disable;
 
   final headerKey = GlobalKey<TimeBatteryMixin>();
 
@@ -432,7 +435,8 @@ class LiveRoomController extends GetxController {
                     ? Colors.white
                     : DmUtils.decimalToColor(extra['color']),
                 type: DmUtils.getPosition(extra['mode']),
-                selfSend: extra['send_from_me'] ?? false,
+                // extra['send_from_me'] is invalid
+                selfSend: uid == mainMid,
                 extra: LiveDanmaku(
                   id: extra['id_str'],
                   mid: uid,

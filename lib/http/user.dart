@@ -221,7 +221,7 @@ class UserHttp {
   // }
 
   // 清空稍后再看 // clean_type: null->all, 1->invalid, 2->viewed
-  static Future toViewClear([int? cleanType]) async {
+  static Future<LoadingState<Null>> toViewClear([int? cleanType]) async {
     var res = await Request().post(
       Api.toViewClear,
       data: {
@@ -231,9 +231,9 @@ class UserHttp {
       options: Options(contentType: Headers.formUrlEncodedContentType),
     );
     if (res.data['code'] == 0) {
-      return {'status': true, 'msg': '操作完成'};
+      return const Success(null);
     } else {
-      return {'status': false, 'msg': res.data['message']};
+      return Error(res.data['message']);
     }
   }
 
@@ -383,9 +383,9 @@ class UserHttp {
     }
   }
 
-  static Future<Map> dynamicReport({
-    required dynamic mid,
-    required dynamic dynId,
+  static Future<LoadingState<Null>> dynamicReport({
+    required Object mid,
+    required Object dynId,
     required int reasonType,
     String? reasonDesc,
   }) async {
@@ -402,7 +402,11 @@ class UserHttp {
       },
       options: Options(contentType: Headers.formUrlEncodedContentType),
     );
-    return res.data as Map;
+    if (res.data['code'] == 0) {
+      return const Success(null);
+    } else {
+      return Error(res.data['message']);
+    }
   }
 
   static Future<LoadingState<SpaceSettingData>> spaceSetting() async {

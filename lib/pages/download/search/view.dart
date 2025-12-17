@@ -17,7 +17,7 @@ class DownloadSearchPage extends StatefulWidget {
     required this.progress,
   });
 
-  final ValueNotifier progress;
+  final ChangeNotifier progress;
 
   @override
   State<DownloadSearchPage> createState() => _DownloadSearchPageState();

@@ -874,7 +874,6 @@ List<SettingsModel> get extraSettings => [
     onTap: (context, setState) async {
       final result = await showDialog<double>(
         context: context,
-
         builder: (context) {
           return SlideDialog(
             title: '连接重试次数',
@@ -900,7 +899,6 @@ List<SettingsModel> get extraSettings => [
     onTap: (context, setState) async {
       final result = await showDialog<double>(
         context: context,
-
         builder: (context) {
           return SlideDialog(
             title: '连接重试间隔',
@@ -928,7 +926,6 @@ List<SettingsModel> get extraSettings => [
     onTap: (context, setState) async {
       final result = await showDialog<int>(
         context: context,
-
         builder: (context) {
           return SelectDialog<int>(
             title: '评论展示',
@@ -953,7 +950,6 @@ List<SettingsModel> get extraSettings => [
     onTap: (context, setState) async {
       final result = await showDialog<int>(
         context: context,
-
         builder: (context) {
           return SelectDialog<int>(
             title: '动态展示',
@@ -978,7 +974,6 @@ List<SettingsModel> get extraSettings => [
     onTap: (context, setState) async {
       final result = await showDialog<MemberTabType>(
         context: context,
-
         builder: (context) {
           return SelectDialog<MemberTabType>(
             title: '用户页默认展示TAB',
@@ -1194,7 +1189,6 @@ Future<void> audioNormalization(
       String param = '';
       await showDialog(
         context: context,
-
         builder: (context) {
           return AlertDialog(
             title: const Text('自定义参数'),

@@ -31,7 +31,7 @@ class _SponsorBlockPageState extends State<SponsorBlockPage> {
   final _url = 'https://github.com/hanydd/BilibiliSponsorBlock';
   final _textController = TextEditingController();
   double _blockLimit = Pref.blockLimit;
-  final List<Pair<SegmentType, SkipType>> _blockSettings = Pref.blockSettings;
+  final _blockSettings = Pref.blockSettings;
   final List<Color> _blockColor = Pref.blockColor;
   String _userId = Pref.blockUserID;
   bool _blockToast = Pref.blockToast;

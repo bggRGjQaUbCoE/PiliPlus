@@ -508,7 +508,7 @@ class VideoDetailController extends GetxController
 
 
   @override
-  Widget buildItem(dynamic item, Animation<double> animation) {
+  Widget buildItem(Object item, Animation<double> animation) {
     final theme = Get.theme;
     return Align(
       alignment: Alignment.centerLeft,
@@ -536,7 +536,7 @@ class VideoDetailController extends GetxController
               fontSize: 14,
               text: item is SegmentModel
                   ? '跳过: ${item.segmentType.shortTitle}'
-                  : '上次看到第${item + 1}P，点击跳转',
+                  : '上次看到第${(item as int) + 1}P，点击跳转',
               onTap: (_) {
                 if (item is int) {
                   try {
@@ -679,6 +679,10 @@ class VideoDetailController extends GetxController
     Volume? volume,
   }) async {
     final onlyPlayAudio = plPlayerController.onlyPlayAudio.value;
+    Duration? seek = seekToTime ?? defaultST ?? playedTime;
+    if (seek == null || seek == Duration.zero) {
+      seek = getFirstSegment();
+    }
     await plPlayerController.setDataSource(
       DataSource(
         videoSource: isFileSource
@@ -695,7 +699,7 @@ class VideoDetailController extends GetxController
                 'referer': HttpString.baseUrl,
               },
       ),
-      seekTo: seekToTime ?? defaultST ?? playedTime,
+      seekTo: seek,
       duration:
           duration ??
           (data.timeLength == null
@@ -803,16 +807,11 @@ class VideoDetailController extends GetxController
 
       volume = data.volume;
 
-      final progress = args['progress'];
+      final progress = args.remove('progress');
       if (progress != null) {
         this.defaultST = Duration(milliseconds: progress);
-        args['progress'] = null;
-      } else {
-        this.defaultST =
-            defaultST ??
-            (data.lastPlayTime == null
-                ? Duration.zero
-                : Duration(milliseconds: data.lastPlayTime!));
+      } else if (defaultST == null && data.lastPlayTime != null) {
+        this.defaultST = Duration(milliseconds: data.lastPlayTime!);
       }
 
       if (!isUgc && !fromReset && plPlayerController.enablePgcSkip) {

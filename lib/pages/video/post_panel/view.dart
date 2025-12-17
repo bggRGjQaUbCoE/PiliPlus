@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:PiliPlus/common/widgets/button/icon_button.dart';
@@ -473,14 +474,14 @@ class _PostPanelState extends State<PostPanel>
                   await videoCtr.play();
                 }
                 final delay = start - seek;
-                if (delay > 0) {
-                  await Future.delayed(Duration(milliseconds: delay));
-                }
-                videoCtr.seek(
-                  Duration(
-                    milliseconds: (item.segment.second * 1000).round(),
-                  ),
+                Future<void> seekTo() => videoCtr.seek(
+                  Duration(milliseconds: (item.segment.second * 1000).round()),
                 );
+                if (delay > 0) {
+                  Timer(Duration(milliseconds: delay), seekTo);
+                } else {
+                  seekTo();
+                }
               }
             },
           ),

@@ -202,7 +202,9 @@ class _SharePanelState extends State<SharePanel> {
                         ..remove(userModel)
                         ..insert(0, userModel);
                       _scrollController.jumpToTop();
-                      setState(() {});
+                      setState(() {
+                        selectedCount++;
+                      });
                     }
                   },
                   text: "更多",

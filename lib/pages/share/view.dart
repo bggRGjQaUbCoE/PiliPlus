@@ -15,12 +15,13 @@ class UserModel {
     required this.mid,
     required this.name,
     required this.avatar,
+    this.selected = false,
   });
 
   final int mid;
   final String name;
   final String avatar;
-  bool selected = false;
+  bool selected;
 
   @override
   bool operator ==(Object other) {
@@ -56,7 +57,6 @@ class _SharePanelState extends State<SharePanel> {
   final ScrollController _scrollController = ScrollController();
   final FocusNode _focusNode = FocusNode();
   final TextEditingController _controller = TextEditingController();
-  bool sending = false;
 
   @override
   void dispose() {
@@ -110,61 +110,66 @@ class _SharePanelState extends State<SharePanel> {
                   padding: EdgeInsets.zero,
                   childBuilder: (index) {
                     final item = _userList[index];
-                    return GestureDetector(
-                      onTap: () {
-                        item.selected = !item.selected;
-                        setState(() {});
-                      },
-                      behavior: HitTestBehavior.opaque,
-                      child: SizedBox(
-                        width: 65,
-                        child: Stack(
-                          clipBehavior: Clip.none,
-                          alignment: Alignment.topCenter,
-                          children: [
-                            Column(
+                    return Builder(
+                      builder: (context) {
+                        return GestureDetector(
+                          onTap: () {
+                            item.selected = !item.selected;
+                            (context as Element).markNeedsBuild();
+                          },
+                          behavior: HitTestBehavior.opaque,
+                          child: SizedBox(
+                            width: 65,
+                            child: Stack(
+                              clipBehavior: Clip.none,
+                              alignment: Alignment.topCenter,
                               children: [
-                                Padding(
-                                  padding: const EdgeInsets.all(5),
-                                  child: NetworkImgLayer(
-                                    width: 40,
-                                    height: 40,
-                                    src: item.avatar,
-                                    type: ImageType.avatar,
+                                Column(
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.all(5),
+                                      child: NetworkImgLayer(
+                                        width: 40,
+                                        height: 40,
+                                        src: item.avatar,
+                                        type: ImageType.avatar,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      item.name,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(fontSize: 12),
+                                    ),
+                                  ],
+                                ),
+                                if (item.selected)
+                                  Container(
+                                    width: 50,
+                                    height: 50,
+                                    decoration: BoxDecoration(
+                                      color: theme.colorScheme.primary
+                                          .withValues(
+                                            alpha: 0.3,
+                                          ),
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        width: 1.5,
+                                        color: theme.colorScheme.primary,
+                                      ),
+                                    ),
+                                    child: const Icon(
+                                      Icons.check,
+                                      size: 20,
+                                      color: Colors.white,
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  item.name,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(fontSize: 12),
-                                ),
                               ],
                             ),
-                            if (item.selected)
-                              Container(
-                                width: 50,
-                                height: 50,
-                                decoration: BoxDecoration(
-                                  color: theme.colorScheme.primary.withValues(
-                                    alpha: 0.3,
-                                  ),
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                    width: 1.5,
-                                    color: theme.colorScheme.primary,
-                                  ),
-                                ),
-                                child: const Icon(
-                                  Icons.check,
-                                  size: 20,
-                                  color: Colors.white,
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
+                          ),
+                        );
+                      },
                     );
                   },
                 ),
@@ -172,14 +177,13 @@ class _SharePanelState extends State<SharePanel> {
               GestureDetector(
                 onTap: () async {
                   _focusNode.unfocus();
-                  UserModel? userModel = await Navigator.of(context).push(
+                  final UserModel? userModel = await Navigator.of(context).push(
                     GetPageRoute(page: () => const ContactPage()),
                   );
                   if (userModel != null) {
                     _userList
                       ..remove(userModel)
                       ..insert(0, userModel);
-                    _userList[0].selected = true;
                     _scrollController.jumpToTop();
                     setState(() {});
                   }
@@ -244,27 +248,7 @@ class _SharePanelState extends State<SharePanel> {
               ),
               const SizedBox(width: 12),
               FilledButton.tonal(
-                onPressed: () {
-                  if(sending) return;// prevent multiple clicks
-                  if (_userList.every((user) => !user.selected)) {
-                    SmartDialog.showToast('请选择分享的用户');
-                    return;
-                  }
-                  setState(() {
-                    sending = true;
-                  });
-                  Future.forEach(_userList.where((user) => user.selected), (user) async {
-                    await RequestUtils.pmShare(
-                      receiverId: user.mid,
-                      content: widget.content,
-                      message: _controller.text,
-                    );
-                  }).whenComplete(() {
-                    setState(() {
-                      sending = false;
-                    });
-                  });
-                },
+                onPressed: _onSend,
                 style: FilledButton.styleFrom(
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   visualDensity: const VisualDensity(
@@ -272,12 +256,39 @@ class _SharePanelState extends State<SharePanel> {
                     vertical: -1,
                   ),
                 ),
-                child: sending ? const CircularProgressIndicator() : const Text('发送'),
+                child: const Text('发送'),
               ),
             ],
           ),
         ],
       ),
     );
+  }
+
+  Future<void> _onSend() async {
+    final list = _userList.where((user) => user.selected);
+    if (list.isEmpty) {
+      SmartDialog.showToast('请选择分享的用户');
+      return;
+    }
+    SmartDialog.showLoading();
+    final res = await Future.wait(
+      list.map(
+        (user) => RequestUtils.pmShare(
+          receiverId: user.mid,
+          content: widget.content,
+          message: _controller.text,
+        ),
+      ),
+    );
+    SmartDialog.dismiss();
+    if (res.every((e) => e)) {
+      Get.back();
+      SmartDialog.showToast('分享成功');
+    } else if (res.every((e) => !e)) {
+      SmartDialog.showToast('分享失败');
+    } else {
+      SmartDialog.showToast('部分分享失败');
+    }
   }
 }

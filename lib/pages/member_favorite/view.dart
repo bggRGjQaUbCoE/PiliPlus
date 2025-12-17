@@ -172,8 +172,8 @@ class _MemberFavoriteState extends State<MemberFavorite>
                   height: 98,
                   child: MemberFavItem(
                     item: item,
-                    callback: (res) {
-                      if (res == true) {
+                    onDelete: (isDeleted) {
+                      if (isDeleted ?? false) {
                         _controller.favState
                           ..value.mediaListResponse?.list?.remove(item)
                           ..refresh();

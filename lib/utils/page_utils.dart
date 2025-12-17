@@ -76,12 +76,11 @@ abstract class PageUtils {
         ),
       );
     } else if (context.mounted) {
-      UserModel? userModel = await Navigator.of(context).push(
+      final UserModel? userModel = await Navigator.of(context).push(
         GetPageRoute(page: () => const ContactPage()),
       );
       if (userModel != null) {
         userList.add(userModel);
-        userList[0].selected = true;
       }
     }
 

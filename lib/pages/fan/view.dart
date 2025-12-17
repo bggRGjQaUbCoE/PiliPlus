@@ -74,6 +74,7 @@ class _FansPageState extends FollowTypePageState<FansPage> {
               mid: item.mid,
               name: item.uname!,
               avatar: item.face!,
+              selected: true,
             ),
           );
           return;

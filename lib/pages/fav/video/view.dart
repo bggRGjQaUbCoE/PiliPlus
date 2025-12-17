@@ -63,7 +63,7 @@ class _FavVideoPageState extends State<FavVideoPage>
                     heroTag: heroTag,
                     item: item,
                     onTap: () async {
-                      var res = await Get.toNamed(
+                      final res = await Get.toNamed(
                         '/favDetail',
                         arguments: item,
                         parameters: {

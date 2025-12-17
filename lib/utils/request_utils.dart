@@ -11,7 +11,6 @@ import 'package:PiliPlus/http/dynamics.dart';
 import 'package:PiliPlus/http/fav.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/member.dart';
-import 'package:PiliPlus/http/msg.dart';
 import 'package:PiliPlus/http/user.dart';
 import 'package:PiliPlus/http/validate.dart';
 import 'package:PiliPlus/http/video.dart';
@@ -64,13 +63,11 @@ abstract final class RequestUtils {
   // 16：番剧（id 为 epid）
   // 17：番剧
   // https://github.com/SocialSisterYi/bilibili-API-collect/tree/master/docs/message/private_msg_content.md
-  static Future<void> pmShare({
+  static Future<bool> pmShare({
     required int receiverId,
     required Map content,
     String? message,
   }) async {
-    SmartDialog.showLoading();
-
     final ownerMid = Accounts.main.mid;
     final contentRes = await ImGrpc.sendMsg(
       senderUid: ownerMid,
@@ -83,26 +80,19 @@ abstract final class RequestUtils {
 
     if (contentRes.isSuccess) {
       if (message?.isNotEmpty == true) {
-        var msgRes = await MsgHttp.sendMsg(
+        final msgRes = await ImGrpc.sendMsg(
           senderUid: ownerMid,
           receiverId: receiverId,
           content: jsonEncode({"content": message}),
-          msgType: 1,
+          msgType: MsgType.EN_MSG_TYPE_TEXT,
         );
-        Get.back();
-        if (msgRes['status']) {
-          SmartDialog.showToast('分享成功');
-        } else {
-          SmartDialog.showToast('内容分享成功，但消息分享失败: ${msgRes['msg']}');
-        }
+        return msgRes.isSuccess;
       } else {
-        Get.back();
-        SmartDialog.showToast('分享成功');
+        return true;
       }
     } else {
-      SmartDialog.showToast('分享失败: ${(contentRes as Error).errMsg}');
+      return false;
     }
-    SmartDialog.dismiss();
   }
 
   static Future<void> actionRelationMod({

@@ -12,10 +12,10 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class MemberFavItem extends StatelessWidget {
-  const MemberFavItem({super.key, required this.item, this.callback});
+  const MemberFavItem({super.key, required this.item, this.onDelete});
 
   final SpaceFavItemModel item;
-  final ValueChanged<bool?>? callback;
+  final ValueChanged<bool?>? onDelete;
 
   @override
   Widget build(BuildContext context) {
@@ -34,14 +34,14 @@ class MemberFavItem extends StatelessWidget {
           }
 
           if (item.type == 0 || item.type == 11) {
-            var res = await Get.toNamed(
+            final bool? isDeleted = await Get.toNamed(
               '/favDetail',
               parameters: {
                 'mediaId': item.id.toString(),
                 'heroTag': Utils.makeHeroTag(item.id),
               },
             );
-            callback?.call(res);
+            onDelete?.call(isDeleted);
           } else {
             SubDetailPage.toSubDetailPage(
               item.id!,

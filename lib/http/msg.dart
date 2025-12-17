@@ -375,7 +375,7 @@ abstract final class MsgHttp {
   }
 
   // 发送私信
-  static Future sendMsg({
+  static Future<LoadingState<Null>> sendMsg({
     int? senderUid,
     int? receiverId,
     int? msgType,
@@ -417,12 +417,9 @@ abstract final class MsgHttp {
       ),
     );
     if (res.data['code'] == 0) {
-      return {
-        'status': true,
-        'data': res.data['data'],
-      };
+      return const Success(null);
     } else {
-      return {'status': false, 'msg': res.data['message']};
+      return Error(res.data['message']);
     }
   }
 

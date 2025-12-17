@@ -47,7 +47,7 @@ class _ContactPageState extends State<ContactPage>
         actions: [
           IconButton(
             onPressed: () async {
-              UserModel? userModel = await Navigator.of(context).push(
+              final UserModel? userModel = await Navigator.of(context).push(
                 GetPageRoute(
                   page: () => FollowSearchPage(
                     mid: mid,

@@ -320,7 +320,7 @@ class _ReplyPageState extends CommonRichTextPubPageState<ReplyPage> {
           item(
             onTap: () async {
               controller.keepChatPanel();
-              ({String title, String url})? res = await Get.to(
+              final ({String title, String url})? res = await Get.to(
                 ReplySearchPage(type: widget.replyType, oid: widget.oid),
               );
               if (res != null) {

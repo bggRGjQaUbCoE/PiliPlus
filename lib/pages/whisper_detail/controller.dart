@@ -82,7 +82,7 @@ class WhisperDetailController extends CommonListController<RspSessionMsg, Msg> {
       SmartDialog.showToast('请先登录');
       return;
     }
-    var result = await ImGrpc.sendMsg(
+    final result = await ImGrpc.sendMsg(
       senderUid: account.mid,
       receiverId: mid!,
       content: msgType == 5

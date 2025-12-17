@@ -617,7 +617,7 @@ class _CreateDynPanelState extends CommonRichTextPubPageState<CreateDynPanel> {
       RichTextItem? voteItem = editController.items.firstWhereOrNull(
         (e) => e.type == RichTextType.vote,
       );
-      VoteInfo? voteInfo = await Navigator.of(context).push(
+      final VoteInfo? voteInfo = await Navigator.of(context).push(
         GetPageRoute(
           page: () => CreateVotePage(
             voteId: voteItem?.id == null ? null : int.parse(voteItem!.id!),
@@ -818,7 +818,7 @@ class _CreateDynPanelState extends CommonRichTextPubPageState<CreateDynPanel> {
 
   Future<void> _onReserve() async {
     controller.keepChatPanel();
-    ReserveInfoData? reserveInfo = await Navigator.of(context).push(
+    final ReserveInfoData? reserveInfo = await Navigator.of(context).push(
       GetPageRoute(
         page: () => CreateReservePage(sid: _reserveCard.value?.id),
       ),

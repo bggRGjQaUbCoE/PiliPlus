@@ -33,6 +33,7 @@ class FollowItem extends StatelessWidget {
                 mid: item.mid,
                 name: item.uname!,
                 avatar: item.face!,
+                selected: true,
               ),
             );
           } else {

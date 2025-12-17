@@ -26,8 +26,7 @@ class LiveIndexData {
             areaItem = LiveCardList.fromJson(json);
             break;
           case 'small_card_v1':
-            cardList ??= <LiveCardList>[];
-            cardList!.add(LiveCardList.fromJson(json));
+            (cardList ??= <LiveCardList>[]).add(LiveCardList.fromJson(json));
             break;
         }
       }

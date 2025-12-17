@@ -500,15 +500,15 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 toolbarColor: theme.colorScheme.secondaryContainer,
                 toolbarWidgetColor: theme.colorScheme.onSecondaryContainer,
                 statusBarLight: theme.colorScheme.isLight,
-                aspectRatioPresets: [CropAspectRatioPresetCustom()],
+                aspectRatioPresets: const [CropAspectRatioPresetCustom()],
                 lockAspectRatio: true,
                 hideBottomControls: true,
                 cropStyle: CropStyle.circle,
-                initAspectRatio: CropAspectRatioPresetCustom(),
+                initAspectRatio: const CropAspectRatioPresetCustom(),
               ),
               IOSUiSettings(
                 title: '裁剪',
-                aspectRatioPresets: [CropAspectRatioPresetCustom()],
+                aspectRatioPresets: const [CropAspectRatioPresetCustom()],
                 cropStyle: CropStyle.circle,
                 aspectRatioLockEnabled: true,
                 resetAspectRatioEnabled: false,
@@ -556,8 +556,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
 }
 
 class CropAspectRatioPresetCustom implements CropAspectRatioPresetData {
+  const CropAspectRatioPresetCustom();
+
   @override
-  (int, int)? get data => (1, 1);
+  (int, int) get data => const (1, 1);
 
   @override
   String get name => '1x1 (customized)';

@@ -38,9 +38,7 @@ class MultiSelectAppBarWidget extends StatelessWidget
           ),
           ...?actions,
           TextButton(
-            style: TextButton.styleFrom(
-              visualDensity: VisualDensity.compact,
-            ),
+            style: style,
             onPressed: () {
               if (ctr.checkedCount == 0) {
                 return;

@@ -34,7 +34,7 @@ class MemberFavItem extends StatelessWidget {
           }
 
           if (item.type == 0 || item.type == 11) {
-            final bool? isDeleted = await Get.toNamed(
+            final isDeleted = await Get.toNamed(
               '/favDetail',
               parameters: {
                 'mediaId': item.id.toString(),

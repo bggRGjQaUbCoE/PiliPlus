@@ -1770,9 +1770,6 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                               .inSeconds;
                           final int buffer =
                               plPlayerController.bufferedSeconds.value;
-                          if (value > max || max <= 0) {
-                            return const SizedBox.shrink();
-                          }
                           return ProgressBar(
                             progress: Duration(seconds: value),
                             buffered: Duration(seconds: buffer),

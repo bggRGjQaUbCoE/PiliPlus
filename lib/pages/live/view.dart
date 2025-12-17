@@ -92,8 +92,8 @@ class _LivePageState extends CommonPageState<LivePage, LiveController>
                 children: [
                   Expanded(
                     child: SizedBox(
-                      // 20+6+14*textScaler
-                      height: 26.0 + textScaler.scale(14),
+                      // 20+10+14*textScaler
+                      height: 30.0 + textScaler.scale(14),
                       child: ListView.separated(
                         scrollDirection: Axis.horizontal,
                         separatorBuilder: (context, index) =>
@@ -114,7 +114,7 @@ class _LivePageState extends CommonPageState<LivePage, LiveController>
                                 height: 1,
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 8,
-                                  vertical: 3,
+                                  vertical: 5,
                                 ),
                                 text: index == 0 ? '推荐' : '${item.title}',
                                 bgColor: isCurr
@@ -191,8 +191,8 @@ class _LivePageState extends CommonPageState<LivePage, LiveController>
             if (newTags.isNotEmpty)
               SliverToBoxAdapter(
                 child: SizedBox(
-                  // 8+6+13*textScaler
-                  height: 14.0 + textScaler.scale(13),
+                  // 8+10+13*textScaler
+                  height: 18.0 + textScaler.scale(13),
                   child: ListView.separated(
                     scrollDirection: Axis.horizontal,
                     separatorBuilder: (_, _) => const SizedBox(width: 12),
@@ -207,7 +207,7 @@ class _LivePageState extends CommonPageState<LivePage, LiveController>
                             fontSize: 13,
                             padding: const EdgeInsets.symmetric(
                               horizontal: 8,
-                              vertical: 3,
+                              vertical: 5,
                             ),
                             text: '${item.name}',
                             bgColor: isCurr

@@ -351,6 +351,15 @@ class MyApp extends StatelessWidget {
     );
   }
 
+  static Future<void> updateDynamicColor(bool value) {
+    if (value) {
+      return _initPlatformState();
+    } else {
+      _light = _dark = null;
+      return Future.syncValue(null);
+    }
+  }
+
   /// from [DynamicColorBuilderState.initPlatformState]
   static Future<void> _initPlatformState() async {
     // Platform messages may fail, so we use a try/catch PlatformException.

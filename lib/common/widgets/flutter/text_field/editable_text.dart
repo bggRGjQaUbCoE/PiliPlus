@@ -3403,7 +3403,6 @@ class EditableTextState extends State<EditableText>
           _finalizeEditing(action, shouldUnfocus: true);
         } else if (HardwareKeyboard.instance.isControlPressed) {
           final ctr = widget.controller;
-          ctr.items.removeLast();
           final length = ctr.text.length;
           ctr.value = ctr.value.copyWith(
             text: ctr.text.substring(0, length - 1),

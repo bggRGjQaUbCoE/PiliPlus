@@ -1,39 +1,32 @@
 import 'package:PiliPlus/common/constants.dart';
 import 'package:flutter/material.dart';
-import 'package:material_color_utilities/material_color_utilities.dart';
 
 class ColorPalette extends StatelessWidget {
-  final Color color;
+  final ColorScheme colorScheme;
   final bool selected;
+  final bool showBgColor;
 
   const ColorPalette({
     super.key,
-    required this.color,
+    required this.colorScheme,
     required this.selected,
+    this.showBgColor = true,
   });
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final Hct hct = Hct.fromInt(color.toARGB32());
-    final primary = Color(Hct.from(hct.hue, 20.0, 90.0).toInt());
-    final tertiary = Color(Hct.from(hct.hue + 50, 20.0, 85.0).toInt());
-    final primaryContainer = Color(Hct.from(hct.hue, 30.0, 50.0).toInt());
-    Widget coloredBox(Color color) => Expanded(
-      child: ColoredBox(
-        color: color,
-        child: const SizedBox.expand(),
-      ),
-    );
+    final primary = colorScheme.primary;
+    final tertiary = colorScheme.tertiary;
+    final primaryContainer = colorScheme.primaryContainer;
     Widget child = ClipOval(
       child: Column(
         children: [
-          coloredBox(primary),
+          _coloredBox(primary),
           Expanded(
             child: Row(
               children: [
-                coloredBox(tertiary),
-                coloredBox(primaryContainer),
+                _coloredBox(tertiary),
+                _coloredBox(primaryContainer),
               ],
             ),
           ),
@@ -50,7 +43,7 @@ class ColorPalette extends StatelessWidget {
             width: 23,
             height: 23,
             decoration: BoxDecoration(
-              color: Color(Hct.from(hct.hue, 30.0, 40.0).toInt()),
+              color: colorScheme.surfaceContainer,
               shape: BoxShape.circle,
             ),
             child: Icon(
@@ -66,11 +59,20 @@ class ColorPalette extends StatelessWidget {
       width: 50,
       height: 50,
       padding: const EdgeInsets.all(6),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.onInverseSurface,
-        borderRadius: StyleString.mdRadius,
-      ),
+      decoration: showBgColor
+          ? BoxDecoration(
+              color: colorScheme.onInverseSurface,
+              borderRadius: StyleString.mdRadius,
+            )
+          : null,
       child: child,
     );
   }
+
+  static Widget _coloredBox(Color color) => Expanded(
+    child: ColoredBox(
+      color: color,
+      child: const SizedBox.expand(),
+    ),
+  );
 }

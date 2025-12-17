@@ -7,7 +7,7 @@ class NormalItem extends StatefulWidget {
   final String? subtitle;
   final ValueGetter<String>? getSubtitle;
   final Widget? leading;
-  final Widget Function()? getTrailing;
+  final ValueGetter<Widget?>? getTrailing;
   final void Function(BuildContext context, void Function() setState)? onTap;
   final EdgeInsetsGeometry? contentPadding;
   final TextStyle? titleStyle;

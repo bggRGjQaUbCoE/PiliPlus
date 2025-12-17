@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:math';
 
+import 'package:PiliPlus/common/widgets/color_palette.dart';
 import 'package:PiliPlus/common/widgets/custom_toast.dart';
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
@@ -11,6 +12,7 @@ import 'package:PiliPlus/models/common/dynamic/up_panel_position.dart';
 import 'package:PiliPlus/models/common/home_tab_type.dart';
 import 'package:PiliPlus/models/common/msg/msg_unread_type.dart';
 import 'package:PiliPlus/models/common/nav_bar_config.dart';
+import 'package:PiliPlus/models/common/theme/theme_color_type.dart';
 import 'package:PiliPlus/models/common/theme/theme_type.dart';
 import 'package:PiliPlus/pages/main/controller.dart';
 import 'package:PiliPlus/pages/mine/controller.dart';
@@ -22,12 +24,15 @@ import 'package:PiliPlus/pages/setting/widgets/multi_select_dialog.dart';
 import 'package:PiliPlus/pages/setting/widgets/select_dialog.dart';
 import 'package:PiliPlus/pages/setting/widgets/slide_dialog.dart';
 import 'package:PiliPlus/plugin/pl_player/utils/fullscreen.dart';
+import 'package:PiliPlus/utils/extension/get_ext.dart';
+import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/global_data.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:auto_orientation/auto_orientation.dart';
+import 'package:flex_seed_scheme/flex_seed_scheme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -548,7 +553,7 @@ List<SettingsModel> get styleSettings => [
           Get.find<MineController>().themeType.value = result;
         } catch (_) {}
         GStorage.setting.put(SettingBoxKey.themeMode, result.index);
-        Get.put(ColorSelectController()).themeType.value = result;
+        Get.putOrFind(ColorSelectController.new).themeType.value = result;
         Get.changeThemeMode(result.toThemeMode);
         setState();
       }
@@ -572,8 +577,21 @@ List<SettingsModel> get styleSettings => [
     onTap: (context, setState) => Get.toNamed('/colorSetting'),
     leading: const Icon(Icons.color_lens_outlined),
     title: '应用主题',
-    getSubtitle: () =>
-        '当前主题：${Get.put(ColorSelectController()).dynamicColor.value ? '动态取色' : '指定颜色'}',
+    getSubtitle: () => '当前主题：${Pref.dynamicColor ? '动态取色' : '指定颜色'}',
+    getTrailing: () => Pref.dynamicColor
+        ? Icon(Icons.color_lens_rounded, color: Get.theme.colorScheme.primary)
+        : SizedBox.square(
+            dimension: 32,
+            child: ColorPalette(
+              colorScheme: colorThemeTypes[Pref.customColor].color
+                  .asColorSchemeSeed(
+                    FlexSchemeVariant.values[Pref.schemeVariant],
+                    Get.theme.brightness,
+                  ),
+              selected: false,
+              showBgColor: false,
+            ),
+          ),
   ),
   NormalModel(
     onTap: (context, setState) async {
@@ -671,15 +689,18 @@ List<SettingsModel> get styleSettings => [
     onTap: (context, setState) async {
       final result = await Get.toNamed('/fontSizeSetting');
       if (result != null) {
-        Get.put(ColorSelectController()).currentTextScale.value = result;
+        Get.putOrFind(ColorSelectController.new).currentTextScale.value =
+            result;
       }
     },
     title: '字体大小',
     leading: const Icon(Icons.format_size_outlined),
     getSubtitle: () =>
-        Get.put(ColorSelectController()).currentTextScale.value == 1.0
+        Get.putOrFind(ColorSelectController.new).currentTextScale.value == 1.0
         ? '默认'
-        : Get.put(ColorSelectController()).currentTextScale.value.toString(),
+        : Get.putOrFind(
+            ColorSelectController.new,
+          ).currentTextScale.value.toString(),
   ),
   NormalModel(
     onTap: (context, setState) => Get.toNamed(

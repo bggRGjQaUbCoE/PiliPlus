@@ -42,8 +42,8 @@ import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
+import 'package:archive/archive.dart' show getCrc32;
 import 'package:canvas_danmaku/canvas_danmaku.dart';
-import 'package:crclib/catalog.dart';
 import 'package:dio/dio.dart' show Options;
 import 'package:easy_debounce/easy_throttle.dart';
 import 'package:floating/floating.dart';
@@ -329,9 +329,10 @@ class PlPlayerController {
   bool showDanmaku = true;
   Set<int> dmState = <int>{};
   late final mergeDanmaku = Pref.mergeDanmaku;
-  late final String midHash = Crc32Xz()
-      .convert(utf8.encode(Accounts.main.mid.toString()))
-      .toRadixString(16);
+  late final String midHash = getCrc32(
+    ascii.encode(Accounts.main.mid.toString()),
+    0,
+  ).toRadixString(16);
   // 弹幕相关配置
   late Set<int> blockTypes = Pref.danmakuBlockType;
   late bool blockColorful = blockTypes.contains(6);

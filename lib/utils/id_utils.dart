@@ -84,7 +84,7 @@ abstract final class IdUtils {
       return '';
     }
 
-    var midByte = utf8.encode(uid.toString());
+    var midByte = ascii.encode(uid.toString());
 
     const key = 'ad1va46a7lza';
     for (int i = 0; i < midByte.length; i++) {

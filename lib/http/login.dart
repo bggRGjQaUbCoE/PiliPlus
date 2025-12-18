@@ -118,7 +118,7 @@ abstract final class LoginHttp {
       'local_id': buvid,
       // https://chinggg.github.io/post/appre/
       'login_session_id': md5
-          .convert(utf8.encode(buvid + timestamp.toString()))
+          .convert(ascii.encode(buvid + timestamp.toString()))
           .toString(),
       'mobi_app': 'android_hd',
       'platform': 'android',

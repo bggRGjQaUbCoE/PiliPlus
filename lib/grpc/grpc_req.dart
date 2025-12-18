@@ -1,20 +1,10 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:PiliPlus/common/constants.dart';
-import 'package:PiliPlus/grpc/bilibili/metadata.pb.dart';
-import 'package:PiliPlus/grpc/bilibili/metadata/device.pb.dart';
-import 'package:PiliPlus/grpc/bilibili/metadata/fawkes.pb.dart';
-import 'package:PiliPlus/grpc/bilibili/metadata/locale.pb.dart';
-import 'package:PiliPlus/grpc/bilibili/metadata/network.pb.dart' as network;
 import 'package:PiliPlus/grpc/bilibili/rpc.pb.dart';
 import 'package:PiliPlus/http/constants.dart';
 import 'package:PiliPlus/http/init.dart';
 import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/utils/accounts.dart';
-import 'package:PiliPlus/utils/id_utils.dart';
-import 'package:PiliPlus/utils/login_utils.dart';
-import 'package:PiliPlus/utils/utils.dart';
 import 'package:archive/archive.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart' show kDebugMode, compute;
@@ -22,100 +12,8 @@ import 'package:protobuf/protobuf.dart' show GeneratedMessage;
 
 abstract final class GrpcReq {
   static const _isolateSize = 256 * 1024;
-  static String? _accessKey = Accounts.main.accessKey;
-  static const _build = 2001100;
-  static const _versionName = '2.0.1';
-  static const _biliChannel = 'master';
-  static const _mobiApp = 'android_hd';
-  static const _device = 'android';
 
-  static final _buvid = LoginUtils.buvid;
-  static final _traceId = IdUtils.genTraceId();
-  static final _sessionId = Utils.generateRandomString(8);
-
-  static void updateHeaders(String? accessKey) {
-    _accessKey = accessKey;
-    if (_accessKey != null) {
-      headers['authorization'] = 'identify_v1 $_accessKey';
-    } else {
-      headers.remove('authorization');
-    }
-    headers['x-bili-metadata-bin'] = base64Encode(
-      Metadata(
-        accessKey: _accessKey ?? '',
-        mobiApp: _mobiApp,
-        device: _device,
-        build: _build,
-        channel: _biliChannel,
-        buvid: _buvid,
-        platform: _device,
-      ).writeToBuffer(),
-    );
-  }
-
-  static final Map<String, String> headers = {
-    Headers.contentTypeHeader: 'application/grpc',
-    'grpc-encoding': 'gzip',
-    'gzip-accept-encoding': 'gzip,identity',
-    'user-agent': Constants.userAgent,
-    'x-bili-gaia-vtoken': '',
-    'x-bili-aurora-zone': '',
-    'x-bili-trace-id': _traceId,
-    if (_accessKey != null) 'authorization': 'identify_v1 $_accessKey',
-    'buvid': _buvid,
-    'bili-http-engine': 'cronet',
-    'te': 'trailers',
-    'x-bili-fawkes-req-bin': base64Encode(
-      FawkesReq(
-        appkey: _mobiApp,
-        env: 'prod',
-        sessionId: _sessionId,
-      ).writeToBuffer(),
-    ),
-    'x-bili-metadata-bin': base64Encode(
-      Metadata(
-        accessKey: _accessKey ?? '',
-        mobiApp: _mobiApp,
-        device: _device,
-        build: _build,
-        channel: _biliChannel,
-        buvid: _buvid,
-        platform: _device,
-      ).writeToBuffer(),
-    ),
-    'x-bili-device-bin': base64Encode(
-      Device(
-        appId: 5,
-        build: _build,
-        buvid: _buvid,
-        mobiApp: _mobiApp,
-        platform: _device,
-        channel: _biliChannel,
-        brand: _device,
-        model: _device,
-        osver: '15',
-        versionName: _versionName,
-      ).writeToBuffer(),
-    ),
-    'x-bili-network-bin': base64Encode(
-      network.Network(
-        type: network.NetworkType.WIFI,
-      ).writeToBuffer(),
-    ),
-    'x-bili-locale-bin': base64Encode(
-      Locale(
-        cLocale: LocaleIds(language: 'zh', region: 'CN', script: 'Hans'),
-        sLocale: LocaleIds(language: 'zh', region: 'CN', script: 'Hans'),
-        timezone: 'Asia/Shanghai',
-      ).writeToBuffer(),
-    ),
-    'x-bili-exps-bin': '',
-  };
-
-  static final Options options = Options(
-    headers: headers,
-    responseType: ResponseType.bytes,
-  );
+  static final options = Options(responseType: ResponseType.bytes);
 
   static Uint8List compressProtobuf(Uint8List proto) {
     proto = const GZipEncoder().encodeBytes(proto);

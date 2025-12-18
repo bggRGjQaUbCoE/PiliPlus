@@ -96,19 +96,15 @@ abstract final class IdUtils {
     return base64Encoded;
   }
 
+  // https://github.com/SocialSisterYi/bilibili-API-collect/blob/master/grpc_api/readme.md#x-bili-trace-id-生成算法
   static String genTraceId() {
-    String randomId = Utils.generateRandomString(32);
+    final randomTraceId = StringBuffer(Utils.generateRandomString(24));
 
-    StringBuffer randomTraceId = StringBuffer(randomId.substring(0, 24));
+    final ts = (DateTime.now().millisecondsSinceEpoch ~/ 1000) >> 8;
 
-    int ts = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-
-    for (int i = 2; i >= 0; i--) {
-      ts >>= 8;
-      randomTraceId.write((ts & 0xFF).toRadixString(16).padLeft(2, '0'));
-    }
-
-    randomTraceId.write(randomId.substring(30, 32));
+    randomTraceId
+      ..write((ts & 0xFFFFFF).toRadixString(16).padLeft(6, '0'))
+      ..write(Utils.generateRandomString(2));
 
     return '${randomTraceId.toString()}:${randomTraceId.toString().substring(16, 32)}:0:0';
   }

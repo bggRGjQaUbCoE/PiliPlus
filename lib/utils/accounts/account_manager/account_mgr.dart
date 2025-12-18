@@ -7,6 +7,7 @@ import 'package:PiliPlus/http/constants.dart';
 import 'package:PiliPlus/models/common/account_type.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/accounts/account.dart';
+import 'package:PiliPlus/utils/accounts/api_type.dart';
 import 'package:PiliPlus/utils/app_sign.dart';
 import 'package:PiliPlus/utils/extension/string_ext.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
@@ -20,115 +21,6 @@ import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 final _setCookieReg = RegExp('(?<=)(,)(?=[^;]+?=)');
 
 class AccountManager extends Interceptor {
-  static const Map<AccountType, Set<String>> apiTypeSet = {
-    AccountType.heartbeat: {
-      Api.videoIntro,
-      Api.replyList,
-      Api.replyReplyList,
-
-      // history
-      Api.heartBeat,
-      Api.historyReport,
-      Api.roomEntryAction,
-      Api.liveLikeReport,
-      Api.mediaListHistory,
-      // Api.historyList,
-      // Api.pauseHistory,
-      // Api.clearHistory,
-      // Api.delHistory,
-      // Api.searchHistory,
-      // Api.historyStatus,
-      // progress
-      Api.pgcInfo,
-      Api.pugvInfo,
-
-      Api.ab2c,
-      Api.liveRoomInfo,
-      Api.liveRoomInfoH5,
-      Api.onlineTotal,
-      Api.dynamicDetail,
-      Api.aiConclusion,
-      Api.getSeasonDetailApi,
-      Api.liveRoomDmToken,
-      Api.liveRoomDmPrefetch,
-      Api.superChatMsg,
-      Api.searchByType,
-      Api.dynSearch,
-      Api.searchArchive,
-
-      // Api.memberInfo,
-      // Api.bgmDetail,
-      // Api.space,
-      // Api.spaceAudio,
-      // Api.spaceComic,
-      // Api.spaceArchive,
-      // Api.spaceChargingArchive,
-      // Api.spaceSeason,
-      // Api.spaceSeries,
-      // Api.spaceBangumi,
-      // Api.spaceOpus,
-      // Api.spaceFav,
-      // Api.seasonSeries,
-      // Api.matchInfo,
-      // Api.articleList,
-      // Api.opusDetail,
-      // Api.articleView,
-      // Api.articleInfo,
-    },
-    AccountType.recommend: {
-      Api.recommendListWeb,
-      Api.recommendListApp,
-      Api.feedDislike,
-      Api.feedDislikeCancel,
-      Api.hotList,
-      Api.relatedList,
-      Api.hotSearchList, // 不同账号搜索结果可能不一样
-      Api.searchDefault,
-      Api.searchSuggest,
-      Api.liveList,
-      Api.searchTrending,
-      Api.searchRecommend,
-      Api.getRankApi,
-      Api.pgcRank,
-      Api.pgcSeasonRank,
-      Api.pgcIndexResult,
-      Api.popularSeriesOne,
-      Api.popularSeriesList,
-      Api.popularPrecious,
-      Api.liveAreaList,
-      Api.liveFeedIndex,
-      Api.liveSecondList,
-      Api.liveRoomAreaList,
-      Api.liveSearch,
-      Api.bgmRecommend,
-      Api.dynTopicRcmd,
-      Api.topicFeed,
-      Api.topicTop,
-    },
-    // progress
-    AccountType.video: {
-      Api.ugcUrl,
-      Api.pgcUrl,
-      Api.pugvUrl,
-      Api.tvPlayUrl,
-    },
-  };
-
-  static const loginApi = {
-    Api.getTVCode,
-    Api.qrcodePoll,
-    Api.getCaptcha,
-    Api.getWebKey,
-    Api.appSmsCode,
-    Api.loginByPwdApi,
-    Api.logInByAppSms,
-    Api.safeCenterGetInfo,
-    Api.preCapture,
-    Api.safeCenterSmsCode,
-    Api.safeCenterSmsVerify,
-    Api.oauth2AccessToken,
-  };
-
   AccountManager();
 
   String blockServer = Pref.blockServer;
@@ -164,29 +56,31 @@ class AccountManager extends Interceptor {
       );
     }
 
+    final isApp = path.startsWith(HttpString.appBaseUrl);
+
+    if (isApp && options.responseType == ResponseType.bytes) {
+      options.headers.addAll(account.grpcHeaders);
+      return handler.next(options);
+    }
+
     options.headers
       ..addAll(account.headers)
       ..['referer'] ??= HttpString.baseUrl;
 
     // app端不需要管理cookie
-    if (path.startsWith(HttpString.appBaseUrl)) {
+    if (isApp) {
       // if (kDebugMode) debugPrint('is app: ${options.path}');
-      // bytes是grpc响应
-      if (options.responseType != ResponseType.bytes) {
-        final dataPtr =
-            (options.method == 'POST' && options.data is Map
-                    ? options.data as Map
-                    : options.queryParameters)
-                .cast<String, dynamic>();
-        if (dataPtr.isNotEmpty) {
-          if (!account.accessKey.isNullOrEmpty) {
-            dataPtr['access_key'] = account.accessKey!;
-          }
-          dataPtr['ts'] ??= (DateTime.now().millisecondsSinceEpoch ~/ 1000)
-              .toString();
-          AppSign.appSign(dataPtr);
-          // if (kDebugMode) debugPrint(dataPtr.toString());
+      final dataPtr = (options.method == 'POST' && options.data is Map
+          ? (options.data as Map).cast<String, dynamic>()
+          : options.queryParameters);
+      if (dataPtr.isNotEmpty) {
+        if (!account.accessKey.isNullOrEmpty) {
+          dataPtr['access_key'] = account.accessKey!;
         }
+        dataPtr['ts'] ??= (DateTime.now().millisecondsSinceEpoch ~/ 1000)
+            .toString();
+        AppSign.appSign(dataPtr);
+        // if (kDebugMode) debugPrint(dataPtr.toString());
       }
       return handler.next(options);
     } else {
@@ -222,9 +116,9 @@ class AccountManager extends Interceptor {
   void onResponse(Response response, ResponseInterceptorHandler handler) {
     final options = response.requestOptions;
     final path = options.path;
-    if (path.startsWith(HttpString.appBaseUrl) ||
-        _skipCookie(path) ||
-        options.extra['account'] is NoAccount) {
+    if (options.extra['account'] is NoAccount ||
+        path.startsWith(HttpString.appBaseUrl) ||
+        _skipCookie(path)) {
       return handler.next(response);
     } else {
       final future = _saveCookies(
@@ -309,7 +203,7 @@ class AccountManager extends Interceptor {
         .map(Cookie.fromSetCookieValue)
         .toList();
     final statusCode = response.statusCode ?? 0;
-    final locations = response.headers[HttpHeaders.locationHeader] ?? [];
+    final locations = response.headers[HttpHeaders.locationHeader] ?? const [];
     final isRedirectRequest = statusCode >= 300 && statusCode < 400;
     final originalUri = response.requestOptions.uri;
     final realUri = originalUri.resolveUri(response.realUri);
@@ -335,11 +229,11 @@ class AccountManager extends Interceptor {
         path.contains('biliimg.com');
   }
 
-  Account _findAccount(String path) => loginApi.contains(path)
+  Account _findAccount(String path) => ApiType.loginApi.contains(path)
       ? AnonymousAccount()
       : Accounts.get(
           AccountType.values.firstWhere(
-            (i) => apiTypeSet[i]?.contains(path) == true,
+            (i) => ApiType.apiTypeSet[i]?.contains(path) == true,
             orElse: () => AccountType.main,
           ),
         );

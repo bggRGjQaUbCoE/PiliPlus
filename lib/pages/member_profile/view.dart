@@ -363,7 +363,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
       'platform': 'android',
       's_locale': 'zh_CN',
       'statistics': Constants.statistics,
-      'ts': (DateTime.now().millisecondsSinceEpoch ~/ 1000).toString(),
       if (type == ProfileType.uname)
         'uname': _textController.text
       else if (type == ProfileType.sign)

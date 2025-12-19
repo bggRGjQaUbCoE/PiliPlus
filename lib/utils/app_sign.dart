@@ -9,10 +9,14 @@ abstract final class AppSign {
     String appkey = Constants.appKey,
     String appsec = Constants.appSec,
   }) {
-    params['appkey'] = appkey;
-    final sorted = Map.fromEntries(
-      params.entries.toList()..sort((a, b) => a.key.compareTo(b.key)),
+    assert(
+      params['appkey'] == null,
+      'appkey-appsec should be provided in appSign',
     );
+    params['appkey'] = appkey;
+    params['ts'] ??= (DateTime.now().millisecondsSinceEpoch ~/ 1000).toString();
+    final sorted = params.entries.toList()
+      ..sort((a, b) => a.key.compareTo(b.key));
     params['sign'] = md5
         .convert(utf8.encode(_makeQueryFromParametersDefault(sorted) + appsec))
         .toString(); // 获取MD5哈希值
@@ -20,12 +24,14 @@ abstract final class AppSign {
 
   /// from [Uri]
   static String _makeQueryFromParametersDefault(
-    Map<String, dynamic /*String?|Iterable<String>*/> queryParameters,
+    List<MapEntry<String, dynamic /*String?|Iterable<String>*/>>
+    queryParameters,
   ) {
     var result = StringBuffer();
     var separator = '';
 
     void writeParameter(String key, String? value) {
+      assert(value != null, 'remove null value');
       result.write(separator);
       separator = '&';
       result.write(Uri.encodeQueryComponent(key));
@@ -36,15 +42,15 @@ abstract final class AppSign {
       }
     }
 
-    queryParameters.forEach((key, value) {
-      if (value case Iterable<String> values) {
+    for (var i in queryParameters) {
+      if (i.value case Iterable<String> values) {
         for (final String value in values) {
-          writeParameter(key, value);
+          writeParameter(i.key, value);
         }
       } else {
-        writeParameter(key, value?.toString());
+        writeParameter(i.key, i.value?.toString());
       }
-    });
+    }
     return result.toString();
   }
 }

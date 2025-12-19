@@ -1067,7 +1067,6 @@ abstract final class VideoHttp {
       'playurl_type': playurlType,
       'protocol': 0,
       'qn': qn ?? 80,
-      'ts': DateTime.now().millisecondsSinceEpoch ~/ 1000,
     };
     AppSign.appSign(params);
     final res = await Request().get(

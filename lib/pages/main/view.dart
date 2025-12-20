@@ -36,7 +36,7 @@ class MainApp extends StatefulWidget {
 
 class _MainAppState extends State<MainApp>
     with RouteAware, WidgetsBindingObserver, WindowListener, TrayListener {
-  final MainController _mainController = Get.put(MainController());
+  final _mainController = Get.put(MainController());
   late final _setting = GStorage.setting;
 
   @override

@@ -7,6 +7,7 @@ import 'package:PiliPlus/pages/dynamics/controller.dart';
 import 'package:PiliPlus/pages/dynamics/widgets/up_panel.dart';
 import 'package:PiliPlus/pages/dynamics_create/view.dart';
 import 'package:PiliPlus/pages/dynamics_tab/view.dart';
+import 'package:PiliPlus/utils/extension/get_ext.dart';
 import 'package:flutter/material.dart' hide DraggableScrollableSheet;
 import 'package:get/get.dart';
 
@@ -19,7 +20,7 @@ class DynamicsPage extends StatefulWidget {
 
 class _DynamicsPageState extends State<DynamicsPage>
     with AutomaticKeepAliveClientMixin {
-  final DynamicsController _dynamicsController = Get.put(DynamicsController());
+  final _dynamicsController = Get.putOrFind(DynamicsController.new);
   UpPanelPosition get upPanelPosition => _dynamicsController.upPanelPosition;
 
   @override

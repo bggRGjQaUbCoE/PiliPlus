@@ -6,6 +6,7 @@ import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/pages/home/controller.dart';
 import 'package:PiliPlus/pages/main/controller.dart';
 import 'package:PiliPlus/pages/mine/controller.dart';
+import 'package:PiliPlus/utils/extension/get_ext.dart';
 import 'package:PiliPlus/utils/extension/size_ext.dart';
 import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:flutter/material.dart';
@@ -21,8 +22,8 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage>
     with AutomaticKeepAliveClientMixin {
-  final HomeController _homeController = Get.put(HomeController());
-  final MainController _mainController = Get.put(MainController());
+  final _homeController = Get.putOrFind(HomeController.new);
+  final _mainController = Get.find<MainController>();
 
   @override
   bool get wantKeepAlive => true;

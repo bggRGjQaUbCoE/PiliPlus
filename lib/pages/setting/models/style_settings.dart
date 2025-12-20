@@ -245,7 +245,7 @@ List<SettingsModel> get styleSettings => [
         },
       );
       if (result != null) {
-        MainController mainController = Get.put(MainController())
+        final mainController = Get.find<MainController>()
           ..dynamicBadgeMode = DynamicBadgeMode.values[result.index];
         if (mainController.dynamicBadgeMode != DynamicBadgeMode.hidden) {
           mainController.getUnreadDynamic();
@@ -275,7 +275,7 @@ List<SettingsModel> get styleSettings => [
         },
       );
       if (result != null) {
-        MainController mainController = Get.put(MainController())
+        final mainController = Get.find<MainController>()
           ..msgBadgeMode = DynamicBadgeMode.values[result.index];
         if (mainController.msgBadgeMode != DynamicBadgeMode.hidden) {
           mainController.queryUnreadMsg(true);
@@ -304,7 +304,7 @@ List<SettingsModel> get styleSettings => [
         },
       );
       if (result != null) {
-        MainController mainController = Get.put(MainController())
+        final mainController = Get.find<MainController>()
           ..msgUnReadTypes = result;
         if (mainController.msgBadgeMode != DynamicBadgeMode.hidden) {
           mainController.queryUnreadMsg();

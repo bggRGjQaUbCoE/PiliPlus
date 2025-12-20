@@ -12,6 +12,7 @@ import 'package:PiliPlus/pages/dynamics/controller.dart';
 import 'package:PiliPlus/pages/home/controller.dart';
 import 'package:PiliPlus/pages/mine/view.dart';
 import 'package:PiliPlus/services/account_service.dart';
+import 'package:PiliPlus/utils/extension/get_ext.dart';
 import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:PiliPlus/utils/storage.dart';
@@ -40,12 +41,10 @@ class MainController extends GetxController
   late int dynamicPeriod = Pref.dynamicPeriod * 60 * 1000;
   late int _lastCheckDynamicAt = 0;
   late bool hasDyn = false;
-  late final DynamicsController dynamicController = Get.put(
-    DynamicsController(),
-  );
+  late final dynamicController = Get.putOrFind(DynamicsController.new);
 
   late bool hasHome = false;
-  late final HomeController homeController = Get.put(HomeController());
+  late final homeController = Get.putOrFind(HomeController.new);
 
   late DynamicBadgeMode msgBadgeMode = Pref.msgBadgeMode;
   late Set<MsgUnReadType> msgUnReadTypes = Pref.msgUnReadTypeV2;

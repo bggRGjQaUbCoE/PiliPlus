@@ -12,6 +12,7 @@ import 'package:protobuf/protobuf.dart' show GeneratedMessage;
 
 abstract final class GrpcReq {
   static const _isolateSize = 256 * 1024;
+  static const _gzipMinLength = 64;
 
   static final options = Options(
     contentType: 'application/grpc',
@@ -19,9 +20,12 @@ abstract final class GrpcReq {
   );
 
   static Uint8List compressProtobuf(Uint8List proto) {
-    proto = const GZipEncoder().encodeBytes(proto);
+    final compress = proto.length > _gzipMinLength;
+    if (compress) {
+      proto = const GZipEncoder().encodeBytes(proto);
+    }
     return Uint8List(5 + proto.length)
-      ..[0] = 1
+      ..[0] = compress ? 1 : 0
       ..buffer.asByteData(1, 4).setInt32(0, proto.length, Endian.big)
       ..setAll(5, proto);
   }
@@ -48,7 +52,7 @@ abstract final class GrpcReq {
     }
   }
 
-  static Future<LoadingState<T>> request<T>(
+  static Future<LoadingState<T>> request<T extends GeneratedMessage>(
     String url,
     GeneratedMessage request,
     T Function(Uint8List) grpcParser, {

@@ -35,6 +35,8 @@ import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/extension/string_ext.dart';
 import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
+import 'package:PiliPlus/utils/memory_manager.dart';
+import 'package:PiliPlus/utils/network_throttle.dart';
 import 'package:PiliPlus/utils/page_utils.dart' show PageUtils;
 import 'package:PiliPlus/utils/path_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
@@ -1638,33 +1640,46 @@ class PlPlayerController {
     if ((durationSeconds.value - position.value).inMilliseconds > 1000) {
       isComplete = false;
     }
-    // 播放状态变化时，更新
 
+    // 生成唯一的心跳key
+    final heartBeatKey = 'heartbeat_${bvid ?? _bvid}_${cid ?? cid}';
+
+    // 播放状态变化时，立即更新
     if (type == HeartBeatType.status || type == HeartBeatType.completed) {
-      await VideoHttp.heartBeat(
-        aid: aid ?? _aid,
-        bvid: bvid ?? _bvid,
-        cid: cid ?? this.cid,
-        progress: isComplete ? -1 : progress,
-        epid: epid ?? _epid,
-        seasonId: seasonId ?? _seasonId,
-        subType: pgcType ?? _pgcType,
-        videoType: videoType ?? _videoType,
+      await NetworkThrottle.throttleRequest(
+        heartBeatKey + '_status',
+        () => VideoHttp.heartBeat(
+          aid: aid ?? _aid,
+          bvid: bvid ?? _bvid,
+          cid: cid ?? this.cid,
+          progress: isComplete ? -1 : progress,
+          epid: epid ?? _epid,
+          seasonId: seasonId ?? _seasonId,
+          subType: pgcType ?? _pgcType,
+          videoType: videoType ?? _videoType,
+        ),
+        duration: const Duration(seconds: 1), // 状态变化时可更快响应
+        force: true,
       );
       return;
     }
-    // 正常播放时，间隔5秒更新一次
-    else if (progress - _heartDuration >= 5) {
+
+    // 正常播放时，使用节流机制，间隔5秒更新一次
+    if (progress - _heartDuration >= 5) {
       _heartDuration = progress;
-      await VideoHttp.heartBeat(
-        aid: aid ?? _aid,
-        bvid: bvid ?? _bvid,
-        cid: cid ?? this.cid,
-        progress: progress,
-        epid: epid ?? _epid,
-        seasonId: seasonId ?? _seasonId,
-        subType: pgcType ?? _pgcType,
-        videoType: videoType ?? _videoType,
+      await NetworkThrottle.throttleRequest(
+        heartBeatKey,
+        () => VideoHttp.heartBeat(
+          aid: aid ?? _aid,
+          bvid: bvid ?? _bvid,
+          cid: cid ?? this.cid,
+          progress: progress,
+          epid: epid ?? _epid,
+          seasonId: seasonId ?? _seasonId,
+          subType: pgcType ?? _pgcType,
+          videoType: videoType ?? _videoType,
+        ),
+        duration: const Duration(seconds: 5),
       );
     }
   }
@@ -1726,6 +1741,21 @@ class PlPlayerController {
     _timer?.cancel();
     _timerForSeek?.cancel();
     _timerForShowingVolume?.cancel();
+
+    // 使用内存管理器清理所有相关资源
+    final disposeKey = 'pl_player_${_bvid ?? 'unknown'}_${cid ?? 'unknown'}';
+    MemoryManager.disposeByTag(disposeKey);
+
+    // 清理心跳节流
+    final heartBeatKey = 'heartbeat_${_bvid ?? 'unknown'}_${cid ?? 'unknown'}';
+    NetworkThrottle.cancel(heartBeatKey);
+    NetworkThrottle.cancel('${heartBeatKey}_status');
+
+    // 清理所有订阅
+    subscriptions.clear();
+    _positionListeners.clear();
+    _statusListeners.clear();
+
     // _position.close();
     // _playerEventSubs?.cancel();
     // _sliderPosition.close();

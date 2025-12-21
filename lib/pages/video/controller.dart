@@ -59,6 +59,8 @@ import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:PiliPlus/utils/extension/context_ext.dart';
 import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:PiliPlus/utils/extension/size_ext.dart';
+import 'package:PiliPlus/utils/memory_manager.dart';
+import 'package:PiliPlus/utils/network_throttle.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
@@ -1660,6 +1662,20 @@ class VideoDetailController extends GetxController
     if (isFileSource) {
       cacheLocalProgress();
     }
+
+    // 使用内存管理器清理资源
+    final disposeKey = 'video_controller_${bvid}_${cid.value}';
+    MemoryManager.disposeByTag(disposeKey);
+
+    // 清理网络节流
+    NetworkThrottle.cancel('video_${bvid}_${cid.value}');
+    NetworkThrottle.cancel('sponsor_block_${bvid}_${cid.value}');
+
+    // 清理定时器和订阅
+    cancelSkipTimer();
+    positionSubscription?.cancel();
+    positionSubscription = null;
+
     introScrollCtr?.dispose();
     introScrollCtr = null;
     tabCtr.dispose();
@@ -1667,6 +1683,12 @@ class VideoDetailController extends GetxController
       ..removeListener(scrollListener)
       ..dispose();
     animController?.dispose();
+
+    // 清理列表数据
+    listData.clear();
+    segmentList.clear();
+    segmentProgressList.clear();
+
     super.onClose();
   }
 

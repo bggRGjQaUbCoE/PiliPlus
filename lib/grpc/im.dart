@@ -93,10 +93,7 @@ abstract final class ImGrpc {
   }) {
     return GrpcReq.request(
       GrpcUrl.clearUnread,
-      ClearUnreadReq(
-        pageType: pageType,
-        sessionId: sessionId,
-      ),
+      ClearUnreadReq(pageType: pageType, sessionId: sessionId),
       ClearUnreadReply.fromBuffer,
     );
   }
@@ -107,10 +104,7 @@ abstract final class ImGrpc {
   }) {
     return GrpcReq.request(
       GrpcUrl.sessionUpdate,
-      SessionUpdateReq(
-        pageType: pageType,
-        sessionId: sessionId,
-      ),
+      SessionUpdateReq(pageType: pageType, sessionId: sessionId),
       SessionUpdateReply.fromBuffer,
     );
   }
@@ -121,10 +115,7 @@ abstract final class ImGrpc {
   }) {
     return GrpcReq.request(
       GrpcUrl.pinSession,
-      PinSessionReq(
-        sessionId: sessionId,
-        topTimeMicros: topTimeMicros,
-      ),
+      PinSessionReq(sessionId: sessionId, topTimeMicros: topTimeMicros),
       PinSessionReply.fromBuffer,
     );
   }
@@ -134,9 +125,7 @@ abstract final class ImGrpc {
   }) {
     return GrpcReq.request(
       GrpcUrl.unpinSession,
-      UnPinSessionReq(
-        sessionId: sessionId,
-      ),
+      UnPinSessionReq(sessionId: sessionId),
       UnPinSessionReply.fromBuffer,
     );
   }
@@ -146,9 +135,7 @@ abstract final class ImGrpc {
   }) {
     return GrpcReq.request(
       GrpcUrl.deleteSessionList,
-      DeleteSessionListReq(
-        pageType: pageType,
-      ),
+      DeleteSessionListReq(pageType: pageType),
       DeleteSessionListReply.fromBuffer,
     );
   }
@@ -158,9 +145,7 @@ abstract final class ImGrpc {
   }) {
     return GrpcReq.request(
       GrpcUrl.getImSettings,
-      GetImSettingsReq(
-        type: type,
-      ),
+      GetImSettingsReq(type: type),
       GetImSettingsReply.fromBuffer,
     );
   }

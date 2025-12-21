@@ -3,37 +3,21 @@ import 'package:flutter/material.dart';
 class Skeleton extends StatelessWidget {
   final Widget child;
 
-  const Skeleton({
-    required this.child,
-    super.key,
-  });
+  const Skeleton({required this.child, super.key});
 
   @override
   Widget build(BuildContext context) {
     final color = Theme.of(context).colorScheme.surface.withAlpha(10);
     var shimmerGradient = LinearGradient(
-      colors: [
-        Colors.transparent,
-        color,
-        color,
-        Colors.transparent,
-      ],
-      stops: const [
-        0.1,
-        0.3,
-        0.5,
-        0.7,
-      ],
+      colors: [Colors.transparent, color, color, Colors.transparent],
+      stops: const [0.1, 0.3, 0.5, 0.7],
       begin: const Alignment(-1.0, -0.3),
       end: const Alignment(1.0, 0.9),
       tileMode: TileMode.clamp,
     );
     return Shimmer(
       linearGradient: shimmerGradient,
-      child: ShimmerLoading(
-        isLoading: true,
-        child: child,
-      ),
+      child: ShimmerLoading(isLoading: true, child: child),
     );
   }
 }
@@ -43,11 +27,7 @@ class Shimmer extends StatefulWidget {
     return context.findAncestorStateOfType<ShimmerState>();
   }
 
-  const Shimmer({
-    super.key,
-    required this.linearGradient,
-    this.child,
-  });
+  const Shimmer({super.key, required this.linearGradient, this.child});
 
   final LinearGradient linearGradient;
   final Widget? child;
@@ -105,9 +85,7 @@ class ShimmerState extends State<Shimmer> with SingleTickerProviderStateMixin {
 }
 
 class _SlidingGradientTransform extends GradientTransform {
-  const _SlidingGradientTransform({
-    required this.slidePercent,
-  });
+  const _SlidingGradientTransform({required this.slidePercent});
 
   final double slidePercent;
 

@@ -267,9 +267,7 @@ class Request {
     } on DioException catch (e) {
       // if (kDebugMode) debugPrint('downloadFile error: $e');
       return Response(
-        data: {
-          'message': await AccountManager.dioError(e),
-        },
+        data: {'message': await AccountManager.dioError(e)},
         statusCode: e.response?.statusCode ?? -1,
         requestOptions: e.requestOptions,
       );

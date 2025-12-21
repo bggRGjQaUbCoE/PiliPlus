@@ -5,11 +5,7 @@ class LiveEmoteDatum {
   int? pkgType;
   String? currentCover;
 
-  LiveEmoteDatum({
-    this.emoticons,
-    this.pkgType,
-    this.currentCover,
-  });
+  LiveEmoteDatum({this.emoticons, this.pkgType, this.currentCover});
 
   factory LiveEmoteDatum.fromJson(Map<String, dynamic> json) => LiveEmoteDatum(
     emoticons: (json['emoticons'] as List<dynamic>?)

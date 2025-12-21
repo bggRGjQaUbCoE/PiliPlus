@@ -21,17 +21,14 @@ class Attributes {
 
   Attributes({this.clazz});
 
-  factory Attributes.fromJson(Map<String, dynamic> json) => Attributes(
-    clazz: json['class'] as String?,
-  );
+  factory Attributes.fromJson(Map<String, dynamic> json) =>
+      Attributes(clazz: json['class'] as String?);
 }
 
 class Insert {
   InsertCard? card;
 
-  Insert({
-    this.card,
-  });
+  Insert({this.card});
 
   Insert.fromJson(Map<String, dynamic> json) {
     if (json['article-card'] != null) {

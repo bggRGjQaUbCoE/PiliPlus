@@ -4,10 +4,7 @@ class PgcCondition {
   String? field;
   String? name;
 
-  PgcCondition({
-    this.field,
-    this.name,
-  });
+  PgcCondition({this.field, this.name});
 }
 
 class PgcConditionFilter extends PgcCondition {

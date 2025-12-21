@@ -3,8 +3,7 @@ enum SkipType {
   skipOnce('跳过一次'),
   skipManually('手动跳过'),
   showOnly('仅显示'),
-  disable('禁用')
-  ;
+  disable('禁用');
 
   final String title;
   const SkipType(this.title);

@@ -206,9 +206,7 @@ abstract class ButtonStyleButton extends StatefulWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(
-        FlagProperty('enabled', value: enabled, ifFalse: 'disabled'),
-      )
+      ..add(FlagProperty('enabled', value: enabled, ifFalse: 'disabled'))
       ..add(
         DiagnosticsProperty<ButtonStyle>('style', style, defaultValue: null),
       )

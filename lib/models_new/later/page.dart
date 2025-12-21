@@ -3,11 +3,7 @@ class Page {
   int? page;
   int? duration;
 
-  Page({
-    this.cid,
-    this.page,
-    this.duration,
-  });
+  Page({this.cid, this.page, this.duration});
 
   factory Page.fromJson(Map<String, dynamic> json) => Page(
     cid: json['cid'] as int?,

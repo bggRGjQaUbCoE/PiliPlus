@@ -4,8 +4,6 @@ class UidSetting {
 
   UidSetting({this.id, this.setting});
 
-  factory UidSetting.fromJson(Map<String, dynamic> json) => UidSetting(
-    id: json['id'] as int?,
-    setting: json['setting'] as int?,
-  );
+  factory UidSetting.fromJson(Map<String, dynamic> json) =>
+      UidSetting(id: json['id'] as int?, setting: json['setting'] as int?);
 }

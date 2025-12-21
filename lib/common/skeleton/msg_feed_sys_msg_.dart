@@ -13,37 +13,17 @@ class MsgFeedSysMsgSkeleton extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              width: 125,
-              height: 16,
-              color: color,
-            ),
+            Container(width: 125, height: 16, color: color),
             const SizedBox(height: 6),
-            Container(
-              width: double.infinity,
-              height: 12,
-              color: color,
-            ),
+            Container(width: double.infinity, height: 12, color: color),
             const SizedBox(height: 4),
-            Container(
-              width: double.infinity,
-              height: 12,
-              color: color,
-            ),
+            Container(width: double.infinity, height: 12, color: color),
             const SizedBox(height: 4),
-            Container(
-              width: 100,
-              height: 12,
-              color: color,
-            ),
+            Container(width: 100, height: 12, color: color),
             const SizedBox(height: 4),
             Align(
               alignment: Alignment.centerRight,
-              child: Container(
-                width: 100,
-                height: 10,
-                color: color,
-              ),
+              child: Container(width: 100, height: 10, color: color),
             ),
           ],
         ),

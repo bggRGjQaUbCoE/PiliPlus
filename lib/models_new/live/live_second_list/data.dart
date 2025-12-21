@@ -6,11 +6,7 @@ class LiveSecondData {
   List<CardLiveItem>? cardList;
   List<LiveSecondTag>? newTags;
 
-  LiveSecondData({
-    this.count,
-    this.cardList,
-    this.newTags,
-  });
+  LiveSecondData({this.count, this.cardList, this.newTags});
 
   factory LiveSecondData.fromJson(Map<String, dynamic> json) => LiveSecondData(
     count: json['count'] as int?,

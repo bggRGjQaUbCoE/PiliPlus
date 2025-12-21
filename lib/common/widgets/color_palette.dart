@@ -24,10 +24,7 @@ class ColorPalette extends StatelessWidget {
           _coloredBox(primary),
           Expanded(
             child: Row(
-              children: [
-                _coloredBox(tertiary),
-                _coloredBox(primaryContainer),
-              ],
+              children: [_coloredBox(tertiary), _coloredBox(primaryContainer)],
             ),
           ),
         ],
@@ -46,11 +43,7 @@ class ColorPalette extends StatelessWidget {
               color: colorScheme.surfaceContainer,
               shape: BoxShape.circle,
             ),
-            child: Icon(
-              Icons.check_rounded,
-              color: primary,
-              size: 12,
-            ),
+            child: Icon(Icons.check_rounded, color: primary, size: 12),
           ),
         ],
       );
@@ -70,9 +63,6 @@ class ColorPalette extends StatelessWidget {
   }
 
   static Widget _coloredBox(Color color) => Expanded(
-    child: ColoredBox(
-      color: color,
-      child: const SizedBox.expand(),
-    ),
+    child: ColoredBox(color: color, child: const SizedBox.expand()),
   );
 }

@@ -4,10 +4,7 @@ class LiveDmInfoData {
   String? token;
   List<HostList>? hostList;
 
-  LiveDmInfoData({
-    this.token,
-    this.hostList,
-  });
+  LiveDmInfoData({this.token, this.hostList});
 
   factory LiveDmInfoData.fromJson(Map<String, dynamic> json) => LiveDmInfoData(
     token: json['token'] as String?,

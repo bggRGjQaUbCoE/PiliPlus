@@ -1,8 +1,5 @@
 class FollowUpModel {
-  FollowUpModel({
-    this.liveUsers,
-    required this.upList,
-  });
+  FollowUpModel({this.liveUsers, required this.upList});
 
   LiveUsers? liveUsers;
   late List<UpItem> upList;
@@ -38,11 +35,7 @@ class DynUpList {
 }
 
 class LiveUsers {
-  LiveUsers({
-    this.count,
-    this.group,
-    this.items,
-  });
+  LiveUsers({this.count, this.group, this.items});
 
   int? count;
   String? group;
@@ -80,12 +73,7 @@ class UpItem {
   late int mid;
   String? uname;
 
-  UpItem({
-    this.face,
-    this.hasUpdate,
-    required this.mid,
-    this.uname,
-  });
+  UpItem({this.face, this.hasUpdate, required this.mid, this.uname});
 
   UpItem.fromJson(Map<String, dynamic> json) {
     face = json['face'];

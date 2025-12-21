@@ -88,11 +88,7 @@ class RenderMaskedIcon extends RenderProxyBox {
     rect = rect
         .translate(-strokeOffset, strokeOffset)
         .deflate(size.width * lineLengthScale);
-    canvas.drawLine(
-      rect.topLeft,
-      rect.bottomRight,
-      linePaint,
-    );
+    canvas.drawLine(rect.topLeft, rect.bottomRight, linePaint);
   }
 }
 

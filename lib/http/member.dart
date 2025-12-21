@@ -92,11 +92,7 @@ abstract final class MemberHttp {
   }) async {
     var res = await Request().get(
       Api.seasonSeries,
-      queryParameters: {
-        'mid': mid,
-        'page_num': pn,
-        'page_size': 10,
-      },
+      queryParameters: {'mid': mid, 'page_num': pn, 'page_size': 10},
     );
     if (res.data['code'] == 0) {
       return Success(
@@ -329,10 +325,7 @@ abstract final class MemberHttp {
   }) async {
     var res = await Request().get(
       Api.memberCardInfo,
-      queryParameters: {
-        'mid': mid,
-        'photo': false,
-      },
+      queryParameters: {'mid': mid, 'photo': false},
     );
     if (res.data['code'] == 0) {
       return Success(MemberCardInfoData.fromJson(res.data['data']));
@@ -381,9 +374,7 @@ abstract final class MemberHttp {
     if (res.data['code'] == 0) {
       return Success(SearchArchiveData.fromJson(res.data['data']));
     } else {
-      Map errMap = const {
-        -352: '风控校验失败，请检查登录状态',
-      };
+      Map errMap = const {-352: '风控校验失败，请检查登录状态'};
       return Error(errMap[res.data['code']] ?? res.data['message']);
     }
   }
@@ -432,9 +423,7 @@ abstract final class MemberHttp {
         return Error('$e\n\n$s');
       }
     } else {
-      Map errMap = const {
-        -352: '风控校验失败，请检查登录状态',
-      };
+      Map errMap = const {-352: '风控校验失败，请检查登录状态'};
       return Error(errMap[res.data['code']] ?? res.data['message']);
     }
   }
@@ -483,10 +472,7 @@ abstract final class MemberHttp {
   }) async {
     var res = await Request().post(
       isAdd ? Api.addSpecial : Api.delSpecial,
-      data: {
-        'fid': fid,
-        'csrf': Accounts.main.csrf,
-      },
+      data: {'fid': fid, 'csrf': Accounts.main.csrf},
       options: Options(contentType: Headers.formUrlEncodedContentType),
     );
     if (res.data['code'] == 0) {
@@ -528,12 +514,7 @@ abstract final class MemberHttp {
   }) async {
     var res = await Request().get(
       Api.followUpGroup,
-      queryParameters: {
-        'mid': mid,
-        'tagid': tagid,
-        'pn': pn,
-        'ps': ps,
-      },
+      queryParameters: {'mid': mid, 'tagid': tagid, 'pn': pn, 'ps': ps},
     );
     if (res.data['code'] == 0) {
       return Success(
@@ -557,10 +538,7 @@ abstract final class MemberHttp {
         'x-bili-device-req-json':
             '{"platform":"web","device":"pc","spmid":"333.1387"}',
       },
-      data: {
-        'tag': tagName,
-        'csrf': Accounts.main.csrf,
-      },
+      data: {'tag': tagName, 'csrf': Accounts.main.csrf},
       options: Options(contentType: Headers.formUrlEncodedContentType),
     );
     if (res.data['code'] == 0) {
@@ -580,11 +558,7 @@ abstract final class MemberHttp {
         'x-bili-device-req-json':
             '{"platform":"web","device":"pc","spmid":"333.1387"}',
       },
-      data: {
-        'tagid': tagid,
-        'name': name,
-        'csrf': Accounts.main.csrf,
-      },
+      data: {'tagid': tagid, 'name': name, 'csrf': Accounts.main.csrf},
       options: Options(contentType: Headers.formUrlEncodedContentType),
     );
     if (res.data['code'] == 0) {
@@ -601,10 +575,7 @@ abstract final class MemberHttp {
         'x-bili-device-req-json':
             '{"platform":"web","device":"pc","spmid":"333.1387"}',
       },
-      data: {
-        'tagid': tagid,
-        'csrf': Accounts.main.csrf,
-      },
+      data: {'tagid': tagid, 'csrf': Accounts.main.csrf},
       options: Options(contentType: Headers.formUrlEncodedContentType),
     );
     if (res.data['code'] == 0) {
@@ -727,11 +698,7 @@ abstract final class MemberHttp {
   }) async {
     var res = await Request().get(
       Api.coinArc,
-      queryParameters: {
-        'pn': page,
-        'ps': 20,
-        'vmid': mid,
-      },
+      queryParameters: {'pn': page, 'ps': 20, 'vmid': mid},
     );
     if (res.data['code'] == 0) {
       return Success(CoinLikeArcData.fromJson(res.data['data']));
@@ -746,11 +713,7 @@ abstract final class MemberHttp {
   }) async {
     var res = await Request().get(
       Api.likeArc,
-      queryParameters: {
-        'pn': page,
-        'ps': 20,
-        'vmid': mid,
-      },
+      queryParameters: {'pn': page, 'ps': 20, 'vmid': mid},
     );
     if (res.data['code'] == 0) {
       return Success(CoinLikeArcData.fromJson(res.data['data']));

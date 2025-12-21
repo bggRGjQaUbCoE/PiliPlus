@@ -68,22 +68,13 @@ class BiliDownloadEntryInfo with MultiSelectData {
       itemBuilder: (_) => [
         PopupMenuItem(
           height: 35,
-          child: const Text(
-            '查看详情页',
-            style: TextStyle(fontSize: 13),
-          ),
+          child: const Text('查看详情页', style: TextStyle(fontSize: 13)),
           onTap: () {
             if (ep case final ep?) {
               if (ep.from == VideoType.pugv.name) {
-                PageUtils.viewPugv(
-                  seasonId: seasonId,
-                  epId: ep.episodeId,
-                );
+                PageUtils.viewPugv(seasonId: seasonId, epId: ep.episodeId);
               } else {
-                PageUtils.viewPgc(
-                  seasonId: seasonId,
-                  epId: ep.episodeId,
-                );
+                PageUtils.viewPgc(seasonId: seasonId, epId: ep.episodeId);
               }
               return;
             }
@@ -102,9 +93,7 @@ class BiliDownloadEntryInfo with MultiSelectData {
             height: 35,
             child: Text(
               '访问${ownerName != null ? '：$ownerName' : '用户主页'}',
-              style: const TextStyle(
-                fontSize: 13,
-              ),
+              style: const TextStyle(fontSize: 13),
             ),
             onTap: () => Get.toNamed('/member?mid=$mid'),
           ),
@@ -289,20 +278,12 @@ class SourceInfo {
   final int avId;
   final int cid;
 
-  SourceInfo({
-    required this.avId,
-    required this.cid,
-  });
+  SourceInfo({required this.avId, required this.cid});
 
-  factory SourceInfo.fromJson(Map<String, dynamic> json) => SourceInfo(
-    avId: json['av_id'] as int,
-    cid: json['cid'] as int,
-  );
+  factory SourceInfo.fromJson(Map<String, dynamic> json) =>
+      SourceInfo(avId: json['av_id'] as int, cid: json['cid'] as int);
 
-  Map<String, dynamic> toJson() => <String, dynamic>{
-    'av_id': avId,
-    'cid': cid,
-  };
+  Map<String, dynamic> toJson() => <String, dynamic>{'av_id': avId, 'cid': cid};
 }
 
 class EpInfo {
@@ -393,8 +374,7 @@ enum DownloadStatus {
   failDanmaku('获取弹幕失败'),
   failPlayUrl('获取播放地址失败'),
   pause('暂停中'),
-  wait('等待中')
-  ;
+  wait('等待中');
 
   final String message;
   const DownloadStatus(this.message);

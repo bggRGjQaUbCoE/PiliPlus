@@ -330,9 +330,7 @@ class RichText extends MultiChildRenderObjectWidget {
         ),
       )
       ..add(StringProperty('text', text.toPlainText()))
-      ..add(
-        DiagnosticsProperty<Locale>('locale', locale, defaultValue: null),
-      )
+      ..add(DiagnosticsProperty<Locale>('locale', locale, defaultValue: null))
       ..add(
         DiagnosticsProperty<StrutStyle>(
           'strutStyle',

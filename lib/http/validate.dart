@@ -7,15 +7,9 @@ abstract final class ValidateHttp {
   static Future gaiaVgateRegister(String vVoucher) async {
     final res = await Request().post(
       Api.gaiaVgateRegister,
-      queryParameters: {
-        if (Accounts.main.isLogin) 'csrf': Accounts.main.csrf,
-      },
-      data: {
-        'v_voucher': vVoucher,
-      },
-      options: Options(
-        contentType: Headers.formUrlEncodedContentType,
-      ),
+      queryParameters: {if (Accounts.main.isLogin) 'csrf': Accounts.main.csrf},
+      data: {'v_voucher': vVoucher},
+      options: Options(contentType: Headers.formUrlEncodedContentType),
     );
     if (res.data['code'] == 0) {
       return {'status': true, 'data': res.data['data']};
@@ -32,9 +26,7 @@ abstract final class ValidateHttp {
   }) async {
     final res = await Request().post(
       Api.gaiaVgateValidate,
-      queryParameters: {
-        if (Accounts.main.isLogin) 'csrf': Accounts.main.csrf,
-      },
+      queryParameters: {if (Accounts.main.isLogin) 'csrf': Accounts.main.csrf},
       data: {
         'challenge': challenge,
         'seccode': seccode,

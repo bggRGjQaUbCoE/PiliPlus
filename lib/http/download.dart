@@ -199,10 +199,7 @@ abstract final class DownloadHttp {
           ..qualityPithyDescription = description;
 
         final List<Type1PlayerCodecConfig> playerCodecConfigList = [
-          Type1PlayerCodecConfig(
-            player: "IJK_PLAYER",
-            useIjkMediaCodec: false,
-          ),
+          Type1PlayerCodecConfig(player: "IJK_PLAYER", useIjkMediaCodec: false),
           Type1PlayerCodecConfig(
             player: "ANDROID_PLAYER",
             useIjkMediaCodec: false,

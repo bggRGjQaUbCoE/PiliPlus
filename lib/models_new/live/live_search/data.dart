@@ -8,13 +8,7 @@ class LiveSearchData {
   Room? room;
   User? user;
 
-  LiveSearchData({
-    this.type,
-    this.page,
-    this.pagesize,
-    this.room,
-    this.user,
-  });
+  LiveSearchData({this.type, this.page, this.pagesize, this.room, this.user});
 
   factory LiveSearchData.fromJson(Map<String, dynamic> json) => LiveSearchData(
     type: json['type'] as String?,

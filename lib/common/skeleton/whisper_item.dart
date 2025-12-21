@@ -12,29 +12,14 @@ class WhisperItemSkeleton extends StatelessWidget {
         leading: Container(
           width: 45,
           height: 45,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: color,
-          ),
+          decoration: BoxDecoration(shape: BoxShape.circle, color: color),
         ),
         title: UnconstrainedBox(
           alignment: Alignment.centerLeft,
-          child: Container(
-            width: 100,
-            height: 11,
-            color: color,
-          ),
+          child: Container(width: 100, height: 11, color: color),
         ),
-        subtitle: Container(
-          color: color,
-          width: 125,
-          height: 11,
-        ),
-        trailing: Container(
-          color: color,
-          width: 50,
-          height: 11,
-        ),
+        subtitle: Container(color: color, width: 125, height: 11),
+        trailing: Container(color: color, width: 50, height: 11),
       ),
     );
   }

@@ -111,10 +111,7 @@ class Option {
   late int cnt;
   String? imgUrl;
 
-  Option({
-    this.optDesc,
-    this.imgUrl,
-  });
+  Option({this.optDesc, this.imgUrl});
 
   Option.fromJson(Map<String, dynamic> json) {
     optIdx = json['opt_idx'];
@@ -123,8 +120,5 @@ class Option {
     imgUrl = json['img_url'];
   }
 
-  Map<String, dynamic> toJson() => {
-    'opt_desc': optDesc,
-    'img_url': imgUrl,
-  };
+  Map<String, dynamic> toJson() => {'opt_desc': optDesc, 'img_url': imgUrl};
 }

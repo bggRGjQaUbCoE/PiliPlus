@@ -729,9 +729,7 @@ class _DraggableScrollableSheetState extends State<DraggableScrollableSheet> {
 ///    [_DraggableScrollableSheetScrollController] as the primary controller for
 ///    descendants.
 class _DraggableScrollableSheetScrollController extends ScrollController {
-  _DraggableScrollableSheetScrollController({
-    required this.extent,
-  });
+  _DraggableScrollableSheetScrollController({required this.extent});
 
   _DraggableSheetExtent extent;
   VoidCallback? onPositionDetached;

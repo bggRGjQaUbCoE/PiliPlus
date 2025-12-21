@@ -4,8 +4,6 @@ class BaseInfo {
 
   BaseInfo({this.uname, this.face});
 
-  factory BaseInfo.fromJson(Map<String, dynamic> json) => BaseInfo(
-    uname: json['uname'] as String?,
-    face: json['face'] as String?,
-  );
+  factory BaseInfo.fromJson(Map<String, dynamic> json) =>
+      BaseInfo(uname: json['uname'] as String?, face: json['face'] as String?);
 }

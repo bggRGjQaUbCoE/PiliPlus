@@ -3,8 +3,7 @@ enum ArticleOrderType {
   pubdate('最新发布'),
   click('最多点击'),
   attention('最多喜欢'),
-  scores('最多评论')
-  ;
+  scores('最多评论');
 
   String get order => name;
   final String label;
@@ -20,8 +19,7 @@ enum ArticleZoneType {
   interest('兴趣', 29),
   novel('轻小说', 16),
   tech('科技', 17),
-  note('笔记', 41)
-  ;
+  note('笔记', 41);
 
   final String label;
   final int categoryId;

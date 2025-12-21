@@ -1,10 +1,5 @@
 class MemberTagItemModel {
-  MemberTagItemModel({
-    this.count,
-    this.name,
-    this.tagid,
-    this.tip,
-  });
+  MemberTagItemModel({this.count, this.name, this.tagid, this.tip});
 
   int? count;
   String? name;

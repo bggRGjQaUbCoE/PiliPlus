@@ -652,12 +652,8 @@ class _InkResponseStateWidget extends StatefulWidget {
       if (onSecondaryTapCancel != null) 'secondary tap cancel',
     ];
     properties
-      ..add(
-        IterableProperty<String>('gestures', gestures, ifEmpty: '<none>'),
-      )
-      ..add(
-        DiagnosticsProperty<MouseCursor>('mouseCursor', mouseCursor),
-      )
+      ..add(IterableProperty<String>('gestures', gestures, ifEmpty: '<none>'))
+      ..add(DiagnosticsProperty<MouseCursor>('mouseCursor', mouseCursor))
       ..add(
         DiagnosticsProperty<bool>(
           'containedInkWell',
@@ -1211,9 +1207,7 @@ class _InkResponseState extends State<_InkResponseStateWidget>
       WidgetState.pressed,
     };
     final Set<WidgetState> nonHighlightableStates = statesController.value
-        .difference(
-          highlightableStates,
-        );
+        .difference(highlightableStates);
     // Each highlightable state will be resolved separately to get the corresponding color.
     // For this resolution to be correct, the non-highlightable states should be preserved.
     final Set<WidgetState> pressed = <WidgetState>{

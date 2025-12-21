@@ -27,10 +27,7 @@ Future<void> showMemberReportDialog(
           spacing: 4,
           crossAxisAlignment: .start,
           children: [
-            Text(
-              '举报: $name',
-              style: const TextStyle(fontSize: 18),
-            ),
+            Text('举报: $name', style: const TextStyle(fontSize: 18)),
             Text('uid: $mid'),
           ],
         ),
@@ -92,46 +89,43 @@ Future<void> showMemberReportDialog(
               Builder(
                 builder: (context) => Column(
                   crossAxisAlignment: .start,
-                  children: List.generate(
-                    _reasonV2.length,
-                    (index) {
-                      final checked = index == reasonV2;
-                      return ListTile(
-                        dense: true,
-                        minTileHeight: 40,
-                        onTap: () {
-                          if (checked) {
-                            reasonV2 = null;
-                          } else {
-                            reasonV2 = index;
-                          }
-                          (context as Element).markNeedsBuild();
-                        },
-                        title: Row(
-                          spacing: 8,
-                          children: [
-                            checked
-                                ? Icon(
-                                    size: 22,
-                                    Icons.radio_button_checked,
-                                    color: theme.colorScheme.primary,
-                                  )
-                                : Icon(
-                                    size: 22,
-                                    Icons.radio_button_off,
-                                    color: theme.colorScheme.onSurfaceVariant,
-                                  ),
-                            Expanded(
-                              child: Text(
-                                _reasonV2[index],
-                                style: const TextStyle(fontSize: 14),
-                              ),
+                  children: List.generate(_reasonV2.length, (index) {
+                    final checked = index == reasonV2;
+                    return ListTile(
+                      dense: true,
+                      minTileHeight: 40,
+                      onTap: () {
+                        if (checked) {
+                          reasonV2 = null;
+                        } else {
+                          reasonV2 = index;
+                        }
+                        (context as Element).markNeedsBuild();
+                      },
+                      title: Row(
+                        spacing: 8,
+                        children: [
+                          checked
+                              ? Icon(
+                                  size: 22,
+                                  Icons.radio_button_checked,
+                                  color: theme.colorScheme.primary,
+                                )
+                              : Icon(
+                                  size: 22,
+                                  Icons.radio_button_off,
+                                  color: theme.colorScheme.onSurfaceVariant,
+                                ),
+                          Expanded(
+                            child: Text(
+                              _reasonV2[index],
+                              style: const TextStyle(fontSize: 14),
                             ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }),
                 ),
               ),
             ],

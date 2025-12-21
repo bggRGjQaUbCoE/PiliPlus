@@ -21,10 +21,7 @@ abstract final class FavHttp {
   static Future<LoadingState<Null>> favFavFolder(Object mediaId) async {
     var res = await Request().post(
       Api.favFavFolder,
-      data: {
-        'media_id': mediaId,
-        'csrf': Accounts.main.csrf,
-      },
+      data: {'media_id': mediaId, 'csrf': Accounts.main.csrf},
       options: Options(contentType: Headers.formUrlEncodedContentType),
     );
     if (res.data['code'] == 0) {
@@ -37,10 +34,7 @@ abstract final class FavHttp {
   static Future<LoadingState<Null>> unfavFavFolder(Object mediaId) async {
     var res = await Request().post(
       Api.unfavFavFolder,
-      data: {
-        'media_id': mediaId,
-        'csrf': Accounts.main.csrf,
-      },
+      data: {'media_id': mediaId, 'csrf': Accounts.main.csrf},
       options: Options(contentType: Headers.formUrlEncodedContentType),
     );
     if (res.data['code'] == 0) {
@@ -86,10 +80,7 @@ abstract final class FavHttp {
     var res = type == 11
         ? await Request().post(
             Api.unfavFolder,
-            data: {
-              'media_id': id,
-              'csrf': Accounts.main.csrf,
-            },
+            data: {'media_id': id, 'csrf': Accounts.main.csrf},
             options: Options(contentType: Headers.formUrlEncodedContentType),
           )
         : await Request().post(
@@ -115,11 +106,7 @@ abstract final class FavHttp {
   }) async {
     var res = await Request().get(
       Api.favSeasonList,
-      queryParameters: {
-        'season_id': id,
-        'ps': ps,
-        'pn': pn,
-      },
+      queryParameters: {'season_id': id, 'ps': ps, 'pn': pn},
     );
     if (res.data['code'] == 0) {
       return Success(SubDetailData.fromJson(res.data['data']));
@@ -151,10 +138,7 @@ abstract final class FavHttp {
   static Future<LoadingState<Null>> addFavPugv(Object seasonId) async {
     var res = await Request().post(
       Api.addFavPugv,
-      data: {
-        'season_id': seasonId,
-        'csrf': Accounts.main.csrf,
-      },
+      data: {'season_id': seasonId, 'csrf': Accounts.main.csrf},
       options: Options(contentType: Headers.formUrlEncodedContentType),
     );
     if (res.data['code'] == 0) {
@@ -167,10 +151,7 @@ abstract final class FavHttp {
   static Future<LoadingState<Null>> delFavPugv(Object seasonId) async {
     var res = await Request().post(
       Api.delFavPugv,
-      data: {
-        'season_id': seasonId,
-        'csrf': Accounts.main.csrf,
-      },
+      data: {'season_id': seasonId, 'csrf': Accounts.main.csrf},
       options: Options(contentType: Headers.formUrlEncodedContentType),
     );
     if (res.data['code'] == 0) {
@@ -201,10 +182,7 @@ abstract final class FavHttp {
   static Future<LoadingState<Null>> addFavTopic(Object topicId) async {
     var res = await Request().post(
       Api.addFavTopic,
-      data: {
-        'topic_id': topicId,
-        'csrf': Accounts.main.csrf,
-      },
+      data: {'topic_id': topicId, 'csrf': Accounts.main.csrf},
       options: Options(contentType: Headers.formUrlEncodedContentType),
     );
     if (res.data['code'] == 0) {
@@ -217,10 +195,7 @@ abstract final class FavHttp {
   static Future<LoadingState<Null>> delFavTopic(Object topicId) async {
     var res = await Request().post(
       Api.delFavTopic,
-      data: {
-        'topic_id': topicId,
-        'csrf': Accounts.main.csrf,
-      },
+      data: {'topic_id': topicId, 'csrf': Accounts.main.csrf},
       options: Options(contentType: Headers.formUrlEncodedContentType),
     );
     if (res.data['code'] == 0) {
@@ -257,10 +232,7 @@ abstract final class FavHttp {
   }) async {
     var res = await Request().get(
       Api.favArticle,
-      queryParameters: {
-        'page_size': 20,
-        'page': page,
-      },
+      queryParameters: {'page_size': 20, 'page': page},
     );
     if (res.data['code'] == 0) {
       return Success(FavArticleData.fromJson(res.data['data']));
@@ -269,18 +241,11 @@ abstract final class FavHttp {
     }
   }
 
-  static Future<LoadingState<Null>> addFavArticle({
-    required Object id,
-  }) async {
+  static Future<LoadingState<Null>> addFavArticle({required Object id}) async {
     var res = await Request().post(
       Api.addFavArticle,
-      data: {
-        'id': id,
-        'csrf': Accounts.main.csrf,
-      },
-      options: Options(
-        contentType: Headers.formUrlEncodedContentType,
-      ),
+      data: {'id': id, 'csrf': Accounts.main.csrf},
+      options: Options(contentType: Headers.formUrlEncodedContentType),
     );
     if (res.data['code'] == 0) {
       return const Success(null);
@@ -289,18 +254,11 @@ abstract final class FavHttp {
     }
   }
 
-  static Future<LoadingState<Null>> delFavArticle({
-    required Object id,
-  }) async {
+  static Future<LoadingState<Null>> delFavArticle({required Object id}) async {
     var res = await Request().post(
       Api.delFavArticle,
-      data: {
-        'id': id,
-        'csrf': Accounts.main.csrf,
-      },
-      options: Options(
-        contentType: Headers.formUrlEncodedContentType,
-      ),
+      data: {'id': id, 'csrf': Accounts.main.csrf},
+      options: Options(contentType: Headers.formUrlEncodedContentType),
     );
     if (res.data['code'] == 0) {
       return const Success(null);
@@ -314,11 +272,7 @@ abstract final class FavHttp {
   }) async {
     var res = await Request().get(
       Api.userNoteList,
-      queryParameters: {
-        'pn': page,
-        'ps': 10,
-        'csrf': Accounts.main.csrf,
-      },
+      queryParameters: {'pn': page, 'ps': 10, 'csrf': Accounts.main.csrf},
     );
     if (res.data['code'] == 0) {
       List<FavNoteItemModel>? list = (res.data['data']?['list'] as List?)
@@ -335,11 +289,7 @@ abstract final class FavHttp {
   }) async {
     var res = await Request().get(
       Api.noteList,
-      queryParameters: {
-        'pn': page,
-        'ps': 10,
-        'csrf': Accounts.main.csrf,
-      },
+      queryParameters: {'pn': page, 'ps': 10, 'csrf': Accounts.main.csrf},
     );
     if (res.data['code'] == 0) {
       List<FavNoteItemModel>? list = (res.data['data']?['list'] as List?)
@@ -361,9 +311,7 @@ abstract final class FavHttp {
         isPublish ? 'cvids' : 'note_ids': noteIds,
         'csrf': Accounts.main.csrf,
       },
-      options: Options(
-        contentType: Headers.formUrlEncodedContentType,
-      ),
+      options: Options(contentType: Headers.formUrlEncodedContentType),
     );
     if (res.data['code'] == 0) {
       return const Success(null);
@@ -402,11 +350,7 @@ abstract final class FavHttp {
   }) async {
     var res = await Request().get(
       Api.userFavFolder,
-      queryParameters: {
-        'pn': pn,
-        'ps': ps,
-        'up_mid': mid,
-      },
+      queryParameters: {'pn': pn, 'ps': ps, 'up_mid': mid},
     );
     if (res.data['code'] == 0) {
       return Success(FavFolderData.fromJson(res.data['data']));
@@ -418,17 +362,12 @@ abstract final class FavHttp {
   static Future<LoadingState<Null>> sortFavFolder({
     required String sort,
   }) async {
-    Map<String, dynamic> data = {
-      'sort': sort,
-      'csrf': Accounts.main.csrf,
-    };
+    Map<String, dynamic> data = {'sort': sort, 'csrf': Accounts.main.csrf};
     AppSign.appSign(data);
     var res = await Request().post(
       Api.sortFavFolder,
       data: data,
-      options: Options(
-        contentType: Headers.formUrlEncodedContentType,
-      ),
+      options: Options(contentType: Headers.formUrlEncodedContentType),
     );
     if (res.data['code'] == 0) {
       return const Success(null);
@@ -450,9 +389,7 @@ abstract final class FavHttp {
     var res = await Request().post(
       Api.sortFav,
       data: data,
-      options: Options(
-        contentType: Headers.formUrlEncodedContentType,
-      ),
+      options: Options(contentType: Headers.formUrlEncodedContentType),
     );
     if (res.data['code'] == 0) {
       return const Success(null);
@@ -461,9 +398,7 @@ abstract final class FavHttp {
     }
   }
 
-  static Future<LoadingState<Null>> cleanFav({
-    required Object mediaId,
-  }) async {
+  static Future<LoadingState<Null>> cleanFav({required Object mediaId}) async {
     var res = await Request().post(
       Api.cleanFav,
       data: {
@@ -471,9 +406,7 @@ abstract final class FavHttp {
         'platform': 'web',
         'csrf': Accounts.main.csrf,
       },
-      options: Options(
-        contentType: Headers.formUrlEncodedContentType,
-      ),
+      options: Options(contentType: Headers.formUrlEncodedContentType),
     );
     if (res.data['code'] == 0) {
       return const Success(null);
@@ -492,9 +425,7 @@ abstract final class FavHttp {
         'platform': 'web',
         'csrf': Accounts.main.csrf,
       },
-      options: Options(
-        contentType: Headers.formUrlEncodedContentType,
-      ),
+      options: Options(contentType: Headers.formUrlEncodedContentType),
     );
     if (res.data['code'] == 0) {
       return const Success(null);
@@ -521,9 +452,7 @@ abstract final class FavHttp {
         'csrf': Accounts.main.csrf,
         'media_id': ?mediaId,
       },
-      options: Options(
-        contentType: Headers.formUrlEncodedContentType,
-      ),
+      options: Options(contentType: Headers.formUrlEncodedContentType),
     );
     if (res.data['code'] == 0) {
       return Success(FavFolderInfo.fromJson(res.data['data']));
@@ -537,9 +466,7 @@ abstract final class FavHttp {
   }) async {
     var res = await Request().get(
       Api.favFolderInfo,
-      queryParameters: {
-        'media_id': mediaId,
-      },
+      queryParameters: {'media_id': mediaId},
     );
     if (res.data['code'] == 0) {
       return Success(FavFolderInfo.fromJson(res.data['data']));
@@ -559,9 +486,7 @@ abstract final class FavHttp {
         'season_id': seasonId,
         'csrf': Accounts.main.csrf,
       },
-      options: Options(
-        contentType: Headers.formUrlEncodedContentType,
-      ),
+      options: Options(contentType: Headers.formUrlEncodedContentType),
     );
     if (res.data['code'] == 0) {
       return const Success(null);
@@ -611,9 +536,7 @@ abstract final class FavHttp {
   }) async {
     var res = await Request().post(
       Api.communityAction,
-      queryParameters: {
-        'csrf': Accounts.main.csrf,
-      },
+      queryParameters: {'csrf': Accounts.main.csrf},
       data: {
         "entity": {
           "object_id_str": opusId,
@@ -659,11 +582,7 @@ abstract final class FavHttp {
   }) async {
     var res = await Request().post(
       Api.unfavAll,
-      data: {
-        'rid': rid,
-        'type': type,
-        'csrf': Accounts.main.csrf,
-      },
+      data: {'rid': rid, 'type': type, 'csrf': Accounts.main.csrf},
       options: Options(contentType: Headers.formUrlEncodedContentType),
     );
     if (res.data['code'] == 0) {
@@ -726,11 +645,7 @@ abstract final class FavHttp {
   }) async {
     var res = await Request().get(
       Api.favFolder,
-      queryParameters: {
-        'up_mid': mid,
-        'rid': rid,
-        'type': ?type,
-      },
+      queryParameters: {'up_mid': mid, 'rid': rid, 'type': ?type},
     );
     if (res.data['code'] == 0) {
       return Success(FavFolderData.fromJson(res.data['data']));

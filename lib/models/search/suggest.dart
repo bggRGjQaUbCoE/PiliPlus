@@ -1,7 +1,5 @@
 class SearchSuggestModel {
-  SearchSuggestModel({
-    this.tag,
-  });
+  SearchSuggestModel({this.tag});
 
   List<SearchSuggestItem>? tag;
 

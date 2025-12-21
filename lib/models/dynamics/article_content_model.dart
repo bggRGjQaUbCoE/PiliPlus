@@ -54,9 +54,7 @@ class Pic {
 }
 
 class Line {
-  Line({
-    this.pic,
-  });
+  Line({this.pic});
   Pic? pic;
 
   Line.fromJson(Map<String, dynamic> json) {
@@ -65,9 +63,7 @@ class Line {
 }
 
 class Format {
-  Format({
-    this.align,
-  });
+  Format({this.align});
   int? align;
 
   Format.fromJson(Map<String, dynamic> json) {
@@ -76,9 +72,7 @@ class Format {
 }
 
 class Text {
-  Text({
-    this.nodes,
-  });
+  Text({this.nodes});
   List<Node>? nodes;
 
   Text.fromJson(Map<String, dynamic> json) {
@@ -136,11 +130,7 @@ class Word {
 }
 
 class Style {
-  Style({
-    this.bold,
-    this.italic,
-    this.strikethrough,
-  });
+  Style({this.bold, this.italic, this.strikethrough});
   bool? bold;
   bool? italic;
   bool? strikethrough;
@@ -355,10 +345,7 @@ class Common {
 }
 
 class ItemNull {
-  ItemNull({
-    this.icon,
-    this.text,
-  });
+  ItemNull({this.icon, this.text});
   String? icon;
   String? text;
 
@@ -369,9 +356,7 @@ class ItemNull {
 }
 
 class LinkCard {
-  LinkCard({
-    this.card,
-  });
+  LinkCard({this.card});
   Card? card;
 
   LinkCard.fromJson(Map<String, dynamic> json) {

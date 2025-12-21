@@ -284,9 +284,7 @@ class Type2File {
 class None extends BiliDownloadMediaInfo {
   final String message;
 
-  const None({
-    required this.message,
-  });
+  const None({required this.message});
 
   @override
   Map<String, dynamic> toJson() {

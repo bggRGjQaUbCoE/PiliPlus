@@ -7,11 +7,7 @@ class RoomInfoH5Data {
   AnchorInfo? anchorInfo;
   WatchedShow? watchedShow;
 
-  RoomInfoH5Data({
-    this.roomInfo,
-    this.anchorInfo,
-    this.watchedShow,
-  });
+  RoomInfoH5Data({this.roomInfo, this.anchorInfo, this.watchedShow});
 
   factory RoomInfoH5Data.fromJson(Map<String, dynamic> json) => RoomInfoH5Data(
     roomInfo: json['room_info'] == null

@@ -92,35 +92,23 @@ class BgmRecommend {
 }
 
 class CoverMark {
-  CoverMark({
-    required this.name,
-    required this.value,
-  });
+  CoverMark({required this.name, required this.value});
 
   final String? name;
   final String? value;
 
   factory CoverMark.fromJson(Map<String, dynamic> json) {
-    return CoverMark(
-      name: json["name"],
-      value: json["value"],
-    );
+    return CoverMark(name: json["name"], value: json["value"]);
   }
 }
 
 class LabelList {
-  LabelList({
-    required this.name,
-    required this.value,
-  });
+  LabelList({required this.name, required this.value});
 
   final String? name;
   final int? value;
 
   factory LabelList.fromJson(Map<String, dynamic> json) {
-    return LabelList(
-      name: json["name"],
-      value: json["value"],
-    );
+    return LabelList(name: json["name"], value: json["value"]);
   }
 }

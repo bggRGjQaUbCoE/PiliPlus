@@ -19,8 +19,7 @@ enum RankType {
   documentary('记录', seasonType: 3),
   movie('电影', seasonType: 2),
   tv('剧集', seasonType: 5),
-  variety('综艺', seasonType: 7)
-  ;
+  variety('综艺', seasonType: 7);
 
   final String label;
   final int? rid;

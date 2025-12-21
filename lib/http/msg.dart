@@ -138,10 +138,7 @@ abstract final class MsgHttp {
     String csrf = Accounts.main.csrf;
     var res = await Request().get(
       Api.msgSysUpdateCursor,
-      queryParameters: {
-        'csrf': csrf,
-        'cursor': cursor,
-      },
+      queryParameters: {'csrf': csrf, 'cursor': cursor},
     );
     if (res.data['code'] == 0) {
       return const Success(null);
@@ -165,15 +162,9 @@ abstract final class MsgHttp {
       }),
     );
     if (res.data['code'] == 0) {
-      return {
-        'status': true,
-        'data': res.data['data'],
-      };
+      return {'status': true, 'data': res.data['data']};
     } else {
-      return {
-        'status': false,
-        'msg': res.data['message'],
-      };
+      return {'status': false, 'msg': res.data['message']};
     }
   }
 
@@ -200,9 +191,7 @@ abstract final class MsgHttp {
     }
   }
 
-  static Future<LoadingState<Null>> createTextDynamic(
-    Object content,
-  ) async {
+  static Future<LoadingState<Null>> createTextDynamic(Object content) async {
     String csrf = Accounts.main.csrf;
     Map<String, dynamic> data = await WbiSign.makSign({
       'dynamic_id': 0,
@@ -231,15 +220,8 @@ abstract final class MsgHttp {
   }) async {
     var res = await Request().post(
       Api.removeDynamic,
-      queryParameters: {
-        'platform': 'web',
-        'csrf': Accounts.main.csrf,
-      },
-      data: {
-        "dyn_id_str": dynIdStr,
-        "dyn_type": ?dynType,
-        "rid_str": ?ridStr,
-      },
+      queryParameters: {'platform': 'web', 'csrf': Accounts.main.csrf},
+      data: {"dyn_id_str": dynIdStr, "dyn_type": ?dynType, "rid_str": ?ridStr},
     );
     if (res.data['code'] == 0) {
       return const Success(null);
@@ -248,9 +230,7 @@ abstract final class MsgHttp {
     }
   }
 
-  static Future<LoadingState<Null>> removeMsg(
-    Object talkerId,
-  ) async {
+  static Future<LoadingState<Null>> removeMsg(Object talkerId) async {
     String csrf = Accounts.main.csrf;
     Map<String, dynamic> data = await WbiSign.makSign({
       'talker_id': talkerId,
@@ -272,10 +252,7 @@ abstract final class MsgHttp {
     }
   }
 
-  static Future<LoadingState<Null>> delMsgfeed(
-    int tp,
-    dynamic id,
-  ) async {
+  static Future<LoadingState<Null>> delMsgfeed(int tp, dynamic id) async {
     String csrf = Accounts.main.csrf;
     var res = await Request().post(
       Api.delMsgfeed,
@@ -296,16 +273,11 @@ abstract final class MsgHttp {
     }
   }
 
-  static Future<LoadingState<Null>> delSysMsg(
-    Object id,
-  ) async {
+  static Future<LoadingState<Null>> delSysMsg(Object id) async {
     String csrf = Accounts.main.csrf;
     var res = await Request().post(
       HttpString.messageBaseUrl + Api.delSysMsg,
-      queryParameters: {
-        'mobi_app': 'android',
-        'csrf': csrf,
-      },
+      queryParameters: {'mobi_app': 'android', 'csrf': csrf},
       data: {
         'csrf': csrf,
         'ids': [id],
@@ -412,9 +384,7 @@ abstract final class MsgHttp {
         'wts': params['wts'],
       },
       data: data,
-      options: Options(
-        contentType: Headers.formUrlEncodedContentType,
-      ),
+      options: Options(contentType: Headers.formUrlEncodedContentType),
     );
     if (res.data['code'] == 0) {
       return const Success(null);
@@ -444,9 +414,7 @@ abstract final class MsgHttp {
         'csrf_token': csrf,
         'csrf': csrf,
       },
-      options: Options(
-        contentType: Headers.formUrlEncodedContentType,
-      ),
+      options: Options(contentType: Headers.formUrlEncodedContentType),
     );
     if (res.data['code'] == 0) {
       return const Success(null);

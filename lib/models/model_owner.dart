@@ -6,11 +6,7 @@ part 'model_owner.g.dart';
 
 @HiveType(typeId: 3)
 class Owner implements BaseOwner {
-  Owner({
-    this.mid,
-    this.name,
-    this.face,
-  });
+  Owner({this.mid, this.name, this.face});
   @HiveField(0)
   @override
   int? mid;
@@ -26,9 +22,5 @@ class Owner implements BaseOwner {
     face = json['face'];
   }
 
-  Map<String, dynamic> toJson() => {
-    'mid': mid,
-    'name': name,
-    'face': face,
-  };
+  Map<String, dynamic> toJson() => {'mid': mid, 'name': name, 'face': face};
 }

@@ -7,13 +7,7 @@ class Bangumi {
   String? cover;
   Season? season;
 
-  Bangumi({
-    this.epId,
-    this.title,
-    this.longTitle,
-    this.cover,
-    this.season,
-  });
+  Bangumi({this.epId, this.title, this.longTitle, this.cover, this.season});
 
   factory Bangumi.fromJson(Map<String, dynamic> json) => Bangumi(
     epId: json['ep_id'] as int?,

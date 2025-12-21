@@ -54,10 +54,7 @@ abstract final class ReplyGrpc {
         oid: Int64(oid),
         type: Int64(type),
         rpid: Int64.ZERO,
-        cursor: CursorReq(
-          mode: mode,
-          next: cursorNext,
-        ),
+        cursor: CursorReq(mode: mode, next: cursorNext),
         // pagination: FeedPagination(offset: offset ?? ''),
       ),
       MainListReply.fromBuffer,
@@ -137,10 +134,7 @@ abstract final class ReplyGrpc {
     return GrpcReq.request(
       GrpcUrl.searchItem,
       SearchItemReq(
-        cursor: SearchItemCursorReq(
-          next: Int64(page),
-          itemType: itemType,
-        ),
+        cursor: SearchItemCursorReq(next: Int64(page), itemType: itemType),
         oid: Int64(oid),
         type: Int64(type),
         keyword: keyword,

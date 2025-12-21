@@ -4,8 +4,7 @@ enum WebviewMenuItem {
   openInBrowser('浏览器中打开'),
   clearCache('清除缓存'),
   resetCookie('重新设置Cookie'),
-  goBack('返回')
-  ;
+  goBack('返回');
 
   final String title;
   const WebviewMenuItem(this.title);

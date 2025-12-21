@@ -80,18 +80,16 @@ class CustomGridView extends StatelessWidget {
   static final _regex = RegExp(r'/(videoV|dynamicDetail)');
 
   void onTap(BuildContext context, int index) {
-    final imgList = picArr.map(
-      (item) {
-        bool isLive = item.isLivePhoto;
-        return SourceModel(
-          sourceType: isLive ? SourceType.livePhoto : SourceType.networkImage,
-          url: item.url,
-          liveUrl: isLive ? item.liveUrl : null,
-          width: isLive ? item.width.toInt() : null,
-          height: isLive ? item.height.toInt() : null,
-        );
-      },
-    ).toList();
+    final imgList = picArr.map((item) {
+      bool isLive = item.isLivePhoto;
+      return SourceModel(
+        sourceType: isLive ? SourceType.livePhoto : SourceType.networkImage,
+        url: item.url,
+        liveUrl: isLive ? item.liveUrl : null,
+        width: isLive ? item.width.toInt() : null,
+        height: isLive ? item.height.toInt() : null,
+      );
+    }).toList();
     if (horizontalPreview &&
         !fullScreen &&
         Get.currentRoute.startsWith(_regex) &&
@@ -99,18 +97,11 @@ class CustomGridView extends StatelessWidget {
       final scaffoldState = Scaffold.maybeOf(context);
       if (scaffoldState != null) {
         onViewImage?.call();
-        PageUtils.onHorizontalPreviewState(
-          scaffoldState,
-          imgList,
-          index,
-        );
+        PageUtils.onHorizontalPreviewState(scaffoldState, imgList, index);
         return;
       }
     }
-    PageUtils.imageView(
-      initialPage: index,
-      imgList: imgList,
-    );
+    PageUtils.imageView(initialPage: index, imgList: imgList);
   }
 
   static BorderRadius borderRadius(
@@ -233,11 +224,7 @@ class CustomGridView extends StatelessWidget {
                           type: PBadgeType.gray,
                         )
                       else if (item.isLongPic)
-                        const PBadge(
-                          text: '长图',
-                          right: 8,
-                          bottom: 8,
-                        ),
+                        const PBadge(text: '长图', right: 8, bottom: 8),
                     ],
                   ),
                 ),

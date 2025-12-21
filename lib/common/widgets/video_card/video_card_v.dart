@@ -24,11 +24,7 @@ class VideoCardV extends StatelessWidget {
   final BaseRecVideoItemModel videoItem;
   final VoidCallback? onRemove;
 
-  const VideoCardV({
-    super.key,
-    required this.videoItem,
-    this.onRemove,
-  });
+  const VideoCardV({super.key, required this.videoItem, this.onRemove});
 
   Future<void> onPushDetail(String heroTag) async {
     String? goto = videoItem.goto;
@@ -148,9 +144,7 @@ class VideoCardV extends StatelessWidget {
                 "${videoItem.title}\n",
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  height: 1.38,
-                ),
+                style: const TextStyle(height: 1.38),
               ),
             ),
             videoStat(context, theme),
@@ -216,16 +210,10 @@ class VideoCardV extends StatelessWidget {
   Widget videoStat(BuildContext context, ThemeData theme) {
     return Row(
       children: [
-        StatWidget(
-          type: StatType.play,
-          value: videoItem.stat.view,
-        ),
+        StatWidget(type: StatType.play, value: videoItem.stat.view),
         if (videoItem.goto != 'picture') ...[
           const SizedBox(width: 4),
-          StatWidget(
-            type: StatType.danmaku,
-            value: videoItem.stat.danmu,
-          ),
+          StatWidget(type: StatType.danmaku, value: videoItem.stat.danmu),
         ],
         if (videoItem is RecVideoItemModel) ...[
           const Spacer(),

@@ -5,11 +5,7 @@ class CardDataItem {
   dynamic topView;
   ExtraInfo? extraInfo;
 
-  CardDataItem({
-    this.list,
-    this.topView,
-    this.extraInfo,
-  });
+  CardDataItem({this.list, this.topView, this.extraInfo});
 
   factory CardDataItem.fromJson(Map<String, dynamic> json) => CardDataItem(
     list: (json['list'] as List<dynamic>?)

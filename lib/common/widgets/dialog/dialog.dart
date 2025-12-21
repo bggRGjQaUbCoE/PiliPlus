@@ -59,10 +59,7 @@ void showPgcFollowDialog({
       enabled: enabled,
       title: Padding(
         padding: const EdgeInsets.only(left: 10),
-        child: Text(
-          '标记为 $text',
-          style: const TextStyle(fontSize: 14),
-        ),
+        child: Text('标记为 $text', style: const TextStyle(fontSize: 14)),
       ),
       trailing: !enabled ? const Icon(size: 22, Icons.check) : null,
       onTap: onTap,
@@ -95,10 +92,7 @@ void showPgcFollowDialog({
             dense: true,
             title: Padding(
               padding: const EdgeInsets.only(left: 10),
-              child: Text(
-                '取消$type',
-                style: const TextStyle(fontSize: 14),
-              ),
+              child: Text('取消$type', style: const TextStyle(fontSize: 14)),
             ),
             onTap: () {
               Get.back();

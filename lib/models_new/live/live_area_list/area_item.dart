@@ -5,13 +5,7 @@ class AreaItem {
   dynamic parentId;
   String? parentName;
 
-  AreaItem({
-    this.id,
-    this.name,
-    this.pic,
-    this.parentId,
-    this.parentName,
-  });
+  AreaItem({this.id, this.name, this.pic, this.parentId, this.parentName});
 
   factory AreaItem.fromJson(Map<String, dynamic> json) => AreaItem(
     id: json['id'],

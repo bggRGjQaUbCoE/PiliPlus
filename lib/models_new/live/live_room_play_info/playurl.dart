@@ -4,10 +4,7 @@ class Playurl {
   int? cid;
   List<Stream>? stream;
 
-  Playurl({
-    this.cid,
-    this.stream,
-  });
+  Playurl({this.cid, this.stream});
 
   factory Playurl.fromJson(Map<String, dynamic> json) => Playurl(
     cid: json['cid'] as int?,

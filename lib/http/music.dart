@@ -48,9 +48,7 @@ abstract final class MusicHttp {
   ) async {
     final res = await Request().get(
       Api.bgmRecommend,
-      queryParameters: {
-        'music_id': musicId,
-      },
+      queryParameters: {'music_id': musicId},
     );
     if (res.data['code'] == 0) {
       return Success(

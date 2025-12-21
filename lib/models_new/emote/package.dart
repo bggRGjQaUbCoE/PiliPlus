@@ -5,11 +5,7 @@ class Package {
   int? type;
   List<Emote>? emote;
 
-  Package({
-    this.url,
-    this.type,
-    this.emote,
-  });
+  Package({this.url, this.type, this.emote});
 
   factory Package.fromJson(Map<String, dynamic> json) => Package(
     url: json['url'] as String?,

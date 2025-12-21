@@ -11,8 +11,7 @@ enum VideoQuality {
   high720(64, '720P 准高清', '720P'),
   clear480(32, '480P 标清', '480P'),
   fluent360(16, '360P 流畅', '360P'),
-  speed240(6, '240P 极速', '240P')
-  ;
+  speed240(6, '240P 极速', '240P');
 
   final int code;
   final String desc;

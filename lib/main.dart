@@ -94,15 +94,13 @@ void main() async {
 
   if (PlatformUtils.isMobile) {
     await Future.wait([
-      SystemChrome.setPreferredOrientations(
-        [
-          DeviceOrientation.portraitUp,
-          if (Pref.horizontalScreen) ...[
-            DeviceOrientation.landscapeLeft,
-            DeviceOrientation.landscapeRight,
-          ],
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.portraitUp,
+        if (Pref.horizontalScreen) ...[
+          DeviceOrientation.landscapeLeft,
+          DeviceOrientation.landscapeRight,
         ],
-      ),
+      ]),
       setupServiceLocator(),
     ]);
   }
@@ -184,27 +182,19 @@ void main() async {
           'Commit Hash: ${BuildConfig.commitHash}',
     };
     final fileHandler = await JsonFileHandler.init();
-    final Catcher2Options debugConfig = Catcher2Options(
-      SilentReportMode(),
-      [
-        ?fileHandler,
-        ConsoleHandler(
-          enableDeviceParameters: false,
-          enableApplicationParameters: false,
-          enableCustomParameters: true,
-        ),
-      ],
-      customParameters: customParameters,
-    );
+    final Catcher2Options debugConfig = Catcher2Options(SilentReportMode(), [
+      ?fileHandler,
+      ConsoleHandler(
+        enableDeviceParameters: false,
+        enableApplicationParameters: false,
+        enableCustomParameters: true,
+      ),
+    ], customParameters: customParameters);
 
-    final Catcher2Options releaseConfig = Catcher2Options(
-      SilentReportMode(),
-      [
-        ?fileHandler,
-        ConsoleHandler(enableCustomParameters: true),
-      ],
-      customParameters: customParameters,
-    );
+    final Catcher2Options releaseConfig = Catcher2Options(SilentReportMode(), [
+      ?fileHandler,
+      ConsoleHandler(enableCustomParameters: true),
+    ], customParameters: customParameters);
 
     Catcher2(
       debugConfig: debugConfig,
@@ -295,9 +285,9 @@ class MyApp extends StatelessWidget {
         loadingBuilder: (msg) => LoadingWidget(msg: msg),
         builder: (context, child) {
           child = MediaQuery(
-            data: MediaQuery.of(context).copyWith(
-              textScaler: TextScaler.linear(Pref.defaultTextScale),
-            ),
+            data: MediaQuery.of(
+              context,
+            ).copyWith(textScaler: TextScaler.linear(Pref.defaultTextScale)),
             child: child!,
           );
           if (PlatformUtils.isDesktop) {
@@ -311,10 +301,7 @@ class MyApp extends StatelessWidget {
                 }
                 return KeyEventResult.ignored;
               },
-              child: MouseBackDetector(
-                onTapDown: _onBack,
-                child: child,
-              ),
+              child: MouseBackDetector(onTapDown: _onBack, child: child),
             );
           }
           return child;

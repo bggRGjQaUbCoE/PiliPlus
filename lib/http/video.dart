@@ -221,10 +221,7 @@ abstract final class VideoHttp {
     });
 
     try {
-      var res = await Request().get(
-        videoType.api,
-        queryParameters: params,
-      );
+      var res = await Request().get(videoType.api, queryParameters: params);
 
       if (res.data['code'] == 0) {
         late PlayUrlModel data;
@@ -293,10 +290,7 @@ abstract final class VideoHttp {
   }) async {
     var res = await Request().get(
       Api.videoRelation,
-      queryParameters: {
-        'aid': IdUtils.bv2av(bvid),
-        'bvid': bvid,
-      },
+      queryParameters: {'aid': IdUtils.bv2av(bvid), 'bvid': bvid},
     );
     if (res.data['code'] == 0) {
       return Success(VideoRelation.fromJson(res.data['data']));
@@ -372,10 +366,7 @@ abstract final class VideoHttp {
   }) async {
     var res = await Request().post(
       Api.pgcTriple,
-      data: {
-        'ep_id': epId,
-        'csrf': Accounts.main.csrf,
-      },
+      data: {'ep_id': epId, 'csrf': Accounts.main.csrf},
       options: Options(
         contentType: Headers.formUrlEncodedContentType,
         headers: {
@@ -431,10 +422,7 @@ abstract final class VideoHttp {
   }) async {
     var res = await Request().post(
       Api.likeVideo,
-      data: {
-        'aid': IdUtils.bv2av(bvid).toString(),
-        'like': type ? '0' : '1',
-      },
+      data: {'aid': IdUtils.bv2av(bvid).toString(), 'like': type ? '0' : '1'},
       options: Options(contentType: Headers.formUrlEncodedContentType),
     );
     if (res.data['code'] == 0) {
@@ -640,18 +628,11 @@ abstract final class VideoHttp {
     }
   }
 
-  static Future<void> roomEntryAction({
-    required Object roomId,
-  }) {
+  static Future<void> roomEntryAction({required Object roomId}) {
     return Request().post(
       Api.roomEntryAction,
-      queryParameters: {
-        'csrf': Accounts.heartbeat.csrf,
-      },
-      data: {
-        'room_id': roomId,
-        'platform': 'pc',
-      },
+      queryParameters: {'csrf': Accounts.heartbeat.csrf},
+      data: {'room_id': roomId, 'platform': 'pc'},
     );
   }
 
@@ -661,11 +642,7 @@ abstract final class VideoHttp {
   }) {
     return Request().post(
       Api.historyReport,
-      data: {
-        'aid': aid,
-        'type': type,
-        'csrf': Accounts.heartbeat.csrf,
-      },
+      data: {'aid': aid, 'type': type, 'csrf': Accounts.heartbeat.csrf},
       options: Options(contentType: Headers.formUrlEncodedContentType),
     );
   }
@@ -719,10 +696,7 @@ abstract final class VideoHttp {
   static Future<LoadingState<String>> pgcAdd({int? seasonId}) async {
     var res = await Request().post(
       Api.pgcAdd,
-      data: {
-        'season_id': seasonId,
-        'csrf': Accounts.main.csrf,
-      },
+      data: {'season_id': seasonId, 'csrf': Accounts.main.csrf},
       options: Options(contentType: Headers.formUrlEncodedContentType),
     );
     if (res.data['code'] == 0) {
@@ -736,10 +710,7 @@ abstract final class VideoHttp {
   static Future<LoadingState<String>> pgcDel({int? seasonId}) async {
     var res = await Request().post(
       Api.pgcDel,
-      data: {
-        'season_id': seasonId,
-        'csrf': Accounts.main.csrf,
-      },
+      data: {'season_id': seasonId, 'csrf': Accounts.main.csrf},
       options: Options(contentType: Headers.formUrlEncodedContentType),
     );
     if (res.data['code'] == 0) {
@@ -760,9 +731,7 @@ abstract final class VideoHttp {
         'status': status,
         'csrf': Accounts.main.csrf,
       },
-      options: Options(
-        contentType: Headers.formUrlEncodedContentType,
-      ),
+      options: Options(contentType: Headers.formUrlEncodedContentType),
     );
     if (res.data['code'] == 0) {
       return Success(res.data['result']['toast']);
@@ -780,11 +749,7 @@ abstract final class VideoHttp {
     assert(aid != null || bvid != null);
     var res = await Request().get(
       Api.onlineTotal,
-      queryParameters: {
-        'aid': aid,
-        'bvid': bvid,
-        'cid': cid,
-      },
+      queryParameters: {'aid': aid, 'bvid': bvid, 'cid': cid},
     );
     if (res.data['code'] == 0) {
       return Success(res.data['data']['total']);
@@ -896,10 +861,7 @@ abstract final class VideoHttp {
   ) async {
     var res = await Request().get(
       Api.getRankApi,
-      queryParameters: await WbiSign.makSign({
-        'rid': rid,
-        'type': 'all',
-      }),
+      queryParameters: await WbiSign.makSign({'rid': rid, 'type': 'all'}),
     );
     if (res.data['code'] == 0) {
       List<HotVideoItemModel> list = <HotVideoItemModel>[];
@@ -995,9 +957,7 @@ abstract final class VideoHttp {
   popularSeriesList() async {
     var res = await Request().get(
       Api.popularSeriesList,
-      queryParameters: await WbiSign.makSign({
-        'web_location': 333.934,
-      }),
+      queryParameters: await WbiSign.makSign({'web_location': 333.934}),
     );
     if (res.data['code'] == 0) {
       return Success(
@@ -1070,10 +1030,7 @@ abstract final class VideoHttp {
       'ts': DateTime.now().millisecondsSinceEpoch ~/ 1000,
     };
     AppSign.appSign(params);
-    final res = await Request().get(
-      Api.tvPlayUrl,
-      queryParameters: params,
-    );
+    final res = await Request().get(Api.tvPlayUrl, queryParameters: params);
     if (res.data['code'] == 0) {
       return Success(PlayUrlModel.fromJson(res.data['data']));
     } else {

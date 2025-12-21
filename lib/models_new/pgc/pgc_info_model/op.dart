@@ -4,8 +4,6 @@ class Op {
 
   Op({this.end, this.start});
 
-  factory Op.fromJson(Map<String, dynamic> json) => Op(
-    end: json['end'] as int?,
-    start: json['start'] as int?,
-  );
+  factory Op.fromJson(Map<String, dynamic> json) =>
+      Op(end: json['end'] as int?, start: json['start'] as int?);
 }

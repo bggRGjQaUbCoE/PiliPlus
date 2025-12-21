@@ -4,8 +4,7 @@ enum VideoDecodeFormatType {
   DVH1(['dvh1']),
   AV1(['av01']),
   HEVC(['hev1', 'hvc1']),
-  AVC(['avc1'])
-  ;
+  AVC(['avc1']);
 
   String get description => name;
   final List<String> codes;

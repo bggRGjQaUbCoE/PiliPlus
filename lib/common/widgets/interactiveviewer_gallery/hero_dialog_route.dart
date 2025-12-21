@@ -7,9 +7,7 @@ import 'package:flutter/material.dart';
 /// Similar to calling [showDialog] except it can be used with a [Navigator] to
 /// show a [Hero] animation.
 class HeroDialogRoute<T> extends PageRoute<T> {
-  HeroDialogRoute({
-    required this.pageBuilder,
-  });
+  HeroDialogRoute({required this.pageBuilder});
 
   final RoutePageBuilder pageBuilder;
 

@@ -98,9 +98,10 @@ void imageSaveDialog({
                       tooltip: '稍后再看',
                       onPressed: () => {
                         SmartDialog.dismiss(),
-                        UserHttp.toViewLater(aid: aid, bvid: bvid).then(
-                          (res) => SmartDialog.showToast(res['msg']),
-                        ),
+                        UserHttp.toViewLater(
+                          aid: aid,
+                          bvid: bvid,
+                        ).then((res) => SmartDialog.showToast(res['msg'])),
                       },
                       icon: const Icon(Icons.watch_later_outlined),
                     ),

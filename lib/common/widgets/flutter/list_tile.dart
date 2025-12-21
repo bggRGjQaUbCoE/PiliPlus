@@ -972,10 +972,7 @@ class ListTile extends StatelessWidget {
         child: child,
       );
     } else {
-      child = Padding(
-        padding: resolvedContentPadding,
-        child: child,
-      );
+      child = Padding(padding: resolvedContentPadding, child: child);
     }
 
     return InkWell(
@@ -1045,9 +1042,7 @@ class ListTile extends StatelessWidget {
       ..add(
         DiagnosticsProperty<ListTileStyle>('style', style, defaultValue: null),
       )
-      ..add(
-        ColorProperty('selectedColor', selectedColor, defaultValue: null),
-      )
+      ..add(ColorProperty('selectedColor', selectedColor, defaultValue: null))
       ..add(ColorProperty('iconColor', iconColor, defaultValue: null))
       ..add(ColorProperty('textColor', textColor, defaultValue: null))
       ..add(
@@ -1088,9 +1083,7 @@ class ListTile extends StatelessWidget {
           defaultValue: true,
         ),
       )
-      ..add(
-        DiagnosticsProperty<Function>('onTap', onTap, defaultValue: null),
-      )
+      ..add(DiagnosticsProperty<Function>('onTap', onTap, defaultValue: null))
       ..add(
         DiagnosticsProperty<Function>(
           'onLongPress',

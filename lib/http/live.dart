@@ -104,9 +104,7 @@ abstract final class LiveHttp {
   }) async {
     var res = await Request().get(
       Api.liveRoomInfoH5,
-      queryParameters: {
-        'room_id': roomId,
-      },
+      queryParameters: {'room_id': roomId},
     );
     if (res.data['code'] == 0) {
       return Success(RoomInfoH5Data.fromJson(res.data['data']));
@@ -155,10 +153,7 @@ abstract final class LiveHttp {
   }) async {
     var res = await Request().get(
       Api.getLiveEmoticons,
-      queryParameters: {
-        'platform': 'pc',
-        'room_id': roomId,
-      },
+      queryParameters: {'platform': 'pc', 'room_id': roomId},
     );
     if (res.data['code'] == 0) {
       return Success(LiveEmoteData.fromJson(res.data['data']).data);
@@ -325,10 +320,7 @@ abstract final class LiveHttp {
       'ts': DateTime.now().millisecondsSinceEpoch ~/ 1000,
     };
     AppSign.appSign(params);
-    var res = await Request().get(
-      Api.liveAreaList,
-      queryParameters: params,
-    );
+    var res = await Request().get(Api.liveAreaList, queryParameters: params);
     if (res.data['code'] == 0) {
       return Success(
         (res.data['data']?['list'] as List?)
@@ -358,10 +350,7 @@ abstract final class LiveHttp {
       'ts': DateTime.now().millisecondsSinceEpoch ~/ 1000,
     };
     AppSign.appSign(params);
-    var res = await Request().get(
-      Api.getLiveFavTag,
-      queryParameters: params,
-    );
+    var res = await Request().get(Api.getLiveFavTag, queryParameters: params);
 
     if (res.data['code'] == 0) {
       return Success(
@@ -375,9 +364,7 @@ abstract final class LiveHttp {
     }
   }
 
-  static Future<LoadingState<Null>> setLiveFavTag({
-    required String ids,
-  }) async {
+  static Future<LoadingState<Null>> setLiveFavTag({required String ids}) async {
     final data = {
       'tags': ids,
       'access_key': Accounts.main.accessKey,
@@ -471,10 +458,7 @@ abstract final class LiveHttp {
       'type': type.name,
     };
     AppSign.appSign(params);
-    var res = await Request().get(
-      Api.liveSearch,
-      queryParameters: params,
-    );
+    var res = await Request().get(Api.liveSearch, queryParameters: params);
     if (res.data['code'] == 0) {
       return Success(LiveSearchData.fromJson(res.data['data']));
     } else {
@@ -508,12 +492,7 @@ abstract final class LiveHttp {
     final csrf = Accounts.main.csrf;
     var res = await Request().post(
       Api.liveSetSilent,
-      data: {
-        'type': type,
-        'level': level,
-        'csrf': csrf,
-        'csrf_token': csrf,
-      },
+      data: {'type': type, 'level': level, 'csrf': csrf, 'csrf_token': csrf},
       options: Options(contentType: Headers.formUrlEncodedContentType),
     );
     if (res.data['code'] == 0) {
@@ -529,11 +508,7 @@ abstract final class LiveHttp {
     final csrf = Accounts.main.csrf;
     var res = await Request().post(
       Api.addShieldKeyword,
-      data: {
-        'keyword': keyword,
-        'csrf': csrf,
-        'csrf_token': csrf,
-      },
+      data: {'keyword': keyword, 'csrf': csrf, 'csrf_token': csrf},
       options: Options(contentType: Headers.formUrlEncodedContentType),
     );
     if (res.data['code'] == 0) {
@@ -549,11 +524,7 @@ abstract final class LiveHttp {
     final csrf = Accounts.main.csrf;
     var res = await Request().post(
       Api.delShieldKeyword,
-      data: {
-        'keyword': keyword,
-        'csrf': csrf,
-        'csrf_token': csrf,
-      },
+      data: {'keyword': keyword, 'csrf': csrf, 'csrf_token': csrf},
       options: Options(contentType: Headers.formUrlEncodedContentType),
     );
     if (res.data['code'] == 0) {
@@ -613,14 +584,10 @@ abstract final class LiveHttp {
   }
 
   @pragma('vm:notify-debugger-on-exception')
-  static Future<LoadingState<SuperChatData>> superChatMsg(
-    Object roomId,
-  ) async {
+  static Future<LoadingState<SuperChatData>> superChatMsg(Object roomId) async {
     var res = await Request().get(
       Api.superChatMsg,
-      queryParameters: {
-        'room_id': roomId,
-      },
+      queryParameters: {'room_id': roomId},
     );
     if (res.data['code'] == 0) {
       try {

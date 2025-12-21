@@ -32,12 +32,7 @@ class CustomSliverPersistentHeaderDelegate
               color: bgColor,
               boxShadow: Platform.isIOS
                   ? null
-                  : [
-                      BoxShadow(
-                        color: bgColor!,
-                        offset: const Offset(0, -1),
-                      ),
-                    ],
+                  : [BoxShadow(color: bgColor!, offset: const Offset(0, -1))],
             ),
             child: child,
           )

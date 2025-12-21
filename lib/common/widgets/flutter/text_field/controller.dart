@@ -34,11 +34,8 @@ class Emote {
   late double width;
   late double height;
 
-  Emote({
-    required this.url,
-    required this.width,
-    double? height,
-  }) : height = height ?? width;
+  Emote({required this.url, required this.width, double? height})
+    : height = height ?? width;
 }
 
 mixin RichTextTypeMixin {
@@ -244,10 +241,7 @@ class RichTextItem {
       controller.newSelection = TextSelection.collapsed(offset: insertEnd);
       if (delta.isText) {
         text = leadingText + delta.textInserted + trailingString;
-        range = TextRange(
-          start: range.start,
-          end: range.start + text.length,
-        );
+        range = TextRange(start: range.start, end: range.start + text.length);
         return null;
       }
       final config = delta.config;
@@ -290,10 +284,7 @@ class RichTextItem {
 
     if (range.start >= deletedRange.end) {
       final length = delLength ?? delta.textDeleted.length;
-      range = TextRange(
-        start: range.start - length,
-        end: range.end - length,
-      );
+      range = TextRange(start: range.start - length, end: range.end - length);
       return null;
     }
 
@@ -331,10 +322,7 @@ class RichTextItem {
         null,
         '',
       );
-      range = TextRange(
-        start: range.start,
-        end: deletedRange.start,
-      );
+      range = TextRange(start: range.start, end: deletedRange.start);
       controller.newSelection = TextSelection.collapsed(
         offset: deletedRange.start,
       );
@@ -348,10 +336,7 @@ class RichTextItem {
         return (remove: true, cal: true);
       }
       text = text.substring(deletedRange.end - range.start);
-      range = TextRange(
-        start: start,
-        end: start + text.length,
-      );
+      range = TextRange(start: start, end: start + text.length);
       return null;
     }
 
@@ -372,10 +357,7 @@ class RichTextItem {
       final before = replacedRange.end - replacedRange.start;
       final after = delta.replacementText.length;
       final length = after - before;
-      range = TextRange(
-        start: range.start + length,
-        end: range.end + length,
-      );
+      range = TextRange(start: range.start + length, end: range.end + length);
       return null;
     }
 
@@ -408,10 +390,7 @@ class RichTextItem {
             id: config.id,
             text: delta.replacementText,
             rawText: config.rawText,
-            range: TextRange(
-              start: replacedRange.start,
-              end: insertEnd,
-            ),
+            range: TextRange(start: replacedRange.start, end: insertEnd),
           );
           final trailItem = RichTextItem(
             text: trailString,
@@ -425,10 +404,7 @@ class RichTextItem {
             start: range.start,
             end: range.start + leadingText.length,
           );
-          return (
-            remove: false,
-            toAdd: [insertedItem, trailItem],
-          );
+          return (remove: false, toAdd: [insertedItem, trailItem]);
         }
       }
       final config = delta.config;
@@ -564,14 +540,12 @@ class RichTextItem {
 }
 
 class RichTextEditingController extends TextEditingController {
-  RichTextEditingController({
-    List<RichTextItem>? items,
-    this.onMention,
-  }) : super(
-         text: items != null && items.isNotEmpty
-             ? (StringBuffer()..writeAll(items.map((e) => e.text))).toString()
-             : null,
-       ) {
+  RichTextEditingController({List<RichTextItem>? items, this.onMention})
+    : super(
+        text: items != null && items.isNotEmpty
+            ? (StringBuffer()..writeAll(items.map((e) => e.text))).toString()
+            : null,
+      ) {
     if (items != null && items.isNotEmpty) {
       this.items.addAll(items);
     }
@@ -771,10 +745,7 @@ class RichTextEditingController extends TextEditingController {
             richStyle ??= (style ?? const TextStyle()).copyWith(
               color: Theme.of(context).colorScheme.primary,
             );
-            return TextSpan(
-              text: e.text,
-              style: richStyle,
-            );
+            return TextSpan(text: e.text, style: richStyle);
           case RichTextType.emoji:
             final emote = e.emote;
             if (emote != null) {
@@ -807,10 +778,7 @@ class RichTextEditingController extends TextEditingController {
                     color: richStyle!.color,
                   ),
                 ),
-                TextSpan(
-                  text: '${e.rawText} ',
-                  style: richStyle,
-                ),
+                TextSpan(text: '${e.rawText} ', style: richStyle),
               ],
             );
         }

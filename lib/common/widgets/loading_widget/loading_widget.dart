@@ -6,11 +6,8 @@ Widget get loadingWidget => const Center(child: CircularProgressIndicator());
 Widget get linearLoading =>
     const SliverToBoxAdapter(child: LinearProgressIndicator());
 
-Widget errorWidget({String? errMsg, VoidCallback? onReload}) => HttpError(
-  isSliver: false,
-  errMsg: errMsg,
-  onReload: onReload,
-);
+Widget errorWidget({String? errMsg, VoidCallback? onReload}) =>
+    HttpError(isSliver: false, errMsg: errMsg, onReload: onReload);
 
 Widget scrollErrorWidget({
   String? errMsg,
@@ -18,10 +15,5 @@ Widget scrollErrorWidget({
   ScrollController? controller,
 }) => CustomScrollView(
   controller: controller,
-  slivers: [
-    HttpError(
-      errMsg: errMsg,
-      onReload: onReload,
-    ),
-  ],
+  slivers: [HttpError(errMsg: errMsg, onReload: onReload)],
 );

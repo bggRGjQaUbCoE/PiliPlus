@@ -24,8 +24,7 @@ enum CDNService {
   aliov('aliov（阿里云海外）', 'upos-sz-mirroraliov.bilivideo.com'),
   cosov('cosov（腾讯云海外）', 'upos-sz-mirrorcosov.bilivideo.com'),
   hwov('hwov（华为云海外）', 'upos-sz-mirrorhwov.bilivideo.com'),
-  hk_bcache('hk_bcache（Bilibili海外）', 'cn-hk-eq-bcache-01.bilivideo.com')
-  ;
+  hk_bcache('hk_bcache（Bilibili海外）', 'cn-hk-eq-bcache-01.bilivideo.com');
 
   final String desc;
   final String? host;

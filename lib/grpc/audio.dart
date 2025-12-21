@@ -17,11 +17,7 @@ abstract final class AudioGrpc {
     return GrpcReq.request(
       GrpcUrl.audioPlayUrl,
       PlayURLReq(
-        item: PlayItem(
-          oid: oid,
-          subId: subId,
-          itemType: itemType,
-        ),
+        item: PlayItem(oid: oid, subId: subId, itemType: itemType),
         playerArgs: PlayerArgs(
           qn: Int64(qn),
           fnval: Int64(fnval),
@@ -51,11 +47,7 @@ abstract final class AudioGrpc {
       PlaylistReq(
         from: from,
         id: id,
-        anchor: PlayItem(
-          oid: oid,
-          subId: subId,
-          itemType: itemType,
-        ),
+        anchor: PlayItem(oid: oid, subId: subId, itemType: itemType),
         pageOpt: pageOpt,
         playerArgs: PlayerArgs(
           qn: Int64(qn),
@@ -80,11 +72,7 @@ abstract final class AudioGrpc {
     return GrpcReq.request(
       GrpcUrl.audioThumbUp,
       ThumbUpReq(
-        item: PlayItem(
-          oid: oid,
-          itemType: itemType,
-          subId: subId,
-        ),
+        item: PlayItem(oid: oid, itemType: itemType, subId: subId),
         action: type,
       ),
       ThumbUpResp.fromBuffer,
@@ -99,11 +87,7 @@ abstract final class AudioGrpc {
     return GrpcReq.request(
       GrpcUrl.audioTripleLike,
       TripleLikeReq(
-        item: PlayItem(
-          oid: oid,
-          subId: subId,
-          itemType: itemType,
-        ),
+        item: PlayItem(oid: oid, subId: subId, itemType: itemType),
       ),
       TripleLikeResp.fromBuffer,
     );
@@ -119,11 +103,7 @@ abstract final class AudioGrpc {
     return GrpcReq.request(
       GrpcUrl.audioCoinAdd,
       CoinAddReq(
-        item: PlayItem(
-          oid: oid,
-          subId: subId,
-          itemType: itemType,
-        ),
+        item: PlayItem(oid: oid, subId: subId, itemType: itemType),
         num: num,
         thumbUp: thumbUp,
       ),

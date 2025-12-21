@@ -103,9 +103,7 @@ class _CachedNetworkSVGImageState extends State<CachedNetworkSVGImage> {
   double? height;
   late TextScaler textScaler;
 
-  static final _sizeRegExp = RegExp(
-    r'height="([\d\.]+)([c-x]{2})?"',
-  );
+  static final _sizeRegExp = RegExp(r'height="([\d\.]+)([c-x]{2})?"');
 
   @override
   void initState() {

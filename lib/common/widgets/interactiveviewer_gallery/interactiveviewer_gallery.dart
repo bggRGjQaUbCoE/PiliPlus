@@ -394,13 +394,10 @@ class _InteractiveviewerGalleryState extends State<InteractiveviewerGallery>
       matrix.row3.w,
     ]);
 
-    _animation =
-        Matrix4Tween(
-          begin: _transformationController.value,
-          end: matrix,
-        ).animate(
-          CurveTween(curve: Curves.easeOut).animate(_animationController),
-        );
+    _animation = Matrix4Tween(
+      begin: _transformationController.value,
+      end: matrix,
+    ).animate(CurveTween(curve: Curves.easeOut).animate(_animationController));
     _animationController
         .forward(from: 0)
         .whenComplete(() => _onScaleChanged(targetScale));
@@ -436,10 +433,7 @@ class _InteractiveviewerGalleryState extends State<InteractiveviewerGallery>
               ListTile(
                 onTap: () {
                   Get.back();
-                  ImageUtils.downloadImg(
-                    this.context,
-                    [item.url],
-                  );
+                  ImageUtils.downloadImg(this.context, [item.url]);
                 },
                 dense: true,
                 title: const Text('保存图片', style: TextStyle(fontSize: 14)),

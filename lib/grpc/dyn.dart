@@ -39,10 +39,7 @@ abstract final class DynGrpc {
   }) {
     return GrpcReq.request(
       GrpcUrl.opusDetail,
-      OpusDetailReq(
-        opusType: opusType,
-        oid: Int64(oid),
-      ),
+      OpusDetailReq(opusType: opusType, oid: Int64(oid)),
       OpusDetailResp.fromBuffer,
     );
   }

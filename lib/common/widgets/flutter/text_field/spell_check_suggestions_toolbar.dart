@@ -142,10 +142,7 @@ class SpellCheckSuggestionsToolbar extends StatelessWidget {
     );
 
     final TextEditingValue newValue = editableTextState.textEditingValue
-        .replaced(
-          replacementRange,
-          text,
-        );
+        .replaced(replacementRange, text);
     editableTextState.userUpdateTextEditingValue(
       newValue,
       SelectionChangedCause.toolbar,

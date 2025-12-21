@@ -56,11 +56,7 @@ class _MediaPgcSkeletonState extends State<MediaPgcSkeleton> {
                       height: 13,
                       margin: const EdgeInsets.only(bottom: 5),
                     ),
-                    Container(
-                      color: bgColor,
-                      width: 150,
-                      height: 13,
-                    ),
+                    Container(color: bgColor, width: 150, height: 13),
                     const Spacer(),
                     Container(
                       width: 90,

@@ -7,12 +7,7 @@ class TopicCardList {
   String? offset;
   TopicSortByConf? topicSortByConf;
 
-  TopicCardList({
-    this.hasMore,
-    this.items,
-    this.offset,
-    this.topicSortByConf,
-  });
+  TopicCardList({this.hasMore, this.items, this.offset, this.topicSortByConf});
 
   factory TopicCardList.fromJson(Map<String, dynamic> json) => TopicCardList(
     hasMore: json['has_more'] as bool?,

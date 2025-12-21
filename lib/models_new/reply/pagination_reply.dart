@@ -4,8 +4,6 @@ class PaginationReply {
   PaginationReply({this.nextOffset});
 
   factory PaginationReply.fromJson(Map<String, dynamic> json) {
-    return PaginationReply(
-      nextOffset: json['next_offset'] as String?,
-    );
+    return PaginationReply(nextOffset: json['next_offset'] as String?);
   }
 }

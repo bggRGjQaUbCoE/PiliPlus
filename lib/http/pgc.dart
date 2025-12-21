@@ -97,11 +97,7 @@ abstract final class PgcHttp {
   }) async {
     var res = await Request().get(
       Api.pgcTimeline,
-      queryParameters: {
-        'types': types,
-        'before': before,
-        'after': after,
-      },
+      queryParameters: {'types': types, 'before': before, 'after': after},
     );
     if (res.data['code'] == 0) {
       return Success(PgcTimeline.fromJson(res.data).result);

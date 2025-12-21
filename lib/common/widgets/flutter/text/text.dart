@@ -766,9 +766,7 @@ class _SelectableTextContainerDelegate
           assert(selectables[index].value.selectionRects.isNotEmpty);
           final bool selectionAtStartOfSelectable = selectables[index]
               .boundingBoxes[0]
-              .overlaps(
-                selectables[index].value.selectionRects[0],
-              );
+              .overlaps(selectables[index].value.selectionRects[0]);
           int startIndex = 0;
           if (lastNextIndex != null && selectionAtStartOfSelectable) {
             startIndex = lastNextIndex + 1;

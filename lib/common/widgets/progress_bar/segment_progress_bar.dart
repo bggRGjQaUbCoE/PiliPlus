@@ -44,9 +44,7 @@ class SegmentProgressBar extends CustomPainter {
   final List<Segment> segmentColors;
   double? _defHeight;
 
-  SegmentProgressBar({
-    required this.segmentColors,
-  });
+  SegmentProgressBar({required this.segmentColors});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -67,9 +65,7 @@ class SegmentProgressBar extends CustomPainter {
               (TextPainter(
                 text: TextSpan(
                   text: item.title,
-                  style: TextStyle(
-                    fontSize: fontSize,
-                  ),
+                  style: TextStyle(fontSize: fontSize),
                 ),
                 textDirection: TextDirection.ltr,
               )..layout()).height +
@@ -103,12 +99,7 @@ class SegmentProgressBar extends CustomPainter {
 
           if (i == 0) {
             canvas.drawRect(
-              Rect.fromLTRB(
-                0,
-                -_defHeight!,
-                size.width,
-                0,
-              ),
+              Rect.fromLTRB(0, -_defHeight!, size.width, 0),
               Paint()..color = Colors.grey[600]!.withValues(alpha: 0.45),
             );
           }

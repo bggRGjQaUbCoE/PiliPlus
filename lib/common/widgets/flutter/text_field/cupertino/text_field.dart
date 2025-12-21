@@ -907,9 +907,7 @@ class CupertinoRichTextField extends StatefulWidget {
           defaultValue: null,
         ),
       )
-      ..add(
-        DiagnosticsProperty<BoxDecoration>('decoration', decoration),
-      )
+      ..add(DiagnosticsProperty<BoxDecoration>('decoration', decoration))
       ..add(DiagnosticsProperty<EdgeInsetsGeometry>('padding', padding))
       ..add(StringProperty('placeholder', placeholder))
       ..add(
@@ -946,9 +944,7 @@ class CupertinoRichTextField extends StatefulWidget {
           defaultValue: TextInputType.text,
         ),
       )
-      ..add(
-        DiagnosticsProperty<TextStyle>('style', style, defaultValue: null),
-      )
+      ..add(DiagnosticsProperty<TextStyle>('style', style, defaultValue: null))
       ..add(
         DiagnosticsProperty<bool>('autofocus', autofocus, defaultValue: false),
       )
@@ -1000,9 +996,7 @@ class CupertinoRichTextField extends StatefulWidget {
       )
       ..add(IntProperty('maxLines', maxLines, defaultValue: 1))
       ..add(IntProperty('minLines', minLines, defaultValue: null))
-      ..add(
-        DiagnosticsProperty<bool>('expands', expands, defaultValue: false),
-      )
+      ..add(DiagnosticsProperty<bool>('expands', expands, defaultValue: false))
       ..add(IntProperty('maxLength', maxLength, defaultValue: null))
       ..add(
         EnumProperty<MaxLengthEnforcement>(
@@ -1011,12 +1005,8 @@ class CupertinoRichTextField extends StatefulWidget {
           defaultValue: null,
         ),
       )
-      ..add(
-        DoubleProperty('cursorWidth', cursorWidth, defaultValue: 2.0),
-      )
-      ..add(
-        DoubleProperty('cursorHeight', cursorHeight, defaultValue: null),
-      )
+      ..add(DoubleProperty('cursorWidth', cursorWidth, defaultValue: 2.0))
+      ..add(DoubleProperty('cursorHeight', cursorHeight, defaultValue: null))
       ..add(
         DiagnosticsProperty<Radius>(
           'cursorRadius',

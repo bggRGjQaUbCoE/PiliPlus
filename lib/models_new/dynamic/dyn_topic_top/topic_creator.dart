@@ -3,11 +3,7 @@ class TopicCreator {
   String? face;
   String? name;
 
-  TopicCreator({
-    this.uid,
-    this.face,
-    this.name,
-  });
+  TopicCreator({this.uid, this.face, this.name});
 
   factory TopicCreator.fromJson(Map<String, dynamic> json) => TopicCreator(
     uid: json['uid'] as int?,

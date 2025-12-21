@@ -19,8 +19,7 @@ enum HomeTabType implements EnumWithLabel {
   hot('热门'),
   rank('分区'),
   bangumi('番剧'),
-  cinema('影视')
-  ;
+  cinema('影视');
 
   @override
   final String label;

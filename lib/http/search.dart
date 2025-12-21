@@ -24,11 +24,7 @@ abstract final class SearchHttp {
   }) async {
     var res = await Request().get(
       Api.searchSuggest,
-      queryParameters: {
-        'term': term,
-        'main_ver': 'v1',
-        'highlight': term,
-      },
+      queryParameters: {'term': term, 'main_ver': 'v1', 'highlight': term},
     );
     if (res.data is String) {
       Map<String, dynamic> resultMap = json.decode(res.data);
@@ -154,10 +150,7 @@ abstract final class SearchHttp {
       'pubtime_begin_s': ?pubBegin,
       'pubtime_end_s': ?pubEnd,
     });
-    var res = await Request().get(
-      Api.searchAll,
-      queryParameters: params,
-    );
+    var res = await Request().get(Api.searchAll, queryParameters: params);
     if (res.data is! Map) {
       return const Error('没有相关数据');
     }
@@ -175,10 +168,7 @@ abstract final class SearchHttp {
   static Future<int?> ab2c({dynamic aid, dynamic bvid, int? part}) async {
     var res = await Request().get(
       Api.ab2c,
-      queryParameters: {
-        'aid': ?aid,
-        'bvid': ?bvid,
-      },
+      queryParameters: {'aid': ?aid, 'bvid': ?bvid},
     );
     if (res.data['code'] == 0) {
       if (res.data['data'] case List list) {
@@ -200,10 +190,7 @@ abstract final class SearchHttp {
   }) async {
     var res = await Request().get(
       Api.pgcInfo,
-      queryParameters: {
-        'season_id': ?seasonId,
-        'ep_id': ?epId,
-      },
+      queryParameters: {'season_id': ?seasonId, 'ep_id': ?epId},
     );
     if (res.data['code'] == 0) {
       return Success(PgcInfoModel.fromJson(res.data['result']));
@@ -218,10 +205,7 @@ abstract final class SearchHttp {
   }) async {
     var res = await Request().get(
       Api.pugvInfo,
-      queryParameters: {
-        'season_id': ?seasonId,
-        'ep_id': ?epId,
-      },
+      queryParameters: {'season_id': ?seasonId, 'ep_id': ?epId},
     );
     if (res.data['code'] == 0) {
       return Success(PgcInfoModel.fromJson(res.data['data']));
@@ -233,9 +217,7 @@ abstract final class SearchHttp {
   static Future<LoadingState> episodeInfo({dynamic epId}) async {
     var res = await Request().get(
       Api.episodeInfo,
-      queryParameters: {
-        'ep_id': ?epId,
-      },
+      queryParameters: {'ep_id': ?epId},
     );
     if (res.data['code'] == 0) {
       return Success(res.data['data']);
@@ -249,9 +231,7 @@ abstract final class SearchHttp {
   }) async {
     final res = await Request().get(
       Api.searchTrending,
-      queryParameters: {
-        'limit': limit,
-      },
+      queryParameters: {'limit': limit},
     );
     if (res.data['code'] == 0) {
       return Success(SearchTrendingData.fromJson(res.data['data']));

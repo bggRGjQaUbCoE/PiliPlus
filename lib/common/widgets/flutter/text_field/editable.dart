@@ -152,10 +152,7 @@ class VerticalCaretMovementRun implements Iterator<TextPosition> {
     final TextPosition closestPosition = _editable._textPainter
         .getPositionForOffset(newOffset);
     final MapEntry<Offset, TextPosition> position =
-        MapEntry<Offset, TextPosition>(
-          newOffset,
-          closestPosition,
-        );
+        MapEntry<Offset, TextPosition>(newOffset, closestPosition);
     _positionCache[lineNumber] = position;
     return position;
   }
@@ -2944,14 +2941,10 @@ class RenderEditable extends RenderBox
     super.debugFillProperties(properties);
     properties
       ..add(ColorProperty('cursorColor', cursorColor))
-      ..add(
-        DiagnosticsProperty<ValueNotifier<bool>>('showCursor', showCursor),
-      )
+      ..add(DiagnosticsProperty<ValueNotifier<bool>>('showCursor', showCursor))
       ..add(IntProperty('maxLines', maxLines))
       ..add(IntProperty('minLines', minLines))
-      ..add(
-        DiagnosticsProperty<bool>('expands', expands, defaultValue: false),
-      )
+      ..add(DiagnosticsProperty<bool>('expands', expands, defaultValue: false))
       ..add(ColorProperty('selectionColor', selectionColor))
       ..add(
         DiagnosticsProperty<TextScaler>(
@@ -2960,9 +2953,7 @@ class RenderEditable extends RenderBox
           defaultValue: TextScaler.noScaling,
         ),
       )
-      ..add(
-        DiagnosticsProperty<Locale>('locale', locale, defaultValue: null),
-      )
+      ..add(DiagnosticsProperty<Locale>('locale', locale, defaultValue: null))
       ..add(DiagnosticsProperty<TextSelection>('selection', selection))
       ..add(DiagnosticsProperty<ViewportOffset>('offset', offset));
   }

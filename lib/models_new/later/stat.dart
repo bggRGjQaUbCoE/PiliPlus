@@ -3,11 +3,7 @@ class Stat {
   int? view;
   int? danmaku;
 
-  Stat({
-    this.aid,
-    this.view,
-    this.danmaku,
-  });
+  Stat({this.aid, this.view, this.danmaku});
 
   factory Stat.fromJson(Map<String, dynamic> json) => Stat(
     aid: json['aid'] as int?,

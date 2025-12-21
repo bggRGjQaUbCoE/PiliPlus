@@ -330,14 +330,10 @@ abstract final class LoginHttp {
   }
 
   // 密码登录时风控验证手机
-  static Future safeCenterGetInfo({
-    required String tmpCode,
-  }) async {
+  static Future safeCenterGetInfo({required String tmpCode}) async {
     var res = await Request().get(
       Api.safeCenterGetInfo,
-      queryParameters: {
-        'tmp_code': tmpCode,
-      },
+      queryParameters: {'tmp_code': tmpCode},
     );
     if (res.data['code'] == 0) {
       return {'status': true, 'data': res.data['data']};
@@ -392,9 +388,7 @@ abstract final class LoginHttp {
       data: data,
       options: Options(
         contentType: Headers.formUrlEncodedContentType,
-        headers: {
-          "Referer": refererUrl,
-        },
+        headers: {"Referer": refererUrl},
       ),
     );
 
@@ -434,9 +428,7 @@ abstract final class LoginHttp {
       data: data,
       options: Options(
         contentType: Headers.formUrlEncodedContentType,
-        headers: {
-          "Referer": refererUrl,
-        },
+        headers: {"Referer": refererUrl},
       ),
     );
 
@@ -453,9 +445,7 @@ abstract final class LoginHttp {
   }
 
   // 风控验证手机：用oauthCode换回accessToken
-  static Future oauth2AccessToken({
-    required String code,
-  }) async {
+  static Future oauth2AccessToken({required String code}) async {
     Map<String, String> data = {
       'appkey': Constants.appKey,
       'build': '2001100',
@@ -526,10 +516,7 @@ abstract final class LoginHttp {
       'ts': DateTime.now().millisecondsSinceEpoch ~/ 1000,
     };
     AppSign.appSign(params);
-    var res = await Request().get(
-      Api.loginDevices,
-      queryParameters: params,
-    );
+    var res = await Request().get(Api.loginDevices, queryParameters: params);
     if (res.data['code'] == 0) {
       return Success(LoginDevicesData.fromJson(res.data['data']));
     } else {

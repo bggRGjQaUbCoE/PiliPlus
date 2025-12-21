@@ -28,10 +28,7 @@ class CaptchaDataModel {
 }
 
 class GeetestData {
-  const GeetestData({
-    required this.challenge,
-    required this.gt,
-  });
+  const GeetestData({required this.challenge, required this.gt});
 
   final String challenge;
   final String gt;

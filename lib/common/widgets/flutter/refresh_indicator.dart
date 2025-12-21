@@ -403,10 +403,7 @@ class RefreshIndicatorState extends State<RefreshIndicator>
     } else {
       // Respect the alpha of the given color.
       _valueColor = _positionController.drive(
-        ColorTween(
-          begin: color.withValues(alpha: 0),
-          end: color,
-        ).chain(
+        ColorTween(begin: color.withValues(alpha: 0), end: color).chain(
           CurveTween(curve: const Interval(0.0, 1.0 / _kDragSizeFactorLimit)),
         ),
       );
@@ -721,9 +718,7 @@ class RefreshIndicatorState extends State<RefreshIndicator>
                             );
 
                         final Widget cupertinoIndicator =
-                            CupertinoActivityIndicator(
-                              color: widget.color,
-                            );
+                            CupertinoActivityIndicator(color: widget.color);
 
                         switch (widget._indicatorType) {
                           case _IndicatorType.material:

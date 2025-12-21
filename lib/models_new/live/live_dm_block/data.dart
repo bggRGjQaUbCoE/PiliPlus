@@ -3,9 +3,7 @@ import 'package:PiliPlus/models_new/live/live_dm_block/shield_info.dart';
 class LiveDmBlockData {
   ShieldInfo? shieldInfo;
 
-  LiveDmBlockData({
-    this.shieldInfo,
-  });
+  LiveDmBlockData({this.shieldInfo});
 
   factory LiveDmBlockData.fromJson(Map<String, dynamic> json) =>
       LiveDmBlockData(

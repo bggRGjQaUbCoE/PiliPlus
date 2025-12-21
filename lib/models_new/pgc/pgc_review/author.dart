@@ -7,13 +7,7 @@ class Author {
   String? uname;
   Vip? vip;
 
-  Author({
-    this.avatar,
-    this.level,
-    this.mid,
-    this.uname,
-    this.vip,
-  });
+  Author({this.avatar, this.level, this.mid, this.uname, this.vip});
 
   factory Author.fromJson(Map<String, dynamic> json) => Author(
     avatar: json['avatar'] as String?,

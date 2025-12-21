@@ -110,10 +110,7 @@ class PendantAvatar extends StatelessWidget {
       isMemberAvatar
       ? DecoratedBox(
           decoration: BoxDecoration(
-            border: Border.all(
-              width: 2,
-              color: colorScheme.surface,
-            ),
+            border: Border.all(width: 2, color: colorScheme.surface),
             shape: BoxShape.circle,
           ),
           child: Padding(

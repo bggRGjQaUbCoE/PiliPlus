@@ -7,11 +7,7 @@ class ShieldInfo {
   List<String>? keywordList;
   ShieldRules? shieldRules;
 
-  ShieldInfo({
-    this.shieldUserList,
-    this.keywordList,
-    this.shieldRules,
-  });
+  ShieldInfo({this.shieldUserList, this.keywordList, this.shieldRules});
 
   factory ShieldInfo.fromJson(Map<String, dynamic> json) => ShieldInfo(
     shieldUserList: (json['shield_user_list'] as List<dynamic>?)

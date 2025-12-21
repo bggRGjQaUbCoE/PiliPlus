@@ -50,10 +50,7 @@ abstract final class SponsorBlock {
   }) async {
     final res = await Request().get(
       _api(SponsorBlockApi.skipSegments),
-      queryParameters: {
-        'videoID': bvid,
-        'cid': cid,
-      },
+      queryParameters: {'videoID': bvid, 'cid': cid},
       options: options,
     );
 
@@ -174,10 +171,7 @@ abstract final class SponsorBlock {
   }) async {
     final res = await Request().get(
       _api(SponsorBlockApi.portVideo),
-      queryParameters: {
-        'videoID': bvid,
-        'cid': cid.toString(),
-      },
+      queryParameters: {'videoID': bvid, 'cid': cid.toString()},
       options: options,
     );
 

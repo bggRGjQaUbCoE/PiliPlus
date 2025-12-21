@@ -1,9 +1,5 @@
 class UserProgress {
-  UserProgress({
-    this.lastEpId,
-    this.lastEpIndex,
-    this.lastTime,
-  });
+  UserProgress({this.lastEpId, this.lastEpIndex, this.lastTime});
   int? lastEpId;
   String? lastEpIndex;
   int? lastTime;

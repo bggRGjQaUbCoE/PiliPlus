@@ -18,10 +18,7 @@ abstract final class DanmakuFilterHttp {
   static Future<LoadingState<Null>> danmakuFilterDel({required int ids}) async {
     var res = await Request().post(
       Api.danmakuFilterDel,
-      data: {
-        'ids': ids,
-        'csrf': Accounts.main.csrf,
-      },
+      data: {'ids': ids, 'csrf': Accounts.main.csrf},
       options: Options(contentType: Headers.formUrlEncodedContentType),
     );
     if (res.data['code'] == 0) {
@@ -37,11 +34,7 @@ abstract final class DanmakuFilterHttp {
   }) async {
     var res = await Request().post(
       Api.danmakuFilterAdd,
-      data: {
-        'type': type,
-        'filter': filter,
-        'csrf': Accounts.main.csrf,
-      },
+      data: {'type': type, 'filter': filter, 'csrf': Accounts.main.csrf},
       options: Options(contentType: Headers.formUrlEncodedContentType),
     );
     if (res.data['code'] == 0) {

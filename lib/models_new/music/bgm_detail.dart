@@ -179,44 +179,29 @@ class Rank {
 }
 
 class ListDetail {
-  ListDetail({
-    required this.date,
-    required this.rank,
-  });
+  ListDetail({required this.date, required this.rank});
 
   final int? date;
   final int? rank;
 
   factory ListDetail.fromJson(Map<String, dynamic> json) {
-    return ListDetail(
-      date: json["date"],
-      rank: json["rank"],
-    );
+    return ListDetail(date: json["date"], rank: json["rank"]);
   }
 }
 
 class FlowAttr {
-  FlowAttr({
-    required this.noShare,
-    required this.noComment,
-  });
+  FlowAttr({required this.noShare, required this.noComment});
 
   final bool? noShare;
   final bool? noComment;
 
   factory FlowAttr.fromJson(Map<String, dynamic> json) {
-    return FlowAttr(
-      noShare: json["no_share"],
-      noComment: json["no_comment"],
-    );
+    return FlowAttr(noShare: json["no_share"], noComment: json["no_comment"]);
   }
 }
 
 class HotSongHeat {
-  HotSongHeat({
-    required this.lastHeat,
-    required this.songHeat,
-  });
+  HotSongHeat({required this.lastHeat, required this.songHeat});
 
   final int? lastHeat;
   final List<SongHeat>? songHeat;
@@ -232,19 +217,13 @@ class HotSongHeat {
 }
 
 class SongHeat {
-  SongHeat({
-    required this.date,
-    required this.heat,
-  });
+  SongHeat({required this.date, required this.heat});
 
   final int date;
   final int heat;
 
   factory SongHeat.fromJson(Map<String, dynamic> json) {
-    return SongHeat(
-      date: json["date"],
-      heat: json["heat"],
-    );
+    return SongHeat(date: json["date"], heat: json["heat"]);
   }
 }
 

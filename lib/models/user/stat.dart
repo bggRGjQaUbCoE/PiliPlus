@@ -4,11 +4,7 @@ part 'stat.g.dart';
 
 @HiveType(typeId: 1)
 class UserStat {
-  const UserStat({
-    this.following,
-    this.follower,
-    this.dynamicCount,
-  });
+  const UserStat({this.following, this.follower, this.dynamicCount});
 
   @HiveField(0)
   final int? following;

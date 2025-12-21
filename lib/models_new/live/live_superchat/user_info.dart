@@ -3,11 +3,7 @@ class UserInfo {
   String uname;
   String nameColor;
 
-  UserInfo({
-    required this.face,
-    required this.uname,
-    required this.nameColor,
-  });
+  UserInfo({required this.face, required this.uname, required this.nameColor});
 
   factory UserInfo.fromJson(Map<String, dynamic> json) => UserInfo(
     face: json['face'],

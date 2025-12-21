@@ -110,11 +110,7 @@ abstract final class UserHttp {
     account ??= Accounts.history;
     var res = await Request().post(
       Api.pauseHistory,
-      data: {
-        'switch': switchStatus,
-        'jsonp': 'jsonp',
-        'csrf': account.csrf,
-      },
+      data: {'switch': switchStatus, 'jsonp': 'jsonp', 'csrf': account.csrf},
       options: Options(
         extra: {'account': account},
         contentType: Headers.formUrlEncodedContentType,
@@ -145,10 +141,7 @@ abstract final class UserHttp {
     account ??= Accounts.history;
     var res = await Request().post(
       Api.clearHistory,
-      data: {
-        'jsonp': 'jsonp',
-        'csrf': account.csrf,
-      },
+      data: {'jsonp': 'jsonp', 'csrf': account.csrf},
       options: Options(
         extra: {'account': account},
         contentType: Headers.formUrlEncodedContentType,
@@ -162,18 +155,11 @@ abstract final class UserHttp {
   }
 
   // 稍后再看
-  static Future toViewLater({
-    String? bvid,
-    Object? aid,
-  }) async {
+  static Future toViewLater({String? bvid, Object? aid}) async {
     assert(aid != null || bvid != null);
     var res = await Request().post(
       Api.toViewLater,
-      data: {
-        'aid': ?aid,
-        'bvid': ?bvid,
-        'csrf': Accounts.main.csrf,
-      },
+      data: {'aid': ?aid, 'bvid': ?bvid, 'csrf': Accounts.main.csrf},
       options: Options(contentType: Headers.formUrlEncodedContentType),
     );
     if (res.data['code'] == 0) {
@@ -224,10 +210,7 @@ abstract final class UserHttp {
   static Future<LoadingState<Null>> toViewClear([int? cleanType]) async {
     var res = await Request().post(
       Api.toViewClear,
-      data: {
-        'clean_type': ?cleanType,
-        'csrf': Accounts.main.csrf,
-      },
+      data: {'clean_type': ?cleanType, 'csrf': Accounts.main.csrf},
       options: Options(contentType: Headers.formUrlEncodedContentType),
     );
     if (res.data['code'] == 0) {
@@ -245,11 +228,7 @@ abstract final class UserHttp {
     account ??= Accounts.history;
     var res = await Request().post(
       Api.delHistory,
-      data: {
-        'kid': kid,
-        'jsonp': 'jsonp',
-        'csrf': account.csrf,
-      },
+      data: {'kid': kid, 'jsonp': 'jsonp', 'csrf': account.csrf},
       options: Options(
         extra: {'account': account},
         contentType: Headers.formUrlEncodedContentType,
@@ -263,12 +242,7 @@ abstract final class UserHttp {
   }
 
   static Future hasFollow(int mid) async {
-    var res = await Request().get(
-      Api.relation,
-      queryParameters: {
-        'fid': mid,
-      },
-    );
+    var res = await Request().get(Api.relation, queryParameters: {'fid': mid});
     if (res.data['code'] == 0) {
       return {'status': true, 'data': res.data['data']};
     } else {
@@ -284,11 +258,7 @@ abstract final class UserHttp {
   }) async {
     var res = await Request().get(
       Api.searchHistory,
-      queryParameters: {
-        'pn': pn,
-        'keyword': keyword,
-        'business': 'all',
-      },
+      queryParameters: {'pn': pn, 'keyword': keyword, 'business': 'all'},
       options: Options(extra: {'account': account ?? Accounts.history}),
     );
     if (res.data['code'] == 0) {
@@ -306,12 +276,7 @@ abstract final class UserHttp {
   }) async {
     var res = await Request().get(
       Api.userSubFolder,
-      queryParameters: {
-        'up_mid': mid,
-        'ps': ps,
-        'pn': pn,
-        'platform': 'web',
-      },
+      queryParameters: {'up_mid': mid, 'ps': ps, 'pn': pn, 'platform': 'web'},
     );
     if (res.data['code'] == 0 && res.data['data'] is Map) {
       return Success(SubData.fromJson(res.data['data']));
@@ -391,9 +356,7 @@ abstract final class UserHttp {
   }) async {
     final res = await Request().post(
       Api.dynamicReport,
-      queryParameters: {
-        'csrf': Accounts.main.csrf,
-      },
+      queryParameters: {'csrf': Accounts.main.csrf},
       data: {
         "accused_uid": mid,
         "dynamic_id": dynId,
@@ -412,9 +375,7 @@ abstract final class UserHttp {
   static Future<LoadingState<SpaceSettingData>> spaceSetting() async {
     final res = await Request().get(
       Api.spaceSetting,
-      queryParameters: {
-        'mid': Accounts.main.mid,
-      },
+      queryParameters: {'mid': Accounts.main.mid},
     );
     if (res.data['code'] == 0) {
       return Success(SpaceSettingData.fromJson(res.data['data']));
@@ -426,9 +387,7 @@ abstract final class UserHttp {
   static Future<LoadingState<Null>> spaceSettingMod(Map data) async {
     final res = await Request().post(
       Api.spaceSettingMod,
-      queryParameters: {
-        'csrf': Accounts.main.csrf,
-      },
+      queryParameters: {'csrf': Accounts.main.csrf},
       data: data,
       options: Options(contentType: Headers.formUrlEncodedContentType),
     );
@@ -442,10 +401,7 @@ abstract final class UserHttp {
   static Future<LoadingState<Null>> vipExpAdd() async {
     final res = await Request().post(
       Api.vipExpAdd,
-      queryParameters: {
-        'mid': Accounts.main.mid,
-        'csrf': Accounts.main.csrf,
-      },
+      queryParameters: {'mid': Accounts.main.mid, 'csrf': Accounts.main.csrf},
     );
     if (res.data['code'] == 0) {
       return const Success(null);
@@ -457,10 +413,7 @@ abstract final class UserHttp {
   static Future<LoadingState<CoinLogData>> coinLog() async {
     final res = await Request().get(
       Api.coinLog,
-      queryParameters: {
-        'jsonp': 'jsonp',
-        'web_location': '333.33',
-      },
+      queryParameters: {'jsonp': 'jsonp', 'web_location': '333.33'},
     );
     if (res.data['code'] == 0) {
       return Success(CoinLogData.fromJson(res.data['data']));
@@ -472,10 +425,7 @@ abstract final class UserHttp {
   static Future<LoadingState<LoginLogData>> loginLog() async {
     final res = await Request().get(
       Api.loginLog,
-      queryParameters: {
-        'jsonp': 'jsonp',
-        'web_location': '333.33',
-      },
+      queryParameters: {'jsonp': 'jsonp', 'web_location': '333.33'},
     );
     if (res.data['code'] == 0) {
       return Success(LoginLogData.fromJson(res.data['data']));
@@ -487,10 +437,7 @@ abstract final class UserHttp {
   static Future<LoadingState<CoinLogData>> expLog() async {
     final res = await Request().get(
       Api.expLog,
-      queryParameters: {
-        'jsonp': 'jsonp',
-        'web_location': '333.33',
-      },
+      queryParameters: {'jsonp': 'jsonp', 'web_location': '333.33'},
     );
     if (res.data['code'] == 0) {
       return Success(CoinLogData.fromJson(res.data['data']));
@@ -502,15 +449,9 @@ abstract final class UserHttp {
   static Future<LoadingState<UserRealNameData>> getUserRealName(
     Object mid,
   ) async {
-    final params = {
-      'access_key': Accounts.main.accessKey,
-      'up_mid': mid,
-    };
+    final params = {'access_key': Accounts.main.accessKey, 'up_mid': mid};
     AppSign.appSign(params);
-    final res = await Request().get(
-      Api.userRealName,
-      queryParameters: params,
-    );
+    final res = await Request().get(Api.userRealName, queryParameters: params);
     if (res.data['code'] == 0) {
       return Success(UserRealNameData.fromJson(res.data['data']));
     } else {

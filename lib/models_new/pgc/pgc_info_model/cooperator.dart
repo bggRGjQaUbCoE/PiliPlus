@@ -4,12 +4,7 @@ class Cooperator {
   String? nickName;
   String? role;
 
-  Cooperator({
-    this.mid,
-    this.avatar,
-    this.nickName,
-    this.role,
-  });
+  Cooperator({this.mid, this.avatar, this.nickName, this.role});
 
   factory Cooperator.fromJson(Map<String, dynamic> json) => Cooperator(
     mid: json['mid'] as int?,

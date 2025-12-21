@@ -204,15 +204,8 @@ class _CustomTooltipOverlay extends StatelessWidget {
         preferBelow: false,
       ),
       children: [
-        LayoutId(
-          id: 'overlay',
-          child: overlayWidget(),
-        ),
-        if (indicator != null)
-          LayoutId(
-            id: 'indicator',
-            child: indicator!(),
-          ),
+        LayoutId(id: 'overlay', child: overlayWidget()),
+        if (indicator != null) LayoutId(id: 'indicator', child: indicator!()),
       ],
     );
     if (PlatformUtils.isMobile) {

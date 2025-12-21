@@ -43,11 +43,7 @@ class DynamicCardSkeleton extends StatelessWidget {
                       height: 13,
                       margin: const EdgeInsets.only(bottom: 5),
                     ),
-                    Container(
-                      color: color,
-                      width: 50,
-                      height: 11,
-                    ),
+                    Container(color: color, width: 50, height: 11),
                   ],
                 ),
               ],

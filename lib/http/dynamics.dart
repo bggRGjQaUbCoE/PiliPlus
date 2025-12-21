@@ -72,10 +72,7 @@ abstract final class DynamicsHttp {
   static Future<LoadingState<FollowUpModel>> followUp() async {
     var res = await Request().get(
       Api.followUp,
-      queryParameters: {
-        'up_list_more': 1,
-        'web_location': 333.1365,
-      },
+      queryParameters: {'up_list_more': 1, 'web_location': 333.1365},
     );
     if (res.data['code'] == 0) {
       return Success(FollowUpModel.fromJson(res.data['data']));
@@ -130,19 +127,9 @@ abstract final class DynamicsHttp {
   }) async {
     var res = await Request().post(
       Api.thumbDynamic,
-      queryParameters: {
-        'csrf': Accounts.main.csrf,
-      },
-      data: {
-        'dyn_id_str': dynamicId,
-        'up': up,
-        'spmid': '333.1365.0.0',
-      },
-      options: Options(
-        headers: {
-          'referer': HttpString.dynamicShareBaseUrl,
-        },
-      ),
+      queryParameters: {'csrf': Accounts.main.csrf},
+      data: {'dyn_id_str': dynamicId, 'up': up, 'spmid': '333.1365.0.0'},
+      options: Options(headers: {'referer': HttpString.dynamicShareBaseUrl}),
     );
     if (res.data['code'] == 0) {
       return const Success(null);
@@ -179,11 +166,7 @@ abstract final class DynamicsHttp {
           "content": {
             "contents": [
               if (rawText != null)
-                {
-                  "raw_text": rawText,
-                  "type": 1,
-                  "biz_id": "",
-                },
+                {"raw_text": rawText, "type": 1, "biz_id": ""},
               ...?extraContent,
             ],
             if (title != null && title.isNotEmpty) 'title': title,
@@ -222,24 +205,14 @@ abstract final class DynamicsHttp {
         if (dynIdStr != null || rid != null)
           "web_repost_src": {
             "dyn_id_str": ?dynIdStr,
-            if (rid != null)
-              "revs_id": {
-                "dyn_type": dynType,
-                "rid": rid,
-              },
+            if (rid != null) "revs_id": {"dyn_type": dynType, "rid": rid},
           },
       },
     );
     if (res.data['code'] == 0) {
-      return {
-        'status': true,
-        'data': res.data['data'],
-      };
+      return {'status': true, 'data': res.data['data']};
     } else {
-      return {
-        'status': false,
-        'msg': res.data['message'],
-      };
+      return {'status': false, 'msg': res.data['message']};
     }
   }
 
@@ -278,17 +251,11 @@ abstract final class DynamicsHttp {
     }
   }
 
-  static Future<LoadingState<Null>> setTop({
-    required Object dynamicId,
-  }) async {
+  static Future<LoadingState<Null>> setTop({required Object dynamicId}) async {
     var res = await Request().post(
       Api.setTopDyn,
-      queryParameters: {
-        'csrf': Accounts.main.csrf,
-      },
-      data: {
-        'dyn_str': dynamicId,
-      },
+      queryParameters: {'csrf': Accounts.main.csrf},
+      data: {'dyn_str': dynamicId},
     );
     if (res.data['code'] == 0) {
       return const Success(null);
@@ -297,17 +264,11 @@ abstract final class DynamicsHttp {
     }
   }
 
-  static Future<LoadingState<Null>> rmTop({
-    required Object dynamicId,
-  }) async {
+  static Future<LoadingState<Null>> rmTop({required Object dynamicId}) async {
     var res = await Request().post(
       Api.rmTopDyn,
-      queryParameters: {
-        'csrf': Accounts.main.csrf,
-      },
-      data: {
-        'dyn_str': dynamicId,
-      },
+      queryParameters: {'csrf': Accounts.main.csrf},
+      data: {'dyn_str': dynamicId},
     );
     if (res.data['code'] == 0) {
       return const Success(null);
@@ -418,10 +379,7 @@ abstract final class DynamicsHttp {
   }) async {
     final res = await Request().get(
       Api.topicTop,
-      queryParameters: {
-        'topic_id': topicId,
-        'source': 'Web',
-      },
+      queryParameters: {'topic_id': topicId, 'source': 'Web'},
     );
     if (res.data['code'] == 0) {
       TopDetails? data = res.data['data']?['top_details'] == null
@@ -465,10 +423,7 @@ abstract final class DynamicsHttp {
   }) async {
     final res = await Request().get(
       Api.articleList,
-      queryParameters: {
-        'id': id,
-        'web_location': 333.1400,
-      },
+      queryParameters: {'id': id, 'web_location': 333.1400},
     );
     if (res.data['code'] == 0) {
       return Success(ArticleListData.fromJson(res.data['data']));
@@ -485,9 +440,7 @@ abstract final class DynamicsHttp {
   }) async {
     var res = await Request().post(
       Api.dynReserve,
-      queryParameters: {
-        'csrf': Accounts.main.csrf,
-      },
+      queryParameters: {'csrf': Accounts.main.csrf},
       data: {
         'reserve_id': ?reserveId,
         'cur_btn_status': ?curBtnStatus,
@@ -527,10 +480,7 @@ abstract final class DynamicsHttp {
   static Future<LoadingState<List<OpusPicModel>?>> dynPic(dynamic id) async {
     final res = await Request().get(
       Api.dynPic,
-      queryParameters: {
-        'id': id,
-        'web_location': 333.1368,
-      },
+      queryParameters: {'id': id, 'web_location': 333.1368},
     );
     if (res.data['code'] == 0) {
       return Success(
@@ -554,9 +504,7 @@ abstract final class DynamicsHttp {
       },
     );
     if (res.data['code'] == 0) {
-      return Success(
-        DynMentionData.fromJson(res.data['data']).groups,
-      );
+      return Success(DynMentionData.fromJson(res.data['data']).groups);
     } else {
       return Error(res.data['message']);
     }
@@ -643,11 +591,7 @@ abstract final class DynamicsHttp {
   }) async {
     final res = await Request().get(
       Api.reserveInfo,
-      queryParameters: {
-        'from': 1,
-        'id': sid,
-        'web_location': 333.1365,
-      },
+      queryParameters: {'from': 1, 'id': sid, 'web_location': 333.1365},
     );
     if (res.data['code'] == 0) {
       return Success(ReserveInfoData.fromJson(res.data['data']));
@@ -661,9 +605,7 @@ abstract final class DynamicsHttp {
   }) async {
     final res = await Request().get(
       Api.followeeVotes,
-      queryParameters: {
-        'vote_id': voteId,
-      },
+      queryParameters: {'vote_id': voteId},
     );
     if (res.data['code'] == 0) {
       return Success(

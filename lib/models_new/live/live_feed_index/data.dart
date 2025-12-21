@@ -6,10 +6,7 @@ class LiveIndexData {
   LiveCardList? followItem;
   LiveCardList? areaItem;
 
-  LiveIndexData({
-    this.cardList,
-    this.hasMore,
-  });
+  LiveIndexData({this.cardList, this.hasMore});
 
   LiveIndexData.fromJson(Map<String, dynamic> json) {
     if ((json['card_list'] as List<dynamic>?)?.isNotEmpty == true) {

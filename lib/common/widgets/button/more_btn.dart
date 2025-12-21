@@ -14,11 +14,7 @@ Widget moreTextButton({
         TextSpan(text: text),
         WidgetSpan(
           alignment: PlaceholderAlignment.middle,
-          child: Icon(
-            size: 22,
-            color: color,
-            Icons.keyboard_arrow_right,
-          ),
+          child: Icon(size: 22, color: color, Icons.keyboard_arrow_right),
         ),
       ],
     ),

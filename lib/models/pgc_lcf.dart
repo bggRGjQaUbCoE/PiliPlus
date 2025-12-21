@@ -4,12 +4,7 @@ class PgcLCF {
   int? isOriginal;
   int? like;
 
-  PgcLCF({
-    this.coinNumber,
-    this.favorite,
-    this.isOriginal,
-    this.like,
-  });
+  PgcLCF({this.coinNumber, this.favorite, this.isOriginal, this.like});
 
   factory PgcLCF.fromJson(Map<String, dynamic> json) => PgcLCF(
     coinNumber: json["coin_number"],

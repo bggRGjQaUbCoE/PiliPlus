@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 
 class ViewSliverSafeArea extends StatelessWidget {
-  const ViewSliverSafeArea({
-    super.key,
-    required this.sliver,
-  });
+  const ViewSliverSafeArea({super.key, required this.sliver});
 
   final Widget sliver;
 

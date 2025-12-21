@@ -138,13 +138,10 @@ class DynamicItemModel {
 class Fallback {
   String? id;
 
-  Fallback({
-    this.id,
-  });
+  Fallback({this.id});
 
-  factory Fallback.fromJson(Map<String, dynamic> json) => Fallback(
-    id: json['id'],
-  );
+  factory Fallback.fromJson(Map<String, dynamic> json) =>
+      Fallback(id: json['id']);
 }
 
 // 单个动态详情
@@ -381,10 +378,7 @@ class Decorate {
   String? cardUrl;
   Fan? fan;
 
-  Decorate({
-    this.cardUrl,
-    this.fan,
-  });
+  Decorate({this.cardUrl, this.fan});
 
   factory Decorate.fromJson(Map<String, dynamic> json) => Decorate(
     cardUrl: json["card_url"],
@@ -396,25 +390,15 @@ class Fan {
   String? color;
   String? numStr;
 
-  Fan({
-    this.color,
-    this.numStr,
-  });
+  Fan({this.color, this.numStr});
 
-  factory Fan.fromJson(Map<String, dynamic> json) => Fan(
-    color: json["color"],
-    numStr: json["num_str"],
-  );
+  factory Fan.fromJson(Map<String, dynamic> json) =>
+      Fan(color: json["color"], numStr: json["num_str"]);
 }
 
 // 单个动态详情 - 动态信息
 class ModuleDynamicModel {
-  ModuleDynamicModel({
-    this.additional,
-    this.desc,
-    this.major,
-    this.topic,
-  });
+  ModuleDynamicModel({this.additional, this.desc, this.major, this.topic});
 
   DynamicAddModel? additional;
   DynamicDescModel? desc;
@@ -438,13 +422,7 @@ class ModuleDynamicModel {
 }
 
 class DynamicAddModel {
-  DynamicAddModel({
-    this.type,
-    this.vote,
-    this.ugc,
-    this.reserve,
-    this.goods,
-  });
+  DynamicAddModel({this.type, this.vote, this.ugc, this.reserve, this.goods});
 
   String? type;
   Vote? vote;
@@ -476,11 +454,7 @@ class AddMatch {
   String? jumpUrl;
   MatchInfo? matchInfo;
 
-  AddMatch({
-    this.button,
-    this.jumpUrl,
-    this.matchInfo,
-  });
+  AddMatch({this.button, this.jumpUrl, this.matchInfo});
 
   factory AddMatch.fromJson(Map<String, dynamic> json) => AddMatch(
     button: json["button"] == null ? null : Button.fromJson(json["button"]),
@@ -526,15 +500,10 @@ class TTeam {
   String? name;
   String? pic;
 
-  TTeam({
-    this.name,
-    this.pic,
-  });
+  TTeam({this.name, this.pic});
 
-  factory TTeam.fromJson(Map<String, dynamic> json) => TTeam(
-    name: json["name"],
-    pic: json["pic"],
-  );
+  factory TTeam.fromJson(Map<String, dynamic> json) =>
+      TTeam(name: json["name"], pic: json["pic"]);
 }
 
 class AddCommon {
@@ -571,13 +540,7 @@ class UpowerLottery {
   String? jumpUrl;
   String? title;
 
-  UpowerLottery({
-    this.button,
-    this.desc,
-    this.hint,
-    this.jumpUrl,
-    this.title,
-  });
+  UpowerLottery({this.button, this.desc, this.hint, this.jumpUrl, this.title});
 
   factory UpowerLottery.fromJson(Map<String, dynamic> json) => UpowerLottery(
     button: json["button"] == null ? null : Button.fromJson(json["button"]),
@@ -591,33 +554,22 @@ class UpowerLottery {
 class Hint {
   String? text;
 
-  Hint({
-    this.text,
-  });
+  Hint({this.text});
 
-  factory Hint.fromJson(Map<String, dynamic> json) => Hint(
-    text: json["text"],
-  );
+  factory Hint.fromJson(Map<String, dynamic> json) => Hint(text: json["text"]);
 }
 
 class JumpStyle {
   String? text;
 
-  JumpStyle({
-    this.text,
-  });
+  JumpStyle({this.text});
 
-  factory JumpStyle.fromJson(Map<String, dynamic> json) => JumpStyle(
-    text: json["text"],
-  );
+  factory JumpStyle.fromJson(Map<String, dynamic> json) =>
+      JumpStyle(text: json["text"]);
 }
 
 class Vote {
-  Vote({
-    this.joinNum,
-    this.voteId,
-    this.desc,
-  });
+  Vote({this.joinNum, this.voteId, this.desc});
 
   int? joinNum;
   int? voteId;
@@ -631,12 +583,7 @@ class Vote {
 }
 
 class Ugc {
-  Ugc({
-    this.cover,
-    this.descSecond,
-    this.jumpUrl,
-    this.title,
-  });
+  Ugc({this.cover, this.descSecond, this.jumpUrl, this.title});
 
   String? cover;
   String? descSecond;
@@ -688,12 +635,7 @@ class Reserve {
 }
 
 class ReserveBtn {
-  ReserveBtn({
-    this.status,
-    this.type,
-    this.checkText,
-    this.uncheckText,
-  });
+  ReserveBtn({this.status, this.type, this.checkText, this.uncheckText});
 
   int? status;
   int? type;
@@ -715,10 +657,7 @@ class ReserveBtn {
 }
 
 class Desc {
-  Desc({
-    this.text,
-    this.jumpUrl,
-  });
+  Desc({this.text, this.jumpUrl});
 
   String? text;
   String? jumpUrl;
@@ -730,9 +669,7 @@ class Desc {
 }
 
 class Good {
-  Good({
-    this.items,
-  });
+  Good({this.items});
 
   List<GoodItem>? items;
 
@@ -744,13 +681,7 @@ class Good {
 }
 
 class GoodItem {
-  GoodItem({
-    this.cover,
-    this.jumpDesc,
-    this.jumpUrl,
-    this.name,
-    this.price,
-  });
+  GoodItem({this.cover, this.jumpDesc, this.jumpUrl, this.name, this.price});
 
   String? cover;
   String? jumpDesc;
@@ -768,10 +699,7 @@ class GoodItem {
 }
 
 class DynamicDescModel {
-  DynamicDescModel({
-    this.richTextNodes,
-    this.text,
-  });
+  DynamicDescModel({this.richTextNodes, this.text});
 
   List<RichTextNodeItem>? richTextNodes;
   String? text;
@@ -892,9 +820,7 @@ class Medialist {
 class SubscriptionNew {
   LiveRcmd? liveRcmd;
 
-  SubscriptionNew({
-    this.liveRcmd,
-  });
+  SubscriptionNew({this.liveRcmd});
 
   factory SubscriptionNew.fromJson(Map<String, dynamic> json) =>
       SubscriptionNew(
@@ -907,9 +833,7 @@ class SubscriptionNew {
 class LiveRcmd {
   LiveRcmdContent? content;
 
-  LiveRcmd({
-    this.content,
-  });
+  LiveRcmd({this.content});
 
   factory LiveRcmd.fromJson(Map<String, dynamic> json) => LiveRcmd(
     content: json["content"] == null
@@ -921,9 +845,7 @@ class LiveRcmd {
 class LiveRcmdContent {
   LivePlayInfo? livePlayInfo;
 
-  LiveRcmdContent({
-    this.livePlayInfo,
-  });
+  LiveRcmdContent({this.livePlayInfo});
 
   factory LiveRcmdContent.fromJson(Map<String, dynamic> json) =>
       LiveRcmdContent(
@@ -963,10 +885,7 @@ class LivePlayInfo {
 }
 
 class DynamicTopicModel {
-  DynamicTopicModel({
-    this.id,
-    this.name,
-  });
+  DynamicTopicModel({this.id, this.name});
 
   int? id;
   String? name;
@@ -1023,9 +942,7 @@ class DynamicArchiveModel {
 }
 
 class Badge {
-  Badge({
-    this.text,
-  });
+  Badge({this.text});
 
   String? text;
 
@@ -1035,11 +952,7 @@ class Badge {
 }
 
 class DynamicOpusModel {
-  DynamicOpusModel({
-    this.pics,
-    this.summary,
-    this.title,
-  });
+  DynamicOpusModel({this.pics, this.summary, this.title});
 
   List<OpusPicModel>? pics;
   SummaryModel? summary;
@@ -1057,10 +970,7 @@ class DynamicOpusModel {
 }
 
 class SummaryModel {
-  SummaryModel({
-    this.richTextNodes,
-    this.text,
-  });
+  SummaryModel({this.richTextNodes, this.text});
 
   List<RichTextNodeItem>? richTextNodes;
   String? text;
@@ -1074,13 +984,7 @@ class SummaryModel {
 }
 
 class RichTextNodeItem {
-  RichTextNodeItem({
-    this.emoji,
-    this.origText,
-    this.text,
-    this.type,
-    this.rid,
-  });
+  RichTextNodeItem({this.emoji, this.origText, this.text, this.type, this.rid});
 
   Emoji? emoji;
   String? origText;
@@ -1115,9 +1019,7 @@ class Emoji {
 }
 
 class DynamicNoneModel {
-  DynamicNoneModel({
-    this.tips,
-  });
+  DynamicNoneModel({this.tips});
 
   String? tips;
 
@@ -1127,12 +1029,7 @@ class DynamicNoneModel {
 }
 
 class OpusPicModel {
-  OpusPicModel({
-    this.width,
-    this.height,
-    this.src,
-    this.url,
-  });
+  OpusPicModel({this.width, this.height, this.src, this.url});
 
   int? width;
   int? height;
@@ -1202,9 +1099,7 @@ class DynamicLive2Model {
 }
 
 class ModuleTag {
-  ModuleTag({
-    this.text,
-  });
+  ModuleTag({this.text});
 
   String? text;
 
@@ -1215,12 +1110,7 @@ class ModuleTag {
 
 // 动态状态 转发、评论、点赞
 class ModuleStatModel {
-  ModuleStatModel({
-    this.comment,
-    this.forward,
-    this.like,
-    this.favorite,
-  });
+  ModuleStatModel({this.comment, this.forward, this.like, this.favorite});
 
   DynamicStat? comment;
   DynamicStat? forward;
@@ -1243,10 +1133,7 @@ class ModuleStatModel {
 
 // 动态状态
 class DynamicStat {
-  DynamicStat({
-    this.count,
-    this.status,
-  });
+  DynamicStat({this.count, this.status});
 
   int? count;
   bool? status;
@@ -1258,10 +1145,7 @@ class DynamicStat {
 }
 
 class Stat {
-  Stat({
-    this.danmu,
-    this.play,
-  });
+  Stat({this.danmu, this.play});
 
   String? danmu;
   String? play;

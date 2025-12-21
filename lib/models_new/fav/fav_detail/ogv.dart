@@ -3,11 +3,7 @@ class Ogv {
   int? typeId;
   int? seasonId;
 
-  Ogv({
-    this.typeName,
-    this.typeId,
-    this.seasonId,
-  });
+  Ogv({this.typeName, this.typeId, this.seasonId});
 
   factory Ogv.fromJson(Map<String, dynamic> json) => Ogv(
     typeName: json['type_name'],

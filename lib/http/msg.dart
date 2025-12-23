@@ -18,7 +18,7 @@ import 'package:PiliPlus/models_new/upload_bfs/data.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/wbi_sign.dart';
 import 'package:dio/dio.dart';
-import 'package:uuid/uuid.dart';
+import 'package:uuid/v4.dart';
 
 abstract final class MsgHttp {
   static Future<LoadingState<MsgReplyData>> msgFeedReplyMe({
@@ -426,7 +426,7 @@ abstract final class MsgHttp {
   }
 
   static String getDevId() {
-    return const Uuid().v4();
+    return const UuidV4().generate();
   }
 
   static Future<LoadingState<Null>> msgSetNotice({

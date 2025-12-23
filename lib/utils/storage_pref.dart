@@ -35,11 +35,12 @@ import 'package:PiliPlus/utils/login_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
+import 'package:PiliPlus/utils/utils.dart';
+import 'package:crypto/crypto.dart';
 import 'package:flex_seed_scheme/flex_seed_scheme.dart' show FlexSchemeVariant;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hive/hive.dart';
-import 'package:uuid/uuid.dart';
 
 abstract final class Pref {
   static final Box _setting = GStorage.setting;
@@ -300,7 +301,9 @@ abstract final class Pref {
   static String get blockUserID {
     String? blockUserID = _setting.get(SettingBoxKey.blockUserID);
     if (blockUserID == null || blockUserID.isEmpty) {
-      blockUserID = const Uuid().v4().replaceAll('-', '');
+      blockUserID = Digest(
+        List.generate(16, (_) => Utils.random.nextInt(256)),
+      ).toString();
       _setting.put(SettingBoxKey.blockUserID, blockUserID);
     }
     return blockUserID;

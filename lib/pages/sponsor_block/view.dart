@@ -13,12 +13,13 @@ import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
+import 'package:PiliPlus/utils/utils.dart';
+import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show FilteringTextInputFormatter;
 import 'package:get/get.dart';
 import 'package:hive/hive.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
-import 'package:uuid/uuid.dart';
 
 class SponsorBlockPage extends StatefulWidget {
   const SponsorBlockPage({super.key});
@@ -179,7 +180,9 @@ class _SponsorBlockPageState extends State<SponsorBlockPage> {
                   TextButton(
                     onPressed: () {
                       Get.back();
-                      _userId = const Uuid().v4().replaceAll('-', '');
+                      _userId = Digest(
+                        List.generate(16, (_) => Utils.random.nextInt(256)),
+                      ).toString();
                       setting.put(SettingBoxKey.blockUserID, _userId);
                       (context as Element).markNeedsBuild();
                     },

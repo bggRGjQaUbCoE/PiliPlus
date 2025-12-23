@@ -801,7 +801,7 @@ abstract final class VideoHttp {
     final params = await WbiSign.makSign({
       'bvid': bvid,
       'cid': cid,
-      'up_mid': upMid,
+      'up_mid': ?upMid,
     });
     var res = await Request().get(Api.aiConclusion, queryParameters: params);
     final int? code = res.data['code'];

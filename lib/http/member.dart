@@ -356,7 +356,7 @@ abstract final class MemberHttp {
       'mid': mid,
       'ps': ps,
       'tid': tid,
-      'pn': pn,
+      'pn': ?pn,
       'keyword': ?keyword,
       'order': order,
       'platform': 'web',
@@ -392,7 +392,7 @@ abstract final class MemberHttp {
   @pragma('vm:notify-debugger-on-exception')
   static Future<LoadingState<DynamicsDataModel>> memberDynamic({
     String? offset,
-    int? mid,
+    required int mid,
   }) async {
     String dmImgStr = Utils.base64EncodeRandomString(16, 64);
     String dmCoverImgStr = Utils.base64EncodeRandomString(32, 128);
@@ -648,7 +648,7 @@ abstract final class MemberHttp {
     required int pn,
     required String name,
   }) async {
-    Map<String, dynamic> data = {
+    final data = {
       'vmid': mid,
       'pn': pn,
       'ps': ps,

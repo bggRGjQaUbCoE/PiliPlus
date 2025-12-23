@@ -11,13 +11,11 @@ import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:crypto/crypto.dart';
 import 'package:hive/hive.dart';
-import 'package:synchronized/synchronized.dart';
 
 abstract final class WbiSign {
-  static Box localCache = GStorage.localCache;
-  static final Lock lock = Lock();
-  static final RegExp chrFilter = RegExp(r"[!\'\(\)\*]");
-  static const mixinKeyEncTab = <int>[
+  static Box get _localCache => GStorage.localCache;
+  static final RegExp _chrFilter = RegExp(r"[!\'\(\)\*]");
+  static const _mixinKeyEncTab = <int>[
     46,
     47,
     18,
@@ -52,21 +50,23 @@ abstract final class WbiSign {
     13,
   ];
 
+  static Future<String>? _future;
+
   // 对 imgKey 和 subKey 进行字符顺序打乱编码
   static String getMixinKey(String orig) {
     final codeUnits = orig.codeUnits;
-    return String.fromCharCodes(mixinKeyEncTab.map((i) => codeUnits[i]));
+    return String.fromCharCodes(_mixinKeyEncTab.map((i) => codeUnits[i]));
   }
 
   // 为请求参数进行 wbi 签名
-  static void encWbi(Map<String, dynamic> params, String mixinKey) {
+  static void encWbi(Map<String, Object> params, String mixinKey) {
     params['wts'] = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     // 按照 key 重排参数
     final List<String> keys = params.keys.toList()..sort();
     final queryStr = keys
         .map(
           (i) =>
-              '${Uri.encodeComponent(i)}=${Uri.encodeComponent(params[i].toString().replaceAll(chrFilter, ''))}',
+              '${Uri.encodeComponent(i)}=${Uri.encodeComponent(params[i].toString().replaceAll(_chrFilter, ''))}',
         )
         .join('&');
     params['w_rid'] = md5
@@ -74,30 +74,19 @@ abstract final class WbiSign {
         .toString(); // 计算 w_rid
   }
 
-  // 获取最新的 img_key 和 sub_key 可以从缓存中获取
-  static Future<String> getWbiKeys() async {
-    final DateTime nowDate = DateTime.now();
-    String? mixinKey = localCache.get(LocalCacheKey.mixinKey);
-    if (mixinKey != null &&
-        DateTime.fromMillisecondsSinceEpoch(
-              localCache.get(LocalCacheKey.timeStamp) as int,
-            ).day ==
-            nowDate.day) {
-      return mixinKey;
-    }
+  static Future<String> _getWbiKeys(DateTime nowDate) async {
     final resp = await Request().get(Api.userInfo);
-
     try {
       final wbiUrls = resp.data['data']['wbi_img'];
 
-      mixinKey = getMixinKey(
+      final mixinKey = getMixinKey(
         Utils.getFileName(wbiUrls['img_url'], fileExt: false) +
             Utils.getFileName(wbiUrls['sub_url'], fileExt: false),
       );
 
-      localCache
+      _localCache
         ..put(LocalCacheKey.mixinKey, mixinKey)
-        ..put(LocalCacheKey.timeStamp, nowDate.millisecondsSinceEpoch);
+        ..put(LocalCacheKey.timeStamp, DateTime.now().millisecondsSinceEpoch);
 
       return mixinKey;
     } catch (_) {
@@ -105,11 +94,25 @@ abstract final class WbiSign {
     }
   }
 
-  static Future<Map<String, dynamic>> makSign(
-    Map<String, dynamic> params,
+  static Future<String> getWbiKeys() async {
+    final DateTime nowDate = DateTime.now();
+    if (DateTime.fromMillisecondsSinceEpoch(
+          _localCache.get(LocalCacheKey.timeStamp, defaultValue: 0) as int,
+        ).day ==
+        nowDate.day) {
+      final String? mixinKey = _localCache.get(LocalCacheKey.mixinKey);
+      if (mixinKey != null) return mixinKey;
+      return _future ??= _getWbiKeys(nowDate);
+    } else {
+      return _future = _getWbiKeys(nowDate);
+    }
+  }
+
+  static Future<Map<String, Object>> makSign(
+    Map<String, Object> params,
   ) async {
     // params 为需要加密的请求参数
-    final String mixinKey = await lock.synchronized(getWbiKeys);
+    final String mixinKey = await getWbiKeys();
     encWbi(params, mixinKey);
     return params;
   }

@@ -2102,7 +2102,6 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                 return Transform.flip(
                   flipX: plPlayerController.flipX.value,
                   flipY: plPlayerController.flipY.value,
-                  filterQuality: FilterQuality.low,
                   child: FittedBox(
                     fit: videoFit.boxFit,
                     alignment: widget.alignment,

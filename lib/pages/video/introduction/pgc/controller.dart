@@ -306,9 +306,11 @@ class PgcIntroController extends CommonIntroController {
       // 重新请求评论
       if (videoDetailCtr.showReply) {
         try {
-          Get.find<VideoReplyController>(tag: heroTag)
-            ..aid = aid
-            ..onReload();
+          final replyCtr = Get.find<VideoReplyController>(tag: heroTag)
+            ..aid = aid;
+          if (replyCtr.loadingState.value is! Loading) {
+            replyCtr.onReload();
+          }
         } catch (_) {}
       }
 

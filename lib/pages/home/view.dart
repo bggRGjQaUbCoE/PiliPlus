@@ -6,6 +6,7 @@ import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/pages/home/controller.dart';
 import 'package:PiliPlus/pages/main/controller.dart';
 import 'package:PiliPlus/pages/mine/controller.dart';
+import 'package:PiliPlus/utils/extension/get_ext.dart';
 import 'package:PiliPlus/utils/extension/size_ext.dart';
 import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:flutter/material.dart';
@@ -21,8 +22,8 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage>
     with AutomaticKeepAliveClientMixin {
-  final HomeController _homeController = Get.put(HomeController());
-  final MainController _mainController = Get.put(MainController());
+  final _homeController = Get.putOrFind(HomeController.new);
+  final _mainController = Get.find<MainController>();
 
   @override
   bool get wantKeepAlive => true;
@@ -46,9 +47,9 @@ class _HomePageState extends State<HomePage>
                 width: double.infinity,
                 child: TabBar(
                   controller: _homeController.tabController,
-                  tabs: [
-                    for (var i in _homeController.tabs) Tab(text: i.label),
-                  ],
+                  tabs: _homeController.tabs
+                      .map((e) => Tab(text: e.label))
+                      .toList(),
                   isScrollable: true,
                   dividerColor: Colors.transparent,
                   dividerHeight: 0,
@@ -149,30 +150,28 @@ class _HomePageState extends State<HomePage>
   }
 
   Widget customAppBar(ThemeData theme) {
-    if (!_homeController.hideSearchBar) {
+    if (_homeController.searchBar case final searchBar?) {
+      return Obx(() {
+        final showSearchBar = searchBar.value;
+        return AnimatedOpacity(
+          opacity: showSearchBar ? 1 : 0,
+          duration: const Duration(milliseconds: 300),
+          child: AnimatedContainer(
+            curve: Curves.easeInOutCubicEmphasized,
+            duration: const Duration(milliseconds: 500),
+            height: showSearchBar ? 52 : 0,
+            padding: const EdgeInsets.fromLTRB(14, 6, 14, 0),
+            child: searchBarAndUser(theme),
+          ),
+        );
+      });
+    } else {
       return Container(
         height: 52,
         padding: const EdgeInsets.fromLTRB(14, 6, 14, 0),
         child: searchBarAndUser(theme),
       );
     }
-    return StreamBuilder(
-      stream: _homeController.searchBarStream?.stream.distinct(),
-      initialData: true,
-      builder: (BuildContext context, AsyncSnapshot snapshot) {
-        return AnimatedOpacity(
-          opacity: snapshot.data ? 1 : 0,
-          duration: const Duration(milliseconds: 300),
-          child: AnimatedContainer(
-            curve: Curves.easeInOutCubicEmphasized,
-            duration: const Duration(milliseconds: 500),
-            height: snapshot.data ? 52 : 0,
-            padding: const EdgeInsets.fromLTRB(14, 6, 14, 0),
-            child: searchBarAndUser(theme),
-          ),
-        );
-      },
-    );
   }
 
   Widget searchBar(ThemeData theme) {

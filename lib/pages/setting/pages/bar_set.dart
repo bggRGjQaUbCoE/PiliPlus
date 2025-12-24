@@ -1,3 +1,4 @@
+import 'package:PiliPlus/common/widgets/pair.dart';
 import 'package:PiliPlus/models/common/enum_with_label.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:flutter/material.dart';
@@ -12,47 +13,48 @@ class BarSetPage extends StatefulWidget {
 }
 
 class _BarSetPageState extends State<BarSetPage> {
-  late final List<EnumWithLabel> defaultBars;
-  late final Map<int, int> barIndex;
   late final String key;
   late final String title;
+  late final List<Pair<EnumWithLabel, bool>> list;
 
   @override
   void initState() {
     super.initState();
-    Map<String, dynamic> args = Get.arguments;
+    final Map<String, dynamic> args = Get.arguments;
     key = args['key'];
-    title = args['title'] ?? '';
-    defaultBars = List<EnumWithLabel>.from(args['defaultBars']);
-    List? bars = GStorage.setting.get(key);
-    if (bars != null) {
-      barIndex = {for (var (k, v) in bars.indexed) v: k};
-
-      // 对 tabData 进行排序
-      defaultBars.sort((a, b) {
-        final indexA = barIndex[a.index] ?? barIndex.length;
-        final indexB = barIndex[b.index] ?? barIndex.length;
+    title = args['title'];
+    final List? cache = GStorage.setting.get(key);
+    list = (args['defaultBars'] as List<EnumWithLabel>)
+        .map((e) => Pair(first: e, second: cache?.contains(e.index) ?? true))
+        .toList();
+    if (cache != null && cache.isNotEmpty) {
+      final cacheIndex = {for (var (k, v) in cache.indexed) v: k};
+      list.sort((a, b) {
+        final indexA = cacheIndex[a.first.index] ?? cacheIndex.length;
+        final indexB = cacheIndex[b.first.index] ?? cacheIndex.length;
         return indexA.compareTo(indexB);
       });
-    } else {
-      barIndex = {for (var (k, v) in defaultBars.indexed) v.index: k};
     }
   }
 
   void saveEdit() {
-    List<int> sortedBar = defaultBars
-        .where((i) => barIndex.containsKey(i.index))
-        .map((i) => i.index)
-        .toList();
-    GStorage.setting.put(key, sortedBar);
+    GStorage.setting.put(
+      key,
+      list.where((e) => e.second).map((e) => e.first.index).toList(),
+    );
     SmartDialog.showToast('保存成功，下次启动时生效');
   }
 
+  void onReset() {
+    Get.back();
+    GStorage.setting.delete(key);
+    SmartDialog.showToast('重置成功，下次启动时生效');
+  }
+
   void onReorder(int oldIndex, int newIndex) {
-    setState(() {
-      if (newIndex > oldIndex) newIndex -= 1;
-      defaultBars.insert(newIndex, defaultBars.removeAt(oldIndex));
-    });
+    if (newIndex > oldIndex) newIndex -= 1;
+    list.insert(newIndex, list.removeAt(oldIndex));
+    setState(() {});
   }
 
   @override
@@ -62,6 +64,7 @@ class _BarSetPageState extends State<BarSetPage> {
       appBar: AppBar(
         title: Text('$title编辑'),
         actions: [
+          TextButton(onPressed: onReset, child: const Text('重置')),
           TextButton(onPressed: saveEdit, child: const Text('保存')),
           const SizedBox(width: 12),
         ],
@@ -77,20 +80,16 @@ class _BarSetPageState extends State<BarSetPage> {
             child: Text('*长按拖动排序'),
           ),
         ),
-        children: defaultBars
+        children: list
             .map(
-              (i) => CheckboxListTile(
-                key: Key(i.label),
-                value: barIndex.containsKey(i.index),
+              (e) => CheckboxListTile(
+                key: ValueKey(e.hashCode),
+                value: e.second,
                 onChanged: (bool? value) {
-                  if (value!) {
-                    barIndex[i.index] = -1;
-                  } else {
-                    barIndex.remove(i.index);
-                  }
+                  e.second = value!;
                   setState(() {});
                 },
-                title: Text(i.label),
+                title: Text(e.first.label),
                 secondary: const Icon(Icons.drag_indicator_rounded),
               ),
             )

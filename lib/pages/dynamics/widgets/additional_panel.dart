@@ -436,7 +436,7 @@ Widget addWidget(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        vote.desc!,
+                        vote.title!,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),

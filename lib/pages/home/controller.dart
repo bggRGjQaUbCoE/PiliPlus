@@ -19,8 +19,7 @@ class HomeController extends GetxController
   late List<HomeTabType> tabs;
   late TabController tabController;
 
-  StreamController<bool>? searchBarStream;
-  final bool hideSearchBar = Pref.hideSearchBar;
+  RxBool? searchBar;
   final bool useSideBar = Pref.useSideBar;
 
   bool enableSearchWord = Pref.enableSearchWord;
@@ -38,8 +37,8 @@ class HomeController extends GetxController
   void onInit() {
     super.onInit();
 
-    if (hideSearchBar) {
-      searchBarStream = StreamController<bool>.broadcast();
+    if (Pref.hideSearchBar) {
+      searchBar = true.obs;
     }
 
     if (enableSearchWord) {
@@ -89,11 +88,5 @@ class HomeController extends GetxController
         // defaultSearch.value = res.data['data']?['show_name'] ?? '';
       }
     } catch (_) {}
-  }
-
-  @override
-  void onClose() {
-    searchBarStream?.close();
-    super.onClose();
   }
 }

@@ -383,7 +383,7 @@ abstract final class MsgHttp {
   }) async {
     String csrf = Accounts.main.csrf;
     final devId = getDevId();
-    Map<String, dynamic> data = {
+    final data = {
       'msg': {
         'sender_uid': senderUid,
         'receiver_id': receiverId,

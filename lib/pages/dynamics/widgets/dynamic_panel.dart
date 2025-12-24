@@ -1,3 +1,4 @@
+import 'package:PiliPlus/common/widgets/avatars.dart';
 import 'package:PiliPlus/common/widgets/flutter/dyn/ink_well.dart';
 import 'package:PiliPlus/common/widgets/image/image_save.dart';
 import 'package:PiliPlus/models/dynamics/result.dart';
@@ -93,39 +94,7 @@ class DynamicPanel extends StatelessWidget {
                   height: 1,
                   color: theme.dividerColor.withValues(alpha: 0.1),
                 ),
-                InkWell(
-                  onTap: onUnfold,
-                  child: Container(
-                    alignment: Alignment.center,
-                    padding: const EdgeInsets.symmetric(vertical: 10),
-                    child: Text.rich(
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        height: 1,
-                        fontSize: 13,
-                        color: theme.colorScheme.outline,
-                      ),
-                      strutStyle: const StrutStyle(
-                        height: 1,
-                        leading: 0,
-                        fontSize: 13,
-                      ),
-                      TextSpan(
-                        children: [
-                          TextSpan(text: moduleFold.statement ?? '展开'),
-                          WidgetSpan(
-                            alignment: PlaceholderAlignment.middle,
-                            child: Icon(
-                              size: 19,
-                              Icons.keyboard_arrow_down,
-                              color: theme.colorScheme.outline,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
+                _buildFoldItem(theme, moduleFold),
               ],
             ] else if (!isSave)
               const SizedBox(height: 12),
@@ -214,6 +183,54 @@ class DynamicPanel extends StatelessWidget {
       title: title,
       cover: cover,
       bvid: bvid,
+    );
+  }
+
+  Widget _buildFoldItem(ThemeData theme, ModuleFold moduleFold) {
+    Widget child = Text.rich(
+      textAlign: TextAlign.center,
+      style: TextStyle(
+        height: 1,
+        fontSize: 13,
+        color: theme.colorScheme.outline,
+      ),
+      strutStyle: const StrutStyle(
+        height: 1,
+        leading: 0,
+        fontSize: 13,
+      ),
+      TextSpan(
+        children: [
+          TextSpan(text: moduleFold.statement ?? '展开'),
+          WidgetSpan(
+            alignment: PlaceholderAlignment.middle,
+            child: Icon(
+              size: 19,
+              Icons.keyboard_arrow_down,
+              color: theme.colorScheme.outline,
+            ),
+          ),
+        ],
+      ),
+    );
+    final users = moduleFold.users;
+    if (users != null && users.isNotEmpty) {
+      child = Row(
+        spacing: 5,
+        mainAxisAlignment: .center,
+        children: [
+          avatars(colorScheme: theme.colorScheme, users: users),
+          child,
+        ],
+      );
+    }
+    return InkWell(
+      onTap: onUnfold,
+      child: Container(
+        alignment: Alignment.center,
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        child: child,
+      ),
     );
   }
 }

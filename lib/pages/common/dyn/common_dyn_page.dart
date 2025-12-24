@@ -17,7 +17,6 @@ import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:easy_debounce/easy_throttle.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:get/get.dart' hide ContextExtensionss;
 
 abstract class CommonDynPageState<T extends StatefulWidget> extends State<T>
@@ -51,14 +50,9 @@ abstract class CommonDynPageState<T extends StatefulWidget> extends State<T>
   void listener() {
     final pos = scrollController.positions;
     controller.showTitle.value = pos.first.pixels > 55;
-
-    final direction1 = pos.first.userScrollDirection;
-    late final direction2 = pos.last.userScrollDirection;
-    if (direction1 == ScrollDirection.forward ||
-        direction2 == ScrollDirection.forward) {
+    if (pos.any((e) => e.userScrollDirection == .forward)) {
       showFab();
-    } else if (direction1 == ScrollDirection.reverse ||
-        direction2 == ScrollDirection.reverse) {
+    } else if (pos.any((e) => e.userScrollDirection == .reverse)) {
       hideFab();
     }
   }

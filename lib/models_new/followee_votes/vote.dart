@@ -1,20 +1,26 @@
-class FolloweeVote {
-  int uid;
-  String name;
-  String face;
+import 'package:PiliPlus/models/model_owner.dart';
+
+class FolloweeVote extends Owner {
+  String _name;
+  @override
+  String get name => _name;
+  String _face;
+  @override
+  String get face => _face;
   List<int> votes;
   int ctime;
 
   FolloweeVote({
-    required this.uid,
-    required this.name,
-    required this.face,
+    required super.mid,
+    required String name,
+    required String face,
     required this.votes,
     required this.ctime,
-  });
+  }) : _name = name,
+       _face = face;
 
   factory FolloweeVote.fromJson(Map<String, dynamic> json) => FolloweeVote(
-    uid: json['uid'],
+    mid: json['uid'],
     name: json['name'],
     face: json['face'],
     votes: List<int>.from(json['votes']),

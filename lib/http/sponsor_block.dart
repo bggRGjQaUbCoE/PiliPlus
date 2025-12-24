@@ -73,7 +73,7 @@ abstract final class SponsorBlock {
     assert((type == null) == (category == null));
     final res = await Request().post(
       _api(SponsorBlockApi.voteOnSponsorTime),
-      data: {
+      queryParameters: {
         'UUID': uuid,
         'type': ?type,
         'category': ?category?.name,

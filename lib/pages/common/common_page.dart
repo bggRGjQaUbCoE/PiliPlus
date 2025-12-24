@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:PiliPlus/pages/common/common_controller.dart';
 import 'package:PiliPlus/pages/home/controller.dart';
 import 'package:PiliPlus/pages/main/controller.dart';
@@ -14,8 +12,8 @@ abstract class CommonPageState<
 >
     extends State<T> {
   R get controller;
-  StreamController<bool>? mainStream;
-  StreamController<bool>? searchBarStream;
+  RxBool? showBottomBar;
+  RxBool? showSearchBar;
   // late double _downScrollCount = 0.0; // 向下滚动计数器
   late double _upScrollCount = 0.0; // 向上滚动计数器
   double? _lastScrollPosition; // 记录上次滚动位置
@@ -27,18 +25,18 @@ abstract class CommonPageState<
   void initState() {
     super.initState();
     try {
-      mainStream = Get.find<MainController>().bottomBarStream;
-      searchBarStream = Get.find<HomeController>().searchBarStream;
+      showBottomBar = Get.find<MainController>().bottomBar;
+      showSearchBar = Get.find<HomeController>().searchBar;
     } catch (_) {}
     if (_enableScrollThreshold &&
-        (mainStream != null || searchBarStream != null)) {
+        (showBottomBar != null || showSearchBar != null)) {
       controller.scrollController.addListener(listener);
     }
   }
 
   Widget onBuild(Widget child) {
     if (!_enableScrollThreshold &&
-        (mainStream != null || searchBarStream != null)) {
+        (showBottomBar != null || showSearchBar != null)) {
       return NotificationListener<UserScrollNotification>(
         onNotification: onNotification,
         child: child,
@@ -51,11 +49,11 @@ abstract class CommonPageState<
     if (notification.metrics.axis == Axis.horizontal) return false;
     final direction = notification.direction;
     if (direction == ScrollDirection.forward) {
-      mainStream?.add(true);
-      searchBarStream?.add(true);
+      showBottomBar?.value = true;
+      showSearchBar?.value = true;
     } else if (direction == ScrollDirection.reverse) {
-      mainStream?.add(false);
-      searchBarStream?.add(false);
+      showBottomBar?.value = false;
+      showSearchBar?.value = false;
     }
     return false;
   }
@@ -72,8 +70,8 @@ abstract class CommonPageState<
     final double scrollDelta = currentPosition - _lastScrollPosition!;
 
     if (direction == ScrollDirection.reverse) {
-      mainStream?.add(false);
-      searchBarStream?.add(false); // // 向下滚动，累加向下滚动距离，重置向上滚动计数器
+      showBottomBar?.value = false;
+      showSearchBar?.value = false; // // 向下滚动，累加向下滚动距离，重置向上滚动计数器
       _upScrollCount = 0.0; // 重置向上滚动计数器
       // if (scrollDelta > 0) {
       //   _downScrollCount += scrollDelta;
@@ -93,8 +91,8 @@ abstract class CommonPageState<
 
         // 当累计向上滚动距离超过阈值时，显示顶底栏
         if (_upScrollCount >= _scrollThreshold) {
-          mainStream?.add(true);
-          searchBarStream?.add(true);
+          showBottomBar?.value = true;
+          showSearchBar?.value = true;
         }
       }
     }
@@ -105,6 +103,8 @@ abstract class CommonPageState<
 
   @override
   void dispose() {
+    showSearchBar = null;
+    showBottomBar = null;
     controller.scrollController.removeListener(listener);
     super.dispose();
   }

@@ -1,9 +1,8 @@
 import 'package:PiliPlus/common/constants.dart';
-import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
+import 'package:PiliPlus/common/widgets/avatars.dart';
 import 'package:PiliPlus/common/widgets/pendant_avatar.dart';
 import 'package:PiliPlus/common/widgets/view_safe_area.dart';
 import 'package:PiliPlus/models/common/image_preview_type.dart';
-import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/models/common/member/user_info_type.dart';
 import 'package:PiliPlus/models_new/space/space/card.dart';
 import 'package:PiliPlus/models_new/space/space/followings_followed_upper.dart';
@@ -601,50 +600,11 @@ class UserInfoCard extends StatelessWidget {
     var list = item.items!;
     final flag = list.length > 3;
     if (flag) list = list.sublist(0, 3);
-    final length = list.length;
-    const size = 22.0;
-    Widget avatar(String url) => NetworkImgLayer(
-      src: url,
-      width: size,
-      height: size,
-      type: ImageType.avatar,
-    );
-    Widget avatars;
-    if (length == 1) {
-      avatars = avatar(list.first.face!);
-    } else {
-      const gap = 4.0;
-      const offset = size - gap;
-      final decoration = BoxDecoration(
-        shape: BoxShape.circle,
-        border: Border.all(color: colorScheme.surface),
-      );
-      avatars = SizedBox(
-        width: length * size - (length - 1) * gap,
-        height: size + 1.6,
-        child: Stack(
-          clipBehavior: Clip.none,
-          children: List.generate(
-            length,
-            (index) => Positioned(
-              right: index * offset,
-              child: DecoratedBox(
-                decoration: decoration,
-                child: Padding(
-                  padding: const EdgeInsets.all(.8),
-                  child: avatar(list[length - 1 - index].face!),
-                ),
-              ),
-            ),
-          ),
-        ),
-      );
-    }
     Widget child = Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         const SizedBox(width: 20),
-        avatars,
+        avatars(colorScheme: colorScheme, users: list),
         const SizedBox(width: 4),
         Flexible(
           child: Text(

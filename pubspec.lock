@@ -340,14 +340,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.0.8"
-  crclib:
-    dependency: "direct main"
-    description:
-      name: crclib
-      sha256: "800f2226cd90c900ddcaaccb79449eabe690627ee8c7046737458f1a2509043d"
-      url: "https://pub.dev"
-    source: hosted
-    version: "3.0.0"
   cross_file:
     dependency: transitive
     description:
@@ -1762,14 +1754,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.5.2"
-  tuple:
-    dependency: transitive
-    description:
-      name: tuple
-      sha256: a97ce2013f240b2f3807bcbaf218765b6f301c3eff91092bcfa23a039e7dd151
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.0.2"
   typed_data:
     dependency: transitive
     description:

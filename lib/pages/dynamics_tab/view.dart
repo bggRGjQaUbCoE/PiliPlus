@@ -11,6 +11,7 @@ import 'package:PiliPlus/pages/dynamics/controller.dart';
 import 'package:PiliPlus/pages/dynamics/widgets/dynamic_panel.dart';
 import 'package:PiliPlus/pages/dynamics_tab/controller.dart';
 import 'package:PiliPlus/pages/main/controller.dart';
+import 'package:PiliPlus/utils/extension/get_ext.dart';
 import 'package:PiliPlus/utils/global_data.dart';
 import 'package:PiliPlus/utils/waterfall.dart';
 import 'package:flutter/material.dart';
@@ -33,11 +34,12 @@ class _DynamicsTabPageState
   StreamSubscription? _listener;
   late final MainController _mainController = Get.find<MainController>();
 
-  DynamicsController dynamicsController = Get.put(DynamicsController());
+  DynamicsController dynamicsController = Get.putOrFind(DynamicsController.new);
   @override
-  late DynamicsTabController controller = Get.put(
-    DynamicsTabController(dynamicsType: widget.dynamicsType)
-      ..mid = dynamicsController.mid.value,
+  late final DynamicsTabController controller = Get.putOrFind(
+    () =>
+        DynamicsTabController(dynamicsType: widget.dynamicsType)
+          ..mid = dynamicsController.mid.value,
     tag: widget.dynamicsType.name,
   );
 

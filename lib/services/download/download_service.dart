@@ -442,9 +442,9 @@ class DownloadService extends GetxService {
     }
   }
 
-  Future<void> _updateBiliDownloadEntryJson(BiliDownloadEntryInfo entry) async {
+  Future<void> _updateBiliDownloadEntryJson(BiliDownloadEntryInfo entry) {
     final entryJsonFile = File(path.join(entry.entryDirPath, _entryFile));
-    await entryJsonFile.writeAsString(jsonEncode(entry.toJson()));
+    return entryJsonFile.writeAsString(jsonEncode(entry.toJson()));
   }
 
   void _onReceive(int progress, int total) {

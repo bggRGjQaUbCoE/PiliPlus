@@ -21,14 +21,11 @@ class LiveFollowData {
     title = json['title'] as String?;
     pageSize = json['pageSize'] as int?;
     totalPage = json['totalPage'] as int?;
-    if ((json['list'] as List<dynamic>?)?.isNotEmpty == true) {
-      list = <LiveFollowItem>[];
-      for (var json in json['list']) {
-        if (json['live_status'] == 1) {
-          list!.add(LiveFollowItem.fromJson(json));
-        }
-      }
-    }
+    list = (json['list'] as List<dynamic>?)
+        ?.cast<Map<String, dynamic>>()
+        .where((i) => i['live_status'] == 1)
+        .map(LiveFollowItem.fromJson)
+        .toList();
     count = json['count'] as int?;
     liveCount = json['live_count'] as int?;
   }

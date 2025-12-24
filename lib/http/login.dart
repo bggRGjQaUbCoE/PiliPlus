@@ -36,7 +36,6 @@ abstract final class LoginHttp {
     var params = {
       // 'local_id': 'Y952A395BB157D305D8A8340FC2AAECECE17',
       'local_id': '0',
-      'ts': (DateTime.now().millisecondsSinceEpoch ~/ 1000).toString(),
       'platform': 'android',
       'mobi_app': 'android_hd',
     };
@@ -59,7 +58,6 @@ abstract final class LoginHttp {
     var params = {
       'auth_code': authCode,
       'local_id': '0',
-      'ts': (DateTime.now().millisecondsSinceEpoch ~/ 1000).toString(),
     };
     AppSign.appSign(params);
     var res = await Request().post(Api.qrcodePoll, queryParameters: params);
@@ -118,7 +116,7 @@ abstract final class LoginHttp {
       'local_id': buvid,
       // https://chinggg.github.io/post/appre/
       'login_session_id': md5
-          .convert(utf8.encode(buvid + timestamp.toString()))
+          .convert(ascii.encode(buvid + timestamp.toString()))
           .toString(),
       'mobi_app': 'android_hd',
       'platform': 'android',
@@ -236,7 +234,6 @@ abstract final class LoginHttp {
       'recaptcha_token': ?recaptchaToken,
       's_locale': 'zh_CN',
       'statistics': Constants.statistics,
-      'ts': (DateTime.now().millisecondsSinceEpoch ~/ 1000).toString(),
       'username': username,
     };
     AppSign.appSign(data);
@@ -304,7 +301,6 @@ abstract final class LoginHttp {
       's_locale': 'zh_CN',
       'statistics': Constants.statistics,
       'tel': tel,
-      'ts': DateTime.now().millisecondsSinceEpoch ~/ 1000,
     };
     AppSign.appSign(data);
     var res = await Request().post(
@@ -456,8 +452,7 @@ abstract final class LoginHttp {
   static Future oauth2AccessToken({
     required String code,
   }) async {
-    Map<String, String> data = {
-      'appkey': Constants.appKey,
+    final Map<String, String> data = {
       'build': '2001100',
       'buvid': buvid,
       // 'c_locale': 'zh_CN',
@@ -474,7 +469,6 @@ abstract final class LoginHttp {
       'platform': 'android',
       // 's_locale': 'zh_CN',
       // 'statistics': Constants.statistics,
-      'ts': (DateTime.now().millisecondsSinceEpoch ~/ 1000).toString(),
     };
     AppSign.appSign(data);
     var res = await Request().post(
@@ -523,7 +517,6 @@ abstract final class LoginHttp {
       'platform': 'android',
       'access_key': account.accessKey,
       'statistics': Constants.statistics,
-      'ts': DateTime.now().millisecondsSinceEpoch ~/ 1000,
     };
     AppSign.appSign(params);
     var res = await Request().get(

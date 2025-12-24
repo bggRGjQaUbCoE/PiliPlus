@@ -173,7 +173,6 @@ abstract final class LiveHttp {
   }) async {
     final params = {
       'access_key': ?recommend.accessKey,
-      'appkey': Constants.appKey,
       'channel': 'master',
       'actionKey': 'appkey',
       'build': 8430300,
@@ -194,7 +193,6 @@ abstract final class LiveHttp {
       's_locale': 'zh_CN',
       'scale': 2,
       'statistics': Constants.statisticsApp,
-      'ts': DateTime.now().millisecondsSinceEpoch ~/ 1000,
     };
     AppSign.appSign(params);
     var res = await Request().get(
@@ -250,7 +248,6 @@ abstract final class LiveHttp {
   }) async {
     final params = {
       'access_key': ?recommend.accessKey,
-      'appkey': Constants.appKey,
       'actionKey': 'appkey',
       'channel': 'master',
       'area_id': ?areaId,
@@ -276,7 +273,6 @@ abstract final class LiveHttp {
       's_locale': 'zh_CN',
       'scale': 2,
       'statistics': Constants.statisticsApp,
-      'ts': DateTime.now().millisecondsSinceEpoch ~/ 1000,
     };
     AppSign.appSign(params);
     var res = await Request().get(
@@ -310,7 +306,6 @@ abstract final class LiveHttp {
   static Future<LoadingState<List<AreaList>?>> liveAreaList() async {
     final params = {
       'access_key': ?recommend.accessKey,
-      'appkey': Constants.appKey,
       'actionKey': 'appkey',
       'build': 8430300,
       'channel': 'master',
@@ -322,7 +317,6 @@ abstract final class LiveHttp {
       'platform': 'android',
       's_locale': 'zh_CN',
       'statistics': Constants.statisticsApp,
-      'ts': DateTime.now().millisecondsSinceEpoch ~/ 1000,
     };
     AppSign.appSign(params);
     var res = await Request().get(
@@ -343,7 +337,6 @@ abstract final class LiveHttp {
   static Future<LoadingState<List<AreaItem>>> getLiveFavTag() async {
     final params = {
       'access_key': ?Accounts.main.accessKey,
-      'appkey': Constants.appKey,
       'actionKey': 'appkey',
       'build': 8430300,
       'channel': 'master',
@@ -355,7 +348,6 @@ abstract final class LiveHttp {
       'platform': 'android',
       's_locale': 'zh_CN',
       'statistics': Constants.statisticsApp,
-      'ts': DateTime.now().millisecondsSinceEpoch ~/ 1000,
     };
     AppSign.appSign(params);
     var res = await Request().get(
@@ -381,7 +373,6 @@ abstract final class LiveHttp {
     final data = {
       'tags': ids,
       'access_key': Accounts.main.accessKey,
-      'appkey': Constants.appKey,
       'actionKey': 'appkey',
       'build': 8430300,
       'channel': 'master',
@@ -393,7 +384,6 @@ abstract final class LiveHttp {
       'platform': 'android',
       's_locale': 'zh_CN',
       'statistics': Constants.statisticsApp,
-      'ts': DateTime.now().millisecondsSinceEpoch ~/ 1000,
     };
     AppSign.appSign(data);
     var res = await Request().post(
@@ -414,7 +404,6 @@ abstract final class LiveHttp {
   }) async {
     final params = {
       'access_key': ?recommend.accessKey,
-      'appkey': Constants.appKey,
       'actionKey': 'appkey',
       'build': 8430300,
       'channel': 'master',
@@ -429,7 +418,6 @@ abstract final class LiveHttp {
       'platform': 'android',
       's_locale': 'zh_CN',
       'statistics': Constants.statisticsApp,
-      'ts': DateTime.now().millisecondsSinceEpoch ~/ 1000,
     };
     AppSign.appSign(params);
     var res = await Request().get(
@@ -452,7 +440,6 @@ abstract final class LiveHttp {
   }) async {
     final params = {
       'access_key': ?recommend.accessKey,
-      'appkey': Constants.appKey,
       'actionKey': 'appkey',
       'build': 8430300,
       'channel': 'master',
@@ -467,7 +454,6 @@ abstract final class LiveHttp {
       'platform': 'android',
       's_locale': 'zh_CN',
       'statistics': Constants.statisticsApp,
-      'ts': DateTime.now().millisecondsSinceEpoch ~/ 1000,
       'type': type.name,
     };
     AppSign.appSign(params);

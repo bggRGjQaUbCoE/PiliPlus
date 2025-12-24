@@ -44,6 +44,8 @@ import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:path/path.dart' as path;
+import 'package:path_provider/path_provider.dart';
 
 List<SettingsModel> get extraSettings => [
   if (PlatformUtils.isDesktop) ...[
@@ -58,62 +60,8 @@ List<SettingsModel> get extraSettings => [
         } catch (_) {}
       },
     ),
-    NormalModel(
-      title: '缓存路径',
-      getSubtitle: () => downloadPath,
-      leading: const Icon(Icons.storage),
-      onTap: (context, setState) {
-        showDialog(
-          context: context,
-          builder: (context) {
-            return AlertDialog(
-              clipBehavior: Clip.hardEdge,
-              contentPadding: const EdgeInsets.symmetric(vertical: 12),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  ListTile(
-                    onTap: () {
-                      Get.back();
-                      Utils.copyText(downloadPath);
-                    },
-                    dense: true,
-                    title: const Text('复制', style: TextStyle(fontSize: 14)),
-                  ),
-                  ListTile(
-                    onTap: () {
-                      Get.back();
-                      final defPath = defDownloadPath;
-                      if (downloadPath == defPath) return;
-                      downloadPath = defPath;
-                      setState();
-                      Get.find<DownloadService>().initDownloadList();
-                      GStorage.setting.delete(SettingBoxKey.downloadPath);
-                    },
-                    dense: true,
-                    title: const Text('重置', style: TextStyle(fontSize: 14)),
-                  ),
-                  ListTile(
-                    onTap: () async {
-                      Get.back();
-                      final path = await FilePicker.platform.getDirectoryPath();
-                      if (path == null || path == downloadPath) return;
-                      downloadPath = path;
-                      setState();
-                      Get.find<DownloadService>().initDownloadList();
-                      GStorage.setting.put(SettingBoxKey.downloadPath, path);
-                    },
-                    dense: true,
-                    title: const Text('设置新路径', style: TextStyle(fontSize: 14)),
-                  ),
-                ],
-              ),
-            );
-          },
-        );
-      },
-    ),
   ],
+  if (PlatformUtils.isDesktop || Platform.isAndroid) _cachePathSetting(),
   SwitchModel(
     title: '空降助手',
     subtitle: '点击配置',
@@ -1141,6 +1089,260 @@ List<SettingsModel> get extraSettings => [
     },
   ),
 ];
+
+SettingsModel _cachePathSetting() => NormalModel(
+  title: '视频缓存路径',
+  getSubtitle: () => Platform.isAndroid
+      ? _androidVideoCacheCodename(downloadPath)
+      : downloadPath,
+  leading: const Icon(Icons.storage),
+  onTap: (context, setState) => _showVideoCachePathSelector(
+    context,
+    setState: setState,
+  ),
+);
+
+Future<void> _showVideoCachePathSelector(
+  BuildContext context, {
+  required void Function() setState,
+}) async {
+  if (Platform.isAndroid) {
+    SmartDialog.showLoading();
+    final values = await _getAndroidVideoCachePathOptions();
+    SmartDialog.dismiss();
+    if (!context.mounted) return;
+
+    final selected = await showDialog<String>(
+      context: context,
+      builder: (context) => SelectDialog<String>(
+        value: downloadPath,
+        values: values,
+        title: '选择视频缓存路径存储位置',
+        subtitleBuilder: (_, index) =>
+            _VideoCachePathSubtitle(dirPath: values[index].$1),
+      ),
+    );
+    if (selected == null || selected == downloadPath) return;
+    await _applyDownloadPath(selected, setState: setState, persist: true);
+    return;
+  }
+
+  if (PlatformUtils.isDesktop) {
+    final selected = await showDialog<_DesktopVideoCacheAction>(
+      context: context,
+      builder: (context) => AlertDialog(
+        clipBehavior: Clip.hardEdge,
+        contentPadding: const EdgeInsets.symmetric(vertical: 12),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              dense: true,
+              title: const Text('默认位置', style: TextStyle(fontSize: 14)),
+              subtitle: Text(
+                defDownloadPath,
+                style: const TextStyle(fontSize: 12),
+              ),
+              onTap: () =>
+                  Navigator.of(context).pop(_DesktopVideoCacheAction.def),
+            ),
+            ListTile(
+              dense: true,
+              title: const Text('选择新路径', style: TextStyle(fontSize: 14)),
+              onTap: () =>
+                  Navigator.of(context).pop(_DesktopVideoCacheAction.pick),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (selected == null) return;
+    if (selected == _DesktopVideoCacheAction.def) {
+      if (downloadPath == defDownloadPath) return;
+      await _applyDownloadPath(
+        defDownloadPath,
+        setState: setState,
+        persist: false,
+      );
+      return;
+    }
+    final newPath = await FilePicker.platform.getDirectoryPath();
+    if (newPath == null || newPath == downloadPath) return;
+    await _applyDownloadPath(newPath, setState: setState, persist: true);
+  }
+}
+
+enum _DesktopVideoCacheAction {
+  def,
+  pick,
+}
+
+class _VideoCachePathSubtitle extends StatefulWidget {
+  final String dirPath;
+
+  const _VideoCachePathSubtitle({required this.dirPath});
+
+  @override
+  State<_VideoCachePathSubtitle> createState() => _VideoCachePathSubtitleState();
+}
+
+class _VideoCachePathSubtitleState extends State<_VideoCachePathSubtitle> {
+  late final Future<int> _futureCount = _countVideoCacheEntries(widget.dirPath);
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<int>(
+      future: _futureCount,
+      builder: (context, snapshot) {
+        final countText = snapshot.connectionState == ConnectionState.done
+            ? '视频数量：${snapshot.data ?? 0}'
+            : '视频数量：计算中…';
+        return Text(
+          '${widget.dirPath}\n$countText',
+          style: const TextStyle(fontSize: 12),
+        );
+      },
+    );
+  }
+}
+
+Future<int> _countVideoCacheEntries(String downloadDirPath) async {
+  try {
+    final root = Directory(downloadDirPath);
+    if (!root.existsSync()) return 0;
+
+    var count = 0;
+    await for (final pageDir in root.list(followLinks: false)) {
+      if (pageDir is! Directory) continue;
+      await for (final entryDir in pageDir.list(followLinks: false)) {
+        if (entryDir is! Directory) continue;
+        final entryFile = File(
+          path.join(entryDir.path, biliDownloadEntryFileName),
+        );
+        if (entryFile.existsSync()) {
+          count++;
+        }
+      }
+    }
+    return count;
+  } catch (_) {
+    return 0;
+  }
+}
+
+Future<String> _getAndroidDefaultVideoCachePath() async {
+  final externalStorageDirPath = (await getExternalStorageDirectory())?.path;
+  return externalStorageDirPath != null
+      ? path.join(externalStorageDirPath, PathUtils.downloadDir)
+      : defDownloadPath;
+}
+
+Future<List<(String, String)>> _getAndroidVideoCachePathOptions() async {
+  final results = <(String, String)>[];
+  final seen = <String>{};
+
+  void add(String downloadDir, String label) {
+    if (seen.add(downloadDir)) {
+      results.add((downloadDir, label));
+    }
+  }
+
+  final defaultPath = await _getAndroidDefaultVideoCachePath();
+  add(defaultPath, await _androidStorageLabel(defaultPath, isDefault: true));
+
+  final dirs = await getExternalStorageDirectories();
+  if (dirs != null && dirs.isNotEmpty) {
+    for (final dir in dirs) {
+      final downloadDir = path.join(dir.path, PathUtils.downloadDir);
+      add(downloadDir, await _androidStorageLabel(downloadDir));
+    }
+  } else {
+    final dir = await getExternalStorageDirectory();
+    if (dir != null) {
+      final downloadDir = path.join(dir.path, PathUtils.downloadDir);
+      add(downloadDir, await _androidStorageLabel(downloadDir));
+    }
+  }
+  return results;
+}
+
+Future<String> _androidStorageLabel(
+  String downloadDirPath, {
+  bool isDefault = false,
+}) async {
+  if (!downloadDirPath.startsWith('/storage/')) {
+    return isDefault ? '应用内部（默认位置）' : '应用内部';
+  }
+
+  final isPrimary = downloadDirPath.contains('/storage/emulated/0/') ||
+      downloadDirPath.contains('/storage/self/primary/');
+  if (isPrimary) {
+    return isDefault ? '内部存储（默认位置）' : '内部存储';
+  }
+
+  final uuidMatch = RegExp(r'/storage/([0-9A-Fa-f]{4}-[0-9A-Fa-f]{4})/')
+      .firstMatch(downloadDirPath);
+  final uuid = uuidMatch?.group(1);
+  final desc = await _getAndroidStorageVolumeDescription(uuid: uuid);
+  final volumeLabel = desc?.trim();
+
+  if (volumeLabel != null && volumeLabel.isNotEmpty) {
+    return isDefault
+        ? '外部存储（默认位置，$volumeLabel）'
+        : '外部存储（$volumeLabel）';
+  }
+  return isDefault ? '外部存储（默认位置）' : '外部存储';
+}
+
+String _androidVideoCacheCodename(String downloadDirPath) {
+  if (!downloadDirPath.startsWith('/storage/')) {
+    return '应用内部';
+  }
+  final isPrimary = downloadDirPath.contains('/storage/emulated/0/') ||
+      downloadDirPath.contains('/storage/self/primary/');
+  return isPrimary ? '内部存储' : '外部存储';
+}
+
+Future<String?> _getAndroidStorageVolumeDescription({String? uuid}) async {
+  if (uuid == null || uuid.isEmpty) return null;
+  try {
+    final res = await Utils.channel.invokeMethod<String>(
+      'getStorageVolumeDescription',
+      {
+        'uuid': uuid,
+      },
+    );
+    return res;
+  } catch (_) {
+    return null;
+  }
+}
+
+Future<void> _applyDownloadPath(
+  String newPath, {
+  required void Function() setState,
+  required bool persist,
+}) async {
+  try {
+    final dir = Directory(newPath);
+    if (!dir.existsSync()) {
+      await dir.create(recursive: true);
+    }
+
+    downloadPath = dir.path;
+    setState();
+    Get.find<DownloadService>().initDownloadList();
+
+    if (persist) {
+      await GStorage.setting.put(SettingBoxKey.downloadPath, downloadPath);
+    } else {
+      await GStorage.setting.delete(SettingBoxKey.downloadPath);
+    }
+  } catch (e) {
+    if (kDebugMode) debugPrint('download path error: $e');
+    SmartDialog.showToast('设置失败：$e');
+  }
+}
 
 Future<void> audioNormalization(
   BuildContext context,

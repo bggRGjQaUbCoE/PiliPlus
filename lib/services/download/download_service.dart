@@ -28,8 +28,10 @@ import 'package:synchronized/synchronized.dart';
 
 // ref https://github.com/10miaomiao/bilimiao2/blob/master/bilimiao-download/src/main/java/cn/a10miaomiao/bilimiao/download/DownloadService.kt
 
+const String biliDownloadEntryFileName = 'entry.json';
+
 class DownloadService extends GetxService {
-  static const _entryFile = 'entry.json';
+  static const _entryFile = biliDownloadEntryFileName;
   static const _indexFile = 'index.json';
 
   final _lock = Lock();

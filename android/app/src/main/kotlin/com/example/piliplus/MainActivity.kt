@@ -3,11 +3,13 @@ package com.example.piliplus
 import android.app.PictureInPictureParams
 import android.app.SearchManager
 import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
+import android.os.storage.StorageManager
 import android.provider.MediaStore
 import android.provider.Settings
 import android.view.WindowManager.LayoutParams
@@ -130,6 +132,24 @@ class MainActivity : AudioServiceActivity() {
                             .setAutoEnterEnabled(call.argument<Boolean>("autoEnable") ?: false)
                             .build()
                         setPictureInPictureParams(params)
+                    }
+                }
+
+                "getStorageVolumeDescription" -> {
+                    val uuid = call.argument<String?>("uuid")
+                    try {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                            val storageManager =
+                                context.getSystemService(Context.STORAGE_SERVICE) as StorageManager
+                            val volume = storageManager.storageVolumes.firstOrNull { v ->
+                                uuid != null && uuid.equals(v.uuid, ignoreCase = true)
+                            }
+                            result.success(volume?.getDescription(context))
+                        } else {
+                            result.success(null)
+                        }
+                    } catch (_: Throwable) {
+                        result.success(null)
                     }
                 }
 

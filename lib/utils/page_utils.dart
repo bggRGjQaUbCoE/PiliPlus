@@ -643,16 +643,16 @@ abstract final class PageUtils {
     }
   }
 
-  static void showVideoBottomSheet(
+  static Future<void>? showVideoBottomSheet(
     BuildContext context, {
     required Widget child,
     required ValueGetter<bool> isFullScreen,
     double? padding,
   }) {
     if (!context.mounted) {
-      return;
+      return null;
     }
-    Get.key.currentState!.push(
+    return Get.key.currentState!.push(
       PublishRoute(
         pageBuilder: (context, animation, secondaryAnimation) {
           if (context.isPortrait) {

@@ -191,6 +191,7 @@ abstract final class SettingBoxKey {
       danmakuDuration = 'danmakuDuration',
       danmakuStaticDuration = 'danmakuStaticDuration',
       danmakuMassiveMode = 'danmakuMassiveMode',
+      danmakuFixedV = 'danmakuFixedV',
       danmakuLineHeight = 'danmakuLineHeight',
       strokeWidth = 'strokeWidth',
       fontWeight = 'fontWeight';

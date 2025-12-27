@@ -5,6 +5,7 @@ import 'package:PiliPlus/pages/danmaku/controller.dart';
 import 'package:PiliPlus/pages/danmaku/danmaku_model.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
+import 'package:PiliPlus/plugin/pl_player/utils/danmaku_options.dart';
 import 'package:PiliPlus/utils/danmaku_utils.dart';
 import 'package:canvas_danmaku/canvas_danmaku.dart';
 import 'package:flutter/material.dart';
@@ -29,6 +30,8 @@ class PlDanmaku extends StatefulWidget {
 
   @override
   State<PlDanmaku> createState() => _PlDanmakuState();
+
+  bool get notFullscreen => !isFullScreen || isPipMode;
 }
 
 class _PlDanmakuState extends State<PlDanmaku> {
@@ -65,21 +68,12 @@ class _PlDanmakuState extends State<PlDanmaku> {
   @override
   void didUpdateWidget(PlDanmaku oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.isPipMode != widget.isPipMode ||
-        oldWidget.isFullScreen != widget.isFullScreen) {
-      _updateFontSize();
+    if (oldWidget.notFullscreen != widget.notFullscreen) {
+      _controller?.updateOption(
+        DanmakuOptions.get(notFullscreen: widget.notFullscreen),
+      );
     }
   }
-
-  void _updateFontSize() {
-    _controller?.updateOption(
-      _controller!.option.copyWith(fontSize: _fontSize),
-    );
-  }
-
-  double get _fontSize => !widget.isFullScreen || widget.isPipMode
-      ? 15 * playerController.danmakuFontScale
-      : 15 * playerController.danmakuFontScaleFS;
 
   // 播放器状态监听
   void playerListener(PlayerStatus? status) {
@@ -114,7 +108,7 @@ class _PlDanmakuState extends State<PlDanmaku> {
     List<DanmakuElem>? currentDanmakuList = _plDanmakuController
         .getCurrentDanmaku(currentPosition);
     if (currentDanmakuList != null) {
-      final blockColorful = playerController.blockColorful;
+      final blockColorful = DanmakuOptions.blockColorful;
       for (DanmakuElem e in currentDanmakuList) {
         if (e.mode == 7) {
           try {
@@ -177,22 +171,9 @@ class _PlDanmakuState extends State<PlDanmaku> {
           createdController: (e) {
             playerController.danmakuController = _controller = e;
           },
-          option: DanmakuOption(
-            fontSize: _fontSize,
-            fontWeight: playerController.danmakuFontWeight,
-            area: playerController.showArea,
-            hideTop: playerController.blockTypes.contains(5),
-            hideScroll: playerController.blockTypes.contains(2),
-            hideBottom: playerController.blockTypes.contains(4),
-            hideSpecial: playerController.blockTypes.contains(7),
-            duration:
-                playerController.danmakuDuration /
-                playerController.playbackSpeed,
-            staticDuration:
-                playerController.danmakuStaticDuration /
-                playerController.playbackSpeed,
-            strokeWidth: playerController.danmakuStrokeWidth,
-            lineHeight: playerController.danmakuLineHeight,
+          option: DanmakuOptions.get(
+            notFullscreen: widget.notFullscreen,
+            speed: playerController.playbackSpeed,
           ),
         ),
       ),

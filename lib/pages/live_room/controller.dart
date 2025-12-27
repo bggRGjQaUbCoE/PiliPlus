@@ -19,6 +19,7 @@ import 'package:PiliPlus/pages/live_room/send_danmaku/view.dart';
 import 'package:PiliPlus/pages/video/widgets/header_control.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/models/data_source.dart';
+import 'package:PiliPlus/plugin/pl_player/utils/danmaku_options.dart';
 import 'package:PiliPlus/services/service_locator.dart';
 import 'package:PiliPlus/tcp/live.dart';
 import 'package:PiliPlus/utils/accounts.dart';
@@ -433,7 +434,7 @@ class LiveRoomController extends GetxController {
             danmakuController?.addDanmaku(
               DanmakuContentItem(
                 msg,
-                color: plPlayerController.blockColorful
+                color: DanmakuOptions.blockColorful
                     ? Colors.white
                     : DmUtils.decimalToColor(extra['color']),
                 type: DmUtils.getPosition(extra['mode']),

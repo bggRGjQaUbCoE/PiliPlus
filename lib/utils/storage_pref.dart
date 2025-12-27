@@ -319,6 +319,9 @@ abstract final class Pref {
   static bool get danmakuMassiveMode =>
       _setting.get(SettingBoxKey.danmakuMassiveMode, defaultValue: false);
 
+  static bool get danmakuFixedV =>
+      _setting.get(SettingBoxKey.danmakuFixedV, defaultValue: false);
+
   static double get subtitleFontScale =>
       _setting.get(SettingBoxKey.subtitleFontScale, defaultValue: 1.0);
 

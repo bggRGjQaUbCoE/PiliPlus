@@ -20,6 +20,7 @@ import 'package:PiliPlus/pages/live_room/widgets/header_control.dart';
 import 'package:PiliPlus/pages/video/widgets/player_focus.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
+import 'package:PiliPlus/plugin/pl_player/utils/danmaku_options.dart';
 import 'package:PiliPlus/plugin/pl_player/utils/fullscreen.dart';
 import 'package:PiliPlus/plugin/pl_player/view.dart';
 import 'package:PiliPlus/services/service_locator.dart';
@@ -974,6 +975,8 @@ class LiveDanmaku extends StatefulWidget {
 
   @override
   State<LiveDanmaku> createState() => _LiveDanmakuState();
+
+  bool get notFullscreen => !isFullScreen || isPipMode;
 }
 
 class _LiveDanmakuState extends State<LiveDanmaku> {
@@ -982,26 +985,12 @@ class _LiveDanmakuState extends State<LiveDanmaku> {
   @override
   void didUpdateWidget(LiveDanmaku oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.isPipMode != widget.isPipMode ||
-        oldWidget.isFullScreen != widget.isFullScreen) {
-      _updateFontSize();
+    if (oldWidget.notFullscreen != widget.notFullscreen) {
+      plPlayerController.danmakuController?.updateOption(
+        DanmakuOptions.get(notFullscreen: widget.notFullscreen),
+      );
     }
   }
-
-  void _updateFontSize() {
-    plPlayerController.danmakuController?.updateOption(
-      plPlayerController.danmakuController!.option.copyWith(
-        fontSize: _fontSize,
-      ),
-    );
-  }
-
-  double get _fontSize =>
-      plPlayerController.isDesktopPip ||
-          !widget.isFullScreen ||
-          widget.isPipMode
-      ? 15 * plPlayerController.danmakuFontScale
-      : 15 * plPlayerController.danmakuFontScaleFS;
 
   @override
   Widget build(BuildContext context) {
@@ -1017,22 +1006,7 @@ class _LiveDanmakuState extends State<LiveDanmaku> {
               widget.liveRoomController.danmakuController =
                   plPlayerController.danmakuController = e;
             },
-            option: DanmakuOption(
-              fontSize: _fontSize,
-              fontWeight: plPlayerController.danmakuFontWeight,
-              area: plPlayerController.showArea,
-              hideTop: plPlayerController.blockTypes.contains(5),
-              hideScroll: plPlayerController.blockTypes.contains(2),
-              hideBottom: plPlayerController.blockTypes.contains(4),
-              duration:
-                  plPlayerController.danmakuDuration /
-                  plPlayerController.playbackSpeed,
-              staticDuration:
-                  plPlayerController.danmakuStaticDuration /
-                  plPlayerController.playbackSpeed,
-              strokeWidth: plPlayerController.danmakuStrokeWidth,
-              lineHeight: plPlayerController.danmakuLineHeight,
-            ),
+            option: DanmakuOptions.get(notFullscreen: widget.notFullscreen),
           ),
         );
       },

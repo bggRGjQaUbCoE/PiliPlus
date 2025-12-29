@@ -5,7 +5,7 @@ import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show PlatformException;
 import 'package:flutter_displaymode/flutter_displaymode.dart';
-import 'package:hive/hive.dart';
+import 'package:hive_ce/hive.dart';
 
 class SetDisplayMode extends StatefulWidget {
   const SetDisplayMode({super.key});

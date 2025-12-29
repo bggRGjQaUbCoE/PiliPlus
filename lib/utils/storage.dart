@@ -12,7 +12,7 @@ import 'package:PiliPlus/utils/path_utils.dart';
 import 'package:PiliPlus/utils/set_int_adapter.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
-import 'package:hive_flutter/hive_flutter.dart';
+import 'package:hive_ce/hive.dart';
 import 'package:path/path.dart' as path;
 
 abstract final class GStorage {
@@ -25,7 +25,7 @@ abstract final class GStorage {
   static late final Box<Uint8List>? reply;
 
   static Future<void> init() async {
-    await Hive.initFlutter(path.join(appSupportDirPath, 'hive'));
+    Hive.init(path.join(appSupportDirPath, 'hive'));
     regAdapter();
 
     await Future.wait([
@@ -57,7 +57,7 @@ abstract final class GStorage {
       Accounts.init(),
       Hive.openBox<int>(
         'watchProgress',
-        keyComparator: _intStrKeyComparator,
+        keyComparator: _intStrDescKeyComparator,
         compactionStrategy: (entries, deletedEntries) {
           return deletedEntries > 4;
         },
@@ -67,7 +67,7 @@ abstract final class GStorage {
     if (Pref.saveReply) {
       reply = await Hive.openBox<Uint8List>(
         'reply',
-        keyComparator: _intStrKeyComparator,
+        keyComparator: _intStrDescKeyComparator,
         compactionStrategy: (entries, deletedEntries) {
           return deletedEntries > 10;
         },
@@ -147,7 +147,7 @@ abstract final class GStorage {
     ]);
   }
 
-  static int _intStrKeyComparator(dynamic k1, dynamic k2) {
+  static int _intStrDescKeyComparator(dynamic k1, dynamic k2) {
     if (k1 is int) {
       if (k2 is int) {
         return k2.compareTo(k1);

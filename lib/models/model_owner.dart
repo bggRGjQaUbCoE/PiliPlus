@@ -1,6 +1,6 @@
 import 'package:PiliPlus/models/model_video.dart';
 import 'package:PiliPlus/utils/utils.dart';
-import 'package:hive/hive.dart';
+import 'package:hive_ce/hive.dart';
 
 part 'model_owner.g.dart';
 

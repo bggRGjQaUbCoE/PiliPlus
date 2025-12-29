@@ -4,7 +4,7 @@ import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/accounts/grpc_headers.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:cookie_jar/cookie_jar.dart';
-import 'package:hive/hive.dart';
+import 'package:hive_ce/hive.dart';
 
 sealed class Account {
   Map<String, dynamic>? toJson() => null;

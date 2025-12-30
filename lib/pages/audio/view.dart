@@ -5,6 +5,7 @@ import 'package:PiliPlus/common/widgets/button/icon_button.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/progress_bar/audio_video_progress_bar.dart';
+import 'package:PiliPlus/common/widgets/progress_bar/segment_progress_bar.dart';
 import 'package:PiliPlus/grpc/bilibili/app/listener/v1.pb.dart';
 import 'package:PiliPlus/models/common/image_preview_type.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
@@ -18,6 +19,7 @@ import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/size_ext.dart';
 import 'package:PiliPlus/utils/extension/string_ext.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
+import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
@@ -26,6 +28,7 @@ import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/gestures.dart' show TapGestureRecognizer;
 import 'package:flutter/material.dart' hide DraggableScrollableSheet;
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
@@ -557,12 +560,13 @@ class _AudioPageState extends State<AudioPage> {
   }
 
   void _showMore() {
+    final parentContext = context;
     showModalBottomSheet(
-      context: context,
+      context: parentContext,
       useSafeArea: true,
       isScrollControlled: true,
       constraints: BoxConstraints(
-        maxWidth: min(640, context.mediaQueryShortestSide),
+        maxWidth: min(640, parentContext.mediaQueryShortestSide),
       ),
       builder: (context) {
         final colorScheme = ColorScheme.of(context);
@@ -592,28 +596,35 @@ class _AudioPageState extends State<AudioPage> {
                   ),
                 ),
               ),
-              // ListTile(
-              //   dense: true,
-              //   title: const Text(
-              //     '定时关闭',
-              //     style: TextStyle(fontSize: 14),
-              //   ),
-              //   onTap: () {
-              //     Get.back();
-              //     _controller.showTimerDialog();
-              //   },
-              // ),
               ListTile(
                 dense: true,
+                leading: const Icon(Icons.hourglass_top_outlined, size: 20),
                 title: const Text(
-                  '举报',
+                  '定时关闭',
                   style: TextStyle(fontSize: 14),
                 ),
                 onTap: () {
                   Get.back();
-                  PageUtils.reportVideo(_controller.oid.toInt());
+                  PageUtils.scheduleExit(parentContext, false);
                 },
               ),
+              if (_controller.isVideo)
+                ListTile(
+                  dense: true,
+                  leading: const Icon(Icons.error_outline, size: 20),
+                  title: const Text(
+                    '举报',
+                    style: TextStyle(fontSize: 14),
+                  ),
+                  onTap: () {
+                    if (!Accounts.main.isLogin) {
+                      SmartDialog.showToast('账号未登录');
+                      return;
+                    }
+                    Get.back();
+                    PageUtils.reportVideo(_controller.oid.toInt());
+                  },
+                ),
             ],
           ),
         );
@@ -735,21 +746,56 @@ class _AudioPageState extends State<AudioPage> {
     final baseBarColor = colorScheme.brightness.isDark
         ? const Color(0x33FFFFFF)
         : const Color(0x33999999);
+    const segmentBarHeight = 3.5;
+    const thumbRadius = 7.0;
+    const barHeight = 3.5;
+    const segmentBarBottom = 5.25;
     final child = Obx(
-      () => ProgressBar(
-        progress: _controller.position.value,
-        total: _controller.duration.value,
-        baseBarColor: baseBarColor,
-        progressBarColor: primary,
-        bufferedBarColor: bufferedBarColor,
-        thumbColor: primary,
-        thumbGlowColor: thumbGlowColor,
-        thumbGlowRadius: 0,
-        thumbRadius: 6,
-        onDragStart: _onDragStart,
-        onDragUpdate: _onDragUpdate,
-        onSeek: _onSeek,
-      ),
+      () {
+        final progressBar = ProgressBar(
+          progress: _controller.position.value,
+          total: _controller.duration.value,
+          barHeight: barHeight,
+          baseBarColor: baseBarColor,
+          progressBarColor: primary,
+          bufferedBarColor: bufferedBarColor,
+          thumbColor: primary,
+          thumbGlowColor: thumbGlowColor,
+          thumbGlowRadius: 0,
+          thumbRadius: thumbRadius,
+          onDragStart: _onDragStart,
+          onDragUpdate: _onDragUpdate,
+          onSeek: _onSeek,
+        );
+        if (!_controller.enableSponsorBlock ||
+            _controller.sponsorBlockProgressList.isEmpty) {
+          return progressBar;
+        }
+        return Stack(
+          clipBehavior: Clip.none,
+          alignment: Alignment.bottomCenter,
+          children: [
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: segmentBarBottom,
+              child: IgnorePointer(
+                child: RepaintBoundary(
+                  child: CustomPaint(
+                    key: const Key('audioSegmentList'),
+                    size: const Size(double.infinity, segmentBarHeight),
+                    painter: SegmentProgressBar(
+                      segmentColors:
+                          List<Segment>.of(_controller.sponsorBlockProgressList),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            progressBar,
+          ],
+        );
+      },
     );
     if (PlatformUtils.isDesktop) {
       return MouseRegion(

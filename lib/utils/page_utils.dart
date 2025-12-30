@@ -117,13 +117,13 @@ abstract final class PageUtils {
       context,
       isFullScreen: () => isFullScreen,
       child: StatefulBuilder(
-        builder: (_, setState) {
+        builder: (sheetContext, setState) {
           void onTap(int choice) {
             if (choice == -1) {
               showDialog(
-                context: context,
-                builder: (context) {
-                  final ThemeData theme = Theme.of(context);
+                context: sheetContext,
+                builder: (dialogContext) {
+                  final ThemeData theme = Theme.of(dialogContext);
                   String duration = '';
                   return AlertDialog(
                     title: const Text('自定义时长'),
@@ -164,7 +164,7 @@ abstract final class PageUtils {
             }
           }
 
-          final ThemeData theme = Theme.of(context);
+          final ThemeData theme = Theme.of(sheetContext);
           return Theme(
             data: theme,
             child: Padding(

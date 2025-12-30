@@ -18,6 +18,7 @@ import 'package:PiliPlus/http/video.dart';
 import 'package:PiliPlus/main.dart';
 import 'package:PiliPlus/models/common/account_type.dart';
 import 'package:PiliPlus/models/common/sponsor_block/action_type.dart';
+import 'package:PiliPlus/models/common/sponsor_block/auto_skipper.dart';
 import 'package:PiliPlus/models/common/sponsor_block/post_segment_model.dart';
 import 'package:PiliPlus/models/common/sponsor_block/segment_model.dart';
 import 'package:PiliPlus/models/common/sponsor_block/segment_type.dart';
@@ -489,6 +490,20 @@ class VideoDetailController extends GetxController
   late final List<PostSegmentModel> postList = [];
   late final List<SegmentModel> segmentList = <SegmentModel>[];
   late final RxList<Segment> segmentProgressList = <Segment>[].obs;
+  late final SponsorBlockAutoSkipper _sbSkipper = SponsorBlockAutoSkipper(
+    segments: () => segmentList,
+    onSkip: (item) => onSkip(item, isSeek: false),
+    onManual: onAddItem,
+  );
+
+  bool get sponsorBlockActive => plPlayerController.enableSponsorBlock && _isBlock;
+  List<SegmentModel> get sponsorBlockSegments => segmentList;
+  RxList<Segment> get sponsorBlockProgressList => segmentProgressList;
+
+  Future<void> ensureSponsorBlockLoaded() async {
+    if (!sponsorBlockActive || segmentList.isNotEmpty) return;
+    await _querySponsorBlock();
+  }
 
   Color _getColor(SegmentType segment) =>
       plPlayerController.blockColor[segment.index];
@@ -866,32 +881,7 @@ class VideoDetailController extends GetxController
             if (currentPos != _lastPos) {
               _lastPos = currentPos;
               final msPos = currentPos * 1000;
-              for (SegmentModel item in segmentList) {
-                // if (kDebugMode) {
-                //   debugPrint(
-                //       '${position.inSeconds},,${item.segment.first},,${item.segment.second},,${item.skipType.name},,${item.hasSkipped}');
-                // }
-                if (msPos <= item.segment.first &&
-                    item.segment.first <= msPos + 1000) {
-                  switch (item.skipType) {
-                    case SkipType.alwaysSkip:
-                      onSkip(item, isSeek: false);
-                      break;
-                    case SkipType.skipOnce:
-                      if (!item.hasSkipped) {
-                        item.hasSkipped = true;
-                        onSkip(item, isSeek: false);
-                      }
-                      break;
-                    case SkipType.skipManually:
-                      onAddItem(item);
-                      break;
-                    default:
-                      break;
-                  }
-                  break;
-                }
-              }
+              _sbSkipper.handlePosition(msPos);
             }
           });
     }
@@ -1829,7 +1819,7 @@ class VideoDetailController extends GetxController
       oid: aid,
       subId: [cid.value],
       from: from,
-      heroTag: autoPlay.value ? heroTag : null,
+      heroTag: heroTag,
       start: playedTime,
       audioUrl: audioUrl,
       extraId: extraId,

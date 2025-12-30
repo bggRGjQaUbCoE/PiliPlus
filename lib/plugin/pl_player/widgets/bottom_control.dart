@@ -97,7 +97,6 @@ class BottomControl extends StatelessWidget {
                 clipBehavior: Clip.none,
                 alignment: Alignment.bottomCenter,
                 children: [
-                  progressBar(),
                   if (controller.enableBlock &&
                       videoDetailController.segmentProgressList.isNotEmpty)
                     Positioned(
@@ -149,6 +148,7 @@ class BottomControl extends StatelessWidget {
                     if (videoDetailController.dmTrend.value?.dataOrNull
                         case final list?)
                       buildDmChart(primary, list, videoDetailController, 4.5),
+                  progressBar(),
                 ],
               ),
             ),

@@ -14,6 +14,9 @@ import 'package:PiliPlus/grpc/bilibili/app/listener/v1.pb.dart'
         DashItem,
         ResponseUrl;
 import 'package:PiliPlus/http/constants.dart';
+import 'package:PiliPlus/http/sponsor_block.dart';
+import 'package:PiliPlus/models/common/sponsor_block/auto_skipper.dart';
+import 'package:PiliPlus/models/common/sponsor_block/segment_model.dart';
 import 'package:PiliPlus/http/ua_type.dart';
 import 'package:PiliPlus/pages/common/common_intro_controller.dart'
     show FavMixin;
@@ -22,9 +25,11 @@ import 'package:PiliPlus/pages/main_reply/view.dart';
 import 'package:PiliPlus/pages/video/controller.dart';
 import 'package:PiliPlus/pages/video/introduction/ugc/widgets/triple_mixin.dart';
 import 'package:PiliPlus/pages/video/pay_coins/view.dart';
+import 'package:PiliPlus/common/widgets/progress_bar/segment_progress_bar.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_repeat.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
 import 'package:PiliPlus/services/service_locator.dart';
+import 'package:PiliPlus/services/shutdown_timer_service.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
@@ -36,6 +41,7 @@ import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:PiliPlus/utils/video_utils.dart';
 import 'package:fixnum/fixnum.dart' show Int64;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -82,6 +88,36 @@ class AudioController extends GetxController
 
   ListOrder order = ListOrder.ORDER_NORMAL;
 
+  final RxList<Segment> _emptySegmentProgressList = <Segment>[].obs;
+  StreamSubscription<Duration>? _sbPositionSubscription;
+  int? _sbLastPos;
+  bool _sbInitHandled = false;
+  late final AudioPlayerDelegate _audioDelegate = AudioPlayerDelegate(
+    getStatus: _getPlayerStatus,
+    pause: () async => player?.pause(),
+  );
+  late final SponsorBlockAutoSkipper _sbSkipper = SponsorBlockAutoSkipper(
+    segments: () => _sponsorBlockSegments,
+    onSkip: (item) => _skipSegment(item, isSkip: true),
+  );
+
+  bool get enableSponsorBlock =>
+      _videoDetailController?.sponsorBlockActive ?? false;
+  RxList<Segment> get sponsorBlockProgressList =>
+      _videoDetailController?.sponsorBlockProgressList ??
+      _emptySegmentProgressList;
+  List<SegmentModel> get _sponsorBlockSegments =>
+      _videoDetailController?.sponsorBlockSegments ?? const [];
+
+  PlayerStatus? _getPlayerStatus() {
+    if (player == null) return null;
+    final playing = player!.state.playing;
+    final completed = player!.state.completed;
+    if (completed) return PlayerStatus.completed;
+    if (playing) return PlayerStatus.playing;
+    return PlayerStatus.paused;
+  }
+
   @override
   void onInit() {
     super.onInit();
@@ -104,6 +140,10 @@ class AudioController extends GetxController
     }
 
     _queryPlayList(isInit: true);
+    _initSponsorBlockFromVideo();
+
+    // 注册定时关闭服务的回调，使其能够检测音频播放状态
+    shutdownTimerService.registerAudioDelegate(_audioDelegate);
 
     final String? audioUrl = args['audioUrl'];
     final hasAudioUrl = audioUrl != null;
@@ -297,6 +337,7 @@ class AudioController extends GetxController
           false,
           false,
         );
+        shutdownTimerService.handleWaitingFinished();
         if (completed) {
           switch (playMode.value) {
             case PlayRepeat.pause:
@@ -322,10 +363,84 @@ class AudioController extends GetxController
         }
       }),
     };
+    if (_sponsorBlockSegments.isNotEmpty) {
+      _initSponsorBlockSkip();
+    }
   }
 
   void _replay() {
     player?.seek(Duration.zero).whenComplete(player!.play);
+  }
+
+  void _initSponsorBlockFromVideo() {
+    if (!enableSponsorBlock || _videoDetailController == null) return;
+    ensureSponsorBlockLoaded().then((_) => _initSponsorBlockSkip());
+  }
+
+  Future<void> ensureSponsorBlockLoaded() async {
+    if (!enableSponsorBlock || _sponsorBlockSegments.isNotEmpty) return;
+    final videoDetailController = _videoDetailController;
+    if (videoDetailController == null) return;
+    await videoDetailController.ensureSponsorBlockLoaded();
+  }
+
+  void _initSponsorBlockSkip() {
+    if (!enableSponsorBlock || _sponsorBlockSegments.isEmpty || player == null) {
+      return;
+    }
+    _sbPositionSubscription?.cancel();
+    _sbInitHandled = false;
+    _sbPositionSubscription = player!.stream.position.listen((position) {
+      final currentPos = position.inSeconds;
+      if (!_sbInitHandled) {
+        _sbInitHandled = true;
+        _sbLastPos = currentPos;
+        _sbSkipper.handlePosition(
+          position.inMilliseconds,
+          isInit: true,
+        );
+        return;
+      }
+      if (currentPos == _sbLastPos) return;
+      _sbLastPos = currentPos;
+      _sbSkipper.handlePosition(currentPos * 1000);
+    });
+  }
+
+  Future<void> _skipSegment(
+    SegmentModel item, {
+    required bool isSkip,
+  }) async {
+    try {
+      if (player?.platform == null) {
+        if (kDebugMode) debugPrint('Cannot skip: player.platform is null');
+        if (isSkip) {
+          _showBlockToast('${item.segmentType.shortTitle}片段跳过失败');
+        }
+        return;
+      }
+      await player!.platform!.seek(
+        Duration(milliseconds: item.segment.second),
+      );
+      if (isSkip) {
+        if (Pref.blockToast) {
+          _showBlockToast('已跳过${item.segmentType.shortTitle}片段');
+        }
+        if (_videoDetailController?.sponsorBlockActive == true &&
+            Pref.blockTrack) {
+          SponsorBlock.viewedVideoSponsorTime(item.UUID);
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) debugPrint('failed to skip: $e');
+      if (isSkip) {
+        _showBlockToast('${item.segmentType.shortTitle}片段跳过失败');
+      }
+    }
+  }
+
+  void _showBlockToast(String msg) {
+    SmartDialog.showToast(msg);
   }
 
   @override
@@ -734,11 +849,15 @@ class AudioController extends GetxController
       ..onPause = null
       ..onSeek = null
       ..onVideoDetailDispose(hashCode.toString());
+    _sbPositionSubscription?.cancel();
+    _sbPositionSubscription = null;
     _subscriptions?.forEach((e) => e.cancel());
     _subscriptions = null;
     player?.dispose();
     player = null;
     animController.dispose();
+    // 清除定时关闭服务的回调
+    shutdownTimerService.unregisterAudioDelegate(_audioDelegate);
     super.onClose();
   }
 }

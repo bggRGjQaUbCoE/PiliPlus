@@ -1761,33 +1761,6 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                   clipBehavior: Clip.none,
                   alignment: Alignment.bottomCenter,
                   children: [
-                    IgnorePointer(
-                      child: RepaintBoundary.wrap(
-                        Obx(() {
-                          final int value =
-                              plPlayerController.sliderPositionSeconds.value;
-                          final int max = plPlayerController
-                              .durationSeconds
-                              .value
-                              .inSeconds;
-                          final int buffer =
-                              plPlayerController.bufferedSeconds.value;
-                          return ProgressBar(
-                            progress: Duration(seconds: value),
-                            buffered: Duration(seconds: buffer),
-                            total: Duration(seconds: max),
-                            progressBarColor: primary,
-                            baseBarColor: const Color(0x33FFFFFF),
-                            bufferedBarColor: bufferedBarColor,
-                            thumbColor: primary,
-                            thumbGlowColor: thumbGlowColor,
-                            barHeight: 3.5,
-                            thumbRadius: 2.5,
-                          );
-                        }),
-                        0,
-                      ),
-                    ),
                     if (plPlayerController.enableBlock &&
                         videoDetailController.segmentProgressList.isNotEmpty)
                       Positioned(
@@ -1840,6 +1813,33 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                       if (videoDetailController.dmTrend.value?.dataOrNull
                           case final list?)
                         buildDmChart(primary, list, videoDetailController),
+                    IgnorePointer(
+                      child: RepaintBoundary.wrap(
+                        Obx(() {
+                          final int value =
+                              plPlayerController.sliderPositionSeconds.value;
+                          final int max = plPlayerController
+                              .durationSeconds
+                              .value
+                              .inSeconds;
+                          final int buffer =
+                              plPlayerController.bufferedSeconds.value;
+                          return ProgressBar(
+                            progress: Duration(seconds: value),
+                            buffered: Duration(seconds: buffer),
+                            total: Duration(seconds: max),
+                            progressBarColor: primary,
+                            baseBarColor: const Color(0x33FFFFFF),
+                            bufferedBarColor: bufferedBarColor,
+                            thumbColor: primary,
+                            thumbGlowColor: thumbGlowColor,
+                            barHeight: 3.5,
+                            thumbRadius: 2.5,
+                          );
+                        }),
+                        0,
+                      ),
+                    ),
                   ],
                 );
               },

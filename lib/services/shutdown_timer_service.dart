@@ -7,6 +7,16 @@ import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 
+class AudioPlayerDelegate {
+  const AudioPlayerDelegate({
+    required this.getStatus,
+    required this.pause,
+  });
+
+  final PlayerStatus? Function() getStatus;
+  final Future<void> Function() pause;
+}
+
 class ShutdownTimerService with WidgetsBindingObserver {
   static final ShutdownTimerService _instance =
       ShutdownTimerService._internal();
@@ -18,10 +28,23 @@ class ShutdownTimerService with WidgetsBindingObserver {
   bool waitForPlayingCompleted = false;
   bool isWaiting = false;
   bool isInBackground = false;
+
+  AudioPlayerDelegate? _audioDelegate;
+
   factory ShutdownTimerService() => _instance;
 
   ShutdownTimerService._internal() {
     WidgetsBinding.instance.addObserver(this); // 添加观察者
+  }
+
+  void registerAudioDelegate(AudioPlayerDelegate delegate) {
+    _audioDelegate = delegate;
+  }
+
+  void unregisterAudioDelegate(AudioPlayerDelegate delegate) {
+    if (_audioDelegate == delegate) {
+      _audioDelegate = null;
+    }
   }
 
   void dispose() {
@@ -105,13 +128,27 @@ class ShutdownTimerService with WidgetsBindingObserver {
     });
   }
 
+  PlayerStatus? _getCurrentPlayerStatus() {
+    // 优先检查音频播放器（仅当正在播放时）
+    final audioStatus = _audioDelegate?.getStatus();
+    if (audioStatus == PlayerStatus.playing) {
+      return audioStatus;
+    }
+    // 如果音频不在播放，优先使用视频播放器状态
+    final videoStatus = PlPlayerController.getPlayerStatusIfExists();
+    if (videoStatus != null) {
+      return videoStatus;
+    }
+    // 最后才回退到音频状态（音频暂停/完成）
+    return audioStatus;
+  }
+
   void _shutdownDecider() {
     if (exitApp && !waitForPlayingCompleted) {
       _showShutdownDialog();
       return;
     }
-    // PlPlayerController plPlayerController = PlPlayerController.getInstance();
-    PlayerStatus? playerStatus = PlPlayerController.getPlayerStatusIfExists();
+    final PlayerStatus? playerStatus = _getCurrentPlayerStatus();
     if (!exitApp && !waitForPlayingCompleted) {
       // if (!plPlayerController.playerStatus.playing) {
       if (playerStatus == PlayerStatus.paused ||
@@ -130,7 +167,7 @@ class ShutdownTimerService with WidgetsBindingObserver {
       _showShutdownDialog();
       return;
     }
-    SmartDialog.showToast("定时关闭时间已到，等待当前视频播放完成");
+    SmartDialog.showToast("定时关闭时间已到，等待当前播放完成");
     //监听播放完成
     //该方法依赖耦合实现，不够优雅
     isWaiting = true;
@@ -143,16 +180,28 @@ class ShutdownTimerService with WidgetsBindingObserver {
     }
   }
 
-  void _executeShutdown() {
+  Future<void> _executeShutdown() async {
     if (exitApp) {
-      PlPlayerController.pauseIfExists();
+      // 优先暂停音频（如果正在播放），否则暂停视频
+      final audioStatus = _audioDelegate?.getStatus();
+      if (audioStatus == PlayerStatus.playing) {
+        await _audioDelegate?.pause();
+      } else {
+        await PlPlayerController.pauseIfExists();
+      }
       //退出app
       exit(0);
     } else {
       //暂停播放
-      PlayerStatus? playerStatus = PlPlayerController.getPlayerStatusIfExists();
+      final PlayerStatus? playerStatus = _getCurrentPlayerStatus();
       if (playerStatus == PlayerStatus.playing) {
-        PlPlayerController.pauseIfExists();
+        // 优先暂停音频（如果正在播放），否则暂停视频
+        final audioStatus = _audioDelegate?.getStatus();
+        if (audioStatus == PlayerStatus.playing) {
+          await _audioDelegate?.pause();
+        } else {
+          await PlPlayerController.pauseIfExists();
+        }
         waitForPlayingCompleted = true;
         SmartDialog.showToast("已暂停播放");
       } else {

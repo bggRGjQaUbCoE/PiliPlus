@@ -87,12 +87,14 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
   @override
   Future<void> queryVideoIntro() async {
     queryVideoTags();
+    String videoUrl = '${HttpString.baseUrl}/video/$bvid';
     final res = await VideoHttp.videoIntro(bvid: bvid);
     if (res case Success(:final response)) {
       videoPlayerServiceHandler?.onVideoDetailChange(
         response,
         cid.value,
         heroTag,
+        shareUrl: videoUrl
       );
       if (videoDetail.value.ugcSeason?.id == response.ugcSeason?.id) {
         // keep reversed season
@@ -469,6 +471,7 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
         return false;
       }
       final String? cover = episode.cover;
+      String videoUrl = '${HttpString.baseUrl}/video/$bvid';
 
       // 重新获取视频资源
 
@@ -534,6 +537,7 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
             heroTag,
             artist: videoDetail.owner?.name,
             cover: videoDetail.pic,
+            shareUrl: videoUrl
           );
         }
       }

@@ -261,11 +261,12 @@ class LiveRoomController extends GetxController {
 
   Future<void> queryLiveInfoH5() async {
     final res = await LiveHttp.liveRoomInfoH5(roomId: roomId);
+    final liveUrl = 'https://live.bilibili.com/$roomId';
     if (res case Success(:final response)) {
       roomInfoH5.value = response;
       title.value = response.roomInfo?.title ?? '';
       watchedShow.value = response.watchedShow?.textLarge;
-      videoPlayerServiceHandler?.onVideoDetailChange(response, roomId, heroTag);
+      videoPlayerServiceHandler?.onVideoDetailChange(response, roomId, heroTag,shareUrl: liveUrl);
     } else {
       res.toast();
     }

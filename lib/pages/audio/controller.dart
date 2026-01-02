@@ -144,6 +144,9 @@ class AudioController extends GetxController
   }
 
   void _updateCurrItem(DetailItem item) {
+    String audioUrl = isVideo
+        ? '${HttpString.baseUrl}/video/${IdUtils.av2bv(oid.toInt())}'
+        : '${HttpString.baseUrl}/audio/au$oid';
     audioItem.value = item;
     hasLike.value = item.stat.hasLike_7;
     coinNum.value = item.stat.hasCoin_8 ? 2 : 0;
@@ -152,6 +155,7 @@ class AudioController extends GetxController
       item,
       (subId.firstOrNull ?? oid).toInt(),
       hashCode.toString(),
+      shareUrl: audioUrl
     );
   }
 

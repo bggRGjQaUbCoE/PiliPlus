@@ -128,6 +128,7 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
     String herotag, {
     String? artist,
     String? cover,
+    String? shareUrl
   }) {
     if (!enableBackgroundPlay) return;
     // if (kDebugMode) {
@@ -136,6 +137,13 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
     // }
     if (!PlPlayerController.instanceExists()) return;
     if (data == null) return;
+
+    final extras = <String, dynamic>{};
+
+    if (shareUrl != null && shareUrl.isNotEmpty) {
+      extras['shareUrl'] = shareUrl;
+    }
+
 
     late final id = '$cid$herotag';
     MediaItem? mediaItem;
@@ -150,6 +158,7 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
           artist: data.owner?.name,
           duration: Duration(seconds: current?.duration ?? 0),
           artUri: Uri.parse(data.pic ?? ''),
+          extras: extras
         );
       } else {
         mediaItem = MediaItem(
@@ -158,6 +167,7 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
           artist: data.owner?.name,
           duration: Duration(seconds: data.duration ?? 0),
           artUri: Uri.parse(data.pic ?? ''),
+          extras: extras
         );
       }
     } else if (data is EpisodeItem) {
@@ -169,6 +179,7 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
             ? Duration(seconds: data.duration ?? 0)
             : Duration(milliseconds: data.duration ?? 0),
         artUri: Uri.parse(data.cover ?? ''),
+          extras: extras
       );
     } else if (data is RoomInfoH5Data) {
       mediaItem = MediaItem(
@@ -177,6 +188,7 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
         artist: data.anchorInfo?.baseInfo?.uname,
         artUri: Uri.parse(data.roomInfo?.cover ?? ''),
         isLive: true,
+          extras: extras
       );
     } else if (data is Part) {
       mediaItem = MediaItem(
@@ -185,6 +197,7 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
         artist: artist,
         duration: Duration(seconds: data.duration ?? 0),
         artUri: Uri.parse(cover ?? ''),
+          extras: extras
       );
     } else if (data is DetailItem) {
       mediaItem = MediaItem(
@@ -193,6 +206,7 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
         artist: data.owner.name,
         duration: Duration(seconds: data.arc.duration.toInt()),
         artUri: Uri.parse(data.arc.cover),
+          extras: extras
       );
     } else if (data is BiliDownloadEntryInfo) {
       mediaItem = MediaItem(
@@ -201,6 +215,7 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
         artist: data.ownerName,
         duration: Duration(milliseconds: data.totalTimeMilli),
         artUri: Uri.parse(data.cover),
+          extras: extras
       );
     }
     if (mediaItem == null) return;

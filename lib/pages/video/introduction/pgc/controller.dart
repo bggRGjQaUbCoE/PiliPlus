@@ -490,6 +490,7 @@ class PgcIntroController extends CommonIntroController {
   @override
   void queryVideoIntro([EpisodeItem? episode]) {
     episode ??= pgcItem.episodes!.firstWhere((e) => e.cid == cid.value);
+    String videoUrl = '${HttpString.baseUrl}/bangumi/play/ep$epId';
     videoDetail
       ..value.title = episode.showTitle
       ..refresh();
@@ -498,6 +499,7 @@ class PgcIntroController extends CommonIntroController {
       cid.value,
       heroTag,
       artist: pgcItem.title,
+      shareUrl: videoUrl
     );
   }
 

@@ -20,6 +20,18 @@ static void first_frame_cb(MyApplication* self, FlView *view)
   gtk_widget_show(gtk_widget_get_toplevel(GTK_WIDGET(view)));
 }
 
+// Called when window is requested to be closed.
+static gboolean window_delete_event_cb(GtkWidget *widget, GdkEvent *event,
+                                       gpointer data) {
+  // Get the application and quit it.
+  GtkApplication *app = gtk_window_get_application(GTK_WINDOW(widget));
+  if (app != nullptr) {
+    g_application_quit(G_APPLICATION(app));
+  }
+  // Return TRUE to prevent further processing of the delete event.
+  return TRUE;
+}
+
 // Implements GApplication::activate.
 static void my_application_activate(GApplication* application) {
   MyApplication* self = MY_APPLICATION(application);
@@ -70,6 +82,9 @@ static void my_application_activate(GApplication* application) {
   // Requires the view to be realized so we can start rendering.
   g_signal_connect_swapped(view, "first-frame", G_CALLBACK(first_frame_cb), self);
   gtk_widget_realize(GTK_WIDGET(view));
+
+  // Connect the delete-event signal to handle window close.
+  g_signal_connect(window, "delete-event", G_CALLBACK(window_delete_event_cb), NULL);
 
   fl_register_plugins(FL_PLUGIN_REGISTRY(view));
 

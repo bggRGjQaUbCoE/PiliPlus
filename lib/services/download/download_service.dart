@@ -246,8 +246,7 @@ class DownloadService extends GetxService {
       ..entryDirPath = entryDir.path
       ..status = DownloadStatus.wait;
     waitDownloadQueue.add(entry);
-    final currStatus = curDownload.value?.status?.index;
-    if (currStatus == null || currStatus > 3) {
+    if (curDownload.value?.status.isDownloading != true) {
       startDownload(entry);
     }
   }
@@ -285,9 +284,10 @@ class DownloadService extends GetxService {
       await _audioDownloadManager?.cancel(isDelete: false);
       _downloadManager = null;
       _audioDownloadManager = null;
-      final prevStatus = curDownload.value?.status?.index;
-      if (prevStatus != null && prevStatus <= 3) {
-        curDownload.value?.status = DownloadStatus.pause;
+      if (curDownload.value case final curEntry?) {
+        if (curEntry.status.isDownloading) {
+          curEntry.status = DownloadStatus.pause;
+        }
       }
 
       _curCid = entry.cid;
@@ -372,13 +372,12 @@ class DownloadService extends GetxService {
 
       _updateCurStatus(DownloadStatus.getPlayUrl);
 
-      final BiliDownloadMediaInfo mediaFileInfo =
-          await DownloadHttp.getVideoUrl(
-            entry: entry,
-            ep: entry.ep,
-            source: entry.source,
-            pageData: entry.pageData,
-          );
+      final mediaFileInfo = await DownloadHttp.getVideoUrl(
+        entry: entry,
+        ep: entry.ep,
+        source: entry.source,
+        pageData: entry.pageData,
+      );
 
       final videoDir = Directory(path.join(entry.entryDirPath, entry.typeTag));
       if (!videoDir.existsSync()) {

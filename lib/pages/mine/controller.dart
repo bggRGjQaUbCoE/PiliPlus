@@ -126,8 +126,8 @@ class MineController extends CommonDataController<FavFolderData, FavFolderData>
 
   Future<void> queryUserStatOwner() async {
     final res = await UserHttp.userStatOwner();
-    if (res['status']) {
-      userStat.value = res['data'];
+    if (res case Success(:final response)) {
+      userStat.value = response;
     }
   }
 

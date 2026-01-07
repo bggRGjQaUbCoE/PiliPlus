@@ -497,13 +497,13 @@ class PlPlayerController {
     return _instance != null;
   }
 
-  static void setPlayCallBack(Function? playCallBack) {
+  static void setPlayCallBack(VoidCallback? playCallBack) {
     _playCallBack = playCallBack;
   }
 
-  static Function? _playCallBack;
+  static VoidCallback? _playCallBack;
 
-  static void playIfExists({bool repeat = false, bool hideControls = true}) {
+  static void playIfExists() {
     // await _instance?.play(repeat: repeat, hideControls: hideControls);
     _playCallBack?.call();
   }

@@ -44,13 +44,12 @@ abstract final class UserHttp {
     }
   }
 
-  static Future<dynamic> userStatOwner() async {
+  static Future<LoadingState<UserStat>> userStatOwner() async {
     final res = await Request().get(Api.userStatOwner);
     if (res.data['code'] == 0) {
-      UserStat data = UserStat.fromJson(res.data['data']);
-      return {'status': true, 'data': data};
+      return Success(UserStat.fromJson(res.data['data']));
     } else {
-      return {'status': false, 'msg': res.data['message']};
+      return Error(res.data['message']);
     }
   }
 

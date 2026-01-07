@@ -2,6 +2,7 @@
 // https://github.com/SocialSisterYi/bilibili-API-collect/blob/master/docs/misc/sign/wbi.md
 // import md5 from 'md5'
 // import axios from 'axios'
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:PiliPlus/http/api.dart';
@@ -74,7 +75,7 @@ abstract final class WbiSign {
         .toString(); // 计算 w_rid
   }
 
-  static Future<String> _getWbiKeys(DateTime nowDate) async {
+  static Future<String> _getWbiKeys() async {
     final resp = await Request().get(Api.userInfo);
     try {
       final wbiUrls = resp.data['data']['wbi_img'];
@@ -84,9 +85,7 @@ abstract final class WbiSign {
             Utils.getFileName(wbiUrls['sub_url'], fileExt: false),
       );
 
-      _localCache
-        ..put(LocalCacheKey.mixinKey, mixinKey)
-        ..put(LocalCacheKey.timeStamp, nowDate.millisecondsSinceEpoch);
+      _localCache.put(LocalCacheKey.mixinKey, mixinKey);
 
       return mixinKey;
     } catch (_) {
@@ -94,17 +93,19 @@ abstract final class WbiSign {
     }
   }
 
-  static Future<String> getWbiKeys() async {
-    final DateTime nowDate = DateTime.now();
+  static FutureOr<String> getWbiKeys() {
+    final nowDate = DateTime.now();
     if (DateTime.fromMillisecondsSinceEpoch(
           _localCache.get(LocalCacheKey.timeStamp, defaultValue: 0) as int,
         ).day ==
         nowDate.day) {
       final String? mixinKey = _localCache.get(LocalCacheKey.mixinKey);
       if (mixinKey != null) return mixinKey;
-      return _future ??= _getWbiKeys(nowDate);
+      return _future ??= _getWbiKeys();
     } else {
-      return _future = _getWbiKeys(nowDate);
+      return _future = _localCache
+          .put(LocalCacheKey.timeStamp, nowDate.millisecondsSinceEpoch)
+          .then((_) => _getWbiKeys());
     }
   }
 

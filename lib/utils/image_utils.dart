@@ -77,18 +77,6 @@ abstract final class ImageUtils {
     }
   }
 
-  // 获取相册权限
-  static Future<bool> requestPhotoPer() async {
-    await Permission.photos.request();
-    PermissionStatus status = await Permission.photos.status;
-    if (status == PermissionStatus.denied ||
-        status == PermissionStatus.permanentlyDenied) {
-      return false;
-    } else {
-      return true;
-    }
-  }
-
   static Future<bool> checkPermissionDependOnSdkInt(
     BuildContext context,
   ) async {
@@ -97,7 +85,7 @@ abstract final class ImageUtils {
         if (!context.mounted) return false;
         return requestStoragePer(context);
       } else {
-        return requestPhotoPer();
+        return true;
       }
     }
     return requestStoragePer(context);

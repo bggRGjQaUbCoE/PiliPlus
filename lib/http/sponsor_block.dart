@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:PiliPlus/common/constants.dart';
+import 'package:PiliPlus/build_config.dart';
 import 'package:PiliPlus/http/init.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/sponsor_block_api.dart';
@@ -17,6 +17,11 @@ abstract final class SponsorBlock {
   static String get blockServer => Pref.blockServer;
   static final options = Options(
     followRedirects: true,
+    // https://github.com/hanydd/BilibiliSponsorBlock/wiki/API#1-%E5%85%AC%E7%94%A8%E5%8F%82%E6%95%B0
+    headers: {
+      'origin': 'PiliPlus',
+      'x-ext-version': BuildConfig.versionName,
+    },
     validateStatus: (status) => true,
   );
 
@@ -107,9 +112,9 @@ abstract final class SponsorBlock {
   }
 
   static Future<LoadingState<UserInfo>> userInfo(
-    List<String> query, {
-    String? userId,
-  }) async {
+      List<String> query, {
+        String? userId,
+      }) async {
     final res = await Request().get(
       _api(SponsorBlockApi.userInfo),
       queryParameters: {
@@ -136,16 +141,16 @@ abstract final class SponsorBlock {
         'videoID': bvid,
         'cid': cid.toString(),
         'userID': Pref.blockUserID,
-        'userAgent': Constants.userAgent,
+        'userAgent': 'PiliPlus/${BuildConfig.versionName}',
         'videoDuration': videoDuration,
         'segments': segments
             .map(
               (item) => {
-                'segment': [item.segment.first, item.segment.second],
-                'category': item.category.name,
-                'actionType': item.actionType.name,
-              },
-            )
+            'segment': [item.segment.first, item.segment.second],
+            'category': item.category.name,
+            'actionType': item.actionType.name,
+          },
+        )
             .toList(),
       },
       options: options,

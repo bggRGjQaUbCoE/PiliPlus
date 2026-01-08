@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:PiliPlus/build_config.dart';
+import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/http/init.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/sponsor_block_api.dart';
@@ -19,7 +20,7 @@ abstract final class SponsorBlock {
     followRedirects: true,
     // https://github.com/hanydd/BilibiliSponsorBlock/wiki/API#1-%E5%85%AC%E7%94%A8%E5%8F%82%E6%95%B0
     headers: {
-      'origin': 'PiliPlus',
+      'origin': Constants.appName,
       'x-ext-version': BuildConfig.versionName,
     },
     validateStatus: (status) => true,
@@ -141,7 +142,7 @@ abstract final class SponsorBlock {
         'videoID': bvid,
         'cid': cid.toString(),
         'userID': Pref.blockUserID,
-        'userAgent': 'PiliPlus/${BuildConfig.versionName}',
+        'userAgent': '${Constants.appName}/${BuildConfig.versionName}',
         'videoDuration': videoDuration,
         'segments': segments
             .map(

@@ -973,6 +973,13 @@ List<SettingsModel> get extraSettings => [
       }
     },
   ),
+  const SwitchModel(
+    title: '显示动态互动内容',
+    subtitle: '开启后则在动态卡片底部显示互动内容（如关注的人点赞、热评等）',
+    leading: Icon(Icons.quickreply_outlined),
+    setKey: SettingBoxKey.showDynInteraction,
+    defaultVal: true,
+  ),
   NormalModel(
     title: '用户页默认展示TAB',
     leading: const Icon(Icons.tab),

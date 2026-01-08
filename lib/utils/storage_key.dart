@@ -57,6 +57,7 @@ abstract final class SettingBoxKey {
       defaultShowComment = 'defaultShowComment',
       replySortType = 'replySortType',
       defaultDynamicType = 'defaultDynamicType',
+      showDynInteraction = 'showDynInteraction',
       enableHotKey = 'enableHotKey',
       enableSearchRcmd = 'enableSearchRcmd',
       enableQuickFav = 'enableQuickFav',

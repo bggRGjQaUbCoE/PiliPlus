@@ -56,16 +56,18 @@ abstract final class ImageUtils {
     if (status == PermissionStatus.denied ||
         status == PermissionStatus.permanentlyDenied) {
       if (!context.mounted) return false;
-      showDialog(
-        context: context,
+      SmartDialog.show(
         builder: (context) {
-          return const AlertDialog(
-            title: Text('提示'),
-            content: Text('存储权限未授权'),
+          return AlertDialog(
+            title: const Text('提示'),
+            content: const Text('存储权限未授权'),
             actions: [
               TextButton(
-                onPressed: openAppSettings,
-                child: Text('去授权'),
+                onPressed: () {
+                  SmartDialog.dismiss();
+                  openAppSettings();
+                },
+                child: const Text('去授权'),
               ),
             ],
           );

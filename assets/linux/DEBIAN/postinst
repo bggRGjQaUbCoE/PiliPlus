@@ -3,18 +3,18 @@
 ln -sf /opt/PiliPlus/piliplus /usr/bin/piliplus
 chmod +x /usr/bin/piliplus
 
-if [ $1 == "config" ] && [ -x /usr/binupdate-mime-database ]; then
+if [ $1 == "configure" ] && [ -x /usr/bin/update-mime-database ]; then
     echo "updating mime database..."
     update-mime-database  /usr/share/mime || true
 fi
 
-if [ $1 == "config" ] && [ -x /usr/bin/gtk-update-icon-cache ]; then
+if [ $1 == "configure" ] && [ -x /usr/bin/gtk-update-icon-cache ]; then
     echo "updating icon cache..."
     gtk-update-icon-cache -q -f -t /usr/share/icons/hicolor || true
 fi
 
-if [ $1 == "config" ] && [ -x /usr/bin/update-desktop-database ]; then
-    echo "updating desktop database..."
+if [ $1 == "configure" ] && [ -x /usr/bin/update-desktop-database ]; then
+    echo "configure desktop database..."
     update-desktop-database -q /usr/share/applications || true
 fi
 

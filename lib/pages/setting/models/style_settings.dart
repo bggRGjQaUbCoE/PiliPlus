@@ -55,6 +55,12 @@ List<SettingsModel> get styleSettings => [
       defaultVal: true,
       needReboot: true,
     ),
+    NormalModel(
+      title: '桌面端界面缩放',
+      getSubtitle: () => '当前缩放比例：${Pref.desktopScale.toStringAsFixed(2)}',
+      leading: const Icon(Icons.zoom_in_outlined),
+      onTap: _showDesktopScaleDialog,
+    ),
   ],
   SwitchModel(
     title: '横屏适配',
@@ -771,6 +777,104 @@ void _showQualityDialog({
     if (result != null) {
       SmartDialog.showToast('设置成功');
       onChanged(result.toInt());
+    }
+  });
+}
+
+void _showDesktopScaleDialog(
+  BuildContext context,
+  void Function() setState,
+) {
+  if (!PlatformUtils.isDesktop) {
+    SmartDialog.showToast('该设置仅在桌面端生效');
+    return;
+  }
+
+  double tempValue = Pref.desktopScale;
+  final textController = TextEditingController(
+    text: tempValue.toStringAsFixed(2),
+  );
+
+  showDialog<double>(
+    context: context,
+    builder: (context) {
+      return StatefulBuilder(
+        builder: (context, setDialogState) {
+          return AlertDialog(
+            title: const Text('桌面端界面缩放'),
+            contentPadding: const EdgeInsets.fromLTRB(24, 20, 24, 8),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Slider(
+                  value: tempValue,
+                  min: 0.5,
+                  max: 2.0,
+                  divisions: 30,
+                  label: tempValue.toStringAsFixed(2),
+                  onChanged: (value) {
+                    setDialogState(() {
+                      tempValue = value;
+                      textController.text = value.toStringAsFixed(2);
+                    });
+                  },
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: textController,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'[\d.]+')),
+                  ],
+                  decoration: const InputDecoration(
+                    labelText: '直接输入缩放比例',
+                    hintText: '0.50 - 2.00',
+                    border: OutlineInputBorder(),
+                  ),
+                  onChanged: (value) {
+                    final parsed = double.tryParse(value);
+                    if (parsed != null && parsed >= 0.5 && parsed <= 2.0) {
+                      setDialogState(() {
+                        tempValue = parsed;
+                      });
+                    }
+                  },
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: Navigator.of(context).pop,
+                child: Text(
+                  '取消',
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.outline,
+                  ),
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                  final parsed = double.tryParse(textController.text);
+                  if (parsed != null && parsed >= 0.5 && parsed <= 2.0) {
+                    Navigator.pop(context, parsed);
+                  } else {
+                    Navigator.pop(context, tempValue);
+                  }
+                },
+                child: const Text('确定'),
+              ),
+            ],
+          );
+        },
+      );
+    },
+  ).then((res) async {
+    if (res != null) {
+      await GStorage.setting.put(SettingBoxKey.desktopScale, res);
+      Get.forceAppUpdate();
+      setState();
     }
   });
 }

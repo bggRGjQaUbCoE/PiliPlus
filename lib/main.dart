@@ -295,12 +295,40 @@ class MyApp extends StatelessWidget {
         toastBuilder: (String msg) => CustomToast(msg: msg),
         loadingBuilder: (msg) => LoadingWidget(msg: msg),
         builder: (context, child) {
-          child = MediaQuery(
-            data: MediaQuery.of(context).copyWith(
-              textScaler: TextScaler.linear(Pref.defaultTextScale),
-            ),
-            child: child!,
-          );
+          final desktopScale = Pref.desktopScale;
+          if (PlatformUtils.isDesktop && desktopScale != 1.0) {
+            // Apply full UI scaling for desktop
+            final mediaQuery = MediaQuery.of(context);
+            final actualSize = mediaQuery.size;
+            final scaledSize = actualSize / desktopScale;
+            child = MediaQuery(
+              data: mediaQuery.copyWith(
+                // Tell child the logical size it should layout to
+                size: scaledSize,
+                padding: mediaQuery.padding / desktopScale,
+                viewPadding: mediaQuery.viewPadding / desktopScale,
+                viewInsets: mediaQuery.viewInsets / desktopScale,
+              ),
+              // Use OverflowBox to let child layout to scaledSize, 
+              // then FittedBox scales it to fit actualSize
+              child: FittedBox(
+                fit: BoxFit.fill,
+                alignment: Alignment.topLeft,
+                child: SizedBox(
+                  width: scaledSize.width,
+                  height: scaledSize.height,
+                  child: child,
+                ),
+              ),
+            );
+          } else {
+            child = MediaQuery(
+              data: MediaQuery.of(context).copyWith(
+                textScaler: TextScaler.linear(Pref.defaultTextScale),
+              ),
+              child: child!,
+            );
+          }
           if (PlatformUtils.isDesktop) {
             return Focus(
               canRequestFocus: false,

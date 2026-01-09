@@ -33,6 +33,7 @@ abstract class CommonDynPageState<T extends StatefulWidget> extends State<T>
   late EdgeInsets padding;
   late bool isPortrait;
   late double maxWidth;
+  late double maxHeight;
 
   bool _showFab = true;
 
@@ -89,6 +90,7 @@ abstract class CommonDynPageState<T extends StatefulWidget> extends State<T>
     super.didChangeDependencies();
     final size = MediaQuery.sizeOf(context);
     maxWidth = size.width;
+    maxHeight = size.height;
     isPortrait = size.isPortrait;
     padding = MediaQuery.viewPaddingOf(context);
   }

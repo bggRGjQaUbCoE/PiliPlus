@@ -6,6 +6,7 @@ import 'package:PiliPlus/pages/dynamics/widgets/action_panel.dart';
 import 'package:PiliPlus/pages/dynamics/widgets/author_panel.dart';
 import 'package:PiliPlus/pages/dynamics/widgets/dyn_content.dart';
 import 'package:PiliPlus/pages/dynamics/widgets/interaction.dart';
+import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:flutter/material.dart' hide InkWell;
@@ -78,6 +79,8 @@ class DynamicPanel extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(12, 12, 12, 6),
               child: authorWidget,
             ),
+            if (item.modules.moduleDispute case final moduleDispute?)
+              _buildDispute(theme, moduleDispute),
             ...dynContent(
               context,
               theme: theme,
@@ -241,5 +244,54 @@ class DynamicPanel extends StatelessWidget {
         child: child,
       ),
     );
+  }
+
+  Widget _buildDispute(ThemeData theme, ModuleDispute moduleDispute) {
+    final child = Container(
+      width: .infinity,
+      margin: const .fromLTRB(12, 0, 12, 6),
+      padding: const .symmetric(horizontal: 8, vertical: 6),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.secondaryContainer.withValues(
+          alpha: theme.brightness.isLight ? 0.5 : 0.7,
+        ),
+        borderRadius: const BorderRadius.all(Radius.circular(6)),
+      ),
+      child: Text.rich(
+        style: TextStyle(
+          height: 1,
+          fontSize: 13,
+          color: theme.colorScheme.onSecondaryContainer,
+        ),
+        strutStyle: const StrutStyle(
+          leading: 0,
+          height: 1,
+          fontSize: 13,
+        ),
+        TextSpan(
+          children: [
+            WidgetSpan(
+              alignment: .middle,
+              child: Padding(
+                padding: const .only(right: 4),
+                child: Icon(
+                  size: 15,
+                  Icons.warning_rounded,
+                  color: theme.colorScheme.onSecondaryContainer,
+                ),
+              ),
+            ),
+            TextSpan(text: moduleDispute.title),
+          ],
+        ),
+      ),
+    );
+    if (moduleDispute.jumpUrl?.isNotEmpty == true) {
+      return GestureDetector(
+        onTap: () => PageUtils.handleWebview(moduleDispute.jumpUrl!),
+        child: child,
+      );
+    }
+    return child;
   }
 }

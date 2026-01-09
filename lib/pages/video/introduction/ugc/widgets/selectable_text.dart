@@ -16,6 +16,7 @@ Widget selectableText(
   return SelectableText(
     style: style,
     text,
+    scrollPhysics: const NeverScrollableScrollPhysics(),
   );
 }
 
@@ -34,5 +35,6 @@ Widget selectableRichText(
   return SelectableText.rich(
     style: style,
     textSpan,
+    scrollPhysics: const NeverScrollableScrollPhysics(),
   );
 }

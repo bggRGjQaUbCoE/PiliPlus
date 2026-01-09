@@ -71,8 +71,8 @@ class InsertCard {
   String? id;
   dynamic alt;
   String? url;
-  num? width;
-  num? height;
+  double? width;
+  double? height;
   num? size;
   String? status;
 
@@ -92,8 +92,8 @@ class InsertCard {
     id = json['id'] == '' ? null : json['id'];
     alt = json['alt'];
     url = json['url'];
-    width = json['width'];
-    height = json['height'];
+    width = (json['width'] as num?)?.toDouble();
+    height = (json['height'] as num?)?.toDouble();
     size = json['size'];
     status = json['status'];
   }

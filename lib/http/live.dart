@@ -695,4 +695,40 @@ abstract final class LiveHttp {
       return Error(res.data['message']);
     }
   }
+
+  static Future<LoadingState<Null>> superChatReport({
+    required int id,
+    required Object roomId,
+    required Object uid,
+    required String msg,
+    required String reason,
+    required int ts,
+    required String token,
+  }) async {
+    final csrf = Accounts.main.csrf;
+    final res = await Request().post(
+      Api.superChatReport,
+      data: {
+        'id': id,
+        'roomid': roomId,
+        'uid': uid,
+        'msg': msg,
+        'reason': reason,
+        'ts': ts,
+        'sign': '',
+        'reason_id': reason,
+        'token': token,
+        'id_str': id.toString(),
+        'csrf_token': csrf,
+        'csrf': csrf,
+        'visit_id': '',
+      },
+      options: Options(contentType: Headers.formUrlEncodedContentType),
+    );
+    if (res.data['code'] == 0) {
+      return const Success(null);
+    } else {
+      return Error(res.data['message']);
+    }
+  }
 }

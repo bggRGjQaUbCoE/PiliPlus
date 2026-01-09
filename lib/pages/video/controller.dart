@@ -855,6 +855,7 @@ class VideoDetailController extends GetxController
   }
 
   void initSkip() {
+    if (isClosed) return;
     if (segmentList.isNotEmpty) {
       positionSubscription?.cancel();
       positionSubscription = plPlayerController
@@ -1174,6 +1175,8 @@ class VideoDetailController extends GetxController
       mediaType: isFileSource ? entry.mediaType : null,
     );
 
+    if (isClosed) return;
+
     if (!isFileSource) {
       if (plPlayerController.enableBlock) {
         initSkip();
@@ -1482,7 +1485,7 @@ class VideoDetailController extends GetxController
       final result = await VideoHttp.vttSubtitles(
         subtitles[index - 1].subtitleUrl!,
       );
-      if (result != null) {
+      if (!isClosed && result != null) {
         vttSubtitles[index - 1] = result;
         await setSub(result);
       }

@@ -157,56 +157,39 @@ class _HistoryPageState extends State<HistoryPage>
         onPressed: () => Get.toNamed('/historySearch'),
         icon: const Icon(Icons.search_outlined),
       ),
-      PopupMenuButton<String>(
-        onSelected: (String type) {
-          switch (type) {
-            case 'pause':
-              _historyController.baseCtr.onPauseHistory(
-                context,
-              );
-              break;
-            case 'clear':
-              _historyController.baseCtr.onClearHistory(
-                context,
-                () {
-                  _historyController.loadingState.value = const Success(
-                    null,
-                  );
-                  if (_historyController.tabController != null) {
-                    for (final item in _historyController.tabs) {
-                      try {
-                        Get.find<HistoryController>(
-                          tag: item.type,
-                        ).loadingState.value = const Success(
-                          null,
-                        );
-                      } catch (_) {}
-                    }
-                  }
-                },
-              );
-              break;
-            case 'viewed':
-              currCtr().onDelViewedHistory();
-              break;
-          }
-        },
-        itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-          PopupMenuItem<String>(
-            value: 'pause',
+      PopupMenuButton(
+        itemBuilder: (_) => [
+          PopupMenuItem(
+            onTap: () => _historyController.baseCtr.onPauseHistory(context),
             child: Text(
               !_historyController.baseCtr.pauseStatus.value
                   ? '暂停观看记录'
                   : '恢复观看记录',
             ),
           ),
-          const PopupMenuItem<String>(
-            value: 'clear',
-            child: Text('清空观看记录'),
+          PopupMenuItem(
+            onTap: () => _historyController.baseCtr.onClearHistory(
+              context,
+              () {
+                _historyController.loadingState.value = const Success(null);
+                if (_historyController.tabController != null) {
+                  for (final item in _historyController.tabs) {
+                    try {
+                      Get.find<HistoryController>(
+                        tag: item.type,
+                      ).loadingState.value = const Success(
+                        null,
+                      );
+                    } catch (_) {}
+                  }
+                }
+              },
+            ),
+            child: const Text('清空观看记录'),
           ),
-          const PopupMenuItem<String>(
-            value: 'viewed',
-            child: Text('删除已看记录'),
+          PopupMenuItem(
+            onTap: currCtr().onDelViewedHistory,
+            child: const Text('删除已看记录'),
           ),
         ],
       ),

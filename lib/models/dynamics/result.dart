@@ -159,6 +159,8 @@ class ItemModulesModel {
   // 动态
   ModuleDynamicModel? moduleDynamic;
   // ModuleInterModel? moduleInter;
+  ModuleInteraction? moduleInteraction;
+  ModuleDispute? moduleDispute;
 
   // 专栏
   ModuleTop? moduleTop;
@@ -167,7 +169,9 @@ class ItemModulesModel {
   List<ArticleContentModel>? moduleContent;
   ModuleBlocked? moduleBlocked;
   ModuleFold? moduleFold;
-  ModuleInteraction? moduleInteraction;
+
+  static bool showArgueMsg = Pref.showArgueMsg;
+  static bool showDynInteraction = Pref.showDynInteraction;
 
   ItemModulesModel.fromJson(Map<String, dynamic> json) {
     moduleAuthor = json['module_author'] != null
@@ -185,9 +189,16 @@ class ItemModulesModel {
     moduleFold = json['module_fold'] != null
         ? ModuleFold.fromJson(json['module_fold'])
         : null;
-    moduleInteraction = json['module_interaction'] != null
-        ? ModuleInteraction.fromJson(json['module_interaction'])
-        : null;
+    if (showDynInteraction) {
+      moduleInteraction = json['module_interaction'] != null
+          ? ModuleInteraction.fromJson(json['module_interaction'])
+          : null;
+    }
+    if (showArgueMsg) {
+      moduleDispute = json['module_dispute'] != null
+          ? ModuleDispute.fromJson(json['module_dispute'])
+          : null;
+    }
   }
 
   ItemModulesModel.fromOpusJson(List json) {
@@ -235,6 +246,18 @@ class ItemModulesModel {
           break;
       }
     }
+  }
+}
+
+class ModuleDispute {
+  String? title;
+  String? desc;
+  String? jumpUrl;
+
+  ModuleDispute.fromJson(Map<String, dynamic> json) {
+    title = json['title'];
+    desc = json['desc'];
+    jumpUrl = json['jump_url'];
   }
 }
 

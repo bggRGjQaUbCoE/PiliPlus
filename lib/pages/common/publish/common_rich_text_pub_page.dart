@@ -274,7 +274,7 @@ abstract class CommonRichTextPubPageState<T extends CommonRichTextPubPage>
   }
 
   late double _mentionOffset = 0;
-  Future<void> onMention([bool fromClick = false]) async {
+  Future<void>? onMention([bool fromClick = false]) async {
     controller.keepChatPanel();
     final res = await DynMentionPanel.onDynMention(
       context,

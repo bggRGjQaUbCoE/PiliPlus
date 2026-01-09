@@ -128,21 +128,17 @@ class _ReplyPageState extends CommonRichTextPubPageState<LiveSendDmPanel> {
       ),
       Container(
         height: 52,
-        padding: const EdgeInsets.only(left: 12, right: 12),
+        padding: const .symmetric(horizontal: 12),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          mainAxisAlignment: .spaceBetween,
           children: [
             emojiBtn,
-            const Spacer(),
             Obx(
               () => FilledButton.tonal(
                 onPressed: enablePublish.value ? onPublish : null,
                 style: FilledButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 10,
-                  ),
-                  visualDensity: VisualDensity.compact,
+                  visualDensity: .compact,
+                  padding: const .symmetric(horizontal: 20, vertical: 10),
                 ),
                 child: const Text('发送'),
               ),
@@ -195,7 +191,5 @@ class _ReplyPageState extends CommonRichTextPubPageState<LiveSendDmPanel> {
   }
 
   @override
-  Future<void> onMention([bool fromClick = false]) {
-    return Future.syncValue(null);
-  }
+  Future<void>? onMention([bool fromClick = false]) => null;
 }

@@ -41,13 +41,14 @@ Widget htmlRender({
           if (clazz?.contains('cut-off') == true || height != null) {
             return CachedNetworkImage(
               width: maxWidth,
+              memCacheWidth: maxWidth.cacheSize(context),
               height: height != null ? double.parse(height) : null,
               imageUrl: ImageUtils.thumbnailUrl(imgUrl),
               fit: BoxFit.contain,
               placeholder: (_, _) => const SizedBox.shrink(),
             );
           }
-          final size = isEmote ? 22.0 : null;
+          final width = isEmote ? 22.0 : maxWidth;
           return GestureDetector(
             onTap: () => PageUtils.imageView(
               imgList: [SourceModel(url: imgUrl)],
@@ -56,9 +57,9 @@ Widget htmlRender({
             child: Hero(
               tag: imgUrl,
               child: CachedNetworkImage(
-                width: size,
-                height: size,
-                memCacheWidth: size?.cacheSize(context),
+                width: width,
+                height: isEmote ? 22.0 : null,
+                memCacheWidth: width.cacheSize(context),
                 imageUrl: ImageUtils.thumbnailUrl(imgUrl, 60),
                 fadeInDuration: const Duration(milliseconds: 120),
                 fadeOutDuration: const Duration(milliseconds: 120),

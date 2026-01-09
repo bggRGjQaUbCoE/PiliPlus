@@ -38,7 +38,7 @@ on:
             build_linux_x64:
                 description: "Build Linux-x64"
                 required: false
-                default: false
+                default: true
                 type: boolean
 
             tag:
@@ -147,7 +147,7 @@ jobs:
             tag: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag || '' }}
 
     mac:
-        if: ${{ github.event_name == 'pull_request' || github.event.inputs.build_mac == 'true' }}
+        if: ${{ github.event.inputs.build_mac == 'true' }}
         uses: ./.github/workflows/mac.yml
         permissions: write-all
         with:

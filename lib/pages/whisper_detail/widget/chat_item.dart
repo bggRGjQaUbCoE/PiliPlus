@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/widgets/badge.dart';
@@ -13,11 +14,10 @@ import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/duration_utils.dart';
-import 'package:PiliPlus/utils/extension/widget_ext.dart';
+import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
-import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -32,13 +32,16 @@ class ChatItem extends StatelessWidget {
   const ChatItem({
     super.key,
     required this.item,
-    this.eInfos,
-    this.onLongPress,
-  }) : isOwner = onLongPress != null;
+    required this.eInfos,
+    required this.onLongPress,
+    required this.onSecondaryTapUp,
+    required this.isOwner,
+  });
 
   final Msg item;
   final List<EmotionInfo>? eInfos;
-  final VoidCallback? onLongPress;
+  final VoidCallback onLongPress;
+  final GestureTapUpCallback? onSecondaryTapUp;
   final bool isOwner;
 
   // 消息来源
@@ -50,14 +53,11 @@ class ChatItem extends StatelessWidget {
   // };
   @override
   Widget build(BuildContext context) {
-    bool isPic = item.msgType == MsgType.EN_MSG_TYPE_PIC.value; // 图片
-    bool isRevoke = item.msgType == MsgType.EN_MSG_TYPE_DRAW_BACK.value; // 撤回消息
-    bool isSystem =
-        item.msgType == MsgType.EN_MSG_TYPE_VIDEO_CARD.value ||
-        item.msgType == MsgType.EN_MSG_TYPE_TIP_MESSAGE.value ||
-        item.msgType == MsgType.EN_MSG_TYPE_NOTIFY_MSG.value ||
-        item.msgType == MsgType.EN_MSG_TYPE_PICTURE_CARD.value ||
-        item.msgType == 16;
+    final msgType = item.msgType;
+    final isRevoke = msgType == MsgType.EN_MSG_TYPE_DRAW_BACK.value; // 撤回消息
+    if (isRevoke) {
+      return const SizedBox.shrink();
+    }
 
     late final ThemeData theme = Theme.of(context);
     late final Color textColor = isOwner
@@ -65,108 +65,98 @@ class ChatItem extends StatelessWidget {
         : theme.colorScheme.onSurfaceVariant;
     late final dynamic content = jsonDecode(item.content);
 
-    return isRevoke
-        ? const SizedBox.shrink()
-        : Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(top: 6, bottom: 18),
-                child: Text(
-                  DateFormatUtils.chatFormat(item.timestamp.toInt()),
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: theme.colorScheme.outline),
-                ),
-              ),
-              isSystem
-                  ? messageContent(
-                      context: context,
-                      theme: theme,
-                      content: content,
-                      textColor: textColor,
+    Widget child = messageContent(
+      context: context,
+      theme: theme,
+      content: content,
+      textColor: textColor,
+    );
+
+    final isSystem =
+        msgType == MsgType.EN_MSG_TYPE_VIDEO_CARD.value ||
+        msgType == MsgType.EN_MSG_TYPE_TIP_MESSAGE.value ||
+        msgType == MsgType.EN_MSG_TYPE_NOTIFY_MSG.value ||
+        msgType == MsgType.EN_MSG_TYPE_PICTURE_CARD.value ||
+        msgType == 16;
+
+    if (!isSystem) {
+      final isPic = msgType == MsgType.EN_MSG_TYPE_PIC.value; // 图片
+      child = Row(
+        mainAxisAlignment: isOwner ? .end : .start,
+        children: [
+          Container(
+            constraints: const BoxConstraints(maxWidth: 300.0),
+            decoration: BoxDecoration(
+              color: isOwner
+                  ? theme.colorScheme.secondaryContainer
+                  : theme.colorScheme.onInverseSurface,
+              borderRadius: isOwner
+                  ? const .only(
+                      topLeft: .circular(16),
+                      topRight: .circular(16),
+                      bottomLeft: .circular(16),
+                      bottomRight: .circular(6),
                     )
-                  : GestureDetector(
-                      onLongPress: () {
-                        Feedback.forLongPress(context);
-                        onLongPress!();
-                      },
-                      onSecondaryTap: PlatformUtils.isMobile
-                          ? null
-                          : onLongPress,
-                      child: Row(
-                        mainAxisAlignment: isOwner
-                            ? MainAxisAlignment.end
-                            : MainAxisAlignment.start,
-                        children: [
-                          Container(
-                            constraints: const BoxConstraints(maxWidth: 300.0),
-                            decoration: BoxDecoration(
-                              color: isOwner
-                                  ? theme.colorScheme.secondaryContainer
-                                  : theme.colorScheme.onInverseSurface,
-                              borderRadius: isOwner
-                                  ? const BorderRadius.only(
-                                      topLeft: Radius.circular(16),
-                                      topRight: Radius.circular(16),
-                                      bottomLeft: Radius.circular(16),
-                                      bottomRight: Radius.circular(6),
-                                    )
-                                  : const BorderRadius.only(
-                                      topLeft: Radius.circular(16),
-                                      topRight: Radius.circular(16),
-                                      bottomLeft: Radius.circular(6),
-                                      bottomRight: Radius.circular(16),
-                                    ),
-                            ),
-                            padding: EdgeInsets.only(
-                              top: 8,
-                              bottom: 6,
-                              left: isPic ? 8 : 12,
-                              right: isPic ? 8 : 12,
-                            ),
-                            child: Column(
-                              crossAxisAlignment: isOwner
-                                  ? CrossAxisAlignment.end
-                                  : CrossAxisAlignment.start,
-                              children: [
-                                messageContent(
-                                  context: context,
-                                  theme: theme,
-                                  content: content,
-                                  textColor: textColor,
-                                ),
-                                SizedBox(height: isPic ? 7 : 2),
-                                if (item.msgStatus == 1)
-                                  Text(
-                                    '  已撤回',
-                                    style: theme.textTheme.labelSmall!.copyWith(
-                                      color: theme.colorScheme.onErrorContainer,
-                                    ),
-                                  ),
-                                if (item.msgSource >= 8 &&
-                                    item.msgSource <= 11) ...[
-                                  Divider(
-                                    height: 10,
-                                    thickness: 1,
-                                    color: theme.colorScheme.outline.withValues(
-                                      alpha: 0.2,
-                                    ),
-                                  ),
-                                  Text(
-                                    '此条消息为自动回复',
-                                    style: theme.textTheme.labelMedium!
-                                        .copyWith(
-                                          color: theme.colorScheme.outline,
-                                        ),
-                                  ),
-                                ],
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
+                  : const .only(
+                      topLeft: .circular(16),
+                      topRight: .circular(16),
+                      bottomLeft: .circular(6),
+                      bottomRight: .circular(16),
                     ),
-            ],
-          );
+            ),
+            padding: isPic
+                ? const .only(top: 8, bottom: 6, left: 8, right: 8)
+                : const .only(top: 8, bottom: 6, left: 12, right: 12),
+            child: Column(
+              crossAxisAlignment: isOwner ? .end : .start,
+              children: [
+                child,
+                isPic ? const SizedBox(height: 7) : const SizedBox(height: 2),
+                if (item.msgStatus == 1)
+                  Text(
+                    '  已撤回',
+                    style: theme.textTheme.labelSmall!.copyWith(
+                      color: theme.colorScheme.onErrorContainer,
+                    ),
+                  ),
+                if (item.msgSource >= 8 && item.msgSource <= 11) ...[
+                  Divider(
+                    height: 10,
+                    thickness: 1,
+                    color: theme.colorScheme.outline.withValues(alpha: 0.2),
+                  ),
+                  Text(
+                    '此条消息为自动回复',
+                    style: theme.textTheme.labelMedium!.copyWith(
+                      color: theme.colorScheme.outline,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      );
+    }
+
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(top: 6, bottom: 18),
+          child: Text(
+            DateFormatUtils.chatFormat(item.timestamp.toInt()),
+            textAlign: TextAlign.center,
+            style: TextStyle(color: theme.colorScheme.outline),
+          ),
+        ),
+        GestureDetector(
+          behavior: .opaque,
+          onLongPress: onLongPress,
+          onSecondaryTapUp: onSecondaryTapUp,
+          child: child,
+        ),
+      ],
+    );
   }
 
   Widget messageContent({
@@ -756,17 +746,34 @@ class ChatItem extends StatelessWidget {
   }
 
   Widget msgTypePictureCard_13(dynamic content) {
-    final url = content['jump_url'];
-    return GestureDetector(
-      onTap: url == null ? null : () => PiliScheme.routePushFromUrl(url),
-      child: ClipRRect(
-        borderRadius: StyleString.mdRadius,
-        child: CachedNetworkImage(
-          imageUrl: ImageUtils.thumbnailUrl(content['pic_url']),
-          placeholder: (_, _) => const SizedBox.shrink(),
-        ),
-      ),
-    ).constraintWidth(constraints: const BoxConstraints(maxWidth: 400.0));
+    final String? url = content['jump_url'];
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final maxWidth = max(400.0, constraints.maxWidth);
+        Widget child = ClipRRect(
+          borderRadius: StyleString.mdRadius,
+          child: CachedNetworkImage(
+            width: maxWidth,
+            memCacheWidth: maxWidth.cacheSize(context),
+            imageUrl: ImageUtils.thumbnailUrl(content['pic_url']),
+            placeholder: (_, _) => const SizedBox.shrink(),
+          ),
+        );
+        if (url != null && url.isNotEmpty) {
+          child = GestureDetector(
+            onTap: () => PiliScheme.routePushFromUrl(url),
+            child: child,
+          );
+        }
+        return Align(
+          alignment: Alignment.topCenter,
+          child: SizedBox(
+            width: maxWidth,
+            child: child,
+          ),
+        );
+      },
+    );
   }
 
   Widget def(Color textColor, {err}) {

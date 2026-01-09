@@ -182,7 +182,7 @@ class HistoryItem extends StatelessWidget {
               child: SizedBox(
                 width: 29,
                 height: 29,
-                child: PopupMenuButton<String>(
+                child: PopupMenuButton(
                   padding: EdgeInsets.zero,
                   tooltip: '功能菜单',
                   icon: Icon(
@@ -191,61 +191,60 @@ class HistoryItem extends StatelessWidget {
                     size: 18,
                   ),
                   position: PopupMenuPosition.under,
-                  itemBuilder: (BuildContext context) =>
-                      <PopupMenuEntry<String>>[
-                        if (item.authorMid != null &&
-                            item.authorName?.isNotEmpty == true)
-                          PopupMenuItem<String>(
-                            onTap: () =>
-                                Get.toNamed('/member?mid=${item.authorMid}'),
-                            height: 35,
-                            child: Row(
-                              children: [
-                                const Icon(
-                                  MdiIcons.accountCircleOutline,
-                                  size: 16,
-                                ),
-                                const SizedBox(width: 6),
-                                Text(
-                                  '访问：${item.authorName}',
-                                  style: const TextStyle(fontSize: 13),
-                                ),
-                              ],
+                  itemBuilder: (_) => [
+                    if (item.authorMid != null &&
+                        item.authorName?.isNotEmpty == true)
+                      PopupMenuItem(
+                        onTap: () =>
+                            Get.toNamed('/member?mid=${item.authorMid}'),
+                        height: 38,
+                        child: Row(
+                          children: [
+                            const Icon(
+                              MdiIcons.accountCircleOutline,
+                              size: 16,
                             ),
-                          ),
-                        if (business != 'pgc' &&
-                            item.badge != '番剧' &&
-                            item.tagName?.contains('动画') != true &&
-                            business != 'live' &&
-                            business?.contains('article') != true)
-                          PopupMenuItem<String>(
-                            onTap: () async {
-                              final res = await UserHttp.toViewLater(
-                                bvid: item.history.bvid,
-                              );
-                              SmartDialog.showToast(res['msg']);
-                            },
-                            height: 35,
-                            child: const Row(
-                              children: [
-                                Icon(Icons.watch_later_outlined, size: 16),
-                                SizedBox(width: 6),
-                                Text('稍后再看', style: TextStyle(fontSize: 13)),
-                              ],
+                            const SizedBox(width: 6),
+                            Text(
+                              '访问：${item.authorName}',
+                              style: const TextStyle(fontSize: 13),
                             ),
-                          ),
-                        PopupMenuItem<String>(
-                          onTap: () => onDelete(item.kid!, business!),
-                          height: 35,
-                          child: const Row(
-                            children: [
-                              Icon(Icons.close_outlined, size: 16),
-                              SizedBox(width: 6),
-                              Text('删除记录', style: TextStyle(fontSize: 13)),
-                            ],
-                          ),
+                          ],
                         ),
-                      ],
+                      ),
+                    if (business != 'pgc' &&
+                        item.badge != '番剧' &&
+                        item.tagName?.contains('动画') != true &&
+                        business != 'live' &&
+                        business?.contains('article') != true)
+                      PopupMenuItem(
+                        onTap: () async {
+                          final res = await UserHttp.toViewLater(
+                            bvid: item.history.bvid,
+                          );
+                          SmartDialog.showToast(res['msg']);
+                        },
+                        height: 38,
+                        child: const Row(
+                          children: [
+                            Icon(Icons.watch_later_outlined, size: 16),
+                            SizedBox(width: 6),
+                            Text('稍后再看', style: TextStyle(fontSize: 13)),
+                          ],
+                        ),
+                      ),
+                    PopupMenuItem(
+                      onTap: () => onDelete(item.kid!, business!),
+                      height: 38,
+                      child: const Row(
+                        children: [
+                          Icon(Icons.close_outlined, size: 16),
+                          SizedBox(width: 6),
+                          Text('删除记录', style: TextStyle(fontSize: 13)),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),

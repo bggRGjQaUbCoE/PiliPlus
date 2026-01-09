@@ -89,7 +89,7 @@ class _LogsPageState extends State<LogsPage> {
     }
   }
 
-  Future<void> clearLogsHandle() async {
+  Future<void> clearLogs() async {
     if (await LoggerUtils.clearLogs()) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -112,57 +112,45 @@ class _LogsPageState extends State<LogsPage> {
       appBar: AppBar(
         title: const Text('日志'),
         actions: [
-          PopupMenuButton<String>(
-            onSelected: (String type) {
-              switch (type) {
-                case 'log':
-                  enableLog = !enableLog;
-                  GStorage.setting.put(SettingBoxKey.enableLog, enableLog);
-                  SmartDialog.showToast('已${enableLog ? '开启' : '关闭'}，重启生效');
-                  break;
-                case 'copy':
-                  copyLogs();
-                  break;
-                case 'feedback':
-                  PageUtils.launchURL('${Constants.sourceCodeUrl}/issues');
-                  break;
-                case 'clear':
-                  latestLog = null;
-                  clearLogsHandle();
-                  break;
-                default:
-                  if (kDebugMode) {
-                    Timer.periodic(const Duration(milliseconds: 3500), (timer) {
+          PopupMenuButton(
+            itemBuilder: (_) => [
+              if (kDebugMode)
+                PopupMenuItem(
+                  onTap: () => Timer.periodic(
+                    const Duration(milliseconds: 3500),
+                    (timer) {
                       Utils.reportError('Manual');
                       if (timer.tick > 3) {
                         timer.cancel();
                         if (mounted) getLog();
                       }
-                    });
-                  }
-              }
-            },
-            itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-              if (kDebugMode)
-                const PopupMenuItem<String>(
-                  value: 'assert',
-                  child: Text('引发错误'),
+                    },
+                  ),
+                  child: const Text('引发错误'),
                 ),
-              PopupMenuItem<String>(
-                value: 'log',
+              PopupMenuItem(
+                onTap: () {
+                  enableLog = !enableLog;
+                  GStorage.setting.put(SettingBoxKey.enableLog, enableLog);
+                  SmartDialog.showToast('已${enableLog ? '开启' : '关闭'}，重启生效');
+                },
                 child: Text('${enableLog ? '关闭' : '开启'}日志'),
               ),
-              const PopupMenuItem<String>(
-                value: 'copy',
-                child: Text('复制日志'),
+              PopupMenuItem(
+                onTap: copyLogs,
+                child: const Text('复制日志'),
               ),
-              const PopupMenuItem<String>(
-                value: 'feedback',
-                child: Text('错误反馈'),
+              PopupMenuItem(
+                onTap: () =>
+                    PageUtils.launchURL('${Constants.sourceCodeUrl}/issues'),
+                child: const Text('错误反馈'),
               ),
-              const PopupMenuItem<String>(
-                value: 'clear',
-                child: Text('清空日志'),
+              PopupMenuItem(
+                onTap: () {
+                  latestLog = null;
+                  clearLogs();
+                },
+                child: const Text('清空日志'),
               ),
             ],
           ),

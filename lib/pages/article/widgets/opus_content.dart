@@ -215,12 +215,13 @@ class OpusContent extends StatelessWidget {
             case 2 when (element.pic != null):
               if (element.pic!.pics!.length == 1) {
                 final pic = element.pic!.pics!.first;
-                final width = pic.width == null
+                double? width = pic.width == null
                     ? null
                     : math.min(maxWidth, pic.width!);
                 final height = width == null || pic.height == null
                     ? null
                     : width * pic.height! / pic.width!;
+                width ??= maxWidth;
                 return GestureDetector(
                   onTap: () => PageUtils.imageView(
                     imgList: [SourceModel(url: pic.url!)],
@@ -232,7 +233,7 @@ class OpusContent extends StatelessWidget {
                       child: CachedNetworkImage(
                         width: width,
                         height: height,
-                        memCacheWidth: width?.cacheSize(context),
+                        memCacheWidth: width.cacheSize(context),
                         imageUrl: ImageUtils.thumbnailUrl(pic.url!, 60),
                         fadeInDuration: const Duration(milliseconds: 120),
                         fadeOutDuration: const Duration(milliseconds: 120),
@@ -259,10 +260,10 @@ class OpusContent extends StatelessWidget {
             case 3 when (element.line != null):
               final height = element.line!.pic!.height?.toDouble();
               return CachedNetworkImage(
-                width: maxWidth,
-                fit: BoxFit.contain,
+                fit: .contain,
                 height: height,
-                memCacheHeight: height?.cacheSize(context),
+                width: maxWidth,
+                memCacheWidth: maxWidth.cacheSize(context),
                 imageUrl: ImageUtils.thumbnailUrl(element.line!.pic!.url!),
                 placeholder: (_, _) => const SizedBox.shrink(),
               );

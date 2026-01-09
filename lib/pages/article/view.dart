@@ -4,6 +4,7 @@ import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/custom_icon.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
+import 'package:PiliPlus/common/widgets/scroll_physics.dart';
 import 'package:PiliPlus/models/common/badge_type.dart';
 import 'package:PiliPlus/models/common/image_preview_type.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
@@ -16,6 +17,7 @@ import 'package:PiliPlus/pages/common/dyn/common_dyn_page.dart';
 import 'package:PiliPlus/pages/dynamics_repost/view.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/extension/get_ext.dart';
+import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/grid.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
@@ -180,7 +182,10 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
           } else if (controller.articleData?.content != null) {
             if (controller.articleData?.type == 3) {
               // json
-              return ArticleOpus(ops: controller.articleData?.ops);
+              return ArticleOpus(
+                ops: controller.articleData?.ops,
+                maxWidth: maxWidth,
+              );
             }
             // if (kDebugMode) debugPrint('html page');
             final res = parser.parse(controller.articleData!.content!);
@@ -238,14 +243,11 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
                       final length = pics.length;
                       final first = pics.first;
                       double height;
-                      double paddingRight;
                       if (first.height != null && first.width != null) {
                         final ratio = first.height! / first.width!;
-                        height = min(maxWidth * ratio, Get.height * 0.55);
-                        paddingRight = (maxWidth - height / ratio) / 2 + 12;
+                        height = min(maxWidth * ratio, maxHeight * 0.55);
                       } else {
-                        height = Get.height * 0.55;
-                        paddingRight = 12;
+                        height = maxHeight * 0.55;
                       }
                       return Stack(
                         clipBehavior: Clip.none,
@@ -255,13 +257,25 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
                             width: maxWidth,
                             margin: const EdgeInsets.only(bottom: 10),
                             child: PageView.builder(
-                              physics: const ClampingScrollPhysics(),
-                              onPageChanged: (value) {
-                                controller.topIndex.value = value;
-                              },
+                              physics: const CustomTabBarViewScrollPhysics(
+                                parent: ClampingScrollPhysics(),
+                              ),
+                              onPageChanged: (value) =>
+                                  controller.topIndex.value = value,
                               itemCount: length,
                               itemBuilder: (context, index) {
                                 final pic = pics[index];
+                                int? memCacheWidth, memCacheHeight;
+                                if (pic.isLongPic ?? false) {
+                                  memCacheWidth = maxWidth.cacheSize(context);
+                                } else if (pic.width != null &&
+                                    pic.height != null) {
+                                  if (pic.width! > pic.height!) {
+                                    memCacheWidth = maxWidth.cacheSize(context);
+                                  } else {
+                                    memCacheHeight = height.cacheSize(context);
+                                  }
+                                }
                                 return GestureDetector(
                                   behavior: HitTestBehavior.opaque,
                                   onTap: () => PageUtils.imageView(
@@ -277,31 +291,33 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
                                       clipBehavior: Clip.none,
                                       alignment: Alignment.center,
                                       children: [
-                                        Positioned.fill(
-                                          child: CachedNetworkImage(
-                                            fit: pic.isLongPic == true
-                                                ? BoxFit.cover
-                                                : null,
-                                            imageUrl: ImageUtils.thumbnailUrl(
-                                              pic.url,
-                                              60,
-                                            ),
-                                            fadeInDuration: const Duration(
-                                              milliseconds: 120,
-                                            ),
-                                            fadeOutDuration: const Duration(
-                                              milliseconds: 120,
-                                            ),
-                                            placeholder: (_, _) =>
-                                                const SizedBox.shrink(),
+                                        CachedNetworkImage(
+                                          height: height,
+                                          width: maxWidth,
+                                          memCacheWidth: memCacheWidth,
+                                          memCacheHeight: memCacheHeight,
+                                          fit: pic.isLongPic == true
+                                              ? BoxFit.cover
+                                              : null,
+                                          imageUrl: ImageUtils.thumbnailUrl(
+                                            pic.url,
+                                            60,
                                           ),
+                                          fadeInDuration: const Duration(
+                                            milliseconds: 120,
+                                          ),
+                                          fadeOutDuration: const Duration(
+                                            milliseconds: 120,
+                                          ),
+                                          placeholder: (_, _) =>
+                                              const SizedBox.shrink(),
                                         ),
                                         if (pic.isLongPic == true)
-                                          PBadge(
-                                            text: '长图',
-                                            type: PBadgeType.primary,
-                                            right: paddingRight,
+                                          const PBadge(
+                                            right: 12,
                                             bottom: 12,
+                                            text: '长图',
+                                            type: .primary,
                                           ),
                                       ],
                                     ),
@@ -313,7 +329,7 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
                           Obx(
                             () => PBadge(
                               top: 12,
-                              right: paddingRight,
+                              right: 12,
                               type: PBadgeType.gray,
                               text: '${controller.topIndex.value + 1}/$length',
                             ),

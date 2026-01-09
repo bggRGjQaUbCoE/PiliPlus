@@ -291,7 +291,7 @@ class _SavePanelState extends State<SavePanel> {
 
   Future<void> _onSaveOrSharePic([bool isShare = false]) async {
     if (!isShare && PlatformUtils.isMobile) {
-      if (mounted && !await ImageUtils.checkPermissionDependOnSdkInt(context)) {
+      if (mounted && !await ImageUtils.checkPermissionDependOnSdkInt()) {
         return;
       }
     }

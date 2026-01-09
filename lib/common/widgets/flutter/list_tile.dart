@@ -337,6 +337,7 @@ class ListTile extends StatelessWidget {
     this.onTap,
     this.onLongPress,
     this.onSecondaryTap,
+    this.onSecondaryTapUp,
     this.onFocusChange,
     this.mouseCursor,
     this.selected = false,
@@ -568,6 +569,8 @@ class ListTile extends StatelessWidget {
   final GestureLongPressCallback? onLongPress;
 
   final GestureTapCallback? onSecondaryTap;
+
+  final GestureTapUpCallback? onSecondaryTapUp;
 
   /// {@macro flutter.material.inkwell.onFocusChange}
   final ValueChanged<bool>? onFocusChange;
@@ -983,6 +986,7 @@ class ListTile extends StatelessWidget {
       onTap: enabled ? onTap : null,
       onLongPress: enabled ? onLongPress : null,
       onSecondaryTap: enabled ? onSecondaryTap : null,
+      onSecondaryTapUp: enabled ? onSecondaryTapUp : null,
       onFocusChange: onFocusChange,
       mouseCursor: effectiveMouseCursor,
       canRequestFocus: enabled,

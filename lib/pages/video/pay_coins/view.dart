@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math' as math;
 import 'dart:math' show max;
 
+import 'package:PiliPlus/common/widgets/scroll_physics.dart';
 import 'package:PiliPlus/pages/common/publish/publish_route.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/size_ext.dart';
@@ -343,7 +344,9 @@ class _PayCoinsPageState extends State<PayCoinsPage>
                         height: 100,
                         child: PageView(
                           key: const PageStorageKey('PageView'),
-                          physics: const ClampingScrollPhysics(),
+                          physics: const CustomTabBarViewScrollPhysics(
+                            parent: ClampingScrollPhysics(),
+                          ),
                           controller: _controller,
                           onPageChanged: (index) {
                             _scale();

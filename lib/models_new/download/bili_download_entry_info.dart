@@ -67,7 +67,7 @@ class BiliDownloadEntryInfo with MultiSelectData {
       ),
       itemBuilder: (_) => [
         PopupMenuItem(
-          height: 35,
+          height: 38,
           child: const Text(
             '查看详情页',
             style: TextStyle(fontSize: 13),
@@ -99,7 +99,7 @@ class BiliDownloadEntryInfo with MultiSelectData {
         ),
         if (ownerId case final mid?)
           PopupMenuItem(
-            height: 35,
+            height: 38,
             child: Text(
               '访问${ownerName != null ? '：$ownerName' : '用户主页'}',
               style: const TextStyle(

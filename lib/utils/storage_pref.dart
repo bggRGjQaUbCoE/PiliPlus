@@ -270,6 +270,9 @@ abstract final class Pref {
   static int get defaultDynamicType =>
       _setting.get(SettingBoxKey.defaultDynamicType, defaultValue: 0);
 
+  static bool get showDynInteraction =>
+      _setting.get(SettingBoxKey.showDynInteraction, defaultValue: true);
+
   static double get blockLimit =>
       _setting.get(SettingBoxKey.blockLimit, defaultValue: 0.0);
 

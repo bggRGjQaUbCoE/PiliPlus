@@ -1312,10 +1312,8 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
         ),
       if (videoDetailController.cover.value.isNotEmpty)
         PopupMenuItem(
-          onTap: () => ImageUtils.downloadImg(
-            context,
-            [videoDetailController.cover.value],
-          ),
+          onTap: () =>
+              ImageUtils.downloadImg([videoDetailController.cover.value]),
           child: const Text('保存封面'),
         ),
       if (!videoDetailController.isFileSource && videoDetailController.isUgc)
@@ -1591,6 +1589,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
               return Positioned.fill(
                 child: GestureDetector(
                   onTap: handlePlay,
+                  behavior: .opaque,
                   child: Obx(
                     () => NetworkImgLayer(
                       type: .emote,

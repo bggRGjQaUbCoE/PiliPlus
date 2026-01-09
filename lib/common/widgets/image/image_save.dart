@@ -117,10 +117,7 @@ void imageSaveDialog({
                     iconBtn(
                       tooltip: '保存封面图',
                       onPressed: () async {
-                        bool saveStatus = await ImageUtils.downloadImg(
-                          context,
-                          [cover],
-                        );
+                        bool saveStatus = await ImageUtils.downloadImg([cover]);
                         if (saveStatus) {
                           SmartDialog.dismiss();
                         }

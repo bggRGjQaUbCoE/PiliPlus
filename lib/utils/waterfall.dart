@@ -27,12 +27,9 @@ mixin DynMixin {
         final cardWidth = Grid.smallCardWidth * 2;
         final flag = cardWidth < maxWidth;
         this.maxWidth = flag ? cardWidth : maxWidth;
-        if (!flag) {
-          return child;
-        }
         return SliverPadding(
           padding: EdgeInsets.symmetric(
-            horizontal: (maxWidth - cardWidth) / 2,
+            horizontal: flag ? (maxWidth - cardWidth) / 2 : 0,
           ),
           sliver: child,
         );

@@ -981,4 +981,9 @@ abstract final class Api {
 
   static const String liveContributionRank =
       '${HttpString.liveBaseUrl}/xlive/general-interface/v1/rank/queryContributionRank';
+
+  static const String superChatReport =
+      '${HttpString.liveBaseUrl}/av/v1/SuperChat/report';
+
+  static const String imMsgReport = '${HttpString.tUrl}/x/bplus/im/report/add';
 }

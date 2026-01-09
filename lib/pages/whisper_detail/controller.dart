@@ -131,4 +131,14 @@ class WhisperDetailController extends CommonListController<RspSessionMsg, Msg> {
         beginSeqno: msgSeqno != null ? Int64.ZERO : null,
         endSeqno: msgSeqno,
       );
+
+  Future<LoadingState> onReport(Msg item, int reasonType, String reasonDesc) {
+    return MsgHttp.imMsgReport(
+      accusedUid: item.senderUid,
+      reasonType: reasonType,
+      reasonDesc: reasonDesc,
+      comment: {'group_id': 0, 'msg_key': item.msgKey},
+      extra: {"msg_keys": []},
+    );
+  }
 }

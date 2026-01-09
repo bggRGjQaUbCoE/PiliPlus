@@ -407,10 +407,9 @@ class HeaderControlState extends State<HeaderControl>
                     dense: true,
                     onTap: () {
                       Get.back();
-                      ImageUtils.downloadImg(
-                        context,
-                        [widget.videoDetailCtr.cover.value],
-                      );
+                      ImageUtils.downloadImg([
+                        widget.videoDetailCtr.cover.value,
+                      ]);
                     },
                     leading: const Icon(Icons.image_outlined, size: 20),
                     title: const Text('保存封面', style: titleStyle),

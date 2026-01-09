@@ -50,12 +50,12 @@ abstract final class ImageUtils {
   }
 
   // 获取存储权限
-  static Future<bool> requestStoragePer(BuildContext context) async {
-    await Permission.storage.request();
-    PermissionStatus status = await Permission.storage.status;
+  static Future<bool> requestPer() async {
+    final status = Platform.isAndroid
+        ? await Permission.storage.request()
+        : await Permission.photos.request();
     if (status == PermissionStatus.denied ||
         status == PermissionStatus.permanentlyDenied) {
-      if (!context.mounted) return false;
       SmartDialog.show(
         builder: (context) {
           return AlertDialog(
@@ -79,30 +79,25 @@ abstract final class ImageUtils {
     }
   }
 
-  static Future<bool> checkPermissionDependOnSdkInt(
-    BuildContext context,
-  ) async {
+  static Future<bool> checkPermissionDependOnSdkInt() async {
     if (Platform.isAndroid) {
-      if (await Utils.sdkInt <= 32) {
-        if (!context.mounted) return false;
-        return requestStoragePer(context);
+      if (await Utils.sdkInt < 29) {
+        return requestPer();
       } else {
         return true;
       }
     }
-    return requestStoragePer(context);
+    return requestPer();
   }
 
   static Future<bool> downloadLivePhoto({
-    required BuildContext context,
     required String url,
     required String liveUrl,
     required int width,
     required int height,
   }) async {
     try {
-      if (PlatformUtils.isMobile &&
-          !await checkPermissionDependOnSdkInt(context)) {
+      if (PlatformUtils.isMobile && !await checkPermissionDependOnSdkInt()) {
         return false;
       }
       if (!silentDownImg) SmartDialog.showLoading(msg: '正在下载');
@@ -157,12 +152,10 @@ abstract final class ImageUtils {
   }
 
   static Future<bool> downloadImg(
-    BuildContext context,
     List<String> imgList, [
     CacheManager? manager,
   ]) async {
-    if (PlatformUtils.isMobile &&
-        !await checkPermissionDependOnSdkInt(context)) {
+    if (PlatformUtils.isMobile && !await checkPermissionDependOnSdkInt()) {
       return false;
     }
     CancelToken? cancelToken;

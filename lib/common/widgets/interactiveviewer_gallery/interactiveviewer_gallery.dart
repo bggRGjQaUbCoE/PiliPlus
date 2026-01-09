@@ -437,10 +437,7 @@ class _InteractiveviewerGalleryState extends State<InteractiveviewerGallery>
               ListTile(
                 onTap: () {
                   Get.back();
-                  ImageUtils.downloadImg(
-                    this.context,
-                    [item.url],
-                  );
+                  ImageUtils.downloadImg([item.url]);
                 },
                 dense: true,
                 title: const Text('保存图片', style: TextStyle(fontSize: 14)),
@@ -459,7 +456,6 @@ class _InteractiveviewerGalleryState extends State<InteractiveviewerGallery>
                   onTap: () {
                     Get.back();
                     ImageUtils.downloadImg(
-                      this.context,
                       widget.sources.map((item) => item.url).toList(),
                     );
                   },
@@ -471,7 +467,6 @@ class _InteractiveviewerGalleryState extends State<InteractiveviewerGallery>
                   onTap: () {
                     Get.back();
                     ImageUtils.downloadLivePhoto(
-                      context: this.context,
                       url: item.url,
                       liveUrl: item.liveUrl!,
                       width: item.width!,
@@ -503,7 +498,7 @@ class _InteractiveviewerGalleryState extends State<InteractiveviewerGallery>
         ),
         PopupMenuItem(
           height: 42,
-          onTap: () => ImageUtils.downloadImg(context, [item.url]),
+          onTap: () => ImageUtils.downloadImg([item.url]),
           child: const Text('保存图片', style: TextStyle(fontSize: 14)),
         ),
         PopupMenuItem(
@@ -515,7 +510,6 @@ class _InteractiveviewerGalleryState extends State<InteractiveviewerGallery>
           PopupMenuItem(
             height: 42,
             onTap: () => ImageUtils.downloadLivePhoto(
-              context: context,
               url: item.url,
               liveUrl: item.liveUrl!,
               width: item.width!,

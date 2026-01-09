@@ -170,6 +170,9 @@ class ItemModulesModel {
   ModuleBlocked? moduleBlocked;
   ModuleFold? moduleFold;
 
+  static bool showArgueMsg = Pref.showArgueMsg;
+  static bool showDynInteraction = Pref.showDynInteraction;
+
   ItemModulesModel.fromJson(Map<String, dynamic> json) {
     moduleAuthor = json['module_author'] != null
         ? ModuleAuthorModel.fromJson(json['module_author'])
@@ -186,12 +189,16 @@ class ItemModulesModel {
     moduleFold = json['module_fold'] != null
         ? ModuleFold.fromJson(json['module_fold'])
         : null;
-    moduleInteraction = json['module_interaction'] != null
-        ? ModuleInteraction.fromJson(json['module_interaction'])
-        : null;
-    moduleDispute = json['module_dispute'] != null
-        ? ModuleDispute.fromJson(json['module_dispute'])
-        : null;
+    if (showDynInteraction) {
+      moduleInteraction = json['module_interaction'] != null
+          ? ModuleInteraction.fromJson(json['module_interaction'])
+          : null;
+    }
+    if (showArgueMsg) {
+      moduleDispute = json['module_dispute'] != null
+          ? ModuleDispute.fromJson(json['module_dispute'])
+          : null;
+    }
   }
 
   ItemModulesModel.fromOpusJson(List json) {

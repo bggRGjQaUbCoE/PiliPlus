@@ -15,7 +15,8 @@ import 'package:PiliPlus/models/common/member/tab_type.dart';
 import 'package:PiliPlus/models/common/reply/reply_sort_type.dart';
 import 'package:PiliPlus/models/common/sponsor_block/skip_type.dart';
 import 'package:PiliPlus/models/common/super_resolution_type.dart';
-import 'package:PiliPlus/models/dynamics/result.dart';
+import 'package:PiliPlus/models/dynamics/result.dart'
+    show DynamicsDataModel, ItemModulesModel;
 import 'package:PiliPlus/pages/common/slide/common_slide_page.dart';
 import 'package:PiliPlus/pages/home/controller.dart';
 import 'package:PiliPlus/pages/hot/controller.dart';
@@ -404,11 +405,12 @@ List<SettingsModel> get extraSettings => [
       );
     },
   ),
-  const SwitchModel(
+  SwitchModel(
     title: '显示视频警告/争议信息',
-    leading: Icon(Icons.warning_amber_rounded),
+    leading: const Icon(Icons.warning_amber_rounded),
     setKey: SettingBoxKey.showArgueMsg,
     defaultVal: true,
+    onChanged: (val) => ItemModulesModel.showArgueMsg = val,
   ),
   const SwitchModel(
     title: '分P/合集：倒序播放从首集开始播放',
@@ -973,12 +975,13 @@ List<SettingsModel> get extraSettings => [
       }
     },
   ),
-  const SwitchModel(
+  SwitchModel(
     title: '显示动态互动内容',
     subtitle: '开启后则在动态卡片底部显示互动内容（如关注的人点赞、热评等）',
-    leading: Icon(Icons.quickreply_outlined),
+    leading: const Icon(Icons.quickreply_outlined),
     setKey: SettingBoxKey.showDynInteraction,
     defaultVal: true,
+    onChanged: (val) => ItemModulesModel.showDynInteraction = val,
   ),
   NormalModel(
     title: '用户页默认展示TAB',

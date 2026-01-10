@@ -5,7 +5,6 @@ import 'package:PiliPlus/common/widgets/color_palette.dart';
 import 'package:PiliPlus/common/widgets/custom_toast.dart';
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
-import 'package:PiliPlus/common/widgets/stateful_builder.dart';
 import 'package:PiliPlus/main.dart';
 import 'package:PiliPlus/models/common/dynamic/dynamic_badge_mode.dart';
 import 'package:PiliPlus/models/common/dynamic/up_panel_position.dart';
@@ -775,109 +774,36 @@ void _showQualityDialog({
   });
 }
 
-const _minUiScale = 0.5;
-const _maxUiScale = 2.0;
-
-void _showUiScaleDialog(
+Future<void> _showUiScaleDialog(
   BuildContext context,
   VoidCallback setState,
-) {
-  double uiScale = Pref.uiScale;
-  final textController = TextEditingController(
-    text: uiScale.toStringAsFixed(2),
-  );
+) async {
+  const minUiScale = 0.5;
+  const maxUiScale = 2.0;
 
-  showDialog(
+  final result = await showDialog<double>(
     context: context,
     builder: (context) {
-      return AlertDialog(
-        title: const Text('界面缩放'),
-        contentPadding: const EdgeInsets.fromLTRB(24, 20, 24, 12),
-        content: StatefulBuilder(
-          onDispose: textController.dispose,
-          builder: (context, setDialogState) {
-            return Column(
-              spacing: 20,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Slider(
-                  padding: .zero,
-                  value: uiScale,
-                  min: _minUiScale,
-                  max: _maxUiScale,
-                  secondaryTrackValue: 1.0,
-                  divisions: ((_maxUiScale - _minUiScale) * 20).toInt(),
-                  label: textController.text,
-                  onChanged: (value) => setDialogState(() {
-                    uiScale = value.toPrecision(2);
-                    textController.text = uiScale.toStringAsFixed(2);
-                  }),
-                ),
-                TextFormField(
-                  controller: textController,
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
-                  ),
-                  inputFormatters: [
-                    LengthLimitingTextInputFormatter(4),
-                    FilteringTextInputFormatter.allow(RegExp(r'[\d.]+')),
-                  ],
-                  decoration: const InputDecoration(
-                    labelText: '缩放比例',
-                    hintText: '0.50 - 2.00',
-                    border: OutlineInputBorder(),
-                  ),
-                  onChanged: (value) {
-                    final parsed = double.tryParse(value);
-                    if (parsed != null &&
-                        parsed >= _minUiScale &&
-                        parsed <= _maxUiScale) {
-                      setDialogState(() {
-                        uiScale = parsed;
-                      });
-                    }
-                  },
-                ),
-              ],
-            );
-          },
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              Pref.uiScale = 1.0;
-              GStorage.setting.delete(SettingBoxKey.uiScale).whenComplete(() {
-                setState();
-                Get.appUpdate();
-              });
-            },
-            child: const Text('重置'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              '取消',
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.outline,
-              ),
-            ),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              Pref.uiScale = uiScale;
-              GStorage.setting.put(SettingBoxKey.uiScale, uiScale).whenComplete(
-                () {
-                  setState();
-                  Get.appUpdate();
-                },
-              );
-            },
-            child: const Text('确定'),
-          ),
-        ],
+      return SlideDialog(
+        value: Pref.uiScale,
+        title: '界面缩放比例',
+        min: minUiScale,
+        max: maxUiScale,
+        divisions: ((maxUiScale - minUiScale) * 20).toInt(),
+        precise: 2,
+        defVal: 1,
       );
     },
   );
+
+  if (result != null) {
+    if (result.isNaN) {
+      Pref.uiScale = 1.0;
+      await GStorage.setting.delete(SettingBoxKey.uiScale);
+    } else {
+      Pref.uiScale = result;
+      await GStorage.setting.put(SettingBoxKey.uiScale, result);
+    }
+    Get.appUpdate();
+  }
 }

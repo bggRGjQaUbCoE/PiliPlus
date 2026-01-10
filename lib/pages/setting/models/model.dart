@@ -34,7 +34,7 @@ class NormalModel extends SettingsModel {
   final ValueGetter<String>? getTitle;
   final ValueGetter<String>? getSubtitle;
   final Widget Function()? getTrailing;
-  final void Function(BuildContext context, void Function() setState)? onTap;
+  final void Function(BuildContext context, VoidCallback setState)? onTap;
 
   const NormalModel({
     super.subtitle,

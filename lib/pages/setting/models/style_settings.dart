@@ -5,6 +5,7 @@ import 'package:PiliPlus/common/widgets/color_palette.dart';
 import 'package:PiliPlus/common/widgets/custom_toast.dart';
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
+import 'package:PiliPlus/common/widgets/stateful_builder.dart';
 import 'package:PiliPlus/main.dart';
 import 'package:PiliPlus/models/common/dynamic/dynamic_badge_mode.dart';
 import 'package:PiliPlus/models/common/dynamic/up_panel_position.dart';
@@ -33,7 +34,7 @@ import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:auto_orientation/auto_orientation.dart';
 import 'package:flex_seed_scheme/flex_seed_scheme.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide StatefulBuilder;
 import 'package:flutter/services.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -55,13 +56,13 @@ List<SettingsModel> get styleSettings => [
       defaultVal: true,
       needReboot: true,
     ),
-    NormalModel(
-      title: '桌面端界面缩放',
-      getSubtitle: () => '当前缩放比例：${Pref.desktopScale.toStringAsFixed(2)}',
-      leading: const Icon(Icons.zoom_in_outlined),
-      onTap: _showDesktopScaleDialog,
-    ),
   ],
+  NormalModel(
+    title: '界面缩放',
+    getSubtitle: () => '当前缩放比例：${Pref.uiScale.toStringAsFixed(2)}',
+    leading: const Icon(Icons.zoom_in_outlined),
+    onTap: _showUiScaleDialog,
+  ),
   SwitchModel(
     title: '横屏适配',
     subtitle: '启用横屏布局与逻辑，平板、折叠屏等可开启；建议全屏方向设为【不改变当前方向】',
@@ -781,100 +782,106 @@ void _showQualityDialog({
   });
 }
 
-void _showDesktopScaleDialog(
-  BuildContext context,
-  void Function() setState,
-) {
-  if (!PlatformUtils.isDesktop) {
-    SmartDialog.showToast('该设置仅在桌面端生效');
-    return;
-  }
+const _minUiScale = 0.5;
+const _maxUiScale = 2.0;
 
-  double tempValue = Pref.desktopScale;
+void _showUiScaleDialog(
+  BuildContext context,
+  VoidCallback setState,
+) {
+  double uiScale = Pref.uiScale;
   final textController = TextEditingController(
-    text: tempValue.toStringAsFixed(2),
+    text: uiScale.toStringAsFixed(2),
   );
 
-  showDialog<double>(
+  showDialog(
     context: context,
     builder: (context) {
-      return StatefulBuilder(
-        builder: (context, setDialogState) {
-          return AlertDialog(
-            title: const Text('桌面端界面缩放'),
-            contentPadding: const EdgeInsets.fromLTRB(24, 20, 24, 8),
-            content: Column(
+      return AlertDialog(
+        title: const Text('界面缩放'),
+        contentPadding: const EdgeInsets.fromLTRB(24, 20, 24, 12),
+        content: StatefulBuilder(
+          onDispose: textController.dispose,
+          builder: (context, setDialogState) {
+            return Column(
+              spacing: 20,
               mainAxisSize: MainAxisSize.min,
               children: [
                 Slider(
-                  value: tempValue,
-                  min: 0.5,
-                  max: 2.0,
-                  divisions: 30,
-                  label: tempValue.toStringAsFixed(2),
-                  onChanged: (value) {
-                    setDialogState(() {
-                      tempValue = value;
-                      textController.text = value.toStringAsFixed(2);
-                    });
-                  },
+                  padding: .zero,
+                  value: uiScale,
+                  min: _minUiScale,
+                  max: _maxUiScale,
+                  divisions: ((_maxUiScale - _minUiScale) * 20).toInt(),
+                  label: textController.text,
+                  onChanged: (value) => setDialogState(() {
+                    uiScale = value.toPrecision(2);
+                    textController.text = uiScale.toStringAsFixed(2);
+                  }),
                 ),
-                const SizedBox(height: 12),
                 TextFormField(
                   controller: textController,
                   keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
                   inputFormatters: [
+                    LengthLimitingTextInputFormatter(4),
                     FilteringTextInputFormatter.allow(RegExp(r'[\d.]+')),
                   ],
                   decoration: const InputDecoration(
-                    labelText: '直接输入缩放比例',
+                    labelText: '缩放比例',
                     hintText: '0.50 - 2.00',
                     border: OutlineInputBorder(),
                   ),
                   onChanged: (value) {
                     final parsed = double.tryParse(value);
-                    if (parsed != null && parsed >= 0.5 && parsed <= 2.0) {
+                    if (parsed != null &&
+                        parsed >= _minUiScale &&
+                        parsed <= _maxUiScale) {
                       setDialogState(() {
-                        tempValue = parsed;
+                        uiScale = parsed;
                       });
                     }
                   },
                 ),
               ],
+            );
+          },
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              GStorage.setting.delete(SettingBoxKey.uiScale).whenComplete(() {
+                setState();
+                Get.appUpdate();
+              });
+            },
+            child: const Text('重置'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              '取消',
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.outline,
+              ),
             ),
-            actions: [
-              TextButton(
-                onPressed: Navigator.of(context).pop,
-                child: Text(
-                  '取消',
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.outline,
-                  ),
-                ),
-              ),
-              TextButton(
-                onPressed: () {
-                  final parsed = double.tryParse(textController.text);
-                  if (parsed != null && parsed >= 0.5 && parsed <= 2.0) {
-                    Navigator.pop(context, parsed);
-                  } else {
-                    Navigator.pop(context, tempValue);
-                  }
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              GStorage.setting.put(SettingBoxKey.uiScale, uiScale).whenComplete(
+                () {
+                  setState();
+                  Get.appUpdate();
                 },
-                child: const Text('确定'),
-              ),
-            ],
-          );
-        },
+              );
+            },
+            child: const Text('确定'),
+          ),
+        ],
       );
     },
-  ).then((res) async {
-    if (res != null) {
-      await GStorage.setting.put(SettingBoxKey.desktopScale, res);
-      Get.forceAppUpdate();
-      setState();
-    }
-  });
+  );
 }

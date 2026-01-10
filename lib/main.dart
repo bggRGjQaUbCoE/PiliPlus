@@ -292,24 +292,26 @@ class MyApp extends StatelessWidget {
       getPages: Routes.getPages,
       defaultTransition: Pref.pageTransition,
       builder: FlutterSmartDialog.init(
-        toastBuilder: (String msg) => CustomToast(msg: msg),
+        toastBuilder: (msg) => CustomToast(msg: msg),
         loadingBuilder: (msg) => LoadingWidget(msg: msg),
         builder: (context, child) {
-          final desktopScale = Pref.desktopScale;
-          if (PlatformUtils.isDesktop && desktopScale != 1.0) {
+          final uiScale = Pref.uiScale;
+          final mediaQuery = MediaQuery.of(context);
+          final textScaler = TextScaler.linear(Pref.defaultTextScale);
+          if (uiScale != 1.0) {
             // Apply full UI scaling for desktop
-            final mediaQuery = MediaQuery.of(context);
             final actualSize = mediaQuery.size;
-            final scaledSize = actualSize / desktopScale;
+            final scaledSize = actualSize / uiScale;
             child = MediaQuery(
               data: mediaQuery.copyWith(
                 // Tell child the logical size it should layout to
                 size: scaledSize,
-                padding: mediaQuery.padding / desktopScale,
-                viewPadding: mediaQuery.viewPadding / desktopScale,
-                viewInsets: mediaQuery.viewInsets / desktopScale,
+                padding: mediaQuery.padding / uiScale,
+                viewPadding: mediaQuery.viewPadding / uiScale,
+                viewInsets: mediaQuery.viewInsets / uiScale,
+                textScaler: textScaler,
               ),
-              // Use OverflowBox to let child layout to scaledSize, 
+              // Use OverflowBox to let child layout to scaledSize,
               // then FittedBox scales it to fit actualSize
               child: FittedBox(
                 fit: BoxFit.fill,
@@ -323,9 +325,7 @@ class MyApp extends StatelessWidget {
             );
           } else {
             child = MediaQuery(
-              data: MediaQuery.of(context).copyWith(
-                textScaler: TextScaler.linear(Pref.defaultTextScale),
-              ),
+              data: mediaQuery.copyWith(textScaler: textScaler),
               child: child!,
             );
           }

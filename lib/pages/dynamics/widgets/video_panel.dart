@@ -1,4 +1,6 @@
 // 视频or合集
+import 'dart:math' as math;
+
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
@@ -41,6 +43,11 @@ Widget videoSeasonWidget(
   } else {
     padding = EdgeInsets.zero;
   }
+
+  final double coverHeight = isDetail
+      ? maxWidth / StyleString.aspectRatio
+      : math.min(maxWidth / StyleString.aspectRatio, 320);
+
   return Padding(
     padding: padding,
     child: Column(
@@ -53,7 +60,7 @@ Widget videoSeasonWidget(
             children: [
               NetworkImgLayer(
                 width: maxWidth,
-                height: maxWidth / StyleString.aspectRatio,
+                height: coverHeight,
                 src: cover,
                 quality: 40,
               ),

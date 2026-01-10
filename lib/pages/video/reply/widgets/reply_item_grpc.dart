@@ -316,6 +316,9 @@ class ReplyItemGrpc extends StatelessWidget {
                     )
                     .toList(),
                 onViewImage: onViewImage,
+                maxSingleImageHeight: replyItem.content.pictures.length == 1
+                    ? 160
+                    : null,
               ),
             ),
           ),

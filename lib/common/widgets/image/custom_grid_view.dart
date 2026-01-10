@@ -72,6 +72,7 @@ class CustomGridView extends StatelessWidget {
     required this.picArr,
     this.onViewImage,
     this.fullScreen = false,
+    this.maxSingleImageHeight,
   });
 
   final double maxWidth;
@@ -79,6 +80,8 @@ class CustomGridView extends StatelessWidget {
   final List<ImageModel> picArr;
   final VoidCallback? onViewImage;
   final bool fullScreen;
+
+  final double? maxSingleImageHeight;
 
   static bool horizontalPreview = Pref.horizontalPreview;
   static const _routes = ['/videoV', '/dynamicDetail'];
@@ -218,6 +221,9 @@ class CustomGridView extends StatelessWidget {
           imageWidth = min(imageWidth, width.toDouble());
         }
         imageHeight = imageWidth * min(ratioHW, _maxRatio);
+        if (maxSingleImageHeight != null) {
+          imageHeight = min(imageHeight, maxSingleImageHeight!);
+        }
       }
     }
 

@@ -102,6 +102,7 @@ Widget content(
                 )
                 .toList(),
             fullScreen: true,
+            maxSingleImageHeight: (!isDetail && pics.length == 1) ? 320 : null,
           ),
       ],
     ),

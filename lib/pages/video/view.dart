@@ -1161,24 +1161,16 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                   children: [
                     buildTabBar(needIndicator: false),
                     Expanded(
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      child: videoTabBarView(
+                        controller: videoDetailController.tabCtr,
                         children: [
-                          Expanded(
-                            child: videoIntro(
-                              width: () {
-                                double flex = 1;
-                                if (videoDetailController.showReply) flex++;
-                                if (shouldShowSeasonPanel) flex++;
-                                return maxWidth / flex;
-                              }(),
-                              height: bottomHeight,
-                            ),
+                          videoIntro(
+                            width: maxWidth - padding.horizontal,
+                            height: bottomHeight,
                           ),
                           if (videoDetailController.showReply)
-                            Expanded(child: videoReplyPanel()),
-                          if (shouldShowSeasonPanel)
-                            Expanded(child: seasonPanel),
+                            videoReplyPanel(),
+                          if (shouldShowSeasonPanel) seasonPanel,
                         ],
                       ),
                     ),

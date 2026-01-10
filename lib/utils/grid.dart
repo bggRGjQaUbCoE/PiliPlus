@@ -22,11 +22,15 @@ abstract final class Grid {
   static SliverGridDelegateWithExtentAndRatio videoCardHDelegate(
     BuildContext context, {
     double minHeight = 90,
+    double maxHeight = 100,
   }) => SliverGridDelegateWithExtentAndRatio(
     mainAxisSpacing: 2,
     maxCrossAxisExtent: Grid.smallCardWidth * 2,
     childAspectRatio: StyleString.aspectRatio * 2.2,
     minHeight: MediaQuery.textScalerOf(context).scale(minHeight),
+    maxHeight: MediaQuery.textScalerOf(
+      context,
+    ).scale(maxHeight),
   );
 }
 
@@ -44,13 +48,17 @@ class SliverGridDelegateWithExtentAndRatio extends SliverGridDelegate {
     this.childAspectRatio = 1.0,
     this.mainAxisExtent = 0.0,
     this.minHeight = 0.0,
+    this.maxHeight = double.infinity,
   }) : assert(maxCrossAxisExtent > 0),
        assert(mainAxisSpacing >= 0),
        assert(crossAxisSpacing >= 0),
        assert(childAspectRatio > 0),
-       assert(minHeight >= 0);
+       assert(minHeight >= 0),
+       assert(maxHeight >= 0),
+       assert(maxHeight >= minHeight);
 
   final double minHeight;
+  final double maxHeight;
 
   /// The maximum extent of tiles in the cross axis.
   ///
@@ -111,9 +119,12 @@ class SliverGridDelegateWithExtentAndRatio extends SliverGridDelegate {
       constraints.crossAxisExtent - crossAxisSpacing * (crossAxisCount - 1),
     );
     final double childCrossAxisExtent = usableCrossAxisExtent / crossAxisCount;
-    final double childMainAxisExtent = max(
-      minHeight,
-      childCrossAxisExtent / childAspectRatio + mainAxisExtent,
+    final double childMainAxisExtent = min(
+      maxHeight,
+      max(
+        minHeight,
+        childCrossAxisExtent / childAspectRatio + mainAxisExtent,
+      ),
     );
     return layoutCache = SliverGridRegularTileLayout(
       crossAxisCount: crossAxisCount,
@@ -132,7 +143,9 @@ class SliverGridDelegateWithExtentAndRatio extends SliverGridDelegate {
         oldDelegate.mainAxisSpacing != mainAxisSpacing ||
         oldDelegate.crossAxisSpacing != crossAxisSpacing ||
         oldDelegate.childAspectRatio != childAspectRatio ||
-        oldDelegate.mainAxisExtent != mainAxisExtent;
+        oldDelegate.mainAxisExtent != mainAxisExtent ||
+        oldDelegate.minHeight != minHeight ||
+        oldDelegate.maxHeight != maxHeight;
     if (flag) layoutCache = null;
     return flag;
   }

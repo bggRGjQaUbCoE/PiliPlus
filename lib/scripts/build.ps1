@@ -5,35 +5,26 @@ param(
 try {
     $versionName = $null
 
-    $flutterVersion = $null
-
     $versionCode = [int](git rev-list --count HEAD).Trim()
 
     $commitHash = (git rev-parse HEAD).Trim()
 
     $updatedContent = foreach ($line in (Get-Content -Path 'pubspec.yaml' -Encoding UTF8)) {
-        if ($line -match '^\s*(version|flutter):\s*([\d\.]+)') {
-            if ('version' -eq $matches[1]) {
-                $versionName = $matches[2]
-                if ('android' -eq $Arg) {
-                    $versionName += '-' + $commitHash.Substring(0, 9)
-                }
-                "version: $versionName+$versionCode"
-            } else {
-                $flutterVersion = $matches[2]
-                $line
+        if ($line -match '^\s*version:\s*([\d\.]+)') {
+            $versionName = $matches[1]
+            if ($Arg -eq 'android') {
+                $versionName += '-' + $commitHash.Substring(0, 9)
             }
+            "version: $versionName+$versionCode"
         }
         else {
             $line
         }
     }
 
-    if ($null -eq $versionName -or $null -eq $flutterVersion) {
+    if ($null -eq $versionName) {
         throw 'version not found'
     }
-
-    Set-Content -Path '.fvmrc' -Value "{`"flutter`":`"$flutterVersion`"}"
 
     $updatedContent | Set-Content -Path 'pubspec.yaml' -Encoding UTF8
 

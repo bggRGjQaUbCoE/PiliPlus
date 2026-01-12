@@ -26,6 +26,7 @@ import 'package:PiliPlus/pages/setting/widgets/select_dialog.dart';
 import 'package:PiliPlus/pages/setting/widgets/slide_dialog.dart';
 import 'package:PiliPlus/pages/video/reply/widgets/reply_item_grpc.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
+import 'package:PiliPlus/services/ai_summary_service.dart';
 import 'package:PiliPlus/services/download/download_service.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/cache_manager.dart';
@@ -39,6 +40,7 @@ import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/update.dart';
 import 'package:PiliPlus/utils/utils.dart';
+import 'package:dio/dio.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
@@ -867,6 +869,17 @@ List<SettingsModel> get extraSettings => [
     setKey: SettingBoxKey.enableAi,
     defaultVal: false,
   ),
+  NormalModel(
+    title: 'AI总结API配置',
+    subtitle: '配置OpenAI兼容API（如DeepSeek、OpenAI等）用于评论总结',
+    leading: const Icon(Icons.api_outlined),
+    onTap: (context, setState) {
+      showDialog(
+        context: context,
+        builder: (context) => _AiApiConfigDialog(onSaved: setState),
+      );
+    },
+  ),
   const SwitchModel(
     title: '消息页禁用"收到的赞"功能',
     subtitle: '禁止打开入口，降低网络社交依赖',
@@ -1264,5 +1277,265 @@ Future<void> audioNormalization(
       }
       setState();
     }
+  }
+}
+
+class _AiApiConfigDialog extends StatefulWidget {
+  final VoidCallback onSaved;
+
+  const _AiApiConfigDialog({required this.onSaved});
+
+  @override
+  State<_AiApiConfigDialog> createState() => _AiApiConfigDialogState();
+}
+
+class _AiApiConfigDialogState extends State<_AiApiConfigDialog> {
+  late TextEditingController _baseUrlController;
+  late TextEditingController _promptController;
+  late TextEditingController _apiKeyController;
+  late TextEditingController _modelController;
+  late TextEditingController _maxTokensController;
+  late TextEditingController _extraParamsController;
+  bool _isTesting = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _baseUrlController = TextEditingController(
+      text: GStorage.setting.get(
+        SettingBoxKey.aiSummaryBaseUrl,
+        defaultValue: 'https://api.deepseek.com/v1',
+      ),
+    );
+    _apiKeyController = TextEditingController(
+      text: GStorage.setting.get(
+        SettingBoxKey.aiSummaryApiKey,
+        defaultValue: '',
+      ),
+    );
+    _modelController = TextEditingController(
+      text: GStorage.setting.get(
+        SettingBoxKey.aiSummaryModel,
+        defaultValue: 'deepseek-chat',
+      ),
+    );
+    _maxTokensController = TextEditingController(
+      text: GStorage.setting.get(
+        SettingBoxKey.aiSummaryMaxTokens,
+        defaultValue: 4000,
+      ).toString(),
+    );
+    _extraParamsController = TextEditingController(
+      text: GStorage.setting.get(
+        SettingBoxKey.aiSummaryExtraParams,
+        defaultValue: '',
+      ),
+    );
+    _promptController = TextEditingController(
+      text: GStorage.setting.get(
+        SettingBoxKey.aiSummaryPrompt,
+        defaultValue: '''
+你是一个舆情分析专家。我提供了一份B站评论区的对话数据（CSV格式）。
+
+**重要结构说明**：
+- **第一行数据（标记为【楼主】）**：是引发讨论的核心观点/原评论。
+- **后续数据**：是其他用户对该观点的回复、反驳或延伸。
+
+请基于此完成分析：
+1. **楼主观点提炼**：简述楼主说了什么？
+2. **舆论阵营**：回复中支持楼主、反驳楼主、纯粹吃瓜和其他讨论的比例大概如何？
+3. **反驳逻辑**：如果有人反驳，他们主要抓住了楼主的什么漏洞？(引用高赞反驳)
+4. **总结**：这段对话反映了什么样的群体情绪？
+
+''',
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _baseUrlController.dispose();
+    _apiKeyController.dispose();
+    _modelController.dispose();
+    _maxTokensController.dispose();
+    _extraParamsController.dispose();
+    _promptController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _testConnection() async {
+    setState(() => _isTesting = true);
+
+    final baseUrl = _baseUrlController.text.trim();
+    final apiKey = _apiKeyController.text.trim();
+    final model = _modelController.text.trim();
+    final maxTokens = int.tryParse(_maxTokensController.text.trim()) ?? 4000;
+    final extraParams = _extraParamsController.text.trim();
+
+    if (baseUrl.isEmpty || apiKey.isEmpty) {
+      SmartDialog.showToast('请先填写完整的配置信息');
+      setState(() => _isTesting = false);
+      return;
+    }
+
+    // Save temporarily for testing
+    await GStorage.setting.put(SettingBoxKey.aiSummaryBaseUrl, baseUrl);
+    await GStorage.setting.put(SettingBoxKey.aiSummaryApiKey, apiKey);
+    await GStorage.setting.put(SettingBoxKey.aiSummaryModel, model);
+    await GStorage.setting.put(SettingBoxKey.aiSummaryMaxTokens, maxTokens);
+    await GStorage.setting.put(SettingBoxKey.aiSummaryExtraParams, extraParams);
+    await GStorage.setting.put(
+      SettingBoxKey.aiSummaryPrompt,
+      _promptController.text.trim(),
+    );
+
+    try {
+      final (success, message) = await AiSummaryService.testConnection();
+      if (mounted) {
+        SmartDialog.showToast(message);
+      }
+    } catch (e) {
+      if (mounted) {
+        SmartDialog.showToast('连接失败: $e');
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isTesting = false);
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return AlertDialog(
+      title: const Text('AI总结API配置'),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              '配置OpenAI兼容API（如DeepSeek、OpenAI等）用于评论总结',
+              style: TextStyle(fontSize: 12, color: Colors.grey),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _baseUrlController,
+              decoration: const InputDecoration(
+                labelText: 'API Base URL',
+                hintText: 'https://api.deepseek.com/v1',
+                border: OutlineInputBorder(),
+                isDense: true,
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _apiKeyController,
+              decoration: const InputDecoration(
+                labelText: 'API Key',
+                hintText: 'sk-...',
+                border: OutlineInputBorder(),
+                isDense: true,
+              ),
+              obscureText: true,
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _modelController,
+              decoration: const InputDecoration(
+                labelText: '模型名称',
+                hintText: 'deepseek-chat',
+                border: OutlineInputBorder(),
+                isDense: true,
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _maxTokensController,
+              decoration: const InputDecoration(
+                labelText: '最大Token长度',
+                hintText: '4000',
+                border: OutlineInputBorder(),
+                isDense: true,
+              ),
+              keyboardType: TextInputType.number,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _extraParamsController,
+              decoration: const InputDecoration(
+                labelText: '额外参数',
+                hintText: '"temperature": 1, "top_p": 1, "frequency_penalty": 0',
+                border: OutlineInputBorder(),
+                isDense: true,
+              ),
+              maxLines: 3,
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _promptController,
+              decoration: const InputDecoration(
+                labelText: 'Prompt',
+                hintText: '',
+                border: OutlineInputBorder(),
+                isDense: true,
+              ),
+              maxLines: 5,
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: _isTesting ? null : _testConnection,
+                icon: _isTesting
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.wifi_tethering),
+                label: Text(_isTesting ? '测试中...' : '测试连接'),
+              ),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Get.back(),
+          child: Text(
+            '取消',
+            style: TextStyle(color: theme.colorScheme.outline),
+          ),
+        ),
+        TextButton(
+          onPressed: () async {
+            final baseUrl = _baseUrlController.text.trim();
+            final apiKey = _apiKeyController.text.trim();
+            final model = _modelController.text.trim();
+            final maxTokens = int.tryParse(_maxTokensController.text.trim()) ?? 4000;
+            final extraParams = _extraParamsController.text.trim();
+
+            await GStorage.setting.put(SettingBoxKey.aiSummaryBaseUrl, baseUrl);
+            await GStorage.setting.put(SettingBoxKey.aiSummaryApiKey, apiKey);
+            await GStorage.setting.put(SettingBoxKey.aiSummaryModel, model);
+            await GStorage.setting.put(SettingBoxKey.aiSummaryMaxTokens, maxTokens);
+            await GStorage.setting.put(SettingBoxKey.aiSummaryExtraParams, extraParams);
+            await GStorage.setting.put(
+              SettingBoxKey.aiSummaryPrompt,
+              _promptController.text.trim(),
+            );
+
+            widget.onSaved();
+            Get.back();
+            SmartDialog.showToast('保存成功');
+          },
+          child: const Text('保存'),
+        ),
+      ],
+    );
   }
 }

@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:PiliPlus/common/constants.dart';
+import 'package:PiliPlus/common/widgets/ai_summary_progress.dart';
 import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/dialog/report.dart';
 import 'package:PiliPlus/common/widgets/flutter/text/text.dart' as custom_text;
@@ -17,6 +18,7 @@ import 'package:PiliPlus/pages/dynamics/widgets/vote.dart';
 import 'package:PiliPlus/pages/save_panel/view.dart';
 import 'package:PiliPlus/pages/video/controller.dart';
 import 'package:PiliPlus/pages/video/reply/widgets/zan_grpc.dart';
+import 'package:PiliPlus/services/ai_summary_service.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/duration_utils.dart';
@@ -27,12 +29,14 @@ import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
+import 'package:PiliPlus/utils/storage.dart';
+import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/url_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fixnum/fixnum.dart';
-import 'package:flutter/foundation.dart' show kDebugMode;
+import 'package:flutter/foundation.dart' show kDebugMode, ChangeNotifier;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -73,6 +77,20 @@ class ReplyItemGrpc extends StatelessWidget {
   static final _timeRegExp = RegExp(r'^(?:\d+[:：])?\d+[:：]\d+$');
   static bool enableWordRe = Pref.enableWordRe;
   static int? replyLengthLimit = Pref.replyLengthLimit;
+  
+  // Global state for AI summaries
+  static final Map<String, AiSummaryState> _summaryStates = {};
+
+  static AiSummaryState _getOrCreateState(String key) {
+    return _summaryStates.putIfAbsent(
+      key,
+      () => AiSummaryState(),
+    );
+  }
+
+  static void _removeSummaryState(String key) {
+    _summaryStates.remove(key);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -185,120 +203,162 @@ class ReplyItemGrpc extends StatelessWidget {
       left: replyLevel == 0 ? 6 : 45,
       right: 6,
     );
+    
+    // Get AI summary state for this reply (only for level 1 replies)
+    final stateKey = '${replyItem.id}';
+    final summaryState = replyLevel == 1 ? ReplyItemGrpc._getOrCreateState(stateKey) : null;
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: () {
-            feedBack();
-            Get.toNamed('/member?mid=${replyItem.mid}');
-          },
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            spacing: 12,
-            children: [
-              _buildAvatar(),
-              Column(
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Avatar column with optional progress indicator
+            Column(
+              children: [
+                GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () {
+                    feedBack();
+                    Get.toNamed('/member?mid=${replyItem.mid}');
+                  },
+                  child: _buildAvatar(),
+                ),
+                // AI summary progress indicator (only for level 1 replies)
+                if (summaryState != null && (summaryState.isProcessing || summaryState.isComplete))
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: AnimatedBuilder(
+                      animation: summaryState,
+                      builder: (context, _) {
+                        return AiSummaryProgressIndicator(
+                          progress: summaryState.progress,
+                          isComplete: summaryState.isComplete,
+                          onTap: summaryState.isComplete
+                              ? () => _showSummaryResult(context, summaryState.summary ?? '')
+                              : null,
+                          onCancel: summaryState.isProcessing
+                              ? () => _onCancelSummary(context, summaryState, stateKey)
+                              : null,
+                        );
+                      },
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(width: 12),
+            // Content column
+            Expanded(
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    spacing: 6,
-                    children: [
-                      Text(
-                        replyItem.member.name,
-                        style: TextStyle(
-                          color:
-                              (replyItem.member.vipStatus > 0 &&
-                                  replyItem.member.vipType == 2)
-                              ? theme.colorScheme.vipColor
-                              : theme.colorScheme.outline,
-                          fontSize: 13,
-                        ),
-                      ),
-                      Image.asset(
-                        Utils.levelName(
-                          replyItem.member.level,
-                          isSeniorMember: replyItem.member.isSeniorMember == 1,
-                        ),
-                        height: 11,
-                        cacheHeight: 11.cacheSize(context),
-                      ),
-                      if (replyItem.mid == upMid)
-                        const PBadge(
-                          text: 'UP',
-                          size: PBadgeSize.small,
-                          isStack: false,
-                          fontSize: 9,
-                        ),
-                    ],
-                  ),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: <Widget>[
-                      Text(
-                        replyLevel == 0
-                            ? DateFormatUtils.format(
-                                replyItem.ctime.toInt(),
-                                format: DateFormatUtils.longFormatDs,
-                              )
-                            : DateFormatUtils.dateFormat(
-                                replyItem.ctime.toInt(),
+                  GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () {
+                      feedBack();
+                      Get.toNamed('/member?mid=${replyItem.mid}');
+                    },
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          spacing: 6,
+                          children: [
+                            Text(
+                              replyItem.member.name,
+                              style: TextStyle(
+                                color:
+                                    (replyItem.member.vipStatus > 0 &&
+                                        replyItem.member.vipType == 2)
+                                    ? theme.colorScheme.vipColor
+                                    : theme.colorScheme.outline,
+                                fontSize: 13,
                               ),
-                        style: TextStyle(
-                          fontSize: theme.textTheme.labelSmall!.fontSize,
-                          color: theme.colorScheme.outline,
+                            ),
+                            Image.asset(
+                              Utils.levelName(
+                                replyItem.member.level,
+                                isSeniorMember: replyItem.member.isSeniorMember == 1,
+                              ),
+                              height: 11,
+                              cacheHeight: 11.cacheSize(context),
+                            ),
+                            if (replyItem.mid == upMid)
+                              const PBadge(
+                                text: 'UP',
+                                size: PBadgeSize.small,
+                                isStack: false,
+                                fontSize: 9,
+                              ),
+                          ],
                         ),
-                      ),
-                      if (replyItem.replyControl.hasLocation())
-                        Text(
-                          ' • ${replyItem.replyControl.location}',
-                          style: TextStyle(
-                            fontSize: theme.textTheme.labelSmall!.fontSize,
-                            color: theme.colorScheme.outline,
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: <Widget>[
+                            Text(
+                              replyLevel == 0
+                                  ? DateFormatUtils.format(
+                                      replyItem.ctime.toInt(),
+                                      format: DateFormatUtils.longFormatDs,
+                                    )
+                                  : DateFormatUtils.dateFormat(
+                                      replyItem.ctime.toInt(),
+                                    ),
+                              style: TextStyle(
+                                fontSize: theme.textTheme.labelSmall!.fontSize,
+                                color: theme.colorScheme.outline,
+                              ),
+                            ),
+                            if (replyItem.replyControl.hasLocation())
+                              Text(
+                                ' • ${replyItem.replyControl.location}',
+                                style: TextStyle(
+                                  fontSize: theme.textTheme.labelSmall!.fontSize,
+                                  color: theme.colorScheme.outline,
+                                ),
+                              ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  custom_text.Text.rich(
+                    primary: theme.colorScheme.primary,
+                    style: TextStyle(
+                      height: 1.75,
+                      fontSize: theme.textTheme.bodyMedium!.fontSize,
+                    ),
+                    maxLines: replyLevel == 1 ? replyLengthLimit : null,
+                    TextSpan(
+                      children: [
+                        if (replyItem.replyControl.isUpTop) ...[
+                          const WidgetSpan(
+                            alignment: PlaceholderAlignment.middle,
+                            child: PBadge(
+                              text: 'TOP',
+                              size: PBadgeSize.small,
+                              isStack: false,
+                              type: PBadgeType.line_primary,
+                              fontSize: 9,
+                              textScaleFactor: 1,
+                            ),
                           ),
-                        ),
-                    ],
+                          const TextSpan(text: ' '),
+                        ],
+                        buildContent(context, theme, replyItem),
+                      ],
+                    ),
                   ),
                 ],
               ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 10),
-        Padding(
-          padding: padding,
-          child: custom_text.Text.rich(
-            primary: theme.colorScheme.primary,
-            style: TextStyle(
-              height: 1.75,
-              fontSize: theme.textTheme.bodyMedium!.fontSize,
             ),
-            maxLines: replyLevel == 1 ? replyLengthLimit : null,
-            TextSpan(
-              children: [
-                if (replyItem.replyControl.isUpTop) ...[
-                  const WidgetSpan(
-                    alignment: PlaceholderAlignment.middle,
-                    child: PBadge(
-                      text: 'TOP',
-                      size: PBadgeSize.small,
-                      isStack: false,
-                      type: PBadgeType.line_primary,
-                      fontSize: 9,
-                      textScaleFactor: 1,
-                    ),
-                  ),
-                  const TextSpan(text: ' '),
-                ],
-                buildContent(context, theme, replyItem),
-              ],
-            ),
-          ),
+          ],
         ),
         if (replyItem.content.pictures.isNotEmpty) ...[
           Padding(
@@ -985,7 +1045,7 @@ class ReplyItemGrpc extends StatelessWidget {
                 builder: (context) {
                   return Dialog(
                     child: Padding(
-                      padding: const .symmetric(horizontal: 20, vertical: 16),
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                       child: SelectableText(
                         message,
                         style: const TextStyle(fontSize: 15, height: 1.7),
@@ -999,6 +1059,16 @@ class ReplyItemGrpc extends StatelessWidget {
             leading: const Icon(Icons.copy_outlined, size: 19),
             title: Text('自由复制', style: style),
           ),
+          if (replyLevel == 1 && !isSubReply)
+            ListTile(
+              onTap: () {
+                Get.back();
+                _onAiSummaryTap(context, item);
+              },
+              minLeadingWidth: 0,
+              leading: const Icon(Icons.psychology_outlined, size: 19),
+              title: Text('AI总结', style: style),
+            ),
           ListTile(
             onTap: () {
               Get.back();
@@ -1028,5 +1098,183 @@ class ReplyItemGrpc extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  void _onAiSummaryTap(BuildContext context, ReplyInfo item) {
+    // Check if AI is configured
+    final baseUrl = GStorage.setting.get(
+      SettingBoxKey.aiSummaryBaseUrl,
+      defaultValue: '',
+    );
+    final apiKey = GStorage.setting.get(
+      SettingBoxKey.aiSummaryApiKey,
+      defaultValue: '',
+    );
+
+    if (baseUrl.isEmpty || apiKey.isEmpty) {
+      SmartDialog.showToast('请先在设置中配置AI API');
+      return;
+    }
+
+    // Get or create state for this reply
+    final stateKey = '${item.id}';
+    final state = ReplyItemGrpc._getOrCreateState(stateKey);
+    
+    // If already summarizing or complete, handle accordingly
+    if (state.isComplete) {
+      _showSummaryResult(context, state.summary ?? '');
+      return;
+    }
+
+    if (state.isProcessing) {
+      SmartDialog.showToast('正在总结中...');
+      return;
+    }
+
+    // Start summarizing
+    state.startProcessing();
+    _startAiSummary(context, item, state);
+  }
+
+  void _onCancelSummary(
+    BuildContext context,
+    AiSummaryState state,
+    String stateKey,
+  ) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        final theme = Theme.of(context);
+        return AlertDialog(
+          title: const Text('取消总结'),
+          content: const Text('正在总结中，是否结束？'),
+          actions: [
+            TextButton(
+              onPressed: () => Get.back(),
+              child: Text(
+                '继续',
+                style: TextStyle(color: theme.colorScheme.outline),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                Get.back();
+                state.reset();
+                ReplyItemGrpc._removeSummaryState(stateKey);
+                SmartDialog.showToast('已取消');
+              },
+              child: const Text('结束'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _startAiSummary(
+    BuildContext context,
+    ReplyInfo item,
+    AiSummaryState state,
+  ) async {
+    try {
+      final (success, result) = await AiSummaryService.summarizeReply(
+        type: item.type.toInt(),
+        oid: item.oid,
+        rootRpid: item.id,
+        onProgress: (progress) {
+          state.updateProgress(progress);
+        },
+      );
+
+      if (success) {
+        state.complete(result);
+        SmartDialog.showToast('总结完成');
+        if (context.mounted) {
+          _showSummaryResult(context, result);
+        }
+      } else {
+        state.reset();
+        SmartDialog.showToast('总结失败: $result');
+      }
+    } catch (e) {
+      state.reset();
+      SmartDialog.showToast('总结失败: $e');
+    }
+  }
+
+  void _showSummaryResult(BuildContext context, String summary) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Row(
+            children: [
+              const Icon(Icons.psychology_outlined),
+              const SizedBox(width: 8),
+              const Text('AI总结'),
+              const Spacer(),
+              IconButton(
+                icon: const Icon(Icons.copy),
+                onPressed: () => Utils.copyText(summary),
+                tooltip: '复制',
+              ),
+            ],
+          ),
+          content: SingleChildScrollView(
+            child: SelectableText(
+              summary,
+              style: const TextStyle(fontSize: 15, height: 1.7),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Get.back(),
+              child: const Text('关闭'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class AiSummaryState extends ChangeNotifier {
+  double _progress = 0.0;
+  bool _isProcessing = false;
+  bool _isComplete = false;
+  String? _summary;
+
+  double get progress => _progress;
+  bool get isProcessing => _isProcessing;
+  bool get isComplete => _isComplete;
+  String? get summary => _summary;
+
+  void startProcessing() {
+    _isProcessing = true;
+    _progress = 0.0;
+    _isComplete = false;
+    _summary = null;
+    notifyListeners();
+  }
+
+  void updateProgress(double progress) {
+    _progress = progress;
+    notifyListeners();
+  }
+
+  void complete(String summary) {
+    _isProcessing = false;
+    _isComplete = true;
+    _summary = summary;
+    _progress = 1.0;
+    notifyListeners();
+  }
+
+  void reset() {
+    _isProcessing = false;
+    _isComplete = false;
+    _progress = 0.0;
+    _summary = null;
+    notifyListeners();
   }
 }

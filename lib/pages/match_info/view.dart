@@ -67,124 +67,121 @@ class _MatchInfoPageState extends CommonDynPageState<MatchInfoPage> {
   }
 
   Widget _buildInfo(ThemeData theme, LoadingState<MatchContest?> infoState) {
-    if (infoState case Success(:final response)) {
-      if (response != null) {
-        try {
-          Widget teamInfo(MatchTeam team) {
-            return Column(
-              spacing: 5,
+    if (infoState case Success(:final response?)) {
+      try {
+        Widget teamInfo(MatchTeam team) {
+          return Column(
+            spacing: 5,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              NetworkImgLayer(
+                width: 50,
+                height: 50,
+                src: 'https://i1.hdslb.com${team.logo}',
+                type: ImageType.emote,
+              ),
+              Text(team.title!),
+            ],
+          );
+        }
+
+        return SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            child: Column(
+              spacing: 12,
               mainAxisSize: MainAxisSize.min,
               children: [
-                NetworkImgLayer(
-                  width: 50,
-                  height: 50,
-                  src: 'https://i1.hdslb.com${team.logo}',
-                  type: ImageType.emote,
+                Center(
+                  child: Text(
+                    '${response.season?.title ?? ''}  ${response.gameStage ?? ''}',
+                  ),
                 ),
-                Text(team.title!),
-              ],
-            );
-          }
-
-          return SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 10),
-              child: Column(
-                spacing: 12,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Center(
-                    child: Text(
-                      '${response.season?.title ?? ''}  ${response.gameStage ?? ''}',
-                    ),
-                  ),
-                  Row(
-                    spacing: 20,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (response.homeId != 0)
-                        Expanded(
-                          child: Align(
-                            alignment: const Alignment(0.8, 1),
-                            child: teamInfo(response.homeTeam!),
-                          ),
+                Row(
+                  spacing: 20,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (response.homeId != 0)
+                      Expanded(
+                        child: Align(
+                          alignment: const Alignment(0.8, 1),
+                          child: teamInfo(response.homeTeam!),
                         ),
-                      Column(
-                        spacing: 10,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (response.homeId != 0)
-                            Text(
-                              response.contestStatus == 1
-                                  ? 'VS'
-                                  : '${response.homeScore} : ${response.awayScore}',
-                              style: const TextStyle(
-                                fontSize: 25,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            )
-                          else if (response.season?.logo != null)
-                            NetworkImgLayer(
-                              width: 50,
-                              height: 50,
-                              src:
-                                  'https://i1.hdslb.com${response.season!.logo}',
-                              type: ImageType.emote,
-                            ),
-                          if (response.contestStatus == 2)
-                            FilledButton.tonal(
-                              style: FilledButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                ),
-                                shape: const RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.all(
-                                    Radius.circular(6),
-                                  ),
-                                ),
-                                visualDensity: VisualDensity.compact,
-                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                              ),
-                              onPressed: () =>
-                                  PageUtils.toLiveRoom(response.liveRoom),
-                              child: const Text('看直播'),
-                            )
-                          else if (response.contestStatus == 3)
-                            Text(
-                              '${DateFormatUtils.dateFormat(response.stime)}${response.contestStatus == 3 ? ' 已结束' : ''}',
-                              style: TextStyle(
-                                color: theme.colorScheme.outline,
-                              ),
-                            )
-                          else if (response.contestStatus == 1)
-                            Text(
-                              DateFormatUtils.format(
-                                response.stime,
-                                format: DateFormat('yy-MM-dd HH:mm'),
-                              ),
-                              style: TextStyle(
-                                color: theme.colorScheme.outline,
-                              ),
-                            ),
-                        ],
                       ),
-                      if (response.awayId != 0)
-                        Expanded(
-                          child: Align(
-                            alignment: const Alignment(-0.8, -1),
-                            child: teamInfo(response.awayTeam!),
+                    Column(
+                      spacing: 10,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (response.homeId != 0)
+                          Text(
+                            response.contestStatus == 1
+                                ? 'VS'
+                                : '${response.homeScore} : ${response.awayScore}',
+                            style: const TextStyle(
+                              fontSize: 25,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          )
+                        else if (response.season?.logo != null)
+                          NetworkImgLayer(
+                            width: 50,
+                            height: 50,
+                            src: 'https://i1.hdslb.com${response.season!.logo}',
+                            type: ImageType.emote,
                           ),
+                        if (response.contestStatus == 2)
+                          FilledButton.tonal(
+                            style: FilledButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                              ),
+                              shape: const RoundedRectangleBorder(
+                                borderRadius: BorderRadius.all(
+                                  Radius.circular(6),
+                                ),
+                              ),
+                              visualDensity: VisualDensity.compact,
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            ),
+                            onPressed: () =>
+                                PageUtils.toLiveRoom(response.liveRoom),
+                            child: const Text('看直播'),
+                          )
+                        else if (response.contestStatus == 3)
+                          Text(
+                            '${DateFormatUtils.dateFormat(response.stime)}${response.contestStatus == 3 ? ' 已结束' : ''}',
+                            style: TextStyle(
+                              color: theme.colorScheme.outline,
+                            ),
+                          )
+                        else if (response.contestStatus == 1)
+                          Text(
+                            DateFormatUtils.format(
+                              response.stime,
+                              format: DateFormat('yy-MM-dd HH:mm'),
+                            ),
+                            style: TextStyle(
+                              color: theme.colorScheme.outline,
+                            ),
+                          ),
+                      ],
+                    ),
+                    if (response.awayId != 0)
+                      Expanded(
+                        child: Align(
+                          alignment: const Alignment(-0.8, -1),
+                          child: teamInfo(response.awayTeam!),
                         ),
-                    ],
-                  ),
-                ],
-              ),
+                      ),
+                  ],
+                ),
+              ],
             ),
-          );
-        } catch (_) {
-          return const SliverToBoxAdapter();
-        }
+          ),
+        );
+      } catch (_) {
+        return const SliverToBoxAdapter();
       }
     }
     return const SliverToBoxAdapter();

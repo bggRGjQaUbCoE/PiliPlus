@@ -281,24 +281,22 @@ abstract final class RequestUtils {
   // }
 
   static Future<void> insertCreatedDyn(dynamic id) async {
-    try {
-      if (id != null) {
+    if (id != null) {
+      try {
         await Future.delayed(const Duration(milliseconds: 450));
         final res = await DynamicsHttp.dynamicDetail(id: id);
         if (res case final Success<DynamicItemModel> e) {
           final ctr = Get.find<DynamicsTabController>(tag: 'all');
-          if (ctr.loadingState.value case Success(:final response)) {
-            if (response != null) {
-              response.insert(0, e.response);
-              ctr.loadingState.refresh();
-              return;
-            }
+          if (ctr.loadingState.value case Success(:final response?)) {
+            response.insert(0, e.response);
+            ctr.loadingState.refresh();
+            return;
           }
           ctr.loadingState.value = Success([e.response]);
         }
+      } catch (e) {
+        if (kDebugMode) debugPrint('create dyn $e');
       }
-    } catch (e) {
-      if (kDebugMode) debugPrint('create dyn $e');
     }
   }
 
@@ -531,9 +529,9 @@ abstract final class RequestUtils {
         validate: captchaData.validate,
       );
       if (res case Success(:final response)) {
-        if (response?['is_valid'] == 1) {
-          final griskId = response?['grisk_id'];
-          if (griskId != null) {
+        if (response != null && response['is_valid'] == 1) {
+          final griskId = response['grisk_id'];
+          if (griskId is String) {
             onSuccess(griskId);
           }
         } else {

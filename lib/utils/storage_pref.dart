@@ -783,7 +783,7 @@ abstract final class Pref {
       _setting.get(SettingBoxKey.expandBuffer, defaultValue: false);
 
   static bool get useOpenSLES =>
-      _setting.get(SettingBoxKey.useOpenSLES, defaultValue: true);
+      _setting.get(SettingBoxKey.useOpenSLES, defaultValue: false);
 
   static bool get enableAi =>
       _setting.get(SettingBoxKey.enableAi, defaultValue: false);

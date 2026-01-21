@@ -243,7 +243,6 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
             : null,
         onTapUp: _onTapUp,
         onTapCancel: _removeDmAction,
-        allowedButtonsFilter: (buttons) => buttons == kPrimaryButton,
       );
 
       _danmakuListener = plPlayerController.enableShowDanmaku.listen((value) {
@@ -251,10 +250,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
         _tapGestureRecognizer.onTapDown = value ? _onTapDown : null;
       });
     } else {
-      _tapGestureRecognizer = ImmediateTapGestureRecognizer(
-        onTapUp: _onTapUp,
-        allowedButtonsFilter: (buttons) => buttons == kPrimaryButton,
-      );
+      _tapGestureRecognizer = ImmediateTapGestureRecognizer(onTapUp: _onTapUp);
     }
 
     _doubleTapGestureRecognizer = DoubleTapGestureRecognizer()
@@ -956,7 +952,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     }
     Offset cumulativeDelta =
         details.localFocalPoint - plPlayerController.initialFocalPoint;
-    if (details.pointerCount > 1 && cumulativeDelta.distance < 1.5) {
+    if (details.pointerCount > 1 && cumulativeDelta.distanceSquared < 2.25) {
       interacting = true;
       _gestureType = null;
       return;
@@ -966,7 +962,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     if (plPlayerController.controlsLock.value) return;
 
     if (_gestureType == null) {
-      if (cumulativeDelta.distance < 1) return;
+      if (cumulativeDelta.distanceSquared < 1) return;
       final dx = cumulativeDelta.dx.abs();
       final dy = cumulativeDelta.dy.abs();
       if (dx > 3 * dy) {
@@ -1292,7 +1288,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     if (plPlayerController.controlsLock.value) return;
     if (_gestureType == null) {
       final pan = event.pan;
-      if (pan.distance < 1) return;
+      if (pan.distanceSquared < 1) return;
       final dx = pan.dx.abs();
       final dy = pan.dy.abs();
       if (dx > 3 * dy) {

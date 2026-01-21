@@ -819,7 +819,7 @@ class PlPlayerController {
     }
 
     // 音轨
-    late final String audioUri;
+    final String audioUri;
     if (isFileSource) {
       audioUri = onlyPlayAudio.value || mediaType == 1
           ? ''
@@ -831,7 +831,7 @@ class PlPlayerController {
     } else {
       audioUri = '';
     }
-    await pp.setProperty('audio-files', audioUri);
+    if (audioUri.isNotEmpty) await pp.setProperty('audio-files', audioUri);
 
     _videoController ??= VideoController(
       player,
@@ -969,9 +969,9 @@ class PlPlayerController {
   }
 
   late final bool enableAutoEnter = Pref.enableAutoEnter;
-  Future<void> autoEnterFullscreen() async {
+  Future<void>? autoEnterFullscreen() {
     if (enableAutoEnter) {
-      Future.delayed(const Duration(milliseconds: 500), () {
+      return Future.delayed(const Duration(milliseconds: 500), () {
         if (dataStatus.status.value != DataStatus.loaded) {
           _stopListenerForEnterFullScreen();
           _dataListenerForEnterFullScreen = dataStatus.status.listen((status) {
@@ -981,10 +981,11 @@ class PlPlayerController {
             }
           });
         } else {
-          triggerFullScreen(status: true);
+          return triggerFullScreen(status: true);
         }
       });
     }
+    return null;
   }
 
   Set<StreamSubscription> subscriptions = {};

@@ -22,8 +22,6 @@ class DisabledIcon<T extends Widget> extends SingleChildRenderObjectWidget {
   final StrokeCap strokeCap;
   final double lineLengthScale;
 
-  T enable() => child as T;
-
   @override
   RenderObject createRenderObject(BuildContext context) {
     late final iconTheme = IconTheme.of(context);
@@ -31,12 +29,12 @@ class DisabledIcon<T extends Widget> extends SingleChildRenderObjectWidget {
       disable: disable,
       iconSize:
           iconSize ??
-          (child is Icon ? (child as Icon?)?.size : null) ??
+          (child is Icon ? (child as Icon).size : null) ??
           iconTheme.size ??
           24.0,
       color:
           color ??
-          (child is Icon ? (child as Icon?)?.color : null) ??
+          (child is Icon ? (child as Icon).color : null) ??
           iconTheme.color!,
       strokeCap: strokeCap,
       lineLengthScale: lineLengthScale,

@@ -72,11 +72,11 @@ class _RcmdPageState extends CommonPageState<RcmdPage, RcmdController>
                   }
                   if (controller.lastRefreshAt != null) {
                     if (controller.lastRefreshAt == index) {
-                      return GestureDetector(
-                        onTap: () => controller
-                          ..animateToTop()
-                          ..onRefresh(),
-                        child: Card(
+                      return Card(
+                        child: InkWell(
+                          onTap: () => controller
+                            ..animateToTop()
+                            ..onRefresh(),
                           child: Container(
                             alignment: Alignment.center,
                             padding: const EdgeInsets.symmetric(
@@ -95,9 +95,7 @@ class _RcmdPageState extends CommonPageState<RcmdPage, RcmdController>
                         ),
                       );
                     }
-                    int actualIndex = controller.lastRefreshAt == null
-                        ? index
-                        : index > controller.lastRefreshAt!
+                    int actualIndex = index > controller.lastRefreshAt!
                         ? index - 1
                         : index;
                     return VideoCardV(

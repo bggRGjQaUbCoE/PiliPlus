@@ -65,6 +65,7 @@ import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
+import 'package:PiliPlus/utils/subtitle_parser.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:PiliPlus/utils/video_utils.dart';
 import 'package:easy_debounce/easy_throttle.dart';
@@ -343,6 +344,27 @@ class VideoDetailController extends GetxController
       vsync: this,
       initialIndex: Pref.defaultShowComment ? 1 : 0,
     );
+    
+    plPlayerController.position.listen((duration) {
+       final index = vttSecondarySubtitlesIndex.value;
+       if (index > 0 && parsedSubtitles.containsKey(index - 1)) {
+          final lines = parsedSubtitles[index - 1]!;
+          SubtitleLine? matches;
+          for (final line in lines) {
+             if (duration >= line.start && duration <= line.end) {
+                matches = line;
+                break;
+             }
+          }
+          if (currentSecondarySubtitle.value != matches) {
+             currentSecondarySubtitle.value = matches;
+          }
+       } else {
+         if (currentSecondarySubtitle.value != null) {
+            currentSecondarySubtitle.value = null;
+         }
+       }
+    });
   }
 
   Future<void> getMediaList({
@@ -1455,9 +1477,24 @@ class VideoDetailController extends GetxController
     }
   }
 
+
+
+
   RxList<Subtitle> subtitles = RxList<Subtitle>();
   late final Map<int, String> vttSubtitles = {};
+
   late final RxInt vttSubtitlesIndex = (-1).obs;
+
+
+  
+  // Secondary Subtitle
+  late final RxInt vttSecondarySubtitlesIndex = (-1).obs;
+  late final Rx<SubtitleLine?> currentSecondarySubtitle = Rx<SubtitleLine?>(null);
+  late final Map<int, List<SubtitleLine>> parsedSubtitles = {};
+  
+  // Secondary Subtitle Font Scale (default 1.5 approx larger than primary)
+  late final RxDouble subtitleFontScaleSecondary = 1.5.obs;
+  
   late final RxBool showVP = true.obs;
   late final RxList<ViewPointSegment> viewPointList = <ViewPointSegment>[].obs;
 
@@ -1493,6 +1530,92 @@ class VideoDetailController extends GetxController
       if (!isClosed && result != null) {
         vttSubtitles[index - 1] = result;
         await setSub(result);
+      }
+    }
+  }
+
+  // Set secondary subtitle track
+  Future<void> setSecondarySubtitle(int index) async {
+    if (index <= 0) {
+      vttSecondarySubtitlesIndex.value = -1;
+      currentSecondarySubtitle.value = null;
+      return;
+    }
+
+    vttSecondarySubtitlesIndex.value = index;
+    // Check if parsed
+    if (parsedSubtitles.containsKey(index - 1)) {
+        return;
+    }
+    
+    String? subtitleContent = vttSubtitles[index - 1];
+    
+    if (subtitleContent == null) {
+       // Fetch content if not already fetched (reuse logic)
+       // Usually setSubtitle fetches it. We might need to fetch it here if primary isn't using it.
+       try {
+         final result = await VideoHttp.vttSubtitles(
+            subtitles[index - 1].subtitleUrl!,
+         );
+         if (!isClosed && result != null) {
+            vttSubtitles[index - 1] = result;
+            subtitleContent = result;
+         }
+       } catch (e) {
+          if (kDebugMode) debugPrint('Fetch secondary sub failed: $e');
+       }
+    }
+
+    if (subtitleContent != null) {
+      // Parse in isolate or compute if large, for now sync
+      parsedSubtitles[index - 1] = SubtitleParser.parse(subtitleContent);
+    }
+  }
+
+  // Toggle Subtitle (Quick Switch)
+  // Logic: 
+  // - If any subtitle is on -> turn all off
+  // - If all off -> turn on default (Bilingual)
+  void toggleSubtitle() {
+    if (vttSubtitlesIndex.value > 0 || vttSecondarySubtitlesIndex.value > 0) {
+      // Turn off
+      setSubtitle(0);
+      setSecondarySubtitle(0);
+      SmartDialog.showToast('字幕已关闭');
+    } else {
+      // Turn on (Default Bilingual)
+      // Find English and Chinese
+      int enIndex = -1;
+      int zhIndex = -1;
+      
+      for (int i = 0; i < subtitles.length; i++) {
+        final lan = subtitles[i].lan;
+        if (lan.contains('zh') || lan.contains('chi') || lan.contains('chs')) {
+           if (zhIndex == -1) zhIndex = i;
+        } else if (lan.contains('en') || lan.contains('eng')) {
+           if (enIndex == -1) enIndex = i;
+        }
+      }
+      
+      if (enIndex != -1 && zhIndex != -1) {
+         // Bilingual: zh (Secondary, Top) / en (Primary, Bottom)
+         setSubtitle(enIndex + 1);
+         setSecondarySubtitle(zhIndex + 1);
+         SmartDialog.showToast('双语字幕已开启');
+      } else if (zhIndex != -1) {
+         // Only Chinese
+         setSubtitle(zhIndex + 1);
+         SmartDialog.showToast('中文字幕已开启');
+      } else if (enIndex != -1) {
+         // Only English
+         setSubtitle(enIndex + 1);
+         SmartDialog.showToast('英文字幕已开启');
+      } else if (subtitles.isNotEmpty) {
+         // Default first
+         setSubtitle(1);
+         SmartDialog.showToast('字幕已开启');
+      } else {
+         SmartDialog.showToast('暂无可用字幕');
       }
     }
   }

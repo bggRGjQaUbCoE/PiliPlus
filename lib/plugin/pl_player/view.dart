@@ -47,7 +47,9 @@ import 'package:PiliPlus/plugin/pl_player/widgets/bottom_control.dart';
 import 'package:PiliPlus/plugin/pl_player/widgets/common_btn.dart';
 import 'package:PiliPlus/plugin/pl_player/widgets/forward_seek.dart';
 import 'package:PiliPlus/plugin/pl_player/widgets/mpv_convert_webp.dart';
+
 import 'package:PiliPlus/plugin/pl_player/widgets/play_pause_btn.dart';
+import 'package:PiliPlus/plugin/pl_player/widgets/subtitle_overlay.dart';
 import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
@@ -664,63 +666,129 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
         () {
           if (videoDetailController.subtitles.isNotEmpty) {
             final val = videoDetailController.vttSubtitlesIndex.value;
-            return PopupMenuButton<int>(
-              tooltip: '字幕',
-              requestFocus: false,
-              initialValue: val,
-              color: Colors.black.withValues(alpha: 0.8),
-              itemBuilder: (context) {
-                return [
-                  PopupMenuItem<int>(
-                    value: 0,
-                    height: 35,
-                    onTap: () => videoDetailController.setSubtitle(0),
-                    child: const Text(
-                      "关闭字幕",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 13,
-                      ),
-                    ),
-                  ),
-                  ...videoDetailController.subtitles.indexed.map((e) {
-                    return PopupMenuItem<int>(
-                      value: e.$1 + 1,
-                      height: 35,
-                      onTap: () => videoDetailController.setSubtitle(e.$1 + 1),
-                      child: Text(
-                        "${e.$2.lanDoc}",
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
+            final secondaryVal = videoDetailController.vttSecondarySubtitlesIndex.value;
+
+            // Find Chinese and English indices for bilingual option
+            int? zhIdx;
+            int? enIdx;
+            for (int i = 0; i < videoDetailController.subtitles.length; i++) {
+              final lan = videoDetailController.subtitles[i].lan;
+              if (zhIdx == null && (lan.contains('zh') || lan.contains('chi') || lan.contains('Hans') || lan.contains('Hant'))) {
+                zhIdx = i;
+              } else if (enIdx == null && (lan.contains('en') || lan.contains('eng'))) {
+                enIdx = i;
+              }
+            }
+            final hasBilingual = zhIdx != null && enIdx != null;
+
+            return Builder(
+              builder: (ctx) {
+                return ComBtn(
+                  width: widgetWidth,
+                  height: 30,
+                  tooltip: '字幕 (点击切换/长按选择)',
+                  icon: val == 0
+                      ? const Icon(
+                          Icons.closed_caption_off_outlined,
+                          size: 22,
                           color: Colors.white,
-                          fontSize: 13,
+                        )
+                      : const Icon(
+                          Icons.closed_caption_off_rounded,
+                          size: 22,
+                          color: Colors.white,
                         ),
+                  onTap: () => videoDetailController.toggleSubtitle(),
+                  onLongPress: () {
+                    final RenderBox button = ctx.findRenderObject() as RenderBox;
+                    final RenderBox overlay = Overlay.of(ctx).context.findRenderObject() as RenderBox;
+                    final RelativeRect position = RelativeRect.fromRect(
+                      Rect.fromPoints(
+                        button.localToGlobal(Offset.zero, ancestor: overlay),
+                        button.localToGlobal(button.size.bottomRight(Offset.zero), ancestor: overlay),
                       ),
+                      Offset.zero & overlay.size,
                     );
-                  }),
-                ];
-              },
-              child: SizedBox(
-                width: widgetWidth,
-                height: 30,
-                child: val == 0
-                    ? const Icon(
-                        Icons.closed_caption_off_outlined,
-                        size: 22,
-                        color: Colors.white,
-                      )
-                    : const Icon(
-                        Icons.closed_caption_off_rounded,
-                        size: 22,
-                        color: Colors.white,
-                      ),
-              ),
+
+                    showMenu<int>(
+                      context: ctx,
+                      position: position,
+                      color: Colors.black.withValues(alpha: 0.8),
+                      initialValue: val,
+                      items: [
+                        PopupMenuItem<int>(
+                          value: 0,
+                          height: 35,
+                          onTap: () {
+                            videoDetailController.setSubtitle(0);
+                            videoDetailController.setSecondarySubtitle(0);
+                          },
+                          child: const Text(
+                            "关闭字幕",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ),
+                        // Bilingual option
+                        if (hasBilingual)
+                          PopupMenuItem<int>(
+                            value: -2,
+                            height: 35,
+                            onTap: () {
+                              videoDetailController.setSubtitle(enIdx! + 1);
+                              videoDetailController.setSecondarySubtitle(zhIdx! + 1);
+                              SmartDialog.showToast('双语字幕已开启');
+                            },
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Text(
+                                  "双语字幕",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                                if (secondaryVal > 0 && val > 0)
+                                  const Padding(
+                                    padding: EdgeInsets.only(left: 4),
+                                    child: Icon(Icons.check, size: 16, color: Colors.white),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ...videoDetailController.subtitles.indexed.map((e) {
+                          return PopupMenuItem<int>(
+                            value: e.$1 + 1,
+                            height: 35,
+                            onTap: () {
+                              videoDetailController.setSubtitle(e.$1 + 1);
+                              videoDetailController.setSecondarySubtitle(0);
+                            },
+                            child: Text(
+                              "${e.$2.lanDoc}",
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 13,
+                              ),
+                            ),
+                          );
+                        }),
+                      ],
+                    );
+                  },
+                );
+              }
             );
           }
           return const SizedBox.shrink();
         },
       ),
+
 
       /// 播放速度
       BottomControlType.speed => Obx(
@@ -1617,8 +1685,17 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                 ),
               ),
             ),
+            ),
           ),
-        ),
+
+
+        // Secondary Subtitle Overlay
+        if (widget.videoDetailController != null)
+           SubtitleOverlay(
+              subtitle: widget.videoDetailController!.currentSecondarySubtitle,
+              plPlayerController: plPlayerController,
+              videoDetailController: widget.videoDetailController,
+           ),
 
         // 头部、底部控制条
         Positioned.fill(

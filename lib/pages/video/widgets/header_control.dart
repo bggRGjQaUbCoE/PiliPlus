@@ -700,11 +700,27 @@ class HeaderControlState extends State<HeaderControl>
                 ListTile(
                   dense: true,
                   onTap: () {
+                     // Quick Toggle
+                     Get.back(); // Close existing panel/sheet
+                     videoDetailCtr.toggleSubtitle();
+                  },
+                  onLongPress: () {
                     Get.back();
                     showSetSubtitle();
                   },
                   leading: const Icon(Icons.subtitles_outlined, size: 20),
-                  title: const Text('字幕设置', style: titleStyle),
+                  title: const Text('字幕 (长按设置)', style: titleStyle),
+                  trailing: Obx(() {
+                       final active = videoDetailCtr.vttSubtitlesIndex.value > 0 
+                                   || videoDetailCtr.vttSecondarySubtitlesIndex.value > 0;
+                       return Switch(
+                          value: active,
+                          onChanged: (val) {
+                             Get.back();
+                             videoDetailCtr.toggleSubtitle();
+                          },
+                       );
+                  }),
                 ),
                 ListTile(
                   dense: true,
@@ -1434,6 +1450,71 @@ class HeaderControlState extends State<HeaderControl>
                         onChanged: updateFontScaleFS,
                       ),
                     ),
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Obx(() => Text(
+                        '副字幕 (Top) ${(videoDetailCtr.subtitleFontScaleSecondary.value * 100).toStringAsFixed(1)}%',
+                      )),
+                      resetBtn(theme, '150.0%', () => videoDetailCtr.subtitleFontScaleSecondary.value = 1.5),
+                    ],
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(
+                      top: 0,
+                      bottom: 6,
+                      left: 10,
+                      right: 10,
+                    ),
+                    child: SliderTheme(
+                      data: sliderTheme,
+                      child: Obx(() => Slider(
+                        min: 0.5,
+                        max: 2.5,
+                        value: videoDetailCtr.subtitleFontScaleSecondary.value,
+                        divisions: 20,
+                        label:
+                            '${(videoDetailCtr.subtitleFontScaleSecondary.value * 100).toStringAsFixed(1)}%',
+                        onChanged: (val) => videoDetailCtr.subtitleFontScaleSecondary.value = val,
+                      )),
+                    ),
+                  ),
+
+                  // Secondary Subtitle Selection
+                   const SizedBox(height: 10),
+                   const Padding(
+                     padding: EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                     child: Text('副字幕轨道', style: titleStyle),
+                   ),
+                   ListTile(
+                      dense: true,
+                      title: const Text('关闭副字幕'),
+                      leading: const Icon(Icons.close, size: 20),
+                      onTap: () {
+                         videoDetailCtr.setSecondarySubtitle(0);
+                      },
+                      trailing: Obx(() => videoDetailCtr.vttSecondarySubtitlesIndex.value <= 0 
+                          ? const Icon(Icons.check, size: 20) 
+                          : const SizedBox()),
+                   ),
+                   ...videoDetailCtr.subtitles.indexed.map((e) {
+                      return Obx(() {
+                        final selected = videoDetailCtr.vttSecondarySubtitlesIndex.value == e.$1 + 1;
+                        return ListTile(
+                          dense: true,
+                          title: Text(e.$2.lanDoc!),
+                          onTap: () => videoDetailCtr.setSecondarySubtitle(e.$1 + 1),
+                          selected: selected,
+                          trailing: selected ? const Icon(Icons.check, size: 20) : null,
+                        );
+                      });
+                   }),
+                  
+                  const Divider(),
+                  const Padding(
+                     padding: EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                     child: Text('主字幕轨道', style: titleStyle),
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,

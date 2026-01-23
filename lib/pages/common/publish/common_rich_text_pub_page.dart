@@ -57,16 +57,11 @@ abstract class CommonRichTextPubPageState<T extends CommonRichTextPubPage>
   int get limit => widget.imageLengthLimit ?? 9;
 
   @override
-  late final RichTextEditingController editController;
-
-  @override
-  void initState() {
-    super.initState();
-    editController = RichTextEditingController(
-      items: widget.items,
-      onMention: onMention,
-    );
-  }
+  late final RichTextEditingController editController =
+      RichTextEditingController(
+        items: widget.items,
+        onMention: onMention,
+      );
 
   @override
   void initPubState() {

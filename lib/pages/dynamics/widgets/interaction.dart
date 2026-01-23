@@ -1,6 +1,6 @@
-import 'package:PiliPlus/common/widgets/gesture/immediate_tap_gesture_recognizer.dart';
 import 'package:PiliPlus/models/dynamics/result.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get_core/src/get_main.dart';
@@ -78,7 +78,7 @@ Widget _item(
                   ? null
                   : TextStyle(color: theme.colorScheme.onSurfaceVariant),
               recognizer: isAt
-                  ? (ImmediateTapGestureRecognizer()
+                  ? (TapGestureRecognizer()
                       ..onTap = () => Get.toNamed('/member?mid=${e.rid}'))
                   : null,
             );

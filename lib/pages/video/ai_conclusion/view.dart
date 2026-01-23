@@ -1,10 +1,10 @@
-import 'package:PiliPlus/common/widgets/gesture/immediate_tap_gesture_recognizer.dart';
 import 'package:PiliPlus/models_new/video/video_ai_conclusion/model_result.dart';
 import 'package:PiliPlus/pages/common/slide/common_slide_page.dart';
 import 'package:PiliPlus/pages/video/controller.dart';
 import 'package:PiliPlus/pages/video/introduction/ugc/widgets/selectable_text.dart';
 import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -99,7 +99,7 @@ class AiConclusionPanel extends CommonSlidePage {
                                           )
                                         : null,
                                     recognizer: tap
-                                        ? (ImmediateTapGestureRecognizer()
+                                        ? (TapGestureRecognizer()
                                             ..onTap = () {
                                               try {
                                                 Get.find<VideoDetailController>(

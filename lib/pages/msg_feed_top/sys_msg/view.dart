@@ -2,7 +2,6 @@ import 'package:PiliPlus/common/skeleton/msg_feed_sys_msg_.dart';
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
 import 'package:PiliPlus/common/widgets/flutter/list_tile.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
-import 'package:PiliPlus/common/widgets/gesture/immediate_tap_gesture_recognizer.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models_new/msg/msg_sys/data.dart';
@@ -11,6 +10,7 @@ import 'package:PiliPlus/utils/app_scheme.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart' hide ListTile;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -145,7 +145,7 @@ class _SysMsgPageState extends State<SysMsgPage> {
               TextSpan(
                 text: match[1],
                 style: TextStyle(color: theme.colorScheme.primary),
-                recognizer: ImmediateTapGestureRecognizer()
+                recognizer: TapGestureRecognizer()
                   ..onTap = () {
                     try {
                       PiliScheme.routePushFromUrl(url);
@@ -176,7 +176,7 @@ class _SysMsgPageState extends State<SysMsgPage> {
                 TextSpan(
                   text: match[3],
                   style: TextStyle(color: theme.colorScheme.primary),
-                  recognizer: ImmediateTapGestureRecognizer()
+                  recognizer: TapGestureRecognizer()
                     ..onTap = () {
                       PiliScheme.videoPush(validAv, validBv);
                     },
@@ -195,7 +195,7 @@ class _SysMsgPageState extends State<SysMsgPage> {
                 TextSpan(
                   text: '查看动态',
                   style: TextStyle(color: theme.colorScheme.primary),
-                  recognizer: ImmediateTapGestureRecognizer()
+                  recognizer: TapGestureRecognizer()
                     ..onTap = () {
                       PageUtils.pushDynFromId(id: dynId).catchError(
                         (err) => SmartDialog.showToast(err.toString()),
@@ -212,7 +212,7 @@ class _SysMsgPageState extends State<SysMsgPage> {
             TextSpan(
               text: '\u{1F517}网页链接',
               style: TextStyle(color: theme.colorScheme.primary),
-              recognizer: ImmediateTapGestureRecognizer()
+              recognizer: TapGestureRecognizer()
                 ..onTap = () {
                   PiliScheme.routePushFromUrl(matchStr);
                 },

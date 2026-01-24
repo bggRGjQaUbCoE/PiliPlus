@@ -152,7 +152,7 @@ class _LiveEmotePanelState extends State<LiveEmotePanel>
                                         width: width,
                                         height: height,
                                         type: ImageType.emote,
-                                        quality: item.pkgType == 3 ? null : 80,
+                                        quality: item.pkgType == 3 ? 1 : 80,
                                       ),
                                     ),
                                   ),

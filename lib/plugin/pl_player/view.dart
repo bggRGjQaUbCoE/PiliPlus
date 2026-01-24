@@ -2601,7 +2601,7 @@ Future<ui.Image?> _getImg(String url) async {
   final cacheKey = Utils.getFileName(url, fileExt: false);
   try {
     final fileInfo = await cacheManager.getSingleFile(
-      url,
+      ImageUtils.thumbnailUrl(url),
       key: cacheKey,
       headers: Constants.baseHeaders,
     );

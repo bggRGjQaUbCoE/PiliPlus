@@ -15,7 +15,7 @@ class NetworkImgLayer extends StatelessWidget {
     this.type = .def,
     this.fadeOutDuration = const Duration(milliseconds: 120),
     this.fadeInDuration = const Duration(milliseconds: 120),
-    this.quality,
+    this.quality = 1,
     this.borderRadius = StyleString.mdRadius,
     this.getPlaceHolder,
     this.fit = .cover,
@@ -29,7 +29,7 @@ class NetworkImgLayer extends StatelessWidget {
   final ImageType type;
   final Duration fadeOutDuration;
   final Duration fadeInDuration;
-  final int? quality;
+  final int quality;
   final BorderRadius borderRadius;
   final ValueGetter<Widget>? getPlaceHolder;
   final BoxFit fit;

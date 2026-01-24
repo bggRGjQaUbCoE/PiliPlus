@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math' as math;
 import 'dart:typed_data';
 
 import 'package:PiliPlus/common/constants.dart';
@@ -267,22 +268,23 @@ abstract final class ImageUtils {
     r'(@(\d+[a-z]_?)*)(\..*)?$',
     caseSensitive: false,
   );
-  static String thumbnailUrl(String? src, [int? quality]) {
-    if (src != null && quality != 100) {
+  static String thumbnailUrl(String? src, [int maxQuality = 1]) {
+    if (src != null && maxQuality != 100) {
+      maxQuality = math.max(maxQuality, GlobalData().imgQuality);
       bool hasMatch = false;
       src = src.splitMapJoin(
         _thumbRegex,
-        onMatch: (Match match) {
+        onMatch: (match) {
           hasMatch = true;
           String suffix = match.group(3) ?? '.webp';
-          return '${match.group(1)}_${quality ?? GlobalData().imgQuality}q$suffix';
+          return '${match.group(1)}_${maxQuality}q$suffix';
         },
         onNonMatch: (String str) {
           return str;
         },
       );
       if (!hasMatch) {
-        src += '@${quality ?? GlobalData().imgQuality}q.webp';
+        src += '@${maxQuality}q.webp';
       }
     }
     return src.http2https;

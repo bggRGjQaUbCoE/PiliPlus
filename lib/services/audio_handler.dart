@@ -1,3 +1,5 @@
+import 'dart:io' show File;
+
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/grpc/bilibili/app/listener/v1.pb.dart' show DetailItem;
 import 'package:PiliPlus/models_new/download/bili_download_entry_info.dart';
@@ -8,8 +10,11 @@ import 'package:PiliPlus/models_new/video/video_detail/page.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
 import 'package:PiliPlus/utils/extension/iterable_ext.dart';
+import 'package:PiliPlus/utils/image_utils.dart';
+import 'package:PiliPlus/utils/path_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:audio_service/audio_service.dart';
+import 'package:path/path.dart' as path;
 
 Future<VideoPlayerServiceHandler> initAudioService() {
   return AudioService.init(
@@ -31,35 +36,37 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
   static final List<MediaItem> _item = [];
   bool enableBackgroundPlay = Pref.enableBackgroundPlay;
 
-  Function? onPlay;
-  Function? onPause;
-  Function(Duration position)? onSeek;
+  Future<void> Function()? onPlay;
+  Future<void> Function()? onPause;
+  Future<void> Function(Duration position)? onSeek;
 
   @override
-  Future<void> play() async {
-    onPlay?.call() ?? PlPlayerController.playIfExists();
+  Future<void> play() {
+    return onPlay?.call() ??
+        PlPlayerController.playIfExists() ??
+        Future.syncValue(null);
     // player.play();
   }
 
   @override
-  Future<void> pause() async {
-    await (onPause?.call() ?? PlPlayerController.pauseIfExists());
+  Future<void> pause() {
+    return onPause?.call() ?? PlPlayerController.pauseIfExists();
     // player.pause();
   }
 
   @override
-  Future<void> seek(Duration position) async {
+  Future<void> seek(Duration position) {
     playbackState.add(
       playbackState.value.copyWith(
         updatePosition: position,
       ),
     );
-    await (onSeek?.call(position) ??
+    return (onSeek?.call(position) ??
         PlPlayerController.seekToIfExists(position, isSeek: false));
     // await player.seekTo(position);
   }
 
-  Future<void> setMediaItem(MediaItem newMediaItem) async {
+  void setMediaItem(MediaItem newMediaItem) {
     if (!enableBackgroundPlay) return;
     // if (kDebugMode) {
     //   debugPrint("此时调用栈为：");
@@ -70,11 +77,11 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
     if (!mediaItem.isClosed) mediaItem.add(newMediaItem);
   }
 
-  Future<void> setPlaybackState(
+  void setPlaybackState(
     PlayerStatus status,
     bool isBuffering,
     bool isLive,
-  ) async {
+  ) {
     if (!enableBackgroundPlay ||
         _item.isEmpty ||
         !PlPlayerController.instanceExists()) {
@@ -137,6 +144,8 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
     if (!PlPlayerController.instanceExists()) return;
     if (data == null) return;
 
+    Uri getUri(String? cover) => Uri.parse(ImageUtils.safeThumbnailUrl(cover));
+
     late final id = '$cid$herotag';
     MediaItem? mediaItem;
     if (data is VideoDetailData) {
@@ -149,7 +158,7 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
           title: current?.part ?? '',
           artist: data.owner?.name,
           duration: Duration(seconds: current?.duration ?? 0),
-          artUri: Uri.parse(data.pic ?? ''),
+          artUri: getUri(data.pic),
         );
       } else {
         mediaItem = MediaItem(
@@ -157,7 +166,7 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
           title: data.title ?? '',
           artist: data.owner?.name,
           duration: Duration(seconds: data.duration ?? 0),
-          artUri: Uri.parse(data.pic ?? ''),
+          artUri: getUri(data.pic),
         );
       }
     } else if (data is EpisodeItem) {
@@ -168,14 +177,14 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
         duration: data.from == 'pugv'
             ? Duration(seconds: data.duration ?? 0)
             : Duration(milliseconds: data.duration ?? 0),
-        artUri: Uri.parse(data.cover ?? ''),
+        artUri: getUri(data.cover),
       );
     } else if (data is RoomInfoH5Data) {
       mediaItem = MediaItem(
         id: id,
         title: data.roomInfo?.title ?? '',
         artist: data.anchorInfo?.baseInfo?.uname,
-        artUri: Uri.parse(data.roomInfo?.cover ?? ''),
+        artUri: getUri(data.roomInfo?.cover),
         isLive: true,
       );
     } else if (data is Part) {
@@ -184,7 +193,7 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
         title: data.part ?? '',
         artist: artist,
         duration: Duration(seconds: data.duration ?? 0),
-        artUri: Uri.parse(cover ?? ''),
+        artUri: getUri(cover),
       );
     } else if (data is DetailItem) {
       mediaItem = MediaItem(
@@ -192,7 +201,7 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
         title: data.arc.title,
         artist: data.owner.name,
         duration: Duration(seconds: data.arc.duration.toInt()),
-        artUri: Uri.parse(data.arc.cover),
+        artUri: getUri(data.arc.cover),
       );
     } else if (data is BiliDownloadEntryInfo) {
       mediaItem = MediaItem(
@@ -200,7 +209,9 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
         title: data.showTitle,
         artist: data.ownerName,
         duration: Duration(milliseconds: data.totalTimeMilli),
-        artUri: Uri.parse(data.cover),
+        artUri: File(
+          path.join(data.entryDirPath, PathUtils.coverName),
+        ).absolute.uri,
       );
     }
     if (mediaItem == null) return;

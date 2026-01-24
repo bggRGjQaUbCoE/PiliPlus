@@ -205,8 +205,8 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     }
   }
 
-  void playCallBack() {
-    plPlayerController?.play();
+  Future<void>? playCallBack() {
+    return plPlayerController?.play();
   }
 
   // 播放器状态监听

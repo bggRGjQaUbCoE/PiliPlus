@@ -831,7 +831,7 @@ class PlPlayerController {
     } else {
       audioUri = '';
     }
-    if (audioUri.isNotEmpty) await pp.setProperty('audio-files', audioUri);
+    await pp.setProperty('audio-files', audioUri);
 
     _videoController ??= VideoController(
       player,

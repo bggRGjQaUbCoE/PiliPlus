@@ -204,14 +204,16 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
         artUri: getUri(data.arc.cover),
       );
     } else if (data is BiliDownloadEntryInfo) {
+      final coverFile = File(path.join(data.entryDirPath, PathUtils.coverName));
+      final uri = coverFile.existsSync()
+          ? coverFile.absolute.uri
+          : getUri(data.cover);
       mediaItem = MediaItem(
         id: id,
         title: data.showTitle,
         artist: data.ownerName,
         duration: Duration(milliseconds: data.totalTimeMilli),
-        artUri: File(
-          path.join(data.entryDirPath, PathUtils.coverName),
-        ).absolute.uri,
+        artUri: uri,
       );
     }
     if (mediaItem == null) return;

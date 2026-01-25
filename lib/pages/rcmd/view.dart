@@ -72,16 +72,14 @@ class _RcmdPageState extends CommonPageState<RcmdPage, RcmdController>
                   }
                   if (controller.lastRefreshAt != null) {
                     if (controller.lastRefreshAt == index) {
-                      return Card(
-                        child: InkWell(
-                          onTap: () => controller
-                            ..animateToTop()
-                            ..onRefresh(),
+                      return GestureDetector(
+                        onTap: () => controller
+                          ..animateToTop()
+                          ..onRefresh(),
+                        child: Card(
                           child: Container(
                             alignment: Alignment.center,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                            ),
+                            padding: const .symmetric(horizontal: 10),
                             child: Text(
                               '上次看到这里\n点击刷新',
                               textAlign: .center,
@@ -95,7 +93,7 @@ class _RcmdPageState extends CommonPageState<RcmdPage, RcmdController>
                         ),
                       );
                     }
-                    int actualIndex = index > controller.lastRefreshAt!
+                    final actualIndex = index > controller.lastRefreshAt!
                         ? index - 1
                         : index;
                     return VideoCardV(

@@ -594,7 +594,7 @@ class _SponsorBlockPageState extends State<SponsorBlockPage> {
                         .map(
                           (item) => PopupMenuItem<SkipType>(
                             value: item,
-                            child: Text(item.title),
+                            child: Text(item.label),
                           ),
                         )
                         .toList(),
@@ -617,7 +617,7 @@ class _SponsorBlockPageState extends State<SponsorBlockPage> {
                         ),
                         TextSpan(
                           children: [
-                            TextSpan(text: item.second.title),
+                            TextSpan(text: item.second.label),
                             WidgetSpan(
                               alignment: .middle,
                               child: Icon(

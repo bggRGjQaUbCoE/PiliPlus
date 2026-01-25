@@ -659,7 +659,7 @@ class VideoDetailController extends GetxController
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          item.skipType.title,
+                          item.skipType.label,
                           style: const TextStyle(fontSize: 13),
                         ),
                         if (item.segment.second != 0)

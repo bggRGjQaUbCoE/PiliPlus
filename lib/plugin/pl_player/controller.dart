@@ -796,8 +796,7 @@ class PlPlayerController {
       await pp.setProperty("af", "scaletempo2=max-speed=8");
       if (Platform.isAndroid) {
         await pp.setProperty("volume-max", "100");
-        final ao = Pref.useOpenSLES ? "opensles,aaudio" : "aaudio,opensles";
-        await pp.setProperty("ao", ao);
+        await pp.setProperty("ao", Pref.audioOutput.name);
       }
       // video-sync=display-resample
       await pp.setProperty("video-sync", Pref.videoSync);

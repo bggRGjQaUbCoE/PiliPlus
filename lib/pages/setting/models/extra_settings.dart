@@ -134,54 +134,12 @@ List<SettingsModel> get extraSettings => [
       ],
     ),
   ),
-  NormalModel(
-    leading: const Icon(MdiIcons.debugStepOver),
+  getPopupMenuModel(
     title: '番剧片头/片尾跳过类型',
-    getTrailing: () => Builder(
-      builder: (context) {
-        final pgcSkipType = Pref.pgcSkipType;
-        final colorScheme = ColorScheme.of(context);
-        final color = pgcSkipType == SkipType.disable
-            ? colorScheme.outline
-            : colorScheme.secondary;
-        return PopupMenuButton<SkipType>(
-          initialValue: pgcSkipType,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            child: Text.rich(
-              style: TextStyle(fontSize: 14, height: 1, color: color),
-              strutStyle: const StrutStyle(
-                leading: 0,
-                height: 1,
-                fontSize: 14,
-              ),
-              TextSpan(
-                children: [
-                  TextSpan(text: pgcSkipType.title),
-                  WidgetSpan(
-                    alignment: .middle,
-                    child: Icon(
-                      MdiIcons.unfoldMoreHorizontal,
-                      size: 14,
-                      color: color,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          onSelected: (value) async {
-            await GStorage.setting.put(SettingBoxKey.pgcSkipType, value.index);
-            if (context.mounted) {
-              (context as Element).markNeedsBuild();
-            }
-          },
-          itemBuilder: (context) => SkipType.values
-              .map((e) => PopupMenuItem(value: e, child: Text(e.title)))
-              .toList(),
-        );
-      },
-    ),
+    leading: const Icon(MdiIcons.debugStepOver),
+    key: SettingBoxKey.pgcSkipType,
+    values: SkipType.values,
+    defaultIndex: SkipType.skipOnce.index,
   ),
   SwitchModel(
     title: '检查未读动态',

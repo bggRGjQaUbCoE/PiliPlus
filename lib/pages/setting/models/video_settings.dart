@@ -8,11 +8,13 @@ import 'package:PiliPlus/models/common/video/video_quality.dart';
 import 'package:PiliPlus/pages/setting/models/model.dart';
 import 'package:PiliPlus/pages/setting/widgets/ordered_multi_select_dialog.dart';
 import 'package:PiliPlus/pages/setting/widgets/select_dialog.dart';
+import 'package:PiliPlus/plugin/pl_player/models/audio_output_type.dart';
 import 'package:PiliPlus/plugin/pl_player/models/hwdec_type.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/video_utils.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
@@ -317,13 +319,13 @@ List<SettingsModel> get videoSettings => [
       }
     },
   ),
-  if (Platform.isAndroid)
-    const SwitchModel(
-      title: '优先使用 OpenSL ES 输出音频',
-      leading: Icon(Icons.speaker_outlined),
-      subtitle: '关闭则优先使用AAudio输出音频（此项即mpv的--ao），若遇系统音效丢失、无声、音画不同步等问题请尝试打开。',
-      setKey: SettingBoxKey.useOpenSLES,
-      defaultVal: false,
+  if (kDebugMode || Platform.isAndroid)
+    getPopupMenuModel(
+      title: '音频输出设备',
+      subtitle: '',
+      leading: const Icon(Icons.speaker_outlined),
+      key: SettingBoxKey.audioOutput,
+      values: AudioOutput.values,
     ),
   const SwitchModel(
     title: '扩大缓冲区',

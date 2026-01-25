@@ -1,4 +1,5 @@
 import 'package:PiliPlus/common/constants.dart';
+import 'package:PiliPlus/models/common/enum_with_label.dart';
 import 'package:PiliPlus/pages/setting/widgets/normal_item.dart';
 import 'package:PiliPlus/pages/setting/widgets/select_dialog.dart';
 import 'package:PiliPlus/pages/setting/widgets/switch_item.dart';
@@ -7,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show FilteringTextInputFormatter;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
 @immutable
 sealed class SettingsModel {
@@ -256,5 +258,63 @@ SettingsModel getVideoFilterSelectModel({
         }
       }
     },
+  );
+}
+
+SettingsModel getPopupMenuModel({
+  required String title,
+  Widget? leading,
+  String? subtitle,
+  required String key,
+  required List<EnumWithLabel> values,
+  int defaultIndex = 0,
+}) {
+  // final globalKey = GlobalKey<PopupMenuButtonState<EnumWithLabel>>();
+  return NormalModel(
+    title: title,
+    subtitle: subtitle,
+    leading: leading,
+    // onTap: (context, setState) => globalKey.currentState?.showButtonMenu(),
+    getTrailing: () => Builder(
+      builder: (context) {
+        final color = ColorScheme.of(context).secondary;
+        final v = values[GStorage.setting.get(key, defaultValue: defaultIndex)];
+        return PopupMenuButton(
+          // key: globalKey,
+          padding: .zero,
+          initialValue: v,
+          onSelected: (value) async {
+            await GStorage.setting.put(key, value.index);
+            if (context.mounted) {
+              (context as Element).markNeedsBuild();
+            }
+          },
+          itemBuilder: (context) => values
+              .map((i) => PopupMenuItem(value: i, child: Text(i.label)))
+              .toList(),
+          child: Padding(
+            padding: const .symmetric(vertical: 8),
+            child: Text.rich(
+              style: TextStyle(fontSize: 14, height: 1, color: color),
+              strutStyle: const StrutStyle(leading: 0, height: 1, fontSize: 14),
+              TextSpan(
+                children: [
+                  TextSpan(text: v.label),
+                  WidgetSpan(
+                    alignment: .middle,
+                    child: Icon(
+                      size: 14,
+                      MdiIcons.unfoldMoreHorizontal,
+                      color: color,
+                    ),
+                  ),
+                ],
+                style: TextStyle(color: color),
+              ),
+            ),
+          ),
+        );
+      },
+    ),
   );
 }

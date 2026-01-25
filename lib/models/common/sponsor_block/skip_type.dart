@@ -1,4 +1,6 @@
-enum SkipType {
+import 'package:PiliPlus/models/common/enum_with_label.dart';
+
+enum SkipType implements EnumWithLabel {
   alwaysSkip('总是跳过'),
   skipOnce('跳过一次'),
   skipManually('手动跳过'),
@@ -6,6 +8,7 @@ enum SkipType {
   disable('禁用')
   ;
 
-  final String title;
-  const SkipType(this.title);
+  @override
+  final String label;
+  const SkipType(this.label);
 }

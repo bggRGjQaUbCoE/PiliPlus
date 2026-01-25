@@ -162,9 +162,14 @@ abstract final class Utils {
     return randomBase64.substring(0, randomBase64.length - 2);
   }
 
+  static int _getExt(String uri) {
+    final i = uri.indexOf('?');
+    return i == -1 ? uri.length : i;
+  }
+
   static String getFileName(String uri, {bool fileExt = true}) {
     final i0 = uri.lastIndexOf('/') + 1;
-    final i1 = fileExt ? uri.length : uri.lastIndexOf('.');
+    final i1 = fileExt ? _getExt(uri) : uri.lastIndexOf('.');
     return uri.substring(i0, i1);
   }
 

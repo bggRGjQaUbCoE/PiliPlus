@@ -787,11 +787,10 @@ abstract final class Pref {
   static bool get expandBuffer =>
       _setting.get(SettingBoxKey.expandBuffer, defaultValue: false);
 
-  static AudioOutput get audioOutput =>
-      AudioOutput.values[_setting.get(
-        SettingBoxKey.audioOutput,
-        defaultValue: AudioOutput.aaudio.index,
-      )];
+  static String get audioOutput => _setting.get(
+    SettingBoxKey.audioOutput,
+    defaultValue: AudioOutput.defaultValue,
+  );
 
   static bool get enableAi =>
       _setting.get(SettingBoxKey.enableAi, defaultValue: false);

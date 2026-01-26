@@ -320,12 +320,31 @@ List<SettingsModel> get videoSettings => [
     },
   ),
   if (kDebugMode || Platform.isAndroid)
-    getPopupMenuModel(
+    NormalModel(
       title: '音频输出设备',
-      subtitle: '',
       leading: const Icon(Icons.speaker_outlined),
-      key: SettingBoxKey.audioOutput,
-      values: AudioOutput.values,
+      getSubtitle: () => '当前：${Pref.audioOutput}',
+      onTap: (context, setState) async {
+        final result = await showDialog<List<String>>(
+          context: context,
+          builder: (context) {
+            return OrderedMultiSelectDialog<String>(
+              title: '音频输出设备',
+              initValues: Pref.audioOutput.split(','),
+              values: {
+                for (final e in AudioOutput.values) e.name: e.label,
+              },
+            );
+          },
+        );
+        if (result != null && result.isNotEmpty) {
+          await GStorage.setting.put(
+            SettingBoxKey.audioOutput,
+            result.join(','),
+          );
+          setState();
+        }
+      },
     ),
   const SwitchModel(
     title: '扩大缓冲区',

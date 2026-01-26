@@ -977,14 +977,9 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
           semanticLabel: '无痕',
         ),
       if (introController.isShowOnlineTotal)
-        Obx(
-          () => Text(
-            '${introController.total.value}人在看',
-            style: TextStyle(
-              fontSize: 12,
-              color: theme.colorScheme.outline,
-            ),
-          ),
+        StatWidget(
+          type: StatType.watching,
+          value: '${introController.total.value}人正在看',
         ),
     ],
   );

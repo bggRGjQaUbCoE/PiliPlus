@@ -7,7 +7,8 @@ enum StatType {
   reply(Icons.comment_outlined, '评论'),
   follow(Icons.favorite_border, '关注'),
   play(Icons.play_circle_outlined, '播放'),
-  listen(Icons.headset_outlined, '播放')
+  listen(Icons.headset_outlined, '播放'),
+  watching(Icons.people_alt_outlined, '正在看')
   ;
 
   final IconData iconData;

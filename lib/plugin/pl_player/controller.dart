@@ -800,6 +800,7 @@ class PlPlayerController {
       }
       // video-sync=display-resample
       await pp.setProperty("video-sync", Pref.videoSync);
+      await pp.setProperty("autosync", "30");
       // vo=gpu-next & gpu-context=android & gpu-api=opengl
       // await pp.setProperty("vo", "gpu-next");
       // await pp.setProperty("gpu-context", "android");

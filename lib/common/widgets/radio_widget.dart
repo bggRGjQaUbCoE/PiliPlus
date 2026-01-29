@@ -1,3 +1,4 @@
+import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:flutter/material.dart';
 
 class RadioWidget<T> extends StatefulWidget {
@@ -61,17 +62,13 @@ class RadioWidgetState<T> extends State<RadioWidget<T>> with RadioClient<T> {
     final child = Row(
       mainAxisSize: widget.mainAxisSize,
       children: [
-        Focus(
-          parentNode: focusNode,
-          canRequestFocus: false,
-          skipTraversal: true,
-          includeSemantics: true,
-          descendantsAreFocusable: false,
-          descendantsAreTraversable: false,
+        ExcludeFocus(
           child: Radio<T>(
             value: radioValue,
             groupRegistry: _radioRegistry,
-            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            materialTapTargetSize: PlatformUtils.isDesktop
+                ? .padded
+                : .shrinkWrap,
           ),
         ),
         Text(widget.title),
@@ -91,22 +88,13 @@ class WrapRadioOptionsGroup<T> extends StatelessWidget {
   final String groupTitle;
   final Map<T, String> options;
   final EdgeInsetsGeometry? itemPadding;
-  final bool vertical;
 
   const WrapRadioOptionsGroup({
     super.key,
     required this.groupTitle,
     required this.options,
     this.itemPadding,
-    this.vertical = false,
   });
-
-  const WrapRadioOptionsGroup.vertical({
-    super.key,
-    required this.groupTitle,
-    required this.options,
-    this.itemPadding,
-  }) : vertical = true;
 
   @override
   Widget build(BuildContext context) {
@@ -123,28 +111,15 @@ class WrapRadioOptionsGroup<T> extends StatelessWidget {
           ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12),
-          child: vertical
-              ? Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: options.entries.map((entry) {
-                    return RadioWidget<T>(
-                      value: entry.key,
-                      title: entry.value,
-                      padding:
-                          itemPadding ??
-                          const EdgeInsets.symmetric(vertical: 4),
-                    );
-                  }).toList(),
-                )
-              : Wrap(
-                  children: options.entries.map((entry) {
-                    return RadioWidget<T>(
-                      value: entry.key,
-                      title: entry.value,
-                      padding: itemPadding ?? const EdgeInsets.only(right: 10),
-                    );
-                  }).toList(),
-                ),
+          child: Wrap(
+            children: options.entries.map((entry) {
+              return RadioWidget<T>(
+                value: entry.key,
+                title: entry.value,
+                padding: itemPadding ?? const EdgeInsets.only(right: 10),
+              );
+            }).toList(),
+          ),
         ),
       ],
     );

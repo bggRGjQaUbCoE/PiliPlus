@@ -91,13 +91,22 @@ class WrapRadioOptionsGroup<T> extends StatelessWidget {
   final String groupTitle;
   final Map<T, String> options;
   final EdgeInsetsGeometry? itemPadding;
+  final bool vertical;
 
   const WrapRadioOptionsGroup({
     super.key,
     required this.groupTitle,
     required this.options,
     this.itemPadding,
+    this.vertical = false,
   });
+
+  const WrapRadioOptionsGroup.vertical({
+    super.key,
+    required this.groupTitle,
+    required this.options,
+    this.itemPadding,
+  }) : vertical = true;
 
   @override
   Widget build(BuildContext context) {
@@ -114,15 +123,28 @@ class WrapRadioOptionsGroup<T> extends StatelessWidget {
           ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12),
-          child: Wrap(
-            children: options.entries.map((entry) {
-              return RadioWidget<T>(
-                value: entry.key,
-                title: entry.value,
-                padding: itemPadding ?? const EdgeInsets.only(right: 10),
-              );
-            }).toList(),
-          ),
+          child: vertical
+              ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: options.entries.map((entry) {
+                    return RadioWidget<T>(
+                      value: entry.key,
+                      title: entry.value,
+                      padding:
+                          itemPadding ??
+                          const EdgeInsets.symmetric(vertical: 4),
+                    );
+                  }).toList(),
+                )
+              : Wrap(
+                  children: options.entries.map((entry) {
+                    return RadioWidget<T>(
+                      value: entry.key,
+                      title: entry.value,
+                      padding: itemPadding ?? const EdgeInsets.only(right: 10),
+                    );
+                  }).toList(),
+                ),
         ),
       ],
     );

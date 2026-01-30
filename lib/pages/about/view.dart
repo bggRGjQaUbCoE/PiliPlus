@@ -43,6 +43,8 @@ class AboutPage extends StatefulWidget {
 class _AboutPageState extends State<AboutPage> {
   final currentVersion =
       '${BuildConfig.versionName}+${BuildConfig.versionCode}';
+  final versionTag = 
+      '${BuildConfig.versionTag}+${BuildConfig.versionCode}';
   RxString cacheSize = ''.obs;
 
   late int _pressCount = 0;
@@ -141,14 +143,14 @@ class _AboutPageState extends State<AboutPage> {
           ),
           ListTile(
             onTap: () => Update.checkUpdate(false),
-            onLongPress: () => Utils.copyText(currentVersion),
+            onLongPress: () => Utils.copyText(versionTag),
             onSecondaryTap: PlatformUtils.isMobile
                 ? null
-                : () => Utils.copyText(currentVersion),
+                : () => Utils.copyText(versionTag),
             title: const Text('当前版本'),
             leading: const Icon(Icons.commit_outlined),
             trailing: Text(
-              currentVersion,
+              versionTag,
               style: subTitleStyle,
             ),
           ),

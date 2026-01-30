@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math' as math;
 
 import 'package:PiliPlus/common/widgets/color_palette.dart';
 import 'package:PiliPlus/common/widgets/custom_toast.dart';
@@ -490,60 +491,41 @@ void _showUiScaleDialog(
   );
 }
 
-void _showSpringDurationDialog(BuildContext context) {
-  String initialValue = '500';
-  showDialog(
-    context: context,
-    builder: (context) => AlertDialog(
-      title: const Text('滑动时间'),
-      content: TextFormField(
-        autofocus: true,
-        keyboardType: .number,
-        initialValue: initialValue,
-        onChanged: (value) => initialValue = value,
-        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-        decoration: const InputDecoration(suffixText: 'ms'),
-      ),
-      actions: [
-        TextButton(
-          onPressed: Get.back,
-          child: Text(
-            '取消',
-            style: TextStyle(color: ColorScheme.of(context).outline),
-          ),
-        ),
-        TextButton(
-          onPressed: () {
-            try {
-              final milliseconds = int.parse(initialValue);
-              Get.back();
-              final springDescription = SpringDescription.withDurationAndBounce(
-                duration: Duration(milliseconds: milliseconds),
-              );
-              GStorage.setting.put(
-                SettingBoxKey.springDescription,
-                [
-                  springDescription.mass,
-                  springDescription.stiffness,
-                  springDescription.damping,
-                ],
-              );
-              SmartDialog.showToast('设置成功，重启生效');
-            } catch (e) {
-              SmartDialog.showToast(e.toString());
-            }
-          },
-          child: const Text('确定'),
-        ),
-      ],
-    ),
-  );
-}
-
 void _showSpringDialog(BuildContext context, _) {
   final List<String> springDescription = Pref.springDescription
       .map((i) => i.toString())
-      .toList();
+      .toList(growable: false);
+  bool physicalMode = true;
+
+  void physical2Duration() {
+    final mass = double.parse(springDescription[0]);
+    final stiffness = double.parse(springDescription[1]);
+    final damping = double.parse(springDescription[2]);
+
+    final duration = math.sqrt(4 * math.pi * math.pi * mass / stiffness);
+    final dampingRatio = damping / (2.0 * math.sqrt(mass * stiffness));
+    final bounce = dampingRatio < 1.0
+        ? 1.0 - dampingRatio
+        : 1.0 / dampingRatio - 1;
+
+    springDescription[0] = duration.toString();
+    springDescription[1] = bounce.toString();
+  }
+
+  /// from [SpringDescription.withDurationAndBounce] but with higher precision
+  void duration2Physical() {
+    final duration = double.parse(springDescription[0]);
+    final bounce = double.parse(springDescription[1]).clamp(-1.0, 1.0);
+
+    final stiffness = 4 * math.pi * math.pi / math.pow(duration, 2);
+    final dampingRatio = bounce > 0 ? 1.0 - bounce : 1.0 / (bounce + 1);
+    final damping = 2 * math.sqrt(stiffness) * dampingRatio;
+
+    springDescription[0] = '1';
+    springDescription[1] = stiffness.toString();
+    springDescription[2] = damping.toString();
+  }
+
   showDialog(
     context: context,
     builder: (context) => AlertDialog(
@@ -557,27 +539,45 @@ void _showSpringDialog(BuildContext context, _) {
               tapTargetSize: .shrinkWrap,
             ),
             onPressed: () {
-              Get.back();
-              _showSpringDurationDialog(context);
+              try {
+                if (physicalMode) {
+                  physical2Duration();
+                } else {
+                  duration2Physical();
+                }
+                physicalMode = !physicalMode;
+                (context as Element).markNeedsBuild();
+              } catch (e) {
+                SmartDialog.showToast(e.toString());
+              }
             },
-            child: const Text('滑动时间'),
+            child: Text(physicalMode ? '滑动时间' : '物理参数'),
           ),
         ],
       ),
       content: Column(
-        mainAxisSize: MainAxisSize.min,
+        key: ValueKey(physicalMode),
+        mainAxisSize: .min,
         children: List.generate(
-          3,
+          physicalMode ? 3 : 2,
           (index) => TextFormField(
             autofocus: index == 0,
             initialValue: springDescription[index],
-            keyboardType: const .numberWithOptions(decimal: true),
+            keyboardType: .numberWithOptions(
+              signed: !physicalMode && index == 1,
+              decimal: true,
+            ),
             onChanged: (value) => springDescription[index] = value,
             inputFormatters: [
-              FilteringTextInputFormatter.allow(RegExp(r'[\d\.]+')),
+              physicalMode || index != 1
+                  ? FilteringTextInputFormatter.allow(RegExp(r'[\d\.]+'))
+                  : FilteringTextInputFormatter.allow(RegExp(r'[-\d\.]+')),
             ],
             decoration: InputDecoration(
-              labelText: const ['mass', 'stiffness', 'damping'][index],
+              labelText: (physicalMode
+                  ? const ['mass', 'stiffness', 'damping']
+                  : const ['duration', 'bounce'])[index],
+              suffixText: physicalMode || index != 0 ? null : 's',
             ),
           ),
         ),
@@ -601,6 +601,9 @@ void _showSpringDialog(BuildContext context, _) {
         TextButton(
           onPressed: () {
             try {
+              if (!physicalMode) {
+                duration2Physical();
+              }
               final res = springDescription.map(double.parse).toList();
               Get.back();
               GStorage.setting.put(SettingBoxKey.springDescription, res);

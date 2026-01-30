@@ -789,13 +789,13 @@ class LoginPageController extends GetxController
                         crossAxisAlignment: .start,
                         children: options.entries
                             .map(
-                              (entry) => RadioListTile<Account>(
+                              (entry) => RadioWidget<Account>(
                                 value: entry.key,
-                                title: Text(entry.value),
-                                contentPadding: const .only(left: 12),
-                                materialTapTargetSize: PlatformUtils.isDesktop
-                                    ? .padded
-                                    : .shrinkWrap,
+                                title: entry.value,
+                                mainAxisSize: .max,
+                                padding: PlatformUtils.isDesktop
+                                    ? const .only(left: 12)
+                                    : const .only(left: 12, top: 2, bottom: 2),
                               ),
                             )
                             .toList(),

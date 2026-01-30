@@ -569,15 +569,15 @@ void _showSpringDialog(BuildContext context, _) {
             ),
             onChanged: (value) => springDescription[index] = value,
             inputFormatters: [
-              physicalMode || index != 1
-                  ? FilteringTextInputFormatter.allow(RegExp(r'[\d\.]+'))
-                  : FilteringTextInputFormatter.allow(RegExp(r'[-\d\.]+')),
+              !physicalMode && index == 1
+                  ? FilteringTextInputFormatter.allow(RegExp(r'[-\d\.]+'))
+                  : FilteringTextInputFormatter.allow(RegExp(r'[\d\.]+')),
             ],
             decoration: InputDecoration(
               labelText: (physicalMode
                   ? const ['mass', 'stiffness', 'damping']
                   : const ['duration', 'bounce'])[index],
-              suffixText: physicalMode || index != 0 ? null : 's',
+              suffixText: !physicalMode && index == 0 ? 's' : null,
             ),
           ),
         ),

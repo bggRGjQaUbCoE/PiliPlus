@@ -93,4 +93,11 @@ class UpItem {
     mid = json['mid'] ?? 0;
     uname = json['uname'];
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) || other is UpItem && mid == other.mid;
+
+  @override
+  int get hashCode => mid.hashCode;
 }

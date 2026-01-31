@@ -219,35 +219,6 @@ class RenderViewPointProgressBar
       ..layout(const ui.ParagraphConstraints(width: double.infinity));
   }
 
-  /// ref [FittedBox]
-  static Matrix4 _getTransform(Size childSize, Size containerSize) {
-    const Alignment resolvedAlignment = Alignment.center;
-    final FittedSizes sizes = applyBoxFit(
-      BoxFit.contain,
-      childSize,
-      containerSize,
-    );
-    final double scaleX = sizes.destination.width / sizes.source.width;
-    final double scaleY = sizes.destination.height / sizes.source.height;
-    final Rect sourceRect = resolvedAlignment.inscribe(
-      sizes.source,
-      Offset.zero & childSize,
-    );
-    final Rect destinationRect = resolvedAlignment.inscribe(
-      sizes.destination,
-      Offset.zero & containerSize,
-    );
-    final transform =
-        Matrix4.translationValues(
-            destinationRect.left,
-            destinationRect.top,
-            0.0,
-          )
-          ..scaleByDouble(scaleX, scaleY, 1.0, 1)
-          ..translateByDouble(-sourceRect.left, -sourceRect.top, 0, 1);
-    return transform;
-  }
-
   @override
   void paint(PaintingContext context, Offset offset) {
     final size = this.size;
@@ -281,22 +252,17 @@ class RenderViewPointProgressBar
         final textHeight = paragraph.height;
 
         final isOverflow = textWidth > segmentWidth;
-        Matrix4? transform;
         if (isOverflow) {
-          transform = _getTransform(
-            Size(textWidth, textHeight),
-            Size(segmentWidth, _barHeight),
-          );
+          final scale = segmentWidth / textWidth;
           canvas
             ..save()
-            ..transform(transform.storage);
+            ..translate(prevEnd, (_barHeight - textHeight * scale) / 2)
+            ..scale(scale);
         }
 
         final Offset offset;
         if (isOverflow) {
-          offset =
-              (MatrixUtils.getAsTranslation(transform!) ?? Offset.zero) +
-              Offset(prevEnd / transform.row0.x, 0);
+          offset = Offset.zero;
         } else {
           offset = Offset(
             (segmentWidth - textWidth) / 2 + prevEnd,

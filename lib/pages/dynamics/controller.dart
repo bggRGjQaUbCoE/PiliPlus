@@ -33,7 +33,7 @@ class DynamicsController extends GetxController
       LoadingState<FollowUpModel>.loading().obs;
   late int _upPage = 1;
   late bool _upEnd = false;
-  List<UpItem>? _cacheUpList;
+  Set<UpItem>? _cacheUpList;
   late final _showAllUp = Pref.dynamicsShowAllFollowedUp;
   late bool showLiveUp = Pref.expandDynLivePanel;
 
@@ -161,8 +161,7 @@ class DynamicsController extends GetxController
         }
 
         final list = data.upList;
-        _cacheUpList = List<UpItem>.from(list);
-        list.addAll(list1..removeWhere(list.contains));
+        list.addAll(list1..removeWhere((_cacheUpList = list.toSet()).contains));
       }
       if (!_showAllUp) {
         if (data.hasMore == false || data.offset.isNullOrEmpty) {

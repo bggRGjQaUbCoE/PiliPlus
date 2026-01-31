@@ -252,16 +252,13 @@ class RenderViewPointProgressBar
         final textHeight = paragraph.height;
 
         final isOverflow = textWidth > segmentWidth;
+        final Offset offset;
         if (isOverflow) {
           final scale = segmentWidth / textWidth;
           canvas
             ..save()
             ..translate(prevEnd, (_barHeight - textHeight * scale) / 2)
             ..scale(scale);
-        }
-
-        final Offset offset;
-        if (isOverflow) {
           offset = Offset.zero;
         } else {
           offset = Offset(

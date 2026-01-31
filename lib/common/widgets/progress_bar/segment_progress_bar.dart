@@ -24,21 +24,20 @@ import 'package:flutter/rendering.dart' show BoxHitTestEntry;
 
 @immutable
 sealed class BaseSegment {
-  final double start;
   final double end;
 
   const BaseSegment({
-    required this.start,
     required this.end,
   });
 }
 
 @immutable
 class Segment extends BaseSegment {
+  final double start;
   final Color color;
 
   const Segment({
-    required super.start,
+    required this.start,
     required super.end,
     required this.color,
   });
@@ -71,7 +70,7 @@ class ViewPointSegment extends BaseSegment {
     this.url,
     this.from,
     this.to,
-  }) : super(start: end);
+  });
 
   @override
   bool operator ==(Object other) {
@@ -79,8 +78,7 @@ class ViewPointSegment extends BaseSegment {
       return true;
     }
     if (other is ViewPointSegment) {
-      return start == other.start &&
-          end == other.end &&
+      return end == other.end &&
           title == other.title &&
           url == other.url &&
           from == other.from &&
@@ -90,13 +88,13 @@ class ViewPointSegment extends BaseSegment {
   }
 
   @override
-  int get hashCode => Object.hash(start, end, title, url, from, to);
+  int get hashCode => Object.hash(end, title, url, from, to);
 }
 
 class SegmentProgressBar extends BaseSegmentProgressBar<Segment> {
   const SegmentProgressBar({
     super.key,
-    super.height = 3.5,
+    super.height,
     required super.segments,
   });
 
@@ -146,7 +144,7 @@ class ViewPointSegmentProgressBar
     extends BaseSegmentProgressBar<ViewPointSegment> {
   const ViewPointSegmentProgressBar({
     super.key,
-    super.height = 3.5,
+    super.height,
     required super.segments,
     this.onSeek,
   });
@@ -232,7 +230,7 @@ class RenderViewPointProgressBar
 
     paint.color = Colors.black.withValues(alpha: 0.5);
 
-    double prevEnd = 0;
+    double prevEnd = 0.0;
     for (final segment in segments) {
       final segmentEnd = segment.end * size.width;
       canvas.drawRect(
@@ -311,8 +309,8 @@ class RenderViewPointProgressBar
     try {
       final seg = details.localPosition.dx / size.width;
       final item = _segments
-          .where((item) => item.start >= seg)
-          .reduce((a, b) => a.start < b.start ? a : b);
+          .where((item) => item.end >= seg)
+          .reduce((a, b) => a.end < b.end ? a : b);
       if (item.from case final from?) {
         _onSeek?.call(Duration(seconds: from));
       }

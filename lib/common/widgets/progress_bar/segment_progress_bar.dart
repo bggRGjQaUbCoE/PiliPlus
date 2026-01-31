@@ -263,7 +263,6 @@ class RenderViewPointProgressBar
 
     double prevEnd = 0;
     for (final segment in segments) {
-      final segmentStart = prevEnd;
       final segmentEnd = segment.end * size.width;
       canvas.drawRect(
         Rect.fromLTRB(
@@ -276,14 +275,16 @@ class RenderViewPointProgressBar
       );
       final title = segment.title;
       if (title != null && title.isNotEmpty) {
-        final segmentWidth = segmentEnd - segmentStart;
+        final segmentWidth = segmentEnd - prevEnd;
         final paragraph = _getParagraph(title, 10);
+        final textWidth = paragraph.maxIntrinsicWidth;
+        final textHeight = paragraph.height;
 
-        final isOverflow = paragraph.maxIntrinsicWidth > segmentWidth;
+        final isOverflow = textWidth > segmentWidth;
         Matrix4? transform;
         if (isOverflow) {
           transform = _getTransform(
-            Size(paragraph.maxIntrinsicWidth, paragraph.height),
+            Size(textWidth, textHeight),
             Size(segmentWidth, _barHeight),
           );
           canvas
@@ -298,8 +299,8 @@ class RenderViewPointProgressBar
               Offset(prevEnd / transform.row0.x, 0);
         } else {
           offset = Offset(
-            (segmentWidth - paragraph.minIntrinsicWidth) / 2 + prevEnd,
-            (_barHeight - paragraph.height) / 2,
+            (segmentWidth - textWidth) / 2 + prevEnd,
+            (_barHeight - textHeight) / 2,
           );
         }
         canvas.drawParagraph(paragraph, offset);

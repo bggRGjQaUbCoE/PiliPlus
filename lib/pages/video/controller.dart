@@ -1585,13 +1585,9 @@ class VideoDetailController extends GetxController
           response.viewPoints?.firstOrNull?.type == 2) {
         try {
           viewPointList.value = response.viewPoints!.map((item) {
-            double start = (item.to! / (data.timeLength! / 1000)).clamp(
-              0.0,
-              1.0,
-            );
+            final end = (item.to! / (data.timeLength! / 1000)).clamp(0.0, 1.0);
             return ViewPointSegment(
-              start: start,
-              end: start,
+              end: end,
               title: item.content,
               url: item.imgUrl,
               from: item.from,

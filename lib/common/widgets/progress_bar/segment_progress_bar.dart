@@ -66,13 +66,12 @@ class ViewPointSegment extends BaseSegment {
   final int? to;
 
   const ViewPointSegment({
-    required super.start,
     required super.end,
     this.title,
     this.url,
     this.from,
     this.to,
-  });
+  }) : super(start: end);
 
   @override
   bool operator ==(Object other) {
@@ -194,6 +193,60 @@ class RenderViewPointProgressBar
   }
 
   static const double _barHeight = 15.0;
+  static const double _dividerWidth = 2.0;
+
+  static ui.Paragraph _getParagraph(String title, double size) {
+    final builder =
+        ui.ParagraphBuilder(
+            ui.ParagraphStyle(
+              textDirection: .ltr,
+              strutStyle: ui.StrutStyle(
+                leading: 0,
+                height: 1,
+                fontSize: size,
+              ),
+            ),
+          )
+          ..pushStyle(
+            ui.TextStyle(
+              color: Colors.white,
+              fontSize: size,
+              height: 1,
+            ),
+          )
+          ..addText(title);
+    return builder.build()
+      ..layout(const ui.ParagraphConstraints(width: double.infinity));
+  }
+
+  /// ref [FittedBox]
+  static Matrix4 _getTransform(Size childSize, Size containerSize) {
+    const Alignment resolvedAlignment = Alignment.center;
+    final FittedSizes sizes = applyBoxFit(
+      BoxFit.contain,
+      childSize,
+      containerSize,
+    );
+    final double scaleX = sizes.destination.width / sizes.source.width;
+    final double scaleY = sizes.destination.height / sizes.source.height;
+    final Rect sourceRect = resolvedAlignment.inscribe(
+      sizes.source,
+      Offset.zero & childSize,
+    );
+    final Rect destinationRect = resolvedAlignment.inscribe(
+      sizes.destination,
+      Offset.zero & containerSize,
+    );
+    final transform =
+        Matrix4.translationValues(
+            destinationRect.left,
+            destinationRect.top,
+            0.0,
+          )
+          ..scaleByDouble(scaleX, scaleY, 1.0, 1)
+          ..translateByDouble(-sourceRect.left, -sourceRect.top, 0, 1);
+    return transform;
+  }
 
   @override
   void paint(PaintingContext context, Offset offset) {
@@ -208,93 +261,54 @@ class RenderViewPointProgressBar
 
     paint.color = Colors.black.withValues(alpha: 0.5);
 
-    for (int index = 0; index < segments.length; index++) {
-      final isFirst = index == 0;
-      final item = segments[index];
-      final segmentStart = item.start * size.width;
-      final segmentEnd = item.end * size.width;
+    double prevEnd = 0;
+    for (final segment in segments) {
+      final segmentStart = prevEnd;
+      final segmentEnd = segment.end * size.width;
+      canvas.drawRect(
+        Rect.fromLTRB(
+          segmentEnd,
+          0,
+          segmentEnd + _dividerWidth,
+          _barHeight + height,
+        ),
+        paint,
+      );
+      final title = segment.title;
+      if (title != null && title.isNotEmpty) {
+        final segmentWidth = segmentEnd - segmentStart;
+        final paragraph = _getParagraph(title, 10);
 
-      if (segmentEnd > segmentStart ||
-          (segmentEnd == segmentStart && segmentStart > 0)) {
-        canvas.drawRect(
-          Rect.fromLTRB(
-            segmentStart,
-            0,
-            segmentEnd == segmentStart ? segmentStart + 2 : segmentEnd,
-            _barHeight + height,
-          ),
-          paint,
-        );
+        final isOverflow = paragraph.maxIntrinsicWidth > segmentWidth;
+        Matrix4? transform;
+        if (isOverflow) {
+          transform = _getTransform(
+            Size(paragraph.maxIntrinsicWidth, paragraph.height),
+            Size(segmentWidth, _barHeight),
+          );
+          canvas
+            ..save()
+            ..transform(transform.storage);
+        }
 
-        final title = item.title;
-        if (title != null && title.isNotEmpty) {
-          ui.Paragraph getParagraph(double size) {
-            final builder =
-                ui.ParagraphBuilder(
-                    ui.ParagraphStyle(
-                      textDirection: .ltr,
-                      strutStyle: ui.StrutStyle(
-                        leading: 0,
-                        height: 1,
-                        fontSize: size,
-                      ),
-                    ),
-                  )
-                  ..pushStyle(
-                    ui.TextStyle(
-                      color: Colors.white,
-                      fontSize: size,
-                      height: 1,
-                    ),
-                  )
-                  ..addText(title);
-            return builder.build()
-              ..layout(const ui.ParagraphConstraints(width: double.infinity));
-          }
-
-          late double prevStart;
-          if (!isFirst) {
-            prevStart = segments[index - 1].start * size.width;
-          }
-          final width = isFirst ? segmentStart : segmentStart - prevStart;
-
-          const double maxFS = 10;
-          const double minFS = 2;
-
-          final space = width - 2;
-
-          final preCalcFS = space / title.length;
-          ui.Paragraph? paragraph;
-          if (0.5 * minFS <= preCalcFS && preCalcFS <= 1.2 * maxFS) {
-            var max = maxFS;
-            var min = minFS;
-            var mid = preCalcFS.clamp(minFS, maxFS);
-            do {
-              paragraph?.dispose();
-              paragraph = getParagraph(mid);
-              var comp = space - paragraph.minIntrinsicWidth;
-              if (comp > 0) {
-                if (comp < 2) break;
-                min = mid;
-              } else {
-                max = mid;
-              }
-              mid = min + (max - min) / 2;
-            } while (max - min > 0.25);
-          } else {
-            paragraph = getParagraph(preCalcFS.clamp(minFS, maxFS));
-          }
-
-          final textX = isFirst
-              ? (segmentStart - paragraph.minIntrinsicWidth) / 2
-              : (segmentStart - prevStart - paragraph.minIntrinsicWidth) / 2 +
-                    prevStart +
-                    1;
-          final textY = (_barHeight - paragraph.height) / 2;
-          canvas.drawParagraph(paragraph, Offset(textX, textY));
-          paragraph.dispose();
+        final Offset offset;
+        if (isOverflow) {
+          offset =
+              (MatrixUtils.getAsTranslation(transform!) ?? Offset.zero) +
+              Offset(prevEnd / transform.row0.x, 0);
+        } else {
+          offset = Offset(
+            (segmentWidth - paragraph.minIntrinsicWidth) / 2 + prevEnd,
+            (_barHeight - paragraph.height) / 2,
+          );
+        }
+        canvas.drawParagraph(paragraph, offset);
+        paragraph.dispose();
+        if (isOverflow) {
+          canvas.restore();
         }
       }
+      prevEnd = segmentEnd + _dividerWidth;
     }
   }
 

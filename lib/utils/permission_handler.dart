@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:permission_handler_platform_interface/permission_handler_platform_interface.dart';
@@ -24,57 +25,51 @@ Future<bool> openAppSettings() => _handler.openAppSettings();
 /// Actions that can be executed on a permission.
 extension PermissionActions on Permission {
   /// Callback for when permission is denied.
-  static Future<void>? Function()? _onDenied;
+  static VoidCallback? _onDenied;
 
   /// Callback for when permission is granted.
-  static Future<void>? Function()? _onGranted;
+  static VoidCallback? _onGranted;
 
   /// Callback for when permission is permanently denied.
-  static Future<void>? Function()? _onPermanentlyDenied;
+  static VoidCallback? _onPermanentlyDenied;
 
   /// Callback for when permission is restricted.
-  static Future<void>? Function()? _onRestricted;
+  static VoidCallback? _onRestricted;
 
   /// Callback for when permission is limited.
-  static Future<void>? Function()? _onLimited;
+  static VoidCallback? _onLimited;
 
   /// Callback for when permission is Provisional.
-  static Future<void>? Function()? _onProvisional;
+  static VoidCallback? _onProvisional;
 
   /// Method to set a callback for when permission is denied.
-  Permission onDeniedCallback(Future<void>? Function()? callback) {
+  void onDeniedCallback(VoidCallback? callback) {
     _onDenied = callback;
-    return this;
   }
 
   /// Method to set a callback for when permission is granted.
-  Permission onGrantedCallback(Future<void>? Function()? callback) {
+  void onGrantedCallback(VoidCallback? callback) {
     _onGranted = callback;
-    return this;
   }
 
   /// Method to set a callback for when permission is permanently denied.
-  Permission onPermanentlyDeniedCallback(Future<void>? Function()? callback) {
+  void onPermanentlyDeniedCallback(VoidCallback? callback) {
     _onPermanentlyDenied = callback;
-    return this;
   }
 
   /// Method to set a callback for when permission is restricted.
-  Permission onRestrictedCallback(Future<void>? Function()? callback) {
+  void onRestrictedCallback(VoidCallback? callback) {
     _onRestricted = callback;
-    return this;
   }
 
   /// Method to set a callback for when permission is limited.
-  Permission onLimitedCallback(Future<void>? Function()? callback) {
+  void onLimitedCallback(VoidCallback? callback) {
     _onLimited = callback;
-    return this;
   }
 
   /// Method to set a callback for when permission is provisional.
-  Permission onProvisionalCallback(Future<void>? Function()? callback) {
+  void onProvisionalCallback(VoidCallback? callback) {
     _onProvisional = callback;
-    return this;
   }
 
   /// Checks the current status of the given [Permission].
@@ -92,8 +87,8 @@ extension PermissionActions on Permission {
   ///
   /// This is only implemented on Android, calling this on iOS always returns
   /// [false].
-  Future<bool> get shouldShowRequestRationale async {
-    if (defaultTargetPlatform != TargetPlatform.android) {
+  FutureOr<bool> get shouldShowRequestRationale {
+    if (!Platform.isAndroid) {
       return false;
     }
 
@@ -108,19 +103,14 @@ extension PermissionActions on Permission {
     final permissionStatus =
         (await [this].request())[this] ?? PermissionStatus.denied;
 
-    if (permissionStatus.isDenied) {
-      _onDenied?.call();
-    } else if (permissionStatus.isGranted) {
-      _onGranted?.call();
-    } else if (permissionStatus.isPermanentlyDenied) {
-      _onPermanentlyDenied?.call();
-    } else if (permissionStatus.isRestricted) {
-      _onRestricted?.call();
-    } else if (permissionStatus.isLimited) {
-      _onLimited?.call();
-    } else if (permissionStatus.isProvisional) {
-      _onProvisional?.call();
-    }
+    (switch (permissionStatus) {
+      .denied => _onDenied,
+      .granted => _onGranted,
+      .restricted => _onRestricted,
+      .limited => _onLimited,
+      .permanentlyDenied => _onPermanentlyDenied,
+      .provisional => _onProvisional,
+    })?.call();
 
     return permissionStatus;
   }

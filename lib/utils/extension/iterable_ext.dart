@@ -50,4 +50,27 @@ extension ListExt<T> on List<T> {
   ) {
     return where(test).reduceOrNull(combine) ?? reduce(combine);
   }
+
+  /// from [algorithms.lowerBoundBy].
+  int lowerBoundByKey<K extends Comparable<K>>(
+    K Function(T element) keyOf,
+    K key, [
+    int start = 0,
+    int? end,
+  ]) {
+    end = RangeError.checkValidRange(start, end, length);
+    var min = start;
+    var max = end;
+    while (min < max) {
+      var mid = min + ((max - min) >> 1);
+      var element = this[mid];
+      var comp = keyOf(element).compareTo(key);
+      if (comp < 0) {
+        min = mid + 1;
+      } else {
+        max = mid;
+      }
+    }
+    return min;
+  }
 }

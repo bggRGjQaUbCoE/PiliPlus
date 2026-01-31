@@ -17,7 +17,9 @@
 
 import 'dart:ui' as ui;
 
-import 'package:flutter/foundation.dart' show listEquals, kDebugMode;
+import 'package:PiliPlus/utils/extension/iterable_ext.dart';
+import 'package:collection/collection.dart';
+import 'package:flutter/foundation.dart' show listEquals;
 import 'package:flutter/gestures.dart' show TapGestureRecognizer;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart' show BoxHitTestEntry;
@@ -223,6 +225,8 @@ class RenderViewPointProgressBar
     final canvas = context.canvas;
     final paint = Paint()..style = PaintingStyle.fill;
 
+    assert(segments.isSortedBy((i) => i.end));
+
     canvas.drawRect(
       Rect.fromLTRB(0, 0, size.width, _barHeight),
       paint..color = Colors.grey[600]!.withValues(alpha: 0.45),
@@ -305,19 +309,16 @@ class RenderViewPointProgressBar
     }
   }
 
+  @pragma('vm:notify-debugger-on-exception')
   void _onTapUp(TapUpDetails details) {
     try {
       final seg = details.localPosition.dx / size.width;
-      final item = _segments
-          .where((item) => item.end >= seg)
-          .reduce((a, b) => a.end < b.end ? a : b);
+      final item = _segments[_segments.lowerBoundByKey((i) => i.end, seg)];
       if (item.from case final from?) {
         _onSeek?.call(Duration(seconds: from));
       }
       // if (kDebugMode) debugPrint('${item.title},,${item.from}');
-    } catch (e) {
-      if (kDebugMode) rethrow;
-    }
+    } catch (_) {}
   }
 }
 

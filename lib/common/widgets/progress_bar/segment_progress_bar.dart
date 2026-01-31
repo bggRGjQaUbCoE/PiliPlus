@@ -15,6 +15,8 @@
  * along with PiliPlus.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import 'dart:ui' as ui;
+
 import 'package:flutter/foundation.dart' show listEquals, kDebugMode;
 import 'package:flutter/gestures.dart' show TapGestureRecognizer;
 import 'package:flutter/material.dart';
@@ -214,35 +216,6 @@ class RenderViewPointProgressBar
 
       if (segmentEnd > segmentStart ||
           (segmentEnd == segmentStart && segmentStart > 0)) {
-        double fontSize = 10;
-
-        TextPainter getTextPainter() => TextPainter(
-          text: TextSpan(
-            text: item.title,
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: fontSize,
-              height: 1,
-            ),
-          ),
-          strutStyle: StrutStyle(leading: 0, height: 1, fontSize: fontSize),
-          textDirection: TextDirection.ltr,
-        )..layout();
-
-        TextPainter textPainter = getTextPainter();
-
-        late double prevStart;
-        if (!isFirst) {
-          prevStart = segments[index - 1].start * size.width;
-        }
-        final width = isFirst ? segmentStart : segmentStart - prevStart;
-
-        while (textPainter.width > width - 2 && fontSize >= 2) {
-          fontSize -= 0.5;
-          textPainter.dispose();
-          textPainter = getTextPainter();
-        }
-
         canvas.drawRect(
           Rect.fromLTRB(
             segmentStart,
@@ -253,13 +226,74 @@ class RenderViewPointProgressBar
           paint,
         );
 
-        final textX = isFirst
-            ? (segmentStart - textPainter.width) / 2
-            : (segmentStart - prevStart - textPainter.width) / 2 +
-                  prevStart +
-                  1;
-        final textY = (_barHeight - textPainter.height) / 2;
-        textPainter.paint(canvas, Offset(textX, textY));
+        final title = item.title;
+        if (title != null && title.isNotEmpty) {
+          ui.Paragraph getParagraph(double size) {
+            final builder =
+                ui.ParagraphBuilder(
+                    ui.ParagraphStyle(
+                      textDirection: .ltr,
+                      strutStyle: ui.StrutStyle(
+                        leading: 0,
+                        height: 1,
+                        fontSize: size,
+                      ),
+                    ),
+                  )
+                  ..pushStyle(
+                    ui.TextStyle(
+                      color: Colors.white,
+                      fontSize: size,
+                      height: 1,
+                    ),
+                  )
+                  ..addText(title);
+            return builder.build()
+              ..layout(const ui.ParagraphConstraints(width: double.infinity));
+          }
+
+          late double prevStart;
+          if (!isFirst) {
+            prevStart = segments[index - 1].start * size.width;
+          }
+          final width = isFirst ? segmentStart : segmentStart - prevStart;
+
+          const double maxFS = 10;
+          const double minFS = 2;
+
+          final space = width - 2;
+
+          final preCalcFS = space / title.length;
+          ui.Paragraph? paragraph;
+          if (0.5 * minFS <= preCalcFS && preCalcFS <= 1.2 * maxFS) {
+            var max = maxFS;
+            var min = minFS;
+            var mid = preCalcFS.clamp(minFS, maxFS);
+            do {
+              paragraph?.dispose();
+              paragraph = getParagraph(mid);
+              var comp = space - paragraph.minIntrinsicWidth;
+              if (comp > 0) {
+                if (comp < 2) break;
+                min = mid;
+              } else {
+                max = mid;
+              }
+              mid = min + (max - min) / 2;
+            } while (max - min > 0.25);
+          } else {
+            paragraph = getParagraph(preCalcFS.clamp(minFS, maxFS));
+          }
+
+          final textX = isFirst
+              ? (segmentStart - paragraph.minIntrinsicWidth) / 2
+              : (segmentStart - prevStart - paragraph.minIntrinsicWidth) / 2 +
+                    prevStart +
+                    1;
+          final textY = (_barHeight - paragraph.height) / 2;
+          canvas.drawParagraph(paragraph, Offset(textX, textY));
+          paragraph.dispose();
+        }
       }
     }
   }

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:PiliPlus/common/widgets/flutter/text_field/text_field.dart';
 import 'package:PiliPlus/common/widgets/view_safe_area.dart';
@@ -8,6 +9,7 @@ import 'package:PiliPlus/pages/common/publish/common_rich_text_pub_page.dart';
 import 'package:PiliPlus/pages/live_emote/controller.dart';
 import 'package:PiliPlus/pages/live_emote/view.dart';
 import 'package:PiliPlus/pages/live_room/controller.dart';
+import 'package:floating/floating.dart';
 import 'package:flutter/material.dart' hide TextField;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -37,6 +39,20 @@ class _ReplyPageState extends CommonRichTextPubPageState<LiveSendDmPanel> {
     super.initState();
     if (widget.fromEmote) {
       updatePanelType(PanelType.emoji);
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (Platform.isAndroid) {
+      if (Floating().isPipMode) {
+        // Close panel when entering PiP mode
+        Get.back();
+      } else {
+        // Listen for size changes
+        MediaQuery.sizeOf(context);
+      }
     }
   }
 

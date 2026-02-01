@@ -124,15 +124,6 @@ class MainActivity : AudioServiceActivity() {
                     result.success(false)
                 }
 
-                "setPipAutoEnterEnabled" -> {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                        val params = PictureInPictureParams.Builder()
-                            .setAutoEnterEnabled(call.argument<Boolean>("autoEnable") ?: false)
-                            .build()
-                        setPictureInPictureParams(params)
-                    }
-                }
-
                 else -> result.notImplemented()
             }
         }

@@ -162,9 +162,7 @@ class _LiveHeaderControlState extends State<LiveHeaderControl>
                   return;
                 }
                 if (await Floating().isPipAvailable) {
-                  plPlayerController
-                    ..showControls.value = false
-                    ..enterPip();
+                  plPlayerController.enterPip();
                 }
               },
               icon: const Icon(

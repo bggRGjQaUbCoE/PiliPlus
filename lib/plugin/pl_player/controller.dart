@@ -281,8 +281,6 @@ class PlPlayerController {
     }
   }
 
-  late bool _shouldSetPip = false;
-
   bool get _isCurrVideoPage {
     final currentRoute = Get.currentRoute;
     return currentRoute.startsWith('/video') ||
@@ -295,28 +293,15 @@ class PlPlayerController {
         previousRoute.startsWith('/liveRoom');
   }
 
-  void enterPip({bool isAuto = false}) {
+  void enterPip() {
     if (videoController != null) {
+      // Android PiP doesn't support controls
+      controls = false;
       final state = videoController!.player.state;
       PageUtils.enterPip(
-        isAuto: isAuto,
         width: state.width ?? width,
         height: state.height ?? height,
       );
-    }
-  }
-
-  void _disableAutoEnterPipIfNeeded() {
-    if (!_isPreviousVideoPage) {
-      _disableAutoEnterPip();
-    }
-  }
-
-  void _disableAutoEnterPip() {
-    if (_shouldSetPip) {
-      Utils.channel.invokeMethod('setPipAutoEnterEnabled', {
-        'autoEnable': false,
-      });
     }
   }
 
@@ -545,17 +530,11 @@ class PlPlayerController {
     }
 
     if (Platform.isAndroid && autoPiP) {
-      Utils.sdkInt.then((sdkInt) {
-        if (sdkInt < 31) {
-          Utils.channel.setMethodCallHandler((call) async {
-            if (call.method == 'onUserLeaveHint') {
-              if (playerStatus.playing && _isCurrVideoPage) {
-                enterPip();
-              }
-            }
-          });
-        } else {
-          _shouldSetPip = true;
+      Utils.channel.setMethodCallHandler((call) async {
+        if (call.method == 'onUserLeaveHint') {
+          if (playerStatus.playing && _isCurrVideoPage) {
+            enterPip();
+          }
         }
       });
     }
@@ -1001,19 +980,7 @@ class PlPlayerController {
     subscriptions = {
       controllerStream.playing.listen((event) {
         WakelockPlus.toggle(enable: event);
-        if (event) {
-          if (_shouldSetPip) {
-            if (_isCurrVideoPage) {
-              enterPip(isAuto: true);
-            } else {
-              _disableAutoEnterPip();
-            }
-          }
-          playerStatus.value = PlayerStatus.playing;
-        } else {
-          _disableAutoEnterPip();
-          playerStatus.value = PlayerStatus.paused;
-        }
+        playerStatus.value = event ? PlayerStatus.playing : PlayerStatus.paused;
         videoPlayerServiceHandler?.onStatusChange(
           playerStatus.value,
           isBuffering.value,
@@ -1701,7 +1668,6 @@ class PlPlayerController {
     danmakuController = null;
     _stopListenerForVideoFit();
     _stopListenerForEnterFullScreen();
-    _disableAutoEnterPip();
     setPlayCallBack(null);
     dmState.clear();
     if (showSeekPreview) {
@@ -1878,9 +1844,6 @@ class PlPlayerController {
   }
 
   bool onPopInvokedWithResult(bool didPop, Object? result) {
-    if (Platform.isAndroid && didPop) {
-      _disableAutoEnterPipIfNeeded();
-    }
     if (controlsLock.value) {
       onLockControl(false);
       return true;

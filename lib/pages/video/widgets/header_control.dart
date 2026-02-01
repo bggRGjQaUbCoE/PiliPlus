@@ -2079,7 +2079,6 @@ class HeaderControlState extends State<HeaderControl>
                         return;
                       }
                       if (await Floating().isPipAvailable) {
-                        plPlayerController.showControls.value = false;
                         if (context.mounted &&
                             !videoPlayerServiceHandler!.enableBackgroundPlay) {
                           final theme = Theme.of(context);

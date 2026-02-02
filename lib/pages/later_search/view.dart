@@ -6,6 +6,7 @@ import 'package:PiliPlus/pages/later/widgets/video_card_h_later.dart';
 import 'package:PiliPlus/pages/later_search/controller.dart';
 import 'package:PiliPlus/utils/grid.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
+import 'package:PiliPlus/utils/request_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -24,6 +25,38 @@ class _LaterSearchPageState
     LaterSearchController(),
     tag: Utils.generateRandomString(8),
   );
+
+  @override
+  List<Widget>? get multiSelectActions => [
+    TextButton(
+      style: TextButton.styleFrom(visualDensity: VisualDensity.compact),
+      onPressed: () => RequestUtils.onCopyOrMove<LaterData, LaterItemModel>(
+        context: context,
+        isCopy: true,
+        ctr: controller,
+        mediaId: null,
+        mid: controller.mid,
+      ),
+      child: Text(
+        '复制',
+        style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
+      ),
+    ),
+    TextButton(
+      style: TextButton.styleFrom(visualDensity: VisualDensity.compact),
+      onPressed: () => RequestUtils.onCopyOrMove<LaterData, LaterItemModel>(
+        context: context,
+        isCopy: false,
+        ctr: controller,
+        mediaId: null,
+        mid: controller.mid,
+      ),
+      child: Text(
+        '移动',
+        style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
+      ),
+    ),
+  ];
 
   late final gridDelegate = Grid.videoCardHDelegate(context, minHeight: 110);
 

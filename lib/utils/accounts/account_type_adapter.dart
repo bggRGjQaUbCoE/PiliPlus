@@ -1,5 +1,4 @@
 import 'package:PiliPlus/models/common/account_type.dart';
-import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:hive/hive.dart';
 
 class AccountTypeAdapter extends TypeAdapter<AccountType> {
@@ -8,7 +7,7 @@ class AccountTypeAdapter extends TypeAdapter<AccountType> {
 
   @override
   AccountType read(BinaryReader reader) =>
-      AccountType.values.getOrNull(reader.readByte()) ?? AccountType.main;
+      AccountType.values.elementAtOrNull(reader.readByte()) ?? AccountType.main;
 
   @override
   void write(BinaryWriter writer, AccountType obj) {

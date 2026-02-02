@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:path_provider/path_provider.dart';
@@ -55,7 +54,7 @@ abstract final class CacheManager {
       value = value / 1024;
     }
     String size = value.toStringAsFixed(2);
-    return size + (unitArr.getOrNull(index) ?? '');
+    return size + (unitArr.elementAtOrNull(index) ?? '');
   }
 
   // 清除 Library/Caches 目录及文件缓存

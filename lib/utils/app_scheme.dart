@@ -14,7 +14,6 @@ import 'package:PiliPlus/pages/live/view.dart';
 import 'package:PiliPlus/pages/rank/view.dart';
 import 'package:PiliPlus/pages/subscription_detail/view.dart';
 import 'package:PiliPlus/pages/video/reply_reply/view.dart';
-import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/request_utils.dart';
@@ -579,7 +578,7 @@ abstract final class PiliScheme {
     }
     final first = pathSegments.first;
     final String? area = const ['mobile', 'h5', 'v'].contains(first)
-        ? pathSegments.getOrNull(1)
+        ? pathSegments.elementAtOrNull(1)
         : first;
     // if (kDebugMode) debugPrint('area: $area');
     switch (area) {

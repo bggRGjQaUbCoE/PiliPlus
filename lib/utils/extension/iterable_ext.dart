@@ -24,13 +24,6 @@ extension IterableExt<T> on Iterable<T> {
 }
 
 extension ListExt<T> on List<T> {
-  T? getOrNull(int index) {
-    if (index < 0 || index >= length) {
-      return null;
-    }
-    return this[index];
-  }
-
   bool removeFirstWhere(bool Function(T) test) {
     final index = indexWhere(test);
     if (index != -1) {

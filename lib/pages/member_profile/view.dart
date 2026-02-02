@@ -15,7 +15,6 @@ import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/app_sign.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/extension/file_ext.dart';
-import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
@@ -483,7 +482,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
       if (pickedFile != null && mounted) {
         String? mimeType = lookupMimeType(
           pickedFile.path,
-        )?.split('/').getOrNull(1);
+        )?.split('/').elementAtOrNull(1);
         if (mimeType == 'gif') {
           SmartDialog.showToast('不能选GIF');
           return;

@@ -10,7 +10,6 @@ import 'package:PiliPlus/pages/common/common_controller.dart';
 import 'package:PiliPlus/pages/dynamics_tab/controller.dart';
 import 'package:PiliPlus/services/account_service.dart';
 import 'package:PiliPlus/utils/accounts.dart';
-import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:PiliPlus/utils/extension/scroll_controller_ext.dart';
 import 'package:PiliPlus/utils/extension/string_ext.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
@@ -150,7 +149,7 @@ class DynamicsController extends GetxController
     final first = res.first;
     if (first case final Success<FollowUpModel> i) {
       final data = i.response;
-      final second = res.getOrNull(1);
+      final second = res.elementAtOrNull(1);
       if (second case final Success<FollowData> j) {
         final data1 = j.response;
         final list1 = data1.list;

@@ -461,7 +461,7 @@ abstract final class Pref {
     SuperResolutionType? superResolutionType;
     final index = _setting.get(SettingBoxKey.superResolutionType);
     if (index != null) {
-      superResolutionType = SuperResolutionType.values.getOrNull(index);
+      superResolutionType = SuperResolutionType.values.elementAtOrNull(index);
     }
     return superResolutionType ?? SuperResolutionType.disable;
   }

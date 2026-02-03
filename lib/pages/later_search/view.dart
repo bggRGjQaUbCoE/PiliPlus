@@ -27,36 +27,36 @@ class _LaterSearchPageState
   );
 
   @override
-  List<Widget>? get multiSelectActions => [
-    TextButton(
-      style: TextButton.styleFrom(visualDensity: VisualDensity.compact),
-      onPressed: () => RequestUtils.onCopyOrMove<LaterData, LaterItemModel>(
-        context: context,
-        isCopy: true,
-        ctr: controller,
-        mediaId: null,
-        mid: controller.mid,
+  List<Widget>? get multiSelectActions {
+    final btnStyle = TextButton.styleFrom(visualDensity: .compact);
+    final textStyle = TextStyle(
+      color: ColorScheme.of(context).onSurfaceVariant,
+    );
+    return [
+      TextButton(
+        style: btnStyle,
+        onPressed: () => RequestUtils.onCopyOrMove<LaterItemModel>(
+          context: context,
+          isCopy: true,
+          ctr: controller,
+          mediaId: null,
+          mid: controller.mid,
+        ),
+        child: Text('复制', style: textStyle),
       ),
-      child: Text(
-        '复制',
-        style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
+      TextButton(
+        style: btnStyle,
+        onPressed: () => RequestUtils.onCopyOrMove<LaterItemModel>(
+          context: context,
+          isCopy: false,
+          ctr: controller,
+          mediaId: null,
+          mid: controller.mid,
+        ),
+        child: Text('移动', style: textStyle),
       ),
-    ),
-    TextButton(
-      style: TextButton.styleFrom(visualDensity: VisualDensity.compact),
-      onPressed: () => RequestUtils.onCopyOrMove<LaterData, LaterItemModel>(
-        context: context,
-        isCopy: false,
-        ctr: controller,
-        mediaId: null,
-        mid: controller.mid,
-      ),
-      child: Text(
-        '移动',
-        style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
-      ),
-    ),
-  ];
+    ];
+  }
 
   late final gridDelegate = Grid.videoCardHDelegate(context, minHeight: 110);
 

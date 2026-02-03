@@ -32,38 +32,36 @@ class _FavSearchPageState
   );
 
   @override
-  List<Widget>? get multiSelectActions => [
-    TextButton(
-      style: TextButton.styleFrom(visualDensity: VisualDensity.compact),
-      onPressed: () =>
-          RequestUtils.onCopyOrMove<FavDetailData, FavDetailItemModel>(
-            context: context,
-            isCopy: true,
-            ctr: controller,
-            mediaId: controller.mediaId,
-            mid: Accounts.main.mid,
-          ),
-      child: Text(
-        '复制',
-        style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
+  List<Widget>? get multiSelectActions {
+    final btnStyle = TextButton.styleFrom(visualDensity: .compact);
+    final textStyle = TextStyle(
+      color: ColorScheme.of(context).onSurfaceVariant,
+    );
+    return [
+      TextButton(
+        style: btnStyle,
+        onPressed: () => RequestUtils.onCopyOrMove<FavDetailItemModel>(
+          context: context,
+          isCopy: true,
+          ctr: controller,
+          mediaId: controller.mediaId,
+          mid: Accounts.main.mid,
+        ),
+        child: Text('复制', style: textStyle),
       ),
-    ),
-    TextButton(
-      style: TextButton.styleFrom(visualDensity: VisualDensity.compact),
-      onPressed: () =>
-          RequestUtils.onCopyOrMove<FavDetailData, FavDetailItemModel>(
-            context: context,
-            isCopy: false,
-            ctr: controller,
-            mediaId: controller.mediaId,
-            mid: Accounts.main.mid,
-          ),
-      child: Text(
-        '移动',
-        style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
+      TextButton(
+        style: btnStyle,
+        onPressed: () => RequestUtils.onCopyOrMove<FavDetailItemModel>(
+          context: context,
+          isCopy: false,
+          ctr: controller,
+          mediaId: controller.mediaId,
+          mid: Accounts.main.mid,
+        ),
+        child: Text('移动', style: textStyle),
       ),
-    ),
-  ];
+    ];
+  }
 
   @override
   List<Widget>? get extraActions => [

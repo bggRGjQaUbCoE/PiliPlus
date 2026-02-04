@@ -1723,6 +1723,7 @@ class HeaderControlState extends State<HeaderControl>
             ((!horizontalScreen || plPlayerController.isDesktopPip) &&
                 !isPortrait))) {
       title = Padding(
+        key: titleKey,
         padding: isPortrait
             ? EdgeInsets.zero
             : const EdgeInsets.only(right: 10),
@@ -1742,7 +1743,6 @@ class HeaderControlState extends State<HeaderControl>
                   videoDetail.title!;
             }
             return MarqueeText(
-              key: titleKey,
               title,
               spacing: 30,
               velocity: 30,

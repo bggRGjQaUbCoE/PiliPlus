@@ -48,12 +48,11 @@ abstract final class IdUtils {
 
   /// bv转av
   static int bv2av(String bvid) {
-    final bvidArr = List.of(bvid.codeUnits);
+    final bvidArr = bvid.codeUnits.sublist(3);
 
-    swap(bvidArr, 3, 9);
-    swap(bvidArr, 4, 7);
+    swap(bvidArr, 0, 6);
+    swap(bvidArr, 1, 4);
 
-    bvidArr.removeRange(0, 3);
     final tmp = bvidArr.fold(0, (pre, char) => pre * BASE + invData[char]!);
     return (tmp & MASK_CODE) ^ XOR_CODE;
   }

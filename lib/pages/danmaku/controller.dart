@@ -25,9 +25,9 @@ class PlDanmakuController {
 
   late final _isLogin = Accounts.main.isLogin;
 
-  final Map<int, List<DanmakuElem>> _dmSegMap = {};
+  final Map<int, List<DanmakuElem>> _dmSegMap = HashMap();
   // 已请求的段落标记
-  late final Set<int> _requestedSeg = {};
+  late final Set<int> _requestedSeg = HashSet();
 
   static const int segmentLength = 60 * 6 * 1000;
 

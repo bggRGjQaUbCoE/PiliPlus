@@ -84,12 +84,15 @@ List<SettingsModel> get extraSettings => [
       ],
     ),
   ),
-  getPopupMenuModel(
+  PopupModel<SkipType>(
     title: '番剧片头/片尾跳过类型',
     leading: const Icon(MdiIcons.debugStepOver),
-    key: SettingBoxKey.pgcSkipType,
-    values: SkipType.values,
-    defaultIndex: SkipType.skipOnce.index,
+    value: () => Pref.pgcSkipType,
+    items: SkipType.values,
+    onSelected: (value, setState) async {
+      await GStorage.setting.put(SettingBoxKey.pgcSkipType, value.index);
+      setState();
+    },
   ),
   SwitchModel(
     title: '检查未读动态',
@@ -295,7 +298,7 @@ List<SettingsModel> get extraSettings => [
     title: '超分辨率',
     leading: const Icon(Icons.stay_current_landscape_outlined),
     getSubtitle: () =>
-        '当前:「${Pref.superResolutionType.title}」\n默认设置对番剧生效, 其他视频默认关闭\n超分辨率需要启用硬件解码, 若启用硬件解码后仍然不生效, 尝试切换硬件解码器为 auto-copy',
+        '当前:「${Pref.superResolutionType.label}」\n默认设置对番剧生效, 其他视频默认关闭\n超分辨率需要启用硬件解码, 若启用硬件解码后仍然不生效, 尝试切换硬件解码器为 auto-copy',
     onTap: _showSuperResolutionDialog,
   ),
   const SwitchModel(
@@ -964,7 +967,6 @@ Future<void> _showRefreshDragDialog(
     kDragContainerExtentPercentage = res;
     await GStorage.setting.put(SettingBoxKey.refreshDragPercentage, res);
     Get.forceAppUpdate();
-    setState();
   }
 }
 
@@ -986,7 +988,6 @@ Future<void> _showRefreshDialog(
     displacement = res;
     await GStorage.setting.put(SettingBoxKey.refreshDisplacement, res);
     Get.forceAppUpdate();
-    setState();
   }
 }
 
@@ -999,7 +1000,7 @@ Future<void> _showSuperResolutionDialog(
     builder: (context) => SelectDialog<SuperResolutionType>(
       title: '超分辨率',
       value: Pref.superResolutionType,
-      values: SuperResolutionType.values.map((e) => (e, e.title)).toList(),
+      values: SuperResolutionType.values.map((e) => (e, e.label)).toList(),
     ),
   );
   if (res != null) {

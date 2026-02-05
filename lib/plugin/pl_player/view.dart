@@ -455,7 +455,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                       value: type,
                       onTap: () => plPlayerController.setShader(type),
                       child: Text(
-                        type.title,
+                        type.label,
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 13,
@@ -468,7 +468,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8),
               child: Text(
-                type.title,
+                type.label,
                 style: const TextStyle(color: Colors.white, fontSize: 13),
               ),
             ),

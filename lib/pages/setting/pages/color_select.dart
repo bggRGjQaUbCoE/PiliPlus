@@ -7,6 +7,7 @@ import 'package:PiliPlus/models/common/theme/theme_color_type.dart';
 import 'package:PiliPlus/models/common/theme/theme_type.dart';
 import 'package:PiliPlus/pages/home/view.dart';
 import 'package:PiliPlus/pages/mine/controller.dart';
+import 'package:PiliPlus/pages/setting/widgets/popup_item.dart';
 import 'package:PiliPlus/pages/setting/widgets/select_dialog.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/storage.dart';
@@ -76,11 +77,7 @@ class _ColorSelectPageState extends State<ColorSelectPage> {
                 Get.changeThemeMode(result.toThemeMode);
               }
             },
-            leading: Container(
-              width: 40,
-              alignment: Alignment.center,
-              child: const Icon(Icons.flashlight_on_outlined),
-            ),
+            leading: const Icon(Icons.flashlight_on_outlined),
             title: Text('主题模式', style: titleStyle),
             subtitle: Obx(
               () => Text(
@@ -90,94 +87,57 @@ class _ColorSelectPageState extends State<ColorSelectPage> {
             ),
           ),
           Obx(
-            () => ListTile(
+            () => PopupListTile<FlexSchemeVariant>(
               enabled: !ctr.dynamicColor.value,
-              title: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text('调色板风格'),
-                  PopupMenuButton(
-                    enabled: !ctr.dynamicColor.value,
-                    initialValue: _dynamicSchemeVariant,
-                    onSelected: (item) {
-                      _dynamicSchemeVariant = item;
-                      GStorage.setting.put(
-                        SettingBoxKey.schemeVariant,
-                        item.index,
-                      );
-                      Get.forceAppUpdate();
-                    },
-                    itemBuilder: (context) => FlexSchemeVariant.values
-                        .map(
-                          (item) => PopupMenuItem<FlexSchemeVariant>(
-                            value: item,
-                            child: Text(item.variantName),
-                          ),
-                        )
-                        .toList(),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          _dynamicSchemeVariant.variantName,
-                          style: TextStyle(
-                            height: 1,
-                            fontSize: 13,
-                            color: ctr.dynamicColor.value
-                                ? theme.colorScheme.outline.withValues(
-                                    alpha: 0.8,
-                                  )
-                                : theme.colorScheme.secondary,
-                          ),
-                          strutStyle: const StrutStyle(leading: 0, height: 1),
-                        ),
-                        Icon(
-                          size: 20,
-                          Icons.keyboard_arrow_right,
-                          color: ctr.dynamicColor.value
-                              ? theme.colorScheme.outline.withValues(
-                                  alpha: 0.8,
-                                )
-                              : theme.colorScheme.secondary,
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              leading: Container(
-                width: 40,
-                alignment: Alignment.center,
-                child: const Icon(Icons.palette_outlined),
-              ),
-              subtitle: Text(
-                _dynamicSchemeVariant.description,
-                style: const TextStyle(fontSize: 12),
-              ),
+              leading: const Icon(Icons.palette_outlined),
+              title: const Text('调色板风格'),
+              value: () =>
+                  (_dynamicSchemeVariant, _dynamicSchemeVariant.variantName),
+              itemBuilder: (_) => FlexSchemeVariant.values
+                  .map(
+                    (e) => PopupMenuItem(value: e, child: Text(e.variantName)),
+                  )
+                  .toList(),
+              onSelected: (value, setState) {
+                _dynamicSchemeVariant = value;
+                GStorage.setting.put(SettingBoxKey.schemeVariant, value.index);
+                Get.forceAppUpdate();
+              },
             ),
           ),
           if (!Platform.isIOS)
             Obx(
-              () => CheckboxListTile(
-                title: const Text('动态取色'),
-                controlAffinity: ListTileControlAffinity.leading,
-                value: ctr.dynamicColor.value,
-                onChanged: (val) async {
-                  ctr
-                    ..dynamicColor.value = val!
-                    ..setting.put(SettingBoxKey.dynamicColor, val);
-                  if (val) {
-                    if (await MyApp.initPlatformState()) {
-                      Get.forceAppUpdate();
+              () {
+                final dynamicColor = ctr.dynamicColor.value;
+                return ListTile(
+                  title: const Text('动态取色'),
+                  leading: Checkbox(
+                    value: dynamicColor,
+                    onChanged: (value) {},
+                    materialTapTargetSize: .shrinkWrap,
+                    visualDensity: const VisualDensity(
+                      horizontal: -4,
+                      vertical: -4,
+                    ),
+                  ),
+                  onTap: () async {
+                    final val = !dynamicColor;
+                    if (val) {
+                      if (await MyApp.initPlatformState()) {
+                        Get.forceAppUpdate();
+                      } else {
+                        SmartDialog.showToast('该设备可能不支持动态取色');
+                        return;
+                      }
                     } else {
-                      SmartDialog.showToast('该设备可能不支持动态取色');
-                      ctr.dynamicColor.value = false;
+                      Get.forceAppUpdate();
                     }
-                  } else {
-                    Get.forceAppUpdate();
-                  }
-                },
-              ),
+                    ctr
+                      ..dynamicColor.value = val
+                      ..setting.put(SettingBoxKey.dynamicColor, val);
+                  },
+                );
+              },
             ),
           Padding(
             padding: padding,

@@ -43,7 +43,13 @@ class _RankPageState extends State<RankPage>
     );
   }
 
-  static const double _tabHeight = 35.0;
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _tabHeight = MediaQuery.textScalerOf(context).scale(21) + 14;
+  }
+
+  late double _tabHeight;
 
   Widget _buildTab(ThemeData theme) {
     return SizedBox(

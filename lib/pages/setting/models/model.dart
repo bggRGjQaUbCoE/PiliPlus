@@ -42,7 +42,7 @@ class PopupModel<T extends EnumWithLabel> extends SettingsModel {
   });
 
   @override
-  String? get effectiveSubtitle => value().label;
+  String? get effectiveSubtitle => null;
 
   @override
   String get effectiveTitle => title;

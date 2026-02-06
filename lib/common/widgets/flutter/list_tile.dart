@@ -916,7 +916,12 @@ class ListTile extends StatelessWidget {
 
     // Show basic cursor when ListTile isn't enabled or gesture callbacks are null.
     final Set<WidgetState> mouseStates = <WidgetState>{
-      if (!enabled || (onTap == null && onLongPress == null))
+      if (!enabled ||
+          (onTap == null &&
+              onTapUp == null &&
+              onLongPress == null &&
+              onSecondaryTap == null &&
+              onSecondaryTapUp == null))
         WidgetState.disabled,
     };
     final MouseCursor effectiveMouseCursor =

@@ -42,6 +42,23 @@ class _ColorSelectPageState extends State<ColorSelectPage> {
   final ctr = Get.put(_ColorSelectController());
   FlexSchemeVariant _dynamicSchemeVariant = Pref.schemeVariant;
 
+  Future<void> _onChanged([bool? val]) async {
+    val ??= !ctr.dynamicColor.value;
+    if (val) {
+      if (await MyApp.initPlatformState()) {
+        Get.forceAppUpdate();
+      } else {
+        SmartDialog.showToast('该设备可能不支持动态取色');
+        return;
+      }
+    } else {
+      Get.forceAppUpdate();
+    }
+    ctr
+      ..dynamicColor.value = val
+      ..setting.put(SettingBoxKey.dynamicColor, val);
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -107,41 +124,21 @@ class _ColorSelectPageState extends State<ColorSelectPage> {
           ),
           if (!Platform.isIOS)
             Obx(
-              () {
-                final dynamicColor = ctr.dynamicColor.value;
-                Future<void> onChanged([bool? val]) async {
-                  val ??= !dynamicColor;
-                  if (val) {
-                    if (await MyApp.initPlatformState()) {
-                      Get.forceAppUpdate();
-                    } else {
-                      SmartDialog.showToast('该设备可能不支持动态取色');
-                      return;
-                    }
-                  } else {
-                    Get.forceAppUpdate();
-                  }
-                  ctr
-                    ..dynamicColor.value = val
-                    ..setting.put(SettingBoxKey.dynamicColor, val);
-                }
-
-                return ListTile(
-                  title: const Text('动态取色'),
-                  leading: ExcludeFocus(
-                    child: Checkbox(
-                      value: dynamicColor,
-                      onChanged: onChanged,
-                      materialTapTargetSize: .shrinkWrap,
-                      visualDensity: const VisualDensity(
-                        horizontal: -4,
-                        vertical: -4,
-                      ),
+              () => ListTile(
+                title: const Text('动态取色'),
+                leading: ExcludeFocus(
+                  child: Checkbox(
+                    value: ctr.dynamicColor.value,
+                    onChanged: _onChanged,
+                    materialTapTargetSize: .shrinkWrap,
+                    visualDensity: const VisualDensity(
+                      horizontal: -4,
+                      vertical: -4,
                     ),
                   ),
-                  onTap: onChanged,
-                );
-              },
+                ),
+                onTap: _onChanged,
+              ),
             ),
           Padding(
             padding: padding,

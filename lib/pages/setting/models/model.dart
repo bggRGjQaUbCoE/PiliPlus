@@ -33,7 +33,6 @@ sealed class SettingsModel {
 class PopupModel<T extends EnumWithLabel> extends SettingsModel {
   const PopupModel({
     required this.title,
-    super.subtitle,
     super.leading,
     super.contentPadding,
     super.titleStyle,
@@ -43,7 +42,7 @@ class PopupModel<T extends EnumWithLabel> extends SettingsModel {
   });
 
   @override
-  String? get effectiveSubtitle => null;
+  String? get effectiveSubtitle => value().label;
 
   @override
   String get effectiveTitle => title;

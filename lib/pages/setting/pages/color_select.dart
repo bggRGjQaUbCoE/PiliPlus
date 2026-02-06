@@ -109,33 +109,37 @@ class _ColorSelectPageState extends State<ColorSelectPage> {
             Obx(
               () {
                 final dynamicColor = ctr.dynamicColor.value;
+                Future<void> onChanged([bool? val]) async {
+                  val ??= !dynamicColor;
+                  if (val) {
+                    if (await MyApp.initPlatformState()) {
+                      Get.forceAppUpdate();
+                    } else {
+                      SmartDialog.showToast('该设备可能不支持动态取色');
+                      return;
+                    }
+                  } else {
+                    Get.forceAppUpdate();
+                  }
+                  ctr
+                    ..dynamicColor.value = val
+                    ..setting.put(SettingBoxKey.dynamicColor, val);
+                }
+
                 return ListTile(
                   title: const Text('动态取色'),
-                  leading: Checkbox(
-                    value: dynamicColor,
-                    onChanged: (value) {},
-                    materialTapTargetSize: .shrinkWrap,
-                    visualDensity: const VisualDensity(
-                      horizontal: -4,
-                      vertical: -4,
+                  leading: ExcludeFocus(
+                    child: Checkbox(
+                      value: dynamicColor,
+                      onChanged: onChanged,
+                      materialTapTargetSize: .shrinkWrap,
+                      visualDensity: const VisualDensity(
+                        horizontal: -4,
+                        vertical: -4,
+                      ),
                     ),
                   ),
-                  onTap: () async {
-                    final val = !dynamicColor;
-                    if (val) {
-                      if (await MyApp.initPlatformState()) {
-                        Get.forceAppUpdate();
-                      } else {
-                        SmartDialog.showToast('该设备可能不支持动态取色');
-                        return;
-                      }
-                    } else {
-                      Get.forceAppUpdate();
-                    }
-                    ctr
-                      ..dynamicColor.value = val
-                      ..setting.put(SettingBoxKey.dynamicColor, val);
-                  },
+                  onTap: onChanged,
                 );
               },
             ),
@@ -147,9 +151,8 @@ class _ColorSelectPageState extends State<ColorSelectPage> {
               duration: const Duration(milliseconds: 200),
               child: Obx(
                 () => ctr.dynamicColor.value
-                    ? const SizedBox.shrink(key: ValueKey(false))
+                    ? const SizedBox.shrink()
                     : Padding(
-                        key: const ValueKey(true),
                         padding: const EdgeInsets.all(12),
                         child: Wrap(
                           alignment: WrapAlignment.center,
@@ -201,25 +204,29 @@ class _ColorSelectPageState extends State<ColorSelectPage> {
           ),
           Padding(
             padding: padding,
-            child: IgnorePointer(
-              child: Container(
-                height: size.height / 2,
-                width: size.width,
-                color: theme.colorScheme.surface,
-                child: const HomePage(),
+            child: ExcludeFocus(
+              child: IgnorePointer(
+                child: Container(
+                  height: size.height / 2,
+                  width: size.width,
+                  color: theme.colorScheme.surface,
+                  child: const HomePage(),
+                ),
               ),
             ),
           ),
-          IgnorePointer(
-            child: NavigationBar(
-              destinations: NavigationBarType.values
-                  .map(
-                    (item) => NavigationDestination(
-                      icon: item.icon,
-                      label: item.label,
-                    ),
-                  )
-                  .toList(),
+          ExcludeFocus(
+            child: IgnorePointer(
+              child: NavigationBar(
+                destinations: NavigationBarType.values
+                    .map(
+                      (item) => NavigationDestination(
+                        icon: item.icon,
+                        label: item.label,
+                      ),
+                    )
+                    .toList(),
+              ),
             ),
           ),
         ],

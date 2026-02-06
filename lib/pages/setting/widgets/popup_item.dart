@@ -42,7 +42,7 @@ class PopupListTile<T> extends StatefulWidget {
 }
 
 class _PopupListTileState<T> extends State<PopupListTile<T>> {
-  final _key = GlobalKey();
+  final _key = PlatformUtils.isDesktop ? null : GlobalKey();
 
   void _showButtonMenu(TapUpDetails details, T value) {
     final box = context.findRenderObject() as RenderBox;
@@ -51,7 +51,7 @@ class _PopupListTileState<T> extends State<PopupListTile<T>> {
     if (PlatformUtils.isDesktop) {
       dx = details.globalPosition.dx + 1;
     } else {
-      final box = _key.currentContext!.findRenderObject() as RenderBox;
+      final box = _key!.currentContext!.findRenderObject() as RenderBox;
       final offset = box.localToGlobal(box.size.topLeft(.zero));
       dx = offset.dx;
     }
@@ -60,7 +60,7 @@ class _PopupListTileState<T> extends State<PopupListTile<T>> {
       position: RelativeRect.fromLTRB(dx, offset.dy + 5, dx, 0),
       items: widget.itemBuilder(context),
       initialValue: value,
-      requestFocus: false,
+      requestFocus: true,
     ).then<void>((T? newValue) {
       if (!mounted) {
         return;
@@ -82,7 +82,7 @@ class _PopupListTileState<T> extends State<PopupListTile<T>> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final (value, descStr) = widget.value();
-    Widget title = Builder(key: _key, builder: (_) => widget.title);
+    Widget title = KeyedSubtree(key: _key, child: widget.title);
     Widget? subtitle;
     Widget? trailing;
     final desc = Text(

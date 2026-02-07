@@ -44,11 +44,11 @@ class _PgcPageState extends CommonPageState<PgcPage, PgcController>
 
   @override
   void initState() {
-    super.initState();
     controller = Get.put(
       PgcController(tabType: widget.tabType),
       tag: widget.tabType.name,
     );
+    super.initState();
   }
 
   @override

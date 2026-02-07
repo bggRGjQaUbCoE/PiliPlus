@@ -27,11 +27,11 @@ class _ZonePageState extends CommonPageState<ZonePage, ZoneController>
 
   @override
   void initState() {
-    super.initState();
     controller = Get.put(
       ZoneController(rid: widget.rid, seasonType: widget.seasonType),
       tag: '${widget.rid}${widget.seasonType}',
     );
+    super.initState();
   }
 
   @override

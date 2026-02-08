@@ -67,31 +67,6 @@ class CachedNetworkSVGImage extends StatefulWidget {
   @override
   State<CachedNetworkSVGImage> createState() => _CachedNetworkSVGImageState();
 
-  static Future<void> preCache(
-    String imageUrl, {
-    String? cacheKey,
-    BaseCacheManager? cacheManager,
-  }) {
-    final key = cacheKey ?? _generateKeyFromUrl(imageUrl);
-    cacheManager ??= DefaultCacheManager();
-    return cacheManager.downloadFile(key);
-  }
-
-  static Future<void> clearCacheForUrl(
-    String imageUrl, {
-    String? cacheKey,
-    BaseCacheManager? cacheManager,
-  }) {
-    final key = cacheKey ?? _generateKeyFromUrl(imageUrl);
-    cacheManager ??= DefaultCacheManager();
-    return cacheManager.removeFile(key);
-  }
-
-  static Future<void> clearCache({BaseCacheManager? cacheManager}) {
-    cacheManager ??= DefaultCacheManager();
-    return cacheManager.emptyCache();
-  }
-
   static String _generateKeyFromUrl(String url) => url.split('?').first;
 }
 

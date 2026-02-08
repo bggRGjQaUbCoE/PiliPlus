@@ -27,7 +27,7 @@ class DynMentionPanel extends StatefulWidget {
   final ScrollController? scrollController;
   final ValueChanged<double>? onCachePos;
 
-  static Future onDynMention(
+  static Future<Object? /* ListOr<MentionItem> */> onDynMention(
     BuildContext context, {
     double offset = 0,
     ValueChanged<double>? onCachePos,

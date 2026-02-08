@@ -64,7 +64,7 @@ class PublishRoute<T> extends PopupRoute<T> {
         Tween<Offset>(
           begin: const Offset(0.0, 1.0),
           end: Offset.zero,
-        ).chain(CurveTween(curve: Curves.linear)),
+        ),
       ),
       child: child,
     );

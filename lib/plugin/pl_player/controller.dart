@@ -177,7 +177,7 @@ class PlPlayerController with BlockConfigMixin {
   late DataSource dataSource;
 
   Timer? _timer;
-  Timer? _timerForSeek;
+  StreamSubscription<Duration>? _subForSeek;
 
   Box setting = GStorage.setting;
 
@@ -517,8 +517,8 @@ class PlPlayerController with BlockConfigMixin {
     return _instance?.volume.value;
   }
 
-  static Future<void> setVolumeIfExists(double volumeNew) async {
-    await _instance?.setVolume(volumeNew);
+  static Future<void>? setVolumeIfExists(double volumeNew) {
+    return _instance?.setVolume(volumeNew);
   }
 
   Box video = GStorage.video;
@@ -757,7 +757,7 @@ class PlPlayerController with BlockConfigMixin {
     // 初始化时清空弹幕，防止上次重叠
     danmakuController?.clear();
 
-    Player player =
+    final player =
         _videoPlayerController ??
         Player(
           configuration: PlayerConfiguration(
@@ -863,7 +863,7 @@ class PlPlayerController with BlockConfigMixin {
 
     // if (kDebugMode) debugPrint(filters.toString());
 
-    late final String videoUri;
+    final String videoUri;
     if (isFileSource) {
       videoUri = path.join(
         dirPath!,
@@ -877,6 +877,7 @@ class PlPlayerController with BlockConfigMixin {
     } else {
       videoUri = dataSource.videoSource!;
     }
+
     await player.open(
       Media(
         videoUri,
@@ -974,14 +975,14 @@ class PlPlayerController with BlockConfigMixin {
     return null;
   }
 
-  Set<StreamSubscription> subscriptions = {};
+  List<StreamSubscription> subscriptions = [];
   final Set<Function(Duration position)> _positionListeners = {};
   final Set<Function(PlayerStatus status)> _statusListeners = {};
 
   /// 播放事件监听
   void startListeners() {
     final controllerStream = videoPlayerController!.stream;
-    subscriptions = {
+    subscriptions = [
       controllerStream.playing.listen((event) {
         WakelockPlus.toggle(enable: event);
         if (event) {
@@ -1131,12 +1132,19 @@ class PlPlayerController with BlockConfigMixin {
           videoPlayerServiceHandler!.onPositionChange(Duration(seconds: event));
         }),
       ],
-    };
+    ];
   }
 
   /// 移除事件监听
   Future<void> removeListeners() {
     return Future.wait(subscriptions.map((e) => e.cancel()));
+  }
+
+  void _cancelSubForSeek() {
+    if (_subForSeek != null) {
+      _subForSeek!.cancel();
+      _subForSeek = null;
+    }
   }
 
   /// 跳转至指定位置
@@ -1153,7 +1161,8 @@ class PlPlayerController with BlockConfigMixin {
     this.position = position;
     updatePositionSecond();
     _heartDuration = position.inSeconds;
-    if (duration.value.inSeconds != 0) {
+
+    Future<void> seek() async {
       if (isSeek) {
         /// 拖动进度条调节时，不等待第一帧，防止抖动
         await _videoPlayerController?.stream.buffer.first;
@@ -1164,33 +1173,16 @@ class PlPlayerController with BlockConfigMixin {
       } catch (e) {
         if (kDebugMode) debugPrint('seek failed: $e');
       }
-      // if (playerStatus.stopped) {
-      //   play();
-      // }
+    }
+
+    if (duration.value != Duration.zero) {
+      seek();
     } else {
       // if (kDebugMode) debugPrint('seek duration else');
-      _timerForSeek?.cancel();
-      _timerForSeek = Timer.periodic(const Duration(milliseconds: 200), (
-        Timer t,
-      ) async {
-        //_timerForSeek = null;
-        if (_playerCount == 0) {
-          _timerForSeek?.cancel();
-          _timerForSeek = null;
-        } else if (duration.value != Duration.zero) {
-          try {
-            await _videoPlayerController?.stream.buffer.first;
-            danmakuController?.clear();
-            await _videoPlayerController?.seek(position);
-          } catch (e) {
-            if (kDebugMode) debugPrint('seek failed: $e');
-          }
-          // if (playerStatus.isPaused) {
-          //   play();
-          // }
-          t.cancel();
-          _timerForSeek = null;
-        }
+      _subForSeek?.cancel();
+      _subForSeek = duration.listen((_) {
+        seek();
+        _cancelSubForSeek();
       });
     }
   }
@@ -1304,7 +1296,7 @@ class PlPlayerController with BlockConfigMixin {
 
   final RxBool volumeIndicator = false.obs;
   Timer? volumeTimer;
-  final RxBool volumeInterceptEventStream = false.obs;
+  bool volumeInterceptEventStream = false;
 
   static final double maxVolume = PlatformUtils.isDesktop ? 2.0 : 1.0;
   Future<void> setVolume(double volume) async {
@@ -1322,11 +1314,11 @@ class PlPlayerController with BlockConfigMixin {
       }
     }
     volumeIndicator.value = true;
-    volumeInterceptEventStream.value = true;
+    volumeInterceptEventStream = true;
     volumeTimer?.cancel();
     volumeTimer = Timer(const Duration(milliseconds: 200), () {
       volumeIndicator.value = false;
-      volumeInterceptEventStream.value = false;
+      volumeInterceptEventStream = false;
       if (PlatformUtils.isDesktop) {
         setting.put(SettingBoxKey.desktopVolume, volume.toPrecision(3));
       }
@@ -1341,7 +1333,7 @@ class PlPlayerController with BlockConfigMixin {
 
   /// 读取fit
   int fitValue = Pref.cacheVideoFit;
-  Future<void> getVideoFit() async {
+  void getVideoFit() {
     var attr = VideoFitType.values[fitValue];
     // 由于none与scaleDown涉及视频原始尺寸，需要等待视频加载后再设置，否则尺寸会变为0，出现错误;
     if (attr == VideoFitType.none || attr == VideoFitType.scaleDown) {
@@ -1657,9 +1649,10 @@ class PlPlayerController with BlockConfigMixin {
   }
 
   bool isCloseAll = false;
-  Future<void> dispose() async {
+  void dispose() {
     // 每次减1，最后销毁
     cancelLongPressTimer();
+    _cancelSubForSeek();
     if (!isCloseAll && _playerCount > 1) {
       _playerCount -= 1;
       _heartDuration = 0;
@@ -1681,7 +1674,6 @@ class PlPlayerController with BlockConfigMixin {
     }
     Utils.channel.setMethodCallHandler(null);
     _timer?.cancel();
-    _timerForSeek?.cancel();
     // _position.close();
     // _playerEventSubs?.cancel();
     // _sliderPosition.close();
@@ -1699,7 +1691,7 @@ class PlPlayerController with BlockConfigMixin {
       windowManager.setAlwaysOnTop(false);
     }
 
-    await removeListeners();
+    removeListeners();
     subscriptions.clear();
     _positionListeners.clear();
     _statusListeners.clear();

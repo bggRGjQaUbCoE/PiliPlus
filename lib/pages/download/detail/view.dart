@@ -54,7 +54,7 @@ class _DownloadDetailPageState extends State<DownloadDetailPage>
     });
   }
 
-  Future _closeSub() async {
+  Future<void> _closeSub() async {
     if (_sub != null) {
       await _sub?.cancel();
       _sub = null;

@@ -21,13 +21,10 @@ enum _ShutdownType with EnumWithLabel {
   const _ShutdownType(this.label);
 }
 
-final shutdownTimerService = ShutdownTimerService();
+final shutdownTimerService = ShutdownTimerService._internal();
 
 class ShutdownTimerService {
   ShutdownTimerService._internal();
-  factory ShutdownTimerService() => _instance;
-  static final ShutdownTimerService _instance =
-      ShutdownTimerService._internal();
 
   VoidCallback? onPause;
   ValueGetter<bool>? isPlaying;
@@ -37,8 +34,8 @@ class ShutdownTimerService {
   int _durationInMinutes = 0;
   _ShutdownType _shutdownType = .pause;
 
-  bool? _isWaiting;
-  bool get isWaiting => _isWaiting ?? false;
+  bool _isWaiting = false;
+  bool get isWaiting => _isWaiting;
   bool _waitUntilCompleted = false;
 
   void _stopTimer() {
@@ -50,7 +47,7 @@ class ShutdownTimerService {
 
   void reset([int durationInMinutes = 0]) {
     _stopTimer();
-    _isWaiting = null;
+    _isWaiting = false;
     _durationInMinutes = durationInMinutes;
   }
 
@@ -100,7 +97,7 @@ class ShutdownTimerService {
   void handleWaiting() {
     switch (_shutdownType) {
       case _ShutdownType.pause:
-        _isWaiting = null;
+        _isWaiting = false;
         _durationInMinutes = 0;
         SmartDialog.showToast('定时时间已到，已暂停');
       case _ShutdownType.exit:

@@ -28,6 +28,8 @@ Widget content(
   );
   final moduleDynamic = item.modules.moduleDynamic;
   final pics = moduleDynamic?.major?.opus?.pics;
+  final text =
+      moduleDynamic?.desc?.text ?? moduleDynamic?.major?.opus?.summary?.text;
   return Padding(
     padding: floor == 1
         ? const EdgeInsets.fromLTRB(12, 0, 12, 6)
@@ -78,8 +80,9 @@ Widget content(
                   style: isSave
                       ? const TextStyle(fontSize: 15)
                       : const TextStyle(fontSize: 16),
-                  contextMenuBuilder: (_, state) =>
-                      _contextMenuBuilder(state, moduleDynamic),
+                  contextMenuBuilder: text == null || text.isEmpty
+                      ? null
+                      : (_, state) => _contextMenuBuilder(state, text),
                 )
               : custom_text.Text.rich(
                   style: floor == 1
@@ -110,26 +113,17 @@ Widget content(
   );
 }
 
-Widget _contextMenuBuilder(
-  EditableTextState state,
-  ModuleDynamicModel? moduleDynamic,
-) {
+Widget _contextMenuBuilder(EditableTextState state, String text) {
   return AdaptiveTextSelectionToolbar.buttonItems(
     buttonItems: state.contextMenuButtonItems
       ..add(
-        ContextMenuButtonItem(
-          label: '文本',
-          onPressed: () => _onCopyText(moduleDynamic),
-        ),
+        ContextMenuButtonItem(label: '文本', onPressed: () => _onCopyText(text)),
       ),
     anchors: state.contextMenuAnchors,
   );
 }
 
-void _onCopyText(ModuleDynamicModel? moduleDynamic) {
-  final text =
-      moduleDynamic?.desc?.text ?? moduleDynamic?.major?.opus?.summary?.text;
-  if (text == null || text.isEmpty) return;
+void _onCopyText(String text) {
   showDialog(
     context: Get.context!,
     builder: (context) => Dialog(

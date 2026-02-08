@@ -155,7 +155,7 @@ class AudioController extends GetxController
     return player?.play();
   }
 
-  Future<void>? onPause() async {
+  Future<void>? onPause() {
     return player?.pause();
   }
 
@@ -311,7 +311,7 @@ class AudioController extends GetxController
         this.duration.value = duration;
       }),
       player!.stream.playing.listen((playing) {
-        PlayerStatus playerStatus;
+        final PlayerStatus playerStatus;
         if (playing) {
           animController.forward();
           playerStatus = PlayerStatus.playing;

@@ -226,8 +226,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
           plPlayerController.volume.value =
               (await FlutterVolumeController.getVolume())!;
           FlutterVolumeController.addListener((double value) {
-            if (mounted &&
-                !plPlayerController.volumeInterceptEventStream.value) {
+            if (mounted && !plPlayerController.volumeInterceptEventStream) {
               plPlayerController.volume.value = value;
               if (Platform.isIOS && !FlutterVolumeController.showSystemUI) {
                 plPlayerController
@@ -240,7 +239,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                   });
               }
             }
-          });
+          }, emitOnStart: false);
         } catch (_) {}
       });
 

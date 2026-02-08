@@ -15,17 +15,20 @@ class OnlyLayoutWidget extends SingleChildRenderObjectWidget {
 
   @override
   RenderObject createRenderObject(BuildContext context) =>
-      Layout(onPerformLayout: onPerformLayout);
+      NoRenderLayoutBox(onPerformLayout: onPerformLayout);
 
   @override
-  void updateRenderObject(BuildContext context, Layout renderObject) {
+  void updateRenderObject(
+    BuildContext context,
+    NoRenderLayoutBox renderObject,
+  ) {
     super.updateRenderObject(context, renderObject);
     renderObject.onPerformLayout = onPerformLayout;
   }
 }
 
-class Layout extends RenderProxyBox {
-  Layout({required this.onPerformLayout});
+class NoRenderLayoutBox extends RenderProxyBox {
+  NoRenderLayoutBox({required this.onPerformLayout});
 
   LayoutCallback onPerformLayout;
 
@@ -39,4 +42,43 @@ class Layout extends RenderProxyBox {
 
   @override
   void paint(PaintingContext context, Offset offset) {}
+}
+
+class LayoutSizeWidget extends SingleChildRenderObjectWidget {
+  const LayoutSizeWidget({
+    super.key,
+    super.child,
+    required this.onPerformLayout,
+  });
+
+  final LayoutCallback onPerformLayout;
+
+  @override
+  RenderObject createRenderObject(BuildContext context) =>
+      RenderLayoutBox(onPerformLayout: onPerformLayout);
+
+  @override
+  void updateRenderObject(
+    BuildContext context,
+    RenderLayoutBox renderObject,
+  ) {
+    super.updateRenderObject(context, renderObject);
+    renderObject.onPerformLayout = onPerformLayout;
+  }
+}
+
+class RenderLayoutBox extends RenderProxyBox {
+  RenderLayoutBox({required this.onPerformLayout});
+
+  LayoutCallback onPerformLayout;
+
+  Size? _size;
+
+  @override
+  void performLayout() {
+    super.performLayout();
+    if (_size != size) {
+      onPerformLayout(_size = size);
+    }
+  }
 }

@@ -13,7 +13,7 @@ class ImageHorizontalDragGestureRecognizer
 
   Offset? _initialPosition;
 
-  final double width;
+  double width;
   final TransformationController transformationController;
 
   @override

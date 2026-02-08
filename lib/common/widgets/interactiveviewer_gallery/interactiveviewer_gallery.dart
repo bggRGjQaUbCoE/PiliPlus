@@ -83,9 +83,19 @@ class _InteractiveviewerGalleryState extends State<InteractiveviewerGallery>
   /// The controller to animate the transformation value of the
   /// [InteractiveViewer] when it should reset.
   late AnimationController _animationController;
-  Animation<Matrix4>? _animation;
+
+  late final _tween = Matrix4Tween();
+  late final _animatable = _tween.chain(CurveTween(curve: Curves.easeOut));
+
+  late final _horizontalDragGestureRecognizer =
+      ImageHorizontalDragGestureRecognizer(
+        width: 0,
+        transformationController: _transformationController,
+      );
 
   late Offset _doubleTapLocalPosition;
+
+  late double _width;
 
   late final RxInt currentIndex = widget.initIndex.obs;
 
@@ -113,7 +123,16 @@ class _InteractiveviewerGalleryState extends State<InteractiveviewerGallery>
   }
 
   void listener() {
-    _transformationController.value = _animation?.value ?? Matrix4.identity();
+    _transformationController.value = _animatable.evaluate(
+      _animationController,
+    );
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _width = MediaQuery.widthOf(context);
+    _horizontalDragGestureRecognizer.width = _width;
   }
 
   @override
@@ -125,6 +144,7 @@ class _InteractiveviewerGalleryState extends State<InteractiveviewerGallery>
       ..removeListener(listener)
       ..dispose();
     _transformationController.dispose();
+    _horizontalDragGestureRecognizer.dispose();
     if (widget.quality != _quality) {
       for (final item in widget.sources) {
         if (item.sourceType == SourceType.networkImage) {
@@ -159,13 +179,9 @@ class _InteractiveviewerGalleryState extends State<InteractiveviewerGallery>
     if (_transformationController.value != Matrix4.identity()) {
       // animate the reset for the transformation of the interactive viewer
 
-      _animation = _animationController.drive(
-        Matrix4Tween(
-          begin: _transformationController.value,
-          end: Matrix4.identity(),
-        ).chain(CurveTween(curve: Curves.easeOut)),
-      );
-
+      _tween
+        ..begin = _transformationController.value.clone()
+        ..end = Matrix4.identity();
       _animationController.forward(from: 0);
     }
   }
@@ -181,13 +197,12 @@ class _InteractiveviewerGalleryState extends State<InteractiveviewerGallery>
 
   @override
   Widget build(BuildContext context) {
-    final width = MediaQuery.widthOf(context);
     return Stack(
       clipBehavior: Clip.none,
       children: [
         InteractiveViewerBoundary(
           controller: _transformationController,
-          boundaryWidth: width,
+          boundaryWidth: _width,
           maxScale: widget.maxScale,
           minScale: widget.minScale,
           onDismissed: Get.back,
@@ -231,11 +246,7 @@ class _InteractiveviewerGalleryState extends State<InteractiveviewerGallery>
                     : _itemBuilder(index, item),
               );
             },
-            horizontalDragGestureRecognizer:
-                ImageHorizontalDragGestureRecognizer(
-                  width: width,
-                  transformationController: _transformationController,
-                ),
+            horizontalDragGestureRecognizer: _horizontalDragGestureRecognizer,
           ),
         ),
         Positioned(
@@ -315,8 +326,8 @@ class _InteractiveviewerGalleryState extends State<InteractiveviewerGallery>
   }
 
   void onDoubleTap() {
-    Matrix4 matrix = _transformationController.value.clone();
-    double currentScale = matrix.storage[0];
+    final matrix = _transformationController.value.clone();
+    final currentScale = matrix.storage[0];
 
     double targetScale = widget.minScale;
 
@@ -324,38 +335,26 @@ class _InteractiveviewerGalleryState extends State<InteractiveviewerGallery>
       targetScale = widget.maxScale * 0.4;
     }
 
-    double offSetX = targetScale == 1.0
-        ? 0.0
-        : -_doubleTapLocalPosition.dx * (targetScale - 1);
-    double offSetY = targetScale == 1.0
-        ? 0.0
-        : -_doubleTapLocalPosition.dy * (targetScale - 1);
+    final double dx, dy;
+    if (targetScale == 1.0) {
+      dx = dy = 0;
+    } else {
+      final tmp = 1 - targetScale;
+      dx = _doubleTapLocalPosition.dx * tmp;
+      dy = _doubleTapLocalPosition.dy * tmp;
+    }
 
-    matrix = Matrix4.fromList([
-      targetScale,
-      matrix.row1.x,
-      matrix.row2.x,
-      matrix.row3.x,
-      matrix.row0.y,
-      targetScale,
-      matrix.row2.y,
-      matrix.row3.y,
-      matrix.row0.z,
-      matrix.row1.z,
-      targetScale,
-      matrix.row3.z,
-      offSetX,
-      offSetY,
-      matrix.row2.w,
-      matrix.row3.w,
-    ]);
+    matrix
+      ..[0] = targetScale
+      ..[5] = targetScale
+      ..[10] = targetScale
+      ..[12] = dx
+      ..[13] = dy;
 
-    _animation = _animationController.drive(
-      Matrix4Tween(
-        begin: _transformationController.value,
-        end: matrix,
-      ).chain(CurveTween(curve: Curves.easeOut)),
-    );
+    _tween
+      ..begin = _transformationController.value.clone()
+      ..end = matrix;
+
     _animationController
         .forward(from: 0)
         .whenComplete(() => _onScaleChanged(targetScale));

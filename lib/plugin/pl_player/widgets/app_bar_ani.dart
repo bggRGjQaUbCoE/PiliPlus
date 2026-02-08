@@ -48,9 +48,7 @@ class AppBarAni extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SlideTransition(
-      position: isTop
-          ? controller.drive(_topPos)
-          : controller.drive(_bottomPos),
+      position: controller.drive(isTop ? _topPos : _bottomPos),
       child: DecoratedBox(
         decoration: BoxDecoration(
           gradient: isTop ? _topDecoration : _bottomDecoration,

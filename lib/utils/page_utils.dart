@@ -575,24 +575,17 @@ abstract final class PageUtils {
     List<SourceModel> imgList,
     int index,
   ) {
-    final animController = AnimationController(
-      vsync: state,
-      duration: Duration.zero,
-      reverseDuration: Duration.zero,
-    );
     state.showBottomSheet(
       constraints: const BoxConstraints(),
       (context) => InteractiveviewerGallery(
         sources: imgList,
         initIndex: index,
         quality: GlobalData().imgQuality,
-        onClose: animController.dispose,
       ),
       enableDrag: false,
       elevation: 0.0,
       backgroundColor: Colors.transparent,
-      transitionAnimationController: animController,
-      sheetAnimationStyle: const AnimationStyle(duration: Duration.zero),
+      sheetAnimationStyle: AnimationStyle.noAnimation,
     );
   }
 

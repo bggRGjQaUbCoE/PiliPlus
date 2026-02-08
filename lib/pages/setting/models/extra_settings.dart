@@ -89,10 +89,9 @@ List<SettingsModel> get extraSettings => [
     leading: const Icon(MdiIcons.debugStepOver),
     value: () => Pref.pgcSkipType,
     items: SkipType.values,
-    onSelected: (value, setState) async {
-      await GStorage.setting.put(SettingBoxKey.pgcSkipType, value.index);
-      setState();
-    },
+    onSelected: (value, setState) => GStorage.setting
+        .put(SettingBoxKey.pgcSkipType, value.index)
+        .whenComplete(setState),
   ),
   SwitchModel(
     title: '检查未读动态',

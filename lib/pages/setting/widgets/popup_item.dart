@@ -60,7 +60,7 @@ class _PopupListTileState<T> extends State<PopupListTile<T>> {
       position: RelativeRect.fromLTRB(dx, offset.dy + 5, dx, 0),
       items: widget.itemBuilder(context),
       initialValue: value,
-      requestFocus: true,
+      requestFocus: false,
     ).then<void>((T? newValue) {
       if (!mounted) {
         return;

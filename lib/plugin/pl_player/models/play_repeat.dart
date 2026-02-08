@@ -1,4 +1,6 @@
-enum PlayRepeat {
+import 'package:PiliPlus/models/common/enum_with_label.dart';
+
+enum PlayRepeat implements EnumWithLabel {
   pause('播完暂停'),
   listOrder('顺序播放'),
   singleCycle('单个循环'),
@@ -6,6 +8,7 @@ enum PlayRepeat {
   autoPlayRelated('自动连播')
   ;
 
-  final String desc;
-  const PlayRepeat(this.desc);
+  @override
+  final String label;
+  const PlayRepeat(this.label);
 }

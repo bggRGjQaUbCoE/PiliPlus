@@ -1664,7 +1664,7 @@ class PlPlayerController with BlockConfigMixin {
 
   void setPlayRepeat(PlayRepeat type) {
     playRepeat = type;
-    video.put(VideoBoxKey.playRepeat, type.index);
+    if (!Pref.tempPlayerConf) video.put(VideoBoxKey.playRepeat, type.index);
   }
 
   void putSubtitleSettings() {

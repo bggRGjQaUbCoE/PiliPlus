@@ -291,7 +291,10 @@ class LiveRoomChatPanel extends StatelessWidget {
   ) {
     final dx = details.globalPosition.dx;
     final renderBox = itemContext.findRenderObject() as RenderBox;
-    final dy = renderBox.localToGlobal(renderBox.size.bottomLeft(.zero)).dy;
+    final dy =
+        details.globalPosition.dy -
+        details.localPosition.dy +
+        renderBox.size.height;
     final autoScroll =
         liveRoomController.autoScroll &&
         !liveRoomController.disableAutoScroll.value;

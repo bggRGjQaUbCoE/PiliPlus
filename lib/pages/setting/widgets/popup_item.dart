@@ -45,19 +45,19 @@ class _PopupListTileState<T> extends State<PopupListTile<T>> {
   final _key = PlatformUtils.isDesktop ? null : GlobalKey();
 
   void _showButtonMenu(TapUpDetails details, T value) {
-    final box = context.findRenderObject() as RenderBox;
-    final offset = box.localToGlobal(box.size.topLeft(.zero));
+    final thisOffset = details.globalPosition - details.localPosition;
     final double dx;
     if (PlatformUtils.isDesktop) {
       dx = details.globalPosition.dx + 1;
     } else {
-      final box = _key!.currentContext!.findRenderObject() as RenderBox;
-      final offset = box.localToGlobal(box.size.topLeft(.zero));
-      dx = offset.dx;
+      final thisBox = context.findRenderObject() as RenderBox;
+      final titleBox = _key!.currentContext!.findRenderObject() as RenderBox;
+      final titleOffset = titleBox.localToGlobal(.zero, ancestor: thisBox);
+      dx = thisOffset.dx + titleOffset.dx;
     }
     showMenu<T?>(
       context: context,
-      position: RelativeRect.fromLTRB(dx, offset.dy + 5, dx, 0),
+      position: RelativeRect.fromLTRB(dx, thisOffset.dy + 5, dx, 0),
       items: widget.itemBuilder(context),
       initialValue: value,
       requestFocus: false,

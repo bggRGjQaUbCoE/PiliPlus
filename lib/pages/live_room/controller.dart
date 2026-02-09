@@ -182,12 +182,12 @@ class LiveRoomController extends GetxController {
   void onInit() {
     super.onInit();
     scrollController = ScrollController()..addListener(listener);
-    final account = Accounts.heartbeat;
+    final account = Accounts.main;
     isLogin = account.isLogin;
     mid = account.mid;
     queryLiveUrl();
     queryLiveInfoH5();
-    if (isLogin && !Pref.historyPause) {
+    if (Accounts.heartbeat.isLogin && !Pref.historyPause) {
       VideoHttp.roomEntryAction(roomId: roomId);
     }
     if (showSuperChat) {
@@ -428,7 +428,7 @@ class LiveRoomController extends GetxController {
         LiveMessageStream(
             streamToken: info.token!,
             roomId: roomId,
-            uid: mid,
+            uid: Accounts.heartbeat.mid,
             servers: info.hostList!
                 .map((host) => 'wss://${host.host}:${host.wssPort}/sub')
                 .toList(),
@@ -488,7 +488,6 @@ class LiveRoomController extends GetxController {
           addDm(
             DanmakuMsg(
               name: name,
-              uid: uid,
               text: msg,
               emots: (extra['emots'] as Map<String, dynamic>?)?.map(
                 (k, v) => MapEntry(k, BaseEmote.fromJson(v)),
@@ -574,7 +573,7 @@ class LiveRoomController extends GetxController {
   }
 
   Future<void> onLike() async {
-    if (!Accounts.main.isLogin) {
+    if (!isLogin) {
       likeClickTime.value = 0;
       return;
     }
@@ -593,7 +592,7 @@ class LiveRoomController extends GetxController {
   }
 
   void onSendDanmaku([bool fromEmote = false]) {
-    if (!Accounts.main.isLogin) {
+    if (!isLogin) {
       SmartDialog.showToast('账号未登录');
       return;
     }
@@ -623,7 +622,7 @@ class LiveRoomController extends GetxController {
   }
 
   void reportSC(SuperChatItem item) {
-    if (!Accounts.main.isLogin) {
+    if (!isLogin) {
       SmartDialog.showToast('账号未登录');
       return;
     }

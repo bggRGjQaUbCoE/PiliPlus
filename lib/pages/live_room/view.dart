@@ -714,7 +714,7 @@ class _LiveRoomPageState extends State<LiveRoomPage>
         ..savedDanmaku = [
           RichTextItem.fromStart(
             '@${item.name} ',
-            rawText: item.uid.toString(),
+            rawText: item.extra.mid.toString(),
             type: .at,
             id: item.extra.id.toString(),
           ),

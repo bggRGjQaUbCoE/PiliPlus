@@ -183,10 +183,9 @@ class _PostPanelState extends State<PostPanel>
   late final List<PostSegmentModel> list = videoDetailController.postList;
 
   late final double videoDuration =
-      plPlayerController.durationSeconds.value.inMilliseconds / 1000;
+      plPlayerController.duration.value.inMilliseconds / 1000;
 
-  double get currentPos =>
-      plPlayerController.position.value.inMilliseconds / 1000;
+  double currentPos() => plPlayerController.position.inMilliseconds / 1000;
 
   @override
   Widget buildPage(ThemeData theme) {
@@ -210,7 +209,7 @@ class _PostPanelState extends State<PostPanel>
                   PostSegmentModel(
                     segment: Pair(
                       first: 0,
-                      second: currentPos,
+                      second: currentPos(),
                     ),
                     category: SegmentType.sponsor,
                     actionType: ActionType.skip,
@@ -349,7 +348,7 @@ class _PostPanelState extends State<PostPanel>
                   PostPanel.segmentWidget(
                     theme,
                     item: item,
-                    currentPos: () => currentPos,
+                    currentPos: currentPos,
                     videoDuration: videoDuration,
                   ),
                 Wrap(

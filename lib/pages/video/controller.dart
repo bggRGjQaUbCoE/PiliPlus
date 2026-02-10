@@ -499,8 +499,7 @@ class VideoDetailController extends GetxController
   bool get preInitPlayer => plPlayerController.preInitPlayer;
   @override
   int get currPosInMilliseconds =>
-      defaultST?.inMilliseconds ??
-      plPlayerController.position.value.inMilliseconds;
+      defaultST?.inMilliseconds ?? plPlayerController.position.inMilliseconds;
   @override
   Future<void> seekTo(Duration duration, {required bool isSeek}) =>
       plPlayerController.seekTo(duration, isSeek: isSeek);
@@ -583,7 +582,7 @@ class VideoDetailController extends GetxController
           return SendDanmakuPanel(
             cid: cid.value,
             bvid: bvid,
-            progress: plPlayerController.position.value.inMilliseconds,
+            progress: plPlayerController.position.inMilliseconds,
             initialValue: savedDanmaku,
             onSave: (danmaku) => savedDanmaku = danmaku,
             onSuccess: (danmakuModel) {
@@ -634,7 +633,7 @@ class VideoDetailController extends GetxController
     final currentVideoQa = this.currentVideoQa.value;
     if (currentVideoQa == null) return;
     _autoPlay.value = true;
-    playedTime = plPlayerController.position.value;
+    playedTime = plPlayerController.position;
     plPlayerController
       ..removeListeners()
       ..isBuffering.value = false
@@ -961,7 +960,7 @@ class VideoDetailController extends GetxController
         PostSegmentModel(
           segment: Pair(
             first: 0,
-            second: plPlayerController.position.value.inMilliseconds / 1000,
+            second: plPlayerController.position.inMilliseconds / 1000,
           ),
           category: SegmentType.sponsor,
           actionType: ActionType.skip,
@@ -1178,7 +1177,7 @@ class VideoDetailController extends GetxController
                     ? -1
                     : playedTime!.inSeconds
               : playedTime!.inSeconds,
-          type: HeartBeatType.status,
+          type: HeartBeatType.completed,
           isManual: true,
           aid: aid,
           bvid: bvid,

@@ -57,7 +57,7 @@ class _PlDanmakuState extends State<PlDanmaku> {
       } else {
         _plDanmakuController.queryDanmaku(
           PlDanmakuController.calcSegment(
-            playerController.position.value.inMilliseconds,
+            playerController.position.inMilliseconds,
           ),
         );
       }

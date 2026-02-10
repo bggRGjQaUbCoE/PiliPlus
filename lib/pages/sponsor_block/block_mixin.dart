@@ -21,9 +21,17 @@ import 'package:media_kit/media_kit.dart';
 mixin BlockConfigMixin {
   late final pgcSkipType = Pref.pgcSkipType;
   late final enablePgcSkip = pgcSkipType != SkipType.disable;
-  late final bool enableSponsorBlock = Pref.enableSponsorBlock;
-  late final bool enableBlock = enableSponsorBlock || enablePgcSkip;
-  late final List<Color> blockColor = Pref.blockColor;
+  late final enableSponsorBlock = Pref.enableSponsorBlock;
+  late final enableBlock = enableSponsorBlock || enablePgcSkip;
+  late final blockColor = Pref.blockColor;
+  late final blockLimit = Pref.blockLimit;
+  late final blockSettings = Pref.blockSettings;
+  late final enableList = blockSettings
+      .where((item) => item.second != SkipType.disable)
+      .map((item) => item.first.name)
+      .toSet();
+
+  Color _getColor(SegmentType segment) => blockColor[segment.index];
 }
 
 mixin BlockMixin on GetxController {
@@ -116,14 +124,14 @@ mixin BlockMixin on GetxController {
           list
               .where(
                 (item) =>
-                    SegmentModel.enableList.contains(item.category) &&
+                    blockConfig.enableList.contains(item.category) &&
                     item.segment[1] >= item.segment[0],
               )
               .map(
                 (item) {
                   final segmentModel = SegmentModel.fromItemModel(
                     item,
-                    isBlock,
+                    isBlock ? blockConfig : null,
                   );
                   if (segmentModel.segment == const (0, 0)) {
                     videoLabel?.value +=
@@ -176,7 +184,7 @@ mixin BlockMixin on GetxController {
             return Segment(
               start: start,
               end: end,
-              color: e.segmentType.barColor,
+              color: blockConfig._getColor(e.segmentType),
             );
           }),
         );
@@ -354,7 +362,7 @@ mixin BlockMixin on GetxController {
                               width: 10,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
-                                color: item.barColor,
+                                color: blockConfig._getColor(item),
                               ),
                             ),
                             style: const TextStyle(fontSize: 14, height: 1),
@@ -404,7 +412,7 @@ mixin BlockMixin on GetxController {
                               width: 10,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
-                                color: item.segmentType.barColor,
+                                color: blockConfig._getColor(item.segmentType),
                               ),
                             ),
                             style: const TextStyle(fontSize: 14, height: 1),

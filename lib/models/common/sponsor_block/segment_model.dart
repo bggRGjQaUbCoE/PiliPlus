@@ -1,16 +1,10 @@
 import 'package:PiliPlus/models/common/sponsor_block/segment_type.dart';
 import 'package:PiliPlus/models/common/sponsor_block/skip_type.dart';
 import 'package:PiliPlus/models_new/sponsor_block/segment_item.dart';
+import 'package:PiliPlus/pages/sponsor_block/block_mixin.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 
 class SegmentModel implements Comparable<SegmentModel> {
-  static final blockLimit = Pref.blockLimit;
-  static final blockSettings = Pref.blockSettings;
-  static final enableList = blockSettings
-      .where((item) => item.second != SkipType.disable)
-      .map((item) => item.first.name)
-      .toSet();
-
   SegmentModel({
     required this.uuid,
     required this.segmentType,
@@ -25,15 +19,15 @@ class SegmentModel implements Comparable<SegmentModel> {
 
   factory SegmentModel.fromItemModel(
     SegmentItemModel model,
-    bool isBlock,
+    BlockConfigMixin? config,
   ) {
     final segmentType = SegmentType.values.byName(model.category);
     final segment = (model.segment[0], model.segment[1]);
     SkipType skipType;
-    if (isBlock) {
-      skipType = blockSettings[segmentType.index].second;
+    if (config != null) {
+      skipType = config.blockSettings[segmentType.index].second;
       if (skipType != SkipType.showOnly) {
-        if (segment.isEq || segment.length < blockLimit) {
+        if (segment.isEq || segment.length < config.blockLimit) {
           skipType = SkipType.showOnly;
         }
       }

@@ -3,7 +3,6 @@
 import 'dart:ui';
 
 import 'package:PiliPlus/models/common/sponsor_block/action_type.dart';
-import 'package:PiliPlus/utils/storage_pref.dart';
 
 enum SegmentType {
   sponsor(
@@ -114,9 +113,6 @@ enum SegmentType {
   final String description;
   final Color color;
   final List<ActionType> toActionType;
-
-  static final blockColor = Pref.blockColor;
-  Color get barColor => blockColor[index];
 
   const SegmentType(
     this.title,

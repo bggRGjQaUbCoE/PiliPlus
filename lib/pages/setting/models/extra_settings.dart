@@ -213,13 +213,6 @@ List<SettingsModel> get extraSettings => [
     setKey: SettingBoxKey.continuePlayingPart,
     defaultVal: true,
   ),
-  const SwitchModel(
-    title: '分享精准空降链接',
-    subtitle: '分享视频/番剧时附带当前播放进度',
-    leading: Icon(Icons.timer_outlined),
-    setKey: SettingBoxKey.shareWithTime,
-    defaultVal: true,
-  ),
   getBanWordModel(
     title: '评论关键词过滤',
     key: SettingBoxKey.banWordForReply,

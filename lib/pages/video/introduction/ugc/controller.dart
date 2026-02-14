@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:PiliPlus/common/widgets/button/icon_button.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart';
 import 'package:PiliPlus/http/api.dart';
 import 'package:PiliPlus/http/constants.dart';
@@ -299,8 +300,8 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
   @override
   void actionShareVideo(BuildContext context) {
     final videoDetail = this.videoDetail.value;
-    String videoUrl =
-        '${HttpString.baseUrl}/video/$bvid${videoDetailCtr.playedTimePos}';
+    final playedTimePos = videoDetailCtr.playedTimePos;
+    String videoUrl = '${HttpString.baseUrl}/video/$bvid';
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
@@ -319,6 +320,16 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
                 Get.back();
                 Utils.copyText(videoUrl);
               },
+              trailing: playedTimePos.isNotEmpty
+                  ? iconButton(
+                      tooltip: '精确分享',
+                      icon: const Icon(Icons.timer_outlined),
+                      onPressed: () {
+                        Get.back();
+                        Utils.copyText('$videoUrl$playedTimePos');
+                      },
+                    )
+                  : null,
             ),
             ListTile(
               dense: true,
@@ -393,26 +404,6 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
                 } catch (e) {
                   SmartDialog.showToast(e.toString());
                 }
-              },
-            ),
-            StatefulBuilder(
-              builder: (context, setState) {
-                bool shareWithTime = Pref.shareWithTime;
-                return CheckboxListTile(
-                  value: shareWithTime,
-                  onChanged: (val) {
-                    if (val != null) {
-                      Pref.shareWithTime = val;
-                      setState(() => shareWithTime = val);
-                      videoUrl =
-                          '${HttpString.baseUrl}/video/$bvid${videoDetailCtr.playedTimePos}';
-                    }
-                  },
-                  title: const Text(
-                    '分享精准空降链接',
-                    style: TextStyle(fontSize: 14),
-                  ),
-                );
               },
             ),
           ],

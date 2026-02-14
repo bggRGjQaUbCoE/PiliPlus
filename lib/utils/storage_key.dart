@@ -148,8 +148,7 @@ abstract final class SettingBoxKey {
       followOrderType = 'followOrderType',
       enableImgMenu = 'enableImgMenu',
       showDynDispute = 'showDynDispute',
-      touchSlopH = 'touchSlopH',
-      shareWithTime = 'shareWithTime';
+      touchSlopH = 'touchSlopH';
 
   static const String minimizeOnExit = 'minimizeOnExit',
       windowSize = 'windowSize',

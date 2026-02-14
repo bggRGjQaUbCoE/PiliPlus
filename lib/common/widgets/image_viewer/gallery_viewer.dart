@@ -70,7 +70,6 @@ class _GalleryViewerState extends State<GalleryViewer>
   late Size _containerSize;
   late final int _quality;
   late final RxInt _currIndex;
-  late final List<GlobalKey> _keys;
 
   Player? _player;
   Player get _effectivePlayer => _player ??= Player();
@@ -107,7 +106,6 @@ class _GalleryViewerState extends State<GalleryViewer>
     _quality = Pref.previewQ;
     _currIndex = widget.initIndex.obs;
     _playIfNeeded(widget.initIndex);
-    _keys = List.generate(widget.sources.length, (_) => GlobalKey());
 
     _pageController = PageController(initialPage: widget.initIndex);
 
@@ -344,7 +342,7 @@ class _GalleryViewerState extends State<GalleryViewer>
     switch (item.sourceType) {
       case SourceType.fileImage:
         child = Image.file(
-          key: _keys[index],
+          key: ValueKey(index),
           File(item.url),
           filterQuality: .low,
           minScale: widget.minScale,
@@ -360,7 +358,7 @@ class _GalleryViewerState extends State<GalleryViewer>
       case SourceType.networkImage:
         final isLongPic = item.isLongPic;
         child = Image(
-          key: _keys[index],
+          key: ValueKey(index),
           image: CachedNetworkImageProvider(_getActualUrl(item.url)),
           minScale: widget.minScale,
           maxScale: widget.maxScale,
@@ -414,7 +412,7 @@ class _GalleryViewerState extends State<GalleryViewer>
         }
       case SourceType.livePhoto:
         child = Obx(
-          key: _keys[index],
+          key: ValueKey(index),
           () => _currIndex.value == index
               ? Viewer(
                   minScale: widget.minScale,

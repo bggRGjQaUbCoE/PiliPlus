@@ -395,6 +395,26 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
                 }
               },
             ),
+            StatefulBuilder(
+              builder: (context, setState) {
+                bool shareWithTime = Pref.shareWithTime;
+                return CheckboxListTile(
+                  value: shareWithTime,
+                  onChanged: (val) {
+                    if (val != null) {
+                      Pref.shareWithTime = val;
+                      setState(() => shareWithTime = val);
+                      videoUrl =
+                          '${HttpString.baseUrl}/video/$bvid${videoDetailCtr.playedTimePos}';
+                    }
+                  },
+                  title: const Text(
+                    '分享精准空降链接',
+                    style: TextStyle(fontSize: 14),
+                  ),
+                );
+              },
+            ),
           ],
         ),
       ),

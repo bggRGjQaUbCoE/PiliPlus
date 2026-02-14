@@ -959,4 +959,10 @@ abstract final class Pref {
 
   static double get touchSlopH =>
       _setting.get(SettingBoxKey.touchSlopH, defaultValue: 24.0);
+
+  static bool get shareWithTime =>
+      _setting.get(SettingBoxKey.shareWithTime, defaultValue: true);
+
+  static set shareWithTime(bool value) =>
+      _setting.put(SettingBoxKey.shareWithTime, value);
 }

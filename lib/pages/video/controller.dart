@@ -129,6 +129,9 @@ class VideoDetailController extends GetxController
   Duration? defaultST;
   Duration? playedTime;
   String get playedTimePos {
+    if (!Pref.shareWithTime) {
+      return '';
+    }
     final pos = playedTime?.inMilliseconds;
     return pos == null || pos == 0 ? '' : '?t=${pos / 1000}';
   }

@@ -22,6 +22,7 @@ import 'package:PiliPlus/common/widgets/gesture/horizontal_drag_gesture_recogniz
 import 'package:PiliPlus/common/widgets/gesture/image_horizontal_drag_gesture_recognizer.dart';
 import 'package:PiliPlus/common/widgets/gesture/image_tap_gesture_recognizer.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
+import 'package:easy_debounce/easy_throttle.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -152,7 +153,7 @@ class _ViewerState extends State<Viewer> with SingleTickerProviderStateMixin {
       ..gestureSettings = DeviceGestureSettings(touchSlop: touchSlopH);
     _doubleTapGestureRecognizer = DoubleTapGestureRecognizer(debugOwner: this)
       ..onDoubleTapDown = _onDoubleTapDown
-      ..onDoubleTap = _handleDoubleTap
+      ..onDoubleTap = _onDoubleTap
       ..gestureSettings = MediaQuery.maybeGestureSettingsOf(Get.context!);
   }
 
@@ -217,6 +218,14 @@ class _ViewerState extends State<Viewer> with SingleTickerProviderStateMixin {
 
   void _onDoubleTapDown(TapDownDetails details) {
     _downPos = details.localPosition;
+  }
+
+  void _onDoubleTap() {
+    EasyThrottle.throttle(
+      'VIEWER_TAP',
+      const Duration(milliseconds: 555),
+      _handleDoubleTap,
+    );
   }
 
   void _handleDoubleTap() {

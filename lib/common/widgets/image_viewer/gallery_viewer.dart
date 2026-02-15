@@ -70,6 +70,7 @@ class _GalleryViewerState extends State<GalleryViewer>
   late Size _containerSize;
   late final int _quality;
   late final RxInt _currIndex;
+  GlobalKey? _key;
 
   Player? _player;
   Player get _effectivePlayer => _player ??= Player();
@@ -104,7 +105,13 @@ class _GalleryViewerState extends State<GalleryViewer>
     super.initState();
     _quality = Pref.previewQ;
     _currIndex = widget.initIndex.obs;
-    _playIfNeeded(widget.initIndex);
+    final item = widget.sources[widget.initIndex];
+    _playIfNeeded(item);
+
+    if (!item.isLongPic) {
+      _key = GlobalKey();
+      WidgetsBinding.instance.addPostFrameCallback((_) => _key = null);
+    }
 
     _pageController = PageController(initialPage: widget.initIndex);
 
@@ -297,8 +304,7 @@ class _GalleryViewerState extends State<GalleryViewer>
     ),
   );
 
-  void _playIfNeeded(int index) {
-    final item = widget.sources[index];
+  void _playIfNeeded(SourceModel item) {
     if (item.sourceType == .livePhoto) {
       _effectivePlayer.open(Media(item.liveUrl!));
     }
@@ -306,7 +312,7 @@ class _GalleryViewerState extends State<GalleryViewer>
 
   void _onPageChanged(int index) {
     _player?.pause();
-    _playIfNeeded(index);
+    _playIfNeeded(widget.sources[index]);
     _currIndex.value = index;
   }
 
@@ -333,7 +339,7 @@ class _GalleryViewerState extends State<GalleryViewer>
     switch (item.sourceType) {
       case SourceType.fileImage:
         child = Image.file(
-          key: ValueKey(index),
+          key: _key,
           File(item.url),
           filterQuality: .low,
           minScale: widget.minScale,
@@ -349,7 +355,7 @@ class _GalleryViewerState extends State<GalleryViewer>
       case SourceType.networkImage:
         final isLongPic = item.isLongPic;
         child = Image(
-          key: ValueKey(index),
+          key: _key,
           image: CachedNetworkImageProvider(_getActualUrl(item.url)),
           minScale: widget.minScale,
           maxScale: widget.maxScale,
@@ -403,7 +409,7 @@ class _GalleryViewerState extends State<GalleryViewer>
         }
       case SourceType.livePhoto:
         child = Obx(
-          key: ValueKey(index),
+          key: _key,
           () => _currIndex.value == index
               ? Viewer(
                   minScale: widget.minScale,

@@ -7,9 +7,9 @@ import 'dart:math' as math;
 
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/widgets/gesture/image_horizontal_drag_gesture_recognizer.dart';
-import 'package:PiliPlus/common/widgets/gesture/image_tap_gesture_recognizer.dart';
 import 'package:PiliPlus/common/widgets/image_viewer/viewer.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/semantics.dart';
@@ -42,7 +42,6 @@ class Image extends StatefulWidget {
     required this.onDragStart,
     required this.onDragUpdate,
     required this.onDragEnd,
-    required this.tapGestureRecognizer,
     required this.doubleTapGestureRecognizer,
     required this.horizontalDragGestureRecognizer,
     required this.onChangePage,
@@ -81,7 +80,6 @@ class Image extends StatefulWidget {
     required this.onDragStart,
     required this.onDragUpdate,
     required this.onDragEnd,
-    required this.tapGestureRecognizer,
     required this.doubleTapGestureRecognizer,
     required this.horizontalDragGestureRecognizer,
     required this.onChangePage,
@@ -127,7 +125,6 @@ class Image extends StatefulWidget {
     required this.onDragStart,
     required this.onDragUpdate,
     required this.onDragEnd,
-    required this.tapGestureRecognizer,
     required this.doubleTapGestureRecognizer,
     required this.horizontalDragGestureRecognizer,
     required this.onChangePage,
@@ -176,7 +173,6 @@ class Image extends StatefulWidget {
     required this.onDragStart,
     required this.onDragUpdate,
     required this.onDragEnd,
-    required this.tapGestureRecognizer,
     required this.doubleTapGestureRecognizer,
     required this.horizontalDragGestureRecognizer,
     required this.onChangePage,
@@ -225,7 +221,6 @@ class Image extends StatefulWidget {
     required this.onDragStart,
     required this.onDragUpdate,
     required this.onDragEnd,
-    required this.tapGestureRecognizer,
     required this.doubleTapGestureRecognizer,
     required this.horizontalDragGestureRecognizer,
     required this.onChangePage,
@@ -285,8 +280,7 @@ class Image extends StatefulWidget {
   final ValueChanged<ScaleEndDetails>? onDragEnd;
   final ValueChanged<int>? onChangePage;
 
-  final ImageTapGestureRecognizer tapGestureRecognizer;
-  final ImageDoubleTapGestureRecognizer doubleTapGestureRecognizer;
+  final DoubleTapGestureRecognizer doubleTapGestureRecognizer;
   final ImageHorizontalDragGestureRecognizer horizontalDragGestureRecognizer;
 
   @override
@@ -630,7 +624,6 @@ class _ImageState extends State<Image> with WidgetsBindingObserver {
       onDragStart: widget.onDragStart,
       onDragUpdate: widget.onDragUpdate,
       onDragEnd: widget.onDragEnd,
-      tapGestureRecognizer: widget.tapGestureRecognizer,
       doubleTapGestureRecognizer: widget.doubleTapGestureRecognizer,
       horizontalDragGestureRecognizer: widget.horizontalDragGestureRecognizer,
       onChangePage: widget.onChangePage,

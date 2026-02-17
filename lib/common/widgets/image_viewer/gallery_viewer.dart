@@ -20,7 +20,6 @@ import 'dart:io' show File, Platform;
 import 'package:PiliPlus/common/widgets/colored_box_transition.dart';
 import 'package:PiliPlus/common/widgets/flutter/page/page_view.dart';
 import 'package:PiliPlus/common/widgets/gesture/image_horizontal_drag_gesture_recognizer.dart';
-import 'package:PiliPlus/common/widgets/gesture/image_tap_gesture_recognizer.dart';
 import 'package:PiliPlus/common/widgets/image_viewer/image.dart';
 import 'package:PiliPlus/common/widgets/image_viewer/loading_indicator.dart';
 import 'package:PiliPlus/common/widgets/image_viewer/viewer.dart';
@@ -81,8 +80,8 @@ class _GalleryViewerState extends State<GalleryViewer>
 
   late final PageController _pageController;
 
-  late final ImageTapGestureRecognizer _tapGestureRecognizer;
-  late final ImageDoubleTapGestureRecognizer _doubleTapGestureRecognizer;
+  late final TapGestureRecognizer _tapGestureRecognizer;
+  late final DoubleTapGestureRecognizer _doubleTapGestureRecognizer;
   late final ImageHorizontalDragGestureRecognizer
   _horizontalDragGestureRecognizer;
   late final LongPressGestureRecognizer _longPressGestureRecognizer;
@@ -116,13 +115,13 @@ class _GalleryViewerState extends State<GalleryViewer>
     _pageController = PageController(initialPage: widget.initIndex);
 
     final gestureSettings = MediaQuery.maybeGestureSettingsOf(Get.context!);
-    _tapGestureRecognizer = ImageTapGestureRecognizer()
+    _tapGestureRecognizer = TapGestureRecognizer()
       // ..onTap = _onTap
       ..gestureSettings = gestureSettings;
     if (PlatformUtils.isDesktop) {
       _tapGestureRecognizer.onSecondaryTapUp = _showDesktopMenu;
     }
-    _doubleTapGestureRecognizer = ImageDoubleTapGestureRecognizer()
+    _doubleTapGestureRecognizer = DoubleTapGestureRecognizer()
       ..onDoubleTap = () {}
       ..gestureSettings = gestureSettings;
     _horizontalDragGestureRecognizer = ImageHorizontalDragGestureRecognizer();
@@ -360,7 +359,6 @@ class _GalleryViewerState extends State<GalleryViewer>
           onDragStart: _onDragStart,
           onDragUpdate: _onDragUpdate,
           onDragEnd: _onDragEnd,
-          tapGestureRecognizer: _tapGestureRecognizer,
           doubleTapGestureRecognizer: _doubleTapGestureRecognizer,
           horizontalDragGestureRecognizer: _horizontalDragGestureRecognizer,
           onChangePage: _onChangePage,
@@ -373,7 +371,6 @@ class _GalleryViewerState extends State<GalleryViewer>
           minScale: widget.minScale,
           maxScale: widget.maxScale,
           containerSize: _containerSize,
-          tapGestureRecognizer: _tapGestureRecognizer,
           doubleTapGestureRecognizer: _doubleTapGestureRecognizer,
           horizontalDragGestureRecognizer: _horizontalDragGestureRecognizer,
           onChangePage: _onChangePage,
@@ -395,7 +392,6 @@ class _GalleryViewerState extends State<GalleryViewer>
                   onDragStart: null,
                   onDragUpdate: null,
                   onDragEnd: null,
-                  tapGestureRecognizer: _tapGestureRecognizer,
                   doubleTapGestureRecognizer: _doubleTapGestureRecognizer,
                   horizontalDragGestureRecognizer:
                       _horizontalDragGestureRecognizer,
@@ -434,7 +430,6 @@ class _GalleryViewerState extends State<GalleryViewer>
                   onDragStart: _onDragStart,
                   onDragUpdate: _onDragUpdate,
                   onDragEnd: _onDragEnd,
-                  tapGestureRecognizer: _tapGestureRecognizer,
                   doubleTapGestureRecognizer: _doubleTapGestureRecognizer,
                   horizontalDragGestureRecognizer:
                       _horizontalDragGestureRecognizer,

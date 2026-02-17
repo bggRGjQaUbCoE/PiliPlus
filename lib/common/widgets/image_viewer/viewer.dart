@@ -20,7 +20,6 @@ import 'dart:math' as math;
 import 'package:PiliPlus/common/widgets/gesture/horizontal_drag_gesture_recognizer.dart'
     show touchSlopH;
 import 'package:PiliPlus/common/widgets/gesture/image_horizontal_drag_gesture_recognizer.dart';
-import 'package:PiliPlus/common/widgets/gesture/image_tap_gesture_recognizer.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:easy_debounce/easy_throttle.dart';
 import 'package:flutter/foundation.dart';
@@ -44,7 +43,6 @@ class Viewer extends StatefulWidget {
     required this.onDragStart,
     required this.onDragUpdate,
     required this.onDragEnd,
-    required this.tapGestureRecognizer,
     required this.doubleTapGestureRecognizer,
     required this.horizontalDragGestureRecognizer,
     required this.onChangePage,
@@ -63,8 +61,7 @@ class Viewer extends StatefulWidget {
   final ValueChanged<ScaleEndDetails>? onDragEnd;
   final ValueChanged<int>? onChangePage;
 
-  final ImageTapGestureRecognizer tapGestureRecognizer;
-  final ImageDoubleTapGestureRecognizer doubleTapGestureRecognizer;
+  final DoubleTapGestureRecognizer doubleTapGestureRecognizer;
   final ImageHorizontalDragGestureRecognizer horizontalDragGestureRecognizer;
 
   @override
@@ -101,8 +98,7 @@ class _ViewerState extends State<Viewer> with SingleTickerProviderStateMixin {
 
   late Size _imageSize;
 
-  late final ImageTapGestureRecognizer _tapGestureRecognizer;
-  late final ImageDoubleTapGestureRecognizer _doubleTapGestureRecognizer;
+  late final DoubleTapGestureRecognizer _doubleTapGestureRecognizer;
   late final ImageHorizontalDragGestureRecognizer
   _horizontalDragGestureRecognizer;
   late final ScaleGestureRecognizer _scaleGestureRecognizer;
@@ -153,7 +149,6 @@ class _ViewerState extends State<Viewer> with SingleTickerProviderStateMixin {
       duration: const Duration(milliseconds: 300),
     )..addListener(_listener);
 
-    _tapGestureRecognizer = widget.tapGestureRecognizer;
     _doubleTapGestureRecognizer = widget.doubleTapGestureRecognizer;
     _horizontalDragGestureRecognizer = widget.horizontalDragGestureRecognizer;
 
@@ -419,14 +414,10 @@ class _ViewerState extends State<Viewer> with SingleTickerProviderStateMixin {
 
   void _onPointerDown(PointerDownEvent event) {
     _scalePos = event.position;
-    _tapGestureRecognizer.addPointer(event);
     _doubleTapGestureRecognizer
       ..onDoubleTapDown = _onDoubleTapDown
-      ..onDoubleTap = _onDoubleTap
-      ..addPointer(event);
-    _horizontalDragGestureRecognizer
-      ..isBoundaryAllowed = _isBoundaryAllowed
-      ..addPointer(event);
+      ..onDoubleTap = _onDoubleTap;
+    _horizontalDragGestureRecognizer.isBoundaryAllowed = _isBoundaryAllowed;
     _scaleGestureRecognizer.addPointer(event);
   }
 

@@ -743,7 +743,7 @@ class _AudioPageState extends State<AudioPage> {
 
   void _onSeek(Duration value) {
     _controller
-      ..player?.platform?.seek(value)
+      ..player?.seek(value)
       ..isDragging = false;
   }
 

@@ -50,8 +50,7 @@ import 'package:easy_debounce/easy_throttle.dart';
 import 'package:floating/floating.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart'
-    show rootBundle, HapticFeedback, Uint8List;
+import 'package:flutter/services.dart' show rootBundle, HapticFeedback;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:flutter_volume_controller/flutter_volume_controller.dart';
 import 'package:get/get.dart';
@@ -549,11 +548,9 @@ class PlPlayerController with BlockConfigMixin {
   // 获取实例 传参
   static PlPlayerController getInstance({bool isLive = false}) {
     // 如果实例尚未创建，则创建一个新实例
-    _instance ??= PlPlayerController._();
-    _instance!
+    return (_instance ??= PlPlayerController._())
       ..isLive = isLive
       .._playerCount += 1;
-    return _instance!;
   }
 
   bool _processing = false;
@@ -710,9 +707,8 @@ class PlPlayerController with BlockConfigMixin {
         setting.put(SettingBoxKey.superResolutionType, type.index);
       }
     }
-    pp ??= _videoPlayerController!.platform!;
+    pp ??= _videoPlayerController!;
     await pp.waitForPlayerInitialization;
-    await pp.waitForVideoControllerInitializationIfAttached;
     switch (type) {
       case SuperResolutionType.disable:
         return pp.command(['change-list', 'glsl-shaders', 'clr', '']);
@@ -768,35 +764,36 @@ class PlPlayerController with BlockConfigMixin {
             logLevel: kDebugMode ? MPVLogLevel.warn : MPVLogLevel.error,
           ),
         );
-    final pp = player.platform!;
     if (_videoPlayerController == null) {
+      await player.waitForPlayerInitialization;
       if (PlatformUtils.isDesktop) {
-        pp.setVolume(this.volume.value * 100);
+        player.setVolume(this.volume.value * 100);
       }
       if (isAnim) {
-        setShader(superResolutionType.value, pp);
+        setShader(superResolutionType.value, player);
       }
-      // await pp.setProperty('audio-pitch-correction', 'yes'); // default yes
+      // await player.setProperty('audio-pitch-correction', 'yes'); // default yes
       if (Platform.isAndroid) {
-        await pp.setProperty("volume-max", "100");
-        await pp.setProperty("ao", Pref.audioOutput);
+        player
+          ..setProperty("volume-max", "100")
+          ..setProperty("ao", Pref.audioOutput);
       }
       // video-sync=display-resample
-      await pp.setProperty("video-sync", Pref.videoSync);
+      player.setProperty("video-sync", Pref.videoSync);
       final autosync = Pref.autosync;
       if (autosync != '0') {
-        await pp.setProperty("autosync", autosync);
+        player.setProperty("autosync", autosync);
       }
       // vo=gpu-next & gpu-context=android & gpu-api=opengl
-      // await pp.setProperty("vo", "gpu-next");
-      // await pp.setProperty("gpu-context", "android");
-      // await pp.setProperty("gpu-api", "opengl");
+      // await player.setProperty("vo", "gpu-next");
+      // await player.setProperty("gpu-context", "android");
+      // await player.setProperty("gpu-api", "opengl");
       await player.setAudioTrack(AudioTrack.auto());
       if (Pref.enableSystemProxy) {
         final systemProxyHost = Pref.systemProxyHost;
         final systemProxyPort = int.tryParse(Pref.systemProxyPort);
         if (systemProxyPort != null && systemProxyHost.isNotEmpty) {
-          await pp.setProperty(
+          player.setProperty(
             "http-proxy",
             'http://$systemProxyHost:$systemProxyPort',
           );
@@ -1560,14 +1557,6 @@ class PlPlayerController with BlockConfigMixin {
   void removeStatusLister(Function(PlayerStatus status) listener) =>
       _statusListeners.remove(listener);
 
-  /// 截屏
-  Future<Uint8List?> screenshot() async {
-    final Uint8List? screenshot = await _videoPlayerController!.screenshot(
-      format: 'image/png',
-    );
-    return screenshot;
-  }
-
   // 记录播放记录
   Future<void>? makeHeartBeat(
     int progress, {
@@ -1792,7 +1781,7 @@ class PlPlayerController with BlockConfigMixin {
 
   void takeScreenshot() {
     SmartDialog.showToast('截图中');
-    videoPlayerController?.screenshot(format: 'image/png').then((value) {
+    videoPlayerController?.screenshot(format: .png).then((value) {
       if (value != null) {
         SmartDialog.showToast('点击弹窗保存截图');
         showDialog(

@@ -277,12 +277,12 @@ class AudioController extends GetxController
     }
   }
 
-  void _onOpenMedia(
+  Future<void> _onOpenMedia(
     String url, {
     String? referer,
     String ua = Constants.userAgentApp,
-  }) {
-    _initPlayerIfNeeded();
+  }) async {
+    await _initPlayerIfNeeded();
     player!.open(
       Media(
         url,
@@ -296,8 +296,10 @@ class AudioController extends GetxController
     _start = null;
   }
 
-  void _initPlayerIfNeeded() {
-    player ??= Player();
+  Future<void> _initPlayerIfNeeded() async {
+    if (player == null) {
+      await (player = Player()).waitForPlayerInitialization;
+    }
     _subscriptions ??= {
       player!.stream.position.listen((position) {
         if (isDragging) return;

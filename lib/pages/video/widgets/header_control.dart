@@ -751,19 +751,16 @@ class HeaderControlState extends State<HeaderControl>
     );
   }
 
-  static Future<void> showPlayerInfo(
+  static void showPlayerInfo(
     BuildContext context, {
     required PlPlayerController plPlayerController,
-  }) async {
+  }) {
     final player = plPlayerController.videoPlayerController;
     if (player == null) {
       SmartDialog.showToast('播放器未初始化');
       return;
     }
-    final hwdec = await player.platform!.getProperty(
-      'hwdec-current',
-    );
-    if (!context.mounted) return;
+    final hwdec = player.getProperty('hwdec-current');
     showDialog(
       context: context,
       builder: (context) {
@@ -854,16 +851,6 @@ class HeaderControlState extends State<HeaderControl>
                       title: const Text("rate"),
                       subtitle: Text(state.rate.toString()),
                       onTap: () => Utils.copyText('rate\n${state.rate}'),
-                    ),
-                    ListTile(
-                      dense: true,
-                      title: const Text("AudioBitrate"),
-                      subtitle: Text(
-                        state.audioBitrate.toString(),
-                      ),
-                      onTap: () => Utils.copyText(
-                        'AudioBitrate\n${state.audioBitrate}',
-                      ),
                     ),
                     ListTile(
                       dense: true,

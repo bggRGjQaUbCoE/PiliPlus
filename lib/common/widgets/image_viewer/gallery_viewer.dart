@@ -317,7 +317,9 @@ class _GalleryViewerState extends State<GalleryViewer>
 
   void _playIfNeeded(SourceModel item) {
     if (item.sourceType == .livePhoto) {
-      _effectivePlayer.open(Media(item.liveUrl!));
+      _effectivePlayer.waitForPlayerInitialization.whenComplete(
+        () => _effectivePlayer.open(Media(item.liveUrl!)),
+      );
     }
   }
 

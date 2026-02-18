@@ -23,7 +23,7 @@ abstract final class MusicHttp {
     }
   }
 
-  static Future<LoadingState<Null>> wishUpdate(
+  static Future<LoadingState<void>> wishUpdate(
     String musicId,
     bool hasLike,
   ) async {

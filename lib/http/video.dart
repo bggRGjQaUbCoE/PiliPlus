@@ -345,7 +345,7 @@ abstract final class VideoHttp {
   }
 
   // 投币
-  static Future<LoadingState<Null>> coinVideo({
+  static Future<LoadingState<void>> coinVideo({
     required String bvid,
     required int multiply,
     int selectLike = 0,
@@ -443,7 +443,7 @@ abstract final class VideoHttp {
   }
 
   // （取消）点踩
-  static Future<LoadingState<Null>> dislikeVideo({
+  static Future<LoadingState<void>> dislikeVideo({
     required String bvid,
     required bool type,
   }) async {
@@ -466,7 +466,7 @@ abstract final class VideoHttp {
   }
 
   // 推送不感兴趣反馈
-  static Future<LoadingState<Null>> feedDislike({
+  static Future<LoadingState<void>> feedDislike({
     required String goto,
     required int id,
     int? reasonId,
@@ -495,7 +495,7 @@ abstract final class VideoHttp {
   }
 
   // 推送不感兴趣取消
-  static Future<LoadingState<Null>> feedDislikeCancel({
+  static Future<LoadingState<void>> feedDislikeCancel({
     required String goto,
     required int id,
     int? reasonId,
@@ -578,7 +578,7 @@ abstract final class VideoHttp {
     }
   }
 
-  static Future<LoadingState<Null>> replyDel({
+  static Future<LoadingState<void>> replyDel({
     required int type, //replyType
     required int oid,
     required int rpid,
@@ -602,7 +602,7 @@ abstract final class VideoHttp {
   }
 
   // 操作用户关系
-  static Future<LoadingState<Null>> relationMod({
+  static Future<LoadingState<void>> relationMod({
     required int mid,
     required int act,
     required int reSrc,

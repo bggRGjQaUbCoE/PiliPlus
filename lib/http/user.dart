@@ -105,7 +105,7 @@ abstract final class UserHttp {
   }
 
   // 暂停观看历史
-  static Future<LoadingState<Null>> pauseHistory(
+  static Future<LoadingState<void>> pauseHistory(
     bool switchStatus, {
     Account? account,
   }) async {
@@ -144,7 +144,7 @@ abstract final class UserHttp {
   }
 
   // 清空历史记录
-  static Future<LoadingState<Null>> clearHistory({Account? account}) async {
+  static Future<LoadingState<void>> clearHistory({Account? account}) async {
     account ??= Accounts.history;
     final res = await Request().post(
       Api.clearHistory,
@@ -165,7 +165,7 @@ abstract final class UserHttp {
   }
 
   // 稍后再看
-  static Future<LoadingState<Null>> toViewLater({
+  static Future<LoadingState<void>> toViewLater({
     String? bvid,
     Object? aid,
   }) async {
@@ -189,7 +189,7 @@ abstract final class UserHttp {
   }
 
   // 移除已观看
-  static Future<LoadingState<Null>> toViewDel({required String aids}) async {
+  static Future<LoadingState<void>> toViewDel({required String aids}) async {
     final Map<String, dynamic> params = {
       'csrf': Accounts.main.csrf,
       'resources': aids,
@@ -228,7 +228,7 @@ abstract final class UserHttp {
   // }
 
   // 清空稍后再看 // clean_type: null->all, 1->invalid, 2->viewed
-  static Future<LoadingState<Null>> toViewClear([int? cleanType]) async {
+  static Future<LoadingState<void>> toViewClear([int? cleanType]) async {
     final res = await Request().post(
       Api.toViewClear,
       data: {
@@ -245,7 +245,7 @@ abstract final class UserHttp {
   }
 
   // 删除历史记录
-  static Future<LoadingState<Null>> delHistory(
+  static Future<LoadingState<void>> delHistory(
     String kid, {
     Account? account,
   }) async {
@@ -390,7 +390,7 @@ abstract final class UserHttp {
     }
   }
 
-  static Future<LoadingState<Null>> dynamicReport({
+  static Future<LoadingState<void>> dynamicReport({
     required Object mid,
     required Object dynId,
     required int reasonType,
@@ -430,7 +430,7 @@ abstract final class UserHttp {
     }
   }
 
-  static Future<LoadingState<Null>> spaceSettingMod(Map data) async {
+  static Future<LoadingState<void>> spaceSettingMod(Map data) async {
     final res = await Request().post(
       Api.spaceSettingMod,
       queryParameters: {
@@ -446,7 +446,7 @@ abstract final class UserHttp {
     }
   }
 
-  static Future<LoadingState<Null>> vipExpAdd() async {
+  static Future<LoadingState<void>> vipExpAdd() async {
     final res = await Request().post(
       Api.vipExpAdd,
       queryParameters: {

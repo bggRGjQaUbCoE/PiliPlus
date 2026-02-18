@@ -60,7 +60,7 @@ abstract final class DanmakuHttp {
     }
   }
 
-  static Future<LoadingState<Null>> danmakuLike({
+  static Future<LoadingState<void>> danmakuLike({
     required bool isLike,
     required int cid,
     required int id,
@@ -89,7 +89,7 @@ abstract final class DanmakuHttp {
     }
   }
 
-  static Future<LoadingState<Null>> danmakuReport({
+  static Future<LoadingState<void>> danmakuReport({
     required int reason,
     required int cid,
     required int id,

@@ -127,7 +127,7 @@ abstract final class DynamicsHttp {
   // }
 
   // 动态点赞
-  static Future<LoadingState<Null>> thumbDynamic({
+  static Future<LoadingState<void>> thumbDynamic({
     required String? dynamicId,
     required int? up,
   }) async {
@@ -275,7 +275,7 @@ abstract final class DynamicsHttp {
     }
   }
 
-  static Future<LoadingState<Null>> setTop({
+  static Future<LoadingState<void>> setTop({
     required Object dynamicId,
   }) async {
     final res = await Request().post(
@@ -294,7 +294,7 @@ abstract final class DynamicsHttp {
     }
   }
 
-  static Future<LoadingState<Null>> rmTop({
+  static Future<LoadingState<void>> rmTop({
     required Object dynamicId,
   }) async {
     final res = await Request().post(
@@ -672,7 +672,7 @@ abstract final class DynamicsHttp {
     }
   }
 
-  static Future<LoadingState<Null>> dynPrivatePubSetting({
+  static Future<LoadingState<void>> dynPrivatePubSetting({
     required Object dynId,
     int? dynType,
     required String action,
@@ -699,7 +699,7 @@ abstract final class DynamicsHttp {
     }
   }
 
-  static Future<LoadingState<Null>> editDyn({
+  static Future<LoadingState<void>> editDyn({
     required Object dynId,
     Object? repostDynId,
     dynamic rawText,

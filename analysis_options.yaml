@@ -72,5 +72,11 @@ linter:
     - use_truncating_division
     - use_string_buffers
     - unnecessary_statements
+    - unnecessary_nullable_for_final_variable_declarations
+    - tighten_type_of_initializing_formals
+    - prefer_void_to_null
+    - prefer_spread_collections
+    - unnecessary_to_list_in_spreads
+    - prefer_for_elements_to_map_fromIterable
 # Additional information about this file can be found at
 # https://dart.dev/guides/language/analysis-options

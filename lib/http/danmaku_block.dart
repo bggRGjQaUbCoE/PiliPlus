@@ -15,7 +15,7 @@ abstract final class DanmakuFilterHttp {
     }
   }
 
-  static Future<LoadingState<Null>> danmakuFilterDel({required int ids}) async {
+  static Future<LoadingState<void>> danmakuFilterDel({required int ids}) async {
     final res = await Request().post(
       Api.danmakuFilterDel,
       data: {

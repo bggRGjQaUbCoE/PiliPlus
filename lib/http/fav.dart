@@ -18,7 +18,7 @@ import 'package:PiliPlus/utils/app_sign.dart';
 import 'package:dio/dio.dart';
 
 abstract final class FavHttp {
-  static Future<LoadingState<Null>> favFavFolder(Object mediaId) async {
+  static Future<LoadingState<void>> favFavFolder(Object mediaId) async {
     final res = await Request().post(
       Api.favFavFolder,
       data: {
@@ -34,7 +34,7 @@ abstract final class FavHttp {
     }
   }
 
-  static Future<LoadingState<Null>> unfavFavFolder(Object mediaId) async {
+  static Future<LoadingState<void>> unfavFavFolder(Object mediaId) async {
     final res = await Request().post(
       Api.unfavFavFolder,
       data: {
@@ -79,7 +79,7 @@ abstract final class FavHttp {
   }
 
   // 取消订阅
-  static Future<LoadingState<Null>> cancelSub({
+  static Future<LoadingState<void>> cancelSub({
     required int id,
     required int type,
   }) async {
@@ -148,7 +148,7 @@ abstract final class FavHttp {
     }
   }
 
-  static Future<LoadingState<Null>> addFavPugv(Object seasonId) async {
+  static Future<LoadingState<void>> addFavPugv(Object seasonId) async {
     final res = await Request().post(
       Api.addFavPugv,
       data: {
@@ -164,7 +164,7 @@ abstract final class FavHttp {
     }
   }
 
-  static Future<LoadingState<Null>> delFavPugv(Object seasonId) async {
+  static Future<LoadingState<void>> delFavPugv(Object seasonId) async {
     final res = await Request().post(
       Api.delFavPugv,
       data: {
@@ -198,7 +198,7 @@ abstract final class FavHttp {
     }
   }
 
-  static Future<LoadingState<Null>> addFavTopic(Object topicId) async {
+  static Future<LoadingState<void>> addFavTopic(Object topicId) async {
     final res = await Request().post(
       Api.addFavTopic,
       data: {
@@ -214,7 +214,7 @@ abstract final class FavHttp {
     }
   }
 
-  static Future<LoadingState<Null>> delFavTopic(Object topicId) async {
+  static Future<LoadingState<void>> delFavTopic(Object topicId) async {
     final res = await Request().post(
       Api.delFavTopic,
       data: {
@@ -230,7 +230,7 @@ abstract final class FavHttp {
     }
   }
 
-  static Future<LoadingState<Null>> likeTopic(
+  static Future<LoadingState<void>> likeTopic(
     Object topicId,
     bool isLike,
   ) async {
@@ -269,7 +269,7 @@ abstract final class FavHttp {
     }
   }
 
-  static Future<LoadingState<Null>> addFavArticle({
+  static Future<LoadingState<void>> addFavArticle({
     required Object id,
   }) async {
     final res = await Request().post(
@@ -289,7 +289,7 @@ abstract final class FavHttp {
     }
   }
 
-  static Future<LoadingState<Null>> delFavArticle({
+  static Future<LoadingState<void>> delFavArticle({
     required Object id,
   }) async {
     final res = await Request().post(
@@ -351,7 +351,7 @@ abstract final class FavHttp {
     }
   }
 
-  static Future<LoadingState<Null>> delNote({
+  static Future<LoadingState<void>> delNote({
     required bool isPublish,
     required String noteIds,
   }) async {
@@ -415,7 +415,7 @@ abstract final class FavHttp {
     }
   }
 
-  static Future<LoadingState<Null>> sortFavFolder({
+  static Future<LoadingState<void>> sortFavFolder({
     required String sort,
   }) async {
     Map<String, dynamic> data = {
@@ -437,7 +437,7 @@ abstract final class FavHttp {
     }
   }
 
-  static Future<LoadingState<Null>> sortFav({
+  static Future<LoadingState<void>> sortFav({
     required Object mediaId,
     required String sort,
   }) async {
@@ -461,7 +461,7 @@ abstract final class FavHttp {
     }
   }
 
-  static Future<LoadingState<Null>> cleanFav({
+  static Future<LoadingState<void>> cleanFav({
     required Object mediaId,
   }) async {
     final res = await Request().post(
@@ -482,7 +482,7 @@ abstract final class FavHttp {
     }
   }
 
-  static Future<LoadingState<Null>> deleteFolder({
+  static Future<LoadingState<void>> deleteFolder({
     required String mediaIds,
   }) async {
     final res = await Request().post(
@@ -548,7 +548,7 @@ abstract final class FavHttp {
     }
   }
 
-  static Future<LoadingState<Null>> seasonFav({
+  static Future<LoadingState<void>> seasonFav({
     required bool isFav,
     required dynamic seasonId,
   }) async {
@@ -605,7 +605,7 @@ abstract final class FavHttp {
     }
   }
 
-  static Future<LoadingState<Null>> communityAction({
+  static Future<LoadingState<void>> communityAction({
     required Object opusId,
     required Object action,
   }) async {
@@ -630,7 +630,7 @@ abstract final class FavHttp {
   }
 
   // （取消）收藏
-  static Future<LoadingState<Null>> favVideo({
+  static Future<LoadingState<void>> favVideo({
     required String resources,
     String? addIds,
     String? delIds,
@@ -653,7 +653,7 @@ abstract final class FavHttp {
   }
 
   // （取消）收藏
-  static Future<LoadingState<Null>> unfavAll({
+  static Future<LoadingState<void>> unfavAll({
     required Object rid,
     required Object type,
   }) async {
@@ -673,7 +673,7 @@ abstract final class FavHttp {
     }
   }
 
-  static Future<LoadingState<Null>> copyOrMoveFav({
+  static Future<LoadingState<void>> copyOrMoveFav({
     required bool isCopy,
     required bool isFav,
     required dynamic srcMediaId,

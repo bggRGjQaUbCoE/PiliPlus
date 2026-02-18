@@ -18,7 +18,6 @@ import 'package:PiliPlus/models_new/upload_bfs/data.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/wbi_sign.dart';
 import 'package:dio/dio.dart';
-import 'package:uuid/v4.dart';
 
 abstract final class MsgHttp {
   static Future<LoadingState<MsgReplyData>> msgFeedReplyMe({
@@ -136,7 +135,7 @@ abstract final class MsgHttp {
     }
   }
 
-  static Future<LoadingState<Null>> msgSysUpdateCursor(int cursor) async {
+  static Future<LoadingState<void>> msgSysUpdateCursor(int cursor) async {
     String csrf = Accounts.main.csrf;
     final res = await Request().get(
       Api.msgSysUpdateCursor,
@@ -196,7 +195,7 @@ abstract final class MsgHttp {
     }
   }
 
-  static Future<LoadingState<Null>> createTextDynamic(
+  static Future<LoadingState<void>> createTextDynamic(
     Object content,
   ) async {
     String csrf = Accounts.main.csrf;
@@ -220,7 +219,7 @@ abstract final class MsgHttp {
     }
   }
 
-  static Future<LoadingState<Null>> removeDynamic({
+  static Future<LoadingState<void>> removeDynamic({
     required Object dynIdStr,
     Object? dynType,
     Object? ridStr,
@@ -244,7 +243,7 @@ abstract final class MsgHttp {
     }
   }
 
-  static Future<LoadingState<Null>> removeMsg(
+  static Future<LoadingState<void>> removeMsg(
     Object talkerId,
   ) async {
     String csrf = Accounts.main.csrf;
@@ -268,7 +267,7 @@ abstract final class MsgHttp {
     }
   }
 
-  static Future<LoadingState<Null>> delMsgfeed(
+  static Future<LoadingState<void>> delMsgfeed(
     int tp,
     dynamic id,
   ) async {
@@ -292,7 +291,7 @@ abstract final class MsgHttp {
     }
   }
 
-  static Future<LoadingState<Null>> delSysMsg(
+  static Future<LoadingState<void>> delSysMsg(
     Object id,
   ) async {
     String csrf = Accounts.main.csrf;
@@ -317,7 +316,7 @@ abstract final class MsgHttp {
     }
   }
 
-  static Future<LoadingState<Null>> setTop({
+  static Future<LoadingState<void>> setTop({
     required Object talkerId,
     required int opType,
   }) async {
@@ -344,7 +343,7 @@ abstract final class MsgHttp {
   }
 
   // 消息标记已读
-  static Future<LoadingState<Null>> ackSessionMsg({
+  static Future<LoadingState<void>> ackSessionMsg({
     required int talkerId,
     required int ackSeqno,
   }) async {
@@ -370,60 +369,60 @@ abstract final class MsgHttp {
     }
   }
 
-  // 发送私信
-  static Future<LoadingState<Null>> sendMsg({
-    int? senderUid,
-    int? receiverId,
-    int? msgType,
-    dynamic content,
-  }) async {
-    String csrf = Accounts.main.csrf;
-    final devId = getDevId();
-    final data = {
-      'msg': {
-        'sender_uid': senderUid,
-        'receiver_id': receiverId,
-        'receiver_type': 1,
-        'msg_type': msgType ?? 1,
-        'msg_status': 0,
-        'dev_id': devId,
-        'timestamp': DateTime.now().millisecondsSinceEpoch ~/ 1000,
-        'new_face_version': 1,
-        'content': content,
-      },
-      'from_firework': 0,
-      'build': 0,
-      'mobi_app': 'web',
-      'csrf_token': csrf,
-      'csrf': csrf,
-    };
-    Map<String, dynamic> params = await WbiSign.makSign(data);
-    final res = await Request().post(
-      Api.sendMsg,
-      queryParameters: <String, dynamic>{
-        'w_sender_uid': senderUid,
-        'w_receiver_id': receiverId,
-        'w_dev_id': devId,
-        'w_rid': params['w_rid'],
-        'wts': params['wts'],
-      },
-      data: data,
-      options: Options(
-        contentType: Headers.formUrlEncodedContentType,
-      ),
-    );
-    if (res.data['code'] == 0) {
-      return const Success(null);
-    } else {
-      return Error(res.data['message']);
-    }
-  }
+  // // 发送私信
+  // static Future<LoadingState<void>> sendMsg({
+  //   required int senderUid,
+  //   required int receiverId,
+  //   int? msgType,
+  //   dynamic content,
+  // }) async {
+  //   String csrf = Accounts.main.csrf;
+  //   final devId = getDevId();
+  //   final data = {
+  //     'msg': {
+  //       'sender_uid': senderUid,
+  //       'receiver_id': receiverId,
+  //       'receiver_type': 1,
+  //       'msg_type': msgType ?? 1,
+  //       'msg_status': 0,
+  //       'dev_id': devId,
+  //       'timestamp': DateTime.now().millisecondsSinceEpoch ~/ 1000,
+  //       'new_face_version': 1,
+  //       'content': content,
+  //     },
+  //     'from_firework': 0,
+  //     'build': 0,
+  //     'mobi_app': 'web',
+  //     'csrf_token': csrf,
+  //     'csrf': csrf,
+  //   };
+  //   Map<String, dynamic> params = await WbiSign.makSign(data);
+  //   final res = await Request().post(
+  //     Api.sendMsg,
+  //     queryParameters: <String, dynamic>{
+  //       'w_sender_uid': senderUid,
+  //       'w_receiver_id': receiverId,
+  //       'w_dev_id': devId,
+  //       'w_rid': params['w_rid'],
+  //       'wts': params['wts'],
+  //     },
+  //     data: data,
+  //     options: Options(
+  //       contentType: Headers.formUrlEncodedContentType,
+  //     ),
+  //   );
+  //   if (res.data['code'] == 0) {
+  //     return const Success(null);
+  //   } else {
+  //     return Error(res.data['message']);
+  //   }
+  // }
 
-  static String getDevId() {
-    return const UuidV4().generate();
-  }
+  // static String getDevId() {
+  //   return const UuidV4().generate();
+  // }
 
-  static Future<LoadingState<Null>> msgSetNotice({
+  static Future<LoadingState<void>> msgSetNotice({
     required Object id,
     required int noticeState,
   }) async {
@@ -451,7 +450,7 @@ abstract final class MsgHttp {
     }
   }
 
-  static Future<LoadingState<Null>> setMsgDnd({
+  static Future<LoadingState<void>> setMsgDnd({
     required Object uid,
     required int setting,
     required dndUid,
@@ -477,7 +476,7 @@ abstract final class MsgHttp {
     }
   }
 
-  static Future<LoadingState<Null>> setPushSs({
+  static Future<LoadingState<void>> setPushSs({
     required int setting,
     required talkerUid,
   }) async {
@@ -606,7 +605,7 @@ abstract final class MsgHttp {
     }
   }
 
-  static Future<LoadingState<Null>> imMsgReport({
+  static Future<LoadingState<void>> imMsgReport({
     required int accusedUid,
     required int reasonType,
     required String reasonDesc,

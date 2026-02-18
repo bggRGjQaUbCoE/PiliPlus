@@ -33,7 +33,7 @@ import 'package:dio/dio.dart';
 abstract final class LiveHttp {
   static Account get recommend => Accounts.get(AccountType.recommend);
 
-  static Future<LoadingState<Null>> sendLiveMsg({
+  static Future<LoadingState<void>> sendLiveMsg({
     required Object roomId,
     required Object msg,
     Object? dmType,
@@ -385,7 +385,7 @@ abstract final class LiveHttp {
     }
   }
 
-  static Future<LoadingState<Null>> setLiveFavTag({
+  static Future<LoadingState<void>> setLiveFavTag({
     required String ids,
   }) async {
     final data = {
@@ -505,7 +505,7 @@ abstract final class LiveHttp {
     }
   }
 
-  static Future<LoadingState<Null>> liveSetSilent({
+  static Future<LoadingState<void>> liveSetSilent({
     required String type,
     required int level,
   }) async {
@@ -527,7 +527,7 @@ abstract final class LiveHttp {
     }
   }
 
-  static Future<LoadingState<Null>> addShieldKeyword({
+  static Future<LoadingState<void>> addShieldKeyword({
     required String keyword,
   }) async {
     final csrf = Accounts.main.csrf;
@@ -547,7 +547,7 @@ abstract final class LiveHttp {
     }
   }
 
-  static Future<LoadingState<Null>> delShieldKeyword({
+  static Future<LoadingState<void>> delShieldKeyword({
     required String keyword,
   }) async {
     final csrf = Accounts.main.csrf;
@@ -591,7 +591,7 @@ abstract final class LiveHttp {
     }
   }
 
-  static Future<LoadingState<Null>> liveLikeReport({
+  static Future<LoadingState<void>> liveLikeReport({
     required int clickTime,
     required Object roomId,
     required Object uid,
@@ -637,7 +637,7 @@ abstract final class LiveHttp {
     }
   }
 
-  static Future<LoadingState<Null>> liveDmReport({
+  static Future<LoadingState<void>> liveDmReport({
     required int roomId,
     required Object mid,
     required String msg,
@@ -707,7 +707,7 @@ abstract final class LiveHttp {
     }
   }
 
-  static Future<LoadingState<Null>> superChatReport({
+  static Future<LoadingState<void>> superChatReport({
     required int id,
     required Object roomId,
     required Object uid,

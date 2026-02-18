@@ -74,7 +74,7 @@ abstract final class SponsorBlock {
     return getErrMsg(res);
   }
 
-  static Future<LoadingState<Null>> voteOnSponsorTime({
+  static Future<LoadingState<void>> voteOnSponsorTime({
     required String uuid,
     int? type,
     SegmentType? category,
@@ -93,7 +93,7 @@ abstract final class SponsorBlock {
     return res.statusCode == 200 ? const Success(null) : getErrMsg(res);
   }
 
-  static Future<LoadingState<Null>> viewedVideoSponsorTime(String uuid) async {
+  static Future<LoadingState<void>> viewedVideoSponsorTime(String uuid) async {
     final res = await Request().post(
       _api(SponsorBlockApi.viewedVideoSponsorTime),
       data: {'UUID': uuid},
@@ -102,7 +102,7 @@ abstract final class SponsorBlock {
     return res.statusCode == 200 ? const Success(null) : getErrMsg(res);
   }
 
-  static Future<LoadingState<Null>> uptimeStatus() async {
+  static Future<LoadingState<void>> uptimeStatus() async {
     final res = await Request().get(
       _api(SponsorBlockApi.uptimeStatus),
       options: options,

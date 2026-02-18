@@ -226,13 +226,14 @@ abstract class MarqueeRender extends RenderBox
     if (_distance > 0) {
       updateSize();
       _ticker.initIfNeeded(_onTick);
+      markNeedsCompositingBitsUpdate();
     } else {
       _ticker.cancel();
     }
   }
 
   @override
-  bool get isRepaintBoundary => true;
+  bool get isRepaintBoundary => _ticker._ticker != null;
 
   void paintCenter(PaintingContext context, Offset offset) {
     if (_direction == Axis.horizontal) {

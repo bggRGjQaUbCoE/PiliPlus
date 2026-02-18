@@ -383,17 +383,27 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          // 播放时间
-          Obx(
-            () => Text(
-              DurationUtils.formatDuration(
-                plPlayerController.positionSeconds.value,
-              ),
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 10,
-                height: 1.4,
-                fontFeatures: [FontFeature.tabularFigures()],
+          SizedBox(
+            // child relayout in Row/Column propagates upward
+            height: 14,
+            width: 45,
+            child: RepaintBoundary(
+              child: Align(
+                alignment: .centerRight,
+                // 播放时间
+                child: Obx(
+                  () => Text(
+                    DurationUtils.formatDuration(
+                      plPlayerController.positionSeconds.value,
+                    ),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 10,
+                      height: 1.4,
+                      fontFeatures: [FontFeature.tabularFigures()],
+                    ),
+                  ),
+                ),
               ),
             ),
           ),
@@ -2767,12 +2777,7 @@ class _RenderDanmakuTip extends RenderProxyBox {
   void paint(PaintingContext context, Offset offset) {
     final paint = Paint()
       ..color = const Color(0xB3000000)
-      ..style = PaintingStyle.fill;
-
-    final strokePaint = Paint()
-      ..color = const Color(0x7EFFFFFF)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.25;
+      ..style = .fill;
 
     final radius = size.height / 2;
     const triangleBase = _triangleHeight * 2 / 3;
@@ -2803,12 +2808,18 @@ class _RenderDanmakuTip extends RenderProxyBox {
       ..close();
 
     context.canvas
+      ..save()
+      ..translate(offset.dx, offset.dy)
       ..drawPath(path, paint)
-      ..drawPath(path, strokePaint);
+      ..drawPath(
+        path,
+        paint
+          ..color = const Color(0x7EFFFFFF)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.25,
+      )
+      ..restore();
 
     super.paint(context, offset);
   }
-
-  @override
-  bool get isRepaintBoundary => true;
 }

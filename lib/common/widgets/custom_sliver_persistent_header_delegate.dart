@@ -95,7 +95,4 @@ class _RenderDecoratedBox extends RenderProxyBox {
 
   @override
   bool hitTestSelf(Offset position) => true;
-
-  @override
-  bool get isRepaintBoundary => true;
 }

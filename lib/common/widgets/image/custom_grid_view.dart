@@ -440,5 +440,5 @@ class RenderImageGrid extends RenderBox
   }
 
   @override
-  bool get isRepaintBoundary => true;
+  bool get isRepaintBoundary => true; // gif repaint
 }

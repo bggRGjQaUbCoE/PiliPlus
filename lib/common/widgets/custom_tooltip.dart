@@ -259,9 +259,6 @@ class _RenderToolTip extends RenderBox
       child = childParentData.nextSibling;
     }
   }
-
-  @override
-  bool get isRepaintBoundary => true;
 }
 
 class Triangle extends LeafRenderObjectWidget {
@@ -328,14 +325,11 @@ class RenderTriangle extends RenderBox {
       ..style = PaintingStyle.fill;
 
     final path = Path()
-      ..moveTo(0, 0)
-      ..lineTo(size.width, 0)
-      ..lineTo(size.width / 2, size.height)
+      ..moveTo(offset.dx, offset.dy)
+      ..lineTo(offset.dx + size.width, offset.dy)
+      ..lineTo(offset.dx + size.width / 2, size.height + offset.dy)
       ..close();
 
     context.canvas.drawPath(path, paint);
   }
-
-  @override
-  bool get isRepaintBoundary => true;
 }

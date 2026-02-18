@@ -155,7 +155,7 @@ class RenderMaskedIcon extends RenderProxyBox {
     canvas
       ..save()
       ..clipPath(path, doAntiAlias: false);
-    super.paint(context, .zero);
+    super.paint(context, offset);
 
     canvas.restore();
 
@@ -174,7 +174,4 @@ class RenderMaskedIcon extends RenderProxyBox {
       linePaint,
     );
   }
-
-  @override
-  bool get isRepaintBoundary => true;
 }

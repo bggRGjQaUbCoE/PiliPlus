@@ -123,17 +123,17 @@ class RenderProgressBar extends BaseRenderProgressBar<Segment> {
 
     for (final segment in segments) {
       paint.color = segment.color;
-      final segmentStart = segment.start * size.width;
-      final segmentEnd = segment.end * size.width;
+      final segmentStart = offset.dx + segment.start * size.width;
+      final segmentEnd = offset.dx + segment.end * size.width;
 
       if (segmentEnd > segmentStart ||
           (segmentEnd == segmentStart && segmentStart > 0)) {
         canvas.drawRect(
           Rect.fromLTRB(
             segmentStart,
-            0,
+            offset.dy,
             segmentEnd == segmentStart ? segmentStart + 2 : segmentEnd,
-            size.height,
+            size.height + offset.dy,
           ),
           paint,
         );
@@ -225,6 +225,12 @@ class RenderViewPointProgressBar
     final canvas = context.canvas;
     final paint = Paint()..style = PaintingStyle.fill;
 
+    if (offset != .zero) {
+      canvas
+        ..save()
+        ..translate(offset.dx, offset.dy);
+    }
+
     assert(segments.isSortedBy((i) => i.end));
 
     canvas.drawRect(
@@ -276,6 +282,7 @@ class RenderViewPointProgressBar
       }
       prevEnd = segmentEnd + _dividerWidth;
     }
+    if (offset != .zero) canvas.restore();
   }
 
   ValueSetter<Duration>? _onSeek;
@@ -371,7 +378,4 @@ class BaseRenderProgressBar<T extends BaseSegment> extends RenderBox {
   void performLayout() {
     size = constraints.constrainDimensions(constraints.maxWidth, height);
   }
-
-  @override
-  bool get isRepaintBoundary => true;
 }

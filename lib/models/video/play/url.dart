@@ -351,6 +351,10 @@ class Volume {
 
   // final MultiSceneArgs? multiSceneArgs;
 
+  // FFmpeg loudnorm 滤镜的标准有效范围（https://ffmpeg.org/ffmpeg-filters.html#loudnorm）
+  static const double minTpValue = -9.0;
+  static const double maxTpValue = 0.0;
+
   factory Volume.fromJson(Map<String, dynamic> json) {
     return Volume(
       measuredI: json["measured_i"] ?? 0,
@@ -367,7 +371,7 @@ class Volume {
   String format(Map<String, num> config) {
     final lra = max(config['lra'] ?? 11, measuredLra);
     num i = config['i'] ?? targetI;
-    final tp = min(config['tp'] ?? targetTp, measuredTp);
+    final tp = min(config['tp'] ?? targetTp, measuredTp).clamp(minTpValue, maxTpValue);
     final offset = config['offset'] ?? targetOffset;
     num measuredI = this.measuredI;
     if (measuredI > 0) {

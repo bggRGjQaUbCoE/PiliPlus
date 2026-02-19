@@ -997,4 +997,6 @@ abstract final class Api {
       '/x/v2/reply/subject/interaction-status';
 
   static const String replySubjectModify = '/x/v2/reply/subject/modify';
+
+  static const String videoshot = '/x/player/videoshot';
 }

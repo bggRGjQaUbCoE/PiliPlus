@@ -94,6 +94,7 @@ abstract final class ApiType {
       Api.pgcUrl,
       Api.pugvUrl,
       Api.tvPlayUrl,
+      Api.videoshot,
     },
   };
 

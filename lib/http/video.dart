@@ -25,6 +25,7 @@ import 'package:PiliPlus/models_new/video/video_detail/video_detail_response.dar
 import 'package:PiliPlus/models_new/video/video_note_list/data.dart';
 import 'package:PiliPlus/models_new/video/video_play_info/data.dart';
 import 'package:PiliPlus/models_new/video/video_relation/data.dart';
+import 'package:PiliPlus/models_new/video/video_shot/data.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/app_sign.dart';
 import 'package:PiliPlus/utils/extension/string_ext.dart';
@@ -1077,5 +1078,35 @@ abstract final class VideoHttp {
     } else {
       return Error(res.data['message']);
     }
+  }
+
+  static Future<LoadingState<VideoShotData>> videoshot({
+    required String bvid,
+    required int cid,
+  }) async {
+    final res = await Request().get(
+      Api.videoshot,
+      queryParameters: {
+        // 'aid': IdUtils.bv2av(_bvid),
+        'bvid': bvid,
+        'cid': cid,
+        'index': 1,
+      },
+      options: Options(
+        headers: {
+          'user-agent': UaType.pc.ua,
+          'referer': 'https://www.bilibili.com/video/$bvid',
+        },
+      ),
+    );
+    if (res.data['code'] == 0) {
+      final data = VideoShotData.fromJson(res.data['data']);
+      if (data.index.isNotEmpty) {
+        return Success(data);
+      } else {
+        return const Error(null);
+      }
+    }
+    return Error(res.data['message']);
   }
 }

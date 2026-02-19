@@ -86,7 +86,7 @@ class MpvConvertWebp {
     return _completer.future;
   }
 
-  Future<void> _onEvent(Pointer<generated.mpv_event> event) async {
+  Future<void> _onEvent(Pointer<generated.mpv_event> event) {
     switch (event.ref.event_id) {
       case generated.mpv_event_id.MPV_EVENT_PROPERTY_CHANGE:
         final prop = event.ref.data.cast<generated.mpv_event_property>().ref;
@@ -117,6 +117,7 @@ class MpvConvertWebp {
         dispose();
         break;
     }
+    return Future.syncValue(null);
   }
 
   void _command(List<String> args) {

@@ -56,6 +56,16 @@ List<SettingsModel> get styleSettings => [
       needReboot: true,
     ),
   ],
+  if (Platform.isLinux) ...[
+    const SwitchModel(
+      title: '使用SSD（Server-Side Decoration）',
+      subtitle: '（Linux）强制使用Server-Side Decoration',
+      leading: Icon(Icons.web_asset),
+      setKey: SettingBoxKey.useSSD,
+      defaultVal: false,
+      needReboot: true,
+    ),
+  ],
   SwitchModel(
     title: '横屏适配',
     subtitle: '启用横屏布局与逻辑，平板、折叠屏等可开启；建议全屏方向设为【不改变当前方向】',

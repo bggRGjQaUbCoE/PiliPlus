@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:PiliPlus/models/model_owner.dart';
 import 'package:PiliPlus/models/user/danmaku_rule_adapter.dart';
@@ -59,6 +60,15 @@ abstract final class GStorage {
         },
       ).then((res) => watchProgress = res),
     ]);
+
+    Future<void> syncToDisk() async {
+      final jsonPath = path.join(appSupportDirPath, 'settings.json');
+      await File(jsonPath).writeAsString(exportAllSettings());
+    }
+
+    setting.watch().listen((_) => syncToDisk());
+    video.watch().listen((_) => syncToDisk());
+    await Future.microtask(syncToDisk);
   }
 
   static String exportAllSettings() {

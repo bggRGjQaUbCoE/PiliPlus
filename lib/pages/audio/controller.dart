@@ -283,16 +283,7 @@ class AudioController extends GetxController
     String ua = Constants.userAgentApp,
   }) async {
     await _initPlayerIfNeeded();
-    player!.open(
-      Media(
-        url,
-        start: _start,
-        httpHeaders: {
-          'user-agent': ua,
-          'referer': ?referer,
-        },
-      ),
-    );
+    player!.open(Media(url, start: _start));
     _start = null;
   }
 

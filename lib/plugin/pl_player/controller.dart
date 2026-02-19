@@ -1,10 +1,11 @@
 import 'dart:async' show StreamSubscription, Timer;
 import 'dart:convert' show ascii;
-import 'dart:io' show Platform, File, Directory;
+import 'dart:io' show Platform;
 import 'dart:math' show max, min;
 import 'dart:ui' as ui;
 
 import 'package:PiliPlus/common/constants.dart';
+import 'package:PiliPlus/http/constants.dart';
 import 'package:PiliPlus/http/init.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/ua_type.dart';
@@ -31,6 +32,7 @@ import 'package:PiliPlus/plugin/pl_player/models/video_fit_type.dart';
 import 'package:PiliPlus/plugin/pl_player/utils/fullscreen.dart';
 import 'package:PiliPlus/services/service_locator.dart';
 import 'package:PiliPlus/utils/accounts.dart';
+import 'package:PiliPlus/utils/asset_utils.dart';
 import 'package:PiliPlus/utils/extension/box_ext.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/string_ext.dart';
@@ -50,7 +52,7 @@ import 'package:easy_debounce/easy_throttle.dart';
 import 'package:floating/floating.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart' show rootBundle, HapticFeedback;
+import 'package:flutter/services.dart' show HapticFeedback;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:flutter_volume_controller/flutter_volume_controller.dart';
 import 'package:get/get.dart';
@@ -386,9 +388,7 @@ class PlPlayerController with BlockConfigMixin {
   late int? cacheVideoQa = PlatformUtils.isMobile ? null : Pref.defaultVideoQa;
   late int cacheAudioQa = Pref.defaultAudioQa;
   bool enableHeart = true;
-
-  late final bool enableHA = Pref.enableHA;
-  late final String hwdec = Pref.hardwareDecoding;
+  late final String? hwdec = Pref.enableHA ? Pref.hardwareDecoding : null;
 
   late final progressType = Pref.btmProgressBehavior;
   late final enableQuickDouble = Pref.enableQuickDouble;
@@ -557,10 +557,7 @@ class PlPlayerController with BlockConfigMixin {
   bool get processing => _processing;
 
   // offline
-  bool isFileSource = false;
-  String? dirPath;
-  String? typeTag;
-  int? mediaType;
+  bool get isFileSource => dataSource is FileSource;
 
   // 初始化资源
   Future<void> setDataSource(
@@ -588,15 +585,8 @@ class PlPlayerController with BlockConfigMixin {
     VideoType? videoType,
     VoidCallback? onInit,
     Volume? volume,
-    String? dirPath,
-    String? typeTag,
-    int? mediaType,
   }) async {
     try {
-      this.dirPath = dirPath;
-      this.typeTag = typeTag;
-      this.mediaType = mediaType;
-      isFileSource = dataSource.type == DataSourceType.file;
       _processing = true;
       this.isLive = isLive;
       _videoType = videoType ?? VideoType.ugc;
@@ -667,32 +657,11 @@ class PlPlayerController with BlockConfigMixin {
       return shadersDirPath!;
     }
 
-    final dir = Directory(path.join(appSupportDirPath, 'anime_shaders'));
-    if (!dir.existsSync()) {
-      await dir.create(recursive: true);
-    }
-
-    final shaderFilesPath =
-        (Constants.mpvAnime4KShaders + Constants.mpvAnime4KShadersLite)
-            .map((e) => 'assets/shaders/$e')
-            .toList();
-
-    for (final filePath in shaderFilesPath) {
-      final fileName = filePath.split('/').last;
-      final targetFile = File(path.join(dir.path, fileName));
-      if (targetFile.existsSync()) {
-        continue;
-      }
-
-      try {
-        final data = await rootBundle.load(filePath);
-        final List<int> bytes = data.buffer.asUint8List();
-        await targetFile.writeAsBytes(bytes);
-      } catch (e) {
-        if (kDebugMode) debugPrint('$e');
-      }
-    }
-    return shadersDirPath = dir.path;
+    return shadersDirPath = await AssetUtils.getOrCopy(
+      'assets/shaders',
+      Constants.mpvAnime4KShaders.followedBy(Constants.mpvAnime4KShadersLite),
+      path.join(appSupportDirPath, 'anime_shaders'),
+    );
   }
 
   late final isAnim = _pgcType == 1 || _pgcType == 4;
@@ -708,10 +677,9 @@ class PlPlayerController with BlockConfigMixin {
       }
     }
     pp ??= _videoPlayerController!;
-    await pp.waitForPlayerInitialization;
     switch (type) {
       case SuperResolutionType.disable:
-        return pp.command(['change-list', 'glsl-shaders', 'clr', '']);
+        return pp.command(const ['change-list', 'glsl-shaders', 'clr', '']);
       case SuperResolutionType.efficiency:
         return pp.command([
           'change-list',
@@ -737,6 +705,46 @@ class PlPlayerController with BlockConfigMixin {
 
   static final loudnormRegExp = RegExp('loudnorm=([^,]+)');
 
+  Future<Player> _initPlayerIfNeeded() async {
+    if (_videoPlayerController case final player?) {
+      return player;
+    } else {
+      final opt = {
+        'video-sync': Pref.videoSync,
+      };
+      if (Platform.isAndroid) {
+        opt['volume-max'] = '100';
+        opt['ao'] = Pref.audioOutput;
+      } else if (PlatformUtils.isDesktop) {
+        opt['volume'] = (volume.value * 100).toString();
+      }
+      final autosync = Pref.autosync;
+      if (autosync != '0') {
+        opt['autosync'] = autosync;
+      }
+
+      final player = Player(
+        configuration: PlayerConfiguration(
+          bufferSize: Pref.expandBuffer
+              ? (isLive ? 64 * 1024 * 1024 : 32 * 1024 * 1024)
+              : (isLive ? 16 * 1024 * 1024 : 4 * 1024 * 1024),
+          logLevel: kDebugMode ? .warn : .error,
+          options: opt,
+        ),
+      );
+
+      assert(_videoController == null);
+
+      await player.waitForPlayerInitialization;
+      player.setMediaHeader(const {
+        'user-agent': UaType.pcUa,
+        'referer': HttpString.baseUrl,
+      });
+      // await player.setAudioTrack(.auto());
+      return player;
+    }
+  }
+
   // 配置播放器
   Future<Player> _createVideoController(
     DataSource dataSource,
@@ -753,81 +761,36 @@ class PlPlayerController with BlockConfigMixin {
     // 初始化时清空弹幕，防止上次重叠
     danmakuController?.clear();
 
-    final player =
-        _videoPlayerController ??
-        Player(
-          configuration: PlayerConfiguration(
-            // 默认缓冲 4M 大小
-            bufferSize: Pref.expandBuffer
-                ? (isLive ? 64 * 1024 * 1024 : 32 * 1024 * 1024)
-                : (isLive ? 16 * 1024 * 1024 : 4 * 1024 * 1024),
-            logLevel: kDebugMode ? MPVLogLevel.warn : MPVLogLevel.error,
-          ),
-        );
-    if (_videoPlayerController == null) {
-      await player.waitForPlayerInitialization;
-      if (PlatformUtils.isDesktop) {
-        player.setVolume(this.volume.value * 100);
-      }
-      if (isAnim) {
-        setShader(superResolutionType.value, player);
-      }
-      // await player.setProperty('audio-pitch-correction', 'yes'); // default yes
-      if (Platform.isAndroid) {
-        player
-          ..setProperty("volume-max", "100")
-          ..setProperty("ao", Pref.audioOutput);
-      }
-      // video-sync=display-resample
-      player.setProperty("video-sync", Pref.videoSync);
-      final autosync = Pref.autosync;
-      if (autosync != '0') {
-        player.setProperty("autosync", autosync);
-      }
-      // vo=gpu-next & gpu-context=android & gpu-api=opengl
-      // await player.setProperty("vo", "gpu-next");
-      // await player.setProperty("gpu-context", "android");
-      // await player.setProperty("gpu-api", "opengl");
-      await player.setAudioTrack(AudioTrack.auto());
-      if (Pref.enableSystemProxy) {
-        final systemProxyHost = Pref.systemProxyHost;
-        final systemProxyPort = int.tryParse(Pref.systemProxyPort);
-        if (systemProxyPort != null && systemProxyHost.isNotEmpty) {
-          player.setProperty(
-            "http-proxy",
-            'http://$systemProxyHost:$systemProxyPort',
-          );
-        }
-      }
+    final player = await _initPlayerIfNeeded();
+    _videoPlayerController = player;
+
+    if (_videoController == null) {
+      await (_videoController = VideoController(
+        player,
+        configuration: VideoControllerConfiguration(
+          enableHardwareAcceleration: hwdec != null,
+          androidAttachSurfaceAfterVideoParameters: false,
+          hwdec: hwdec,
+        ),
+      )).platform.future;
     }
+
+    await Future.wait([
+      player.setPlaylistMode(looping),
+      if (isAnim) setShader(),
+    ]);
 
     final Map<String, String> extras = {};
 
-    // 音轨
-    final String audioUri;
-    if (isFileSource) {
-      audioUri = onlyPlayAudio.value || mediaType == 1
-          ? ''
-          : path.join(dirPath!, typeTag!, PathUtils.audioNameType2);
-    } else if (dataSource.audioSource?.isNotEmpty == true) {
-      audioUri = Platform.isWindows
-          ? dataSource.audioSource!.replaceAll(';', r'\;')
-          : dataSource.audioSource!.replaceAll(':', r'\:');
-    } else {
-      audioUri = '';
+    String video = dataSource.videoSource;
+    if (dataSource.audioSource case final audio? when (audio.isNotEmpty)) {
+      if (onlyPlayAudio.value) {
+        video = audio;
+      } else {
+        extras['audio-files'] =
+            '"${Platform.isWindows ? audio.replaceAll(';', r'\;') : audio.replaceAll(':', r'\:')}"';
+      }
     }
-    if (audioUri.isNotEmpty) extras['audio-files'] = '"$audioUri"';
-
-    _videoController ??= VideoController(
-      player,
-      configuration: VideoControllerConfiguration(
-        enableHardwareAcceleration: enableHA,
-        androidAttachSurfaceAfterVideoParameters: false,
-        hwdec: enableHA ? hwdec : null,
-      ),
-    );
-
-    player.setPlaylistMode(looping);
 
     if (kDebugMode || Platform.isAndroid) {
       String audioNormalization = AudioNormalization.getParamFromConfig(
@@ -857,27 +820,9 @@ class PlPlayerController with BlockConfigMixin {
       }
     }
 
-    // if (kDebugMode) debugPrint(filters.toString());
-
-    final String videoUri;
-    if (isFileSource) {
-      videoUri = path.join(
-        dirPath!,
-        typeTag!,
-        mediaType == 1
-            ? PathUtils.videoNameType1
-            : onlyPlayAudio.value
-            ? PathUtils.audioNameType2
-            : PathUtils.videoNameType2,
-      );
-    } else {
-      videoUri = dataSource.videoSource!;
-    }
-
     await player.open(
       Media(
-        videoUri,
-        httpHeaders: dataSource.httpHeaders,
+        video,
         start: seekTo,
         extras: extras.isEmpty ? null : extras,
       ),
@@ -888,7 +833,7 @@ class PlPlayerController with BlockConfigMixin {
   }
 
   Future<bool> refreshPlayer() async {
-    if (isFileSource) {
+    if (dataSource is FileSource) {
       return true;
     }
     if (_videoPlayerController == null) {
@@ -911,8 +856,7 @@ class PlPlayerController with BlockConfigMixin {
     }
     await _videoPlayerController!.open(
       Media(
-        dataSource.videoSource!,
-        httpHeaders: dataSource.httpHeaders,
+        dataSource.videoSource,
         start: position,
         extras: audioUri == null ? null : {'audio-files': '"$audioUri"'},
       ),
@@ -1058,7 +1002,8 @@ class PlPlayerController with BlockConfigMixin {
           }
         })),
       controllerStream.error.listen((String event) {
-        if (isFileSource && event.startsWith("Failed to open file")) {
+        if (dataSource is FileSource &&
+            event.startsWith("Failed to open file")) {
           return;
         }
         if (isLive) {

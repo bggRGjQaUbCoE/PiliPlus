@@ -1,39 +1,42 @@
-/// The way in which the video was originally loaded.
-///
-/// This has nothing to do with the video's file type. It's just the place
-/// from which the video is fetched from.
-enum DataSourceType {
-  /// The video was downloaded from the internet.
-  network,
+import 'package:PiliPlus/utils/path_utils.dart';
+import 'package:path/path.dart' as path;
 
-  /// The video was loaded off of the local filesystem.
-  file,
+sealed class DataSource {
+  final String videoSource;
+  final String? audioSource;
+
+  const DataSource({
+    required this.videoSource,
+    this.audioSource,
+  });
 }
 
-class DataSource {
-  String? videoSource;
-  String? audioSource;
-  DataSourceType type;
-  Map<String, String>? httpHeaders; // for headers
-
-  DataSource({
-    this.videoSource,
-    this.audioSource,
-    required this.type,
-    this.httpHeaders,
+class NetworkSource extends DataSource {
+  const NetworkSource({
+    required super.videoSource,
+    super.audioSource,
   });
+}
 
-  DataSource copyWith({
-    String? videoSource,
-    String? audioSource,
-    DataSourceType? type,
-    Map<String, String>? httpHeaders,
-  }) {
-    return DataSource(
-      videoSource: videoSource ?? this.videoSource,
-      audioSource: audioSource ?? this.audioSource,
-      type: type ?? this.type,
-      httpHeaders: httpHeaders ?? this.httpHeaders,
-    );
-  }
+class FileSource implements DataSource {
+  @override
+  String get videoSource => path.join(
+    dir,
+    typeTag,
+    mp4Video ? PathUtils.videoNameType1 : PathUtils.videoNameType2,
+  );
+
+  @override
+  String? get audioSource =>
+      mp4Video ? null : path.join(dir, typeTag, PathUtils.audioNameType2);
+
+  final bool mp4Video;
+  final String dir;
+  final String typeTag;
+
+  const FileSource({
+    required this.dir,
+    required this.typeTag,
+    this.mp4Video = false,
+  });
 }

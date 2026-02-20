@@ -322,6 +322,12 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     super.dispose();
   }
 
+  double _calcTimeWidth(int seconds) {
+    return MediaQuery.textScalerOf(
+      context,
+    ).scale(seconds >= Duration.secondsPerHour ? 40.0 : 25.0);
+  }
+
   // 动态构建底部控制条
   Widget buildBottomControl(
     VideoDetailController videoDetailController,
@@ -379,48 +385,49 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       ),
 
       /// 时间进度
-      BottomControlType.time => Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          SizedBox(
-            // child relayout in Row/Column propagates upward
-            height: 14,
-            width: 45,
-            child: RepaintBoundary(
-              child: Align(
-                alignment: .centerRight,
-                // 播放时间
-                child: Obx(
-                  () => Text(
-                    DurationUtils.formatDuration(
-                      plPlayerController.positionSeconds.value,
-                    ),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 10,
-                      height: 1.4,
-                      fontFeatures: [FontFeature.tabularFigures()],
+      BottomControlType.time => Obx(
+        () {
+          final duration = plPlayerController.duration.value.inSeconds;
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              SizedBox(
+                // child relayout in Row/Column propagates upward
+                height: 14,
+                width: _calcTimeWidth(duration),
+                child: RepaintBoundary(
+                  child: Align(
+                    alignment: .centerRight,
+                    // 播放时间
+                    child: Obx(
+                      () => Text(
+                        DurationUtils.formatDuration(
+                          plPlayerController.positionSeconds.value,
+                        ),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          height: 1.4,
+                          fontFeatures: [FontFeature.tabularFigures()],
+                        ),
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-          ),
-          Obx(
-            () => Text(
-              DurationUtils.formatDuration(
-                plPlayerController.duration.value.inSeconds,
+              Text(
+                DurationUtils.formatDuration(duration),
+                style: const TextStyle(
+                  color: Color(0xFFD0D0D0),
+                  fontSize: 10,
+                  height: 1.4,
+                  fontFeatures: [FontFeature.tabularFigures()],
+                ),
               ),
-              style: const TextStyle(
-                color: Color(0xFFD0D0D0),
-                fontSize: 10,
-                height: 1.4,
-                fontFeatures: [FontFeature.tabularFigures()],
-              ),
-            ),
-          ),
-        ],
+            ],
+          );
+        },
       ),
 
       /// 高能进度条

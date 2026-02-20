@@ -119,7 +119,9 @@ class RenderProgressBar extends RenderBox {
   @override
   void paint(PaintingContext context, Offset offset) {
     final size = this.size;
-    final canvas = context.canvas;
+    final canvas = context.canvas
+      ..save()
+      ..translate(offset.dx, offset.dy);
     final paint = Paint()..style = .fill;
 
     canvas.clipRect(
@@ -147,8 +149,6 @@ class RenderProgressBar extends RenderBox {
         ..drawRect(left, paint..color = _color)
         ..drawRect(right, paint..color = _backgroundColor);
     }
+    canvas.restore();
   }
-
-  @override
-  bool get isRepaintBoundary => true;
 }

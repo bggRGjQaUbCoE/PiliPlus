@@ -65,7 +65,4 @@ class RenderCustomHeightWidget extends RenderProxyBox {
   void paint(PaintingContext context, Offset offset) {
     context.paintChild(child!, offset + _offset);
   }
-
-  @override
-  bool get isRepaintBoundary => true;
 }

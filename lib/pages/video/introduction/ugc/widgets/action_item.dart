@@ -66,22 +66,25 @@ class ActionItem extends StatelessWidget {
       child = SizedBox.square(dimension: 28, child: child);
     }
 
-    child = InkWell(
-      borderRadius: const BorderRadius.all(Radius.circular(6)),
-      onTap: _isThumbsUp ? null : onTap,
-      onLongPress: _isThumbsUp ? null : onLongPress,
-      onSecondaryTap: PlatformUtils.isMobile || _isThumbsUp
-          ? null
-          : onLongPress,
-      onTapDown: _isThumbsUp ? (_) => onStartTriple!() : null,
-      onTapUp: _isThumbsUp ? (_) => onCancelTriple!(true) : null,
-      onTapCancel: _isThumbsUp ? onCancelTriple : null,
-      child: expand
-          ? Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [child, _buildText(theme)],
-            )
-          : child,
+    child = Material(
+      type: .transparency,
+      child: InkWell(
+        borderRadius: const BorderRadius.all(Radius.circular(6)),
+        onTap: _isThumbsUp ? null : onTap,
+        onLongPress: _isThumbsUp ? null : onLongPress,
+        onSecondaryTap: PlatformUtils.isMobile || _isThumbsUp
+            ? null
+            : onLongPress,
+        onTapDown: _isThumbsUp ? (_) => onStartTriple!() : null,
+        onTapUp: _isThumbsUp ? (_) => onCancelTriple!(true) : null,
+        onTapCancel: _isThumbsUp ? onCancelTriple : null,
+        child: expand
+            ? Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [child, _buildText(theme)],
+              )
+            : child,
+      ),
     );
     return expand ? Expanded(child: child) : child;
   }

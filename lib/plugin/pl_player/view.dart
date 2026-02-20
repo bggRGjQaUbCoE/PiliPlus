@@ -382,8 +382,12 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       /// 时间进度
       BottomControlType.time => Obx(
         () => _VideoTime(
-          plPlayerController.positionSeconds.value,
-          plPlayerController.duration.value.inSeconds,
+          position: DurationUtils.formatDuration(
+            plPlayerController.positionSeconds.value,
+          ),
+          duration: DurationUtils.formatDuration(
+            plPlayerController.duration.value.inSeconds,
+          ),
         ),
       ),
 
@@ -1591,39 +1595,41 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
           top: -1,
           bottom: -1,
           child: ClipRect(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                AppBarAni(
-                  isTop: true,
-                  controller: animationController,
-                  isFullScreen: isFullScreen,
-                  child: plPlayerController.isDesktopPip
-                      ? GestureDetector(
-                          behavior: HitTestBehavior.translucent,
-                          onPanStart: (_) => windowManager.startDragging(),
-                          child: widget.headerControl,
-                        )
-                      : widget.headerControl,
-                ),
-                AppBarAni(
-                  isTop: false,
-                  controller: animationController,
-                  isFullScreen: isFullScreen,
-                  child:
-                      widget.bottomControl ??
-                      BottomControl(
-                        maxWidth: maxWidth,
-                        isFullScreen: isFullScreen,
-                        controller: plPlayerController,
-                        videoDetailController: videoDetailController,
-                        buildBottomControl: () => buildBottomControl(
-                          videoDetailController,
-                          maxWidth > maxHeight,
+            child: RepaintBoundary(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  AppBarAni(
+                    isTop: true,
+                    controller: animationController,
+                    isFullScreen: isFullScreen,
+                    child: plPlayerController.isDesktopPip
+                        ? GestureDetector(
+                            behavior: HitTestBehavior.translucent,
+                            onPanStart: (_) => windowManager.startDragging(),
+                            child: widget.headerControl,
+                          )
+                        : widget.headerControl,
+                  ),
+                  AppBarAni(
+                    isTop: false,
+                    controller: animationController,
+                    isFullScreen: isFullScreen,
+                    child:
+                        widget.bottomControl ??
+                        BottomControl(
+                          maxWidth: maxWidth,
+                          isFullScreen: isFullScreen,
+                          controller: plPlayerController,
+                          videoDetailController: videoDetailController,
+                          buildBottomControl: () => buildBottomControl(
+                            videoDetailController,
+                            maxWidth > maxHeight,
+                          ),
                         ),
-                      ),
-                ),
-              ],
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -2789,13 +2795,19 @@ class _RenderDanmakuTip extends RenderProxyBox {
 }
 
 class _VideoTime extends LeafRenderObjectWidget {
-  final int position, duration;
+  const _VideoTime({
+    required this.position,
+    required this.duration,
+  });
 
-  const _VideoTime(this.position, this.duration);
+  final String position;
+  final String duration;
 
   @override
-  _RenderVideoTime createRenderObject(BuildContext context) =>
-      _RenderVideoTime(position, duration);
+  _RenderVideoTime createRenderObject(BuildContext context) => _RenderVideoTime(
+    position: position,
+    duration: duration,
+  );
 
   @override
   void updateRenderObject(
@@ -2809,13 +2821,15 @@ class _VideoTime extends LeafRenderObjectWidget {
 }
 
 class _RenderVideoTime extends RenderBox {
-  _RenderVideoTime(int position, int duration)
-    : _position = DurationUtils.formatDuration(position),
-      _duration = DurationUtils.formatDuration(duration);
+  _RenderVideoTime({
+    required String position,
+    required String duration,
+  }) : _position = position,
+       _duration = duration;
 
   String _duration;
-  set duration(int value) {
-    _duration = DurationUtils.formatDuration(value);
+  set duration(String value) {
+    _duration = value;
     final paragraph = _buildParagraph(const Color(0xFFD0D0D0), _duration);
     if (paragraph.maxIntrinsicWidth != _cache?.maxIntrinsicWidth) {
       markNeedsLayout();
@@ -2826,8 +2840,8 @@ class _RenderVideoTime extends RenderBox {
   }
 
   String _position;
-  set position(int value) {
-    _position = DurationUtils.formatDuration(value);
+  set position(String value) {
+    _position = value;
     markNeedsPaint();
     markNeedsSemanticsUpdate();
   }

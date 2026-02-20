@@ -66,7 +66,8 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart' show RenderProxyBox;
+import 'package:flutter/rendering.dart'
+    show RenderProxyBox, SemanticsConfiguration;
 import 'package:flutter/services.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -322,12 +323,6 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     super.dispose();
   }
 
-  double _calcTimeWidth(int seconds) {
-    return MediaQuery.textScalerOf(
-      context,
-    ).scale(seconds >= Duration.secondsPerHour ? 40.0 : 25.0);
-  }
-
   // 动态构建底部控制条
   Widget buildBottomControl(
     VideoDetailController videoDetailController,
@@ -386,48 +381,10 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
 
       /// 时间进度
       BottomControlType.time => Obx(
-        () {
-          final duration = plPlayerController.duration.value.inSeconds;
-          return Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              SizedBox(
-                // child relayout in Row/Column propagates upward
-                height: 14,
-                width: _calcTimeWidth(duration),
-                child: RepaintBoundary(
-                  child: Align(
-                    alignment: .centerRight,
-                    // 播放时间
-                    child: Obx(
-                      () => Text(
-                        DurationUtils.formatDuration(
-                          plPlayerController.positionSeconds.value,
-                        ),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 10,
-                          height: 1.4,
-                          fontFeatures: [FontFeature.tabularFigures()],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              Text(
-                DurationUtils.formatDuration(duration),
-                style: const TextStyle(
-                  color: Color(0xFFD0D0D0),
-                  fontSize: 10,
-                  height: 1.4,
-                  fontFeatures: [FontFeature.tabularFigures()],
-                ),
-              ),
-            ],
-          );
-        },
+        () => _VideoTime(
+          plPlayerController.positionSeconds.value,
+          plPlayerController.duration.value.inSeconds,
+        ),
       ),
 
       /// 高能进度条
@@ -2829,4 +2786,119 @@ class _RenderDanmakuTip extends RenderProxyBox {
 
     super.paint(context, offset);
   }
+}
+
+class _VideoTime extends LeafRenderObjectWidget {
+  final int position, duration;
+
+  const _VideoTime(this.position, this.duration);
+
+  @override
+  _RenderVideoTime createRenderObject(BuildContext context) =>
+      _RenderVideoTime(position, duration);
+
+  @override
+  void updateRenderObject(
+    BuildContext context,
+    covariant _RenderVideoTime renderObject,
+  ) {
+    renderObject
+      ..position = position
+      ..duration = duration;
+  }
+}
+
+class _RenderVideoTime extends RenderBox {
+  _RenderVideoTime(int position, int duration)
+    : _position = DurationUtils.formatDuration(position),
+      _duration = DurationUtils.formatDuration(duration);
+
+  String _duration;
+  set duration(int value) {
+    _duration = DurationUtils.formatDuration(value);
+    final paragraph = _buildParagraph(const Color(0xFFD0D0D0), _duration);
+    if (paragraph.maxIntrinsicWidth != _cache?.maxIntrinsicWidth) {
+      markNeedsLayout();
+    }
+    _cache?.dispose();
+    _cache = paragraph;
+    markNeedsSemanticsUpdate();
+  }
+
+  String _position;
+  set position(int value) {
+    _position = DurationUtils.formatDuration(value);
+    markNeedsPaint();
+    markNeedsSemanticsUpdate();
+  }
+
+  ui.Paragraph? _cache;
+
+  ui.Paragraph _buildParagraph(Color color, String time) {
+    final builder =
+        ui.ParagraphBuilder(
+            ui.ParagraphStyle(
+              fontSize: 10,
+              height: 1.4,
+              fontFamily: 'Monospace',
+            ),
+          )
+          ..pushStyle(
+            ui.TextStyle(
+              color: color,
+              fontSize: 10,
+              height: 1.4,
+              fontFamily: 'Monospace',
+              fontFeatures: const [FontFeature.tabularFigures()],
+            ),
+          )
+          ..addText(time);
+    return builder.build()
+      ..layout(ui.ParagraphConstraints(width: constraints.maxWidth));
+  }
+
+  @override
+  ui.Size computeDryLayout(covariant BoxConstraints constraints) {
+    final paragraph = _cache ??= _buildParagraph(
+      const Color(0xFFD0D0D0),
+      _duration,
+    );
+    return Size(paragraph.maxIntrinsicWidth, paragraph.height * 2);
+  }
+
+  @override
+  void describeSemanticsConfiguration(SemanticsConfiguration config) {
+    super.describeSemanticsConfiguration(config);
+    config.label = 'position:$_position\nduration:$_duration';
+  }
+
+  @override
+  void performLayout() {
+    size = computeDryLayout(constraints);
+  }
+
+  @override
+  void paint(PaintingContext context, ui.Offset offset) {
+    final para = _buildParagraph(Colors.white, _position);
+    context.canvas
+      ..drawParagraph(
+        para,
+        Offset(
+          offset.dx + _cache!.maxIntrinsicWidth - para.maxIntrinsicWidth,
+          offset.dy,
+        ),
+      )
+      ..drawParagraph(_cache!, Offset(offset.dx, offset.dy + para.height));
+    para.dispose();
+  }
+
+  @override
+  void dispose() {
+    _cache?.dispose();
+    _cache = null;
+    super.dispose();
+  }
+
+  @override
+  bool get isRepaintBoundary => true;
 }

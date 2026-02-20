@@ -60,15 +60,11 @@ abstract final class GStorage {
         },
       ).then((res) => watchProgress = res),
     ]);
+  }
 
-    Future<void> syncToDisk() async {
-      final jsonPath = path.join(appSupportDirPath, 'settings.json');
-      await File(jsonPath).writeAsString(exportAllSettings());
-    }
-
-    setting.watch().listen((_) => syncToDisk());
-    video.watch().listen((_) => syncToDisk());
-    await Future.microtask(syncToDisk);
+  static Future<File> syncToDisk([_]) {
+    final jsonPath = path.join(appSupportDirPath, 'settings.json');
+    return File(jsonPath).writeAsString(exportAllSettings());
   }
 
   static String exportAllSettings() {

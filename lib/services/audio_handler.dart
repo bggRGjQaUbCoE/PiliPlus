@@ -238,6 +238,8 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
       );
       setMediaItem(_item.last);
       stop();
+    } else {
+      clear();
     }
   }
 

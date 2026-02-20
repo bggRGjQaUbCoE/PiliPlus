@@ -5,10 +5,6 @@
 #include <gdk/gdkx.h>
 #endif
 
-#include <fstream>
-#include <iterator>
-#include <string>
-
 #include "flutter/generated_plugin_registrant.h"
 
 struct _MyApplication {
@@ -50,22 +46,9 @@ static void my_application_activate(GApplication *application) {
   // if future cases occur).
 
   const gboolean use_header_bar = [window]() -> gboolean {
-    auto UseSSD = []() -> bool {
-      const gchar *config_root = g_get_user_data_dir();
-      gchar *full_path_c = g_build_filename(config_root, "com.example.piliplus",
-                                            "settings.json", NULL);
-      std::string config_path(full_path_c);
-      g_free(full_path_c);
-      std::ifstream f(config_path);
-      if (!f.is_open()) {
-        return false;
-      }
-
-      std::string content{std::istreambuf_iterator<char>(f), {}};
-      return (content.find("\"useSSD\": true,") != std::string::npos);
-      // user choose to use SSD
-    };
-    if (UseSSD())
+    if (g_file_test(
+        g_build_filename(g_get_user_data_dir(), "com.example.piliplus", "use_ssd", NULL),
+        G_FILE_TEST_EXISTS))
       return FALSE;
 
 #ifdef GDK_WINDOWING_X11

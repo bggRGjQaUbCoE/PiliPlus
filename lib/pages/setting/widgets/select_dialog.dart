@@ -1,7 +1,7 @@
 import 'dart:async';
 
+import 'package:PiliPlus/http/browser_ua.dart';
 import 'package:PiliPlus/http/constants.dart';
-import 'package:PiliPlus/http/ua_type.dart';
 import 'package:PiliPlus/http/video.dart';
 import 'package:PiliPlus/models/common/video/cdn_type.dart';
 import 'package:PiliPlus/models/common/video/video_type.dart';
@@ -99,7 +99,7 @@ class _CdnSelectDialogState extends State<CdnSelectDialog> {
               ),
             )
             ..options.headers = {
-              'user-agent': UaType.pc.ua,
+              'user-agent': BrowserUa.pc,
               'referer': HttpString.baseUrl,
             };
       final length = CDNService.values.length;

@@ -3,8 +3,8 @@ import 'dart:io' show Platform;
 import 'package:PiliPlus/build_config.dart';
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/http/api.dart';
+import 'package:PiliPlus/http/browser_ua.dart';
 import 'package:PiliPlus/http/init.dart';
-import 'package:PiliPlus/http/ua_type.dart';
 import 'package:PiliPlus/utils/accounts/account.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
@@ -24,7 +24,7 @@ abstract final class Update {
       final res = await Request().get(
         Api.latestApp,
         options: Options(
-          headers: {'user-agent': UaType.mob.ua},
+          headers: {'user-agent': BrowserUa.mob},
           extra: {'account': const NoAccount()},
         ),
       );

@@ -12,9 +12,9 @@ import 'package:PiliPlus/grpc/bilibili/app/listener/v1.pb.dart'
         ListOrder,
         DashItem,
         ResponseUrl;
+import 'package:PiliPlus/http/browser_ua.dart';
 import 'package:PiliPlus/http/constants.dart';
 import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/http/ua_type.dart';
 import 'package:PiliPlus/pages/common/common_intro_controller.dart'
     show FavMixin;
 import 'package:PiliPlus/pages/dynamics_repost/view.dart';
@@ -120,7 +120,7 @@ class AudioController extends GetxController
       _querySponsorBlock();
       _onOpenMedia(
         audioUrl,
-        ua: UaType.pc.ua,
+        ua: BrowserUa.pc,
         referer: HttpString.baseUrl,
       );
     }
@@ -290,7 +290,7 @@ class AudioController extends GetxController
   Future<void> _initPlayerIfNeeded() async {
     if (player == null) {
       (player = await Player.create()).setMediaHeader(const {
-        'user-agent': UaType.pcUa,
+        'user-agent': BrowserUa.pc,
         'referer': HttpString.baseUrl,
       });
     }

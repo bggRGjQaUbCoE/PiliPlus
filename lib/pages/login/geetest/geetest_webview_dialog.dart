@@ -1,8 +1,8 @@
 import 'dart:convert';
 
+import 'package:PiliPlus/http/browser_ua.dart';
 import 'package:PiliPlus/http/init.dart';
 import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/http/ua_type.dart';
 import 'package:PiliPlus/main.dart';
 import 'package:PiliPlus/utils/accounts/account.dart';
 import 'package:dio/dio.dart';
@@ -79,7 +79,7 @@ class GeetestWebviewDialog extends StatelessWidget {
             useHybridComposition: false,
             algorithmicDarkeningAllowed: true,
             useShouldOverrideUrlLoading: true,
-            userAgent: UaType.mob.ua,
+            userAgent: BrowserUa.mob,
             mixedContentMode: MixedContentMode.MIXED_CONTENT_ALWAYS_ALLOW,
           ),
           initialData: InAppWebViewInitialData(

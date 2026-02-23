@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:PiliPlus/http/ua_type.dart';
+import 'package:PiliPlus/http/browser_ua.dart';
 import 'package:PiliPlus/main.dart';
 import 'package:PiliPlus/models/common/webview_menu_type.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
@@ -15,14 +15,20 @@ import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 
 class WebviewPage extends StatefulWidget {
-  const WebviewPage({super.key, this.url, this.oid, this.title, this.uaType});
+  const WebviewPage({
+    super.key,
+    this.url,
+    this.oid,
+    this.title,
+    this.userAgent,
+  });
 
   final String? url;
 
   // note
   final int? oid;
   final String? title;
-  final UaType? uaType;
+  final String? userAgent;
 
   @override
   State<WebviewPage> createState() => _WebviewPageState();
@@ -30,7 +36,7 @@ class WebviewPage extends StatefulWidget {
 
 class _WebviewPageState extends State<WebviewPage> {
   late final String _url = widget.url ?? Get.parameters['url'] ?? '';
-  late final UaType uaType;
+  late final String userAgent;
   final RxString title = ''.obs;
   final RxDouble progress = 1.0.obs;
   bool _inApp = false;
@@ -46,10 +52,13 @@ class _WebviewPageState extends State<WebviewPage> {
   @override
   void initState() {
     super.initState();
-    late final uaType = Get.parameters['uaType'];
-    this.uaType =
-        widget.uaType ??
-        (uaType != null ? UaType.values.byName(uaType) : UaType.platformUA);
+    userAgent =
+        widget.userAgent ??
+        switch (Get.parameters['uaType']) {
+          'pc' => BrowserUa.pc,
+          'mob' => BrowserUa.mob,
+          _ => BrowserUa.platform,
+        };
     if (Get.arguments case final Map map) {
       _inApp = map['inApp'] ?? false;
       _off = map['off'] ?? false;
@@ -169,7 +178,7 @@ class _WebviewPageState extends State<WebviewPage> {
             useHybridComposition: false,
             algorithmicDarkeningAllowed: true,
             useShouldOverrideUrlLoading: true,
-            userAgent: uaType.ua,
+            userAgent: userAgent,
             mixedContentMode: MixedContentMode.MIXED_CONTENT_ALWAYS_ALLOW,
           ),
           initialUrlRequest: URLRequest(

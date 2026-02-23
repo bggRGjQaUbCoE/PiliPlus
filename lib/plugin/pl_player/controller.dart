@@ -5,10 +5,10 @@ import 'dart:math' show max, min;
 import 'dart:ui' as ui;
 
 import 'package:PiliPlus/common/constants.dart';
+import 'package:PiliPlus/http/browser_ua.dart';
 import 'package:PiliPlus/http/constants.dart';
 import 'package:PiliPlus/http/init.dart';
 import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/http/ua_type.dart';
 import 'package:PiliPlus/http/video.dart';
 import 'package:PiliPlus/models/common/account_type.dart';
 import 'package:PiliPlus/models/common/audio_normalization.dart';
@@ -743,7 +743,7 @@ class PlPlayerController with BlockConfigMixin {
 
       await player.waitForPlayerInitialization;
       player.setMediaHeader(const {
-        'user-agent': UaType.pcUa,
+        'user-agent': BrowserUa.pc,
         'referer': HttpString.baseUrl,
       });
       // await player.setAudioTrack(.auto());
@@ -1709,7 +1709,7 @@ class PlPlayerController with BlockConfigMixin {
         },
         options: Options(
           headers: {
-            'user-agent': UaType.pc.ua,
+            'user-agent': BrowserUa.pc,
             'referer': 'https://www.bilibili.com/video/$bvid',
           },
         ),

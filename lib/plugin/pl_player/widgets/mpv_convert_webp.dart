@@ -3,8 +3,8 @@
 import 'dart:async';
 import 'dart:ffi';
 
+import 'package:PiliPlus/http/browser_ua.dart';
 import 'package:PiliPlus/http/constants.dart';
-import 'package:PiliPlus/http/ua_type.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
@@ -60,7 +60,7 @@ class MpvConvertWebp {
     );
     NativePlayer.setHeader(
       const {
-        'user-agent': UaType.pcUa,
+        'user-agent': BrowserUa.pc,
         'referer': HttpString.baseUrl,
       },
       _mpv,

@@ -289,7 +289,10 @@ class AudioController extends GetxController
 
   Future<void> _initPlayerIfNeeded() async {
     if (player == null) {
-      await (player = Player()).waitForPlayerInitialization;
+      (player = await Player.create()).setMediaHeader(const {
+        'user-agent': UaType.pcUa,
+        'referer': HttpString.baseUrl,
+      });
     }
     _subscriptions ??= {
       player!.stream.position.listen((position) {

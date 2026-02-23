@@ -72,11 +72,9 @@ class _GalleryViewerState extends State<GalleryViewer>
   late final RxInt _currIndex;
   GlobalKey? _key;
 
+  late final _controller = Rxn<VideoController>();
   Player? _player;
-  Player get _effectivePlayer => _player ??= Player();
-  VideoController? _videoController;
-  VideoController get _effectiveVideoController =>
-      _videoController ??= VideoController(_effectivePlayer);
+  String? _initUri;
 
   late final PageController _pageController;
 
@@ -99,13 +97,22 @@ class _GalleryViewerState extends State<GalleryViewer>
         : url.http2https;
   }
 
+  Future<void> _initPlayer() async {
+    _player = await Player.create();
+    _controller.value = await VideoController.create(_player!);
+    await _player!.open(Media(_initUri!));
+  }
+
   @override
   void initState() {
     super.initState();
     _quality = Pref.previewQ;
     _currIndex = widget.initIndex.obs;
     final item = widget.sources[widget.initIndex];
-    _playIfNeeded(item);
+    if (item.sourceType == .livePhoto) {
+      _initPlayer();
+      _playIfNeeded(item);
+    }
 
     if (!item.isLongPic) {
       _key = GlobalKey();
@@ -219,9 +226,9 @@ class _GalleryViewerState extends State<GalleryViewer>
 
   @override
   void dispose() {
+    _initUri = null;
     _player?.dispose();
     _player = null;
-    _videoController = null;
     _pageController.dispose();
     _animateController.dispose();
     _tapGestureRecognizer.dispose();
@@ -317,9 +324,11 @@ class _GalleryViewerState extends State<GalleryViewer>
 
   void _playIfNeeded(SourceModel item) {
     if (item.sourceType == .livePhoto) {
-      _effectivePlayer.waitForPlayerInitialization.whenComplete(
-        () => _effectivePlayer.open(Media(item.liveUrl!)),
-      );
+      if (_player != null) {
+        _player!.open(Media(item.liveUrl!));
+      } else {
+        _initUri = item.liveUrl;
+      }
     }
   }
 
@@ -421,9 +430,9 @@ class _GalleryViewerState extends State<GalleryViewer>
           return child;
         }
       case SourceType.livePhoto:
-        child = Obx(
-          key: _key,
-          () => _currIndex.value == index
+        child = Obx(key: _key, () {
+          final ctr = _controller.value;
+          return _currIndex.value == index && ctr != null
               ? Viewer(
                   minScale: widget.minScale,
                   maxScale: widget.maxScale,
@@ -436,15 +445,15 @@ class _GalleryViewerState extends State<GalleryViewer>
                   horizontalDragGestureRecognizer:
                       _horizontalDragGestureRecognizer,
                   onChangePage: _onChangePage,
-                  child: AbsorbPointer(
-                    child: Video(
-                      controller: _effectiveVideoController,
+                  child: FittedBox(
+                    child: SimpleVideo(
+                      controller: ctr,
                       fill: Colors.transparent,
                     ),
                   ),
                 )
-              : const SizedBox.shrink(),
-        );
+              : const SizedBox.shrink();
+        });
     }
     return Hero(tag: item.url, child: child);
   }

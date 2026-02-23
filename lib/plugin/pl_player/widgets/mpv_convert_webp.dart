@@ -4,6 +4,7 @@ import 'dart:async';
 import 'dart:ffi';
 
 import 'package:PiliPlus/http/constants.dart';
+import 'package:PiliPlus/http/ua_type.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
@@ -41,7 +42,7 @@ class MpvConvertWebp {
   Future<void> _init() async {
     final enableHA = Pref.enableHA;
     _ctx = await Initializer.create(
-      NativeLibrary.path,
+      _mpv,
       _onEvent,
       options: {
         'o': outFile,
@@ -59,8 +60,7 @@ class MpvConvertWebp {
     );
     NativePlayer.setHeader(
       const {
-        'user-agent':
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36',
+        'user-agent': UaType.pcUa,
         'referer': HttpString.baseUrl,
       },
       _mpv,

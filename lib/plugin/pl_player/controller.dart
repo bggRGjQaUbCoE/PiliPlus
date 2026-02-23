@@ -256,10 +256,16 @@ class PlPlayerController with BlockConfigMixin {
       windowManager.setTitleBarStyle(TitleBarStyle.hidden);
     }
 
-    late final Size size;
+    final Size size;
     final state = videoController!.player.state;
-    final width = state.width ?? this.width ?? 16;
-    final height = state.height ?? this.height ?? 9;
+    int width = state.width;
+    int height = state.height;
+    if (width == 0) {
+      width = this.width ?? 16;
+    }
+    if (height == 0) {
+      height = this.height ?? 9;
+    }
     if (height > width) {
       size = Size(280.0, 280.0 * height / width);
     } else {
@@ -305,8 +311,8 @@ class PlPlayerController with BlockConfigMixin {
       final state = videoController!.player.state;
       PageUtils.enterPip(
         isAuto: isAuto,
-        width: state.width ?? width,
-        height: state.height ?? height,
+        width: state.width == 0 ? width : state.width,
+        height: state.height == 0 ? height : state.height,
       );
     }
   }
@@ -723,7 +729,7 @@ class PlPlayerController with BlockConfigMixin {
         opt['autosync'] = autosync;
       }
 
-      final player = Player(
+      final player = await Player.create(
         configuration: PlayerConfiguration(
           bufferSize: Pref.expandBuffer
               ? (isLive ? 64 * 1024 * 1024 : 32 * 1024 * 1024)
@@ -764,16 +770,14 @@ class PlPlayerController with BlockConfigMixin {
     final player = await _initPlayerIfNeeded();
     _videoPlayerController = player;
 
-    if (_videoController == null) {
-      await (_videoController = VideoController(
-        player,
-        configuration: VideoControllerConfiguration(
-          enableHardwareAcceleration: hwdec != null,
-          androidAttachSurfaceAfterVideoParameters: false,
-          hwdec: hwdec,
-        ),
-      )).platform.future;
-    }
+    _videoController ??= await VideoController.create(
+      player,
+      configuration: VideoControllerConfiguration(
+        enableHardwareAcceleration: hwdec != null,
+        androidAttachSurfaceAfterVideoParameters: false,
+        hwdec: hwdec,
+      ),
+    );
 
     await Future.wait([
       player.setPlaylistMode(looping),

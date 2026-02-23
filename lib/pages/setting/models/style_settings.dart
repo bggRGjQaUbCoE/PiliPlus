@@ -14,6 +14,7 @@ import 'package:PiliPlus/models/common/dynamic/up_panel_position.dart';
 import 'package:PiliPlus/models/common/home_tab_type.dart';
 import 'package:PiliPlus/models/common/msg/msg_unread_type.dart';
 import 'package:PiliPlus/models/common/nav_bar_config.dart';
+import 'package:PiliPlus/models/common/search/search_type.dart';
 import 'package:PiliPlus/models/common/theme/theme_color_type.dart';
 import 'package:PiliPlus/models/common/theme/theme_type.dart';
 import 'package:PiliPlus/pages/main/controller.dart';
@@ -343,6 +344,19 @@ List<SettingsModel> get styleSettings => [
     title: '首页标签页',
     subtitle: '删除或调换首页标签页',
     leading: const Icon(Icons.toc_outlined),
+  ),
+  NormalModel(
+    onTap: (context, setState) => Get.toNamed(
+      '/barSetting',
+      arguments: {
+        'key': SettingBoxKey.searchTypeSort,
+        'defaultBars': SearchType.values,
+        'title': '搜索分类',
+      },
+    ),
+    title: '搜索分类编辑',
+    subtitle: '删除或调换搜索分类',
+    leading: const Icon(Icons.manage_search_outlined),
   ),
   NormalModel(
     onTap: (context, setState) => Get.toNamed(

@@ -1,5 +1,9 @@
 // ignore_for_file: constant_identifier_names
-enum SearchType {
+import 'package:PiliPlus/models/common/enum_with_label.dart';
+import 'package:PiliPlus/utils/storage.dart';
+import 'package:PiliPlus/utils/storage_key.dart';
+
+enum SearchType implements EnumWithLabel {
   // all('综合'),
   // 视频：video
   video('视频'),
@@ -23,6 +27,15 @@ enum SearchType {
   // 相簿：photo
   // photo
 
+  @override
   final String label;
   const SearchType(this.label);
+
+  static List<SearchType> get activeValues {
+    final List? indices = GStorage.setting.get(SettingBoxKey.searchTypeSort);
+    if (indices == null || indices.isEmpty) {
+      return values;
+    }
+    return indices.map((e) => values[e]).toList();
+  }
 }

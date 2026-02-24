@@ -1131,7 +1131,7 @@ packages:
     description:
       path: media_kit
       ref: "version_1.2.5"
-      resolved-ref: fc2b965768510b584f4f81195bbc8aa4b1f7ed99
+      resolved-ref: "7a4ad2c5fd290b11a460f1fb08e3ee449092320b"
       url: "https://github.com/My-Responsitories/media-kit.git"
     source: git
     version: "1.1.11"
@@ -1140,7 +1140,7 @@ packages:
     description:
       path: "libs/android/media_kit_libs_android_video"
       ref: "version_1.2.5"
-      resolved-ref: fc2b965768510b584f4f81195bbc8aa4b1f7ed99
+      resolved-ref: "7a4ad2c5fd290b11a460f1fb08e3ee449092320b"
       url: "https://github.com/My-Responsitories/media-kit.git"
     source: git
     version: "1.3.7"
@@ -1173,7 +1173,7 @@ packages:
     description:
       path: "libs/universal/media_kit_libs_video"
       ref: "version_1.2.5"
-      resolved-ref: fc2b965768510b584f4f81195bbc8aa4b1f7ed99
+      resolved-ref: "7a4ad2c5fd290b11a460f1fb08e3ee449092320b"
       url: "https://github.com/My-Responsitories/media-kit.git"
     source: git
     version: "1.0.5"
@@ -1182,7 +1182,7 @@ packages:
     description:
       path: "libs/windows/media_kit_libs_windows_video"
       ref: "version_1.2.5"
-      resolved-ref: fc2b965768510b584f4f81195bbc8aa4b1f7ed99
+      resolved-ref: "7a4ad2c5fd290b11a460f1fb08e3ee449092320b"
       url: "https://github.com/My-Responsitories/media-kit.git"
     source: git
     version: "1.0.10"
@@ -1191,7 +1191,7 @@ packages:
     description:
       path: media_kit_native_event_loop
       ref: "version_1.2.5"
-      resolved-ref: fc2b965768510b584f4f81195bbc8aa4b1f7ed99
+      resolved-ref: "7a4ad2c5fd290b11a460f1fb08e3ee449092320b"
       url: "https://github.com/My-Responsitories/media-kit.git"
     source: git
     version: "1.0.9"
@@ -1200,7 +1200,7 @@ packages:
     description:
       path: media_kit_video
       ref: "version_1.2.5"
-      resolved-ref: fc2b965768510b584f4f81195bbc8aa4b1f7ed99
+      resolved-ref: "7a4ad2c5fd290b11a460f1fb08e3ee449092320b"
       url: "https://github.com/My-Responsitories/media-kit.git"
     source: git
     version: "1.2.5"
@@ -1476,14 +1476,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.28.0"
-  safe_local_storage:
-    dependency: transitive
-    description:
-      name: safe_local_storage
-      sha256: "287ea1f667c0b93cdc127dccc707158e2d81ee59fba0459c31a0c7da4d09c755"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.0.3"
   saver_gallery:
     dependency: "direct main"
     description:

@@ -3,18 +3,16 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
-class DisabledIcon<T extends Widget> extends SingleChildRenderObjectWidget {
+class DisabledIcon extends SingleChildRenderObjectWidget {
   const DisabledIcon({
     super.key,
-    required T child,
+    required Widget super.child,
     this.disable = false,
     this.color,
     this.iconSize,
-    double? lineLengthScale,
-    StrokeCap? strokeCap,
-  }) : lineLengthScale = lineLengthScale ?? 0.9,
-       strokeCap = strokeCap ?? StrokeCap.butt,
-       super(child: child);
+    this.lineLengthScale = 0.9,
+    this.strokeCap = .butt,
+  });
 
   final bool disable;
   final Color? color;
@@ -48,12 +46,12 @@ class DisabledIcon<T extends Widget> extends SingleChildRenderObjectWidget {
       ..disable = disable
       ..iconSize =
           iconSize ??
-          (child is Icon ? (child as Icon?)?.size : null) ??
+          (child is Icon ? (child as Icon).size : null) ??
           iconTheme.size ??
           24.0
       ..color =
           color ??
-          (child is Icon ? (child as Icon?)?.color : null) ??
+          (child is Icon ? (child as Icon).color : null) ??
           iconTheme.color!
       ..strokeCap = strokeCap
       ..lineLengthScale = lineLengthScale;

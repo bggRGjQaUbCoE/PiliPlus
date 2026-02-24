@@ -467,6 +467,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
               tooltip: '分段信息',
               icon: DisabledIcon(
                 iconSize: 22,
+                color: Colors.white,
                 disable: !show,
                 child: Transform.rotate(
                   angle: math.pi / 2,

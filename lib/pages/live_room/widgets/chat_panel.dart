@@ -294,7 +294,8 @@ class LiveRoomChatPanel extends StatelessWidget {
     final dy =
         details.globalPosition.dy -
         details.localPosition.dy +
-        renderBox.size.height;
+        renderBox.size.height -
+        4; // padding
     final autoScroll =
         liveRoomController.autoScroll &&
         !liveRoomController.disableAutoScroll.value;
@@ -340,7 +341,7 @@ class LiveRoomChatPanel extends StatelessWidget {
         PopupMenuItem(
           height: 38,
           onTap: () async {
-            if (item.extra.mid == 0) return;
+            if (!liveRoomController.isLogin) return;
             final res = await LiveHttp.liveShieldUser(
               uid: item.extra.mid,
               roomid: roomId,

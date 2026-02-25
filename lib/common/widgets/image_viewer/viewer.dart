@@ -417,7 +417,9 @@ class _ViewerState extends State<Viewer> with SingleTickerProviderStateMixin {
     _doubleTapGestureRecognizer
       ..onDoubleTapDown = _onDoubleTapDown
       ..onDoubleTap = _onDoubleTap;
-    _horizontalDragGestureRecognizer.isBoundaryAllowed = _isBoundaryAllowed;
+    _horizontalDragGestureRecognizer
+      ..isBoundaryAllowed = _isBoundaryAllowed
+      ..addPointer(event);
     _scaleGestureRecognizer.addPointer(event);
   }
 

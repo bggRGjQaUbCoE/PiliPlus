@@ -671,33 +671,45 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       BottomControlType.subtitle => Obx(
         () {
           if (videoDetailController.subtitles.isNotEmpty) {
-            final val = videoDetailController.vttSubtitlesIndex.value;
-            return PopupMenuButton<int>(
+            final mainVal = videoDetailController.vttSubtitlesIndex.value;
+            final secondVal =
+                videoDetailController.vttSubtitlesSecondIndex.value;
+            final showSecondSubtitle =
+                videoDetailController.subtitles.length > 1;
+            return PopupMenuButton<String>(
               tooltip: '字幕',
               requestFocus: false,
-              initialValue: val,
               color: Colors.black.withValues(alpha: 0.8),
               itemBuilder: (context) {
                 return [
-                  PopupMenuItem<int>(
-                    value: 0,
-                    height: 35,
-                    onTap: () => videoDetailController.setSubtitle(0),
-                    child: const Text(
-                      "关闭字幕",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 13,
+                  PopupMenuItem<String>(
+                    enabled: false,
+                    height: 30,
+                    value: 'm_title',
+                    child: Text(
+                      showSecondSubtitle ? '主字幕' : '字幕',
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 12,
                       ),
                     ),
                   ),
+                  PopupMenuItem<String>(
+                    value: 'm_0',
+                    height: 35,
+                    onTap: () => videoDetailController.setSubtitle(0),
+                    child: Text(
+                      showSecondSubtitle ? '关闭主字幕' : '关闭字幕',
+                      style: const TextStyle(color: Colors.white, fontSize: 13),
+                    ),
+                  ),
                   ...videoDetailController.subtitles.indexed.map((e) {
-                    return PopupMenuItem<int>(
-                      value: e.$1 + 1,
+                    return PopupMenuItem<String>(
+                      value: 'm_${e.$1 + 1}',
                       height: 35,
                       onTap: () => videoDetailController.setSubtitle(e.$1 + 1),
                       child: Text(
-                        "${e.$2.lanDoc}",
+                        '${e.$2.lanDoc}',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
@@ -707,19 +719,59 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                       ),
                     );
                   }),
+                  if (showSecondSubtitle) ...[
+                    const PopupMenuDivider(height: 6),
+                    const PopupMenuItem<String>(
+                      enabled: false,
+                      height: 30,
+                      value: 's_title',
+                      child: Text(
+                        '副字幕',
+                        style: TextStyle(color: Colors.white70, fontSize: 12),
+                      ),
+                    ),
+                    PopupMenuItem<String>(
+                      value: 's_0',
+                      height: 35,
+                      onTap: () => videoDetailController.setSecondSubtitle(0),
+                      child: const Text(
+                        '关闭副字幕',
+                        style: TextStyle(color: Colors.white, fontSize: 13),
+                      ),
+                    ),
+                    ...videoDetailController.subtitles.indexed.map((e) {
+                      return PopupMenuItem<String>(
+                        value: 's_${e.$1 + 1}',
+                        height: 35,
+                        onTap: () =>
+                            videoDetailController.setSecondSubtitle(e.$1 + 1),
+                        child: Text(
+                          '${e.$2.lanDoc}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 13,
+                          ),
+                        ),
+                      );
+                    }),
+                  ],
                 ];
               },
               child: SizedBox(
                 width: widgetWidth,
                 height: 30,
-                child: val == 0
+                child: mainVal == 0
                     ? const Icon(
                         Icons.closed_caption_off_outlined,
                         size: 22,
                         color: Colors.white,
                       )
-                    : const Icon(
-                        Icons.closed_caption_off_rounded,
+                    : Icon(
+                        secondVal == 0
+                            ? Icons.closed_caption_outlined
+                            : Icons.closed_caption,
                         size: 22,
                         color: Colors.white,
                       ),
@@ -1386,15 +1438,60 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
         if (!isLive)
           Positioned.fill(
             child: IgnorePointer(
-              ignoring: !plPlayerController.enableDragSubtitle,
-              child: Obx(
-                () => SubtitleView(
-                  controller: videoController,
-                  configuration: plPlayerController.subtitleConfig.value,
-                  enableDragSubtitle: plPlayerController.enableDragSubtitle,
-                  onUpdatePadding: plPlayerController.onUpdatePadding,
-                ),
-              ),
+              child: Obx(() {
+                final player = plPlayerController.videoPlayerController;
+                if (player == null) {
+                  return const SizedBox.shrink();
+                }
+
+                final config = plPlayerController.subtitleConfig.value;
+                final mainStyle = config.style;
+                final mainFontSize = mainStyle.fontSize ?? 18.0;
+                final secondStyle = mainStyle.copyWith(fontSize: mainFontSize * 0.8);
+
+                return StreamBuilder<Duration>(
+                  stream: player.stream.position,
+                  initialData: plPlayerController.position,
+                  builder: (context, snapshot) {
+                    final position = snapshot.data ?? Duration.zero;
+                    final mainText = videoDetailController.getMainSubtitleTextAt(
+                      position,
+                    );
+                    final secondText =
+                        videoDetailController.getSecondSubtitleTextAt(position);
+
+                    if (mainText.isEmpty && secondText.isEmpty) {
+                      return const SizedBox.shrink();
+                    }
+
+                    return Padding(
+                      padding: config.padding,
+                      child: Align(
+                        alignment: Alignment.bottomCenter,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (mainText.isNotEmpty)
+                              Text(
+                                mainText,
+                                textAlign: TextAlign.center,
+                                style: mainStyle,
+                              ),
+                            if (mainText.isNotEmpty && secondText.isNotEmpty)
+                              const SizedBox(height: 4),
+                            if (secondText.isNotEmpty)
+                              Text(
+                                secondText,
+                                textAlign: TextAlign.center,
+                                style: secondStyle,
+                              ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                );
+              }),
             ),
           ),
 

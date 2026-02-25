@@ -997,47 +997,229 @@ class VideoDetailController extends GetxController
 
   RxList<Subtitle> subtitles = RxList<Subtitle>();
   final Map<int, ({bool isData, String id})> vttSubtitles = {};
+  final Map<int, List<({Duration start, Duration end, String text})>>
+  subtitleCueCache = {};
   late final RxInt vttSubtitlesIndex = (-1).obs;
+  late final RxInt vttSubtitlesSecondIndex = 0.obs;
   late final RxBool showVP = true.obs;
   late final RxList<ViewPointSegment> viewPointList = <ViewPointSegment>[].obs;
 
-  // 设定字幕轨道
-  Future<void> setSubtitle(int index) async {
-    if (index <= 0) {
-      await plPlayerController.videoPlayerController?.setSubtitleTrack(
-        SubtitleTrack.no(),
-      );
-      vttSubtitlesIndex.value = index;
+  Future<({bool isData, String id})?> _getSubtitleTrackData(int index) async {
+    if (index <= 0 || index > subtitles.length) {
+      return null;
+    }
+    ({bool isData, String id})? subtitle = vttSubtitles[index - 1];
+    if (subtitle != null) {
+      return subtitle;
+    }
+    final result = await VideoHttp.vttSubtitles(subtitles[index - 1].subtitleUrl!);
+    if (isClosed || result == null) {
+      return null;
+    }
+    subtitle = (isData: true, id: result);
+    vttSubtitles[index - 1] = subtitle;
+    return subtitle;
+  }
+
+  Duration? _parseVttDuration(String raw) {
+    final normalized = raw.trim().replaceAll(',', '.');
+    final parts = normalized.split(':');
+    if (parts.length < 2 || parts.length > 3) {
+      return null;
+    }
+    final secParts = parts.last.split('.');
+    if (secParts.isEmpty) {
+      return null;
+    }
+    final seconds = int.tryParse(secParts.first);
+    final milliseconds = secParts.length > 1
+        ? int.tryParse(secParts[1].padRight(3, '0').substring(0, 3))
+        : 0;
+    if (seconds == null || milliseconds == null) {
+      return null;
+    }
+    final minutes = int.tryParse(parts[parts.length - 2]);
+    final hours = parts.length == 3 ? int.tryParse(parts.first) : 0;
+    if (minutes == null || hours == null) {
+      return null;
+    }
+    return Duration(
+      hours: hours,
+      minutes: minutes,
+      seconds: seconds,
+      milliseconds: milliseconds,
+    );
+  }
+
+  List<({Duration start, Duration end, String text})> _parseVttCues(String vtt) {
+    final List<({Duration start, Duration end, String text})> cues = [];
+    final lines = vtt.replaceAll('\r\n', '\n').replaceAll('\r', '\n').split('\n');
+    int i = 0;
+    while (i < lines.length) {
+      var line = lines[i].trim();
+      if (line.isEmpty || line == 'WEBVTT' || line.startsWith('NOTE')) {
+        i++;
+        continue;
+      }
+      if (line == 'STYLE' || line == 'REGION') {
+        while (i < lines.length && lines[i].trim().isNotEmpty) {
+          i++;
+        }
+        continue;
+      }
+      if (!line.contains('-->')) {
+        i++;
+        if (i >= lines.length) {
+          break;
+        }
+        line = lines[i].trim();
+      }
+      if (!line.contains('-->')) {
+        i++;
+        continue;
+      }
+
+      final timing = line.split('-->');
+      if (timing.length != 2) {
+        i++;
+        continue;
+      }
+      final start = _parseVttDuration(timing.first.trim());
+      final end = _parseVttDuration(timing.last.trim().split(' ').first);
+      i++;
+      final textLines = <String>[];
+      while (i < lines.length && lines[i].trim().isNotEmpty) {
+        textLines.add(lines[i]);
+        i++;
+      }
+      if (start != null && end != null && end > start) {
+        cues.add((start: start, end: end, text: textLines.join('\n').trim()));
+      }
+      i++;
+    }
+    return cues;
+  }
+
+  Future<List<({Duration start, Duration end, String text})>?> _getSubtitleCues(
+    int index,
+  ) async {
+    if (index <= 0 || index > subtitles.length) {
+      return null;
+    }
+    final cache = subtitleCueCache[index - 1];
+    if (cache != null) {
+      return cache;
+    }
+    final track = await _getSubtitleTrackData(index);
+    if (track == null) {
+      return null;
+    }
+    final cues = _parseVttCues(track.id);
+    subtitleCueCache[index - 1] = cues;
+    return cues;
+  }
+
+  String _getCueTextAt(
+    List<({Duration start, Duration end, String text})> cues,
+    Duration position,
+  ) {
+    if (cues.isEmpty) {
+      return '';
+    }
+    int left = 0;
+    int right = cues.length - 1;
+    while (left <= right) {
+      final mid = left + ((right - left) >> 1);
+      final cue = cues[mid];
+      if (position < cue.start) {
+        right = mid - 1;
+      } else if (position >= cue.end) {
+        left = mid + 1;
+      } else {
+        return cue.text.trim();
+      }
+    }
+    return '';
+  }
+
+  String getMainSubtitleTextAt(Duration position) {
+    final mainIndex = vttSubtitlesIndex.value;
+    if (mainIndex <= 0 || mainIndex > subtitles.length) {
+      return '';
+    }
+    final cues = subtitleCueCache[mainIndex - 1];
+    if (cues == null) {
+      return '';
+    }
+    return _getCueTextAt(cues, position);
+  }
+
+  String getSecondSubtitleTextAt(Duration position) {
+    final secondIndex = vttSubtitlesSecondIndex.value;
+    if (subtitles.length <= 1 || secondIndex <= 0 || secondIndex > subtitles.length) {
+      return '';
+    }
+    final cues = subtitleCueCache[secondIndex - 1];
+    if (cues == null) {
+      return '';
+    }
+    return _getCueTextAt(cues, position);
+  }
+
+  Future<void> _setNoSubtitle() async {
+    await plPlayerController.videoPlayerController?.setSubtitleTrack(
+      SubtitleTrack.no(),
+    );
+  }
+
+  Future<void> _applySubtitleTrack() async {
+    if (subtitles.length <= 1 && vttSubtitlesSecondIndex.value != 0) {
+      vttSubtitlesSecondIndex.value = 0;
+    }
+
+    final mainIndex = vttSubtitlesIndex.value;
+    if (mainIndex <= 0) {
+      await _setNoSubtitle();
       return;
     }
 
-    Future<void> setSub(({bool isData, String id}) subtitle) async {
-      final sub = subtitles[index - 1];
-      await plPlayerController.videoPlayerController?.setSubtitleTrack(
-        SubtitleTrack(
-          subtitle.id,
-          sub.lanDoc,
-          sub.lan,
-          uri: !subtitle.isData,
-          data: subtitle.isData,
-        ),
-      );
-      vttSubtitlesIndex.value = index;
+    final primaryTrack = await _getSubtitleTrackData(mainIndex);
+    if (primaryTrack == null) {
+      await _setNoSubtitle();
+      return;
     }
 
-    ({bool isData, String id})? subtitle = vttSubtitles[index - 1];
-    if (subtitle != null) {
-      await setSub(subtitle);
-    } else {
-      final result = await VideoHttp.vttSubtitles(
-        subtitles[index - 1].subtitleUrl!,
-      );
-      if (!isClosed && result != null) {
-        final subtitle = (isData: true, id: result);
-        vttSubtitles[index - 1] = subtitle;
-        await setSub(subtitle);
-      }
+    final primarySub = subtitles[mainIndex - 1];
+    await plPlayerController.videoPlayerController?.setSubtitleTrack(
+      SubtitleTrack(
+        primaryTrack.id,
+        primarySub.lanDoc,
+        primarySub.lan,
+        uri: !primaryTrack.isData,
+        data: primaryTrack.isData,
+      ),
+    );
+    await _getSubtitleCues(mainIndex);
+  }
+
+  // 设定主字幕轨道
+  Future<void> setSubtitle(int index) async {
+    vttSubtitlesIndex.value = index;
+    await _applySubtitleTrack();
+  }
+
+  // 设定副字幕轨道(0=关闭)
+  Future<void> setSecondSubtitle(int index) async {
+    if (subtitles.length <= 1) {
+      vttSubtitlesSecondIndex.value = 0;
+      return;
     }
+    if (index <= 0) {
+      vttSubtitlesSecondIndex.value = 0;
+      return;
+    }
+    vttSubtitlesSecondIndex.value = index;
+    await _getSubtitleCues(index);
   }
 
   // interactive video
@@ -1072,7 +1254,9 @@ class VideoDetailController extends GetxController
 
   Future<void> _queryPlayInfo() async {
     vttSubtitles.clear();
+    subtitleCueCache.clear();
     vttSubtitlesIndex.value = 0;
+    vttSubtitlesSecondIndex.value = 0;
     if (plPlayerController.showViewPoints) {
       viewPointList.clear();
     }
@@ -1226,7 +1410,9 @@ class VideoDetailController extends GetxController
     // subtitle
     subtitles.clear();
     vttSubtitlesIndex.value = -1;
+    vttSubtitlesSecondIndex.value = 0;
     vttSubtitles.clear();
+    subtitleCueCache.clear();
 
     if (!isFileSource) {
       // language

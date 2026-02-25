@@ -791,8 +791,9 @@ class PlPlayerController with BlockConfigMixin {
       if (onlyPlayAudio.value) {
         video = audio;
       } else {
-        extras['audio-files'] =
-            '"${Platform.isWindows ? audio.replaceAll(';', r'\;') : audio.replaceAll(':', r'\:')}"';
+        extras['audio-files'] = Platform.isWindows
+            ? audio.replaceAll(';', r'\;')
+            : audio.replaceAll(':', r'\:');
       }
     }
 
@@ -820,7 +821,7 @@ class PlPlayerController with BlockConfigMixin {
         );
       }
       if (audioNormalization.isNotEmpty) {
-        extras['lavfi-complex'] = '"[aid1] $audioNormalization [ao]"';
+        extras['lavfi-complex'] = '[aid1] $audioNormalization [ao]';
       }
     }
 

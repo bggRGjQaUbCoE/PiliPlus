@@ -120,8 +120,10 @@ class AudioController extends GetxController
       _querySponsorBlock();
       _onOpenMedia(
         audioUrl,
-        ua: BrowserUa.pc,
-        referer: HttpString.baseUrl,
+        headers: const {
+          'user-agent': BrowserUa.pc,
+          'referer': HttpString.baseUrl,
+        },
       );
     }
     Utils.isWiFi.then((isWiFi) {
@@ -277,23 +279,20 @@ class AudioController extends GetxController
     }
   }
 
+  static const _grpcHeaders = {'user-agent': Constants.userAgentApp};
   Future<void> _onOpenMedia(
     String url, {
-    String? referer,
-    String ua = Constants.userAgentApp,
+    Map<String, String> headers = _grpcHeaders,
   }) async {
     await _initPlayerIfNeeded();
-    player!.open(Media(url, start: _start));
+    player!
+      ..setMediaHeader(headers)
+      ..open(Media(url, start: _start));
     _start = null;
   }
 
   Future<void> _initPlayerIfNeeded() async {
-    if (player == null) {
-      (player = await Player.create()).setMediaHeader(const {
-        'user-agent': BrowserUa.pc,
-        'referer': HttpString.baseUrl,
-      });
-    }
+    player ??= await Player.create();
     _subscriptions ??= {
       player!.stream.position.listen((position) {
         if (isDragging) return;

@@ -465,6 +465,32 @@ class ChatItem extends StatelessWidget {
                       ),
                     ),
                   ),
+                  if (content['attach_msg'] is Map<String, dynamic> &&
+                      content['attach_msg'].containsKey('content') &&
+                      content['attach_msg']['content'] is String)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.surface.withValues(
+                            alpha: 0.5,
+                          ),
+                          borderRadius: StyleString.mdRadius,
+                        ),
+                        child: msgTypeText_1(
+                          theme,
+                          content: content['attach_msg'],
+                          textColor: theme.colorScheme.onSurface.withValues(
+                            alpha: 0.5,
+                          ),
+                        ),
+                      ),
+                    ),
                 ],
               ),
             );

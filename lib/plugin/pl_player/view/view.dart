@@ -294,7 +294,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (!plPlayerController.continuePlayInBackground.value) {
-      late final player = plPlayerController.videoController?.player;
+      late final player = plPlayerController.videoPlayerController;
       if (const [
         AppLifecycleState.paused,
         AppLifecycleState.detached,

@@ -257,7 +257,7 @@ class PlPlayerController with BlockConfigMixin {
     }
 
     final Size size;
-    final state = videoController!.player.state;
+    final state = videoPlayerController!.state;
     int width = state.width;
     int height = state.height;
     if (width == 0) {
@@ -306,9 +306,9 @@ class PlPlayerController with BlockConfigMixin {
   }
 
   void enterPip({bool isAuto = false}) {
-    if (videoController != null) {
+    if (videoPlayerController != null) {
       controls = false;
-      final state = videoController!.player.state;
+      final state = videoPlayerController!.state;
       PageUtils.enterPip(
         isAuto: isAuto,
         width: state.width == 0 ? width : state.width,
@@ -633,6 +633,13 @@ class PlPlayerController with BlockConfigMixin {
         seekTo,
         volume,
       );
+
+      if (_playerCount == 0) {
+        _videoPlayerController?.dispose();
+        _videoPlayerController = null;
+        return;
+      }
+
       // 获取视频时长 00:00
       this.duration.value = duration ?? _videoPlayerController!.state.duration;
       position = buffered.value = sliderPosition = seekTo ?? Duration.zero;
@@ -741,7 +748,15 @@ class PlPlayerController with BlockConfigMixin {
 
       assert(_videoController == null);
 
-      await player.waitForPlayerInitialization;
+      _videoController = await VideoController.create(
+        player,
+        configuration: VideoControllerConfiguration(
+          enableHardwareAcceleration: hwdec != null,
+          androidAttachSurfaceAfterVideoParameters: false,
+          hwdec: hwdec,
+        ),
+      );
+
       player.setMediaHeader(const {
         'user-agent': BrowserUa.pc,
         'referer': HttpString.baseUrl,
@@ -769,15 +784,6 @@ class PlPlayerController with BlockConfigMixin {
 
     final player = await _initPlayerIfNeeded();
     _videoPlayerController = player;
-
-    _videoController ??= await VideoController.create(
-      player,
-      configuration: VideoControllerConfiguration(
-        enableHardwareAcceleration: hwdec != null,
-        androidAttachSurfaceAfterVideoParameters: false,
-        hwdec: hwdec,
-      ),
-    );
 
     await Future.wait([
       player.setPlaylistMode(looping),

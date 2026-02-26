@@ -97,12 +97,15 @@ class _GalleryViewerState extends State<GalleryViewer>
         : url.http2https;
   }
 
-  bool _needInitPlayer = true;
   Future<void> _initPlayer() async {
     final player = await Player.create();
     _controller.value = await VideoController.create(player);
-    _player = player;
-    await player.open(Media(_initUri!));
+    if (_initUri == null) {
+      player.dispose();
+    } else {
+      _player = player;
+      await player.open(Media(_initUri!));
+    }
   }
 
   @override
@@ -328,8 +331,7 @@ class _GalleryViewerState extends State<GalleryViewer>
       if (_player != null) {
         _player!.open(Media(item.liveUrl!));
       } else {
-        if (_needInitPlayer) {
-          _needInitPlayer = false;
+        if (_initUri == null) {
           _initPlayer();
         }
         _initUri = item.liveUrl;

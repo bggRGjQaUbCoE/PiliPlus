@@ -71,7 +71,7 @@ class AudioController extends GetxController
 
   late final AnimationController animController;
 
-  Set<StreamSubscription>? _subscriptions;
+  List<StreamSubscription>? _subscriptions;
 
   int? index;
   List<DetailItem>? playlist;
@@ -285,15 +285,20 @@ class AudioController extends GetxController
     Map<String, String> headers = _grpcHeaders,
   }) async {
     await _initPlayerIfNeeded();
-    player!
-      ..setMediaHeader(headers)
+    player
+      ?..setMediaHeader(headers)
       ..open(Media(url, start: _start));
     _start = null;
   }
 
   Future<void> _initPlayerIfNeeded() async {
     player ??= await Player.create();
-    _subscriptions ??= {
+    if (isClosed) {
+      player!.dispose();
+      player = null;
+      return;
+    }
+    _subscriptions ??= [
       player!.stream.position.listen((position) {
         if (isDragging) return;
         if (position.inSeconds != this.position.value.inSeconds) {
@@ -351,7 +356,7 @@ class AudioController extends GetxController
           }
         }
       }),
-    };
+    ];
   }
 
   void _replay() {

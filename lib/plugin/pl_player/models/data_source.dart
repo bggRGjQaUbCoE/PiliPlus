@@ -5,38 +5,35 @@ sealed class DataSource {
   final String videoSource;
   final String? audioSource;
 
-  const DataSource({
+  DataSource({
     required this.videoSource,
-    this.audioSource,
+    required this.audioSource,
   });
 }
 
 class NetworkSource extends DataSource {
-  const NetworkSource({
+  NetworkSource({
     required super.videoSource,
-    super.audioSource,
+    required super.audioSource,
   });
 }
 
-class FileSource implements DataSource {
-  @override
-  String get videoSource => path.join(
-    dir,
-    typeTag,
-    mp4Video ? PathUtils.videoNameType1 : PathUtils.videoNameType2,
-  );
-
-  @override
-  String? get audioSource =>
-      mp4Video ? null : path.join(dir, typeTag, PathUtils.audioNameType2);
-
-  final bool mp4Video;
+class FileSource extends DataSource {
   final String dir;
-  final String typeTag;
+  final bool isMp4;
 
-  const FileSource({
+  FileSource({
     required this.dir,
-    required this.typeTag,
-    this.mp4Video = false,
-  });
+    required this.isMp4,
+    required String typeTag,
+  }) : super(
+         videoSource: path.join(
+           dir,
+           typeTag,
+           isMp4 ? PathUtils.videoNameType1 : PathUtils.videoNameType2,
+         ),
+         audioSource: isMp4
+             ? null
+             : path.join(dir, typeTag, PathUtils.audioNameType2),
+       );
 }

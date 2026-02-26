@@ -686,7 +686,7 @@ class VideoDetailController extends GetxController
           ? FileSource(
               dir: args['dirPath'],
               typeTag: entry.typeTag!,
-              mp4Video: entry.mediaType == 1,
+              isMp4: entry.mediaType == 1,
             )
           : NetworkSource(
               videoSource: video ?? videoUrl!,

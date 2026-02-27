@@ -112,7 +112,6 @@ class RenderHeaderWidget extends RenderBox
 
   @override
   void paint(PaintingContext context, Offset offset) {
-    children;
     for (var slot in HeaderType.values) {
       final child = childForSlot(slot)!;
       context.paintChild(child, _getOffset(child) + offset);

@@ -627,16 +627,12 @@ class PlPlayerController with BlockConfigMixin {
         return;
       }
       // 配置Player 音轨、字幕等等
-      _videoPlayerController = await _createVideoController(
-        dataSource,
-        _looping,
-        seekTo,
-        volume,
-      );
+      await _createVideoController(dataSource, _looping, seekTo, volume);
 
       if (_playerCount == 0) {
         _videoPlayerController?.dispose();
         _videoPlayerController = null;
+        _videoController = null;
         return;
       }
 
@@ -718,56 +714,53 @@ class PlPlayerController with BlockConfigMixin {
 
   static final loudnormRegExp = RegExp('loudnorm=([^,]+)');
 
-  Future<Player> _initPlayerIfNeeded() async {
-    if (_videoPlayerController case final player?) {
-      return player;
-    } else {
-      final opt = {
-        'video-sync': Pref.videoSync,
-      };
-      if (Platform.isAndroid) {
-        opt['volume-max'] = '100';
-        opt['ao'] = Pref.audioOutput;
-      } else if (PlatformUtils.isDesktop) {
-        opt['volume'] = (volume.value * 100).toString();
-      }
-      final autosync = Pref.autosync;
-      if (autosync != '0') {
-        opt['autosync'] = autosync;
-      }
-
-      final player = await Player.create(
-        configuration: PlayerConfiguration(
-          bufferSize: Pref.expandBuffer
-              ? (isLive ? 64 * 1024 * 1024 : 32 * 1024 * 1024)
-              : (isLive ? 16 * 1024 * 1024 : 4 * 1024 * 1024),
-          logLevel: kDebugMode ? .warn : .error,
-          options: opt,
-        ),
-      );
-
-      assert(_videoController == null);
-
-      _videoController = await VideoController.create(
-        player,
-        configuration: VideoControllerConfiguration(
-          enableHardwareAcceleration: hwdec != null,
-          androidAttachSurfaceAfterVideoParameters: false,
-          hwdec: hwdec,
-        ),
-      );
-
-      player.setMediaHeader(const {
-        'user-agent': BrowserUa.pc,
-        'referer': HttpString.baseUrl,
-      });
-      // await player.setAudioTrack(.auto());
-      return player;
+  Future<Player> _initPlayer() async {
+    assert(_videoPlayerController == null);
+    final opt = {
+      'video-sync': Pref.videoSync,
+    };
+    if (Platform.isAndroid) {
+      opt['volume-max'] = '100';
+      opt['ao'] = Pref.audioOutput;
+    } else if (PlatformUtils.isDesktop) {
+      opt['volume'] = (volume.value * 100).toString();
     }
+    final autosync = Pref.autosync;
+    if (autosync != '0') {
+      opt['autosync'] = autosync;
+    }
+
+    final player = await Player.create(
+      configuration: PlayerConfiguration(
+        bufferSize: Pref.expandBuffer
+            ? (isLive ? 64 * 1024 * 1024 : 32 * 1024 * 1024)
+            : (isLive ? 16 * 1024 * 1024 : 4 * 1024 * 1024),
+        logLevel: kDebugMode ? .warn : .error,
+        options: opt,
+      ),
+    );
+
+    assert(_videoController == null);
+
+    _videoController = await VideoController.create(
+      player,
+      configuration: VideoControllerConfiguration(
+        enableHardwareAcceleration: hwdec != null,
+        androidAttachSurfaceAfterVideoParameters: false,
+        hwdec: hwdec,
+      ),
+    );
+
+    player.setMediaHeader(const {
+      'user-agent': BrowserUa.pc,
+      'referer': HttpString.baseUrl,
+    });
+    // await player.setAudioTrack(.auto());
+    return player;
   }
 
   // 配置播放器
-  Future<Player> _createVideoController(
+  Future<void> _createVideoController(
     DataSource dataSource,
     PlaylistMode looping,
     Duration? seekTo,
@@ -782,8 +775,18 @@ class PlPlayerController with BlockConfigMixin {
     // 初始化时清空弹幕，防止上次重叠
     danmakuController?.clear();
 
-    final player = await _initPlayerIfNeeded();
-    _videoPlayerController = player;
+    var player = _videoPlayerController;
+
+    if (player == null) {
+      player = await _initPlayer();
+      if (_playerCount == 0) {
+        player.dispose();
+        player = null;
+        _videoController = null;
+        return;
+      }
+      _videoPlayerController = player;
+    }
 
     await Future.wait([
       player.setPlaylistMode(looping),
@@ -838,8 +841,6 @@ class PlPlayerController with BlockConfigMixin {
       ),
       play: false,
     );
-
-    return player;
   }
 
   Future<bool> refreshPlayer() async {

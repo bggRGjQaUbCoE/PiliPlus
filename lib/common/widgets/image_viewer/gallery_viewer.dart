@@ -72,9 +72,9 @@ class _GalleryViewerState extends State<GalleryViewer>
   late final RxInt _currIndex;
   GlobalKey? _key;
 
-  late final _controller = Rxn<VideoController>();
+  late bool _hasInit = false;
   Player? _player;
-  String? _initUri;
+  VideoController? _videoController;
 
   late final PageController _pageController;
 
@@ -98,13 +98,19 @@ class _GalleryViewerState extends State<GalleryViewer>
   }
 
   Future<void> _initPlayer() async {
+    assert(_player == null);
     final player = await Player.create();
-    _controller.value = await VideoController.create(player);
-    if (_initUri == null) {
+    _videoController = await VideoController.create(player);
+    if (!mounted) {
       player.dispose();
-    } else {
-      _player = player;
-      await player.open(Media(_initUri!));
+      _videoController = null;
+      return;
+    }
+    _player = player;
+    final currItem = widget.sources[_currIndex.value];
+    if (currItem.sourceType == .livePhoto) {
+      player.open(Media(currItem.liveUrl!));
+      _currIndex.refresh();
     }
   }
 
@@ -230,9 +236,9 @@ class _GalleryViewerState extends State<GalleryViewer>
 
   @override
   void dispose() {
-    _initUri = null;
     _player?.dispose();
     _player = null;
+    _videoController = null;
     _pageController.dispose();
     _animateController.dispose();
     _tapGestureRecognizer.dispose();
@@ -241,7 +247,6 @@ class _GalleryViewerState extends State<GalleryViewer>
       ..onDoubleTap = null
       ..dispose();
     _longPressGestureRecognizer.dispose();
-    _currIndex.close();
     if (widget.quality != _quality) {
       for (final item in widget.sources) {
         if (item.sourceType == SourceType.networkImage) {
@@ -249,6 +254,7 @@ class _GalleryViewerState extends State<GalleryViewer>
         }
       }
     }
+    Future.delayed(const Duration(milliseconds: 200), _currIndex.close);
     super.dispose();
   }
 
@@ -330,11 +336,9 @@ class _GalleryViewerState extends State<GalleryViewer>
     if (item.sourceType == .livePhoto) {
       if (_player != null) {
         _player!.open(Media(item.liveUrl!));
-      } else {
-        if (_initUri == null) {
-          _initPlayer();
-        }
-        _initUri = item.liveUrl;
+      } else if (!_hasInit) {
+        _hasInit = true;
+        _initPlayer();
       }
     }
   }
@@ -437,9 +441,9 @@ class _GalleryViewerState extends State<GalleryViewer>
           return child;
         }
       case SourceType.livePhoto:
-        child = Obx(key: _key, () {
-          final ctr = _controller.value;
-          return _currIndex.value == index && ctr != null
+        child = Obx(
+          key: _key,
+          () => _currIndex.value == index && _videoController != null
               ? Viewer(
                   minScale: widget.minScale,
                   maxScale: widget.maxScale,
@@ -454,13 +458,13 @@ class _GalleryViewerState extends State<GalleryViewer>
                   onChangePage: _onChangePage,
                   child: FittedBox(
                     child: SimpleVideo(
-                      controller: ctr,
+                      controller: _videoController!,
                       fill: Colors.transparent,
                     ),
                   ),
                 )
-              : const SizedBox.shrink();
-        });
+              : const SizedBox.shrink(),
+        );
     }
     return Hero(tag: item.url, child: child);
   }

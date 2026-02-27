@@ -61,6 +61,7 @@ class AudioController extends GetxController
 
   final Rx<DetailItem?> audioItem = Rx<DetailItem?>(null);
 
+  bool _hasInit = false;
   @override
   Player? player;
   late int cacheAudioQa;
@@ -292,13 +293,16 @@ class AudioController extends GetxController
   }
 
   Future<void> _initPlayerIfNeeded() async {
-    player ??= await Player.create();
+    if (_hasInit) return;
+    _hasInit = true;
+    assert(player == null, _subscriptions = null);
+    player = await Player.create();
     if (isClosed) {
       player!.dispose();
       player = null;
       return;
     }
-    _subscriptions ??= [
+    _subscriptions = [
       player!.stream.position.listen((position) {
         if (isDragging) return;
         if (position.inSeconds != this.position.value.inSeconds) {

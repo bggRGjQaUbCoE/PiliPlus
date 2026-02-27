@@ -202,9 +202,9 @@ mixin HeaderMixin<T extends StatefulWidget> on State<T> {
                         data: sliderTheme,
                         child: Slider(
                           min: 0,
-                          max: 10,
+                          max: 11,
                           value: DanmakuOptions.danmakuWeight.toDouble(),
-                          divisions: 10,
+                          divisions: 11,
                           label: DanmakuOptions.danmakuWeight.toString(),
                           onChanged: updateDanmakuWeight,
                         ),

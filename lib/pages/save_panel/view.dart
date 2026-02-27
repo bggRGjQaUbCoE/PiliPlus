@@ -1,6 +1,3 @@
-import 'dart:typed_data';
-import 'dart:ui';
-
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/widgets/button/icon_button.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
@@ -292,14 +289,15 @@ class _SavePanelState extends State<SavePanel> {
     }
     SmartDialog.showLoading();
     try {
-      RenderRepaintBoundary boundary =
+      final boundary =
           boundaryKey.currentContext!.findRenderObject()
               as RenderRepaintBoundary;
       final image = await boundary.toImage(pixelRatio: 3);
-      ByteData? byteData = await image.toByteData(format: ImageByteFormat.png);
-      Uint8List pngBytes = byteData!.buffer.asUint8List();
-      String picName =
-          "${Constants.appName}_${DateFormat('yyyyMMddHHmmss').format(DateTime.now())}";
+      final byteData = await image.toByteData(format: .png);
+      image.dispose();
+      final pngBytes = byteData!.buffer.asUint8List();
+      final picName =
+          "${Constants.appName}_${itemType}_${DateFormat('yyyyMMddHHmmss').format(DateTime.now())}";
       if (isShare) {
         Get.back();
         SmartDialog.dismiss();
@@ -350,8 +348,7 @@ class _SavePanelState extends State<SavePanel> {
               top: 12 + padding.top,
               bottom: 80 + padding.bottom,
             ),
-            child: GestureDetector(
-              onTap: () {},
+            child: Listener(
               child: Container(
                 width: maxWidth,
                 padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -361,7 +358,7 @@ class _SavePanelState extends State<SavePanel> {
                     clipBehavior: Clip.hardEdge,
                     decoration: BoxDecoration(
                       color: theme.colorScheme.surface,
-                      borderRadius: const BorderRadius.all(Radius.circular(12)),
+                      borderRadius: const .all(.circular(12)),
                     ),
                     child: AnimatedSize(
                       curve: Curves.easeInOut,
@@ -393,40 +390,33 @@ class _SavePanelState extends State<SavePanel> {
                             Container(
                               height: 81,
                               clipBehavior: Clip.hardEdge,
-                              margin: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                              ),
-                              padding: const EdgeInsets.all(8),
+                              margin: const .symmetric(horizontal: 12),
+                              padding: const .all(8),
                               decoration: BoxDecoration(
                                 color: theme.colorScheme.onInverseSurface,
-                                borderRadius: const BorderRadius.all(
-                                  Radius.circular(8),
-                                ),
+                                borderRadius: const .all(.circular(8)),
                               ),
                               child: Row(
                                 children: [
                                   NetworkImgLayer(
                                     src: cover!,
                                     height: coverSize,
-                                    width: coverType == _CoverType.def16_9
+                                    width: coverType == .def16_9
                                         ? coverSize *
                                               StyleString.aspectRatio16x9
                                         : coverSize,
                                     quality: 100,
-                                    borderRadius: const BorderRadius.all(
-                                      Radius.circular(6),
-                                    ),
+                                    borderRadius: const .all(.circular(6)),
                                   ),
                                   const SizedBox(width: 10),
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
+                                      crossAxisAlignment: .start,
                                       children: [
                                         Text(
                                           '$title\n',
                                           maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
+                                          overflow: .ellipsis,
                                         ),
                                         if (pubdate != null) ...[
                                           const Spacer(),
@@ -466,8 +456,7 @@ class _SavePanelState extends State<SavePanel> {
                                                     Text(
                                                       '@$uname',
                                                       maxLines: 1,
-                                                      overflow:
-                                                          TextOverflow.ellipsis,
+                                                      overflow: .ellipsis,
                                                       style: TextStyle(
                                                         color: theme
                                                             .colorScheme
@@ -485,9 +474,7 @@ class _SavePanelState extends State<SavePanel> {
                                                   ),
                                                   Text(
                                                     DateFormatUtils.longFormatDs
-                                                        .format(
-                                                          DateTime.now(),
-                                                        ),
+                                                        .format(.now()),
                                                     textAlign: TextAlign.end,
                                                     style: TextStyle(
                                                       fontSize: 13,
@@ -504,12 +491,8 @@ class _SavePanelState extends State<SavePanel> {
                                               child: Container(
                                                 width: 88,
                                                 height: 88,
-                                                margin: const EdgeInsets.all(
-                                                  12,
-                                                ),
-                                                padding: const EdgeInsets.all(
-                                                  3,
-                                                ),
+                                                margin: const .all(12),
+                                                padding: const .all(3),
                                                 color: theme.brightness.isDark
                                                     ? Colors.white
                                                     : theme.colorScheme.surface,

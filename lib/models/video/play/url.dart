@@ -163,19 +163,15 @@ class Dash {
     video = (json['video'] as List?)
         ?.map<VideoItem>((e) => VideoItem.fromJson(e))
         .toList();
-    audio = (json['audio'] as List?)
-        ?.map<AudioItem>((e) => AudioItem.fromJson(e))
-        .toList();
-    if (json['dolby']?['audio'] case List list) {
-      (audio ??= <AudioItem>[]).insertAll(
-        0,
-        list.map((e) => AudioItem.fromJson(e)),
-      );
-    }
-    final flacAudio = json['flac']?['audio'];
-    if (flacAudio != null) {
-      (audio ??= <AudioItem>[]).insert(0, AudioItem.fromJson(flacAudio));
-    }
+    final audio = [
+      if (json['flac']?['audio'] case Map<String, dynamic> flac)
+        AudioItem.fromJson(flac),
+      if (json['dolby']?['audio'] case List list)
+        ...list.map((e) => AudioItem.fromJson(e)),
+      if (json['audio'] case List list)
+        ...list.map((e) => AudioItem.fromJson(e)),
+    ];
+    this.audio = audio.isEmpty ? null : audio;
   }
 }
 

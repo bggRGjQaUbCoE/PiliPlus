@@ -7,7 +7,6 @@ import 'dart:ui' as ui;
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/http/browser_ua.dart';
 import 'package:PiliPlus/http/constants.dart';
-import 'package:PiliPlus/http/init.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/video.dart';
 import 'package:PiliPlus/models/common/account_type.dart';
@@ -47,7 +46,6 @@ import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:archive/archive.dart' show getCrc32;
 import 'package:canvas_danmaku/canvas_danmaku.dart';
-import 'package:dio/dio.dart' show Options;
 import 'package:easy_debounce/easy_throttle.dart';
 import 'package:floating/floating.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
@@ -1659,34 +1657,7 @@ class PlPlayerController with BlockConfigMixin {
   }
 
   Future<void> getVideoShot() async {
-    try {
-      final res = await Request().get(
-        '/x/player/videoshot',
-        queryParameters: {
-          // 'aid': IdUtils.bv2av(_bvid),
-          'bvid': _bvid,
-          'cid': cid,
-          'index': 1,
-        },
-        options: Options(
-          headers: {
-            'user-agent': BrowserUa.pc,
-            'referer': 'https://www.bilibili.com/video/$bvid',
-          },
-        ),
-      );
-      if (res.data['code'] == 0) {
-        final data = VideoShotData.fromJson(res.data['data']);
-        if (data.index.isNotEmpty) {
-          videoShot = Success(data);
-          return;
-        }
-      }
-      videoShot = const Error(null);
-    } catch (e) {
-      videoShot = const Error(null);
-      if (kDebugMode) debugPrint('getVideoShot: $e');
-    }
+    videoShot = await VideoHttp.videoshot(bvid: bvid, cid: cid!);
   }
 
   void takeScreenshot() {

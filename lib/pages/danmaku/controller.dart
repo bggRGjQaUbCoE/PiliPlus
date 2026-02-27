@@ -6,7 +6,6 @@ import 'package:PiliPlus/grpc/dm.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/models/data_source.dart';
-import 'package:PiliPlus/plugin/pl_player/utils/danmaku_options.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/path_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
@@ -68,8 +67,8 @@ class PlDanmakuController {
     if (elems.isEmpty) return;
     final uniques = HashMap<String, DanmakuElem>();
 
-    final shouldFilter = _plPlayerController.filters.count != 0;
-    final danmakuWeight = DanmakuOptions.danmakuWeight;
+    final filters = _plPlayerController.filters;
+    final shouldFilter = filters.count != 0;
     for (final element in elems) {
       if (_isLogin) {
         element.isSelf = element.midHash == _plPlayerController.midHash;
@@ -86,8 +85,7 @@ class PlDanmakuController {
           }
         }
 
-        if (element.weight < danmakuWeight ||
-            (shouldFilter && _plPlayerController.filters.remove(element))) {
+        if (shouldFilter && filters.remove(element)) {
           continue;
         }
       }

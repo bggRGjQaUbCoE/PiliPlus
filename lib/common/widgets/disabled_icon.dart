@@ -20,20 +20,16 @@ class DisabledIcon extends SingleChildRenderObjectWidget {
   final StrokeCap strokeCap;
   final double lineLengthScale;
 
+  Icon? get _icon => child is Icon ? child as Icon : null;
+
   @override
   RenderObject createRenderObject(BuildContext context) {
     late final iconTheme = IconTheme.of(context);
+    final icon = _icon;
     return RenderMaskedIcon(
       disable: disable,
-      iconSize:
-          iconSize ??
-          (child is Icon ? (child as Icon).size : null) ??
-          iconTheme.size ??
-          24.0,
-      color:
-          color ??
-          (child is Icon ? (child as Icon).color : null) ??
-          iconTheme.color!,
+      iconSize: iconSize ?? icon?.size ?? iconTheme.size ?? 24.0,
+      color: color ?? icon?.color ?? iconTheme.color!,
       strokeCap: strokeCap,
       lineLengthScale: lineLengthScale,
     );
@@ -42,17 +38,11 @@ class DisabledIcon extends SingleChildRenderObjectWidget {
   @override
   void updateRenderObject(BuildContext context, RenderMaskedIcon renderObject) {
     late final iconTheme = IconTheme.of(context);
+    final icon = _icon;
     renderObject
       ..disable = disable
-      ..iconSize =
-          iconSize ??
-          (child is Icon ? (child as Icon).size : null) ??
-          iconTheme.size ??
-          24.0
-      ..color =
-          color ??
-          (child is Icon ? (child as Icon).color : null) ??
-          iconTheme.color!
+      ..iconSize = iconSize ?? icon?.size ?? iconTheme.size ?? 24.0
+      ..color = color ?? icon?.color ?? iconTheme.color!
       ..strokeCap = strokeCap
       ..lineLengthScale = lineLengthScale;
   }

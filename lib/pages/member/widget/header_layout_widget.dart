@@ -18,12 +18,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart'
-    show
-        ContainerRenderObjectMixin,
-        MultiChildLayoutParentData,
-        RenderBoxContainerDefaultsMixin,
-        BoxHitTestResult;
+import 'package:flutter/rendering.dart' show BoxHitTestResult, BoxParentData;
 
 const double kHeaderHeight = 135.0;
 
@@ -39,79 +34,103 @@ const double _kActionsRightPadding = 15.0;
 
 enum HeaderType { header, avatar, actions }
 
-class HeaderLayoutWidget extends MultiChildRenderObjectWidget {
+class HeaderLayoutWidget
+    extends SlottedMultiChildRenderObjectWidget<HeaderType, RenderBox> {
+  final Widget header;
+  final Widget avatar;
+  final Widget actions;
+
   const HeaderLayoutWidget({
     super.key,
-    super.children,
+    required this.header,
+    required this.avatar,
+    required this.actions,
   });
 
   @override
-  RenderObject createRenderObject(BuildContext context) {
+  Iterable<HeaderType> get slots => HeaderType.values;
+
+  @override
+  Widget childForSlot(HeaderType slot) => switch (slot) {
+    .header => header,
+    .avatar => avatar,
+    .actions => actions,
+  };
+
+  @override
+  RenderHeaderWidget createRenderObject(BuildContext context) {
     return RenderHeaderWidget();
   }
 }
 
 class RenderHeaderWidget extends RenderBox
-    with
-        ContainerRenderObjectMixin<RenderBox, MultiChildLayoutParentData>,
-        RenderBoxContainerDefaultsMixin<RenderBox, MultiChildLayoutParentData> {
-  @override
-  void setupParentData(RenderBox child) {
-    if (child.parentData is! MultiChildLayoutParentData) {
-      child.parentData = MultiChildLayoutParentData();
-    }
+    with SlottedContainerRenderObjectMixin<HeaderType, RenderBox> {
+  Offset _getOffset(RenderBox child) {
+    return (child.parentData as BoxParentData).offset;
+  }
+
+  void _setOffset(RenderBox child, Offset offset) {
+    (child.parentData as BoxParentData).offset = offset;
   }
 
   @override
   void performLayout() {
     double height = kHeaderHeight;
-    RenderBox? child = firstChild;
     final maxWidth = constraints.maxWidth;
-    while (child != null) {
-      final childParentData = child.parentData! as MultiChildLayoutParentData;
 
-      switch (childParentData.id as HeaderType) {
-        case HeaderType.header:
-          child.layout(constraints);
-          childParentData.offset = .zero;
-        case HeaderType.avatar:
-          child.layout(constraints);
-          childParentData.offset = const Offset(
-            _kAvatarLeftPadding,
-            _kAvatarTopPadding,
-          );
-        case HeaderType.actions:
-          final childSize =
-              (child..layout(
-                    BoxConstraints(
-                      maxWidth:
-                          maxWidth -
-                          _kActionsLeftPadding -
-                          _kActionsRightPadding,
-                    ),
-                    parentUsesSize: true,
-                  ))
-                  .size;
-          height += (math.max(_kAvatarEffectiveHeight, childSize.height)) + 5.0;
-          childParentData.offset = Offset(
-            maxWidth - childSize.width - _kActionsRightPadding,
-            _kActionsTopPadding,
-          );
-      }
+    _setOffset(
+      childForSlot(HeaderType.header)!..layout(constraints),
+      Offset.zero,
+    );
 
-      child = childParentData.nextSibling;
-    }
+    _setOffset(
+      childForSlot(HeaderType.avatar)!..layout(constraints),
+      const Offset(_kAvatarLeftPadding, _kAvatarTopPadding),
+    );
+
+    final actions = childForSlot(HeaderType.actions)!;
+    final childSize =
+        (actions..layout(
+              BoxConstraints(
+                maxWidth:
+                    maxWidth - _kActionsLeftPadding - _kActionsRightPadding,
+              ),
+              parentUsesSize: true,
+            ))
+            .size;
+    height += (math.max(_kAvatarEffectiveHeight, childSize.height)) + 5.0;
+    _setOffset(
+      actions,
+      Offset(
+        maxWidth - childSize.width - _kActionsRightPadding,
+        _kActionsTopPadding,
+      ),
+    );
 
     size = constraints.constrainDimensions(maxWidth, height);
   }
 
   @override
   void paint(PaintingContext context, Offset offset) {
-    defaultPaint(context, offset);
+    for (var child in children) {
+      context.paintChild(child, _getOffset(child) + offset);
+    }
   }
 
   @override
   bool hitTestChildren(BoxHitTestResult result, {required Offset position}) {
-    return defaultHitTestChildren(result, position: position);
+    for (var child in children) {
+      final bool isHit = result.addWithPaintOffset(
+        offset: _getOffset(child),
+        position: position,
+        hitTest: (BoxHitTestResult result, Offset transformed) {
+          return child.hitTest(result, position: transformed);
+        },
+      );
+      if (isHit) {
+        return true;
+      }
+    }
+    return false;
   }
 }

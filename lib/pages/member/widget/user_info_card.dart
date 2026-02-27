@@ -481,20 +481,9 @@ class UserInfoCard extends StatelessWidget {
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       HeaderLayoutWidget(
-        children: [
-          LayoutId(
-            id: HeaderType.header,
-            child: _buildHeader(context, colorScheme, isLight, width),
-          ),
-          LayoutId(
-            id: HeaderType.avatar,
-            child: _buildAvatar,
-          ),
-          LayoutId(
-            id: HeaderType.actions,
-            child: _buildRight(colorScheme),
-          ),
-        ],
+        header: _buildHeader(context, colorScheme, isLight, width),
+        avatar: _buildAvatar,
+        actions: _buildRight(colorScheme),
       ),
       const SizedBox(height: 5),
       ..._buildLeft(context, colorScheme, isLight),

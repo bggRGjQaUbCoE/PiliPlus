@@ -120,9 +120,7 @@ class _GalleryViewerState extends State<GalleryViewer>
     _quality = Pref.previewQ;
     _currIndex = widget.initIndex.obs;
     final item = widget.sources[widget.initIndex];
-    if (item.sourceType == .livePhoto) {
-      _playIfNeeded(item);
-    }
+    _playIfNeeded(item);
 
     if (!item.isLongPic) {
       _key = GlobalKey();

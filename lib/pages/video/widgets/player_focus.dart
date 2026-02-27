@@ -115,7 +115,7 @@ class PlayerFocus extends StatelessWidget {
       return true;
     }
 
-    if (key == LogicalKeyboardKey.arrowRight) {
+    if (key == LogicalKeyboardKey.arrowRight || key == LogicalKeyboardKey.arrowLeft) {
       if (!plPlayerController.isLive) {
         if (event is KeyDownEvent) {
           if (hasPlayer && !plPlayerController.longPressStatus.value) {
@@ -134,9 +134,12 @@ class PlayerFocus extends StatelessWidget {
             if (plPlayerController.longPressStatus.value) {
               plPlayerController.setLongPressStatus(false);
             } else {
-              plPlayerController.onForward(
-                plPlayerController.fastForBackwardDuration,
-              );
+              final duration = plPlayerController.fastForBackwardDuration;
+              if (key == LogicalKeyboardKey.arrowRight) {
+                plPlayerController.onForward(duration);
+              } else {
+                plPlayerController.onBackward(duration);
+              }
             }
           }
         }

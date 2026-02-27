@@ -338,6 +338,8 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _danmakuListener?.cancel();
+    _vrJoystickReleaseTimer?.cancel();
+    _vrJoystickHoldTimer?.cancel();
     _tapGestureRecognizer.dispose();
     _longPressRecognizer?.dispose();
     _doubleTapGestureRecognizer.dispose();
@@ -969,13 +971,22 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     if (plPlayerController.controlsLock.value) return;
 
     if (_gestureType == null) {
-      if (cumulativeDelta.distanceSquared < 1) return;
+      if (cumulativeDelta.distanceSquared < (PlatformUtils.isVR ? 9 : 1)) return;
       final dx = cumulativeDelta.dx.abs();
       final dy = cumulativeDelta.dy.abs();
-      if (dx > 3 * dy) {
+      // VR joystick pointer has inherent cross-axis drift;
+      // use a lower ratio (1.5:1 vs 3:1) to detect horizontal gestures.
+      final ratio = PlatformUtils.isVR ? 1.5 : 3.0;
+      if (PlatformUtils.isVR) {
+        debugPrint('VR_GESTURE: dx=${dx.toStringAsFixed(1)} '
+            'dy=${dy.toStringAsFixed(1)} ratio=$ratio '
+            'h=${dx > ratio * dy} v=${dy > ratio * dx}');
+      }
+      if (dx > ratio * dy) {
         _gestureType = GestureType.horizontal;
+        if (PlatformUtils.isVR) debugPrint('VR_GESTURE: → HORIZONTAL');
         _showControlsIfNeeded();
-      } else if (dy > 3 * dx) {
+      } else if (dy > ratio * dx) {
         if (!plPlayerController.enableSlideVolumeBrightness &&
             !plPlayerController.enableSlideFS) {
           return;
@@ -1020,7 +1031,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
           plPlayerController.sliderPosition.inMilliseconds;
       final int newPos =
           (curSliderPosition +
-                  (plPlayerController.sliderScale * delta.dx / maxWidth)
+                  (plPlayerController.sliderScale * (plPlayerController.fullScreenGestureReverse ? -delta.dx : delta.dx) / maxWidth)
                       .round())
               .clamp(0, plPlayerController.duration.value.inMilliseconds);
       final Duration result = Duration(milliseconds: newPos);
@@ -1243,6 +1254,10 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
   late final ImmediateTapGestureRecognizer _tapGestureRecognizer;
   late final DoubleTapGestureRecognizer _doubleTapGestureRecognizer;
   StreamSubscription<bool>? _danmakuListener;
+  DateTime? _lastVRSeekTime;
+  Timer? _vrJoystickReleaseTimer;
+  Timer? _vrJoystickHoldTimer;
+  bool _vrJoystickIsRightHeld = false;
 
   void _onPointerDown(PointerDownEvent event) {
     if (PlatformUtils.isDesktop) {
@@ -1309,7 +1324,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
           plPlayerController.sliderPosition.inMilliseconds;
       final int newPos =
           (curSliderPosition +
-                  (plPlayerController.sliderScale * delta.dx / maxWidth)
+                  (plPlayerController.sliderScale * (plPlayerController.fullScreenGestureReverse ? -delta.dx : delta.dx) / maxWidth)
                       .round())
               .clamp(0, plPlayerController.duration.value.inMilliseconds);
       final Duration result = Duration(milliseconds: newPos);
@@ -1349,13 +1364,84 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
 
   void _onPointerSignal(PointerSignalEvent event) {
     if (event is PointerScrollEvent) {
-      final offset = -event.scrollDelta.dy / 4000;
-      final volume = clampDouble(
-        plPlayerController.volume.value + offset,
-        0.0,
-        PlPlayerController.maxVolume,
-      );
-      plPlayerController.setVolume(volume);
+      final dx = event.scrollDelta.dx;
+      final dy = event.scrollDelta.dy;
+
+      if (PlatformUtils.isVR) {
+        // VR joystick: only process the dominant axis to prevent
+        // cross-axis jitter from triggering both volume and seek.
+        if (dy.abs() >= dx.abs()) {
+          // Vertical dominant → volume
+          final offset = -dy / 4000;
+          final volume = clampDouble(
+            plPlayerController.volume.value + offset,
+            0.0,
+            PlPlayerController.maxVolume,
+          );
+          plPlayerController.setVolume(volume);
+        } else {
+          // Horizontal dominant → seek
+          if (!plPlayerController.isLive) {
+            final isRight = dx < 0; // Negative scroll dx = physically pushing joystick right
+
+            if (isRight) {
+              _lastVRSeekTime = null; // Reset left seek throttle
+
+              _vrJoystickReleaseTimer?.cancel();
+              _vrJoystickReleaseTimer = Timer(const Duration(milliseconds: 100), () {
+                // Emulate KeyUp: if released, and we were holding...
+                _vrJoystickHoldTimer?.cancel();
+                if (_vrJoystickIsRightHeld) {
+                  if (plPlayerController.longPressStatus.value) {
+                    plPlayerController.setLongPressStatus(false);
+                  } else {
+                    plPlayerController.onForward(plPlayerController.fastForBackwardDuration);
+                  }
+                  _vrJoystickIsRightHeld = false;
+                }
+              });
+
+              if (!_vrJoystickIsRightHeld) {
+                // Emulate KeyDown: first event starts the hold timer
+                _vrJoystickIsRightHeld = true;
+                _vrJoystickHoldTimer?.cancel();
+                _vrJoystickHoldTimer = Timer(const Duration(milliseconds: 400), () {
+                  if (_vrJoystickIsRightHeld) {
+                    plPlayerController.setLongPressStatus(true);
+                  }
+                });
+              }
+            } else {
+              // Left push: cancel any active right-hold state
+              if (_vrJoystickIsRightHeld) {
+                _vrJoystickHoldTimer?.cancel();
+                _vrJoystickReleaseTimer?.cancel();
+                if (plPlayerController.longPressStatus.value) {
+                  plPlayerController.setLongPressStatus(false);
+                }
+                _vrJoystickIsRightHeld = false;
+              }
+
+              // Throttle left seeking
+              final now = DateTime.now();
+              if (_lastVRSeekTime == null ||
+                  now.difference(_lastVRSeekTime!) > const Duration(milliseconds: 250)) {
+                _lastVRSeekTime = now;
+                plPlayerController.onBackward(plPlayerController.fastForBackwardDuration);
+              }
+            }
+          }
+        }
+      } else {
+        // Non-VR: original behavior — scroll adjusts volume
+        final offset = -dy / 4000;
+        final volume = clampDouble(
+          plPlayerController.volume.value + offset,
+          0.0,
+          PlPlayerController.maxVolume,
+        );
+        plPlayerController.setVolume(volume);
+      }
     }
   }
 

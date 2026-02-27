@@ -1,3 +1,4 @@
+import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 
@@ -28,6 +29,10 @@ class ImmediateTapGestureRecognizer extends OneSequenceGestureRecognizer {
   bool _sentTapDown = false;
   bool _wonArena = false;
   Offset? _initialPosition;
+
+  /// VR controllers have inherent ray-pointer jitter;
+  /// use a larger movement threshold on VR devices.
+  static final double _moveThreshold = PlatformUtils.isVR ? 400.0 : 4.0;
 
   @override
   bool isPointerPanZoomAllowed(PointerPanZoomStartEvent event) => false;
@@ -79,7 +84,7 @@ class ImmediateTapGestureRecognizer extends OneSequenceGestureRecognizer {
   }
 
   void _handlePointerMove(PointerMoveEvent event) {
-    if ((event.position - _initialPosition!).distanceSquared > 4.0) {
+    if ((event.position - _initialPosition!).distanceSquared > _moveThreshold) {
       resolve(GestureDisposition.rejected);
       stopTrackingPointer(event.pointer);
     }

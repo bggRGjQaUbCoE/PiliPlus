@@ -95,7 +95,7 @@ void main() async {
     exit(0);
   }
   ScaledWidgetsFlutterBinding.instance.scaleFactor = Pref.uiScale;
-  await Future.wait([_initDownPath(), _initTmpPath()]);
+  await Future.wait([_initDownPath(), _initTmpPath(), PlatformUtils.initVR()]);
   Get
     ..lazyPut(AccountService.new)
     ..lazyPut(DownloadService.new);

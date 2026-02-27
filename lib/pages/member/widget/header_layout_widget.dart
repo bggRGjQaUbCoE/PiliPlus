@@ -112,14 +112,17 @@ class RenderHeaderWidget extends RenderBox
 
   @override
   void paint(PaintingContext context, Offset offset) {
-    for (var child in children) {
+    children;
+    for (var slot in HeaderType.values) {
+      final child = childForSlot(slot)!;
       context.paintChild(child, _getOffset(child) + offset);
     }
   }
 
   @override
   bool hitTestChildren(BoxHitTestResult result, {required Offset position}) {
-    for (var child in children) {
+    for (var slot in HeaderType.values.reversed) {
+      final child = childForSlot(slot)!;
       final bool isHit = result.addWithPaintOffset(
         offset: _getOffset(child),
         position: position,

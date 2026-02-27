@@ -397,6 +397,11 @@ class ChatItem extends StatelessWidget {
   }
 
   Widget msgTypeVideoCard_11(ThemeData theme, content, Color textColor) {
+    String? attachMsg;
+    try {
+      attachMsg = content['attach_msg']?['content'];
+    } catch (_) {}
+
     return Center(
       child: Container(
         clipBehavior: Clip.hardEdge,
@@ -428,7 +433,7 @@ class ChatItem extends StatelessWidget {
                 }
               },
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Stack(
                     clipBehavior: Clip.none,
@@ -465,30 +470,18 @@ class ChatItem extends StatelessWidget {
                       ),
                     ),
                   ),
-                  if (content['attach_msg'] is Map<String, dynamic> &&
-                      content['attach_msg'].containsKey('content') &&
-                      content['attach_msg']['content'] is String)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 8,
+                  if (attachMsg?.isNotEmpty ?? false)
+                    Container(
+                      margin: const .fromLTRB(12, 0, 12, 8),
+                      padding: const .symmetric(horizontal: 11, vertical: 3.5),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.surface,
+                        borderRadius: const .all(.circular(6)),
                       ),
-                      child: Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.surface.withValues(
-                            alpha: 0.5,
-                          ),
-                          borderRadius: StyleString.mdRadius,
-                        ),
-                        child: msgTypeText_1(
-                          theme,
-                          content: content['attach_msg'],
-                          textColor: theme.colorScheme.onSurface.withValues(
-                            alpha: 0.5,
-                          ),
-                        ),
+                      child: msgTypeText_1(
+                        theme,
+                        content: content['attach_msg'],
+                        textColor: textColor,
                       ),
                     ),
                 ],

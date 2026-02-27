@@ -157,8 +157,6 @@ class PlPlayerController with BlockConfigMixin {
   ///
   final RxBool isSliderMoving = false.obs;
 
-  /// 是否循环
-  PlaylistMode _looping = PlaylistMode.none;
   bool _autoPlay = false;
 
   // 记录历史记录
@@ -570,8 +568,6 @@ class PlPlayerController with BlockConfigMixin {
     DataSource dataSource, {
     bool isLive = false,
     bool autoplay = true,
-    // 默认不循环
-    PlaylistMode looping = PlaylistMode.none,
     // 初始化播放位置
     Duration? seekTo,
     // 初始化播放速度
@@ -600,7 +596,6 @@ class PlPlayerController with BlockConfigMixin {
       this.height = height;
       this.dataSource = dataSource;
       _autoPlay = autoplay;
-      _looping = looping;
       // 初始化视频倍速
       // _playbackSpeed.value = speed;
       // 初始化数据加载状态
@@ -627,7 +622,7 @@ class PlPlayerController with BlockConfigMixin {
         return;
       }
       // 配置Player 音轨、字幕等等
-      await _createVideoController(dataSource, _looping, seekTo, volume);
+      await _createVideoController(dataSource, seekTo, volume);
 
       if (_playerCount == 0) {
         _videoPlayerController?.dispose();
@@ -751,10 +746,10 @@ class PlPlayerController with BlockConfigMixin {
       ),
     );
 
-    player.setMediaHeader(const {
-      'user-agent': BrowserUa.pc,
-      'referer': HttpString.baseUrl,
-    });
+    player.setMediaHeader(
+      userAgent: BrowserUa.pc,
+      referer: HttpString.baseUrl,
+    );
     // await player.setAudioTrack(.auto());
     return player;
   }
@@ -762,7 +757,6 @@ class PlPlayerController with BlockConfigMixin {
   // 配置播放器
   Future<void> _createVideoController(
     DataSource dataSource,
-    PlaylistMode looping,
     Duration? seekTo,
     Volume? volume,
   ) async {
@@ -788,10 +782,7 @@ class PlPlayerController with BlockConfigMixin {
       _videoPlayerController = player;
     }
 
-    await Future.wait([
-      player.setPlaylistMode(looping),
-      if (isAnim) setShader(),
-    ]);
+    if (isAnim) await setShader();
 
     final Map<String, String> extras = {};
 

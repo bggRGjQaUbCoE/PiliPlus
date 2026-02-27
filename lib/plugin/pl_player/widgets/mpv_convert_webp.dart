@@ -58,12 +58,10 @@ class MpvConvertWebp {
       },
     );
     NativePlayer.setHeader(
-      const {
-        'user-agent': BrowserUa.pc,
-        'referer': HttpString.baseUrl,
-      },
       _mpv,
       _ctx,
+      userAgent: BrowserUa.pc,
+      referer: HttpString.baseUrl,
     );
     if (progress != null) {
       _observeProperty('time-pos');
@@ -121,7 +119,7 @@ class MpvConvertWebp {
 
   void _command(List<String> args) {
     final pointers = args.map((e) => e.toNativeUtf8()).toList();
-    final arr = calloc<Pointer<Uint8>>(128);
+    final arr = calloc<Pointer<Uint8>>(pointers.length + 1);
     for (int i = 0; i < args.length; i++) {
       arr[i] = pointers[i];
     }

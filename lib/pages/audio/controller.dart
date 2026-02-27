@@ -59,7 +59,7 @@ class AudioController extends GetxController
   @override
   late final bool isUgc = itemType == 1;
 
-  final Rx<DetailItem?> audioItem = Rx<DetailItem?>(null);
+  final audioItem = Rxn<DetailItem>();
 
   bool _hasInit = false;
   @override
@@ -119,13 +119,7 @@ class AudioController extends GetxController
     final hasAudioUrl = audioUrl != null;
     if (hasAudioUrl) {
       _querySponsorBlock();
-      _onOpenMedia(
-        audioUrl,
-        headers: const {
-          'user-agent': BrowserUa.pc,
-          'referer': HttpString.baseUrl,
-        },
-      );
+      _onOpenMedia(audioUrl, ua: BrowserUa.pc, referer: HttpString.baseUrl);
     }
     Utils.isWiFi.then((isWiFi) {
       cacheAudioQa = isWiFi ? Pref.defaultAudioQa : Pref.defaultAudioQaCellular;
@@ -280,14 +274,18 @@ class AudioController extends GetxController
     }
   }
 
-  static const _grpcHeaders = {'user-agent': Constants.userAgentApp};
   Future<void> _onOpenMedia(
     String url, {
-    Map<String, String> headers = _grpcHeaders,
+    String ua = Constants.userAgentApp,
+    String? referer,
   }) async {
     await _initPlayerIfNeeded();
     player
-      ?..setMediaHeader(headers)
+      ?..setMediaHeader(
+        userAgent: ua,
+        // mpv cannot clear referer option
+        headers: {'Referer': ?referer},
+      )
       ..open(Media(url, start: _start));
     _start = null;
   }
@@ -311,9 +309,7 @@ class AudioController extends GetxController
           videoPlayerServiceHandler?.onPositionChange(position);
         }
       }),
-      player!.stream.duration.listen((duration) {
-        this.duration.value = duration;
-      }),
+      player!.stream.duration.listen(duration.call),
       player!.stream.playing.listen((playing) {
         final PlayerStatus playerStatus;
         if (playing) {
@@ -343,14 +339,14 @@ class AudioController extends GetxController
                 playNext(nextPart: true);
                 break;
               case PlayRepeat.singleCycle:
-                _replay();
+                onPlay();
                 break;
               case PlayRepeat.listCycle:
                 if (!playNext(nextPart: true)) {
                   if (index != null && index != 0 && playlist != null) {
                     playIndex(0);
                   } else {
-                    _replay();
+                    onPlay();
                   }
                 }
                 break;
@@ -361,10 +357,6 @@ class AudioController extends GetxController
         }
       }),
     ];
-  }
-
-  void _replay() {
-    player?.seek(Duration.zero).whenComplete(player!.play);
   }
 
   @override

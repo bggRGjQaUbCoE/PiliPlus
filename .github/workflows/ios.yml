@@ -58,7 +58,8 @@ jobs:
             PiliPlus_ios_*.ipa
 
       - name: Upload ios release
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
+          archive: false
           name: iOS-release
           path: PiliPlus_ios_*.ipa

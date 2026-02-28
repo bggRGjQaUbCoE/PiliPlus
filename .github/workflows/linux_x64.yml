@@ -246,25 +246,29 @@ jobs:
             PiliPlus_linux_*.AppImage
 
       - name: Upload linux targz package
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
+          archive: false
           name: Linux_targz_amd64_packege
           path: PiliPlus_linux_*.tar.gz
 
       - name: Upload linux deb package
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
+          archive: false
           name: Linux_deb_amd64_package
           path: PiliPlus_linux_*.deb
 
       - name: Upload linux rpm package
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
+          archive: false
           name: Linux_rpm_amd64_package
           path: PiliPlus_linux_*.rpm
 
       - name: Upload linux AppImage package
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
+          archive: false
           name: Linux_AppImage_amd64_package
           path: PiliPlus_linux_*.AppImage

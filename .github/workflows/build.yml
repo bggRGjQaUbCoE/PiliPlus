@@ -137,29 +137,28 @@ jobs:
               with:
                   tag_name: ${{ github.event.inputs.tag }}
                   name: ${{ github.event.inputs.tag }}
-                  files: |
-                      PiliPlus_android_*.apk
+                  files: PiliPlus_android_*.apk
 
             - name: 上传
-              uses: actions/upload-artifact@v6
+              uses: actions/upload-artifact@v7
               with:
+                  archive: false
                   name: Android_arm64-v8a
-                  path: |
-                      PiliPlus_android_*_arm64-v8a.apk
+                  path: PiliPlus_android_*_arm64-v8a.apk
 
             - name: 上传
-              uses: actions/upload-artifact@v6
+              uses: actions/upload-artifact@v7
               with:
+                  archive: false
                   name: Android_armeabi-v7a
-                  path: |
-                      PiliPlus_android_*_armeabi-v7a.apk
+                  path: PiliPlus_android_*_armeabi-v7a.apk
 
             - name: 上传
-              uses: actions/upload-artifact@v6
+              uses: actions/upload-artifact@v7
               with:
+                  archive: false
                   name: Android_x86_64
-                  path: |
-                      PiliPlus_android_*_x86_64.apk
+                  path: PiliPlus_android_*_x86_64.apk
 
     ios:
         if: ${{ github.event_name == 'pull_request' || github.event.inputs.build_ios == 'true' }}

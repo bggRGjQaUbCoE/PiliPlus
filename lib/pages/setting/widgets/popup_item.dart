@@ -24,6 +24,7 @@ class PopupListTile<T> extends StatefulWidget {
     required this.value,
     required this.itemBuilder,
     required this.onSelected,
+    this.descFontSize = 13,
   });
 
   final bool? dense;
@@ -36,6 +37,7 @@ class PopupListTile<T> extends StatefulWidget {
   final ValueGetter<(T, String)> value;
   final PopupMenuItemBuilder<T> itemBuilder;
   final PopupMenuItemSelected<T> onSelected;
+  final double descFontSize;
 
   @override
   State<PopupListTile<T>> createState() => _PopupListTileState<T>();
@@ -88,7 +90,7 @@ class _PopupListTileState<T> extends State<PopupListTile<T>> {
     final desc = Text(
       descStr,
       style: TextStyle(
-        fontSize: 13,
+        fontSize: widget.descFontSize,
         color: widget.enabled
             ? theme.colorScheme.secondary
             : theme.disabledColor,

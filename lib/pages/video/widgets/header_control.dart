@@ -466,14 +466,15 @@ class HeaderControlState extends State<HeaderControl>
                     final value = plPlayerController.superResolutionType.value;
                     return (value, value.label);
                   },
-                  itemBuilder: (_) => enumItemBuilder<SuperResolutionType>(
+                  itemBuilder: (_) => enumItemBuilder(
                     SuperResolutionType.values,
                   ),
                   onSelected: (value, setState) {
                     plPlayerController.setShader(value);
                     setState();
                   },
-                  descPosType: .title,
+                  descFontSize: 12,
+                  descPosType: .subtitle,
                 ),
                 if (!isFileSource)
                   ListTile(
@@ -618,18 +619,21 @@ class HeaderControlState extends State<HeaderControl>
                     ),
                   ),
                 ],
-                ListTile(
+                PopupListTile(
                   dense: true,
-                  onTap: () {
-                    Get.back();
-                    showSetRepeat();
-                  },
                   leading: const Icon(Icons.repeat, size: 20),
-                  title: const Text('播放顺序', style: titleStyle),
-                  subtitle: Text(
-                    plPlayerController.playRepeat.label,
-                    style: subTitleStyle,
-                  ),
+                  title: const Text('播放顺序'),
+                  value: () {
+                    final value = plPlayerController.playRepeat;
+                    return (value, value.label);
+                  },
+                  itemBuilder: (_) => enumItemBuilder(PlayRepeat.values),
+                  onSelected: (value, setState) {
+                    plPlayerController.setPlayRepeat(value);
+                    setState();
+                  },
+                  descPosType: .subtitle,
+                  descFontSize: 12,
                 ),
                 ListTile(
                   dense: true,
@@ -1645,58 +1649,6 @@ class HeaderControlState extends State<HeaderControl>
                   icon: const Icon(CustomIcons.player_dm_tip_back),
                 ),
             ],
-          ),
-        );
-      },
-    );
-  }
-
-  /// 播放顺序
-  void showSetRepeat() {
-    showBottomSheet(
-      (context, setState) {
-        final theme = Theme.of(context);
-        return Padding(
-          padding: const EdgeInsets.all(12),
-          child: Material(
-            clipBehavior: Clip.hardEdge,
-            color: theme.colorScheme.surface,
-            borderRadius: const BorderRadius.all(Radius.circular(12)),
-            child: CustomScrollView(
-              slivers: [
-                const SliverToBoxAdapter(
-                  child: SizedBox(
-                    height: 45,
-                    child: Center(
-                      child: Text('选择播放顺序', style: titleStyle),
-                    ),
-                  ),
-                ),
-                SliverList.builder(
-                  itemCount: PlayRepeat.values.length,
-                  itemBuilder: (context, index) {
-                    final i = PlayRepeat.values[index];
-                    return ListTile(
-                      dense: true,
-                      onTap: () {
-                        Get.back();
-                        plPlayerController.setPlayRepeat(i);
-                      },
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                      ),
-                      title: Text(i.label),
-                      trailing: plPlayerController.playRepeat == i
-                          ? Icon(
-                              Icons.done,
-                              color: theme.colorScheme.primary,
-                            )
-                          : null,
-                    );
-                  },
-                ),
-              ],
-            ),
           ),
         );
       },

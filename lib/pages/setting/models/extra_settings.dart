@@ -741,6 +741,14 @@ void _showImgFileNameTemplateDialog(BuildContext context, VoidCallback setState)
   final textController = TextEditingController(text: template);
   final dialogNow = DateTime.now();
   const sampleFileName = '7f945854a143ebd3527fdcc8c9cbbec41636034895.jpg';
+  int lastCursorPos = template.length;
+
+  textController.addListener(() {
+    final offset = textController.selection.baseOffset;
+    if (offset >= 0) {
+      lastCursorPos = offset;
+    }
+  });
 
   String buildPreview(String tpl) {
     final full = ImageUtils.generateFileName(
@@ -755,100 +763,143 @@ void _showImgFileNameTemplateDialog(BuildContext context, VoidCallback setState)
   showDialog(
     context: context,
     builder: (context) => StatefulBuilder(
-      builder: (context, setDialogState) => AlertDialog(
-        title: const Text('图片文件名模板'),
-        content: ConstrainedBox(
-          constraints: BoxConstraints(
-            maxHeight: MediaQuery.sizeOf(context).height * 0.6,
-          ),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                TextFormField(
-                  autofocus: true,
-                  controller: textController,
-                  decoration: const InputDecoration(
-                    hintText: '例如: {name} 或 {date}_{time}_{name}',
-                    border: OutlineInputBorder(),
+      builder: (context, setDialogState) {
+        void insertVariable(String variable) {
+          final text = textController.text;
+          int cursorPos = lastCursorPos;
+          if (cursorPos < 0 || cursorPos > text.length) {
+            cursorPos = text.length;
+          }
+
+          final beforeCursor = text.substring(0, cursorPos);
+          final lastOpen = beforeCursor.lastIndexOf('{');
+          final lastClose = beforeCursor.lastIndexOf('}');
+          if (lastOpen > lastClose) {
+            final nextClose = text.indexOf('}', cursorPos);
+            if (nextClose != -1) {
+              cursorPos = nextClose + 1;
+            }
+          }
+
+          final newText =
+              text.substring(0, cursorPos) + variable + text.substring(cursorPos);
+          final newCursorPos = cursorPos + variable.length;
+          template = newText;
+          textController.value = TextEditingValue(
+            text: newText,
+            selection: TextSelection.collapsed(offset: newCursorPos),
+          );
+          setDialogState(() {});
+        }
+
+        return AlertDialog(
+          title: const Text('图片文件名模板'),
+          content: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.sizeOf(context).height * 0.6,
+            ),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  TextFormField(
+                    autofocus: true,
+                    controller: textController,
+                    decoration: const InputDecoration(
+                      hintText: '例如: {name} 或 {date}_{time}_{name}',
+                      border: OutlineInputBorder(),
+                    ),
+                    inputFormatters: [
+                      FilteringTextInputFormatter.deny(RegExp(r'[/\\:*?"<>|]')),
+                    ],
+                    onChanged: (value) {
+                      template = value;
+                      setDialogState(() {});
+                    },
                   ),
-                  inputFormatters: [
-                    FilteringTextInputFormatter.deny(RegExp(r'[/\\:*?"<>|]')),
-                  ],
-                  onChanged: (value) {
-                    template = value;
-                    setDialogState(() {});
-                  },
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  '预览: ${buildPreview(template)}',
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.outline,
-                    fontSize: 12,
+                  const SizedBox(height: 8),
+                  Text(
+                    '预览: ${buildPreview(template)}',
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.outline,
+                      fontSize: 12,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 12),
-                const Text(
-                  '可用变量:',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 4),
-                const Text('{name} - 服务器文件名'),
-                const Text('{date} - 日期 (yyyy-MM-dd)'),
-                const Text('{time} - 时间 (HH-mm-ss)'),
-                const Text('{timestamp} - 时间戳 (毫秒)'),
-                const Text('{year} - 年 (4位)'),
-                const Text('{month} - 月 (2位)'),
-                const Text('{day} - 日 (2位)'),
-                const Text('{hour} - 时 (2位)'),
-                const Text('{minute} - 分 (2位)'),
-                const Text('{second} - 秒 (2位)'),
-                const SizedBox(height: 8),
-                const Text(
-                  '留空则使用默认: {name}',
-                  style: TextStyle(color: Colors.grey),
-                ),
-              ],
+                  const SizedBox(height: 12),
+                  const Text(
+                    '可用变量 (点击插入):',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 4),
+                  for (final (variable, desc) in const [
+                    ('{name}', '服务器文件名'),
+                    ('{date}', '日期 (yyyy-MM-dd)'),
+                    ('{time}', '时间 (HH-mm-ss)'),
+                    ('{timestamp}', '时间戳 (毫秒)'),
+                    ('{year}', '年 (4位)'),
+                    ('{month}', '月 (2位)'),
+                    ('{day}', '日 (2位)'),
+                    ('{hour}', '时 (2位)'),
+                    ('{minute}', '分 (2位)'),
+                    ('{second}', '秒 (2位)'),
+                  ])
+                    InkWell(
+                      onTap: () => insertVariable(variable),
+                      borderRadius: BorderRadius.circular(4),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 3,
+                          horizontal: 2,
+                        ),
+                        child: Text('$variable - $desc'),
+                      ),
+                    ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    '留空则使用默认: {name}',
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              template = '{name}';
-              textController.value = TextEditingValue(
-                text: template,
-                selection: TextSelection.collapsed(offset: template.length),
-              );
-              setDialogState(() {});
-            },
-            child: const Text('重置'),
-          ),
-          TextButton(
-            onPressed: () => Get.back(),
-            child: Text(
-              '取消',
-              style: TextStyle(color: ColorScheme.of(context).outline),
+          actions: [
+            TextButton(
+              onPressed: () {
+                template = '{name}';
+                textController.value = TextEditingValue(
+                  text: template,
+                  selection: TextSelection.collapsed(offset: template.length),
+                );
+                setDialogState(() {});
+              },
+              child: const Text('重置'),
             ),
-          ),
-          TextButton(
-            onPressed: () async {
-              Get.back();
-              final currentTemplate = textController.text;
-              final finalTemplate =
-                  currentTemplate.isEmpty ? '{name}' : currentTemplate;
-              await GStorage.setting.put(
-                SettingBoxKey.imgFileNameTemplate,
-                finalTemplate,
-              );
-              setState();
-            },
-            child: const Text('确定'),
-          ),
-        ],
-      ),
+            TextButton(
+              onPressed: () => Get.back(),
+              child: Text(
+                '取消',
+                style: TextStyle(color: ColorScheme.of(context).outline),
+              ),
+            ),
+            TextButton(
+              onPressed: () async {
+                Get.back();
+                final currentTemplate = textController.text;
+                final finalTemplate =
+                    currentTemplate.isEmpty ? '{name}' : currentTemplate;
+                await GStorage.setting.put(
+                  SettingBoxKey.imgFileNameTemplate,
+                  finalTemplate,
+                );
+                setState();
+              },
+              child: const Text('确定'),
+            ),
+          ],
+        );
+      },
     ),
   ).then((_) => textController.dispose());
 }

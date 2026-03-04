@@ -51,6 +51,12 @@ class WhisperController extends CommonWhisperController<SessionMainReply> {
         route: "/sysMsg",
         enabled: true,
       ),
+      const (
+        name: "我的评论",
+        icon: Icons.history_outlined,
+        route: "/hisPublished",
+        enabled: true,
+      ),
     ];
     unreadCounts = List.filled(msgFeedTopItems.length, 0).obs;
     queryMsgFeedUnread();
@@ -61,7 +67,7 @@ class WhisperController extends CommonWhisperController<SessionMainReply> {
     final res = await ImGrpc.getTotalUnread(unreadType: 2);
     if (res case Success(:final response)) {
       final data = MsgFeedUnread.fromJson(response.msgFeedUnread.unread);
-      final unreadCounts = [data.reply, data.at, data.like, data.sysMsg];
+      final unreadCounts = [data.reply, data.at, data.like, data.sysMsg, 0];
       if (!listEquals(this.unreadCounts, unreadCounts)) {
         this.unreadCounts.value = unreadCounts;
       }

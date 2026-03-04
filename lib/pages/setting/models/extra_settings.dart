@@ -844,6 +844,7 @@ void _showImgFileNameTemplateDialog(BuildContext context, VoidCallback setState)
                     ('{minute}', '分 (2位)'),
                     ('{second}', '秒 (2位)'),
                     ('{ms}', '毫秒 (3位)'),
+                    ('{index}', '序号 (批量下载从1开始)'),
                   ])
                     InkWell(
                       onTap: () => insertVariable(variable),

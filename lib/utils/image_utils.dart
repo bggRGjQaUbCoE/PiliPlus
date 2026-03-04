@@ -34,6 +34,7 @@ abstract final class ImageUtils {
     String template,
     String urlFileName, [
     DateTime? now,
+    int? index,
   ]) {
     final dotIndex = urlFileName.lastIndexOf('.');
     final ext = dotIndex != -1 ? urlFileName.substring(dotIndex) : '';
@@ -51,6 +52,7 @@ abstract final class ImageUtils {
     final minute = now.minute.toString().padLeft(2, '0');
     final second = now.second.toString().padLeft(2, '0');
     final ms = now.millisecond.toString().padLeft(3, '0');
+    final indexStr = (index ?? 1).toString();
 
     final name = template
         .replaceAll('{date}', dateStr)
@@ -63,6 +65,7 @@ abstract final class ImageUtils {
         .replaceAll('{minute}', minute)
         .replaceAll('{second}', second)
         .replaceAll('{ms}', ms)
+        .replaceAll('{index}', indexStr)
         .replaceAll('{name}', baseName)
         .replaceAll(_illegalCharsRegExp, '_');
     return name + ext;
@@ -208,9 +211,11 @@ abstract final class ImageUtils {
     }
     final template = Pref.imgFileNameTemplate;
     try {
-      final futures = imgList.map((url) async {
+      final futures = imgList.asMap().entries.map((entry) async {
+        final index = entry.key + 1;
+        final url = entry.value;
         final name = Utils.getFileName(url);
-        final fileName = generateFileName(template, name);
+        final fileName = generateFileName(template, name, null, index);
 
         final file = (await (manager ?? DefaultCacheManager()).getFileFromCache(
           url.http2https,

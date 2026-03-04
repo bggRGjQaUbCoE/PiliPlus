@@ -872,6 +872,9 @@ abstract final class Pref {
   static bool get silentDownImg =>
       _setting.get(SettingBoxKey.silentDownImg, defaultValue: false);
 
+  static String get imgFileNameTemplate =>
+      _setting.get(SettingBoxKey.imgFileNameTemplate, defaultValue: '{name}');
+
   static String get buvid {
     String? buvid = _localCache.get(LocalCacheKey.buvid);
     if (buvid == null) {

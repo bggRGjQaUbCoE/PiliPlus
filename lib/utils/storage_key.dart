@@ -140,6 +140,7 @@ abstract final class SettingBoxKey {
       showFsScreenshotBtn = 'showFsScreenshotBtn',
       showFsLockBtn = 'showFsLockBtn',
       silentDownImg = 'silentDownImg',
+      imgFileNameTemplate = 'imgFileNameTemplate',
       showMemberShop = 'showMemberShop',
       enablePlayAll = 'enablePlayAll',
       enableTapDm = 'enableTapDm',

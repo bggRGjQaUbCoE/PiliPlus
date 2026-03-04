@@ -28,6 +28,44 @@ abstract final class ImageUtils {
   static bool silentDownImg = Pref.silentDownImg;
   static const _androidRelativePath = 'Pictures/${Constants.appName}';
 
+  static final _illegalCharsRegExp = RegExp(r'[/\\:*?"<>|]');
+
+  static String generateFileName(
+    String template,
+    String urlFileName, [
+    DateTime? now,
+  ]) {
+    final dotIndex = urlFileName.lastIndexOf('.');
+    final ext = dotIndex != -1 ? urlFileName.substring(dotIndex) : '';
+    final baseName =
+        dotIndex != -1 ? urlFileName.substring(0, dotIndex) : urlFileName;
+
+    now ??= DateTime.now();
+    final dateStr = DateFormat('yyyy-MM-dd').format(now);
+    final timeStr = DateFormat('HH-mm-ss').format(now);
+    final timestamp = now.millisecondsSinceEpoch.toString();
+    final year = now.year.toString();
+    final month = now.month.toString().padLeft(2, '0');
+    final day = now.day.toString().padLeft(2, '0');
+    final hour = now.hour.toString().padLeft(2, '0');
+    final minute = now.minute.toString().padLeft(2, '0');
+    final second = now.second.toString().padLeft(2, '0');
+
+    final name = template
+        .replaceAll('{date}', dateStr)
+        .replaceAll('{time}', timeStr)
+        .replaceAll('{timestamp}', timestamp)
+        .replaceAll('{year}', year)
+        .replaceAll('{month}', month)
+        .replaceAll('{day}', day)
+        .replaceAll('{hour}', hour)
+        .replaceAll('{minute}', minute)
+        .replaceAll('{second}', second)
+        .replaceAll('{name}', baseName)
+        .replaceAll(_illegalCharsRegExp, '_');
+    return name + ext;
+  }
+
   // 图片分享
   static Future<void> onShareImg(String url) async {
     try {
@@ -166,9 +204,11 @@ abstract final class ImageUtils {
         onDismiss: cancelToken.cancel,
       );
     }
+    final template = Pref.imgFileNameTemplate;
     try {
       final futures = imgList.map((url) async {
         final name = Utils.getFileName(url);
+        final fileName = generateFileName(template, name);
 
         final file = (await (manager ?? DefaultCacheManager()).getFileFromCache(
           url.http2https,
@@ -184,6 +224,7 @@ abstract final class ImageUtils {
           return (
             filePath: filePath,
             name: name,
+            fileName: fileName,
             statusCode: response.statusCode,
             del: true,
           );
@@ -191,6 +232,7 @@ abstract final class ImageUtils {
           return (
             filePath: file.path,
             name: name,
+            fileName: fileName,
             statusCode: 200,
             del: false,
           );
@@ -207,7 +249,7 @@ abstract final class ImageUtils {
             saveList.add(
               SaveFileData(
                 filePath: i.filePath,
-                fileName: i.name,
+                fileName: i.fileName,
                 androidRelativePath: _androidRelativePath,
               ),
             );
@@ -224,7 +266,7 @@ abstract final class ImageUtils {
           if (res.statusCode == 200) {
             await saveFileImg(
               filePath: res.filePath,
-              fileName: res.name,
+              fileName: res.fileName,
               del: res.del,
             );
           } else {

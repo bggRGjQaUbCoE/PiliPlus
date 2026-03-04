@@ -843,6 +843,7 @@ void _showImgFileNameTemplateDialog(BuildContext context, VoidCallback setState)
                     ('{hour}', '时 (2位)'),
                     ('{minute}', '分 (2位)'),
                     ('{second}', '秒 (2位)'),
+                    ('{ms}', '毫秒 (3位)'),
                   ])
                     InkWell(
                       onTap: () => insertVariable(variable),

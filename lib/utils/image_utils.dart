@@ -50,6 +50,7 @@ abstract final class ImageUtils {
     final hour = now.hour.toString().padLeft(2, '0');
     final minute = now.minute.toString().padLeft(2, '0');
     final second = now.second.toString().padLeft(2, '0');
+    final ms = now.millisecond.toString().padLeft(3, '0');
 
     final name = template
         .replaceAll('{date}', dateStr)
@@ -61,6 +62,7 @@ abstract final class ImageUtils {
         .replaceAll('{hour}', hour)
         .replaceAll('{minute}', minute)
         .replaceAll('{second}', second)
+        .replaceAll('{ms}', ms)
         .replaceAll('{name}', baseName)
         .replaceAll(_illegalCharsRegExp, '_');
     return name + ext;

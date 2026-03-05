@@ -27,7 +27,7 @@ class SearchText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    late final colorScheme = Theme.of(context).colorScheme;
+    late final colorScheme = ColorScheme.of(context);
     final hasLongPress = onLongPress != null;
     return Material(
       color: bgColor ?? colorScheme.onInverseSurface,

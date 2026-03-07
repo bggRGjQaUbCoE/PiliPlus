@@ -92,17 +92,12 @@ class _VideoReplyPanelState extends State<VideoReplyPanel>
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Obx(() {
-                          final sortType = _videoReplyController.sortType.value;
-                          final prefix =
-                              _videoReplyController.isUpSelectionEnabled.value
-                              ? '精选 - '
-                              : '';
-                          return Text(
-                            '$prefix${sortType.title}',
+                        Obx(
+                          () => Text(
+                            _videoReplyController.sortType.value.title,
                             style: const TextStyle(fontSize: 13),
-                          );
-                        }),
+                          ),
+                        ),
                         TextButton.icon(
                           style: StyleString.buttonStyle,
                           onPressed: _videoReplyController.queryBySort,

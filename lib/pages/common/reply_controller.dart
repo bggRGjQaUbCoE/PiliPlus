@@ -41,13 +41,6 @@ abstract class ReplyController<R> extends CommonListController<R, ReplyInfo> {
       _enableCommAntifraud || _biliSendCommAntifraud;
   dynamic get sourceId;
 
-  // 评论精选 UpSelection
-  final RxBool isUpSelectionEnabled = false.obs;
-  static const upSelectionRootTextCandicate = [
-    '仅UP关注的人可发评论', // for video
-    '评论将在筛选后显示，对所有人可见', // for dynamic
-  ];
-
   @override
   void onInit() {
     super.onInit();
@@ -78,10 +71,8 @@ abstract class ReplyController<R> extends CommonListController<R, ReplyInfo> {
       if (data.hasUpTop()) {
         data.replies.insert(0, data.upTop);
       }
-      if (upSelectionRootTextCandicate.contains(subjectControl?.rootText)) {
-        isUpSelectionEnabled.value = true;
-      } else {
-        isUpSelectionEnabled.value = false;
+      if (subjectControl?.title == ReplySortType.select.title) {
+        sortType.value = .select;
       }
     }
     isEnd = data.cursor.isEnd;
@@ -99,7 +90,6 @@ abstract class ReplyController<R> extends CommonListController<R, ReplyInfo> {
   // 排序搜索评论
   void queryBySort() {
     if (isLoading) return;
-    feedBack();
     switch (sortType.value) {
       case ReplySortType.time:
         sortType.value = ReplySortType.hot;
@@ -109,7 +99,10 @@ abstract class ReplyController<R> extends CommonListController<R, ReplyInfo> {
         sortType.value = ReplySortType.time;
         mode.value = Mode.MAIN_LIST_TIME;
         break;
+      case ReplySortType.select:
+        return;
     }
+    feedBack();
     onReload();
   }
 

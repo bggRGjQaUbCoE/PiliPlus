@@ -41,6 +41,13 @@ abstract class ReplyController<R> extends CommonListController<R, ReplyInfo> {
       _enableCommAntifraud || _biliSendCommAntifraud;
   dynamic get sourceId;
 
+  // 评论精选 UpSelection
+  final RxBool isUpSelectionEnabled = false.obs;
+  static const upSelectionRootTextCandicate = [
+    '仅UP关注的人可发评论', // for video
+    '评论将在筛选后显示，对所有人可见', // for dynamic
+  ];
+
   @override
   void onInit() {
     super.onInit();
@@ -70,6 +77,11 @@ abstract class ReplyController<R> extends CommonListController<R, ReplyInfo> {
       hasUpTop = data.hasUpTop();
       if (data.hasUpTop()) {
         data.replies.insert(0, data.upTop);
+      }
+      if (upSelectionRootTextCandicate.contains(subjectControl?.rootText)) {
+        isUpSelectionEnabled.value = true;
+      } else {
+        isUpSelectionEnabled.value = false;
       }
     }
     isEnd = data.cursor.isEnd;

@@ -114,8 +114,11 @@ abstract class CommonDynPageState<T extends StatefulWidget> extends State<T>
             Obx(
               () {
                 final count = controller.count.value;
+                final prefix = controller.isUpSelectionEnabled.value
+                    ? '精选 - '
+                    : '';
                 return Text(
-                  '${count == -1 ? 0 : NumUtils.numFormat(count)}条回复',
+                  '$prefix${count == -1 ? 0 : NumUtils.numFormat(count)}条回复',
                 );
               },
             ),

@@ -6,6 +6,7 @@ import 'package:PiliPlus/http/browser_ua.dart';
 import 'package:PiliPlus/http/init.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/login.dart';
+import 'package:PiliPlus/models/comment_record.dart';
 import 'package:PiliPlus/models/common/account_type.dart';
 import 'package:PiliPlus/models/common/video/video_type.dart';
 import 'package:PiliPlus/models/home/rcmd/result.dart';
@@ -32,6 +33,7 @@ import 'package:PiliPlus/utils/extension/string_ext.dart';
 import 'package:PiliPlus/utils/global_data.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:PiliPlus/utils/recommend_filter.dart';
+import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/wbi_sign.dart';
 import 'package:dio/dio.dart';
@@ -552,6 +554,25 @@ abstract final class VideoHttp {
       options: Options(contentType: Headers.formUrlEncodedContentType),
     );
     if (res.data['code'] == 0) {
+      try {
+        final record = CommentRecord(
+          type: type,
+          oid: oid,
+          message: message,
+          root: root,
+          parent: parent,
+          pictures: pictures,
+          syncToDynamic: syncToDynamic,
+          atNameToMid: atNameToMid,
+          rpid: res.data['data']?['rpid'],
+          timestamp: DateTime.now(),
+          senderMid: Accounts.main.mid,
+          senderFace: Pref.userInfoCache?.face,
+        );
+        await GStorage.commentRecords.add(record);
+      } catch (e) {
+        // 保存失败不影响评论发送
+      }
       return Success(res.data['data']);
     } else {
       return Error(res.data['message']);

@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:PiliPlus/models/comment_record.dart';
 import 'package:PiliPlus/models/model_owner.dart';
 import 'package:PiliPlus/models/user/danmaku_rule_adapter.dart';
 import 'package:PiliPlus/models/user/info.dart';
@@ -7,6 +8,7 @@ import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/accounts/account_adapter.dart';
 import 'package:PiliPlus/utils/accounts/account_type_adapter.dart';
 import 'package:PiliPlus/utils/accounts/cookie_jar_adapter.dart';
+import 'package:PiliPlus/utils/comment_record_adapter.dart';
 import 'package:PiliPlus/utils/path_utils.dart';
 import 'package:PiliPlus/utils/set_int_adapter.dart';
 import 'package:PiliPlus/utils/utils.dart';
@@ -20,6 +22,7 @@ abstract final class GStorage {
   static late final Box<dynamic> setting;
   static late final Box<dynamic> video;
   static late final Box<int> watchProgress;
+  static late final Box<CommentRecord> commentRecords;
 
   static Future<void> init() async {
     await Hive.initFlutter(path.join(appSupportDirPath, 'hive'));
@@ -58,6 +61,13 @@ abstract final class GStorage {
           return deletedEntries > 4;
         },
       ).then((res) => watchProgress = res),
+      // 评论记录
+      Hive.openBox<CommentRecord>(
+        'commentRecords',
+        compactionStrategy: (entries, deletedEntries) {
+          return deletedEntries > 20;
+        },
+      ).then((res) => commentRecords = res),
     ]);
   }
 
@@ -88,7 +98,8 @@ abstract final class GStorage {
       ..registerAdapter(LoginAccountAdapter())
       ..registerAdapter(AccountTypeAdapter())
       ..registerAdapter(SetIntAdapter())
-      ..registerAdapter(RuleFilterAdapter());
+      ..registerAdapter(RuleFilterAdapter())
+      ..registerAdapter(CommentRecordAdapter());
   }
 
   static Future<void> compact() async {
@@ -100,6 +111,7 @@ abstract final class GStorage {
       video.compact(),
       Accounts.account.compact(),
       watchProgress.compact(),
+      commentRecords.compact(),
     ]);
   }
 
@@ -112,6 +124,7 @@ abstract final class GStorage {
       video.close(),
       Accounts.account.close(),
       watchProgress.close(),
+      commentRecords.close(),
     ]);
   }
 }

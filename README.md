@@ -32,6 +32,7 @@
 - [x] Pad
 - [x] Windows
 - [x] Linux
+- [x] HarmonyOS 5.0 及以上 (位于[分支仓库](https://github.com/qinshah/PiliPlus))
 
 [![Packaging status](https://repology.org/badge/vertical-allrepos/piliplus.svg)](https://repology.org/project/piliplus/versions)
 

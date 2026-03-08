@@ -3,17 +3,19 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 class HttpError extends StatelessWidget {
   const HttpError({
+    super.key,
     this.isSliver = true,
     this.errMsg,
     this.onReload,
     this.btnText,
-    super.key,
+    this.safeArea = true,
   });
 
   final bool isSliver;
   final String? errMsg;
   final VoidCallback? onReload;
   final String? btnText;
+  final bool safeArea;
 
   @override
   Widget build(BuildContext context) {
@@ -57,7 +59,8 @@ class HttpError extends StatelessWidget {
               style: TextStyle(color: theme.colorScheme.primary),
             ),
           ),
-        SizedBox(height: 40 + MediaQuery.viewPaddingOf(context).bottom),
+        if (safeArea)
+          SizedBox(height: 40 + MediaQuery.viewPaddingOf(context).bottom),
       ],
     );
   }

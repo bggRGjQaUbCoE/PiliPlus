@@ -875,7 +875,7 @@ class ReplyItemGrpc extends StatelessWidget {
                   item.id.toString(),
                   (item.deepCopy()
                         ..unknownFields.clear()
-                        ..clearField(0)
+                        ..replies.clear()
                         ..clearMemberV2()
                         ..clearTrackInfo())
                       .writeToBuffer(),

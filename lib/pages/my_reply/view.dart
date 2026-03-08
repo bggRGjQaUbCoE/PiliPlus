@@ -4,6 +4,7 @@ import 'package:PiliPlus/common/widgets/view_sliver_safe_area.dart';
 import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart';
 import 'package:PiliPlus/pages/video/reply/widgets/reply_item_grpc.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
+import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/reply_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
@@ -26,11 +27,8 @@ class _MyReplyState extends State<MyReply> with DynMixin {
   @override
   void initState() {
     super.initState();
-    _replies =
-        GStorage.reply.values
-            .map((e) => ReplyInfo.create()..mergeFromProto3Json(e))
-            .toList()
-          ..sort((a, b) => b.ctime.compareTo(a.ctime));
+    _replies = GStorage.reply.values.map(ReplyInfo.fromBuffer).toList()
+      ..sort((a, b) => b.ctime.compareTo(a.ctime));
   }
 
   @override
@@ -112,10 +110,14 @@ class _MyReplyState extends State<MyReply> with DynMixin {
   }
 
   void _onCheckReply(ReplyInfo replyInfo) {
+    final oid = replyInfo.oid.toInt();
     ReplyUtils.onCheckReply(
       replyInfo: replyInfo,
       biliSendCommAntifraud: Pref.biliSendCommAntifraud,
-      sourceId: null,
+      sourceId: switch (oid) {
+        1 => IdUtils.av2bv(oid),
+        _ => oid.toString(),
+      },
       isManual: true,
     );
   }

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:PiliPlus/models/model_owner.dart';
 import 'package:PiliPlus/models/user/danmaku_rule_adapter.dart';
@@ -20,7 +21,7 @@ abstract final class GStorage {
   static late final Box<dynamic> setting;
   static late final Box<dynamic> video;
   static late final Box<int> watchProgress;
-  static late final Box<Map> reply;
+  static late final Box<Uint8List> reply;
 
   static Future<void> init() async {
     await Hive.initFlutter(path.join(appSupportDirPath, 'hive'));
@@ -55,12 +56,14 @@ abstract final class GStorage {
       Accounts.init(),
       Hive.openBox<int>(
         'watchProgress',
+        keyComparator: _intStrKeyComparator,
         compactionStrategy: (entries, deletedEntries) {
           return deletedEntries > 4;
         },
       ).then((res) => watchProgress = res),
-      Hive.openBox<Map>(
+      Hive.openBox<Uint8List>(
         'reply',
+        keyComparator: _intStrKeyComparator,
         compactionStrategy: (entries, deletedEntries) {
           return deletedEntries > 10;
         },
@@ -122,5 +125,24 @@ abstract final class GStorage {
       watchProgress.close(),
       reply.close(),
     ]);
+  }
+
+  static int _intStrKeyComparator(dynamic k1, dynamic k2) {
+    if (k1 is int) {
+      if (k2 is int) {
+        return k1.compareTo(k2);
+      } else {
+        return -1;
+      }
+    } else if (k2 is String) {
+      final lenCompare = (k1 as String).length.compareTo(k2.length);
+      if (lenCompare == 0) {
+        return k1.compareTo(k2);
+      } else {
+        return lenCompare;
+      }
+    } else {
+      return 1;
+    }
   }
 }

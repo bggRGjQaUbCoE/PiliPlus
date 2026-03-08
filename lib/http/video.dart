@@ -41,6 +41,7 @@ import 'package:PiliPlus/utils/utils.dart';
 import 'package:PiliPlus/utils/wbi_sign.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart' show compute;
+import 'package:protobuf/protobuf.dart';
 
 /// view层根据 status 判断渲染逻辑
 abstract final class VideoHttp {
@@ -561,9 +562,11 @@ abstract final class VideoHttp {
         final replyInfo = RequestUtils.replyCast(res.data['data']['reply']);
         GStorage.reply.put(
           replyInfo.id.toString(),
-          (replyInfo.toProto3Json() as Map)
-            ..remove('memberV2')
-            ..remove('trackInfo'),
+          (replyInfo.deepCopy()
+                ..unknownFields.clear()
+                ..clearMemberV2()
+                ..clearTrackInfo())
+              .writeToBuffer(),
         );
         return Success(replyInfo);
       } catch (e, s) {

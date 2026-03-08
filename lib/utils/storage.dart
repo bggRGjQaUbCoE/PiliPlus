@@ -136,14 +136,14 @@ abstract final class GStorage {
   static int _intStrKeyComparator(dynamic k1, dynamic k2) {
     if (k1 is int) {
       if (k2 is int) {
-        return k1.compareTo(k2);
+        return k2.compareTo(k1);
       } else {
         return -1;
       }
     } else if (k2 is String) {
-      final lenCompare = (k1 as String).length.compareTo(k2.length);
+      final lenCompare = k2.length.compareTo((k1 as String).length);
       if (lenCompare == 0) {
-        return k1.compareTo(k2);
+        return k2.compareTo(k1);
       } else {
         return lenCompare;
       }

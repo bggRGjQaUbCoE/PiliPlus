@@ -355,6 +355,13 @@ List<SettingsModel> get extraSettings => [
     defaultVal: false,
   ),
   const SwitchModel(
+    title: '记录评论',
+    leading: Icon(Icons.message_outlined),
+    setKey: SettingBoxKey.saveReply,
+    defaultVal: true,
+    needReboot: true,
+  ),
+  const SwitchModel(
     title: '发评反诈',
     subtitle: '发送评论后检查评论是否可见',
     leading: Stack(

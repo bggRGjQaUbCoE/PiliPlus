@@ -560,7 +560,7 @@ abstract final class VideoHttp {
     if (res.data['code'] == 0) {
       try {
         final replyInfo = RequestUtils.replyCast(res.data['data']['reply']);
-        GStorage.reply.put(
+        GStorage.reply?.put(
           replyInfo.id.toString(),
           (replyInfo.deepCopy()
                 ..unknownFields.clear()
@@ -594,7 +594,7 @@ abstract final class VideoHttp {
       options: Options(contentType: Headers.formUrlEncodedContentType),
     );
     if (res.data['code'] == 0) {
-      GStorage.reply.delete(rpid.toString());
+      GStorage.reply?.delete(rpid.toString());
       return const Success(null);
     } else {
       return const Error('请退出账号后重新登录');

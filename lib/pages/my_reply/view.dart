@@ -8,6 +8,7 @@ import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/reply_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
+import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/waterfall.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
@@ -27,7 +28,7 @@ class _MyReplyState extends State<MyReply> with DynMixin {
   @override
   void initState() {
     super.initState();
-    _replies = GStorage.reply.values.map(ReplyInfo.fromBuffer).toList()
+    _replies = GStorage.reply!.values.map(ReplyInfo.fromBuffer).toList()
       ..sort((a, b) => b.ctime.compareTo(a.ctime));
   }
 
@@ -36,24 +37,35 @@ class _MyReplyState extends State<MyReply> with DynMixin {
     return Scaffold(
       appBar: AppBar(
         title: const Text('我的评论'),
-        actions: kDebugMode
-            ? [
-                IconButton(
-                  tooltip: 'Clear',
-                  onPressed: () => showConfirmDialog(
-                    context: context,
-                    title: 'Clear Local Storage?',
-                    onConfirm: () {
-                      GStorage.reply.clear();
-                      _replies.clear();
-                      setState(() {});
-                    },
-                  ),
-                  icon: const Icon(Icons.clear_all),
-                ),
-                const SizedBox(width: 6),
-              ]
-            : null,
+        actions: [
+          if (kDebugMode)
+            IconButton(
+              tooltip: 'Clear',
+              onPressed: () => showConfirmDialog(
+                context: context,
+                title: 'Clear Local Storage?',
+                onConfirm: () {
+                  GStorage.reply!.clear();
+                  _replies.clear();
+                  setState(() {});
+                },
+              ),
+              icon: const Icon(Icons.clear_all),
+            ),
+          Builder(
+            builder: (context) => Transform.scale(
+              scale: 0.75,
+              child: Switch(
+                value: Pref.saveReply,
+                onChanged: (value) {
+                  GStorage.setting.put(SettingBoxKey.saveReply, value);
+                  (context as Element).markNeedsBuild();
+                },
+              ),
+            ),
+          ),
+          const SizedBox(width: 6),
+        ],
       ),
       body: CustomScrollView(
         physics: const AlwaysScrollableScrollPhysics(),

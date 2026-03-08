@@ -867,11 +867,11 @@ class ReplyItemGrpc extends StatelessWidget {
               ),
             ),
           ),
-          if (kDebugMode) ...[
+          if (kDebugMode && GStorage.reply != null) ...[
             ListTile(
               onTap: () {
                 Get.back();
-                GStorage.reply.put(
+                GStorage.reply!.put(
                   item.id.toString(),
                   (item.deepCopy()
                         ..unknownFields.clear()
@@ -890,7 +890,7 @@ class ReplyItemGrpc extends StatelessWidget {
               onTap: () {
                 Get.back();
                 onDelete();
-                GStorage.reply.delete(item.id.toString());
+                GStorage.reply!.delete(item.id.toString());
               },
               title: Text(
                 'remove from local',
@@ -908,7 +908,7 @@ class ReplyItemGrpc extends StatelessWidget {
                           ..clearMemberV2()
                           ..clearTrackInfo())
                         .writeToBuffer();
-                GStorage.reply.putAll({
+                GStorage.reply!.putAll({
                   for (var i = oid; i < oid + 1000; i++) i.toString(): data,
                 });
               },

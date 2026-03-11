@@ -417,6 +417,16 @@ class HeaderControlState extends State<HeaderControl>
                     leading: const Icon(Icons.image_outlined, size: 20),
                     title: const Text('保存封面', style: titleStyle),
                   ),
+                if (!isFileSource)
+                  ListTile(
+                    dense: true,
+                    onTap: () {
+                      Get.back();
+                      videoDetailCtr.downloadVideoToLocal();
+                    },
+                    leading: const Icon(Icons.download_outlined, size: 20),
+                    title: const Text('下载视频', style: titleStyle),
+                  ),
                 ListTile(
                   dense: true,
                   onTap: () {

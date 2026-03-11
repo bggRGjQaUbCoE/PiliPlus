@@ -58,6 +58,8 @@ import 'package:PiliPlus/utils/extension/file_ext.dart';
 import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/size_ext.dart';
+import 'package:PiliPlus/utils/extension/string_ext.dart';
+import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/path_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
@@ -66,6 +68,7 @@ import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:PiliPlus/utils/video_utils.dart';
 import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -1461,6 +1464,120 @@ class VideoDetailController extends GetxController
           );
         },
       );
+    }
+  }
+
+  String _sanitizeFileName(String name) {
+    const invalid = r'\/:*?"<>|';
+    final buffer = StringBuffer();
+    for (final rune in name.runes) {
+      final ch = String.fromCharCode(rune);
+      buffer.write(invalid.contains(ch) ? '_' : ch);
+    }
+    return buffer.toString().trim();
+  }
+
+  String _buildLocalVideoFileName() {
+    String title = '';
+    String author = '';
+    try {
+      if (isUgc) {
+        final detail = Get.find<UgcIntroController>(tag: heroTag)
+            .videoDetail
+            .value;
+        title = detail.title ?? '';
+        author = detail.owner?.name ?? '';
+      } else {
+        final pgc = Get.find<PgcIntroController>(tag: heroTag).pgcItem;
+        title = pgc.seasonTitle ?? pgc.title ?? '';
+        author = pgc.upInfo?.uname ?? '';
+      }
+    } catch (_) {}
+    final time = ImageUtils.time;
+    final raw = '${title.isEmpty ? 'video' : title}'
+        '-${author.isEmpty ? 'author' : author}_$time.mp4';
+    return _sanitizeFileName(raw);
+  }
+
+  @pragma('vm:notify-debugger-on-exception')
+  Future<void> downloadVideoToLocal() async {
+    if (isFileSource) {
+      SmartDialog.showToast('本地视频无需下载');
+      return;
+    }
+    if (PlatformUtils.isMobile &&
+        !await ImageUtils.checkPermissionDependOnSdkInt()) {
+      return;
+    }
+    SmartDialog.showLoading(msg: '正在获取下载链接');
+    final res = await VideoHttp.tvPlayUrl(
+      cid: cid.value,
+      objectId: epId ?? aid,
+      playurlType: epId != null ? 2 : 1,
+      qn: currentVideoQa.value?.code,
+    );
+    SmartDialog.dismiss();
+    if (res case Success(:final response)) {
+      final first = response.durl?.firstOrNull;
+      if (first == null || first.playUrls.isEmpty) {
+        SmartDialog.showToast('获取下载链接失败');
+        return;
+      }
+      final url = VideoUtils.getCdnUrl(first.playUrls);
+      final fileName = _buildLocalVideoFileName();
+      if (PlatformUtils.isDesktop) {
+        final savePath = await FilePicker.saveFile(
+          type: FileType.video,
+          fileName: fileName,
+        );
+        if (savePath == null) {
+          SmartDialog.showToast('取消保存');
+          return;
+        }
+        SmartDialog.showLoading(msg: '正在下载');
+        try {
+          final downloadRes = await Request().downloadFile(
+            url.http2https,
+            savePath,
+          );
+          SmartDialog.dismiss();
+          if (downloadRes.statusCode == 200) {
+            SmartDialog.showToast('已保存');
+          } else {
+            SmartDialog.showToast('下载失败，${downloadRes.statusCode}');
+          }
+        } catch (e) {
+          SmartDialog.dismiss();
+          SmartDialog.showToast(e.toString());
+        }
+      } else {
+        final filePath = '$tmpDirPath/$fileName';
+        SmartDialog.showLoading(msg: '正在下载');
+        try {
+          final downloadRes = await Request().downloadFile(
+            url.http2https,
+            filePath,
+          );
+          SmartDialog.dismiss();
+          if (downloadRes.statusCode == 200) {
+            await ImageUtils.saveFileImg(
+              filePath: filePath,
+              fileName: fileName,
+              type: FileType.video,
+              needToast: true,
+            );
+          } else {
+            File(filePath).tryDel();
+            SmartDialog.showToast('下载失败，${downloadRes.statusCode}');
+          }
+        } catch (e) {
+          SmartDialog.dismiss();
+          File(filePath).tryDel();
+          SmartDialog.showToast(e.toString());
+        }
+      }
+    } else {
+      res.toast();
     }
   }
 

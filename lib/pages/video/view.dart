@@ -1310,6 +1310,11 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
           onTap: () => videoDetailController.onDownload(this.context),
           child: const Text('缓存视频'),
         ),
+      if (!videoDetailController.isFileSource)
+        PopupMenuItem(
+          onTap: videoDetailController.downloadVideoToLocal,
+          child: const Text('下载视频至本地'),
+        ),
       if (videoDetailController.cover.value.isNotEmpty)
         PopupMenuItem(
           onTap: () =>

@@ -112,6 +112,9 @@ class VideoCardH extends StatelessWidget {
                         cid: cid,
                         cover: videoItem.cover,
                         title: videoItem.title,
+                        tname: videoItem is HotVideoItemModel
+                            ? (videoItem as HotVideoItemModel).tname
+                            : null,
                       );
                     }
                   } catch (err) {

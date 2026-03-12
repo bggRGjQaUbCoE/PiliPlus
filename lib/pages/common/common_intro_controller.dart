@@ -145,7 +145,14 @@ abstract class CommonIntroController extends GetxController
 
   Future<void> queryVideoTags() async {
     final result = await UserHttp.videoTags(bvid: bvid, cid: cid.value);
-    videoTags.value = result.dataOrNull;
+    final tags = result.dataOrNull;
+    videoTags.value = tags;
+    if (tags != null && tags.isNotEmpty) {
+      final tagNames = tags.map((tag) => tag.tagName).whereType<String>().toList();
+      if (PageUtils.shouldAutoIncognito(null, null, tags: tagNames)) {
+        videoDetailCtr.triggerAutoIncognito();
+      }
+    }
   }
 
   Future<void> viewLater() async {

@@ -91,6 +91,7 @@ abstract final class SettingBoxKey {
       banWordForZone = 'banWordForZone',
       incognitoKeywords = 'incognitoKeywords',
       incognitoTnameKeywords = 'incognitoTnameKeywords',
+      incognitoTagKeywords = 'incognitoTagKeywords',
       savedRcmdTip = 'savedRcmdTip',
       openInBrowser = 'openInBrowser',
       refreshDragPercentage = 'refreshDragPercentage',

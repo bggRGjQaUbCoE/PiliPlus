@@ -42,6 +42,11 @@ List<SettingsModel> get privacySettings => [
     key: SettingBoxKey.incognitoTnameKeywords,
     onChanged: (_) {},
   ),
+  getBanWordModel(
+    title: '视频TAG关键词无痕浏览',
+    key: SettingBoxKey.incognitoTagKeywords,
+    onChanged: (_) {},
+  ),
   NormalModel(
     onTap: (context, setState) {
       showDialog(

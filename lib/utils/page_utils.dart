@@ -538,26 +538,30 @@ abstract final class PageUtils {
     }
   }
 
-  static bool shouldAutoIncognito(String? title, String? tname) {
-    bool matchTitle = false;
+  static bool shouldAutoIncognito(String? title, String? tname, {List<String>? tags}) {
     if (title != null && title.isNotEmpty) {
       final keywords = Pref.incognitoKeywords;
-      if (keywords.isNotEmpty) {
-        final lowerTitle = title.toLowerCase();
-        matchTitle = keywords.any(lowerTitle.contains);
+      if (keywords.isNotEmpty && keywords.any((k) => title.toLowerCase().contains(k))) {
+        return true;
       }
     }
 
-    bool matchPartition = false;
     if (tname != null && tname.isNotEmpty) {
       final tnameKeywords = Pref.incognitoTnameKeywords;
-      if (tnameKeywords.isNotEmpty) {
-        final lowerTname = tname.toLowerCase();
-        matchPartition = tnameKeywords.any(lowerTname.contains);
+      if (tnameKeywords.isNotEmpty && tnameKeywords.any((k) => tname.toLowerCase().contains(k))) {
+        return true;
       }
     }
 
-    return matchTitle || matchPartition;
+    if (tags != null && tags.isNotEmpty) {
+      final tagKeywords = Pref.incognitoTagKeywords;
+      if (tagKeywords.isNotEmpty &&
+          tags.any((tag) => tagKeywords.any((k) => tag.toLowerCase().contains(k)))) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   static Future<void>? toVideoPage({

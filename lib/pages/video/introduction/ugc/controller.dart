@@ -132,7 +132,8 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
         cid.value = pages.first.cid!;
       }
 
-      if (PageUtils.shouldAutoIncognito(response.title, response.tname)) {
+      final tags = videoTags.value?.map((tag) => tag.tagName).whereType<String>().toList();
+      if (PageUtils.shouldAutoIncognito(response.title, response.tname, tags: tags)) {
         videoDetailCtr.triggerAutoIncognito();
       }
 

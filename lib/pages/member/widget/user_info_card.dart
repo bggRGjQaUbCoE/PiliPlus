@@ -458,7 +458,7 @@ class UserInfoCard extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         HeaderLayoutWidget(
-          header: imgUrls != null
+          header: imgUrls != null && imgUrls.isNotEmpty
               ? _buildCollectionHeader(context, scheme, isLight, imgUrls, width)
               : _buildHeader(
                   context,
@@ -496,9 +496,10 @@ class UserInfoCard extends StatelessWidget {
         context,
         isLight,
         width,
-        img.cover,
+        img.header,
         filter: false,
         fullCover: img.fullCover,
+        alignment: Alignment(0.0, img.dy),
       );
     }
     final controller = headerControllerBuilder();
@@ -529,7 +530,7 @@ class UserInfoCard extends StatelessWidget {
                     height: kHeaderHeight,
                     width: width,
                     memCacheWidth: memCacheWidth,
-                    imageUrl: ImageUtils.thumbnailUrl(img.cover),
+                    imageUrl: ImageUtils.thumbnailUrl(img.header),
                     fadeInDuration: const Duration(milliseconds: 120),
                     fadeOutDuration: const Duration(milliseconds: 120),
                     placeholder: (_, _) =>
@@ -560,6 +561,7 @@ class UserInfoCard extends StatelessWidget {
     String imgUrl, {
     bool filter = true,
     String? fullCover,
+    Alignment alignment = .center,
   }) {
     final img = fullCover ?? imgUrl;
     return GestureDetector(
@@ -569,6 +571,7 @@ class UserInfoCard extends StatelessWidget {
         tag: img,
         child: CachedNetworkImage(
           fit: .cover,
+          alignment: alignment,
           height: kHeaderHeight,
           width: width,
           memCacheWidth: width.cacheSize(context),

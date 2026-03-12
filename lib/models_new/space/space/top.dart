@@ -16,16 +16,17 @@ class Top {
 }
 
 class TopImage {
-  late final String cover;
+  String? _defaultImage;
   late final String fullCover;
+  String get header => _defaultImage ?? fullCover;
   late final double dy;
 
   @pragma('vm:notify-debugger-on-exception')
   TopImage.fromJson(Map<String, dynamic> json) {
+    _defaultImage = noneNullOrEmptyString(
+      json['item']['image']?['default_image'],
+    );
     fullCover = json['cover'];
-    cover =
-        noneNullOrEmptyString(json['item']['image']?['default_image']) ??
-        fullCover;
     double dy = 0;
     try {
       final Map image = json['item']['image'] ?? json['item']['animation'];

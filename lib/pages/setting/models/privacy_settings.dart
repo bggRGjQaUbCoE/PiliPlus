@@ -33,8 +33,13 @@ List<SettingsModel> get privacySettings => [
         : '未开启无痕模式，将使用账户信息提供完整服务',
   ),
   getBanWordModel(
-    title: '关键词无痕浏览',
+    title: '标题关键词无痕浏览',
     key: SettingBoxKey.incognitoKeywords,
+    onChanged: (_) {},
+  ),
+  getBanWordModel(
+    title: '视频分区关键词无痕浏览',
+    key: SettingBoxKey.incognitoTnameKeywords,
     onChanged: (_) {},
   ),
   NormalModel(

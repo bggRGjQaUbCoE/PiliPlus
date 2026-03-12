@@ -538,12 +538,26 @@ abstract final class PageUtils {
     }
   }
 
-  static bool _shouldAutoIncognito(String? title) {
-    if (title == null || title.isEmpty) return false;
-    final keywords = Pref.incognitoKeywords;
-    if (keywords.isEmpty) return false;
-    final lowerTitle = title.toLowerCase();
-    return keywords.any((k) => lowerTitle.contains(k));
+  static bool _shouldAutoIncognito(String? title, String? tname) {
+    bool matchTitle = false;
+    if (title != null && title.isNotEmpty) {
+      final keywords = Pref.incognitoKeywords;
+      if (keywords.isNotEmpty) {
+        final lowerTitle = title.toLowerCase();
+        matchTitle = keywords.any(lowerTitle.contains);
+      }
+    }
+
+    bool matchTname = false;
+    if (tname != null && tname.isNotEmpty) {
+      final tnameKeywords = Pref.incognitoTnameKeywords;
+      if (tnameKeywords.isNotEmpty) {
+        final lowerTname = tname.toLowerCase();
+        matchTname = tnameKeywords.any(lowerTname.contains);
+      }
+    }
+
+    return matchTitle || matchTname;
   }
 
   static Future<void>? toVideoPage({
@@ -556,6 +570,7 @@ abstract final class PageUtils {
     int? pgcType,
     String? cover,
     String? title,
+    String? tname,
     int? progress, // milliseconds
     Map? extraArguments,
     bool off = false,
@@ -569,12 +584,13 @@ abstract final class PageUtils {
       'pgcType': ?pgcType,
       'cover': ?cover,
       'title': ?title,
+      'tname': ?tname,
       'progress': ?progress,
       'videoType': videoType,
       'heroTag': Utils.makeHeroTag(cid),
       ...?extraArguments,
     };
-    if (_shouldAutoIncognito(title)) {
+    if (_shouldAutoIncognito(title, tname)) {
       arguments['autoIncognito'] = true;
     }
     if (off) {

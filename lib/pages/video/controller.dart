@@ -311,6 +311,16 @@ class VideoDetailController extends GetxController
     }
   }
 
+  void triggerAutoIncognito() {
+    if (!MineController.anonymity.value) {
+      _savedHeartbeatAccount ??= Accounts.heartbeat;
+      Accounts.accountMode[AccountType.heartbeat.index] = AnonymousAccount();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        MineController.anonymity.value = true;
+      });
+    }
+  }
+
   @override
   void onInit() {
     super.onInit();
@@ -334,10 +344,8 @@ class VideoDetailController extends GetxController
     cover = RxString(args['cover'] ?? '');
 
     // 关键词无痕模式：如果视频标题匹配关键词，临时切换到无痕
-    if (args['autoIncognito'] == true && !MineController.anonymity.value) {
-      _savedHeartbeatAccount = Accounts.heartbeat;
-      Accounts.accountMode[AccountType.heartbeat.index] = AnonymousAccount();
-      MineController.anonymity.value = true;
+    if (args['autoIncognito'] == true) {
+      triggerAutoIncognito();
     }
 
     sourceType = args['sourceType'] ?? SourceType.normal;

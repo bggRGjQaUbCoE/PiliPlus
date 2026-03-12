@@ -70,6 +70,17 @@ abstract final class Pref {
         .toList();
   }
 
+  static List<String> get incognitoTnameKeywords {
+    final raw =
+        _setting.get(SettingBoxKey.incognitoTnameKeywords, defaultValue: '');
+    if (raw is! String || raw.isEmpty) return [];
+    return raw
+        .split('|')
+        .map((e) => e.trim().toLowerCase())
+        .where((e) => e.isNotEmpty)
+        .toList();
+  }
+
   static Set<int> get blackMids =>
       _localCache.get(LocalCacheKey.blackMids, defaultValue: <int>{});
 

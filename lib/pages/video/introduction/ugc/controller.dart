@@ -132,23 +132,7 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
         cid.value = pages.first.cid!;
       }
 
-      bool matchTitle = false;
-      if (response.title != null && response.title!.isNotEmpty) {
-        final keywords = Pref.incognitoKeywords;
-        if (keywords.isNotEmpty) {
-          final lowerTitle = response.title!.toLowerCase();
-          matchTitle = keywords.any(lowerTitle.contains);
-        }
-      }
-      bool matchTname = false;
-      if (response.tname != null && response.tname!.isNotEmpty) {
-        final tnameKeywords = Pref.incognitoTnameKeywords;
-        if (tnameKeywords.isNotEmpty) {
-          final lowerTname = response.tname!.toLowerCase();
-          matchTname = tnameKeywords.any(lowerTname.contains);
-        }
-      }
-      if (matchTitle || matchTname) {
+      if (PageUtils.shouldAutoIncognito(response.title, response.tname)) {
         videoDetailCtr.triggerAutoIncognito();
       }
 

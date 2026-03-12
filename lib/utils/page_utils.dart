@@ -538,7 +538,7 @@ abstract final class PageUtils {
     }
   }
 
-  static bool _shouldAutoIncognito(String? title, String? tname) {
+  static bool shouldAutoIncognito(String? title, String? tname) {
     bool matchTitle = false;
     if (title != null && title.isNotEmpty) {
       final keywords = Pref.incognitoKeywords;
@@ -548,16 +548,16 @@ abstract final class PageUtils {
       }
     }
 
-    bool matchTname = false;
+    bool matchPartition = false;
     if (tname != null && tname.isNotEmpty) {
       final tnameKeywords = Pref.incognitoTnameKeywords;
       if (tnameKeywords.isNotEmpty) {
         final lowerTname = tname.toLowerCase();
-        matchTname = tnameKeywords.any(lowerTname.contains);
+        matchPartition = tnameKeywords.any(lowerTname.contains);
       }
     }
 
-    return matchTitle || matchTname;
+    return matchTitle || matchPartition;
   }
 
   static Future<void>? toVideoPage({
@@ -590,7 +590,7 @@ abstract final class PageUtils {
       'heroTag': Utils.makeHeroTag(cid),
       ...?extraArguments,
     };
-    if (_shouldAutoIncognito(title, tname)) {
+    if (shouldAutoIncognito(title, tname)) {
       arguments['autoIncognito'] = true;
     }
     if (off) {

@@ -357,6 +357,7 @@ class _SearchPageState extends State<SearchPage> {
                 runSpacing: 8,
                 delegate: SliverChildBuilderDelegate(
                   addAutomaticKeepAlives: false,
+                  addRepaintBoundaries: false,
                   childCount: list.length,
                   (context, index) => SearchText(
                     text: list[index],

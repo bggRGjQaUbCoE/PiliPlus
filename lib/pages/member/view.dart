@@ -40,7 +40,8 @@ class _MemberPageState extends State<MemberPage> {
   late final String _heroTag;
   late final MemberController _userController;
   PageController? _headerController;
-  PageController get headerController => _headerController ??= PageController();
+  PageController getHeaderController() =>
+      _headerController ??= PageController();
 
   @override
   void initState() {
@@ -367,7 +368,7 @@ class _MemberPageState extends State<MemberPage> {
                 onFollow: () => _userController.onFollow(context),
                 live: _userController.live,
                 silence: _userController.silence,
-                headerControllerBuilder: () => headerController,
+                headerControllerBuilder: getHeaderController,
               ),
             ),
           );

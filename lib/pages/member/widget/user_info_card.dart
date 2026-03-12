@@ -491,12 +491,14 @@ class UserInfoCard extends StatelessWidget {
     double width,
   ) {
     if (imgUrls.length == 1) {
+      final img = imgUrls.first;
       return _buildHeader(
         context,
         isLight,
         width,
-        imgUrls.single.cover,
+        img.cover,
         filter: false,
+        fullCover: img.fullCover,
       );
     }
     final controller = headerControllerBuilder();
@@ -505,7 +507,7 @@ class UserInfoCard extends StatelessWidget {
       behavior: .opaque,
       onTap: () => PageUtils.imageView(
         initialPage: controller.page?.round() ?? 0,
-        imgList: imgUrls.map((e) => SourceModel(url: e.cover)).toList(),
+        imgList: imgUrls.map((e) => SourceModel(url: e.fullCover)).toList(),
         onPageChanged: controller.jumpToPage,
       ),
       child: Stack(
@@ -520,7 +522,7 @@ class UserInfoCard extends StatelessWidget {
               itemBuilder: (context, index) {
                 final img = imgUrls[index];
                 return fromHero(
-                  tag: img.cover,
+                  tag: img.fullCover,
                   child: CachedNetworkImage(
                     fit: .cover,
                     alignment: Alignment(0.0, img.dy),
@@ -557,12 +559,14 @@ class UserInfoCard extends StatelessWidget {
     double width,
     String imgUrl, {
     bool filter = true,
+    String? fullCover,
   }) {
+    final img = fullCover ?? imgUrl;
     return GestureDetector(
       behavior: .opaque,
-      onTap: () => PageUtils.imageView(imgList: [SourceModel(url: imgUrl)]),
+      onTap: () => PageUtils.imageView(imgList: [SourceModel(url: img)]),
       child: fromHero(
-        tag: imgUrl,
+        tag: img,
         child: CachedNetworkImage(
           fit: .cover,
           height: kHeaderHeight,
@@ -760,7 +764,8 @@ class _HeaderIndicatorState extends State<HeaderIndicator> {
   }
 
   void _updateProgress() {
-    _progress = ((widget.pageController.page ?? 0) + 1) / widget.length;
+    _progress = (widget.pageController.page ?? 0) / (widget.length - 1);
+    assert(_progress.isFinite && 0 <= _progress && _progress <= 1);
   }
 
   @override

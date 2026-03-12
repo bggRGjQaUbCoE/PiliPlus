@@ -538,6 +538,14 @@ abstract final class PageUtils {
     }
   }
 
+  static bool _shouldAutoIncognito(String? title) {
+    if (title == null || title.isEmpty) return false;
+    final keywords = Pref.incognitoKeywords;
+    if (keywords.isEmpty) return false;
+    final lowerTitle = title.toLowerCase();
+    return keywords.any((k) => lowerTitle.contains(k));
+  }
+
   static Future<void>? toVideoPage({
     VideoType videoType = VideoType.ugc,
     int? aid,
@@ -566,6 +574,9 @@ abstract final class PageUtils {
       'heroTag': Utils.makeHeroTag(cid),
       ...?extraArguments,
     };
+    if (_shouldAutoIncognito(title)) {
+      arguments['autoIncognito'] = true;
+    }
     if (off) {
       return Get.offNamed(
         '/videoV',

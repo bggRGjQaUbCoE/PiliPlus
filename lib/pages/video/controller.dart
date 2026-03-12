@@ -37,6 +37,7 @@ import 'package:PiliPlus/models_new/video/video_play_info/subtitle.dart';
 import 'package:PiliPlus/models_new/video/video_stein_edgeinfo/data.dart';
 import 'package:PiliPlus/pages/audio/view.dart';
 import 'package:PiliPlus/pages/common/publish/publish_route.dart';
+import 'package:PiliPlus/pages/mine/controller.dart';
 import 'package:PiliPlus/pages/search/widgets/search_text.dart';
 import 'package:PiliPlus/pages/sponsor_block/block_mixin.dart';
 import 'package:PiliPlus/pages/video/download_panel/view.dart';
@@ -53,6 +54,7 @@ import 'package:PiliPlus/plugin/pl_player/models/heart_beat_type.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
 import 'package:PiliPlus/services/download/download_service.dart';
 import 'package:PiliPlus/utils/accounts.dart';
+import 'package:PiliPlus/utils/accounts/account.dart';
 import 'package:PiliPlus/utils/extension/context_ext.dart';
 import 'package:PiliPlus/utils/extension/file_ext.dart';
 import 'package:PiliPlus/utils/extension/iterable_ext.dart';
@@ -273,6 +275,9 @@ class VideoDetailController extends GetxController
 
   final isLoginVideo = Accounts.get(AccountType.video).isLogin;
 
+  // 保存用于恢复的 heartbeat 账号
+  Account? _savedHeartbeatAccount;
+
   late final watchProgress = GStorage.watchProgress;
   void cacheLocalProgress() {
     if (plPlayerController.playerStatus.isCompleted) {
@@ -327,6 +332,13 @@ class VideoDetailController extends GetxController
     pgcType = args['pgcType'];
     heroTag = args['heroTag'];
     cover = RxString(args['cover'] ?? '');
+
+    // 关键词无痕模式：如果视频标题匹配关键词，临时切换到无痕
+    if (args['autoIncognito'] == true && !MineController.anonymity.value) {
+      _savedHeartbeatAccount = Accounts.heartbeat;
+      Accounts.accountMode[AccountType.heartbeat.index] = AnonymousAccount();
+      MineController.anonymity.value = true;
+    }
 
     sourceType = args['sourceType'] ?? SourceType.normal;
     isFileSource = sourceType == SourceType.file;
@@ -1195,6 +1207,13 @@ class VideoDetailController extends GetxController
 
   @override
   void onClose() {
+    // 恢复之前保存的 heartbeat 账号
+    if (_savedHeartbeatAccount != null) {
+      Accounts.accountMode[AccountType.heartbeat.index] =
+          _savedHeartbeatAccount!;
+      MineController.anonymity.value = !_savedHeartbeatAccount!.isLogin;
+    }
+
     cid.close();
     if (isFileSource) {
       cacheLocalProgress();

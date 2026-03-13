@@ -250,26 +250,34 @@ class MyApp extends StatelessWidget {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final dynamicColor = Pref.dynamicColor && _light != null && _dark != null;
+  static (ThemeData, ThemeData) getAllTheme() {
+    final dynamicColor = _light != null && _dark != null && Pref.dynamicColor;
     late final brandColor = colorThemeTypes[Pref.customColor].color;
     late final variant = Pref.schemeVariant;
-    return GetMaterialApp(
-      title: Constants.appName,
-      theme: ThemeUtils.getThemeData(
+    return (
+      ThemeUtils.getThemeData(
         colorScheme: dynamicColor
             ? _light!
             : brandColor.asColorSchemeSeed(variant, .light),
         isDynamic: dynamicColor,
       ),
-      darkTheme: ThemeUtils.getThemeData(
+      ThemeUtils.getThemeData(
         isDark: true,
         colorScheme: dynamicColor
             ? _dark!
             : brandColor.asColorSchemeSeed(variant, .dark),
         isDynamic: dynamicColor,
       ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final (light, dark) = getAllTheme();
+    return GetMaterialApp(
+      title: Constants.appName,
+      theme: light,
+      darkTheme: dark,
       themeMode: Pref.themeMode,
       localizationsDelegates: const [
         GlobalCupertinoLocalizations.delegate,

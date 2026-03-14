@@ -3,7 +3,7 @@ import 'dart:convert' show utf8, jsonDecode;
 import 'dart:io' show File;
 
 import 'package:PiliPlus/common/style.dart';
-import 'package:PiliPlus/utils/extension/context_ext.dart';
+import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/storage_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:file_picker/file_picker.dart';
@@ -46,87 +46,91 @@ Future<void> importFromClipBoard<T>(
   bool showConfirmDialog = true,
 }) async {
   final data = await Clipboard.getData('text/plain');
-  if (data?.text?.isNotEmpty != true) {
-    SmartDialog.showToast('剪贴板无数据');
-    return;
-  }
-  if (!context.mounted) return;
-  final text = data!.text!;
-  late final T json;
-  late final String formatText;
-  try {
-    json = jsonDecode(text);
-    formatText = Utils.jsonEncoder.convert(json);
-  } catch (e) {
-    SmartDialog.showToast('解析json失败：$e');
-    return;
-  }
-  bool? executeImport;
-  if (showConfirmDialog) {
-    final highlight = Highlight()..registerLanguage('json', langJson);
-    final result = highlight.highlight(
-      code: formatText,
-      language: 'json',
-    );
-    late TextSpanRenderer renderer;
-    bool? isDarkMode;
-    executeImport = await showDialog(
-      context: context,
-      builder: (context) {
-        final isDark = context.isDarkMode;
-        if (isDark != isDarkMode) {
-          isDarkMode = isDark;
-          renderer = TextSpanRenderer(
-            const TextStyle(),
-            isDark ? githubDarkTheme : githubTheme,
-          );
-          result.render(renderer);
-        }
-        return AlertDialog(
-          title: Text('是否导入如下$title？'),
-          content: SingleChildScrollView(
-            child: Text.rich(renderer.span!),
-          ),
-          actions: [
-            TextButton(
-              onPressed: Get.back,
-              child: Text(
-                '取消',
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.outline,
+  if (data?.text case final text? when (text.isNotEmpty)) {
+    if (!context.mounted) return;
+    final T json;
+    final String formatText;
+    try {
+      json = jsonDecode(text);
+      formatText = Utils.jsonEncoder.convert(json);
+    } catch (e) {
+      SmartDialog.showToast('解析json失败：$e');
+      return;
+    }
+    bool? executeImport;
+    if (showConfirmDialog) {
+      final highlight = Highlight()..registerLanguage('json', langJson);
+      final result = highlight.highlight(
+        code: formatText,
+        language: 'json',
+      );
+      late TextSpanRenderer renderer;
+      bool? isDarkMode;
+      executeImport = await showDialog<bool>(
+        context: context,
+        builder: (context) {
+          final theme = Theme.of(context);
+          final isDark = theme.brightness.isDark;
+          if (isDark != isDarkMode) {
+            isDarkMode = isDark;
+            renderer = TextSpanRenderer(
+              const TextStyle(),
+              isDark ? githubDarkTheme : githubTheme,
+            );
+            result.render(renderer);
+          }
+          return AlertDialog(
+            title: Text('是否导入如下$title？'),
+            content: SingleChildScrollView(
+              child: Text.rich(renderer.span!),
+            ),
+            actions: [
+              TextButton(
+                onPressed: Get.back,
+                child: Text(
+                  '取消',
+                  style: TextStyle(
+                    color: theme.colorScheme.outline,
+                  ),
                 ),
               ),
-            ),
-            TextButton(
-              onPressed: () => Get.back(result: true),
-              child: const Text('确定'),
-            ),
-          ],
-        );
-      },
-    );
-  } else {
-    executeImport = true;
-  }
-  if (executeImport ?? false) {
-    try {
-      await onImport(json);
-      SmartDialog.showToast('导入成功');
-    } catch (e) {
-      SmartDialog.showToast('导入失败：$e');
+              TextButton(
+                onPressed: () => Get.back(result: true),
+                child: const Text('确定'),
+              ),
+            ],
+          );
+        },
+      );
+    } else {
+      executeImport = true;
     }
+    if (executeImport ?? false) {
+      try {
+        await onImport(json);
+        SmartDialog.showToast('导入成功');
+      } catch (e) {
+        SmartDialog.showToast('导入失败：$e');
+      }
+    }
+  } else {
+    SmartDialog.showToast('剪贴板无数据');
+    return;
   }
 }
 
 Future<void> importFromLocalFile<T>({
   required FutureOr<void> Function(T json) onImport,
 }) async {
-  final result = await FilePicker.pickFiles();
+  final result = await FilePicker.pickFiles(
+    type: .custom,
+    allowedExtensions: const ['json', 'txt'],
+  );
   if (result != null) {
     final path = result.files.first.path;
     if (path != null) {
       final data = await File(path).readAsString();
-      late final T json;
+      final T json;
       try {
         json = jsonDecode(data);
       } catch (e) {
@@ -172,7 +176,6 @@ void importFromInput<T>(
             json = jsonDecode(value!) as T;
             return null;
           } catch (e) {
-            if (e is FormatException) {}
             return '解析json失败：$e';
           }
         },

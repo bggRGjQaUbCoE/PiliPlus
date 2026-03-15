@@ -369,7 +369,7 @@ class PlPlayerController with BlockConfigMixin {
   late final showFsLockBtn = Pref.showFsLockBtn;
   late final keyboardControl = Pref.keyboardControl;
 
-  late final bool _autoEnterFullScreen = Pref.autoEnterFullScreen;
+  late final bool autoEnterFullScreen = Pref.autoEnterFullScreen;
   late final bool autoExitFullscreen = Pref.autoExitFullscreen;
   late final bool autoPlayEnable = Pref.autoPlayEnable;
   late final bool enableVerticalExpand = Pref.enableVerticalExpand;
@@ -630,7 +630,7 @@ class PlPlayerController with BlockConfigMixin {
       // 数据加载完成
       dataStatus.value = DataStatus.loaded;
 
-      if (autoFullScreenFlag && _autoEnterFullScreen) {
+      if (autoFullScreenFlag && autoEnterFullScreen) {
         triggerFullScreen(status: true);
       }
 

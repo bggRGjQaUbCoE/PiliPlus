@@ -29,6 +29,7 @@ class VideoReplyController extends ReplyController<MainListReply>
   bool _isFabVisible = true;
   late final AnimationController _fabAnimationCtr;
   late final Animation<Offset> animation;
+  late final Animation<double> opacityAnimation;
 
   @override
   void onInit() {
@@ -42,6 +43,9 @@ class VideoReplyController extends ReplyController<MainListReply>
         begin: const Offset(0.0, 2.0),
         end: Offset.zero,
       ).chain(CurveTween(curve: Curves.easeInOut)),
+    );
+    opacityAnimation = _fabAnimationCtr.drive(
+      CurveTween(curve: Curves.easeInOut),
     );
   }
 

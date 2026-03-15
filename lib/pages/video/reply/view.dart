@@ -133,18 +133,21 @@ class _VideoReplyPanelState extends State<VideoReplyPanel>
               bottom: kFloatingActionButtonMargin + bottom,
               child: SlideTransition(
                 position: _videoReplyController.animation,
-                child: FloatingActionButton(
-                  heroTag: null,
-                  onPressed: () {
-                    feedBack();
-                    _videoReplyController.onReply(
-                      null,
-                      oid: _videoReplyController.aid,
-                      replyType: _videoReplyController.videoType.replyType,
-                    );
-                  },
-                  tooltip: '发表评论',
-                  child: const Icon(Icons.reply),
+                child: FadeTransition(
+                  opacity: _videoReplyController.opacityAnimation,
+                  child: FloatingActionButton(
+                    heroTag: null,
+                    onPressed: () {
+                      feedBack();
+                      _videoReplyController.onReply(
+                        null,
+                        oid: _videoReplyController.aid,
+                        replyType: _videoReplyController.videoType.replyType,
+                      );
+                    },
+                    tooltip: '发表评论',
+                    child: const Icon(Icons.reply),
+                  ),
                 ),
               ),
             ),

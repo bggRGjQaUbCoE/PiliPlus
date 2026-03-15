@@ -1915,9 +1915,6 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                 child: GestureDetector(
                   onTap: () {
                     final savedVolume = Pref.volumeBeforeMute;
-                    if (PlatformUtils.isMobile) {
-                      FlutterVolumeController.setVolume(savedVolume);
-                    }
                     plPlayerController.setVolume(savedVolume);
                   },
                   child: Container(

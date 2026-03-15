@@ -1219,7 +1219,6 @@ class PlPlayerController with BlockConfigMixin {
 
   static final double maxVolume = PlatformUtils.isDesktop ? 2.0 : 1.0;
   Future<void> setVolume(double volume) async {
-    final wasMuted = this.volume.value == 0 && Pref.muteOnStartup;
     if (this.volume.value != volume) {
       this.volume.value = volume;
       try {
@@ -1227,11 +1226,7 @@ class PlPlayerController with BlockConfigMixin {
           _videoPlayerController!.setVolume(volume * 100);
         } else {
           FlutterVolumeController.updateShowSystemUI(false);
-          if (wasMuted && volume > 0) {
-            await FlutterVolumeController.setVolume(Pref.volumeBeforeMute);
-          } else {
-            await FlutterVolumeController.setVolume(volume);
-          }
+          await FlutterVolumeController.setVolume(volume);
         }
       } catch (err) {
         if (kDebugMode) debugPrint(err.toString());

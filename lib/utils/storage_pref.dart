@@ -969,4 +969,7 @@ abstract final class Pref {
 
   static double get volumeBeforeMute =>
       _setting.get(SettingBoxKey.volumeBeforeMute, defaultValue: 1.0);
+
+  static set volumeBeforeMute(double value) =>
+      _setting.put(SettingBoxKey.volumeBeforeMute, value);
 }

@@ -966,4 +966,7 @@ abstract final class Pref {
 
   static bool get muteOnStartup =>
       _setting.get(SettingBoxKey.muteOnStartup, defaultValue: false);
+
+  static double get volumeBeforeMute =>
+      _setting.get(SettingBoxKey.volumeBeforeMute, defaultValue: 1.0);
 }

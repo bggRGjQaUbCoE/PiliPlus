@@ -28,7 +28,8 @@ abstract final class SettingBoxKey {
       pgcSkipType = 'pgcSkipType',
       audioPlayMode = 'audioPlayMode',
       showBatteryLevel = 'showBatteryLevel',
-      muteOnStartup = 'muteOnStartup';
+      muteOnStartup = 'muteOnStartup',
+      volumeBeforeMute = 'volumeBeforeMute';
 
   static const String enableVerticalExpand = 'enableVerticalExpand',
       feedBackEnable = 'feedBackEnable',

@@ -369,7 +369,7 @@ class PlPlayerController with BlockConfigMixin {
   late final showFsLockBtn = Pref.showFsLockBtn;
   late final keyboardControl = Pref.keyboardControl;
 
-  late final bool autoEnterFullScreen = Pref.autoEnterFullScreen;
+  late final bool _autoEnterFullScreen = Pref.autoEnterFullScreen;
   late final bool autoExitFullscreen = Pref.autoExitFullscreen;
   late final bool autoPlayEnable = Pref.autoPlayEnable;
   late final bool enableVerticalExpand = Pref.enableVerticalExpand;
@@ -630,7 +630,7 @@ class PlPlayerController with BlockConfigMixin {
       // 数据加载完成
       dataStatus.value = DataStatus.loaded;
 
-      if (autoFullScreenFlag && autoEnterFullScreen) {
+      if (autoFullScreenFlag && _autoEnterFullScreen) {
         triggerFullScreen(status: true);
       }
 
@@ -788,32 +788,33 @@ class PlPlayerController with BlockConfigMixin {
         extras['audio-files'] =
             '"${Platform.isWindows ? audio.replaceAll(';', r'\;') : audio.replaceAll(':', r'\:')}"';
       }
-      if (kDebugMode || Platform.isAndroid) {
-        String audioNormalization = AudioNormalization.getParamFromConfig(
-          Pref.audioNormalization,
+    }
+
+    if (kDebugMode || Platform.isAndroid) {
+      String audioNormalization = AudioNormalization.getParamFromConfig(
+        Pref.audioNormalization,
+      );
+      if (volume != null && volume.isNotEmpty) {
+        audioNormalization = audioNormalization.replaceFirstMapped(
+          loudnormRegExp,
+          (i) =>
+              'loudnorm=${volume.format(
+                Map.fromEntries(
+                  i.group(1)!.split(':').map((item) {
+                    final parts = item.split('=');
+                    return MapEntry(parts[0].toLowerCase(), num.parse(parts[1]));
+                  }),
+                ),
+              )}',
         );
-        if (volume != null && volume.isNotEmpty) {
-          audioNormalization = audioNormalization.replaceFirstMapped(
-            loudnormRegExp,
-            (i) =>
-                'loudnorm=${volume.format(
-                  Map.fromEntries(
-                    i.group(1)!.split(':').map((item) {
-                      final parts = item.split('=');
-                      return MapEntry(parts[0].toLowerCase(), num.parse(parts[1]));
-                    }),
-                  ),
-                )}',
-          );
-        } else {
-          audioNormalization = audioNormalization.replaceFirst(
-            loudnormRegExp,
-            AudioNormalization.getParamFromConfig(Pref.fallbackNormalization),
-          );
-        }
-        if (audioNormalization.isNotEmpty) {
-          extras['lavfi-complex'] = '"[aid1] $audioNormalization [ao]"';
-        }
+      } else {
+        audioNormalization = audioNormalization.replaceFirst(
+          loudnormRegExp,
+          AudioNormalization.getParamFromConfig(Pref.fallbackNormalization),
+        );
+      }
+      if (audioNormalization.isNotEmpty) {
+        extras['lavfi-complex'] = '"[aid1] $audioNormalization [ao]"';
       }
     }
 
@@ -839,21 +840,21 @@ class PlPlayerController with BlockConfigMixin {
       SmartDialog.showToast('视频源为空，请重新进入本页面');
       return false;
     }
-    final Map<String, String> extras = {};
-    String video = dataSource.videoSource;
-    if (dataSource.audioSource case final audio? when (audio.isNotEmpty)) {
-      if (onlyPlayAudio.value) {
-        video = audio;
+    String? audioUri;
+    if (!isLive) {
+      if (dataSource.audioSource.isNullOrEmpty) {
+        SmartDialog.showToast('音频源为空');
       } else {
-        extras['audio-files'] =
-            '"${Platform.isWindows ? audio.replaceAll(';', r'\;') : audio.replaceAll(':', r'\:')}"';
+        audioUri = Platform.isWindows
+            ? dataSource.audioSource!.replaceAll(';', '\\;')
+            : dataSource.audioSource!.replaceAll(':', '\\:');
       }
     }
     await _videoPlayerController!.open(
       Media(
-        video,
+        dataSource.videoSource,
         start: position,
-        extras: extras.isEmpty ? null : extras,
+        extras: audioUri == null ? null : {'audio-files': '"$audioUri"'},
       ),
       play: true,
     );
@@ -1218,6 +1219,7 @@ class PlPlayerController with BlockConfigMixin {
 
   static final double maxVolume = PlatformUtils.isDesktop ? 2.0 : 1.0;
   Future<void> setVolume(double volume) async {
+    final wasMuted = this.volume.value == 0 && Pref.muteOnStartup;
     if (this.volume.value != volume) {
       this.volume.value = volume;
       try {
@@ -1225,7 +1227,11 @@ class PlPlayerController with BlockConfigMixin {
           _videoPlayerController!.setVolume(volume * 100);
         } else {
           FlutterVolumeController.updateShowSystemUI(false);
-          await FlutterVolumeController.setVolume(volume);
+          if (wasMuted && volume > 0) {
+            await FlutterVolumeController.setVolume(Pref.volumeBeforeMute);
+          } else {
+            await FlutterVolumeController.setVolume(volume);
+          }
         }
       } catch (err) {
         if (kDebugMode) debugPrint(err.toString());

@@ -96,8 +96,8 @@ void main() async {
   }
 
   if (Pref.muteOnStartup && PlatformUtils.isMobile) {
-    final currentVolume = await FlutterVolumeController.getVolume();
-    GStorage.setting.put('volumeBeforeMute', currentVolume);
+    final currentVolume = await FlutterVolumeController.getVolume() ?? 1.0;
+    Pref.volumeBeforeMute = currentVolume;
     FlutterVolumeController.setVolume(0);
   }
 

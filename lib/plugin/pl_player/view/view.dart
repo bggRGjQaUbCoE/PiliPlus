@@ -59,7 +59,6 @@ import 'package:PiliPlus/utils/path_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
-import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:canvas_danmaku/canvas_danmaku.dart';
 import 'package:collection/collection.dart';
@@ -225,11 +224,18 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     videoController = plPlayerController.videoController!;
 
     if (PlatformUtils.isMobile) {
+      final isMuteOnStartup = Pref.muteOnStartup;
+      final savedVolume = Pref.volumeBeforeMute;
+      final bool volumeRestored = isMuteOnStartup;
+
       Future.microtask(() async {
         try {
           FlutterVolumeController.updateShowSystemUI(true);
-          plPlayerController.volume.value =
-              (await FlutterVolumeController.getVolume())!;
+          var volume = (await FlutterVolumeController.getVolume())!;
+          if (isMuteOnStartup && volume == 0) {
+            volume = savedVolume;
+          }
+          plPlayerController.volume.value = volume;
           FlutterVolumeController.addListener((double value) {
             if (mounted && !plPlayerController.volumeInterceptEventStream) {
               plPlayerController.volume.value = value;
@@ -1906,12 +1912,11 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
               return Offstage(
                 offstage: !isMuted,
                 child: GestureDetector(
-                  onTap: () async {
+                  onTap: () {
+                    final savedVolume = Pref.volumeBeforeMute;
                     if (PlatformUtils.isMobile) {
-                      final savedVolume = GStorage.setting.get('volumeBeforeMute', defaultValue: 1.0);
-                      await FlutterVolumeController.setVolume(savedVolume);
+                      FlutterVolumeController.setVolume(savedVolume);
                     }
-                    final savedVolume = GStorage.setting.get('volumeBeforeMute', defaultValue: 1.0);
                     plPlayerController.setVolume(savedVolume);
                   },
                   child: Container(

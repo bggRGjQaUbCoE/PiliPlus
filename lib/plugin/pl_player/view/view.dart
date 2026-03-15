@@ -1906,11 +1906,13 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
               return Offstage(
                 offstage: !isMuted,
                 child: GestureDetector(
-                  onTap: () {
+                  onTap: () async {
                     if (PlatformUtils.isMobile) {
-                      FlutterVolumeController.setVolume(1.0);
+                      final savedVolume = GStorage.setting.get('volumeBeforeMute', defaultValue: 1.0);
+                      await FlutterVolumeController.setVolume(savedVolume);
                     }
-                    plPlayerController.setVolume(1.0);
+                    final savedVolume = GStorage.setting.get('volumeBeforeMute', defaultValue: 1.0);
+                    plPlayerController.setVolume(savedVolume);
                   },
                   child: Container(
                     width: 44,

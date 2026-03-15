@@ -234,6 +234,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
           final systemVolume = (await FlutterVolumeController.getVolume())!;
           if (isMuteOnStartup && systemVolume == 0) {
             plPlayerController.volume.value = savedVolume;
+            await FlutterVolumeController.setVolume(savedVolume);
           } else {
             plPlayerController.volume.value = systemVolume;
           }

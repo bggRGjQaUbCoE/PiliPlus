@@ -225,6 +225,10 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     videoController = plPlayerController.videoController!;
 
     if (PlatformUtils.isMobile) {
+      final savedVolume = Pref.volumeBeforeMute;
+      final isMuteOnStartup = Pref.muteOnStartup;
+      var _volumeRestored = false;
+
       Future.microtask(() async {
         try {
           FlutterVolumeController.updateShowSystemUI(true);
@@ -232,7 +236,14 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
               (await FlutterVolumeController.getVolume())!;
           FlutterVolumeController.addListener((double value) {
             if (mounted && !plPlayerController.volumeInterceptEventStream) {
-              plPlayerController.volume.value = value;
+              if (isMuteOnStartup && !_volumeRestored && value > 0) {
+                _volumeRestored = true;
+                plPlayerController.volume.value = savedVolume;
+                FlutterVolumeController.setVolume(savedVolume);
+              } else {
+                plPlayerController.volume.value = value;
+                if (value == 0) _volumeRestored = false;
+              }
               if (Platform.isIOS && !FlutterVolumeController.showSystemUI) {
                 plPlayerController
                   ..volumeIndicator.value = true

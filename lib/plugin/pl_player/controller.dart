@@ -839,21 +839,21 @@ class PlPlayerController with BlockConfigMixin {
       SmartDialog.showToast('视频源为空，请重新进入本页面');
       return false;
     }
-    String? audioUri;
-    if (!isLive) {
-      if (dataSource.audioSource.isNullOrEmpty) {
-        SmartDialog.showToast('音频源为空');
+    final Map<String, String> extras = {};
+    String video = dataSource.videoSource;
+    if (dataSource.audioSource case final audio? when (audio.isNotEmpty)) {
+      if (onlyPlayAudio.value) {
+        video = audio;
       } else {
-        audioUri = Platform.isWindows
-            ? dataSource.audioSource!.replaceAll(';', '\\;')
-            : dataSource.audioSource!.replaceAll(':', '\\:');
+        extras['audio-files'] =
+            '"${Platform.isWindows ? audio.replaceAll(';', r'\;') : audio.replaceAll(':', r'\:')}"';
       }
     }
     await _videoPlayerController!.open(
       Media(
-        dataSource.videoSource,
+        video,
         start: position,
-        extras: audioUri == null ? null : {'audio-files': '"$audioUri"'},
+        extras: extras.isEmpty ? null : extras,
       ),
       play: true,
     );

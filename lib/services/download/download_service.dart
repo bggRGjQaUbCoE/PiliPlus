@@ -138,7 +138,7 @@ class DownloadService extends GetxService {
     final currentTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     final entry = BiliDownloadEntryInfo(
       mediaType: 2,
-      hasDashAudio: true,
+      hasDashAudio: false,
       isCompleted: false,
       totalBytes: 0,
       downloadedBytes: 0,
@@ -206,7 +206,7 @@ class DownloadService extends GetxService {
     );
     final entry = BiliDownloadEntryInfo(
       mediaType: 2,
-      hasDashAudio: true,
+      hasDashAudio: false,
       isCompleted: false,
       totalBytes: 0,
       downloadedBytes: 0,

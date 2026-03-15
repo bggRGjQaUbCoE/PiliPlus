@@ -10,13 +10,13 @@ import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/select_mask.dart';
 import 'package:PiliPlus/models/common/badge_type.dart';
-import 'package:PiliPlus/models_new/download/bili_download_entry_info.dart';
 import 'package:PiliPlus/models_new/download/download_info.dart';
 import 'package:PiliPlus/pages/download/controller.dart';
 import 'package:PiliPlus/pages/download/detail/view.dart';
 import 'package:PiliPlus/pages/download/detail/widgets/item.dart';
 import 'package:PiliPlus/pages/download/search/view.dart';
 import 'package:PiliPlus/services/download/download_service.dart';
+import 'package:PiliPlus/utils/cache_manager.dart';
 import 'package:PiliPlus/utils/extension/iterable_ext.dart' show IterableExt;
 import 'package:PiliPlus/utils/grid.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
@@ -67,20 +67,16 @@ class _DownloadPageState extends State<DownloadPage> {
                   visualDensity: VisualDensity.compact,
                 ),
                 onPressed: () async {
-                  final allChecked = _controller.allChecked.toSet();
+                  final future = [
+                    for (final page in _controller.allChecked)
+                      for (final e in page.entries)
+                        _downloadService.downloadDanmaku(
+                          entry: e,
+                          isUpdate: true,
+                        ),
+                  ];
                   _controller.handleSelect();
-                  final list = <BiliDownloadEntryInfo>[];
-                  for (final page in allChecked) {
-                    list.addAll(page.entries);
-                  }
-                  final res = await Future.wait(
-                    list.map(
-                      (e) => _downloadService.downloadDanmaku(
-                        entry: e,
-                        isUpdate: true,
-                      ),
-                    ),
-                  );
+                  final res = await Future.wait(future);
                   if (res.every((e) => e)) {
                     SmartDialog.showToast('更新成功');
                   } else {
@@ -355,7 +351,7 @@ class _DownloadPageState extends State<DownloadPage> {
                       top: 6.0,
                     ),
                   Positioned.fill(
-                    child: selectMask(theme, pageInfo.checked),
+                    child: selectMask(theme.colorScheme, pageInfo.checked),
                   ),
                 ],
               ),
@@ -381,17 +377,14 @@ class _DownloadPageState extends State<DownloadPage> {
                       crossAxisAlignment: .end,
                       mainAxisAlignment: .spaceBetween,
                       children: [
-                        if (first.ownerName case final ownerName?)
-                          Text(
-                            ownerName,
-                            style: TextStyle(
-                              fontSize: 12,
-                              height: 1.6,
-                              color: theme.colorScheme.outline,
-                            ),
-                          )
-                        else
-                          const Spacer(),
+                        Text(
+                          '${CacheManager.formatSize(pageInfo.entries.fold(0, (p, n) => p + n.totalBytes))}  ${first.ownerName ?? ""}',
+                          style: TextStyle(
+                            fontSize: 12,
+                            height: 1.6,
+                            color: theme.colorScheme.outline,
+                          ),
+                        ),
                         pageInfo.entries.first.moreBtn(theme),
                       ],
                     ),

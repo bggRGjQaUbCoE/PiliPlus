@@ -275,7 +275,10 @@ class DetailItem extends StatelessWidget {
                       type: PBadgeType.gray,
                     ),
                   Positioned.fill(
-                    child: selectMask(theme, checked ?? entry.checked),
+                    child: selectMask(
+                      theme.colorScheme,
+                      checked ?? entry.checked,
+                    ),
                   ),
                 ],
               ),

@@ -1896,6 +1896,39 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
             ),
         ],
 
+        if (Pref.muteOnStartup && !isFullScreen && !plPlayerController.isDesktopPip)
+          Positioned(
+            right: 16,
+            bottom: 80,
+            child: Obx(() {
+              final isMuted = plPlayerController.volume.value == 0;
+              return Offstage(
+                offstage: !isMuted,
+                child: GestureDetector(
+                  onTap: () {
+                    if (PlatformUtils.isMobile) {
+                      FlutterVolumeController.setVolume(1.0);
+                    }
+                    plPlayerController.setVolume(1.0);
+                  },
+                  child: Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.5),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.volume_up,
+                      color: Colors.white,
+                      size: 24,
+                    ),
+                  ),
+                ),
+              );
+            }),
+          ),
+
         Obx(() {
           if (plPlayerController.dataStatus.loading ||
               (plPlayerController.isBuffering.value &&

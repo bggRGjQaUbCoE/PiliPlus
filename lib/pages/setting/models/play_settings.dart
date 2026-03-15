@@ -51,6 +51,13 @@ List<SettingsModel> get playSettings => [
     defaultVal: false,
   ),
   const SwitchModel(
+    title: '打开时静音',
+    subtitle: '每次打开APP时自动静音',
+    leading: Icon(Icons.volume_off_outlined),
+    setKey: SettingBoxKey.muteOnStartup,
+    defaultVal: false,
+  ),
+  const SwitchModel(
     title: '全屏显示锁定按钮',
     leading: Icon(Icons.lock_outline),
     setKey: SettingBoxKey.showFsLockBtn,

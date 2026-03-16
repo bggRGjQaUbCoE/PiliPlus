@@ -29,10 +29,13 @@ class Request {
   static late final IOHttpClientAdapter _http11Adapter;
   static late AccountManager accountManager;
   static bool _isCookieInitialized = false;
+  static late final bool _enableHttp2AtStartup;
   static late final Dio dio;
   static Dio? _http11Dio;
   static Dio get http11Dio =>
-      _http11Dio ??= Pref.enableHttp2 ? _createDio(enableHttp2: false) : dio;
+      _http11Dio ??= _enableHttp2AtStartup
+          ? _createDio(enableHttp2: false)
+          : dio;
   factory Request() => _instance;
 
   /// 设置cookie
@@ -108,6 +111,7 @@ class Request {
    * config it and create
    */
   Request._internal() {
+    _enableHttp2AtStartup = Pref.enableHttp2;
     final bool enableSystemProxy;
     String? systemProxyHost;
     int? systemProxyPort;
@@ -132,7 +136,7 @@ class Request {
     );
 
     dio = _createDio(
-      enableHttp2: Pref.enableHttp2,
+      enableHttp2: _enableHttp2AtStartup,
       enableSystemProxy: enableSystemProxy,
       systemProxyHost: systemProxyHost,
       systemProxyPort: systemProxyPort,

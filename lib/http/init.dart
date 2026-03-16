@@ -26,17 +26,23 @@ class Request {
   static const _brotliDecoder = BrotliDecoder();
 
   static final Request _instance = Request._internal();
+  static late final IOHttpClientAdapter _http11Adapter;
   static late AccountManager accountManager;
+  static bool _isCookieInitialized = false;
   static late final Dio dio;
   static Dio? _http11Dio;
-  static Dio get http11Dio => _http11Dio ?? dio;
+  static Dio get http11Dio =>
+      _http11Dio ??= Pref.enableHttp2 ? _createDio(enableHttp2: false) : dio;
   factory Request() => _instance;
 
   /// 设置cookie
   static void setCookie() {
+    _isCookieInitialized = true;
     accountManager = AccountManager();
     dio.interceptors.add(accountManager);
-    _http11Dio?.interceptors.add(accountManager);
+    if (_http11Dio case final http11Dio? when !identical(http11Dio, dio)) {
+      http11Dio.interceptors.add(accountManager);
+    }
     Accounts.refresh();
     LoginUtils.setWebCookie();
 
@@ -102,10 +108,9 @@ class Request {
    * config it and create
    */
   Request._internal() {
-    final enableHttp2 = Pref.enableHttp2;
     final bool enableSystemProxy;
-    late final String systemProxyHost;
-    late final int? systemProxyPort;
+    String? systemProxyHost;
+    int? systemProxyPort;
     if (Pref.enableSystemProxy) {
       systemProxyHost = Pref.systemProxyHost;
       systemProxyPort = int.tryParse(Pref.systemProxyPort);
@@ -114,7 +119,7 @@ class Request {
       enableSystemProxy = false;
     }
 
-    final http11Adapter = IOHttpClientAdapter(
+    _http11Adapter = IOHttpClientAdapter(
       createHttpClient: enableSystemProxy
           ? () => HttpClient()
               ..idleTimeout = const Duration(seconds: 15)
@@ -126,77 +131,95 @@ class Request {
               ..autoUncompress = false, // Http2Adapter没有自动解压, 统一行为
     );
 
-    Dio createDio({required bool enableHttp2}) {
-      final client = Dio(
-        BaseOptions(
-          //请求基地址,可以包含子路径
-          baseUrl: HttpString.apiBaseUrl,
-          //连接服务器超时时间，单位是毫秒.
-          connectTimeout: const Duration(milliseconds: 10000),
-          //响应流上前后两次接受到数据的间隔，单位为毫秒。
-          receiveTimeout: const Duration(milliseconds: 10000),
-          //Http请求头.
-          headers: {
-            'user-agent': 'Dart/3.6 (dart:io)', // Http2Adapter不会自动添加标头
-            if (!enableHttp2) 'connection': 'keep-alive',
-            'accept-encoding': 'br,gzip',
-          },
-          responseDecoder: _responseDecoder, // Http2Adapter没有自动解压
-          persistentConnection: true,
-        ),
-      );
+    dio = _createDio(
+      enableHttp2: Pref.enableHttp2,
+      enableSystemProxy: enableSystemProxy,
+      systemProxyHost: systemProxyHost,
+      systemProxyPort: systemProxyPort,
+    );
+  }
 
-      client.httpClientAdapter = enableHttp2
-          ? Http2Adapter(
-              ConnectionManager(
-                idleTimeout: const Duration(seconds: 15),
-                onClientCreate: enableSystemProxy
-                    ? (_, config) {
-                        config
-                          ..proxy = Uri(
-                            scheme: 'http',
-                            host: systemProxyHost,
-                            port: systemProxyPort,
-                          )
-                          ..onBadCertificate = (_) => true;
-                      }
-                    : Pref.badCertificateCallback
-                    ? (_, config) {
-                        config.onBadCertificate = (_) => true;
-                      }
-                    : null,
-              ),
-              fallbackAdapter: http11Adapter,
-            )
-          : http11Adapter;
+  static Dio _createDio({
+    required bool enableHttp2,
+    bool? enableSystemProxy,
+    String? systemProxyHost,
+    int? systemProxyPort,
+  }) {
+    final client = Dio(
+      BaseOptions(
+        //请求基地址,可以包含子路径
+        baseUrl: HttpString.apiBaseUrl,
+        //连接服务器超时时间，单位是毫秒.
+        connectTimeout: const Duration(milliseconds: 10000),
+        //响应流上前后两次接受到数据的间隔，单位为毫秒。
+        receiveTimeout: const Duration(milliseconds: 10000),
+        //Http请求头.
+        headers: {
+          'user-agent': 'Dart/3.6 (dart:io)', // Http2Adapter不会自动添加标头
+          if (!enableHttp2) 'connection': 'keep-alive',
+          'accept-encoding': 'br,gzip',
+        },
+        responseDecoder: _responseDecoder, // Http2Adapter没有自动解压
+        persistentConnection: true,
+      ),
+    );
 
-      // 先于其他Interceptor
-      client.interceptors.add(
-        RetryInterceptor(client, Pref.retryCount, Pref.retryDelay),
-      );
+    final effectiveEnableSystemProxy = enableSystemProxy ?? Pref.enableSystemProxy;
+    final effectiveSystemProxyHost = systemProxyHost ?? Pref.systemProxyHost;
+    final effectiveSystemProxyPort =
+        systemProxyPort ?? int.tryParse(Pref.systemProxyPort);
 
-      // 日志拦截器 输出请求、响应内容
-      if (kDebugMode) {
-        client.interceptors.add(
-          LogInterceptor(
-            request: false,
-            requestHeader: false,
-            responseHeader: false,
-          ),
-        );
-      }
+    client.httpClientAdapter = enableHttp2
+        ? Http2Adapter(
+            ConnectionManager(
+              idleTimeout: const Duration(seconds: 15),
+              onClientCreate: effectiveEnableSystemProxy
+                  ? (_, config) {
+                      config
+                        ..proxy = Uri(
+                          scheme: 'http',
+                          host: effectiveSystemProxyHost,
+                          port: effectiveSystemProxyPort,
+                        )
+                        ..onBadCertificate = (_) => true;
+                    }
+                  : Pref.badCertificateCallback
+                  ? (_, config) {
+                      config.onBadCertificate = (_) => true;
+                    }
+                  : null,
+            ),
+            fallbackAdapter: _http11Adapter,
+          )
+        : _http11Adapter;
 
-      client
-        ..transformer = BackgroundTransformer()
-        ..options.validateStatus = (int? status) {
-          return status != null && status >= 200 && status < 300;
-        };
+    // 先于其他Interceptor
+    client.interceptors.add(
+      RetryInterceptor(client, Pref.retryCount, Pref.retryDelay),
+    );
 
-      return client;
+    if (_isCookieInitialized) {
+      client.interceptors.add(accountManager);
     }
 
-    dio = createDio(enableHttp2: enableHttp2);
-    _http11Dio = enableHttp2 ? createDio(enableHttp2: false) : null;
+    // 日志拦截器 输出请求、响应内容
+    if (kDebugMode) {
+      client.interceptors.add(
+        LogInterceptor(
+          request: false,
+          requestHeader: false,
+          responseHeader: false,
+        ),
+      );
+    }
+
+    client
+      ..transformer = BackgroundTransformer()
+      ..options.validateStatus = (int? status) {
+        return status != null && status >= 200 && status < 300;
+      };
+
+    return client;
   }
 
   /*

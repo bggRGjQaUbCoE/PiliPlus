@@ -215,7 +215,7 @@ class Request {
    */
   Future<Response> get<T>(
     String url, {
-    Map<String, Object>? queryParameters,
+    Map<String, dynamic>? queryParameters,
     Options? options,
     CancelToken? cancelToken,
   }) async {
@@ -243,7 +243,7 @@ class Request {
   Future<Response> post<T>(
     String url, {
     Object? data,
-    Map<String, Object>? queryParameters,
+    Map<String, dynamic>? queryParameters,
     Options? options,
     CancelToken? cancelToken,
   }) async {

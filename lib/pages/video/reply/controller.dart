@@ -6,11 +6,9 @@ import 'package:PiliPlus/models/common/video/video_type.dart';
 import 'package:PiliPlus/pages/common/reply_controller.dart';
 import 'package:PiliPlus/pages/video/controller.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-class VideoReplyController extends ReplyController<MainListReply>
-    with GetSingleTickerProviderStateMixin {
+class VideoReplyController extends ReplyController<MainListReply> {
   VideoReplyController({
     required this.aid,
     required this.videoType,
@@ -26,39 +24,6 @@ class VideoReplyController extends ReplyController<MainListReply>
   @override
   dynamic get sourceId => IdUtils.av2bv(aid);
 
-  bool _isFabVisible = true;
-  late final AnimationController _fabAnimationCtr;
-  late final Animation<Offset> animation;
-
-  @override
-  void onInit() {
-    super.onInit();
-    _fabAnimationCtr = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 100),
-    )..forward();
-    animation = _fabAnimationCtr.drive(
-      Tween<Offset>(
-        begin: const Offset(0.0, 2.0),
-        end: Offset.zero,
-      ).chain(CurveTween(curve: Curves.easeInOut)),
-    );
-  }
-
-  void showFab() {
-    if (!_isFabVisible) {
-      _isFabVisible = true;
-      _fabAnimationCtr.forward();
-    }
-  }
-
-  void hideFab() {
-    if (_isFabVisible) {
-      _isFabVisible = false;
-      _fabAnimationCtr.reverse();
-    }
-  }
-
   @override
   List<ReplyInfo>? getDataList(MainListReply response) {
     return response.replies;
@@ -72,10 +37,4 @@ class VideoReplyController extends ReplyController<MainListReply>
     cursorNext: cursorNext,
     offset: paginationReply?.nextOffset,
   );
-
-  @override
-  void onClose() {
-    _fabAnimationCtr.dispose();
-    super.onClose();
-  }
 }

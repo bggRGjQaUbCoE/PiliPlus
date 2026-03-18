@@ -25,6 +25,7 @@ class FileSource extends DataSource {
   FileSource({
     required this.dir,
     required this.isMp4,
+    required bool hasDashAudio,
     required String typeTag,
   }) : super(
          videoSource: path.join(
@@ -32,7 +33,7 @@ class FileSource extends DataSource {
            typeTag,
            isMp4 ? PathUtils.videoNameType1 : PathUtils.videoNameType2,
          ),
-         audioSource: isMp4
+         audioSource: isMp4 || !hasDashAudio
              ? null
              : path.join(dir, typeTag, PathUtils.audioNameType2),
        );

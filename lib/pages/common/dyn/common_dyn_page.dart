@@ -9,6 +9,7 @@ import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
     show ReplyInfo;
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/pages/common/dyn/common_dyn_controller.dart';
+import 'package:PiliPlus/pages/common/fab_mixin.dart';
 import 'package:PiliPlus/pages/video/reply/widgets/reply_item_grpc.dart';
 import 'package:PiliPlus/pages/video/reply_reply/view.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
@@ -22,7 +23,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 abstract class CommonDynPageState<T extends StatefulWidget> extends State<T>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, FabMixin {
   CommonDynController get controller;
 
   late final ScrollController scrollController;
@@ -36,26 +37,9 @@ abstract class CommonDynPageState<T extends StatefulWidget> extends State<T>
   late double maxWidth;
   late double maxHeight;
 
-  bool _showFab = true;
-
-  final fabOffset = const Offset(0, 1);
-
-  late final AnimationController _fabAnimationCtr;
-  late final Animation<Offset> fabAnim;
-
   @override
   void initState() {
     super.initState();
-    _fabAnimationCtr = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 200),
-    )..forward();
-    fabAnim = _fabAnimationCtr.drive(
-      Tween<Offset>(
-        begin: fabOffset,
-        end: Offset.zero,
-      ).chain(CurveTween(curve: Curves.easeInOut)),
-    );
     scrollController = ScrollController()..addListener(listener);
   }
 
@@ -66,20 +50,6 @@ abstract class CommonDynPageState<T extends StatefulWidget> extends State<T>
       showFab();
     } else if (pos.any((e) => e.userScrollDirection == .reverse)) {
       hideFab();
-    }
-  }
-
-  void showFab() {
-    if (!_showFab) {
-      _showFab = true;
-      _fabAnimationCtr.forward();
-    }
-  }
-
-  void hideFab() {
-    if (_showFab) {
-      _showFab = false;
-      _fabAnimationCtr.reverse();
     }
   }
 
@@ -98,7 +68,6 @@ abstract class CommonDynPageState<T extends StatefulWidget> extends State<T>
     scrollController
       ..removeListener(listener)
       ..dispose();
-    _fabAnimationCtr.dispose();
     super.dispose();
   }
 
@@ -302,6 +271,16 @@ abstract class CommonDynPageState<T extends StatefulWidget> extends State<T>
       angle: pi / 2,
       child: const Icon(Icons.splitscreen, size: 19),
     ),
+  );
+
+  FloatingActionButtonLocation get floatingActionButtonLocation =>
+      controller.showDynActionBar
+      ? const ActionBarLocation()
+      : const NoBottomPaddingFabLocation();
+
+  Widget get fabButton => Padding(
+    padding: .only(bottom: padding.bottom + kFloatingActionButtonMargin),
+    child: replyButton,
   );
 
   Widget get replyButton => FloatingActionButton(

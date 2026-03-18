@@ -161,6 +161,7 @@ abstract final class DownloadHttp {
               dashDrmType: 0,
             ),
           ];
+          entry.hasDashAudio = true;
         }
         return Type2(
           duration: dash.duration!,

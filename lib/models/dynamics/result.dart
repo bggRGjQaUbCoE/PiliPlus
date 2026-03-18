@@ -104,6 +104,8 @@ class DynamicItemModel {
   String? type;
   bool? visible;
 
+  late bool linkFolded = false;
+
   // opus
   Fallback? fallback;
 

@@ -12,6 +12,13 @@ import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart'
 import 'package:flutter/foundation.dart' show clampDouble;
 import 'package:flutter/material.dart' hide RefreshIndicator;
 
+/// The distance from the child's top or bottom [edgeOffset] where
+/// the refresh indicator will settle. During the drag that exposes the refresh
+/// indicator, its actual displacement may significantly exceed this value.
+///
+/// In most cases, [displacement] distance starts counting from the parent's
+/// edges. However, if [edgeOffset] is larger than zero then the [displacement]
+/// value is calculated from that offset instead of the parent's edge.
 double displacement = Pref.refreshDisplacement;
 
 // The over-scroll distance that moves the indicator to its maximum
@@ -125,7 +132,6 @@ class RefreshIndicator extends StatefulWidget {
   /// The [semanticsValue] may be used to specify progress on the widget.
   const RefreshIndicator({
     super.key,
-    this.displacement = 40.0,
     this.edgeOffset = 0.0,
     required this.onRefresh,
     this.color,
@@ -144,15 +150,6 @@ class RefreshIndicator extends StatefulWidget {
   ///
   /// Typically a [ListView] or [CustomScrollView].
   final Widget child;
-
-  /// The distance from the child's top or bottom [edgeOffset] where
-  /// the refresh indicator will settle. During the drag that exposes the refresh
-  /// indicator, its actual displacement may significantly exceed this value.
-  ///
-  /// In most cases, [displacement] distance starts counting from the parent's
-  /// edges. However, if [edgeOffset] is larger than zero then the [displacement]
-  /// value is calculated from that offset instead of the parent's edge.
-  final double displacement;
 
   /// The offset where [RefreshProgressIndicator] starts to appear on drag start.
   ///
@@ -522,7 +519,7 @@ class RefreshIndicatorState extends State<RefreshIndicator>
               axisAlignment: 1.0,
               sizeFactor: _positionFactor, // This is what brings it down.
               child: Padding(
-                padding: EdgeInsets.only(top: widget.displacement),
+                padding: EdgeInsets.only(top: displacement),
                 child: Align(
                   alignment: Alignment.topCenter,
                   child: ScaleTransition(
@@ -571,18 +568,8 @@ class RefreshIndicatorState extends State<RefreshIndicator>
   }
 }
 
-Widget refreshIndicator({
-  required RefreshCallback onRefresh,
-  required Widget child,
-  bool isClampingScrollPhysics = false,
-}) {
-  return RefreshIndicator(
-    displacement: displacement,
-    onRefresh: onRefresh,
-    isClampingScrollPhysics: isClampingScrollPhysics,
-    child: child,
-  );
-}
+// ignore: camel_case_types
+typedef refreshIndicator = RefreshIndicator;
 
 class RefreshScrollBehavior extends CustomScrollBehavior {
   const RefreshScrollBehavior(

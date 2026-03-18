@@ -1,11 +1,13 @@
 import 'package:PiliPlus/common/widgets/appbar/appbar.dart';
 import 'package:PiliPlus/common/widgets/flutter/page/tabs.dart';
+import 'package:PiliPlus/common/widgets/flutter/pop_scope.dart';
 import 'package:PiliPlus/common/widgets/gesture/horizontal_drag_gesture_recognizer.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart';
 import 'package:PiliPlus/common/widgets/view_safe_area.dart';
 import 'package:PiliPlus/models/common/later_view_type.dart';
 import 'package:PiliPlus/models_new/later/list.dart';
-import 'package:PiliPlus/pages/fav_detail/view.dart';
+import 'package:PiliPlus/pages/common/fab_mixin.dart'
+    show NoRightMarginFabLocation;
 import 'package:PiliPlus/pages/later/base_controller.dart';
 import 'package:PiliPlus/pages/later/controller.dart';
 import 'package:PiliPlus/utils/accounts.dart';
@@ -64,7 +66,7 @@ class _LaterPageState extends State<LaterPage>
     return Obx(
       () {
         final enableMultiSelect = _baseCtr.enableMultiSelect.value;
-        return PopScope(
+        return popScope(
           canPop: !enableMultiSelect,
           onPopInvokedWithResult: (didPop, result) {
             if (enableMultiSelect) {
@@ -74,7 +76,7 @@ class _LaterPageState extends State<LaterPage>
           child: Scaffold(
             resizeToAvoidBottomInset: false,
             appBar: _buildAppbar(enableMultiSelect),
-            floatingActionButtonLocation: const CustomFabLocation(),
+            floatingActionButtonLocation: const NoRightMarginFabLocation(),
             floatingActionButton: Padding(
               padding: const .only(right: kFloatingActionButtonMargin),
               child: Obx(

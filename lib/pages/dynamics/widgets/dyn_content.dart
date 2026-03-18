@@ -33,7 +33,7 @@ List<Widget> dynContent(
       floor: floor,
     ),
     if (moduleDynamic?.additional case final additional?)
-      addWidget(
+      ?addWidget(
         theme: theme,
         context,
         idStr: item.idStr,

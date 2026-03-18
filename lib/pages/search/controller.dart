@@ -54,7 +54,7 @@ abstract class DebounceStreamState<T extends StatefulWidget, S> extends State<T>
 
 class BaseSearchController extends GetxController {
   final historyList = List<String>.from(
-    GStorage.historyWord.get('cacheList') ?? [],
+    GStorage.historyWord.get('cacheList') ?? const <String>[],
   ).obs;
 
   late final Rx<LoadingState<SearchTrendingData>> trendingState;

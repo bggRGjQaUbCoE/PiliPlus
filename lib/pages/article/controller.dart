@@ -32,8 +32,6 @@ class ArticleController extends CommonDynController {
 
   late final RxInt topIndex = 0.obs;
 
-  late final showDynActionBar = Pref.showDynActionBar;
-
   @override
   dynamic get sourceId => commentType == 12 ? 'cv$commentId' : id;
 

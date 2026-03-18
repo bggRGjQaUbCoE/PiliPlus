@@ -279,7 +279,7 @@ class _EpisodePanelState extends State<EpisodePanel>
   ) {
     final isCurrTab = tabIndex == widget.initialTabIndex;
     return KeepAliveWrapper(
-      builder: (context) => CustomScrollView(
+      child: CustomScrollView(
         reverse: _isReversed[tabIndex],
         physics: const AlwaysScrollableScrollPhysics(),
         controller: _itemScrollController[tabIndex],

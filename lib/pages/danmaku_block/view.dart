@@ -64,7 +64,7 @@ class _DanmakuBlockPageState extends State<DanmakuBlockPage> {
         children: DmBlockType.values
             .map(
               (e) => KeepAliveWrapper(
-                builder: (context) => Obx(
+                child: Obx(
                   () => tabViewBuilder(e.index, _controller.rules[e.index]),
                 ),
               ),

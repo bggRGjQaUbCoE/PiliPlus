@@ -33,7 +33,7 @@ import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show HapticFeedback;
 import 'package:get/get_core/src/get_main.dart';
-import 'package:get/get_navigation/get_navigation.dart';
+import 'package:get/get_navigation/src/extension_navigation.dart';
 
 class ImageModel {
   ImageModel({
@@ -74,14 +74,14 @@ class ImageGridView extends StatelessWidget {
   final bool fullScreen;
 
   static bool horizontalPreview = Pref.horizontalPreview;
-  static const _routes = ['/videoV', '/dynamicDetail'];
+  static final _regex = RegExp(r'/videoV|/dynamicDetail$|/articlePage');
 
   void _onTap(BuildContext context, int index) {
     final imgList = picArr.map(
       (item) {
         bool isLive = item.isLivePhoto;
         return SourceModel(
-          sourceType: isLive ? SourceType.livePhoto : SourceType.networkImage,
+          sourceType: isLive ? .livePhoto : .networkImage,
           url: item.url,
           liveUrl: isLive ? item.liveUrl : null,
           width: isLive ? item.width.toInt() : null,
@@ -92,7 +92,7 @@ class ImageGridView extends StatelessWidget {
     ).toList();
     if (horizontalPreview &&
         !fullScreen &&
-        _routes.contains(Get.currentRoute) &&
+        Get.currentRoute.startsWith(_regex) &&
         !context.mediaQuerySize.isPortrait) {
       final scaffoldState = Scaffold.maybeOf(context);
       if (scaffoldState != null) {
@@ -108,6 +108,7 @@ class ImageGridView extends StatelessWidget {
     PageUtils.imageView(
       initialPage: index,
       imgList: imgList,
+      tag: hashCode.toString(),
     );
   }
 
@@ -255,7 +256,7 @@ class ImageGridView extends StatelessWidget {
             );
             if (!item.isLongPic) {
               child = Hero(
-                tag: item.url,
+                tag: '${item.url}$hashCode',
                 child: child,
               );
             }

@@ -136,9 +136,7 @@ class _UpowerRankPageState extends State<UpowerRankPage>
                               Expanded(
                                 child: tabBarView(
                                   children: [
-                                    KeepAliveWrapper(
-                                      builder: (context) => child,
-                                    ),
+                                    KeepAliveWrapper(child: child),
                                     ...tabs
                                         .skip(1)
                                         .map(

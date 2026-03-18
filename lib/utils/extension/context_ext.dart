@@ -1,3 +1,4 @@
+import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:flutter/material.dart';
 
 /// from Getx
@@ -71,4 +72,10 @@ extension ContextExtensions on BuildContext {
 
   /// True if the current device is Tablet
   bool get isTablet => isSmallTablet || isLargeTablet;
+
+  String get platformName => PlatformUtils.isDesktop
+      ? 'desktop'
+      : isTablet
+      ? 'pad'
+      : 'phone';
 }

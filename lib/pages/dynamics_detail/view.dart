@@ -70,6 +70,11 @@ class _DynamicDetailPageState extends CommonDynPageState<DynamicDetailPage> {
               )
             : _buildBody(theme),
       ),
+      floatingActionButtonLocation: floatingActionButtonLocation,
+      floatingActionButton: SlideTransition(
+        position: fabAnimation,
+        child: _buildBottom(theme),
+      ),
     );
   }
 
@@ -319,166 +324,139 @@ class _DynamicDetailPageState extends CommonDynPageState<DynamicDetailPage> {
         ],
       );
     }
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        child,
-        _buildBottom(theme),
-      ],
-    );
+    return child;
   }
 
   Widget _buildBottom(ThemeData theme) {
-    return Positioned(
-      left: 0,
-      right: 0,
-      bottom: 0,
-      child: SlideTransition(
-        position: fabAnim,
-        child: Builder(
-          builder: (context) {
-            if (!controller.showDynActionBar) {
-              return Align(
-                alignment: Alignment.bottomRight,
-                child: Padding(
-                  padding: EdgeInsets.only(
-                    right: kFloatingActionButtonMargin,
-                    bottom: padding.bottom + kFloatingActionButtonMargin,
+    if (!controller.showDynActionBar) {
+      return fabButton;
+    }
+
+    final primary = theme.colorScheme.primary;
+    final outline = theme.colorScheme.outline;
+    final btnStyle = TextButton.styleFrom(
+      tapTargetSize: .padded,
+      padding: const EdgeInsets.symmetric(horizontal: 15),
+      foregroundColor: outline,
+    );
+
+    Widget textIconButton({
+      required IconData icon,
+      required String text,
+      required DynamicStat? stat,
+      required ValueChanged<Color> onPressed,
+      IconData? activatedIcon,
+    }) {
+      final status = stat?.status == true;
+      final color = status ? primary : outline;
+      final iconWidget = Icon(
+        status ? activatedIcon : icon,
+        size: 16,
+        color: color,
+      );
+      return TextButton.icon(
+        onPressed: () => onPressed(iconWidget.color!),
+        icon: iconWidget,
+        style: btnStyle,
+        label: Text(
+          stat?.count != null ? NumUtils.numFormat(stat!.count) : text,
+          style: TextStyle(color: color),
+        ),
+      );
+    }
+
+    final moduleStat = controller.dynItem.modules.moduleStat;
+    return Padding(
+      padding: .only(left: padding.left, right: padding.right),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(
+              right: kFloatingActionButtonMargin,
+              bottom: kFloatingActionButtonMargin,
+            ),
+            child: replyButton,
+          ),
+          Container(
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surface,
+              border: Border(
+                top: BorderSide(
+                  color: theme.colorScheme.outline.withValues(
+                    alpha: 0.08,
                   ),
-                  child: replyButton,
                 ),
-              );
-            }
-
-            final moduleStat = controller.dynItem.modules.moduleStat;
-            final primary = theme.colorScheme.primary;
-            final outline = theme.colorScheme.outline;
-            final btnStyle = TextButton.styleFrom(
-              tapTargetSize: .padded,
-              padding: const EdgeInsets.symmetric(horizontal: 15),
-              foregroundColor: outline,
-            );
-
-            Widget textIconButton({
-              required IconData icon,
-              required String text,
-              required DynamicStat? stat,
-              required ValueChanged<Color> onPressed,
-              IconData? activatedIcon,
-            }) {
-              final status = stat?.status == true;
-              final color = status ? primary : outline;
-              final iconWidget = Icon(
-                status ? activatedIcon : icon,
-                size: 16,
-                color: color,
-              );
-              return TextButton.icon(
-                onPressed: () => onPressed(iconWidget.color!),
-                icon: iconWidget,
-                style: btnStyle,
-                label: Text(
-                  stat?.count != null ? NumUtils.numFormat(stat!.count) : text,
-                  style: TextStyle(color: color),
-                ),
-              );
-            }
-
-            return Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.end,
+              ),
+            ),
+            padding: EdgeInsets.only(bottom: padding.bottom),
+            child: Row(
               children: [
-                Padding(
-                  padding: const EdgeInsets.only(
-                    right: kFloatingActionButtonMargin,
-                    bottom: kFloatingActionButtonMargin,
-                  ),
-                  child: replyButton,
-                ),
-                Container(
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.surface,
-                    border: Border(
-                      top: BorderSide(
-                        color: theme.colorScheme.outline.withValues(
-                          alpha: 0.08,
-                        ),
-                      ),
-                    ),
-                  ),
-                  padding: EdgeInsets.only(bottom: padding.bottom),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      Expanded(
-                        child: Builder(
-                          builder: (btnContext) {
-                            final forward = moduleStat?.forward;
-                            return textIconButton(
-                              icon: FontAwesomeIcons.shareFromSquare,
-                              text: '转发',
-                              stat: forward,
-                              onPressed: (_) => showModalBottomSheet(
-                                context: context,
-                                isScrollControlled: true,
-                                useSafeArea: true,
-                                builder: (context) => RepostPanel(
-                                  item: controller.dynItem,
-                                  onSuccess: () {
-                                    if (forward != null) {
-                                      int count = forward.count ?? 0;
-                                      forward.count = count + 1;
-                                      if (btnContext.mounted) {
-                                        (btnContext as Element)
-                                            .markNeedsBuild();
-                                      }
-                                    }
-                                  },
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                      Expanded(
-                        child: textIconButton(
-                          icon: CustomIcons.share_node,
-                          text: '分享',
-                          stat: null,
-                          onPressed: (_) => Utils.shareText(
-                            '${HttpString.dynamicShareBaseUrl}/${controller.dynItem.idStr}',
+                Expanded(
+                  child: Builder(
+                    builder: (btnContext) {
+                      final forward = moduleStat?.forward;
+                      return textIconButton(
+                        icon: FontAwesomeIcons.shareFromSquare,
+                        text: '转发',
+                        stat: forward,
+                        onPressed: (_) => showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          useSafeArea: true,
+                          builder: (context) => RepostPanel(
+                            item: controller.dynItem,
+                            onSuccess: () {
+                              if (forward != null) {
+                                int count = forward.count ?? 0;
+                                forward.count = count + 1;
+                                if (btnContext.mounted) {
+                                  (btnContext as Element).markNeedsBuild();
+                                }
+                              }
+                            },
                           ),
                         ),
-                      ),
-                      Expanded(
-                        child: Builder(
-                          builder: (context) {
-                            return textIconButton(
-                              icon: FontAwesomeIcons.thumbsUp,
-                              activatedIcon: FontAwesomeIcons.solidThumbsUp,
-                              text: '点赞',
-                              stat: moduleStat?.like,
-                              onPressed: (iconColor) =>
-                                  RequestUtils.onLikeDynamic(
-                                    controller.dynItem,
-                                    iconColor == primary,
-                                    () {
-                                      if (context.mounted) {
-                                        (context as Element).markNeedsBuild();
-                                      }
-                                    },
-                                  ),
-                            );
+                      );
+                    },
+                  ),
+                ),
+                Expanded(
+                  child: textIconButton(
+                    icon: CustomIcons.share_node,
+                    text: '分享',
+                    stat: null,
+                    onPressed: (_) => Utils.shareText(
+                      '${HttpString.dynamicShareBaseUrl}/${controller.dynItem.idStr}',
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: Builder(
+                    builder: (context) {
+                      return textIconButton(
+                        icon: FontAwesomeIcons.thumbsUp,
+                        activatedIcon: FontAwesomeIcons.solidThumbsUp,
+                        text: '点赞',
+                        stat: moduleStat?.like,
+                        onPressed: (iconColor) => RequestUtils.onLikeDynamic(
+                          controller.dynItem,
+                          iconColor == primary,
+                          () {
+                            if (context.mounted) {
+                              (context as Element).markNeedsBuild();
+                            }
                           },
                         ),
-                      ),
-                    ],
+                      );
+                    },
                   ),
                 ),
               ],
-            );
-          },
-        ),
+            ),
+          ),
+        ],
       ),
     );
   }

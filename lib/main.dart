@@ -4,6 +4,7 @@ import 'package:PiliPlus/build_config.dart';
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/widgets/back_detector.dart';
 import 'package:PiliPlus/common/widgets/custom_toast.dart';
+import 'package:PiliPlus/common/widgets/route_aware_mixin.dart';
 import 'package:PiliPlus/common/widgets/scale_app.dart';
 import 'package:PiliPlus/common/widgets/scroll_behavior.dart';
 import 'package:PiliPlus/http/init.dart';
@@ -18,7 +19,6 @@ import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/json_file_handler.dart';
-import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/path_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/request_utils.dart';
@@ -250,26 +250,34 @@ class MyApp extends StatelessWidget {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final dynamicColor = Pref.dynamicColor && _light != null && _dark != null;
+  static (ThemeData, ThemeData) getAllTheme() {
+    final dynamicColor = _light != null && _dark != null && Pref.dynamicColor;
     late final brandColor = colorThemeTypes[Pref.customColor].color;
     late final variant = Pref.schemeVariant;
-    return GetMaterialApp(
-      title: Constants.appName,
-      theme: ThemeUtils.getThemeData(
+    return (
+      ThemeUtils.getThemeData(
         colorScheme: dynamicColor
             ? _light!
             : brandColor.asColorSchemeSeed(variant, .light),
         isDynamic: dynamicColor,
       ),
-      darkTheme: ThemeUtils.getThemeData(
+      ThemeUtils.getThemeData(
         isDark: true,
         colorScheme: dynamicColor
             ? _dark!
             : brandColor.asColorSchemeSeed(variant, .dark),
         isDynamic: dynamicColor,
       ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final (light, dark) = getAllTheme();
+    return GetMaterialApp(
+      title: Constants.appName,
+      theme: light,
+      darkTheme: dark,
       themeMode: Pref.themeMode,
       localizationsDelegates: const [
         GlobalCupertinoLocalizations.delegate,
@@ -288,7 +296,7 @@ class MyApp extends StatelessWidget {
         builder: _builder,
       ),
       navigatorObservers: [
-        PageUtils.routeObserver,
+        routeObserver,
         FlutterSmartDialog.observer,
       ],
       scrollBehavior: PlatformUtils.isDesktop

@@ -7,7 +7,7 @@ import 'package:get/route_manager.dart';
 
 class BiliDownloadEntryInfo with MultiSelectData {
   int mediaType;
-  final bool hasDashAudio;
+  bool hasDashAudio;
   bool isCompleted;
   int totalBytes;
   int downloadedBytes;

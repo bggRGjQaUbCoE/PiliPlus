@@ -1,5 +1,5 @@
 import 'package:PiliPlus/models/user/danmaku_rule.dart';
-import 'package:hive/hive.dart';
+import 'package:hive_ce/hive.dart';
 
 class RuleFilterAdapter extends TypeAdapter<RuleFilter> {
   @override

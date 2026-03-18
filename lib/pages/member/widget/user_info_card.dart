@@ -429,7 +429,7 @@ class UserInfoCard extends StatelessWidget {
   );
 
   Widget _buildAvatar(bool hasPendant) => fromHero(
-    tag: card.face ?? '',
+    tag: '${card.face}$hashCode',
     child: PendantAvatar(
       avatar: card.face,
       size: hasPendant ? kPendantAvatarSize : kAvatarSize,
@@ -440,6 +440,7 @@ class UserInfoCard extends StatelessWidget {
       garbPendantImage: card.pendant?.image,
       roomId: live?.liveStatus == 1 ? live!.roomid : null,
       onTap: () => PageUtils.imageView(
+        tag: hashCode.toString(),
         imgList: [SourceModel(url: card.face.http2https)],
       ),
     ),
@@ -767,8 +768,7 @@ class _HeaderIndicatorState extends State<HeaderIndicator> {
   }
 
   void _updateProgress() {
-    _progress = (widget.pageController.page ?? 0) / (widget.length - 1);
-    assert(_progress.isFinite && 0 <= _progress && _progress <= 1);
+    _progress = ((widget.pageController.page ?? 0) + 1) / widget.length;
   }
 
   @override

@@ -95,57 +95,57 @@ class _LiveAreaPageState extends State<LiveAreaPage> {
                       children: response
                           .map(
                             (e) => KeepAliveWrapper(
-                              builder: (context) {
-                                if (e.areaList.isNullOrEmpty) {
-                                  return const SizedBox.shrink();
-                                }
-                                return GridView.builder(
-                                  padding: EdgeInsets.only(
-                                    top: 12,
-                                    bottom: bottom + 100,
-                                  ),
-                                  gridDelegate:
-                                      const SliverGridDelegateWithMaxCrossAxisExtent(
-                                        maxCrossAxisExtent: 100,
-                                        mainAxisSpacing: 10,
-                                        crossAxisSpacing: 10,
-                                        mainAxisExtent: 80,
+                              child: e.areaList.isNullOrEmpty
+                                  ? const SizedBox.shrink()
+                                  : GridView.builder(
+                                      padding: EdgeInsets.only(
+                                        top: 12,
+                                        bottom: bottom + 100,
                                       ),
-                                  itemCount: e.areaList!.length,
-                                  itemBuilder: (context, index) {
-                                    final item = e.areaList![index];
-                                    return _tagItem(
-                                      theme: theme,
-                                      item: item,
-                                      onPressed: () {
-                                        // success
-                                        bool? isFav =
-                                            _controller.favInfo[item.id];
-                                        if (isFav == true) {
-                                          _controller.favInfo[item.id] = false;
-                                          _controller.favState
-                                            ..value.data.remove(item)
-                                            ..refresh();
-                                          (context as Element).markNeedsBuild();
-                                        } else {
-                                          // check
-                                          if (_controller
-                                              .favState
-                                              .value
-                                              .isSuccess) {
-                                            _controller.favInfo[item.id] = true;
-                                            _controller.favState
-                                              ..value.data.add(item)
-                                              ..refresh();
-                                            (context as Element)
-                                                .markNeedsBuild();
-                                          }
-                                        }
+                                      gridDelegate:
+                                          const SliverGridDelegateWithMaxCrossAxisExtent(
+                                            maxCrossAxisExtent: 100,
+                                            mainAxisSpacing: 10,
+                                            crossAxisSpacing: 10,
+                                            mainAxisExtent: 80,
+                                          ),
+                                      itemCount: e.areaList!.length,
+                                      itemBuilder: (context, index) {
+                                        final item = e.areaList![index];
+                                        return _tagItem(
+                                          theme: theme,
+                                          item: item,
+                                          onPressed: () {
+                                            // success
+                                            bool? isFav =
+                                                _controller.favInfo[item.id];
+                                            if (isFav == true) {
+                                              _controller.favInfo[item.id] =
+                                                  false;
+                                              _controller.favState
+                                                ..value.data.remove(item)
+                                                ..refresh();
+                                              (context as Element)
+                                                  .markNeedsBuild();
+                                            } else {
+                                              // check
+                                              if (_controller
+                                                  .favState
+                                                  .value
+                                                  .isSuccess) {
+                                                _controller.favInfo[item.id] =
+                                                    true;
+                                                _controller.favState
+                                                  ..value.data.add(item)
+                                                  ..refresh();
+                                                (context as Element)
+                                                    .markNeedsBuild();
+                                              }
+                                            }
+                                          },
+                                        );
                                       },
-                                    );
-                                  },
-                                );
-                              },
+                                    ),
                             ),
                           )
                           .toList(),

@@ -58,7 +58,7 @@ class DownloadManager {
 
     Response<ResponseBody> response;
     try {
-      response = await Request.dio.get<ResponseBody>(
+      response = await Request.http11Dio.get<ResponseBody>(
         url.http2https,
         options: Options(
           headers: {'range': 'bytes=$received-'},

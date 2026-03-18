@@ -12,7 +12,7 @@ import 'package:PiliPlus/utils/path_utils.dart';
 import 'package:PiliPlus/utils/set_int_adapter.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
-import 'package:hive_flutter/hive_flutter.dart';
+import 'package:hive_ce/hive.dart';
 import 'package:path/path.dart' as path;
 
 abstract final class GStorage {
@@ -25,7 +25,7 @@ abstract final class GStorage {
   static late final Box<Uint8List>? reply;
 
   static Future<void> init() async {
-    await Hive.initFlutter(path.join(appSupportDirPath, 'hive'));
+    Hive.init(path.join(appSupportDirPath, 'hive'));
     regAdapter();
 
     await Future.wait([
@@ -57,7 +57,7 @@ abstract final class GStorage {
       Accounts.init(),
       Hive.openBox<int>(
         'watchProgress',
-        keyComparator: _intStrKeyComparator,
+        keyComparator: _intStrDescKeyComparator,
         compactionStrategy: (entries, deletedEntries) {
           return deletedEntries > 4;
         },
@@ -67,7 +67,7 @@ abstract final class GStorage {
     if (Pref.saveReply) {
       reply = await Hive.openBox<Uint8List>(
         'reply',
-        keyComparator: _intStrKeyComparator,
+        keyComparator: _intStrDescKeyComparator,
         compactionStrategy: (entries, deletedEntries) {
           return deletedEntries > 10;
         },
@@ -87,12 +87,13 @@ abstract final class GStorage {
   static Future<void> importAllSettings(String data) =>
       importAllJsonSettings(jsonDecode(data));
 
-  static Future<bool> importAllJsonSettings(Map<String, dynamic> map) async {
-    await Future.wait([
+  static Future<List<void>> importAllJsonSettings(
+    Map<String, dynamic> map,
+  ) {
+    return Future.wait([
       setting.clear().then((_) => setting.putAll(map[setting.name])),
       video.clear().then((_) => video.putAll(map[video.name])),
     ]);
-    return true;
   }
 
   static void regAdapter() {
@@ -107,8 +108,8 @@ abstract final class GStorage {
       ..registerAdapter(RuleFilterAdapter());
   }
 
-  static Future<void> compact() async {
-    await Future.wait([
+  static Future<List<void>> compact() {
+    return Future.wait([
       userInfo.compact(),
       historyWord.compact(),
       localCache.compact(),
@@ -120,8 +121,8 @@ abstract final class GStorage {
     ]);
   }
 
-  static Future<void> close() async {
-    await Future.wait([
+  static Future<List<void>> close() {
+    return Future.wait([
       userInfo.close(),
       historyWord.close(),
       localCache.close(),
@@ -133,7 +134,20 @@ abstract final class GStorage {
     ]);
   }
 
-  static int _intStrKeyComparator(dynamic k1, dynamic k2) {
+  static Future<List<void>> clear() {
+    return Future.wait([
+      userInfo.clear(),
+      historyWord.clear(),
+      localCache.clear(),
+      setting.clear(),
+      video.clear(),
+      Accounts.clear(),
+      watchProgress.clear(),
+      ?reply?.clear(),
+    ]);
+  }
+
+  static int _intStrDescKeyComparator(dynamic k1, dynamic k2) {
     if (k1 is int) {
       if (k2 is int) {
         return k2.compareTo(k1);

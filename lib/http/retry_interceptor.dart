@@ -1,12 +1,12 @@
-import 'package:PiliPlus/http/init.dart';
 import 'package:dio/dio.dart';
 import 'package:http2/http2.dart';
 
 class RetryInterceptor extends Interceptor {
+  final Dio _client;
   final int _count;
   final int _delay;
 
-  RetryInterceptor(this._count, this._delay);
+  RetryInterceptor(this._client, this._count, this._delay);
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
@@ -31,7 +31,7 @@ class RetryInterceptor extends Interceptor {
                 ..data = null
                 ..method = 'GET';
             }
-            Request.dio
+            _client
                 .fetch(options)
                 .then(
                   (i) => handler.resolve(
@@ -62,7 +62,7 @@ class RetryInterceptor extends Interceptor {
               Duration(
                 milliseconds: ++err.requestOptions.extra['_rt'] * _delay,
               ),
-              () => Request.dio
+              () => _client
                   .fetch(err.requestOptions)
                   .then(handler.resolve)
                   .onError<DioException>((error, _) => handler.reject(error)),
@@ -76,4 +76,7 @@ class RetryInterceptor extends Interceptor {
       }
     }
   }
+
+  RetryInterceptor copyWith({Dio? client, int? count, int? delay}) =>
+      .new(client ?? _client, count ?? _count, delay ?? _delay);
 }

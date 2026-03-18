@@ -38,7 +38,6 @@ import 'package:PiliPlus/utils/video_utils.dart';
 import 'package:canvas_danmaku/canvas_danmaku.dart';
 import 'package:easy_debounce/easy_throttle.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 
@@ -373,9 +372,9 @@ class LiveRoomController extends GetxController {
 
   void listener() {
     final userScrollDirection = scrollController.position.userScrollDirection;
-    if (userScrollDirection == ScrollDirection.forward) {
+    if (userScrollDirection == .forward) {
       disableAutoScroll.value = true;
-    } else if (userScrollDirection == ScrollDirection.reverse) {
+    } else if (userScrollDirection == .reverse) {
       final pos = scrollController.position;
       if (pos.maxScrollExtent - pos.pixels <= 100) {
         disableAutoScroll.value = false;

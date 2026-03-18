@@ -1,10 +1,10 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:PiliPlus/build_config.dart';
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
+import 'package:PiliPlus/common/widgets/dialog/export_import.dart';
 import 'package:PiliPlus/common/widgets/flutter/list_tile.dart';
 import 'package:PiliPlus/pages/mine/controller.dart';
 import 'package:PiliPlus/services/logger.dart';
@@ -21,15 +21,9 @@ import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/update.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart' hide ListTile;
-import 'package:flutter/services.dart' show Clipboard, ClipboardData;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
-import 'package:intl/intl.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
-import 'package:re_highlight/languages/json.dart';
-import 'package:re_highlight/re_highlight.dart';
-import 'package:re_highlight/styles/github-dark.dart';
-import 'package:re_highlight/styles/github.dart';
 
 class AboutPage extends StatefulWidget {
   const AboutPage({super.key, this.showAppBar = true});
@@ -249,8 +243,10 @@ Commit Hash: ${BuildConfig.commitHash}''',
             onTap: () => showImportExportDialog<Map>(
               context,
               title: '登录信息',
-              toJson: () => Utils.jsonEncoder.convert(Accounts.account.toMap()),
-              fromJson: (json) async {
+              localFileName: () => 'account',
+              onExport: () =>
+                  Utils.jsonEncoder.convert(Accounts.account.toMap()),
+              onImport: (json) async {
                 final res = json.map(
                   (key, value) => MapEntry(key, LoginAccount.fromJson(value)),
                 );
@@ -260,7 +256,6 @@ Commit Hash: ${BuildConfig.commitHash}''',
                 if (Accounts.main.isLogin) {
                   await LoginUtils.onLoginMain();
                 }
-                return true;
               },
             ),
           ),
@@ -268,12 +263,12 @@ Commit Hash: ${BuildConfig.commitHash}''',
             title: const Text('导入/导出设置'),
             dense: false,
             leading: const Icon(Icons.import_export_outlined),
-            onTap: () => showImportExportDialog(
+            onTap: () => showImportExportDialog<Map<String, dynamic>>(
               context,
               title: '设置',
-              label: GStorage.setting.name,
-              toJson: GStorage.exportAllSettings,
-              fromJson: GStorage.importAllJsonSettings,
+              localFileName: () => 'setting_${context.platformName}',
+              onExport: GStorage.exportAllSettings,
+              onImport: GStorage.importAllJsonSettings,
             ),
           ),
           ListTile(
@@ -302,15 +297,7 @@ Commit Hash: ${BuildConfig.commitHash}''',
                       dense: true,
                       onTap: () async {
                         Get.back();
-                        await Future.wait([
-                          GStorage.userInfo.clear(),
-                          GStorage.setting.clear(),
-                          GStorage.localCache.clear(),
-                          GStorage.video.clear(),
-                          GStorage.historyWord.clear(),
-                          Accounts.clear(),
-                          GStorage.watchProgress.clear(),
-                        ]);
+                        await GStorage.clear();
                         SmartDialog.showToast('重置成功');
                       },
                       title: const Text('重置所有数据（含登录信息）', style: style),
@@ -325,190 +312,3 @@ Commit Hash: ${BuildConfig.commitHash}''',
     );
   }
 }
-
-Future<void> showImportExportDialog<T>(
-  BuildContext context, {
-  required String title,
-  String? label,
-  required ValueGetter<String> toJson,
-  required FutureOr<bool> Function(T json) fromJson,
-}) => showDialog(
-  context: context,
-  builder: (context) {
-    const style = TextStyle(fontSize: 15);
-    return SimpleDialog(
-      clipBehavior: Clip.hardEdge,
-      title: Text('导入/导出$title'),
-      children: [
-        if (label != null)
-          ListTile(
-            dense: true,
-            title: const Text('导出文件至本地', style: style),
-            onTap: () {
-              Get.back();
-              final res = utf8.encode(toJson());
-              final name =
-                  'piliplus_${label}_${context.isTablet ? 'pad' : 'phone'}_'
-                  '${DateFormat('yyyyMMddHHmmss').format(DateTime.now())}.json';
-              Utils.saveBytes2File(
-                name: name,
-                bytes: res,
-                allowedExtensions: const ['json'],
-              );
-            },
-          ),
-        ListTile(
-          dense: true,
-          title: Text('导出$title至剪贴板', style: style),
-          onTap: () {
-            Get.back();
-            Utils.copyText(toJson());
-          },
-        ),
-        ListTile(
-          dense: true,
-          title: Text('从剪贴板导入$title', style: style),
-          onTap: () async {
-            Get.back();
-            ClipboardData? data = await Clipboard.getData(
-              'text/plain',
-            );
-            if (data?.text?.isNotEmpty != true) {
-              SmartDialog.showToast('剪贴板无数据');
-              return;
-            }
-            if (!context.mounted) return;
-            final text = data!.text!;
-            late final T json;
-            late final String formatText;
-            try {
-              json = jsonDecode(text);
-              formatText = Utils.jsonEncoder.convert(json);
-            } catch (e) {
-              SmartDialog.showToast('解析json失败：$e');
-              return;
-            }
-            final highlight = Highlight()..registerLanguage('json', langJson);
-            final result = highlight.highlight(
-              code: formatText,
-              language: 'json',
-            );
-            late TextSpanRenderer renderer;
-            bool? isDarkMode;
-            showDialog(
-              context: context,
-              builder: (context) {
-                final isDark = context.isDarkMode;
-                if (isDark != isDarkMode) {
-                  isDarkMode = isDark;
-                  renderer = TextSpanRenderer(
-                    const TextStyle(),
-                    isDark ? githubDarkTheme : githubTheme,
-                  );
-                  result.render(renderer);
-                }
-                return AlertDialog(
-                  title: Text('是否导入如下$title？'),
-                  content: SingleChildScrollView(
-                    child: Text.rich(renderer.span!),
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: Get.back,
-                      child: Text(
-                        '取消',
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.outline,
-                        ),
-                      ),
-                    ),
-                    TextButton(
-                      onPressed: () async {
-                        Get.back();
-                        try {
-                          if (await fromJson(json)) {
-                            SmartDialog.showToast('导入成功');
-                          }
-                        } catch (e) {
-                          SmartDialog.showToast('导入失败：$e');
-                        }
-                      },
-                      child: const Text('确定'),
-                    ),
-                  ],
-                );
-              },
-            );
-          },
-        ),
-        ListTile(
-          dense: true,
-          title: Text('输入$title', style: style),
-          onTap: () {
-            Get.back();
-            final key = GlobalKey<FormFieldState<String>>();
-            late T json;
-            String? forceErrorText;
-
-            showDialog(
-              context: context,
-              builder: (context) => AlertDialog(
-                title: Text('输入$title'),
-                constraints: StyleString.dialogFixedConstraints,
-                content: TextFormField(
-                  key: key,
-                  minLines: 4,
-                  maxLines: 12,
-                  autofocus: true,
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    errorMaxLines: 3,
-                  ),
-                  validator: (value) {
-                    if (forceErrorText != null) return forceErrorText;
-                    try {
-                      json = jsonDecode(value!) as T;
-                      return null;
-                    } catch (e) {
-                      if (e is FormatException) {}
-                      return '解析json失败：$e';
-                    }
-                  },
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: Get.back,
-                    child: Text(
-                      '取消',
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.outline,
-                      ),
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: () async {
-                      if (key.currentState?.validate() == true) {
-                        try {
-                          if (await fromJson(json)) {
-                            Get.back();
-                            SmartDialog.showToast('导入成功');
-                            return;
-                          }
-                        } catch (e) {
-                          forceErrorText = '导入失败：$e';
-                        }
-                        key.currentState?.validate();
-                        forceErrorText = null;
-                      }
-                    },
-                    child: const Text('确定'),
-                  ),
-                ],
-              ),
-            );
-          },
-        ),
-      ],
-    );
-  },
-);

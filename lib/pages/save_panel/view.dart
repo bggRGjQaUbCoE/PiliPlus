@@ -336,266 +336,258 @@ class _SavePanelState extends State<SavePanel> {
     final padding = MediaQuery.viewPaddingOf(context);
     final maxWidth = context.mediaQueryShortestSide;
     late final coverSize = MediaQuery.textScalerOf(context).scale(65);
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: Get.back,
-      child: Stack(
-        clipBehavior: Clip.none,
-        alignment: Alignment.center,
-        children: [
-          SingleChildScrollView(
-            padding: EdgeInsets.only(
-              top: 12 + padding.top,
-              bottom: 80 + padding.bottom,
-            ),
-            child: Listener(
+    return Stack(
+      clipBehavior: .none,
+      alignment: .center,
+      children: [
+        SingleChildScrollView(
+          hitTestBehavior: .deferToChild,
+          padding: .only(
+            top: 12 + padding.top,
+            bottom: 80 + padding.bottom,
+          ),
+          child: Container(
+            width: maxWidth,
+            padding: const .symmetric(horizontal: 12),
+            child: RepaintBoundary(
+              key: boundaryKey,
               child: Container(
-                width: maxWidth,
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: RepaintBoundary(
-                  key: boundaryKey,
-                  child: Container(
-                    clipBehavior: Clip.hardEdge,
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.surface,
-                      borderRadius: const .all(.circular(12)),
-                    ),
-                    child: AnimatedSize(
-                      curve: Curves.easeInOut,
-                      alignment: Alignment.topCenter,
-                      duration: const Duration(milliseconds: 255),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          if (_item case final ReplyInfo reply)
-                            IgnorePointer(
-                              child: ReplyItemGrpc(
-                                replyItem: reply,
-                                replyLevel: 0,
-                                needDivider: false,
-                                upMid: widget.upMid,
+                clipBehavior: .hardEdge,
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surface,
+                  borderRadius: const .all(.circular(12)),
+                ),
+                child: AnimatedSize(
+                  curve: Curves.easeInOut,
+                  alignment: .topCenter,
+                  duration: const Duration(milliseconds: 255),
+                  child: Column(
+                    mainAxisSize: .min,
+                    crossAxisAlignment: .start,
+                    children: [
+                      switch (_item) {
+                        ReplyInfo reply => IgnorePointer(
+                          child: ReplyItemGrpc(
+                            replyItem: reply,
+                            replyLevel: 0,
+                            needDivider: false,
+                            upMid: widget.upMid,
+                          ),
+                        ),
+                        DynamicItemModel dyn => IgnorePointer(
+                          child: DynamicPanel(
+                            item: dyn,
+                            isDetail: true,
+                            isSave: true,
+                          ),
+                        ),
+                        _ => throw UnsupportedError(_item.toString()),
+                      },
+                      if (cover?.isNotEmpty == true &&
+                          title?.isNotEmpty == true)
+                        Container(
+                          height: 81,
+                          clipBehavior: Clip.hardEdge,
+                          margin: const .symmetric(horizontal: 12),
+                          padding: const .all(8),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.onInverseSurface,
+                            borderRadius: const .all(.circular(8)),
+                          ),
+                          child: Row(
+                            spacing: 10,
+                            children: [
+                              NetworkImgLayer(
+                                src: cover!,
+                                height: coverSize,
+                                width: coverType == .def16_9
+                                    ? coverSize * StyleString.aspectRatio16x9
+                                    : coverSize,
+                                quality: 100,
+                                borderRadius: const .all(.circular(6)),
                               ),
-                            )
-                          else if (_item case final DynamicItemModel dyn)
-                            IgnorePointer(
-                              child: DynamicPanel(
-                                item: dyn,
-                                isDetail: true,
-                                isSave: true,
-                              ),
-                            ),
-                          if (cover?.isNotEmpty == true &&
-                              title?.isNotEmpty == true)
-                            Container(
-                              height: 81,
-                              clipBehavior: Clip.hardEdge,
-                              margin: const .symmetric(horizontal: 12),
-                              padding: const .all(8),
-                              decoration: BoxDecoration(
-                                color: theme.colorScheme.onInverseSurface,
-                                borderRadius: const .all(.circular(8)),
-                              ),
-                              child: Row(
-                                children: [
-                                  NetworkImgLayer(
-                                    src: cover!,
-                                    height: coverSize,
-                                    width: coverType == .def16_9
-                                        ? coverSize *
-                                              StyleString.aspectRatio16x9
-                                        : coverSize,
-                                    quality: 100,
-                                    borderRadius: const .all(.circular(6)),
-                                  ),
-                                  const SizedBox(width: 10),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: .start,
-                                      children: [
-                                        Text(
-                                          '$title\n',
-                                          maxLines: 2,
-                                          overflow: .ellipsis,
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: .start,
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        '$title\n',
+                                        maxLines: 2,
+                                        overflow: .ellipsis,
+                                      ),
+                                    ),
+                                    if (pubdate != null)
+                                      Text(
+                                        DateFormatUtils.format(
+                                          pubdate,
+                                          format: dateFormat,
                                         ),
-                                        if (pubdate != null) ...[
-                                          const Spacer(),
-                                          Text(
-                                            DateFormatUtils.format(
-                                              pubdate,
-                                              format: dateFormat,
-                                            ),
-                                            style: TextStyle(
-                                              color: theme.colorScheme.outline,
+                                        style: TextStyle(
+                                          color: theme.colorScheme.outline,
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      showBottom
+                          ? Stack(
+                              clipBehavior: .none,
+                              children: [
+                                if (uri.isNotEmpty)
+                                  Align(
+                                    alignment: .centerRight,
+                                    child: Row(
+                                      children: [
+                                        Expanded(
+                                          child: Column(
+                                            mainAxisSize: .min,
+                                            crossAxisAlignment: .end,
+                                            spacing: 4,
+                                            children: [
+                                              if (uname?.isNotEmpty == true)
+                                                Text(
+                                                  '@$uname',
+                                                  maxLines: 1,
+                                                  overflow: .ellipsis,
+                                                  style: TextStyle(
+                                                    color: theme
+                                                        .colorScheme
+                                                        .primary,
+                                                  ),
+                                                ),
+                                              Text(
+                                                '识别二维码，$viewType$itemType',
+                                                textAlign: .end,
+                                                style: TextStyle(
+                                                  color: theme
+                                                      .colorScheme
+                                                      .onSurfaceVariant,
+                                                ),
+                                              ),
+                                              Text(
+                                                DateFormatUtils.longFormatDs
+                                                    .format(.now()),
+                                                textAlign: .end,
+                                                style: TextStyle(
+                                                  fontSize: 13,
+                                                  color:
+                                                      theme.colorScheme.outline,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        GestureDetector(
+                                          onTap: () => Utils.copyText(uri),
+                                          child: Container(
+                                            width: 88,
+                                            height: 88,
+                                            margin: const .all(12),
+                                            padding: const .all(3),
+                                            color: theme.brightness.isDark
+                                                ? Colors.white
+                                                : theme.colorScheme.surface,
+                                            child: PrettyQrView.data(
+                                              data: uri,
+                                              decoration:
+                                                  const PrettyQrDecoration(
+                                                    shape:
+                                                        PrettyQrSquaresSymbol(),
+                                                  ),
                                             ),
                                           ),
-                                        ],
+                                        ),
                                       ],
                                     ),
                                   ),
-                                ],
-                              ),
-                            ),
-                          showBottom
-                              ? Stack(
-                                  clipBehavior: Clip.none,
-                                  children: [
-                                    if (uri.isNotEmpty)
-                                      Align(
-                                        alignment: Alignment.centerRight,
-                                        child: Row(
-                                          children: [
-                                            Expanded(
-                                              child: Column(
-                                                mainAxisSize: MainAxisSize.min,
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.end,
-                                                spacing: 4,
-                                                children: [
-                                                  if (uname?.isNotEmpty == true)
-                                                    Text(
-                                                      '@$uname',
-                                                      maxLines: 1,
-                                                      overflow: .ellipsis,
-                                                      style: TextStyle(
-                                                        color: theme
-                                                            .colorScheme
-                                                            .primary,
-                                                      ),
-                                                    ),
-                                                  Text(
-                                                    '识别二维码，$viewType$itemType',
-                                                    textAlign: TextAlign.end,
-                                                    style: TextStyle(
-                                                      color: theme
-                                                          .colorScheme
-                                                          .onSurfaceVariant,
-                                                    ),
-                                                  ),
-                                                  Text(
-                                                    DateFormatUtils.longFormatDs
-                                                        .format(.now()),
-                                                    textAlign: TextAlign.end,
-                                                    style: TextStyle(
-                                                      fontSize: 13,
-                                                      color: theme
-                                                          .colorScheme
-                                                          .outline,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                            GestureDetector(
-                                              onTap: () => Utils.copyText(uri),
-                                              child: Container(
-                                                width: 88,
-                                                height: 88,
-                                                margin: const .all(12),
-                                                padding: const .all(3),
-                                                color: theme.brightness.isDark
-                                                    ? Colors.white
-                                                    : theme.colorScheme.surface,
-                                                child: PrettyQrView.data(
-                                                  data: uri,
-                                                  decoration:
-                                                      const PrettyQrDecoration(
-                                                        shape:
-                                                            PrettyQrSquaresSymbol(),
-                                                      ),
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    Align(
-                                      alignment: Alignment.centerLeft,
-                                      child: Image.asset(
-                                        'assets/images/logo/logo_2.png',
-                                        width: 100,
-                                        cacheWidth: 100.cacheSize(context),
-                                        color:
-                                            theme.colorScheme.onSurfaceVariant,
-                                      ),
-                                    ),
-                                  ],
-                                )
-                              : const SizedBox(height: 12),
-                        ],
-                      ),
-                    ),
+                                Align(
+                                  alignment: .centerLeft,
+                                  child: Image.asset(
+                                    'assets/images/logo/logo_2.png',
+                                    width: 100,
+                                    cacheWidth: 100.cacheSize(context),
+                                    color: theme.colorScheme.onSurfaceVariant,
+                                  ),
+                                ),
+                              ],
+                            )
+                          : const SizedBox(height: 12),
+                    ],
                   ),
                 ),
               ),
             ),
           ),
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: DecoratedBox(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.transparent,
-                    Colors.black54,
-                  ],
-                ),
+        ),
+        Positioned(
+          left: 0,
+          right: 0,
+          bottom: 0,
+          child: DecoratedBox(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: .topCenter,
+                end: .bottomCenter,
+                colors: [
+                  Colors.transparent,
+                  Colors.black54,
+                ],
               ),
-              child: Padding(
-                padding: EdgeInsets.only(
-                  left: padding.left,
-                  right: padding.right,
-                  bottom: 25 + padding.bottom,
-                ),
-                child: Row(
-                  spacing: 40,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
+            ),
+            child: Padding(
+              padding: EdgeInsets.only(
+                left: padding.left,
+                right: padding.right,
+                bottom: 25 + padding.bottom,
+              ),
+              child: Row(
+                spacing: 40,
+                mainAxisAlignment: .center,
+                children: [
+                  iconButton(
+                    size: 42,
+                    tooltip: '关闭',
+                    icon: const Icon(Icons.clear),
+                    onPressed: Get.back,
+                    bgColor: theme.colorScheme.onInverseSurface,
+                    iconColor: theme.colorScheme.onSurfaceVariant,
+                  ),
+                  iconButton(
+                    size: 42,
+                    tooltip: showBottom ? '隐藏' : '显示',
+                    context: context,
+                    icon: showBottom
+                        ? const Icon(Icons.visibility_off)
+                        : const Icon(Icons.visibility),
+                    onPressed: () => setState(() {
+                      showBottom = !showBottom;
+                    }),
+                  ),
+                  if (PlatformUtils.isMobile)
                     iconButton(
                       size: 42,
-                      tooltip: '关闭',
-                      icon: const Icon(Icons.clear),
-                      onPressed: Get.back,
-                      bgColor: theme.colorScheme.onInverseSurface,
-                      iconColor: theme.colorScheme.onSurfaceVariant,
-                    ),
-                    iconButton(
-                      size: 42,
-                      tooltip: showBottom ? '隐藏' : '显示',
+                      tooltip: '分享',
                       context: context,
-                      icon: showBottom
-                          ? const Icon(Icons.visibility_off)
-                          : const Icon(Icons.visibility),
-                      onPressed: () => setState(() {
-                        showBottom = !showBottom;
-                      }),
+                      icon: const Icon(Icons.share),
+                      onPressed: () => _onSaveOrSharePic(true),
                     ),
-                    if (PlatformUtils.isMobile)
-                      iconButton(
-                        size: 42,
-                        tooltip: '分享',
-                        context: context,
-                        icon: const Icon(Icons.share),
-                        onPressed: () => _onSaveOrSharePic(true),
-                      ),
-                    iconButton(
-                      size: 42,
-                      tooltip: '保存',
-                      context: context,
-                      icon: const Icon(Icons.save_alt),
-                      onPressed: _onSaveOrSharePic,
-                    ),
-                  ],
-                ),
+                  iconButton(
+                    size: 42,
+                    tooltip: '保存',
+                    context: context,
+                    icon: const Icon(Icons.save_alt),
+                    onPressed: _onSaveOrSharePic,
+                  ),
+                ],
               ),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

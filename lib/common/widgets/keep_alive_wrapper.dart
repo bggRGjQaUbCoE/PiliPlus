@@ -3,11 +3,11 @@ import 'package:flutter/material.dart';
 class KeepAliveWrapper extends StatefulWidget {
   const KeepAliveWrapper({
     super.key,
-    required this.builder,
+    required this.child,
     this.wantKeepAlive = true,
   });
 
-  final WidgetBuilder builder;
+  final Widget child;
   final bool wantKeepAlive;
 
   @override
@@ -19,7 +19,7 @@ class _KeepAliveWrapperState extends State<KeepAliveWrapper>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return widget.builder(context);
+    return widget.child;
   }
 
   @override

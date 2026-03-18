@@ -1,4 +1,4 @@
-import 'package:hive/hive.dart';
+import 'package:hive_ce/hive.dart';
 
 class SetIntAdapter extends TypeAdapter<Set<int>> {
   @override

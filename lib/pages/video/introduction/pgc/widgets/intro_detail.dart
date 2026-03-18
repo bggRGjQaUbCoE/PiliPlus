@@ -100,7 +100,7 @@ class _IntroDetailState extends State<PgcIntroPanel>
       horizontalDragGestureRecognizer: () =>
           TabBarDragGestureRecognizer(isDxAllowed: isDxAllowed),
       children: [
-        KeepAliveWrapper(builder: (context) => _buildInfo(theme)),
+        KeepAliveWrapper(child: _buildInfo(theme)),
         PgcReviewPage(
           name: widget.item.title!,
           mediaId: widget.item.mediaId,

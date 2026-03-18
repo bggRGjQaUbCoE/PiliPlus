@@ -4,7 +4,6 @@ import 'package:PiliPlus/http/reply.dart';
 import 'package:PiliPlus/models/dynamics/result.dart';
 import 'package:PiliPlus/pages/common/dyn/common_dyn_controller.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
-import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 
@@ -14,8 +13,6 @@ class DynamicDetailController extends CommonDynController {
   @override
   late int replyType;
   late DynamicItemModel dynItem;
-
-  late final showDynActionBar = Pref.showDynActionBar;
 
   @override
   dynamic get sourceId => replyType == 1 ? IdUtils.av2bv(oid) : oid;

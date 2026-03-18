@@ -26,6 +26,7 @@ import 'package:PiliPlus/pages/setting/widgets/select_dialog.dart';
 import 'package:PiliPlus/pages/setting/widgets/slider_dialog.dart';
 import 'package:PiliPlus/plugin/pl_player/utils/fullscreen.dart';
 import 'package:PiliPlus/utils/extension/file_ext.dart';
+import 'package:PiliPlus/utils/extension/get_ext.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/global_data.dart';
@@ -88,7 +89,7 @@ List<SettingsModel> get styleSettings => [
     setKey: SettingBoxKey.appFontWeight,
     defaultVal: false,
     leading: const Icon(Icons.text_fields),
-    onChanged: (value) => Get.forceAppUpdate(),
+    onChanged: (_) => Get.updateMyAppTheme(),
     onTap: _showFontWeightDialog,
   ),
   NormalModel(
@@ -132,7 +133,7 @@ List<SettingsModel> get styleSettings => [
     defaultVal: false,
     onChanged: (value) {
       if (value && MyApp.darkThemeData == null) {
-        Get.forceAppUpdate();
+        Get.updateMyAppTheme();
       }
     },
   ),
@@ -279,7 +280,7 @@ List<SettingsModel> get styleSettings => [
     defaultVal: false,
     onChanged: (value) {
       if (Get.isDarkMode || Pref.darkVideoPage) {
-        Get.forceAppUpdate();
+        Get.updateMyAppTheme();
       }
     },
   ),
@@ -634,7 +635,7 @@ Future<void> _showFontWeightDialog(BuildContext context) async {
   );
   if (res != null) {
     await GStorage.setting.put(SettingBoxKey.appFontWeight, res.toInt() - 1);
-    Get.forceAppUpdate();
+    Get.updateMyAppTheme();
   }
 }
 

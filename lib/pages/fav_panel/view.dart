@@ -41,7 +41,7 @@ class _FavPanelState extends State<FavPanel> {
   Widget get _buildBody {
     late final list = widget.ctr.favFolderData.value.list!;
     return switch (loadingState) {
-      Loading() => loadingWidget,
+      Loading() => m3eLoading,
       Success() => ListView.builder(
         controller: widget.scrollController,
         itemCount: list.length,

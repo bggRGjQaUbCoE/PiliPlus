@@ -21,7 +21,7 @@ version: 2.0.1+1
 
 environment:
   sdk: ">=3.10.0"
-  flutter: 3.41.4 # update `.fvmrc` config
+  flutter: 3.41.5 # update `.fvmrc` config
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -227,6 +227,7 @@ dependencies:
       ref: mod
   dlna_dart: ^0.1.0
   battery_plus: ^7.0.0
+  material_new_shapes: ^1.0.0
 
   vector_math: any
   fixnum: any

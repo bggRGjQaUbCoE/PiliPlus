@@ -109,7 +109,7 @@ class _FollowPageState extends State<FollowPage> {
 
   Widget _buildBody(LoadingState loadingState) {
     return switch (loadingState) {
-      Loading() => loadingWidget,
+      Loading() => m3eLoading,
       Success() => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

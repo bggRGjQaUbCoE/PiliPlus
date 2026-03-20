@@ -184,7 +184,7 @@ class _LogsPageState extends State<LogsPage> {
                 ],
               ),
             )
-          : scrollErrorWidget(),
+          : scrollableError,
     );
   }
 }

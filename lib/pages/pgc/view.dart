@@ -83,7 +83,7 @@ class _PgcPageState extends State<PgcPage> with AutomaticKeepAliveClientMixin {
     ThemeData theme,
     LoadingState<List<TimelineResult>?> loadingState,
   ) => switch (loadingState) {
-    Loading() => loadingWidget,
+    Loading() => m3eLoading,
     Success(:final response) =>
       response != null && response.isNotEmpty
           ? Builder(
@@ -397,7 +397,7 @@ class _PgcPageState extends State<PgcPage> with AutomaticKeepAliveClientMixin {
 
   Widget _buildFollowBody(LoadingState<List<FavPgcItemModel>?> loadingState) {
     return switch (loadingState) {
-      Loading() => loadingWidget,
+      Loading() => m3eLoading,
       Success(:final response) =>
         response != null && response.isNotEmpty
             ? ListView.builder(

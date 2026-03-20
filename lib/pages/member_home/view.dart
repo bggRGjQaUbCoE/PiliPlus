@@ -73,7 +73,7 @@ class _MemberHomeState extends State<MemberHome>
     final isOwner = setting != null;
     final color = Theme.of(context).colorScheme.outline;
     return switch (loadingState) {
-      Loading() => loadingWidget,
+      Loading() => m3eLoading,
       Success(response: final res) =>
         res != null
             ? CustomScrollView(
@@ -257,7 +257,7 @@ class _MemberHomeState extends State<MemberHome>
                   ),
                 ],
               )
-            : scrollErrorWidget(),
+            : scrollableError,
       Error(:final errMsg) => scrollErrorWidget(errMsg: errMsg),
     };
   }

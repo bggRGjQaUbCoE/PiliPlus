@@ -58,7 +58,7 @@ class _PgcIndexPageState extends State<PgcIndexPage>
   ) {
     final padding = MediaQuery.viewPaddingOf(context);
     return switch (loadingState) {
-      Loading() => loadingWidget,
+      Loading() => m3eLoading,
       Success(:final response) => Builder(
         builder: (context) {
           int count =

@@ -19,14 +19,8 @@ class HttpError extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return isSliver
-        ? SliverToBoxAdapter(child: content(context))
-        : SizedBox(width: double.infinity, child: content(context));
-  }
-
-  Widget content(BuildContext context) {
     final theme = Theme.of(context);
-    return Column(
+    final child = Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.center,
       mainAxisAlignment: MainAxisAlignment.center,
@@ -63,5 +57,9 @@ class HttpError extends StatelessWidget {
           SizedBox(height: 40 + MediaQuery.viewPaddingOf(context).bottom),
       ],
     );
+
+    return isSliver
+        ? SliverToBoxAdapter(child: child)
+        : SizedBox(width: double.infinity, child: child);
   }
 }

@@ -81,7 +81,7 @@ class _HorizontalMemberPageState extends State<HorizontalMemberPage> {
 
   Widget _buildUserPage(ThemeData theme, LoadingState userState) {
     return switch (userState) {
-      Loading() => loadingWidget,
+      Loading() => m3eLoading,
       Success(:final response) => Column(
         children: [
           _buildUserInfo(theme, response),

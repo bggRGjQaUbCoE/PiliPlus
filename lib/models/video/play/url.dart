@@ -377,6 +377,11 @@ class Volume {
       i -= measuredI;
       measuredI = 0;
     }
+    num measuredThreshold = this.measuredThreshold;
+    if (measuredThreshold > 0) {
+      measuredThreshold = 0;
+    }
+
     return 'LRA=$lra:I=$i:TP=$tp:offset=$offset:linear=true:measured_I=$measuredI:measured_LRA=$measuredLra:measured_TP=$measuredTp:measured_thresh=$measuredThreshold';
   }
 

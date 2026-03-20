@@ -127,7 +127,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
     );
 
     return switch (loadingState) {
-      Loading() => loadingWidget,
+      Loading() => m3eLoading,
       Success(:final response) => ListView(
         padding: EdgeInsets.only(
           bottom: MediaQuery.viewPaddingOf(context).bottom + 25,

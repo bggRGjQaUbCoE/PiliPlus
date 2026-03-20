@@ -82,7 +82,7 @@ class _DanmakuBlockPageState extends State<DanmakuBlockPage> {
 
   Widget tabViewBuilder(final int tabIndex, List<SimpleRule> list) {
     if (list.isEmpty) {
-      return scrollErrorWidget();
+      return scrollableError;
     }
     return ListView.builder(
       itemCount: list.length,

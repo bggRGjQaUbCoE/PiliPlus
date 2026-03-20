@@ -234,8 +234,8 @@ class _DynMentionPanelState
     LoadingState<List<MentionGroup>?> loadingState,
   ) {
     return switch (loadingState) {
-      Loading() => SliverPadding(
-        padding: const EdgeInsets.only(top: 8),
+      Loading() => const SliverPadding(
+        padding: EdgeInsets.only(top: 8),
         sliver: linearLoading,
       ),
       Success<List<MentionGroup>?>(:final response) =>

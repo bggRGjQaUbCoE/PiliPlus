@@ -188,7 +188,7 @@ class _SelectTopicPanelState
     LoadingState<List<TopicItem>?> loadingState,
   ) {
     return switch (loadingState) {
-      Loading() => loadingWidget,
+      Loading() => m3eLoading,
       Success<List<TopicItem>?>(:final response) =>
         response != null && response.isNotEmpty
             ? ListView.builder(

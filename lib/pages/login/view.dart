@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:ui';
 
 import 'package:PiliPlus/common/constants.dart';
+import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart';
 import 'package:PiliPlus/http/loading_state.dart';
@@ -96,15 +97,12 @@ class _LoginPageState extends State<LoginPage> {
         ),
         RepaintBoundary(
           key: globalKey,
-          child: Obx(() {
-            return switch (_loginPageCtr.codeInfo.value) {
-              Loading() => Container(
+          child: Obx(
+            () => switch (_loginPageCtr.codeInfo.value) {
+              Loading() => const SizedBox(
                 height: 200,
                 width: 200,
-                alignment: Alignment.center,
-                child: const CircularProgressIndicator(
-                  semanticsLabel: '二维码加载中',
-                ),
+                child: m3eLoading,
               ),
               Success(:final response) => Container(
                 width: 200,
@@ -120,12 +118,13 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
               ),
-              Error(:final errMsg) => errorWidget(
+              Error(:final errMsg) => HttpError(
+                isSliver: false,
                 errMsg: errMsg,
                 onReload: _loginPageCtr.refreshQRCode,
               ),
-            };
-          }),
+            },
+          ),
         ),
         const SizedBox(height: 10),
         Obx(

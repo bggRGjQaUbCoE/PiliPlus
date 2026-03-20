@@ -107,7 +107,7 @@ class _CreateFavPageState extends State<CreateFavPage> {
                 ? _buildBody(theme)
                 : _errMsg?.isNotEmpty == true
                 ? scrollErrorWidget(errMsg: _errMsg, onReload: _getFolderInfo)
-                : const Center(child: CircularProgressIndicator())
+                : m3eLoading
           : _buildBody(theme),
     );
   }

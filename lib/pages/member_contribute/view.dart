@@ -93,7 +93,7 @@ class _MemberContributeState extends State<MemberContribute>
           )
         : _controller.items?.isNotEmpty == true
         ? _getPageFromType(_controller.items!.first)
-        : scrollErrorWidget();
+        : scrollableError;
   }
 
   Widget _getPageFromType(SpaceTab2Item item) {

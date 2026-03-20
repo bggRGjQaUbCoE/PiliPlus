@@ -340,6 +340,7 @@ class Common {
   int? style;
   String? subType;
   String? title;
+  String? titlePrefix;
 
   Common.fromJson(Map<String, dynamic> json) {
     cover = json['cover'];
@@ -352,6 +353,7 @@ class Common {
     style = json['style'];
     subType = json['sub_type'];
     title = json['title'];
+    titlePrefix = json['title_prefix'];
   }
 }
 

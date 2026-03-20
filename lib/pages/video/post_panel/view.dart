@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:PiliPlus/common/widgets/button/icon_button.dart';
-import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
+import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/pair.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/sponsor_block.dart';
@@ -249,7 +249,7 @@ class _PostPanelState extends State<PostPanel>
   @override
   Widget buildList(ThemeData theme) {
     if (list.isEmpty) {
-      return errorWidget();
+      return const HttpError(isSliver: false);
     }
     final bottom = MediaQuery.viewPaddingOf(context).bottom;
     Widget child = ListView.builder(

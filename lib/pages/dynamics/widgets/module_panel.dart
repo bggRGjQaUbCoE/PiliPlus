@@ -153,13 +153,12 @@ Widget module(
                     spacing: 2,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      if (common.title?.isNotEmpty ?? false)
-                        Text(
-                          common.title!,
-                          style: TextStyle(color: theme.colorScheme.primary),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
+                      Text(
+                        '${common.titlePrefix ?? ''}${common.title ?? ''}',
+                        style: TextStyle(color: theme.colorScheme.primary),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                       if (common.desc?.isNotEmpty ?? false)
                         Text(
                           common.desc!,

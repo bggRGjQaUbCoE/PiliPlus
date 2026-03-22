@@ -3,8 +3,14 @@ import 'dart:async';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
 import 'package:PiliPlus/common/widgets/view_sliver_safe_area.dart';
+import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/http/video.dart';
+import 'package:PiliPlus/models/common/video/video_quality.dart';
+import 'package:PiliPlus/models/video/play/url.dart';
+import 'package:PiliPlus/utils/video_utils.dart';
 import 'package:dlna_dart/dlna.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 
 class DLNAPage extends StatefulWidget {
@@ -19,6 +25,12 @@ class _DLNAPageState extends State<DLNAPage> {
   final Map<String, DLNADevice> _deviceList = {};
   late final _url = Get.parameters['url']!;
   late final _title = Get.parameters['title'];
+  late final int? _cid = int.tryParse(Get.parameters['cid'] ?? '');
+  late final int? _objectId = int.tryParse(Get.parameters['objectId'] ?? '');
+  late final int? _playurlType = int.tryParse(
+    Get.parameters['playurlType'] ?? '',
+  );
+  late final int? _initialQn = int.tryParse(Get.parameters['qn'] ?? '');
 
   Timer? _timer;
   bool _isSearching = false;
@@ -119,13 +131,98 @@ class _DLNAPageState extends State<DLNAPage> {
               _lastDevice = device;
               _lastDeviceKey = key;
               setState(() {});
-              await device.setUrl(_url, title: _title ?? '');
-              await device.play();
+
+              await _showQualityDialog(device);
             },
           );
         },
       );
     }
     return const SliverToBoxAdapter();
+  }
+
+  Future<void> _showQualityDialog(DLNADevice device) async {
+    if (_cid == null || _objectId == null || _playurlType == null) {
+      await device.setUrl(_url, title: _title ?? '');
+      await device.play();
+      return;
+    }
+
+    SmartDialog.showLoading();
+    final res = await VideoHttp.tvPlayUrl(
+      cid: _cid!,
+      objectId: _objectId!,
+      playurlType: _playurlType!,
+      qn: _initialQn ?? 80,
+    );
+    SmartDialog.dismiss();
+
+    if (res case Success(:final response)) {
+      final acceptQuality = response.acceptQuality;
+      final acceptDesc = response.acceptDesc;
+
+      if (acceptQuality == null || acceptQuality.isEmpty) {
+        await device.setUrl(_url, title: _title ?? '');
+        await device.play();
+        return;
+      }
+
+      final initialQa = _initialQn ?? 80;
+      final theme = Theme.of(context);
+
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('选择清晰度'),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: acceptQuality.length,
+              itemBuilder: (context, index) {
+                final quality = acceptQuality[index];
+                final desc =
+                    acceptDesc?[index] ?? VideoQuality.fromCode(quality).desc;
+                final isCurrent = quality == initialQa;
+                return ListTile(
+                  title: Text(desc),
+                  trailing: isCurrent
+                      ? Icon(Icons.check, color: theme.colorScheme.primary)
+                      : null,
+                  onTap: () async {
+                    Navigator.of(context).pop();
+                    SmartDialog.showLoading();
+                    final newRes = await VideoHttp.tvPlayUrl(
+                      cid: _cid!,
+                      objectId: _objectId!,
+                      playurlType: _playurlType!,
+                      qn: quality,
+                    );
+                    SmartDialog.dismiss();
+
+                    if (newRes case Success(:final response)) {
+                      final first = response.durl?.firstOrNull;
+                      if (first == null || first.playUrls.isEmpty) {
+                        SmartDialog.showToast('不支持该清晰度');
+                        return;
+                      }
+                      final url = VideoUtils.getCdnUrl(first.playUrls);
+                      await device.setUrl(url, title: _title ?? '');
+                      await device.play();
+                      SmartDialog.showToast('已投屏：${desc}');
+                    } else {
+                      newRes.toast();
+                    }
+                  },
+                );
+              },
+            ),
+          ),
+        ),
+      );
+    } else {
+      await device.setUrl(_url, title: _title ?? '');
+      await device.play();
+    }
   }
 }

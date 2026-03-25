@@ -62,6 +62,7 @@ class MainController extends GetxController
   late bool directExitOnBack = Pref.directExitOnBack;
   late bool showTrayIcon = Pref.showTrayIcon;
   late bool minimizeOnExit = Pref.minimizeOnExit;
+  late int exitBehavior = Pref.exitBehavior;
   late bool pauseOnMinimize = Pref.pauseOnMinimize;
   late bool isPlaying = false;
 

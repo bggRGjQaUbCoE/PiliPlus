@@ -152,6 +152,7 @@ abstract final class SettingBoxKey {
       touchSlopH = 'touchSlopH';
 
   static const String minimizeOnExit = 'minimizeOnExit',
+      exitBehavior = 'exitBehavior',
       windowSize = 'windowSize',
       windowPosition = 'windowPosition',
       isWindowMaximized = 'isWindowMaximized',

@@ -44,6 +44,7 @@ class _MainAppState extends PopScopeState<MainApp>
   final _mainController = Get.put(MainController());
   late final _setting = GStorage.setting;
   late EdgeInsets _padding;
+  bool _showingExitDialog = false;
 
   @override
   bool get initCanPop => false;
@@ -152,12 +153,94 @@ class _MainAppState extends PopScopeState<MainApp>
 
   @override
   void onWindowClose() {
-    if (_mainController.showTrayIcon && _mainController.minimizeOnExit) {
-      windowManager.hide();
-      _onHideWindow();
-    } else {
-      _onClose();
+    // exitBehavior: 0=直接退出, 1=最小化到托盘, 2=每次询问(默认)
+    final exitBehavior = _mainController.exitBehavior;
+    switch (exitBehavior) {
+      case 0:
+        _onClose();
+      case 1:
+        if (_mainController.showTrayIcon) {
+          windowManager.hide();
+          _onHideWindow();
+        } else {
+          _onClose();
+        }
+      default:
+        if (_showingExitDialog) return;
+        _showingExitDialog = true;
+        _showExitConfirmDialog();
     }
+  }
+
+  void _showExitConfirmDialog() {
+    bool saveExitBehavior = false;
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: const Text('退出确认'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text('您想要退出 ${Constants.appName} 吗？'),
+              const SizedBox(height: 16),
+              Wrap(
+                crossAxisAlignment: WrapCrossAlignment.center,
+                spacing: 8,
+                children: [
+                  Checkbox(
+                    value: saveExitBehavior,
+                    onChanged: (value) {
+                      setState(() => saveExitBehavior = value ?? false);
+                    },
+                  ),
+                  const Text('下次不再询问'),
+                ],
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                _showingExitDialog = false;
+                Navigator.of(context).pop();
+              },
+              child: Text(
+                '取消',
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.outline,
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: () async {
+                if (saveExitBehavior) {
+                  await _setting.put(SettingBoxKey.exitBehavior, 0);
+                }
+                if (context.mounted) Navigator.of(context).pop();
+                _onClose();
+              },
+              child: const Text('退出'),
+            ),
+            if (_mainController.showTrayIcon)
+              TextButton(
+                onPressed: () async {
+                  if (saveExitBehavior) {
+                    await _setting.put(SettingBoxKey.exitBehavior, 1);
+                  }
+                  if (context.mounted) Navigator.of(context).pop();
+                  _showingExitDialog = false;
+                  windowManager.hide();
+                  _onHideWindow();
+                },
+                child: const Text('最小化至托盘'),
+              ),
+          ],
+        ),
+      ),
+    ).whenComplete(() => _showingExitDialog = false);
   }
 
   Future<void> _onClose() async {

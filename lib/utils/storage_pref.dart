@@ -896,6 +896,10 @@ abstract final class Pref {
   static bool get minimizeOnExit =>
       _setting.get(SettingBoxKey.minimizeOnExit, defaultValue: true);
 
+  /// 0: 直接退出, 1: 最小化到托盘, 2: 每次询问(默认)
+  static int get exitBehavior =>
+      _setting.get(SettingBoxKey.exitBehavior, defaultValue: 2);
+
   static Size get windowSize {
     final List<double>? size = (_setting.get(SettingBoxKey.windowSize) as List?)
         ?.fromCast<double>();

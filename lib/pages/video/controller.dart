@@ -720,11 +720,11 @@ class VideoDetailController extends GetxController
 
     if (isClosed) return;
 
-    if (!isFileSource) {
-      if (plPlayerController.enableBlock) {
-        initSkip();
-      }
+    if (plPlayerController.enableBlock) {
+      initSkip();
+    }
 
+    if (!isFileSource) {
       if (vttSubtitlesIndex.value == -1) {
         _queryPlayInfo();
       }
@@ -759,6 +759,9 @@ class VideoDetailController extends GetxController
     bool fromReset = false,
     bool autoFullScreenFlag = false,
   }) async {
+    if (plPlayerController.enableSponsorBlock && isBlock && !fromReset) {
+      querySponsorBlock(bvid: bvid, cid: cid.value);
+    }
     if (isFileSource) {
       return _initPlayerIfNeeded(autoFullScreenFlag);
     }
@@ -766,9 +769,6 @@ class VideoDetailController extends GetxController
       return;
     }
     isQuerying = true;
-    if (plPlayerController.enableSponsorBlock && isBlock && !fromReset) {
-      querySponsorBlock(bvid: bvid, cid: cid.value);
-    }
     if (plPlayerController.cacheVideoQa == null) {
       final isWiFi = await Utils.isWiFi;
       plPlayerController
@@ -1232,6 +1232,11 @@ class VideoDetailController extends GetxController
     vttSubtitlesIndex.value = -1;
     vttSubtitles.clear();
 
+    // sponsor block
+    if (blockConfig.enableBlock) {
+      resetBlock();
+    }
+
     if (!isFileSource) {
       // language
       languages.value = null;
@@ -1245,11 +1250,6 @@ class VideoDetailController extends GetxController
       // view point
       if (plPlayerController.showViewPoints) {
         viewPointList.clear();
-      }
-
-      // sponsor block
-      if (blockConfig.enableBlock) {
-        resetBlock();
       }
 
       // interactive video

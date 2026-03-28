@@ -52,7 +52,7 @@ class _M3ELoadingIndicatorState extends State<M3ELoadingIndicator>
   }();
 
   static const int _morphIntervalMs = 650;
-  static const double _fullRotation = 360.0;
+  static const double _fullRotation = 2 * math.pi;
   static const int _globalRotationDurationMs = 4666;
   static const double _quarterRotation = _fullRotation / 4;
 
@@ -60,9 +60,9 @@ class _M3ELoadingIndicatorState extends State<M3ELoadingIndicator>
 
   int _morphIndex = 1;
 
-  double _morphRotationTargetAngle = _quarterRotation;
+  double _morphRotationTarget = _quarterRotation;
 
-  final _morphAnimationSpec = SpringSimulation(
+  static final _morphAnimationSpec = SpringSimulation(
     SpringDescription.withDampingRatio(ratio: 0.6, stiffness: 200.0, mass: 1.0),
     0.0,
     1.0,
@@ -78,11 +78,9 @@ class _M3ELoadingIndicatorState extends State<M3ELoadingIndicator>
 
   void _startAnimation() {
     _morphIndex++;
-    _morphRotationTargetAngle =
-        (_morphRotationTargetAngle + _quarterRotation) % _fullRotation;
-    _controller
-      ..value = 0.0
-      ..animateWith(_morphAnimationSpec);
+    _morphRotationTarget =
+        (_morphRotationTarget + _quarterRotation) % _fullRotation;
+    _controller.animateWith(_morphAnimationSpec);
   }
 
   @override
@@ -94,7 +92,6 @@ class _M3ELoadingIndicatorState extends State<M3ELoadingIndicator>
             duration: const Duration(milliseconds: _morphIntervalMs),
           )
           ..addStatusListener(_statusListener)
-          ..value = 0.0
           ..animateWith(_morphAnimationSpec);
   }
 
@@ -110,30 +107,31 @@ class _M3ELoadingIndicatorState extends State<M3ELoadingIndicator>
     final elapsedInMs =
         _morphIntervalMs * (_morphIndex - 1) +
         (_controller.lastElapsedDuration?.inMilliseconds ?? 0);
-    final globalRotationControllerValue =
-        (elapsedInMs % _globalRotationDurationMs) / _globalRotationDurationMs;
-    final globalRotationDegrees = globalRotationControllerValue * _fullRotation;
-    final totalRotationDegrees =
-        progress * _quarterRotation +
-        _morphRotationTargetAngle +
-        globalRotationDegrees;
-    return totalRotationDegrees * (math.pi / 180.0);
+    final globalRotation =
+        (elapsedInMs % _globalRotationDurationMs) /
+        _globalRotationDurationMs *
+        _fullRotation;
+
+    return progress * _quarterRotation + _morphRotationTarget + globalRotation;
   }
 
   @override
   Widget build(BuildContext context) {
     final color = Theme.of(context).colorScheme.secondaryFixedDim;
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, child) {
-        final progress = _controller.value;
-        return _M3ELoadingIndicator(
-          morph: _morphs[_morphIndex % _morphs.length],
-          progress: progress,
-          angle: _calcAngle(progress),
-          color: color,
-        );
-      },
+    return Semantics(
+      role: .loadingSpinner,
+      child: AnimatedBuilder(
+        animation: _controller,
+        builder: (context, child) {
+          final progress = _controller.value;
+          return _M3ELoadingIndicator(
+            morph: _morphs[_morphIndex % _morphs.length],
+            progress: progress,
+            angle: _calcAngle(progress),
+            color: color,
+          );
+        },
+      ),
     );
   }
 }
@@ -186,7 +184,6 @@ class _RenderM3ELoadingIndicator extends RenderBox {
   }) : _morph = morph,
        _progress = progress,
        _angle = angle,
-       _color = color,
        _paint = Paint()
          ..style = PaintingStyle.fill
          ..color = color;
@@ -215,11 +212,10 @@ class _RenderM3ELoadingIndicator extends RenderBox {
     markNeedsPaint();
   }
 
-  Color _color;
   final Paint _paint;
   set color(Color value) {
-    if (_color == value) return;
-    _paint.color = _color = value;
+    if (_paint.color == value) return;
+    _paint.color = value;
     markNeedsPaint();
   }
 
@@ -232,11 +228,11 @@ class _RenderM3ELoadingIndicator extends RenderBox {
   void paint(PaintingContext context, Offset offset) {
     final width = size.width;
     final value = size.width / 2;
-    final matrix = Matrix4.identity()
-      ..translateByDouble(offset.dx + value, offset.dy + value, 0.0, 1.0)
-      ..rotateZ(angle)
-      ..translateByDouble(-value, -value, 0.0, 1.0)
-      ..scaleByDouble(width, width, width, 1.0);
+    final matrix =
+        Matrix4.translationValues(offset.dx + value, offset.dy + value, 0.0)
+          ..rotateZ(angle)
+          ..translateByDouble(-value, -value, 0.0, 1.0)
+          ..scaleByDouble(width, width, width, 1.0);
     final path = morph.toPath(progress: progress).transform(matrix.storage);
 
     context.canvas.drawPath(path, _paint);

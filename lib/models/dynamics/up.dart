@@ -49,7 +49,7 @@ class LiveUsers {
   List<LiveUserItem>? items;
 
   LiveUsers.fromJson(Map<String, dynamic> json) {
-    count = json['count'] ?? 0;
+    count = int.tryParse(json['count']?.toString() ?? '') ?? 0;
     group = json['group'];
     items = (json['items'] as List?)
         ?.map<LiveUserItem>((e) => LiveUserItem.fromJson(e))
@@ -64,11 +64,11 @@ class LiveUserItem extends UpItem {
   String? title;
 
   LiveUserItem.fromJson(Map<String, dynamic> json)
-    : super(mid: json['mid'] ?? 0) {
+    : super(mid: int.tryParse(json['mid']?.toString() ?? '') ?? 0) {
     face = json['face'];
     isReserveRecall = json['is_reserve_recall'];
     jumpUrl = json['jump_url'];
-    roomId = json['room_id'];
+    roomId = int.tryParse(json['room_id']?.toString() ?? '') ?? 0;
     title = json['title'];
     uname = json['uname'];
   }
@@ -90,7 +90,7 @@ class UpItem {
   UpItem.fromJson(Map<String, dynamic> json) {
     face = json['face'];
     hasUpdate = json['has_update'];
-    mid = json['mid'] ?? 0;
+    mid = int.tryParse(json['mid']?.toString() ?? '') ?? 0;
     uname = json['uname'];
   }
 

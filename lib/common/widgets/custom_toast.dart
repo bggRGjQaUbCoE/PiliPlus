@@ -1,3 +1,4 @@
+import 'package:PiliPlus/common/widgets/loading_widget/m3e_loading_indicator.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:flutter/material.dart';
 
@@ -10,23 +11,21 @@ class CustomToast extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
+    final colorScheme = ColorScheme.of(context);
     return Container(
       margin: EdgeInsets.only(
         bottom: MediaQuery.viewPaddingOf(context).bottom + 30,
       ),
       padding: const EdgeInsets.symmetric(horizontal: 17, vertical: 10),
       decoration: BoxDecoration(
-        color: theme.colorScheme.primaryContainer.withValues(
-          alpha: toastOpacity,
-        ),
+        color: colorScheme.primaryContainer.withValues(alpha: toastOpacity),
         borderRadius: const BorderRadius.all(Radius.circular(20)),
       ),
       child: Text(
         msg,
         style: TextStyle(
           fontSize: 13,
-          color: theme.colorScheme.onPrimaryContainer,
+          color: colorScheme.onPrimaryContainer,
         ),
       ),
     );
@@ -41,8 +40,7 @@ class LoadingWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
-    final onSurfaceVariant = theme.colorScheme.onSurfaceVariant;
+    final theme = Theme.of(context);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
       decoration: BoxDecoration(
@@ -54,13 +52,12 @@ class LoadingWidget extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           //loading animation
-          CircularProgressIndicator(
-            strokeWidth: 3,
-            valueColor: AlwaysStoppedAnimation(onSurfaceVariant),
-          ),
-
+          const M3ELoadingIndicator(),
           //msg
-          Text(msg, style: TextStyle(color: onSurfaceVariant)),
+          Text(
+            msg,
+            style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
+          ),
         ],
       ),
     );

@@ -4,7 +4,10 @@
 
 import 'dart:async' show Completer;
 import 'dart:io' show Platform;
+import 'dart:math' as math;
 
+import 'package:PiliPlus/common/widgets/loading_widget/m3e_loading_indicator.dart';
+import 'package:PiliPlus/common/widgets/loading_widget/morphs.dart';
 import 'package:PiliPlus/common/widgets/scroll_behavior.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart'
@@ -217,8 +220,8 @@ class RefreshIndicatorState extends State<RefreshIndicator>
   RefreshIndicatorStatus? _status;
   late Future<void> _pendingRefreshFuture;
   double? _dragOffset;
-  late Color _effectiveValueColor =
-      widget.color ?? Theme.of(context).colorScheme.primary;
+  late Color _effectiveValueColor;
+  late Color _backgroundColor;
 
   static final Animatable<double> _threeQuarterTween = Tween<double>(
     begin: 0.0,
@@ -274,9 +277,10 @@ class RefreshIndicatorState extends State<RefreshIndicator>
   }
 
   void _setupColorTween() {
+    final colorScheme = ColorScheme.of(context);
+    _backgroundColor = colorScheme.surfaceContainerHighest;
     // Reset the current value color.
-    _effectiveValueColor =
-        widget.color ?? Theme.of(context).colorScheme.primary;
+    _effectiveValueColor = widget.color ?? colorScheme.primary;
     final Color color = _effectiveValueColor;
     if (color.a == 0) {
       // Set an always stopped animation instead of a driven tween.
@@ -526,12 +530,8 @@ class RefreshIndicatorState extends State<RefreshIndicator>
                     scale: _scaleFactor,
                     child: AnimatedBuilder(
                       animation: _positionController,
-                      builder: (context, child) => RefreshProgressIndicator(
-                        value: showIndeterminateIndicator ? null : _value.value,
-                        valueColor: _valueColor,
-                        backgroundColor: widget.backgroundColor,
-                        strokeWidth: widget.strokeWidth,
-                        elevation: widget.elevation,
+                      builder: (context, child) => _m3eRefreshProgressIndicator(
+                        showIndeterminateIndicator,
                       ),
                     ),
                   ),
@@ -558,13 +558,51 @@ class RefreshIndicatorState extends State<RefreshIndicator>
   }
 
   bool _onDrag(double offset, double viewportDimension) {
-    if (_positionController.value > 0.0 &&
-        _status == RefreshIndicatorStatus.drag) {
+    if (_positionController.value > 0.0 && _status == .drag) {
       _dragOffset = _dragOffset! + offset;
       _checkDragOffset(viewportDimension);
       return true;
     }
     return false;
+  }
+
+  late final _refreshKey = GlobalKey();
+  Widget _m3eRefreshProgressIndicator(bool showIndeterminateIndicator) {
+    const indicatorMargin = EdgeInsets.all(4);
+    const indicatorPadding = EdgeInsets.all(6);
+    const indicatorSize = 41.0;
+
+    final progress = _value.value;
+    return Padding(
+      padding: indicatorMargin,
+      child: SizedBox(
+        width: indicatorSize,
+        height: indicatorSize,
+        child: Material(
+          type: MaterialType.circle,
+          color: _backgroundColor,
+          elevation: widget.elevation,
+          child: Padding(
+            padding: indicatorPadding,
+            child: showIndeterminateIndicator
+                ? M3ELoadingIndicator(
+                    childKey: _refreshKey,
+                    color: _effectiveValueColor,
+                    morphs: Morphs.refreshMorphs,
+                    size: null,
+                  )
+                : RawM3ELoadingIndicator(
+                    key: _refreshKey,
+                    morph: Morphs.manualMorph,
+                    progress: progress,
+                    angle: -progress * math.pi,
+                    color: _valueColor.value!,
+                    size: null,
+                  ),
+          ),
+        ),
+      ),
+    );
   }
 }
 

@@ -23,19 +23,19 @@ abstract final class Morphs {
     MaterialShapes.oval,
   ]);
 
-  static final refreshMorphs = buildMorph([
-    MaterialShapes.softBurst,
-    MaterialShapes.cookie9Sided,
-    MaterialShapes.gem,
-    MaterialShapes.flower,
-    MaterialShapes.sunny,
-    MaterialShapes.cookie4Sided,
-    MaterialShapes.oval,
-    MaterialShapes.cookie12Sided,
-  ]);
+  // static final refreshMorphs = buildMorph([
+  //   MaterialShapes.softBurst,
+  //   MaterialShapes.cookie9Sided,
+  //   MaterialShapes.gem,
+  //   MaterialShapes.flower,
+  //   MaterialShapes.sunny,
+  //   MaterialShapes.cookie4Sided,
+  //   MaterialShapes.oval,
+  //   MaterialShapes.cookie12Sided,
+  // ]);
 
-  static final manualMorph = Morph(
-    MaterialShapes.circle,
-    MaterialShapes.softBurst,
-  );
+  // static final manualMorph = Morph(
+  //   MaterialShapes.circle,
+  //   MaterialShapes.softBurst,
+  // );
 }

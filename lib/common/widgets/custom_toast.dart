@@ -1,4 +1,3 @@
-import 'package:PiliPlus/common/widgets/loading_widget/m3e_loading_indicator.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:flutter/material.dart';
 
@@ -41,6 +40,7 @@ class LoadingWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final onSurfaceVariant = theme.colorScheme.onSurfaceVariant;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
       decoration: BoxDecoration(
@@ -52,12 +52,12 @@ class LoadingWidget extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           //loading animation
-          const M3ELoadingIndicator(),
-          //msg
-          Text(
-            msg,
-            style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
+          CircularProgressIndicator(
+            strokeWidth: 3,
+            valueColor: AlwaysStoppedAnimation(onSurfaceVariant),
           ),
+          //msg
+          Text(msg, style: TextStyle(color: onSurfaceVariant)),
         ],
       ),
     );

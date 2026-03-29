@@ -26,18 +26,18 @@ import 'package:material_new_shapes/material_new_shapes.dart';
 /// reimplement of https://github.com/EmilyMoonstone/material_3_expressive/tree/main/packages/loading_indicator_m3e
 
 class M3ELoadingIndicator extends StatefulWidget {
-  final List<Morph>? morphs;
-  final Color? color;
-  final Size? size;
-  final Key? childKey;
-
   const M3ELoadingIndicator({
     super.key,
-    this.childKey,
+    // this.childKey,
     this.morphs,
     this.color,
     this.size = const Size.square(40),
   });
+  final List<Morph>? morphs;
+
+  final Color? color;
+  final Size size;
+  // final Key? childKey;
 
   @override
   State<M3ELoadingIndicator> createState() => _M3ELoadingIndicatorState();
@@ -63,7 +63,7 @@ class _M3ELoadingIndicatorState extends State<M3ELoadingIndicator>
     1.0,
     5.0,
     snapToEnd: true,
-    tolerance: const Tolerance(velocity: 0.1, distance: 0.1),
+    // tolerance: const Tolerance(velocity: 0.1, distance: 0.1),
   );
 
   void _statusListener(AnimationStatus status) {
@@ -120,7 +120,7 @@ class _M3ELoadingIndicatorState extends State<M3ELoadingIndicator>
       builder: (context, child) {
         final progress = _controller.value;
         return RawM3ELoadingIndicator(
-          key: widget.childKey,
+          // key: widget.childKey,
           morph: _morphs[_morphIndex % _morphs.length],
           progress: progress,
           angle: _calcAngle(progress),
@@ -146,7 +146,7 @@ class RawM3ELoadingIndicator extends LeafRenderObjectWidget {
   final double progress;
   final double angle;
   final Color color;
-  final Size? size;
+  final Size size;
 
   @override
   RenderObject createRenderObject(BuildContext context) {
@@ -169,7 +169,7 @@ class RawM3ELoadingIndicator extends LeafRenderObjectWidget {
       ..progress = progress
       ..angle = angle
       ..color = color
-      ..drySize = size;
+      ..preferredSize = size;
   }
 }
 
@@ -179,11 +179,12 @@ class RenderM3ELoadingIndicator extends RenderBox {
     required double progress,
     required double angle,
     required Color color,
-    required Size? size,
+    required Size size,
   }) : _morph = morph,
        _progress = progress,
        _angle = angle,
-       _drySize = size,
+       _preferredSize = size,
+       _color = color,
        _paint = Paint()
          ..style = PaintingStyle.fill
          ..color = color;
@@ -212,25 +213,24 @@ class RenderM3ELoadingIndicator extends RenderBox {
     markNeedsPaint();
   }
 
+  Color _color;
   final Paint _paint;
   set color(Color value) {
-    if (_paint.color == value) return;
-    _paint.color = value;
+    if (_color == value) return;
+    _paint.color = _color = value;
     markNeedsPaint();
   }
 
-  Size? _drySize;
-  set drySize(Size? value) {
-    if (_drySize == value) return;
-    _drySize = size;
+  Size _preferredSize;
+  set preferredSize(Size value) {
+    if (_preferredSize == value) return;
+    _preferredSize = size;
     markNeedsLayout();
   }
 
   @override
   Size computeDryLayout(covariant BoxConstraints constraints) {
-    return _drySize == null
-        ? constraints.biggest
-        : constraints.constrain(_drySize!);
+    return constraints.constrain(_preferredSize);
   }
 
   @override

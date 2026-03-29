@@ -18,7 +18,7 @@
 import 'dart:math' show pi;
 
 import 'package:flutter/material.dart';
-import 'package:flutter/semantics.dart';
+import 'package:flutter/semantics.dart' show SemanticsConfiguration;
 
 ///
 /// created by dom on 2026/02/14

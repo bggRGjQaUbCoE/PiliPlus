@@ -4,10 +4,7 @@
 
 import 'dart:async' show Completer;
 import 'dart:io' show Platform;
-import 'dart:math' as math;
 
-import 'package:PiliPlus/common/widgets/loading_widget/m3e_loading_indicator.dart';
-import 'package:PiliPlus/common/widgets/loading_widget/morphs.dart';
 import 'package:PiliPlus/common/widgets/scroll_behavior.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart'
@@ -221,7 +218,7 @@ class RefreshIndicatorState extends State<RefreshIndicator>
   late Future<void> _pendingRefreshFuture;
   double? _dragOffset;
   late Color _effectiveValueColor;
-  late Color _backgroundColor;
+  // late Color _backgroundColor;
 
   static final Animatable<double> _threeQuarterTween = Tween<double>(
     begin: 0.0,
@@ -278,7 +275,7 @@ class RefreshIndicatorState extends State<RefreshIndicator>
 
   void _setupColorTween() {
     final colorScheme = ColorScheme.of(context);
-    _backgroundColor = colorScheme.surfaceContainerHighest;
+    // _backgroundColor = colorScheme.surfaceContainerHighest;
     // Reset the current value color.
     _effectiveValueColor = widget.color ?? colorScheme.primary;
     final Color color = _effectiveValueColor;
@@ -530,8 +527,12 @@ class RefreshIndicatorState extends State<RefreshIndicator>
                     scale: _scaleFactor,
                     child: AnimatedBuilder(
                       animation: _positionController,
-                      builder: (context, child) => _m3eRefreshProgressIndicator(
-                        showIndeterminateIndicator,
+                      builder: (context, child) => RefreshProgressIndicator(
+                        value: showIndeterminateIndicator ? null : _value.value,
+                        valueColor: _valueColor,
+                        backgroundColor: widget.backgroundColor,
+                        strokeWidth: widget.strokeWidth,
+                        elevation: widget.elevation,
                       ),
                     ),
                   ),
@@ -566,44 +567,44 @@ class RefreshIndicatorState extends State<RefreshIndicator>
     return false;
   }
 
-  late final _refreshKey = GlobalKey();
-  Widget _m3eRefreshProgressIndicator(bool showIndeterminateIndicator) {
-    const indicatorMargin = EdgeInsets.all(4);
-    const indicatorPadding = EdgeInsets.all(6);
-    const indicatorSize = 41.0;
+  // late final _refreshKey = GlobalKey();
+  // Widget _m3eRefreshProgressIndicator(bool showIndeterminateIndicator) {
+  //   const indicatorMargin = EdgeInsets.all(4);
+  //   const indicatorPadding = EdgeInsets.all(6);
+  //   const indicatorSize = 41.0;
 
-    final progress = _value.value;
-    return Padding(
-      padding: indicatorMargin,
-      child: SizedBox(
-        width: indicatorSize,
-        height: indicatorSize,
-        child: Material(
-          type: MaterialType.circle,
-          color: _backgroundColor,
-          elevation: widget.elevation,
-          child: Padding(
-            padding: indicatorPadding,
-            child: showIndeterminateIndicator
-                ? M3ELoadingIndicator(
-                    childKey: _refreshKey,
-                    color: _effectiveValueColor,
-                    morphs: Morphs.refreshMorphs,
-                    size: null,
-                  )
-                : RawM3ELoadingIndicator(
-                    key: _refreshKey,
-                    morph: Morphs.manualMorph,
-                    progress: progress,
-                    angle: -progress * math.pi,
-                    color: _valueColor.value!,
-                    size: null,
-                  ),
-          ),
-        ),
-      ),
-    );
-  }
+  //   final progress = _value.value;
+  //   return Padding(
+  //     padding: indicatorMargin,
+  //     child: SizedBox(
+  //       width: indicatorSize,
+  //       height: indicatorSize,
+  //       child: Material(
+  //         type: MaterialType.circle,
+  //         color: _backgroundColor,
+  //         elevation: widget.elevation,
+  //         child: Padding(
+  //           padding: indicatorPadding,
+  //           child: showIndeterminateIndicator
+  //               ? M3ELoadingIndicator(
+  //                   childKey: _refreshKey,
+  //                   color: _effectiveValueColor,
+  //                   morphs: Morphs.refreshMorphs,
+  //                   size: null,
+  //                 )
+  //               : RawM3ELoadingIndicator(
+  //                   key: _refreshKey,
+  //                   morph: Morphs.manualMorph,
+  //                   progress: progress,
+  //                   angle: -progress * math.pi,
+  //                   color: _valueColor.value!,
+  //                   size: null,
+  //                 ),
+  //         ),
+  //       ),
+  //     ),
+  //   );
+  // }
 }
 
 // ignore: camel_case_types

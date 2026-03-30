@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:PiliPlus/common/assets.dart';
 import 'package:PiliPlus/models_new/video/video_detail/data.dart';
 import 'package:PiliPlus/models_new/video/video_detail/episode.dart';
 import 'package:PiliPlus/models_new/video/video_detail/section.dart';
@@ -126,7 +127,7 @@ class _SeasonPanelState extends State<SeasonPanel> {
                 ),
                 const SizedBox(width: 15),
                 Image.asset(
-                  'assets/images/live.png',
+                  Assets.livingStatic,
                   color: theme.colorScheme.primary,
                   height: 12,
                   cacheHeight: 12.cacheSize(context),

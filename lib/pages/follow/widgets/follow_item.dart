@@ -51,7 +51,7 @@ class FollowItem extends StatelessWidget {
               PendantAvatar(
                 size: 45,
                 badgeSize: 14,
-                avatar: item.face,
+                item.face,
                 officialType: item.officialVerify?.type,
               ),
               const SizedBox(width: 10),

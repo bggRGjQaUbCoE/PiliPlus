@@ -47,15 +47,15 @@ extension ThreeDotItemTypeExt on ThreeDotItemType {
       case ThreeDotItemType.THREE_DOT_ITEM_TYPE_READ_ALL:
         showConfirmDialog(
           context: context,
-          title: '一键已读',
-          content: '是否清除全部新消息提醒？',
+          title: const Text('一键已读'),
+          content: const Text('是否清除全部新消息提醒？'),
           onConfirm: controller.onClearUnread,
         );
       case ThreeDotItemType.THREE_DOT_ITEM_TYPE_CLEAR_LIST:
         showConfirmDialog(
           context: context,
-          title: '清空列表',
-          content: '清空后所有消息将被删除，无法恢复',
+          title: const Text('清空列表'),
+          content: const Text('清空后所有消息将被删除，无法恢复'),
           onConfirm: controller.onDeleteList,
         );
       case ThreeDotItemType.THREE_DOT_ITEM_TYPE_MSG_SETTING:

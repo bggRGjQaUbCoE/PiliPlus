@@ -2,7 +2,9 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:PiliPlus/build_config.dart';
+import 'package:PiliPlus/common/assets.dart';
 import 'package:PiliPlus/common/constants.dart';
+import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
 import 'package:PiliPlus/common/widgets/dialog/export_import.dart';
 import 'package:PiliPlus/common/widgets/flutter/list_tile.dart';
@@ -64,7 +66,7 @@ class _AboutPageState extends State<AboutPage> {
   void _showDialog() => showDialog(
     context: context,
     builder: (context) => AlertDialog(
-      constraints: StyleString.dialogFixedConstraints,
+      constraints: Style.dialogFixedConstraints,
       content: TextField(
         autofocus: true,
         onSubmitted: (value) {
@@ -108,7 +110,7 @@ class _AboutPageState extends State<AboutPage> {
               height: 150,
               excludeFromSemantics: true,
               cacheWidth: 150.cacheSize(context),
-              'assets/images/logo/logo.png',
+              Assets.logo,
             ),
           ),
           ListTile(
@@ -211,8 +213,8 @@ Commit Hash: ${BuildConfig.commitHash}''',
               if (cacheSize.value.isNotEmpty) {
                 showConfirmDialog(
                   context: context,
-                  title: '提示',
-                  content: '该操作将清除图片及网络请求缓存数据，确认清除？',
+                  title: const Text('提示'),
+                  content: const Text('该操作将清除图片及网络请求缓存数据，确认清除？'),
                   onConfirm: () async {
                     SmartDialog.showLoading(msg: '正在清除...');
                     try {

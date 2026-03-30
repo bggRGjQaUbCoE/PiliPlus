@@ -10,23 +10,21 @@ class CustomToast extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
+    final colorScheme = ColorScheme.of(context);
     return Container(
       margin: EdgeInsets.only(
         bottom: MediaQuery.viewPaddingOf(context).bottom + 30,
       ),
       padding: const EdgeInsets.symmetric(horizontal: 17, vertical: 10),
       decoration: BoxDecoration(
-        color: theme.colorScheme.primaryContainer.withValues(
-          alpha: toastOpacity,
-        ),
+        color: colorScheme.primaryContainer.withValues(alpha: toastOpacity),
         borderRadius: const BorderRadius.all(Radius.circular(20)),
       ),
       child: Text(
         msg,
         style: TextStyle(
           fontSize: 13,
-          color: theme.colorScheme.onPrimaryContainer,
+          color: colorScheme.onPrimaryContainer,
         ),
       ),
     );
@@ -41,7 +39,7 @@ class LoadingWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
+    final theme = Theme.of(context);
     final onSurfaceVariant = theme.colorScheme.onSurfaceVariant;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
@@ -58,7 +56,6 @@ class LoadingWidget extends StatelessWidget {
             strokeWidth: 3,
             valueColor: AlwaysStoppedAnimation(onSurfaceVariant),
           ),
-
           //msg
           Text(msg, style: TextStyle(color: onSurfaceVariant)),
         ],

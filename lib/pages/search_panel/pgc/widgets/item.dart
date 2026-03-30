@@ -1,4 +1,4 @@
-import 'package:PiliPlus/common/constants.dart';
+import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/image/image_save.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
@@ -32,8 +32,8 @@ class SearchPgcItem extends StatelessWidget {
         onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
         child: Padding(
           padding: const EdgeInsets.symmetric(
-            horizontal: StyleString.safeSpace,
-            vertical: StyleString.cardSpace,
+            horizontal: Style.safeSpace,
+            vertical: Style.cardSpace,
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,

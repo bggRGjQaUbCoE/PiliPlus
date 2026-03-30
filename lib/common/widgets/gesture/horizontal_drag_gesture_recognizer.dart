@@ -1,26 +1,29 @@
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:flutter/gestures.dart';
 
-class CustomHorizontalDragGestureRecognizer
-    extends HorizontalDragGestureRecognizer {
-  CustomHorizontalDragGestureRecognizer({
-    super.debugOwner,
-    super.supportedDevices,
-    super.allowedButtonsFilter,
-  });
-
+mixin InitialPositionMixin on GestureRecognizer {
   Offset? _initialPosition;
   Offset? get initialPosition => _initialPosition;
-
-  @override
-  DeviceGestureSettings get gestureSettings => _gestureSettings;
-  final _gestureSettings = DeviceGestureSettings(touchSlop: touchSlopH);
 
   @override
   void addAllowedPointer(PointerDownEvent event) {
     super.addAllowedPointer(event);
     _initialPosition = event.position;
   }
+}
+
+class CustomHorizontalDragGestureRecognizer
+    extends HorizontalDragGestureRecognizer
+    with InitialPositionMixin {
+  CustomHorizontalDragGestureRecognizer({
+    super.debugOwner,
+    super.supportedDevices,
+    super.allowedButtonsFilter,
+  });
+
+  @override
+  DeviceGestureSettings get gestureSettings => _gestureSettings;
+  final _gestureSettings = DeviceGestureSettings(touchSlop: touchSlopH);
 
   @override
   bool hasSufficientGlobalDistanceToAccept(
@@ -41,7 +44,7 @@ double touchSlopH = Pref.touchSlopH;
 
 bool _computeHitSlop(
   double globalDistanceMoved,
-  DeviceGestureSettings? settings,
+  DeviceGestureSettings settings,
   PointerDeviceKind kind,
   Offset? initialPosition,
   Offset lastPosition,
@@ -53,10 +56,10 @@ bool _computeHitSlop(
     case PointerDeviceKind.invertedStylus:
     case PointerDeviceKind.unknown:
     case PointerDeviceKind.touch:
-      return globalDistanceMoved > touchSlopH &&
+      return globalDistanceMoved > settings.touchSlop! &&
           _calc(initialPosition!, lastPosition);
     case PointerDeviceKind.trackpad:
-      return globalDistanceMoved > (settings?.touchSlop ?? kTouchSlop);
+      return globalDistanceMoved > settings.touchSlop!;
   }
 }
 

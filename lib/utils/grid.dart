@@ -1,7 +1,7 @@
 import 'dart:math';
 
-import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/skeleton/video_card_h.dart';
+import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -25,7 +25,7 @@ abstract final class Grid {
   }) => SliverGridDelegateWithExtentAndRatio(
     mainAxisSpacing: 2,
     maxCrossAxisExtent: Grid.smallCardWidth * 2,
-    childAspectRatio: StyleString.aspectRatio * 2.2,
+    childAspectRatio: Style.aspectRatio * 2.2,
     minHeight: MediaQuery.textScalerOf(context).scale(minHeight),
   );
 }

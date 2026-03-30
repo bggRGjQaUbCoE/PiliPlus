@@ -1,4 +1,4 @@
-import 'package:PiliPlus/common/constants.dart';
+import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/flutter/layout_builder.dart';
 import 'package:PiliPlus/common/widgets/image/image_save.dart';
@@ -80,7 +80,7 @@ class VideoCardVMemberHome extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             AspectRatio(
-              aspectRatio: StyleString.aspectRatio,
+              aspectRatio: Style.aspectRatio,
               child: LayoutBuilder(
                 builder: (context, boxConstraints) {
                   double maxWidth = boxConstraints.maxWidth;

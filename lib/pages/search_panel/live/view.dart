@@ -1,5 +1,5 @@
-import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/skeleton/video_card_v.dart';
+import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/models/search/result.dart';
 import 'package:PiliPlus/pages/search_panel/controller.dart';
 import 'package:PiliPlus/pages/search_panel/live/widgets/item.dart';
@@ -46,9 +46,9 @@ class _SearchLivePanelState
 
   late final gridDelegate = SliverGridDelegateWithExtentAndRatio(
     maxCrossAxisExtent: Grid.smallCardWidth,
-    crossAxisSpacing: StyleString.cardSpace,
-    mainAxisSpacing: StyleString.cardSpace,
-    childAspectRatio: StyleString.aspectRatio,
+    crossAxisSpacing: Style.cardSpace,
+    mainAxisSpacing: Style.cardSpace,
+    childAspectRatio: Style.aspectRatio,
     mainAxisExtent: MediaQuery.textScalerOf(context).scale(80),
   );
 
@@ -56,8 +56,8 @@ class _SearchLivePanelState
   Widget buildList(ThemeData theme, List<SearchLiveItemModel> list) {
     return SliverPadding(
       padding: const EdgeInsets.only(
-        left: StyleString.safeSpace,
-        right: StyleString.safeSpace,
+        left: Style.safeSpace,
+        right: Style.safeSpace,
       ),
       sliver: SliverGrid.builder(
         gridDelegate: gridDelegate,

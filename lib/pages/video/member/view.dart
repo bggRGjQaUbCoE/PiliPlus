@@ -1,9 +1,10 @@
-import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/skeleton/video_card_h.dart';
+import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
+import 'package:PiliPlus/common/widgets/sliver/sliver_pinned_header.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/image_preview_type.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
@@ -85,7 +86,6 @@ class _HorizontalMemberPageState extends State<HorizontalMemberPage> {
       Success(:final response) => Column(
         children: [
           _buildUserInfo(theme, response),
-          _buildHeader(theme),
           Expanded(
             child: refreshIndicator(
               onRefresh: _controller.onRefresh,
@@ -122,42 +122,49 @@ class _HorizontalMemberPageState extends State<HorizontalMemberPage> {
   }
 
   Widget _buildHeader(ThemeData theme) {
-    return Container(
-      height: 40,
-      padding: const EdgeInsets.fromLTRB(12, 0, 6, 0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Obx(
-            () {
-              final count = _controller.count.value;
-              return Text(
-                count != -1 ? '共$count视频' : '',
-                style: const TextStyle(fontSize: 13),
-              );
-            },
-          ),
-          TextButton.icon(
-            style: StyleString.buttonStyle,
-            onPressed: () => _controller
-              ..lastAid = widget.videoDetailController.aid.toString()
-              ..queryBySort(),
-            icon: Icon(
-              Icons.sort,
-              size: 16,
-              color: theme.colorScheme.secondary,
-            ),
-            label: Obx(
-              () => Text(
-                _controller.order.value == 'pubdate' ? '最新发布' : '最多播放',
-                style: TextStyle(
-                  fontSize: 13,
-                  color: theme.colorScheme.secondary,
-                ),
-              ),
-            ),
-          ),
-        ],
+    return SliverPinnedHeader(
+      backgroundColor: theme.colorScheme.surface,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(12, 4, 6, 4),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            ?_buildCount(),
+            _buildSortBtn(theme),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget? _buildCount() {
+    final count = _controller.count;
+    if (count != null) {
+      return Text(
+        '共$count视频',
+        style: const TextStyle(fontSize: 13),
+      );
+    }
+    return null;
+  }
+
+  Widget _buildSortBtn(ThemeData theme) {
+    return TextButton.icon(
+      style: Style.buttonStyle,
+      onPressed: () => _controller
+        ..lastAid = widget.videoDetailController.aid.toString()
+        ..queryBySort(),
+      icon: Icon(
+        Icons.sort,
+        size: 16,
+        color: theme.colorScheme.secondary,
+      ),
+      label: Text(
+        _controller.order.label,
+        style: TextStyle(
+          fontSize: 13,
+          color: theme.colorScheme.secondary,
+        ),
       ),
     );
   }
@@ -174,32 +181,37 @@ class _HorizontalMemberPageState extends State<HorizontalMemberPage> {
       ),
       Success(:final response) =>
         response != null && response.isNotEmpty
-            ? SliverFixedExtentList.builder(
-                itemBuilder: (context, index) {
-                  if (index == response.length - 1 && _controller.hasNext) {
-                    _controller.onLoadMore();
-                  }
-                  final SpaceArchiveItem videoItem = response[index];
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 2),
-                    child: VideoCardHMemberVideo(
-                      videoItem: videoItem,
-                      bvid: _bvid,
-                      onTap: () {
-                        Get.back();
-                        widget.ugcIntroController.onChangeEpisode(
-                          BaseEpisodeItem(
-                            bvid: videoItem.bvid,
-                            cid: videoItem.cid,
-                            cover: videoItem.cover,
-                          ),
-                        );
-                      },
-                    ),
-                  );
-                },
-                itemCount: response.length,
-                itemExtent: 100,
+            ? SliverMainAxisGroup(
+                slivers: [
+                  _buildHeader(theme),
+                  SliverFixedExtentList.builder(
+                    itemBuilder: (context, index) {
+                      if (index == response.length - 1 && _controller.hasNext) {
+                        _controller.onLoadMore();
+                      }
+                      final videoItem = response[index];
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 2),
+                        child: VideoCardHMemberVideo(
+                          videoItem: videoItem,
+                          bvid: _bvid,
+                          onTap: () {
+                            Get.back();
+                            widget.ugcIntroController.onChangeEpisode(
+                              BaseEpisodeItem(
+                                bvid: videoItem.bvid,
+                                cid: videoItem.cid,
+                                cover: videoItem.cover,
+                              ),
+                            );
+                          },
+                        ),
+                      );
+                    },
+                    itemCount: response.length,
+                    itemExtent: 100,
+                  ),
+                ],
               )
             : HttpError(onReload: _controller.onReload),
       Error(:final errMsg) => HttpError(

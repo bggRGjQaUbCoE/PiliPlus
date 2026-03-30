@@ -196,26 +196,27 @@ class _LiveHeaderControlState extends State<LiveHeaderControl>
               );
             },
           ),
-          Obx(() {
-            final continuePlayInBackground =
-                plPlayerController.continuePlayInBackground.value;
-            return ComBtn(
-              height: 30,
-              tooltip: '${continuePlayInBackground ? '关闭' : ''}后台播放',
-              onTap: plPlayerController.setContinuePlayInBackground,
-              icon: continuePlayInBackground
-                  ? const Icon(
-                      size: 18,
-                      Icons.play_circle,
-                      color: Colors.white,
-                    )
-                  : const Icon(
-                      size: 18,
-                      Icons.play_circle_outline,
-                      color: Colors.white,
-                    ),
-            );
-          }),
+          if (PlatformUtils.isMobile)
+            Obx(() {
+              final continuePlayInBackground =
+                  plPlayerController.continuePlayInBackground.value;
+              return ComBtn(
+                height: 30,
+                tooltip: '${continuePlayInBackground ? '关闭' : ''}后台播放',
+                onTap: plPlayerController.setContinuePlayInBackground,
+                icon: continuePlayInBackground
+                    ? const Icon(
+                        size: 18,
+                        Icons.play_circle,
+                        color: Colors.white,
+                      )
+                    : const Icon(
+                        size: 18,
+                        Icons.play_circle_outline,
+                        color: Colors.white,
+                      ),
+              );
+            }),
           ComBtn(
             height: 30,
             tooltip: '定时关闭',

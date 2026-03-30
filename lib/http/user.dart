@@ -9,6 +9,7 @@ import 'package:PiliPlus/models_new/history/data.dart';
 import 'package:PiliPlus/models_new/later/data.dart';
 import 'package:PiliPlus/models_new/login_log/data.dart';
 import 'package:PiliPlus/models_new/media_list/data.dart';
+import 'package:PiliPlus/models_new/relation/data.dart';
 import 'package:PiliPlus/models_new/space_setting/data.dart';
 import 'package:PiliPlus/models_new/sub/sub/data.dart';
 import 'package:PiliPlus/models_new/user_real_name/data.dart';
@@ -269,7 +270,7 @@ abstract final class UserHttp {
     }
   }
 
-  static Future<LoadingState<Map>> hasFollow(int mid) async {
+  static Future<LoadingState<RelationData>> userRelation(int mid) async {
     final res = await Request().get(
       Api.relation,
       queryParameters: {
@@ -277,7 +278,7 @@ abstract final class UserHttp {
       },
     );
     if (res.data['code'] == 0) {
-      return Success(res.data['data']);
+      return Success(RelationData.fromJson(res.data['data']));
     } else {
       return Error(res.data['message']);
     }

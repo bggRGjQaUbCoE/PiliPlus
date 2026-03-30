@@ -1,4 +1,4 @@
-import 'package:PiliPlus/common/constants.dart';
+import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/flutter/layout_builder.dart';
 import 'package:PiliPlus/common/widgets/image/image_save.dart';
@@ -22,7 +22,7 @@ import 'package:intl/intl.dart';
 
 // 视频卡片 - 垂直布局
 class VideoCardV extends StatelessWidget {
-  final BaseRecVideoItemModel videoItem;
+  final BaseRcmdVideoItemModel videoItem;
   final VoidCallback? onRemove;
 
   const VideoCardV({
@@ -87,7 +87,7 @@ class VideoCardV extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 AspectRatio(
-                  aspectRatio: StyleString.aspectRatio,
+                  aspectRatio: Style.aspectRatio,
                   child: LayoutBuilder(
                     builder: (context, boxConstraints) {
                       double maxWidth = boxConstraints.maxWidth;
@@ -229,7 +229,7 @@ class VideoCardV extends StatelessWidget {
             value: videoItem.stat.danmu,
           ),
         ],
-        if (videoItem is RecVideoItemModel) ...[
+        if (videoItem is RcmdVideoItemModel) ...[
           const Spacer(),
           Text.rich(
             maxLines: 1,
@@ -248,7 +248,7 @@ class VideoCardV extends StatelessWidget {
           const SizedBox(width: 2),
         ],
         // deprecated
-        //  else if (videoItem is RecVideoItemAppModel &&
+        //  else if (videoItem is RcmdVideoItemAppModel &&
         //     videoItem.desc != null &&
         //     videoItem.desc!.contains(' · ')) ...[
         //   const Spacer(),

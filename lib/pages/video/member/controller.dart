@@ -1,6 +1,6 @@
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/member.dart';
-import 'package:PiliPlus/models/common/member/contribute_type.dart';
+import 'package:PiliPlus/models/common/member/archive_order_type_app.dart';
 import 'package:PiliPlus/models/member/info.dart';
 import 'package:PiliPlus/models_new/space/space_archive/data.dart';
 import 'package:PiliPlus/models_new/space/space_archive/item.dart';
@@ -55,7 +55,7 @@ class HorizontalMemberPageController
   @override
   bool customHandleResponse(bool isRefresh, Success response) {
     SpaceArchiveData data = response.response;
-    count.value = data.count ?? -1;
+    count = data.count;
     if (isRefresh) {
       if (isLoadPrevious) {
         hasPrev = data.hasPrev ?? false;
@@ -83,8 +83,8 @@ class HorizontalMemberPageController
   String? currAid;
   String? firstAid;
   String? lastAid;
-  RxString order = 'pubdate'.obs;
-  RxInt count = (-1).obs;
+  ArchiveOrderTypeApp order = .pubdate;
+  int? count;
   bool isLoadPrevious = false;
   bool hasPrev = true;
   bool hasNext = true;
@@ -92,15 +92,15 @@ class HorizontalMemberPageController
   @override
   Future<LoadingState<SpaceArchiveData>> customGetData() =>
       MemberHttp.spaceArchive(
-        type: ContributeType.video,
+        type: .video,
         mid: mid,
         aid: page == 1
             ? currAid
             : isLoadPrevious
             ? firstAid
             : lastAid,
-        order: order.value,
-        sort: page != 1 && isLoadPrevious ? 'asc' : null,
+        order: order,
+        sort: page != 1 && isLoadPrevious ? .asc : null,
         pn: null,
         next: null,
         seasonId: null,
@@ -131,7 +131,7 @@ class HorizontalMemberPageController
 
   void queryBySort() {
     if (isLoading) return;
-    order.value = order.value == 'pubdate' ? 'click' : 'pubdate';
+    order = order == .pubdate ? .click : .pubdate;
     onReload();
   }
 }

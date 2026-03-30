@@ -17,7 +17,8 @@
 
 import 'dart:io' show Platform;
 
-import 'package:PiliPlus/common/constants.dart';
+import 'package:PiliPlus/common/assets.dart';
+import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/image_grid/image_grid_builder.dart';
@@ -53,8 +54,7 @@ class ImageModel {
   bool? _isLongPic;
   bool? _isLivePhoto;
 
-  bool get isLongPic =>
-      _isLongPic ??= (height / width) > StyleString.imgMaxRatio;
+  bool get isLongPic => _isLongPic ??= (height / width) > Style.imgMaxRatio;
   bool get isLivePhoto =>
       _isLivePhoto ??= enableLivePhoto && liveUrl?.isNotEmpty == true;
 
@@ -116,9 +116,9 @@ class ImageGridView extends StatelessWidget {
     int col,
     int length,
     int index, {
-    Radius r = StyleString.imgRadius,
+    Radius r = Style.imgRadius,
   }) {
-    if (length == 1) return StyleString.mdRadius;
+    if (length == 1) return Style.mdRadius;
 
     final bool hasUp = index - col >= 0;
     final bool hasDown = index + col < length;
@@ -213,7 +213,7 @@ class ImageGridView extends StatelessWidget {
               ).colorScheme.onInverseSurface.withValues(alpha: 0.4),
             ),
             child: Image.asset(
-              'assets/images/loading.png',
+              Assets.loading,
               width: width,
               height: height,
               cacheWidth: width.cacheSize(context),

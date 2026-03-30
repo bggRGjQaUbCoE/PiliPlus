@@ -1,5 +1,5 @@
-import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/skeleton/skeleton.dart';
+import 'package:PiliPlus/common/style.dart';
 import 'package:flutter/material.dart';
 
 class VideoCardVSkeleton extends StatelessWidget {
@@ -13,11 +13,11 @@ class VideoCardVSkeleton extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           AspectRatio(
-            aspectRatio: StyleString.aspectRatio,
+            aspectRatio: Style.aspectRatio,
             child: DecoratedBox(
               decoration: BoxDecoration(
                 color: color,
-                borderRadius: StyleString.mdRadius,
+                borderRadius: Style.mdRadius,
               ),
             ),
           ),

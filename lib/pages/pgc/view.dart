@@ -1,6 +1,6 @@
 import 'dart:math';
 
-import 'package:PiliPlus/common/constants.dart';
+import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/button/more_btn.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
@@ -170,9 +170,9 @@ class _PgcPageState extends State<PgcPage> with AutomaticKeepAliveClientMixin {
                                 return Container(
                                   width: Grid.smallCardWidth / 2,
                                   margin: EdgeInsets.only(
-                                    left: StyleString.safeSpace,
+                                    left: Style.safeSpace,
                                     right: index == item.episodes!.length - 1
-                                        ? StyleString.safeSpace
+                                        ? Style.safeSpace
                                         : 0,
                                   ),
                                   child: PgcCardVTimeline(
@@ -208,8 +208,8 @@ class _PgcPageState extends State<PgcPage> with AutomaticKeepAliveClientMixin {
     _buildRcmdTitle(theme),
     SliverPadding(
       padding: const EdgeInsets.only(
-        left: StyleString.safeSpace,
-        right: StyleString.safeSpace,
+        left: Style.safeSpace,
+        right: Style.safeSpace,
         bottom: 100,
       ),
       sliver: Obx(
@@ -301,8 +301,8 @@ class _PgcPageState extends State<PgcPage> with AutomaticKeepAliveClientMixin {
   );
 
   late final gridDelegate = SliverGridDelegateWithExtentAndRatio(
-    mainAxisSpacing: StyleString.cardSpace,
-    crossAxisSpacing: StyleString.cardSpace,
+    mainAxisSpacing: Style.cardSpace,
+    crossAxisSpacing: Style.cardSpace,
     maxCrossAxisExtent: Grid.smallCardWidth * 0.6,
     childAspectRatio: 0.75,
     mainAxisExtent: MediaQuery.textScalerOf(context).scale(50),
@@ -412,10 +412,8 @@ class _PgcPageState extends State<PgcPage> with AutomaticKeepAliveClientMixin {
                   return Container(
                     width: Grid.smallCardWidth / 2,
                     margin: EdgeInsets.only(
-                      left: StyleString.safeSpace,
-                      right: index == response.length - 1
-                          ? StyleString.safeSpace
-                          : 0,
+                      left: Style.safeSpace,
+                      right: index == response.length - 1 ? Style.safeSpace : 0,
                     ),
                     child: PgcCardV(item: response[index]),
                   );

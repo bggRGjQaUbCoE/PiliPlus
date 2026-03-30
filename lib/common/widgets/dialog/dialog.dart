@@ -3,21 +3,16 @@ import 'package:get/get.dart';
 
 Future<bool> showConfirmDialog({
   required BuildContext context,
-  required String title,
-  Object? content,
+  required Widget title,
+  Widget? content,
   // @Deprecated('use `bool result = await showConfirmDialog()` instead')
   VoidCallback? onConfirm,
 }) async {
-  assert(content is String? || content is Widget);
   return await showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
-          title: Text(title),
-          content: content is String
-              ? Text(content)
-              : content is Widget
-              ? content
-              : null,
+          title: title,
+          content: content,
           actions: [
             TextButton(
               onPressed: Get.back,

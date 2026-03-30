@@ -424,7 +424,7 @@ class ModuleAuthorModel extends Avatar {
     pubTime = json['pub_time'];
     pubTs = json['pub_ts'] == 0 ? null : Utils.safeToInt(json['pub_ts']);
     type = json['type'];
-    if (PendantAvatar.showDynDecorate) {
+    if (PendantAvatar.showDecorate) {
       decorate = json['decorate'] == null
           ? null
           : Decorate.fromJson(json['decorate']);

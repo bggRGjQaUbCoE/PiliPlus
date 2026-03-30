@@ -1,5 +1,5 @@
-import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/skeleton/skeleton.dart';
+import 'package:PiliPlus/common/style.dart';
 import 'package:flutter/material.dart';
 
 class MediaPgcSkeleton extends StatefulWidget {
@@ -15,11 +15,9 @@ class _MediaPgcSkeletonState extends State<MediaPgcSkeleton> {
     Color bgColor = Theme.of(context).colorScheme.onInverseSurface;
     return Skeleton(
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(
-          StyleString.safeSpace,
-          7,
-          StyleString.safeSpace,
-          7,
+        padding: const .symmetric(
+          horizontal: Style.safeSpace,
+          vertical: 7,
         ),
         child: Row(
           children: [

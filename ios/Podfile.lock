@@ -8,6 +8,8 @@ PODS:
     - Flutter
   - auto_orientation (0.0.1):
     - Flutter
+  - battery_plus (1.0.0):
+    - Flutter
   - chat_bottom_container (0.0.1):
     - Flutter
   - connectivity_plus (0.0.1):
@@ -68,9 +70,9 @@ PODS:
     - Flutter
     - GT3Captcha-iOS
   - GT3Captcha-iOS (0.15.8.3)
-  - image_cropper (0.0.4):
+  - image_cropper (0.0.5):
     - Flutter
-    - TOCropViewController (~> 2.8.0)
+    - TOCropViewController (~> 3.1.1)
   - image_picker_ios (0.0.1):
     - Flutter
   - live_photo_maker (0.0.3):
@@ -84,9 +86,6 @@ PODS:
   - OrderedSet (6.0.3)
   - package_info_plus (0.4.5):
     - Flutter
-  - path_provider_foundation (0.0.1):
-    - Flutter
-    - FlutterMacOS
   - permission_handler_apple (9.3.0):
     - Flutter
   - saver_gallery (0.0.1):
@@ -105,7 +104,7 @@ PODS:
     - Flutter
     - FlutterMacOS
   - SwiftyGif (5.4.5)
-  - TOCropViewController (2.8.0)
+  - TOCropViewController (3.1.1)
   - url_launcher_ios (0.0.1):
     - Flutter
   - wakelock_plus (0.0.1):
@@ -116,6 +115,7 @@ DEPENDENCIES:
   - audio_service (from `.symlinks/plugins/audio_service/darwin`)
   - audio_session (from `.symlinks/plugins/audio_session/ios`)
   - auto_orientation (from `.symlinks/plugins/auto_orientation/ios`)
+  - battery_plus (from `.symlinks/plugins/battery_plus/ios`)
   - chat_bottom_container (from `.symlinks/plugins/chat_bottom_container/ios`)
   - connectivity_plus (from `.symlinks/plugins/connectivity_plus/ios`)
   - device_info_plus (from `.symlinks/plugins/device_info_plus/ios`)
@@ -134,7 +134,6 @@ DEPENDENCIES:
   - media_kit_native_event_loop (from `.symlinks/plugins/media_kit_native_event_loop/ios`)
   - media_kit_video (from `.symlinks/plugins/media_kit_video/ios`)
   - package_info_plus (from `.symlinks/plugins/package_info_plus/ios`)
-  - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
   - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
   - saver_gallery (from `.symlinks/plugins/saver_gallery/ios`)
   - screen_brightness_ios (from `.symlinks/plugins/screen_brightness_ios/ios`)
@@ -163,6 +162,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/audio_session/ios"
   auto_orientation:
     :path: ".symlinks/plugins/auto_orientation/ios"
+  battery_plus:
+    :path: ".symlinks/plugins/battery_plus/ios"
   chat_bottom_container:
     :path: ".symlinks/plugins/chat_bottom_container/ios"
   connectivity_plus:
@@ -199,8 +200,6 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/media_kit_video/ios"
   package_info_plus:
     :path: ".symlinks/plugins/package_info_plus/ios"
-  path_provider_foundation:
-    :path: ".symlinks/plugins/path_provider_foundation/darwin"
   permission_handler_apple:
     :path: ".symlinks/plugins/permission_handler_apple/ios"
   saver_gallery:
@@ -219,44 +218,44 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/wakelock_plus/ios"
 
 SPEC CHECKSUMS:
-  app_links: 6d01271b3907b0ee7325c5297c75d697c4226c4d
-  audio_service: cab6c1a0eaf01b5a35b567e11fa67d3cc1956910
-  audio_session: 19e9480dbdd4e5f6c4543826b2e8b0e4ab6145fe
-  auto_orientation: 102ed811a5938d52c86520ddd7ecd3a126b5d39d
-  chat_bottom_container: d8b077152c91b0ab90001e900748ea50353a5520
-  connectivity_plus: 2a701ffec2c0ae28a48cf7540e279787e77c447d
-  device_info_plus: bf2e3232933866d73fe290f2942f2156cdd10342
+  app_links: a754cbec3c255bd4bbb4d236ecc06f28cd9a7ce8
+  audio_service: aa99a6ba2ae7565996015322b0bb024e1d25c6fd
+  audio_session: 9bb7f6c970f21241b19f5a3658097ae459681ba0
+  auto_orientation: a1600c9ed72e6e96982fb4e1214463343342432a
+  battery_plus: b42253f6d2dde71712f8c36fef456d99121c5977
+  chat_bottom_container: f1eb8323db77a87db50f361142c679f11e892d1b
+  connectivity_plus: cb623214f4e1f6ef8fe7403d580fdad517d2f7dd
+  device_info_plus: 21fcca2080fbcd348be798aa36c3e5ed849eefbe
   DKImagePickerController: 946cec48c7873164274ecc4624d19e3da4c1ef3c
   DKPhotoGallery: b3834fecb755ee09a593d7c9e389d8b5d6deed60
-  file_picker: b159e0c068aef54932bb15dc9fd1571818edaf49
+  file_picker: a0560bc09d61de87f12d246fc47d2119e6ef37be
   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
-  flutter_inappwebview_ios: 6f63631e2c62a7c350263b13fa5427aedefe81d4
-  flutter_mailer: 2ef5a67087bc8c6c4cefd04a178bf1ae2c94cd83
-  flutter_native_splash: df59bb2e1421aa0282cb2e95618af4dcb0c56c29
-  flutter_volume_controller: e4d5832f08008180f76e30faf671ffd5a425e529
-  fluttertoast: 21eecd6935e7064cc1fcb733a4c5a428f3f24f0f
-  gt3_flutter_plugin: 5bd2c08d3c19cbb6ee3b08f4358439e54c8ab2ee
+  flutter_inappwebview_ios: b89ba3482b96fb25e00c967aae065701b66e9b99
+  flutter_mailer: 3a8cd4f36c960fb04528d5471097270c19fec1c4
+  flutter_native_splash: c32d145d68aeda5502d5f543ee38c192065986cf
+  flutter_volume_controller: c2be490cb0487e8b88d0d9fc2b7e1c139a4ebccb
+  fluttertoast: 2c67e14dce98bbdb200df9e1acf610d7a6264ea1
+  gt3_flutter_plugin: 37090e5fa66ff2a52939eb9d208fc36fa49d36e5
   GT3Captcha-iOS: 5e3b1077834d8a9d6f4d64a447a30af3e14affe6
-  image_cropper: b8ef14d3fcff4040b0f9da2ca28d98219a5cba0e
-  image_picker_ios: 4f2f91b01abdb52842a8e277617df877e40f905b
-  live_photo_maker: 7d57bfc70a120b4673c10871f354f4b1b6fde5fd
-  media_kit_libs_ios_video: a5fe24bc7875ccd6378a0978c13185e1344651c1
-  media_kit_native_event_loop: e6b2ab20cf0746eb1c33be961fcf79667304fa2a
-  media_kit_video: 5da63f157170e5bf303bf85453b7ef6971218a2e
+  image_cropper: e405d3e44183f8e8edbec2e49b01ff9c819c7ac8
+  image_picker_ios: e0ece4aa2a75771a7de3fa735d26d90817041326
+  live_photo_maker: 29280ca88323bd5a33aafd00d98624d5cf522176
+  media_kit_libs_ios_video: 5a18affdb97d1f5d466dc79988b13eff6c5e2854
+  media_kit_native_event_loop: 5fba1a849a6c87a34985f1e178a0de5bd444a0cf
+  media_kit_video: 1746e198cb697d1ffb734b1d05ec429d1fcd1474
   OrderedSet: e539b66b644ff081c73a262d24ad552a69be3a94
-  package_info_plus: c0502532a26c7662a62a356cebe2692ec5fe4ec4
-  path_provider_foundation: 0b743cbb62d8e47eab856f09262bb8c1ddcfe6ba
-  permission_handler_apple: 9878588469a2b0d0fc1e048d9f43605f92e6cec2
-  saver_gallery: 76172dc4bf6b40e66d694948ada9ff402304dd87
-  screen_brightness_ios: 6a6f7794b67f07c4f1e24f6374b2d8ad367ffb39
+  package_info_plus: af8e2ca6888548050f16fa2f1938db7b5a5df499
+  permission_handler_apple: 4ed2196e43d0651e8ff7ca3483a069d469701f2d
+  saver_gallery: af2d0c762dafda254e0ad025ef0dabd6506cd490
+  screen_brightness_ios: 9953fd7da5bd480f1a93990daeec2eb42d4f3b52
   SDWebImage: 16309af6d214ba3f77a7c6f6fdda888cb313a50a
-  share_plus: 8b6f8b3447e494cca5317c8c3073de39b3600d1f
-  shared_preferences_foundation: 5086985c1d43c5ba4d5e69a4e8083a389e2909e6
-  sqflite_darwin: 5a7236e3b501866c1c9befc6771dfd73ffb8702d
+  share_plus: 50da8cb520a8f0f65671c6c6a99b3617ed10a58a
+  shared_preferences_foundation: 7036424c3d8ec98dfe75ff1667cb0cd531ec82bb
+  sqflite_darwin: 20b2a3a3b70e43edae938624ce550a3cbf66a3d0
   SwiftyGif: 706c60cf65fa2bc5ee0313beece843c8eb8194d4
-  TOCropViewController: 797deaf39c90e6e9ddd848d88817f6b9a8a09888
-  url_launcher_ios: bb13df5870e8c4234ca12609d04010a21be43dfa
-  wakelock_plus: 76957ab028e12bfa4e66813c99e46637f367fc7e
+  TOCropViewController: 9002a9b12d8104d7478cdc306d80f0efea7fe2c5
+  url_launcher_ios: 7a95fa5b60cc718a708b8f2966718e93db0cef1b
+  wakelock_plus: e29112ab3ef0b318e58cfa5c32326458be66b556
 
 PODFILE CHECKSUM: f62db4fb414ebdecb264109948f76dfef35fdc3d
 

@@ -1,5 +1,5 @@
-import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/skeleton/dynamic_card.dart';
+import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/flutter/sliver_layout_builder.dart';
 import 'package:PiliPlus/utils/global_data.dart';
 import 'package:PiliPlus/utils/grid.dart';
@@ -38,7 +38,7 @@ mixin DynMixin {
     crossAxisSpacing: 4,
     mainAxisSpacing: 4,
     maxCrossAxisExtent: Grid.smallCardWidth * 2,
-    childAspectRatio: StyleString.aspectRatio,
+    childAspectRatio: Style.aspectRatio,
     mainAxisExtent: 50,
   );
 

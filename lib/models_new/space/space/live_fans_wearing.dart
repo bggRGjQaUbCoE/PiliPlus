@@ -1,28 +1,44 @@
 class LiveFansWearing {
-  int? level;
-  String? medalName;
-  int? medalColorStart;
-  int? medalColorEnd;
-  int? medalColorBorder;
-  String? medalJumpUrl;
+  DetailV2? detailV2;
 
   LiveFansWearing({
-    this.level,
-    this.medalName,
-    this.medalColorStart,
-    this.medalColorEnd,
-    this.medalColorBorder,
-    this.medalJumpUrl,
+    this.detailV2,
   });
 
   factory LiveFansWearing.fromJson(Map<String, dynamic> json) {
     return LiveFansWearing(
-      level: json['level'] as int?,
-      medalName: json['medal_name'] as String?,
-      medalColorStart: json['medal_color_start'] as int?,
-      medalColorEnd: json['medal_color_end'] as int?,
-      medalColorBorder: json['medal_color_border'] as int?,
-      medalJumpUrl: json['medal_jump_url'] as String?,
+      detailV2: json['detail_v2'] == null
+          ? null
+          : DetailV2.fromJson(json['detail_v2']),
+    );
+  }
+}
+
+class DetailV2 {
+  int? uid;
+  int? level;
+  String? medalColorName;
+  String? medalName;
+  int? medalId;
+  String? medalColor;
+
+  DetailV2({
+    this.uid,
+    this.level,
+    this.medalColorName,
+    this.medalName,
+    this.medalId,
+    this.medalColor,
+  });
+
+  factory DetailV2.fromJson(Map<String, dynamic> json) {
+    return DetailV2(
+      uid: json["uid"],
+      level: json["level"],
+      medalColorName: json["medal_color_name"],
+      medalName: json["medal_name"],
+      medalId: json["medal_id"],
+      medalColor: json["medal_color"],
     );
   }
 }

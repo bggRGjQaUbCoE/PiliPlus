@@ -1,5 +1,5 @@
-import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/skeleton/video_card_v.dart';
+import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/http/loading_state.dart';
@@ -57,8 +57,8 @@ class _MemberCoinArcPageState extends State<MemberCoinArcPage> {
             SliverPadding(
               padding: EdgeInsets.only(
                 top: 7,
-                left: StyleString.safeSpace + padding.left,
-                right: StyleString.safeSpace + padding.right,
+                left: Style.safeSpace + padding.left,
+                right: Style.safeSpace + padding.right,
                 bottom: padding.bottom + 100,
               ),
               sliver: Obx(() => _buildBody(_ctr.loadingState.value)),
@@ -70,10 +70,10 @@ class _MemberCoinArcPageState extends State<MemberCoinArcPage> {
   }
 
   late final gridDelegate = SliverGridDelegateWithExtentAndRatio(
-    mainAxisSpacing: StyleString.cardSpace,
-    crossAxisSpacing: StyleString.cardSpace,
+    mainAxisSpacing: Style.cardSpace,
+    crossAxisSpacing: Style.cardSpace,
     maxCrossAxisExtent: Grid.smallCardWidth,
-    childAspectRatio: StyleString.aspectRatio,
+    childAspectRatio: Style.aspectRatio,
     mainAxisExtent: MediaQuery.textScalerOf(context).scale(75),
   );
 

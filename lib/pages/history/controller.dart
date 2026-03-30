@@ -126,8 +126,8 @@ class HistoryController
   void onRemove() {
     showConfirmDialog(
       context: Get.context!,
-      content: '确认删除所选历史记录吗？',
-      title: '提示',
+      title: const Text('提示'),
+      content: const Text('确认删除所选历史记录吗？'),
       onConfirm: () => _onDelete(allChecked.toSet()),
     );
   }

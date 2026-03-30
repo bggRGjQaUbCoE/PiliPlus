@@ -3,7 +3,7 @@ import 'dart:io';
 import 'dart:math' show min;
 import 'dart:ui';
 
-import 'package:PiliPlus/common/constants.dart';
+import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/pair.dart';
 import 'package:PiliPlus/common/widgets/progress_bar/segment_progress_bar.dart';
 import 'package:PiliPlus/grpc/bilibili/app/listener/v1.pbenum.dart'
@@ -1510,7 +1510,7 @@ class VideoDetailController extends GetxController
     showDialog(
       context: Get.context!,
       builder: (context) => AlertDialog(
-        constraints: StyleString.dialogFixedConstraints,
+        constraints: Style.dialogFixedConstraints,
         title: const Text('播放地址'),
         content: Column(
           spacing: 20,

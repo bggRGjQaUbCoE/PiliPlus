@@ -1,5 +1,5 @@
-import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/skeleton/video_card_h.dart';
+import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/video_card/video_card_h.dart';
 import 'package:PiliPlus/models/search/result.dart';
 import 'package:PiliPlus/pages/search_panel/all/controller.dart';
@@ -49,7 +49,7 @@ class _SearchAllPanelState
     return SliverWaterfallFlow(
       gridDelegate: SliverWaterfallFlowDelegateWithMaxCrossAxisExtent(
         maxCrossAxisExtent: Grid.smallCardWidth * 2,
-        crossAxisSpacing: StyleString.safeSpace,
+        crossAxisSpacing: Style.safeSpace,
       ),
       delegate: SliverChildBuilderDelegate(
         (_, index) {
@@ -80,9 +80,9 @@ class _SearchAllPanelState
                           return Container(
                             width: Grid.smallCardWidth / 2,
                             margin: EdgeInsets.only(
-                              left: StyleString.safeSpace,
+                              left: Style.safeSpace,
                               right: index == e.length - 1
-                                  ? StyleString.safeSpace
+                                  ? Style.safeSpace
                                   : 0,
                             ),
                             child: PgcCardVSearch(item: e[index]),

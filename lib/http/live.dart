@@ -19,6 +19,7 @@ import 'package:PiliPlus/models_new/live/live_emote/data.dart';
 import 'package:PiliPlus/models_new/live/live_emote/datum.dart';
 import 'package:PiliPlus/models_new/live/live_feed_index/data.dart';
 import 'package:PiliPlus/models_new/live/live_follow/data.dart';
+import 'package:PiliPlus/models_new/live/live_medal_wall/data.dart';
 import 'package:PiliPlus/models_new/live/live_room_info_h5/data.dart';
 import 'package:PiliPlus/models_new/live/live_room_play_info/data.dart';
 import 'package:PiliPlus/models_new/live/live_search/data.dart';
@@ -738,6 +739,20 @@ abstract final class LiveHttp {
     );
     if (res.data['code'] == 0) {
       return const Success(null);
+    } else {
+      return Error(res.data['message']);
+    }
+  }
+
+  static Future<LoadingState<MedalWallData>> liveMedalWall({
+    required Object mid,
+  }) async {
+    final res = await Request().get(
+      Api.liveMedalWall,
+      queryParameters: {'target_id': mid},
+    );
+    if (res.data['code'] == 0) {
+      return Success(MedalWallData.fromJson(res.data['data']));
     } else {
       return Error(res.data['message']);
     }

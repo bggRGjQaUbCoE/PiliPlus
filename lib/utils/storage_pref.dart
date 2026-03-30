@@ -509,8 +509,11 @@ abstract final class Pref {
   static bool get searchSuggestion =>
       _setting.get(SettingBoxKey.searchSuggestion, defaultValue: true);
 
-  static bool get showDynDecorate =>
-      _setting.get(SettingBoxKey.showDynDecorate, defaultValue: true);
+  static bool get showDecorate =>
+      _setting.get(SettingBoxKey.showDecorate, defaultValue: true);
+
+  static bool get showMedal =>
+      _setting.get(SettingBoxKey.showMedal, defaultValue: true);
 
   static bool get enableLivePhoto =>
       _setting.get(SettingBoxKey.enableLivePhoto, defaultValue: true);

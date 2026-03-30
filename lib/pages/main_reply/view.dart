@@ -1,5 +1,5 @@
-import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/skeleton/video_reply.dart';
+import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/sliver/sliver_floating_header.dart';
@@ -194,7 +194,7 @@ class _MainReplyPageState extends State<MainReplyPage>
               },
             ),
             TextButton.icon(
-              style: StyleString.buttonStyle,
+              style: Style.buttonStyle,
               onPressed: _controller.queryBySort,
               icon: Icon(Icons.sort, size: 16, color: secondary),
               label: Obx(
@@ -239,6 +239,7 @@ class _MainReplyPageState extends State<MainReplyPage>
               isVideoDetail: false,
               replyType: _controller.replyType,
               firstFloor: replyItem,
+              upMid: _controller.upMid,
             ),
           ).constraintWidth(),
         ),

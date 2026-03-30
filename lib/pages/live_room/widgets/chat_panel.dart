@@ -7,6 +7,7 @@ import 'package:PiliPlus/models_new/live/live_danmaku/danmaku_msg.dart';
 import 'package:PiliPlus/models_new/live/live_superchat/item.dart';
 import 'package:PiliPlus/pages/live_room/controller.dart';
 import 'package:PiliPlus/pages/live_room/superchat/superchat_card.dart';
+import 'package:PiliPlus/pages/member/widget/medal_widget.dart';
 import 'package:PiliPlus/pages/video/widgets/header_control.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/utils.dart';
@@ -57,24 +58,38 @@ class LiveRoomChatPanel extends StatelessWidget {
             itemBuilder: (_, index) {
               final item = liveRoomController.messages[index];
               if (item is DanmakuMsg) {
+                WidgetSpan? medal;
+                if (item.medalInfo case final medalInfo?) {
+                  try {
+                    medal = WidgetSpan(
+                      child: Padding(
+                        padding: const .only(right: 4),
+                        child: MedalWidget.fromMedalInfo(
+                          medal: medalInfo,
+                          padding: MedalWidget.mediumPadding,
+                        ),
+                      ),
+                    );
+                  } catch (e, s) {
+                    if (kDebugMode) {
+                      Utils.reportError(e, s);
+                    }
+                  }
+                }
                 return Align(
                   alignment: Alignment.centerLeft,
                   child: Builder(
                     builder: (itemContext) {
                       return Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 4,
-                        ),
+                        padding: const .symmetric(horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
                           color: bg,
-                          borderRadius: const BorderRadius.all(
-                            Radius.circular(14),
-                          ),
+                          borderRadius: const .all(.circular(14)),
                         ),
                         child: Text.rich(
                           TextSpan(
                             children: [
+                              ?medal,
                               TextSpan(
                                 text: '${item.name}: ',
                                 style: TextStyle(

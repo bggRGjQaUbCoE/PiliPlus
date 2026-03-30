@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:PiliPlus/common/assets.dart';
 import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
 import 'package:PiliPlus/common/widgets/flutter/list_tile.dart';
@@ -87,7 +88,7 @@ class WhisperSessionItem extends StatelessWidget {
                       Get.back();
                       showConfirmDialog(
                         context: context,
-                        title: '确定删除该对话？',
+                        title: const Text('确定删除该对话？'),
                         onConfirm: () =>
                             onRemove(item.id.privateId.talkerUid.toInt()),
                       );
@@ -121,7 +122,7 @@ class WhisperSessionItem extends StatelessWidget {
                     height: 42,
                     onTap: () => showConfirmDialog(
                       context: context,
-                      title: '确定删除该对话？',
+                      title: const Text('确定删除该对话？'),
                       onConfirm: () =>
                           onRemove(item.id.privateId.talkerUid.toInt()),
                     ),
@@ -184,6 +185,25 @@ class WhisperSessionItem extends StatelessWidget {
           } else {
             SmartDialog.showToast(item.id.foldId.type.name);
           }
+          return;
+        }
+
+        if (item.id.hasSystemId()) {
+          switch (item.id.systemId.type) {
+            case SessionType.SESSION_TYPE_SYSTEM:
+              Get.toNamed('/sysMsg');
+            case SessionType.SESSION_TYPE_AI_FOLD:
+            case SessionType.SESSION_TYPE_CUSTOMER_ACCOUNT:
+            case SessionType.SESSION_TYPE_CUSTOMER_FOLD:
+            case SessionType.SESSION_TYPE_DUSTBIN:
+            case SessionType.SESSION_TYPE_GROUP:
+            case SessionType.SESSION_TYPE_GROUP_FOLD:
+            case SessionType.SESSION_TYPE_PRIVATE:
+            case SessionType.SESSION_TYPE_STRANGER:
+            case SessionType.SESSION_TYPE_UNFOLLOWED:
+            case SessionType.SESSION_TYPE_UNKNOWN:
+              SmartDialog.showToast(item.id.systemId.type.name);
+          }
         }
       },
       leading: Builder(
@@ -207,14 +227,13 @@ class WhisperSessionItem extends StatelessWidget {
                       Get.toNamed('/member?mid=${item.sessionInfo.avatar.mid}')
                 : null,
             child: PendantAvatar(
+              avatar,
               size: 42,
               badgeSize: 14,
-              avatar: avatar,
-              garbPendantImage:
-                  pendant?.resImage.imageSrc.remote.hasUrl() == true
+              pendantImage: pendant?.resImage.imageSrc.remote.hasUrl() == true
                   ? pendant!.resImage.imageSrc.remote.url
                   : pendant?.resAnimation.webpSrc.remote.url,
-              isVip: vipInfo?['status'] != null && vipInfo!['status'] > 0,
+              vipStatus: vipInfo?['status'],
               officialType: official?.hasLocalValue() == true
                   ? switch (official!.localValue) {
                       3 => 0,
@@ -260,7 +279,7 @@ class WhisperSessionItem extends StatelessWidget {
                   ),
                 if (item.sessionInfo.isLive)
                   Image.asset(
-                    'assets/images/live/live.gif',
+                    Assets.livingRect,
                     height: 15,
                     cacheHeight: 15.cacheSize(context),
                     filterQuality: FilterQuality.low,

@@ -49,7 +49,7 @@ abstract final class VideoHttp {
   static bool enableFilter = zoneRegExp.pattern.isNotEmpty;
 
   // 首页推荐视频
-  static Future<LoadingState<List<RecVideoItemModel>>> rcmdVideoList({
+  static Future<LoadingState<List<RcmdVideoItemModel>>> rcmdVideoList({
     required int ps,
     required int freshIdx,
   }) async {
@@ -66,13 +66,13 @@ abstract final class VideoHttp {
       }),
     );
     if (res.data['code'] == 0) {
-      List<RecVideoItemModel> list = <RecVideoItemModel>[];
+      List<RcmdVideoItemModel> list = <RcmdVideoItemModel>[];
       for (final i in res.data['data']['item']) {
         //过滤掉live与ad，以及拉黑用户
         if (i['goto'] == 'av' &&
             (i['owner'] != null &&
                 !GlobalData().blackMids.contains(i['owner']['mid']))) {
-          RecVideoItemModel videoItem = RecVideoItemModel.fromJson(i);
+          RcmdVideoItemModel videoItem = RcmdVideoItemModel.fromJson(i);
           if (!RecommendFilter.filter(videoItem)) {
             list.add(videoItem);
           }
@@ -85,7 +85,7 @@ abstract final class VideoHttp {
   }
 
   // 添加额外的loginState变量模拟未登录状态
-  static Future<LoadingState<List<RecVideoItemAppModel>>> rcmdVideoListApp({
+  static Future<LoadingState<List<RcmdVideoItemAppModel>>> rcmdVideoListApp({
     required int freshIdx,
   }) async {
     final params = {
@@ -139,7 +139,7 @@ abstract final class VideoHttp {
       ),
     );
     if (res.data['code'] == 0) {
-      List<RecVideoItemAppModel> list = <RecVideoItemAppModel>[];
+      List<RcmdVideoItemAppModel> list = <RcmdVideoItemAppModel>[];
       for (final i in res.data['data']['items']) {
         // 屏蔽推广和拉黑用户
         if (i['card_goto'] != 'ad_av' &&
@@ -152,7 +152,7 @@ abstract final class VideoHttp {
               zoneRegExp.hasMatch(i['args']['tname'])) {
             continue;
           }
-          RecVideoItemAppModel videoItem = RecVideoItemAppModel.fromJson(i);
+          RcmdVideoItemAppModel videoItem = RcmdVideoItemAppModel.fromJson(i);
           if (!RecommendFilter.filter(videoItem)) {
             list.add(videoItem);
           }
@@ -564,7 +564,6 @@ abstract final class VideoHttp {
           replyInfo.id.toString(),
           (replyInfo.deepCopy()
                 ..unknownFields.clear()
-                ..clearMemberV2()
                 ..clearTrackInfo())
               .writeToBuffer(),
         );

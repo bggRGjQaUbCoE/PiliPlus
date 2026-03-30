@@ -18,6 +18,7 @@
 import 'dart:math' show pi;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart' show SemanticsConfiguration;
 
 ///
 /// created by dom on 2026/02/14
@@ -73,6 +74,7 @@ class RenderLoadingIndicator extends RenderBox {
     if (_progress == value) return;
     _progress = value;
     markNeedsPaint();
+    markNeedsSemanticsUpdate();
   }
 
   @override
@@ -117,6 +119,16 @@ class RenderLoadingIndicator extends RenderBox {
         true,
         paint..style = .fill,
       );
+  }
+
+  @override
+  void describeSemanticsConfiguration(SemanticsConfiguration config) {
+    super.describeSemanticsConfiguration(config);
+    config
+      ..role = .progressBar
+      ..minValue = '0'
+      ..maxValue = '100'
+      ..value = (_progress * 100).round().toString();
   }
 
   @override

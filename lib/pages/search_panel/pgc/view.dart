@@ -1,5 +1,5 @@
-import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/skeleton/media_bangumi.dart';
+import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/models/search/result.dart';
 import 'package:PiliPlus/pages/search_panel/controller.dart';
 import 'package:PiliPlus/pages/search_panel/pgc/widgets/item.dart';
@@ -69,7 +69,7 @@ class _SearchPgcPanelState
     gridDelegate: SliverGridDelegateWithExtentAndRatio(
       mainAxisSpacing: 2,
       maxCrossAxisExtent: Grid.smallCardWidth * 2,
-      childAspectRatio: StyleString.aspectRatio * 1.5,
+      childAspectRatio: Style.aspectRatio * 1.5,
       minHeight: MediaQuery.textScalerOf(context).scale(155),
     ),
     itemBuilder: (context, index) => const MediaPgcSkeleton(),

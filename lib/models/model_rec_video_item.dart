@@ -1,7 +1,7 @@
 import 'package:PiliPlus/models/model_owner.dart';
 import 'package:PiliPlus/models/model_video.dart';
 
-abstract class BaseRecVideoItemModel extends BaseVideoItemModel {
+abstract class BaseRcmdVideoItemModel extends BaseVideoItemModel {
   String? goto;
   String? uri;
   String? rcmdReason;
@@ -11,8 +11,8 @@ abstract class BaseRecVideoItemModel extends BaseVideoItemModel {
   String? pgcBadge;
 }
 
-class RecVideoItemModel extends BaseRecVideoItemModel {
-  RecVideoItemModel.fromJson(Map<String, dynamic> json) {
+class RcmdVideoItemModel extends BaseRcmdVideoItemModel {
+  RcmdVideoItemModel.fromJson(Map<String, dynamic> json) {
     aid = json["id"];
     bvid = json["bvid"];
     cid = json["cid"];

@@ -3,14 +3,14 @@ import 'package:PiliPlus/models/model_video.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
 
-class RecVideoItemAppModel extends BaseRecVideoItemModel {
+class RcmdVideoItemAppModel extends BaseRcmdVideoItemModel {
   int? get id => aid;
   String? talkBack;
 
   String? cardType;
   ThreePoint? threePoint;
 
-  RecVideoItemAppModel.fromJson(Map<String, dynamic> json) {
+  RcmdVideoItemAppModel.fromJson(Map<String, dynamic> json) {
     aid = json['player_args']?['aid'] ?? int.tryParse(json['param'] ?? '0');
     bvid = json['bvid'] ?? IdUtils.av2bv(aid!);
     cid = json['player_args']?['cid'];

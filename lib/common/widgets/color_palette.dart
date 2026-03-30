@@ -1,4 +1,4 @@
-import 'package:PiliPlus/common/constants.dart';
+import 'package:PiliPlus/common/style.dart';
 import 'package:flutter/material.dart';
 
 class ColorPalette extends StatelessWidget {
@@ -62,7 +62,7 @@ class ColorPalette extends StatelessWidget {
         padding: const EdgeInsets.all(6),
         decoration: BoxDecoration(
           color: colorScheme.onInverseSurface,
-          borderRadius: StyleString.mdRadius,
+          borderRadius: Style.mdRadius,
         ),
         child: child,
       );

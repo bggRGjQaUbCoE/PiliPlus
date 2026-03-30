@@ -9,8 +9,9 @@ class SearchText extends StatelessWidget {
   final Color? bgColor;
   final Color? textColor;
   final TextAlign? textAlign;
-  final EdgeInsetsGeometry? padding;
   final double? height;
+  final EdgeInsets padding;
+  final BorderRadius borderRadius;
 
   const SearchText({
     super.key,
@@ -21,8 +22,9 @@ class SearchText extends StatelessWidget {
     this.bgColor,
     this.textColor,
     this.textAlign,
-    this.padding,
     this.height,
+    this.padding = const .symmetric(horizontal: 11, vertical: 5),
+    this.borderRadius = const .all(.circular(6)),
   });
 
   @override
@@ -31,18 +33,16 @@ class SearchText extends StatelessWidget {
     final hasLongPress = onLongPress != null;
     return Material(
       color: bgColor ?? colorScheme.onInverseSurface,
-      borderRadius: const BorderRadius.all(Radius.circular(6)),
+      borderRadius: borderRadius,
       child: InkWell(
         onTap: () => onTap?.call(text),
         onLongPress: hasLongPress ? () => onLongPress!(text) : null,
         onSecondaryTap: hasLongPress && !PlatformUtils.isMobile
             ? () => onLongPress!(text)
             : null,
-        borderRadius: const BorderRadius.all(Radius.circular(6)),
+        borderRadius: borderRadius,
         child: Padding(
-          padding:
-              padding ??
-              const EdgeInsets.symmetric(horizontal: 11, vertical: 5),
+          padding: padding,
           child: Text(
             text,
             textAlign: textAlign,

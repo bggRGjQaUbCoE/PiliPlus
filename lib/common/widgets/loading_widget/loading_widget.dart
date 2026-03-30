@@ -4,8 +4,6 @@ import 'package:flutter/material.dart';
 
 const Widget m3eLoading = Center(child: M3ELoadingIndicator());
 
-const Widget circularLoading = Center(child: CircularProgressIndicator());
-
 const Widget linearLoading = SliverToBoxAdapter(
   child: LinearProgressIndicator(),
 );

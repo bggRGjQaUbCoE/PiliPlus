@@ -28,8 +28,8 @@ mixin BaseLaterController
   void onRemove() {
     showConfirmDialog(
       context: Get.context!,
-      content: '确认删除所选稍后再看吗？',
-      title: '提示',
+      title: const Text('提示'),
+      content: const Text('确认删除所选稍后再看吗？'),
       onConfirm: () async {
         final removeList = allChecked.toSet();
         SmartDialog.showLoading(msg: '请求中');
@@ -135,8 +135,8 @@ class LaterController extends MultiSelectController<LaterData, LaterItemModel>
     };
     showConfirmDialog(
       context: context,
-      title: '确认',
-      content: content,
+      title: const Text('确认'),
+      content: Text(content),
       onConfirm: () async {
         final res = await UserHttp.toViewClear(cleanType);
         if (res.isSuccess) {

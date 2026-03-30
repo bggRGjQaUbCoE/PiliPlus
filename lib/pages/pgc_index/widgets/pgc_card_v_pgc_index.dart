@@ -1,4 +1,4 @@
-import 'package:PiliPlus/common/constants.dart';
+import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/flutter/layout_builder.dart';
 import 'package:PiliPlus/common/widgets/image/image_save.dart';
@@ -25,9 +25,9 @@ class PgcCardVPgcIndex extends StatelessWidget {
       cover: item.cover,
     );
     return Card(
-      shape: const RoundedRectangleBorder(borderRadius: StyleString.mdRadius),
+      shape: const RoundedRectangleBorder(borderRadius: Style.mdRadius),
       child: InkWell(
-        borderRadius: StyleString.mdRadius,
+        borderRadius: Style.mdRadius,
         onTap: () => PageUtils.viewPgc(seasonId: item.seasonId),
         onLongPress: onLongPress,
         onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,

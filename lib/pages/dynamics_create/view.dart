@@ -1,6 +1,6 @@
 import 'dart:math' show max;
 
-import 'package:PiliPlus/common/constants.dart';
+import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/button/icon_button.dart';
 import 'package:PiliPlus/common/widgets/button/toolbar_icon_button.dart';
 import 'package:PiliPlus/common/widgets/custom_icon.dart';
@@ -299,9 +299,9 @@ class _CreateDynPanelState extends CommonRichTextPubPageState<CreateDynPanel> {
           if (imageList.length != limit)
             SliverToBoxAdapter(
               child: Material(
-                borderRadius: StyleString.mdRadius,
+                borderRadius: Style.mdRadius,
                 child: InkWell(
-                  borderRadius: StyleString.mdRadius,
+                  borderRadius: Style.mdRadius,
                   onTap: () => onPickImage(() {
                     if (imageList.isNotEmpty && !enablePublish.value) {
                       enablePublish.value = true;
@@ -311,7 +311,7 @@ class _CreateDynPanelState extends CommonRichTextPubPageState<CreateDynPanel> {
                     width: 100,
                     height: 100,
                     decoration: BoxDecoration(
-                      borderRadius: StyleString.mdRadius,
+                      borderRadius: Style.mdRadius,
                       color: theme.colorScheme.secondaryContainer,
                     ),
                     child: const Center(child: Icon(Icons.add, size: 35)),

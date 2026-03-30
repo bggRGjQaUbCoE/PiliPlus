@@ -4,9 +4,13 @@ import 'package:PiliPlus/common/widgets/flutter/selectable_text/selection_area.d
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/models_new/live/live_superchat/item.dart';
+import 'package:PiliPlus/pages/member/widget/medal_widget.dart';
+import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart' hide SelectionArea;
 import 'package:get/get.dart';
 
@@ -135,6 +139,34 @@ class _SuperChatCardState extends State<SuperChatCard> {
     final bottomColor = Utils.parseColor(item.backgroundBottomColor);
     final border = BorderSide(color: bottomColor);
     void showMenu(TapUpDetails e) => _showMenu(e.globalPosition, item);
+
+    Widget name = Text(
+      item.userInfo.uname,
+      maxLines: 1,
+      overflow: .ellipsis,
+      style: TextStyle(
+        color: Utils.parseColor(item.userInfo.nameColor),
+      ),
+    );
+    if (item.medalInfo case final medal?) {
+      try {
+        name = Row(
+          spacing: 5,
+          children: [
+            MedalWidget.fromMedalInfo(
+              medal: medal,
+              padding: MedalWidget.mediumPadding,
+            ),
+            Flexible(child: name),
+          ],
+        );
+      } catch (e, s) {
+        if (kDebugMode) {
+          Utils.reportError(e, s);
+        }
+      }
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -146,6 +178,13 @@ class _SuperChatCardState extends State<SuperChatCard> {
               borderRadius: const .vertical(top: .circular(8)),
               color: Utils.parseColor(item.backgroundColor),
               border: Border(top: border, left: border, right: border),
+              image: item.backgroundImage == null
+                  ? null
+                  : DecorationImage(
+                      image: CachedNetworkImageProvider(
+                        ImageUtils.safeThumbnailUrl(item.backgroundImage),
+                      ),
+                    ),
             ),
             padding: const EdgeInsets.all(8),
             child: Row(
@@ -162,12 +201,7 @@ class _SuperChatCardState extends State<SuperChatCard> {
                     mainAxisSize: .min,
                     crossAxisAlignment: .start,
                     children: [
-                      Text(
-                        item.userInfo.uname,
-                        style: TextStyle(
-                          color: Utils.parseColor(item.userInfo.nameColor),
-                        ),
-                      ),
+                      name,
                       Text(
                         "￥${item.price}",
                         style: TextStyle(

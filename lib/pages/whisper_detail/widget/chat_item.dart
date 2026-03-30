@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:math' as math;
 
 import 'package:PiliPlus/common/constants.dart';
+import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/flutter/layout_builder.dart';
 import 'package:PiliPlus/common/widgets/gesture/tap_gesture_recognizer.dart';
@@ -408,7 +409,7 @@ class ChatItem extends StatelessWidget {
         clipBehavior: Clip.hardEdge,
         constraints: const BoxConstraints(maxWidth: 400.0),
         decoration: BoxDecoration(
-          borderRadius: StyleString.mdRadius,
+          borderRadius: Style.mdRadius,
           color: theme.colorScheme.onInverseSurface,
         ),
         child: LayoutBuilder(
@@ -442,8 +443,7 @@ class ChatItem extends StatelessWidget {
                       NetworkImgLayer(
                         type: ImageType.emote,
                         width: constrains.maxWidth,
-                        height:
-                            constrains.maxWidth / StyleString.aspectRatio16x9,
+                        height: constrains.maxWidth / Style.aspectRatio16x9,
                         src: content['cover'],
                       ),
                       PBadge(
@@ -620,7 +620,7 @@ class ChatItem extends StatelessWidget {
       height: width * ratio,
       src: url,
     );
-    if (ratio <= StyleString.imgMaxRatio) {
+    if (ratio <= Style.imgMaxRatio) {
       child = fromHero(
         tag: url,
         child: child,
@@ -781,7 +781,7 @@ class ChatItem extends StatelessWidget {
       builder: (context, constraints) {
         final maxWidth = math.max(400.0, constraints.maxWidth);
         Widget child = ClipRRect(
-          borderRadius: StyleString.mdRadius,
+          borderRadius: Style.mdRadius,
           child: CachedNetworkImage(
             width: maxWidth,
             memCacheWidth: maxWidth.cacheSize(context),

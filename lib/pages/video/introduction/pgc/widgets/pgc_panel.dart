@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:PiliPlus/common/assets.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_info_model/episode.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_info_model/new_ep.dart';
 import 'package:PiliPlus/models_new/video/video_detail/episode.dart'
@@ -189,7 +190,7 @@ class _PgcPanelState extends State<PgcPanel> {
                                 child: Padding(
                                   padding: const EdgeInsets.only(right: 6),
                                   child: Image.asset(
-                                    'assets/images/live.png',
+                                    Assets.livingStatic,
                                     color: theme.primary,
                                     height: 12,
                                     cacheHeight: 12.cacheSize(context),
@@ -212,7 +213,7 @@ class _PgcPanelState extends State<PgcPanel> {
                       const SizedBox(width: 2),
                       if (item.badge == '会员')
                         Image.asset(
-                          'assets/images/big-vip.png',
+                          Assets.vipIcon,
                           height: 16,
                           cacheHeight: 16.cacheSize(context),
                           semanticLabel: "大会员",

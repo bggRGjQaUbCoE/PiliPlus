@@ -1,6 +1,6 @@
 import 'dart:math';
 
-import 'package:PiliPlus/common/constants.dart';
+import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/button/icon_button.dart';
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
@@ -104,7 +104,7 @@ class _PgcIntroPageState extends State<PgcIntroPage> {
     }
     return SliverPadding(
       padding:
-          const EdgeInsets.all(StyleString.safeSpace) +
+          const EdgeInsets.all(Style.safeSpace) +
           const EdgeInsets.only(bottom: 50),
       sliver: sliver,
     );

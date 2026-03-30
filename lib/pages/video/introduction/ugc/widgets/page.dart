@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:PiliPlus/common/assets.dart';
 import 'package:PiliPlus/models_new/video/video_detail/page.dart';
 import 'package:PiliPlus/pages/video/controller.dart';
 import 'package:PiliPlus/pages/video/introduction/ugc/controller.dart';
@@ -197,7 +198,7 @@ class _PagesPanelState extends State<PagesPanel> {
                         children: <Widget>[
                           if (isCurrentIndex) ...<Widget>[
                             Image.asset(
-                              'assets/images/live.png',
+                              Assets.livingStatic,
                               color: theme.colorScheme.primary,
                               height: 12,
                               cacheHeight: 12.cacheSize(context),

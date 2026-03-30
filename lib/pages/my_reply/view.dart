@@ -53,7 +53,7 @@ class _MyReplyState extends State<MyReply> with DynMixin {
               tooltip: 'Clear',
               onPressed: () => showConfirmDialog(
                 context: context,
-                title: 'Clear Local Storage?',
+                title: const Text('Clear Local Storage?'),
                 onConfirm: () {
                   GStorage.reply!.clear();
                   _replies.clear();

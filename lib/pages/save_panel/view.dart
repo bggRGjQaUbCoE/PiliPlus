@@ -1,4 +1,6 @@
+import 'package:PiliPlus/common/assets.dart';
 import 'package:PiliPlus/common/constants.dart';
+import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/button/icon_button.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
@@ -401,7 +403,7 @@ class _SavePanelState extends State<SavePanel> {
                                 src: cover!,
                                 height: coverSize,
                                 width: coverType == .def16_9
-                                    ? coverSize * StyleString.aspectRatio16x9
+                                    ? coverSize * Style.aspectRatio16x9
                                     : coverSize,
                                 quality: 100,
                                 borderRadius: const .all(.circular(6)),
@@ -507,7 +509,7 @@ class _SavePanelState extends State<SavePanel> {
                                 Align(
                                   alignment: .centerLeft,
                                   child: Image.asset(
-                                    'assets/images/logo/logo_2.png',
+                                    Assets.logo2,
                                     width: 100,
                                     cacheWidth: 100.cacheSize(context),
                                     color: theme.colorScheme.onSurfaceVariant,

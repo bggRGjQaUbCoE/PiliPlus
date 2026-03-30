@@ -1,4 +1,5 @@
-import 'package:PiliPlus/common/constants.dart';
+import 'package:PiliPlus/common/assets.dart';
+import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/flutter/layout_builder.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
@@ -36,7 +37,7 @@ Widget liveRcmdPanel(
             LayoutBuilder(
               builder: (context, constraints) => NetworkImgLayer(
                 width: constraints.maxWidth,
-                height: constraints.maxWidth / StyleString.aspectRatio,
+                height: constraints.maxWidth / Style.aspectRatio,
                 src: liveRcmd.cover,
                 quality: 40,
               ),
@@ -55,7 +56,7 @@ Widget liveRcmdPanel(
                 child: Image.asset(
                   height: 16,
                   cacheHeight: 16.cacheSize(context),
-                  'assets/images/live/live.gif',
+                  Assets.livingRect,
                   filterQuality: FilterQuality.low,
                 ),
               )
@@ -85,7 +86,7 @@ Widget liveRcmdPanel(
                       ],
                     ),
                     borderRadius: BorderRadius.vertical(
-                      bottom: StyleString.imgRadius,
+                      bottom: Style.imgRadius,
                     ),
                   ),
                   child: Text(

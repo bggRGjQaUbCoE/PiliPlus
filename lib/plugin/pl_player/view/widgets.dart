@@ -98,7 +98,7 @@ Widget buildSeekPreviewWidget(
               final url = data.image[pageIndex];
 
               return ClipRRect(
-                borderRadius: StyleString.mdRadius,
+                borderRadius: Style.mdRadius,
                 child: VideoShotImage(
                   url: url,
                   x: x,

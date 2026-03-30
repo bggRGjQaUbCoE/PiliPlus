@@ -1,4 +1,4 @@
-import 'package:PiliPlus/common/constants.dart';
+import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/button/icon_button.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/http/user.dart';
@@ -22,10 +22,10 @@ void imageSaveDialog({
       final theme = Theme.of(context);
       return Container(
         width: imgWidth,
-        margin: const .symmetric(horizontal: StyleString.safeSpace),
+        margin: const .symmetric(horizontal: Style.safeSpace),
         decoration: BoxDecoration(
           color: theme.colorScheme.surface,
-          borderRadius: StyleString.mdRadius,
+          borderRadius: Style.mdRadius,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -39,8 +39,8 @@ void imageSaveDialog({
                     src: cover,
                     quality: 100,
                     width: imgWidth,
-                    height: imgWidth / StyleString.aspectRatio16x9,
-                    borderRadius: const .vertical(top: StyleString.imgRadius),
+                    height: imgWidth / Style.aspectRatio16x9,
+                    borderRadius: const .vertical(top: Style.imgRadius),
                   ),
                 ),
                 Positioned(

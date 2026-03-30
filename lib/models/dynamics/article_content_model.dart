@@ -1,4 +1,4 @@
-import 'package:PiliPlus/common/constants.dart';
+import 'package:PiliPlus/common/style.dart' as common_style;
 import 'package:PiliPlus/models/dynamics/result.dart';
 import 'package:PiliPlus/models/dynamics/vote_model.dart';
 
@@ -49,7 +49,7 @@ class Pic {
     style = json['style'];
     liveUrl = json['live_url'];
     if (width != null && height != null) {
-      isLongPic = (height! / width!) > StyleString.imgMaxRatio;
+      isLongPic = (height! / width!) > common_style.Style.imgMaxRatio;
     }
   }
 }

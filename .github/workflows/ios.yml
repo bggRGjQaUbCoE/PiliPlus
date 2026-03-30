@@ -13,7 +13,7 @@ on:
 jobs:
   build-macos-app:
     name: Release IOS
-    runs-on: macos-latest
+    runs-on: macos-26
     steps:
       - name: Checkout code
         uses: actions/checkout@v6

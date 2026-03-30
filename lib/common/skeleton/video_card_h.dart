@@ -1,5 +1,5 @@
-import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/skeleton/skeleton.dart';
+import 'package:PiliPlus/common/style.dart';
 import 'package:flutter/material.dart';
 
 class VideoCardHSkeleton extends StatelessWidget {
@@ -10,25 +10,25 @@ class VideoCardHSkeleton extends StatelessWidget {
     final color = Theme.of(context).colorScheme.onInverseSurface;
     return Skeleton(
       child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: StyleString.safeSpace,
+        padding: const .symmetric(
+          horizontal: Style.safeSpace,
           vertical: 5,
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             AspectRatio(
-              aspectRatio: StyleString.aspectRatio,
+              aspectRatio: Style.aspectRatio,
               child: DecoratedBox(
                 decoration: BoxDecoration(
                   color: color,
-                  borderRadius: StyleString.mdRadius,
+                  borderRadius: Style.mdRadius,
                 ),
               ),
             ),
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(10, 4, 6, 4),
+                padding: const .fromLTRB(10, 4, 6, 4),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [

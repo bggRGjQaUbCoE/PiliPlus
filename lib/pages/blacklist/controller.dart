@@ -35,7 +35,7 @@ class BlackListController
   void onRemove(BuildContext context, int index, name, mid) {
     showConfirmDialog(
       context: context,
-      title: '确定将 $name 移出黑名单？',
+      title: Text('确定将 $name 移出黑名单？'),
       onConfirm: () async {
         final result = await VideoHttp.relationMod(mid: mid, act: 6, reSrc: 11);
         if (result.isSuccess) {

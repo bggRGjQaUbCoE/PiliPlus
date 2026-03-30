@@ -21,7 +21,7 @@ version: 2.0.1+1
 
 environment:
   sdk: ">=3.10.0"
-  flutter: 3.41.5 # update `.fvmrc` config
+  flutter: 3.41.6 # update `.fvmrc` config
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -188,7 +188,7 @@ dependencies:
   intl: ^0.20.2
   archive: ^4.0.0
   flutter_svg: ^2.0.14
-  image_cropper: ^11.0.0
+  image_cropper: ^12.0.0
   #解压直播消息
   brotli: ^0.6.0
   expandable: ^5.0.1
@@ -281,6 +281,16 @@ dependency_overrides:
       url: https://github.com/My-Responsitories/media-kit.git
       path: libs/windows/media_kit_libs_windows_video
       ref: version_1.2.5
+  media_kit_libs_ios_video:
+    git:
+      url: https://github.com/bggRGjQaUbCoE/media-kit.git
+      path: libs/ios/media_kit_libs_ios_video
+      ref: dev
+  media_kit_libs_macos_video:
+    git:
+      url: https://github.com/bggRGjQaUbCoE/media-kit.git
+      path: libs/macos/media_kit_libs_macos_video
+      ref: dev
   font_awesome_flutter: 10.9.0
 
 dev_dependencies:

@@ -11,7 +11,7 @@ import 'package:get/get.dart';
 
 class GroupPanel extends StatefulWidget {
   final int mid;
-  final List? tags;
+  final List<int>? tags;
   final ScrollController? scrollController;
   const GroupPanel({
     super.key,

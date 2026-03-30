@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:PiliPlus/common/constants.dart';
+import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/models/common/badge_type.dart';
@@ -71,7 +71,7 @@ class _LocalIntroPanelState extends State<LocalIntroPanel>
             },
             child: Padding(
               padding: const EdgeInsets.symmetric(
-                horizontal: StyleString.safeSpace,
+                horizontal: Style.safeSpace,
                 vertical: 5,
               ),
               child: Row(
@@ -82,7 +82,7 @@ class _LocalIntroPanelState extends State<LocalIntroPanel>
                     children: [
                       cover.existsSync()
                           ? ClipRRect(
-                              borderRadius: StyleString.mdRadius,
+                              borderRadius: Style.mdRadius,
                               child: Image.file(
                                 cover,
                                 width: 140.8,

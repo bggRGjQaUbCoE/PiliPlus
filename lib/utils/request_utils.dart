@@ -18,6 +18,7 @@ import 'package:PiliPlus/models/dynamics/result.dart';
 import 'package:PiliPlus/models/login/model.dart';
 import 'package:PiliPlus/models_new/fav/fav_detail/media.dart';
 import 'package:PiliPlus/models_new/later/list.dart';
+import 'package:PiliPlus/models_new/relation/data.dart';
 import 'package:PiliPlus/pages/common/multi_select/base.dart';
 import 'package:PiliPlus/pages/dynamics_tab/controller.dart';
 import 'package:PiliPlus/pages/fav_detail/controller.dart'
@@ -103,7 +104,7 @@ abstract final class RequestUtils {
     required dynamic mid,
     required bool isFollow,
     required ValueChanged<int>? afterMod,
-    Map? followStatus,
+    RelationData? followStatus,
   }) async {
     if (mid == null) {
       return;
@@ -122,8 +123,8 @@ abstract final class RequestUtils {
         res.toast();
       }
     } else {
-      if (followStatus?['tag'] == null) {
-        final res = await UserHttp.hasFollow(mid);
+      if (followStatus?.tag == null) {
+        final res = await UserHttp.userRelation(mid);
         if (res case Success(:final response)) {
           followStatus = response;
         } else {
@@ -133,7 +134,7 @@ abstract final class RequestUtils {
       }
 
       if (context.mounted) {
-        bool isSpecialFollowed = followStatus!['special'] == 1;
+        bool isSpecialFollowed = followStatus!.special == 1;
         String text = isSpecialFollowed ? '移除特别关注' : '加入特别关注';
         showDialog(
           context: context,
@@ -194,15 +195,15 @@ abstract final class RequestUtils {
                               ) {
                                 return GroupPanel(
                                   mid: mid,
-                                  tags: followStatus!['tag'],
+                                  tags: followStatus!.tag,
                                   scrollController: scrollController,
                                 );
                               },
                         );
                       },
                     );
-                    followStatus!['tag'] = result?.toList();
                     if (result != null) {
+                      followStatus!.tag = result.toList();
                       afterMod?.call(result.contains(-10) ? -10 : 2);
                     }
                   },

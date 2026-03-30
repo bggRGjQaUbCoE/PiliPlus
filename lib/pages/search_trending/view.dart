@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:PiliPlus/common/assets.dart';
 import 'package:PiliPlus/common/widgets/flutter/list_tile.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
@@ -126,7 +127,7 @@ class _SearchTrendingPageState extends State<SearchTrendingPage> {
                       width: width,
                       height: height,
                       cacheWidth: width.cacheSize(context),
-                      'assets/images/trending_banner.png',
+                      Assets.trendingBanner,
                       filterQuality: FilterQuality.low,
                     ),
                   ),
@@ -210,7 +211,7 @@ class _SearchTrendingPageState extends State<SearchTrendingPage> {
                         ] else if (item.showLiveIcon == true) ...[
                           const SizedBox(width: 4),
                           Image.asset(
-                            'assets/images/live/live.gif',
+                            Assets.livingRect,
                             width: 51,
                             height: 16,
                             cacheHeight: 16.cacheSize(context),

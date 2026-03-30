@@ -1,4 +1,4 @@
-import 'package:PiliPlus/common/constants.dart';
+import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/http/loading_state.dart';
@@ -52,9 +52,9 @@ class _MemberBangumiState extends State<MemberBangumi>
         slivers: [
           SliverPadding(
             padding: EdgeInsets.only(
-              left: StyleString.safeSpace,
-              right: StyleString.safeSpace,
-              top: StyleString.safeSpace,
+              left: Style.safeSpace,
+              right: Style.safeSpace,
+              top: Style.safeSpace,
               bottom: MediaQuery.viewPaddingOf(context).bottom + 100,
             ),
             sliver: Obx(
@@ -67,8 +67,8 @@ class _MemberBangumiState extends State<MemberBangumi>
   }
 
   late final gridDelegate = SliverGridDelegateWithExtentAndRatio(
-    mainAxisSpacing: StyleString.cardSpace,
-    crossAxisSpacing: StyleString.cardSpace,
+    mainAxisSpacing: Style.cardSpace,
+    crossAxisSpacing: Style.cardSpace,
     maxCrossAxisExtent: Grid.smallCardWidth * 0.6,
     childAspectRatio: 0.75,
     mainAxisExtent: MediaQuery.textScalerOf(context).scale(52),

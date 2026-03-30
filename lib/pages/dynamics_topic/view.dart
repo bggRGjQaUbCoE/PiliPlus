@@ -1,3 +1,4 @@
+import 'package:PiliPlus/common/assets.dart';
 import 'package:PiliPlus/common/widgets/custom_icon.dart';
 import 'package:PiliPlus/common/widgets/dynamic_sliver_app_bar/dynamic_sliver_app_bar.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
@@ -12,6 +13,7 @@ import 'package:PiliPlus/models_new/dynamic/dyn_topic_top/top_details.dart';
 import 'package:PiliPlus/pages/dynamics/widgets/dynamic_panel.dart';
 import 'package:PiliPlus/pages/dynamics_create/view.dart';
 import 'package:PiliPlus/pages/dynamics_topic/controller.dart';
+import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/global_data.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
@@ -157,9 +159,10 @@ class _DynTopicPageState extends State<DynTopicPage> with DynMixin {
         flexibleSpace: Container(
           decoration: BoxDecoration(
             image: DecorationImage(
-              image: Image.asset(
-                'assets/images/topic-header-bg.png',
-              ).image,
+              image: ResizeImage(
+                width: MediaQuery.widthOf(context).cacheSize(context),
+                const AssetImage(Assets.topicHeader),
+              ),
               filterQuality: FilterQuality.low,
               fit: BoxFit.cover,
             ),

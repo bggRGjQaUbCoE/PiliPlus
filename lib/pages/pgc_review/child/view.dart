@@ -1,5 +1,5 @@
-import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/skeleton/video_reply.dart';
+import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/custom_icon.dart';
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
@@ -163,7 +163,7 @@ class _PgcReviewChildPageState extends State<PgcReviewChildPage>
                   Get.back();
                   showConfirmDialog(
                     context: context,
-                    title: '删除短评，同时删除评分？',
+                    title: const Text('删除短评，同时删除评分？'),
                     onConfirm: () => _controller.onDel(index, item.reviewId!),
                   );
                 },
@@ -403,7 +403,7 @@ class _PgcReviewChildPageState extends State<PgcReviewChildPage>
             },
           ),
           TextButton.icon(
-            style: StyleString.buttonStyle,
+            style: Style.buttonStyle,
             onPressed: _controller.queryBySort,
             icon: Icon(
               Icons.sort,

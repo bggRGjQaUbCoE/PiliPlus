@@ -2,7 +2,8 @@ import 'dart:io';
 import 'dart:math';
 import 'dart:ui';
 
-import 'package:PiliPlus/common/constants.dart';
+import 'package:PiliPlus/common/assets.dart';
+import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/button/icon_button.dart';
 import 'package:PiliPlus/common/widgets/custom_icon.dart';
 import 'package:PiliPlus/common/widgets/flutter/page/page_view.dart';
@@ -36,6 +37,7 @@ import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/size_ext.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
+import 'package:PiliPlus/utils/mobile_observer.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
@@ -72,7 +74,7 @@ class _LiveRoomPageState extends State<LiveRoomPage>
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this);
+    addObserverMobile(this);
     _liveRoomController = Get.put(
       LiveRoomController(heroTag),
       tag: heroTag,
@@ -94,7 +96,7 @@ class _LiveRoomPageState extends State<LiveRoomPage>
 
   @override
   Future<void> didPopNext() async {
-    WidgetsBinding.instance.addObserver(this);
+    addObserverMobile(this);
     plPlayerController
       ..isLive = true
       ..danmakuController = _liveRoomController.danmakuController;
@@ -121,7 +123,7 @@ class _LiveRoomPageState extends State<LiveRoomPage>
 
   @override
   void didPushNext() {
-    WidgetsBinding.instance.removeObserver(this);
+    removeObserverMobile(this);
     plPlayerController.removeStatusLister(playerListener);
     _liveRoomController
       ..danmakuController?.clear()
@@ -148,8 +150,8 @@ class _LiveRoomPageState extends State<LiveRoomPage>
 
   @override
   void dispose() {
+    removeObserverMobile(this);
     videoPlayerServiceHandler?.onVideoDetailDispose(heroTag);
-    WidgetsBinding.instance.removeObserver(this);
     if (Platform.isAndroid && !plPlayerController.setSystemBrightness) {
       ScreenBrightnessPlatform.instance.resetApplicationScreenBrightness();
     }
@@ -383,7 +385,7 @@ class _LiveRoomPageState extends State<LiveRoomPage>
                   );
                 } else {
                   child = Image.asset(
-                    'assets/images/live/default_bg.webp',
+                    Assets.livingBackground,
                     fit: BoxFit.cover,
                     width: maxWidth,
                     height: maxHeight,
@@ -416,7 +418,7 @@ class _LiveRoomPageState extends State<LiveRoomPage>
   }
 
   Widget _buildPH(bool isFullScreen) {
-    final height = maxWidth / StyleString.aspectRatio16x9;
+    final height = maxWidth / Style.aspectRatio16x9;
     final videoHeight = isFullScreen ? maxHeight - padding.top : height;
     final bottomHeight = maxHeight - padding.top - height - kToolbarHeight;
     return Column(

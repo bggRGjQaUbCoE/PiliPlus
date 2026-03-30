@@ -1,4 +1,5 @@
-import 'package:PiliPlus/common/constants.dart';
+import 'package:PiliPlus/common/assets.dart';
+import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
@@ -16,7 +17,7 @@ class NetworkImgLayer extends StatelessWidget {
     this.fadeOutDuration = const Duration(milliseconds: 120),
     this.fadeInDuration = const Duration(milliseconds: 120),
     this.quality = 1,
-    this.borderRadius = StyleString.mdRadius,
+    this.borderRadius = Style.mdRadius,
     this.getPlaceHolder,
     this.fit = .cover,
     this.alignment = .center,
@@ -108,7 +109,7 @@ class NetworkImgLayer extends StatelessWidget {
       ),
       child: Center(
         child: Image.asset(
-          isAvatar ? 'assets/images/noface.jpeg' : 'assets/images/loading.png',
+          isAvatar ? Assets.avatarPlaceHolder : Assets.loading,
           width: width,
           height: height,
           cacheWidth: width.cacheSize(context),

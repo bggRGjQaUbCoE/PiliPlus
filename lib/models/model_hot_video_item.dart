@@ -5,7 +5,7 @@ import 'package:PiliPlus/models_new/video/video_detail/dimension.dart';
 import 'package:PiliPlus/pages/common/multi_select/base.dart';
 
 // 稍后再看, 排行榜等网页返回也使用该类
-class HotVideoItemModel extends BaseRecVideoItemModel with MultiSelectData {
+class HotVideoItemModel extends BaseRcmdVideoItemModel with MultiSelectData {
   int? videos;
   int? tid;
   String? tname;

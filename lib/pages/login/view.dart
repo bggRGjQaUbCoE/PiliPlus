@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:ui';
 
 import 'package:PiliPlus/common/constants.dart';
+import 'package:PiliPlus/common/dial_prefix.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart';
@@ -390,19 +391,18 @@ class _LoginPageState extends State<LoginPage> {
                         (context as Element).markNeedsBuild();
                       },
                       initialValue: _loginPageCtr.selectedCountryCodeId,
-                      itemBuilder: (_) =>
-                          Constants.internationalDialingPrefix.map((item) {
-                            return PopupMenuItem(
-                              value: item,
-                              child: Row(
-                                children: [
-                                  Text(item.cname),
-                                  const Spacer(),
-                                  Text("+${item.countryId}"),
-                                ],
-                              ),
-                            );
-                          }).toList(),
+                      itemBuilder: (_) => Login.dialPrefix.map((item) {
+                        return PopupMenuItem(
+                          value: item,
+                          child: Row(
+                            children: [
+                              Text(item.cname),
+                              const Spacer(),
+                              Text("+${item.countryId}"),
+                            ],
+                          ),
+                        );
+                      }).toList(),
                       child: Row(
                         children: [
                           Icon(

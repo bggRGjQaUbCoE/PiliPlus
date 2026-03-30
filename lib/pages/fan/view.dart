@@ -67,7 +67,7 @@ class _FansPageState extends FollowTypePageState<FansPage> {
   Widget buildItem(int index, FollowItemModel item) {
     void onRemove() => showConfirmDialog(
       context: context,
-      title: '确定移除 ${item.uname} ？',
+      title: Text('确定移除 ${item.uname} ？'),
       onConfirm: () => controller.onRemoveFan(index, item.mid),
     );
 

@@ -1,3 +1,4 @@
+import 'package:PiliPlus/common/assets.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/models/common/dynamic/up_panel_position.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
@@ -162,7 +163,7 @@ class _UpPanelState extends State<UpPanel> {
           width: 38,
           height: 38,
           cacheWidth: 38.cacheSize(context),
-          'assets/images/logo/logo.png',
+          Assets.logo,
         ),
       );
     } else {

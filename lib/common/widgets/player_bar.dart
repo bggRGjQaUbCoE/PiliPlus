@@ -23,7 +23,8 @@ import 'package:flutter/rendering.dart'
         ContainerRenderObjectMixin,
         MultiChildLayoutParentData,
         RenderBoxContainerDefaultsMixin,
-        BoxHitTestResult;
+        BoxHitTestResult,
+        TransformLayer;
 
 class PlayerBar extends MultiChildRenderObjectWidget {
   const PlayerBar({
@@ -92,14 +93,16 @@ class RenderBottomBar extends RenderBox
   @override
   void paint(PaintingContext context, Offset offset) {
     if (_transform != null) {
-      context.pushTransform(
+      layer = context.pushTransform(
         needsCompositing,
         offset,
         _transform!,
         defaultPaint,
+        oldLayer: layer as TransformLayer?,
       );
     } else {
       defaultPaint(context, offset);
+      layer = null;
     }
   }
 

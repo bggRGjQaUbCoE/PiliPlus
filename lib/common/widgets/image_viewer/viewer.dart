@@ -26,6 +26,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/physics.dart' show FrictionSimulation;
+import 'package:flutter/scheduler.dart' show SchedulerBinding;
 import 'package:flutter/services.dart' show HardwareKeyboard;
 
 ///
@@ -69,7 +70,6 @@ class Viewer extends StatefulWidget {
 }
 
 class _ViewerState extends State<Viewer> with SingleTickerProviderStateMixin {
-  double get _interactionEndFrictionCoefficient => 0.0001 * _scale; // 0.0000135
   static const double _scaleFactor = kDefaultMouseScrollToScaleFactor;
 
   _GestureType? _gestureType;
@@ -171,6 +171,7 @@ class _ViewerState extends State<Viewer> with SingleTickerProviderStateMixin {
 
   @override
   void dispose() {
+    _stopFling();
     _animationController
       ..removeListener(_listener)
       ..dispose();
@@ -234,6 +235,7 @@ class _ViewerState extends State<Viewer> with SingleTickerProviderStateMixin {
   void _handleDoubleTap() {
     if (!mounted) return;
     if (_animationController.isAnimating) return;
+    _stopFling();
     _scaleFrom = _scale;
     _positionFrom = _position;
 
@@ -265,6 +267,8 @@ class _ViewerState extends State<Viewer> with SingleTickerProviderStateMixin {
   }
 
   void _onScaleStart(ScaleStartDetails details) {
+    _stopFling();
+
     if (_animationController.isAnimating) {
       _animationController.stop();
     }
@@ -329,40 +333,106 @@ class _ViewerState extends State<Viewer> with SingleTickerProviderStateMixin {
     }
   }
 
+  /// ref https://github.com/ahnaineh/custom_interactive_viewer
+  int? _flingFrameCallbackId;
+  Simulation? _flingSimulation;
+  Duration? _flingStartTime;
+  double _lastFlingElapsedSeconds = 0.0;
+  Offset _flingDirection = Offset.zero;
+
+  /// Calculate appropriate friction based on velocity magnitude
+  double _calculateDynamicFriction(double velocityMagnitude) {
+    // Use higher friction for faster flicks
+    // These values can be tuned for the feel you want
+    if (velocityMagnitude > 5000) {
+      return 0.03; // Higher friction for very fast flicks
+    } else if (velocityMagnitude > 3000) {
+      return 0.02; // Medium friction for moderate flicks
+    } else {
+      return 0.01; // Lower friction for gentle movements
+    }
+  }
+
+  void _startFling(Velocity velocity) {
+    _stopFling();
+
+    final double velocityMagnitude = velocity.pixelsPerSecond.distance;
+    final double frictionCoefficient = _calculateDynamicFriction(
+      velocityMagnitude,
+    );
+
+    _flingSimulation = FrictionSimulation(
+      frictionCoefficient,
+      0.0,
+      velocityMagnitude,
+    );
+
+    _flingDirection = velocityMagnitude > 0
+        ? velocity.pixelsPerSecond / velocityMagnitude
+        : Offset.zero;
+
+    _flingStartTime = null;
+    _lastFlingElapsedSeconds = 0.0;
+    _scheduleFlingFrame();
+  }
+
+  void _scheduleFlingFrame() {
+    _flingFrameCallbackId = SchedulerBinding.instance.scheduleFrameCallback(
+      _handleFlingFrame,
+    );
+  }
+
+  void _handleFlingFrame(Duration timeStamp) {
+    if (_flingSimulation == null) return;
+
+    _flingStartTime ??= timeStamp;
+    final double elapsedSeconds =
+        (timeStamp - _flingStartTime!).inMicroseconds / 1e6;
+
+    final double distance = _flingSimulation!.x(elapsedSeconds);
+    final double prevDistance = _flingSimulation!.x(_lastFlingElapsedSeconds);
+    final double delta = distance - prevDistance;
+    _lastFlingElapsedSeconds = elapsedSeconds;
+
+    if ((prevDistance != 0.0 && delta.abs() < 0.1) ||
+        _flingSimulation!.isDone(elapsedSeconds)) {
+      _stopFling();
+      return;
+    }
+
+    final Offset movement = _flingDirection * delta;
+    _position = _clampPosition(_position + movement, _scale);
+    setState(() {});
+
+    if (_flingSimulation!.isDone(elapsedSeconds)) {
+      _stopFling();
+    } else {
+      _scheduleFlingFrame();
+    }
+  }
+
+  void _stopFling() {
+    if (_flingFrameCallbackId != null) {
+      SchedulerBinding.instance.cancelFrameCallbackWithId(
+        _flingFrameCallbackId!,
+      );
+      _flingFrameCallbackId = null;
+    }
+    _flingStartTime = null;
+    _lastFlingElapsedSeconds = 0.0;
+    _flingSimulation = null;
+  }
+
   /// ref [InteractiveViewer]
   void _onScaleEnd(ScaleEndDetails details) {
     switch (_gestureType) {
       case _GestureType.pan:
-        if (details.velocity.pixelsPerSecond.distance < kMinFlingVelocity) {
-          return;
+        final double velocityMagnitude =
+            details.velocity.pixelsPerSecond.distance;
+        if (velocityMagnitude >= 200.0) {
+          _startFling(details.velocity);
         }
-        final drag = _interactionEndFrictionCoefficient;
-        final FrictionSimulation frictionSimulationX = FrictionSimulation(
-          drag,
-          _position.dx,
-          details.velocity.pixelsPerSecond.dx,
-        );
-        final FrictionSimulation frictionSimulationY = FrictionSimulation(
-          drag,
-          _position.dy,
-          details.velocity.pixelsPerSecond.dy,
-        );
-        final double tFinal = _getFinalTime(
-          details.velocity.pixelsPerSecond.distance,
-          drag,
-        );
-        final position = _clampPosition(
-          Offset(frictionSimulationX.finalX, frictionSimulationY.finalX),
-          _scale,
-        );
 
-        _scaleFrom = _scaleTo = _scale;
-        _positionFrom = _position;
-        _positionTo = position;
-
-        _animationController
-          ..duration = Duration(milliseconds: (tFinal * 1000).round())
-          ..forward(from: 0);
       case _GestureType.scale:
         // if (details.scaleVelocity.abs() < 0.1) {
         //   return;
@@ -417,9 +487,10 @@ class _ViewerState extends State<Viewer> with SingleTickerProviderStateMixin {
     _doubleTapGestureRecognizer
       ..onDoubleTapDown = _onDoubleTapDown
       ..onDoubleTap = _onDoubleTap;
-    _horizontalDragGestureRecognizer
-      ..isBoundaryAllowed = _isBoundaryAllowed
-      ..addPointer(event);
+    _horizontalDragGestureRecognizer.addPointer(
+      event,
+      isPointerAllowed: _isAtEdge(event.localPosition),
+    );
     _scaleGestureRecognizer.addPointer(event);
   }
 
@@ -427,25 +498,28 @@ class _ViewerState extends State<Viewer> with SingleTickerProviderStateMixin {
     _scaleGestureRecognizer.addPointerPanZoom(event);
   }
 
-  bool _isBoundaryAllowed(Offset? initialPosition, OffsetPair lastPosition) {
-    if (initialPosition == null) {
-      return true;
-    }
+  bool _isAtEdge(Offset position) {
     if (_scale <= widget.minScale) {
+      _horizontalDragGestureRecognizer.setAtBothEdges();
       return true;
     }
     final containerWidth = widget.containerSize.width;
     final imageWidth = _imageSize.width * _scale;
     if (imageWidth <= containerWidth) {
+      _horizontalDragGestureRecognizer.setAtBothEdges();
       return true;
     }
     final dx = (1 - _scale) * containerWidth / 2;
     final dxOffset = (imageWidth - containerWidth) / 2;
-    if (initialPosition.dx < lastPosition.global.dx) {
-      return _position.dx.equals(dx + dxOffset, 1e-6);
-    } else {
-      return _position.dx.equals(dx - dxOffset, 1e-6);
+    if (_position.dx.equals(dx + dxOffset, 1e-6)) {
+      _horizontalDragGestureRecognizer.isAtLeftEdge = true;
+      return true;
     }
+    if (_position.dx.equals(dx - dxOffset, 1e-6)) {
+      _horizontalDragGestureRecognizer.isAtRightEdge = true;
+      return true;
+    }
+    return false;
   }
 
   void _onPointerSignal(PointerSignalEvent event) {
@@ -455,6 +529,7 @@ class _ViewerState extends State<Viewer> with SingleTickerProviderStateMixin {
         widget.onChangePage!.call(event.scrollDelta.dy < 0 ? -1 : 1);
         return;
       }
+      _stopFling();
       final double scaleChange = math.exp(-event.scrollDelta.dy / _scaleFactor);
       final Offset local = event.localPosition;
       final Offset focalPointScene = _toScene(local);
@@ -471,11 +546,3 @@ class _ViewerState extends State<Viewer> with SingleTickerProviderStateMixin {
 }
 
 enum _GestureType { pan, scale, drag }
-
-double _getFinalTime(
-  double velocity,
-  double drag, {
-  double effectivelyMotionless = 10,
-}) {
-  return math.log(effectivelyMotionless / velocity) / math.log(drag / 100);
-}

@@ -1,6 +1,7 @@
 import 'dart:math' show min;
 
-import 'package:PiliPlus/common/constants.dart';
+import 'package:PiliPlus/common/assets.dart';
+import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/button/icon_button.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/gesture/tap_gesture_recognizer.dart';
@@ -292,7 +293,7 @@ class _AudioPageState extends State<AudioPage> {
                                     WidgetSpan(
                                       alignment: .bottom,
                                       child: Image.asset(
-                                        'assets/images/live.gif',
+                                        Assets.livingChart,
                                         width: 16,
                                         height: 16,
                                         cacheWidth: 16.cacheSize(
@@ -336,7 +337,7 @@ class _AudioPageState extends State<AudioPage> {
                               WidgetSpan(
                                 alignment: .bottom,
                                 child: Image.asset(
-                                  'assets/images/live.gif',
+                                  Assets.livingChart,
                                   width: 16,
                                   height: 16,
                                   cacheWidth: 16.cacheSize(
@@ -391,7 +392,7 @@ class _AudioPageState extends State<AudioPage> {
               children: [
                 InkWell(
                   onTap: Get.back,
-                  borderRadius: StyleString.bottomSheetRadius,
+                  borderRadius: Style.bottomSheetRadius,
                   child: SizedBox(
                     height: 35,
                     child: Center(
@@ -460,7 +461,7 @@ class _AudioPageState extends State<AudioPage> {
           children: [
             InkWell(
               onTap: Get.back,
-              borderRadius: StyleString.bottomSheetRadius,
+              borderRadius: Style.bottomSheetRadius,
               child: SizedBox(
                 height: 35,
                 child: Center(
@@ -595,7 +596,7 @@ class _AudioPageState extends State<AudioPage> {
             children: [
               InkWell(
                 onTap: Get.back,
-                borderRadius: StyleString.bottomSheetRadius,
+                borderRadius: Style.bottomSheetRadius,
                 child: SizedBox(
                   height: 35,
                   child: Center(

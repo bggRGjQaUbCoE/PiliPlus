@@ -1,4 +1,4 @@
-import 'package:PiliPlus/common/constants.dart';
+import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/grpc/bilibili/app/listener/v1.pbenum.dart'
@@ -114,9 +114,9 @@ Widget module(
             : theme.colorScheme.surface,
         shape: floor == 1
             ? null
-            : const RoundedRectangleBorder(borderRadius: StyleString.mdRadius),
+            : const RoundedRectangleBorder(borderRadius: Style.mdRadius),
         child: InkWell(
-          borderRadius: floor == 1 ? null : StyleString.mdRadius,
+          borderRadius: floor == 1 ? null : Style.mdRadius,
           onTap: () {
             try {
               String url = common.jumpUrl!;
@@ -179,7 +179,7 @@ Widget module(
       );
     case 'DYNAMIC_TYPE_MUSIC':
       final music = major!.music!;
-      final borderRadius = floor == 1 ? null : StyleString.mdRadius;
+      final borderRadius = floor == 1 ? null : Style.mdRadius;
       final Color bgColor = floor == 1
           ? theme.dividerColor.withValues(alpha: 0.08)
           : theme.colorScheme.surface;

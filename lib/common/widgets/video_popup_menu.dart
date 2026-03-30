@@ -135,7 +135,7 @@ class VideoPopupMenu extends StatelessWidget {
                         SmartDialog.showToast("请退出账号后重新登录");
                         return;
                       }
-                      if (videoItem case final RecVideoItemAppModel item) {
+                      if (videoItem case final RcmdVideoItemAppModel item) {
                         ThreePoint? tp = item.threePoint;
                         if (tp == null) {
                           SmartDialog.showToast("未能获取threePoint");

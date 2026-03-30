@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:PiliPlus/common/assets.dart';
 import 'package:PiliPlus/common/widgets/flutter/layout_builder.dart';
 import 'package:PiliPlus/common/widgets/gesture/tap_gesture_recognizer.dart';
 import 'package:PiliPlus/common/widgets/image/cached_network_svg_image.dart';
@@ -231,8 +232,7 @@ class OpusContent extends StatelessWidget {
                   imageUrl: ImageUtils.thumbnailUrl(pic.url!, 60),
                   fadeInDuration: const Duration(milliseconds: 120),
                   fadeOutDuration: const Duration(milliseconds: 120),
-                  placeholder: (_, _) =>
-                      Image.asset('assets/images/loading.png'),
+                  placeholder: (_, _) => Image.asset(Assets.loading),
                 );
                 if (!(pic.isLongPic ?? false)) {
                   child = fromHero(
@@ -715,18 +715,21 @@ Widget moduleBlockedItem(
 ) {
   late final isDarkMode = theme.brightness.isDark;
 
-  BoxDecoration? bgImg() {
+  BoxDecoration? bgImg(double width) {
     return moduleBlocked.bgImg == null
         ? null
         : BoxDecoration(
             image: DecorationImage(
               fit: BoxFit.fill,
-              image: CachedNetworkImageProvider(
-                ImageUtils.thumbnailUrl(
-                  isDarkMode
-                      ? moduleBlocked.bgImg!.imgDark
-                      : moduleBlocked.bgImg!.imgDay,
+              image: ResizeImage(
+                CachedNetworkImageProvider(
+                  ImageUtils.thumbnailUrl(
+                    isDarkMode
+                        ? moduleBlocked.bgImg!.imgDark
+                        : moduleBlocked.bgImg!.imgDay,
+                  ),
                 ),
+                width: width.cacheSize(context),
               ),
             ),
           );
@@ -755,9 +758,7 @@ Widget moduleBlockedItem(
         padding: padding,
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
         visualDensity: visualDensity,
-        backgroundColor: isDarkMode
-            ? const Color(0xFF8F0030)
-            : const Color(0xFFFF6699),
+        backgroundColor: theme.colorScheme.btnColor,
         foregroundColor: Colors.white,
         shape: shape,
       ),
@@ -793,7 +794,7 @@ Widget moduleBlockedItem(
           return Container(
             width: maxWidth,
             height: maxWidth,
-            decoration: bgImg(),
+            decoration: bgImg(maxWidth),
             padding: const EdgeInsets.all(12),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -822,43 +823,50 @@ Widget moduleBlockedItem(
       ),
     );
   }
-  return Container(
-    decoration: bgImg(),
-    padding: const EdgeInsets.all(12),
-    child: Row(
-      spacing: 8,
-      children: [
-        if (moduleBlocked.icon != null) icon(42),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            spacing: 2,
-            children: [
-              if (moduleBlocked.title?.isNotEmpty == true)
-                Text(moduleBlocked.title!),
-              if (moduleBlocked.hintMessage?.isNotEmpty == true)
-                Text(
-                  moduleBlocked.hintMessage!,
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: theme.colorScheme.outline,
-                  ),
-                ),
-            ],
-          ),
-        ),
-        if (moduleBlocked.button != null)
-          btn(
-            context,
-            visualDensity: const VisualDensity(vertical: -3, horizontal: -4),
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(Radius.circular(6)),
+  return LayoutBuilder(
+    builder: (context, constraints) {
+      return Container(
+        decoration: bgImg(constraints.maxWidth),
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          spacing: 8,
+          children: [
+            if (moduleBlocked.icon != null) icon(42),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                spacing: 2,
+                children: [
+                  if (moduleBlocked.title?.isNotEmpty == true)
+                    Text(moduleBlocked.title!),
+                  if (moduleBlocked.hintMessage?.isNotEmpty == true)
+                    Text(
+                      moduleBlocked.hintMessage!,
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: theme.colorScheme.outline,
+                      ),
+                    ),
+                ],
+              ),
             ),
-            padding: const EdgeInsets.symmetric(horizontal: 10),
-          ),
-      ],
-    ),
+            if (moduleBlocked.button != null)
+              btn(
+                context,
+                visualDensity: const VisualDensity(
+                  vertical: -3,
+                  horizontal: -4,
+                ),
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(6)),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+              ),
+          ],
+        ),
+      );
+    },
   );
 }
 

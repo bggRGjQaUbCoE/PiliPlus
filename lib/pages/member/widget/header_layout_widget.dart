@@ -23,7 +23,6 @@ import 'package:flutter/rendering.dart' show BoxHitTestResult, BoxParentData;
 const double kHeaderHeight = 135.0;
 
 const double kAvatarSize = 80.0;
-const double kPendantAvatarSize = 70.0;
 const double _kAvatarLeftPadding = 20.0;
 const double _kAvatarTopPadding = 115.0;
 const double _kAvatarEffectiveHeight =

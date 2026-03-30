@@ -2,7 +2,7 @@ import 'dart:async' show FutureOr;
 import 'dart:convert' show utf8, jsonDecode;
 import 'dart:io' show File;
 
-import 'package:PiliPlus/common/constants.dart' show StyleString;
+import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/utils/extension/context_ext.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:file_picker/file_picker.dart';
@@ -155,7 +155,7 @@ void importFromInput<T>(
     context: context,
     builder: (context) => AlertDialog(
       title: Text('输入$title'),
-      constraints: StyleString.dialogFixedConstraints,
+      constraints: Style.dialogFixedConstraints,
       content: TextFormField(
         key: key,
         minLines: 4,

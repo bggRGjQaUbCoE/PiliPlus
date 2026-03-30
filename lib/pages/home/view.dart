@@ -1,4 +1,4 @@
-import 'package:PiliPlus/common/constants.dart';
+import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/custom_height_widget.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart';
@@ -48,7 +48,7 @@ class _HomePageState extends CommonPageState<HomePage>
             isScrollable: true,
             dividerColor: Colors.transparent,
             dividerHeight: 0,
-            splashBorderRadius: StyleString.mdRadius,
+            splashBorderRadius: Style.mdRadius,
             tabAlignment: TabAlignment.center,
             onTap: (_) {
               feedBack();
@@ -105,7 +105,7 @@ class _HomePageState extends CommonPageState<HomePage>
             final offset = barOffset.value;
             return CustomHeightWidget(
               offset: Offset(0, -offset),
-              height: StyleString.topBarHeight - offset,
+              height: Style.topBarHeight - offset,
               child: Padding(
                 padding: padding,
                 child: child,
@@ -123,7 +123,7 @@ class _HomePageState extends CommonPageState<HomePage>
             child: AnimatedContainer(
               curve: Curves.easeInOutCubicEmphasized,
               duration: const Duration(milliseconds: 500),
-              height: showSearchBar ? StyleString.topBarHeight : 0,
+              height: showSearchBar ? Style.topBarHeight : 0,
               padding: padding,
               child: child,
             ),
@@ -132,7 +132,7 @@ class _HomePageState extends CommonPageState<HomePage>
       }
     }
     return Container(
-      height: StyleString.topBarHeight,
+      height: Style.topBarHeight,
       padding: padding,
       child: child,
     );

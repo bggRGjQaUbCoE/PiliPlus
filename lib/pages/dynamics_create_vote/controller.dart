@@ -5,6 +5,7 @@ import 'package:PiliPlus/http/msg.dart';
 import 'package:PiliPlus/models/dynamics/vote_model.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/utils.dart';
+import 'package:flutter/widgets.dart' show Text;
 import 'package:get/get.dart';
 
 class CreateVoteController extends GetxController {
@@ -71,7 +72,7 @@ class CreateVoteController extends GetxController {
     } else {
       showConfirmDialog(
         context: Get.context!,
-        title: res.toString(),
+        title: Text(res.toString()),
         onConfirm: Get.back,
       );
     }

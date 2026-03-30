@@ -1,9 +1,14 @@
 import 'package:flex_seed_scheme/flex_seed_scheme.dart';
 import 'package:flutter/material.dart';
 
+const _pinkLight = Color(0xFFFF6699);
+const _pinkDark = Color(0xFFD44E7D);
+
 extension ColorSchemeExt on ColorScheme {
-  Color get vipColor =>
-      brightness.isLight ? const Color(0xFFFF6699) : const Color(0xFFD44E7D);
+  Color get vipColor => brightness.isLight ? _pinkLight : _pinkDark;
+
+  Color get btnColor =>
+      brightness.isLight ? _pinkLight : const Color(0xFF8F0030);
 
   Color get freeColor =>
       brightness.isLight ? const Color(0xFFFF7F24) : const Color(0xFFD66011);

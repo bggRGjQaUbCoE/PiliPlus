@@ -4,9 +4,14 @@ import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/http/api.dart';
 import 'package:PiliPlus/http/browser_ua.dart';
 import 'package:PiliPlus/http/constants.dart';
+import 'package:PiliPlus/http/error_msg.dart';
 import 'package:PiliPlus/http/init.dart';
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/models/common/member/archive_order_type_app.dart';
+import 'package:PiliPlus/models/common/member/archive_order_type_web.dart';
+import 'package:PiliPlus/models/common/member/archive_sort_type_app.dart';
 import 'package:PiliPlus/models/common/member/contribute_type.dart';
+import 'package:PiliPlus/models/common/member/web_ss_type.dart';
 import 'package:PiliPlus/models/dynamics/result.dart';
 import 'package:PiliPlus/models/member/info.dart';
 import 'package:PiliPlus/models/member/tags.dart';
@@ -14,6 +19,7 @@ import 'package:PiliPlus/models_new/follow/data.dart';
 import 'package:PiliPlus/models_new/follow/list.dart';
 import 'package:PiliPlus/models_new/member/coin_like_arc/data.dart';
 import 'package:PiliPlus/models_new/member/search_archive/data.dart';
+import 'package:PiliPlus/models_new/member/season_web/data.dart';
 import 'package:PiliPlus/models_new/member_card_info/data.dart';
 import 'package:PiliPlus/models_new/space/space/data.dart';
 import 'package:PiliPlus/models_new/space/space_archive/data.dart';
@@ -113,8 +119,8 @@ abstract final class MemberHttp {
     required ContributeType type,
     required int? mid,
     String? aid,
-    String? order,
-    String? sort,
+    ArchiveOrderTypeApp? order,
+    ArchiveSortTypeApp? sort,
     int? pn,
     int? next,
     int? seasonId,
@@ -135,22 +141,15 @@ abstract final class MemberHttp {
       'next': ?next,
       'season_id': ?seasonId,
       'series_id': ?seriesId,
-      'qn': type == ContributeType.video ? 80 : 32,
-      'order': ?order,
-      'sort': ?sort,
+      'qn': type == .video ? 80 : 32,
+      'order': ?order?.name,
+      'sort': ?sort?.name,
       'include_cursor': ?includeCursor,
       'statistics': Constants.statisticsApp,
       'vmid': mid,
     };
     final res = await Request().get(
-      switch (type) {
-        ContributeType.video => Api.spaceArchive,
-        ContributeType.charging => Api.spaceChargingArchive,
-        ContributeType.season => Api.spaceSeason,
-        ContributeType.series => Api.spaceSeries,
-        ContributeType.bangumi => Api.spaceBangumi,
-        ContributeType.comic => Api.spaceComic,
-      },
+      type.api,
       queryParameters: params,
       options: Options(
         headers: {
@@ -348,12 +347,12 @@ abstract final class MemberHttp {
 
   static Future<LoadingState<SearchArchiveData>> searchArchive({
     required Object mid,
+    int tid = 0, // e.g. pugv: 196
     int ps = 30,
-    int tid = 0,
-    int? pn,
+    required int pn,
     String? keyword,
-    String order = 'pubdate',
-    bool orderAvoided = true,
+    String? specialType, // e.g. 'charging'
+    ArchiveOrderTypeWeb order = .pubdate,
   }) async {
     String dmImgStr = Utils.base64EncodeRandomString(16, 64);
     String dmCoverImgStr = Utils.base64EncodeRandomString(32, 128);
@@ -361,12 +360,13 @@ abstract final class MemberHttp {
       'mid': mid,
       'ps': ps,
       'tid': tid,
-      'pn': ?pn,
+      'pn': pn,
       'keyword': ?keyword,
-      'order': order,
+      'special_type': ?specialType,
+      'order': order.name,
       'platform': 'web',
-      'web_location': 1550101,
-      'order_avoided': orderAvoided,
+      'web_location': 333.1387,
+      'order_avoided': true,
       'dm_img_list': '[]',
       'dm_img_str': dmImgStr,
       'dm_cover_img_str': dmCoverImgStr,
@@ -386,10 +386,50 @@ abstract final class MemberHttp {
     if (res.data['code'] == 0) {
       return Success(SearchArchiveData.fromJson(res.data['data']));
     } else {
-      Map errMap = const {
-        -352: '风控校验失败，请检查登录状态',
-      };
-      return Error(errMap[res.data['code']] ?? res.data['message']);
+      return Error(errorMsg[res.data['code']] ?? res.data['message']);
+    }
+  }
+
+  static Future<LoadingState<SeasonWebData>> seasonSeriesWeb({
+    required WebSsType type,
+    required Object mid,
+    required Object id,
+    int ps = 30,
+    required int pn,
+    ArchiveSortTypeApp sort = .desc,
+  }) async {
+    final res = await Request().get(
+      type.api,
+      queryParameters: switch (type) {
+        .season => {
+          'mid': mid,
+          'season_id': id,
+          'sort_reverse': sort == .asc,
+          'page_size': ps,
+          'page_num': pn,
+          'web_location': 333.1387,
+        },
+        .series => {
+          'mid': mid,
+          'series_id': id,
+          'sort': sort.name,
+          'ps': ps,
+          'pn': pn,
+          'web_location': 333.1387,
+        },
+      },
+      options: Options(
+        headers: {
+          HttpHeaders.userAgentHeader: BrowserUa.pc,
+          HttpHeaders.refererHeader: '${HttpString.spaceBaseUrl}/$mid',
+          'origin': HttpString.spaceBaseUrl,
+        },
+      ),
+    );
+    if (res.data['code'] == 0) {
+      return Success(SeasonWebData.fromJson(res.data['data']));
+    } else {
+      return Error(errorMsg[res.data['code']] ?? res.data['message']);
     }
   }
 
@@ -437,10 +477,7 @@ abstract final class MemberHttp {
         return Error('$e\n\n$s');
       }
     } else {
-      Map errMap = const {
-        -352: '风控校验失败，请检查登录状态',
-      };
-      return Error(errMap[res.data['code']] ?? res.data['message']);
+      return Error(errorMsg[res.data['code']] ?? res.data['message']);
     }
   }
 
@@ -551,7 +588,7 @@ abstract final class MemberHttp {
         ),
       );
     } else {
-      return Error(res.data['message']);
+      return Error(errorMsg[res.data['code']] ?? res.data['message']);
     }
   }
 

@@ -818,9 +818,10 @@ void _showReduceColorDialog(
               if (color.computeLuminance() < 0.2) {
                 showConfirmDialog(
                   context: context,
-                  title:
-                      '确认使用#${(color.toARGB32() & 0xFFFFFF).toRadixString(16).toUpperCase().padLeft(6)}？',
-                  content: '所选颜色过于昏暗，可能会影响图片观看',
+                  title: Text(
+                    '确认使用#${(color.toARGB32() & 0xFFFFFF).toRadixString(16).toUpperCase().padLeft(6)}？',
+                  ),
+                  content: const Text('所选颜色过于昏暗，可能会影响图片观看'),
                   onConfirm: onConfirm,
                 );
               } else {

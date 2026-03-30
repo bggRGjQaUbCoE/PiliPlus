@@ -1,3 +1,4 @@
+import 'package:PiliPlus/common/assets.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/models_new/live/live_search/user_item.dart';
@@ -53,7 +54,7 @@ class LiveSearchUserItem extends StatelessWidget {
                       Image.asset(
                         height: 14,
                         cacheHeight: 14.cacheSize(context),
-                        'assets/images/live/live.gif',
+                        Assets.livingRect,
                       ),
                     ],
                   ],

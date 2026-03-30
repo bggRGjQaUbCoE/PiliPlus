@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io' show File;
 
+import 'package:PiliPlus/common/assets.dart';
 import 'package:PiliPlus/common/widgets/dialog/report.dart';
 import 'package:PiliPlus/common/widgets/flutter/chat_list_view.dart';
 import 'package:PiliPlus/common/widgets/flutter/text_field/text_field.dart';
@@ -92,7 +93,7 @@ class _WhisperDetailPageState
               if (_whisperDetailController.isLive) ...[
                 const SizedBox(width: 10),
                 Image.asset(
-                  'assets/images/live/live.gif',
+                  Assets.livingRect,
                   height: 16,
                   cacheHeight: 16.cacheSize(context),
                   filterQuality: FilterQuality.low,

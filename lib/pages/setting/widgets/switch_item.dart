@@ -70,8 +70,8 @@ class _SetSwitchItemState extends State<SetSwitchItem> {
     if (widget.setKey == SettingBoxKey.badCertificateCallback && val) {
       val = await showConfirmDialog(
         context: context,
-        title: '确定禁用 SSL 证书验证？',
-        content: '禁用容易受到中间人攻击',
+        title: const Text('确定禁用 SSL 证书验证？'),
+        content: const Text('禁用容易受到中间人攻击'),
       );
     }
 

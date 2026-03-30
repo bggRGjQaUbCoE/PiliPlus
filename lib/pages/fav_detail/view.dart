@@ -280,7 +280,7 @@ class _FavDetailPageState extends State<FavDetailPage> with GridMixin {
                 PopupMenuItem(
                   onTap: () => showConfirmDialog(
                     context: context,
-                    title: '确定删除该收藏夹?',
+                    title: const Text('确定删除该收藏夹?'),
                     onConfirm: () =>
                         FavHttp.deleteFolder(mediaIds: mediaId).then((res) {
                           if (res.isSuccess) {

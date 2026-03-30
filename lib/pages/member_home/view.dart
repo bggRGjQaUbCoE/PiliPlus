@@ -1,6 +1,6 @@
 import 'dart:math';
 
-import 'package:PiliPlus/common/constants.dart';
+import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/button/more_btn.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
 import 'package:PiliPlus/http/loading_state.dart';
@@ -45,23 +45,23 @@ class _MemberHomeState extends State<MemberHome>
   }
 
   late final gridDelegateV = SliverGridDelegateWithExtentAndRatio(
-    mainAxisSpacing: StyleString.cardSpace,
-    crossAxisSpacing: StyleString.cardSpace,
+    mainAxisSpacing: Style.cardSpace,
+    crossAxisSpacing: Style.cardSpace,
     maxCrossAxisExtent: Grid.smallCardWidth,
-    childAspectRatio: StyleString.aspectRatio,
+    childAspectRatio: Style.aspectRatio,
     mainAxisExtent: MediaQuery.textScalerOf(context).scale(55),
   );
 
   late final gridDelegateAudio = SliverGridDelegateWithExtentAndRatio(
     mainAxisSpacing: 2,
     maxCrossAxisExtent: Grid.smallCardWidth * 2,
-    childAspectRatio: StyleString.aspectRatio * 2.6,
+    childAspectRatio: Style.aspectRatio * 2.6,
     minHeight: MediaQuery.textScalerOf(context).scale(90),
   );
 
   late final gridDelegatePgc = SliverGridDelegateWithExtentAndRatio(
-    mainAxisSpacing: StyleString.cardSpace,
-    crossAxisSpacing: StyleString.cardSpace,
+    mainAxisSpacing: Style.cardSpace,
+    crossAxisSpacing: Style.cardSpace,
     maxCrossAxisExtent: Grid.smallCardWidth * 0.6,
     childAspectRatio: 0.75,
     mainAxisExtent: MediaQuery.textScalerOf(context).scale(52),
@@ -88,7 +88,7 @@ class _MemberHomeState extends State<MemberHome>
                     ),
                     SliverPadding(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: StyleString.safeSpace,
+                        horizontal: Style.safeSpace,
                       ),
                       sliver: SliverGrid.builder(
                         gridDelegate: gridDelegateV,
@@ -131,7 +131,7 @@ class _MemberHomeState extends State<MemberHome>
                     ),
                     SliverPadding(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: StyleString.safeSpace,
+                        horizontal: Style.safeSpace,
                       ),
                       sliver: SliverGrid.builder(
                         gridDelegate: gridDelegateV,
@@ -157,7 +157,7 @@ class _MemberHomeState extends State<MemberHome>
                     ),
                     SliverPadding(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: StyleString.safeSpace,
+                        horizontal: Style.safeSpace,
                       ),
                       sliver: SliverGrid.builder(
                         gridDelegate: gridDelegateV,
@@ -234,7 +234,7 @@ class _MemberHomeState extends State<MemberHome>
                     ),
                     SliverPadding(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: StyleString.safeSpace,
+                        horizontal: Style.safeSpace,
                       ),
                       sliver: SliverGrid.builder(
                         gridDelegate: gridDelegatePgc,

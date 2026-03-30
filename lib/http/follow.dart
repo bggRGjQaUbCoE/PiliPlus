@@ -1,4 +1,5 @@
 import 'package:PiliPlus/http/api.dart';
+import 'package:PiliPlus/http/error_msg.dart';
 import 'package:PiliPlus/http/init.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models_new/follow/data.dart';
@@ -23,7 +24,7 @@ abstract final class FollowHttp {
     if (res.data['code'] == 0) {
       return Success(FollowData.fromJson(res.data['data']));
     } else {
-      return Error(res.data['message']);
+      return Error(errorMsg[res.data['code']] ?? res.data['message']);
     }
   }
 }

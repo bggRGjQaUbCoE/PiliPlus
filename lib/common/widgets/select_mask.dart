@@ -1,10 +1,10 @@
-import 'package:PiliPlus/common/constants.dart';
+import 'package:PiliPlus/common/style.dart';
 import 'package:flutter/material.dart';
 
 Widget selectMask(
   ThemeData theme,
   bool checked, {
-  BorderRadiusGeometry borderRadius = StyleString.mdRadius,
+  BorderRadiusGeometry borderRadius = Style.mdRadius,
 }) {
   return AnimatedOpacity(
     opacity: checked ? 1 : 0,

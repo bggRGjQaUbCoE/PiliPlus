@@ -97,7 +97,7 @@ class _ReplyMePageState extends State<ReplyMePage> {
 
                   void onLongPress() => showConfirmDialog(
                     context: context,
-                    title: '确定删除该通知?',
+                    title: const Text('确定删除该通知?'),
                     onConfirm: () =>
                         _replyMeController.onRemove(item.id, index),
                   );

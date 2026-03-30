@@ -1,4 +1,4 @@
-import 'package:PiliPlus/common/constants.dart';
+import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/gesture/tap_gesture_recognizer.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/http/dynamics.dart';
@@ -21,7 +21,7 @@ Widget? addWidget(
   late final Color bgColor = floor == 1
       ? theme.dividerColor.withValues(alpha: 0.08)
       : theme.colorScheme.surface;
-  late final borderRadius = floor == 1 ? null : StyleString.mdRadius;
+  late final borderRadius = floor == 1 ? null : Style.mdRadius;
   Widget? child;
   try {
     switch (type) {

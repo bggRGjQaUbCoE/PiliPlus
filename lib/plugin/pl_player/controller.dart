@@ -1,4 +1,4 @@
-import 'dart:async' show StreamSubscription, Timer;
+import 'dart:async' show StreamSubscription, Timer, unawaited;
 import 'dart:convert' show ascii;
 import 'dart:io' show Platform;
 import 'dart:math' show max, min;
@@ -29,6 +29,7 @@ import 'package:PiliPlus/plugin/pl_player/models/play_repeat.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
 import 'package:PiliPlus/plugin/pl_player/models/video_fit_type.dart';
 import 'package:PiliPlus/plugin/pl_player/utils/fullscreen.dart';
+import 'package:PiliPlus/services/ios_pip_service.dart';
 import 'package:PiliPlus/services/service_locator.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/asset_utils.dart';
@@ -204,6 +205,8 @@ class PlPlayerController with BlockConfigMixin {
       isLive ? _enableShowLiveDanmaku : _enableShowDanmaku;
 
   late final bool autoPiP = Pref.autoPiP;
+  StreamSubscription<IOSPipRestoreState>? _iosPipRestoreSubscription;
+  bool _restoringFromIosPip = false;
   bool get isPipMode =>
       (Platform.isAndroid && Floating().isPipMode) ||
       (PlatformUtils.isDesktop && isDesktopPip);
@@ -290,14 +293,85 @@ class PlPlayerController with BlockConfigMixin {
   }
 
   void enterPip({bool isAuto = false}) {
-    if (videoPlayerController != null) {
-      controls = false;
-      final state = videoPlayerController!.state;
-      PageUtils.enterPip(
-        isAuto: isAuto,
-        width: state.width == 0 ? width : state.width,
-        height: state.height == 0 ? height : state.height,
-      );
+    unawaited(enterPipAsync(isAuto: isAuto));
+  }
+
+  Future<bool> get isPipAvailable async {
+    if (PlatformUtils.isDesktop) {
+      return true;
+    }
+    if (Platform.isAndroid) {
+      return Floating().isPipAvailable;
+    }
+    if (Platform.isIOS) {
+      return IOSPipService.isAvailable;
+    }
+    return false;
+  }
+
+  Future<bool> enterPipAsync({bool isAuto = false}) async {
+    if (videoPlayerController == null) {
+      return false;
+    }
+    if (Platform.isIOS) {
+      return _enterIosPip();
+    }
+    controls = false;
+    final state = videoPlayerController!.state;
+    PageUtils.enterPip(
+      isAuto: isAuto,
+      width: state.width == 0 ? width : state.width,
+      height: state.height == 0 ? height : state.height,
+    );
+    return true;
+  }
+
+  Future<bool> _enterIosPip() async {
+    if (!await isPipAvailable) {
+      return false;
+    }
+    final started = await IOSPipService.enter(
+      dataSource: dataSource,
+      position: position,
+      isPlaying: true,
+      playbackSpeed: playbackSpeed,
+    );
+    if (!started) {
+      return false;
+    }
+    controls = false;
+    if (playerStatus.isPlaying) {
+      await pause(notify: false, isInterrupt: true);
+    }
+    return true;
+  }
+
+  Future<bool> restoreFromIosPipIfNeeded() async {
+    if (!Platform.isIOS) {
+      return false;
+    }
+    final state = await IOSPipService.restore();
+    if (state == null || !state.wasActive) {
+      return false;
+    }
+    await _restoreFromIosPipState(state);
+    return true;
+  }
+
+  Future<void> _restoreFromIosPipState(IOSPipRestoreState state) async {
+    if (_restoringFromIosPip || !state.wasActive || _playerCount == 0) {
+      return;
+    }
+    _restoringFromIosPip = true;
+    try {
+      if (state.position > Duration.zero) {
+        await seekTo(state.position, isSeek: false);
+      }
+      if (state.isPlaying) {
+        await play(hideControls: false);
+      }
+    } finally {
+      _restoringFromIosPip = false;
     }
   }
 
@@ -519,6 +593,13 @@ class PlPlayerController with BlockConfigMixin {
       enableHeart = false;
     }
 
+    if (Platform.isIOS) {
+      IOSPipService.ensureInitialized();
+      _iosPipRestoreSubscription = IOSPipService.onPipStop.listen(
+        _restoreFromIosPipState,
+      );
+    }
+
     if (Platform.isAndroid && autoPiP) {
       Utils.sdkInt.then((sdkInt) {
         if (sdkInt < 36) {
@@ -539,9 +620,16 @@ class PlPlayerController with BlockConfigMixin {
   // 获取实例 传参
   static PlPlayerController getInstance({bool isLive = false}) {
     // 如果实例尚未创建，则创建一个新实例
-    return (_instance ??= PlPlayerController._())
+    final controller = (_instance ??= PlPlayerController._())
       ..isLive = isLive
       .._playerCount += 1;
+    if (Platform.isIOS && controller._iosPipRestoreSubscription == null) {
+      IOSPipService.ensureInitialized();
+      controller._iosPipRestoreSubscription = IOSPipService.onPipStop.listen(
+        controller._restoreFromIosPipState,
+      );
+    }
+    return controller;
   }
 
   bool _processing = false;
@@ -1543,6 +1631,8 @@ class PlPlayerController with BlockConfigMixin {
       _clearPreview();
     }
     Utils.channel.setMethodCallHandler(null);
+    _iosPipRestoreSubscription?.cancel();
+    _iosPipRestoreSubscription = null;
     _timer?.cancel();
     // _position.close();
     // _playerEventSubs?.cancel();

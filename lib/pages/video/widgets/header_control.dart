@@ -1966,6 +1966,7 @@ class HeaderControlState extends State<HeaderControl>
                 ),
               ),
               if (Platform.isAndroid ||
+                  Platform.isIOS ||
                   (PlatformUtils.isDesktop && !isFullScreen))
                 SizedBox(
                   width: btnWidth,
@@ -1978,8 +1979,9 @@ class HeaderControlState extends State<HeaderControl>
                         plPlayerController.toggleDesktopPip();
                         return;
                       }
-                      if (await Floating().isPipAvailable) {
+                      if (await plPlayerController.isPipAvailable) {
                         if (context.mounted &&
+                            Platform.isAndroid &&
                             !videoPlayerServiceHandler!.enableBackgroundPlay) {
                           final theme = Theme.of(context);
                           ScaffoldMessenger.of(context).showSnackBar(
@@ -2054,7 +2056,9 @@ class HeaderControlState extends State<HeaderControl>
                           await Future.delayed(const Duration(seconds: 3));
                         }
                         if (!context.mounted) return;
-                        plPlayerController.enterPip();
+                        await plPlayerController.enterPipAsync();
+                      } else if (context.mounted) {
+                        SmartDialog.showToast('当前设备不支持画中画');
                       }
                     },
                     icon: const Icon(

@@ -184,8 +184,15 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
+    unawaited(_handleAppLifecycleState(state));
+  }
+
+  Future<void> _handleAppLifecycleState(AppLifecycleState state) async {
     late final ctr = videoDetailController.plPlayerController;
     if (state == AppLifecycleState.resumed) {
+      if (Platform.isIOS) {
+        await ctr.restoreFromIosPipIfNeeded();
+      }
       if (!ctr.showDanmaku) {
         introController.startTimer();
         ctr.showDanmaku = true;
@@ -207,6 +214,9 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
         }
       }
     } else if (state == AppLifecycleState.paused) {
+      if (Platform.isIOS && ctr.autoPiP && ctr.playerStatus.isPlaying) {
+        await ctr.enterPipAsync(isAuto: true);
+      }
       introController.cancelTimer();
       ctr.showDanmaku = false;
     }

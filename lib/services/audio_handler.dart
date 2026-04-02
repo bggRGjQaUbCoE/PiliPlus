@@ -79,7 +79,11 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
 
   @override
   Future<void> seek(Duration position) {
-    playbackState.add(playbackState.value.copyWith(updatePosition: position));
+    playbackState.add(
+      playbackState.value.copyWith(
+        updatePosition: position,
+      ),
+    );
     return (onSeek?.call(position) ??
         PlPlayerController.seekToIfExists(position, isSeek: false));
     // await player.seekTo(position);
@@ -96,7 +100,11 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
     if (!mediaItem.isClosed) mediaItem.add(newMediaItem);
   }
 
-  void setPlaybackState(PlayerStatus status, bool isBuffering, bool isLive) {
+  void setPlaybackState(
+    PlayerStatus status,
+    bool isBuffering,
+    bool isLive,
+  ) {
     if (!enableBackgroundPlay ||
         _item.isEmpty ||
         !PlPlayerController.instanceExists()) {
@@ -130,7 +138,9 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
             ),
         ],
         playing: playing,
-        systemActions: const {MediaAction.seek},
+        systemActions: const {
+          MediaAction.seek,
+        },
       ),
     );
   }
@@ -283,7 +293,10 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
       );
     }
     playbackState.add(
-      PlaybackState(processingState: AudioProcessingState.idle, playing: false),
+      PlaybackState(
+        processingState: AudioProcessingState.idle,
+        playing: false,
+      ),
     );
     if (!keepMediaNotificationAlive) {
       stop();
@@ -297,6 +310,10 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
       return;
     }
 
-    playbackState.add(playbackState.value.copyWith(updatePosition: position));
+    playbackState.add(
+      playbackState.value.copyWith(
+        updatePosition: position,
+      ),
+    );
   }
 }

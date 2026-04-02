@@ -128,7 +128,8 @@ class AudioController extends GetxController
       }
     });
     videoPlayerServiceHandler
-      ?..onPlay = onPlay
+      ?..setAudioPageActive(true)
+      ..onPlay = onPlay
       ..onPause = onPause
       ..onSeek = onSeek;
 
@@ -501,10 +502,7 @@ class AudioController extends GetxController
   }
 
   void showReply() {
-    MainReplyPage.toMainReplyPage(
-      oid: oid.toInt(),
-      replyType: isUgc ? 1 : 14,
-    );
+    MainReplyPage.toMainReplyPage(oid: oid.toInt(), replyType: isUgc ? 1 : 14);
   }
 
   void actionShareVideo(BuildContext context) {
@@ -521,10 +519,7 @@ class AudioController extends GetxController
           children: [
             ListTile(
               dense: true,
-              title: const Text(
-                '复制链接',
-                style: TextStyle(fontSize: 14),
-              ),
+              title: const Text('复制链接', style: TextStyle(fontSize: 14)),
               onTap: () {
                 Get.back();
                 Utils.copyText(audioUrl);
@@ -532,10 +527,7 @@ class AudioController extends GetxController
             ),
             ListTile(
               dense: true,
-              title: const Text(
-                '其它app打开',
-                style: TextStyle(fontSize: 14),
-              ),
+              title: const Text('其它app打开', style: TextStyle(fontSize: 14)),
               onTap: () {
                 Get.back();
                 PageUtils.launchURL(audioUrl);
@@ -544,10 +536,7 @@ class AudioController extends GetxController
             if (PlatformUtils.isMobile)
               ListTile(
                 dense: true,
-                title: const Text(
-                  '分享视频',
-                  style: TextStyle(fontSize: 14),
-                ),
+                title: const Text('分享视频', style: TextStyle(fontSize: 14)),
                 onTap: () {
                   Get.back();
                   if (audioItem.value case DetailItem(
@@ -564,16 +553,10 @@ class AudioController extends GetxController
               ),
             ListTile(
               dense: true,
-              title: const Text(
-                '分享至动态',
-                style: TextStyle(fontSize: 14),
-              ),
+              title: const Text('分享至动态', style: TextStyle(fontSize: 14)),
               onTap: () {
                 Get.back();
-                if (audioItem.value case DetailItem(
-                  :final arc,
-                  :final owner,
-                )) {
+                if (audioItem.value case DetailItem(:final arc, :final owner)) {
                   showModalBottomSheet(
                     context: context,
                     isScrollControlled: true,
@@ -592,10 +575,7 @@ class AudioController extends GetxController
             if (isUgc)
               ListTile(
                 dense: true,
-                title: const Text(
-                  '分享至消息',
-                  style: TextStyle(fontSize: 14),
-                ),
+                title: const Text('分享至消息', style: TextStyle(fontSize: 14)),
                 onTap: () {
                   Get.back();
                   if (audioItem.value case DetailItem(
@@ -773,6 +753,7 @@ class AudioController extends GetxController
       ?..onPlay = null
       ..onPause = null
       ..onSeek = null
+      ..setAudioPageActive(false)
       ..onVideoDetailDispose(hashCode.toString());
     _subscriptions?.forEach((e) => e.cancel());
     _subscriptions?.clear();

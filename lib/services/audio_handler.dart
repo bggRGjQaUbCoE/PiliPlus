@@ -35,10 +35,33 @@ Future<VideoPlayerServiceHandler> initAudioService() {
 class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
   static final List<MediaItem> _item = [];
   bool enableBackgroundPlay = Pref.enableBackgroundPlay;
+  bool _audioPageActive = false;
 
   Future<void>? Function()? onPlay;
   Future<void>? Function()? onPause;
   Future<void>? Function(Duration position)? onSeek;
+
+  // 只有独立音频页或“听视频”模式才需要在后台保留媒体通知。
+  bool get keepMediaNotificationAlive =>
+      _audioPageActive ||
+      (PlPlayerController.instance?.onlyPlayAudio.value ?? false);
+
+  void setAudioPageActive(bool active) {
+    _audioPageActive = active;
+  }
+
+  void stopServiceIfNeeded() {
+    if (!enableBackgroundPlay || keepMediaNotificationAlive || _item.isEmpty) {
+      return;
+    }
+    playbackState.add(
+      playbackState.value.copyWith(
+        processingState: AudioProcessingState.idle,
+        playing: false,
+      ),
+    );
+    stop();
+  }
 
   @override
   Future<void> play() {
@@ -56,11 +79,7 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
 
   @override
   Future<void> seek(Duration position) {
-    playbackState.add(
-      playbackState.value.copyWith(
-        updatePosition: position,
-      ),
-    );
+    playbackState.add(playbackState.value.copyWith(updatePosition: position));
     return (onSeek?.call(position) ??
         PlPlayerController.seekToIfExists(position, isSeek: false));
     // await player.seekTo(position);
@@ -77,11 +96,7 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
     if (!mediaItem.isClosed) mediaItem.add(newMediaItem);
   }
 
-  void setPlaybackState(
-    PlayerStatus status,
-    bool isBuffering,
-    bool isLive,
-  ) {
+  void setPlaybackState(PlayerStatus status, bool isBuffering, bool isLive) {
     if (!enableBackgroundPlay ||
         _item.isEmpty ||
         !PlPlayerController.instanceExists()) {
@@ -115,9 +130,7 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
             ),
         ],
         playing: playing,
-        systemActions: const {
-          MediaAction.seek,
-        },
+        systemActions: const {MediaAction.seek},
       ),
     );
   }
@@ -231,7 +244,15 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
     if (_item.isNotEmpty) {
       _item.removeWhere((item) => item.id.endsWith(herotag));
     }
+    if (_item.isEmpty) {
+      clear();
+      return;
+    }
     if (_item.isNotEmpty) {
+      if (keepMediaNotificationAlive) {
+        setMediaItem(_item.last);
+        return;
+      }
       playbackState.add(
         playbackState.value.copyWith(
           processingState: AudioProcessingState.idle,
@@ -262,11 +283,11 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
       );
     }
     playbackState.add(
-      PlaybackState(
-        processingState: AudioProcessingState.idle,
-        playing: false,
-      ),
+      PlaybackState(processingState: AudioProcessingState.idle, playing: false),
     );
+    if (!keepMediaNotificationAlive) {
+      stop();
+    }
   }
 
   void onPositionChange(Duration position) {
@@ -276,10 +297,6 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
       return;
     }
 
-    playbackState.add(
-      playbackState.value.copyWith(
-        updatePosition: position,
-      ),
-    );
+    playbackState.add(playbackState.value.copyWith(updatePosition: position));
   }
 }

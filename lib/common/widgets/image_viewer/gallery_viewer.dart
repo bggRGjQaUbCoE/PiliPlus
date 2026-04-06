@@ -37,7 +37,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_debounce/easy_throttle.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart' hide Image, PageView, LayoutBuilder;
-import 'package:flutter/services.dart' show HapticFeedback;
+import 'package:flutter/services.dart' show HapticFeedback, SystemChrome, SystemUiMode;
 import 'package:get/get.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
@@ -122,6 +122,9 @@ class _GalleryViewerState extends State<GalleryViewer>
   @override
   void initState() {
     super.initState();
+    if (Platform.isAndroid || Platform.isIOS) {
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+    }
     _quality = Pref.previewQ;
     _currIndex = widget.initIndex.obs;
     final item = widget.sources[widget.initIndex];
@@ -239,6 +242,9 @@ class _GalleryViewerState extends State<GalleryViewer>
 
   @override
   void dispose() {
+    if (Platform.isAndroid || Platform.isIOS) {
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    }
     _player?.dispose();
     _player = null;
     _videoController = null;

@@ -2028,7 +2028,24 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
         ),
       );
     }
-    return child;
+    return Obx(() {
+      if (plPlayerController.manualLandscapeMode.value) {
+        final size = MediaQuery.sizeOf(context);
+        return SizedBox(
+          width: size.width,
+          height: size.height,
+          child: RotatedBox(
+            quarterTurns: 1,
+            child: SizedBox(
+              width: size.height,
+              height: size.width,
+              child: child,
+            ),
+          ),
+        );
+      }
+      return child;
+    });
   }
 
   Widget get _videoWidget {

@@ -34,11 +34,20 @@ Future<void> exitDesktopFullscreen() async {
 }
 
 //横屏
+// Returns true if system rotation succeeded, false if manual rotation needed
 @pragma('vm:notify-debugger-on-exception')
-Future<void> landscape() async {
+Future<bool> landscape() async {
+  if (Platform.isAndroid) {
+    try {
+      final result = await Utils.channel.invokeMethod<bool>('forceLandscape');
+      if (result == true) return true;
+      if (result == false) return false;
+    } catch (_) {}
+  }
   try {
     await AutoOrientation.landscapeAutoMode(forceSensor: true);
   } catch (_) {}
+  return true;
 }
 
 //竖屏
@@ -62,6 +71,14 @@ Future<void> autoScreen() async {
 
 Future<void> fullAutoModeForceSensor() {
   return AutoOrientation.fullAutoMode(forceSensor: true);
+}
+
+Future<void> exitForcedOrientation() async {
+  if (Platform.isAndroid) {
+    try {
+      await Utils.channel.invokeMethod('exitForceLandscape');
+    } catch (_) {}
+  }
 }
 
 bool _showStatusBar = true;

@@ -1,0 +1,62 @@
+name: Build Android Dev APK
+
+on:
+    push:
+        branches:
+            - "claude/**"
+    workflow_dispatch:
+
+jobs:
+    android:
+        name: Build Android Dev APK
+        runs-on: ubuntu-latest
+        permissions: write-all
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v6
+              with:
+                  fetch-depth: 0
+
+            - name: Setup Java
+              uses: actions/setup-java@v5
+              with:
+                  distribution: "zulu"
+                  java-version: "17"
+                  cache: "gradle"
+                  cache-dependency-path: |
+                      android/*.gradle*
+                      android/**/gradle-wrapper.properties
+
+            - name: Setup Flutter
+              uses: subosito/flutter-action@v2
+              with:
+                  channel: stable
+                  flutter-version-file: pubspec.yaml
+                  cache: true
+
+            - name: Apply Patch
+              shell: pwsh
+              run: lib/scripts/patch.ps1 android
+              continue-on-error: true
+
+            - name: Build Dev APK
+              run: flutter build apk --release --split-per-abi --android-project-arg dev=1 --pub
+
+            - name: Upload arm64-v8a
+              uses: actions/upload-artifact@v4
+              with:
+                  name: PiliPlus-dev-arm64-v8a
+                  path: build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
+
+            - name: Upload armeabi-v7a
+              uses: actions/upload-artifact@v4
+              with:
+                  name: PiliPlus-dev-armeabi-v7a
+                  path: build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
+
+            - name: Upload x86_64
+              uses: actions/upload-artifact@v4
+              with:
+                  name: PiliPlus-dev-x86_64
+                  path: build/app/outputs/flutter-apk/app-x86_64-release.apk

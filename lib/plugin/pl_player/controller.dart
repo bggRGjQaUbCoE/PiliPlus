@@ -128,6 +128,8 @@ class PlPlayerController with BlockConfigMixin {
 
   /// 全屏状态
   final RxBool isFullScreen = false.obs;
+  /// 手动横屏模式（折叠屏内屏系统无法旋转时使用）
+  final RxBool manualLandscapeMode = false.obs;
   // 默认投稿视频格式
   bool isLive = false;
 
@@ -1401,7 +1403,10 @@ class PlPlayerController with BlockConfigMixin {
                   (isVertical || size.height / size.width < kScreenRatio)))) {
             await verticalScreenForTwoSeconds();
           } else {
-            await landscape();
+            final success = await landscape();
+            if (!success) {
+              manualLandscapeMode.value = true;
+            }
           }
         } else {
           await enterDesktopFullscreen(inAppFullScreen: inAppFullScreen);
@@ -1409,6 +1414,8 @@ class PlPlayerController with BlockConfigMixin {
       } else {
         if (PlatformUtils.isMobile) {
           showStatusBar();
+          manualLandscapeMode.value = false;
+          await exitForcedOrientation();
           if (mode == FullScreenMode.none) {
             return;
           }

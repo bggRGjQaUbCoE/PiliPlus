@@ -5,6 +5,7 @@ import android.app.PictureInPictureParams
 import android.app.SearchManager
 import android.content.ComponentName
 import android.content.Intent
+import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.content.pm.ShortcutInfo
 import android.content.pm.ShortcutManager
@@ -13,6 +14,8 @@ import android.graphics.BitmapFactory
 import android.graphics.drawable.Icon
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.provider.MediaStore
 import android.provider.Settings
 import android.view.WindowManager.LayoutParams
@@ -20,6 +23,7 @@ import androidx.core.net.toUri
 import com.ryanheise.audioservice.AudioServiceActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
+import kotlin.math.min
 import kotlin.system.exitProcess
 import java.io.File
 
@@ -130,6 +134,32 @@ class MainActivity : AudioServiceActivity() {
                     result.success(false)
                 }
 
+                "forceLandscape" -> {
+                    val handler = Handler(Looper.getMainLooper())
+                    if (isNearSquareLargeDisplay()) {
+                        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+                        handler.postDelayed({
+                            if (resources.configuration.orientation != Configuration.ORIENTATION_LANDSCAPE) {
+                                requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+                                handler.postDelayed({
+                                    val success = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+                                    result.success(success)
+                                }, 350)
+                            } else {
+                                result.success(true)
+                            }
+                        }, 350)
+                    } else {
+                        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+                        result.success(true)
+                    }
+                    return@setMethodCallHandler
+                }
+
+                "exitForceLandscape" -> {
+                    requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+                }
+
                 "setPipAutoEnterEnabled" -> {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                         val params = PictureInPictureParams.Builder()
@@ -174,6 +204,19 @@ class MainActivity : AudioServiceActivity() {
                 else -> result.notImplemented()
             }
         }
+    }
+
+    private fun isNearSquareLargeDisplay(): Boolean {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            val metrics = windowManager.currentWindowMetrics
+            val bounds = metrics.bounds
+            val width = bounds.width().toFloat()
+            val height = bounds.height().toFloat()
+            val ratio = if (width > height) width / height else height / width
+            val shortestSideDp = min(width, height) / resources.displayMetrics.density
+            return ratio < 1.25f && shortestSideDp >= 600f
+        }
+        return false
     }
 
     private fun back() {

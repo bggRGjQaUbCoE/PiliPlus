@@ -2030,16 +2030,33 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     }
     return Obx(() {
       if (plPlayerController.manualLandscapeMode.value) {
-        final size = MediaQuery.sizeOf(context);
-        return SizedBox(
-          width: size.width,
-          height: size.height,
-          child: RotatedBox(
-            quarterTurns: 1,
+        final mq = MediaQuery.of(context);
+        final padding = mq.padding;
+        // Use full physical screen dimensions including any system
+        // padding to prevent black bars from status bar / display
+        // cutout appearing on the sides after 90-degree rotation
+        final fullWidth = mq.size.width + padding.left + padding.right;
+        final fullHeight = mq.size.height + padding.top + padding.bottom;
+        return Transform.translate(
+          offset: Offset(-padding.left, -padding.top),
+          child: MediaQuery(
+            data: mq.copyWith(
+              size: Size(fullWidth, fullHeight),
+              padding: EdgeInsets.zero,
+              viewPadding: EdgeInsets.zero,
+              viewInsets: EdgeInsets.zero,
+            ),
             child: SizedBox(
-              width: size.height,
-              height: size.width,
-              child: child,
+              width: fullWidth,
+              height: fullHeight,
+              child: RotatedBox(
+                quarterTurns: 1,
+                child: SizedBox(
+                  width: fullHeight,
+                  height: fullWidth,
+                  child: child,
+                ),
+              ),
             ),
           ),
         );

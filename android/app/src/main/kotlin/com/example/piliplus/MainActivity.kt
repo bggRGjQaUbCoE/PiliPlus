@@ -137,22 +137,43 @@ class MainActivity : AudioServiceActivity() {
                 "forceLandscape" -> {
                     val handler = Handler(Looper.getMainLooper())
                     if (isNearSquareLargeDisplay()) {
+                        // On foldable inner displays, Android may ignore orientation requests.
+                        // Try multiple strategies with increasing aggressiveness.
+
+                        // Strategy 1: Reset to unspecified first, then request sensor landscape
+                        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
                         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
                         handler.postDelayed({
-                            if (resources.configuration.orientation != Configuration.ORIENTATION_LANDSCAPE) {
+                            if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                                result.success(true)
+                                return@postDelayed
+                            }
+                            // Strategy 2: Try USER_LANDSCAPE (different compat path)
+                            requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE
+                            handler.postDelayed({
+                                if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                                    result.success(true)
+                                    return@postDelayed
+                                }
+                                // Strategy 3: Try fixed LANDSCAPE
                                 requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
                                 handler.postDelayed({
                                     val success = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
                                     result.success(success)
                                 }, 350)
-                            } else {
-                                result.success(true)
-                            }
+                            }, 350)
                         }, 350)
                     } else {
                         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
                         result.success(true)
                     }
+                    return@setMethodCallHandler
+                }
+
+                "checkLandscape" -> {
+                    result.success(
+                        resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+                    )
                     return@setMethodCallHandler
                 }
 

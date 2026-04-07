@@ -41,7 +41,20 @@ Future<bool> landscape() async {
     try {
       final result = await Utils.channel.invokeMethod<bool>('forceLandscape');
       if (result == true) return true;
-      if (result == false) return false;
+      // Native strategies all failed; try Flutter's SystemChrome API
+      // which uses a slightly different code path
+      await SystemChrome.setPreferredOrientations([
+        DeviceOrientation.landscapeLeft,
+        DeviceOrientation.landscapeRight,
+      ]);
+      // Give the system time to respond
+      await Future.delayed(const Duration(milliseconds: 400));
+      // Check via native if orientation changed
+      final retryResult =
+          await Utils.channel.invokeMethod<bool>('checkLandscape');
+      if (retryResult == true) return true;
+      // All strategies failed - caller should use manual rotation
+      return false;
     } catch (_) {}
   }
   try {

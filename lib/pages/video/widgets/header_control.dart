@@ -1756,11 +1756,8 @@ class HeaderControlState extends State<HeaderControl>
                     size: 15,
                     color: Colors.white,
                   ),
-                  onPressed: () => plPlayerController.onPopInvokedWithResult(
-                    false,
-                    null,
-                    videoDetailCtr.isPortrait,
-                  ),
+                  onPressed: () =>
+                      plPlayerController.onPopInvokedWithResult(false, null),
                 ),
               ),
               if (!plPlayerController.isDesktopPip &&

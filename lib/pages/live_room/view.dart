@@ -346,8 +346,7 @@ class _LiveRoomPageState extends State<LiveRoomPage>
     }
     return popScope(
       canPop: !isFullScreen && !plPlayerController.isDesktopPip,
-      onPopInvokedWithResult: (didPop, result) =>
-          plPlayerController.onPopInvokedWithResult(didPop, result, isPortrait),
+      onPopInvokedWithResult: plPlayerController.onPopInvokedWithResult,
       child: player,
     );
   }

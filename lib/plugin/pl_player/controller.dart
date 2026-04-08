@@ -1765,8 +1765,6 @@ class PlPlayerController with BlockConfigMixin {
       triggerFullScreen(status: false);
       return;
     }
-    if (!horizontalScreen && !isPortrait) {
-      Get.back();
-    }
+    Get.back();
   }
 }

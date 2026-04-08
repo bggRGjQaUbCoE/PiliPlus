@@ -1746,7 +1746,7 @@ class PlPlayerController with BlockConfigMixin {
     });
   }
 
-  void onPopInvokedWithResult(bool didPop, Object? result) {
+  void onPopInvokedWithResult(bool didPop, Object? result, bool isPortrait) {
     if (didPop) {
       if (Platform.isAndroid) {
         _disableAutoEnterPipIfNeeded();

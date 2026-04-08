@@ -1746,7 +1746,7 @@ class PlPlayerController with BlockConfigMixin {
     });
   }
 
-  void onPopInvokedWithResult(bool didPop, Object? result, bool isPortrait) {
+  void onPopInvokedWithResult(bool didPop, Object? result) {
     if (didPop) {
       if (Platform.isAndroid) {
         _disableAutoEnterPipIfNeeded();
@@ -1765,6 +1765,8 @@ class PlPlayerController with BlockConfigMixin {
       triggerFullScreen(status: false);
       return;
     }
-    Get.back();
+    if (horizontalScreen || isPortrait) {
+      Get.back();
+    }
   }
 }

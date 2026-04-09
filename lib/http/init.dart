@@ -20,7 +20,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
 import 'package:dio_http2_adapter/dio_http2_adapter.dart';
-import 'package:flutter/foundation.dart' show kDebugMode;
+import 'package:flutter/foundation.dart' show debugPrint, kDebugMode;
 
 class Request {
   static const _gzipDecoder = GZipDecoder();
@@ -31,6 +31,10 @@ class Request {
   static final _enableHttp2 = Pref.enableHttp2;
   static late final Dio dio;
   static Dio? _http11Dio;
+  static bool _watchingConnectivity = false;
+  static Set<ConnectivityResult>? _lastConnectivity;
+  static Timer? _networkChangeDebounce;
+
   static Dio get http11Dio =>
       _http11Dio ??= _enableHttp2 ? _cloneHttp11Dio() : dio;
   factory Request() => _instance;
@@ -116,7 +120,7 @@ class Request {
     return h11;
   }
 
-  static void _resetAdaptersForNetworkChange() {
+  static HttpClientAdapter _createHttpClientAdapter() {
     final bool enableSystemProxy;
     late final String systemProxyHost;
     late final int? systemProxyPort;
@@ -140,29 +144,35 @@ class Request {
               ..autoUncompress = false, // Http2Adapter没有自动解压, 统一行为
     );
 
-    final HttpClientAdapter newAdapter = _enableHttp2
-        ? Http2Adapter(
-            ConnectionManager(
-              idleTimeout: const Duration(seconds: 15),
-              onClientCreate: enableSystemProxy
-                  ? (_, config) {
-                      config
-                        ..proxy = Uri(
-                          scheme: 'http',
-                          host: systemProxyHost,
-                          port: systemProxyPort,
-                        )
-                        ..onBadCertificate = (_) => true;
-                    }
-                  : Pref.badCertificateCallback
-                  ? (_, config) {
-                      config.onBadCertificate = (_) => true;
-                    }
-                  : null,
-            ),
-            fallbackAdapter: http11Adapter,
-          )
-        : http11Adapter;
+    if (!_enableHttp2) {
+      return http11Adapter;
+    }
+
+    return Http2Adapter(
+      ConnectionManager(
+        idleTimeout: const Duration(seconds: 15),
+        onClientCreate: enableSystemProxy
+            ? (_, config) {
+                config
+                  ..proxy = Uri(
+                    scheme: 'http',
+                    host: systemProxyHost,
+                    port: systemProxyPort,
+                  )
+                  ..onBadCertificate = (_) => true;
+              }
+            : Pref.badCertificateCallback
+            ? (_, config) {
+                config.onBadCertificate = (_) => true;
+              }
+            : null,
+      ),
+      fallbackAdapter: http11Adapter,
+    );
+  }
+
+  static void _resetAdaptersForNetworkChange() {
+    final newAdapter = _createHttpClientAdapter();
 
     final oldPrimaryAdapter = dio.httpClientAdapter;
     final oldFallbackAdapter = oldPrimaryAdapter is Http2Adapter
@@ -191,11 +201,50 @@ class Request {
     }
   }
 
+  static bool _sameConnectivity(
+    Set<ConnectivityResult> previous,
+    Set<ConnectivityResult> current,
+  ) => previous.length == current.length && previous.containsAll(current);
+
   static void _watchConnectivity() {
-    Connectivity().onConnectivityChanged.listen((_) {
-      try {
-        _resetAdaptersForNetworkChange();
-      } catch (_) {}
+    if (_watchingConnectivity) {
+      return;
+    }
+    _watchingConnectivity = true;
+
+    final connectivity = Connectivity();
+    connectivity
+        .checkConnectivity()
+        .then((results) {
+          _lastConnectivity = results.toSet();
+        })
+        .onError<Exception>((error, stackTrace) {
+          if (kDebugMode) {
+            debugPrint('Request: failed to get connectivity state: $error');
+          }
+        });
+
+    connectivity.onConnectivityChanged.listen((results) {
+      final current = results.toSet();
+      final previous = _lastConnectivity;
+      _lastConnectivity = current;
+      if (previous != null && _sameConnectivity(previous, current)) {
+        return;
+      }
+
+      _networkChangeDebounce?.cancel();
+      _networkChangeDebounce = Timer(const Duration(milliseconds: 500), () {
+        try {
+          _resetAdaptersForNetworkChange();
+        } on Exception catch (error, stackTrace) {
+          if (kDebugMode) {
+            debugPrint(
+              'Request: reset adapters after network change failed: '
+              '$error\n$stackTrace',
+            );
+          }
+        }
+      });
     });
   }
 
@@ -221,53 +270,7 @@ class Request {
       persistentConnection: true,
     );
 
-    final bool enableSystemProxy;
-    late final String systemProxyHost;
-    late final int? systemProxyPort;
-    if (Pref.enableSystemProxy) {
-      systemProxyHost = Pref.systemProxyHost;
-      systemProxyPort = int.tryParse(Pref.systemProxyPort);
-      enableSystemProxy = systemProxyPort != null && systemProxyHost.isNotEmpty;
-    } else {
-      enableSystemProxy = false;
-    }
-
-    final http11Adapter = IOHttpClientAdapter(
-      createHttpClient: enableSystemProxy
-          ? () => HttpClient()
-              ..idleTimeout = const Duration(seconds: 15)
-              ..autoUncompress = false
-              ..findProxy = ((_) => 'PROXY $systemProxyHost:$systemProxyPort')
-              ..badCertificateCallback = (cert, host, port) => true
-          : () => HttpClient()
-              ..idleTimeout = const Duration(seconds: 15)
-              ..autoUncompress = false, // Http2Adapter没有自动解压, 统一行为
-    );
-
-    dio = Dio(options)
-      ..httpClientAdapter = _enableHttp2
-          ? Http2Adapter(
-              ConnectionManager(
-                idleTimeout: const Duration(seconds: 15),
-                onClientCreate: enableSystemProxy
-                    ? (_, config) {
-                        config
-                          ..proxy = Uri(
-                            scheme: 'http',
-                            host: systemProxyHost,
-                            port: systemProxyPort,
-                          )
-                          ..onBadCertificate = (_) => true;
-                      }
-                    : Pref.badCertificateCallback
-                    ? (_, config) {
-                        config.onBadCertificate = (_) => true;
-                      }
-                    : null,
-              ),
-              fallbackAdapter: http11Adapter,
-            )
-          : http11Adapter;
+    dio = Dio(options)..httpClientAdapter = _createHttpClientAdapter();
 
     // 先于其他Interceptor
     if (Pref.retryCount != 0) {
@@ -293,7 +296,9 @@ class Request {
         return status != null && status >= 200 && status < 300;
       };
 
-    _watchConnectivity();
+    if (Platform.isIOS) {
+      _watchConnectivity();
+    }
   }
 
   /*

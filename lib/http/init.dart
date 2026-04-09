@@ -16,6 +16,7 @@ import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:archive/archive.dart';
 import 'package:brotli/brotli.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
 import 'package:dio_http2_adapter/dio_http2_adapter.dart';
@@ -115,6 +116,89 @@ class Request {
     return h11;
   }
 
+  static void _resetAdaptersForNetworkChange() {
+    final bool enableSystemProxy;
+    late final String systemProxyHost;
+    late final int? systemProxyPort;
+    if (Pref.enableSystemProxy) {
+      systemProxyHost = Pref.systemProxyHost;
+      systemProxyPort = int.tryParse(Pref.systemProxyPort);
+      enableSystemProxy = systemProxyPort != null && systemProxyHost.isNotEmpty;
+    } else {
+      enableSystemProxy = false;
+    }
+
+    final http11Adapter = IOHttpClientAdapter(
+      createHttpClient: enableSystemProxy
+          ? () => HttpClient()
+              ..idleTimeout = const Duration(seconds: 15)
+              ..autoUncompress = false
+              ..findProxy = ((_) => 'PROXY $systemProxyHost:$systemProxyPort')
+              ..badCertificateCallback = (cert, host, port) => true
+          : () => HttpClient()
+              ..idleTimeout = const Duration(seconds: 15)
+              ..autoUncompress = false, // Http2Adapter没有自动解压, 统一行为
+    );
+
+    final HttpClientAdapter newAdapter = _enableHttp2
+        ? Http2Adapter(
+            ConnectionManager(
+              idleTimeout: const Duration(seconds: 15),
+              onClientCreate: enableSystemProxy
+                  ? (_, config) {
+                      config
+                        ..proxy = Uri(
+                          scheme: 'http',
+                          host: systemProxyHost,
+                          port: systemProxyPort,
+                        )
+                        ..onBadCertificate = (_) => true;
+                    }
+                  : Pref.badCertificateCallback
+                  ? (_, config) {
+                      config.onBadCertificate = (_) => true;
+                    }
+                  : null,
+            ),
+            fallbackAdapter: http11Adapter,
+          )
+        : http11Adapter;
+
+    final oldPrimaryAdapter = dio.httpClientAdapter;
+    final oldFallbackAdapter = oldPrimaryAdapter is Http2Adapter
+        ? oldPrimaryAdapter.fallbackAdapter
+        : null;
+    final oldHttp11Adapter = _http11Dio?.httpClientAdapter;
+
+    dio.httpClientAdapter = newAdapter;
+
+    final h11 = _http11Dio;
+    if (h11 != null) {
+      h11.httpClientAdapter = _enableHttp2
+          ? (newAdapter as Http2Adapter).fallbackAdapter
+          : newAdapter;
+    }
+
+    oldPrimaryAdapter.close(force: true);
+    if (oldHttp11Adapter != null &&
+        !identical(oldHttp11Adapter, oldPrimaryAdapter)) {
+      oldHttp11Adapter.close(force: true);
+    }
+    if (oldFallbackAdapter != null &&
+        !identical(oldFallbackAdapter, oldPrimaryAdapter) &&
+        !identical(oldFallbackAdapter, oldHttp11Adapter)) {
+      oldFallbackAdapter.close(force: true);
+    }
+  }
+
+  static void _watchConnectivity() {
+    Connectivity().onConnectivityChanged.listen((_) {
+      try {
+        _resetAdaptersForNetworkChange();
+      } catch (_) {}
+    });
+  }
+
   /*
    * config it and create
    */
@@ -208,6 +292,8 @@ class Request {
       ..options.validateStatus = (int? status) {
         return status != null && status >= 200 && status < 300;
       };
+
+    _watchConnectivity();
   }
 
   /*

@@ -145,6 +145,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
   late FullScreenMode mode;
 
   late final RxBool showRestoreScaleBtn = false.obs;
+  final RxBool _isDraggingProgress = false.obs;
 
   GestureType? _gestureType;
 
@@ -976,7 +977,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       final dy = cumulativeDelta.dy.abs();
       if (dx > 3 * dy) {
         _gestureType = GestureType.horizontal;
-        _showControlsIfNeeded();
+        _isDraggingProgress.value = true;
       } else if (dy > 3 * dx) {
         if (!plPlayerController.enableSlideVolumeBrightness &&
             !plPlayerController.enableSlideFS) {
@@ -1127,6 +1128,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
   }
 
   void _onInteractionEnd(ScaleEndDetails details) {
+    _isDraggingProgress.value = false;
     if (plPlayerController.showSeekPreview) {
       plPlayerController.showPreview.value = false;
     }
@@ -1274,18 +1276,6 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     }
   }
 
-  void _showControlsIfNeeded() {
-    if (plPlayerController.isLive) return;
-    late final isFullScreen = this.isFullScreen;
-    final progressType = plPlayerController.progressType;
-    if (progressType == BtmProgressBehavior.alwaysHide ||
-        (isFullScreen &&
-            progressType == BtmProgressBehavior.onlyHideFullScreen) ||
-        (!isFullScreen &&
-            progressType == BtmProgressBehavior.onlyShowFullScreen)) {
-      plPlayerController.controls = true;
-    }
-  }
 
   void _onPointerPanZoomUpdate(PointerPanZoomUpdateEvent event) {
     if (plPlayerController.controlsLock.value) return;
@@ -1296,7 +1286,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       final dy = pan.dy.abs();
       if (dx > 3 * dy) {
         _gestureType = GestureType.horizontal;
-        _showControlsIfNeeded();
+        _isDraggingProgress.value = true;
       } else if (dy > 3 * dx) {
         _gestureType = GestureType.right;
       }
@@ -1350,6 +1340,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
   }
 
   void _onPointerPanZoomEnd(PointerPanZoomEndEvent event) {
+    _isDraggingProgress.value = false;
     _gestureType = null;
   }
 
@@ -1737,13 +1728,16 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
             child: Obx(
               () {
                 final showControls = plPlayerController.showControls.value;
-                final offstage = switch (plPlayerController.progressType) {
-                  BtmProgressBehavior.onlyShowFullScreen =>
-                    showControls || !isFullScreen,
-                  BtmProgressBehavior.onlyHideFullScreen =>
-                    showControls || isFullScreen,
-                  _ => showControls,
-                };
+                final isDragging = _isDraggingProgress.value;
+                final offstage = isDragging
+                    ? false
+                    : switch (plPlayerController.progressType) {
+                        BtmProgressBehavior.onlyShowFullScreen =>
+                          showControls || !isFullScreen,
+                        BtmProgressBehavior.onlyHideFullScreen =>
+                          showControls || isFullScreen,
+                        _ => showControls,
+                      };
                 return Offstage(
                   offstage: offstage,
                   child: Stack(

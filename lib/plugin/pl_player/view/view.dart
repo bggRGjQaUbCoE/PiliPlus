@@ -976,7 +976,6 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       final dy = cumulativeDelta.dy.abs();
       if (dx > 3 * dy) {
         _gestureType = GestureType.horizontal;
-        _showControlsIfNeeded();
       } else if (dy > 3 * dx) {
         if (!plPlayerController.enableSlideVolumeBrightness &&
             !plPlayerController.enableSlideFS) {
@@ -1296,7 +1295,6 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       final dy = pan.dy.abs();
       if (dx > 3 * dy) {
         _gestureType = GestureType.horizontal;
-        _showControlsIfNeeded();
       } else if (dy > 3 * dx) {
         _gestureType = GestureType.right;
       }

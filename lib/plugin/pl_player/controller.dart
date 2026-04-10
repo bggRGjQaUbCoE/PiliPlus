@@ -1667,6 +1667,7 @@ class PlPlayerController with BlockConfigMixin {
 
   late final Map<String, ui.Image?> previewCache = {};
   LoadingState<VideoShotData>? videoShot;
+  final RxBool isDraggingProgress = false.obs;
   late final RxBool showPreview = false.obs;
   late final showSeekPreview = Pref.showSeekPreview;
   late final previewIndex = RxnInt();

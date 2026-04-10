@@ -1729,7 +1729,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
               () {
                 final showControls = plPlayerController.showControls.value;
                 final isDragging = _isDraggingProgress.value;
-                final offstage = isDragging
+                final offstage = isDragging && !showControls
                     ? false
                     : switch (plPlayerController.progressType) {
                         BtmProgressBehavior.onlyShowFullScreen =>

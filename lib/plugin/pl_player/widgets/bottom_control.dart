@@ -65,8 +65,7 @@ class BottomControl extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(10, 0, 10, 7),
             child: Obx(
               () => Offstage(
-                offstage: !controller.showControls.value &&
-                    !controller.isDraggingProgress.value,
+                offstage: !controller.showControls.value,
                 child: Stack(
                   clipBehavior: Clip.none,
                   alignment: Alignment.bottomCenter,

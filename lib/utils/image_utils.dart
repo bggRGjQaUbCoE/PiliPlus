@@ -255,9 +255,9 @@ abstract final class ImageUtils {
     r'\.(jpg|jpeg|png|webp|gif|avif)$',
     caseSensitive: false,
   );
-  static String safeThumbnailUrl(String? src) {
+  static String safeThumbnailUrl(String? src, [String suffix = '.webp']) {
     if (src != null && _suffixRegex.hasMatch(src)) {
-      return thumbnailUrl(src);
+      return thumbnailUrl(src, 1, suffix);
     }
     return src.http2https;
   }
@@ -266,7 +266,11 @@ abstract final class ImageUtils {
     r'(@(\d+[a-z]_?)*)(\..*)?$',
     caseSensitive: false,
   );
-  static String thumbnailUrl(String? src, [int maxQuality = 1]) {
+  static String thumbnailUrl(
+    String? src, [
+    int maxQuality = 1,
+    String suffix = '.webp',
+  ]) {
     if (src != null && maxQuality != 100) {
       maxQuality = math.max(maxQuality, GlobalData().imgQuality);
       bool hasMatch = false;
@@ -274,7 +278,7 @@ abstract final class ImageUtils {
         _thumbRegex,
         onMatch: (match) {
           hasMatch = true;
-          String suffix = match.group(3) ?? '.webp';
+          suffix = match.group(3) ?? suffix;
           return '${match.group(1)}_${maxQuality}q$suffix';
         },
         onNonMatch: (String str) {
@@ -282,7 +286,7 @@ abstract final class ImageUtils {
         },
       );
       if (!hasMatch) {
-        src += '@${maxQuality}q.webp';
+        src += '@${maxQuality}q$suffix';
       }
     }
     return src.http2https;

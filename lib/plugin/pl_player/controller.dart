@@ -488,20 +488,21 @@ class PlPlayerController with BlockConfigMixin {
     return _instance?.playerStatus.value;
   }
 
-  static Future<void> pauseIfExists({
+  static Future<void>? pauseIfExists({
     bool notify = true,
     bool isInterrupt = false,
-  }) async {
+  }) {
     if (_instance?.playerStatus.isPlaying ?? false) {
-      await _instance?.pause(notify: notify, isInterrupt: isInterrupt);
+      return _instance?.pause(notify: notify, isInterrupt: isInterrupt);
     }
+    return null;
   }
 
-  static Future<void> seekToIfExists(
+  static Future<void>? seekToIfExists(
     Duration position, {
     bool isSeek = true,
-  }) async {
-    await _instance?.seekTo(position, isSeek: isSeek);
+  }) {
+    return _instance?.seekTo(position, isSeek: isSeek);
   }
 
   static double? getVolumeIfExists() {

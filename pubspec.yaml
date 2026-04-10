@@ -120,6 +120,7 @@ dependencies:
 
   # 媒体通知
   audio_service: ^0.18.15
+  audio_service_win: ^0.0.3
   audio_session: ^0.2.2
 
   # 音量、亮度、屏幕控制

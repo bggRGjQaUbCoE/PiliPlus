@@ -1,4 +1,4 @@
-import 'dart:io' show File;
+import 'dart:io' show File, Platform;
 
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/grpc/bilibili/app/listener/v1.pb.dart' show DetailItem;
@@ -32,6 +32,7 @@ Future<VideoPlayerServiceHandler> initAudioService() {
   );
 }
 
+// TODO: windows: skipToPrevious, skipToNext
 class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
   static final List<MediaItem> _item = [];
   bool enableBackgroundPlay = Pref.enableBackgroundPlay;
@@ -50,7 +51,9 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
 
   @override
   Future<void> pause() {
-    return onPause?.call() ?? PlPlayerController.pauseIfExists();
+    return onPause?.call() ??
+        PlPlayerController.pauseIfExists() ??
+        Future.syncValue(null);
     // player.pause();
   }
 
@@ -61,8 +64,9 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
         updatePosition: position,
       ),
     );
-    return (onSeek?.call(position) ??
-        PlPlayerController.seekToIfExists(position, isSeek: false));
+    return onSeek?.call(position) ??
+        PlPlayerController.seekToIfExists(position, isSeek: false) ??
+        Future.syncValue(null);
     // await player.seekTo(position);
   }
 
@@ -144,7 +148,9 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
     if (!PlPlayerController.instanceExists()) return;
     if (data == null) return;
 
-    Uri getUri(String? cover) => Uri.parse(ImageUtils.safeThumbnailUrl(cover));
+    Uri getUri(String? cover) => Uri.parse(
+      ImageUtils.safeThumbnailUrl(cover, Platform.isWindows ? '.png' : '.webp'),
+    );
 
     late final id = '$cid$herotag';
     final MediaItem mediaItem;

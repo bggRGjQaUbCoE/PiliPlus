@@ -37,9 +37,20 @@ abstract final class Update {
       final data = res.data[0];
       final int latest =
           DateTime.parse(data['created_at']).millisecondsSinceEpoch ~/ 1000;
+
+      // 获取被跳过的版本时间戳
+      final int? skippedVersionTime = GStorage.setting.get(
+        SettingBoxKey.skippedUpdateVersion,
+      );
+
       if (BuildConfig.buildTime >= latest) {
         if (!isAuto) {
           SmartDialog.showToast('已是最新版本');
+        }
+      } else if (skippedVersionTime == latest) {
+        // 当前版本已被跳过，不弹窗
+        if (!isAuto) {
+          SmartDialog.showToast('当前版本已选择跳过');
         }
       } else {
         SmartDialog.show(
@@ -83,11 +94,15 @@ abstract final class Update {
                 if (isAuto)
                   TextButton(
                     onPressed: () {
+                      // 保存当前版本为跳过的版本
+                      GStorage.setting.put(
+                        SettingBoxKey.skippedUpdateVersion,
+                        latest,
+                      );
                       SmartDialog.dismiss();
-                      GStorage.setting.put(SettingBoxKey.autoUpdate, false);
                     },
                     child: Text(
-                      '不再提醒',
+                      '跳过此版本',
                       style: TextStyle(
                         color: theme.colorScheme.outline,
                       ),

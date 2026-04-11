@@ -1719,7 +1719,8 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
         ),
 
         /// 进度条 live模式下禁用
-        if (!isLive)
+        if (!isLive &&
+            plPlayerController.progressType != BtmProgressBehavior.alwaysHide)
           Positioned(
             bottom: -2.2,
             left: 0,
@@ -1731,7 +1732,6 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                 final offstage = isDragging && !showControls
                     ? false
                     : switch (plPlayerController.progressType) {
-                        BtmProgressBehavior.alwaysHide => true,
                         BtmProgressBehavior.onlyShowFullScreen =>
                           showControls || !isFullScreen,
                         BtmProgressBehavior.onlyHideFullScreen =>

@@ -16,10 +16,11 @@ import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:archive/archive.dart';
 import 'package:brotli/brotli.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
 import 'package:dio_http2_adapter/dio_http2_adapter.dart';
-import 'package:flutter/foundation.dart' show kDebugMode;
+import 'package:flutter/foundation.dart' show debugPrint, kDebugMode;
 
 class Request {
   static const _gzipDecoder = GZipDecoder();
@@ -30,6 +31,10 @@ class Request {
   static final _enableHttp2 = Pref.enableHttp2;
   static late final Dio dio;
   static Dio? _http11Dio;
+  static bool _watchingConnectivity = false;
+  static Set<ConnectivityResult>? _lastConnectivity;
+  static Timer? _networkChangeDebounce;
+
   static Dio get http11Dio =>
       _http11Dio ??= _enableHttp2 ? _cloneHttp11Dio() : dio;
   factory Request() => _instance;
@@ -115,28 +120,7 @@ class Request {
     return h11;
   }
 
-  /*
-   * config it and create
-   */
-  Request._internal() {
-    //BaseOptions、Options、RequestOptions 都可以配置参数，优先级别依次递增，且可以根据优先级别覆盖参数
-    BaseOptions options = BaseOptions(
-      //请求基地址,可以包含子路径
-      baseUrl: HttpString.apiBaseUrl,
-      //连接服务器超时时间，单位是毫秒.
-      connectTimeout: const Duration(milliseconds: 10000),
-      //响应流上前后两次接受到数据的间隔，单位为毫秒。
-      receiveTimeout: const Duration(milliseconds: 10000),
-      //Http请求头.
-      headers: {
-        'user-agent': 'Dart/3.6 (dart:io)', // Http2Adapter不会自动添加标头
-        if (!_enableHttp2) 'connection': 'keep-alive',
-        'accept-encoding': 'br,gzip',
-      },
-      responseDecoder: _responseDecoder, // Http2Adapter没有自动解压
-      persistentConnection: true,
-    );
-
+  static HttpClientAdapter _createHttpClientAdapter() {
     final bool enableSystemProxy;
     late final String systemProxyHost;
     late final int? systemProxyPort;
@@ -160,30 +144,133 @@ class Request {
               ..autoUncompress = false, // Http2Adapter没有自动解压, 统一行为
     );
 
-    dio = Dio(options)
-      ..httpClientAdapter = _enableHttp2
-          ? Http2Adapter(
-              ConnectionManager(
-                idleTimeout: const Duration(seconds: 15),
-                onClientCreate: enableSystemProxy
-                    ? (_, config) {
-                        config
-                          ..proxy = Uri(
-                            scheme: 'http',
-                            host: systemProxyHost,
-                            port: systemProxyPort,
-                          )
-                          ..onBadCertificate = (_) => true;
-                      }
-                    : Pref.badCertificateCallback
-                    ? (_, config) {
-                        config.onBadCertificate = (_) => true;
-                      }
-                    : null,
-              ),
-              fallbackAdapter: http11Adapter,
-            )
-          : http11Adapter;
+    if (!_enableHttp2) {
+      return http11Adapter;
+    }
+
+    return Http2Adapter(
+      ConnectionManager(
+        idleTimeout: const Duration(seconds: 15),
+        onClientCreate: enableSystemProxy
+            ? (_, config) {
+                config
+                  ..proxy = Uri(
+                    scheme: 'http',
+                    host: systemProxyHost,
+                    port: systemProxyPort,
+                  )
+                  ..onBadCertificate = (_) => true;
+              }
+            : Pref.badCertificateCallback
+            ? (_, config) {
+                config.onBadCertificate = (_) => true;
+              }
+            : null,
+      ),
+      fallbackAdapter: http11Adapter,
+    );
+  }
+
+  static void _resetAdaptersForNetworkChange() {
+    final newAdapter = _createHttpClientAdapter();
+
+    final oldPrimaryAdapter = dio.httpClientAdapter;
+    final oldFallbackAdapter = oldPrimaryAdapter is Http2Adapter
+        ? oldPrimaryAdapter.fallbackAdapter
+        : null;
+    final oldHttp11Adapter = _http11Dio?.httpClientAdapter;
+
+    dio.httpClientAdapter = newAdapter;
+
+    final h11 = _http11Dio;
+    if (h11 != null) {
+      h11.httpClientAdapter = _enableHttp2
+          ? (newAdapter as Http2Adapter).fallbackAdapter
+          : newAdapter;
+    }
+
+    oldPrimaryAdapter.close(force: true);
+    if (oldHttp11Adapter != null &&
+        !identical(oldHttp11Adapter, oldPrimaryAdapter)) {
+      oldHttp11Adapter.close(force: true);
+    }
+    if (oldFallbackAdapter != null &&
+        !identical(oldFallbackAdapter, oldPrimaryAdapter) &&
+        !identical(oldFallbackAdapter, oldHttp11Adapter)) {
+      oldFallbackAdapter.close(force: true);
+    }
+  }
+
+  static bool _sameConnectivity(
+    Set<ConnectivityResult> previous,
+    Set<ConnectivityResult> current,
+  ) => previous.length == current.length && previous.containsAll(current);
+
+  static void _watchConnectivity() {
+    if (_watchingConnectivity) {
+      return;
+    }
+    _watchingConnectivity = true;
+
+    final connectivity = Connectivity();
+    connectivity
+        .checkConnectivity()
+        .then((results) {
+          _lastConnectivity = results.toSet();
+        })
+        .onError<Exception>((error, stackTrace) {
+          if (kDebugMode) {
+            debugPrint('Request: failed to get connectivity state: $error');
+          }
+        });
+
+    connectivity.onConnectivityChanged.listen((results) {
+      final current = results.toSet();
+      final previous = _lastConnectivity;
+      _lastConnectivity = current;
+      if (previous != null && _sameConnectivity(previous, current)) {
+        return;
+      }
+
+      _networkChangeDebounce?.cancel();
+      _networkChangeDebounce = Timer(const Duration(milliseconds: 500), () {
+        try {
+          _resetAdaptersForNetworkChange();
+        } on Exception catch (error, stackTrace) {
+          if (kDebugMode) {
+            debugPrint(
+              'Request: reset adapters after network change failed: '
+              '$error\n$stackTrace',
+            );
+          }
+        }
+      });
+    });
+  }
+
+  /*
+   * config it and create
+   */
+  Request._internal() {
+    //BaseOptions、Options、RequestOptions 都可以配置参数，优先级别依次递增，且可以根据优先级别覆盖参数
+    BaseOptions options = BaseOptions(
+      //请求基地址,可以包含子路径
+      baseUrl: HttpString.apiBaseUrl,
+      //连接服务器超时时间，单位是毫秒.
+      connectTimeout: const Duration(milliseconds: 10000),
+      //响应流上前后两次接受到数据的间隔，单位为毫秒。
+      receiveTimeout: const Duration(milliseconds: 10000),
+      //Http请求头.
+      headers: {
+        'user-agent': 'Dart/3.6 (dart:io)', // Http2Adapter不会自动添加标头
+        if (!_enableHttp2) 'connection': 'keep-alive',
+        'accept-encoding': 'br,gzip',
+      },
+      responseDecoder: _responseDecoder, // Http2Adapter没有自动解压
+      persistentConnection: true,
+    );
+
+    dio = Dio(options)..httpClientAdapter = _createHttpClientAdapter();
 
     // 先于其他Interceptor
     if (Pref.retryCount != 0) {
@@ -208,6 +295,10 @@ class Request {
       ..options.validateStatus = (int? status) {
         return status != null && status >= 200 && status < 300;
       };
+
+    if (Platform.isIOS) {
+      _watchConnectivity();
+    }
   }
 
   /*

@@ -46,9 +46,9 @@ static void my_application_activate(GApplication *application) {
   // if future cases occur).
 
   const gboolean use_header_bar = [window]() -> gboolean {
-    if (g_file_test(
-        g_build_filename(g_get_user_data_dir(), "com.example.piliplus", "use_ssd", NULL),
-        G_FILE_TEST_EXISTS))
+    if (g_file_test(g_build_filename(g_get_user_data_dir(),
+                                     "com.example.piliplus", "use_ssd", NULL),
+                    G_FILE_TEST_EXISTS))
       return FALSE;
 
 #ifdef GDK_WINDOWING_X11
@@ -85,8 +85,16 @@ static void my_application_activate(GApplication *application) {
   // for transparent.
   gdk_rgba_parse(&background_color, "#000000");
   fl_view_set_background_color(view, &background_color);
+  gtk_widget_set_hexpand(GTK_WIDGET(view), TRUE);
+  gtk_widget_set_vexpand(GTK_WIDGET(view), TRUE);
   gtk_widget_show(GTK_WIDGET(view));
-  gtk_container_add(GTK_CONTAINER(window), GTK_WIDGET(view));
+
+  GtkWidget *overlay = gtk_overlay_new();
+  gtk_widget_set_hexpand(overlay, TRUE);
+  gtk_widget_set_vexpand(overlay, TRUE);
+  gtk_widget_show(overlay);
+  gtk_container_add(GTK_CONTAINER(overlay), GTK_WIDGET(view));
+  gtk_container_add(GTK_CONTAINER(window), overlay);
 
   // Show the window when Flutter renders.
   // Requires the view to be realized so we can start rendering.

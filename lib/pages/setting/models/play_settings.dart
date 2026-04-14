@@ -7,6 +7,7 @@ import 'package:PiliPlus/pages/main/controller.dart';
 import 'package:PiliPlus/pages/setting/models/model.dart';
 import 'package:PiliPlus/pages/setting/widgets/select_dialog.dart';
 import 'package:PiliPlus/plugin/pl_player/models/bottom_progress_behavior.dart';
+import 'package:PiliPlus/plugin/pl_player/models/double_tap_seek_layout.dart';
 import 'package:PiliPlus/plugin/pl_player/models/fullscreen_mode.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_repeat.dart';
 import 'package:PiliPlus/services/service_locator.dart';
@@ -72,6 +73,19 @@ List<SettingsModel> get playSettings => [
     leading: Icon(Icons.touch_app_outlined),
     setKey: SettingBoxKey.enableQuickDouble,
     defaultVal: true,
+  ),
+  NormalModel(
+    title: '双击区域调整',
+    leading: const Icon(Icons.crop_16_9_outlined),
+    getSubtitle: () {
+      final layout = DoubleTapSeekLayout.normalize(
+        backwardPercent: Pref.doubleTapBackwardZone,
+        forwardPercent: Pref.doubleTapForwardZone,
+      );
+      return '左 ${layout.backwardPercent}% / 中 ${layout.centerPercent}% / 右 ${layout.forwardPercent}%';
+    },
+    onTap: (_, setState) =>
+        Get.toNamed('/doubleTapSeekZoneSetting')?.then((_) => setState()),
   ),
   getVideoFilterSelectModel(
     title: '左侧双击快退时长',

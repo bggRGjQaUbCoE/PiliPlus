@@ -129,6 +129,8 @@ abstract final class SettingBoxKey {
       fastForBackwardDuration = 'fastForBackwardDuration',
       doubleTapBackwardDuration = 'doubleTapBackwardDuration',
       doubleTapForwardDuration = 'doubleTapForwardDuration',
+      doubleTapBackwardZone = 'doubleTapBackwardZone',
+      doubleTapForwardZone = 'doubleTapForwardZone',
       enableTwoFingerTapPause = 'enableTwoFingerTapPause',
       recordSearchHistory = 'recordSearchHistory',
       showPgcTimeline = 'showPgcTimeline',

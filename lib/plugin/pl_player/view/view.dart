@@ -39,7 +39,7 @@ import 'package:PiliPlus/pages/video/widgets/header_control.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/models/bottom_control_type.dart';
 import 'package:PiliPlus/plugin/pl_player/models/data_status.dart';
-import 'package:PiliPlus/plugin/pl_player/models/double_tap_type.dart';
+import 'package:PiliPlus/plugin/pl_player/models/double_tap_seek_layout.dart';
 import 'package:PiliPlus/plugin/pl_player/models/fullscreen_mode.dart';
 import 'package:PiliPlus/plugin/pl_player/models/gesture_type.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
@@ -165,6 +165,10 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
 
   int? tmpSubtitlePaddingB;
   StreamSubscription? _controlsListener;
+
+  DoubleTapSeekLayout get _doubleTapSeekLayout =>
+      plPlayerController.doubleTapSeekLayout;
+
   void _onControlChanged(bool val) {
     final visible = val && !plPlayerController.controlsLock.value;
 
@@ -1153,16 +1157,10 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     if (plPlayerController.isLive || plPlayerController.controlsLock.value) {
       return;
     }
-    final double tapPosition = details.localPosition.dx;
-    final double sectionWidth = maxWidth / 4;
-    DoubleTapType type;
-    if (tapPosition < sectionWidth) {
-      type = DoubleTapType.left;
-    } else if (tapPosition < sectionWidth * 3) {
-      type = DoubleTapType.center;
-    } else {
-      type = DoubleTapType.right;
-    }
+    final type = _doubleTapSeekLayout.resolveType(
+      tapPosition: details.localPosition.dx,
+      width: maxWidth,
+    );
     plPlayerController.doubleTapFuc(type);
   }
 
@@ -2011,48 +2009,56 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                 plPlayerController.mountSeekBackwardButton.value;
             final mountSeekForwardButton =
                 plPlayerController.mountSeekForwardButton.value;
+            final seekLayout = _doubleTapSeekLayout;
             return mountSeekBackwardButton || mountSeekForwardButton
                 ? Positioned.fill(
-                    child: Row(
+                    child: Stack(
                       children: [
                         if (mountSeekBackwardButton)
-                          Expanded(
-                            child: TweenAnimationBuilder<double>(
-                              tween: Tween<double>(begin: 0.0, end: 1.0),
-                              duration: const Duration(milliseconds: 500),
-                              builder: (context, value, child) => Opacity(
-                                opacity: value,
-                                child: child,
-                              ),
-                              child: BackwardSeekIndicator(
-                                duration:
-                                    plPlayerController.fastBackwardDuration,
-                                onSubmitted: (Duration value) {
-                                  plPlayerController
-                                    ..mountSeekBackwardButton.value = false
-                                    ..onBackward(value);
-                                },
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: FractionallySizedBox(
+                              widthFactor: seekLayout.backwardFraction,
+                              heightFactor: 1,
+                              alignment: Alignment.centerLeft,
+                              child: TweenAnimationBuilder<double>(
+                                tween: Tween<double>(begin: 0.0, end: 1.0),
+                                duration: const Duration(milliseconds: 500),
+                                builder: (context, value, child) =>
+                                    Opacity(opacity: value, child: child),
+                                child: BackwardSeekIndicator(
+                                  duration:
+                                      plPlayerController.fastBackwardDuration,
+                                  onSubmitted: (Duration value) {
+                                    plPlayerController
+                                      ..mountSeekBackwardButton.value = false
+                                      ..onBackward(value);
+                                  },
+                                ),
                               ),
                             ),
                           ),
-                        const Spacer(flex: 2),
                         if (mountSeekForwardButton)
-                          Expanded(
-                            child: TweenAnimationBuilder<double>(
-                              tween: Tween<double>(begin: 0.0, end: 1.0),
-                              duration: const Duration(milliseconds: 500),
-                              builder: (context, value, child) => Opacity(
-                                opacity: value,
-                                child: child,
-                              ),
-                              child: ForwardSeekIndicator(
-                                duration:
-                                    plPlayerController.fastForwardDuration,
-                                onSubmitted: (Duration value) {
-                                  plPlayerController
-                                    ..mountSeekForwardButton.value = false
-                                    ..onForward(value);
-                                },
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: FractionallySizedBox(
+                              widthFactor: seekLayout.forwardFraction,
+                              heightFactor: 1,
+                              alignment: Alignment.centerRight,
+                              child: TweenAnimationBuilder<double>(
+                                tween: Tween<double>(begin: 0.0, end: 1.0),
+                                duration: const Duration(milliseconds: 500),
+                                builder: (context, value, child) =>
+                                    Opacity(opacity: value, child: child),
+                                child: ForwardSeekIndicator(
+                                  duration:
+                                      plPlayerController.fastForwardDuration,
+                                  onSubmitted: (Duration value) {
+                                    plPlayerController
+                                      ..mountSeekForwardButton.value = false
+                                      ..onForward(value);
+                                  },
+                                ),
                               ),
                             ),
                           ),

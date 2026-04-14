@@ -20,11 +20,16 @@ class _DoubleTapSeekZoneSettingPageState
 
   late double _backwardPercent;
   late double _forwardPercent;
+  final ValueNotifier<int> _dragRefresh = ValueNotifier<int>(0);
 
   DoubleTapSeekLayout get _layout => DoubleTapSeekLayout.normalize(
     backwardPercent: _backwardPercent.round(),
     forwardPercent: _forwardPercent.round(),
   );
+  double get _centerPercent => 100 - _backwardPercent - _forwardPercent;
+  double get _backwardFraction => _backwardPercent / 100;
+  double get _centerFraction => _centerPercent / 100;
+  double get _forwardFraction => _forwardPercent / 100;
 
   @override
   void initState() {
@@ -38,23 +43,27 @@ class _DoubleTapSeekZoneSettingPageState
   }
 
   void _updateBackward(double nextValue) {
-    final next = DoubleTapSeekLayout.clampBackwardPercent(
-      nextValue.round(),
-      forwardPercent: _forwardPercent.round(),
+    final next = DoubleTapSeekLayout.clampBackwardPercentDouble(
+      nextValue,
+      forwardPercent: _forwardPercent,
     );
-    setState(() {
-      _backwardPercent = next.toDouble();
-    });
+    if ((_backwardPercent - next).abs() < 0.001) {
+      return;
+    }
+    _backwardPercent = next;
+    _dragRefresh.value++;
   }
 
   void _updateForward(double nextValue) {
-    final next = DoubleTapSeekLayout.clampForwardPercent(
-      nextValue.round(),
-      backwardPercent: _backwardPercent.round(),
+    final next = DoubleTapSeekLayout.clampForwardPercentDouble(
+      nextValue,
+      backwardPercent: _backwardPercent,
     );
-    setState(() {
-      _forwardPercent = next.toDouble();
-    });
+    if ((_forwardPercent - next).abs() < 0.001) {
+      return;
+    }
+    _forwardPercent = next;
+    _dragRefresh.value++;
   }
 
   void _reset() {
@@ -62,6 +71,7 @@ class _DoubleTapSeekZoneSettingPageState
       _backwardPercent = DoubleTapSeekLayout.defaultBackwardPercent.toDouble();
       _forwardPercent = DoubleTapSeekLayout.defaultForwardPercent.toDouble();
     });
+    _dragRefresh.value++;
   }
 
   void _save() {
@@ -75,7 +85,6 @@ class _DoubleTapSeekZoneSettingPageState
 
   @override
   Widget build(BuildContext context) {
-    final layout = _layout;
     return Scaffold(
       backgroundColor: Colors.black,
       resizeToAvoidBottomInset: false,
@@ -87,14 +96,19 @@ class _DoubleTapSeekZoneSettingPageState
                 const SizedBox(height: 56),
                 Expanded(
                   child: LayoutBuilder(
-                    builder: (context, constraints) => _buildPreview(
-                      constraints.maxWidth,
-                      constraints.maxHeight,
-                      layout,
+                    builder: (context, constraints) => ValueListenableBuilder(
+                      valueListenable: _dragRefresh,
+                      builder: (_, _, _) => _buildPreview(
+                        constraints.maxWidth,
+                        constraints.maxHeight,
+                      ),
                     ),
                   ),
                 ),
-                _buildBottomPanel(context, layout),
+                ValueListenableBuilder(
+                  valueListenable: _dragRefresh,
+                  builder: (_, _, _) => _buildBottomPanel(context, _layout),
+                ),
               ],
             ),
           ),
@@ -134,11 +148,11 @@ class _DoubleTapSeekZoneSettingPageState
   Widget _buildPreview(
     double width,
     double height,
-    DoubleTapSeekLayout layout,
   ) {
-    final backwardWidth = width * layout.backwardFraction;
-    final centerWidth = width * layout.centerFraction;
-    final forwardWidth = width * layout.forwardFraction;
+    final layout = _layout;
+    final backwardWidth = width * _backwardFraction;
+    final centerWidth = width * _centerFraction;
+    final forwardWidth = width * _forwardFraction;
     final backwardHandleLeft = backwardWidth - _handleWidth / 2;
     final forwardHandleLeft = backwardWidth + centerWidth - _handleWidth / 2;
     return Stack(
@@ -252,7 +266,7 @@ class _DoubleTapSeekZoneSettingPageState
           ),
           const SizedBox(height: 8),
           const Text(
-            '左侧分隔线控制“快退区”宽度，右侧分隔线控制“快进区”宽度；中间区域自动保留为播放/暂停。',
+            '左侧分隔线控制“快退区”宽度，右侧分隔线控制“快进区”宽度；左右侧支持 1%~40%，中间区域自动保留为播放/暂停。',
             style: TextStyle(color: Colors.white70, height: 1.45),
           ),
           const SizedBox(height: 12),
@@ -268,6 +282,12 @@ class _DoubleTapSeekZoneSettingPageState
         ],
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _dragRefresh.dispose();
+    super.dispose();
   }
 }
 

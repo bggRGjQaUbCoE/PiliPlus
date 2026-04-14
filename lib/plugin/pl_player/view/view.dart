@@ -40,6 +40,7 @@ import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/models/bottom_control_type.dart';
 import 'package:PiliPlus/plugin/pl_player/models/data_status.dart';
 import 'package:PiliPlus/plugin/pl_player/models/double_tap_seek_layout.dart';
+import 'package:PiliPlus/plugin/pl_player/models/double_tap_type.dart';
 import 'package:PiliPlus/plugin/pl_player/models/fullscreen_mode.dart';
 import 'package:PiliPlus/plugin/pl_player/models/gesture_type.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
@@ -97,6 +98,7 @@ class PLVideoPlayer extends StatefulWidget {
     this.danmuWidget,
     this.showEpisodes,
     this.showViewPoints,
+    this.isPipMode = false,
     this.fill = Colors.black,
     this.alignment = Alignment.center,
     super.key,
@@ -120,6 +122,7 @@ class PLVideoPlayer extends StatefulWidget {
   ])?
   showEpisodes;
   final VoidCallback? showViewPoints;
+  final bool isPipMode;
   final Color fill;
   final Alignment alignment;
 
@@ -149,6 +152,12 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
   GestureType? _gestureType;
   final TwoFingerTapDetector _twoFingerTapDetector = TwoFingerTapDetector();
   DateTime? _ignoreTapUpBefore;
+  final GlobalKey<BackwardSeekIndicatorState> _backwardSeekIndicatorKey =
+      GlobalKey<BackwardSeekIndicatorState>();
+  final GlobalKey<ForwardSeekIndicatorState> _forwardSeekIndicatorKey =
+      GlobalKey<ForwardSeekIndicatorState>();
+  double _gestureWidth = 0;
+  double _gestureHeight = 0;
 
   Offset initialFocalPoint = Offset.zero;
 
@@ -168,6 +177,10 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
 
   DoubleTapSeekLayout get _doubleTapSeekLayout =>
       plPlayerController.doubleTapSeekLayout;
+  double get _activeGestureWidth =>
+      _gestureWidth > 0 ? _gestureWidth : maxWidth;
+  double get _activeGestureHeight =>
+      _gestureHeight > 0 ? _gestureHeight : maxHeight;
 
   void _onControlChanged(bool val) {
     final visible = val && !plPlayerController.controlsLock.value;
@@ -949,7 +962,9 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     final dx = localFocalPoint.dx;
     final dy = localFocalPoint.dy;
     if (dx < 40 || dy < 40) return;
-    if (dx > maxWidth - 40 || dy > maxHeight - 40) return;
+    if (dx > _activeGestureWidth - 40 || dy > _activeGestureHeight - 40) {
+      return;
+    }
     if (details.pointerCount > 1) {
       interacting = true;
     }
@@ -991,7 +1006,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
         // _gestureType = 'vertical';
 
         final double tapPosition = details.localFocalPoint.dx;
-        final double sectionWidth = maxWidth / 3;
+        final double sectionWidth = _activeGestureWidth / 3;
         if (tapPosition < sectionWidth) {
           if (PlatformUtils.isDesktop ||
               !plPlayerController.enableSlideVolumeBrightness) {
@@ -1027,14 +1042,16 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
           plPlayerController.sliderPosition.inMilliseconds;
       final int newPos =
           (curSliderPosition +
-                  (plPlayerController.sliderScale * delta.dx / maxWidth)
+                  (plPlayerController.sliderScale *
+                          delta.dx /
+                          _activeGestureWidth)
                       .round())
               .clamp(0, plPlayerController.duration.value.inMilliseconds);
       final Duration result = Duration(milliseconds: newPos);
-      final height = maxHeight * 0.125;
+      final height = _activeGestureHeight * 0.125;
       if (details.localFocalPoint.dy <= height &&
-          (details.localFocalPoint.dx >= maxWidth * 0.875 ||
-              details.localFocalPoint.dx <= maxWidth * 0.125)) {
+          (details.localFocalPoint.dx >= _activeGestureWidth * 0.875 ||
+              details.localFocalPoint.dx <= _activeGestureWidth * 0.125)) {
         plPlayerController.cancelSeek = true;
         plPlayerController.showPreview.value = false;
         if (plPlayerController.hasToast != true) {
@@ -1083,7 +1100,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       }
     } else if (_gestureType == GestureType.left) {
       // 左边区域 👈
-      final double level = maxHeight * 3;
+      final double level = _activeGestureHeight * 3;
       final double brightness = _brightnessValue.value - delta.dy / level;
       final double result = brightness.clamp(0.0, 1.0);
       setBrightness(result);
@@ -1115,19 +1132,15 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       }
     } else if (_gestureType == GestureType.right) {
       // 右边区域
-      final double level = maxHeight * 0.5;
-      EasyThrottle.throttle(
-        'setVolume',
-        const Duration(milliseconds: 20),
-        () {
-          final double volume = clampDouble(
-            plPlayerController.volume.value - delta.dy / level,
-            0.0,
-            PlPlayerController.maxVolume,
-          );
-          plPlayerController.setVolume(volume);
-        },
-      );
+      final double level = _activeGestureHeight * 0.5;
+      EasyThrottle.throttle('setVolume', const Duration(milliseconds: 20), () {
+        final double volume = clampDouble(
+          plPlayerController.volume.value - delta.dy / level,
+          0.0,
+          PlPlayerController.maxVolume,
+        );
+        plPlayerController.setVolume(volume);
+      });
     }
   }
 
@@ -1159,8 +1172,18 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     }
     final type = _doubleTapSeekLayout.resolveType(
       tapPosition: details.localPosition.dx,
-      width: maxWidth,
+      width: _activeGestureWidth,
     );
+    if (type == DoubleTapType.left &&
+        plPlayerController.mountSeekBackwardButton.value) {
+      _backwardSeekIndicatorKey.currentState?.increment();
+      return;
+    }
+    if (type == DoubleTapType.right &&
+        plPlayerController.mountSeekForwardButton.value) {
+      _forwardSeekIndicatorKey.currentState?.increment();
+      return;
+    }
     plPlayerController.doubleTapFuc(type);
   }
 
@@ -1349,7 +1372,9 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
           plPlayerController.sliderPosition.inMilliseconds;
       final int newPos =
           (curSliderPosition +
-                  (plPlayerController.sliderScale * delta.dx / maxWidth)
+                  (plPlayerController.sliderScale *
+                          delta.dx /
+                          _activeGestureWidth)
                       .round())
               .clamp(0, plPlayerController.duration.value.inMilliseconds);
       final Duration result = Duration(milliseconds: newPos);
@@ -1371,19 +1396,15 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
         return;
       }
 
-      final double level = maxHeight * 0.5;
-      EasyThrottle.throttle(
-        'setVolume',
-        const Duration(milliseconds: 20),
-        () {
-          final double volume = clampDouble(
-            plPlayerController.volume.value - event.localPanDelta.dy / level,
-            0.0,
-            PlPlayerController.maxVolume,
-          );
-          plPlayerController.setVolume(volume);
-        },
-      );
+      final double level = _activeGestureHeight * 0.5;
+      EasyThrottle.throttle('setVolume', const Duration(milliseconds: 20), () {
+        final double volume = clampDouble(
+          plPlayerController.volume.value - event.localPanDelta.dy / level,
+          0.0,
+          PlPlayerController.maxVolume,
+        );
+        plPlayerController.setVolume(volume);
+      });
     }
   }
 
@@ -2027,6 +2048,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                                 builder: (context, value, child) =>
                                     Opacity(opacity: value, child: child),
                                 child: BackwardSeekIndicator(
+                                  key: _backwardSeekIndicatorKey,
                                   duration:
                                       plPlayerController.fastBackwardDuration,
                                   onSubmitted: (Duration value) {
@@ -2051,6 +2073,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                                 builder: (context, value, child) =>
                                     Opacity(opacity: value, child: child),
                                 child: ForwardSeekIndicator(
+                                  key: _forwardSeekIndicatorKey,
                                   duration:
                                       plPlayerController.fastForwardDuration,
                                   onSubmitted: (Duration value) {
@@ -2087,63 +2110,91 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
   }
 
   Widget get _videoWidget {
-    return Container(
-      clipBehavior: Clip.none,
-      width: maxWidth,
-      height: maxHeight,
-      color: widget.fill,
-      child: Obx(
-        () => MouseInteractiveViewer(
-          scaleEnabled: !plPlayerController.controlsLock.value,
-          pointerSignalFallback: _onPointerSignal,
-          onPointerPanZoomUpdate: _onPointerPanZoomUpdate,
-          onPointerPanZoomEnd: _onPointerPanZoomEnd,
-          onPointerDown: _onPointerDown,
-          onPointerMove: _onPointerMove,
-          onPointerUp: _onPointerUp,
-          onPointerCancel: _onPointerCancel,
-          onInteractionStart: _onInteractionStart,
-          onInteractionUpdate: _onInteractionUpdate,
-          onInteractionEnd: _onInteractionEnd,
-          panEnabled: false,
-          minScale: plPlayerController.enableShrinkVideoSize ? 0.75 : 1,
-          maxScale: 2.0,
-          boundaryMargin: plPlayerController.enableShrinkVideoSize
-              ? const EdgeInsets.all(double.infinity)
-              : EdgeInsets.zero,
-          panAxis: PanAxis.aligned,
-          transformationController: transformationController,
-          onTranslate: () {
-            final storage = transformationController.value.storage;
-            showRestoreScaleBtn.value =
-                storage[12].abs() > 2.0 ||
-                storage[13].abs() > 2.0 ||
-                storage[0] != 1.0;
-          },
-          childKey: _videoKey,
-          child: RepaintBoundary(
-            key: _videoKey,
-            child: Obx(
-              () {
-                final videoFit = plPlayerController.videoFit.value;
-                return Transform.flip(
-                  flipX: plPlayerController.flipX.value,
-                  flipY: plPlayerController.flipY.value,
-                  child: FittedBox(
-                    fit: videoFit.boxFit,
-                    alignment: widget.alignment,
-                    child: SimpleVideo(
-                      controller: plPlayerController.videoController!,
-                      fill: widget.fill,
-                      aspectRatio: videoFit.aspectRatio,
-                    ),
-                  ),
-                );
+    // 使用 LayoutBuilder 动态捕获当前渲染容器的真实约束。
+    // 在系统画中画（PiP）转场或拖动过程中，MediaQuery 更新可能不及时，
+    // 而 LayoutBuilder 提供的 Constraints 是最准确的。
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // 如果是在小窗模式下，或者当前容器具有有效的有限约束，则优先使用约束尺寸，
+        // 从而解决从系统 PiP 恢复到应用时渲染容器未及时由于 layout 变化而导致渲染异常的问题。
+        final bool useConstraints =
+            (widget.isPipMode ||
+            (constraints.maxWidth > 0 && constraints.maxWidth.isFinite));
+
+        final double currentWidth = useConstraints
+            ? constraints.maxWidth.clamp(0.0, double.infinity)
+            : maxWidth;
+        final double currentHeight = useConstraints
+            ? constraints.maxHeight.clamp(0.0, double.infinity)
+            : maxHeight;
+
+        // 确保容器至少有一个最小有效的尺寸，避免播放引擎初始化失败
+        final double finalWidth = currentWidth > 0
+            ? currentWidth
+            : (maxWidth > 0 ? maxWidth : 16.0);
+        final double finalHeight = currentHeight > 0
+            ? currentHeight
+            : (maxHeight > 0 ? maxHeight : 9.0);
+        _gestureWidth = finalWidth;
+        _gestureHeight = finalHeight;
+
+        return Container(
+          clipBehavior: Clip.none,
+          width: finalWidth,
+          height: finalHeight,
+          color: widget.fill,
+          child: Obx(
+            () => MouseInteractiveViewer(
+              scaleEnabled: !plPlayerController.controlsLock.value,
+              pointerSignalFallback: _onPointerSignal,
+              onPointerPanZoomUpdate: _onPointerPanZoomUpdate,
+              onPointerPanZoomEnd: _onPointerPanZoomEnd,
+              onPointerDown: _onPointerDown,
+              onPointerMove: _onPointerMove,
+              onPointerUp: _onPointerUp,
+              onPointerCancel: _onPointerCancel,
+              onInteractionStart: _onInteractionStart,
+              onInteractionUpdate: _onInteractionUpdate,
+              onInteractionEnd: _onInteractionEnd,
+              panEnabled: false,
+              minScale: plPlayerController.enableShrinkVideoSize ? 0.75 : 1,
+              maxScale: 2.0,
+              boundaryMargin: plPlayerController.enableShrinkVideoSize
+                  ? const EdgeInsets.all(double.infinity)
+                  : EdgeInsets.zero,
+              panAxis: PanAxis.aligned,
+              transformationController: transformationController,
+              onTranslate: () {
+                final storage = transformationController.value.storage;
+                showRestoreScaleBtn.value =
+                    storage[12].abs() > 2.0 ||
+                    storage[13].abs() > 2.0 ||
+                    storage[0] != 1.0;
               },
+              childKey: _videoKey,
+              child: RepaintBoundary(
+                key: _videoKey,
+                child: Obx(() {
+                  final videoFit = plPlayerController.videoFit.value;
+                  return Transform.flip(
+                    flipX: plPlayerController.flipX.value,
+                    flipY: plPlayerController.flipY.value,
+                    child: FittedBox(
+                      fit: videoFit.boxFit,
+                      alignment: widget.alignment,
+                      child: SimpleVideo(
+                        controller: plPlayerController.videoController!,
+                        fill: widget.fill,
+                        aspectRatio: videoFit.aspectRatio,
+                      ),
+                    ),
+                  );
+                }),
+              ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 

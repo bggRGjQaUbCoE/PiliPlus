@@ -15,6 +15,17 @@ void main() {
       expect(layout.centerPercent, 20);
     });
 
+    test('allows side regions as low as 1 percent', () {
+      final layout = DoubleTapSeekLayout.normalize(
+        backwardPercent: 1,
+        forwardPercent: 1,
+      );
+
+      expect(layout.backwardPercent, 1);
+      expect(layout.forwardPercent, 1);
+      expect(layout.centerPercent, 98);
+    });
+
     test('resolves left center right zones from tap position', () {
       const layout = DoubleTapSeekLayout(
         backwardPercent: 25,

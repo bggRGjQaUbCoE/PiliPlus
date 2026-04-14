@@ -5,7 +5,7 @@ import 'package:PiliPlus/plugin/pl_player/models/double_tap_type.dart';
 class DoubleTapSeekLayout {
   static const int defaultBackwardPercent = 25;
   static const int defaultForwardPercent = 25;
-  static const int minSidePercent = 10;
+  static const int minSidePercent = 1;
   static const int maxSidePercent = 40;
   static const int minCenterPercent = 20;
 
@@ -47,6 +47,42 @@ class DoubleTapSeekLayout {
       100 - minCenterPercent - safeBackward,
     );
     return math.max(minSidePercent, math.min(value, maxForward));
+  }
+
+  static double clampBackwardPercentDouble(
+    double value, {
+    required double forwardPercent,
+  }) {
+    final safeForward = math.max<double>(
+      minSidePercent.toDouble(),
+      math.min(forwardPercent, maxSidePercent.toDouble()),
+    );
+    final maxBackward = math.min<double>(
+      maxSidePercent.toDouble(),
+      100 - minCenterPercent - safeForward,
+    );
+    return math.max<double>(
+      minSidePercent.toDouble(),
+      math.min(value, maxBackward),
+    );
+  }
+
+  static double clampForwardPercentDouble(
+    double value, {
+    required double backwardPercent,
+  }) {
+    final safeBackward = math.max<double>(
+      minSidePercent.toDouble(),
+      math.min(backwardPercent, maxSidePercent.toDouble()),
+    );
+    final maxForward = math.min<double>(
+      maxSidePercent.toDouble(),
+      100 - minCenterPercent - safeBackward,
+    );
+    return math.max<double>(
+      minSidePercent.toDouble(),
+      math.min(value, maxForward),
+    );
   }
 
   factory DoubleTapSeekLayout.normalize({

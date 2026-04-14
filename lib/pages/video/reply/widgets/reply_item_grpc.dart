@@ -1038,6 +1038,58 @@ class ReplyItemGrpc extends StatelessWidget {
               leading: Icon(Icons.error_outline, color: errorColor, size: 19),
               title: Text('举报', style: style.copyWith(color: errorColor)),
             ),
+          if (ownerMid != Int64.ZERO && item.mid != ownerMid)
+            ListTile(
+              onTap: () {
+                Get.back();
+                showDialog(
+                  context: context,
+                  builder: (context) {
+                    return AlertDialog(
+                      title: const Text('提示'),
+                      content: Text(
+                        '确定拉黑：${item.member.name}(${item.mid})？'
+                        '\n\n注：被拉黑的用户可以在隐私设置-黑名单管理中解除。',
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: Get.back,
+                          child: Text(
+                            '取消',
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.outline,
+                            ),
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () async {
+                            Get.back();
+                            final res = await VideoHttp.relationMod(
+                              mid: item.mid.toInt(),
+                              act: 5,
+                              reSrc: 11,
+                            );
+                            if (res.isSuccess) {
+                              SmartDialog.showToast('拉黑成功');
+                              onDelete();
+                            } else {
+                              res.toast();
+                            }
+                          },
+                          child: const Text('确认'),
+                        ),
+                      ],
+                    );
+                  },
+                );
+              },
+              minLeadingWidth: 0,
+              leading: Icon(Icons.block, color: errorColor, size: 19),
+              title: Text(
+                '拉黑此人',
+                style: style.copyWith(color: errorColor),
+              ),
+            ),
           if (replyLevel == 1 && !isSubReply && ownerMid == upMid)
             ListTile(
               onTap: () {

@@ -73,6 +73,29 @@ List<SettingsModel> get playSettings => [
     setKey: SettingBoxKey.enableQuickDouble,
     defaultVal: true,
   ),
+  getVideoFilterSelectModel(
+    title: '左侧双击快退时长',
+    suffix: 's',
+    key: SettingBoxKey.doubleTapBackwardDuration,
+    values: [5, 10, 15, 20, 30],
+    defaultValue: Pref.fastForBackwardDuration,
+    isFilter: false,
+  ),
+  getVideoFilterSelectModel(
+    title: '右侧双击快进时长',
+    suffix: 's',
+    key: SettingBoxKey.doubleTapForwardDuration,
+    values: [5, 10, 15, 20, 30],
+    defaultValue: Pref.fastForBackwardDuration,
+    isFilter: false,
+  ),
+  const SwitchModel(
+    title: '双指轻点暂停/播放',
+    subtitle: '启用后，两指短按屏幕可切换播放状态',
+    leading: Icon(Icons.touch_app),
+    setKey: SettingBoxKey.enableTwoFingerTapPause,
+    defaultVal: false,
+  ),
   const SwitchModel(
     title: '左右侧滑动调节亮度/音量',
     leading: Icon(MdiIcons.tuneVerticalVariant),
@@ -91,14 +114,6 @@ List<SettingsModel> get playSettings => [
     leading: Icon(MdiIcons.panVertical),
     setKey: SettingBoxKey.enableSlideFS,
     defaultVal: true,
-  ),
-  getVideoFilterSelectModel(
-    title: '双击快进/快退时长',
-    suffix: 's',
-    key: SettingBoxKey.fastForBackwardDuration,
-    values: [5, 10, 15],
-    defaultValue: 10,
-    isFilter: false,
   ),
   const SwitchModel(
     title: '滑动快进/快退使用相对时长',
@@ -275,10 +290,7 @@ Future<void> _showSubtitleDialog(
     ),
   );
   if (res != null) {
-    await GStorage.setting.put(
-      SettingBoxKey.subtitlePreferenceV2,
-      res.index,
-    );
+    await GStorage.setting.put(SettingBoxKey.subtitlePreferenceV2, res.index);
     setState();
   }
 }
@@ -332,10 +344,7 @@ Future<void> _showProgressBehaviorDialog(
     ),
   );
   if (res != null) {
-    await GStorage.setting.put(
-      SettingBoxKey.btmProgressBehavior,
-      res.index,
-    );
+    await GStorage.setting.put(SettingBoxKey.btmProgressBehavior, res.index);
     setState();
   }
 }

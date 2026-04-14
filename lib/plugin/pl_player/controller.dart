@@ -352,9 +352,11 @@ class PlPlayerController with BlockConfigMixin {
   late final enableSlideVolumeBrightness = Pref.enableSlideVolumeBrightness;
   late final enableSlideFS = Pref.enableSlideFS;
   late final enableDragSubtitle = Pref.enableDragSubtitle;
-  late final fastForBackwardDuration = Duration(
-    seconds: Pref.fastForBackwardDuration,
-  );
+  Duration get fastBackwardDuration =>
+      Duration(seconds: Pref.doubleTapBackwardDuration);
+  Duration get fastForwardDuration =>
+      Duration(seconds: Pref.doubleTapForwardDuration);
+  bool get enableTwoFingerTapPause => Pref.enableTwoFingerTapPause;
 
   late final horizontalSeasonPanel = Pref.horizontalSeasonPanel;
   late final preInitPlayer = Pref.preInitPlayer;

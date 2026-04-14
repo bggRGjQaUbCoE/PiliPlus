@@ -43,6 +43,7 @@ import 'package:PiliPlus/plugin/pl_player/models/double_tap_type.dart';
 import 'package:PiliPlus/plugin/pl_player/models/fullscreen_mode.dart';
 import 'package:PiliPlus/plugin/pl_player/models/gesture_type.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
+import 'package:PiliPlus/plugin/pl_player/models/two_finger_tap_detector.dart';
 import 'package:PiliPlus/plugin/pl_player/models/video_fit_type.dart';
 import 'package:PiliPlus/plugin/pl_player/widgets/app_bar_ani.dart';
 import 'package:PiliPlus/plugin/pl_player/widgets/backward_seek.dart';
@@ -146,6 +147,8 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
   late final RxBool showRestoreScaleBtn = false.obs;
 
   GestureType? _gestureType;
+  final TwoFingerTapDetector _twoFingerTapDetector = TwoFingerTapDetector();
+  DateTime? _ignoreTapUpBefore;
 
   Offset initialFocalPoint = Offset.zero;
 
@@ -1178,6 +1181,11 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
   }
 
   void _onTapUp(TapUpDetails details) {
+    final ignoreTapUpBefore = _ignoreTapUpBefore;
+    if (ignoreTapUpBefore != null &&
+        DateTime.now().isBefore(ignoreTapUpBefore)) {
+      return;
+    }
     switch (details.kind) {
       case ui.PointerDeviceKind.mouse when PlatformUtils.isDesktop:
         onTapDesktop();
@@ -1244,6 +1252,47 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
   late final DoubleTapGestureRecognizer _doubleTapGestureRecognizer;
   StreamSubscription<bool>? _danmakuListener;
 
+  bool _handleTwoFingerTapIfNeeded() {
+    if (!plPlayerController.enableTwoFingerTapPause ||
+        plPlayerController.controlsLock.value ||
+        plPlayerController.isLive) {
+      return false;
+    }
+    _ignoreTapUpBefore = DateTime.now().add(const Duration(milliseconds: 300));
+    if (plPlayerController.playerStatus.isPlaying) {
+      unawaited(plPlayerController.pause());
+    } else {
+      unawaited(plPlayerController.play());
+    }
+    return true;
+  }
+
+  void _onPointerMove(PointerMoveEvent event) {
+    if (event.kind != ui.PointerDeviceKind.touch) {
+      return;
+    }
+    _twoFingerTapDetector.onPointerMove(
+      pointer: event.pointer,
+      position: event.localPosition,
+    );
+  }
+
+  void _onPointerUp(PointerUpEvent event) {
+    if (event.kind != ui.PointerDeviceKind.touch) {
+      return;
+    }
+    if (_twoFingerTapDetector.onPointerUp(pointer: event.pointer)) {
+      _handleTwoFingerTapIfNeeded();
+    }
+  }
+
+  void _onPointerCancel(PointerCancelEvent event) {
+    if (event.kind != ui.PointerDeviceKind.touch) {
+      return;
+    }
+    _twoFingerTapDetector.onPointerCancel(event.pointer);
+  }
+
   void _onPointerDown(PointerDownEvent event) {
     if (PlatformUtils.isDesktop) {
       final buttons = event.buttons;
@@ -1263,6 +1312,13 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
             .whenComplete(() => initialFocalPoint = Offset.zero);
         return;
       }
+    }
+
+    if (event.kind == ui.PointerDeviceKind.touch) {
+      _twoFingerTapDetector.onPointerDown(
+        pointer: event.pointer,
+        position: event.localPosition,
+      );
     }
 
     _tapGestureRecognizer.addPointer(event);
@@ -1970,7 +2026,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                               ),
                               child: BackwardSeekIndicator(
                                 duration:
-                                    plPlayerController.fastForBackwardDuration,
+                                    plPlayerController.fastBackwardDuration,
                                 onSubmitted: (Duration value) {
                                   plPlayerController
                                     ..mountSeekBackwardButton.value = false
@@ -1991,7 +2047,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                               ),
                               child: ForwardSeekIndicator(
                                 duration:
-                                    plPlayerController.fastForBackwardDuration,
+                                    plPlayerController.fastForwardDuration,
                                 onSubmitted: (Duration value) {
                                   plPlayerController
                                     ..mountSeekForwardButton.value = false
@@ -2037,6 +2093,9 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
           onPointerPanZoomUpdate: _onPointerPanZoomUpdate,
           onPointerPanZoomEnd: _onPointerPanZoomEnd,
           onPointerDown: _onPointerDown,
+          onPointerMove: _onPointerMove,
+          onPointerUp: _onPointerUp,
+          onPointerCancel: _onPointerCancel,
           onInteractionStart: _onInteractionStart,
           onInteractionUpdate: _onInteractionUpdate,
           onInteractionEnd: _onInteractionEnd,

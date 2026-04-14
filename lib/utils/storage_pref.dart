@@ -571,6 +571,19 @@ abstract final class Pref {
   static int get fastForBackwardDuration =>
       _setting.get(SettingBoxKey.fastForBackwardDuration, defaultValue: 10);
 
+  static int get doubleTapBackwardDuration => _setting.get(
+    SettingBoxKey.doubleTapBackwardDuration,
+    defaultValue: fastForBackwardDuration,
+  );
+
+  static int get doubleTapForwardDuration => _setting.get(
+    SettingBoxKey.doubleTapForwardDuration,
+    defaultValue: fastForBackwardDuration,
+  );
+
+  static bool get enableTwoFingerTapPause =>
+      _setting.get(SettingBoxKey.enableTwoFingerTapPause, defaultValue: false);
+
   static bool get recordSearchHistory =>
       _setting.get(SettingBoxKey.recordSearchHistory, defaultValue: true);
 

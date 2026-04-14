@@ -135,7 +135,7 @@ class PlayerFocus extends StatelessWidget {
               plPlayerController.setLongPressStatus(false);
             } else {
               plPlayerController.onForward(
-                plPlayerController.fastForBackwardDuration,
+                plPlayerController.fastForwardDuration,
               );
             }
           }
@@ -239,7 +239,7 @@ class PlayerFocus extends StatelessWidget {
           case LogicalKeyboardKey.arrowLeft:
             if (hasPlayer) {
               plPlayerController.onBackward(
-                plPlayerController.fastForBackwardDuration,
+                plPlayerController.fastBackwardDuration,
               );
             }
             return true;

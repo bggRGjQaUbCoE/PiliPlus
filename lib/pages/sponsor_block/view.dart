@@ -1,3 +1,4 @@
+import 'package:PiliPlus/common/widgets/flutter/scroll_view/scroll_view.dart';
 import 'package:PiliPlus/common/widgets/pair.dart';
 import 'package:PiliPlus/http/constants.dart';
 import 'package:PiliPlus/http/init.dart';
@@ -485,7 +486,7 @@ class _SponsorBlockPageState extends State<SponsorBlockPage> {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(title: const Text('空降助手')),
-      body: CustomScrollView(
+      body: customScrollView(
         slivers: [
           dividerL,
           SliverToBoxAdapter(child: _serverStatusItem(theme, titleStyle)),

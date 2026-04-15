@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:PiliPlus/common/widgets/button/icon_button.dart';
+import 'package:PiliPlus/common/widgets/flutter/scroll_view/scroll_view.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/pair.dart';
 import 'package:PiliPlus/http/loading_state.dart';
@@ -252,7 +253,7 @@ class _PostPanelState extends State<PostPanel>
       return const HttpError(isSliver: false);
     }
     final bottom = MediaQuery.viewPaddingOf(context).bottom;
-    Widget child = ListView.builder(
+    Widget child = ExtendedListView.builder(
       key: _key,
       physics: const AlwaysScrollableScrollPhysics(),
       padding: EdgeInsets.only(bottom: 88 + bottom),

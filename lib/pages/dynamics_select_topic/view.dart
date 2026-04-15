@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:PiliPlus/common/widgets/flutter/draggable_sheet/draggable_scrollable_sheet_topic.dart'
     as topic_sheet;
+import 'package:PiliPlus/common/widgets/flutter/scroll_view/scroll_view.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models_new/dynamic/dyn_topic_top/topic_item.dart';
@@ -191,7 +192,7 @@ class _SelectTopicPanelState
       Loading() => m3eLoading,
       Success<List<TopicItem>?>(:final response) =>
         response != null && response.isNotEmpty
-            ? ListView.builder(
+            ? ExtendedListView.builder(
                 padding: EdgeInsets.only(
                   bottom: MediaQuery.viewPaddingOf(context).bottom + 100,
                 ),

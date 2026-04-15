@@ -1,5 +1,6 @@
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
 import 'package:PiliPlus/common/widgets/dialog/export_import.dart';
+import 'package:PiliPlus/common/widgets/flutter/scroll_view/scroll_view.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/view_sliver_safe_area.dart';
 import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
@@ -76,7 +77,7 @@ class _MyReplyState extends State<MyReply> with DynMixin {
           const SizedBox(width: 6),
         ],
       ),
-      body: CustomScrollView(
+      body: customScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         slivers: [
           _replies.isNotEmpty

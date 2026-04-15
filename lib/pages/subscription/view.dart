@@ -1,4 +1,5 @@
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
+import 'package:PiliPlus/common/widgets/flutter/scroll_view/scroll_view.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/view_sliver_safe_area.dart';
 import 'package:PiliPlus/http/loading_state.dart';
@@ -26,7 +27,7 @@ class _SubPageState extends State<SubPage> with GridMixin {
       appBar: AppBar(title: const Text('我的订阅')),
       body: refreshIndicator(
         onRefresh: _subController.onRefresh,
-        child: CustomScrollView(
+        child: customScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           slivers: [
             ViewSliverSafeArea(

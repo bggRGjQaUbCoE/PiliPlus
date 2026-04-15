@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
+import 'package:PiliPlus/common/widgets/flutter/scroll_view/scroll_view.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart';
 import 'package:PiliPlus/common/widgets/sliver/sliver_floating_header.dart';
@@ -41,7 +42,7 @@ class _PopularSeriesPageState extends State<PopularSeriesPage> with GridMixin {
       ),
       body: refreshIndicator(
         onRefresh: _controller.onRefresh,
-        child: CustomScrollView(
+        child: customScrollView(
           physics: ReloadScrollPhysics(controller: _controller),
           slivers: [
             ViewSliverSafeArea(

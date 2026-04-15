@@ -219,9 +219,9 @@ Win32Window::MessageHandler(HWND hwnd,
       }
       return 0;
 
-    case WM_DWMCOLORIZATIONCOLORCHANGED:
-      UpdateTheme(hwnd);
-      return 0;
+//    case WM_DWMCOLORIZATIONCOLORCHANGED:
+//      UpdateTheme(hwnd);
+//      return 0;
   }
 
   return DefWindowProc(window_handle_, message, wparam, lparam);

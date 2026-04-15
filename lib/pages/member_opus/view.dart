@@ -1,6 +1,7 @@
 import 'package:PiliPlus/common/skeleton/space_opus.dart';
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
+import 'package:PiliPlus/common/widgets/flutter/scroll_view/scroll_view.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models_new/space/space_opus/item.dart';
@@ -53,7 +54,7 @@ class _MemberOpusState extends State<MemberOpus>
       children: [
         refreshIndicator(
           onRefresh: _controller.onRefresh,
-          child: CustomScrollView(
+          child: customScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             slivers: [
               SliverPadding(

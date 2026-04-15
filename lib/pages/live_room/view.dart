@@ -393,7 +393,9 @@ class _LiveRoomPageState extends State<LiveRoomPage>
           Scaffold(
             resizeToAvoidBottomInset: false,
             backgroundColor: Colors.transparent,
-            appBar: _buildAppBar(isFullScreen),
+            appBar: isFullScreen && !isPortrait
+                ? null
+                : _buildAppBar(isFullScreen),
             body: isPortrait
                 ? Obx(
                     () {
@@ -412,7 +414,9 @@ class _LiveRoomPageState extends State<LiveRoomPage>
 
   Widget _buildPH(bool isFullScreen) {
     final height = maxWidth / Style.aspectRatio16x9;
-    final videoHeight = isFullScreen ? maxHeight - padding.top : height;
+    final videoHeight = isFullScreen
+        ? maxHeight - (isPortrait ? padding.top : 0)
+        : height;
     final bottomHeight = maxHeight - padding.top - height - kToolbarHeight;
     return Column(
       children: [
@@ -440,7 +444,7 @@ class _LiveRoomPageState extends State<LiveRoomPage>
   Widget _buildPP(bool isFullScreen) {
     final bottomHeight = 70 + padding.bottom;
     final videoHeight = isFullScreen
-        ? maxHeight - padding.top
+        ? maxHeight - (isPortrait ? padding.top : 0)
         : maxHeight - bottomHeight;
     return Stack(
       clipBehavior: Clip.none,
@@ -655,7 +659,9 @@ class _LiveRoomPageState extends State<LiveRoomPage>
     videoWidth = maxWidth - rightWidth - padding.horizontal;
     final videoHeight = maxHeight - padding.top - kToolbarHeight;
     final width = isFullScreen ? maxWidth : videoWidth;
-    final height = isFullScreen ? maxHeight - padding.top : videoHeight;
+    final height = isFullScreen
+        ? maxHeight - (isPortrait ? padding.top : 0)
+        : videoHeight;
     return Padding(
       padding: isFullScreen
           ? EdgeInsets.zero

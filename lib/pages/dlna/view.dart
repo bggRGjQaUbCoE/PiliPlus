@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:PiliPlus/common/widgets/flutter/scroll_view/scroll_view.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
 import 'package:PiliPlus/common/widgets/view_sliver_safe_area.dart';
@@ -83,7 +84,7 @@ class _DLNAPageState extends State<DLNAPage> {
           const SizedBox(width: 6),
         ],
       ),
-      body: CustomScrollView(
+      body: customScrollView(
         slivers: [
           if (_isSearching) linearLoading,
           ViewSliverSafeArea(sliver: _buildBody(colorScheme)),

@@ -1,4 +1,5 @@
 import 'package:PiliPlus/common/widgets/flutter/page/tabs.dart';
+import 'package:PiliPlus/common/widgets/flutter/scroll_view/scroll_view.dart';
 import 'package:PiliPlus/common/widgets/flutter/selectable_text/text.dart';
 import 'package:PiliPlus/common/widgets/keep_alive_wrapper.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart';
@@ -117,7 +118,7 @@ class _IntroDetailState extends State<PgcIntroPanel>
     final TextStyle textStyle = TextStyle(
       color: theme.colorScheme.onSurfaceVariant,
     );
-    return ListView(
+    return listView(
       controller: _controller,
       physics: const AlwaysScrollableScrollPhysics(),
       padding: EdgeInsets.only(

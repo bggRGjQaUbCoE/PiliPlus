@@ -1,5 +1,6 @@
 import 'package:PiliPlus/common/widgets/flutter/list_tile.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
+import 'package:PiliPlus/common/widgets/flutter/scroll_view/scroll_view.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
@@ -60,7 +61,7 @@ class _MemberGuardState extends State<MemberGuard> {
       ),
       body: refreshIndicator(
         onRefresh: _controller.onRefresh,
-        child: CustomScrollView(
+        child: customScrollView(
           slivers: [
             ViewSliverSafeArea(
               sliver: Obx(() => _buildBody(_controller.loadingState.value)),

@@ -7,6 +7,7 @@ import 'package:PiliPlus/common/assets.dart';
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/custom_icon.dart';
 import 'package:PiliPlus/common/widgets/flutter/pop_scope.dart';
+import 'package:PiliPlus/common/widgets/flutter/scroll_view/scroll_view.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/keep_alive_wrapper.dart';
 import 'package:PiliPlus/common/widgets/route_aware_mixin.dart';
@@ -515,42 +516,47 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
         final isFullScreen = this.isFullScreen;
         return Scaffold(
           resizeToAvoidBottomInset: false,
-          appBar: PreferredSize(
-            preferredSize: const Size.fromHeight(0),
-            child: Obx(
-              () {
-                final scrollRatio = videoDetailController.scrollRatio.value;
-                final flag =
-                    isPortrait && videoDetailController.scrollCtr.offset != 0;
-                return AppBar(
-                  backgroundColor: flag && scrollRatio > 0
-                      ? Color.lerp(
-                          Colors.black,
-                          themeData.colorScheme.surface,
-                          scrollRatio,
-                        )
-                      : Colors.black,
-                  toolbarHeight: 0,
-                  systemOverlayStyle: Platform.isAndroid
-                      ? SystemUiOverlayStyle(
-                          statusBarIconBrightness: flag && scrollRatio >= 0.5
-                              ? themeData.brightness.reverse
-                              : Brightness.light,
-                          systemNavigationBarIconBrightness:
-                              themeData.brightness.reverse,
-                        )
-                      : null,
-                );
-              },
-            ),
-          ),
+          appBar: isFullScreen && !isPortrait
+              ? null
+              : PreferredSize(
+                  preferredSize: const Size.fromHeight(0),
+                  child: Obx(
+                    () {
+                      final scrollRatio =
+                          videoDetailController.scrollRatio.value;
+                      final flag =
+                          isPortrait &&
+                          videoDetailController.scrollCtr.offset != 0;
+                      return AppBar(
+                        backgroundColor: flag && scrollRatio > 0
+                            ? Color.lerp(
+                                Colors.black,
+                                themeData.colorScheme.surface,
+                                scrollRatio,
+                              )
+                            : Colors.black,
+                        toolbarHeight: 0,
+                        systemOverlayStyle: Platform.isAndroid
+                            ? SystemUiOverlayStyle(
+                                statusBarIconBrightness:
+                                    flag && scrollRatio >= 0.5
+                                    ? themeData.brightness.reverse
+                                    : Brightness.light,
+                                systemNavigationBarIconBrightness:
+                                    themeData.brightness.reverse,
+                              )
+                            : null,
+                      );
+                    },
+                  ),
+                ),
           body: ExtendedNestedScrollView(
             key: videoDetailController.scrollKey,
             controller: videoDetailController.scrollCtr,
             onlyOneScrollInBody: true,
             pinnedHeaderSliverHeightBuilder: () {
               double pinnedHeight = this.isFullScreen || !isPortrait
-                  ? maxHeight - padding.top
+                  ? maxHeight - (isPortrait ? padding.top : 0)
                   : videoDetailController.isExpanding ||
                         videoDetailController.isCollapsing
                   ? animHeight
@@ -576,7 +582,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
             },
             headerSliverBuilder: (context, innerBoxIsScrolled) {
               final height = isFullScreen || !isPortrait
-                  ? maxHeight - padding.top
+                  ? maxHeight - (isPortrait ? padding.top : 0)
                   : videoDetailController.isExpanding ||
                         videoDetailController.isCollapsing
                   ? animHeight
@@ -812,7 +818,9 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
       final isFullScreen = this.isFullScreen;
       return Scaffold(
         resizeToAvoidBottomInset: false,
-        appBar: AppBar(backgroundColor: Colors.black, toolbarHeight: 0),
+        appBar: isFullScreen && !isPortrait
+            ? null
+            : AppBar(backgroundColor: Colors.black, toolbarHeight: 0),
         body: Padding(
           padding: !isFullScreen
               ? padding.copyWith(top: 0, bottom: 0)
@@ -945,7 +953,9 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     }
     final videoWidth = isFullScreen ? maxWidth : width;
     final double height = width / Style.aspectRatio16x9;
-    final videoHeight = isFullScreen ? maxHeight - padding.top : height;
+    final videoHeight = isFullScreen
+        ? maxHeight - (isPortrait ? padding.top : 0)
+        : height;
     if (height > maxHeight) {
       return childSplit(Style.aspectRatio16x9);
     }
@@ -1008,7 +1018,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                           localIntroPanel()
                         else if (showIntro)
                           KeepAliveWrapper(
-                            child: CustomScrollView(
+                            child: customScrollView(
                               key: const PageStorageKey(CommonIntroController),
                               controller:
                                   videoDetailController.effectiveIntroScrollCtr,
@@ -1038,7 +1048,9 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     final isFullScreen = this.isFullScreen;
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      appBar: AppBar(backgroundColor: Colors.black, toolbarHeight: 0),
+      appBar: isFullScreen && !isPortrait
+          ? null
+          : AppBar(backgroundColor: Colors.black, toolbarHeight: 0),
       body: Padding(
         padding: !isFullScreen
             ? padding.copyWith(top: 0, bottom: 0)
@@ -1061,7 +1073,9 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
       }
       final shouldShowSeasonPanel = _shouldShowSeasonPanel;
       final double height = maxHeight / 2.5;
-      final videoHeight = isFullScreen ? maxHeight - padding.top : height;
+      final videoHeight = isFullScreen
+          ? maxHeight - (isPortrait ? padding.top : 0)
+          : height;
       final bottomHeight = maxHeight - height - padding.top;
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1514,6 +1528,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
         Obx(() {
           if (!videoDetailController.autoPlay) {
             return Positioned.fill(
+              bottom: -1,
               child: GestureDetector(
                 onTap: handlePlay,
                 behavior: .opaque,
@@ -1662,7 +1677,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
   Widget localIntroPanel({
     bool needCtr = true,
   }) {
-    return CustomScrollView(
+    return customScrollView(
       controller: needCtr
           ? videoDetailController.effectiveIntroScrollCtr
           : null,
@@ -1694,7 +1709,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
       return localIntroPanel(needCtr: needCtr);
     }
     Widget introPanel() {
-      Widget child = CustomScrollView(
+      Widget child = customScrollView(
         key: const PageStorageKey(CommonIntroController),
         controller: needCtr
             ? videoDetailController.effectiveIntroScrollCtr

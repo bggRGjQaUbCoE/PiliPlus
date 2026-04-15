@@ -1,5 +1,6 @@
 import 'package:PiliPlus/common/widgets/flutter/list_tile.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
+import 'package:PiliPlus/common/widgets/flutter/scroll_view/scroll_view.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/keep_alive_wrapper.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
@@ -72,7 +73,7 @@ class _UpowerRankPageState extends State<UpowerRankPage>
     final padding = MediaQuery.viewPaddingOf(context);
     final child = refreshIndicator(
       onRefresh: _controller.onRefresh,
-      child: CustomScrollView(
+      child: customScrollView(
         controller: _controller.scrollController,
         physics: const AlwaysScrollableScrollPhysics(),
         slivers: [

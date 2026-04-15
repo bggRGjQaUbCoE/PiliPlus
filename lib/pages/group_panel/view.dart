@@ -1,3 +1,4 @@
+import 'package:PiliPlus/common/widgets/flutter/scroll_view/scroll_view.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/member.dart';
@@ -59,7 +60,7 @@ class _GroupPanelState extends State<GroupPanel> {
       tags.isEmpty ? '0' : tags.join(','),
     );
     if (res.isSuccess) {
-      SmartDialog.showToast('操作成功');
+      SmartDialog.showToast('保存成功');
       Get.back(result: tags);
     } else {
       res.toast();
@@ -69,7 +70,7 @@ class _GroupPanelState extends State<GroupPanel> {
   Widget get _buildBody {
     return switch (loadingState) {
       Loading() => m3eLoading,
-      Success(:final response) => ListView.builder(
+      Success(:final response) => ExtendedListView.builder(
         controller: widget.scrollController,
         itemCount: response.length,
         itemBuilder: (context, index) {

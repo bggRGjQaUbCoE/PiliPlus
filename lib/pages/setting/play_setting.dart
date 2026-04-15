@@ -1,3 +1,4 @@
+import 'package:PiliPlus/common/widgets/flutter/scroll_view/scroll_view.dart';
 import 'package:PiliPlus/pages/setting/models/play_settings.dart';
 import 'package:flutter/material.dart';
 
@@ -20,7 +21,7 @@ class _PlaySettingState extends State<PlaySetting> {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: showAppBar ? AppBar(title: const Text('播放器设置')) : null,
-      body: ListView.builder(
+      body: ExtendedListView.builder(
         padding: EdgeInsets.only(
           left: showAppBar ? padding.left : 0,
           right: showAppBar ? padding.right : 0,

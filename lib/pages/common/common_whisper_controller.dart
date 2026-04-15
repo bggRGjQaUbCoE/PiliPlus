@@ -56,7 +56,7 @@ abstract class CommonWhisperController<R>
     if (res.isSuccess) {
       item.isMuted = !isMuted;
       loadingState.refresh();
-      SmartDialog.showToast('操作成功');
+      SmartDialog.showToast('设置成功');
     } else {
       res.toast();
     }

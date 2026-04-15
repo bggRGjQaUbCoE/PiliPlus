@@ -190,13 +190,15 @@ abstract final class Pref {
         defaultValue: UpPanelPosition.leftFixed.index,
       )];
 
-  static FullScreenMode get fullScreenMode =>
-      FullScreenMode.values[_setting.get(
-        SettingBoxKey.fullScreenMode,
-        defaultValue: horizontalScreen
-            ? FullScreenMode.none.index
-            : FullScreenMode.auto.index,
-      )];
+  static FullScreenMode get fullScreenMode {
+    int? index = _setting.get(SettingBoxKey.fullScreenMode);
+    if (index == null) {
+      final FullScreenMode mode = horizontalScreen && isTablet ? .none : .auto;
+      _setting.put(SettingBoxKey.fullScreenMode, mode.index);
+      return mode;
+    }
+    return FullScreenMode.values[index];
+  }
 
   static BtmProgressBehavior get btmProgressBehavior =>
       BtmProgressBehavior.values[_setting.get(

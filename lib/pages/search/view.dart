@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:PiliPlus/common/widgets/dialog/export_import.dart';
 import 'package:PiliPlus/common/widgets/disabled_icon.dart';
+import 'package:PiliPlus/common/widgets/flutter/scroll_view/scroll_view.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/sliver_wrap.dart';
 import 'package:PiliPlus/http/loading_state.dart';
@@ -61,7 +62,7 @@ class _SearchPageState extends State<SearchPage> {
       appBar: _buildAppBar,
       body: Padding(
         padding: .only(left: padding.left, right: padding.right),
-        child: CustomScrollView(
+        child: customScrollView(
           slivers: [
             if (_searchController.searchSuggestion) _buildSearchSuggest(),
             if (isPortrait) ...[

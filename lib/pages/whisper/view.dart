@@ -1,5 +1,6 @@
 import 'package:PiliPlus/common/skeleton/whisper_item.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
+import 'package:PiliPlus/common/widgets/flutter/scroll_view/scroll_view.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/grpc/bilibili/app/im/v1.pb.dart';
 import 'package:PiliPlus/http/loading_state.dart';
@@ -94,7 +95,7 @@ class _WhisperPageState extends State<WhisperPage> {
       ),
       body: refreshIndicator(
         onRefresh: _controller.onRefresh,
-        child: CustomScrollView(
+        child: customScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           slivers: [
             _buildTopItems(theme, padding),

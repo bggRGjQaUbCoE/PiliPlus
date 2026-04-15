@@ -6,6 +6,7 @@ import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
 import 'package:PiliPlus/common/widgets/flutter/layout_builder.dart';
 import 'package:PiliPlus/common/widgets/flutter/pop_scope.dart';
+import 'package:PiliPlus/common/widgets/flutter/scroll_view/scroll_view.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/select_mask.dart';
@@ -122,7 +123,7 @@ class _DownloadPageState extends State<DownloadPage> {
           ),
           body: Padding(
             padding: EdgeInsets.only(left: padding.left, right: padding.right),
-            child: CustomScrollView(
+            child: customScrollView(
               slivers: [
                 Obx(() {
                   final entry =

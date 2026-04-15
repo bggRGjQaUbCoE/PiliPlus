@@ -1,6 +1,7 @@
 import 'package:PiliPlus/common/skeleton/video_reply.dart';
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
+import 'package:PiliPlus/common/widgets/flutter/scroll_view/scroll_view.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/sliver/sliver_floating_header.dart';
 import 'package:PiliPlus/common/widgets/view_safe_area.dart';
@@ -77,7 +78,7 @@ class _MainReplyPageState extends State<MainReplyPage>
               left: padding.left,
               right: padding.right,
             ),
-            child: CustomScrollView(
+            child: customScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
               slivers: [
                 buildReplyHeader(colorScheme),

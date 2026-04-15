@@ -1,4 +1,5 @@
 import 'package:PiliPlus/common/assets.dart';
+import 'package:PiliPlus/common/widgets/flutter/scroll_view/scroll_view.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/pendant_avatar.dart';
 import 'package:PiliPlus/models_new/live/live_medal_wall/data.dart';
@@ -22,7 +23,7 @@ class MedalWall extends StatelessWidget {
       title: const Text('粉丝勋章墙'),
       contentPadding: const .symmetric(vertical: 16),
       constraints: const BoxConstraints.tightFor(width: 380),
-      content: CustomScrollView(
+      content: customScrollView(
         shrinkWrap: true,
         slivers: [
           SliverToBoxAdapter(

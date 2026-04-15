@@ -22,6 +22,7 @@ abstract final class GrpcUrl {
   static const dialogList = '$reply/DialogList';
   // static const replyInfo = '$reply/ReplyInfo';
   static const searchItem = '$reply/SearchItem';
+  static const translateReply = '$reply/TranslateReply';
 
   // im
   static const im = '/bilibili.im.interface.v1.ImInterface';

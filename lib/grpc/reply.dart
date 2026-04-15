@@ -1,4 +1,5 @@
 import 'package:PiliPlus/common/constants.dart';
+
 import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart';
 import 'package:PiliPlus/grpc/bilibili/pagination.pb.dart';
 import 'package:PiliPlus/grpc/grpc_req.dart';
@@ -146,6 +147,22 @@ abstract final class ReplyGrpc {
         keyword: keyword,
       ),
       SearchItemReply.fromBuffer,
+    );
+  }
+
+  static Future<LoadingState<ReplyInfoReply>> translateReply({
+    required int type,
+    required int oid,
+    required int rpid,
+  }) {
+    return GrpcReq.request(
+      GrpcUrl.translateReply,
+      TranslateReplyReq(
+        type: type,
+        oid: Int64(oid),
+        rpid: Int64(rpid),
+      ),
+      ReplyInfoReply.fromBuffer,
     );
   }
 }

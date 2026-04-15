@@ -8159,6 +8159,8 @@ class ReplyControl extends $pb.GeneratedMessage {
     ReplyControl_EasterEggLabel? easterEggLabel,
     $core.String? contextFeature,
     ReplyControl_InsertEffect? insertEffect,
+    $core.int? translateState,
+    $core.bool? showTranslate,
   }) {
     final result = create();
     if (action != null) result.action = action;
@@ -8198,6 +8200,8 @@ class ReplyControl extends $pb.GeneratedMessage {
     if (easterEggLabel != null) result.easterEggLabel = easterEggLabel;
     if (contextFeature != null) result.contextFeature = contextFeature;
     if (insertEffect != null) result.insertEffect = insertEffect;
+    if (translateState != null) result.translateState = translateState;
+    if (showTranslate != null) result.showTranslate = showTranslate;
     return result;
   }
 
@@ -8257,6 +8261,8 @@ class ReplyControl extends $pb.GeneratedMessage {
     ..aOS(35, _omitFieldNames ? '' : 'contextFeature')
     ..aOM<ReplyControl_InsertEffect>(36, _omitFieldNames ? '' : 'insertEffect',
         subBuilder: ReplyControl_InsertEffect.create)
+    ..aI(37, _omitFieldNames ? '' : 'translateState')
+    ..aOB(38, _omitFieldNames ? '' : 'showTranslate')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -8604,6 +8610,26 @@ class ReplyControl extends $pb.GeneratedMessage {
   void clearInsertEffect() => $_clearField(36);
   @$pb.TagNumber(36)
   ReplyControl_InsertEffect ensureInsertEffect() => $_ensure(35);
+
+  /// Translation availability state. Observed values: 1/2.
+  @$pb.TagNumber(37)
+  $core.int get translateState => $_getIZ(36);
+  @$pb.TagNumber(37)
+  set translateState($core.int value) => $_setSignedInt32(36, value);
+  @$pb.TagNumber(37)
+  $core.bool hasTranslateState() => $_has(36);
+  @$pb.TagNumber(37)
+  void clearTranslateState() => $_clearField(37);
+
+  /// Whether translate-related capability is enabled for this reply context.
+  @$pb.TagNumber(38)
+  $core.bool get showTranslate => $_getBF(37);
+  @$pb.TagNumber(38)
+  set showTranslate($core.bool value) => $_setBool(37, value);
+  @$pb.TagNumber(38)
+  $core.bool hasShowTranslate() => $_has(37);
+  @$pb.TagNumber(38)
+  void clearShowTranslate() => $_clearField(38);
 }
 
 class ReplyExtra extends $pb.GeneratedMessage {
@@ -9494,6 +9520,7 @@ class ReplyInfo extends $pb.GeneratedMessage {
     ReplyControl? replyControl,
     MemberV2? memberV2,
     $core.String? trackInfo,
+    Content? translatedText,
   }) {
     final result = create();
     if (replies != null) result.replies.addAll(replies);
@@ -9512,6 +9539,7 @@ class ReplyInfo extends $pb.GeneratedMessage {
     if (replyControl != null) result.replyControl = replyControl;
     if (memberV2 != null) result.memberV2 = memberV2;
     if (trackInfo != null) result.trackInfo = trackInfo;
+    if (translatedText != null) result.translatedText = translatedText;
     return result;
   }
 
@@ -9550,6 +9578,8 @@ class ReplyInfo extends $pb.GeneratedMessage {
     ..aOM<MemberV2>(15, _omitFieldNames ? '' : 'memberV2',
         subBuilder: MemberV2.create)
     ..aOS(16, _omitFieldNames ? '' : 'trackInfo')
+    ..aOM<Content>(17, _omitFieldNames ? '' : 'translatedText',
+        subBuilder: Content.create)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -9715,6 +9745,18 @@ class ReplyInfo extends $pb.GeneratedMessage {
   $core.bool hasTrackInfo() => $_has(15);
   @$pb.TagNumber(16)
   void clearTrackInfo() => $_clearField(16);
+
+  /// 翻译结果(仅在翻译请求中返回)
+  @$pb.TagNumber(17)
+  Content get translatedText => $_getN(16);
+  @$pb.TagNumber(17)
+  set translatedText(Content value) => $_setField(17, value);
+  @$pb.TagNumber(17)
+  $core.bool hasTranslatedText() => $_has(16);
+  @$pb.TagNumber(17)
+  void clearTranslatedText() => $_clearField(17);
+  @$pb.TagNumber(17)
+  Content ensureTranslatedText() => $_ensure(16);
 }
 
 class ReplyInfoReply extends $pb.GeneratedMessage {
@@ -13974,6 +14016,89 @@ class WordSearchParam extends $pb.GeneratedMessage {
   $core.bool hasShownCount() => $_has(0);
   @$pb.TagNumber(1)
   void clearShownCount() => $_clearField(1);
+}
+
+/// 翻译评论请求
+class TranslateReplyReq extends $pb.GeneratedMessage {
+  factory TranslateReplyReq({
+    $core.int? type,
+    $fixnum.Int64? oid,
+    $fixnum.Int64? rpid,
+  }) {
+    final result = create();
+    if (type != null) result.type = type;
+    if (oid != null) result.oid = oid;
+    if (rpid != null) result.rpid = rpid;
+    return result;
+  }
+
+  TranslateReplyReq._();
+
+  factory TranslateReplyReq.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory TranslateReplyReq.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'TranslateReplyReq',
+      package: const $pb.PackageName(
+          _omitMessageNames ? '' : 'bilibili.main.community.reply.v1'),
+      createEmptyInstance: create)
+    ..aI(1, _omitFieldNames ? '' : 'type')
+    ..aInt64(2, _omitFieldNames ? '' : 'oid')
+    ..aInt64(3, _omitFieldNames ? '' : 'rpid')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  TranslateReplyReq clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  TranslateReplyReq copyWith(void Function(TranslateReplyReq) updates) =>
+      super.copyWith((message) => updates(message as TranslateReplyReq))
+          as TranslateReplyReq;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static TranslateReplyReq create() => TranslateReplyReq._();
+  @$core.override
+  TranslateReplyReq createEmptyInstance() => create();
+  @$core.pragma('dart2js:noInline')
+  static TranslateReplyReq getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<TranslateReplyReq>(create);
+  static TranslateReplyReq? _defaultInstance;
+
+  /// 业务type
+  @$pb.TagNumber(1)
+  $core.int get type => $_getIZ(0);
+  @$pb.TagNumber(1)
+  set type($core.int value) => $_setSignedInt32(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasType() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearType() => $_clearField(1);
+
+  /// 稿件id
+  @$pb.TagNumber(2)
+  $fixnum.Int64 get oid => $_getI64(1);
+  @$pb.TagNumber(2)
+  set oid($fixnum.Int64 value) => $_setInt64(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasOid() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearOid() => $_clearField(2);
+
+  /// 评论id
+  @$pb.TagNumber(3)
+  $fixnum.Int64 get rpid => $_getI64(2);
+  @$pb.TagNumber(3)
+  set rpid($fixnum.Int64 value) => $_setInt64(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasRpid() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearRpid() => $_clearField(3);
 }
 
 const $core.bool _omitFieldNames =

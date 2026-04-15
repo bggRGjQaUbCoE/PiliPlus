@@ -2857,6 +2857,8 @@ const ReplyControl$json = {
       '6': '.bilibili.main.community.reply.v1.ReplyControl.InsertEffect',
       '10': 'insertEffect'
     },
+    {'1': 'translate_state', '3': 37, '4': 1, '5': 5, '10': 'translateState'},
+    {'1': 'show_translate', '3': 38, '4': 1, '5': 8, '10': 'showTranslate'},
   ],
   '3': [
     ReplyControl_EasterEggLabel$json,
@@ -2977,18 +2979,19 @@ final $typed_data.Uint8List replyControlDescriptor = $convert.base64Decode(
     'aWxpLm1haW4uY29tbXVuaXR5LnJlcGx5LnYxLlJlcGx5Q29udHJvbC5FYXN0ZXJFZ2dMYWJlbF'
     'IOZWFzdGVyRWdnTGFiZWwSJwoPY29udGV4dF9mZWF0dXJlGCMgASgJUg5jb250ZXh0RmVhdHVy'
     'ZRJgCg1pbnNlcnRfZWZmZWN0GCQgASgLMjsuYmlsaWJpbGkubWFpbi5jb21tdW5pdHkucmVwbH'
-    'kudjEuUmVwbHlDb250cm9sLkluc2VydEVmZmVjdFIMaW5zZXJ0RWZmZWN0GkEKDkVhc3RlckVn'
-    'Z0xhYmVsEhQKBWltYWdlGAEgASgJUgVpbWFnZRIZCghqdW1wX3VybBgCIAEoCVIHanVtcFVybB'
-    'rXAQoLR3JhZGVSZWNvcmQSFAoFc2NvcmUYASABKAVSBXNjb3JlElUKBXRleHRzGAIgAygLMj8u'
-    'YmlsaWJpbGkubWFpbi5jb21tdW5pdHkucmVwbHkudjEuUmVwbHlDb250cm9sLkdyYWRlUmVjb3'
-    'JkLlRleHRSBXRleHRzGlsKBFRleHQSEAoDcmF3GAEgASgJUgNyYXcSQQoFc3R5bGUYAiABKAsy'
-    'Ky5iaWxpYmlsaS5tYWluLmNvbW11bml0eS5yZXBseS52MS5UZXh0U3R5bGVSBXN0eWxlGjwKDE'
-    'luc2VydEVmZmVjdBIYCgdjb250ZW50GAEgASgJUgdjb250ZW50EhIKBGljb24YAiABKAlSBGlj'
-    'b24a8QEKClZvdGVPcHRpb24SYgoKbGFiZWxfa2luZBgBIAEoDjJDLmJpbGliaWxpLm1haW4uY2'
-    '9tbXVuaXR5LnJlcGx5LnYxLlJlcGx5Q29udHJvbC5Wb3RlT3B0aW9uLkxhYmVsS2luZFIJbGFi'
-    'ZWxLaW5kEhIKBGRlc2MYAiABKAlSBGRlc2MSEAoDaWR4GAMgASgDUgNpZHgSFwoHdm90ZV9pZB'
-    'gEIAEoA1IGdm90ZUlkIkAKCUxhYmVsS2luZBIVChFERUZBVUxUX0xhYmVsS2luZBAAEgcKA1JF'
-    'RBABEggKBEJMVUUQAhIJCgVQTEFJThAD');
+    'kudjEuUmVwbHlDb250cm9sLkluc2VydEVmZmVjdFIMaW5zZXJ0RWZmZWN0EicKD3RyYW5zbGF0'
+    'ZV9zdGF0ZRglIAEoBVIOdHJhbnNsYXRlU3RhdGUSJQoOc2hvd190cmFuc2xhdGUYJiABKAhSDX'
+    'Nob3dUcmFuc2xhdGUaQQoORWFzdGVyRWdnTGFiZWwSFAoFaW1hZ2UYASABKAlSBWltYWdlEhkK'
+    'CGp1bXBfdXJsGAIgASgJUgdqdW1wVXJsGtcBCgtHcmFkZVJlY29yZBIUCgVzY29yZRgBIAEoBV'
+    'IFc2NvcmUSVQoFdGV4dHMYAiADKAsyPy5iaWxpYmlsaS5tYWluLmNvbW11bml0eS5yZXBseS52'
+    'MS5SZXBseUNvbnRyb2wuR3JhZGVSZWNvcmQuVGV4dFIFdGV4dHMaWwoEVGV4dBIQCgNyYXcYAS'
+    'ABKAlSA3JhdxJBCgVzdHlsZRgCIAEoCzIrLmJpbGliaWxpLm1haW4uY29tbXVuaXR5LnJlcGx5'
+    'LnYxLlRleHRTdHlsZVIFc3R5bGUaPAoMSW5zZXJ0RWZmZWN0EhgKB2NvbnRlbnQYASABKAlSB2'
+    'NvbnRlbnQSEgoEaWNvbhgCIAEoCVIEaWNvbhrxAQoKVm90ZU9wdGlvbhJiCgpsYWJlbF9raW5k'
+    'GAEgASgOMkMuYmlsaWJpbGkubWFpbi5jb21tdW5pdHkucmVwbHkudjEuUmVwbHlDb250cm9sLl'
+    'ZvdGVPcHRpb24uTGFiZWxLaW5kUglsYWJlbEtpbmQSEgoEZGVzYxgCIAEoCVIEZGVzYxIQCgNp'
+    'ZHgYAyABKANSA2lkeBIXCgd2b3RlX2lkGAQgASgDUgZ2b3RlSWQiQAoJTGFiZWxLaW5kEhUKEU'
+    'RFRkFVTFRfTGFiZWxLaW5kEAASBwoDUkVEEAESCAoEQkxVRRACEgkKBVBMQUlOEAM=');
 
 @$core.Deprecated('Use replyExtraDescriptor instead')
 const ReplyExtra$json = {
@@ -3311,6 +3314,14 @@ const ReplyInfo$json = {
       '10': 'memberV2'
     },
     {'1': 'track_info', '3': 16, '4': 1, '5': 9, '10': 'trackInfo'},
+    {
+      '1': 'translated_text',
+      '3': 17,
+      '4': 1,
+      '5': 11,
+      '6': '.bilibili.main.community.reply.v1.Content',
+      '10': 'translatedText'
+    },
   ],
 };
 
@@ -3326,8 +3337,9 @@ final $typed_data.Uint8List replyInfoDescriptor = $convert.base64Decode(
     'NvbW11bml0eS5yZXBseS52MS5NZW1iZXJSBm1lbWJlchJTCg1yZXBseV9jb250cm9sGA4gASgL'
     'Mi4uYmlsaWJpbGkubWFpbi5jb21tdW5pdHkucmVwbHkudjEuUmVwbHlDb250cm9sUgxyZXBseU'
     'NvbnRyb2wSRwoJbWVtYmVyX3YyGA8gASgLMiouYmlsaWJpbGkubWFpbi5jb21tdW5pdHkucmVw'
-    'bHkudjEuTWVtYmVyVjJSCG1lbWJlclYyEh0KCnRyYWNrX2luZm8YECABKAlSCXRyYWNrSW5mbw'
-    '==');
+    'bHkudjEuTWVtYmVyVjJSCG1lbWJlclYyEh0KCnRyYWNrX2luZm8YECABKAlSCXRyYWNrSW5mbx'
+    'JSCg90cmFuc2xhdGVkX3RleHQYESABKAsyKS5iaWxpYmlsaS5tYWluLmNvbW11bml0eS5yZXBs'
+    'eS52MS5Db250ZW50Ug50cmFuc2xhdGVkVGV4dA==');
 
 @$core.Deprecated('Use replyInfoReplyDescriptor instead')
 const ReplyInfoReply$json = {
@@ -4561,3 +4573,18 @@ const WordSearchParam$json = {
 /// Descriptor for `WordSearchParam`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List wordSearchParamDescriptor = $convert.base64Decode(
     'Cg9Xb3JkU2VhcmNoUGFyYW0SHwoLc2hvd25fY291bnQYASABKANSCnNob3duQ291bnQ=');
+
+@$core.Deprecated('Use translateReplyReqDescriptor instead')
+const TranslateReplyReq$json = {
+  '1': 'TranslateReplyReq',
+  '2': [
+    {'1': 'type', '3': 1, '4': 1, '5': 5, '10': 'type'},
+    {'1': 'oid', '3': 2, '4': 1, '5': 3, '10': 'oid'},
+    {'1': 'rpid', '3': 3, '4': 1, '5': 3, '10': 'rpid'},
+  ],
+};
+
+/// Descriptor for `TranslateReplyReq`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List translateReplyReqDescriptor = $convert.base64Decode(
+    'ChFUcmFuc2xhdGVSZXBseVJlcRISCgR0eXBlGAEgASgFUgR0eXBlEhAKA29pZBgCIAEoA1IDb2'
+    'lkEhIKBHJwaWQYAyABKANSBHJwaWQ=');

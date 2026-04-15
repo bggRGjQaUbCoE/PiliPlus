@@ -11,6 +11,7 @@ import 'package:PiliPlus/common/widgets/gesture/tap_gesture_recognizer.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/image_grid/image_grid_view.dart';
 import 'package:PiliPlus/common/widgets/pendant_avatar.dart';
+import 'package:PiliPlus/grpc/reply.dart';
 import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
     show ReplyInfo, ReplyControl, Content, Url;
 import 'package:PiliPlus/http/reply.dart';
@@ -36,10 +37,12 @@ import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
+import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/url_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:characters/characters.dart';
 import 'package:fixnum/fixnum.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
@@ -82,6 +85,47 @@ class ReplyItemGrpc extends StatelessWidget {
   static final _timeRegExp = RegExp(r'^(?:\d+[:：])?\d+[:：]\d+$');
   static bool enableWordRe = Pref.enableWordRe;
   static int? replyLengthLimit = Pref.replyLengthLimit;
+
+  static Future<bool> addReplyBanWord(String keyword) async {
+    final normalized = keyword.trim();
+    if (normalized.isEmpty) {
+      SmartDialog.showToast('请选择要屏蔽的内容');
+      return false;
+    }
+
+    final escaped = RegExp.escape(normalized);
+    final current = Pref.banWordForReply;
+    final items = current.isEmpty ? const <String>[] : current.split('|');
+    if (items.contains(escaped)) {
+      SmartDialog.showToast('该关键词已存在');
+      return false;
+    }
+
+    final next = current.isEmpty ? escaped : '$current|$escaped';
+    await GStorage.setting.put(SettingBoxKey.banWordForReply, next);
+    ReplyGrpc.replyRegExp = RegExp(next, caseSensitive: false);
+    ReplyGrpc.enableFilter = true;
+    SmartDialog.showToast('已加入评论过滤关键词');
+    return true;
+  }
+
+  void showReplyBanWordDialog(
+    BuildContext context,
+    ReplyInfo item,
+    VoidCallback onDelete,
+  ) {
+    Future<void>.delayed(Duration.zero, () {
+      final currentContext = Get.context ?? context;
+      showDialog(
+        context: currentContext,
+        builder: (dialogContext) => _ReplyBanWordDialog(
+          message: item.content.message,
+          item: item,
+          onDelete: onDelete,
+        ),
+      );
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1135,6 +1179,15 @@ class ReplyItemGrpc extends StatelessWidget {
           ListTile(
             onTap: () {
               Get.back();
+              showReplyBanWordDialog(context, item, onDelete);
+            },
+            minLeadingWidth: 0,
+            leading: const Icon(Icons.gesture_outlined, size: 19),
+            title: Text('取词加入过滤', style: style),
+          ),
+          ListTile(
+            onTap: () {
+              Get.back();
               SavePanel.toSavePanel(upMid: upMid, item: item);
             },
             minLeadingWidth: 0,
@@ -1160,6 +1213,312 @@ class ReplyItemGrpc extends StatelessWidget {
             ),
         ],
       ),
+    );
+  }
+}
+
+class _ReplyBanWordDialog extends StatefulWidget {
+  const _ReplyBanWordDialog({
+    required this.message,
+    required this.item,
+    required this.onDelete,
+  });
+
+  final String message;
+  final ReplyInfo item;
+  final VoidCallback onDelete;
+
+  @override
+  State<_ReplyBanWordDialog> createState() => _ReplyBanWordDialogState();
+}
+
+class _ReplyBanWordDialogState extends State<_ReplyBanWordDialog> {
+  late final List<String> _chars = widget.message.characters.toList();
+  late final List<int> _charStarts = _buildCharStarts(_chars);
+  final ScrollController _scrollController = ScrollController();
+
+  int? _selectionStart;
+  int? _selectionEnd;
+  bool _isDragging = false;
+  bool _blockUser = false;
+
+  static List<int> _buildCharStarts(List<String> chars) {
+    int offset = 0;
+    return chars.map((char) {
+      final start = offset;
+      offset += char.length;
+      return start;
+    }).toList();
+  }
+
+  String get _selectedText {
+    if (_selectionStart == null || _selectionEnd == null) {
+      return '';
+    }
+    final start = min(_selectionStart!, _selectionEnd!);
+    final end = max(_selectionStart!, _selectionEnd!);
+    return _chars.sublist(start, end + 1).join();
+  }
+
+  bool _isSelected(int index) {
+    if (_selectionStart == null || _selectionEnd == null) {
+      return false;
+    }
+    final start = min(_selectionStart!, _selectionEnd!);
+    final end = max(_selectionStart!, _selectionEnd!);
+    return index >= start && index <= end;
+  }
+
+  int _indexFromTextOffset(int textOffset) {
+    for (int i = _charStarts.length - 1; i >= 0; i--) {
+      if (textOffset >= _charStarts[i]) {
+        return i;
+      }
+    }
+    return 0;
+  }
+
+  int? _hitTestIndex(BoxConstraints constraints, Offset localPosition) {
+    if (_chars.isEmpty) {
+      return null;
+    }
+
+    final theme = Theme.of(context);
+    final textStyle = theme.textTheme.bodyLarge?.copyWith(
+      fontSize: 20,
+      height: 1.9,
+      color: theme.colorScheme.onSurface,
+    );
+    if (textStyle == null) {
+      return null;
+    }
+
+    final painter = TextPainter(
+      textDirection: Directionality.of(context),
+      text: TextSpan(
+        style: textStyle,
+        children: [
+          for (final char in _chars) TextSpan(text: char),
+        ],
+      ),
+    )..layout(maxWidth: constraints.maxWidth);
+
+    final adjustedPosition =
+        localPosition + Offset(0, _scrollController.hasClients ? _scrollController.offset : 0);
+
+    if (adjustedPosition.dx < 0 ||
+        adjustedPosition.dy < 0 ||
+        adjustedPosition.dx > painter.width ||
+        adjustedPosition.dy > painter.height) {
+      return null;
+    }
+
+    final textOffset = painter.getPositionForOffset(adjustedPosition).offset;
+    return _indexFromTextOffset(textOffset);
+  }
+
+  void _updateSelection(int index, {required bool resetStart}) {
+    final nextStart = resetStart ? index : (_selectionStart ?? index);
+    if (_selectionStart == nextStart && _selectionEnd == index) {
+      return;
+    }
+    setState(() {
+      _selectionStart = nextStart;
+      _selectionEnd = index;
+    });
+  }
+
+  Future<void> _submit() async {
+    final keyword = _selectedText.trim();
+    if (keyword.isEmpty && !_blockUser) {
+      SmartDialog.showToast('请选择要屏蔽的内容');
+      return;
+    }
+
+    bool didSomething = false;
+    if (keyword.isNotEmpty) {
+      final added = await ReplyItemGrpc.addReplyBanWord(keyword);
+      didSomething = added;
+    }
+
+    bool blocked = false;
+    if (_blockUser) {
+      final res = await VideoHttp.relationMod(
+        mid: widget.item.mid.toInt(),
+        act: 5,
+        reSrc: 11,
+      );
+      if (res.isSuccess) {
+        SmartDialog.showToast('拉黑成功');
+        blocked = true;
+        didSomething = true;
+      } else {
+        res.toast();
+      }
+    }
+
+    if (!didSomething || !mounted) {
+      return;
+    }
+    Navigator.of(context).pop();
+    if (blocked) {
+      widget.onDelete();
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final textStyle = theme.textTheme.bodyLarge?.copyWith(
+      fontSize: 20,
+      height: 1.9,
+      color: theme.colorScheme.onSurface,
+    );
+    final selectedColor = theme.colorScheme.primaryContainer;
+    final selectedTextColor = theme.colorScheme.onPrimaryContainer;
+
+    return AlertDialog(
+      title: const Text('取词加入评论过滤'),
+      contentPadding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
+      content: SizedBox(
+        width: min(520, MediaQuery.sizeOf(context).width - 48),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '按住并滑动选择要加入过滤的文字',
+              style: TextStyle(
+                fontSize: 13,
+                color: theme.colorScheme.outline,
+              ),
+            ),
+            const SizedBox(height: 8),
+            CheckboxListTile(
+              value: _blockUser,
+              onChanged: (value) {
+                setState(() {
+                  _blockUser = value ?? false;
+                });
+              },
+              dense: true,
+              contentPadding: EdgeInsets.zero,
+              controlAffinity: ListTileControlAffinity.leading,
+              activeColor: theme.colorScheme.error,
+              title: Text(
+                '拉黑此人',
+                style: TextStyle(color: theme.colorScheme.error),
+              ),
+            ),
+            const SizedBox(height: 12),
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxHeight: 280),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surfaceContainerHighest.withValues(
+                    alpha: 0.45,
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    return Listener(
+                      onPointerDown: (event) {
+                        final index = _hitTestIndex(
+                          constraints,
+                          event.localPosition,
+                        );
+                        if (index == null) {
+                          return;
+                        }
+                        _isDragging = true;
+                        _updateSelection(index, resetStart: true);
+                      },
+                      onPointerMove: (event) {
+                        if (!_isDragging) {
+                          return;
+                        }
+                        final index = _hitTestIndex(
+                          constraints,
+                          event.localPosition,
+                        );
+                        if (index == null) {
+                          return;
+                        }
+                        _updateSelection(index, resetStart: false);
+                      },
+                      onPointerUp: (_) => _isDragging = false,
+                      onPointerCancel: (_) => _isDragging = false,
+                      child: SingleChildScrollView(
+                        controller: _scrollController,
+                        child: RichText(
+                          text: TextSpan(
+                            style: textStyle,
+                            children: [
+                              for (int i = 0; i < _chars.length; i++)
+                                TextSpan(
+                                  text: _chars[i],
+                                  style: _isSelected(i)
+                                      ? TextStyle(
+                                          backgroundColor: selectedColor,
+                                          color: selectedTextColor,
+                                        )
+                                      : null,
+                                ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              _selectedText.isEmpty ? '当前未选择内容' : '当前选择：$_selectedText',
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 13,
+                color: _selectedText.isEmpty
+                    ? theme.colorScheme.outline
+                    : theme.colorScheme.primary,
+              ),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () {
+            setState(() {
+              _selectionStart = null;
+              _selectionEnd = null;
+            });
+          },
+          child: const Text('清空'),
+        ),
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(
+            '取消',
+            style: TextStyle(color: theme.colorScheme.outline),
+          ),
+        ),
+        TextButton(
+          onPressed: _submit,
+          child: const Text('确定'),
+        ),
+      ],
     );
   }
 }

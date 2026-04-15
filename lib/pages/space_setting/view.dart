@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:PiliPlus/common/widgets/flutter/scroll_view/scroll_view.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models_new/space_setting/privacy.dart';
@@ -54,7 +55,7 @@ class _SpaceSettingPageState extends State<SpaceSettingPage> {
                       color: theme.colorScheme.outline.withValues(alpha: 0.1),
                     ),
                   );
-                  return CustomScrollView(
+                  return customScrollView(
                     slivers: [
                       dividerL,
                       SliverList.separated(

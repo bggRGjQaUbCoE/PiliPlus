@@ -1,4 +1,5 @@
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
+import 'package:PiliPlus/common/widgets/flutter/scroll_view/scroll_view.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/http/loading_state.dart';
@@ -54,7 +55,7 @@ class _SubDetailPageState extends State<SubDetailPage> with GridMixin {
       color: theme.colorScheme.surface,
       child: refreshIndicator(
         onRefresh: _subDetailController.onRefresh,
-        child: CustomScrollView(
+        child: customScrollView(
           controller: _subDetailController.scrollController,
           physics: const AlwaysScrollableScrollPhysics(),
           slivers: [

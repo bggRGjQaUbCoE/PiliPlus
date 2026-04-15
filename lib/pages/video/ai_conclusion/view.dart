@@ -1,3 +1,4 @@
+import 'package:PiliPlus/common/widgets/flutter/scroll_view/scroll_view.dart';
 import 'package:PiliPlus/common/widgets/flutter/selectable_text/text.dart';
 import 'package:PiliPlus/common/widgets/gesture/tap_gesture_recognizer.dart';
 import 'package:PiliPlus/models_new/video/video_ai_conclusion/model_result.dart';
@@ -26,7 +27,7 @@ class AiConclusionPanel extends CommonSlidePage {
     Key? key,
     bool tap = true,
   }) {
-    return CustomScrollView(
+    return customScrollView(
       key: key,
       shrinkWrap: !tap,
       physics: const AlwaysScrollableScrollPhysics(),

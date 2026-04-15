@@ -4,6 +4,7 @@ import 'package:PiliPlus/common/assets.dart';
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/flutter/list_tile.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
+import 'package:PiliPlus/common/widgets/flutter/scroll_view/scroll_view.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/nav_bar_config.dart';
@@ -78,7 +79,7 @@ class _MediaPageState extends CommonPageState<MinePage>
             child: refreshIndicator(
               onRefresh: controller.onRefresh,
               child: onBuild(
-                ListView(
+                listView(
                   padding: const .only(bottom: 100),
                   physics: const AlwaysScrollableScrollPhysics(),
                   children: [

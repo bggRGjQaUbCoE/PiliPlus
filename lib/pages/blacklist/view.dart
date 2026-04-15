@@ -1,5 +1,6 @@
 import 'package:PiliPlus/common/skeleton/msg_feed_top.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
+import 'package:PiliPlus/common/widgets/flutter/scroll_view/scroll_view.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/http/loading_state.dart';
@@ -45,7 +46,7 @@ class _BlackListPageState extends State<BlackListPage> {
       ),
       body: refreshIndicator(
         onRefresh: _blackListController.onRefresh,
-        child: CustomScrollView(
+        child: customScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           controller: _blackListController.scrollController,
           slivers: [

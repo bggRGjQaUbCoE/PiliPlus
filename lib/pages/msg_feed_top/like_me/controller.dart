@@ -92,7 +92,7 @@ class LikeMeController
     if (res.isSuccess) {
       item.noticeState = noticeState;
       loadingState.refresh();
-      SmartDialog.showToast('操作成功');
+      SmartDialog.showToast('设置成功');
     } else {
       res.toast();
     }

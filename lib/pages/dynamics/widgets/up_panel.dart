@@ -1,4 +1,5 @@
 import 'package:PiliPlus/common/assets.dart';
+import 'package:PiliPlus/common/widgets/flutter/scroll_view/scroll_view.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/models/common/dynamic/up_panel_position.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
@@ -41,7 +42,7 @@ class _UpPanelState extends State<UpPanel> {
     final upData = controller.upState.value.data;
     final List<UpItem> upList = upData.upList;
     final List<LiveUserItem>? liveList = upData.liveUsers?.items;
-    return CustomScrollView(
+    return customScrollView(
       scrollDirection: isTop ? Axis.horizontal : Axis.vertical,
       physics: const AlwaysScrollableScrollPhysics(),
       controller: controller.scrollController,

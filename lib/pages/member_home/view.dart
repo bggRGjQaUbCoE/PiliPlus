@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/button/more_btn.dart';
+import 'package:PiliPlus/common/widgets/flutter/scroll_view/scroll_view.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models_new/space/space/data.dart';
@@ -76,7 +77,7 @@ class _MemberHomeState extends State<MemberHome>
       Loading() => m3eLoading,
       Success(response: final res) =>
         res != null
-            ? CustomScrollView(
+            ? customScrollView(
                 slivers: [
                   if (res.archive?.item?.isNotEmpty == true) ...[
                     _header(

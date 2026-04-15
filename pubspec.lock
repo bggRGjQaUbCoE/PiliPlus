@@ -238,10 +238,10 @@ packages:
     dependency: "direct main"
     description:
       name: catcher_2
-      sha256: "3c9bc7435d250c1a958bbc7beb2f1d960ffb6c2658f2a5afd8d8e6db15cf8708"
+      sha256: ac9dd03230fa4058d14d46450335ca3c40564f734d793e52f81053f3cbf95009
       url: "https://pub.dev"
     source: hosted
-    version: "2.1.8"
+    version: "2.1.9"
   characters:
     dependency: "direct main"
     description:
@@ -1251,7 +1251,7 @@ packages:
     description:
       path: "."
       ref: master
-      resolved-ref: "64cbc7886f5a5a5ecb09a34aab0d8b9ee48d03d2"
+      resolved-ref: "240534adb4b4b5c2c7e6c4578b1fc052ce98d7fd"
       url: "https://github.com/bggRGjQaUbCoE/flutter_native_device_orientation.git"
     source: git
     version: "2.0.5"
@@ -1969,10 +1969,10 @@ packages:
     dependency: "direct main"
     description:
       name: wakelock_plus
-      sha256: "8b12256f616346910c519a35606fb69b1fe0737c06b6a447c6df43888b097f39"
+      sha256: ddf3db70eaa10c37558ff817519b85d527dbd21034fd5d8e1c2e85f31588f1c1
       url: "https://pub.dev"
     source: hosted
-    version: "1.5.1"
+    version: "1.5.2"
   wakelock_plus_platform_interface:
     dependency: transitive
     description:

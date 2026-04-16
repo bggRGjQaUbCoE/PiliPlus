@@ -8159,8 +8159,8 @@ class ReplyControl extends $pb.GeneratedMessage {
     ReplyControl_EasterEggLabel? easterEggLabel,
     $core.String? contextFeature,
     ReplyControl_InsertEffect? insertEffect,
-    $core.int? translateState,
-    $core.bool? showTranslate,
+    $core.int? translationSwitch,
+    $core.bool? showTranslation,
   }) {
     final result = create();
     if (action != null) result.action = action;
@@ -8200,8 +8200,8 @@ class ReplyControl extends $pb.GeneratedMessage {
     if (easterEggLabel != null) result.easterEggLabel = easterEggLabel;
     if (contextFeature != null) result.contextFeature = contextFeature;
     if (insertEffect != null) result.insertEffect = insertEffect;
-    if (translateState != null) result.translateState = translateState;
-    if (showTranslate != null) result.showTranslate = showTranslate;
+    if (translationSwitch != null) result.translationSwitch = translationSwitch;
+    if (showTranslation != null) result.showTranslation = showTranslation;
     return result;
   }
 
@@ -8261,8 +8261,8 @@ class ReplyControl extends $pb.GeneratedMessage {
     ..aOS(35, _omitFieldNames ? '' : 'contextFeature')
     ..aOM<ReplyControl_InsertEffect>(36, _omitFieldNames ? '' : 'insertEffect',
         subBuilder: ReplyControl_InsertEffect.create)
-    ..aI(37, _omitFieldNames ? '' : 'translateState')
-    ..aOB(38, _omitFieldNames ? '' : 'showTranslate')
+    ..aI(37, _omitFieldNames ? '' : 'translationSwitch')
+    ..aOB(100, _omitFieldNames ? '' : 'showTranslation')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -8611,25 +8611,24 @@ class ReplyControl extends $pb.GeneratedMessage {
   @$pb.TagNumber(36)
   ReplyControl_InsertEffect ensureInsertEffect() => $_ensure(35);
 
-  /// Translation availability state. Observed values: 1/2.
   @$pb.TagNumber(37)
-  $core.int get translateState => $_getIZ(36);
+  $core.int get translationSwitch => $_getIZ(36);
   @$pb.TagNumber(37)
-  set translateState($core.int value) => $_setSignedInt32(36, value);
+  set translationSwitch($core.int value) => $_setSignedInt32(36, value);
   @$pb.TagNumber(37)
-  $core.bool hasTranslateState() => $_has(36);
+  $core.bool hasTranslationSwitch() => $_has(36);
   @$pb.TagNumber(37)
-  void clearTranslateState() => $_clearField(37);
+  void clearTranslationSwitch() => $_clearField(37);
 
-  /// Whether translate-related capability is enabled for this reply context.
-  @$pb.TagNumber(38)
-  $core.bool get showTranslate => $_getBF(37);
-  @$pb.TagNumber(38)
-  set showTranslate($core.bool value) => $_setBool(37, value);
-  @$pb.TagNumber(38)
-  $core.bool hasShowTranslate() => $_has(37);
-  @$pb.TagNumber(38)
-  void clearShowTranslate() => $_clearField(38);
+  /// extra field
+  @$pb.TagNumber(100)
+  $core.bool get showTranslation => $_getBF(37);
+  @$pb.TagNumber(100)
+  set showTranslation($core.bool value) => $_setBool(37, value);
+  @$pb.TagNumber(100)
+  $core.bool hasShowTranslation() => $_has(37);
+  @$pb.TagNumber(100)
+  void clearShowTranslation() => $_clearField(100);
 }
 
 class ReplyExtra extends $pb.GeneratedMessage {
@@ -9520,7 +9519,7 @@ class ReplyInfo extends $pb.GeneratedMessage {
     ReplyControl? replyControl,
     MemberV2? memberV2,
     $core.String? trackInfo,
-    Content? translatedText,
+    Content? translatedContent,
   }) {
     final result = create();
     if (replies != null) result.replies.addAll(replies);
@@ -9539,7 +9538,7 @@ class ReplyInfo extends $pb.GeneratedMessage {
     if (replyControl != null) result.replyControl = replyControl;
     if (memberV2 != null) result.memberV2 = memberV2;
     if (trackInfo != null) result.trackInfo = trackInfo;
-    if (translatedText != null) result.translatedText = translatedText;
+    if (translatedContent != null) result.translatedContent = translatedContent;
     return result;
   }
 
@@ -9578,7 +9577,7 @@ class ReplyInfo extends $pb.GeneratedMessage {
     ..aOM<MemberV2>(15, _omitFieldNames ? '' : 'memberV2',
         subBuilder: MemberV2.create)
     ..aOS(16, _omitFieldNames ? '' : 'trackInfo')
-    ..aOM<Content>(17, _omitFieldNames ? '' : 'translatedText',
+    ..aOM<Content>(17, _omitFieldNames ? '' : 'translatedContent',
         subBuilder: Content.create)
     ..hasRequiredFields = false;
 
@@ -9746,17 +9745,16 @@ class ReplyInfo extends $pb.GeneratedMessage {
   @$pb.TagNumber(16)
   void clearTrackInfo() => $_clearField(16);
 
-  /// 翻译结果(仅在翻译请求中返回)
   @$pb.TagNumber(17)
-  Content get translatedText => $_getN(16);
+  Content get translatedContent => $_getN(16);
   @$pb.TagNumber(17)
-  set translatedText(Content value) => $_setField(17, value);
+  set translatedContent(Content value) => $_setField(17, value);
   @$pb.TagNumber(17)
-  $core.bool hasTranslatedText() => $_has(16);
+  $core.bool hasTranslatedContent() => $_has(16);
   @$pb.TagNumber(17)
-  void clearTranslatedText() => $_clearField(17);
+  void clearTranslatedContent() => $_clearField(17);
   @$pb.TagNumber(17)
-  Content ensureTranslatedText() => $_ensure(16);
+  Content ensureTranslatedContent() => $_ensure(16);
 }
 
 class ReplyInfoReply extends $pb.GeneratedMessage {
@@ -14018,17 +14016,16 @@ class WordSearchParam extends $pb.GeneratedMessage {
   void clearShownCount() => $_clearField(1);
 }
 
-/// 翻译评论请求
 class TranslateReplyReq extends $pb.GeneratedMessage {
   factory TranslateReplyReq({
-    $core.int? type,
+    $fixnum.Int64? type,
     $fixnum.Int64? oid,
-    $fixnum.Int64? rpid,
+    $core.Iterable<$fixnum.Int64>? rpid,
   }) {
     final result = create();
     if (type != null) result.type = type;
     if (oid != null) result.oid = oid;
-    if (rpid != null) result.rpid = rpid;
+    if (rpid != null) result.rpid.addAll(rpid);
     return result;
   }
 
@@ -14046,9 +14043,9 @@ class TranslateReplyReq extends $pb.GeneratedMessage {
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.main.community.reply.v1'),
       createEmptyInstance: create)
-    ..aI(1, _omitFieldNames ? '' : 'type')
+    ..aInt64(1, _omitFieldNames ? '' : 'type')
     ..aInt64(2, _omitFieldNames ? '' : 'oid')
-    ..aInt64(3, _omitFieldNames ? '' : 'rpid')
+    ..p<$fixnum.Int64>(3, _omitFieldNames ? '' : 'rpid', $pb.PbFieldType.K6)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -14070,17 +14067,15 @@ class TranslateReplyReq extends $pb.GeneratedMessage {
       $pb.GeneratedMessage.$_defaultFor<TranslateReplyReq>(create);
   static TranslateReplyReq? _defaultInstance;
 
-  /// 业务type
   @$pb.TagNumber(1)
-  $core.int get type => $_getIZ(0);
+  $fixnum.Int64 get type => $_getI64(0);
   @$pb.TagNumber(1)
-  set type($core.int value) => $_setSignedInt32(0, value);
+  set type($fixnum.Int64 value) => $_setInt64(0, value);
   @$pb.TagNumber(1)
   $core.bool hasType() => $_has(0);
   @$pb.TagNumber(1)
   void clearType() => $_clearField(1);
 
-  /// 稿件id
   @$pb.TagNumber(2)
   $fixnum.Int64 get oid => $_getI64(1);
   @$pb.TagNumber(2)
@@ -14090,15 +14085,64 @@ class TranslateReplyReq extends $pb.GeneratedMessage {
   @$pb.TagNumber(2)
   void clearOid() => $_clearField(2);
 
-  /// 评论id
   @$pb.TagNumber(3)
-  $fixnum.Int64 get rpid => $_getI64(2);
-  @$pb.TagNumber(3)
-  set rpid($fixnum.Int64 value) => $_setInt64(2, value);
-  @$pb.TagNumber(3)
-  $core.bool hasRpid() => $_has(2);
-  @$pb.TagNumber(3)
-  void clearRpid() => $_clearField(3);
+  $pb.PbList<$fixnum.Int64> get rpid => $_getList(2);
+}
+
+class TranslateReplyResp extends $pb.GeneratedMessage {
+  factory TranslateReplyResp({
+    $core.Iterable<$core.MapEntry<$fixnum.Int64, ReplyInfo>>? translatedReply,
+  }) {
+    final result = create();
+    if (translatedReply != null)
+      result.translatedReply.addEntries(translatedReply);
+    return result;
+  }
+
+  TranslateReplyResp._();
+
+  factory TranslateReplyResp.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory TranslateReplyResp.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'TranslateReplyResp',
+      package: const $pb.PackageName(
+          _omitMessageNames ? '' : 'bilibili.main.community.reply.v1'),
+      createEmptyInstance: create)
+    ..m<$fixnum.Int64, ReplyInfo>(1, _omitFieldNames ? '' : 'translatedReply',
+        entryClassName: 'TranslateReplyResp.TranslatedReplyEntry',
+        keyFieldType: $pb.PbFieldType.O6,
+        valueFieldType: $pb.PbFieldType.OM,
+        valueCreator: ReplyInfo.create,
+        valueDefaultOrMaker: ReplyInfo.getDefault,
+        packageName: const $pb.PackageName('bilibili.main.community.reply.v1'))
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  TranslateReplyResp clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  TranslateReplyResp copyWith(void Function(TranslateReplyResp) updates) =>
+      super.copyWith((message) => updates(message as TranslateReplyResp))
+          as TranslateReplyResp;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static TranslateReplyResp create() => TranslateReplyResp._();
+  @$core.override
+  TranslateReplyResp createEmptyInstance() => create();
+  @$core.pragma('dart2js:noInline')
+  static TranslateReplyResp getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<TranslateReplyResp>(create);
+  static TranslateReplyResp? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $pb.PbMap<$fixnum.Int64, ReplyInfo> get translatedReply => $_getMap(0);
 }
 
 const $core.bool _omitFieldNames =

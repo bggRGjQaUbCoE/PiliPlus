@@ -2857,8 +2857,20 @@ const ReplyControl$json = {
       '6': '.bilibili.main.community.reply.v1.ReplyControl.InsertEffect',
       '10': 'insertEffect'
     },
-    {'1': 'translate_state', '3': 37, '4': 1, '5': 5, '10': 'translateState'},
-    {'1': 'show_translate', '3': 38, '4': 1, '5': 8, '10': 'showTranslate'},
+    {
+      '1': 'translation_switch',
+      '3': 37,
+      '4': 1,
+      '5': 5,
+      '10': 'translationSwitch'
+    },
+    {
+      '1': 'show_translation',
+      '3': 100,
+      '4': 1,
+      '5': 8,
+      '10': 'showTranslation'
+    },
   ],
   '3': [
     ReplyControl_EasterEggLabel$json,
@@ -2979,19 +2991,20 @@ final $typed_data.Uint8List replyControlDescriptor = $convert.base64Decode(
     'aWxpLm1haW4uY29tbXVuaXR5LnJlcGx5LnYxLlJlcGx5Q29udHJvbC5FYXN0ZXJFZ2dMYWJlbF'
     'IOZWFzdGVyRWdnTGFiZWwSJwoPY29udGV4dF9mZWF0dXJlGCMgASgJUg5jb250ZXh0RmVhdHVy'
     'ZRJgCg1pbnNlcnRfZWZmZWN0GCQgASgLMjsuYmlsaWJpbGkubWFpbi5jb21tdW5pdHkucmVwbH'
-    'kudjEuUmVwbHlDb250cm9sLkluc2VydEVmZmVjdFIMaW5zZXJ0RWZmZWN0EicKD3RyYW5zbGF0'
-    'ZV9zdGF0ZRglIAEoBVIOdHJhbnNsYXRlU3RhdGUSJQoOc2hvd190cmFuc2xhdGUYJiABKAhSDX'
-    'Nob3dUcmFuc2xhdGUaQQoORWFzdGVyRWdnTGFiZWwSFAoFaW1hZ2UYASABKAlSBWltYWdlEhkK'
-    'CGp1bXBfdXJsGAIgASgJUgdqdW1wVXJsGtcBCgtHcmFkZVJlY29yZBIUCgVzY29yZRgBIAEoBV'
-    'IFc2NvcmUSVQoFdGV4dHMYAiADKAsyPy5iaWxpYmlsaS5tYWluLmNvbW11bml0eS5yZXBseS52'
-    'MS5SZXBseUNvbnRyb2wuR3JhZGVSZWNvcmQuVGV4dFIFdGV4dHMaWwoEVGV4dBIQCgNyYXcYAS'
-    'ABKAlSA3JhdxJBCgVzdHlsZRgCIAEoCzIrLmJpbGliaWxpLm1haW4uY29tbXVuaXR5LnJlcGx5'
-    'LnYxLlRleHRTdHlsZVIFc3R5bGUaPAoMSW5zZXJ0RWZmZWN0EhgKB2NvbnRlbnQYASABKAlSB2'
-    'NvbnRlbnQSEgoEaWNvbhgCIAEoCVIEaWNvbhrxAQoKVm90ZU9wdGlvbhJiCgpsYWJlbF9raW5k'
-    'GAEgASgOMkMuYmlsaWJpbGkubWFpbi5jb21tdW5pdHkucmVwbHkudjEuUmVwbHlDb250cm9sLl'
-    'ZvdGVPcHRpb24uTGFiZWxLaW5kUglsYWJlbEtpbmQSEgoEZGVzYxgCIAEoCVIEZGVzYxIQCgNp'
-    'ZHgYAyABKANSA2lkeBIXCgd2b3RlX2lkGAQgASgDUgZ2b3RlSWQiQAoJTGFiZWxLaW5kEhUKEU'
-    'RFRkFVTFRfTGFiZWxLaW5kEAASBwoDUkVEEAESCAoEQkxVRRACEgkKBVBMQUlOEAM=');
+    'kudjEuUmVwbHlDb250cm9sLkluc2VydEVmZmVjdFIMaW5zZXJ0RWZmZWN0Ei0KEnRyYW5zbGF0'
+    'aW9uX3N3aXRjaBglIAEoBVIRdHJhbnNsYXRpb25Td2l0Y2gSKQoQc2hvd190cmFuc2xhdGlvbh'
+    'hkIAEoCFIPc2hvd1RyYW5zbGF0aW9uGkEKDkVhc3RlckVnZ0xhYmVsEhQKBWltYWdlGAEgASgJ'
+    'UgVpbWFnZRIZCghqdW1wX3VybBgCIAEoCVIHanVtcFVybBrXAQoLR3JhZGVSZWNvcmQSFAoFc2'
+    'NvcmUYASABKAVSBXNjb3JlElUKBXRleHRzGAIgAygLMj8uYmlsaWJpbGkubWFpbi5jb21tdW5p'
+    'dHkucmVwbHkudjEuUmVwbHlDb250cm9sLkdyYWRlUmVjb3JkLlRleHRSBXRleHRzGlsKBFRleH'
+    'QSEAoDcmF3GAEgASgJUgNyYXcSQQoFc3R5bGUYAiABKAsyKy5iaWxpYmlsaS5tYWluLmNvbW11'
+    'bml0eS5yZXBseS52MS5UZXh0U3R5bGVSBXN0eWxlGjwKDEluc2VydEVmZmVjdBIYCgdjb250ZW'
+    '50GAEgASgJUgdjb250ZW50EhIKBGljb24YAiABKAlSBGljb24a8QEKClZvdGVPcHRpb24SYgoK'
+    'bGFiZWxfa2luZBgBIAEoDjJDLmJpbGliaWxpLm1haW4uY29tbXVuaXR5LnJlcGx5LnYxLlJlcG'
+    'x5Q29udHJvbC5Wb3RlT3B0aW9uLkxhYmVsS2luZFIJbGFiZWxLaW5kEhIKBGRlc2MYAiABKAlS'
+    'BGRlc2MSEAoDaWR4GAMgASgDUgNpZHgSFwoHdm90ZV9pZBgEIAEoA1IGdm90ZUlkIkAKCUxhYm'
+    'VsS2luZBIVChFERUZBVUxUX0xhYmVsS2luZBAAEgcKA1JFRBABEggKBEJMVUUQAhIJCgVQTEFJ'
+    'ThAD');
 
 @$core.Deprecated('Use replyExtraDescriptor instead')
 const ReplyExtra$json = {
@@ -3315,12 +3328,12 @@ const ReplyInfo$json = {
     },
     {'1': 'track_info', '3': 16, '4': 1, '5': 9, '10': 'trackInfo'},
     {
-      '1': 'translated_text',
+      '1': 'translated_content',
       '3': 17,
       '4': 1,
       '5': 11,
       '6': '.bilibili.main.community.reply.v1.Content',
-      '10': 'translatedText'
+      '10': 'translatedContent'
     },
   ],
 };
@@ -3338,8 +3351,8 @@ final $typed_data.Uint8List replyInfoDescriptor = $convert.base64Decode(
     'Mi4uYmlsaWJpbGkubWFpbi5jb21tdW5pdHkucmVwbHkudjEuUmVwbHlDb250cm9sUgxyZXBseU'
     'NvbnRyb2wSRwoJbWVtYmVyX3YyGA8gASgLMiouYmlsaWJpbGkubWFpbi5jb21tdW5pdHkucmVw'
     'bHkudjEuTWVtYmVyVjJSCG1lbWJlclYyEh0KCnRyYWNrX2luZm8YECABKAlSCXRyYWNrSW5mbx'
-    'JSCg90cmFuc2xhdGVkX3RleHQYESABKAsyKS5iaWxpYmlsaS5tYWluLmNvbW11bml0eS5yZXBs'
-    'eS52MS5Db250ZW50Ug50cmFuc2xhdGVkVGV4dA==');
+    'JYChJ0cmFuc2xhdGVkX2NvbnRlbnQYESABKAsyKS5iaWxpYmlsaS5tYWluLmNvbW11bml0eS5y'
+    'ZXBseS52MS5Db250ZW50UhF0cmFuc2xhdGVkQ29udGVudA==');
 
 @$core.Deprecated('Use replyInfoReplyDescriptor instead')
 const ReplyInfoReply$json = {
@@ -4578,13 +4591,55 @@ final $typed_data.Uint8List wordSearchParamDescriptor = $convert.base64Decode(
 const TranslateReplyReq$json = {
   '1': 'TranslateReplyReq',
   '2': [
-    {'1': 'type', '3': 1, '4': 1, '5': 5, '10': 'type'},
+    {'1': 'type', '3': 1, '4': 1, '5': 3, '10': 'type'},
     {'1': 'oid', '3': 2, '4': 1, '5': 3, '10': 'oid'},
-    {'1': 'rpid', '3': 3, '4': 1, '5': 3, '10': 'rpid'},
+    {'1': 'rpid', '3': 3, '4': 3, '5': 3, '10': 'rpid'},
   ],
 };
 
 /// Descriptor for `TranslateReplyReq`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List translateReplyReqDescriptor = $convert.base64Decode(
-    'ChFUcmFuc2xhdGVSZXBseVJlcRISCgR0eXBlGAEgASgFUgR0eXBlEhAKA29pZBgCIAEoA1IDb2'
-    'lkEhIKBHJwaWQYAyABKANSBHJwaWQ=');
+    'ChFUcmFuc2xhdGVSZXBseVJlcRISCgR0eXBlGAEgASgDUgR0eXBlEhAKA29pZBgCIAEoA1IDb2'
+    'lkEhIKBHJwaWQYAyADKANSBHJwaWQ=');
+
+@$core.Deprecated('Use translateReplyRespDescriptor instead')
+const TranslateReplyResp$json = {
+  '1': 'TranslateReplyResp',
+  '2': [
+    {
+      '1': 'translated_reply',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6':
+          '.bilibili.main.community.reply.v1.TranslateReplyResp.TranslatedReplyEntry',
+      '10': 'translatedReply'
+    },
+  ],
+  '3': [TranslateReplyResp_TranslatedReplyEntry$json],
+};
+
+@$core.Deprecated('Use translateReplyRespDescriptor instead')
+const TranslateReplyResp_TranslatedReplyEntry$json = {
+  '1': 'TranslatedReplyEntry',
+  '2': [
+    {'1': 'key', '3': 1, '4': 1, '5': 3, '10': 'key'},
+    {
+      '1': 'value',
+      '3': 2,
+      '4': 1,
+      '5': 11,
+      '6': '.bilibili.main.community.reply.v1.ReplyInfo',
+      '10': 'value'
+    },
+  ],
+  '7': {'7': true},
+};
+
+/// Descriptor for `TranslateReplyResp`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List translateReplyRespDescriptor = $convert.base64Decode(
+    'ChJUcmFuc2xhdGVSZXBseVJlc3ASdAoQdHJhbnNsYXRlZF9yZXBseRgBIAMoCzJJLmJpbGliaW'
+    'xpLm1haW4uY29tbXVuaXR5LnJlcGx5LnYxLlRyYW5zbGF0ZVJlcGx5UmVzcC5UcmFuc2xhdGVk'
+    'UmVwbHlFbnRyeVIPdHJhbnNsYXRlZFJlcGx5Gm8KFFRyYW5zbGF0ZWRSZXBseUVudHJ5EhAKA2'
+    'tleRgBIAEoA1IDa2V5EkEKBXZhbHVlGAIgASgLMisuYmlsaWJpbGkubWFpbi5jb21tdW5pdHku'
+    'cmVwbHkudjEuUmVwbHlJbmZvUgV2YWx1ZToCOAE=');

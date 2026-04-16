@@ -9,8 +9,8 @@ import 'package:PiliPlus/utils/accounts/account.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:desktop_webview_window/desktop_webview_window.dart';
 import 'package:get/get.dart';
-import 'package:webview_all/webview_all.dart';
 
 class GeetestWebviewDialog extends StatefulWidget {
   const GeetestWebviewDialog(this.gt, this.challenge, {super.key});
@@ -18,8 +18,26 @@ class GeetestWebviewDialog extends StatefulWidget {
   final String gt;
   final String challenge;
 
+  @override
+  State<GeetestWebviewDialog> createState() => _GeetestWebviewDialogState();
+}
+
+class _GeetestWebviewDialogState extends State<GeetestWebviewDialog> {
   static const _geetestJsUri =
       'https://static.geetest.com/static/js/fullpage.0.0.0.js';
+
+  late Future<LoadingState<String>> _future;
+  Webview? _linuxWebview;
+  bool _linuxWebviewLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _future = _getConfig(widget.gt, widget.challenge);
+    if (Platform.isLinux) {
+      _initLinuxWebview();
+    }
+  }
 
   static Future<LoadingState<String>> _getConfig(
     String gt,
@@ -64,133 +82,167 @@ class GeetestWebviewDialog extends StatefulWidget {
     return Error(res.data['message']);
   }
 
-  @override
-  State<GeetestWebviewDialog> createState() => _GeetestWebviewDialogState();
-}
+  Future<void> _initLinuxWebview() async {
+    setState(() {
+      _linuxWebviewLoading = true;
+    });
 
-class _GeetestWebviewDialogState extends State<GeetestWebviewDialog> {
-  late final bool _isLinux = Platform.isLinux;
-  late final Future<LoadingState<String>> _future;
-  late WebViewController? _linuxController;
+    final config = await _future;
+    if (config is Error) {
+      if (mounted) {
+        config.toast();
+        Get.back();
+      }
+      return;
+    }
 
-  @override
-  void initState() {
-    super.initState();
-    _future = GeetestWebviewDialog._getConfig(widget.gt, widget.challenge);
+    final response = (config as Success<String>).response;
 
-    if (_isLinux) {
-      _linuxController = WebViewController()
-        ..setJavaScriptMode(JavaScriptMode.unrestricted)
-        ..setUserAgent(BrowserUa.mob)
-        ..addJavaScriptChannel(
-          'geetestResult',
-          onMessageReceived: (JavaScriptMessage message) {
-            try {
-              final Map<String, dynamic> data = jsonDecode(message.message);
-              if (data['type'] == 'success' &&
-                  data['payload'] is Map<String, dynamic>) {
-                Get.back(result: data['payload']);
-              } else if (data['type'] == 'error') {
-                debugPrint('geetest error: ${data['payload']}');
-              }
-            } catch (_) {
-              debugPrint('geetest invalid: ${message.message}');
-            }
-          },
-        )
-        ..setNavigationDelegate(
-          NavigationDelegate(
-            onPageFinished: (_) async {
-              final config = await _future;
-              if (!mounted) return;
-              if (config case Success(:final response)) {
-                await _linuxController!.runJavaScript('''
-                  let t=Geetest($response)
-                    .onSuccess(()=>R("success",t.getValidate()))
-                    .onError((o)=>R("error",o));
-                  t.onReady(()=> {
-                    t.verify();
-                  });
-                ''');
-              } else {
-                config.toast();
-                Get.back();
-              }
-            },
-          ),
-        );
+    _linuxWebview = await WebviewWindow.create(
+      configuration: const CreateConfiguration(
+        windowWidth: 300,
+        windowHeight: 400,
+        title: "验证码",
+      ),
+    );
 
-      const initialHtml =
-          '''
-          <!DOCTYPE html><html><head></head><body>
-          <script src="${GeetestWebviewDialog._geetestJsUri}"></script>
-          <script>
-          function R(n,o){
-            window.geetestResult.postMessage(JSON.stringify({type: n, payload: o}));
-          }
-          </script>
-          </body></html>
-          ''';
-      _linuxController!.loadHtmlString(initialHtml);
+    _linuxWebview!.addOnWebMessageReceivedCallback((msg) {
+      final msgStr = msg.toString();
+      if (msgStr.startsWith("success:")) {
+        final dataStr = msgStr.substring("success:".length);
+        try {
+          final data = jsonDecode(dataStr);
+          Get.back(result: data);
+        } catch (e) {
+          debugPrint('geetest decode error: $e');
+        }
+      } else if (msgStr.startsWith("error:")) {
+        debugPrint('geetest error: $msgStr');
+      }
+    });
+
+    _linuxWebview!.onClose.whenComplete(() {
+      if (mounted) {
+        Get.back();
+      }
+    });
+
+    final html =
+        '''
+<!DOCTYPE html><html><head></head><body>
+<script src="$_geetestJsUri"></script>
+<script>
+  function R(n,o){
+     window.webkit.messageHandlers.msgToNative.postMessage(n + ':' + JSON.stringify(o));
+  }
+  let t=Geetest($response).onSuccess(()=>R("success",t.getValidate())).onError((o)=>R("error",o));
+  t.onReady(()=>t.verify());
+</script>
+</body></html>
+''';
+
+    final tempDir = Directory.systemTemp;
+    final file = File(
+      '${tempDir.path}/geetest_${DateTime.now().millisecondsSinceEpoch}.html',
+    );
+    await file.writeAsString(html);
+
+    _linuxWebview!.launch('file://${file.path}');
+
+    if (mounted) {
+      setState(() {
+        _linuxWebviewLoading = false;
+      });
     }
   }
 
   @override
+  void dispose() {
+    _linuxWebview?.close();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    if (Platform.isLinux) {
+      return AlertDialog(
+        title: const Text('验证码'),
+        content: SizedBox(
+          width: 300,
+          height: 400,
+          child: Center(
+            child: _linuxWebviewLoading
+                ? const CircularProgressIndicator()
+                : const Text('请在弹出的新窗口中完成验证'),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: Get.back,
+            child: Text(
+              '取消',
+              style: TextStyle(color: ColorScheme.of(context).outline),
+            ),
+          ),
+        ],
+      );
+    }
+
     return AlertDialog(
       title: const Text('验证码'),
       content: SizedBox(
         width: 300,
         height: 400,
-        child: _isLinux
-            ? WebViewWidget(controller: _linuxController!)
-            : InAppWebView(
-                webViewEnvironment: webViewEnvironment,
-                initialSettings: InAppWebViewSettings(
-                  clearCache: true,
-                  javaScriptEnabled: true,
-                  forceDark: ForceDark.AUTO,
-                  useHybridComposition: false,
-                  algorithmicDarkeningAllowed: true,
-                  useShouldOverrideUrlLoading: true,
-                  userAgent: BrowserUa.mob,
-                  mixedContentMode: MixedContentMode.MIXED_CONTENT_ALWAYS_ALLOW,
-                ),
-                initialData: InAppWebViewInitialData(
-                  data:
-                      '<!DOCTYPE html><html><head></head><body><script src="${GeetestWebviewDialog._geetestJsUri}"></script><script>function R(n,o){flutter_inappwebview.callHandler(n,o)}</script></body></html>',
-                ),
-                onWebViewCreated: (ctr) {
-                  ctr
-                    ..addJavaScriptHandler(
-                      handlerName: 'success',
-                      callback: (args) {
-                        if (args.isNotEmpty &&
-                            args[0] is Map<String, dynamic>) {
-                          Get.back(result: args[0]);
-                        } else {
-                          debugPrint('geetest invalid result: $args');
-                        }
-                      },
-                    )
-                    ..addJavaScriptHandler(
-                      handlerName: 'error',
-                      callback: (args) => debugPrint('geetest error: $args'),
-                    );
-                },
-                onLoadStop: (ctr, _) async {
-                  final config = await _future;
-                  if (config case Success(:final response)) {
-                    ctr.evaluateJavascript(
-                      source:
-                          'let t=Geetest($response).onSuccess(()=>R("success",t.getValidate())).onError((o)=>R("error",o));t.onReady(()=>t.verify());',
-                    );
-                  } else {
-                    config.toast();
-                    Get.back();
+        child: InAppWebView(
+          webViewEnvironment: webViewEnvironment,
+          initialSettings: InAppWebViewSettings(
+            clearCache: true,
+            javaScriptEnabled: true,
+            forceDark: ForceDark.AUTO,
+            useHybridComposition: false,
+            algorithmicDarkeningAllowed: true,
+            useShouldOverrideUrlLoading: true,
+            userAgent: BrowserUa.mob,
+            mixedContentMode: MixedContentMode.MIXED_CONTENT_ALWAYS_ALLOW,
+          ),
+          initialData: InAppWebViewInitialData(
+            data:
+                '<!DOCTYPE html><html><head></head><body><script src="$_geetestJsUri"></script><script>function R(n,o){flutter_inappwebview.callHandler(n,o)}</script></body></html>',
+          ),
+          onWebViewCreated: (ctr) {
+            ctr
+              ..addJavaScriptHandler(
+                handlerName: 'success',
+                callback: (args) {
+                  if (args.isNotEmpty) {
+                    if (args[0] case Map<String, dynamic> data) {
+                      Get.back(result: data);
+                      return;
+                    }
                   }
+                  debugPrint('geetest invalid result: $args');
                 },
-              ),
+              )
+              ..addJavaScriptHandler(
+                handlerName: 'error',
+                callback: (args) {
+                  debugPrint('geetest error: $args');
+                },
+              );
+          },
+          onLoadStop: (ctr, _) async {
+            final config = await _future;
+            if (config case Success(:final response)) {
+              ctr.evaluateJavascript(
+                source:
+                    'let t=Geetest($response).onSuccess(()=>R("success",t.getValidate())).onError((o)=>R("error",o));t.onReady(()=>t.verify());',
+              );
+            } else {
+              config.toast();
+              Get.back();
+            }
+          },
+        ),
       ),
       actions: [
         TextButton(

@@ -79,7 +79,10 @@ dependencies:
   # 浏览器
   # webview_flutter: ^4.10.0
   flutter_inappwebview: ^6.1.5
-  webview_all: ^1.0.3
+  desktop_webview_window:
+    git:
+      url: https://github.com/Predidit/linux_webview_window
+      ref: main
   # 解决sliver滑动不同步
   # extended_nested_scroll_view: ^6.2.1
   extended_nested_scroll_view:

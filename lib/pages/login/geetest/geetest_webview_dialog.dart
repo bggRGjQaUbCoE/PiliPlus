@@ -1,15 +1,15 @@
-import 'dart:convert';
-import 'dart:io';
+import 'dart:convert' show jsonDecode, jsonEncode;
+import 'dart:io' show Platform, Directory, File;
 
 import 'package:PiliPlus/http/browser_ua.dart';
 import 'package:PiliPlus/http/init.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/main.dart';
 import 'package:PiliPlus/utils/accounts/account.dart';
+import 'package:desktop_webview_window/desktop_webview_window.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
-import 'package:desktop_webview_window/desktop_webview_window.dart';
 import 'package:get/get.dart';
 
 class GeetestWebviewDialog extends StatefulWidget {
@@ -26,9 +26,9 @@ class _GeetestWebviewDialogState extends State<GeetestWebviewDialog> {
   static const _geetestJsUri =
       'https://static.geetest.com/static/js/fullpage.0.0.0.js';
 
-  late Future<LoadingState<String>> _future;
+  late final Future<LoadingState<String>> _future;
   Webview? _linuxWebview;
-  bool _linuxWebviewLoading = false;
+  late bool _linuxWebviewLoading = true;
 
   @override
   void initState() {
@@ -83,16 +83,15 @@ class _GeetestWebviewDialogState extends State<GeetestWebviewDialog> {
   }
 
   Future<void> _initLinuxWebview() async {
-    setState(() {
-      _linuxWebviewLoading = true;
-    });
-
     final config = await _future;
+
+    if (!mounted) {
+      return;
+    }
+
     if (config is Error) {
-      if (mounted) {
-        config.toast();
-        Get.back();
-      }
+      config.toast();
+      Get.back();
       return;
     }
 
@@ -105,6 +104,11 @@ class _GeetestWebviewDialogState extends State<GeetestWebviewDialog> {
         title: "验证码",
       ),
     );
+
+    if (!mounted) {
+      _closeLinuxWebview();
+      return;
+    }
 
     _linuxWebview!.addOnWebMessageReceivedCallback((msg) {
       final msgStr = msg.toString();
@@ -147,6 +151,11 @@ class _GeetestWebviewDialogState extends State<GeetestWebviewDialog> {
     );
     await file.writeAsString(html);
 
+    if (!mounted) {
+      _closeLinuxWebview();
+      return;
+    }
+
     _linuxWebview!.launch('file://${file.path}');
 
     if (mounted) {
@@ -156,9 +165,14 @@ class _GeetestWebviewDialogState extends State<GeetestWebviewDialog> {
     }
   }
 
+  void _closeLinuxWebview() {
+    _linuxWebview?.close();
+    _linuxWebview = null;
+  }
+
   @override
   void dispose() {
-    _linuxWebview?.close();
+    _closeLinuxWebview();
     super.dispose();
   }
 
@@ -232,6 +246,7 @@ class _GeetestWebviewDialogState extends State<GeetestWebviewDialog> {
           },
           onLoadStop: (ctr, _) async {
             final config = await _future;
+            if (!mounted) return;
             if (config case Success(:final response)) {
               ctr.evaluateJavascript(
                 source:

@@ -379,7 +379,6 @@ class _LoginPageState extends State<LoginPage> {
                 Builder(
                   builder: (context) {
                     return PopupMenuButton(
-                      enabled: true,
                       padding: EdgeInsets.zero,
                       tooltip:
                           '选择国际冠码，'
@@ -427,7 +426,6 @@ class _LoginPageState extends State<LoginPage> {
                 const SizedBox(width: 6),
                 Expanded(
                   child: TextField(
-                    enabled: true,
                     controller: _loginPageCtr.telTextController,
                     keyboardType: TextInputType.number,
                     inputFormatters: <TextInputFormatter>[
@@ -459,7 +457,6 @@ class _LoginPageState extends State<LoginPage> {
               children: [
                 Expanded(
                   child: TextField(
-                    enabled: true,
                     controller: _loginPageCtr.smsCodeTextController,
                     decoration: const InputDecoration(
                       prefixIcon: Icon(Icons.sms_outlined),

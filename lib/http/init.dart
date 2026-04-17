@@ -20,7 +20,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
 import 'package:dio_http2_adapter/dio_http2_adapter.dart';
-import 'package:flutter/foundation.dart' show debugPrint, kDebugMode;
+import 'package:flutter/foundation.dart' show kDebugMode;
 
 class Request {
   static const _gzipDecoder = GZipDecoder();
@@ -31,10 +31,6 @@ class Request {
   static final _enableHttp2 = Pref.enableHttp2;
   static late final Dio dio;
   static Dio? _http11Dio;
-  static bool _watchingConnectivity = false;
-  static Set<ConnectivityResult>? _lastConnectivity;
-  static Timer? _networkChangeDebounce;
-
   static Dio get http11Dio =>
       _http11Dio ??= _enableHttp2 ? _cloneHttp11Dio() : dio;
   factory Request() => _instance;
@@ -120,7 +116,18 @@ class Request {
     return h11;
   }
 
-  static HttpClientAdapter _createHttpClientAdapter() {
+  static Timer? _networkChangeDebounce;
+  static void _watchConnectivity() {
+    Connectivity().onConnectivityChanged.skip(1).listen((result) {
+      _networkChangeDebounce?.cancel();
+      _networkChangeDebounce = Timer(
+        const Duration(milliseconds: 500),
+        _resetAdaptersForNetworkChange,
+      );
+    });
+  }
+
+  static (IOHttpClientAdapter, ConnectionManager?) _createPool() {
     final bool enableSystemProxy;
     late final String systemProxyHost;
     late final int? systemProxyPort;
@@ -144,108 +151,42 @@ class Request {
               ..autoUncompress = false, // Http2Adapter没有自动解压, 统一行为
     );
 
-    if (!_enableHttp2) {
-      return http11Adapter;
-    }
-
-    return Http2Adapter(
-      ConnectionManager(
-        idleTimeout: const Duration(seconds: 15),
-        onClientCreate: enableSystemProxy
-            ? (_, config) {
-                config
-                  ..proxy = Uri(
-                    scheme: 'http',
-                    host: systemProxyHost,
-                    port: systemProxyPort,
-                  )
-                  ..onBadCertificate = (_) => true;
-              }
-            : Pref.badCertificateCallback
-            ? (_, config) {
-                config.onBadCertificate = (_) => true;
-              }
-            : null,
-      ),
-      fallbackAdapter: http11Adapter,
-    );
-  }
-
-  static void _resetAdaptersForNetworkChange() {
-    final newAdapter = _createHttpClientAdapter();
-
-    final oldPrimaryAdapter = dio.httpClientAdapter;
-    final oldFallbackAdapter = oldPrimaryAdapter is Http2Adapter
-        ? oldPrimaryAdapter.fallbackAdapter
+    final connectionManager = _enableHttp2
+        ? ConnectionManager(
+            idleTimeout: const Duration(seconds: 15),
+            onClientCreate: enableSystemProxy
+                ? (_, config) => config
+                    ..proxy = Uri(
+                      scheme: 'http',
+                      host: systemProxyHost,
+                      port: systemProxyPort,
+                    )
+                    ..onBadCertificate = (_) => true
+                : Pref.badCertificateCallback
+                ? (_, config) => config.onBadCertificate = (_) => true
+                : null,
+          )
         : null;
-    final oldHttp11Adapter = _http11Dio?.httpClientAdapter;
-
-    dio.httpClientAdapter = newAdapter;
-
-    final h11 = _http11Dio;
-    if (h11 != null) {
-      h11.httpClientAdapter = _enableHttp2
-          ? (newAdapter as Http2Adapter).fallbackAdapter
-          : newAdapter;
-    }
-
-    oldPrimaryAdapter.close(force: true);
-    if (oldHttp11Adapter != null &&
-        !identical(oldHttp11Adapter, oldPrimaryAdapter)) {
-      oldHttp11Adapter.close(force: true);
-    }
-    if (oldFallbackAdapter != null &&
-        !identical(oldFallbackAdapter, oldPrimaryAdapter) &&
-        !identical(oldFallbackAdapter, oldHttp11Adapter)) {
-      oldFallbackAdapter.close(force: true);
-    }
+    return (http11Adapter, connectionManager);
   }
 
-  static bool _sameConnectivity(
-    Set<ConnectivityResult> previous,
-    Set<ConnectivityResult> current,
-  ) => previous.length == current.length && previous.containsAll(current);
-
-  static void _watchConnectivity() {
-    if (_watchingConnectivity) {
-      return;
-    }
-    _watchingConnectivity = true;
-
-    final connectivity = Connectivity();
-    connectivity
-        .checkConnectivity()
-        .then((results) {
-          _lastConnectivity = results.toSet();
-        })
-        .onError<Exception>((error, stackTrace) {
-          if (kDebugMode) {
-            debugPrint('Request: failed to get connectivity state: $error');
-          }
-        });
-
-    connectivity.onConnectivityChanged.listen((results) {
-      final current = results.toSet();
-      final previous = _lastConnectivity;
-      _lastConnectivity = current;
-      if (previous != null && _sameConnectivity(previous, current)) {
-        return;
+  @pragma('vm:notify-debugger-on-exception')
+  static void _resetAdaptersForNetworkChange() {
+    try {
+      final (h11, connectionManager) = _createPool();
+      if (connectionManager != null) {
+        (dio.httpClientAdapter as Http2Adapter)
+          ..connectionManager.close(force: true)
+          ..connectionManager = connectionManager
+          ..fallbackAdapter.close(force: true)
+          ..fallbackAdapter = h11;
+        _http11Dio?.httpClientAdapter = h11;
+      } else {
+        dio
+          ..httpClientAdapter.close(force: true)
+          ..httpClientAdapter = h11;
       }
-
-      _networkChangeDebounce?.cancel();
-      _networkChangeDebounce = Timer(const Duration(milliseconds: 500), () {
-        try {
-          _resetAdaptersForNetworkChange();
-        } on Exception catch (error, stackTrace) {
-          if (kDebugMode) {
-            debugPrint(
-              'Request: reset adapters after network change failed: '
-              '$error\n$stackTrace',
-            );
-          }
-        }
-      });
-    });
+    } catch (_) {}
   }
 
   /*
@@ -270,7 +211,12 @@ class Request {
       persistentConnection: true,
     );
 
-    dio = Dio(options)..httpClientAdapter = _createHttpClientAdapter();
+    final (h11, connectionManager) = _createPool();
+
+    dio = Dio(options)
+      ..httpClientAdapter = _enableHttp2
+          ? Http2Adapter(connectionManager, fallbackAdapter: h11)
+          : h11;
 
     // 先于其他Interceptor
     if (Pref.retryCount != 0) {
@@ -296,9 +242,7 @@ class Request {
         return status != null && status >= 200 && status < 300;
       };
 
-    if (Platform.isIOS) {
-      _watchConnectivity();
-    }
+    if (Platform.isIOS) _watchConnectivity();
   }
 
   /*

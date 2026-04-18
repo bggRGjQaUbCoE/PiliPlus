@@ -40,9 +40,10 @@ Thread 0 Crashed:
 
 
 ## 5. 修复建议
-建议开发者检查 Xcode 16 构建设置：
-* 确认 **Minimum Deployment Target**（最低部署目标）在 Intel 分支下是否被意外提升。
-* 建议在编译 Intel 架构包时开启 **Static Linking for Swift Standard Libraries**（静态链接 Swift 标准库）。
-* 检查是否在 `x86_64` 分支中引入了仅限 Apple Silicon (ARM) 环境支持的 Swift 6 新 API 类名。
+通过对源码的初步审计，建议开发者针对 Intel (x86_64) 分支进行以下调整，以解决 OCLP 环境下的链接断层：
+
+* 强制嵌入运行时库： 在 project.pbxproj 中明确开启 ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;。目前该配置缺失（默认为 NO），导致应用强制依赖系统 Shared Cache，而在 OCLP 驱动的旧款 Intel 设备上，系统库可能无法提供 Swift 6 所需的全部符号。
+* 强化 Podfile 约束： 建议在 macos/Podfile 的 post_install 钩子中增加强制对齐脚本。防止第三方插件（如视频引擎）因默认配置较高或未开启嵌入，导致整体包链接失败。
+* 体积优化建议： 若担心安装包体积，可仅针对 x86_64 架构开启嵌入，或提供专门的 Intel 兼容版 Release。
 
 ---

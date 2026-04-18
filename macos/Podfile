@@ -36,5 +36,16 @@ end
 post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_macos_build_settings(target)
+    
+    target.build_configurations.each do |config|
+      # 1. 强制将所有插件的最低支持版本设为 11.0，确保 Swift 6 符号兼容
+      config.build_settings['MACOSX_DEPLOYMENT_TARGET'] = '11.0'
+      
+      # 2. 核心大招：强制每个插件都自带 Swift 标准库，解决 Symbol not found
+      config.build_settings['ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES'] = 'YES'
+      
+      # 3. 针对 Intel (x86_64) 的特殊优化，确保生成完整的架构支持
+      config.build_settings['ONLY_ACTIVE_ARCH'] = 'NO'
+    end
   end
 end

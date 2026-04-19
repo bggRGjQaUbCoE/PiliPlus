@@ -27,6 +27,7 @@ import 'package:PiliPlus/models/user/danmaku_rule.dart';
 import 'package:PiliPlus/models/user/info.dart';
 import 'package:PiliPlus/plugin/pl_player/models/audio_output_type.dart';
 import 'package:PiliPlus/plugin/pl_player/models/bottom_progress_behavior.dart';
+import 'package:PiliPlus/plugin/pl_player/models/double_tap_seek_layout.dart';
 import 'package:PiliPlus/plugin/pl_player/models/fullscreen_mode.dart';
 import 'package:PiliPlus/plugin/pl_player/models/hwdec_type.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_repeat.dart';
@@ -570,6 +571,41 @@ abstract final class Pref {
 
   static int get fastForBackwardDuration =>
       _setting.get(SettingBoxKey.fastForBackwardDuration, defaultValue: 10);
+
+  static int get doubleTapBackwardDuration => _setting.get(
+    SettingBoxKey.doubleTapBackwardDuration,
+    defaultValue: fastForBackwardDuration,
+  );
+
+  static int get doubleTapForwardDuration => _setting.get(
+    SettingBoxKey.doubleTapForwardDuration,
+    defaultValue: fastForBackwardDuration,
+  );
+
+  static int get doubleTapBackwardZoneRaw => _setting.get(
+    SettingBoxKey.doubleTapBackwardZone,
+    defaultValue: DoubleTapSeekLayout.defaultBackwardPercent,
+  );
+
+  static int get doubleTapForwardZoneRaw => _setting.get(
+    SettingBoxKey.doubleTapForwardZone,
+    defaultValue: DoubleTapSeekLayout.defaultForwardPercent,
+  );
+
+  static int get doubleTapBackwardZone =>
+      DoubleTapSeekLayout.clampBackwardPercent(
+        doubleTapBackwardZoneRaw,
+        forwardPercent: doubleTapForwardZoneRaw,
+      );
+
+  static int get doubleTapForwardZone =>
+      DoubleTapSeekLayout.clampForwardPercent(
+        doubleTapForwardZoneRaw,
+        backwardPercent: doubleTapBackwardZone,
+      );
+
+  static bool get enableTwoFingerTapPause =>
+      _setting.get(SettingBoxKey.enableTwoFingerTapPause, defaultValue: false);
 
   static bool get recordSearchHistory =>
       _setting.get(SettingBoxKey.recordSearchHistory, defaultValue: true);

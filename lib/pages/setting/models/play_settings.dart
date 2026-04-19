@@ -7,6 +7,7 @@ import 'package:PiliPlus/pages/main/controller.dart';
 import 'package:PiliPlus/pages/setting/models/model.dart';
 import 'package:PiliPlus/pages/setting/widgets/select_dialog.dart';
 import 'package:PiliPlus/plugin/pl_player/models/bottom_progress_behavior.dart';
+import 'package:PiliPlus/plugin/pl_player/models/double_tap_seek_layout.dart';
 import 'package:PiliPlus/plugin/pl_player/models/fullscreen_mode.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_repeat.dart';
 import 'package:PiliPlus/services/service_locator.dart';
@@ -73,6 +74,42 @@ List<SettingsModel> get playSettings => [
     setKey: SettingBoxKey.enableQuickDouble,
     defaultVal: true,
   ),
+  NormalModel(
+    title: '双击区域调整',
+    leading: const Icon(Icons.crop_16_9_outlined),
+    getSubtitle: () {
+      final layout = DoubleTapSeekLayout.normalize(
+        backwardPercent: Pref.doubleTapBackwardZone,
+        forwardPercent: Pref.doubleTapForwardZone,
+      );
+      return '左 ${layout.backwardPercent}% / 中 ${layout.centerPercent}% / 右 ${layout.forwardPercent}%';
+    },
+    onTap: (_, setState) =>
+        Get.toNamed('/doubleTapSeekZoneSetting')?.then((_) => setState()),
+  ),
+  getVideoFilterSelectModel(
+    title: '左侧双击快退时长',
+    suffix: 's',
+    key: SettingBoxKey.doubleTapBackwardDuration,
+    values: [5, 10, 15, 20, 30],
+    defaultValue: Pref.fastForBackwardDuration,
+    isFilter: false,
+  ),
+  getVideoFilterSelectModel(
+    title: '右侧双击快进时长',
+    suffix: 's',
+    key: SettingBoxKey.doubleTapForwardDuration,
+    values: [5, 10, 15, 20, 30],
+    defaultValue: Pref.fastForBackwardDuration,
+    isFilter: false,
+  ),
+  const SwitchModel(
+    title: '双指轻点暂停/播放',
+    subtitle: '启用后，两指短按屏幕可切换播放状态',
+    leading: Icon(Icons.touch_app),
+    setKey: SettingBoxKey.enableTwoFingerTapPause,
+    defaultVal: false,
+  ),
   const SwitchModel(
     title: '左右侧滑动调节亮度/音量',
     leading: Icon(MdiIcons.tuneVerticalVariant),
@@ -91,14 +128,6 @@ List<SettingsModel> get playSettings => [
     leading: Icon(MdiIcons.panVertical),
     setKey: SettingBoxKey.enableSlideFS,
     defaultVal: true,
-  ),
-  getVideoFilterSelectModel(
-    title: '双击快进/快退时长',
-    suffix: 's',
-    key: SettingBoxKey.fastForBackwardDuration,
-    values: [5, 10, 15],
-    defaultValue: 10,
-    isFilter: false,
   ),
   const SwitchModel(
     title: '滑动快进/快退使用相对时长',
@@ -275,10 +304,7 @@ Future<void> _showSubtitleDialog(
     ),
   );
   if (res != null) {
-    await GStorage.setting.put(
-      SettingBoxKey.subtitlePreferenceV2,
-      res.index,
-    );
+    await GStorage.setting.put(SettingBoxKey.subtitlePreferenceV2, res.index);
     setState();
   }
 }
@@ -332,10 +358,7 @@ Future<void> _showProgressBehaviorDialog(
     ),
   );
   if (res != null) {
-    await GStorage.setting.put(
-      SettingBoxKey.btmProgressBehavior,
-      res.index,
-    );
+    await GStorage.setting.put(SettingBoxKey.btmProgressBehavior, res.index);
     setState();
   }
 }

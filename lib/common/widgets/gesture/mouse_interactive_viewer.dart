@@ -27,6 +27,9 @@ class MouseInteractiveViewer extends StatefulWidget {
     this.onPointerPanZoomUpdate,
     this.onPointerPanZoomEnd,
     this.onPointerDown,
+    this.onPointerMove,
+    this.onPointerUp,
+    this.onPointerCancel,
     this.onInteractionEnd,
     this.onInteractionStart,
     this.onInteractionUpdate,
@@ -61,6 +64,9 @@ class MouseInteractiveViewer extends StatefulWidget {
   final PointerPanZoomUpdateEventListener? onPointerPanZoomUpdate;
   final PointerPanZoomEndEventListener? onPointerPanZoomEnd;
   final PointerDownEventListener? onPointerDown;
+  final PointerMoveEventListener? onPointerMove;
+  final PointerUpEventListener? onPointerUp;
+  final PointerCancelEventListener? onPointerCancel;
   final GestureScaleEndCallback? onInteractionEnd;
   final GestureScaleStartCallback? onInteractionStart;
   final GestureScaleUpdateCallback? onInteractionUpdate;
@@ -436,10 +442,7 @@ class _MouseInteractiveViewerState extends State<MouseInteractiveViewer>
         _animation = _controller.drive(
           Tween<Offset>(
             begin: translation,
-            end: Offset(
-              frictionSimulationX.finalX,
-              frictionSimulationY.finalX,
-            ),
+            end: Offset(frictionSimulationX.finalX, frictionSimulationY.finalX),
           ).chain(CurveTween(curve: Curves.decelerate)),
         )..addListener(_handleInertiaAnimation);
         _controller
@@ -739,6 +742,9 @@ class _MouseInteractiveViewerState extends State<MouseInteractiveViewer>
       behavior: HitTestBehavior.opaque,
       onPointerSignal: _receivedPointerSignal,
       onPointerDown: _onPointerDown,
+      onPointerMove: widget.onPointerMove,
+      onPointerUp: widget.onPointerUp,
+      onPointerCancel: widget.onPointerCancel,
       onPointerPanZoomStart: _scaleGestureRecognizer.addPointerPanZoom,
       onPointerPanZoomUpdate: widget.onPointerPanZoomUpdate,
       onPointerPanZoomEnd: widget.onPointerPanZoomEnd,

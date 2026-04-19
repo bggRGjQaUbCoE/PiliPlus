@@ -57,6 +57,7 @@ import 'package:PiliPlus/pages/setting/extra_setting.dart';
 import 'package:PiliPlus/pages/setting/pages/bar_set.dart';
 import 'package:PiliPlus/pages/setting/pages/color_select.dart';
 import 'package:PiliPlus/pages/setting/pages/display_mode.dart';
+import 'package:PiliPlus/pages/setting/pages/double_tap_seek_zone_setting.dart';
 import 'package:PiliPlus/pages/setting/pages/font_size_select.dart';
 import 'package:PiliPlus/pages/setting/pages/logs.dart';
 import 'package:PiliPlus/pages/setting/pages/play_speed_set.dart';
@@ -132,6 +133,10 @@ class Routes {
     GetPage(name: '/blackListPage', page: () => const BlackListPage()),
     GetPage(name: '/colorSetting', page: () => const ColorSelectPage()),
     GetPage(name: '/fontSizeSetting', page: () => const FontSizeSelectPage()),
+    GetPage(
+      name: '/doubleTapSeekZoneSetting',
+      page: () => const DoubleTapSeekZoneSettingPage(),
+    ),
     // 屏幕帧率
     GetPage(name: '/displayModeSetting', page: () => const SetDisplayMode()),
     // 关于

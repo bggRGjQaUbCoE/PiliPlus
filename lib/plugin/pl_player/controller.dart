@@ -21,6 +21,7 @@ import 'package:PiliPlus/pages/mine/controller.dart';
 import 'package:PiliPlus/pages/sponsor_block/block_mixin.dart';
 import 'package:PiliPlus/plugin/pl_player/models/data_source.dart';
 import 'package:PiliPlus/plugin/pl_player/models/data_status.dart';
+import 'package:PiliPlus/plugin/pl_player/models/double_tap_seek_layout.dart';
 import 'package:PiliPlus/plugin/pl_player/models/double_tap_type.dart';
 import 'package:PiliPlus/plugin/pl_player/models/duration.dart';
 import 'package:PiliPlus/plugin/pl_player/models/fullscreen_mode.dart';
@@ -352,8 +353,14 @@ class PlPlayerController with BlockConfigMixin {
   late final enableSlideVolumeBrightness = Pref.enableSlideVolumeBrightness;
   late final enableSlideFS = Pref.enableSlideFS;
   late final enableDragSubtitle = Pref.enableDragSubtitle;
-  late final fastForBackwardDuration = Duration(
-    seconds: Pref.fastForBackwardDuration,
+  Duration get fastBackwardDuration =>
+      Duration(seconds: Pref.doubleTapBackwardDuration);
+  Duration get fastForwardDuration =>
+      Duration(seconds: Pref.doubleTapForwardDuration);
+  bool get enableTwoFingerTapPause => Pref.enableTwoFingerTapPause;
+  DoubleTapSeekLayout get doubleTapSeekLayout => DoubleTapSeekLayout.normalize(
+    backwardPercent: Pref.doubleTapBackwardZone,
+    forwardPercent: Pref.doubleTapForwardZone,
   );
 
   late final horizontalSeasonPanel = Pref.horizontalSeasonPanel;

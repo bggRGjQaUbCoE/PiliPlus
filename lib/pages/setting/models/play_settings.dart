@@ -183,14 +183,13 @@ List<SettingsModel> get playSettings => [
     defaultVal: true,
     onChanged: (value) => allowRotateScreen = value,
   ),
-  if (PlatformUtils.isMobile)
-    const SwitchModel(
-      title: '后台播放',
-      subtitle: '进入后台时继续播放',
-      leading: Icon(Icons.motion_photos_pause_outlined),
-      setKey: SettingBoxKey.continuePlayInBackground,
-      defaultVal: false,
-    ),
+  const SwitchModel(
+    title: '后台播放',
+    subtitle: '进入后台时继续播放',
+    leading: Icon(Icons.motion_photos_pause_outlined),
+    setKey: SettingBoxKey.continuePlayInBackground,
+    defaultVal: false,
+  ),
   if (Platform.isAndroid) ...[
     SwitchModel(
       title: '后台画中画',

@@ -5,7 +5,6 @@ import 'dart:io';
 import 'package:PiliPlus/models/common/enum_with_label.dart';
 import 'package:PiliPlus/pages/video/introduction/ugc/widgets/menu_row.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
-import 'package:PiliPlus/plugin/pl_player/models/heart_beat_type.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:collection/collection.dart';
@@ -107,13 +106,14 @@ class ShutdownTimerService {
   }
 
   void _syncProgressAndExit() {
-    final player = PlPlayerController.instance;
-    if (player != null && player.enableHeart && !player.isLive) {
-      final progress = player.positionSeconds.value;
-      if (progress > 0) {
-        player
-            .makeHeartBeat(progress, type: HeartBeatType.completed, isManual: true)
-            ?.whenComplete(() => exit(0));
+    if (PlPlayerController.instance case final player?) {
+      final res = player.makeHeartBeat(
+        player.positionSeconds.value,
+        type: .completed,
+        isManual: true,
+      );
+      if (res != null) {
+        res.whenComplete(() => exit(0));
         return;
       }
     }

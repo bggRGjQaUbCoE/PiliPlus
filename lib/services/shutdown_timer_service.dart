@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:PiliPlus/models/common/enum_with_label.dart';
 import 'package:PiliPlus/pages/video/introduction/ugc/widgets/menu_row.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
+import 'package:PiliPlus/plugin/pl_player/models/heart_beat_type.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:collection/collection.dart';
@@ -90,7 +91,7 @@ class ShutdownTimerService {
             return;
           }
         }
-        exit(0);
+        _syncProgressAndExit();
     }
   }
 
@@ -101,8 +102,22 @@ class ShutdownTimerService {
         _durationInMinutes = 0;
         SmartDialog.showToast('定时时间已到，已暂停');
       case _ShutdownType.exit:
-        exit(0);
+        _syncProgressAndExit();
     }
+  }
+
+  void _syncProgressAndExit() {
+    final player = PlPlayerController.instance;
+    if (player != null && player.enableHeart && !player.isLive) {
+      final progress = player.positionSeconds.value;
+      if (progress > 0) {
+        player
+            .makeHeartBeat(progress, type: HeartBeatType.completed, isManual: true)
+            ?.whenComplete(() => exit(0));
+        return;
+      }
+    }
+    exit(0);
   }
 
   static (int hour, int minute) _parseMinutes(int minutes) =>

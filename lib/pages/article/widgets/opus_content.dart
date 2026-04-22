@@ -151,7 +151,7 @@ class OpusContent extends StatelessWidget {
       style: _getStyle(
         word?.style,
         color ?? defaultColor,
-        word?.fontSize,
+        word?.effectiveFontSize,
       ),
     );
   }

@@ -507,8 +507,11 @@ class PlPlayerController with BlockConfigMixin {
     return _instance?.volume.value;
   }
 
-  static Future<void>? setVolumeIfExists(double volumeNew) {
-    return _instance?.setVolume(volumeNew);
+  static Future<void>? setVolumeIfExists(
+    double volumeNew, {
+    bool showIndicator = true,
+  }) {
+    return _instance?.setVolume(volumeNew, showIndicator: showIndicator);
   }
 
   Box video = GStorage.video;
@@ -1254,7 +1257,7 @@ class PlPlayerController with BlockConfigMixin {
   bool volumeInterceptEventStream = false;
 
   static final double maxVolume = PlatformUtils.isDesktop ? 2.0 : 1.0;
-  Future<void> setVolume(double volume) async {
+  Future<void> setVolume(double volume, {bool showIndicator = true}) async {
     if (this.volume.value != volume) {
       this.volume.value = volume;
       try {
@@ -1268,7 +1271,9 @@ class PlPlayerController with BlockConfigMixin {
         if (kDebugMode) debugPrint(err.toString());
       }
     }
-    volumeIndicator.value = true;
+    if (showIndicator) {
+      volumeIndicator.value = true;
+    }
     volumeInterceptEventStream = true;
     volumeTimer?.cancel();
     volumeTimer = Timer(const Duration(milliseconds: 200), () {

@@ -43,6 +43,7 @@ abstract final class ReplyGrpc {
 
   static bool needRemoveGrpc(ReplyInfo reply) {
     return (enableFilter && replyRegExp.hasMatch(reply.content.message)) ||
+        (enableUserFilter && replyUserRegExp.hasMatch(reply.member.name)) ||
         (antiGoodsReply && needRemoveGoodGrpc(reply));
   }
 

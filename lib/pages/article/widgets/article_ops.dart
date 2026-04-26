@@ -73,7 +73,10 @@ class ArticleOpus extends StatelessWidget {
                         width: width,
                         height: height,
                         memCacheWidth: width.cacheSize(context),
-                        imageUrl: ImageUtils.thumbnailUrl(card.url, 60),
+                        imageUrl: ImageUtils.thumbnailUrl(
+                          card.url,
+                          maxQuality: 60,
+                        ),
                         placeholder: (_, _) => const SizedBox.shrink(),
                       ),
                     ),

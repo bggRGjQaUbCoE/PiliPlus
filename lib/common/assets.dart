@@ -15,9 +15,9 @@ abstract final class Assets {
   static const trendingBanner = 'assets/images/trending_banner.png';
   static const ai = 'assets/images/ai.png';
 
-  static const livingChart = 'assets/images/live.gif';
+  // static const livingChart = 'assets/images/live.gif';
   static const livingStatic = 'assets/images/live.png';
-  static const livingRect = 'assets/images/live/live.gif';
+  static const livingRect = 'assets/images/live/live.png';
   static const livingBackground = 'assets/images/live/default_bg.webp';
 
   static const thunder1 = 'assets/images/paycoins/ic_thunder_1.png';

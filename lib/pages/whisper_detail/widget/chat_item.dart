@@ -671,7 +671,9 @@ class ChatItem extends StatelessWidget {
     if (eInfos != null) {
       for (final e in eInfos!) {
         emojiMap[e.text] ??= {
-          'url': e.hasGifUrl() ? e.gifUrl : e.url,
+          /// remove gif
+          'url': e.url,
+          // 'url': e.hasGifUrl() ? e.gifUrl : e.url,
           'size': e.size * 22.0,
         };
       }

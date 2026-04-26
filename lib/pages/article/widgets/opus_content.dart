@@ -229,7 +229,7 @@ class OpusContent extends StatelessWidget {
                   width: width,
                   height: height,
                   memCacheWidth: width.cacheSize(context),
-                  imageUrl: ImageUtils.thumbnailUrl(pic.url!, 60),
+                  imageUrl: ImageUtils.thumbnailUrl(pic.url!, maxQuality: 60),
                   fadeInDuration: const Duration(milliseconds: 120),
                   fadeOutDuration: const Duration(milliseconds: 120),
                   placeholder: (_, _) => Image.asset(Assets.loading),

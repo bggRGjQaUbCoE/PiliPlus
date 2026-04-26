@@ -298,7 +298,7 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
                                               : null,
                                           imageUrl: ImageUtils.thumbnailUrl(
                                             pic.url,
-                                            60,
+                                            maxQuality: 60,
                                           ),
                                           fadeInDuration: const Duration(
                                             milliseconds: 120,

@@ -98,7 +98,7 @@ class _GalleryViewerState extends State<GalleryViewer>
 
   String _getActualUrl(String url) {
     return _quality != 100
-        ? ImageUtils.thumbnailUrl(url, _quality)
+        ? ImageUtils.thumbnailUrl(url, maxQuality: _quality)
         : url.http2https;
   }
 
@@ -413,7 +413,10 @@ class _GalleryViewerState extends State<GalleryViewer>
                     _containerSize.width.cacheSize(context),
                     null,
                     CachedNetworkImageProvider(
-                      ImageUtils.thumbnailUrl(item.url, widget.quality),
+                      ImageUtils.thumbnailUrl(
+                        item.url,
+                        maxQuality: widget.quality,
+                      ),
                     ),
                   ),
                   minScale: widget.minScale,

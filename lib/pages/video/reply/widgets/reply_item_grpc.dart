@@ -794,11 +794,13 @@ class ReplyItemGrpc extends StatelessWidget {
           spanChildren.add(
             WidgetSpan(
               child: NetworkImgLayer(
-                src: emote.hasWebpUrl()
-                    ? emote.webpUrl
-                    : emote.hasGifUrl()
-                    ? emote.gifUrl
-                    : emote.url,
+                /// remove gif
+                src: emote.url,
+                // src: emote.hasWebpUrl()
+                //     ? emote.webpUrl
+                //     : emote.hasGifUrl()
+                //     ? emote.gifUrl
+                //     : emote.url,
                 type: ImageType.emote,
                 width: size,
                 height: size,

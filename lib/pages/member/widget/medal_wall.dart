@@ -107,7 +107,7 @@ class MedalWall extends StatelessWidget {
                       Padding(
                         padding: const .only(left: 4),
                         child: Image.asset(
-                          Assets.livingChart,
+                          Assets.livingStatic,
                           height: 16,
                           cacheHeight: 16.cacheSize(context),
                           color: colorScheme.primary,

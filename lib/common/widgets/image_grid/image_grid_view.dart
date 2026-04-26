@@ -22,7 +22,6 @@ import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/image_grid/image_grid_builder.dart';
-import 'package:PiliPlus/models/common/badge_type.dart';
 import 'package:PiliPlus/models/common/image_preview_type.dart';
 import 'package:PiliPlus/utils/extension/context_ext.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
@@ -58,6 +57,8 @@ class ImageModel {
       _isLongPic ??= (height / width) > Style.imgMaxRatio && width > 100;
   bool get isLivePhoto =>
       _isLivePhoto ??= enableLivePhoto && liveUrl?.isNotEmpty == true;
+
+  bool get isGif => url.endsWith(ImageUtils.kSuffixGIF);
 
   static bool enableLivePhoto = Pref.enableLivePhoto;
 }
@@ -245,13 +246,20 @@ class ImageGridView extends StatelessWidget {
                     text: 'Live',
                     right: 8,
                     bottom: 8,
-                    type: PBadgeType.gray,
+                    type: .gray,
                   )
                 else if (item.isLongPic)
                   const PBadge(
                     text: '长图',
                     right: 8,
                     bottom: 8,
+                  )
+                else if (item.isGif)
+                  const PBadge(
+                    text: 'GIF',
+                    right: 8,
+                    bottom: 8,
+                    type: .gray,
                   ),
               ],
             );

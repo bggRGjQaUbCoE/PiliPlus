@@ -62,7 +62,7 @@ Widget htmlRender({
                 width: width,
                 height: isEmote ? 22.0 : null,
                 memCacheWidth: width.cacheSize(context),
-                imageUrl: ImageUtils.thumbnailUrl(imgUrl, 60),
+                imageUrl: ImageUtils.thumbnailUrl(imgUrl, maxQuality: 60),
                 fadeInDuration: const Duration(milliseconds: 120),
                 fadeOutDuration: const Duration(milliseconds: 120),
                 placeholder: (context, url) => Image.asset(Assets.loading),

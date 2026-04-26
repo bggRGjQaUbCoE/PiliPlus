@@ -266,7 +266,16 @@ abstract final class ImageUtils {
     r'(@(\d+[a-z]_?)*)(\..*)?$',
     caseSensitive: false,
   );
-  static String thumbnailUrl(String? src, [int maxQuality = 1]) {
+
+  static const kSuffixJPG = '.jpg';
+  static const kSuffixGIF = '.gif';
+  static const kSuffixWEBP = '.webp';
+
+  static String thumbnailUrl(
+    String? src, {
+    int maxQuality = 1,
+    String suffix = kSuffixWEBP,
+  }) {
     if (src != null && maxQuality != 100) {
       maxQuality = math.max(maxQuality, GlobalData().imgQuality);
       bool hasMatch = false;
@@ -274,15 +283,14 @@ abstract final class ImageUtils {
         _thumbRegex,
         onMatch: (match) {
           hasMatch = true;
-          String suffix = match.group(3) ?? '.webp';
-          return '${match.group(1)}_${maxQuality}q$suffix';
+          return '${match.group(1)}_${maxQuality}q${match.group(3) ?? suffix}';
         },
         onNonMatch: (String str) {
           return str;
         },
       );
       if (!hasMatch) {
-        src += '@${maxQuality}q.webp';
+        src += '@${maxQuality}q$suffix';
       }
     }
     return src.http2https;

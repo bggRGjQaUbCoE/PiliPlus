@@ -293,7 +293,7 @@ class _AudioPageState extends State<AudioPage> {
                                     WidgetSpan(
                                       alignment: .bottom,
                                       child: Image.asset(
-                                        Assets.livingChart,
+                                        Assets.livingStatic,
                                         width: 16,
                                         height: 16,
                                         cacheWidth: 16.cacheSize(
@@ -337,7 +337,7 @@ class _AudioPageState extends State<AudioPage> {
                               WidgetSpan(
                                 alignment: .bottom,
                                 child: Image.asset(
-                                  Assets.livingChart,
+                                  Assets.livingStatic,
                                   width: 16,
                                   height: 16,
                                   cacheWidth: 16.cacheSize(

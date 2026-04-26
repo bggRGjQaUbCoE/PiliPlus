@@ -71,7 +71,15 @@ class NetworkImgLayer extends StatelessWidget {
       memCacheHeight = height.cacheSize(context);
     }
     return CachedNetworkImage(
-      imageUrl: ImageUtils.thumbnailUrl(src, quality),
+      imageUrl: ImageUtils.thumbnailUrl(
+        src,
+        maxQuality: quality,
+
+        /// remove gif
+        suffix: src!.endsWith(ImageUtils.kSuffixGIF)
+            ? ImageUtils.kSuffixJPG
+            : ImageUtils.kSuffixWEBP,
+      ),
       width: width,
       height: height,
       memCacheWidth: memCacheWidth,

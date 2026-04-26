@@ -593,7 +593,7 @@ abstract final class MemberHttp {
     }
   }
 
-  static Future<LoadingState<void>> createFollowTag(Object tagName) async {
+  static Future<LoadingState<int>> createFollowTag(String tagName) async {
     final res = await Request().post(
       Api.createFollowTag,
       queryParameters: {
@@ -607,7 +607,7 @@ abstract final class MemberHttp {
       options: Options(contentType: Headers.formUrlEncodedContentType),
     );
     if (res.data['code'] == 0) {
-      return const Success(null);
+      return Success(res.data['data']['tagid']);
     } else {
       return Error(res.data['message']);
     }

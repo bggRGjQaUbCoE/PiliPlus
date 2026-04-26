@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
+import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
 import 'package:PiliPlus/grpc/bilibili/im/type.pbenum.dart';
 import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
     show ReplyInfo;
@@ -37,6 +38,7 @@ import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show LengthLimitingTextInputFormatter;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:gt3_flutter_plugin/gt3_flutter_plugin.dart';
@@ -96,6 +98,35 @@ abstract final class RequestUtils {
       }
     } else {
       return false;
+    }
+  }
+
+  static Future<void> createFavTag(
+    BuildContext context,
+    ValueChanged<({int tagid, String tagName})> onSuccess,
+  ) async {
+    String tagName = '';
+    final onCreate = await showConfirmDialog(
+      context: context,
+      title: const Text('新建分组'),
+      content: TextFormField(
+        autofocus: true,
+        initialValue: tagName,
+        onChanged: (value) => tagName = value,
+        inputFormatters: [
+          LengthLimitingTextInputFormatter(16),
+        ],
+        decoration: const InputDecoration(border: OutlineInputBorder()),
+      ),
+    );
+    if (onCreate) {
+      final res = await MemberHttp.createFollowTag(tagName);
+      if (res case Success(:final response)) {
+        onSuccess((tagid: response, tagName: tagName));
+        SmartDialog.showToast('创建成功');
+      } else {
+        res.toast();
+      }
     }
   }
 
@@ -188,17 +219,13 @@ abstract final class RequestUtils {
                           expand: false,
                           snapSizes: [maxChildSize],
                           initialChildSize: maxChildSize,
-                          builder:
-                              (
-                                BuildContext context,
-                                ScrollController scrollController,
-                              ) {
-                                return GroupPanel(
-                                  mid: mid,
-                                  tags: followStatus!.tag,
-                                  scrollController: scrollController,
-                                );
-                              },
+                          builder: (context, scrollController) {
+                            return GroupPanel(
+                              mid: mid,
+                              tags: followStatus!.tag,
+                              scrollController: scrollController,
+                            );
+                          },
                         );
                       },
                     );

@@ -8,6 +8,7 @@ import 'package:PiliPlus/pages/follow/child/child_controller.dart';
 import 'package:PiliPlus/pages/follow/child/child_view.dart';
 import 'package:PiliPlus/pages/follow/controller.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
+import 'package:PiliPlus/utils/request_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show LengthLimitingTextInputFormatter;
@@ -45,56 +46,61 @@ class _FollowPageState extends State<FollowPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      appBar: AppBar(
-        title: _followController.isOwner
-            ? const Text('我的关注')
-            : Obx(() {
-                final name = _followController.name.value;
-                if (name != null) return Text('$name的关注');
-                return const SizedBox.shrink();
-              }),
-        actions: _followController.isOwner
-            ? [
-                IconButton(
-                  onPressed: _onCreateTag,
-                  icon: const Icon(Icons.add),
-                  tooltip: '新建分组',
-                ),
-                IconButton(
-                  onPressed: () => Get.toNamed(
-                    '/followSearch',
-                    arguments: {
-                      'mid': _followController.mid,
-                    },
-                  ),
-                  icon: const Icon(Icons.search_outlined),
-                  tooltip: '搜索',
-                ),
-                PopupMenuButton(
-                  icon: const Icon(Icons.more_vert),
-                  itemBuilder: (context) => [
-                    PopupMenuItem(
-                      onTap: () => Get.toNamed('/blackListPage'),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.block, size: 19),
-                          SizedBox(width: 10),
-                          Text('黑名单管理'),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(width: 6),
-              ]
-            : null,
-      ),
+      appBar: _buildAppBar,
       body: _followController.isOwner
           ? Obx(() => _buildBody(_followController.followState.value))
           : _childPage(),
     );
   }
+
+  PreferredSizeWidget get _buildAppBar => AppBar(
+    title: _followController.isOwner
+        ? const Text('我的关注')
+        : Obx(() {
+            final name = _followController.name.value;
+            if (name != null) return Text('$name的关注');
+            return const SizedBox.shrink();
+          }),
+    actions: _followController.isOwner
+        ? [
+            IconButton(
+              onPressed: () => RequestUtils.createFavTag(
+                context,
+                _followController.onCreateFavTag,
+              ),
+              icon: const Icon(Icons.add),
+              tooltip: '新建分组',
+            ),
+            IconButton(
+              onPressed: () => Get.toNamed(
+                '/followSearch',
+                arguments: {
+                  'mid': _followController.mid,
+                },
+              ),
+              icon: const Icon(Icons.search_outlined),
+              tooltip: '搜索',
+            ),
+            PopupMenuButton(
+              icon: const Icon(Icons.more_vert),
+              itemBuilder: (context) => [
+                PopupMenuItem(
+                  onTap: () => Get.toNamed('/blackListPage'),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.block, size: 19),
+                      SizedBox(width: 10),
+                      Text('黑名单管理'),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(width: 6),
+          ]
+        : null,
+  );
 
   Widget _childPage([MemberTagItemModel? item]) => FollowChildPage(
     tag: _tag,
@@ -223,7 +229,8 @@ class _FollowPageState extends State<FollowPage> {
                   context: context,
                   title: const Text('删除分组'),
                   content: const Text('删除后，该分组下的用户依旧保留？'),
-                  onConfirm: () => _followController.onDelTag(item.tagid!),
+                  onConfirm: () =>
+                      _followController.onDelTag(index, item.tagid!),
                 );
               },
               dense: true,
@@ -235,24 +242,6 @@ class _FollowPageState extends State<FollowPage> {
           ],
         ),
       ),
-    );
-  }
-
-  void _onCreateTag() {
-    String tagName = '';
-    showConfirmDialog(
-      context: context,
-      title: const Text('新建分组'),
-      content: TextFormField(
-        autofocus: true,
-        initialValue: tagName,
-        onChanged: (value) => tagName = value,
-        inputFormatters: [
-          LengthLimitingTextInputFormatter(16),
-        ],
-        decoration: const InputDecoration(border: OutlineInputBorder()),
-      ),
-      onConfirm: () => _followController.onCreateTag(tagName),
     );
   }
 }

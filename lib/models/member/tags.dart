@@ -17,4 +17,10 @@ class MemberTagItemModel {
     tagid = json['tagid'];
     tip = json['tip'];
   }
+
+  MemberTagItemModel.fromCreate(({int tagid, String tagName}) res) {
+    tagid = res.tagid;
+    name = res.tagName;
+    count = 0;
+  }
 }

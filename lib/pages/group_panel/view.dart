@@ -5,6 +5,7 @@ import 'package:PiliPlus/models/member/tags.dart';
 import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/feed_back.dart';
+import 'package:PiliPlus/utils/request_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -26,7 +27,7 @@ class GroupPanel extends StatefulWidget {
 
 class _GroupPanelState extends State<GroupPanel> {
   LoadingState<List<MemberTagItemModel>> loadingState = LoadingState.loading();
-  RxBool showDefaultBtn = true.obs;
+  final RxBool showDefaultBtn = true.obs;
   late final Set<int> tags = widget.tags == null
       ? {}
       : Set<int>.from(widget.tags!);
@@ -34,10 +35,10 @@ class _GroupPanelState extends State<GroupPanel> {
   @override
   void initState() {
     super.initState();
-    _query();
+    _queryFollowUpTags();
   }
 
-  void _query() {
+  void _queryFollowUpTags() {
     MemberHttp.followUpTags().then((res) {
       if (mounted) {
         loadingState = res..dataOrNull?.removeFirstWhere((e) => e.tagid == 0);
@@ -116,7 +117,7 @@ class _GroupPanelState extends State<GroupPanel> {
       Error(:final errMsg) => scrollErrorWidget(
         controller: widget.scrollController,
         errMsg: errMsg,
-        onReload: _query,
+        onReload: _queryFollowUpTags,
       ),
     };
   }
@@ -125,8 +126,8 @@ class _GroupPanelState extends State<GroupPanel> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: <Widget>[
+      crossAxisAlignment: .end,
+      children: [
         AppBar(
           backgroundColor: Colors.transparent,
           leading: IconButton(
@@ -135,6 +136,21 @@ class _GroupPanelState extends State<GroupPanel> {
             icon: const Icon(Icons.close_outlined),
           ),
           title: const Text('设置关注分组'),
+          actions: [
+            TextButton.icon(
+              onPressed: () =>
+                  RequestUtils.createFavTag(context, _onCreateFavTag),
+              icon: Icon(Icons.add, color: theme.colorScheme.primary),
+              label: const Text('新建分组'),
+              style: const ButtonStyle(
+                visualDensity: .compact,
+                padding: WidgetStatePropertyAll(
+                  .symmetric(horizontal: 18, vertical: 14),
+                ),
+              ),
+            ),
+            const SizedBox(width: 16),
+          ],
         ),
         Expanded(child: _buildBody),
         Divider(
@@ -142,20 +158,28 @@ class _GroupPanelState extends State<GroupPanel> {
           color: theme.disabledColor.withValues(alpha: 0.08),
         ),
         Padding(
-          padding: EdgeInsets.only(
+          padding: .only(
             right: 20,
             top: 12,
             bottom: MediaQuery.viewPaddingOf(context).bottom + 12,
           ),
           child: FilledButton.tonal(
             onPressed: onSave,
-            style: FilledButton.styleFrom(
-              visualDensity: VisualDensity.compact,
-            ),
+            style: const ButtonStyle(visualDensity: .compact),
             child: Obx(() => Text(showDefaultBtn.value ? '保存至默认分组' : '保存')),
           ),
         ),
       ],
     );
+  }
+
+  void _onCreateFavTag(({int tagid, String tagName}) res) {
+    if (!mounted) return;
+    if (loadingState case Success(:final response)) {
+      response.add(MemberTagItemModel.fromCreate(res));
+      setState(() {});
+    } else {
+      _queryFollowUpTags();
+    }
   }
 }

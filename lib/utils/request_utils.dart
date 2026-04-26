@@ -493,10 +493,6 @@ abstract final class RequestUtils {
     String vVoucher,
     ValueChanged<String> onSuccess,
   ) async {
-    if (Platform.isLinux) {
-      return;
-    }
-
     final res = await ValidateHttp.gaiaVgateRegister(vVoucher);
     if (!res.isSuccess) {
       res.toast();

@@ -14,7 +14,7 @@ class CachedNetworkSVGImage extends StatefulWidget {
     Key? key,
     String? cacheKey,
     Widget? placeholder,
-    Widget? errorWidget,
+    WidgetBuilder? errorBuilder,
     double? width,
     double? height,
     Map<String, String>? headers,
@@ -31,7 +31,7 @@ class CachedNetworkSVGImage extends StatefulWidget {
   }) : _url = url,
        _cacheKey = cacheKey,
        _placeholder = placeholder,
-       _errorWidget = errorWidget,
+       _errorBuilder = errorBuilder,
        _width = width,
        _height = height,
        _headers = headers,
@@ -50,7 +50,7 @@ class CachedNetworkSVGImage extends StatefulWidget {
   final String _url;
   final String? _cacheKey;
   final Widget? _placeholder;
-  final Widget? _errorWidget;
+  final WidgetBuilder? _errorBuilder;
   final double? _width;
   final double? _height;
   final Map<String, String>? _headers;
@@ -172,7 +172,8 @@ class _CachedNetworkSVGImageState extends State<CachedNetworkSVGImage> {
 
   Widget _buildPlaceholderWidget() => Center(child: widget._placeholder);
 
-  Widget _buildErrorWidget() => Center(child: widget._errorWidget);
+  Widget _buildErrorWidget() =>
+      Center(child: widget._errorBuilder?.call(context));
 
   Widget? _buildSVGImage() {
     if (_svgString == null) {

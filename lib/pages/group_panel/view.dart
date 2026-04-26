@@ -1,4 +1,3 @@
-import 'package:PiliPlus/common/widgets/flutter/scroll_view/scroll_view.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/member.dart';
@@ -70,7 +69,7 @@ class _GroupPanelState extends State<GroupPanel> {
   Widget get _buildBody {
     return switch (loadingState) {
       Loading() => m3eLoading,
-      Success(:final response) => ExtendedListView.builder(
+      Success(:final response) => ListView.builder(
         controller: widget.scrollController,
         itemCount: response.length,
         itemBuilder: (context, index) {

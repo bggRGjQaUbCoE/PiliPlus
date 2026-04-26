@@ -1,7 +1,6 @@
 import 'package:PiliPlus/common/skeleton/space_opus.dart';
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
-import 'package:PiliPlus/common/widgets/flutter/scroll_view/scroll_view.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models_new/space/space_shop/item.dart';
@@ -46,7 +45,7 @@ class _MemberShopState extends State<MemberShop>
     super.build(context);
     return refreshIndicator(
       onRefresh: _controller.onRefresh,
-      child: customScrollView(
+      child: CustomScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         slivers: [
           SliverPadding(

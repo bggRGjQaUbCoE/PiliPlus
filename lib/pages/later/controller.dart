@@ -170,6 +170,7 @@ class LaterController extends MultiSelectController<LaterData, LaterItemModel>
             cid: item.cid!,
             cover: item.pic,
             title: item.title,
+            dimension: item.dimension,
             extraArguments: {
               'sourceType': SourceType.watchLater,
               'count': baseCtr.counts[LaterViewType.all.index],

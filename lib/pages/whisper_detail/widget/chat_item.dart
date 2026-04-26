@@ -328,13 +328,17 @@ class ChatItem extends StatelessWidget {
                   if (bvid != null) {
                     try {
                       SmartDialog.showLoading();
-                      final int? cid = await SearchHttp.ab2c(bvid: bvid);
+                      final res = await SearchHttp.ab2cWithDimension(
+                        bvid: bvid,
+                      );
+                      final cid = res?.cid;
                       SmartDialog.dismiss();
                       if (cid != null) {
                         PageUtils.toVideoPage(
                           bvid: bvid,
                           cid: cid,
                           cover: i['cover_url'],
+                          dimension: res!.dimension,
                         );
                       }
                     } catch (err) {
@@ -420,13 +424,17 @@ class ChatItem extends StatelessWidget {
                 try {
                   SmartDialog.showLoading();
                   final bvid = content["bvid"];
-                  final int? cid = await SearchHttp.ab2c(bvid: bvid);
+                  final res = await SearchHttp.ab2cWithDimension(
+                    bvid: bvid,
+                  );
+                  final cid = res?.cid;
                   SmartDialog.dismiss();
                   if (cid != null) {
                     PageUtils.toVideoPage(
                       bvid: bvid,
                       cid: cid,
                       cover: content['cover'],
+                      dimension: res!.dimension,
                     );
                   }
                 } catch (err) {
@@ -518,7 +526,10 @@ class ChatItem extends StatelessWidget {
           }
           bvid ??= IdUtils.av2bv(aid);
           SmartDialog.showLoading();
-          final int? cid = await SearchHttp.ab2c(bvid: bvid);
+          final res = await SearchHttp.ab2cWithDimension(
+            bvid: bvid,
+          );
+          final cid = res?.cid;
           SmartDialog.dismiss();
           if (cid != null) {
             PageUtils.toVideoPage(
@@ -526,6 +537,7 @@ class ChatItem extends StatelessWidget {
               bvid: bvid,
               cid: cid,
               cover: content['thumb'],
+              dimension: res!.dimension,
             );
           }
         };

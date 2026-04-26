@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:PiliPlus/common/widgets/button/icon_button.dart';
-import 'package:PiliPlus/common/widgets/flutter/scroll_view/scroll_view.dart';
 import 'package:PiliPlus/common/widgets/view_safe_area.dart';
 import 'package:PiliPlus/http/danmaku.dart';
 import 'package:PiliPlus/http/loading_state.dart';
@@ -180,7 +179,7 @@ class _SendDanmakuPanelState extends CommonTextPubPageState<SendDanmakuPanel> {
         ),
       ),
     ),
-    child: listView(
+    child: ListView(
       physics: const ClampingScrollPhysics(),
       padding: .only(
         top: 12,

@@ -1,5 +1,4 @@
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
-import 'package:PiliPlus/common/widgets/flutter/scroll_view/scroll_view.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
 import 'package:PiliPlus/common/widgets/view_sliver_safe_area.dart';
@@ -27,7 +26,7 @@ class _DynTopicRcmdPageState extends State<DynTopicRcmdPage> {
       appBar: AppBar(title: const Text('话题')),
       body: refreshIndicator(
         onRefresh: _controller.onRefresh,
-        child: customScrollView(
+        child: CustomScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           slivers: [
             ViewSliverSafeArea(

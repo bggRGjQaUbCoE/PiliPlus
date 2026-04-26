@@ -154,4 +154,20 @@ abstract final class ReplyGrpc {
       SearchItemReply.fromBuffer,
     );
   }
+
+  static Future<LoadingState<TranslateReplyResp>> translateReply({
+    required Int64 type,
+    required Int64 oid,
+    required Int64 rpid,
+  }) {
+    return GrpcReq.request(
+      GrpcUrl.translateReply,
+      TranslateReplyReq(
+        type: type,
+        oid: oid,
+        rpids: [rpid],
+      ),
+      TranslateReplyResp.fromBuffer,
+    );
+  }
 }

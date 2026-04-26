@@ -213,6 +213,7 @@ class FavDetailController
   @override
   void onViewFav(FavDetailItemModel item, int? index) {
     final folder = folderInfo.value;
+    // TODO: dimension
     PageUtils.toVideoPage(
       bvid: item.bvid,
       cid: item.ugc!.firstCid!,

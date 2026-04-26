@@ -247,11 +247,15 @@ TextSpan? richNode(
                   recognizer: NoDeadlineTapGestureRecognizer()
                     ..onTap = () async {
                       try {
-                        int? cid = await SearchHttp.ab2c(bvid: i.rid);
+                        final res = await SearchHttp.ab2cWithDimension(
+                          bvid: i.rid,
+                        );
+                        final cid = res?.cid;
                         if (cid != null) {
                           PageUtils.toVideoPage(
                             bvid: i.rid,
                             cid: cid,
+                            dimension: res!.dimension,
                           );
                         }
                       } catch (err) {

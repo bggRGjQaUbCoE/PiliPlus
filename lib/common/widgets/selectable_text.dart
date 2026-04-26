@@ -1,7 +1,5 @@
-import 'package:PiliPlus/common/widgets/flutter/selectable_text/selectable_text.dart';
-import 'package:PiliPlus/common/widgets/flutter/selectable_text/selection_area.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
-import 'package:flutter/material.dart' hide SelectableText, SelectionArea;
+import 'package:flutter/material.dart';
 
 Widget selectableText(
   String text, {

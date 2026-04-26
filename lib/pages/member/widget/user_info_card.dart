@@ -1048,18 +1048,19 @@ class _HeaderTitleState extends State<HeaderTitle> {
             overflow: .ellipsis,
             style: const TextStyle(fontSize: 12, color: Colors.white),
           ),
-          Text(
-            title.subTitle!,
-            style: TextStyle(
-              fontSize: 12,
-              fontFamily: Assets.digitalNum,
-              color: title.subTitleColorFormat?.colors?.isNotEmpty == true
-                  ? Utils.parseMedalColor(
-                      title.subTitleColorFormat!.colors!.last,
-                    )
-                  : Colors.white,
+          if (title.subTitle?.isNotEmpty ?? false)
+            Text(
+              title.subTitle!,
+              style: TextStyle(
+                fontSize: 12,
+                fontFamily: Assets.digitalNum,
+                color: title.subTitleColorFormat?.colors?.isNotEmpty == true
+                    ? Utils.parseMedalColor(
+                        title.subTitleColorFormat!.colors!.last,
+                      )
+                    : Colors.white,
+              ),
             ),
-          ),
         ],
       );
     } catch (e, s) {

@@ -49,12 +49,14 @@ abstract final class UrlUtils {
       final aid = matchRes.av;
       String? bvid = matchRes.bv;
       bvid ??= IdUtils.av2bv(aid!);
-      final int? cid = await SearchHttp.ab2c(aid: aid, bvid: bvid);
+      final res = await SearchHttp.ab2cWithDimension(aid: aid, bvid: bvid);
+      final cid = res?.cid;
       if (cid != null) {
         PageUtils.toVideoPage(
           aid: aid,
           bvid: bvid,
           cid: cid,
+          dimension: res!.dimension,
         );
       }
     } else {

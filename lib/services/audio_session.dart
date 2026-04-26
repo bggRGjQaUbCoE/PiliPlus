@@ -28,6 +28,7 @@ class AudioSessionHandler {
           case AudioInterruptionType.duck:
             PlPlayerController.setVolumeIfExists(
               (PlPlayerController.getVolumeIfExists() ?? 0) * 0.5,
+              showIndicator: false,
             );
             // player.setVolume(player.volume.value * 0.5);
             break;
@@ -47,6 +48,7 @@ class AudioSessionHandler {
           case AudioInterruptionType.duck:
             PlPlayerController.setVolumeIfExists(
               (PlPlayerController.getVolumeIfExists() ?? 0) * 2,
+              showIndicator: false,
             );
             // player.setVolume(player.volume.value * 2);
             break;

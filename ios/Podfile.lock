@@ -70,7 +70,7 @@ PODS:
   - GT3Captcha-iOS (0.15.8.3)
   - image_cropper (0.0.5):
     - Flutter
-    - TOCropViewController (~> 3.1.1)
+    - TOCropViewController (~> 3.1.2)
   - image_picker_ios (0.0.1):
     - Flutter
   - live_photo_maker (0.0.3):
@@ -104,7 +104,7 @@ PODS:
     - Flutter
     - FlutterMacOS
   - SwiftyGif (5.4.5)
-  - TOCropViewController (3.1.1)
+  - TOCropViewController (3.1.2)
   - url_launcher_ios (0.0.1):
     - Flutter
   - wakelock_plus (0.0.1):
@@ -236,7 +236,7 @@ SPEC CHECKSUMS:
   fluttertoast: 2c67e14dce98bbdb200df9e1acf610d7a6264ea1
   gt3_flutter_plugin: 37090e5fa66ff2a52939eb9d208fc36fa49d36e5
   GT3Captcha-iOS: 5e3b1077834d8a9d6f4d64a447a30af3e14affe6
-  image_cropper: e405d3e44183f8e8edbec2e49b01ff9c819c7ac8
+  image_cropper: fca51f94982730acae168c4b5d691e0f11aeb259
   image_picker_ios: e0ece4aa2a75771a7de3fa735d26d90817041326
   live_photo_maker: 29280ca88323bd5a33aafd00d98624d5cf522176
   media_kit_libs_ios_video: 5a18affdb97d1f5d466dc79988b13eff6c5e2854
@@ -253,7 +253,7 @@ SPEC CHECKSUMS:
   shared_preferences_foundation: 7036424c3d8ec98dfe75ff1667cb0cd531ec82bb
   sqflite_darwin: 20b2a3a3b70e43edae938624ce550a3cbf66a3d0
   SwiftyGif: 706c60cf65fa2bc5ee0313beece843c8eb8194d4
-  TOCropViewController: 9002a9b12d8104d7478cdc306d80f0efea7fe2c5
+  TOCropViewController: a916930c465b5d9445a74d95e0c0da931771b4df
   url_launcher_ios: 7a95fa5b60cc718a708b8f2966718e93db0cef1b
   wakelock_plus: e29112ab3ef0b318e58cfa5c32326458be66b556
 

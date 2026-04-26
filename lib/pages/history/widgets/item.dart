@@ -8,6 +8,7 @@ import 'package:PiliPlus/http/search.dart';
 import 'package:PiliPlus/http/user.dart';
 import 'package:PiliPlus/models/common/badge_type.dart';
 import 'package:PiliPlus/models_new/history/list.dart';
+import 'package:PiliPlus/models_new/video/video_detail/dimension.dart';
 import 'package:PiliPlus/pages/common/multi_select/base.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/duration_utils.dart';
@@ -79,20 +80,28 @@ class HistoryItem extends StatelessWidget {
                     );
                   }
                 } else {
-                  int? cid =
-                      item.history.cid ??
-                      await SearchHttp.ab2c(
-                        aid: aid,
-                        bvid: bvid,
-                        part: item.history.page,
-                      );
+                  int? cid = item.history.cid;
+                  Dimension? dimension;
+                  if (cid == null) {
+                    if (await SearchHttp.ab2cWithDimension(
+                          aid: aid,
+                          bvid: bvid,
+                          part: item.history.page,
+                        )
+                        case final res?) {
+                      cid = res.cid;
+                      dimension = res.dimension;
+                    }
+                  }
                   if (cid != null) {
+                    // TODO: dimension
                     PageUtils.toVideoPage(
                       aid: aid,
                       bvid: bvid,
                       cid: cid,
                       cover: item.cover,
                       title: item.title,
+                      dimension: dimension,
                     );
                   }
                 }

@@ -2,7 +2,6 @@ import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/button/icon_button.dart';
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
-import 'package:PiliPlus/common/widgets/flutter/scroll_view/scroll_view.dart';
 import 'package:PiliPlus/common/widgets/image/image_save.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/stat/stat.dart';
@@ -121,7 +120,7 @@ class _MediaListPanelState extends State<MediaListPanel>
 
   Widget _buildList(ThemeData theme) {
     final showDelBtn = widget.onDelete != null && widget.mediaList.length > 1;
-    return customScrollView(
+    return CustomScrollView(
       controller: _controller,
       physics: const AlwaysScrollableScrollPhysics(),
       slivers: [

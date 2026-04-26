@@ -1,7 +1,6 @@
 import 'dart:io' show Platform;
 
 import 'package:PiliPlus/common/widgets/color_palette.dart';
-import 'package:PiliPlus/common/widgets/flutter/scroll_view/scroll_view.dart';
 import 'package:PiliPlus/main.dart' show MyApp;
 import 'package:PiliPlus/models/common/nav_bar_config.dart';
 import 'package:PiliPlus/models/common/theme/theme_color_type.dart';
@@ -68,7 +67,7 @@ class _ColorSelectPageState extends State<ColorSelectPage> {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(title: const Text('选择应用主题')),
-      body: listView(
+      body: ListView(
         children: [
           ListTile(
             onTap: () async {

@@ -6,9 +6,10 @@ import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/stat/stat.dart';
 import 'package:PiliPlus/common/widgets/video_popup_menu.dart';
 import 'package:PiliPlus/http/search.dart';
-import 'package:PiliPlus/models/common/badge_type.dart';
 import 'package:PiliPlus/models/common/stat_type.dart';
+import 'package:PiliPlus/models/home/rcmd/result.dart';
 import 'package:PiliPlus/models/model_rec_video_item.dart';
+import 'package:PiliPlus/models_new/video/video_detail/dimension.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/duration_utils.dart';
@@ -31,17 +32,28 @@ class VideoCardV extends StatelessWidget {
     this.onRemove,
   });
 
-  Future<void> onPushDetail(String heroTag) async {
-    String? goto = videoItem.goto;
-    switch (goto) {
+  Future<void> onPushDetail() async {
+    switch (videoItem.goto) {
       case 'bangumi':
         PageUtils.viewPgc(epId: videoItem.param!);
         break;
       case 'av':
-        String bvid = videoItem.bvid ?? IdUtils.av2bv(videoItem.aid!);
-        int? cid =
-            videoItem.cid ??
-            await SearchHttp.ab2c(aid: videoItem.aid, bvid: bvid);
+        var bvid = videoItem.bvid ?? IdUtils.av2bv(videoItem.aid!);
+        var cid = videoItem.cid;
+        bool isVertical = false;
+        Dimension? dimension;
+        if (videoItem is RcmdVideoItemAppModel) {
+          if (videoItem.uri case final uri?) {
+            isVertical = Utils.getDimensionFromUri(uri);
+          }
+        }
+        if (cid == null) {
+          if (await SearchHttp.ab2cWithDimension(aid: videoItem.aid, bvid: bvid)
+              case final res?) {
+            cid = res.cid;
+            dimension = res.dimension;
+          }
+        }
         if (cid != null) {
           PageUtils.toVideoPage(
             aid: videoItem.aid,
@@ -49,6 +61,8 @@ class VideoCardV extends StatelessWidget {
             cid: cid,
             cover: videoItem.cover,
             title: videoItem.title,
+            isVertical: isVertical,
+            dimension: dimension,
           );
         }
         break;
@@ -80,7 +94,7 @@ class VideoCardV extends StatelessWidget {
         Card(
           clipBehavior: Clip.hardEdge,
           child: InkWell(
-            onTap: () => onPushDetail(Utils.makeHeroTag(videoItem.aid)),
+            onTap: onPushDetail,
             onLongPress: onLongPress,
             onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
             child: Column(
@@ -105,8 +119,8 @@ class VideoCardV extends StatelessWidget {
                             PBadge(
                               bottom: 6,
                               right: 7,
-                              size: PBadgeSize.small,
-                              type: PBadgeType.gray,
+                              size: .small,
+                              type: .gray,
                               text: DurationUtils.formatDuration(
                                 videoItem.duration,
                               ),
@@ -163,31 +177,31 @@ class VideoCardV extends StatelessWidget {
                   PBadge(
                     text: videoItem.pgcBadge,
                     isStack: false,
-                    size: PBadgeSize.small,
-                    type: PBadgeType.line_primary,
+                    size: .small,
+                    type: .line_primary,
                     fontSize: 9,
                   ),
                 if (videoItem.rcmdReason != null)
                   PBadge(
                     text: videoItem.rcmdReason,
                     isStack: false,
-                    size: PBadgeSize.small,
-                    type: PBadgeType.secondary,
+                    size: .small,
+                    type: .secondary,
                   ),
                 if (videoItem.goto == 'picture')
                   const PBadge(
                     text: '动态',
                     isStack: false,
-                    size: PBadgeSize.small,
-                    type: PBadgeType.line_primary,
+                    size: .small,
+                    type: .line_primary,
                     fontSize: 9,
                   ),
                 if (videoItem.isFollowed)
                   const PBadge(
                     text: '已关注',
                     isStack: false,
-                    size: PBadgeSize.small,
-                    type: PBadgeType.secondary,
+                    size: .small,
+                    type: .secondary,
                   ),
                 Expanded(
                   flex: 1,

@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:PiliPlus/common/widgets/flutter/selectable_text/selection_area.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/models_new/live/live_superchat/item.dart';
@@ -11,7 +10,7 @@ import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
-import 'package:flutter/material.dart' hide SelectionArea;
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class SuperChatCard extends StatefulWidget {

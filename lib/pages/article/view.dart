@@ -3,7 +3,6 @@ import 'dart:math';
 import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/custom_icon.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
-import 'package:PiliPlus/common/widgets/flutter/scroll_view/scroll_view.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart';
 import 'package:PiliPlus/models/common/badge_type.dart';
@@ -84,7 +83,7 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
     if (isPortrait) {
       return Padding(
         padding: EdgeInsets.symmetric(horizontal: padding),
-        child: customScrollView(
+        child: CustomScrollView(
           controller: scrollController,
           physics: const AlwaysScrollableScrollPhysics(),
           slivers: [
@@ -113,7 +112,7 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
       children: [
         Expanded(
           flex: flex,
-          child: customScrollView(
+          child: CustomScrollView(
             controller: scrollController,
             physics: const AlwaysScrollableScrollPhysics(),
             slivers: [
@@ -145,7 +144,7 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
               resizeToAvoidBottomInset: false,
               body: refreshIndicator(
                 onRefresh: controller.onRefresh,
-                child: customScrollView(
+                child: CustomScrollView(
                   controller: scrollController,
                   physics: const AlwaysScrollableScrollPhysics(),
                   slivers: [

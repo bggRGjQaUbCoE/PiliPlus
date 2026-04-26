@@ -1,5 +1,4 @@
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
-import 'package:PiliPlus/common/widgets/flutter/scroll_view/scroll_view.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models_new/fav/fav_folder/list.dart';
@@ -29,7 +28,7 @@ class _FavVideoPageState extends State<FavVideoPage>
     super.build(context);
     return refreshIndicator(
       onRefresh: _favController.onRefresh,
-      child: customScrollView(
+      child: CustomScrollView(
         controller: _favController.scrollController,
         physics: const AlwaysScrollableScrollPhysics(),
         slivers: [

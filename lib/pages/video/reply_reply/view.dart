@@ -2,7 +2,6 @@ import 'package:PiliPlus/common/skeleton/video_reply.dart';
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/colored_box_transition.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
-import 'package:PiliPlus/common/widgets/flutter/scroll_view/scroll_view.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/sliver/sliver_pinned_header.dart';
 import 'package:PiliPlus/common/widgets/view_safe_area.dart';
@@ -187,7 +186,7 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
     final child = refreshIndicator(
       onRefresh: _controller.onRefresh,
       isClampingScrollPhysics: widget.isNested,
-      child: customScrollView(
+      child: CustomScrollView(
         key: ValueKey(scrollController.hashCode),
         controller: scrollController,
         physics: const AlwaysScrollableScrollPhysics(),

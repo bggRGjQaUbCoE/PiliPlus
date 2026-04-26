@@ -46,9 +46,9 @@ static void my_application_activate(GApplication *application) {
   // if future cases occur).
 
   const gboolean use_header_bar = [window]() -> gboolean {
-    if (g_file_test(
-        g_build_filename(g_get_user_data_dir(), "com.example.piliplus", "use_ssd", NULL),
-        G_FILE_TEST_EXISTS))
+    if (g_file_test(g_build_filename(g_get_user_data_dir(),
+                                     "com.example.piliplus", "use_ssd", NULL),
+                    G_FILE_TEST_EXISTS))
       return FALSE;
 
 #ifdef GDK_WINDOWING_X11

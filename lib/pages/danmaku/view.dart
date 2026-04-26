@@ -125,7 +125,7 @@ class _PlDanmakuState extends State<PlDanmaku> {
                 extra: VideoDanmaku(
                   id: e.id.toInt(),
                   mid: e.midHash,
-                  like: e.like.toInt(),
+                  like: e.likeCount.toInt(),
                 ),
               ),
             );
@@ -146,7 +146,7 @@ class _PlDanmakuState extends State<PlDanmaku> {
               extra: VideoDanmaku(
                 id: e.id.toInt(),
                 mid: e.midHash,
-                like: e.like.toInt(),
+                like: e.likeCount.toInt(),
               ),
             ),
           );

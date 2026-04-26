@@ -2,27 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// ignore_for_file: uri_does_not_exist_in_doc_import, depend_on_referenced_packages
-
-/// @docImport 'package:flutter/material.dart';
-/// @docImport 'package:flutter_test/flutter_test.dart';
-///
-/// @docImport 'primary_scroll_controller.dart';
-/// @docImport 'scroll_configuration.dart';
-/// @docImport 'scroll_view.dart';
-/// @docImport 'scrollable.dart';
-/// @docImport 'single_child_scroll_view.dart';
-/// @docImport 'viewport.dart';
-library;
-
 import 'dart:math' as math;
 
-import 'package:PiliPlus/common/widgets/flutter/layout_builder.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
-import 'package:flutter/material.dart'
-    hide DraggableScrollableSheet, LayoutBuilder;
+import 'package:flutter/material.dart' hide DraggableScrollableSheet;
+
+part 'package:PiliPlus/common/widgets/draggable_sheet/dyn.dart';
+part 'package:PiliPlus/common/widgets/draggable_sheet/topic.dart';
 
 /// Controls a [DraggableScrollableSheet].
 ///
@@ -297,7 +285,6 @@ class DraggableScrollableSheet extends StatefulWidget {
     this.snapAnimationDuration,
     this.controller,
     this.shouldCloseOnMinExtent = true,
-    this.initialScrollOffset = 0,
     required this.builder,
   }) : assert(minChildSize >= 0.0),
        assert(maxChildSize <= 1.0),
@@ -306,8 +293,6 @@ class DraggableScrollableSheet extends StatefulWidget {
        assert(
          snapAnimationDuration == null || snapAnimationDuration > Duration.zero,
        );
-
-  final double initialScrollOffset;
 
   /// The initial fractional value of the parent container's height to use when
   /// displaying the widget.
@@ -582,7 +567,6 @@ class _DraggableScrollableSheetState extends State<DraggableScrollableSheet> {
     );
     _scrollController = _DraggableScrollableSheetScrollController(
       extent: _extent,
-      initialScrollOffset: widget.initialScrollOffset,
     );
     widget.controller?._attach(_scrollController);
   }
@@ -734,17 +718,10 @@ class _DraggableScrollableSheetState extends State<DraggableScrollableSheet> {
 ///    [_DraggableScrollableSheetScrollController] as the primary controller for
 ///    descendants.
 class _DraggableScrollableSheetScrollController extends ScrollController {
-  _DraggableScrollableSheetScrollController({
-    required this.extent,
-    double initialScrollOffset = 0.0,
-  }) : _initialScrollOffset = initialScrollOffset;
+  _DraggableScrollableSheetScrollController({required this.extent});
 
   _DraggableSheetExtent extent;
   VoidCallback? onPositionDetached;
-
-  @override
-  double get initialScrollOffset => _initialScrollOffset;
-  final double _initialScrollOffset;
 
   @override
   _DraggableScrollableSheetScrollPosition createScrollPosition(
@@ -757,7 +734,6 @@ class _DraggableScrollableSheetScrollController extends ScrollController {
       context: context,
       oldPosition: oldPosition,
       getExtent: () => extent,
-      initialPixels: _initialScrollOffset,
     );
   }
 
@@ -824,7 +800,7 @@ class _DraggableScrollableSheetScrollPosition
   final _DraggableSheetExtent Function() getExtent;
   final Set<AnimationController> _ballisticControllers =
       <AnimationController>{};
-  bool get listShouldScroll => pixels > 0.0 && extent.isAtMax;
+  bool get listShouldScroll => pixels > 0.0;
 
   _DraggableSheetExtent get extent => getExtent();
 
@@ -973,64 +949,6 @@ class _DraggableScrollableSheetScrollPosition
   }
 }
 
-/// A widget that can notify a descendent [DraggableScrollableSheet] that it
-/// should reset its position to the initial state.
-///
-/// The [Scaffold] uses this widget to notify a persistent bottom sheet that
-/// the user has tapped back if the sheet has started to cover more of the body
-/// than when at its initial position. This is important for users of assistive
-/// technology, where dragging may be difficult to communicate.
-///
-/// This is just a wrapper on top of [DraggableScrollableController]. It is
-/// primarily useful for controlling a sheet in a part of the widget tree that
-/// the current code does not control (e.g. library code trying to affect a sheet
-/// in library users' code). Generally, it's easier to control the sheet
-/// directly by creating a controller and passing the controller to the sheet in
-/// its constructor (see [DraggableScrollableSheet.controller]).
-class DraggableScrollableActuator extends StatefulWidget {
-  /// Creates a widget that can notify descendent [DraggableScrollableSheet]s
-  /// to reset to their initial position.
-  ///
-  /// The [child] parameter is required.
-  const DraggableScrollableActuator({super.key, required this.child});
-
-  /// This child's [DraggableScrollableSheet] descendant will be reset when the
-  /// [reset] method is applied to a context that includes it.
-  final Widget child;
-
-  /// Notifies any descendant [DraggableScrollableSheet] that it should reset
-  /// to its initial position.
-  ///
-  /// Returns `true` if a [DraggableScrollableActuator] is available and
-  /// some [DraggableScrollableSheet] is listening for updates, `false`
-  /// otherwise.
-  static bool reset(BuildContext context) {
-    final _InheritedResetNotifier? notifier = context
-        .dependOnInheritedWidgetOfExactType<_InheritedResetNotifier>();
-    return notifier?._sendReset() ?? false;
-  }
-
-  @override
-  State<DraggableScrollableActuator> createState() =>
-      _DraggableScrollableActuatorState();
-}
-
-class _DraggableScrollableActuatorState
-    extends State<DraggableScrollableActuator> {
-  final _ResetNotifier _notifier = _ResetNotifier();
-
-  @override
-  Widget build(BuildContext context) {
-    return _InheritedResetNotifier(notifier: _notifier, child: widget.child);
-  }
-
-  @override
-  void dispose() {
-    _notifier.dispose();
-    super.dispose();
-  }
-}
-
 /// A [ChangeNotifier] to use with [_InheritedResetNotifier] to notify
 /// descendants that they should reset to initial state.
 class _ResetNotifier extends ChangeNotifier {
@@ -1066,6 +984,7 @@ class _InheritedResetNotifier extends InheritedNotifier<_ResetNotifier> {
     required _ResetNotifier super.notifier,
   });
 
+  // ignore: unused_element
   bool _sendReset() => notifier!.sendReset();
 
   /// Specifies whether the [DraggableScrollableSheet] should reset to its

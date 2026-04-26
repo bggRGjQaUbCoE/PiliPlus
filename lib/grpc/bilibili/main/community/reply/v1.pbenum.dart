@@ -194,6 +194,35 @@ class UserCallbackScene extends $pb.ProtobufEnum {
   const UserCallbackScene._(super.value, super.name);
 }
 
+class TranslationSwitch extends $pb.ProtobufEnum {
+  static const TranslationSwitch TRANSLATION_SWITCH_UNSPECIFIED =
+      TranslationSwitch._(
+          0, _omitEnumNames ? '' : 'TRANSLATION_SWITCH_UNSPECIFIED');
+  static const TranslationSwitch TRANSLATION_SWITCH_UNSUPPORTED =
+      TranslationSwitch._(
+          1, _omitEnumNames ? '' : 'TRANSLATION_SWITCH_UNSUPPORTED');
+  static const TranslationSwitch TRANSLATION_SWITCH_SHOW_TRANSLATION =
+      TranslationSwitch._(
+          2, _omitEnumNames ? '' : 'TRANSLATION_SWITCH_SHOW_TRANSLATION');
+  static const TranslationSwitch TRANSLATION_SWITCH_SHOW_ORIGIN =
+      TranslationSwitch._(
+          3, _omitEnumNames ? '' : 'TRANSLATION_SWITCH_SHOW_ORIGIN');
+
+  static const $core.List<TranslationSwitch> values = <TranslationSwitch>[
+    TRANSLATION_SWITCH_UNSPECIFIED,
+    TRANSLATION_SWITCH_UNSUPPORTED,
+    TRANSLATION_SWITCH_SHOW_TRANSLATION,
+    TRANSLATION_SWITCH_SHOW_ORIGIN,
+  ];
+
+  static final $core.List<TranslationSwitch?> _byValue =
+      $pb.ProtobufEnum.$_initByValueList(values, 3);
+  static TranslationSwitch? valueOf($core.int value) =>
+      value < 0 || value >= _byValue.length ? null : _byValue[value];
+
+  const TranslationSwitch._(super.value, super.name);
+}
+
 class AtGroup_Type extends $pb.ProtobufEnum {
   static const AtGroup_Type AT_GROUP_TYPE_DEFAULT =
       AtGroup_Type._(0, _omitEnumNames ? '' : 'AT_GROUP_TYPE_DEFAULT');

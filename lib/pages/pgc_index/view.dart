@@ -1,5 +1,4 @@
 import 'package:PiliPlus/common/style.dart';
-import 'package:PiliPlus/common/widgets/flutter/scroll_view/scroll_view.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
 import 'package:PiliPlus/common/widgets/self_sized_horizontal_list.dart';
@@ -68,7 +67,7 @@ class _PgcIndexPageState extends State<PgcIndexPage>
           if (count == 0) return const SizedBox.shrink();
           return Padding(
             padding: EdgeInsets.only(left: padding.left, right: padding.right),
-            child: customScrollView(
+            child: CustomScrollView(
               controller: _ctr.scrollController,
               slivers: [
                 if (widget.indexType != null)

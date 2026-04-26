@@ -1,4 +1,3 @@
-import 'package:PiliPlus/common/widgets/flutter/scroll_view/scroll_view.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/view_safe_area.dart';
 import 'package:PiliPlus/http/loading_state.dart';
@@ -45,7 +44,7 @@ class _SeasonSeriesPageState extends State<SeasonSeriesPage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return customScrollView(
+    return CustomScrollView(
       slivers: [
         SliverPadding(
           padding: EdgeInsets.only(

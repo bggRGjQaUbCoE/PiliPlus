@@ -2,7 +2,6 @@ import 'package:PiliPlus/common/widgets/button/icon_button.dart';
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
 import 'package:PiliPlus/common/widgets/flutter/pop_scope.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
-import 'package:PiliPlus/common/widgets/flutter/scroll_view/scroll_view.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/http/fav.dart';
@@ -101,7 +100,7 @@ class _FavDetailPageState extends State<FavDetailPage> with GridMixin {
             ),
             body: refreshIndicator(
               onRefresh: _favDetailController.onRefresh,
-              child: customScrollView(
+              child: CustomScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
                 controller: _favDetailController.scrollController,
                 slivers: [

@@ -36,13 +36,15 @@ class SubVideoCardH extends StatelessWidget {
       type: MaterialType.transparency,
       child: InkWell(
         onTap: () async {
-          int? cid = await SearchHttp.ab2c(bvid: videoItem.bvid);
+          final res = await SearchHttp.ab2cWithDimension(bvid: videoItem.bvid);
+          final cid = res?.cid;
           if (cid != null) {
             PageUtils.toVideoPage(
               bvid: videoItem.bvid,
               cid: cid,
               cover: videoItem.cover,
               title: videoItem.title,
+              dimension: res!.dimension,
             );
           }
         },

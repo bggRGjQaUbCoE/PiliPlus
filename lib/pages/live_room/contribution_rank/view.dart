@@ -1,5 +1,4 @@
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
-import 'package:PiliPlus/common/widgets/flutter/scroll_view/scroll_view.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
@@ -132,7 +131,7 @@ class _ContributionRankTypeState extends State<_ContributionRankType>
       type: .transparency,
       child: refreshIndicator(
         onRefresh: _controller.onRefresh,
-        child: customScrollView(
+        child: CustomScrollView(
           controller: _controller.scrollController,
           physics: const AlwaysScrollableScrollPhysics(),
           slivers: [

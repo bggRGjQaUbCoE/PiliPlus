@@ -17,8 +17,10 @@ class SetSwitchItem extends StatefulWidget {
   final void Function(BuildContext context)? onTap;
   final EdgeInsetsGeometry? contentPadding;
   final TextStyle? titleStyle;
+  final bool isSplit;
 
   const SetSwitchItem({
+    super.key,
     required this.title,
     this.subtitle,
     required this.setKey,
@@ -29,7 +31,7 @@ class SetSwitchItem extends StatefulWidget {
     this.onTap,
     this.contentPadding,
     this.titleStyle,
-    super.key,
+    this.isSplit = false,
   });
 
   @override
@@ -103,7 +105,17 @@ class _SetSwitchItemState extends State<SetSwitchItem> {
     final subTitleStyle = theme.textTheme.labelMedium!.copyWith(
       color: theme.colorScheme.outline,
     );
-    return ListTile(
+
+    final switchBtn = Transform.scale(
+      scale: 0.8,
+      alignment: .centerRight,
+      child: Switch(
+        value: val,
+        onChanged: switchChange,
+      ),
+    );
+
+    Widget child(Widget? trailing) => ListTile(
       contentPadding: widget.contentPadding,
       enabled: widget.onTap == null ? true : val,
       onTap: widget.onTap == null ? switchChange : () => widget.onTap!(context),
@@ -112,14 +124,28 @@ class _SetSwitchItemState extends State<SetSwitchItem> {
           ? Text(widget.subtitle!, style: subTitleStyle)
           : null,
       leading: widget.leading,
-      trailing: Transform.scale(
-        scale: 0.8,
-        alignment: .centerRight,
-        child: Switch(
-          value: val,
-          onChanged: switchChange,
-        ),
-      ),
+      trailing: trailing,
     );
+
+    if (widget.isSplit) {
+      return Row(
+        children: [
+          Expanded(child: child(null)),
+          SizedBox(
+            height: 25,
+            child: VerticalDivider(
+              width: 1,
+              color: theme.colorScheme.outline.withValues(alpha: .3),
+            ),
+          ),
+          Padding(
+            padding: const .only(left: 4, right: 24),
+            child: switchBtn,
+          ),
+        ],
+      );
+    }
+
+    return child(switchBtn);
   }
 }

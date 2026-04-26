@@ -13,8 +13,8 @@ import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
+import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart' hide LayoutBuilder;
-import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 
 // 视频卡片 - 水平布局
 class VideoCardHMemberVideo extends StatelessWidget {
@@ -62,16 +62,17 @@ class VideoCardHMemberVideo extends StatelessWidget {
                   if (videoItem.bvid == null || videoItem.cid == null) {
                     return;
                   }
-                  try {
-                    PageUtils.toVideoPage(
-                      bvid: videoItem.bvid,
-                      cid: videoItem.cid!,
-                      cover: videoItem.cover,
-                      title: videoItem.title,
-                    );
-                  } catch (err) {
-                    SmartDialog.showToast(err.toString());
+                  bool isVertical = false;
+                  if (videoItem.uri case final uri?) {
+                    isVertical = Utils.getDimensionFromUri(uri);
                   }
+                  PageUtils.toVideoPage(
+                    bvid: videoItem.bvid,
+                    cid: videoItem.cid!,
+                    cover: videoItem.cover,
+                    title: videoItem.title,
+                    isVertical: isVertical,
+                  );
                 },
             child: Padding(
               padding: const EdgeInsets.symmetric(

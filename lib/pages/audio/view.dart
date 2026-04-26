@@ -4,7 +4,6 @@ import 'package:PiliPlus/common/assets.dart';
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/button/icon_button.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
-import 'package:PiliPlus/common/widgets/flutter/scroll_view/scroll_view.dart';
 import 'package:PiliPlus/common/widgets/gesture/tap_gesture_recognizer.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/image_viewer/hero.dart';
@@ -203,7 +202,7 @@ class _AudioPageState extends State<AudioPage> {
         builder: (context) {
           final theme = Theme.of(context);
           final colorScheme = theme.colorScheme;
-          Widget child = customScrollView(
+          Widget child = CustomScrollView(
             controller: scrollController,
             physics: _controller.reachStart
                 ? null

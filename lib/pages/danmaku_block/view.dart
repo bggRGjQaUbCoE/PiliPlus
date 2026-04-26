@@ -1,6 +1,5 @@
 import 'package:PiliPlus/common/widgets/button/icon_button.dart';
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
-import 'package:PiliPlus/common/widgets/flutter/scroll_view/scroll_view.dart';
 import 'package:PiliPlus/common/widgets/keep_alive_wrapper.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart';
@@ -85,7 +84,7 @@ class _DanmakuBlockPageState extends State<DanmakuBlockPage> {
     if (list.isEmpty) {
       return scrollableError;
     }
-    return ExtendedListView.builder(
+    return ListView.builder(
       itemCount: list.length,
       padding: EdgeInsets.only(
         bottom: MediaQuery.viewPaddingOf(context).bottom + 100,

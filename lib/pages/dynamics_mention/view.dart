@@ -1,9 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 
-import 'package:PiliPlus/common/widgets/flutter/draggable_sheet/draggable_scrollable_sheet_topic.dart'
-    as topic_sheet;
-import 'package:PiliPlus/common/widgets/flutter/scroll_view/scroll_view.dart';
+import 'package:PiliPlus/common/widgets/flutter/draggable_scrollable_sheet.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
 import 'package:PiliPlus/common/widgets/sliver/sliver_pinned_header.dart';
@@ -40,7 +38,7 @@ class DynMentionPanel extends StatefulWidget {
       constraints: BoxConstraints(
         maxWidth: min(600, context.mediaQueryShortestSide),
       ),
-      builder: (context) => topic_sheet.DraggableScrollableSheet(
+      builder: (context) => TopicDraggableScrollableSheet(
         expand: false,
         snap: true,
         minChildSize: 0,
@@ -185,7 +183,7 @@ class _DynMentionPanelState
                   }
                   return false;
                 },
-                child: customScrollView(
+                child: CustomScrollView(
                   controller: widget.scrollController,
                   slivers: [
                     Obx(

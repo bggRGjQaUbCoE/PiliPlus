@@ -3341,6 +3341,13 @@ class EditableTextState extends State<EditableText>
           affinity: _value.selection.affinity,
         ),
       );
+      if (remoteValue != null) {
+        remoteValue = remoteValue.copyWith(
+          selection: remoteValue.selection.copyWith(
+            affinity: _value.selection.affinity,
+          ),
+        );
+      }
     }
 
     if (widget.readOnly) {

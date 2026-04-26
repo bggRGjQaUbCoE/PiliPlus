@@ -22,6 +22,7 @@ abstract final class GrpcUrl {
   static const dialogList = '$reply/DialogList';
   // static const replyInfo = '$reply/ReplyInfo';
   static const searchItem = '$reply/SearchItem';
+  static const translateReply = '$reply/TranslateReply';
 
   // im
   static const im = '/bilibili.im.interface.v1.ImInterface';
@@ -54,4 +55,8 @@ abstract final class GrpcUrl {
   static const audioThumbUp = '$audio/ThumbUp';
   static const audioTripleLike = '$audio/TripleLike';
   static const audioCoinAdd = '$audio/CoinAdd';
+
+  // space
+  static const space = '/bilibili.app.interface.v1.Space';
+  static const searchArchive = '$space/SearchArchive';
 }

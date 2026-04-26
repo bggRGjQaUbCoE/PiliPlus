@@ -1,6 +1,5 @@
 import 'package:PiliPlus/common/skeleton/video_card_h.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
-import 'package:PiliPlus/common/widgets/flutter/scroll_view/scroll_view.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/sliver/sliver_pinned_header.dart';
 import 'package:PiliPlus/http/loading_state.dart';
@@ -47,7 +46,7 @@ class _MemberFavoriteState extends State<MemberFavorite>
     final theme = Theme.of(context);
     return refreshIndicator(
       onRefresh: _controller.onRefresh,
-      child: customScrollView(
+      child: CustomScrollView(
         physics: _FavScrollPhysics(controller: _controller),
         slivers: [
           SliverPadding(

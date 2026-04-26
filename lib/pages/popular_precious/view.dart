@@ -1,5 +1,4 @@
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
-import 'package:PiliPlus/common/widgets/flutter/scroll_view/scroll_view.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/video_card/video_card_h.dart';
 import 'package:PiliPlus/common/widgets/view_sliver_safe_area.dart';
@@ -30,7 +29,7 @@ class _PopularPreciousPageState extends State<PopularPreciousPage>
       appBar: AppBar(title: const Text('入站必刷')),
       body: refreshIndicator(
         onRefresh: _controller.onRefresh,
-        child: customScrollView(
+        child: CustomScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           slivers: [
             ViewSliverSafeArea(
@@ -58,6 +57,7 @@ class _PopularPreciousPageState extends State<PopularPreciousPage>
                 PageUtils.toVideoPage(
                   bvid: item.bvid,
                   cid: item.cid!,
+                  dimension: item.dimension,
                   extraArguments: {
                     'sourceType': SourceType.playlist,
                     'favTitle': '入站必刷',

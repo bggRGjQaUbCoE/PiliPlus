@@ -77,7 +77,7 @@ class AccountManager extends Interceptor {
         if (!account.accessKey.isNullOrEmpty) {
           dataPtr['access_key'] = account.accessKey!;
         }
-        AppSign.appSign(dataPtr);
+        AppSign.appSign(dataPtr..remove('sign'));
         // if (kDebugMode) debugPrint(dataPtr.toString());
       }
       return handler.next(options);

@@ -1,0 +1,73 @@
+diff --git a/packages/flutter/lib/src/widgets/scrollable.dart b/packages/flutter/lib/src/widgets/scrollable.dart
+index ac854f7de8f..fdeba1a88f5 100644
+--- a/packages/flutter/lib/src/widgets/scrollable.dart
++++ b/packages/flutter/lib/src/widgets/scrollable.dart
+@@ -786,11 +786,13 @@ class ScrollableState extends State<Scrollable>
+       switch (widget.axis) {
+         case Axis.vertical:
+           _gestureRecognizers = <Type, GestureRecognizerFactory>{
+-            VerticalDragGestureRecognizer:
+-                GestureRecognizerFactoryWithHandlers<VerticalDragGestureRecognizer>(
+-                  () => VerticalDragGestureRecognizer(supportedDevices: _configuration.dragDevices),
+-                  (VerticalDragGestureRecognizer instance) {
++            _VerticalDragGestureRecognizer:
++                GestureRecognizerFactoryWithHandlers<_VerticalDragGestureRecognizer>(
++                  () =>
++                      _VerticalDragGestureRecognizer(supportedDevices: _configuration.dragDevices),
++                  (_VerticalDragGestureRecognizer instance) {
+                     instance
++                      ..isDyAllowed = _isDyAllowed
+                       ..onDown = _handleDragDown
+                       ..onStart = _handleDragStart
+                       ..onUpdate = _handleDragUpdate
+@@ -859,6 +861,10 @@ class ScrollableState extends State<Scrollable>
+   Drag? _drag;
+   ScrollHoldController? _hold;
+ 
++  bool _isDyAllowed(double dy) {
++    return position.viewportDimension - dy > 30;
++  }
++
+   void _handleDragDown(DragDownDetails details) {
+     assert(_drag == null);
+     assert(_hold == null);
+@@ -2553,3 +2559,39 @@ class _HorizontalInnerDimensionState extends ScrollableState {
+     return _configuration.buildOverscrollIndicator(context, child, details);
+   }
+ }
++
++typedef IsDyAllowed = bool Function(double dy);
++
++class _VerticalDragGestureRecognizer extends VerticalDragGestureRecognizer {
++  _VerticalDragGestureRecognizer({
++    super.debugOwner,
++    super.supportedDevices,
++    super.allowedButtonsFilter,
++  });
++
++  IsDyAllowed? isDyAllowed;
++
++  bool _isDyAllowed = true;
++
++  @override
++  bool isPointerAllowed(PointerEvent event) {
++    _isDyAllowed = isDyAllowed?.call(event.localPosition.dy) ?? true;
++    return super.isPointerAllowed(event);
++  }
++
++  @override
++  T? invokeCallback<T>(
++    String name,
++    RecognizerCallback<T> callback, {
++    String Function()? debugReport,
++  }) {
++    if (!_isDyAllowed) return null;
++    return super.invokeCallback(name, callback, debugReport: debugReport);
++  }
++
++  @override
++  void dispose() {
++    isDyAllowed = null;
++    super.dispose();
++  }
++}

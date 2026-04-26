@@ -46,6 +46,7 @@ class FavSearchController
   }
 
   @override
+  // TODO: dimension
   void onViewFav(FavDetailItemModel item, int? index) => PageUtils.toVideoPage(
     bvid: item.bvid,
     cid: item.ugc!.firstCid!,

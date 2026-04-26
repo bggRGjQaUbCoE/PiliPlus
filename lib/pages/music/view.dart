@@ -4,7 +4,6 @@ import 'dart:math';
 import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/custom_icon.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
-import 'package:PiliPlus/common/widgets/flutter/scroll_view/scroll_view.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/image_viewer/hero.dart';
 import 'package:PiliPlus/common/widgets/marquee.dart';
@@ -115,7 +114,7 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
         if (isPortrait) {
           child = Padding(
             padding: EdgeInsets.symmetric(horizontal: padding),
-            child: customScrollView(
+            child: CustomScrollView(
               controller: scrollController,
               physics: const AlwaysScrollableScrollPhysics(),
               slivers: [
@@ -141,7 +140,7 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
             children: [
               Expanded(
                 flex: flex,
-                child: customScrollView(
+                child: CustomScrollView(
                   controller: scrollController,
                   physics: const AlwaysScrollableScrollPhysics(),
                   slivers: [
@@ -174,7 +173,7 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
                     resizeToAvoidBottomInset: false,
                     body: refreshIndicator(
                       onRefresh: controller.onRefresh,
-                      child: customScrollView(
+                      child: CustomScrollView(
                         controller: scrollController,
                         physics: const AlwaysScrollableScrollPhysics(),
                         slivers: [

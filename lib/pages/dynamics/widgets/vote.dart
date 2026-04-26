@@ -8,6 +8,7 @@ import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/http/dynamics.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/badge_type.dart';
+import 'package:PiliPlus/models/common/image_preview_type.dart';
 import 'package:PiliPlus/models/dynamics/vote_model.dart';
 import 'package:PiliPlus/models_new/followee_votes/vote.dart';
 import 'package:PiliPlus/utils/accounts.dart';
@@ -15,6 +16,8 @@ import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:PiliPlus/utils/grid.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
+import 'package:PiliPlus/utils/page_utils.dart';
+import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:flutter/material.dart' hide LayoutBuilder;
 import 'package:get/get.dart';
 
@@ -311,6 +314,12 @@ class _VotePanelState extends State<VotePanel> {
   );
 
   Widget _buildPicOptions(int index, ColorScheme colorScheme) {
+    void onLongPress() => PageUtils.imageView(
+      initialPage: index,
+      imgList: _voteInfo.options
+          .map((e) => SourceModel(url: e.imgUrl!))
+          .toList(),
+    );
     return Card(
       clipBehavior: Clip.hardEdge,
       shape: const RoundedRectangleBorder(
@@ -324,6 +333,8 @@ class _VotePanelState extends State<VotePanel> {
             onTap: !_enabled
                 ? null
                 : () => _onSelected(context, !selected, opt.optIdx!),
+            onLongPress: PlatformUtils.isMobile ? onLongPress : null,
+            onSecondaryTap: PlatformUtils.isDesktop ? onLongPress : null,
             child: Column(
               spacing: 5,
               crossAxisAlignment: CrossAxisAlignment.stretch,

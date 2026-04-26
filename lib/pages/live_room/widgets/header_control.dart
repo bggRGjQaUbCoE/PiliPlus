@@ -24,6 +24,7 @@ class LiveHeaderControl extends StatefulWidget {
     required this.onPlayAudio,
     required this.isPortrait,
     required this.liveController,
+    required this.onlineWidget,
   });
 
   final String? title;
@@ -33,6 +34,7 @@ class LiveHeaderControl extends StatefulWidget {
   final VoidCallback onPlayAudio;
   final bool isPortrait;
   final LiveRoomController liveController;
+  final Widget onlineWidget;
 
   @override
   State<LiveHeaderControl> createState() => _LiveHeaderControlState();
@@ -90,7 +92,7 @@ class _LiveHeaderControlState extends State<LiveHeaderControl>
                   ),
                 ),
               liveController.watchedWidget,
-              liveController.onlineWidget,
+              widget.onlineWidget,
               liveController.timeWidget,
             ],
           ),

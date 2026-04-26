@@ -3,7 +3,6 @@ import 'dart:convert';
 
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/widgets/button/icon_button.dart';
-import 'package:PiliPlus/common/widgets/flutter/scroll_view/scroll_view.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
 import 'package:PiliPlus/services/logger.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
@@ -164,7 +163,7 @@ class _LogsPageState extends State<LogsPage> {
                 left: padding.left + 12,
                 right: padding.right + 12,
               ),
-              child: customScrollView(
+              child: CustomScrollView(
                 slivers: [
                   if (latestLog != null)
                     SliverToBoxAdapter(

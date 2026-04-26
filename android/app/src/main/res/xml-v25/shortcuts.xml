@@ -1,6 +1,6 @@
 <shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
     <shortcut
-        android:icon="@drawable/search"
+        android:icon="@drawable/ic_shortcut_search"
         android:shortcutId="search"
         android:shortcutLongLabel="@string/search"
         android:shortcutShortLabel="@string/search">
@@ -9,7 +9,7 @@
             android:data="bilibili://search" />
     </shortcut>
     <shortcut
-        android:icon="@drawable/download"
+        android:icon="@drawable/ic_shortcut_download"
         android:shortcutId="offline_video"
         android:shortcutLongLabel="@string/offline_video"
         android:shortcutShortLabel="@string/offline_video">

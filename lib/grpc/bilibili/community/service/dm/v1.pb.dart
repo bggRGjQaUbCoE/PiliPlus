@@ -1223,7 +1223,7 @@ class DanmakuElem extends $pb.GeneratedMessage {
     $core.int? pool,
     $core.String? idStr,
     $core.int? attr,
-    $fixnum.Int64? like,
+    $fixnum.Int64? likeCount,
     $core.String? animation,
     $core.String? extra,
     DmColorfulType? colorful,
@@ -1247,7 +1247,7 @@ class DanmakuElem extends $pb.GeneratedMessage {
     if (pool != null) result.pool = pool;
     if (idStr != null) result.idStr = idStr;
     if (attr != null) result.attr = attr;
-    if (like != null) result.like = like;
+    if (likeCount != null) result.likeCount = likeCount;
     if (animation != null) result.animation = animation;
     if (extra != null) result.extra = extra;
     if (colorful != null) result.colorful = colorful;
@@ -1286,7 +1286,7 @@ class DanmakuElem extends $pb.GeneratedMessage {
     ..aI(11, _omitFieldNames ? '' : 'pool')
     ..aOS(12, _omitFieldNames ? '' : 'idStr')
     ..aI(13, _omitFieldNames ? '' : 'attr')
-    ..aInt64(15, _omitFieldNames ? '' : 'like')
+    ..aInt64(15, _omitFieldNames ? '' : 'likeCount')
     ..aOS(22, _omitFieldNames ? '' : 'animation')
     ..aOS(23, _omitFieldNames ? '' : 'extra')
     ..aE<DmColorfulType>(24, _omitFieldNames ? '' : 'colorful',
@@ -1295,8 +1295,8 @@ class DanmakuElem extends $pb.GeneratedMessage {
     ..aInt64(26, _omitFieldNames ? '' : 'oid')
     ..aE<DmFromType>(27, _omitFieldNames ? '' : 'dmFrom',
         enumValues: DmFromType.values)
-    ..aI(28, _omitFieldNames ? '' : 'count')
-    ..aOB(29, _omitFieldNames ? '' : 'isSelf')
+    ..aI(100, _omitFieldNames ? '' : 'count')
+    ..aOB(101, _omitFieldNames ? '' : 'isSelf')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -1436,13 +1436,13 @@ class DanmakuElem extends $pb.GeneratedMessage {
   void clearAttr() => $_clearField(13);
 
   @$pb.TagNumber(15)
-  $fixnum.Int64 get like => $_getI64(13);
+  $fixnum.Int64 get likeCount => $_getI64(13);
   @$pb.TagNumber(15)
-  set like($fixnum.Int64 value) => $_setInt64(13, value);
+  set likeCount($fixnum.Int64 value) => $_setInt64(13, value);
   @$pb.TagNumber(15)
-  $core.bool hasLike() => $_has(13);
+  $core.bool hasLikeCount() => $_has(13);
   @$pb.TagNumber(15)
-  void clearLike() => $_clearField(15);
+  void clearLikeCount() => $_clearField(15);
 
   @$pb.TagNumber(22)
   $core.String get animation => $_getSZ(14);
@@ -1498,23 +1498,25 @@ class DanmakuElem extends $pb.GeneratedMessage {
   @$pb.TagNumber(27)
   void clearDmFrom() => $_clearField(27);
 
-  @$pb.TagNumber(28)
+  /// extra field
+  @$pb.TagNumber(100)
   $core.int get count => $_getIZ(20);
-  @$pb.TagNumber(28)
+  @$pb.TagNumber(100)
   set count($core.int value) => $_setSignedInt32(20, value);
-  @$pb.TagNumber(28)
+  @$pb.TagNumber(100)
   $core.bool hasCount() => $_has(20);
-  @$pb.TagNumber(28)
-  void clearCount() => $_clearField(28);
+  @$pb.TagNumber(100)
+  void clearCount() => $_clearField(100);
 
-  @$pb.TagNumber(29)
+  /// extra field
+  @$pb.TagNumber(101)
   $core.bool get isSelf => $_getBF(21);
-  @$pb.TagNumber(29)
+  @$pb.TagNumber(101)
   set isSelf($core.bool value) => $_setBool(21, value);
-  @$pb.TagNumber(29)
+  @$pb.TagNumber(101)
   $core.bool hasIsSelf() => $_has(21);
-  @$pb.TagNumber(29)
-  void clearIsSelf() => $_clearField(29);
+  @$pb.TagNumber(101)
+  void clearIsSelf() => $_clearField(101);
 }
 
 class DanmakuFlag extends $pb.GeneratedMessage {

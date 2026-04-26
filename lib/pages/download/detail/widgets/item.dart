@@ -126,6 +126,7 @@ class DetailItem extends StatelessWidget {
               cid: cid!,
               cover: entry.cover,
               title: entry.showTitle,
+              isVertical: entry.pageData?.isVertical ?? false,
               extraArguments: {
                 'sourceType': SourceType.file,
                 'entry': entry,

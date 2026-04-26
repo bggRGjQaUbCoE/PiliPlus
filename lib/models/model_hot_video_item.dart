@@ -38,7 +38,9 @@ class HotVideoItemModel extends BaseRcmdVideoItemModel with MultiSelectData {
     duration = json["duration"];
     owner = Owner.fromJson(json["owner"]);
     stat = HotStat.fromJson(json['stat']);
-    dimension = Dimension.fromJson(json['dimension']);
+    dimension = json['dimension'] == null
+        ? null
+        : Dimension.fromJson(json['dimension']);
     firstFrame = json["first_frame"];
     pubLocation = json["pub_location"];
     dynamic rcmd = json['rcmd_reason'];

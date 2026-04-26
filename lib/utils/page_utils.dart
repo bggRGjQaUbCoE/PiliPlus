@@ -11,6 +11,7 @@ import 'package:PiliPlus/models/common/image_preview_type.dart';
 import 'package:PiliPlus/models/common/video/video_type.dart';
 import 'package:PiliPlus/models/dynamics/result.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_info_model/episode.dart';
+import 'package:PiliPlus/models_new/video/video_detail/dimension.dart';
 import 'package:PiliPlus/pages/common/common_intro_controller.dart';
 import 'package:PiliPlus/pages/common/publish/publish_route.dart';
 import 'package:PiliPlus/pages/contact/view.dart';
@@ -271,12 +272,14 @@ abstract final class PageUtils {
         try {
           String bvid = archive.bvid!;
           String cover = archive.cover!;
-          int? cid = await SearchHttp.ab2c(bvid: bvid);
+          final res = await SearchHttp.ab2cWithDimension(bvid: bvid);
+          final cid = res?.cid;
           if (cid != null) {
             toVideoPage(
               bvid: bvid,
               cid: cid,
               cover: cover,
+              dimension: res!.dimension,
             );
           }
         } catch (err) {
@@ -330,13 +333,15 @@ abstract final class PageUtils {
         int aid = ugcSeason.aid!;
         String bvid = IdUtils.av2bv(aid);
         String cover = ugcSeason.cover!;
-        int? cid = await SearchHttp.ab2c(bvid: bvid);
+        final res = await SearchHttp.ab2cWithDimension(bvid: bvid);
+        final cid = res?.cid;
         if (cid != null) {
           toVideoPage(
             aid: aid,
             bvid: bvid,
             cid: cid,
             cover: cover,
+            dimension: res!.dimension,
           );
         }
         break;
@@ -554,6 +559,8 @@ abstract final class PageUtils {
     int? progress, // milliseconds
     Map? extraArguments,
     bool off = false,
+    bool isVertical = false,
+    Dimension? dimension,
   }) {
     final arguments = {
       'aid': aid ?? IdUtils.bv2av(bvid!),
@@ -566,6 +573,7 @@ abstract final class PageUtils {
       'title': ?title,
       'progress': ?progress,
       'videoType': videoType,
+      'isVertical': dimension?.isVertical ?? isVertical,
       'heroTag': Utils.makeHeroTag(cid),
       ...?extraArguments,
     };

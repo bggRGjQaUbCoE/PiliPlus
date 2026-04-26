@@ -1,7 +1,6 @@
 import 'package:PiliPlus/common/skeleton/video_card_v.dart';
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
-import 'package:PiliPlus/common/widgets/flutter/scroll_view/scroll_view.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models_new/live/live_follow/item.dart';
@@ -36,7 +35,7 @@ class _LiveFollowPageState extends State<LiveFollowPage> {
       ),
       body: refreshIndicator(
         onRefresh: _controller.onRefresh,
-        child: customScrollView(
+        child: CustomScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           slivers: [
             SliverPadding(

@@ -181,10 +181,10 @@ packages:
     dependency: "direct dev"
     description:
       name: build_runner
-      sha256: "521daf8d189deb79ba474e43a696b41c49fb3987818dbacf3308f1e03673a75e"
+      sha256: "22fdcc3cfeb9d974d7408718c4be15ec5e9b1b350088f3a6c88f154e74dd700d"
       url: "https://pub.dev"
     source: hosted
-    version: "2.13.1"
+    version: "2.14.1"
   built_collection:
     dependency: transitive
     description:
@@ -291,14 +291,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.0"
-  code_builder:
-    dependency: transitive
-    description:
-      name: code_builder
-      sha256: "6a6cab2ba4680d6423f34a9b972a4c9a94ebe1b62ecec4e1a1f2cba91fd1319d"
-      url: "https://pub.dev"
-    source: hosted
-    version: "4.11.1"
   collection:
     dependency: "direct main"
     description:
@@ -387,6 +379,15 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.7.12"
+  desktop_webview_window:
+    dependency: "direct main"
+    description:
+      path: "."
+      ref: main
+      resolved-ref: b429f8ba6b8a99cd0f7eb5fe8d1621f325635c3d
+      url: "https://github.com/Predidit/linux_webview_window"
+    source: git
+    version: "0.2.4"
   device_info_plus:
     dependency: "direct main"
     description:
@@ -841,10 +842,10 @@ packages:
     dependency: transitive
     description:
       name: hooks
-      sha256: e79ed1e8e1929bc6ecb6ec85f0cb519c887aa5b423705ded0d0f2d9226def388
+      sha256: "025f060e86d2d4c3c47b56e33caf7f93bf9283340f26d23424ebcfccf34f621e"
       url: "https://pub.dev"
     source: hosted
-    version: "1.0.2"
+    version: "1.0.3"
   html:
     dependency: "direct main"
     description:
@@ -897,10 +898,10 @@ packages:
     dependency: "direct main"
     description:
       name: image_cropper
-      sha256: e2c8da14ecb4c6ead02b8e1265f966ce72b43ff930da66eef3833e622185dec7
+      sha256: "95782c9068ff09b95a5ece6a2b5fb31b18d8e544d79ebfa7bdafc08df39b3440"
       url: "https://pub.dev"
     source: hosted
-    version: "12.2.0"
+    version: "12.2.1"
   image_cropper_for_web:
     dependency: transitive
     description:
@@ -1178,13 +1179,12 @@ packages:
     source: hosted
     version: "1.2.1"
   media_kit_libs_macos_video:
-    dependency: "direct overridden"
+    dependency: transitive
     description:
-      path: "libs/macos/media_kit_libs_macos_video"
-      ref: dev
-      resolved-ref: "547999bfb8b5cae9f9aca6125f46fd7cb500e994"
-      url: "https://github.com/bggRGjQaUbCoE/media-kit.git"
-    source: git
+      name: media_kit_libs_macos_video
+      sha256: f26aa1452b665df288e360393758f84b911f70ffb3878032e1aabba23aa1032d
+      url: "https://pub.dev"
+    source: hosted
     version: "1.1.4"
   media_kit_libs_video:
     dependency: "direct main"
@@ -1251,7 +1251,7 @@ packages:
     description:
       path: "."
       ref: master
-      resolved-ref: "240534adb4b4b5c2c7e6c4578b1fc052ce98d7fd"
+      resolved-ref: "731bb77e39cca77065c86ece38902d35f5d653d2"
       url: "https://github.com/bggRGjQaUbCoE/flutter_native_device_orientation.git"
     source: git
     version: "2.0.5"
@@ -1503,6 +1503,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.0.3"
+  record_use:
+    dependency: transitive
+    description:
+      name: record_use
+      sha256: "2551bd8eecfe95d14ae75f6021ad0248be5c27f138c2ec12fcb52b500b3ba1ed"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.6.0"
   rxdart:
     dependency: "direct overridden"
     description:
@@ -1587,10 +1595,10 @@ packages:
     dependency: transitive
     description:
       name: sentry
-      sha256: "682360642a7b14b36daef3b5574b7269164e7763512ac92cdafd55b695bd2183"
+      sha256: "1f78300740739ff4b4920802687879231554350eab73eb229778f463aabda440"
       url: "https://pub.dev"
     source: hosted
-    version: "9.16.1"
+    version: "9.19.0"
   share_plus:
     dependency: "direct main"
     description:
@@ -1704,10 +1712,10 @@ packages:
     dependency: transitive
     description:
       name: sqflite
-      sha256: e2297b1da52f127bc7a3da11439985d9b536f75070f3325e62ada69a5c585d03
+      sha256: "564cfed0746fe53140c23b70b308e045c3b31f17778f2f326ccb7d804ea0250a"
       url: "https://pub.dev"
     source: hosted
-    version: "2.4.2"
+    version: "2.4.2+1"
   sqflite_android:
     dependency: transitive
     description:
@@ -1720,10 +1728,10 @@ packages:
     dependency: transitive
     description:
       name: sqflite_common
-      sha256: "6ef422a4525ecc601db6c0a2233ff448c731307906e92cabc9ba292afaae16a6"
+      sha256: "5e8377564d95166761a968ed96104e0569b6b6cc611faac92a36ab8a169112c3"
       url: "https://pub.dev"
     source: hosted
-    version: "2.5.6"
+    version: "2.5.6+1"
   sqflite_darwin:
     dependency: transitive
     description:
@@ -1785,10 +1793,10 @@ packages:
     dependency: "direct main"
     description:
       name: synchronized
-      sha256: c254ade258ec8282947a0acbbc90b9575b4f19673533ee46f2f6e9b3aeefd7c0
+      sha256: "63896c27e81b28f8cb4e69ead0d3e8f03f1d1e5fc531a3e579cabed6a2c7c9e5"
       url: "https://pub.dev"
     source: hosted
-    version: "3.4.0"
+    version: "3.4.0+1"
   term_glyph:
     dependency: transitive
     description:
@@ -1961,10 +1969,10 @@ packages:
     dependency: transitive
     description:
       name: vm_service
-      sha256: "45caa6c5917fa127b5dbcfbd1fa60b14e583afdc08bfc96dda38886ca252eb60"
+      sha256: "046d3928e16fa4dc46e8350415661755ab759d9fc97fc21b5ab295f71e4f0499"
       url: "https://pub.dev"
     source: hosted
-    version: "15.0.2"
+    version: "15.1.0"
   wakelock_plus:
     dependency: "direct main"
     description:
@@ -1977,10 +1985,10 @@ packages:
     dependency: transitive
     description:
       name: wakelock_plus_platform_interface
-      sha256: "24b84143787220a403491c2e5de0877fbbb87baf3f0b18a2a988973863db4b03"
+      sha256: "14b2e5b9e35c2631e656913c47adecdd71633ae92896a27a64c8f1fcfabc21cc"
       url: "https://pub.dev"
     source: hosted
-    version: "1.4.0"
+    version: "1.5.0"
   watcher:
     dependency: transitive
     description:
@@ -2080,5 +2088,5 @@ packages:
     source: hosted
     version: "3.1.3"
 sdks:
-  dart: ">=3.10.3 <4.0.0"
+  dart: ">=3.11.0 <4.0.0"
   flutter: "3.41.6"

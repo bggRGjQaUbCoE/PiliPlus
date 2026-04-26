@@ -2,7 +2,6 @@ import 'dart:math';
 
 import 'package:PiliPlus/common/widgets/custom_icon.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
-import 'package:PiliPlus/common/widgets/flutter/scroll_view/scroll_view.dart';
 import 'package:PiliPlus/common/widgets/flutter/text_field/controller.dart';
 import 'package:PiliPlus/common/widgets/pair.dart';
 import 'package:PiliPlus/http/constants.dart';
@@ -249,7 +248,7 @@ class _DynamicDetailPageState extends CommonDynPageState<DynamicDetailPage> {
     if (isPortrait) {
       child = Padding(
         padding: EdgeInsets.symmetric(horizontal: padding),
-        child: customScrollView(
+        child: CustomScrollView(
           controller: scrollController,
           physics: const AlwaysScrollableScrollPhysics(),
           slivers: [
@@ -276,7 +275,7 @@ class _DynamicDetailPageState extends CommonDynPageState<DynamicDetailPage> {
         children: [
           Expanded(
             flex: flex,
-            child: customScrollView(
+            child: CustomScrollView(
               controller: scrollController,
               physics: const AlwaysScrollableScrollPhysics(),
               slivers: [
@@ -308,7 +307,7 @@ class _DynamicDetailPageState extends CommonDynPageState<DynamicDetailPage> {
                 resizeToAvoidBottomInset: false,
                 body: refreshIndicator(
                   onRefresh: controller.onRefresh,
-                  child: customScrollView(
+                  child: CustomScrollView(
                     controller: scrollController,
                     physics: const AlwaysScrollableScrollPhysics(),
                     slivers: [

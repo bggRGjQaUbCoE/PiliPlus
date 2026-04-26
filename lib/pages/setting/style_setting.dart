@@ -1,4 +1,3 @@
-import 'package:PiliPlus/common/widgets/flutter/scroll_view/scroll_view.dart';
 import 'package:PiliPlus/pages/setting/models/style_settings.dart';
 import 'package:flutter/material.dart';
 
@@ -21,7 +20,7 @@ class _StyleSettingState extends State<StyleSetting> {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: showAppBar ? AppBar(title: const Text('外观设置')) : null,
-      body: ExtendedListView.builder(
+      body: ListView.builder(
         padding: EdgeInsets.only(
           left: showAppBar ? padding.left : 0,
           right: showAppBar ? padding.right : 0,

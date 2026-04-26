@@ -1,7 +1,6 @@
 import 'package:PiliPlus/common/widgets/button/icon_button.dart';
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
-import 'package:PiliPlus/common/widgets/flutter/scroll_view/scroll_view.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models_new/fav/fav_note/list.dart';
@@ -44,7 +43,7 @@ class _FavNoteChildPageState extends State<FavNoteChildPage>
       children: [
         refreshIndicator(
           onRefresh: _favNoteController.onRefresh,
-          child: customScrollView(
+          child: CustomScrollView(
             controller: _favNoteController.scrollController,
             physics: const AlwaysScrollableScrollPhysics(),
             slivers: [

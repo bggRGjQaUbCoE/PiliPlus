@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:PiliPlus/common/widgets/appbar/appbar.dart';
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
 import 'package:PiliPlus/common/widgets/flutter/pop_scope.dart';
-import 'package:PiliPlus/common/widgets/flutter/scroll_view/scroll_view.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/view_sliver_safe_area.dart';
 import 'package:PiliPlus/models_new/download/bili_download_entry_info.dart';
@@ -144,7 +143,7 @@ class _DownloadDetailPageState extends State<DownloadDetailPage>
               ],
             ),
           ),
-          body: customScrollView(
+          body: CustomScrollView(
             slivers: [
               ViewSliverSafeArea(
                 sliver: Obx(() {

@@ -3,7 +3,6 @@ import 'dart:math';
 import 'package:PiliPlus/common/skeleton/msg_feed_top.dart';
 import 'package:PiliPlus/common/widgets/button/more_btn.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
-import 'package:PiliPlus/common/widgets/flutter/scroll_view/scroll_view.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/follow_order_type.dart';
@@ -59,7 +58,7 @@ class _FollowChildPageState extends State<FollowChildPage>
       padding: EdgeInsets.only(left: padding.left, right: padding.right),
       child: refreshIndicator(
         onRefresh: _followController.onRefresh,
-        child: customScrollView(
+        child: CustomScrollView(
           controller: _followController.scrollController,
           physics: const AlwaysScrollableScrollPhysics(),
           slivers: [

@@ -33,6 +33,17 @@ abstract final class Utils {
     _ => color,
   };
 
+  static bool getDimensionFromUri(String uri) {
+    try {
+      final params = Uri.parse(uri).queryParameters;
+      final width = int.parse(params['player_width']!);
+      final height = int.parse(params['player_height']!);
+      return params['player_rotate'] == '1' ? width > height : height > width;
+    } catch (_) {
+      return false;
+    }
+  }
+
   static String themeUrl(bool isDark) =>
       'native.theme=${isDark ? 2 : 1}&night=${isDark ? 1 : 0}';
 

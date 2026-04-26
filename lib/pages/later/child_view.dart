@@ -1,5 +1,4 @@
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
-import 'package:PiliPlus/common/widgets/flutter/scroll_view/scroll_view.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/later_view_type.dart';
@@ -45,7 +44,7 @@ class _LaterViewChildPageState extends State<LaterViewChildPage>
     super.build(context);
     return refreshIndicator(
       onRefresh: _laterController.onRefresh,
-      child: customScrollView(
+      child: CustomScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         controller: _laterController.scrollController,
         slivers: [
@@ -85,6 +84,7 @@ class _LaterViewChildPageState extends State<LaterViewChildPage>
                         cid: cid,
                         cover: videoItem.pic,
                         title: videoItem.title,
+                        dimension: videoItem.dimension,
                         extraArguments: _baseCtr.isPlayAll.value
                             ? {
                                 'oid': videoItem.aid,

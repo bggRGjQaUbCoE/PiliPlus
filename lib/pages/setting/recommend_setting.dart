@@ -1,5 +1,4 @@
 import 'package:PiliPlus/common/widgets/flutter/list_tile.dart';
-import 'package:PiliPlus/common/widgets/flutter/scroll_view/scroll_view.dart';
 import 'package:PiliPlus/pages/setting/models/recommend_settings.dart';
 import 'package:flutter/material.dart' hide ListTile;
 
@@ -23,7 +22,7 @@ class _RecommendSettingState extends State<RecommendSetting> {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: widget.showAppBar ? AppBar(title: const Text('推荐流设置')) : null,
-      body: listView(
+      body: ListView(
         padding: EdgeInsets.only(
           left: showAppBar ? padding.left : 0,
           right: showAppBar ? padding.right : 0,

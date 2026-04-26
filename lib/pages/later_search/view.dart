@@ -79,6 +79,7 @@ class _LaterSearchPageState
               cid: cid,
               cover: item.pic,
               title: item.title,
+              dimension: item.dimension,
               extraArguments: {
                 'oid': item.aid,
                 'sourceType': SourceType.watchLater,

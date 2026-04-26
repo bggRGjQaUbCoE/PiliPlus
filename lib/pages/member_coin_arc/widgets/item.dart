@@ -42,13 +42,15 @@ class MemberCoinLikeItem extends StatelessWidget {
           }
 
           if (item.param != null) {
-            int? cid = await SearchHttp.ab2c(aid: item.param);
+            final res = await SearchHttp.ab2cWithDimension(aid: item.param);
+            final cid = res?.cid;
             if (cid != null) {
               PageUtils.toVideoPage(
                 aid: int.parse(item.param!),
                 cid: cid,
                 cover: item.cover,
                 title: item.title,
+                dimension: res!.dimension,
               );
             }
           }

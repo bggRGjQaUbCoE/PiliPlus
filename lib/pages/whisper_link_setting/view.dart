@@ -1,4 +1,3 @@
-import 'package:PiliPlus/common/widgets/flutter/scroll_view/scroll_view.dart';
 import 'package:PiliPlus/common/widgets/pendant_avatar.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models_new/msg/im_user_infos/datum.dart';
@@ -50,7 +49,7 @@ class _WhisperLinkSettingPageState extends State<WhisperLinkSettingPage> {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(title: const Text('聊天设置')),
-      body: listView(
+      body: ListView(
         padding: EdgeInsets.only(
           bottom: MediaQuery.viewPaddingOf(context).bottom + 100,
         ),

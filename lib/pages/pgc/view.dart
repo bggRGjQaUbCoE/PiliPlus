@@ -3,7 +3,6 @@ import 'dart:math';
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/button/more_btn.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
-import 'package:PiliPlus/common/widgets/flutter/scroll_view/scroll_view.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart';
@@ -58,7 +57,7 @@ class _PgcPageState extends State<PgcPage> with AutomaticKeepAliveClientMixin {
     final ThemeData theme = Theme.of(context);
     return refreshIndicator(
       onRefresh: controller.onRefresh,
-      child: customScrollView(
+      child: CustomScrollView(
         controller: controller.scrollController,
         physics: const AlwaysScrollableScrollPhysics(),
         slivers: [

@@ -1,6 +1,5 @@
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
-import 'package:PiliPlus/common/widgets/flutter/scroll_view/scroll_view.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart';
 import 'package:PiliPlus/common/widgets/sliver/sliver_floating_header.dart';
@@ -100,7 +99,7 @@ class _MemberVideoState extends State<MemberVideo>
           }
         }
       },
-      child: customScrollView(
+      child: CustomScrollView(
         physics: ReloadScrollPhysics(controller: _controller),
         slivers: [
           SliverPadding(

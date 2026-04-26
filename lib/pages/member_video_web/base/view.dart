@@ -1,7 +1,6 @@
 import 'package:PiliPlus/common/widgets/button/icon_button.dart';
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
-import 'package:PiliPlus/common/widgets/flutter/scroll_view/scroll_view.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart';
 import 'package:PiliPlus/common/widgets/sliver/sliver_pinned_header.dart';
@@ -64,7 +63,7 @@ abstract class BaseVideoWebState<
       ),
       body: refreshIndicator(
         onRefresh: controller.onRefresh,
-        child: customScrollView(
+        child: CustomScrollView(
           physics: ReloadScrollPhysics(controller: controller),
           slivers: [
             SliverPadding(
@@ -100,6 +99,7 @@ abstract class BaseVideoWebState<
                       if (index == response.length - 1) {
                         controller.onLoadMore();
                       }
+                      // TODO: dimension
                       return VideoCardH(videoItem: response[index]);
                     },
                   ),

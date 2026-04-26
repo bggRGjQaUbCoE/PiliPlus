@@ -18,7 +18,6 @@ import 'package:PiliPlus/models_new/live/live_room_play_info/codec.dart';
 import 'package:PiliPlus/models_new/live/live_superchat/item.dart';
 import 'package:PiliPlus/pages/common/publish/publish_route.dart';
 import 'package:PiliPlus/pages/danmaku/danmaku_model.dart';
-import 'package:PiliPlus/pages/live_room/contribution_rank/view.dart';
 import 'package:PiliPlus/pages/live_room/send_danmaku/view.dart';
 import 'package:PiliPlus/pages/video/widgets/header_control.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
@@ -30,7 +29,6 @@ import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/danmaku_utils.dart';
 import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:PiliPlus/utils/extension/iterable_ext.dart';
-import 'package:PiliPlus/utils/extension/size_ext.dart';
 import 'package:PiliPlus/utils/global_data.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
@@ -130,40 +128,6 @@ class LiveRoomController extends GetxController {
   final RxString title = ''.obs;
 
   final RxnString onlineCount = RxnString();
-  Widget get onlineWidget => GestureDetector(
-    onTap: _showRank,
-    child: Obx(() {
-      if (onlineCount.value case final onlineCount?) {
-        return Text(
-          '高能观众($onlineCount)',
-          style: const TextStyle(
-            fontSize: 12,
-            color: Colors.white,
-          ),
-        );
-      }
-      return const SizedBox.shrink();
-    }),
-  );
-
-  void _showRank() {
-    if (ruid case final ruid?) {
-      final heightFactor =
-          PlatformUtils.isMobile && !Get.mediaQuery.size.isPortrait ? 1.0 : 0.7;
-      showModalBottomSheet(
-        context: Get.context!,
-        useSafeArea: true,
-        clipBehavior: .hardEdge,
-        isScrollControlled: true,
-        constraints: const BoxConstraints(maxWidth: 450),
-        builder: (context) => FractionallySizedBox(
-          widthFactor: 1.0,
-          heightFactor: heightFactor,
-          child: ContributionRankPanel(ruid: ruid, roomId: roomId),
-        ),
-      );
-    }
-  }
 
   final RxnString watchedShow = RxnString();
   Widget get watchedWidget => Obx(() {

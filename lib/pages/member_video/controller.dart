@@ -13,6 +13,7 @@ import 'package:PiliPlus/pages/common/common_list_controller.dart';
 import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
+import 'package:PiliPlus/utils/utils.dart';
 import 'package:get/get.dart';
 
 class MemberVideoCtr
@@ -152,12 +153,14 @@ class MemberVideoCtr
       String? oid = params['oid'];
       if (oid != null) {
         final bvid = IdUtils.av2bv(int.parse(oid));
-        final cid = await SearchHttp.ab2c(aid: oid, bvid: bvid);
+        final res = await SearchHttp.ab2cWithDimension(aid: oid, bvid: bvid);
+        final cid = res?.cid;
         if (cid != null) {
           PageUtils.toVideoPage(
             aid: int.parse(oid),
             bvid: bvid,
             cid: cid,
+            dimension: res!.dimension,
             extraArguments: {
               'sourceType': SourceType.archive,
               'mediaId': seasonId ?? seriesId ?? mid,
@@ -190,11 +193,16 @@ class MemberVideoCtr
                   (isVideo ? order == .click : sort == .asc)
               ? !desc
               : desc;
+          bool isVertical = false;
+          if (element.uri case final uri?) {
+            isVertical = Utils.getDimensionFromUri(uri);
+          }
           PageUtils.toVideoPage(
             bvid: element.bvid,
             cid: element.cid!,
             cover: element.cover,
             title: element.title,
+            isVertical: isVertical,
             extraArguments: {
               'sourceType': SourceType.archive,
               'mediaId': seasonId ?? seriesId ?? mid,

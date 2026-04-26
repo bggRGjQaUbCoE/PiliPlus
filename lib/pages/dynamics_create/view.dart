@@ -4,8 +4,7 @@ import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/button/icon_button.dart';
 import 'package:PiliPlus/common/widgets/button/toolbar_icon_button.dart';
 import 'package:PiliPlus/common/widgets/custom_icon.dart';
-import 'package:PiliPlus/common/widgets/flutter/draggable_sheet/draggable_scrollable_sheet_dyn.dart'
-    as dyn_sheet;
+import 'package:PiliPlus/common/widgets/flutter/draggable_scrollable_sheet.dart';
 import 'package:PiliPlus/common/widgets/flutter/text_field/controller.dart';
 import 'package:PiliPlus/common/widgets/flutter/text_field/text_field.dart';
 import 'package:PiliPlus/common/widgets/pair.dart';
@@ -32,8 +31,7 @@ import 'package:PiliPlus/utils/extension/context_ext.dart';
 import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:PiliPlus/utils/grid.dart';
 import 'package:PiliPlus/utils/request_utils.dart';
-import 'package:flutter/material.dart'
-    hide DraggableScrollableSheet, showTimePicker;
+import 'package:flutter/material.dart' hide showTimePicker;
 import 'package:flutter/services.dart' show LengthLimitingTextInputFormatter;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -78,7 +76,7 @@ class CreateDynPanel extends CommonRichTextPubPage {
     context: context,
     useSafeArea: true,
     isScrollControlled: true,
-    builder: (context) => dyn_sheet.DraggableScrollableSheet(
+    builder: (context) => DynDraggableScrollableSheet(
       snap: true,
       expand: false,
       initialChildSize: 1,

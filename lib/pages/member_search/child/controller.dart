@@ -1,10 +1,13 @@
+import 'package:PiliPlus/grpc/bilibili/app/interfaces/v1.pb.dart'
+    show SearchArchiveReply;
+import 'package:PiliPlus/grpc/space.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/member.dart';
 import 'package:PiliPlus/models/common/member/search_type.dart';
 import 'package:PiliPlus/models/dynamics/result.dart';
-import 'package:PiliPlus/models_new/member/search_archive/data.dart';
 import 'package:PiliPlus/pages/common/common_list_controller.dart';
 import 'package:PiliPlus/pages/member_search/controller.dart';
+import 'package:fixnum/fixnum.dart' show Int64;
 
 class MemberSearchChildController extends CommonListController {
   MemberSearchChildController(this.controller, this.searchType);
@@ -12,22 +15,18 @@ class MemberSearchChildController extends CommonListController {
   final MemberSearchController controller;
   final MemberSearchType searchType;
 
-  dynamic offset;
+  // archive
+  late final _ps = Int64(20);
+  late final _midInt64 = Int64(int.parse(controller.mid));
+
+  // dynamic
+  String? offset;
 
   @override
   void checkIsEnd(int length) {
-    switch (searchType) {
-      case MemberSearchType.archive:
-        if (controller.counts.first != -1 &&
-            length >= controller.counts.first) {
-          isEnd = true;
-        }
-        break;
-      case MemberSearchType.dynamic:
-        if (controller.counts[1] != -1 && length >= controller.counts[1]) {
-          isEnd = true;
-        }
-        break;
+    final count = controller.counts[searchType.index];
+    if (count != -1 && length >= count) {
+      isEnd = true;
     }
   }
 
@@ -35,9 +34,9 @@ class MemberSearchChildController extends CommonListController {
   List? getDataList(response) {
     switch (searchType) {
       case MemberSearchType.archive:
-        SearchArchiveData data = response;
-        controller.counts[searchType.index] = data.page?.count ?? 0;
-        return data.list?.vlist;
+        SearchArchiveReply data = response;
+        controller.counts[searchType.index] = data.total.toInt();
+        return data.archives;
       case MemberSearchType.dynamic:
         DynamicsDataModel data = response;
         offset = data.offset;
@@ -58,9 +57,10 @@ class MemberSearchChildController extends CommonListController {
   @override
   Future<LoadingState> customGetData() {
     return switch (searchType) {
-      MemberSearchType.archive => MemberHttp.searchArchive(
-        mid: controller.mid,
+      MemberSearchType.archive => SpaceGrpc.searchArchive(
+        mid: _midInt64,
         pn: page,
+        ps: _ps,
         keyword: controller.editingController.text,
       ),
       MemberSearchType.dynamic => MemberHttp.dynSearch(

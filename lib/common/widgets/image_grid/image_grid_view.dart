@@ -54,7 +54,8 @@ class ImageModel {
   bool? _isLongPic;
   bool? _isLivePhoto;
 
-  bool get isLongPic => _isLongPic ??= (height / width) > Style.imgMaxRatio;
+  bool get isLongPic =>
+      _isLongPic ??= (height / width) > Style.imgMaxRatio && width > 100;
   bool get isLivePhoto =>
       _isLivePhoto ??= enableLivePhoto && liveUrl?.isNotEmpty == true;
 

@@ -133,6 +133,24 @@ final $typed_data.Uint8List userCallbackSceneDescriptor = $convert.base64Decode(
     'ChFVc2VyQ2FsbGJhY2tTY2VuZRIcChhJbnNlcnRfVXNlckNhbGxiYWNrU2NlbmUQABIYChRSZW'
     'NvbW1lbmRTdXBlcmJSZXBseRAB');
 
+@$core.Deprecated('Use translationSwitchDescriptor instead')
+const TranslationSwitch$json = {
+  '1': 'TranslationSwitch',
+  '2': [
+    {'1': 'TRANSLATION_SWITCH_UNSPECIFIED', '2': 0},
+    {'1': 'TRANSLATION_SWITCH_UNSUPPORTED', '2': 1},
+    {'1': 'TRANSLATION_SWITCH_SHOW_TRANSLATION', '2': 2},
+    {'1': 'TRANSLATION_SWITCH_SHOW_ORIGIN', '2': 3},
+  ],
+};
+
+/// Descriptor for `TranslationSwitch`. Decode as a `google.protobuf.EnumDescriptorProto`.
+final $typed_data.Uint8List translationSwitchDescriptor = $convert.base64Decode(
+    'ChFUcmFuc2xhdGlvblN3aXRjaBIiCh5UUkFOU0xBVElPTl9TV0lUQ0hfVU5TUEVDSUZJRUQQAB'
+    'IiCh5UUkFOU0xBVElPTl9TV0lUQ0hfVU5TVVBQT1JURUQQARInCiNUUkFOU0xBVElPTl9TV0lU'
+    'Q0hfU0hPV19UUkFOU0xBVElPThACEiIKHlRSQU5TTEFUSU9OX1NXSVRDSF9TSE9XX09SSUdJTh'
+    'AD');
+
 @$core.Deprecated('Use activityDescriptor instead')
 const Activity$json = {
   '1': 'Activity',
@@ -2857,6 +2875,21 @@ const ReplyControl$json = {
       '6': '.bilibili.main.community.reply.v1.ReplyControl.InsertEffect',
       '10': 'insertEffect'
     },
+    {
+      '1': 'translation_switch',
+      '3': 37,
+      '4': 1,
+      '5': 14,
+      '6': '.bilibili.main.community.reply.v1.TranslationSwitch',
+      '10': 'translationSwitch'
+    },
+    {
+      '1': 'show_translation',
+      '3': 100,
+      '4': 1,
+      '5': 8,
+      '10': 'showTranslation'
+    },
   ],
   '3': [
     ReplyControl_EasterEggLabel$json,
@@ -2977,18 +3010,21 @@ final $typed_data.Uint8List replyControlDescriptor = $convert.base64Decode(
     'aWxpLm1haW4uY29tbXVuaXR5LnJlcGx5LnYxLlJlcGx5Q29udHJvbC5FYXN0ZXJFZ2dMYWJlbF'
     'IOZWFzdGVyRWdnTGFiZWwSJwoPY29udGV4dF9mZWF0dXJlGCMgASgJUg5jb250ZXh0RmVhdHVy'
     'ZRJgCg1pbnNlcnRfZWZmZWN0GCQgASgLMjsuYmlsaWJpbGkubWFpbi5jb21tdW5pdHkucmVwbH'
-    'kudjEuUmVwbHlDb250cm9sLkluc2VydEVmZmVjdFIMaW5zZXJ0RWZmZWN0GkEKDkVhc3RlckVn'
-    'Z0xhYmVsEhQKBWltYWdlGAEgASgJUgVpbWFnZRIZCghqdW1wX3VybBgCIAEoCVIHanVtcFVybB'
-    'rXAQoLR3JhZGVSZWNvcmQSFAoFc2NvcmUYASABKAVSBXNjb3JlElUKBXRleHRzGAIgAygLMj8u'
-    'YmlsaWJpbGkubWFpbi5jb21tdW5pdHkucmVwbHkudjEuUmVwbHlDb250cm9sLkdyYWRlUmVjb3'
-    'JkLlRleHRSBXRleHRzGlsKBFRleHQSEAoDcmF3GAEgASgJUgNyYXcSQQoFc3R5bGUYAiABKAsy'
-    'Ky5iaWxpYmlsaS5tYWluLmNvbW11bml0eS5yZXBseS52MS5UZXh0U3R5bGVSBXN0eWxlGjwKDE'
-    'luc2VydEVmZmVjdBIYCgdjb250ZW50GAEgASgJUgdjb250ZW50EhIKBGljb24YAiABKAlSBGlj'
-    'b24a8QEKClZvdGVPcHRpb24SYgoKbGFiZWxfa2luZBgBIAEoDjJDLmJpbGliaWxpLm1haW4uY2'
-    '9tbXVuaXR5LnJlcGx5LnYxLlJlcGx5Q29udHJvbC5Wb3RlT3B0aW9uLkxhYmVsS2luZFIJbGFi'
-    'ZWxLaW5kEhIKBGRlc2MYAiABKAlSBGRlc2MSEAoDaWR4GAMgASgDUgNpZHgSFwoHdm90ZV9pZB'
-    'gEIAEoA1IGdm90ZUlkIkAKCUxhYmVsS2luZBIVChFERUZBVUxUX0xhYmVsS2luZBAAEgcKA1JF'
-    'RBABEggKBEJMVUUQAhIJCgVQTEFJThAD');
+    'kudjEuUmVwbHlDb250cm9sLkluc2VydEVmZmVjdFIMaW5zZXJ0RWZmZWN0EmIKEnRyYW5zbGF0'
+    'aW9uX3N3aXRjaBglIAEoDjIzLmJpbGliaWxpLm1haW4uY29tbXVuaXR5LnJlcGx5LnYxLlRyYW'
+    '5zbGF0aW9uU3dpdGNoUhF0cmFuc2xhdGlvblN3aXRjaBIpChBzaG93X3RyYW5zbGF0aW9uGGQg'
+    'ASgIUg9zaG93VHJhbnNsYXRpb24aQQoORWFzdGVyRWdnTGFiZWwSFAoFaW1hZ2UYASABKAlSBW'
+    'ltYWdlEhkKCGp1bXBfdXJsGAIgASgJUgdqdW1wVXJsGtcBCgtHcmFkZVJlY29yZBIUCgVzY29y'
+    'ZRgBIAEoBVIFc2NvcmUSVQoFdGV4dHMYAiADKAsyPy5iaWxpYmlsaS5tYWluLmNvbW11bml0eS'
+    '5yZXBseS52MS5SZXBseUNvbnRyb2wuR3JhZGVSZWNvcmQuVGV4dFIFdGV4dHMaWwoEVGV4dBIQ'
+    'CgNyYXcYASABKAlSA3JhdxJBCgVzdHlsZRgCIAEoCzIrLmJpbGliaWxpLm1haW4uY29tbXVuaX'
+    'R5LnJlcGx5LnYxLlRleHRTdHlsZVIFc3R5bGUaPAoMSW5zZXJ0RWZmZWN0EhgKB2NvbnRlbnQY'
+    'ASABKAlSB2NvbnRlbnQSEgoEaWNvbhgCIAEoCVIEaWNvbhrxAQoKVm90ZU9wdGlvbhJiCgpsYW'
+    'JlbF9raW5kGAEgASgOMkMuYmlsaWJpbGkubWFpbi5jb21tdW5pdHkucmVwbHkudjEuUmVwbHlD'
+    'b250cm9sLlZvdGVPcHRpb24uTGFiZWxLaW5kUglsYWJlbEtpbmQSEgoEZGVzYxgCIAEoCVIEZG'
+    'VzYxIQCgNpZHgYAyABKANSA2lkeBIXCgd2b3RlX2lkGAQgASgDUgZ2b3RlSWQiQAoJTGFiZWxL'
+    'aW5kEhUKEURFRkFVTFRfTGFiZWxLaW5kEAASBwoDUkVEEAESCAoEQkxVRRACEgkKBVBMQUlOEA'
+    'M=');
 
 @$core.Deprecated('Use replyExtraDescriptor instead')
 const ReplyExtra$json = {
@@ -3311,6 +3347,14 @@ const ReplyInfo$json = {
       '10': 'memberV2'
     },
     {'1': 'track_info', '3': 16, '4': 1, '5': 9, '10': 'trackInfo'},
+    {
+      '1': 'translated_content',
+      '3': 17,
+      '4': 1,
+      '5': 11,
+      '6': '.bilibili.main.community.reply.v1.Content',
+      '10': 'translatedContent'
+    },
   ],
 };
 
@@ -3326,8 +3370,9 @@ final $typed_data.Uint8List replyInfoDescriptor = $convert.base64Decode(
     'NvbW11bml0eS5yZXBseS52MS5NZW1iZXJSBm1lbWJlchJTCg1yZXBseV9jb250cm9sGA4gASgL'
     'Mi4uYmlsaWJpbGkubWFpbi5jb21tdW5pdHkucmVwbHkudjEuUmVwbHlDb250cm9sUgxyZXBseU'
     'NvbnRyb2wSRwoJbWVtYmVyX3YyGA8gASgLMiouYmlsaWJpbGkubWFpbi5jb21tdW5pdHkucmVw'
-    'bHkudjEuTWVtYmVyVjJSCG1lbWJlclYyEh0KCnRyYWNrX2luZm8YECABKAlSCXRyYWNrSW5mbw'
-    '==');
+    'bHkudjEuTWVtYmVyVjJSCG1lbWJlclYyEh0KCnRyYWNrX2luZm8YECABKAlSCXRyYWNrSW5mbx'
+    'JYChJ0cmFuc2xhdGVkX2NvbnRlbnQYESABKAsyKS5iaWxpYmlsaS5tYWluLmNvbW11bml0eS5y'
+    'ZXBseS52MS5Db250ZW50UhF0cmFuc2xhdGVkQ29udGVudA==');
 
 @$core.Deprecated('Use replyInfoReplyDescriptor instead')
 const ReplyInfoReply$json = {
@@ -4561,3 +4606,60 @@ const WordSearchParam$json = {
 /// Descriptor for `WordSearchParam`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List wordSearchParamDescriptor = $convert.base64Decode(
     'Cg9Xb3JkU2VhcmNoUGFyYW0SHwoLc2hvd25fY291bnQYASABKANSCnNob3duQ291bnQ=');
+
+@$core.Deprecated('Use translateReplyReqDescriptor instead')
+const TranslateReplyReq$json = {
+  '1': 'TranslateReplyReq',
+  '2': [
+    {'1': 'type', '3': 1, '4': 1, '5': 3, '10': 'type'},
+    {'1': 'oid', '3': 2, '4': 1, '5': 3, '10': 'oid'},
+    {'1': 'rpids', '3': 3, '4': 3, '5': 3, '10': 'rpids'},
+  ],
+};
+
+/// Descriptor for `TranslateReplyReq`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List translateReplyReqDescriptor = $convert.base64Decode(
+    'ChFUcmFuc2xhdGVSZXBseVJlcRISCgR0eXBlGAEgASgDUgR0eXBlEhAKA29pZBgCIAEoA1IDb2'
+    'lkEhQKBXJwaWRzGAMgAygDUgVycGlkcw==');
+
+@$core.Deprecated('Use translateReplyRespDescriptor instead')
+const TranslateReplyResp$json = {
+  '1': 'TranslateReplyResp',
+  '2': [
+    {
+      '1': 'translated_replies',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6':
+          '.bilibili.main.community.reply.v1.TranslateReplyResp.TranslatedRepliesEntry',
+      '10': 'translatedReplies'
+    },
+  ],
+  '3': [TranslateReplyResp_TranslatedRepliesEntry$json],
+};
+
+@$core.Deprecated('Use translateReplyRespDescriptor instead')
+const TranslateReplyResp_TranslatedRepliesEntry$json = {
+  '1': 'TranslatedRepliesEntry',
+  '2': [
+    {'1': 'key', '3': 1, '4': 1, '5': 3, '10': 'key'},
+    {
+      '1': 'value',
+      '3': 2,
+      '4': 1,
+      '5': 11,
+      '6': '.bilibili.main.community.reply.v1.ReplyInfo',
+      '10': 'value'
+    },
+  ],
+  '7': {'7': true},
+};
+
+/// Descriptor for `TranslateReplyResp`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List translateReplyRespDescriptor = $convert.base64Decode(
+    'ChJUcmFuc2xhdGVSZXBseVJlc3ASegoSdHJhbnNsYXRlZF9yZXBsaWVzGAEgAygLMksuYmlsaW'
+    'JpbGkubWFpbi5jb21tdW5pdHkucmVwbHkudjEuVHJhbnNsYXRlUmVwbHlSZXNwLlRyYW5zbGF0'
+    'ZWRSZXBsaWVzRW50cnlSEXRyYW5zbGF0ZWRSZXBsaWVzGnEKFlRyYW5zbGF0ZWRSZXBsaWVzRW'
+    '50cnkSEAoDa2V5GAEgASgDUgNrZXkSQQoFdmFsdWUYAiABKAsyKy5iaWxpYmlsaS5tYWluLmNv'
+    'bW11bml0eS5yZXBseS52MS5SZXBseUluZm9SBXZhbHVlOgI4AQ==');

@@ -70,19 +70,23 @@ List<SettingsModel> get extraSettings => [
       onTap: _showDownPathDialog,
     ),
   ],
-  SwitchModel(
-    title: '空降助手',
-    subtitle: '点击配置',
-    setKey: SettingBoxKey.enableSponsorBlock,
-    defaultVal: false,
-    onTap: (context) => Get.toNamed('/sponsorBlock'),
-    leading: const Stack(
-      clipBehavior: Clip.none,
-      alignment: Alignment.center,
-      children: [
-        Icon(Icons.shield_outlined),
-        Icon(Icons.play_arrow_rounded, size: 15),
-      ],
+  SplitModel(
+    normalModel: const NormalModel.split(
+      title: '空降助手',
+      subtitle: '点击配置',
+      leading: Stack(
+        clipBehavior: Clip.none,
+        alignment: Alignment.center,
+        children: [
+          Icon(Icons.shield_outlined),
+          Icon(Icons.play_arrow_rounded, size: 15),
+        ],
+      ),
+    ),
+    switchModel: SwitchModel.split(
+      defaultVal: false,
+      setKey: SettingBoxKey.enableSponsorBlock,
+      onTap: (context) => Get.toNamed('/sponsorBlock'),
     ),
   ),
   PopupModel<SkipType>(
@@ -94,14 +98,18 @@ List<SettingsModel> get extraSettings => [
         .put(SettingBoxKey.pgcSkipType, value.index)
         .whenComplete(setState),
   ),
-  SwitchModel(
-    title: '检查未读动态',
-    subtitle: '点击设置检查周期(min)',
-    leading: const Icon(Icons.notifications_none),
-    setKey: SettingBoxKey.checkDynamic,
-    defaultVal: true,
-    onChanged: (value) => Get.find<MainController>().checkDynamic = value,
-    onTap: _showDynDialog,
+  SplitModel(
+    normalModel: const NormalModel.split(
+      title: '检查未读动态',
+      subtitle: '点击设置检查周期(min)',
+      leading: Icon(Icons.notifications_none),
+    ),
+    switchModel: SwitchModel.split(
+      defaultVal: true,
+      setKey: SettingBoxKey.checkDynamic,
+      onChanged: (value) => Get.find<MainController>().checkDynamic = value,
+      onTap: _showDynDialog,
+    ),
   ),
   SwitchModel(
     title: '显示视频分段信息',
@@ -146,13 +154,13 @@ List<SettingsModel> get extraSettings => [
     title: '横屏分P/合集列表显示在Tab栏',
     leading: const Icon(Icons.format_list_numbered_rtl_sharp),
     setKey: SettingBoxKey.horizontalSeasonPanel,
-    defaultVal: PlatformUtils.isDesktop,
+    defaultVal: Pref.horizontalScreen,
   ),
   SwitchModel(
     title: '横屏播放页在侧栏打开UP主页',
     leading: const Icon(Icons.account_circle_outlined),
     setKey: SettingBoxKey.horizontalMemberPage,
-    defaultVal: PlatformUtils.isDesktop,
+    defaultVal: Pref.horizontalScreen,
   ),
   SwitchModel(
     title: '横屏在侧栏打开图片预览',
@@ -623,12 +631,17 @@ List<SettingsModel> get extraSettings => [
     defaultVal: false,
     onChanged: (value) => MemberTabType.showMemberShop = value,
   ),
-  const SwitchModel(
-    leading: Icon(Icons.airplane_ticket_outlined),
-    title: '设置代理',
-    subtitle: '设置代理 host:port',
-    setKey: SettingBoxKey.enableSystemProxy,
-    onTap: _showProxyDialog,
+  const SplitModel(
+    normalModel: NormalModel.split(
+      title: '设置代理',
+      subtitle: '设置代理 host:port',
+      leading: Icon(Icons.airplane_ticket_outlined),
+    ),
+    switchModel: SwitchModel.split(
+      defaultVal: false,
+      setKey: SettingBoxKey.enableSystemProxy,
+      onTap: _showProxyDialog,
+    ),
   ),
   const SwitchModel(
     title: '自动清除缓存',

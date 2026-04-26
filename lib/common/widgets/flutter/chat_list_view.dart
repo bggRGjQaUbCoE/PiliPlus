@@ -4,9 +4,8 @@
 
 import 'dart:math' as math;
 
-import 'package:PiliPlus/common/widgets/flutter/scroll_view/scroll_view.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart' hide BoxScrollView;
+import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
 class ChatListView extends BoxScrollView {

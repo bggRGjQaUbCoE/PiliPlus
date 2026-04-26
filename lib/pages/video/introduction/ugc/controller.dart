@@ -15,6 +15,7 @@ import 'package:PiliPlus/models/common/video/source_type.dart';
 import 'package:PiliPlus/models_new/member_card_info/data.dart';
 import 'package:PiliPlus/models_new/relation/data.dart';
 import 'package:PiliPlus/models_new/video/video_ai_conclusion/model_result.dart';
+import 'package:PiliPlus/models_new/video/video_detail/dimension.dart';
 import 'package:PiliPlus/models_new/video/video_detail/episode.dart';
 import 'package:PiliPlus/models_new/video/video_detail/page.dart';
 import 'package:PiliPlus/models_new/video/video_detail/section.dart';
@@ -485,22 +486,33 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
     try {
       final String bvid = episode.bvid ?? this.bvid;
       final int aid = episode.aid ?? IdUtils.bv2av(bvid);
-      final int? cid =
-          episode.cid ?? await SearchHttp.ab2c(aid: aid, bvid: bvid);
+      int? cid = episode.cid;
+      Dimension? dimension;
+      if (cid == null) {
+        if (await SearchHttp.ab2cWithDimension(aid: aid, bvid: bvid)
+            case final res?) {
+          cid = res.cid;
+          dimension = res.dimension;
+        }
+      }
       if (cid == null) {
         return false;
       }
+
       final String? cover = episode.cover;
 
       // 重新获取视频资源
-
       if (videoDetailCtr.isPlayAll) {
         if (videoDetailCtr.mediaList.indexWhere((item) => item.bvid == bvid) ==
             -1) {
+          if (dimension == null && episode is EpisodeItem) {
+            dimension = episode.page?.dimension;
+          }
           PageUtils.toVideoPage(
             bvid: bvid,
             cid: cid,
             cover: cover,
+            dimension: dimension,
           );
           return false;
         }

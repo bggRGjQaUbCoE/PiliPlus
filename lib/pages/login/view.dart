@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:ui';
 
 import 'package:PiliPlus/common/constants.dart';
@@ -380,7 +379,6 @@ class _LoginPageState extends State<LoginPage> {
                 Builder(
                   builder: (context) {
                     return PopupMenuButton(
-                      enabled: !Platform.isLinux,
                       padding: EdgeInsets.zero,
                       tooltip:
                           '选择国际冠码，'
@@ -428,7 +426,6 @@ class _LoginPageState extends State<LoginPage> {
                 const SizedBox(width: 6),
                 Expanded(
                   child: TextField(
-                    enabled: !Platform.isLinux,
                     controller: _loginPageCtr.telTextController,
                     keyboardType: TextInputType.number,
                     inputFormatters: <TextInputFormatter>[
@@ -460,7 +457,6 @@ class _LoginPageState extends State<LoginPage> {
               children: [
                 Expanded(
                   child: TextField(
-                    enabled: !Platform.isLinux,
                     controller: _loginPageCtr.smsCodeTextController,
                     decoration: const InputDecoration(
                       prefixIcon: Icon(Icons.sms_outlined),
@@ -475,11 +471,9 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 Obx(
                   () => TextButton.icon(
-                    onPressed: !Platform.isLinux
-                        ? _loginPageCtr.smsSendCooldown > 0
-                              ? null
-                              : _loginPageCtr.sendSmsCode
-                        : null,
+                    onPressed: _loginPageCtr.smsSendCooldown > 0
+                        ? null
+                        : _loginPageCtr.sendSmsCode,
                     icon: const Icon(Icons.send),
                     label: Text(
                       _loginPageCtr.smsSendCooldown > 0
@@ -494,7 +488,7 @@ class _LoginPageState extends State<LoginPage> {
         ),
         const SizedBox(height: 20),
         OutlinedButton.icon(
-          onPressed: !Platform.isLinux ? _loginPageCtr.loginBySmsCode : null,
+          onPressed: _loginPageCtr.loginBySmsCode,
           icon: const Icon(Icons.login),
           label: const Text('登录'),
         ),

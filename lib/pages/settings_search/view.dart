@@ -1,4 +1,3 @@
-import 'package:PiliPlus/common/widgets/flutter/scroll_view/scroll_view.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/view_sliver_safe_area.dart';
 import 'package:PiliPlus/pages/search/controller.dart' show DebounceStreamState;
@@ -89,7 +88,7 @@ class _SettingsSearchPageState
           ),
         ),
       ),
-      body: customScrollView(
+      body: CustomScrollView(
         slivers: [
           ViewSliverSafeArea(
             sliver: Obx(

@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:PiliPlus/common/widgets/flutter/pop_scope.dart';
 import 'package:PiliPlus/http/browser_ua.dart';
 import 'package:PiliPlus/main.dart';
 import 'package:PiliPlus/models/common/webview_menu_type.dart';
@@ -85,10 +86,11 @@ class _WebviewPageState extends State<WebviewPage> {
         ),
       );
     }
-    return Scaffold(
+    Widget child = Scaffold(
       appBar: widget.url != null
           ? null
           : AppBar(
+              leading: BackButton(onPressed: Get.back),
               title: Obx(
                 () => Text(
                   title.value.isNotEmpty ? title.value : _url,
@@ -351,5 +353,24 @@ class _WebviewPageState extends State<WebviewPage> {
         ),
       ),
     );
+    if (Platform.isAndroid) {
+      return popScope(
+        canPop: false,
+        onPopInvokedWithResult: (didPop, result) async {
+          if (didPop) {
+            return;
+          }
+          final canGoBack = await _webViewController?.canGoBack();
+          if (!mounted) return;
+          if (canGoBack ?? false) {
+            _webViewController!.goBack();
+          } else {
+            Get.back();
+          }
+        },
+        child: child,
+      );
+    }
+    return child;
   }
 }

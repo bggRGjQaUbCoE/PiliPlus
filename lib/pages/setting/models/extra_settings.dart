@@ -223,6 +223,14 @@ List<SettingsModel> get extraSettings => [
     },
   ),
   getBanWordModel(
+    title: '评论用户昵称关键词过滤',
+    key: SettingBoxKey.banWordForReplyUser,
+    onChanged: (value) {
+      ReplyGrpc.replyUserRegExp = value;
+      ReplyGrpc.enableUserFilter = value.pattern.isNotEmpty;
+    },
+  ),
+  getBanWordModel(
     title: '动态关键词过滤',
     key: SettingBoxKey.banWordForDyn,
     onChanged: (value) {

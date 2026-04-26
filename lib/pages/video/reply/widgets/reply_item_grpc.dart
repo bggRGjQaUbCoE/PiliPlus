@@ -109,12 +109,20 @@ class ReplyItemGrpc extends StatelessWidget {
     return true;
   }
 
-  void showReplyBanWordDialog(BuildContext context, String message) {
+  void showReplyBanWordDialog(
+    BuildContext context,
+    ReplyInfo item,
+    VoidCallback onDelete,
+  ) {
     Future<void>.delayed(Duration.zero, () {
       final currentContext = Get.context ?? context;
       showDialog(
         context: currentContext,
-        builder: (dialogContext) => _ReplyBanWordDialog(message: message),
+        builder: (dialogContext) => _ReplyBanWordDialog(
+          message: item.content.message,
+          item: item,
+          onDelete: onDelete,
+        ),
       );
     });
   }
@@ -1171,7 +1179,7 @@ class ReplyItemGrpc extends StatelessWidget {
           ListTile(
             onTap: () {
               Get.back();
-              showReplyBanWordDialog(context, message);
+              showReplyBanWordDialog(context, item, onDelete);
             },
             minLeadingWidth: 0,
             leading: const Icon(Icons.gesture_outlined, size: 19),
@@ -1212,9 +1220,13 @@ class ReplyItemGrpc extends StatelessWidget {
 class _ReplyBanWordDialog extends StatefulWidget {
   const _ReplyBanWordDialog({
     required this.message,
+    required this.item,
+    required this.onDelete,
   });
 
   final String message;
+  final ReplyInfo item;
+  final VoidCallback onDelete;
 
   @override
   State<_ReplyBanWordDialog> createState() => _ReplyBanWordDialogState();
@@ -1228,6 +1240,7 @@ class _ReplyBanWordDialogState extends State<_ReplyBanWordDialog> {
   int? _selectionStart;
   int? _selectionEnd;
   bool _isDragging = false;
+  bool _blockUser = false;
 
   static List<int> _buildCharStarts(List<String> chars) {
     int offset = 0;
@@ -1315,15 +1328,41 @@ class _ReplyBanWordDialogState extends State<_ReplyBanWordDialog> {
     });
   }
 
-  Future<void> _saveSelection() async {
+  Future<void> _submit() async {
     final keyword = _selectedText.trim();
-    if (keyword.isEmpty) {
+    if (keyword.isEmpty && !_blockUser) {
       SmartDialog.showToast('请选择要屏蔽的内容');
       return;
     }
-    final added = await ReplyItemGrpc.addReplyBanWord(keyword);
-    if (added && mounted) {
-      Navigator.of(context).pop();
+
+    bool didSomething = false;
+    if (keyword.isNotEmpty) {
+      final added = await ReplyItemGrpc.addReplyBanWord(keyword);
+      didSomething = added;
+    }
+
+    bool blocked = false;
+    if (_blockUser) {
+      final res = await VideoHttp.relationMod(
+        mid: widget.item.mid.toInt(),
+        act: 5,
+        reSrc: 11,
+      );
+      if (res.isSuccess) {
+        SmartDialog.showToast('拉黑成功');
+        blocked = true;
+        didSomething = true;
+      } else {
+        res.toast();
+      }
+    }
+
+    if (!didSomething || !mounted) {
+      return;
+    }
+    Navigator.of(context).pop();
+    if (blocked) {
+      widget.onDelete();
     }
   }
 
@@ -1358,6 +1397,23 @@ class _ReplyBanWordDialogState extends State<_ReplyBanWordDialog> {
               style: TextStyle(
                 fontSize: 13,
                 color: theme.colorScheme.outline,
+              ),
+            ),
+            const SizedBox(height: 8),
+            CheckboxListTile(
+              value: _blockUser,
+              onChanged: (value) {
+                setState(() {
+                  _blockUser = value ?? false;
+                });
+              },
+              dense: true,
+              contentPadding: EdgeInsets.zero,
+              controlAffinity: ListTileControlAffinity.leading,
+              activeColor: theme.colorScheme.error,
+              title: Text(
+                '拉黑此人',
+                style: TextStyle(color: theme.colorScheme.error),
               ),
             ),
             const SizedBox(height: 12),
@@ -1459,8 +1515,8 @@ class _ReplyBanWordDialogState extends State<_ReplyBanWordDialog> {
           ),
         ),
         TextButton(
-          onPressed: _saveSelection,
-          child: const Text('加入过滤'),
+          onPressed: _submit,
+          child: const Text('确定'),
         ),
       ],
     );

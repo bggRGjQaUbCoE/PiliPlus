@@ -13,7 +13,12 @@ abstract final class ReplyGrpc {
     Pref.banWordForReply,
     caseSensitive: false,
   );
+  static RegExp replyUserRegExp = RegExp(
+    Pref.banWordForReplyUser,
+    caseSensitive: false,
+  );
   static bool enableFilter = replyRegExp.pattern.isNotEmpty;
+  static bool enableUserFilter = replyUserRegExp.pattern.isNotEmpty;
 
   // static Future replyInfo({required int rpid}) {
   //   return _request(
@@ -38,6 +43,7 @@ abstract final class ReplyGrpc {
 
   static bool needRemoveGrpc(ReplyInfo reply) {
     return (enableFilter && replyRegExp.hasMatch(reply.content.message)) ||
+        (enableUserFilter && replyUserRegExp.hasMatch(reply.member.name)) ||
         (antiGoodsReply && needRemoveGoodGrpc(reply));
   }
 

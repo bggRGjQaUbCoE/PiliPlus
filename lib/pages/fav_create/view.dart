@@ -90,8 +90,10 @@ class _CreateFavPageState extends State<CreateFavPage> {
                 intro: _introController.text,
               ).then((res) {
                 if (res case Success(:final response)) {
-                  Get.back(result: response);
                   SmartDialog.showToast('${_mediaId != null ? '编辑' : '创建'}成功');
+                  if (mounted) {
+                    Get.back(result: response);
+                  }
                 } else {
                   res.toast();
                 }

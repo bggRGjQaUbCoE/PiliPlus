@@ -176,7 +176,9 @@ class _GroupPanelState extends State<GroupPanel> {
   void _onCreateFavTag(({int tagid, String tagName}) res) {
     if (!mounted) return;
     if (loadingState case Success(:final response)) {
-      response.add(MemberTagItemModel.fromCreate(res));
+      response.add(MemberTagItemModel.fromCreate(res, count: 1));
+      tags.add(res.tagid);
+      showDefaultBtn.value = false;
       setState(() {});
     } else {
       _queryFollowUpTags();

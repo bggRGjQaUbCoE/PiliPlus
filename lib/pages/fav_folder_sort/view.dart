@@ -39,7 +39,9 @@ class _FavFolderSortPageState extends State<FavFolderSortPage> {
               if (res.isSuccess) {
                 SmartDialog.showToast('排序完成');
                 _favController.loadingState.value = Success(sortList);
-                Get.back();
+                if (mounted) {
+                  Get.back();
+                }
               } else {
                 res.toast();
               }

@@ -51,22 +51,25 @@ class _FavSortPageState extends State<FavSortPage> {
         title: Text('排序: ${_favDetailController.folderInfo.value.title}'),
         actions: [
           TextButton(
-            onPressed: () async {
+            onPressed: () {
               if (sort.isEmpty) {
                 Get.back();
                 return;
               }
-              final res = await FavHttp.sortFav(
+              FavHttp.sortFav(
                 mediaId: _favDetailController.mediaId,
                 sort: sort.join(','),
-              );
-              if (res.isSuccess) {
-                SmartDialog.showToast('排序完成');
-                _favDetailController.loadingState.value = Success(sortList);
-                Get.back();
-              } else {
-                res.toast();
-              }
+              ).then((res) {
+                if (res.isSuccess) {
+                  SmartDialog.showToast('排序完成');
+                  _favDetailController.loadingState.value = Success(sortList);
+                  if (mounted) {
+                    Get.back();
+                  }
+                } else {
+                  res.toast();
+                }
+              });
             },
             child: const Text('完成'),
           ),
@@ -108,7 +111,7 @@ class _FavSortPageState extends State<FavSortPage> {
       itemBuilder: (context, index) {
         final item = sortList[index];
         return SizedBox(
-          key: Key(item.id.toString()),
+          key: ValueKey(item.id),
           height: 98,
           child: FavVideoCardH(item: item),
         );

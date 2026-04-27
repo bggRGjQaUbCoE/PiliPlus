@@ -7,6 +7,7 @@ import 'package:PiliPlus/models/member/tags.dart';
 import 'package:PiliPlus/pages/follow/child/child_controller.dart';
 import 'package:PiliPlus/pages/follow/child/child_view.dart';
 import 'package:PiliPlus/pages/follow/controller.dart';
+import 'package:PiliPlus/pages/follow_tag_sort/view.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/request_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
@@ -72,6 +73,16 @@ class _FollowPageState extends State<FollowPage> {
               tooltip: '新建分组',
             ),
             IconButton(
+              onPressed: () {
+                if (_followController.followState.value is! Success) {
+                  return;
+                }
+                Get.to(FollowTagSortPage(controller: _followController));
+              },
+              icon: const Icon(Icons.sort),
+              tooltip: '分组排序',
+            ),
+            IconButton(
               onPressed: () => Get.toNamed(
                 '/followSearch',
                 arguments: {
@@ -87,10 +98,10 @@ class _FollowPageState extends State<FollowPage> {
                 PopupMenuItem(
                   onTap: () => Get.toNamed('/blackListPage'),
                   child: const Row(
-                    mainAxisSize: MainAxisSize.min,
+                    spacing: 10,
+                    mainAxisSize: .min,
                     children: [
                       Icon(Icons.block, size: 19),
-                      SizedBox(width: 10),
                       Text('黑名单管理'),
                     ],
                   ),
@@ -109,10 +120,6 @@ class _FollowPageState extends State<FollowPage> {
     tagid: item?.tagid,
   );
 
-  bool _isCustomTag(int? tagid) {
-    return tagid != null && tagid != 0 && tagid != -10 && tagid != -2;
-  }
-
   Widget _buildBody(LoadingState loadingState) {
     return switch (loadingState) {
       Loading() => m3eLoading,
@@ -128,7 +135,7 @@ class _FollowPageState extends State<FollowPage> {
                 return Obx(() {
                   final item = _followController.tabs[index];
                   int? count = item.count;
-                  if (_isCustomTag(item.tagid)) {
+                  if (Utils.isCustomFollowTag(item.tagid)) {
                     return GestureDetector(
                       behavior: HitTestBehavior.translucent,
                       onLongPress: () {

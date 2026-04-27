@@ -21,6 +21,10 @@ abstract final class Utils {
 
   static const jsonEncoder = JsonEncoder.withIndent('    ');
 
+  static bool isCustomFollowTag(int? tagid) {
+    return tagid != null && tagid != 0 && tagid != -10 && tagid != -2;
+  }
+
   static String levelName(
     Object level, {
     bool isSeniorMember = false,

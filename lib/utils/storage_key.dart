@@ -222,6 +222,7 @@ abstract final class SettingBoxKey {
       enableMYBar = 'enableMYBar',
       hideTopBar = 'hideSearchBar',
       hideBottomBar = 'hideTabBar',
+      hideHomeSearchBar = 'hideHomeSearchBar',
       barHideType = 'barHideType',
       tabBarSort = 'tabBarSort',
       dynamicBadgeMode = 'dynamicBadgeMode',

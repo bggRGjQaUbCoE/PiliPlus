@@ -9,6 +9,8 @@ import 'package:PiliPlus/pages/mine/controller.dart';
 import 'package:PiliPlus/utils/extension/get_ext.dart';
 import 'package:PiliPlus/utils/extension/size_ext.dart';
 import 'package:PiliPlus/utils/feed_back.dart';
+import 'package:PiliPlus/utils/storage.dart';
+import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
@@ -89,10 +91,15 @@ class _HomePageState extends CommonPageState<HomePage>
 
   Widget customAppBar(ThemeData theme) {
     const padding = EdgeInsets.fromLTRB(14, 6, 14, 0);
+    final hideSearchBar = GStorage.setting.get(
+      SettingBoxKey.hideHomeSearchBar,
+      defaultValue: false,
+    );
     final child = Row(
       children: [
-        searchBar(theme),
-        const SizedBox(width: 4),
+        if (!hideSearchBar) Expanded(child: searchBar(theme)),
+        if (!hideSearchBar) const SizedBox(width: 4),
+        if (hideSearchBar) const Spacer(),
         msgBadge(_mainController),
         const SizedBox(width: 8),
         userAvatar(theme: theme, mainController: _mainController),
@@ -140,45 +147,43 @@ class _HomePageState extends CommonPageState<HomePage>
 
   Widget searchBar(ThemeData theme) {
     const borderRadius = BorderRadius.all(Radius.circular(25));
-    return Expanded(
-      child: SizedBox(
-        height: 44,
-        child: Material(
+    return SizedBox(
+      height: 44,
+      child: Material(
+        borderRadius: borderRadius,
+        color: theme.colorScheme.onSecondaryContainer.withValues(alpha: 0.05),
+        child: InkWell(
           borderRadius: borderRadius,
-          color: theme.colorScheme.onSecondaryContainer.withValues(alpha: 0.05),
-          child: InkWell(
-            borderRadius: borderRadius,
-            splashColor: theme.colorScheme.primaryContainer.withValues(
-              alpha: 0.3,
-            ),
-            onTap: () => Get.toNamed(
-              '/search',
-              parameters: _homeController.enableSearchWord
-                  ? {'hintText': _homeController.defaultSearch.value}
-                  : null,
-            ),
-            child: Row(
-              children: [
-                const SizedBox(width: 14),
-                Icon(
-                  Icons.search_outlined,
-                  color: theme.colorScheme.onSecondaryContainer,
-                  semanticLabel: '搜索',
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Obx(
-                    () => Text(
-                      _homeController.defaultSearch.value,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(color: theme.colorScheme.outline),
-                    ),
+          splashColor: theme.colorScheme.primaryContainer.withValues(
+            alpha: 0.3,
+          ),
+          onTap: () => Get.toNamed(
+            '/search',
+            parameters: _homeController.enableSearchWord
+                ? {'hintText': _homeController.defaultSearch.value}
+                : null,
+          ),
+          child: Row(
+            children: [
+              const SizedBox(width: 14),
+              Icon(
+                Icons.search_outlined,
+                color: theme.colorScheme.onSecondaryContainer,
+                semanticLabel: '搜索',
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Obx(
+                  () => Text(
+                    _homeController.defaultSearch.value,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(color: theme.colorScheme.outline),
                   ),
                 ),
-                const SizedBox(width: 5),
-              ],
-            ),
+              ),
+              const SizedBox(width: 5),
+            ],
           ),
         ),
       ),

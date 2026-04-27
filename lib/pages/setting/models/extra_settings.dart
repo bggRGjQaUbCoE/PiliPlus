@@ -517,6 +517,13 @@ List<SettingsModel> get extraSettings => [
     setKey: SettingBoxKey.enableSearchRcmd,
     defaultVal: true,
   ),
+  const SwitchModel(
+    title: '隐藏首页搜索框',
+    subtitle: '隐藏首页顶部的搜索框入口',
+    leading: Icon(Icons.search_off_outlined),
+    setKey: SettingBoxKey.hideHomeSearchBar,
+    defaultVal: false,
+  ),
   SwitchModel(
     title: '搜索默认词',
     subtitle: '是否展示搜索框默认词',

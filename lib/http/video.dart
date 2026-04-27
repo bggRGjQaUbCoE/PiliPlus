@@ -208,6 +208,7 @@ abstract final class VideoHttp {
     required bool tryLook,
     required VideoType videoType,
     String? language,
+    bool voiceBalance = false,
   }) async {
     final params = await WbiSign.makSign({
       'avid': ?avid,
@@ -220,7 +221,7 @@ abstract final class VideoHttp {
       'fnval': 4048,
       'fourk': 1,
       'fnver': 0,
-      'voice_balance': 1,
+      'voice_balance': voiceBalance ? 1 : 0,
       'gaia_source': 'pre-load',
       'isGaiaAvoided': true,
       'web_location': 1315873,

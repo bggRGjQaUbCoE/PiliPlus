@@ -613,6 +613,12 @@ class PlPlayerController with BlockConfigMixin {
   // offline
   bool get isFileSource => dataSource is FileSource;
 
+  late final _audioNormalization = Pref.audioNormalization;
+  late final enableAudioNormalization =
+      Platform.isAndroid && _audioNormalization != '0';
+  late final String _audioNormalizationParam =
+      AudioNormalization.getParamFromConfig(_audioNormalization);
+
   // 初始化资源
   Future<void> setDataSource(
     DataSource dataSource, {
@@ -851,12 +857,10 @@ class PlPlayerController with BlockConfigMixin {
         extras['audio-files'] =
             '"${Platform.isWindows ? audio.replaceAll(';', r'\;') : audio.replaceAll(':', r'\:')}"';
       }
-      if (kDebugMode || Platform.isAndroid) {
-        String audioNormalization = AudioNormalization.getParamFromConfig(
-          Pref.audioNormalization,
-        );
+      if (enableAudioNormalization) {
+        final String audioNormalization;
         if (volume != null && volume.isNotEmpty) {
-          audioNormalization = audioNormalization.replaceFirstMapped(
+          audioNormalization = _audioNormalizationParam.replaceFirstMapped(
             loudnormRegExp,
             (i) =>
                 'loudnorm=${volume.format(
@@ -869,7 +873,7 @@ class PlPlayerController with BlockConfigMixin {
                 )}',
           );
         } else {
-          audioNormalization = audioNormalization.replaceFirst(
+          audioNormalization = _audioNormalizationParam.replaceFirst(
             loudnormRegExp,
             AudioNormalization.getParamFromConfig(Pref.fallbackNormalization),
           );

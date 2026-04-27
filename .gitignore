@@ -142,6 +142,11 @@ devtools_options.yaml
 # FVM Version Cache
 .fvm/
 
+# Local development environment
+.android-sdk/
+flutter.zip
+setup-env.ps1
+
 pili_release.json
 
 dist

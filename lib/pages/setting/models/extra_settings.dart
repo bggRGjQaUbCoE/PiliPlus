@@ -523,6 +523,7 @@ List<SettingsModel> get extraSettings => [
     leading: Icon(Icons.search_off_outlined),
     setKey: SettingBoxKey.hideHomeSearchBar,
     defaultVal: false,
+    needReboot: true,
   ),
   SwitchModel(
     title: '搜索默认词',

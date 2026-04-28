@@ -1,4 +1,5 @@
 import 'package:PiliPlus/common/widgets/pair.dart';
+import 'package:PiliPlus/common/widgets/reorder_mixin.dart';
 import 'package:PiliPlus/models/common/enum_with_label.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:flutter/material.dart';
@@ -12,7 +13,7 @@ class BarSetPage extends StatefulWidget {
   State<BarSetPage> createState() => _BarSetPageState();
 }
 
-class _BarSetPageState extends State<BarSetPage> {
+class _BarSetPageState extends State<BarSetPage> with ReorderMixin {
   late final String key;
   late final String title;
   late final List<Pair<EnumWithLabel, bool>> list;
@@ -71,6 +72,7 @@ class _BarSetPageState extends State<BarSetPage> {
       ),
       body: ReorderableListView(
         onReorder: onReorder,
+        proxyDecorator: proxyDecorator,
         footer: Padding(
           padding:
               MediaQuery.viewPaddingOf(context).copyWith(top: 0, left: 0) +

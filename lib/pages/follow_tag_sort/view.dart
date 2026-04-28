@@ -1,3 +1,4 @@
+import 'package:PiliPlus/common/widgets/reorder_mixin.dart';
 import 'package:PiliPlus/http/follow.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/member/tags.dart';
@@ -16,9 +17,8 @@ class FollowTagSortPage extends StatefulWidget {
   State<FollowTagSortPage> createState() => _FollowTagSortPageState();
 }
 
-class _FollowTagSortPageState extends State<FollowTagSortPage> {
-  late ColorScheme _scheme;
-  final GlobalKey _key = GlobalKey();
+class _FollowTagSortPageState extends State<FollowTagSortPage>
+    with ReorderMixin {
   final List<MemberTagItemModel> _defTags = <MemberTagItemModel>[];
   final List<MemberTagItemModel> _customTags = <MemberTagItemModel>[];
 
@@ -32,12 +32,6 @@ class _FollowTagSortPageState extends State<FollowTagSortPage> {
         _defTags.add(e);
       }
     }
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _scheme = ColorScheme.of(context);
   }
 
   @override
@@ -90,12 +84,12 @@ class _FollowTagSortPageState extends State<FollowTagSortPage> {
 
   Widget get _buildBody {
     return ReorderableListView.builder(
-      key: _key,
       onReorder: onReorder,
+      proxyDecorator: proxyDecorator,
       physics: const AlwaysScrollableScrollPhysics(),
-      padding:
-          MediaQuery.viewPaddingOf(context).copyWith(top: 0) +
-          const EdgeInsets.only(bottom: 100),
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.viewPaddingOf(context).bottom + 100,
+      ),
       header: Column(
         children: _defTags.map((e) => _buildItem(e, enabled: false)).toList(),
       ),
@@ -111,14 +105,14 @@ class _FollowTagSortPageState extends State<FollowTagSortPage> {
     bool enabled = true,
   }) {
     return ListTile(
-      textColor: enabled ? null : _scheme.outline,
+      textColor: enabled ? null : scheme.outline,
       key: ValueKey(item.tagid),
       leading: enabled
           ? const Icon(Icons.group_outlined)
           : Icon(
               size: 23,
               Icons.lock_outline,
-              color: _scheme.outline,
+              color: scheme.outline,
             ),
       minLeadingWidth: 0,
       title: Text('${item.name} (${item.count})'),

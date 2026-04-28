@@ -1,3 +1,4 @@
+import 'package:PiliPlus/common/widgets/reorder_mixin.dart';
 import 'package:PiliPlus/http/fav.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models_new/fav/fav_detail/media.dart';
@@ -17,10 +18,9 @@ class FavSortPage extends StatefulWidget {
   State<FavSortPage> createState() => _FavSortPageState();
 }
 
-class _FavSortPageState extends State<FavSortPage> {
+class _FavSortPageState extends State<FavSortPage> with ReorderMixin {
   FavDetailController get _favDetailController => widget.favDetailController;
 
-  final GlobalKey _key = GlobalKey();
   late List<FavDetailItemModel> sortList = List<FavDetailItemModel>.from(
     _favDetailController.loadingState.value.data!,
   );
@@ -102,8 +102,8 @@ class _FavSortPageState extends State<FavSortPage> {
 
   Widget get _buildBody {
     final child = ReorderableListView.builder(
-      key: _key,
       onReorder: onReorder,
+      proxyDecorator: proxyDecorator,
       physics: const AlwaysScrollableScrollPhysics(),
       padding:
           MediaQuery.viewPaddingOf(context).copyWith(top: 0) +

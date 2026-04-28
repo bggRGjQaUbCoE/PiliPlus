@@ -57,6 +57,7 @@ import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 import 'package:native_device_orientation/native_device_orientation.dart';
 import 'package:path/path.dart' as path;
+import 'package:screen_brightness_platform_interface/screen_brightness_platform_interface.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import 'package:window_manager/window_manager.dart';
 
@@ -281,10 +282,6 @@ class PlPlayerController with BlockConfigMixin {
     return _isVideoPage(routing.current);
   }
 
-  static bool get _isPreviousVideoPage {
-    return _isVideoPage(Get.previousRoute);
-  }
-
   static bool _isVideoPage(String routeName) {
     return routeName == '/videoV' || routeName == '/liveRoom';
   }
@@ -298,12 +295,6 @@ class PlPlayerController with BlockConfigMixin {
         width: state.width == 0 ? width : state.width,
         height: state.height == 0 ? height : state.height,
       );
-    }
-  }
-
-  void _disableAutoEnterPipIfNeeded() {
-    if (!_isPreviousVideoPage) {
-      _disableAutoEnterPip();
     }
   }
 
@@ -1636,10 +1627,6 @@ class PlPlayerController with BlockConfigMixin {
     if (!_isCloseAll && _playerCount > 1) {
       _playerCount -= 1;
       _heartDuration = 0;
-      // called after pop
-      if (!_isCurrVideoPage) {
-        pause();
-      }
       return;
     }
 
@@ -1798,11 +1785,22 @@ class PlPlayerController with BlockConfigMixin {
 
   void onPopInvokedWithResult(bool didPop, Object? result) {
     if (didPop) {
-      if (Platform.isAndroid) {
-        _disableAutoEnterPipIfNeeded();
+      if (playerStatus.isPlaying) {
+        pause();
       }
+
+      setPlayCallBack(null);
+
+      if (Platform.isAndroid && _playerCount <= 1) {
+        _disableAutoEnterPip();
+        if (!setSystemBrightness) {
+          ScreenBrightnessPlatform.instance.resetApplicationScreenBrightness();
+        }
+      }
+
       return;
     }
+
     if (controlsLock.value) {
       onLockControl(false);
       return;

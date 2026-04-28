@@ -90,7 +90,7 @@ class _SavePanelState extends State<SavePanel> {
       final currentRoute = Get.currentRoute;
       late final hasRoot = reply.hasRoot();
 
-      if (currentRoute.startsWith('/video')) {
+      if (currentRoute == '/videoV') {
         final rootId = hasRoot ? reply.root : reply.id;
 
         uri =

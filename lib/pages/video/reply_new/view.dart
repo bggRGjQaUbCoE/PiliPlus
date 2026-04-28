@@ -78,7 +78,7 @@ class _ReplyPageState extends CommonRichTextPubPageState<ReplyPage> {
   }
 
   late final darkVideoPage =
-      Get.currentRoute.startsWith('/video') && Pref.darkVideoPage;
+      Get.currentRoute == '/videoV' && Pref.darkVideoPage;
   late ThemeData themeData;
 
   @override

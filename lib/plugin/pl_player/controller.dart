@@ -273,20 +273,20 @@ class PlPlayerController with BlockConfigMixin {
 
   late bool _shouldSetPip = false;
 
-  bool get _isCurrVideoPage {
+  static bool get _isCurrVideoPage {
     final routing = Get.routing;
     if (routing.route is! GetPageRoute) {
       return false;
     }
-    final currentRoute = routing.current;
-    return currentRoute.startsWith('/video') ||
-        currentRoute.startsWith('/liveRoom');
+    return _isVideoPage(routing.current);
   }
 
-  bool get _isPreviousVideoPage {
-    final previousRoute = Get.previousRoute;
-    return previousRoute.startsWith('/video') ||
-        previousRoute.startsWith('/liveRoom');
+  static bool get _isPreviousVideoPage {
+    return _isVideoPage(Get.previousRoute);
+  }
+
+  static bool _isVideoPage(String routeName) {
+    return routeName == '/videoV' || routeName == '/liveRoom';
   }
 
   void enterPip({bool isAuto = false}) {
@@ -1636,7 +1636,8 @@ class PlPlayerController with BlockConfigMixin {
     if (!_isCloseAll && _playerCount > 1) {
       _playerCount -= 1;
       _heartDuration = 0;
-      if (!_isPreviousVideoPage) {
+      // called after pop
+      if (!_isCurrVideoPage) {
         pause();
       }
       return;

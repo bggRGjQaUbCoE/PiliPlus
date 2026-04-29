@@ -48,6 +48,8 @@ import 'package:window_manager/window_manager.dart' hide calcWindowPosition;
 
 WebViewEnvironment? webViewEnvironment;
 
+EdgeInsets? tmpPadding;
+
 Future<void> _initDownPath() async {
   if (PlatformUtils.isDesktop) {
     final customDownPath = Pref.downloadPath;
@@ -317,16 +319,20 @@ class MyApp extends StatelessWidget {
         data: mediaQuery.copyWith(
           textScaler: textScaler,
           size: mediaQuery.size / uiScale,
-          padding: mediaQuery.padding / uiScale,
+          padding: (tmpPadding ?? mediaQuery.padding) / uiScale,
           viewInsets: mediaQuery.viewInsets / uiScale,
-          viewPadding: mediaQuery.viewPadding / uiScale,
+          viewPadding: (tmpPadding ?? mediaQuery.viewPadding) / uiScale,
           devicePixelRatio: mediaQuery.devicePixelRatio * uiScale,
         ),
         child: child!,
       );
     } else {
       child = MediaQuery(
-        data: mediaQuery.copyWith(textScaler: textScaler),
+        data: mediaQuery.copyWith(
+          textScaler: textScaler,
+          padding: tmpPadding,
+          viewPadding: tmpPadding,
+        ),
         child: child!,
       );
     }

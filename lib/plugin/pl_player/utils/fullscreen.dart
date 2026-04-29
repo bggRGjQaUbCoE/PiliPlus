@@ -62,21 +62,22 @@ Future<void>? fullMode() {
   );
 }
 
-bool _showStatusBar = true;
-Future<void>? hideStatusBar() {
-  if (!_showStatusBar) {
+bool _showSystemBar = true;
+bool get showSystemBar_ => _showSystemBar;
+Future<void>? hideSystemBar() {
+  if (!_showSystemBar) {
     return null;
   }
-  _showStatusBar = false;
+  _showSystemBar = false;
   return SystemChrome.setEnabledSystemUIMode(.immersiveSticky);
 }
 
 //退出全屏显示
-Future<void>? showStatusBar() {
-  if (_showStatusBar) {
+Future<void>? showSystemBar() {
+  if (_showSystemBar) {
     return null;
   }
-  _showStatusBar = true;
+  _showSystemBar = true;
   return SystemChrome.setEnabledSystemUIMode(
     Platform.isAndroid && Utils.sdkInt < 29 ? .manual : .edgeToEdge,
     overlays: SystemUiOverlay.values,

@@ -30,7 +30,6 @@ import 'package:PiliPlus/plugin/pl_player/models/bottom_progress_behavior.dart';
 import 'package:PiliPlus/plugin/pl_player/models/fullscreen_mode.dart';
 import 'package:PiliPlus/plugin/pl_player/models/hwdec_type.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_repeat.dart';
-import 'package:PiliPlus/utils/extension/context_ext.dart';
 import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:PiliPlus/utils/global_data.dart';
 import 'package:PiliPlus/utils/login_utils.dart';
@@ -599,14 +598,9 @@ abstract final class Pref {
       _setting.get(SettingBoxKey.horizontalScreen) ?? isTablet;
 
   static bool get isTablet {
-    bool isTablet;
-    if (Get.context != null) {
-      isTablet = Get.context!.isTablet;
-    } else {
-      final view = WidgetsBinding.instance.platformDispatcher.views.first;
-      final screenSize = view.physicalSize / view.devicePixelRatio;
-      isTablet = screenSize.shortestSide >= 600;
-    }
+    final view = WidgetsBinding.instance.platformDispatcher.views.first;
+    final size = view.physicalSize / view.devicePixelRatio;
+    final isTablet = size.shortestSide >= 600;
     _setting.put(SettingBoxKey.horizontalScreen, isTablet);
     return isTablet;
   }

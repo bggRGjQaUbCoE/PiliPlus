@@ -1474,7 +1474,7 @@ class PlPlayerController with BlockConfigMixin {
     try {
       if (status) {
         if (PlatformUtils.isMobile) {
-          hideStatusBar();
+          hideSystemBar();
           await changeOrientation(
             isVertical: isVertical,
             orientation: orientation,
@@ -1485,7 +1485,7 @@ class PlPlayerController with BlockConfigMixin {
       } else {
         if (PlatformUtils.isMobile) {
           if (!removeSafeArea) {
-            showStatusBar();
+            showSystemBar();
           }
           if (orientation == null && mode == .none) {
             return;
@@ -1632,7 +1632,7 @@ class PlPlayerController with BlockConfigMixin {
 
     _playerCount = 0;
     if (removeSafeArea) {
-      showStatusBar();
+      showSystemBar();
     }
     danmakuController = null;
     _stopOrientationListener();

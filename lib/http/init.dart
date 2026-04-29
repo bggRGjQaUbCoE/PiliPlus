@@ -16,11 +16,10 @@ import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:archive/archive.dart';
 import 'package:brotli/brotli.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
 import 'package:dio_http2_adapter/dio_http2_adapter.dart';
-import 'package:flutter/foundation.dart' show kDebugMode, listEquals;
+import 'package:flutter/foundation.dart' show kDebugMode;
 
 class Request {
   static const _gzipDecoder = GZipDecoder();
@@ -116,23 +115,6 @@ class Request {
     return h11;
   }
 
-  static Timer? _networkChangeDebounce;
-
-  static void _onConnectivityChanged(List<ConnectivityResult> result) {
-    if (listEquals(result, const [ConnectivityResult.none])) {
-      return;
-    }
-    _networkChangeDebounce?.cancel();
-    _networkChangeDebounce = Timer(
-      const Duration(milliseconds: 500),
-      _resetAdaptersForNetworkChange,
-    );
-  }
-
-  static void _watchConnectivity() {
-    Connectivity().onConnectivityChanged.skip(1).listen(_onConnectivityChanged);
-  }
-
   static (IOHttpClientAdapter, ConnectionManager?) _createPool() {
     final bool enableSystemProxy;
     late final String systemProxyHost;
@@ -174,25 +156,6 @@ class Request {
           )
         : null;
     return (http11Adapter, connectionManager);
-  }
-
-  @pragma('vm:notify-debugger-on-exception')
-  static void _resetAdaptersForNetworkChange() {
-    try {
-      final (h11, connectionManager) = _createPool();
-      if (connectionManager != null) {
-        (dio.httpClientAdapter as Http2Adapter)
-          ..connectionManager.close(force: true)
-          ..connectionManager = connectionManager
-          ..fallbackAdapter.close(force: true)
-          ..fallbackAdapter = h11;
-        _http11Dio?.httpClientAdapter = h11;
-      } else {
-        dio
-          ..httpClientAdapter.close(force: true)
-          ..httpClientAdapter = h11;
-      }
-    } catch (_) {}
   }
 
   /*
@@ -247,8 +210,6 @@ class Request {
       ..options.validateStatus = (int? status) {
         return status != null && status >= 200 && status < 300;
       };
-
-    if (Platform.isIOS) _watchConnectivity();
   }
 
   /*

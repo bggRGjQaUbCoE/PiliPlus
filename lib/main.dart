@@ -20,6 +20,7 @@ import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/json_file_handler.dart';
+import 'package:PiliPlus/utils/max_screen_size.dart';
 import 'package:PiliPlus/utils/path_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/request_utils.dart';
@@ -111,7 +112,7 @@ void main() async {
 
   if (PlatformUtils.isMobile) {
     await Future.wait([
-      if (Platform.isAndroid) _initSdkInt(),
+      if (Platform.isAndroid) ...[_initSdkInt(), MaxScreenSize.init()],
       if (Pref.horizontalScreen) ?fullMode() else ?portraitUpMode(),
       setupServiceLocator(),
     ]);

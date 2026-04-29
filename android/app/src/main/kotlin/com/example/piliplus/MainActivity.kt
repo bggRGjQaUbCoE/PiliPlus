@@ -10,6 +10,7 @@ import android.content.pm.ShortcutInfo
 import android.content.pm.ShortcutManager
 import android.content.res.Configuration
 import android.graphics.BitmapFactory
+import android.graphics.Point
 import android.graphics.drawable.Icon
 import android.os.Build
 import android.os.Bundle
@@ -20,6 +21,7 @@ import androidx.core.net.toUri
 import com.ryanheise.audioservice.AudioServiceActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
+import kotlin.math.roundToInt
 import kotlin.system.exitProcess
 import java.io.File
 
@@ -168,6 +170,31 @@ class MainActivity : AudioServiceActivity() {
                             }
                         } catch (e: Exception) {
                         }
+                    }
+                }
+
+                "maxScreenSize" -> {
+                    try {
+                        val density = resources.displayMetrics.density
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                            val maxBounds = windowManager.maximumWindowMetrics.bounds
+                            result.success(
+                                mapOf(
+                                    "maxWidth" to (maxBounds.width() / density).roundToInt(),
+                                    "maxHeight" to (maxBounds.height() / density).roundToInt(),
+                                )
+                            )
+                        } else {
+                            val realSizePoint = Point()
+                            windowManager.defaultDisplay.getRealSize(realSizePoint)
+                            result.success(
+                                mapOf(
+                                    "maxWidth" to (realSizePoint.x / density).roundToInt(),
+                                    "maxHeight" to (realSizePoint.y / density).roundToInt(),
+                                )
+                            )
+                        }
+                    } catch (e: Exception) {
                     }
                 }
 

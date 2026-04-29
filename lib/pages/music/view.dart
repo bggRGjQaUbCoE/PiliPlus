@@ -25,6 +25,7 @@ import 'package:PiliPlus/utils/extension/string_ext.dart';
 import 'package:PiliPlus/utils/grid.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
+import 'package:PiliPlus/utils/share_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
@@ -307,7 +308,8 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
                     child: textIconButton(
                       icon: CustomIcons.share_node,
                       text: '分享',
-                      onPressed: () => Utils.shareText(controller.shareUrl),
+                      onPressed: () =>
+                          ShareUtils.shareText(controller.shareUrl),
                     ),
                   ),
                   Expanded(

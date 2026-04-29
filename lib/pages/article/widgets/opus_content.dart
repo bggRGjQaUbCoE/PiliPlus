@@ -713,7 +713,7 @@ Widget moduleBlockedItem(
   ThemeData theme,
   ModuleBlocked moduleBlocked,
 ) {
-  late final isDarkMode = theme.brightness.isDark;
+  late final isDarkMode = theme.isDark;
 
   BoxDecoration? bgImg(double width) {
     return moduleBlocked.bgImg == null

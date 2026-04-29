@@ -350,9 +350,9 @@ flutter:
     - path: assets/images/lv/
     - path: assets/images/logo/
     - path: assets/images/logo/ico/
-      platforms: [windows]
+      platforms: [ windows ]
     - path: assets/images/logo/desktop/
-      platforms: [linux, macos]
+      platforms: [ linux, macos ]
     - path: assets/images/live/
     - path: assets/images/video/
     - path: assets/images/paycoins/

@@ -1,4 +1,4 @@
-import 'package:PiliPlus/utils/utils.dart';
+import 'package:PiliPlus/utils/parse_int.dart';
 
 class FollowUpModel {
   FollowUpModel({
@@ -51,7 +51,7 @@ class LiveUsers {
   List<LiveUserItem>? items;
 
   LiveUsers.fromJson(Map<String, dynamic> json) {
-    count = Utils.safeToInt(json['count']) ?? 0;
+    count = safeToInt(json['count']) ?? 0;
     group = json['group'];
     items = (json['items'] as List?)
         ?.map<LiveUserItem>((e) => LiveUserItem.fromJson(e))
@@ -68,7 +68,7 @@ class LiveUserItem extends UpItem {
   LiveUserItem.fromJson(Map<String, dynamic> json) : super.fromJson(json) {
     isReserveRecall = json['is_reserve_recall'];
     jumpUrl = json['jump_url'];
-    roomId = Utils.safeToInt(json['room_id']);
+    roomId = safeToInt(json['room_id']);
     title = json['title'];
   }
 }
@@ -89,7 +89,7 @@ class UpItem {
   UpItem.fromJson(Map<String, dynamic> json) {
     face = json['face'];
     hasUpdate = json['has_update'];
-    mid = Utils.safeToInt(json['mid']) ?? 0;
+    mid = safeToInt(json['mid']) ?? 0;
     uname = json['uname'];
   }
 

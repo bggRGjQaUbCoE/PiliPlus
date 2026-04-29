@@ -18,6 +18,8 @@ import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/global_data.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
+import 'package:PiliPlus/utils/share_utils.dart';
+import 'package:PiliPlus/utils/theme_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:PiliPlus/utils/waterfall.dart';
 import 'package:flutter/material.dart';
@@ -297,7 +299,7 @@ class _DynTopicPageState extends State<DynTopicPage> with DynMixin {
         ),
         actions: [
           IconButton(
-            onPressed: () => Utils.shareText(
+            onPressed: () => ShareUtils.shareText(
               '${_controller.topicName} https://m.bilibili.com/topic-detail?topic_id=${_controller.topicId}',
             ),
             // https://www.bilibili.com/v/topic/detail?topic_id=${_controller.topicId}
@@ -320,7 +322,7 @@ class _DynTopicPageState extends State<DynTopicPage> with DynMixin {
                       return;
                     }
                     PageUtils.inAppWebview(
-                      'https://www.bilibili.com/h5/topic-active/topic-report?topic_id=${_controller.topicId}&topic_name=${_controller.topicName}&${Utils.themeUrl(theme.colorScheme.isDark)}',
+                      'https://www.bilibili.com/h5/topic-active/topic-report?topic_id=${_controller.topicId}&topic_name=${_controller.topicName}&${ThemeUtils.themeUrl(theme.isDark)}',
                     );
                   },
                 ),

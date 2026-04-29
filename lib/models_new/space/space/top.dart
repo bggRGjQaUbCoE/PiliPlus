@@ -28,7 +28,7 @@ class TopImage {
     final item = json['item'];
     final img = item['image'];
     title = json['title'] == null ? null : TopTitle.fromJson(json['title']);
-    _defaultImage = noneNullOrEmptyString(img?['default_image']);
+    _defaultImage = nonNullOrEmptyString(img?['default_image']);
     fullCover = json['cover'];
     double dy = 0;
     try {

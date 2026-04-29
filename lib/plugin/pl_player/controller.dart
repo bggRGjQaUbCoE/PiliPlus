@@ -31,6 +31,7 @@ import 'package:PiliPlus/plugin/pl_player/utils/fullscreen.dart';
 import 'package:PiliPlus/services/service_locator.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/asset_utils.dart';
+import 'package:PiliPlus/utils/device_utils.dart';
 import 'package:PiliPlus/utils/extension/box_ext.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/feed_back.dart';
@@ -41,6 +42,7 @@ import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
+import 'package:PiliPlus/utils/theme_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:archive/archive.dart' show getCrc32;
 import 'package:canvas_danmaku/canvas_danmaku.dart';
@@ -576,7 +578,7 @@ class PlPlayerController with BlockConfigMixin {
     }
 
     if (Platform.isAndroid && autoPiP) {
-      if (Utils.sdkInt < 36) {
+      if (DeviceUtils.sdkInt < 36) {
         Utils.channel.setMethodCallHandler((call) async {
           if (call.method == 'onUserLeaveHint') {
             if (playerStatus.isPlaying && _isCurrVideoPage) {
@@ -1758,13 +1760,13 @@ class PlPlayerController with BlockConfigMixin {
                 padding: const EdgeInsets.only(right: 12),
                 child: ConstrainedBox(
                   constraints: BoxConstraints(
-                    maxWidth: min(Get.width / 3, 350),
+                    maxWidth: min(DeviceUtils.size.width / 3, 350),
                   ),
                   child: DecoratedBox(
                     decoration: BoxDecoration(
                       border: Border.all(
                         width: 5,
-                        color: Get.theme.colorScheme.surface,
+                        color: ThemeUtils.theme.colorScheme.surface,
                       ),
                     ),
                     child: Padding(

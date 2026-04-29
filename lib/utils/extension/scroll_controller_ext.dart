@@ -1,4 +1,4 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/widgets.dart' show ScrollController, Curves;
 
 extension ScrollControllerExt on ScrollController {
   void animToTop() => animTo(0);

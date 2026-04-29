@@ -26,6 +26,7 @@ import 'package:PiliPlus/plugin/pl_player/utils/danmaku_options.dart';
 import 'package:PiliPlus/services/service_locator.dart';
 import 'package:PiliPlus/tcp/live.dart';
 import 'package:PiliPlus/utils/accounts.dart';
+import 'package:PiliPlus/utils/connectivity_utils.dart';
 import 'package:PiliPlus/utils/danmaku_utils.dart';
 import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:PiliPlus/utils/extension/iterable_ext.dart';
@@ -33,6 +34,7 @@ import 'package:PiliPlus/utils/global_data.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
+import 'package:PiliPlus/utils/theme_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:PiliPlus/utils/video_utils.dart';
 import 'package:canvas_danmaku/canvas_danmaku.dart';
@@ -177,7 +179,7 @@ class LiveRoomController extends GetxController {
   }
 
   Future<void> queryLiveUrl({bool autoFullScreenFlag = false}) async {
-    currentQn ??= await Utils.isWiFi
+    currentQn ??= await ConnectivityUtils.isWiFi
         ? Pref.liveQuality
         : Pref.liveQualityCellular;
     final res = await LiveHttp.liveRoomInfo(
@@ -244,7 +246,7 @@ class LiveRoomController extends GetxController {
             onPressed: Get.back,
             child: Text(
               '关闭',
-              style: TextStyle(color: Get.theme.colorScheme.outline),
+              style: TextStyle(color: ThemeUtils.theme.colorScheme.outline),
             ),
           ),
           TextButton(

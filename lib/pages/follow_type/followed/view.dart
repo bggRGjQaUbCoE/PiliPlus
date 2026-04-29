@@ -1,6 +1,7 @@
 import 'package:PiliPlus/pages/follow_type/followed/controller.dart';
 import 'package:PiliPlus/pages/follow_type/view.dart';
 import 'package:PiliPlus/utils/extension/get_ext.dart';
+import 'package:PiliPlus/utils/parse_int.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -16,7 +17,7 @@ class FollowedPage extends StatefulWidget {
     Get.toNamed(
       '/followed',
       arguments: {
-        'mid': Utils.safeToInt(mid),
+        'mid': safeToInt(mid),
         'name': name,
       },
     );

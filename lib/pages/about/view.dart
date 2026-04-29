@@ -14,7 +14,7 @@ import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/accounts/account.dart';
 import 'package:PiliPlus/utils/cache_manager.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
-import 'package:PiliPlus/utils/extension/context_ext.dart';
+import 'package:PiliPlus/utils/device_utils.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/login_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
@@ -268,7 +268,7 @@ Commit Hash: ${BuildConfig.commitHash}''',
             onTap: () => showImportExportDialog<Map<String, dynamic>>(
               context,
               title: '设置',
-              localFileName: () => 'setting_${context.platformName}',
+              localFileName: () => 'setting_${DeviceUtils.platformName}',
               onExport: GStorage.exportAllSettings,
               onImport: GStorage.importAllJsonSettings,
             ),

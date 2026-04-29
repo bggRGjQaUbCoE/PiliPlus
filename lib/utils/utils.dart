@@ -1,18 +1,11 @@
-import 'dart:async';
-import 'dart:convert';
-import 'dart:io';
+import 'dart:convert' show JsonEncoder, base64;
 import 'dart:math' show Random;
 
 import 'package:PiliPlus/common/constants.dart';
-import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:catcher_2/catcher_2.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:device_info_plus/device_info_plus.dart';
-import 'package:file_picker/file_picker.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter/services.dart'
+    show Clipboard, ClipboardData, MethodChannel;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
-import 'package:get/get.dart';
-import 'package:share_plus/share_plus.dart';
 
 abstract final class Utils {
   static final random = Random();
@@ -20,119 +13,6 @@ abstract final class Utils {
   static const channel = MethodChannel(Constants.appName);
 
   static const jsonEncoder = JsonEncoder.withIndent('    ');
-
-  static bool isCustomFollowTag(int? tagid) {
-    return tagid != null && tagid != 0 && tagid != -10 && tagid != -2;
-  }
-
-  static String levelName(
-    Object level, {
-    bool isSeniorMember = false,
-  }) => 'assets/images/lv/lv${isSeniorMember ? '6_s' : level}.png';
-
-  static Color index2Color(int index, Color color) => switch (index) {
-    0 => const Color(0xFFfdad13),
-    1 => const Color(0xFF8aace1),
-    2 => const Color(0xFFdfa777),
-    _ => color,
-  };
-
-  static bool getDimensionFromUri(String uri) {
-    try {
-      final params = Uri.parse(uri).queryParameters;
-      final width = int.parse(params['player_width']!);
-      final height = int.parse(params['player_height']!);
-      return params['player_rotate'] == '1' ? width > height : height > width;
-    } catch (_) {
-      return false;
-    }
-  }
-
-  static String themeUrl(bool isDark) =>
-      'native.theme=${isDark ? 2 : 1}&night=${isDark ? 1 : 0}';
-
-  static Future<void> saveBytes2File({
-    required String name,
-    required Uint8List bytes,
-    required List<String> allowedExtensions,
-    FileType type = FileType.custom,
-  }) async {
-    try {
-      final path = await FilePicker.saveFile(
-        allowedExtensions: allowedExtensions,
-        type: type,
-        fileName: name,
-        bytes: PlatformUtils.isDesktop ? null : bytes,
-      );
-      if (path == null) {
-        SmartDialog.showToast("取消保存");
-        return;
-      }
-      if (PlatformUtils.isDesktop) {
-        await File(path).writeAsBytes(bytes);
-      }
-      SmartDialog.showToast("已保存");
-    } catch (e) {
-      SmartDialog.showToast("保存失败: $e");
-    }
-  }
-
-  static int? safeToInt(dynamic value) => switch (value) {
-    int e => e,
-    String e => int.tryParse(e),
-    num e => e.toInt(),
-    _ => null,
-  };
-
-  static Future<bool> get isWiFi async {
-    try {
-      return PlatformUtils.isMobile &&
-          (await Connectivity().checkConnectivity()).contains(
-            ConnectivityResult.wifi,
-          );
-    } catch (_) {
-      return true;
-    }
-  }
-
-  static Color parseColor(String color) =>
-      Color(int.parse('FF${color.substring(1)}', radix: 16));
-
-  static Color parseMedalColor(String color) => Color(
-    int.parse('${color.substring(7)}${color.substring(1, 7)}', radix: 16),
-  );
-
-  static late int sdkInt;
-
-  static bool? _isIpad;
-  static Future<bool> get isIpad async {
-    if (!Platform.isIOS) return false;
-    return _isIpad ??= (await DeviceInfoPlugin().iosInfo).model
-        .toLowerCase()
-        .contains('ipad');
-  }
-
-  static Future<Rect?> get sharePositionOrigin async {
-    if (await isIpad) {
-      final size = Get.size;
-      return Rect.fromLTRB(0, 0, size.width, size.height / 2);
-    }
-    return null;
-  }
-
-  static Future<void> shareText(String text) async {
-    if (PlatformUtils.isDesktop) {
-      copyText(text);
-      return;
-    }
-    try {
-      await SharePlus.instance.share(
-        ShareParams(text: text, sharePositionOrigin: await sharePositionOrigin),
-      );
-    } catch (e) {
-      SmartDialog.showToast(e.toString());
-    }
-  }
 
   static final numericRegex = RegExp(r'^[\d\.]+$');
   static bool isStringNumeric(String str) {

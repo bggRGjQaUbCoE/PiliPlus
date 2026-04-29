@@ -4,6 +4,7 @@ import 'dart:io' show File;
 
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/utils/extension/context_ext.dart';
+import 'package:PiliPlus/utils/storage_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -28,7 +29,7 @@ void exportToLocalFile({
   required ValueGetter<String> localFileName,
 }) {
   final res = utf8.encode(onExport());
-  Utils.saveBytes2File(
+  StorageUtils.saveBytes2File(
     name:
         'piliplus_${localFileName()}_'
         '${DateFormat('yyyyMMddHHmmss').format(DateTime.now())}.json',

@@ -12,7 +12,6 @@ import 'package:PiliPlus/common/widgets/keep_alive_wrapper.dart';
 import 'package:PiliPlus/common/widgets/route_aware_mixin.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart';
 import 'package:PiliPlus/common/widgets/sliver/sliver_pinned_dynamic_header.dart';
-import 'package:PiliPlus/main.dart';
 import 'package:PiliPlus/models/common/episode_panel_type.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_info_model/result.dart';
 import 'package:PiliPlus/models_new/video/video_detail/episode.dart' as ugc;
@@ -61,6 +60,7 @@ import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
+import 'package:PiliPlus/utils/theme_utils.dart';
 import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart';
 import 'package:floating/floating.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
@@ -472,7 +472,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
           : minVideoHeight;
 
     themeData = videoDetailController.plPlayerController.darkVideoPage
-        ? MyApp.darkThemeData ?? Theme.of(context)
+        ? ThemeUtils.darkTheme
         : Theme.of(context);
   }
 

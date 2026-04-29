@@ -4,13 +4,13 @@ import 'package:PiliPlus/common/widgets/button/icon_button.dart';
 import 'package:PiliPlus/common/widgets/view_safe_area.dart';
 import 'package:PiliPlus/http/danmaku.dart';
 import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/main.dart';
 import 'package:PiliPlus/models/common/publish_panel_type.dart';
 import 'package:PiliPlus/pages/common/publish/common_text_pub_page.dart';
 import 'package:PiliPlus/pages/danmaku/danmaku_model.dart';
 import 'package:PiliPlus/pages/setting/slide_color_picker.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
+import 'package:PiliPlus/utils/theme_utils.dart';
 import 'package:canvas_danmaku/models/danmaku_content_item.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show LengthLimitingTextInputFormatter;
@@ -138,9 +138,7 @@ class _SendDanmakuPanelState extends CommonTextPubPageState<SendDanmakuPanel> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    themeData = widget.darkVideoPage
-        ? MyApp.darkThemeData ?? Theme.of(context)
-        : Theme.of(context);
+    themeData = widget.darkVideoPage ? ThemeUtils.darkTheme : Theme.of(context);
   }
 
   late ThemeData themeData;

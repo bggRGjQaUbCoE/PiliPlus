@@ -14,6 +14,7 @@ import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
+import 'package:PiliPlus/utils/theme_utils.dart';
 import 'package:flex_seed_scheme/flex_seed_scheme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -85,7 +86,7 @@ class _ColorSelectPageState extends State<ColorSelectPage> {
                 } catch (_) {}
                 ctr.themeType.value = result;
                 GStorage.setting.put(SettingBoxKey.themeMode, result.index);
-                Get.changeThemeMode(result.toThemeMode);
+                Get.changeThemeMode(ThemeUtils.themeMode = result.toThemeMode);
               }
             },
             leading: const Icon(Icons.flashlight_on_outlined),

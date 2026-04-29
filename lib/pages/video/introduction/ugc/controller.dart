@@ -30,7 +30,8 @@ import 'package:PiliPlus/pages/video/reply/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_repeat.dart';
 import 'package:PiliPlus/services/service_locator.dart';
 import 'package:PiliPlus/utils/accounts.dart';
-import 'package:PiliPlus/utils/extension/context_ext.dart';
+import 'package:PiliPlus/utils/device_utils.dart';
+import 'package:PiliPlus/utils/extension/size_ext.dart';
 import 'package:PiliPlus/utils/extension/string_ext.dart';
 import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:PiliPlus/utils/global_data.dart';
@@ -38,6 +39,7 @@ import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/request_utils.dart';
+import 'package:PiliPlus/utils/share_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:expandable/expandable.dart';
@@ -77,7 +79,7 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
     );
     if (!alwaysExpandIntroPanel && Pref.expandIntroPanelH) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!expandableCtr.expanded && Get.context!.isLandscape) {
+        if (!expandableCtr.expanded && !DeviceUtils.size.isPortrait) {
           expandableCtr.toggle();
         }
       });
@@ -361,7 +363,7 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
                 ),
                 onTap: () {
                   Get.back();
-                  Utils.shareText(
+                  ShareUtils.shareText(
                     '${videoDetail.title} '
                     'UP主: ${videoDetail.owner!.name!}'
                     ' - $videoUrl',

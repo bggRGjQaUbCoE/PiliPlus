@@ -45,6 +45,7 @@ class _MainAppState extends PopScopeState<MainApp>
   final _mainController = Get.put(MainController());
   late final _setting = GStorage.setting;
   late EdgeInsets _padding;
+  late ThemeData theme;
 
   @override
   bool get initCanPop => false;
@@ -71,7 +72,8 @@ class _MainAppState extends PopScopeState<MainApp>
   void didChangeDependencies() {
     super.didChangeDependencies();
     _padding = MediaQuery.viewPaddingOf(context);
-    final brightness = Theme.brightnessOf(context);
+    theme = Theme.of(context);
+    final brightness = theme.brightness;
     NetworkImgLayer.reduce =
         NetworkImgLayer.reduceLuxColor != null && brightness.isDark;
     if (PlatformUtils.isDesktop) {
@@ -425,7 +427,6 @@ class _MainAppState extends PopScopeState<MainApp>
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     Widget child;
     if (_mainController.mainTabBarView) {
       child = CustomTabBarView(

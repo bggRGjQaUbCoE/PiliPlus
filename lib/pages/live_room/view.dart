@@ -43,6 +43,7 @@ import 'package:PiliPlus/utils/max_screen_size.dart';
 import 'package:PiliPlus/utils/mobile_observer.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
+import 'package:PiliPlus/utils/share_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/utils.dart';
@@ -633,7 +634,7 @@ class _LiveRoomPageState extends State<LiveRoomPage>
               ),
               if (PlatformUtils.isMobile)
                 PopupMenuItem(
-                  onTap: () => Utils.shareText(liveUrl),
+                  onTap: () => ShareUtils.shareText(liveUrl),
                   child: Row(
                     spacing: 10,
                     mainAxisSize: MainAxisSize.min,

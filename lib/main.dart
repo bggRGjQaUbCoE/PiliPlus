@@ -17,6 +17,7 @@ import 'package:PiliPlus/services/service_locator.dart';
 import 'package:PiliPlus/utils/cache_manager.dart';
 import 'package:PiliPlus/utils/calc_window_position.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
+import 'package:PiliPlus/utils/device_utils.dart';
 import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/json_file_handler.dart';
@@ -89,7 +90,7 @@ Future<void> _initAppPath() async {
 }
 
 Future<void> _initSdkInt() async {
-  Utils.sdkInt = (await DeviceInfoPlugin().androidInfo).version.sdkInt;
+  DeviceUtils.sdkInt = (await DeviceInfoPlugin().androidInfo).version.sdkInt;
 }
 
 void main() async {
@@ -233,8 +234,6 @@ class MyApp extends StatelessWidget {
 
   static ColorScheme? _light, _dark;
 
-  static ThemeData? darkThemeData;
-
   static void _onBack() {
     if (SmartDialog.checkExist()) {
       SmartDialog.dismiss();
@@ -260,13 +259,13 @@ class MyApp extends StatelessWidget {
     late final brandColor = colorThemeTypes[Pref.customColor].color;
     late final variant = Pref.schemeVariant;
     return (
-      ThemeUtils.getThemeData(
+      ThemeUtils.lightTheme = ThemeUtils.getThemeData(
         colorScheme: dynamicColor
             ? _light!
             : brandColor.asColorSchemeSeed(variant, .light),
         isDynamic: dynamicColor,
       ),
-      ThemeUtils.getThemeData(
+      ThemeUtils.darkTheme = ThemeUtils.getThemeData(
         isDark: true,
         colorScheme: dynamicColor
             ? _dark!
@@ -283,7 +282,7 @@ class MyApp extends StatelessWidget {
       title: Constants.appName,
       theme: light,
       darkTheme: dark,
-      themeMode: Pref.themeMode,
+      themeMode: ThemeUtils.themeMode = Pref.themeMode,
       localizationsDelegates: const [
         GlobalCupertinoLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,

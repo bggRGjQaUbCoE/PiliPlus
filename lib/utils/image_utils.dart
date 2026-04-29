@@ -1,15 +1,17 @@
-import 'dart:io';
+import 'dart:io' show File, Platform;
 import 'dart:math' as math;
-import 'dart:typed_data';
+import 'dart:typed_data' show Uint8List;
 
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/http/init.dart';
+import 'package:PiliPlus/utils/device_utils.dart';
 import 'package:PiliPlus/utils/extension/file_ext.dart';
 import 'package:PiliPlus/utils/extension/string_ext.dart';
 import 'package:PiliPlus/utils/global_data.dart';
 import 'package:PiliPlus/utils/path_utils.dart';
 import 'package:PiliPlus/utils/permission_handler.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
+import 'package:PiliPlus/utils/share_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:dio/dio.dart';
@@ -40,7 +42,7 @@ abstract final class ImageUtils {
             .share(
               ShareParams(
                 files: [XFile(path)],
-                sharePositionOrigin: await Utils.sharePositionOrigin,
+                sharePositionOrigin: await ShareUtils.sharePositionOrigin,
               ),
             )
             .whenComplete(File(path).tryDel);
@@ -80,7 +82,7 @@ abstract final class ImageUtils {
 
   static Future<bool> checkPermissionDependOnSdkInt() {
     if (Platform.isAndroid) {
-      if (Utils.sdkInt < 29) {
+      if (DeviceUtils.sdkInt < 29) {
         return requestPer();
       } else {
         return Future.syncValue(true);

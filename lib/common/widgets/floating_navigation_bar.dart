@@ -724,7 +724,7 @@ class _NavigationBarDefaultsM3 extends NavigationBarThemeData {
   late final _colors = Theme.of(context).colorScheme;
   late final _textTheme = Theme.of(context).textTheme;
 
-  BorderSide get borderSide => _colors.brightness.isDark
+  BorderSide get borderSide => _colors.isDark
       ? const BorderSide(color: Color(0x08FFFFFF))
       : const BorderSide(color: Color(0x08000000));
 
@@ -753,7 +753,7 @@ class _NavigationBarDefaultsM3 extends NavigationBarThemeData {
 
   @override
   Color? get indicatorColor =>
-      _colors.brightness.isDark ? _indicatorDark : _indicatorLight;
+      _colors.isDark ? _indicatorDark : _indicatorLight;
 
   @override
   ShapeBorder? get indicatorShape => const StadiumBorder();

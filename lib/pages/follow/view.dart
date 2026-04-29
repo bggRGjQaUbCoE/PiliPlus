@@ -8,6 +8,8 @@ import 'package:PiliPlus/pages/follow/child/child_controller.dart';
 import 'package:PiliPlus/pages/follow/child/child_view.dart';
 import 'package:PiliPlus/pages/follow/controller.dart';
 import 'package:PiliPlus/pages/follow_tag_sort/view.dart';
+import 'package:PiliPlus/utils/bili_utils.dart';
+import 'package:PiliPlus/utils/parse_int.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/request_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
@@ -26,7 +28,7 @@ class FollowPage extends StatefulWidget {
     Get.toNamed(
       '/follow',
       arguments: {
-        'mid': Utils.safeToInt(mid),
+        'mid': safeToInt(mid),
         'name': name,
       },
     );
@@ -135,7 +137,7 @@ class _FollowPageState extends State<FollowPage> {
                 return Obx(() {
                   final item = _followController.tabs[index];
                   int? count = item.count;
-                  if (Utils.isCustomFollowTag(item.tagid)) {
+                  if (BiliUtils.isCustomFollowTag(item.tagid)) {
                     return GestureDetector(
                       behavior: HitTestBehavior.translucent,
                       onLongPress: () {

@@ -1,7 +1,7 @@
-import 'dart:async';
-import 'dart:io';
+import 'dart:async' show FutureOr;
+import 'dart:io' show Platform, Directory, File;
 
-import 'package:flutter/services.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:path/path.dart' as path;
 
 abstract final class AssetUtils {

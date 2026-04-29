@@ -18,7 +18,7 @@ import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/grid.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
-import 'package:PiliPlus/utils/utils.dart';
+import 'package:PiliPlus/utils/theme_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
@@ -154,7 +154,7 @@ class _LivePageState extends State<LivePage>
                         parameters: {
                           'uaType': 'mob',
                           'url':
-                              'https://www.bilibili.com/h5/match/data/home?navhide=1&${Utils.themeUrl(theme.brightness.isDark)}',
+                              'https://www.bilibili.com/h5/match/data/home?navhide=1&${ThemeUtils.themeUrl(theme.isDark)}',
                         },
                       ),
                     ),

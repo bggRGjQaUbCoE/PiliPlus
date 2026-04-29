@@ -3,7 +3,7 @@ import 'package:PiliPlus/http/follow.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/member/tags.dart';
 import 'package:PiliPlus/pages/follow/controller.dart';
-import 'package:PiliPlus/utils/utils.dart';
+import 'package:PiliPlus/utils/bili_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -26,7 +26,7 @@ class _FollowTagSortPageState extends State<FollowTagSortPage>
   void initState() {
     super.initState();
     for (final e in widget.controller.tabs) {
-      if (Utils.isCustomFollowTag(e.tagid)) {
+      if (BiliUtils.isCustomFollowTag(e.tagid)) {
         _customTags.add(e);
       } else {
         _defTags.add(e);

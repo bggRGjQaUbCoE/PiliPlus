@@ -28,6 +28,7 @@ import 'package:PiliPlus/common/widgets/scroll_physics.dart';
 import 'package:PiliPlus/main.dart' show tmpPadding;
 import 'package:PiliPlus/models/common/image_preview_type.dart';
 import 'package:PiliPlus/plugin/pl_player/utils/fullscreen.dart';
+import 'package:PiliPlus/utils/device_utils.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/string_ext.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
@@ -179,8 +180,7 @@ class _GalleryViewerState extends State<GalleryViewer>
   void _initHideSystemBar() {
     if (Platform.isAndroid) {
       if (showSystemBar_) {
-        final view = WidgetsBinding.instance.platformDispatcher.views.first;
-        final size = view.physicalSize / view.devicePixelRatio;
+        final size = DeviceUtils.size;
         _hideSystemBar = !MaxScreenSize.isWindowMode(
           width: size.width,
           height: size.height,

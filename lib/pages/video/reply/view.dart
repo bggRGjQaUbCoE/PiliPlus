@@ -238,11 +238,10 @@ class _VideoReplyPanelState extends State<VideoReplyPanel>
     EasyThrottle.throttle('replyReply', const Duration(milliseconds: 500), () {
       int oid = replyItem.oid.toInt();
       int rpid = replyItem.id.toInt();
-      showBottomSheet(
-        context: context,
+      Scaffold.of(context).showBottomSheet(
         backgroundColor: Colors.transparent,
         constraints: const BoxConstraints(),
-        builder: (context) => VideoReplyReplyPanel(
+        (context) => VideoReplyReplyPanel(
           id: id,
           oid: oid,
           rpid: rpid,

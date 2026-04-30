@@ -4,6 +4,7 @@ import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/models_new/live/live_superchat/item.dart';
 import 'package:PiliPlus/pages/member/widget/medal_widget.dart';
+import 'package:PiliPlus/utils/color_utils.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
@@ -19,13 +20,13 @@ class SuperChatCard extends StatefulWidget {
     required this.item,
     this.onRemove,
     this.persistentSC = false,
-    required this.onReport,
+    this.onReport,
   });
 
   final SuperChatItem item;
   final VoidCallback? onRemove;
   final bool persistentSC;
-  final VoidCallback onReport;
+  final VoidCallback? onReport;
 
   @override
   State<SuperChatCard> createState() => _SuperChatCardState();
@@ -135,7 +136,7 @@ class _SuperChatCardState extends State<SuperChatCard> {
   @override
   Widget build(BuildContext context) {
     final item = widget.item;
-    final bottomColor = Utils.parseColor(item.backgroundBottomColor);
+    final bottomColor = ColourUtils.parseColor(item.backgroundBottomColor);
     final border = BorderSide(color: bottomColor);
     void showMenu(TapUpDetails e) => _showMenu(e.globalPosition, item);
 
@@ -144,7 +145,7 @@ class _SuperChatCardState extends State<SuperChatCard> {
       maxLines: 1,
       overflow: .ellipsis,
       style: TextStyle(
-        color: Utils.parseColor(item.userInfo.nameColor),
+        color: ColourUtils.parseColor(item.userInfo.nameColor),
       ),
     );
     if (item.medalInfo case final medal?) {
@@ -167,6 +168,7 @@ class _SuperChatCardState extends State<SuperChatCard> {
     }
 
     return Column(
+      mainAxisSize: .min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         GestureDetector(
@@ -175,7 +177,7 @@ class _SuperChatCardState extends State<SuperChatCard> {
           child: Container(
             decoration: BoxDecoration(
               borderRadius: const .vertical(top: .circular(8)),
-              color: Utils.parseColor(item.backgroundColor),
+              color: ColourUtils.parseColor(item.backgroundColor),
               border: Border(top: border, left: border, right: border),
               image: item.backgroundImage == null
                   ? null
@@ -205,7 +207,9 @@ class _SuperChatCardState extends State<SuperChatCard> {
                       Text(
                         "￥${item.price}",
                         style: TextStyle(
-                          color: Utils.parseColor(item.backgroundPriceColor),
+                          color: ColourUtils.parseColor(
+                            item.backgroundPriceColor,
+                          ),
                         ),
                       ),
                     ],
@@ -235,7 +239,7 @@ class _SuperChatCardState extends State<SuperChatCard> {
             child: Text(
               item.message,
               style: TextStyle(
-                color: Utils.parseColor(item.messageFontColor),
+                color: ColourUtils.parseColor(item.messageFontColor),
                 decoration: widget.persistentSC && item.deleted
                     ? .lineThrough
                     : null,

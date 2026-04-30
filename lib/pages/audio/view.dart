@@ -753,7 +753,7 @@ class _AudioPageState extends State<AudioPage> {
     final primary = colorScheme.primary;
     final thumbGlowColor = primary.withAlpha(80);
     final bufferedBarColor = primary.withValues(alpha: 0.4);
-    final baseBarColor = colorScheme.brightness.isDark
+    final baseBarColor = colorScheme.isDark
         ? const Color(0x33FFFFFF)
         : const Color(0x33999999);
     Widget child = Obx(

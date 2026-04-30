@@ -7,9 +7,9 @@ import 'package:PiliPlus/models/model_avatar.dart';
 import 'package:PiliPlus/models/model_owner.dart';
 import 'package:PiliPlus/models_new/live/live_feed_index/watched_show.dart';
 import 'package:PiliPlus/utils/extension/iterable_ext.dart';
+import 'package:PiliPlus/utils/parse_int.dart';
 import 'package:PiliPlus/utils/parse_string.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
-import 'package:PiliPlus/utils/utils.dart';
 
 class DynamicsDataModel {
   bool? hasMore;
@@ -90,7 +90,7 @@ class DynamicsDataModel {
     }
 
     offset = json['offset'];
-    total = Utils.safeToInt(json['total']);
+    total = safeToInt(json['total']);
   }
 }
 
@@ -306,7 +306,7 @@ class ModuleCollection {
 
   ModuleCollection.fromJson(Map<String, dynamic> json) {
     count = json['count'];
-    id = Utils.safeToInt(json['id']);
+    id = safeToInt(json['id']);
     name = json['name'];
     title = json['title'];
   }
@@ -350,7 +350,7 @@ class ModuleBlocked {
 
   ModuleBlocked.fromJson(Map<String, dynamic> json) {
     bgImg = json['bg_img'] == null ? null : BgImg.fromJson(json['bg_img']);
-    blockedType = Utils.safeToInt(json['blocked_type']);
+    blockedType = safeToInt(json['blocked_type']);
     button = json['button'] == null ? null : Button.fromJson(json['button']);
     title = json['title'];
     hintMessage = json['hint_message'];
@@ -401,7 +401,7 @@ class Basic {
 
   Basic.fromJson(Map<String, dynamic> json) {
     commentIdStr = json['comment_id_str'];
-    commentType = Utils.safeToInt(json['comment_type']);
+    commentType = safeToInt(json['comment_type']);
     ridStr = json['rid_str'];
   }
 }
@@ -422,7 +422,7 @@ class ModuleAuthorModel extends Avatar {
     }
     pubAction = json['pub_action'];
     pubTime = json['pub_time'];
-    pubTs = json['pub_ts'] == 0 ? null : Utils.safeToInt(json['pub_ts']);
+    pubTs = json['pub_ts'] == 0 ? null : safeToInt(json['pub_ts']);
     type = json['type'];
     if (PendantAvatar.showDecorate) {
       decorate = json['decorate'] == null
@@ -432,7 +432,7 @@ class ModuleAuthorModel extends Avatar {
       pendant = null;
     }
     isTop = json['is_top'];
-    badgeText = noneNullOrEmptyString(json['icon_badge']?['text']);
+    badgeText = nonNullOrEmptyString(json['icon_badge']?['text']);
   }
 }
 
@@ -683,11 +683,11 @@ class Vote {
   String? title;
 
   Vote.fromJson(Map<String, dynamic> json) {
-    joinNum = Utils.safeToInt(json['join_num']);
-    voteId = Utils.safeToInt(json['vote_id']);
+    joinNum = safeToInt(json['join_num']);
+    voteId = safeToInt(json['vote_id']);
     title =
-        noneNullOrEmptyString(json['title']) ??
-        noneNullOrEmptyString(json['desc']);
+        nonNullOrEmptyString(json['title']) ??
+        nonNullOrEmptyString(json['desc']);
   }
 }
 
@@ -740,10 +740,10 @@ class Reserve {
     desc1 = json['desc1'] == null ? null : Desc.fromJson(json['desc1']);
     desc2 = json['desc2'] == null ? null : Desc.fromJson(json['desc2']);
     desc3 = json['desc3'] == null ? null : Desc.fromJson(json['desc3']);
-    reserveTotal = Utils.safeToInt(json['reserve_total']);
-    rid = Utils.safeToInt(json['rid']);
-    state = Utils.safeToInt(json['state']);
-    state = Utils.safeToInt(json['state']);
+    reserveTotal = safeToInt(json['reserve_total']);
+    rid = safeToInt(json['rid']);
+    state = safeToInt(json['state']);
+    state = safeToInt(json['state']);
     title = json['title'];
   }
 }
@@ -765,11 +765,11 @@ class ReserveBtn {
   String? jumpUrl;
 
   ReserveBtn.fromJson(Map<String, dynamic> json) {
-    status = Utils.safeToInt(json['status']);
-    type = Utils.safeToInt(json['type']);
+    status = safeToInt(json['status']);
+    type = safeToInt(json['type']);
     checkText = json['check']?['text'] ?? '已预约';
     uncheckText = json['uncheck']?['text'] ?? '预约';
-    disable = Utils.safeToInt(json['uncheck']?['disable']);
+    disable = safeToInt(json['uncheck']?['disable']);
     jumpText = json['jump_style']?['text'];
     jumpUrl = json['jump_url'];
   }
@@ -929,7 +929,7 @@ class Music {
   String? label;
 
   Music.fromJson(Map<String, dynamic> json) {
-    id = Utils.safeToInt(json['id']);
+    id = safeToInt(json['id']);
     cover = json['cover'];
     title = json['title'];
     label = json['label'];
@@ -1016,8 +1016,8 @@ class LivePlayInfo {
   });
 
   factory LivePlayInfo.fromJson(Map<String, dynamic> json) => LivePlayInfo(
-    roomId: Utils.safeToInt(json["room_id"]),
-    liveStatus: Utils.safeToInt(json["live_status"]),
+    roomId: safeToInt(json["room_id"]),
+    liveStatus: safeToInt(json["live_status"]),
     title: json["title"],
     cover: json["cover"],
     areaName: json["area_name"],
@@ -1037,7 +1037,7 @@ class DynamicTopicModel {
   String? name;
 
   DynamicTopicModel.fromJson(Map<String, dynamic> json) {
-    id = Utils.safeToInt(json['id']);
+    id = safeToInt(json['id']);
     name = json['name'];
   }
 }
@@ -1072,8 +1072,8 @@ class DynamicArchiveModel {
   int? seasonId;
 
   DynamicArchiveModel.fromJson(Map<String, dynamic> json) {
-    id = Utils.safeToInt(json['id']);
-    aid = Utils.safeToInt(json['aid']);
+    id = safeToInt(json['id']);
+    aid = safeToInt(json['aid']);
     badge = json['badge'] == null ? null : Badge.fromJson(json['badge']);
     bvid = json['bvid'] ?? json['epid'].toString() ?? ' ';
     cover = json['cover'];
@@ -1081,9 +1081,9 @@ class DynamicArchiveModel {
     jumpUrl = json['jump_url'];
     stat = json['stat'] != null ? Stat.fromJson(json['stat']) : null;
     title = json['title'];
-    type = Utils.safeToInt(json['type']);
-    epid = Utils.safeToInt(json['epid']);
-    seasonId = Utils.safeToInt(json['season_id']);
+    type = safeToInt(json['type']);
+    epid = safeToInt(json['epid']);
+    seasonId = safeToInt(json['season_id']);
   }
 }
 
@@ -1175,9 +1175,9 @@ class Emoji {
 
   Emoji.fromJson(Map<String, dynamic> json) {
     url =
-        noneNullOrEmptyString(json['webp_url']) ??
-        noneNullOrEmptyString(json['gif_url']) ??
-        noneNullOrEmptyString(json['icon_url']);
+        nonNullOrEmptyString(json['webp_url']) ??
+        nonNullOrEmptyString(json['gif_url']) ??
+        nonNullOrEmptyString(json['icon_url']);
     size = json['size'] ?? 1;
   }
 }
@@ -1221,8 +1221,8 @@ class OpusPicModel extends PicModel {
   num? size;
 
   OpusPicModel.fromJson(Map<String, dynamic> json) {
-    width = Utils.safeToInt(json['width']);
-    height = Utils.safeToInt(json['height']);
+    width = safeToInt(json['width']);
+    height = safeToInt(json['height']);
     src = json['src'];
     url = json['url'];
     liveUrl = json['live_url'];
@@ -1250,8 +1250,8 @@ class DynamicLiveModel {
       Map<String, dynamic> data = jsonDecode(json['content']);
       Map livePlayInfo = data['live_play_info'];
 
-      roomId = Utils.safeToInt(livePlayInfo['room_id']);
-      liveStatus = Utils.safeToInt(livePlayInfo['live_status']);
+      roomId = safeToInt(livePlayInfo['room_id']);
+      liveStatus = safeToInt(livePlayInfo['live_status']);
       cover = livePlayInfo['cover'];
       areaName = livePlayInfo['area_name'];
       title = livePlayInfo['title'];
@@ -1283,8 +1283,8 @@ class DynamicLive2Model {
     badge = json['badge'] == null ? null : Badge.fromJson(json['badge']);
     cover = json['cover'];
     descFirst = json['desc_first'];
-    id = Utils.safeToInt(json['id']);
-    liveState = Utils.safeToInt(json['live_state']);
+    id = safeToInt(json['id']);
+    liveState = safeToInt(json['live_state']);
     title = json['title'];
   }
 }
@@ -1297,7 +1297,7 @@ class ModuleTag {
   String? text;
 
   ModuleTag.fromJson(Map<String, dynamic> json) {
-    text = noneNullOrEmptyString(json['text']);
+    text = nonNullOrEmptyString(json['text']);
   }
 }
 
@@ -1340,7 +1340,7 @@ class DynamicStat {
   bool? status;
 
   DynamicStat.fromJson(Map<String, dynamic> json) {
-    count = json['count'] == 0 ? null : Utils.safeToInt(json['count']);
+    count = json['count'] == 0 ? null : safeToInt(json['count']);
     status = json['status'];
   }
 }

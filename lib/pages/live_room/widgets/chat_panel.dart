@@ -52,7 +52,8 @@ class LiveRoomChatPanel extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 12),
             controller: liveRoomController.scrollController,
             separatorBuilder: (_, _) => const SizedBox(height: 8),
-            itemCount: liveRoomController.messages.length,
+            itemCount: liveRoomController.builtLength =
+                liveRoomController.messages.length,
             physics: const ClampingScrollPhysics(),
             itemBuilder: (_, index) {
               final item = liveRoomController.messages[index];
@@ -218,17 +219,10 @@ class LiveRoomChatPanel extends StatelessWidget {
                   right: 12,
                   bottom: 0,
                   child: ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      visualDensity: VisualDensity.comfortable,
-                    ),
-                    icon: const Icon(
-                      Icons.arrow_downward_rounded,
-                      size: 20,
-                    ),
+                    style: const ButtonStyle(visualDensity: .comfortable),
+                    icon: const Icon(Icons.arrow_downward_rounded, size: 20),
                     label: const Text('回到底部'),
-                    onPressed: () => liveRoomController
-                      ..disableAutoScroll.value = false
-                      ..jumpToBottom(),
+                    onPressed: liveRoomController.handleJumpToBottom,
                   ),
                 )
               : const SizedBox.shrink(),

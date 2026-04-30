@@ -75,7 +75,7 @@ class _DownloadSearchPageState
       },
       child: Text(
         '更新',
-        style: TextStyle(color: Get.theme.colorScheme.onSurface),
+        style: TextStyle(color: ColorScheme.of(context).onSurface),
       ),
     ),
   ];

@@ -30,11 +30,13 @@ import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/extension/context_ext.dart';
 import 'package:PiliPlus/utils/extension/size_ext.dart';
 import 'package:PiliPlus/utils/extension/string_ext.dart';
+import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
+import 'package:PiliPlus/utils/theme_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
@@ -344,6 +346,7 @@ abstract final class RequestUtils {
             clearCookie: true,
           );
           final isSuccess = res.isSuccess;
+          final theme = ThemeUtils.theme;
           final actions = [
             if (!isSuccess)
               TextButton(
@@ -354,7 +357,7 @@ abstract final class RequestUtils {
                     '/webview',
                     parameters: {
                       'url':
-                          'https://www.bilibili.com/h5/comment/appeal?${Utils.themeUrl(Get.isDarkMode)}',
+                          'https://www.bilibili.com/h5/comment/appeal?${ThemeUtils.themeUrl(theme.isDark)}',
                     },
                   );
                 },
@@ -365,7 +368,7 @@ abstract final class RequestUtils {
                 onPressed: Get.back,
                 child: Text(
                   '关闭',
-                  style: TextStyle(color: Get.theme.colorScheme.outline),
+                  style: TextStyle(color: theme.colorScheme.outline),
                 ),
               ),
           ];

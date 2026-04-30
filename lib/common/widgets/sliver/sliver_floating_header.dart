@@ -20,13 +20,78 @@ import 'dart:math' as math;
 import 'package:flutter/foundation.dart' show clampDouble;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart'
-    show RenderSliverSingleBoxAdapter, SliverGeometry;
+    show RenderSliverSingleBoxAdapter, SliverGeometry, ScrollDirection;
 
 /// ref [SliverFloatingHeader]
 
-class SliverFloatingHeaderWidget extends SingleChildRenderObjectWidget {
+class SliverFloatingHeaderWidget extends StatelessWidget {
   const SliverFloatingHeaderWidget({
     super.key,
+    required this.child,
+    required this.backgroundColor,
+  });
+
+  final Widget child;
+  final Color backgroundColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return _SliverFloatingHeaderWidget(
+      backgroundColor: backgroundColor,
+      child: _SliverFloatingHeaderScroll(child: child),
+    );
+  }
+}
+
+class _SliverFloatingHeaderScroll extends StatefulWidget {
+  const _SliverFloatingHeaderScroll({required this.child});
+
+  final Widget child;
+
+  @override
+  State<_SliverFloatingHeaderScroll> createState() =>
+      _SliverFloatingHeaderScrollState();
+}
+
+class _SliverFloatingHeaderScrollState
+    extends State<_SliverFloatingHeaderScroll> {
+  ScrollPosition? _position;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_position != null) {
+      _position!.isScrollingNotifier.removeListener(_isScrollingListener);
+    }
+    _position = Scrollable.maybeOf(context)?.position;
+    if (_position != null) {
+      _position!.isScrollingNotifier.addListener(_isScrollingListener);
+    }
+  }
+
+  @override
+  void dispose() {
+    if (_position != null) {
+      _position!.isScrollingNotifier.removeListener(_isScrollingListener);
+    }
+    super.dispose();
+  }
+
+  void _isScrollingListener() {
+    assert(_position != null);
+    if (_position!.isScrollingNotifier.value) {
+      final RenderSliverFloatingHeader? renderer = context
+          .findAncestorRenderObjectOfType<RenderSliverFloatingHeader>();
+      renderer?.updateScrollStartDirection(_position!.userScrollDirection);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
+}
+
+class _SliverFloatingHeaderWidget extends SingleChildRenderObjectWidget {
+  const _SliverFloatingHeaderWidget({
     required Widget super.child,
     required this.backgroundColor,
   });
@@ -70,6 +135,12 @@ class RenderSliverFloatingHeader extends RenderSliverSingleBoxAdapter {
             effectiveScrollOffset < child!.size.height);
   }
 
+  ScrollDirection? _lastStartedScrollDirection;
+
+  void updateScrollStartDirection(ScrollDirection direction) {
+    _lastStartedScrollDirection = direction;
+  }
+
   @override
   void performLayout() {
     if (!floatingHeaderNeedsToBeUpdated) {
@@ -78,7 +149,8 @@ class RenderSliverFloatingHeader extends RenderSliverSingleBoxAdapter {
       double delta =
           lastScrollOffset! -
           constraints.scrollOffset; // > 0 when the header is growing
-      if (constraints.userScrollDirection == .forward) {
+      if (constraints.userScrollDirection == .forward ||
+          _lastStartedScrollDirection == .forward) {
         final childExtent = child!.size.height;
         if (effectiveScrollOffset > childExtent) {
           effectiveScrollOffset =

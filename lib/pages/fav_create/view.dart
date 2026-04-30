@@ -5,9 +5,9 @@ import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
 import 'package:PiliPlus/http/fav.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/msg.dart';
+import 'package:PiliPlus/utils/bili_utils.dart';
 import 'package:PiliPlus/utils/extension/file_ext.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
-import 'package:PiliPlus/utils/fav_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:easy_debounce/easy_throttle.dart';
 import 'package:flutter/material.dart';
@@ -51,7 +51,7 @@ class _CreateFavPageState extends State<CreateFavPage> {
       if (res case Success(:final response)) {
         _titleController.text = response.title;
         _introController.text = response.intro ?? '';
-        _isPublic = FavUtils.isPublicFav(response.attr);
+        _isPublic = BiliUtils.isPublicFav(response.attr);
         _cover = response.cover;
         _attr = response.attr;
       } else {
@@ -90,8 +90,10 @@ class _CreateFavPageState extends State<CreateFavPage> {
                 intro: _introController.text,
               ).then((res) {
                 if (res case Success(:final response)) {
-                  Get.back(result: response);
                   SmartDialog.showToast('${_mediaId != null ? '编辑' : '创建'}成功');
+                  if (mounted) {
+                    Get.back(result: response);
+                  }
                 } else {
                   res.toast();
                 }
@@ -128,7 +130,7 @@ class _CreateFavPageState extends State<CreateFavPage> {
                 toolbarTitle: '裁剪',
                 toolbarColor: theme.colorScheme.secondaryContainer,
                 toolbarWidgetColor: theme.colorScheme.onSecondaryContainer,
-                statusBarLight: theme.colorScheme.isLight,
+                statusBarLight: theme.isLight,
                 aspectRatioPresets: [CropAspectRatioPreset.ratio16x9],
                 lockAspectRatio: true,
                 hideBottomControls: true,
@@ -178,7 +180,7 @@ class _CreateFavPageState extends State<CreateFavPage> {
     child: Column(
       spacing: 12,
       children: [
-        if (_attr == null || !FavUtils.isDefaultFav(_attr!))
+        if (_attr == null || !BiliUtils.isDefaultFav(_attr!))
           Builder(
             builder: (context) {
               return ListTile(
@@ -287,11 +289,11 @@ class _CreateFavPageState extends State<CreateFavPage> {
               Expanded(
                 child: TextField(
                   autofocus: true,
-                  readOnly: _attr != null && FavUtils.isDefaultFav(_attr!),
+                  readOnly: _attr != null && BiliUtils.isDefaultFav(_attr!),
                   controller: _titleController,
                   style: TextStyle(
                     fontSize: 14,
-                    color: _attr != null && FavUtils.isDefaultFav(_attr!)
+                    color: _attr != null && BiliUtils.isDefaultFav(_attr!)
                         ? theme.colorScheme.outline
                         : null,
                   ),
@@ -316,7 +318,7 @@ class _CreateFavPageState extends State<CreateFavPage> {
             ],
           ),
         ),
-        if (_attr == null || !FavUtils.isDefaultFav(_attr!))
+        if (_attr == null || !BiliUtils.isDefaultFav(_attr!))
           ListTile(
             tileColor: theme.colorScheme.onInverseSurface,
             title: Row(

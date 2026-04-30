@@ -154,7 +154,7 @@ class _PgcReviewPageState extends State<PgcReviewPage>
                           '/webview',
                           parameters: {
                             'url':
-                                'https://member.bilibili.com/article-text/mobile?theme=${theme.brightness.isDark ? 1 : 0}&media_id=${widget.mediaId}',
+                                'https://member.bilibili.com/article-text/mobile?theme=${theme.isDark ? 1 : 0}&media_id=${widget.mediaId}',
                           },
                         ),
                     ),

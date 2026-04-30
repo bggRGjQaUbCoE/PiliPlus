@@ -19,7 +19,7 @@ import 'package:PiliPlus/utils/extension/get_ext.dart';
 import 'package:PiliPlus/utils/grid.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:PiliPlus/utils/request_utils.dart';
-import 'package:PiliPlus/utils/utils.dart';
+import 'package:PiliPlus/utils/share_utils.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -427,7 +427,7 @@ class _DynamicDetailPageState extends CommonDynPageState<DynamicDetailPage> {
                     icon: CustomIcons.share_node,
                     text: '分享',
                     stat: null,
-                    onPressed: (_) => Utils.shareText(
+                    onPressed: (_) => ShareUtils.shareText(
                       '${HttpString.dynamicShareBaseUrl}/${controller.dynItem.idStr}',
                     ),
                   ),

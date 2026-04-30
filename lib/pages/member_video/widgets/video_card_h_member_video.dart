@@ -11,9 +11,9 @@ import 'package:PiliPlus/models/common/stat_type.dart';
 import 'package:PiliPlus/models_new/space/space_archive/item.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/duration_utils.dart';
+import 'package:PiliPlus/utils/extension/dimension_ext.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
-import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart' hide LayoutBuilder;
 
 // 视频卡片 - 水平布局
@@ -64,7 +64,7 @@ class VideoCardHMemberVideo extends StatelessWidget {
                   }
                   bool isVertical = false;
                   if (videoItem.uri case final uri?) {
-                    isVertical = Utils.getDimensionFromUri(uri);
+                    isVertical = uri.isVerticalFromUri;
                   }
                   PageUtils.toVideoPage(
                     bvid: videoItem.bvid,

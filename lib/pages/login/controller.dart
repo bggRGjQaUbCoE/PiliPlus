@@ -13,6 +13,7 @@ import 'package:PiliPlus/pages/login/geetest/geetest_webview_dialog.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/accounts/account.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
+import 'package:PiliPlus/utils/theme_utils.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
@@ -439,7 +440,7 @@ class LoginPageController extends GetxController
                 onPressed: Get.back,
                 child: Text(
                   "取消",
-                  style: TextStyle(color: Get.theme.colorScheme.outline),
+                  style: TextStyle(color: ThemeUtils.theme.colorScheme.outline),
                 ),
               ),
               TextButton(

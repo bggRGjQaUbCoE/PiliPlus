@@ -1,3 +1,4 @@
+import 'package:PiliPlus/models/horizontal_video_model.dart';
 import 'package:PiliPlus/models/model_avatar.dart';
 import 'package:PiliPlus/models/model_owner.dart';
 import 'package:PiliPlus/models/model_video.dart';
@@ -64,18 +65,16 @@ class SearchVideoData extends SearchNumData<SearchVideoItemModel> {
   }
 }
 
-class SearchVideoItemModel extends BaseVideoItemModel {
-  String? type;
+class SearchVideoItemModel extends HorizontalVideoModel {
   int? id;
   String? arcurl;
   String? tag;
   int? ctime;
-  int? isUnionVideo;
 
-  List<({bool isEm, String text})>? titleList;
+  @override
+  int? get seasonId => aid;
 
   SearchVideoItemModel.fromJson(Map<String, dynamic> json) {
-    type = json['type'];
     id = json['id'];
     arcurl = json['arcurl'];
     aid = json['aid'];
@@ -89,7 +88,19 @@ class SearchVideoItemModel extends BaseVideoItemModel {
     duration = DurationUtils.parseDuration(json['duration']);
     owner = SearchOwner.fromJson(json);
     stat = SearchStat.fromJson(json);
-    isUnionVideo = json['is_union_video'];
+    switch (json['type']) {
+      case 'ketang':
+        badge = '课堂';
+        isPugv = true;
+      case 'live_room':
+        badge = '直播';
+        isLive = true;
+        roomId = json['roomid'];
+      default:
+        if (json['is_union_video'] == 1) {
+          badge = '合作';
+        }
+    }
   }
 }
 

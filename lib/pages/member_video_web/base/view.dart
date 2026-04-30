@@ -7,7 +7,7 @@ import 'package:PiliPlus/common/widgets/sliver/sliver_pinned_header.dart';
 import 'package:PiliPlus/common/widgets/video_card/video_card_h.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/enum_with_label.dart';
-import 'package:PiliPlus/models/model_video.dart';
+import 'package:PiliPlus/models/horizontal_video_model.dart';
 import 'package:PiliPlus/pages/member_video_web/base/controller.dart';
 import 'package:PiliPlus/pages/search/widgets/search_text.dart';
 import 'package:PiliPlus/utils/grid.dart';
@@ -19,7 +19,7 @@ import 'package:get/get.dart';
 abstract class BaseVideoWebState<
   S extends StatefulWidget,
   R,
-  T extends BaseVideoItemModel,
+  T extends HorizontalVideoModel,
   V extends EnumWithLabel
 >
     extends State<S>

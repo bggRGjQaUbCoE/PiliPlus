@@ -260,7 +260,7 @@ class DynamicPanel extends StatelessWidget {
       padding: const .symmetric(horizontal: 8, vertical: 6),
       decoration: BoxDecoration(
         color: theme.colorScheme.secondaryContainer.withValues(
-          alpha: theme.brightness.isLight ? 0.5 : 0.7,
+          alpha: theme.isLight ? 0.5 : 0.7,
         ),
         borderRadius: const BorderRadius.all(Radius.circular(6)),
       ),

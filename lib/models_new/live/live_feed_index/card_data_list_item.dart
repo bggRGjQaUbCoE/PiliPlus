@@ -27,7 +27,7 @@ class CardLiveItem {
     this.areaV2Id,
     this.areaV2ParentId,
     this.watchedShow,
-  }) : _systemCover = noneNullOrEmptyString(systemCover);
+  }) : _systemCover = nonNullOrEmptyString(systemCover);
 
   factory CardLiveItem.fromJson(Map<String, dynamic> json) => CardLiveItem(
     roomid: json['roomid'] ?? json['id'],

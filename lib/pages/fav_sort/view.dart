@@ -1,8 +1,10 @@
+import 'package:PiliPlus/common/widgets/reorder_mixin.dart';
 import 'package:PiliPlus/http/fav.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models_new/fav/fav_detail/media.dart';
 import 'package:PiliPlus/pages/fav_detail/controller.dart';
 import 'package:PiliPlus/pages/fav_detail/widget/fav_video_card.dart';
+import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -16,10 +18,9 @@ class FavSortPage extends StatefulWidget {
   State<FavSortPage> createState() => _FavSortPageState();
 }
 
-class _FavSortPageState extends State<FavSortPage> {
+class _FavSortPageState extends State<FavSortPage> with ReorderMixin {
   FavDetailController get _favDetailController => widget.favDetailController;
 
-  final GlobalKey _key = GlobalKey();
   late List<FavDetailItemModel> sortList = List<FavDetailItemModel>.from(
     _favDetailController.loadingState.value.data!,
   );
@@ -51,22 +52,25 @@ class _FavSortPageState extends State<FavSortPage> {
         title: Text('排序: ${_favDetailController.folderInfo.value.title}'),
         actions: [
           TextButton(
-            onPressed: () async {
+            onPressed: () {
               if (sort.isEmpty) {
                 Get.back();
                 return;
               }
-              final res = await FavHttp.sortFav(
+              FavHttp.sortFav(
                 mediaId: _favDetailController.mediaId,
                 sort: sort.join(','),
-              );
-              if (res.isSuccess) {
-                SmartDialog.showToast('排序完成');
-                _favDetailController.loadingState.value = Success(sortList);
-                Get.back();
-              } else {
-                res.toast();
-              }
+              ).then((res) {
+                if (res.isSuccess) {
+                  SmartDialog.showToast('排序完成');
+                  _favDetailController.loadingState.value = Success(sortList);
+                  if (mounted) {
+                    Get.back();
+                  }
+                } else {
+                  res.toast();
+                }
+              });
             },
             child: const Text('完成'),
           ),
@@ -83,8 +87,8 @@ class _FavSortPageState extends State<FavSortPage> {
     }
 
     final oldItem = sortList[oldIndex];
-    final newItem = sortList.elementAtOrNull(
-      oldIndex > newIndex ? newIndex - 1 : newIndex,
+    final newItem = sortList.getOrNull(
+      oldIndex > newIndex ? newIndex - 1 : newIndex, // might be Negative
     );
     sort.add(
       '${newItem == null ? '0:0' : '${newItem.id}:${newItem.type}'}:${oldItem.id}:${oldItem.type}',
@@ -98,8 +102,8 @@ class _FavSortPageState extends State<FavSortPage> {
 
   Widget get _buildBody {
     final child = ReorderableListView.builder(
-      key: _key,
       onReorder: onReorder,
+      proxyDecorator: proxyDecorator,
       physics: const AlwaysScrollableScrollPhysics(),
       padding:
           MediaQuery.viewPaddingOf(context).copyWith(top: 0) +
@@ -108,7 +112,7 @@ class _FavSortPageState extends State<FavSortPage> {
       itemBuilder: (context, index) {
         final item = sortList[index];
         return SizedBox(
-          key: Key(item.id.toString()),
+          key: ValueKey(item.id),
           height: 98,
           child: FavVideoCardH(item: item),
         );

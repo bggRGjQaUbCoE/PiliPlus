@@ -9,6 +9,7 @@ import 'package:PiliPlus/models/common/live/live_contribution_rank_type.dart';
 import 'package:PiliPlus/models_new/live/live_contribution_rank/item.dart';
 import 'package:PiliPlus/pages/live_room/contribution_rank/controller.dart';
 import 'package:PiliPlus/pages/member/widget/medal_widget.dart';
+import 'package:PiliPlus/utils/color_utils.dart';
 import 'package:PiliPlus/utils/extension/scroll_controller_ext.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
@@ -228,7 +229,7 @@ class _Item extends StatelessWidget {
                   textScaler: .noScaling,
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    color: Utils.index2Color(index, colorScheme.outline),
+                    color: ColourUtils.index2Color(index, colorScheme.outline),
                     fontSize: 16,
                     fontStyle: FontStyle.italic,
                   ),

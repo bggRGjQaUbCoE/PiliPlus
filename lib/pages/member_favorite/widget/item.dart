@@ -5,7 +5,7 @@ import 'package:PiliPlus/common/widgets/image/image_save.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/models_new/space/space_fav/list.dart';
 import 'package:PiliPlus/pages/subscription_detail/view.dart';
-import 'package:PiliPlus/utils/fav_utils.dart';
+import 'package:PiliPlus/utils/bili_utils.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
@@ -101,7 +101,7 @@ class MemberFavItem extends StatelessWidget {
                     const Spacer(),
                     Text(
                       item.type == 0
-                          ? '${item.mediaCount}个内容 · ${FavUtils.isPublicFavText(item.attr)}'
+                          ? '${item.mediaCount}个内容 · ${BiliUtils.isPublicFavText(item.attr)}'
                           : item.type == 11
                           ? '${item.mediaCount}个内容 · ${item.upper?.name}'
                           : item.type == 21

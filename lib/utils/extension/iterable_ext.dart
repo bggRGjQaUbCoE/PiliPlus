@@ -66,4 +66,9 @@ extension ListExt<T> on List<T> {
     }
     return min;
   }
+
+  T? getOrNull(int index) {
+    if (index < 0 || index >= length) return null;
+    return elementAt(index);
+  }
 }

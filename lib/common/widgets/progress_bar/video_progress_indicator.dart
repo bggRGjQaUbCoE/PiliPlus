@@ -25,7 +25,7 @@ class VideoProgressIndicator extends LeafRenderObjectWidget {
     this.radius = 10,
     this.height = 4,
     required this.progress,
-  }) : assert(progress >= 0 && progress <= 1);
+  });
 
   final Color color;
   final Color backgroundColor;
@@ -136,9 +136,9 @@ class RenderProgressBar extends RenderBox {
       bottomRight: radius,
     );
 
-    if (progress == 0) {
+    if (progress <= 0) {
       canvas.drawRRect(rrect, paint..color = _backgroundColor);
-    } else if (progress == 1) {
+    } else if (progress >= 1) {
       canvas.drawRRect(rrect, paint..color = _color);
     } else {
       final w = size.width * progress;

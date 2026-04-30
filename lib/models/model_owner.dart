@@ -1,5 +1,5 @@
 import 'package:PiliPlus/models/model_video.dart';
-import 'package:PiliPlus/utils/utils.dart';
+import 'package:PiliPlus/utils/parse_int.dart';
 import 'package:hive_ce/hive.dart';
 
 part 'model_owner.g.dart';
@@ -21,7 +21,7 @@ class Owner implements BaseOwner {
   String? face;
 
   Owner.fromJson(Map<String, dynamic> json) {
-    mid = Utils.safeToInt(json["mid"]);
+    mid = safeToInt(json["mid"]);
     name = json["name"];
     face = json['face'];
   }

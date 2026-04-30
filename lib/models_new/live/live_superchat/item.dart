@@ -1,6 +1,7 @@
 import 'package:PiliPlus/models_new/live/live_medal_wall/uinfo_medal.dart';
 import 'package:PiliPlus/models_new/live/live_superchat/user_info.dart';
 import 'package:PiliPlus/utils/global_data.dart';
+import 'package:PiliPlus/utils/parse_int.dart';
 import 'package:PiliPlus/utils/parse_string.dart';
 import 'package:PiliPlus/utils/utils.dart';
 
@@ -64,18 +65,18 @@ class SuperChatItem {
   });
 
   factory SuperChatItem.fromJson(Map<String, dynamic> json) => SuperChatItem(
-    id: Utils.safeToInt(json['id']) ?? Utils.random.nextInt(2147483647),
-    uid: Utils.safeToInt(json['uid'])!,
+    id: safeToInt(json['id']) ?? Utils.random.nextInt(2147483647),
+    uid: safeToInt(json['uid'])!,
     price: json['price'],
-    backgroundImage: noneNullOrEmptyString(json['background_image']),
+    backgroundImage: nonNullOrEmptyString(json['background_image']),
     backgroundColor: json['background_color'] ?? '#EDF5FF',
     backgroundBottomColor: json['background_bottom_color'] ?? '#2A60B2',
     backgroundPriceColor: json['background_price_color'] ?? '#7497CD',
     messageFontColor: json['message_font_color'] ?? '#FFFFFF',
-    endTime: Utils.safeToInt(json['end_time'])!,
+    endTime: safeToInt(json['end_time'])!,
     message: json['message'],
     token: json['token'],
-    ts: Utils.safeToInt(json['ts'])!,
+    ts: safeToInt(json['ts'])!,
     userInfo: UserInfo.fromJson(json['user_info'] as Map<String, dynamic>),
     medalInfo: !GlobalData().showMedal || json['uinfo']?['medal'] == null
         ? null

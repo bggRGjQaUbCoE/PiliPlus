@@ -24,6 +24,8 @@ import 'package:PiliPlus/pages/member_guard/view.dart';
 import 'package:PiliPlus/pages/member_upower_rank/view.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
+import 'package:PiliPlus/utils/bili_utils.dart';
+import 'package:PiliPlus/utils/color_utils.dart';
 import 'package:PiliPlus/utils/extension/context_ext.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/string_ext.dart';
@@ -165,8 +167,8 @@ class UserInfoCard extends StatelessWidget {
       Color? nameColor;
       Color? backgroundColor;
       try {
-        nameColor = Utils.parseColor(detailV2.medalColorName!);
-        backgroundColor = Utils.parseColor(detailV2.medalColor!);
+        nameColor = ColourUtils.parseColor(detailV2.medalColorName!);
+        backgroundColor = ColourUtils.parseColor(detailV2.medalColor!);
       } catch (e, s) {
         if (kDebugMode) {
           Utils.reportError(e, s);
@@ -216,7 +218,7 @@ class UserInfoCard extends StatelessWidget {
             ),
           ),
           Image.asset(
-            Utils.levelName(
+            BiliUtils.levelName(
               card.levelInfo!.currentLevel!,
               isSeniorMember: card.levelInfo?.identity == 2,
             ),
@@ -714,7 +716,7 @@ class UserInfoCard extends StatelessWidget {
     bool isLight,
     SpacePrInfo prInfo,
   ) {
-    final textColor = Utils.parseColor(
+    final textColor = ColourUtils.parseColor(
       isLight ? prInfo.textColor : prInfo.textColorNight,
     );
     String? icon = !isLight && prInfo.iconNight?.isNotEmpty == true
@@ -726,7 +728,9 @@ class UserInfoCard extends StatelessWidget {
     Widget child = Container(
       margin: const .only(top: 8),
       padding: const .symmetric(horizontal: 16, vertical: 10),
-      color: Utils.parseColor(isLight ? prInfo.bgColor : prInfo.bgColorNight),
+      color: ColourUtils.parseColor(
+        isLight ? prInfo.bgColor : prInfo.bgColorNight,
+      ),
       child: Row(
         children: [
           if (icon != null) ...[
@@ -1055,7 +1059,7 @@ class _HeaderTitleState extends State<HeaderTitle> {
                 fontSize: 12,
                 fontFamily: Assets.digitalNum,
                 color: title.subTitleColorFormat?.colors?.isNotEmpty == true
-                    ? Utils.parseMedalColor(
+                    ? ColourUtils.parseMedalColor(
                         title.subTitleColorFormat!.colors!.last,
                       )
                     : Colors.white,

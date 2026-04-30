@@ -19,6 +19,7 @@ import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
+import 'package:PiliPlus/utils/share_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
@@ -90,7 +91,7 @@ class _SavePanelState extends State<SavePanel> {
       final currentRoute = Get.currentRoute;
       late final hasRoot = reply.hasRoot();
 
-      if (currentRoute.startsWith('/video')) {
+      if (currentRoute == '/videoV') {
         final rootId = hasRoot ? reply.root : reply.id;
 
         uri =
@@ -312,7 +313,7 @@ class _SavePanelState extends State<SavePanel> {
                 mimeType: 'image/png',
               ),
             ],
-            sharePositionOrigin: await Utils.sharePositionOrigin,
+            sharePositionOrigin: await ShareUtils.sharePositionOrigin,
           ),
         );
       } else {
@@ -490,7 +491,7 @@ class _SavePanelState extends State<SavePanel> {
                                             height: 88,
                                             margin: const .all(12),
                                             padding: const .all(3),
-                                            color: theme.brightness.isDark
+                                            color: theme.isDark
                                                 ? Colors.white
                                                 : theme.colorScheme.surface,
                                             child: PrettyQrView.data(

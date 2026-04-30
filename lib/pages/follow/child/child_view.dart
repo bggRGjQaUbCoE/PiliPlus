@@ -38,15 +38,38 @@ class FollowChildPage extends StatefulWidget {
 
 class _FollowChildPageState extends State<FollowChildPage>
     with AutomaticKeepAliveClientMixin {
-  late final FollowChildController _followController;
+  late String _tag;
+  late FollowChildController _followController;
+
+  String get _newTag =>
+      '${widget.tag ?? Utils.generateRandomString(8)}${widget.tagid}';
 
   @override
   void initState() {
     super.initState();
+    _initController();
+  }
+
+  void _initController() {
+    _tag = _newTag;
     _followController = Get.put(
       FollowChildController(widget.controller, widget.mid, widget.tagid),
-      tag: '${widget.tag ?? Utils.generateRandomString(8)}${widget.tagid}',
+      tag: _tag,
     );
+  }
+
+  @override
+  void didUpdateWidget(FollowChildPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.tagid != widget.tagid) {
+      final newTag = _newTag;
+      if (Get.isRegistered<FollowChildController>(tag: newTag)) {
+        _followController = Get.find<FollowChildController>(tag: newTag);
+      } else {
+        Get.delete<FollowChildController>(tag: _tag);
+        _initController();
+      }
+    }
   }
 
   @override

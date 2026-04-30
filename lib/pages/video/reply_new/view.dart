@@ -11,7 +11,6 @@ import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
     show ReplyInfo;
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/video.dart';
-import 'package:PiliPlus/main.dart';
 import 'package:PiliPlus/models/common/publish_panel_type.dart';
 import 'package:PiliPlus/models/dynamics/result.dart' show FilePicModel;
 import 'package:PiliPlus/pages/common/publish/common_rich_text_pub_page.dart';
@@ -25,6 +24,7 @@ import 'package:PiliPlus/utils/extension/context_ext.dart';
 import 'package:PiliPlus/utils/grid.dart';
 import 'package:PiliPlus/utils/path_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
+import 'package:PiliPlus/utils/theme_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart' hide TextField;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -72,13 +72,11 @@ class _ReplyPageState extends CommonRichTextPubPageState<ReplyPage> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    themeData = darkVideoPage
-        ? MyApp.darkThemeData ?? Theme.of(context)
-        : Theme.of(context);
+    themeData = darkVideoPage ? ThemeUtils.darkTheme : Theme.of(context);
   }
 
   late final darkVideoPage =
-      Get.currentRoute.startsWith('/video') && Pref.darkVideoPage;
+      Get.currentRoute == '/videoV' && Pref.darkVideoPage;
   late ThemeData themeData;
 
   @override

@@ -10,10 +10,10 @@ import 'package:PiliPlus/models_new/space/space_archive/data.dart';
 import 'package:PiliPlus/models_new/space/space_archive/episodic_button.dart';
 import 'package:PiliPlus/models_new/space/space_archive/item.dart';
 import 'package:PiliPlus/pages/common/common_list_controller.dart';
+import 'package:PiliPlus/utils/extension/dimension_ext.dart';
 import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
-import 'package:PiliPlus/utils/utils.dart';
 import 'package:get/get.dart';
 
 class MemberVideoCtr
@@ -195,7 +195,7 @@ class MemberVideoCtr
               : desc;
           bool isVertical = false;
           if (element.uri case final uri?) {
-            isVertical = Utils.getDimensionFromUri(uri);
+            isVertical = uri.isVerticalFromUri;
           }
           PageUtils.toVideoPage(
             bvid: element.bvid,

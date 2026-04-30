@@ -1,0 +1,87 @@
+diff --git a/packages/flutter/lib/src/cupertino/route.dart b/packages/flutter/lib/src/cupertino/route.dart
+index 5ce4479480e..0e6387596c5 100644
+--- a/packages/flutter/lib/src/cupertino/route.dart
++++ b/packages/flutter/lib/src/cupertino/route.dart
+@@ -883,7 +883,7 @@ class _CupertinoBackGestureController<T> {
+     } else {
+       if (isCurrent) {
+         // This route is destined to pop at this point. Reuse navigator's pop.
+-        navigator.pop();
++        navigator.pop(gesturePop);
+       }
+ 
+       // The popping may have finished inline if already at the target destination.
+diff --git a/packages/flutter/lib/src/material/scaffold.dart b/packages/flutter/lib/src/material/scaffold.dart
+index d121d10f1d6..92fa155c168 100644
+--- a/packages/flutter/lib/src/material/scaffold.dart
++++ b/packages/flutter/lib/src/material/scaffold.dart
+@@ -2521,6 +2521,7 @@ class ScaffoldState extends State<Scaffold>
+     final LocalHistoryEntry? entry = isPersistent
+         ? null
+         : LocalHistoryEntry(
++            popGestureEnabled: true,
+             onRemove: () {
+               if (!removedEntry && _currentBottomSheet?._widget == bottomSheet && !doingDispose) {
+                 removeCurrentBottomSheet();
+diff --git a/packages/flutter/lib/src/widgets/routes.dart b/packages/flutter/lib/src/widgets/routes.dart
+index 5c4a8982617..d3fa530e250 100644
+--- a/packages/flutter/lib/src/widgets/routes.dart
++++ b/packages/flutter/lib/src/widgets/routes.dart
+@@ -709,7 +709,11 @@ class LocalHistoryEntry {
+   /// Creates an entry in the history of a [LocalHistoryRoute].
+   ///
+   /// The [impliesAppBarDismissal] defaults to true if not provided.
+-  LocalHistoryEntry({this.onRemove, this.impliesAppBarDismissal = true});
++  LocalHistoryEntry({
++    this.onRemove,
++    this.impliesAppBarDismissal = true,
++    this.popGestureEnabled = false,
++  });
+ 
+   /// Called when this entry is removed from the history of its associated [LocalHistoryRoute].
+   final VoidCallback? onRemove;
+@@ -722,6 +726,8 @@ class LocalHistoryEntry {
+   /// Defaults to true.
+   final bool impliesAppBarDismissal;
+ 
++  final bool popGestureEnabled;
++
+   /// Remove this entry from the history of its associated [LocalHistoryRoute].
+   void remove() {
+     _owner?.removeLocalHistoryEntry(this);
+@@ -949,6 +955,14 @@ mixin LocalHistoryRoute<T> on Route<T> {
+   @override
+   bool didPop(T? result) {
+     if (_localHistory != null && _localHistory!.isNotEmpty) {
++      if (result == gesturePop) {
++        for (var e in _localHistory!) {
++          e._owner = null;
++        }
++        _localHistory!.clear();
++        _localHistory = null;
++        return super.didPop(result);
++      }
+       final LocalHistoryEntry entry = _localHistory!.removeLast();
+       assert(entry._owner == this);
+       entry._owner = null;
+@@ -968,7 +982,9 @@ mixin LocalHistoryRoute<T> on Route<T> {
+ 
+   @override
+   bool get willHandlePopInternally {
+-    return _localHistory != null && _localHistory!.isNotEmpty;
++    return _localHistory != null &&
++        _localHistory!.isNotEmpty &&
++        !_localHistory!.last.popGestureEnabled;
+   }
+ }
+ 
+@@ -2839,3 +2855,9 @@ abstract class PopEntry<T> {
+     return 'PopEntry canPop: ${canPopNotifier.value}, onPopInvoked: $onPopInvokedWithResult';
+   }
+ }
++
++class _GesturePop {
++  const _GesturePop();
++}
++
++const Object gesturePop = _GesturePop();

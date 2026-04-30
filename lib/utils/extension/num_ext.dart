@@ -1,6 +1,6 @@
 import 'dart:math' show pow;
 
-import 'package:flutter/widgets.dart';
+import 'package:flutter/widgets.dart' show BuildContext, MediaQuery;
 
 extension ImageExtension on num {
   int? cacheSize(BuildContext context) {

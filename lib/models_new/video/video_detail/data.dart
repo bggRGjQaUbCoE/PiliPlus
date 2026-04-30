@@ -103,6 +103,6 @@ class VideoDetailData {
         staff: (json["staff"] as List?)
             ?.map((item) => Staff.fromJson(item))
             .toList(),
-        redirectUrl: noneNullOrEmptyString(json['redirect_url']),
+        redirectUrl: nonNullOrEmptyString(json['redirect_url']),
       );
 }

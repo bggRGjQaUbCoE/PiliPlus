@@ -116,8 +116,10 @@ jobs:
 
             - name: Rename
               run: |
-                  for file in build/app/outputs/flutter-apk/app-mobile-*-release.apk; do
-                    abi=$(echo "$file" | sed -E 's|.*app-mobile-(.*)-release\.apk|\1|')
+                  ls -la build/app/outputs/flutter-apk/ || true
+                  for file in build/app/outputs/flutter-apk/app-*-release.apk; do
+                    [ -f "$file" ] || continue
+                    abi=$(echo "$file" | sed -E 's|.*/app-(mobile-)?(.*)-release\.apk|\2|')
                     mv "$file" "PiliPlus_android_${{ env.version }}_${abi}.apk"
                   done
               shell: bash

@@ -32,6 +32,17 @@ android {
         versionName = flutter.versionName
     }
 
+    flavorDimensions += "device"
+
+    productFlavors {
+        create("mobile") {
+            dimension = "device"
+        }
+        create("tv") {
+            dimension = "device"
+        }
+    }
+
     packagingOptions.jniLibs.useLegacyPackaging = true
 
     val keyProperties = Properties().also {

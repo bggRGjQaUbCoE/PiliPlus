@@ -41,6 +41,12 @@ on:
                 default: true
                 type: boolean
 
+            build_android_tv:
+                description: "Build Android TV"
+                required: false
+                default: true
+                type: boolean
+
             tag:
                 description: "tag"
                 required: false
@@ -101,17 +107,17 @@ jobs:
 
             - name: Flutter Build Release Apk
               if: ${{ github.event_name == 'workflow_dispatch' }}
-              run: flutter build apk --release --split-per-abi --dart-define-from-file=pili_release.json --pub
+              run: flutter build apk --flavor mobile --release --split-per-abi --dart-define-from-file=pili_release.json --pub
 
             - name: Flutter Build Dev Apk
               if: ${{ github.event_name == 'pull_request' }}
               run: |
-                flutter build apk --release --split-per-abi --android-project-arg dev=1 --pub
+                flutter build apk --flavor mobile --release --split-per-abi --android-project-arg dev=1 --pub
 
             - name: Rename
               run: |
-                  for file in build/app/outputs/flutter-apk/app-*-release.apk; do
-                    abi=$(echo "$file" | sed -E 's|.*app-(.*)-release\.apk|\1|')
+                  for file in build/app/outputs/flutter-apk/app-mobile-*-release.apk; do
+                    abi=$(echo "$file" | sed -E 's|.*app-mobile-(.*)-release\.apk|\1|')
                     mv "$file" "PiliPlus_android_${{ env.version }}_${abi}.apk"
                   done
               shell: bash
@@ -144,6 +150,82 @@ jobs:
                   archive: false
                   name: Android_x86_64
                   path: PiliPlus_android_*_x86_64.apk
+
+    android-tv:
+        if: ${{ github.event.inputs.build_android_tv == 'true' }}
+        name: Release Android TV
+        runs-on: ubuntu-latest
+        permissions: write-all
+
+        steps:
+            - name: 代码迁出
+              uses: actions/checkout@v6
+              with:
+                  fetch-depth: 0
+
+            - name: 构建Java环境
+              uses: actions/setup-java@v5
+              with:
+                  distribution: "zulu"
+                  java-version: "17"
+                  cache: "gradle"
+                  cache-dependency-path: |
+                      android/*.gradle*
+                      android/**/gradle-wrapper.properties
+
+            - name: 安装Flutter
+              uses: subosito/flutter-action@v2
+              id: flutter-action
+              with:
+                  channel: stable
+                  flutter-version-file: pubspec.yaml
+                  cache: true
+
+            - name: Apply Patch
+              shell: pwsh
+              run: lib/scripts/patch.ps1 android
+              continue-on-error: true
+
+            - name: Write key
+              run: |
+                  if [ ! -z "${{ secrets.SIGN_KEYSTORE_BASE64 }}" ]; then
+                    echo "${{ secrets.SIGN_KEYSTORE_BASE64 }}" | base64 --decode > android/app/key.jks
+                    echo storeFile='key.jks' >> android/key.properties
+                    echo storePassword='${{ secrets.KEYSTORE_PASSWORD }}' >> android/key.properties
+                    echo keyAlias='${{ secrets.KEY_ALIAS }}' >> android/key.properties
+                    echo keyPassword='${{ secrets.KEY_PASSWORD }}' >> android/key.properties
+                  fi
+
+            - name: Set and Extract version
+              shell: pwsh
+              run: lib/scripts/build.ps1 android
+
+            - name: Flutter Build TV Release Apk
+              if: ${{ github.event_name == 'workflow_dispatch' }}
+              run: flutter build apk --flavor tv -t lib/main_tv.dart --release --dart-define-from-file=pili_release.json --pub
+
+            - name: Flutter Build TV Dev Apk
+              if: ${{ github.event_name == 'pull_request' }}
+              run: flutter build apk --flavor tv -t lib/main_tv.dart --release --pub
+
+            - name: Rename
+              run: mv build/app/outputs/flutter-apk/app-tv-release.apk "PiliPlus_android_tv_${{ env.version }}.apk"
+              shell: bash
+
+            - name: Release
+              if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag != '' }}
+              uses: softprops/action-gh-release@v2
+              with:
+                  tag_name: ${{ github.event.inputs.tag }}
+                  name: ${{ github.event.inputs.tag }}
+                  files: PiliPlus_android_tv_*.apk
+
+            - name: 上传
+              uses: actions/upload-artifact@v7
+              with:
+                  archive: false
+                  name: Android_TV
+                  path: PiliPlus_android_tv_*.apk
 
     ios:
         if: ${{ (github.event_name == 'pull_request' && github.repository == 'bggRGjQaUbCoE/PiliPlus') || github.event.inputs.build_ios == 'true' }}

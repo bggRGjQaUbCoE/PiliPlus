@@ -7,4 +7,6 @@ abstract final class PlatformUtils {
   @pragma("vm:platform-const")
   static final bool isDesktop =
       Platform.isWindows || Platform.isMacOS || Platform.isLinux;
+
+  static bool isTV = false;
 }

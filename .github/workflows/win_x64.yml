@@ -20,6 +20,12 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Install yq
+        run: |
+          Invoke-WebRequest -Uri "https://github.com/mikefarah/yq/releases/latest/download/yq_windows_amd64.exe" -OutFile "$env:USERPROFILE\yq.exe"
+          Copy-Item "$env:USERPROFILE\yq.exe" "C:\ProgramData\chocolatey\bin\yq.exe"
+        shell: pwsh
+
       - name: Setup flutter
         uses: subosito/flutter-action@v2
         with:

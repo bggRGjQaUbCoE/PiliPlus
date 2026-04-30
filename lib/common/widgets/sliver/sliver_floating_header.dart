@@ -20,7 +20,7 @@ import 'dart:math' as math;
 import 'package:flutter/foundation.dart' show clampDouble;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart'
-    show RenderSliverSingleBoxAdapter, SliverGeometry;
+    show RenderSliverSingleBoxAdapter, SliverGeometry, ScrollDirection;
 
 /// ref [SliverFloatingHeader]
 
@@ -81,7 +81,9 @@ class _SliverFloatingHeaderScrollState
     assert(_position != null);
     final RenderSliverFloatingHeader? renderer = context
         .findAncestorRenderObjectOfType<RenderSliverFloatingHeader>();
-    renderer?.isScrollingUpdate(_position!);
+    if (_position!.isScrollingNotifier.value) {
+      renderer?.updateScrollStartDirection(_position!.userScrollDirection);
+    }
   }
 
   @override
@@ -133,6 +135,12 @@ class RenderSliverFloatingHeader extends RenderSliverSingleBoxAdapter {
             effectiveScrollOffset < child!.size.height);
   }
 
+  ScrollDirection? _lastStartedScrollDirection;
+
+  void updateScrollStartDirection(ScrollDirection direction) {
+    _lastStartedScrollDirection = direction;
+  }
+
   @override
   void performLayout() {
     if (!floatingHeaderNeedsToBeUpdated) {
@@ -141,7 +149,8 @@ class RenderSliverFloatingHeader extends RenderSliverSingleBoxAdapter {
       double delta =
           lastScrollOffset! -
           constraints.scrollOffset; // > 0 when the header is growing
-      if (constraints.userScrollDirection == .forward) {
+      if (constraints.userScrollDirection == .forward ||
+          _lastStartedScrollDirection == .forward) {
         final childExtent = child!.size.height;
         if (effectiveScrollOffset > childExtent) {
           effectiveScrollOffset =
@@ -217,24 +226,4 @@ class RenderSliverFloatingHeader extends RenderSliverSingleBoxAdapter {
     required double mainAxisPosition,
     required double crossAxisPosition,
   }) => true;
-
-  void isScrollingUpdate(ScrollPosition position) {
-    if (position.isScrollingNotifier.value) {
-      return;
-    }
-    final direction = position.userScrollDirection;
-    late final childExtent = child!.size.height;
-    final bool headerIsPartiallyVisible = switch (direction) {
-      .forward when effectiveScrollOffset <= 0 => false,
-      .reverse when effectiveScrollOffset >= childExtent => false,
-      _ => true,
-    };
-    if (headerIsPartiallyVisible) {
-      effectiveScrollOffset = switch (direction) {
-        .forward => 0,
-        _ => childExtent,
-      };
-      markNeedsLayout();
-    }
-  }
 }

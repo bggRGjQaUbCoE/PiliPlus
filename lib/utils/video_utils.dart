@@ -5,10 +5,25 @@ import 'package:flutter/foundation.dart' show kDebugMode, debugPrint;
 
 abstract final class VideoUtils {
   static CDNService cdnService = Pref.defaultCDNService;
+  static String? customCDNUrl = _readCustomCDNUrl();
   static String? liveCdnUrl = Pref.liveCdnUrl;
   static bool disableAudioCDN = Pref.disableAudioCDN;
 
   static const _proxyTf = 'proxy-tf-all-ws.bilivideo.com';
+
+  static const _replaceableCdnHostParts = [
+    'bilivideo',
+    'acgvideo',
+    'edge.mountaintoys.cn',
+    'akamaized.net',
+  ];
+
+  static const _apiHostParts = [
+    'api',
+    'bvc',
+    'data',
+    'pbp',
+  ];
 
   static final _mirrorRegex = RegExp(
     r'^https?://(?:upos-\w+-(?!302)\w+|(?:upos|proxy)-tf-[^/]+)\.(?:bilivideo|akamaized)\.(?:com|net)/upgcxcode',
@@ -21,9 +36,22 @@ abstract final class VideoUtils {
   static String getCdnUrl(
     Iterable<String> urls, {
     CDNService? defaultCDNService,
+    String? customCDNUrl,
     bool isAudio = false,
   }) {
     defaultCDNService ??= cdnService;
+    customCDNUrl = normalizeCustomCDNHost(
+      customCDNUrl ?? VideoUtils.customCDNUrl,
+    );
+
+    if (customCDNUrl != null && !(isAudio && disableAudioCDN)) {
+      for (final url in urls) {
+        final replaced = _replaceWithCustomCdn(url, customCDNUrl);
+        if (replaced != null) {
+          return replaced;
+        }
+      }
+    }
 
     if (defaultCDNService == CDNService.baseUrl) {
       return urls.first;
@@ -86,6 +114,66 @@ abstract final class VideoUtils {
         : Uri.parse(mcdnUpgcxcode)
               .replace(host: defaultCDNService.host ?? CDNService.ali.host)
               .toString();
+  }
+
+  static String? normalizeCustomCDNHost(String? value) {
+    final trimmed = value?.trim();
+    if (trimmed == null || trimmed.isEmpty) {
+      return null;
+    }
+
+    final uri = Uri.tryParse(trimmed);
+    if (uri == null) {
+      return null;
+    }
+
+    if (uri.hasScheme) {
+      return uri.host.isEmpty ? null : uri.host;
+    }
+
+    if (trimmed.contains('/') ||
+        trimmed.contains('?') ||
+        trimmed.contains('#')) {
+      return null;
+    }
+    return trimmed;
+  }
+
+  static String effectiveCdnDesc({
+    CDNService? service,
+    String? customCDNUrl,
+  }) {
+    final host = normalizeCustomCDNHost(
+      customCDNUrl ?? VideoUtils.customCDNUrl,
+    );
+    return host == null ? (service ?? cdnService).desc : '自定义：$host';
+  }
+
+  static String? _replaceWithCustomCdn(String url, String customHost) {
+    final uri = Uri.tryParse(url);
+    if (uri == null || uri.host.isEmpty) {
+      return null;
+    }
+    if (!_isReplaceableMediaHost(uri.host)) {
+      return null;
+    }
+    return uri.replace(host: customHost).toString();
+  }
+
+  static bool _isReplaceableMediaHost(String host) {
+    final lowerHost = host.toLowerCase();
+    if (_apiHostParts.any(lowerHost.contains)) {
+      return false;
+    }
+    return _replaceableCdnHostParts.any(lowerHost.contains);
+  }
+
+  static String? _readCustomCDNUrl() {
+    try {
+      return Pref.customCDNUrl;
+    } catch (_) {
+      return null;
+    }
   }
 
   static String getLiveCdnUrl(CodecItem e) {

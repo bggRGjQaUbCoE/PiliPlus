@@ -274,6 +274,11 @@ abstract final class Pref {
     return CDNService.backupUrl;
   }
 
+  static String? get customCDNUrl {
+    final value = _setting.get(SettingBoxKey.customCDNUrl);
+    return value is String && value.isNotEmpty ? value : null;
+  }
+
   static String get banWordForRecommend =>
       _setting.get(SettingBoxKey.banWordForRecommend, defaultValue: '');
 

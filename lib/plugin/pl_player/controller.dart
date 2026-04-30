@@ -1826,6 +1826,11 @@ class PlPlayerController with BlockConfigMixin {
       return;
     }
     if (isFullScreen.value) {
+      if (PlatformUtils.isTV) {
+        triggerFullScreen(status: false);
+        Get.back();
+        return;
+      }
       triggerFullScreen(status: false);
       return;
     }

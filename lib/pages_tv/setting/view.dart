@@ -18,6 +18,7 @@ class TVSettingPage extends StatefulWidget {
 
 class _TVSettingPageState extends State<TVSettingPage> {
   late final _enableDanmaku = Pref.enableShowDanmaku.obs;
+  late final _enableHA = Pref.enableHA.obs;
 
   @override
   Widget build(BuildContext context) {
@@ -66,6 +67,16 @@ class _TVSettingPageState extends State<TVSettingPage> {
               onChanged: (val) {
                 _enableDanmaku.value = val;
                 GStorage.setting.put(SettingBoxKey.enableShowDanmaku, val);
+              },
+            ),
+            _buildToggleItem(
+              icon: Icons.memory,
+              title: '硬件解码',
+              value: _enableHA,
+              onChanged: (val) {
+                _enableHA.value = val;
+                GStorage.setting.put(SettingBoxKey.enableHA, val);
+                SmartDialog.showToast('重启应用后生效');
               },
             ),
 

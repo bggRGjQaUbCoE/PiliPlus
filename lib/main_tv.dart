@@ -75,6 +75,10 @@ void main() async {
       statusBarColor: Colors.transparent,
     ),
   );
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.landscapeLeft,
+    DeviceOrientation.landscapeRight,
+  ]);
 
   if (Pref.dynamicColor) {
     await TVApp.initPlatformState();

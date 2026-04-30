@@ -3,6 +3,7 @@ import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/dynamic/dynamics_type.dart';
 import 'package:PiliPlus/pages_tv/common/tv_card.dart';
 import 'package:PiliPlus/pages_tv/common/tv_page.dart';
+import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -24,6 +25,7 @@ class _TVDynamicsPageState extends State<TVDynamicsPage> {
 
   Future<void> _loadData() async {
     final res = await DynamicsHttp.followDynamic(type: DynamicsTabType.video);
+    if (!mounted) return;
     if (res is Success) {
       final data = res.data;
       final items = data.items;
@@ -68,20 +70,7 @@ class _TVDynamicsPageState extends State<TVDynamicsPage> {
                             autoFocus: i == 0,
                             width: double.infinity,
                             onSelect: () {
-                              final bvid = archive?.bvid;
-                              final aid = archive?.aid;
-                              if (bvid != null) {
-                                Get.toNamed(
-                                  '/videoV',
-                                  arguments: {
-                                    'aid': aid ?? 0,
-                                    'bvid': bvid,
-                                    'cid': 0,
-                                    'cover': archive?.cover,
-                                    'title': archive?.title,
-                                  },
-                                );
-                              }
+                              PageUtils.pushDynDetail(item);
                             },
                           );
                         },

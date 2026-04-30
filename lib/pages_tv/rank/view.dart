@@ -39,6 +39,7 @@ class _TVRankPageState extends State<TVRankPage> {
     } else {
       res = await VideoHttp.pgcSeasonRankList(seasonType: rankType.seasonType!);
     }
+    if (!mounted) return;
     if (res is Success) {
       _state.value = Success(res.data);
     } else {

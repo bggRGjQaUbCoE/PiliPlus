@@ -31,8 +31,43 @@ class TVCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final coverHeight = isVertical ? width * 1.4 : width * 9 / 16;
-    final cardHeight = height ?? coverHeight + 60;
+    final bool isInfiniteWidth = width == double.infinity;
+    final coverHeight =
+        isInfiniteWidth ? null : (isVertical ? width * 1.4 : width * 9 / 16);
+    final cardHeight =
+        isInfiniteWidth ? null : (height ?? coverHeight! + 60);
+
+    Widget coverWidget = Stack(
+      children: [
+        NetworkImgLayer(
+          src: coverUrl,
+          width: width,
+          height: coverHeight ?? double.infinity,
+        ),
+        if (badge != null)
+          Positioned(
+            right: 6,
+            top: 6,
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 6,
+                vertical: 2,
+              ),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.primary,
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Text(
+                badge!,
+                style: TextStyle(
+                  color: theme.colorScheme.onPrimary,
+                  fontSize: 11,
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
 
     return TVFocusWrapper(
       onSelect: onSelect,
@@ -44,37 +79,7 @@ class TVCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Stack(
-              children: [
-                NetworkImgLayer(
-                  src: coverUrl,
-                  width: width,
-                  height: coverHeight,
-                ),
-                if (badge != null)
-                  Positioned(
-                    right: 6,
-                    top: 6,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 2,
-                      ),
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.primary,
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        badge!,
-                        style: TextStyle(
-                          color: theme.colorScheme.onPrimary,
-                          fontSize: 11,
-                        ),
-                      ),
-                    ),
-                  ),
-              ],
-            ),
+            if (isInfiniteWidth) Expanded(child: coverWidget) else coverWidget,
             const SizedBox(height: 6),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 6),

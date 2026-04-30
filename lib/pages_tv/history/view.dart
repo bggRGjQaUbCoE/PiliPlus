@@ -25,6 +25,7 @@ class _TVHistoryPageState extends State<TVHistoryPage> {
 
   Future<void> _loadData() async {
     final res = await UserHttp.historyList(type: '');
+    if (!mounted) return;
     if (res is Success) {
       final data = res.data;
       _state.value = Success(data.list);

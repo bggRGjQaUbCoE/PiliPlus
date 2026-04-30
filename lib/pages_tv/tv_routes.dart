@@ -14,13 +14,12 @@ import 'package:PiliPlus/pages_tv/pgc/view.dart';
 import 'package:PiliPlus/pages_tv/rank/view.dart';
 import 'package:PiliPlus/pages_tv/search/view.dart';
 import 'package:PiliPlus/pages_tv/setting/view.dart';
-import 'package:PiliPlus/pages_tv/video/view.dart';
 import 'package:get/get.dart';
 
 class TVRoutes {
   static final List<GetPage<dynamic>> getPages = [
     GetPage(name: '/', page: () => const TVHomePage()),
-    GetPage(name: '/tvVideo', page: () => const TVVideoPage()),
+    GetPage(name: '/tvVideo', page: () => const VideoDetailPageV()),
     GetPage(name: '/tvLive', page: () => const TVLivePage()),
     GetPage(name: '/tvPgc', page: () => const TVPgcPage()),
     GetPage(name: '/tvSearch', page: () => const TVSearchPage()),

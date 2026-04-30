@@ -577,15 +577,16 @@ abstract final class PageUtils {
       'heroTag': Utils.makeHeroTag(cid),
       ...?extraArguments,
     };
+    final route = PlatformUtils.isTV ? '/tvVideo' : '/videoV';
     if (off) {
       return Get.offNamed(
-        '/videoV',
+        route,
         arguments: arguments,
         preventDuplicates: false,
       );
     } else {
       return Get.toNamed(
-        '/videoV',
+        route,
         arguments: arguments,
         preventDuplicates: false,
       );

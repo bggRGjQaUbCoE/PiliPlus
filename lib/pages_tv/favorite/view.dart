@@ -4,6 +4,8 @@ import 'package:PiliPlus/pages_tv/common/tv_card.dart';
 import 'package:PiliPlus/pages_tv/common/tv_focus_wrapper.dart';
 import 'package:PiliPlus/pages_tv/common/tv_page.dart';
 import 'package:PiliPlus/utils/accounts.dart';
+import 'package:PiliPlus/utils/id_utils.dart';
+import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -32,6 +34,7 @@ class _TVFavoritePageState extends State<TVFavoritePage> {
       ps: 50,
       mid: mid,
     );
+    if (!mounted) return;
     if (res is Success) {
       final data = res.data;
       _foldersState.value = Success(data.list);
@@ -49,6 +52,7 @@ class _TVFavoritePageState extends State<TVFavoritePage> {
       pn: 1,
       ps: 20,
     );
+    if (!mounted) return;
     if (res is Success) {
       final data = res.data;
       _contentState.value = Success(data.medias);
@@ -163,16 +167,17 @@ class _TVFavoritePageState extends State<TVFavoritePage> {
                                   coverUrl: item.cover,
                                   width: double.infinity,
                                   onSelect: () {
-                                    Get.toNamed(
-                                      '/videoV',
-                                      arguments: {
-                                        'aid': item.id,
-                                        'bvid': item.bvid ?? '',
-                                        'cid': item.ugc?.firstCid ?? 0,
-                                        'cover': item.cover,
-                                        'title': item.title,
-                                      },
-                                    );
+                                    final cid = item.ugc?.firstCid;
+                                    if (cid != null && cid > 0) {
+                                      PageUtils.toVideoPage(
+                                        aid: item.id,
+                                        bvid: item.bvid ??
+                                            IdUtils.av2bv(item.id),
+                                        cid: cid,
+                                        cover: item.cover,
+                                        title: item.title,
+                                      );
+                                    }
                                   },
                                   onLongPress: () =>
                                       _showUnfavDialog(item, i),

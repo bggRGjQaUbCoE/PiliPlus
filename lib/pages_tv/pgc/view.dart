@@ -3,6 +3,7 @@ import 'package:PiliPlus/http/pgc.dart';
 import 'package:PiliPlus/pages_tv/common/tv_card.dart';
 import 'package:PiliPlus/pages_tv/common/tv_page.dart';
 import 'package:PiliPlus/pages_tv/common/tv_row.dart';
+import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -24,6 +25,7 @@ class _TVPgcPageState extends State<TVPgcPage> {
 
   Future<void> _loadData() async {
     final res = await PgcHttp.pgcIndex(page: 1);
+    if (!mounted) return;
     if (res is Success) {
       _state.value = Success(res.data);
     } else {
@@ -60,13 +62,7 @@ class _TVPgcPageState extends State<TVPgcPage> {
                             onSelect: () {
                               final sid = item.seasonId;
                               if (sid != null) {
-                                Get.toNamed(
-                                  '/videoV',
-                                  arguments: {
-                                    'seasonId': sid,
-                                    'videoType': 'pgc',
-                                  },
-                                );
+                                PageUtils.viewPgc(seasonId: sid);
                               }
                             },
                           );

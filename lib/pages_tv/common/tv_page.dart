@@ -20,6 +20,7 @@ class TVPage extends StatefulWidget {
 
 class _TVPageState extends State<TVPage> {
   late final FocusNode _focusNode;
+  static bool _isExitDialogShowing = false;
 
   @override
   void initState() {
@@ -35,21 +36,24 @@ class _TVPageState extends State<TVPage> {
 
   @override
   Widget build(BuildContext context) {
-    return KeyboardListener(
+    return Focus(
       focusNode: _focusNode,
       autofocus: false,
-      onKeyEvent: (event) {
-        if (event is! KeyDownEvent) return;
+      onKeyEvent: (node, event) {
+        if (event is! KeyDownEvent) return KeyEventResult.ignored;
         if (event.logicalKey == LogicalKeyboardKey.goBack ||
             event.logicalKey == LogicalKeyboardKey.escape) {
           if (widget.isRoot) {
             _showExitDialog(context);
-          } else {
+          } else if (mounted) {
             Get.back();
           }
+          return KeyEventResult.handled;
         } else if (event.logicalKey == LogicalKeyboardKey.contextMenu) {
           widget.onMenuPressed?.call();
+          return KeyEventResult.handled;
         }
+        return KeyEventResult.ignored;
       },
       child: SafeArea(
         minimum: EdgeInsets.symmetric(
@@ -62,6 +66,8 @@ class _TVPageState extends State<TVPage> {
   }
 
   static void _showExitDialog(BuildContext context) {
+    if (_isExitDialogShowing) return;
+    _isExitDialogShowing = true;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -78,6 +84,8 @@ class _TVPageState extends State<TVPage> {
           ),
         ],
       ),
-    );
+    ).then((_) {
+      _isExitDialogShowing = false;
+    });
   }
 }

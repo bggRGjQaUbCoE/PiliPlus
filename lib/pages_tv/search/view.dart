@@ -44,6 +44,7 @@ class _TVSearchPageState extends State<TVSearchPage> {
 
   Future<void> _loadTrending() async {
     final res = await SearchHttp.searchTrending(limit: 10);
+    if (!mounted) return;
     if (res is Success) {
       final data = res.data;
       _trendingState.value = Success(data.list ?? []);
@@ -80,6 +81,7 @@ class _TVSearchPageState extends State<TVSearchPage> {
 
   Future<void> _loadSuggestions(String term) async {
     final res = await SearchHttp.searchSuggest(term: term);
+    if (!mounted) return;
     if (res is Success) {
       final data = res.data;
       _suggestState.value = Success(data.tag ?? []);
@@ -97,6 +99,7 @@ class _TVSearchPageState extends State<TVSearchPage> {
       page: 1,
       onSuccess: (_) {},
     );
+    if (!mounted) return;
     if (res is Success) {
       final data = res.data;
       _resultState.value = Success(data.list);

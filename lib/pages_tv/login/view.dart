@@ -24,6 +24,8 @@ class _TVLoginPageState extends State<TVLoginPage> {
   final _status = ''.obs;
   final _leftTime = 180.obs;
   Timer? _pollTimer;
+  Timer? _countdownTimer;
+  bool _isPolling = false;
 
   @override
   void initState() {
@@ -34,6 +36,7 @@ class _TVLoginPageState extends State<TVLoginPage> {
   @override
   void dispose() {
     _pollTimer?.cancel();
+    _countdownTimer?.cancel();
     super.dispose();
   }
 
@@ -45,34 +48,54 @@ class _TVLoginPageState extends State<TVLoginPage> {
       _leftTime.value = 180;
       _status.value = '';
       _pollTimer?.cancel();
-      _pollTimer = Timer.periodic(const Duration(seconds: 3), (timer) async {
-        final left = 180 - timer.tick * 3;
+      _countdownTimer?.cancel();
+
+      _countdownTimer =
+          Timer.periodic(const Duration(seconds: 1), (timer) {
+        final left = 180 - timer.tick;
         if (left <= 0) {
           timer.cancel();
+          _pollTimer?.cancel();
           _status.value = '二维码已过期，请刷新';
           _leftTime.value = 0;
           return;
         }
         _leftTime.value = left;
+      });
 
-        final poll = await LoginHttp.codePoll(response.authCode);
-        if (poll['status'] == true) {
+      _pollTimer = Timer.periodic(const Duration(seconds: 3), (timer) async {
+        if (_isPolling) return;
+        if (_leftTime.value <= 0) {
           timer.cancel();
-          _status.value = '登录成功';
-          final data = poll['data'];
-          final account = LoginAccount(
-            BiliCookieJar.fromList(data['cookie_info']['cookies']),
-            data['token_info']['access_token'],
-            data['token_info']['refresh_token'],
-          );
-          await Future.wait([account.onChange(), AnonymousAccount().delete()]);
-          SmartDialog.showToast('登录成功');
-          Get.back();
-        } else if (poll['code'] == 86038) {
-          timer.cancel();
-          _status.value = '二维码已过期';
-        } else if (poll['code'] == 86090) {
-          _status.value = '已扫码，请确认';
+          return;
+        }
+        _isPolling = true;
+        try {
+          final poll = await LoginHttp.codePoll(response.authCode);
+          if (poll['status'] == true) {
+            timer.cancel();
+            _countdownTimer?.cancel();
+            _status.value = '登录成功';
+            final data = poll['data'];
+            final account = LoginAccount(
+              BiliCookieJar.fromList(data['cookie_info']['cookies']),
+              data['token_info']['access_token'],
+              data['token_info']['refresh_token'],
+            );
+            await Future.wait(
+                [account.onChange(), AnonymousAccount().delete()]);
+            SmartDialog.showToast('登录成功');
+            Get.offAllNamed('/');
+          } else if (poll['code'] == 86038) {
+            timer.cancel();
+            _countdownTimer?.cancel();
+            _status.value = '二维码已过期';
+            _leftTime.value = 0;
+          } else if (poll['code'] == 86090) {
+            _status.value = '已扫码，请确认';
+          }
+        } finally {
+          _isPolling = false;
         }
       });
     }

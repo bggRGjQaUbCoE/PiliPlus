@@ -25,6 +25,7 @@ class _TVLaterPageState extends State<TVLaterPage> {
 
   Future<void> _loadData() async {
     final res = await UserHttp.seeYouLater(page: 1);
+    if (!mounted) return;
     if (res is Success) {
       final data = res.data;
       _state.value = Success(data.list);

@@ -18,7 +18,6 @@ class TVSettingPage extends StatefulWidget {
 
 class _TVSettingPageState extends State<TVSettingPage> {
   late final _enableDanmaku = Pref.enableShowDanmaku.obs;
-  late final _autoPlay = Pref.autoPlayEnable.obs;
 
   @override
   Widget build(BuildContext context) {
@@ -60,15 +59,6 @@ class _TVSettingPageState extends State<TVSettingPage> {
 
             const SizedBox(height: 16),
             _SectionTitle('播放设置', theme),
-            _buildToggleItem(
-              icon: Icons.play_arrow,
-              title: '自动播放',
-              value: _autoPlay,
-              onChanged: (val) {
-                _autoPlay.value = val;
-                GStorage.setting.put(SettingBoxKey.autoPlayEnable, val);
-              },
-            ),
             _buildToggleItem(
               icon: Icons.subtitles,
               title: '默认显示弹幕',

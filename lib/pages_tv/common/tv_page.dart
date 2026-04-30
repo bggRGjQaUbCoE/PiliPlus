@@ -1,67 +1,46 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:get/get.dart';
 
 class TVPage extends StatefulWidget {
   const TVPage({
     super.key,
     required this.child,
     this.isRoot = false,
-    this.onMenuPressed,
   });
 
   final Widget child;
   final bool isRoot;
-  final VoidCallback? onMenuPressed;
 
   @override
   State<TVPage> createState() => _TVPageState();
 }
 
 class _TVPageState extends State<TVPage> {
-  late final FocusNode _focusNode;
   static bool _isExitDialogShowing = false;
 
   @override
-  void initState() {
-    super.initState();
-    _focusNode = FocusNode();
-  }
-
-  @override
-  void dispose() {
-    _focusNode.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return Focus(
-      focusNode: _focusNode,
-      autofocus: false,
-      onKeyEvent: (node, event) {
-        if (event is! KeyDownEvent) return KeyEventResult.ignored;
-        if (event.logicalKey == LogicalKeyboardKey.goBack ||
-            event.logicalKey == LogicalKeyboardKey.escape) {
-          if (widget.isRoot) {
-            _showExitDialog(context);
-            return KeyEventResult.handled;
-          }
-          return KeyEventResult.ignored;
-        } else if (event.logicalKey == LogicalKeyboardKey.contextMenu) {
-          widget.onMenuPressed?.call();
-          return KeyEventResult.handled;
-        }
-        return KeyEventResult.ignored;
-      },
-      child: SafeArea(
-        minimum: EdgeInsets.symmetric(
-          horizontal: MediaQuery.sizeOf(context).width * 0.03,
-          vertical: MediaQuery.sizeOf(context).height * 0.03,
-        ),
-        child: widget.child,
+    Widget child = SafeArea(
+      minimum: EdgeInsets.symmetric(
+        horizontal: MediaQuery.sizeOf(context).width * 0.03,
+        vertical: MediaQuery.sizeOf(context).height * 0.03,
       ),
+      child: widget.child,
     );
+
+    if (widget.isRoot) {
+      child = PopScope(
+        canPop: false,
+        onPopInvokedWithResult: (didPop, _) {
+          if (!didPop) {
+            _showExitDialog(context);
+          }
+        },
+        child: child,
+      );
+    }
+
+    return child;
   }
 
   static void _showExitDialog(BuildContext context) {

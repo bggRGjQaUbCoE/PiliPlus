@@ -1,97 +1,52 @@
-# PiliPlus 项目环境配置 (Harness 标准格式)
-# 
-# 用途: 为 AI 智能体提供完整的环境配置信息
-# 格式: 基于 Harness 配置标准
-# 版本: 1.0.0
-# 更新日期: 2026-04-28
-#
-# ⚠️ 重要提示:
-# 1. 本文件是智能体配置环境的唯一事实来源
-# 2. 所有路径必须使用绝对路径
-# 3. 版本号必须精确匹配
-# 4. 首次配置预计耗时: 30-60 分钟
+# PiliPlus 项目环境配置
+# 更新日期: 2026-04-30
+# 版本: 2.0.6
 
 ---
-# ==================== 项目元数据 ====================
 project:
   name: PiliPlus
   type: flutter_android
   root_path: c:\traeapp\PiliPlusgzy622Mod
-  version: 2.0.5+1
+  version: 2.0.6+1
 
-# ==================== 环境要求 ====================
 environment:
-  # 操作系统要求
   os:
     type: windows
     minimum_version: "10"
-    recommended_version: "11"
     
-  # 必需环境变量 (必须在系统或会话中设置)
   required_variables:
     - name: ANDROID_HOME
       value: "c:\\traeapp\\PiliPlusgzy622Mod\\.android-sdk"
-      description: Android SDK 根目录
       
     - name: ANDROID_SDK_ROOT
       value: "c:\\traeapp\\PiliPlusgzy622Mod\\.android-sdk"
-      description: Android SDK 根目录 (兼容变量)
       
     - name: JAVA_TOOL_OPTIONS
       value: "-Dhttps.protocols=TLSv1.2,TLSv1.3 -Djdk.tls.client.protocols=TLSv1.2,TLSv1.3"
-      description: 解决 TLS 握手问题 (中国网络环境必需)
       critical: true
-      
-  # 可选环境变量
-  optional_variables:
-    - name: PUB_HOSTED_URL
-      value: "https://pub.flutter-io.cn"
-      description: Flutter 国内镜像 (如网络不稳定)
-      
-    - name: FLUTTER_STORAGE_BASE_URL
-      value: "https://storage.flutter-io.cn"
-      description: Flutter 存储国内镜像
 
-# ==================== SDK 配置 ====================
 sdks:
   flutter:
     version: "3.41.6"
     management: fvm
-    fvm_config_path: ".fvmrc"
     
-    # FVM 路径 (Windows)
     fvm_paths:
       executable: "C:\\Users\\VG622\\AppData\\Local\\Pub\\Cache\\bin\\fvm.bat"
       flutter_binary: "C:\\Users\\VG622\\fvm\\versions\\3.41.6\\bin\\flutter.bat"
       dart_binary: "C:\\Users\\VG622\\fvm\\versions\\3.41.6\\bin\\dart.bat"
       
-    # 系统 Flutter (仅作参考, 不要使用)
-    system_flutter: "C:\\dev\\flutter"
-    
     dart_sdk:
       minimum_version: ">=3.10.0"
       
   android:
     sdk_path: "c:\\traeapp\\PiliPlusgzy622Mod\\.android-sdk"
+    compile_sdk: 35
+    target_sdk: 35
+    min_sdk: 21
     
-    compile_sdk: 31
-    target_sdk: 35  # 由 flutter.targetSdkVersion 决定
-    min_sdk: 21     # 由 flutter.minSdkVersion 决定
-    
-    # NDK 配置
     ndk:
       required: true
-      version: "28.2.13676358"  # 项目指定版本
-      install_command: 'sdkmanager --install "ndk;28.2.13676358"'
-      
-    # 构建工具
-    build_tools:
-      version: "35.0.0"
-      
-    # 平台工具
-    platform_tools:
-      - adb
-      - fastboot
+      version: "28.2.13676358"
       
   java:
     version: "17"
@@ -99,37 +54,26 @@ sdks:
     target_compatibility: "VERSION_17"
     kotlin_jvm_target: "JVM_17"
 
-# ==================== 构建工具配置 ====================
 build_tools:
   gradle:
     plugin_version: "8.12.1"
     kotlin_version: "2.2.20"
     
-    # 镜像配置 (已配置在项目中)
-    mirrors:
-      - name: 阿里云 Google
-        url: "https://maven.aliyun.com/repository/google"
-      - name: 阿里云 Public
-        url: "https://maven.aliyun.com/repository/public"
-      - name: 阿里云 Gradle Plugin
-        url: "https://maven.aliyun.com/repository/gradle-plugin"
-      - name: 阿里云 Central
-        url: "https://maven.aliyun.com/repository/central"
-        
-  # 配置文件位置
-  config_files:
-    settings_gradle: "android/settings.gradle.kts"
-    project_build_gradle: "android/build.gradle.kts"
-    app_build_gradle: "android/app/build.gradle.kts"
+  mirrors:
+    - name: 阿里云 Google
+      url: "https://maven.aliyun.com/repository/google"
+    - name: 阿里云 Public
+      url: "https://maven.aliyun.com/repository/public"
+    - name: 阿里云 Gradle Plugin
+      url: "https://maven.aliyun.com/repository/gradle-plugin"
+    - name: 阿里云 Central
+      url: "https://maven.aliyun.com/repository/central"
 
-# ==================== 依赖配置 ====================
 dependencies:
-  # Flutter 依赖
   flutter:
     config_file: "pubspec.yaml"
     lock_file: "pubspec.lock"
     
-    # 关键依赖类别
     categories:
       - name: 状态管理
         packages: [get]
@@ -142,7 +86,6 @@ dependencies:
       - name: UI组件
         packages: [dynamic_color, flutter_smart_dialog, canvas_danmaku]
         
-    # Git 依赖 (需要特别注意)
     git_dependencies:
       - name: get
         url: "https://github.com/bggRGjQaUbCoE/getx.git"
@@ -150,190 +93,69 @@ dependencies:
       - name: media_kit
         url: "https://github.com/My-Responsitories/media-kit.git"
         ref: "version_1.2.5"
-        
-  # Android 原生依赖
-  android:
-    # 在 android/app/build.gradle.kts 中声明
-    native_dependencies: []
 
-# ==================== 设备配置 ====================
 devices:
-  # 已配置设备
-  configured:
-    - id: "10AD133K3D0011C"
-      model: "V2232A"
-      status: "已连接"
-      
-  # ADB 配置
   adb:
     path: "c:\\traeapp\\PiliPlusgzy622Mod\\.android-sdk\\platform-tools\\adb.exe"
     
-  # 应用包名
   package_names:
     debug: "com.example.piliplus.debug"
     release: "com.example.piliplus"
     
   main_activity: "com.example.piliplus.MainActivity"
 
-# ==================== 构建配置 ====================
 build:
-  # 输出路径
   output_paths:
     debug_apk: "build/app/outputs/flutter-apk/app-debug.apk"
     release_apk: "build/app/outputs/flutter-apk/app-release.apk"
     
-  # 构建命令
   commands:
-    debug: 'fvm flutter build apk --debug'
-    release: 'fvm flutter build apk --release'
-    clean: 'fvm flutter clean'
-    pub_get: 'fvm flutter pub get'
-    doctor: 'fvm flutter doctor -v'
+    debug: '& "C:\Users\VG622\fvm\versions\3.41.6\bin\flutter.bat" build apk --debug'
+    release: '& "C:\Users\VG622\fvm\versions\3.41.6\bin\flutter.bat" build apk --release --obfuscate --split-debug-info=build/debug_info'
+    clean: '& "C:\Users\VG622\fvm\versions\3.41.6\bin\flutter.bat" clean'
+    pub_get: '& "C:\Users\VG622\fvm\versions\3.41.6\bin\flutter.bat" pub get'
     
-  # 安装命令
   install:
     debug: 'adb install -r build/app/outputs/flutter-apk/app-debug.apk'
+    release: 'adb install -r build/app/outputs/flutter-apk/app-release.apk'
     
-  # 启动命令
   launch: 'adb shell am start -n com.example.piliplus.debug/com.example.piliplus.MainActivity'
 
-# ==================== 已知问题与解决方案 ====================
 known_issues:
   - id: ISSUE_001
     name: "Dart SDK 版本不匹配"
     symptom: "Because PiliPlus requires SDK version >=3.10.0, version solving failed"
-    cause: "使用了系统 Flutter 而非 FVM Flutter"
-    solution: "必须使用 FVM 的 Flutter 3.41.6"
-    prevention: "始终使用 'fvm flutter' 而非 'flutter'"
+    solution: "使用 FVM Flutter 3.41.6"
     
   - id: ISSUE_002
     name: "TLS 握手失败"
     symptom: "The server may not support the client's requested TLS protocol versions"
-    cause: "Java/Gradle TLS 配置与国内网络不兼容"
     solution: "设置 JAVA_TOOL_OPTIONS 环境变量"
-    prevention: "在每次构建前设置环境变量"
     critical: true
     
   - id: ISSUE_003
-    name: "NDK 未找到或损坏"
-    symptom: "NDK at [path] did not have a source.properties file"
-    cause: "NDK 下载不完整或版本不匹配"
-    solution: "删除 NDK 目录并重新安装"
-    command: 'Remove-Item -Recurse -Force "$env:ANDROID_SDK/ndk/28.2.13676358"; sdkmanager --install "ndk;28.2.13676358"'
+    name: "R8 混淆失败"
+    symptom: "Missing class com.google.android.play.core.splitcompat.SplitCompatApplication"
+    solution: "已修复 - 添加 Play Core ProGuard 规则到 android/app/proguard-rules.pro"
     
   - id: ISSUE_004
-    name: "Windows 符号链接权限"
-    symptom: "Building with plugins requires symlink support"
-    cause: "Windows 未启用开发者模式"
-    solution: "启用开发者模式或以管理员身份运行"
-    command: 'reg add "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\AppModelUnlock" /t REG_DWORD /f /v "AllowDevelopmentWithoutDevLicense" /d "1"'
-    
-  - id: ISSUE_005
-    name: "Git 依赖下载失败"
-    symptom: "Could not resolve git reference"
-    cause: "网络问题或 Git 配置问题"
-    solution: "检查网络连接, 配置 Git 代理"
-    prevention: "确保 Git 可以访问 GitHub"
+    name: "NDK 未找到"
+    symptom: "NDK at [path] did not have a source.properties file"
+    solution: "删除 NDK 目录并重新安装: sdkmanager --install ndk;28.2.13676358"
 
-# ==================== 首次设置步骤 ====================
-setup_steps:
-  - step: 1
-    name: "验证环境变量"
-    commands:
-      - 'echo $env:ANDROID_HOME'
-      - 'echo $env:JAVA_TOOL_OPTIONS'
-    expected_output: "包含正确的路径和配置"
-    
-  - step: 2
-    name: "检查 FVM 和 Flutter"
-    commands:
-      - 'fvm --version'
-      - 'fvm flutter --version'
-    expected_output: "Flutter 3.41.6"
-    
-  - step: 3
-    name: "检查 Android SDK"
-    commands:
-      - 'adb devices'
-      - 'sdkmanager --list_installed | findstr "ndk"'
-    expected_output: "设备已连接, NDK 已安装"
-    
-  - step: 4
-    name: "获取 Flutter 依赖"
-    commands:
-      - 'fvm flutter pub get'
-    timeout: 300
-    
-  - step: 5
-    name: "首次构建 (耗时最长)"
-    commands:
-      - 'fvm flutter build apk --debug'
-    timeout: 1800
-    note: "首次构建需要下载 Gradle、NDK、依赖库, 耗时 10-30 分钟"
-    
-  - step: 6
-    name: "安装并测试"
-    commands:
-      - 'adb install -r build/app/outputs/flutter-apk/app-debug.apk'
-      - 'adb shell am start -n com.example.piliplus.debug/com.example.piliplus.MainActivity'
-
-# ==================== 验证清单 ====================
-verification_checklist:
-  environment:
-    - item: "ANDROID_HOME 已设置"
-      check: "Test-Path $env:ANDROID_HOME"
-    - item: "JAVA_TOOL_OPTIONS 已设置"
-      check: "$env:JAVA_TOOL_OPTIONS -match 'TLSv1.2'"
-      
-  tools:
-    - item: "FVM 可用"
-      check: "Get-Command fvm"
-    - item: "ADB 可用"
-      check: "Get-Command adb"
-    - item: "Flutter 版本正确"
-      check: "(fvm flutter --version) -match '3.41.6'"
-      
-  project:
-    - item: "pubspec.yaml 存在"
-      check: "Test-Path pubspec.yaml"
-    - item: ".fvmrc 存在"
-      check: "Test-Path .fvmrc"
-    - item: "Android 目录存在"
-      check: "Test-Path android"
-      
-  device:
-    - item: "设备已连接"
-      check: "(adb devices).Count -gt 1"
-
-# ==================== 智能体操作指南 ====================
 agent_guidelines:
-  # 构建前必须执行
   pre_build_required:
     - "设置 JAVA_TOOL_OPTIONS 环境变量"
     - "验证使用 FVM Flutter 而非系统 Flutter"
     - "检查设备连接状态"
     
-  # 构建命令模板
   build_template: |
-    # 设置环境变量
     $env:JAVA_TOOL_OPTIONS="-Dhttps.protocols=TLSv1.2,TLSv1.3 -Djdk.tls.client.protocols=TLSv1.2,TLSv1.3"
     $env:ANDROID_HOME="c:\traeapp\PiliPlusgzy622Mod\.android-sdk"
     $env:ANDROID_SDK_ROOT="c:\traeapp\PiliPlusgzy622Mod\.android-sdk"
+    & "C:\Users\VG622\fvm\versions\3.41.6\bin\flutter.bat" build apk --release --obfuscate --split-debug-info=build/debug_info
     
-    # 构建
-    & "C:\Users\VG622\fvm\versions\3.41.6\bin\flutter.bat" build apk --debug
-    
-  # 故障排查流程
-  troubleshooting_flow:
-    - "检查环境变量是否正确设置"
-    - "确认使用 FVM Flutter 路径"
-    - "查看 known_issues 匹配症状"
-    - "执行对应的 solution 命令"
-    - "如仍失败, 执行 clean 后重试"
-    
-  # 禁止事项
   prohibited_actions:
-    - "不要使用系统 Flutter (C:\dev\flutter)"
+    - "不要使用系统 Flutter"
     - "不要修改已配置的阿里云镜像"
-    - "不要降低 compileSdk 版本"
     - "不要跳过 JAVA_TOOL_OPTIONS 设置"

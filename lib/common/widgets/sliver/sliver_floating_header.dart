@@ -79,9 +79,9 @@ class _SliverFloatingHeaderScrollState
 
   void _isScrollingListener() {
     assert(_position != null);
-    final RenderSliverFloatingHeader? renderer = context
-        .findAncestorRenderObjectOfType<RenderSliverFloatingHeader>();
     if (_position!.isScrollingNotifier.value) {
+      final RenderSliverFloatingHeader? renderer = context
+          .findAncestorRenderObjectOfType<RenderSliverFloatingHeader>();
       renderer?.updateScrollStartDirection(_position!.userScrollDirection);
     }
   }

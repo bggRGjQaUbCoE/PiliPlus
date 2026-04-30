@@ -9,6 +9,7 @@ import 'package:PiliPlus/utils/path_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/request_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
+import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
@@ -50,6 +51,11 @@ void main() async {
     await Utils.copyText(e.toString());
     if (kDebugMode) debugPrint('GStorage init error: $e');
     exit(0);
+  }
+
+  // TV 默认画质 720P（如果用户没有手动设置过）
+  if (!GStorage.setting.containsKey(SettingBoxKey.defaultVideoQa)) {
+    GStorage.setting.put(SettingBoxKey.defaultVideoQa, 64); // 720P
   }
 
   await Future.wait([_initDownPath(), _initTmpPath()]);

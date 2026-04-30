@@ -37,74 +37,104 @@ class TVCard extends StatelessWidget {
     final cardHeight =
         isInfiniteWidth ? null : (height ?? coverHeight! + 60);
 
-    Widget coverWidget = Stack(
-      children: [
-        NetworkImgLayer(
-          src: coverUrl,
-          width: width,
-          height: coverHeight ?? double.infinity,
-        ),
-        if (badge != null)
-          Positioned(
-            right: 6,
-            top: 6,
-            child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 6,
-                vertical: 2,
-              ),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.primary,
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Text(
-                badge!,
-                style: TextStyle(
-                  color: theme.colorScheme.onPrimary,
-                  fontSize: 11,
+    Widget buildCover(double w, double h) => Stack(
+          children: [
+            NetworkImgLayer(src: coverUrl, width: w, height: h),
+            if (badge != null)
+              Positioned(
+                right: 6,
+                top: 6,
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.primary,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    badge!,
+                    style: TextStyle(
+                      color: theme.colorScheme.onPrimary,
+                      fontSize: 11,
+                    ),
+                  ),
                 ),
               ),
-            ),
-          ),
-      ],
-    );
+          ],
+        );
 
     return TVFocusWrapper(
       onSelect: onSelect,
       onLongPress: onLongPress,
       autoFocus: autoFocus,
-      child: SizedBox(
-        width: width,
-        height: cardHeight,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (isInfiniteWidth) Expanded(child: coverWidget) else coverWidget,
-            const SizedBox(height: 6),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 6),
-              child: Text(
-                title,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.bodyMedium,
-              ),
-            ),
-            if (subtitle != null)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 6),
-                child: Text(
-                  subtitle!,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
+      child: isInfiniteWidth
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: LayoutBuilder(
+                    builder: (context, constraints) => buildCover(
+                      constraints.maxWidth,
+                      constraints.maxHeight,
+                    ),
                   ),
                 ),
+                const SizedBox(height: 6),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 6),
+                  child: Text(
+                    title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.bodyMedium,
+                  ),
+                ),
+                if (subtitle != null)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 6),
+                    child: Text(
+                      subtitle!,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+              ],
+            )
+          : SizedBox(
+              width: width,
+              height: height ?? coverHeight! + 60,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  buildCover(width, coverHeight!),
+                  const SizedBox(height: 6),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 6),
+                    child: Text(
+                      title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.bodyMedium,
+                    ),
+                  ),
+                  if (subtitle != null)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 6),
+                      child: Text(
+                        subtitle!,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
+                ],
               ),
-          ],
-        ),
-      ),
+            ),
     );
   }
 }

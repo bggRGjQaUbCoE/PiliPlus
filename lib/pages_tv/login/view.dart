@@ -4,8 +4,10 @@ import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/login.dart';
 import 'package:PiliPlus/pages_tv/common/tv_focus_wrapper.dart';
 import 'package:PiliPlus/pages_tv/common/tv_page.dart';
+import 'package:PiliPlus/http/init.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/accounts/account.dart';
+import 'package:PiliPlus/utils/login_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -84,7 +86,16 @@ class _TVLoginPageState extends State<TVLoginPage> {
             );
             await Future.wait(
                 [account.onChange(), AnonymousAccount().delete()]);
-            SmartDialog.showToast('登录成功');
+            for (int i = 0; i < AccountType.values.length; i++) {
+              if (Accounts.accountMode[i].mid == account.mid) {
+                Accounts.accountMode[i] = account;
+              }
+            }
+            if (!Accounts.main.isLogin) {
+              Accounts.accountMode[AccountType.main.index] = account;
+            }
+            Request.setCookie();
+            await LoginUtils.onLoginMain();
             Get.offAllNamed('/');
           } else if (poll['code'] == 86038) {
             timer.cancel();

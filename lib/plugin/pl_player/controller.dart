@@ -50,7 +50,7 @@ import 'package:easy_debounce/easy_throttle.dart';
 import 'package:floating/floating.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart' show HapticFeedback, DeviceOrientation;
+import 'package:flutter/services.dart' show DeviceOrientation, HapticFeedback, SystemChrome, SystemUiMode;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:flutter_volume_controller/flutter_volume_controller.dart';
 import 'package:get/get.dart';
@@ -1476,7 +1476,13 @@ class PlPlayerController with BlockConfigMixin {
     this.isManualFS = isManualFS;
     try {
       if (status) {
-        if (PlatformUtils.isMobile) {
+        if (PlatformUtils.isTV) {
+          hideSystemBar();
+          await SystemChrome.setPreferredOrientations([
+            DeviceOrientation.landscapeLeft,
+            DeviceOrientation.landscapeRight,
+          ]);
+        } else if (PlatformUtils.isMobile) {
           hideSystemBar();
           await changeOrientation(
             isVertical: isVertical,
@@ -1486,7 +1492,14 @@ class PlPlayerController with BlockConfigMixin {
           await enterDesktopFullScreen(inAppFullScreen: inAppFullScreen);
         }
       } else {
-        if (PlatformUtils.isMobile) {
+        if (PlatformUtils.isTV) {
+          // TV: stay in landscape, restore immersive mode
+          await SystemChrome.setPreferredOrientations([
+            DeviceOrientation.landscapeLeft,
+            DeviceOrientation.landscapeRight,
+          ]);
+          SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+        } else if (PlatformUtils.isMobile) {
           if (!removeSafeArea) {
             showSystemBar();
           }

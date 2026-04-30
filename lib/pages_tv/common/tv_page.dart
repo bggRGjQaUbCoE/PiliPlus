@@ -45,10 +45,9 @@ class _TVPageState extends State<TVPage> {
             event.logicalKey == LogicalKeyboardKey.escape) {
           if (widget.isRoot) {
             _showExitDialog(context);
-          } else if (mounted) {
-            Get.back();
+            return KeyEventResult.handled;
           }
-          return KeyEventResult.handled;
+          return KeyEventResult.ignored;
         } else if (event.logicalKey == LogicalKeyboardKey.contextMenu) {
           widget.onMenuPressed?.call();
           return KeyEventResult.handled;

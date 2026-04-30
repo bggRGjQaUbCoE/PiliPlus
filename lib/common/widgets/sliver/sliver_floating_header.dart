@@ -24,9 +24,72 @@ import 'package:flutter/rendering.dart'
 
 /// ref [SliverFloatingHeader]
 
-class SliverFloatingHeaderWidget extends SingleChildRenderObjectWidget {
+class SliverFloatingHeaderWidget extends StatelessWidget {
   const SliverFloatingHeaderWidget({
     super.key,
+    required this.child,
+    required this.backgroundColor,
+  });
+
+  final Widget child;
+  final Color backgroundColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return _SliverFloatingHeaderWidget(
+      backgroundColor: backgroundColor,
+      child: _SliverFloatingHeaderScroll(child: child),
+    );
+  }
+}
+
+class _SliverFloatingHeaderScroll extends StatefulWidget {
+  const _SliverFloatingHeaderScroll({required this.child});
+
+  final Widget child;
+
+  @override
+  State<_SliverFloatingHeaderScroll> createState() =>
+      _SliverFloatingHeaderScrollState();
+}
+
+class _SliverFloatingHeaderScrollState
+    extends State<_SliverFloatingHeaderScroll> {
+  ScrollPosition? _position;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_position != null) {
+      _position!.isScrollingNotifier.removeListener(_isScrollingListener);
+    }
+    _position = Scrollable.maybeOf(context)?.position;
+    if (_position != null) {
+      _position!.isScrollingNotifier.addListener(_isScrollingListener);
+    }
+  }
+
+  @override
+  void dispose() {
+    if (_position != null) {
+      _position!.isScrollingNotifier.removeListener(_isScrollingListener);
+    }
+    super.dispose();
+  }
+
+  void _isScrollingListener() {
+    assert(_position != null);
+    final RenderSliverFloatingHeader? renderer = context
+        .findAncestorRenderObjectOfType<RenderSliverFloatingHeader>();
+    renderer?.isScrollingUpdate(_position!);
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
+}
+
+class _SliverFloatingHeaderWidget extends SingleChildRenderObjectWidget {
+  const _SliverFloatingHeaderWidget({
     required Widget super.child,
     required this.backgroundColor,
   });
@@ -154,4 +217,24 @@ class RenderSliverFloatingHeader extends RenderSliverSingleBoxAdapter {
     required double mainAxisPosition,
     required double crossAxisPosition,
   }) => true;
+
+  void isScrollingUpdate(ScrollPosition position) {
+    if (position.isScrollingNotifier.value) {
+      return;
+    }
+    final direction = position.userScrollDirection;
+    late final childExtent = child!.size.height;
+    final bool headerIsPartiallyVisible = switch (direction) {
+      .forward when effectiveScrollOffset <= 0 => false,
+      .reverse when effectiveScrollOffset >= childExtent => false,
+      _ => true,
+    };
+    if (headerIsPartiallyVisible) {
+      effectiveScrollOffset = switch (direction) {
+        .forward => 0,
+        _ => childExtent,
+      };
+      markNeedsLayout();
+    }
+  }
 }

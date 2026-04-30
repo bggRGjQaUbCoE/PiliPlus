@@ -20,13 +20,13 @@ class SuperChatCard extends StatefulWidget {
     required this.item,
     this.onRemove,
     this.persistentSC = false,
-    required this.onReport,
+    this.onReport,
   });
 
   final SuperChatItem item;
   final VoidCallback? onRemove;
   final bool persistentSC;
-  final VoidCallback onReport;
+  final VoidCallback? onReport;
 
   @override
   State<SuperChatCard> createState() => _SuperChatCardState();
@@ -168,6 +168,7 @@ class _SuperChatCardState extends State<SuperChatCard> {
     }
 
     return Column(
+      mainAxisSize: .min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         GestureDetector(

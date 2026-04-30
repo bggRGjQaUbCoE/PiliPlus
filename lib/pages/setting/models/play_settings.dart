@@ -5,6 +5,7 @@ import 'package:PiliPlus/models/common/super_chat_type.dart';
 import 'package:PiliPlus/models/common/video/subtitle_pref_type.dart';
 import 'package:PiliPlus/pages/main/controller.dart';
 import 'package:PiliPlus/pages/setting/models/model.dart';
+import 'package:PiliPlus/pages/setting/pages/fullscreen_sc_size.dart';
 import 'package:PiliPlus/pages/setting/widgets/select_dialog.dart';
 import 'package:PiliPlus/plugin/pl_player/models/bottom_progress_behavior.dart';
 import 'package:PiliPlus/plugin/pl_player/models/fullscreen_mode.dart';
@@ -144,6 +145,12 @@ List<SettingsModel> get playSettings => [
     leading: const Icon(Icons.live_tv),
     getSubtitle: () => '当前:「${Pref.superChatType.title}」',
     onTap: _showSuperChatDialog,
+  ),
+  NormalModel(
+    title: '全屏 SC 大小',
+    subtitle: 'SuperChat (醒目留言) 大小设置',
+    leading: const Icon(Icons.open_in_full),
+    onTap: (_, _) => Get.to(const FullScreenScSize()),
   ),
   const SwitchModel(
     title: '竖屏扩大展示',

@@ -204,14 +204,19 @@ jobs:
 
             - name: Flutter Build TV Release Apk
               if: ${{ github.event_name == 'workflow_dispatch' }}
-              run: flutter build apk --flavor tv -t lib/main_tv.dart --release --dart-define-from-file=pili_release.json --pub
+              run: flutter build apk --flavor tv -t lib/main_tv.dart --release --split-per-abi --dart-define-from-file=pili_release.json --pub
 
             - name: Flutter Build TV Dev Apk
               if: ${{ github.event_name == 'pull_request' }}
-              run: flutter build apk --flavor tv -t lib/main_tv.dart --release --pub
+              run: flutter build apk --flavor tv -t lib/main_tv.dart --release --split-per-abi --pub
 
             - name: Rename
-              run: mv build/app/outputs/flutter-apk/app-tv-release.apk "PiliPlus_android_tv_${{ env.version }}.apk"
+              run: |
+                  for file in build/app/outputs/flutter-apk/app-tv-*-release.apk; do
+                    [ -f "$file" ] || continue
+                    abi=$(echo "$file" | sed -E 's|.*/app-tv-(.*)-release\.apk|\1|')
+                    mv "$file" "PiliPlus_android_tv_${{ env.version }}_${abi}.apk"
+                  done
               shell: bash
 
             - name: Release
@@ -226,8 +231,22 @@ jobs:
               uses: actions/upload-artifact@v7
               with:
                   archive: false
-                  name: Android_TV
-                  path: PiliPlus_android_tv_*.apk
+                  name: Android_TV_arm64-v8a
+                  path: PiliPlus_android_tv_*_arm64-v8a.apk
+
+            - name: 上传
+              uses: actions/upload-artifact@v7
+              with:
+                  archive: false
+                  name: Android_TV_armeabi-v7a
+                  path: PiliPlus_android_tv_*_armeabi-v7a.apk
+
+            - name: 上传
+              uses: actions/upload-artifact@v7
+              with:
+                  archive: false
+                  name: Android_TV_x86_64
+                  path: PiliPlus_android_tv_*_x86_64.apk
 
     ios:
         if: ${{ (github.event_name == 'pull_request' && github.repository == 'bggRGjQaUbCoE/PiliPlus') || github.event.inputs.build_ios == 'true' }}

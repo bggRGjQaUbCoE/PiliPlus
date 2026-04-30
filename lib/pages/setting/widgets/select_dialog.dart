@@ -70,6 +70,35 @@ class SelectDialog<T> extends StatelessWidget {
   }
 }
 
+enum CdnSelectResultType { builtIn, custom, clearCustom }
+
+final class CdnSelectResult {
+  final CdnSelectResultType type;
+  final CDNService? service;
+  final String? customCDNUrl;
+
+  const CdnSelectResult._({
+    required this.type,
+    this.service,
+    this.customCDNUrl,
+  });
+
+  const CdnSelectResult.builtIn(CDNService service)
+    : this._(
+        type: CdnSelectResultType.builtIn,
+        service: service,
+      );
+
+  const CdnSelectResult.custom(String customCDNUrl)
+    : this._(
+        type: CdnSelectResultType.custom,
+        customCDNUrl: customCDNUrl,
+      );
+
+  const CdnSelectResult.clearCustom()
+    : this._(type: CdnSelectResultType.clearCustom);
+}
+
 class CdnSelectDialog extends StatefulWidget {
   final BaseItem? sample;
 
@@ -243,26 +272,154 @@ class _CdnSelectDialogState extends State<CdnSelectDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return SelectDialog<CDNService>(
-      title: 'CDN 设置',
-      values: CDNService.values.map((i) => (i, i.desc)).toList(),
-      value: VideoUtils.cdnService,
-      subtitleBuilder: _cdnSpeedTest
-          ? (context, index) {
-              final item = _cdnResList[index];
-              return ValueListenableBuilder(
-                valueListenable: item,
-                builder: (context, value, _) {
-                  return Text(
-                    value ?? '---',
-                    style: const TextStyle(fontSize: 13),
+    final titleMedium = TextTheme.of(context).titleMedium!;
+    final customHost = VideoUtils.normalizeCustomCDNHost(
+      VideoUtils.customCDNUrl,
+    );
+    return AlertDialog(
+      clipBehavior: Clip.hardEdge,
+      title: const Text('CDN 设置'),
+      constraints: _cdnSpeedTest
+          ? const BoxConstraints(maxWidth: 320, minWidth: 320)
+          : null,
+      contentPadding: const EdgeInsets.symmetric(vertical: 12),
+      content: Material(
+        type: .transparency,
+        child: SingleChildScrollView(
+          child: RadioGroup<CDNService>(
+            onChanged: (v) {
+              if (v == null) return;
+              Navigator.of(context).pop(CdnSelectResult.builtIn(v));
+            },
+            groupValue: VideoUtils.cdnService,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ...List.generate(
+                  CDNService.values.length,
+                  (index) {
+                    final item = CDNService.values[index];
+                    return RadioListTile<CDNService>(
+                      dense: true,
+                      value: item,
+                      title: Text(
+                        item.desc,
+                        style: titleMedium,
+                      ),
+                      subtitle: _cdnSpeedTest
+                          ? _CdnSpeedResultText(notifier: _cdnResList[index])
+                          : null,
+                    );
+                  },
+                ),
+                const Divider(height: 1),
+                ListTile(
+                  dense: true,
+                  leading: const Icon(Icons.edit_outlined),
+                  title: Text('自定义 CDN 节点', style: titleMedium),
+                  subtitle: Text(
+                    customHost ?? '未设置，点击输入 host 或 URL',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
+                  ),
+                  trailing: customHost == null
+                      ? null
+                      : IconButton(
+                          tooltip: '清除自定义 CDN',
+                          icon: const Icon(Icons.close),
+                          onPressed: () => Navigator.of(
+                            context,
+                          ).pop(const CdnSelectResult.clearCustom()),
+                        ),
+                  onTap: () async {
+                    final host = await _showCustomCdnDialog(
+                      context,
+                      customHost,
+                    );
+                    if (!context.mounted || host == null) return;
+                    Navigator.of(context).pop(CdnSelectResult.custom(host));
+                  },
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<String?> _showCustomCdnDialog(
+    BuildContext context,
+    String? initialValue,
+  ) async {
+    final controller = TextEditingController(text: initialValue ?? '');
+    String? errorText;
+    try {
+      return await showDialog<String>(
+        context: context,
+        builder: (context) => StatefulBuilder(
+          builder: (context, setDialogState) => AlertDialog(
+            title: const Text('自定义 CDN 节点'),
+            content: TextField(
+              controller: controller,
+              autofocus: true,
+              decoration: InputDecoration(
+                hintText: 'upos-sz-mirrorali.bilivideo.com',
+                errorText: errorText,
+              ),
+              onChanged: (_) {
+                if (errorText == null) return;
+                setDialogState(() => errorText = null);
+              },
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: Text(
+                  '取消',
+                  style: TextStyle(color: ColorScheme.of(context).outline),
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                  final host = VideoUtils.normalizeCustomCDNHost(
+                    controller.text,
                   );
+                  if (host == null) {
+                    setDialogState(() => errorText = '请输入有效的 host 或完整 URL');
+                    return;
+                  }
+                  Navigator.of(context).pop(host);
                 },
-              );
-            }
-          : null,
+                child: const Text('确定'),
+              ),
+            ],
+          ),
+        ),
+      );
+    } finally {
+      controller.dispose();
+    }
+  }
+}
+
+class _CdnSpeedResultText extends StatelessWidget {
+  final ValueNotifier<String?> notifier;
+
+  const _CdnSpeedResultText({required this.notifier});
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder(
+      valueListenable: notifier,
+      builder: (context, value, _) {
+        return Text(
+          value ?? '---',
+          style: const TextStyle(fontSize: 13),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        );
+      },
     );
   }
 }

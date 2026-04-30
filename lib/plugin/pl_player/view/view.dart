@@ -2026,6 +2026,59 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
         ),
       );
     }
+    if (PlatformUtils.isTV) {
+      return Focus(
+        autofocus: true,
+        onKeyEvent: (node, event) {
+          if (event is! KeyDownEvent && event is! KeyRepeatEvent) {
+            // long-press OK release: restore speed
+            if (event is KeyUpEvent &&
+                event.logicalKey == LogicalKeyboardKey.select) {
+              plPlayerController.setPlaybackSpeed(
+                plPlayerController.playbackSpeed,
+              );
+            }
+            return KeyEventResult.ignored;
+          }
+          final key = event.logicalKey;
+          if (key == LogicalKeyboardKey.select ||
+              key == LogicalKeyboardKey.enter) {
+            if (event is KeyRepeatEvent) {
+              // long-press OK: speed +1x
+              plPlayerController.setPlaybackSpeed(
+                plPlayerController.playbackSpeed + 1.0,
+              );
+            } else {
+              if (plPlayerController.playerStatus.isPlaying) {
+                plPlayerController.pause();
+              } else {
+                plPlayerController.play();
+              }
+            }
+            return KeyEventResult.handled;
+          } else if (key == LogicalKeyboardKey.arrowLeft) {
+            plPlayerController.seekTo(
+              plPlayerController.position - const Duration(seconds: 10),
+            );
+            plPlayerController.controls = true;
+            return KeyEventResult.handled;
+          } else if (key == LogicalKeyboardKey.arrowRight) {
+            plPlayerController.seekTo(
+              plPlayerController.position + const Duration(seconds: 10),
+            );
+            plPlayerController.controls = true;
+            return KeyEventResult.handled;
+          } else if (key == LogicalKeyboardKey.arrowDown ||
+              key == LogicalKeyboardKey.arrowUp) {
+            plPlayerController.controls =
+                !plPlayerController.showControls.value;
+            return KeyEventResult.handled;
+          }
+          return KeyEventResult.ignored;
+        },
+        child: child,
+      );
+    }
     return child;
   }
 

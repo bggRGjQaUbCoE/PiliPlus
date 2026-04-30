@@ -50,6 +50,7 @@ import 'package:PiliPlus/services/service_locator.dart';
 import 'package:PiliPlus/services/shutdown_timer_service.dart'
     show shutdownTimerService;
 import 'package:PiliPlus/utils/accounts.dart';
+import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/scroll_controller_ext.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
@@ -171,7 +172,17 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
 
   // 获取视频资源，初始化播放器
   void videoSourceInit() {
-    videoDetailController.queryVideoUrl(autoFullScreenFlag: true);
+    if (PlatformUtils.isTV && videoDetailController.cid.value == 0) {
+      Worker? cidWorker;
+      cidWorker = ever(videoDetailController.cid, (cid) {
+        if (cid != 0) {
+          cidWorker?.dispose();
+          videoDetailController.queryVideoUrl(autoFullScreenFlag: true);
+        }
+      });
+    } else {
+      videoDetailController.queryVideoUrl(autoFullScreenFlag: true);
+    }
     if (videoDetailController.autoPlay) {
       plPlayerController = videoDetailController.plPlayerController;
       plPlayerController!

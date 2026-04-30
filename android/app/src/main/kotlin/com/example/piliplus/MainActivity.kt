@@ -251,8 +251,6 @@ class MainActivity : AudioServiceActivity() {
     override fun onDestroy() {
         stopService(Intent(this, com.ryanheise.audioservice.AudioService::class.java))
         super.onDestroy()
-        android.os.Process.killProcess(android.os.Process.myPid())
-        exitProcess(0)
     }
 
     override fun onUserLeaveHint() {

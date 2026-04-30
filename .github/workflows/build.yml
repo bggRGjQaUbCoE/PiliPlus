@@ -116,10 +116,9 @@ jobs:
 
             - name: Rename
               run: |
-                  ls -la build/app/outputs/flutter-apk/ || true
-                  for file in build/app/outputs/flutter-apk/app-*-release.apk; do
-                    [ -f "$file" ] || continue
-                    abi=$(echo "$file" | sed -E 's|.*/app-(mobile-)?(.*)-release\.apk|\2|')
+                  find build/app/outputs -name "*.apk" -type f
+                  find build/app/outputs -name "app-*-release.apk" -type f | while read file; do
+                    abi=$(basename "$file" | sed -E 's/app-(mobile-)?(.*)-release\.apk/\2/')
                     mv "$file" "PiliPlus_android_${{ env.version }}_${abi}.apk"
                   done
               shell: bash
@@ -212,9 +211,9 @@ jobs:
 
             - name: Rename
               run: |
-                  for file in build/app/outputs/flutter-apk/app-tv-*-release.apk; do
-                    [ -f "$file" ] || continue
-                    abi=$(echo "$file" | sed -E 's|.*/app-tv-(.*)-release\.apk|\1|')
+                  find build/app/outputs -name "*.apk" -type f
+                  find build/app/outputs -name "app-tv-*-release.apk" -type f | while read file; do
+                    abi=$(basename "$file" | sed -E 's/app-tv-(.*)-release\.apk/\1/')
                     mv "$file" "PiliPlus_android_tv_${{ env.version }}_${abi}.apk"
                   done
               shell: bash

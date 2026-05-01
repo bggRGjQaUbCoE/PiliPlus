@@ -1,10 +1,13 @@
 import 'dart:io';
 
+import 'package:PiliPlus/build_config.dart';
 import 'package:PiliPlus/http/init.dart';
 import 'package:PiliPlus/pages_tv/tv_app.dart';
 import 'package:PiliPlus/services/account_service.dart';
 import 'package:PiliPlus/services/service_locator.dart';
 import 'package:PiliPlus/utils/cache_manager.dart';
+import 'package:PiliPlus/utils/date_utils.dart';
+import 'package:PiliPlus/utils/json_file_handler.dart';
 import 'package:PiliPlus/utils/path_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/request_utils.dart';
@@ -12,6 +15,7 @@ import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
+import 'package:catcher_2/catcher_2.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -93,7 +97,38 @@ void main() async {
     await TVApp.initPlatformState();
   }
 
-  runApp(const TVApp());
+  if (Pref.enableLog) {
+    final customParameters = {
+      'BuildConfig':
+          '\nBuild Time: ${DateFormatUtils.format(BuildConfig.buildTime, format: DateFormatUtils.longFormatDs)}\n'
+          'Commit Hash: ${BuildConfig.commitHash}',
+    };
+    final fileHandler = await JsonFileHandler.init();
+    final Catcher2Options debugConfig = Catcher2Options(
+      SilentReportMode(),
+      [
+        ?fileHandler,
+        ConsoleHandler(
+          enableDeviceParameters: false,
+          enableApplicationParameters: false,
+          enableCustomParameters: true,
+        ),
+      ],
+      customParameters: customParameters,
+    );
+    final Catcher2Options releaseConfig = Catcher2Options(
+      SilentReportMode(),
+      [?fileHandler, ConsoleHandler(enableCustomParameters: true)],
+      customParameters: customParameters,
+    );
+    Catcher2(
+      debugConfig: debugConfig,
+      releaseConfig: releaseConfig,
+      rootWidget: const TVApp(),
+    );
+  } else {
+    runApp(const TVApp());
+  }
 }
 
 class _TVHttpOverrides extends HttpOverrides {

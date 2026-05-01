@@ -1026,6 +1026,7 @@ class PlPlayerController with BlockConfigMixin {
         if (PlatformUtils.isTV) {
           SmartDialog.showToast('播放错误: $event',
               displayTime: const Duration(seconds: 5));
+          Utils.reportError('mpv error: $event');
         }
         if (dataSource is FileSource &&
             event.startsWith("Failed to open file")) {

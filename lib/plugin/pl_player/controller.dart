@@ -771,6 +771,11 @@ class PlPlayerController with BlockConfigMixin {
     if (Platform.isAndroid) {
       opt['volume-max'] = '100';
       opt['ao'] = Pref.audioOutput;
+      if (PlatformUtils.isTV) {
+        opt['opengl-es'] = 'yes';
+        opt['demuxer-max-bytes'] = '2MiB';
+        opt['demuxer-max-back-bytes'] = '512KiB';
+      }
     } else if (PlatformUtils.isDesktop) {
       opt['volume'] = (volume.value * 100).toString();
     }
@@ -781,10 +786,14 @@ class PlPlayerController with BlockConfigMixin {
 
     final player = await Player.create(
       configuration: PlayerConfiguration(
-        bufferSize: Pref.expandBuffer
-            ? (isLive ? 64 * 1024 * 1024 : 32 * 1024 * 1024)
-            : (isLive ? 16 * 1024 * 1024 : 4 * 1024 * 1024),
-        logLevel: kDebugMode ? .warn : .error,
+        bufferSize: PlatformUtils.isTV
+            ? 2 * 1024 * 1024
+            : Pref.expandBuffer
+                ? (isLive ? 64 * 1024 * 1024 : 32 * 1024 * 1024)
+                : (isLive ? 16 * 1024 * 1024 : 4 * 1024 * 1024),
+        logLevel: PlatformUtils.isTV
+            ? .warn
+            : kDebugMode ? .warn : .error,
         options: opt,
       ),
     );
@@ -1018,6 +1027,10 @@ class PlPlayerController with BlockConfigMixin {
           }
         })),
       stream.error.listen((String event) {
+        if (PlatformUtils.isTV) {
+          SmartDialog.showToast('播放错误: $event',
+              displayTime: const Duration(seconds: 5));
+        }
         if (dataSource is FileSource &&
             event.startsWith("Failed to open file")) {
           return;

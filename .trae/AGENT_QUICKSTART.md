@@ -3,6 +3,7 @@
 > ⚡ 5 分钟上手，避免踩坑
 > 
 > 本文档面向 AI 智能体，提供最小可行操作路径
+> 更新日期: 2026-04-30 | 版本: 2.0.6
 
 ---
 
@@ -232,9 +233,8 @@ adb uninstall com.example.piliplus.debug
 
 ## 📚 延伸阅读
 
-- [完整环境配置](environment.yml) - Harness 标准格式
-- [构建指南](../FLUTTER_ANDROID_BUILD_GUIDE.md) - 详细构建说明
-- [开发指南](../FLUTTER_DEV_AGENT_GUIDE.md) - 开发操作指南
+- [完整环境配置](environment.yml) - 环境变量和路径定义
+- [故障排查](TROUBLESHOOTING.md) - 常见问题及解决方案
 
 ---
 

@@ -2027,57 +2027,9 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       );
     }
     if (PlatformUtils.isTV) {
-      return Focus(
-        autofocus: true,
-        onKeyEvent: (node, event) {
-          if (event is! KeyDownEvent && event is! KeyRepeatEvent) {
-            if (event is KeyUpEvent &&
-                event.logicalKey == LogicalKeyboardKey.select) {
-              plPlayerController.setPlaybackSpeed(
-                plPlayerController.playbackSpeed,
-              );
-            }
-            return KeyEventResult.ignored;
-          }
-          final key = event.logicalKey;
-          if (key == LogicalKeyboardKey.select ||
-              key == LogicalKeyboardKey.enter) {
-            if (event is KeyRepeatEvent) {
-              plPlayerController.setPlaybackSpeed(
-                plPlayerController.playbackSpeed + 1.0,
-              );
-            } else {
-              if (plPlayerController.playerStatus.isPlaying) {
-                plPlayerController.pause();
-              } else {
-                plPlayerController.play();
-              }
-            }
-            return KeyEventResult.handled;
-          } else if (key == LogicalKeyboardKey.arrowLeft) {
-            plPlayerController.seekTo(
-              plPlayerController.position - const Duration(seconds: 10),
-            );
-            plPlayerController.controls = true;
-            return KeyEventResult.handled;
-          } else if (key == LogicalKeyboardKey.arrowRight) {
-            plPlayerController.seekTo(
-              plPlayerController.position + const Duration(seconds: 10),
-            );
-            plPlayerController.controls = true;
-            return KeyEventResult.handled;
-          } else if (key == LogicalKeyboardKey.arrowUp) {
-            plPlayerController.controls = true;
-            return KeyEventResult.handled;
-          } else if (key == LogicalKeyboardKey.arrowDown) {
-            _showTVPlayerMenu(context);
-            return KeyEventResult.handled;
-          } else if (key == LogicalKeyboardKey.contextMenu) {
-            _showTVPlayerMenu(context);
-            return KeyEventResult.handled;
-          }
-          return KeyEventResult.ignored;
-        },
+      return _TVPlayerKeyHandler(
+        plPlayerController: plPlayerController,
+        onMenu: () => _showTVPlayerMenu(context),
         child: child,
       );
     }
@@ -2595,4 +2547,78 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       ),
     );
   }
+}
+
+class _TVPlayerKeyHandler extends StatefulWidget {
+  const _TVPlayerKeyHandler({
+    required this.plPlayerController,
+    required this.onMenu,
+    required this.child,
+  });
+
+  final PlPlayerController plPlayerController;
+  final VoidCallback onMenu;
+  final Widget child;
+
+  @override
+  State<_TVPlayerKeyHandler> createState() => _TVPlayerKeyHandlerState();
+}
+
+class _TVPlayerKeyHandlerState extends State<_TVPlayerKeyHandler> {
+  PlPlayerController get ctr => widget.plPlayerController;
+
+  bool _handleKeyEvent(KeyEvent event) {
+    if (event is! KeyDownEvent && event is! KeyRepeatEvent) {
+      if (event is KeyUpEvent &&
+          event.logicalKey == LogicalKeyboardKey.select) {
+        ctr.setPlaybackSpeed(ctr.playbackSpeed);
+      }
+      return false;
+    }
+    final key = event.logicalKey;
+    if (key == LogicalKeyboardKey.select ||
+        key == LogicalKeyboardKey.enter) {
+      if (event is KeyRepeatEvent) {
+        ctr.setPlaybackSpeed(ctr.playbackSpeed + 1.0);
+      } else {
+        if (ctr.playerStatus.isPlaying) {
+          ctr.pause();
+        } else {
+          ctr.play();
+        }
+      }
+      return true;
+    } else if (key == LogicalKeyboardKey.arrowLeft) {
+      ctr.seekTo(ctr.position - const Duration(seconds: 10));
+      ctr.controls = true;
+      return true;
+    } else if (key == LogicalKeyboardKey.arrowRight) {
+      ctr.seekTo(ctr.position + const Duration(seconds: 10));
+      ctr.controls = true;
+      return true;
+    } else if (key == LogicalKeyboardKey.arrowUp) {
+      ctr.controls = true;
+      return true;
+    } else if (key == LogicalKeyboardKey.arrowDown ||
+        key == LogicalKeyboardKey.contextMenu) {
+      widget.onMenu();
+      return true;
+    }
+    return false;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    HardwareKeyboard.instance.addHandler(_handleKeyEvent);
+  }
+
+  @override
+  void dispose() {
+    HardwareKeyboard.instance.removeHandler(_handleKeyEvent);
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
 }

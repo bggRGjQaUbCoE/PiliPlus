@@ -1,3 +1,4 @@
+import 'package:PiliPlus/pages/setting/pages/logs.dart';
 import 'package:PiliPlus/pages_tv/common/tv_focus_wrapper.dart';
 import 'package:PiliPlus/pages_tv/common/tv_page.dart';
 import 'package:PiliPlus/services/account_service.dart';
@@ -19,6 +20,7 @@ class TVSettingPage extends StatefulWidget {
 class _TVSettingPageState extends State<TVSettingPage> {
   late final _enableDanmaku = Pref.enableShowDanmaku.obs;
   late final _enableHA = Pref.enableHA.obs;
+  late final _enableLog = Pref.enableLog.obs;
 
   @override
   Widget build(BuildContext context) {
@@ -91,6 +93,31 @@ class _TVSettingPageState extends State<TVSettingPage> {
                     color: theme.colorScheme.primary),
                 title: const Text('默认画质'),
                 subtitle: Text(_getQualityLabel(Pref.defaultVideoQa)),
+              ),
+            ),
+
+            const SizedBox(height: 16),
+            _SectionTitle('日志', theme),
+            _buildToggleItem(
+              icon: Icons.bug_report,
+              title: '日志记录',
+              value: _enableLog,
+              onChanged: (val) {
+                _enableLog.value = val;
+                GStorage.setting.put(SettingBoxKey.enableLog, val);
+                SmartDialog.showToast('重启应用后生效');
+              },
+            ),
+            TVFocusWrapper(
+              scaleFactor: 1.02,
+              borderRadius: 12,
+              onSelect: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const LogsPage()),
+              ),
+              child: ListTile(
+                leading: Icon(Icons.article, color: theme.colorScheme.primary),
+                title: const Text('查看日志'),
+                subtitle: const Text('查看应用运行日志'),
               ),
             ),
 

@@ -2031,7 +2031,6 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
         autofocus: true,
         onKeyEvent: (node, event) {
           if (event is! KeyDownEvent && event is! KeyRepeatEvent) {
-            // long-press OK release: restore speed
             if (event is KeyUpEvent &&
                 event.logicalKey == LogicalKeyboardKey.select) {
               plPlayerController.setPlaybackSpeed(
@@ -2044,7 +2043,6 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
           if (key == LogicalKeyboardKey.select ||
               key == LogicalKeyboardKey.enter) {
             if (event is KeyRepeatEvent) {
-              // long-press OK: speed +1x
               plPlayerController.setPlaybackSpeed(
                 plPlayerController.playbackSpeed + 1.0,
               );
@@ -2068,10 +2066,14 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
             );
             plPlayerController.controls = true;
             return KeyEventResult.handled;
-          } else if (key == LogicalKeyboardKey.arrowDown ||
-              key == LogicalKeyboardKey.arrowUp) {
-            plPlayerController.controls =
-                !plPlayerController.showControls.value;
+          } else if (key == LogicalKeyboardKey.arrowUp) {
+            plPlayerController.controls = true;
+            return KeyEventResult.handled;
+          } else if (key == LogicalKeyboardKey.arrowDown) {
+            _showTVPlayerMenu(context);
+            return KeyEventResult.handled;
+          } else if (key == LogicalKeyboardKey.contextMenu) {
+            _showTVPlayerMenu(context);
             return KeyEventResult.handled;
           }
           return KeyEventResult.ignored;
@@ -2080,6 +2082,103 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       );
     }
     return child;
+  }
+
+  void _showTVPlayerMenu(BuildContext context) {
+    final ctr = plPlayerController;
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        final speeds = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0, 3.0];
+        return AlertDialog(
+          title: const Text('播放设置'),
+          content: SizedBox(
+            width: 400,
+            child: StatefulBuilder(
+              builder: (ctx, setDialogState) => Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // 弹幕开关
+                  Obx(() => SwitchListTile(
+                        title: const Text('弹幕'),
+                        value: ctr.enableShowDanmaku.value,
+                        onChanged: (val) {
+                          ctr.enableShowDanmaku.value = val;
+                        },
+                      )),
+                  const Divider(),
+                  // 倍速选择
+                  const Padding(
+                    padding: EdgeInsets.only(left: 16, top: 8),
+                    child: Text('播放速度'),
+                  ),
+                  Obx(() => Wrap(
+                        spacing: 8,
+                        children: speeds
+                            .map(
+                              (s) => ChoiceChip(
+                                label: Text('${s}x'),
+                                selected: ctr.playbackSpeed == s,
+                                onSelected: (_) {
+                                  ctr.setPlaybackSpeed(s);
+                                },
+                              ),
+                            )
+                            .toList(),
+                      )),
+                  const Divider(),
+                  // 画质选择（如果有）
+                  if (widget.videoDetailController != null) ...[
+                    const Padding(
+                      padding: EdgeInsets.only(left: 16, top: 8),
+                      child: Text('画质'),
+                    ),
+                    Obx(() {
+                      final currentQa =
+                          widget.videoDetailController!.currentVideoQa.value;
+                      final acceptQuality =
+                          widget.videoDetailController!.data.acceptQuality;
+                      final acceptDesc =
+                          widget.videoDetailController!.data.acceptDesc;
+                      if (acceptQuality == null || acceptDesc == null) {
+                        return const SizedBox.shrink();
+                      }
+                      return Wrap(
+                        spacing: 8,
+                        children: List.generate(
+                          acceptQuality.length,
+                          (i) => ChoiceChip(
+                            label: Text(
+                              i < acceptDesc.length ? acceptDesc[i] : '未知',
+                            ),
+                            selected: currentQa?.code == acceptQuality[i],
+                            onSelected: (_) {
+                              widget.videoDetailController!.currentVideoQa
+                                  .value = VideoQuality.fromCode(
+                                acceptQuality[i],
+                              );
+                              widget.videoDetailController!.updatePlayer();
+                              Navigator.of(ctx).pop();
+                            },
+                          ),
+                        ),
+                      );
+                    }),
+                  ],
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text('关闭'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   Widget get _videoWidget {

@@ -772,11 +772,8 @@ class PlPlayerController with BlockConfigMixin {
       opt['volume-max'] = '100';
       opt['ao'] = Pref.audioOutput;
       if (PlatformUtils.isTV) {
-        opt['opengl-es'] = 'yes';
-        opt['gpu-dumb-mode'] = 'yes';
-        opt['demuxer-max-bytes'] = '2MiB';
-        opt['demuxer-max-back-bytes'] = '512KiB';
-        opt['vd-lavc-threads'] = '4';
+        opt['demuxer-max-bytes'] = '2097152'; // 2MiB
+        opt['demuxer-max-back-bytes'] = '524288'; // 512KiB
       }
     } else if (PlatformUtils.isDesktop) {
       opt['volume'] = (volume.value * 100).toString();

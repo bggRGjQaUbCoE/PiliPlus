@@ -254,8 +254,16 @@ dependencies:
 dependency_overrides:
   # screen_brightness: ^2.1.
   screen_brightness_ios: ^2.1.2
-  screen_brightness_android: ^2.1.3
-  screen_brightness_platform_interface: ^2.1.0
+  screen_brightness_android:
+    git:
+      url: https://github.com/bggRGjQaUbCoE/screen_brightness.git
+      path: screen_brightness_android
+      ref: dev
+  screen_brightness_platform_interface:
+    git:
+      url: https://github.com/bggRGjQaUbCoE/screen_brightness.git
+      path: screen_brightness_platform_interface
+      ref: dev
   path: ^1.9.1
   mime: ^2.0.0
   rxdart: ^0.28.0

@@ -252,25 +252,27 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
 
       Future.microtask(() async {
         try {
-          _brightnessValue.value =
-              await ScreenBrightnessPlatform.instance.application;
-
           void listener(double value) {
             if (mounted) {
               _brightnessValue.value = value;
             }
           }
 
-          _brightnessListener =
-              Platform.isIOS || plPlayerController.setSystemBrightness
-              ? ScreenBrightnessPlatform
-                    .instance
-                    .onSystemScreenBrightnessChanged
-                    .listen(listener)
-              : ScreenBrightnessPlatform
-                    .instance
-                    .onApplicationScreenBrightnessChanged
-                    .listen(listener);
+          if (Platform.isIOS || plPlayerController.setSystemBrightness) {
+            _brightnessValue.value =
+                await ScreenBrightnessPlatform.instance.system;
+            _brightnessListener = ScreenBrightnessPlatform
+                .instance
+                .onSystemScreenBrightnessChanged
+                .listen(listener);
+          } else {
+            _brightnessValue.value =
+                await ScreenBrightnessPlatform.instance.application;
+            _brightnessListener = ScreenBrightnessPlatform
+                .instance
+                .onApplicationScreenBrightnessChanged
+                .listen(listener);
+          }
         } catch (_) {}
       });
     }
@@ -1078,9 +1080,9 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     } else if (_gestureType == GestureType.left) {
       // 左边区域 👈
       final double level = maxHeight * 3;
-      final double brightness = _brightnessValue.value - delta.dy / level;
-      final double result = brightness.clamp(0.0, 1.0);
-      setBrightness(result);
+      final double brightness = (_brightnessValue.value - delta.dy / level)
+          .clamp(0.0, 1.0);
+      setBrightness(brightness);
     } else if (_gestureType == GestureType.center) {
       // 全屏
       const double threshold = 2.5; // 滑动阈值
@@ -1126,6 +1128,11 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
   }
 
   void _onInteractionEnd(ScaleEndDetails details) {
+    if (Platform.isAndroid &&
+        _gestureType == .left &&
+        plPlayerController.setSystemBrightness) {
+      ScreenBrightnessPlatform.instance.restoreBrightnessMode();
+    }
     if (plPlayerController.showSeekPreview) {
       plPlayerController.showPreview.value = false;
     }

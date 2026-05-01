@@ -1522,10 +1522,11 @@ packages:
   screen_brightness_android:
     dependency: "direct overridden"
     description:
-      name: screen_brightness_android
-      sha256: d34f5321abd03bc3474f4c381f53d189117eba0b039eac1916aa92cca5fd0a96
-      url: "https://pub.dev"
-    source: hosted
+      path: screen_brightness_android
+      ref: dev
+      resolved-ref: "0696d1f3665511496bfeb842f02deada5cd57ff9"
+      url: "https://github.com/bggRGjQaUbCoE/screen_brightness.git"
+    source: git
     version: "2.1.3"
   screen_brightness_ios:
     dependency: "direct overridden"
@@ -1538,10 +1539,11 @@ packages:
   screen_brightness_platform_interface:
     dependency: "direct main"
     description:
-      name: screen_brightness_platform_interface
-      sha256: "737bd47b57746bc4291cab1b8a5843ee881af499514881b0247ec77447ee769c"
-      url: "https://pub.dev"
-    source: hosted
+      path: screen_brightness_platform_interface
+      ref: dev
+      resolved-ref: "0696d1f3665511496bfeb842f02deada5cd57ff9"
+      url: "https://github.com/bggRGjQaUbCoE/screen_brightness.git"
+    source: git
     version: "2.1.0"
   screen_retriever:
     dependency: "direct main"

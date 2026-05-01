@@ -13,8 +13,6 @@ import 'package:PiliPlus/common/widgets/image_grid/image_grid_view.dart';
 import 'package:PiliPlus/common/widgets/pendant_avatar.dart';
 import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
     show ReplyInfo, ReplyControl, Content, Url;
-import 'package:PiliPlus/grpc/reply.dart';
-import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/reply.dart';
 import 'package:PiliPlus/http/video.dart';
 import 'package:PiliPlus/models/common/badge_type.dart';
@@ -34,13 +32,11 @@ import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:PiliPlus/utils/extension/context_ext.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
-import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:PiliPlus/utils/global_data.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
-import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/url_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -84,8 +80,6 @@ class ReplyItemGrpc extends StatelessWidget {
 
   static final _voteRegExp = RegExp(r"^\{vote:\d+?\}$");
   static final _timeRegExp = RegExp(r'^(?:\d+[:：])?\d+[:：]\d+$');
-  static bool enableWordRe = Pref.enableWordRe;
-  static int? replyLengthLimit = Pref.replyLengthLimit;
 
   @override
   Widget build(BuildContext context) {
@@ -140,10 +134,7 @@ class ReplyItemGrpc extends StatelessWidget {
   Widget _buildHeader(BuildContext context, ThemeData theme) {
     final member = replyItem.member;
     Widget header = GestureDetector(
-      onTap: () {
-        feedBack();
-        Get.toNamed('/member?mid=${replyItem.mid}');
-      },
+      onTap: () => Get.toNamed('/member?mid=${replyItem.mid}'),
       child: ExtraHitTestWidget(
         width: 46,
         child: Row(
@@ -310,7 +301,6 @@ class ReplyItemGrpc extends StatelessWidget {
               height: 1.75,
               fontSize: theme.textTheme.bodyMedium!.fontSize,
             ),
-            maxLines: replyLevel == 1 ? replyLengthLimit : null,
             TextSpan(
               children: [
                 if (replyControl.isUpTop) ...[
@@ -330,9 +320,7 @@ class ReplyItemGrpc extends StatelessWidget {
                 _buildMessage(
                   context,
                   theme,
-                  replyControl.showTranslation
-                      ? replyItem.translatedContent
-                      : replyItem.content,
+                  replyItem.content,
                   replyControl,
                 ),
               ],
@@ -371,72 +359,6 @@ class ReplyItemGrpc extends StatelessWidget {
     );
   }
 
-  Widget _buildTranslateBtn(
-    BuildContext context,
-    ThemeData theme,
-    ReplyControl replyControl,
-    TextStyle textStyle,
-    ButtonStyle buttonStyle,
-  ) {
-    late bool isProcessing = false;
-    final color = replyControl.showTranslation
-        ? theme.colorScheme.primary
-        : theme.colorScheme.outline.withValues(alpha: 0.8);
-    return SizedBox(
-      height: 32,
-      child: TextButton(
-        style: buttonStyle,
-        onPressed: () async {
-          if (replyControl.showTranslation) {
-            replyControl.showTranslation = false;
-            (context as Element).markNeedsBuild();
-          } else {
-            if (isProcessing) {
-              return;
-            }
-            if (replyItem.hasTranslatedContent()) {
-              replyControl.showTranslation = true;
-              (context as Element).markNeedsBuild();
-              return;
-            }
-            isProcessing = true;
-            final res = await ReplyGrpc.translateReply(
-              type: replyItem.type,
-              oid: replyItem.oid,
-              rpid: replyItem.id,
-            );
-            if (res case Success(:final response)) {
-              final item = response.translatedReplies[replyItem.id];
-              if (item != null && item.hasTranslatedContent()) {
-                replyControl.showTranslation = true;
-                replyItem.translatedContent = item.translatedContent;
-                if (context.mounted) {
-                  (context as Element).markNeedsBuild();
-                }
-              } else {
-                SmartDialog.showToast('翻译结果为空');
-              }
-            } else if (res case Error(:final errMsg)) {
-              SmartDialog.showToast('翻译失败: $errMsg');
-            }
-            isProcessing = false;
-          }
-        },
-        child: Row(
-          spacing: 3,
-          mainAxisSize: .min,
-          children: [
-            Icon(Icons.translate, size: 16, color: color),
-            Text(
-              replyControl.showTranslation ? '原文' : '翻译',
-              style: textStyle.copyWith(color: color),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget buttonAction(
     BuildContext context,
     ThemeData theme,
@@ -460,10 +382,7 @@ class ReplyItemGrpc extends StatelessWidget {
           height: 32,
           child: TextButton(
             style: buttonStyle,
-            onPressed: () {
-              feedBack();
-              onReply?.call(replyItem);
-            },
+            onPressed: () => onReply?.call(replyItem),
             child: Row(
               spacing: 3,
               mainAxisSize: .min,
@@ -479,17 +398,7 @@ class ReplyItemGrpc extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 2),
-        if (replyControl.translationSwitch ==
-            .TRANSLATION_SWITCH_SHOW_TRANSLATION) ...[
-          _buildTranslateBtn(
-            context,
-            theme,
-            replyControl,
-            textStyle,
-            buttonStyle,
-          ),
-          const SizedBox(width: 2),
-        ] else if (replyItem.replyControl.cardLabels.isNotEmpty) ...[
+        if (replyItem.replyControl.cardLabels.isNotEmpty) ...[
           Text(
             replyItem.replyControl.cardLabels
                 .map((e) => e.textContent)
@@ -598,12 +507,9 @@ class ReplyItemGrpc extends StatelessWidget {
                               color: theme.colorScheme.primary,
                             ),
                             recognizer: NoDeadlineTapGestureRecognizer()
-                              ..onTap = () {
-                                feedBack();
-                                Get.toNamed(
-                                  '/member?mid=${childReply.member.mid}',
-                                );
-                              },
+                              ..onTap = () => Get.toNamed(
+                                '/member?mid=${childReply.member.mid}',
+                              ),
                           ),
                           if (childReply.mid == upMid) ...[
                             const TextSpan(text: ' '),
@@ -709,7 +615,7 @@ class ReplyItemGrpc extends StatelessWidget {
     }
 
     void addUrl(String matchStr, Url url, {bool addPlainText = false}) {
-      if (url.extra.isWordSearch && !enableWordRe) {
+      if (url.extra.isWordSearch) {
         if (addPlainText) {
           addPlainTextSpan(matchStr);
         }
@@ -796,13 +702,7 @@ class ReplyItemGrpc extends StatelessWidget {
           spanChildren.add(
             WidgetSpan(
               child: NetworkImgLayer(
-                /// remove gif
                 src: emote.url,
-                // src: emote.hasWebpUrl()
-                //     ? emote.webpUrl
-                //     : emote.hasGifUrl()
-                //     ? emote.gifUrl
-                //     : emote.url,
                 type: ImageType.emote,
                 width: size,
                 height: size,

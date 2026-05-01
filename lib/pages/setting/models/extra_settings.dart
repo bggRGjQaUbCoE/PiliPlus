@@ -20,18 +20,15 @@ import 'package:PiliPlus/models/common/super_resolution_type.dart';
 import 'package:PiliPlus/models/dynamics/result.dart'
     show DynamicsDataModel, ItemModulesModel;
 import 'package:PiliPlus/pages/common/slide/common_slide_page.dart';
-import 'package:PiliPlus/pages/home/controller.dart';
 import 'package:PiliPlus/pages/main/controller.dart';
 import 'package:PiliPlus/pages/setting/models/model.dart';
 import 'package:PiliPlus/pages/setting/widgets/select_dialog.dart';
 import 'package:PiliPlus/pages/setting/widgets/slider_dialog.dart';
-import 'package:PiliPlus/pages/video/reply/widgets/reply_item_grpc.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/services/download/download_service.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/cache_manager.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
-import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:PiliPlus/utils/global_data.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:PiliPlus/utils/path_utils.dart';
@@ -39,7 +36,6 @@ import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
-import 'package:PiliPlus/utils/update.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
@@ -168,16 +164,6 @@ List<SettingsModel> get extraSettings => [
     setKey: SettingBoxKey.horizontalPreview,
     defaultVal: false,
     onChanged: (value) => ImageGridView.horizontalPreview = value,
-  ),
-  NormalModel(
-    title: '评论折叠行数',
-    subtitle: '0行为不折叠',
-    leading: const Icon(Icons.compress),
-    getTrailing: (theme) => Text(
-      '${ReplyItemGrpc.replyLengthLimit}行',
-      style: theme.textTheme.titleSmall,
-    ),
-    onTap: _showReplyLengthDialog,
   ),
   NormalModel(
     title: '弹幕行高',
@@ -317,13 +303,6 @@ List<SettingsModel> get extraSettings => [
     defaultVal: false,
   ),
   const SwitchModel(
-    title: '首页切换页面动画',
-    leading: Icon(Icons.home_outlined),
-    setKey: SettingBoxKey.mainTabBarView,
-    defaultVal: false,
-    needReboot: true,
-  ),
-  const SwitchModel(
     title: '搜索建议',
     leading: Icon(Icons.search),
     setKey: SettingBoxKey.searchSuggestion,
@@ -454,12 +433,6 @@ List<SettingsModel> get extraSettings => [
     onChanged: (value) => CommonSlideMixin.slideDismissReplyPage = value,
   ),
   const SwitchModel(
-    title: '启用双指缩小视频',
-    leading: Icon(Icons.pinch),
-    setKey: SettingBoxKey.enableShrinkVideoSize,
-    defaultVal: true,
-  ),
-  const SwitchModel(
     title: '动态/专栏详情页展示底部操作栏',
     leading: Icon(Icons.more_horiz),
     setKey: SettingBoxKey.showDynActionBar,
@@ -493,16 +466,6 @@ List<SettingsModel> get extraSettings => [
     defaultVal: false,
     onChanged: (value) => ImageGridView.enableImgMenu = value,
   ),
-  SwitchModel(
-    setKey: SettingBoxKey.feedBackEnable,
-    onChanged: (value) {
-      enableFeedback = value;
-      feedBack();
-    },
-    leading: const Icon(Icons.vibration_outlined),
-    title: '震动反馈',
-    subtitle: '请确定手机设置中已开启震动反馈',
-  ),
   const SwitchModel(
     title: '大家都在搜',
     subtitle: '是否展示「大家都在搜」',
@@ -517,23 +480,6 @@ List<SettingsModel> get extraSettings => [
     setKey: SettingBoxKey.enableSearchRcmd,
     defaultVal: true,
   ),
-  SwitchModel(
-    title: '搜索默认词',
-    subtitle: '是否展示搜索框默认词',
-    leading: const Icon(Icons.whatshot_outlined),
-    setKey: SettingBoxKey.enableSearchWord,
-    defaultVal: false,
-    onChanged: (val) {
-      try {
-        final controller = Get.find<HomeController>()..enableSearchWord = val;
-        if (val) {
-          controller.querySearchDefault();
-        } else {
-          controller.defaultSearch.value = '';
-        }
-      } catch (_) {}
-    },
-  ),
   const SwitchModel(
     title: '快速收藏',
     subtitle: '点击设置默认收藏夹\n点按收藏至默认，长按选择文件夹',
@@ -542,26 +488,11 @@ List<SettingsModel> get extraSettings => [
     onTap: _showFavDialog,
     defaultVal: false,
   ),
-  SwitchModel(
-    title: '评论区搜索关键词',
-    subtitle: '展示评论区搜索关键词',
-    leading: const Icon(Icons.search_outlined),
-    setKey: SettingBoxKey.enableWordRe,
-    defaultVal: false,
-    onChanged: (value) => ReplyItemGrpc.enableWordRe = value,
-  ),
   const SwitchModel(
     title: '启用AI总结',
     subtitle: '视频详情页开启AI总结',
     leading: Icon(Icons.engineering_outlined),
     setKey: SettingBoxKey.enableAi,
-    defaultVal: false,
-  ),
-  const SwitchModel(
-    title: '消息页禁用"收到的赞"功能',
-    subtitle: '禁止打开入口，降低网络社交依赖',
-    leading: Icon(Icons.beach_access_outlined),
-    setKey: SettingBoxKey.disableLikeMsg,
     defaultVal: false,
   ),
   const SwitchModel(
@@ -650,18 +581,6 @@ List<SettingsModel> get extraSettings => [
     },
     leading: const Icon(Icons.delete_outlined),
     onTap: _showCacheDialog,
-  ),
-  SwitchModel(
-    title: '检查更新',
-    subtitle: '每次启动时检查是否需要更新',
-    leading: const Icon(Icons.system_update_alt),
-    setKey: SettingBoxKey.autoUpdate,
-    defaultVal: true,
-    onChanged: (val) {
-      if (val) {
-        Update.checkUpdate(false);
-      }
-    },
   ),
 ];
 
@@ -836,47 +755,6 @@ void _showDynDialog(BuildContext context) {
               Get.back();
               GStorage.setting.put(SettingBoxKey.dynamicPeriod, val);
               Get.find<MainController>().dynamicPeriod = val * 60 * 1000;
-            } catch (e) {
-              SmartDialog.showToast(e.toString());
-            }
-          },
-          child: const Text('确定'),
-        ),
-      ],
-    ),
-  );
-}
-
-void _showReplyLengthDialog(BuildContext context, VoidCallback setState) {
-  String replyLengthLimit = ReplyItemGrpc.replyLengthLimit.toString();
-  showDialog(
-    context: context,
-    builder: (context) => AlertDialog(
-      title: const Text('评论折叠行数'),
-      content: TextFormField(
-        autofocus: true,
-        initialValue: replyLengthLimit,
-        keyboardType: TextInputType.number,
-        onChanged: (value) => replyLengthLimit = value,
-        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-        decoration: const InputDecoration(suffixText: '行'),
-      ),
-      actions: [
-        TextButton(
-          onPressed: Get.back,
-          child: Text(
-            '取消',
-            style: TextStyle(color: ColorScheme.of(context).outline),
-          ),
-        ),
-        TextButton(
-          onPressed: () async {
-            try {
-              final val = int.parse(replyLengthLimit);
-              Get.back();
-              ReplyItemGrpc.replyLengthLimit = val == 0 ? null : val;
-              await GStorage.setting.put(SettingBoxKey.replyLengthLimit, val);
-              setState();
             } catch (e) {
               SmartDialog.showToast(e.toString());
             }

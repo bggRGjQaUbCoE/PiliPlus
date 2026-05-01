@@ -94,12 +94,6 @@ class _LocalIntroPanelState extends State<LocalIntroPanel>
                                 cacheHeight: cacheWidth
                                     ? null
                                     : 88.cacheSize(context),
-                                colorBlendMode: NetworkImgLayer.reduce
-                                    ? BlendMode.modulate
-                                    : null,
-                                color: NetworkImgLayer.reduce
-                                    ? NetworkImgLayer.reduceLuxColor
-                                    : null,
                               ),
                             )
                           : NetworkImgLayer(

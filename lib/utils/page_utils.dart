@@ -23,7 +23,6 @@ import 'package:PiliPlus/utils/extension/extension.dart';
 import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:PiliPlus/utils/extension/size_ext.dart';
 import 'package:PiliPlus/utils/extension/string_ext.dart';
-import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:PiliPlus/utils/global_data.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
@@ -209,8 +208,6 @@ abstract final class PageUtils {
     DynamicItemModel item, {
     bool isPush = false,
   }) async {
-    feedBack();
-
     void push() {
       if (item.basic?.commentType == 12) {
         toDupNamed(

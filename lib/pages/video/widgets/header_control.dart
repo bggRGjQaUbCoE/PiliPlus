@@ -1,7 +1,8 @@
-import 'dart:async';
+import 'dart:async' show Timer;
 import 'dart:convert' show jsonDecode, utf8;
-import 'dart:io';
+import 'dart:io' show Platform, File;
 import 'dart:math';
+import 'dart:typed_data' show Uint8List;
 
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/widgets/button/icon_button.dart';
@@ -59,7 +60,7 @@ import 'package:dio/dio.dart';
 import 'package:easy_debounce/easy_throttle.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:floating/floating.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart' show compute;
 import 'package:flutter/material.dart' hide showBottomSheet;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';

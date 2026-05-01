@@ -1,8 +1,6 @@
 import 'dart:async';
 import 'dart:math';
 
-import 'package:PiliPlus/http/api.dart';
-import 'package:PiliPlus/http/init.dart';
 import 'package:PiliPlus/models/common/home_tab_type.dart';
 import 'package:PiliPlus/pages/common/common_controller.dart';
 import 'package:PiliPlus/pages/main/controller.dart';
@@ -10,7 +8,6 @@ import 'package:PiliPlus/services/account_service.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
-import 'package:PiliPlus/utils/wbi_sign.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -23,10 +20,6 @@ class HomeController extends GetxController
   RxBool? showTopBar;
   late final bool hideTopBar;
 
-  bool enableSearchWord = Pref.enableSearchWord;
-  late final RxString defaultSearch = ''.obs;
-  late int lateCheckSearchAt = 0;
-
   ScrollOrRefreshMixin get controller => tabs[tabController.index].ctr();
 
   @override
@@ -38,7 +31,7 @@ class HomeController extends GetxController
   void onInit() {
     super.onInit();
 
-    hideTopBar = !Pref.useSideBar && Pref.hideTopBar;
+    hideTopBar = Pref.hideTopBar;
     if (hideTopBar) {
       final mainCtr = Get.find<MainController>();
       switch (mainCtr.barHideType) {
@@ -47,11 +40,6 @@ class HomeController extends GetxController
         case .sync:
           mainCtr.barOffset ??= RxDouble(0.0);
       }
-    }
-
-    if (enableSearchWord) {
-      lateCheckSearchAt = DateTime.now().millisecondsSinceEpoch;
-      querySearchDefault();
     }
 
     setTabConfig();
@@ -83,18 +71,5 @@ class HomeController extends GetxController
   void dispose() {
     tabController.dispose();
     super.dispose();
-  }
-
-  Future<void> querySearchDefault() async {
-    try {
-      final res = await Request().get(
-        Api.searchDefault,
-        queryParameters: await WbiSign.makSign({'web_location': 333.1365}),
-      );
-      if (res.data['code'] == 0) {
-        defaultSearch.value = res.data['data']?['name'] ?? '';
-        // defaultSearch.value = res.data['data']?['show_name'] ?? '';
-      }
-    } catch (_) {}
   }
 }

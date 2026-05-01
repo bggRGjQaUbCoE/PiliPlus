@@ -31,7 +31,6 @@ import 'package:PiliPlus/utils/extension/context_ext.dart';
 import 'package:PiliPlus/utils/extension/size_ext.dart';
 import 'package:PiliPlus/utils/extension/string_ext.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
-import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
@@ -142,7 +141,6 @@ abstract final class RequestUtils {
     if (mid == null) {
       return;
     }
-    feedBack();
     if (!isFollow) {
       final res = await VideoHttp.relationMod(
         mid: mid,
@@ -396,8 +394,6 @@ abstract final class RequestUtils {
     bool uiStatus,
     VoidCallback onSuccess,
   ) async {
-    feedBack();
-
     final like = item.modules.moduleStat?.like;
     final status = like?.status ?? false;
 

@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart' show clampDouble;
 
 class Cover {
   String? url;

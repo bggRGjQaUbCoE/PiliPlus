@@ -20,7 +20,6 @@ import 'package:PiliPlus/pages/whisper_link_setting/view.dart';
 import 'package:PiliPlus/utils/extension/file_ext.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/widget_ext.dart';
-import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
@@ -63,7 +62,6 @@ class _WhisperDetailPageState
           behavior: HitTestBehavior.opaque,
           onTap: () {
             if (_whisperDetailController.mid != null) {
-              feedBack();
               Get.toNamed('/member?mid=${_whisperDetailController.mid}');
             }
           },

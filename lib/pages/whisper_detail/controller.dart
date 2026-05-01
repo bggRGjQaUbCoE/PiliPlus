@@ -10,7 +10,6 @@ import 'package:PiliPlus/http/msg.dart';
 import 'package:PiliPlus/pages/common/common_list_controller.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/extension/scroll_controller_ext.dart';
-import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:fixnum/fixnum.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -101,7 +100,6 @@ class WhisperDetailController extends CommonListController<RspSessionMsg, Msg> {
     assert((message != null) ^ (picMsg != null));
     if (_isSending) return;
     _isSending = true;
-    feedBack();
     SmartDialog.dismiss();
     if (!account.isLogin) {
       SmartDialog.showToast('请先登录');

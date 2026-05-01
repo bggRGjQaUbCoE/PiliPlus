@@ -18,7 +18,6 @@ import 'package:PiliPlus/utils/extension/file_ext.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/string_ext.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
-import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
@@ -513,7 +512,6 @@ abstract class CommonRichTextPubPageState<T extends CommonRichTextPubPage>
 
   @override
   Future<void> onPublish() async {
-    feedBack();
     List<Map<String, dynamic>>? pictures;
     if (imageList.isNotEmpty) {
       SmartDialog.showLoading(msg: '正在上传图片...');

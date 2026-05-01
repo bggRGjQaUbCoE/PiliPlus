@@ -1,7 +1,6 @@
 import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
     show ReplyInfo;
 import 'package:PiliPlus/http/reply.dart';
-import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:flutter/material.dart';
@@ -27,7 +26,6 @@ class ZanButtonGrpc extends StatelessWidget {
       return;
     }
     isProcessing = true;
-    feedBack();
     final int oid = replyItem.oid.toInt();
     final int rpid = replyItem.id.toInt();
     // 1 已点赞 2 不喜欢 0 未操作
@@ -68,7 +66,6 @@ class ZanButtonGrpc extends StatelessWidget {
       return;
     }
     isProcessing = true;
-    feedBack();
     final int oid = replyItem.oid.toInt();
     final int rpid = replyItem.id.toInt();
     // 1 已点赞 2 不喜欢 0 未操作

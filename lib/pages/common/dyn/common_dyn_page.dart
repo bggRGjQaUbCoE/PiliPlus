@@ -14,7 +14,6 @@ import 'package:PiliPlus/pages/video/reply/widgets/reply_item_grpc.dart';
 import 'package:PiliPlus/pages/video/reply_reply/view.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/size_ext.dart';
-import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
@@ -288,7 +287,6 @@ abstract class CommonDynPageState<T extends StatefulWidget> extends State<T>
     heroTag: null,
     onPressed: () {
       try {
-        feedBack();
         controller.onReply(
           null,
           oid: controller.oid,

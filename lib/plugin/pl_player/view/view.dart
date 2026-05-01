@@ -67,7 +67,7 @@ import 'package:canvas_danmaku/canvas_danmaku.dart';
 import 'package:collection/collection.dart';
 import 'package:easy_debounce/easy_throttle.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart' show clampDouble, kDebugMode;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart'
@@ -2046,11 +2046,8 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
           onInteractionUpdate: _onInteractionUpdate,
           onInteractionEnd: _onInteractionEnd,
           panEnabled: false,
-          minScale: plPlayerController.enableShrinkVideoSize ? 0.75 : 1,
+          minScale: 1.0,
           maxScale: 2.0,
-          boundaryMargin: plPlayerController.enableShrinkVideoSize
-              ? const EdgeInsets.all(double.infinity)
-              : EdgeInsets.zero,
           panAxis: PanAxis.aligned,
           transformationController: transformationController,
           onTranslate: () {

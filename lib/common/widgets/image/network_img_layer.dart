@@ -3,7 +3,6 @@ import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
-import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
@@ -36,9 +35,6 @@ class NetworkImgLayer extends StatelessWidget {
   final BoxFit fit;
   final Alignment alignment;
   final bool? cacheWidth;
-
-  static Color? reduceLuxColor = Pref.reduceLuxColor;
-  static bool reduce = false;
 
   @override
   Widget build(BuildContext context) {
@@ -74,8 +70,6 @@ class NetworkImgLayer extends StatelessWidget {
       imageUrl: ImageUtils.thumbnailUrl(
         src,
         maxQuality: quality,
-
-        /// remove gif
         suffix: src!.endsWith(ImageUtils.kSuffixGIF)
             ? ImageUtils.kSuffixJPG
             : ImageUtils.kSuffixWEBP,
@@ -94,8 +88,6 @@ class NetworkImgLayer extends StatelessWidget {
           _placeholder(context, isEmote: isEmote, isAvatar: isAvatar),
       errorWidget: (_, _, _) =>
           _placeholder(context, isEmote: isEmote, isAvatar: isAvatar),
-      colorBlendMode: reduce ? BlendMode.modulate : null,
-      color: reduce ? reduceLuxColor : null,
     );
   }
 
@@ -121,8 +113,6 @@ class NetworkImgLayer extends StatelessWidget {
           width: width,
           height: height,
           cacheWidth: width.cacheSize(context),
-          colorBlendMode: reduce ? BlendMode.modulate : null,
-          color: reduce ? reduceLuxColor : null,
         ),
       ),
     );

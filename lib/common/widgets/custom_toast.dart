@@ -1,12 +1,9 @@
-import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:flutter/material.dart';
 
 class CustomToast extends StatelessWidget {
-  const CustomToast({super.key, required this.msg});
+  const CustomToast(this.msg, {super.key});
 
   final String msg;
-
-  static double toastOpacity = Pref.defaultToastOp;
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +14,7 @@ class CustomToast extends StatelessWidget {
       ),
       padding: const EdgeInsets.symmetric(horizontal: 17, vertical: 10),
       decoration: BoxDecoration(
-        color: colorScheme.primaryContainer.withValues(alpha: toastOpacity),
+        color: colorScheme.primaryContainer,
         borderRadius: const BorderRadius.all(Radius.circular(20)),
       ),
       child: Text(
@@ -32,7 +29,7 @@ class CustomToast extends StatelessWidget {
 }
 
 class LoadingWidget extends StatelessWidget {
-  const LoadingWidget({super.key, required this.msg});
+  const LoadingWidget(this.msg, {super.key});
 
   ///loading msg
   final String msg;

@@ -20,7 +20,6 @@ import 'package:PiliPlus/utils/login_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
-import 'package:PiliPlus/utils/update.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart' hide ListTile;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -136,7 +135,6 @@ class _AboutPageState extends State<AboutPage> {
             ),
           ),
           ListTile(
-            onTap: () => Update.checkUpdate(false),
             onLongPress: () => Utils.copyText(currentVersion),
             onSecondaryTap: PlatformUtils.isMobile
                 ? null

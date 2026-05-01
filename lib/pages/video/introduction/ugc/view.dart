@@ -30,7 +30,6 @@ import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/string_ext.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
-import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
@@ -109,7 +108,6 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
                 if (isLoading) {
                   return;
                 }
-                feedBack();
                 introController.expandableCtr.toggle();
               },
               child: Column(
@@ -128,7 +126,6 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
                                 theme,
                                 () {
                                   if (mid != null) {
-                                    feedBack();
                                     if (!isPortrait &&
                                         introController.horizontalMemberPage) {
                                       widget.onShowMemberPage(mid);

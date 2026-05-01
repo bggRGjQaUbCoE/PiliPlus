@@ -10,7 +10,6 @@ import 'package:PiliPlus/pages/common/fab_mixin.dart';
 import 'package:PiliPlus/pages/video/reply/controller.dart';
 import 'package:PiliPlus/pages/video/reply/widgets/reply_item_grpc.dart';
 import 'package:PiliPlus/pages/video/reply_reply/view.dart';
-import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:easy_debounce/easy_throttle.dart';
 import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart';
 import 'package:flutter/material.dart';
@@ -144,14 +143,11 @@ class _VideoReplyPanelState extends State<VideoReplyPanel>
                   ),
                   child: FloatingActionButton(
                     heroTag: null,
-                    onPressed: () {
-                      feedBack();
-                      _videoReplyController.onReply(
-                        null,
-                        oid: _videoReplyController.aid,
-                        replyType: _videoReplyController.videoType.replyType,
-                      );
-                    },
+                    onPressed: () => _videoReplyController.onReply(
+                      null,
+                      oid: _videoReplyController.aid,
+                      replyType: _videoReplyController.videoType.replyType,
+                    ),
                     tooltip: '发表评论',
                     child: const Icon(Icons.reply),
                   ),

@@ -4,7 +4,6 @@ import 'package:PiliPlus/pages/video/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/view/view.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
-import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -26,7 +25,6 @@ class BottomControl extends StatelessWidget {
   final VideoDetailController videoDetailController;
 
   void onDragStart(ThumbDragDetails duration) {
-    feedBack();
     controller.onChangedSliderStart(duration.timeStamp);
   }
 

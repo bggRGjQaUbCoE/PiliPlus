@@ -8,7 +8,6 @@ import 'package:PiliPlus/models/common/reply/reply_sort_type.dart';
 import 'package:PiliPlus/pages/common/common_list_controller.dart';
 import 'package:PiliPlus/pages/common/publish/publish_route.dart';
 import 'package:PiliPlus/pages/video/reply_new/view.dart';
-import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:PiliPlus/utils/reply_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:fixnum/fixnum.dart';
@@ -101,7 +100,6 @@ abstract class ReplyController<R> extends CommonListController<R, ReplyInfo> {
       case ReplySortType.select:
         return;
     }
-    feedBack();
     onReload();
   }
 

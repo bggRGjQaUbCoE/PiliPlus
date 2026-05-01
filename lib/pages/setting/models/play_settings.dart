@@ -134,11 +134,11 @@ List<SettingsModel> get playSettings => [
         } catch (_) {}
       },
     ),
-  const SwitchModel(
+  SwitchModel(
     title: '启用键盘控制',
-    leading: Icon(Icons.keyboard_alt_outlined),
+    leading: const Icon(Icons.keyboard_alt_outlined),
     setKey: SettingBoxKey.keyboardControl,
-    defaultVal: true,
+    defaultVal: PlatformUtils.isDesktop,
   ),
   NormalModel(
     title: 'SuperChat (醒目留言) 显示类型',
@@ -172,13 +172,6 @@ List<SettingsModel> get playSettings => [
     leading: Icon(Icons.fullscreen_exit_outlined),
     setKey: SettingBoxKey.enableAutoExit,
     defaultVal: true,
-  ),
-  const SwitchModel(
-    title: '延长播放控件显示时间',
-    subtitle: '开启后延长至30秒，便于屏幕阅读器滑动切换控件焦点',
-    leading: Icon(Icons.timer_outlined),
-    setKey: SettingBoxKey.enableLongShowControl,
-    defaultVal: false,
   ),
   if (PlatformUtils.isMobile)
     const SwitchModel(

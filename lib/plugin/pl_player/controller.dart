@@ -34,7 +34,6 @@ import 'package:PiliPlus/utils/asset_utils.dart';
 import 'package:PiliPlus/utils/device_utils.dart';
 import 'package:PiliPlus/utils/extension/box_ext.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
-import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/path_utils.dart';
@@ -324,9 +323,7 @@ class PlPlayerController with BlockConfigMixin {
 
   late List<double> speedList = Pref.speedList;
   late bool enableAutoLongPressSpeed = Pref.enableAutoLongPressSpeed;
-  late final showControlDuration = Pref.enableLongShowControl
-      ? const Duration(seconds: 30)
-      : const Duration(seconds: 3);
+  late final showControlDuration = const Duration(seconds: 3);
   // 字幕
   late double subtitleFontScale = Pref.subtitleFontScale;
   late double subtitleFontScaleFS = Pref.subtitleFontScaleFS;
@@ -339,7 +336,6 @@ class PlPlayerController with BlockConfigMixin {
 
   // settings
   late final showFSActionItem = Pref.showFSActionItem;
-  late final enableShrinkVideoSize = Pref.enableShrinkVideoSize;
   late final darkVideoPage = Pref.darkVideoPage;
   late final enableSlideVolumeBrightness = Pref.enableSlideVolumeBrightness;
   late final enableSlideFS = Pref.enableSlideFS;
@@ -1241,9 +1237,6 @@ class PlPlayerController with BlockConfigMixin {
   }
 
   void onChangedSliderEnd() {
-    if (cancelSeek != true) {
-      feedBack();
-    }
     cancelSeek = null;
     hasToast = null;
     isSliderMoving.value = false;
@@ -1409,7 +1402,6 @@ class PlPlayerController with BlockConfigMixin {
 
   /// 关闭控制栏
   void onLockControl(bool val) {
-    feedBack();
     controlsLock.value = val;
     if (!val && showControls.value) {
       showControls.refresh();

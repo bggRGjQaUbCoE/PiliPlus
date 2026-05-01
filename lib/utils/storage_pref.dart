@@ -42,7 +42,6 @@ import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:crypto/crypto.dart';
 import 'package:flex_seed_scheme/flex_seed_scheme.dart' show FlexSchemeVariant;
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hive_ce/hive.dart';
@@ -144,9 +143,6 @@ abstract final class Pref {
       },
     ).toList();
   }
-
-  static bool get feedBackEnable =>
-      _setting.get(SettingBoxKey.feedBackEnable, defaultValue: false);
 
   static int get picQuality =>
       _setting.get(SettingBoxKey.defaultPicQa, defaultValue: 10);
@@ -334,7 +330,7 @@ abstract final class Pref {
   );
 
   static bool get blockTrack =>
-      _setting.get(SettingBoxKey.blockTrack, defaultValue: !kDebugMode);
+      _setting.get(SettingBoxKey.blockTrack, defaultValue: false);
 
   static bool get checkDynamic =>
       _setting.get(SettingBoxKey.checkDynamic, defaultValue: true);
@@ -396,14 +392,6 @@ abstract final class Pref {
     defaultValue: horizontalScreen,
   );
 
-  static int? get replyLengthLimit {
-    int length = _setting.get(SettingBoxKey.replyLengthLimit, defaultValue: 6);
-    if (length <= 0) {
-      return null;
-    }
-    return length;
-  }
-
   static int get defaultPicQa =>
       _setting.get(SettingBoxKey.defaultPicQa, defaultValue: 10);
 
@@ -440,9 +428,6 @@ abstract final class Pref {
   static bool get cdnSpeedTest =>
       _setting.get(SettingBoxKey.cdnSpeedTest, defaultValue: true);
 
-  static bool get autoUpdate =>
-      _setting.get(SettingBoxKey.autoUpdate, defaultValue: true);
-
   static bool get horizontalPreview =>
       _setting.get(SettingBoxKey.horizontalPreview, defaultValue: false);
 
@@ -478,9 +463,6 @@ abstract final class Pref {
 
   static bool get preInitPlayer =>
       _setting.get(SettingBoxKey.preInitPlayer, defaultValue: false);
-
-  static bool get mainTabBarView =>
-      _setting.get(SettingBoxKey.mainTabBarView, defaultValue: false);
 
   static bool get searchSuggestion =>
       _setting.get(SettingBoxKey.searchSuggestion, defaultValue: true);
@@ -533,9 +515,6 @@ abstract final class Pref {
   static bool get showFSActionItem =>
       _setting.get(SettingBoxKey.showFSActionItem, defaultValue: true);
 
-  static bool get enableShrinkVideoSize =>
-      _setting.get(SettingBoxKey.enableShrinkVideoSize, defaultValue: true);
-
   static bool get showDynActionBar =>
       _setting.get(SettingBoxKey.showDynActionBar, defaultValue: true);
 
@@ -566,9 +545,6 @@ abstract final class Pref {
     defaultValue: LiveQuality.superHD.code,
   );
 
-  static int get appFontWeight =>
-      _setting.get(SettingBoxKey.appFontWeight, defaultValue: -1);
-
   static bool get enableDragSubtitle =>
       _setting.get(SettingBoxKey.enableDragSubtitle, defaultValue: false);
 
@@ -595,9 +571,6 @@ abstract final class Pref {
 
   static num get maxCacheSize =>
       _setting.get(SettingBoxKey.maxCacheSize) ?? pow(1024, 3);
-
-  static bool get optTabletNav =>
-      _setting.get(SettingBoxKey.optTabletNav, defaultValue: true);
 
   static bool get horizontalScreen {
     bool? horizontalScreen = _setting.get(SettingBoxKey.horizontalScreen);
@@ -638,12 +611,6 @@ abstract final class Pref {
   static bool get enableBackgroundPlay =>
       _setting.get(SettingBoxKey.enableBackgroundPlay, defaultValue: true);
 
-  static bool get disableLikeMsg =>
-      _setting.get(SettingBoxKey.disableLikeMsg, defaultValue: false);
-
-  static bool get enableWordRe =>
-      _setting.get(SettingBoxKey.enableWordRe, defaultValue: false);
-
   static bool get autoExitFullscreen =>
       _setting.get(SettingBoxKey.enableAutoExit, defaultValue: true);
 
@@ -682,12 +649,6 @@ abstract final class Pref {
         SettingBoxKey.barHideType,
         defaultValue: BarHideType.sync.index,
       )];
-
-  static bool get enableSearchWord =>
-      _setting.get(SettingBoxKey.enableSearchWord, defaultValue: false);
-
-  static bool get useSideBar =>
-      _setting.get(SettingBoxKey.useSideBar, defaultValue: false);
 
   static bool get dynamicsShowAllFollowedUp => _setting.get(
     SettingBoxKey.dynamicsShowAllFollowedUp,
@@ -733,9 +694,6 @@ abstract final class Pref {
         SettingBoxKey.dynamicBadgeMode,
         defaultValue: DynamicBadgeMode.number.index,
       )];
-
-  static bool get enableMYBar =>
-      _setting.get(SettingBoxKey.enableMYBar, defaultValue: true);
 
   static Transition get pageTransition =>
       Transition.values[_setting.get(
@@ -792,9 +750,6 @@ abstract final class Pref {
     defaultValue: PlatformUtils.isMobile ? 5 : 6,
   );
 
-  static bool get enableLongShowControl =>
-      _setting.get(SettingBoxKey.enableLongShowControl, defaultValue: false);
-
   static bool get expandBuffer =>
       _setting.get(SettingBoxKey.expandBuffer, defaultValue: false);
 
@@ -833,9 +788,6 @@ abstract final class Pref {
   static bool get enableSaveLastData =>
       _setting.get(SettingBoxKey.enableSaveLastData, defaultValue: true);
 
-  static double get defaultToastOp =>
-      _setting.get(SettingBoxKey.defaultToastOp, defaultValue: 1.0);
-
   static PlayRepeat get playRepeat =>
       PlayRepeat.values[_video.get(
         VideoBoxKey.playRepeat,
@@ -858,14 +810,6 @@ abstract final class Pref {
 
   static bool get tempPlayerConf =>
       _setting.get(SettingBoxKey.tempPlayerConf, defaultValue: false);
-
-  static Color? get reduceLuxColor {
-    final int? color = _setting.get(SettingBoxKey.reduceLuxColor);
-    if (color != null && color != 0xFFFFFFFF) {
-      return Color(color);
-    }
-    return null;
-  }
 
   static bool get showFsScreenshotBtn =>
       _setting.get(SettingBoxKey.showFsScreenshotBtn, defaultValue: true);
@@ -914,8 +858,10 @@ abstract final class Pref {
   static bool get isWindowMaximized =>
       _setting.get(SettingBoxKey.isWindowMaximized, defaultValue: false);
 
-  static bool get keyboardControl =>
-      _setting.get(SettingBoxKey.keyboardControl, defaultValue: true);
+  static bool get keyboardControl => _setting.get(
+    SettingBoxKey.keyboardControl,
+    defaultValue: PlatformUtils.isDesktop,
+  );
 
   static bool get pauseOnMinimize =>
       _setting.get(SettingBoxKey.pauseOnMinimize, defaultValue: false);

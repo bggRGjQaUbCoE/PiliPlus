@@ -193,12 +193,6 @@ class DetailItem extends StatelessWidget {
                                   fit: BoxFit.cover,
                                   cacheWidth: cacheWidth,
                                   cacheHeight: cacheHeight,
-                                  colorBlendMode: NetworkImgLayer.reduce
-                                      ? BlendMode.modulate
-                                      : null,
-                                  color: NetworkImgLayer.reduce
-                                      ? NetworkImgLayer.reduceLuxColor
-                                      : null,
                                 ),
                               )
                             : NetworkImgLayer(

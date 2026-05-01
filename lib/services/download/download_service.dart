@@ -20,7 +20,8 @@ import 'package:PiliPlus/utils/extension/file_ext.dart';
 import 'package:PiliPlus/utils/extension/string_ext.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:PiliPlus/utils/path_utils.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart'
+    show kDebugMode, debugPrint, VoidCallback;
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';

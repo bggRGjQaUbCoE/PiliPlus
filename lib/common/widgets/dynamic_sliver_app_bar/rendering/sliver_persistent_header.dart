@@ -19,7 +19,7 @@ import 'dart:math' as math;
 
 import 'package:PiliPlus/common/widgets/dynamic_sliver_app_bar/sliver_persistent_header.dart';
 import 'package:PiliPlus/common/widgets/only_layout_widget.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart' show clampDouble;
 import 'package:flutter/rendering.dart' hide LayoutCallback;
 import 'package:flutter/widgets.dart'
     hide SliverPersistentHeader, SliverPersistentHeaderDelegate;

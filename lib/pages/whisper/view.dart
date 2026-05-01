@@ -9,7 +9,6 @@ import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/extension/three_dot_ext.dart';
 import 'package:PiliPlus/utils/theme_utils.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 
 class WhisperPage extends StatefulWidget {
@@ -194,10 +193,6 @@ class _WhisperPageState extends State<WhisperPage> {
                 ),
               ),
               onTap: () {
-                if (!item.enabled) {
-                  SmartDialog.showToast('已禁用');
-                  return;
-                }
                 _controller.unreadCounts[index] = 0;
                 Get.toNamed(item.route);
               },

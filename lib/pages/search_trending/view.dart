@@ -15,7 +15,7 @@ import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/size_ext.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart' show clampDouble;
 import 'package:flutter/material.dart' hide ListTile;
 import 'package:flutter/services.dart' show SystemUiOverlayStyle;
 import 'package:get/get.dart';

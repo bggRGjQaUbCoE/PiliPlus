@@ -18,7 +18,6 @@ import 'package:PiliPlus/utils/cache_manager.dart';
 import 'package:PiliPlus/utils/calc_window_position.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/device_utils.dart';
-import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/json_file_handler.dart';
 import 'package:PiliPlus/utils/max_screen_size.dart';
@@ -31,12 +30,10 @@ import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/theme_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:catcher_2/catcher_2.dart';
-import 'package:device_info_plus/device_info_plus.dart';
 import 'package:dynamic_color/dynamic_color.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_displaymode/flutter_displaymode.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -90,7 +87,7 @@ Future<void> _initAppPath() async {
 }
 
 Future<void> _initSdkInt() async {
-  DeviceUtils.sdkInt = (await DeviceInfoPlugin().androidInfo).version.sdkInt;
+  DeviceUtils.sdkInt = await Utils.channel.invokeMethod('sdkInt');
 }
 
 void main() async {
@@ -147,20 +144,7 @@ void main() async {
         systemNavigationBarContrastEnforced: false,
       ),
     );
-    if (Platform.isAndroid) {
-      FlutterDisplayMode.supported.then((mode) {
-        final String? storageDisplay = GStorage.setting.get(
-          SettingBoxKey.displayMode,
-        );
-        DisplayMode? displayMode;
-        if (storageDisplay != null) {
-          displayMode = mode.firstWhereOrNull(
-            (e) => e.toString() == storageDisplay,
-          );
-        }
-        FlutterDisplayMode.setPreferredMode(displayMode ?? DisplayMode.auto);
-      });
-    } else {
+    if (Platform.isIOS) {
       ScreenBrightnessPlatform.instance.setAutoReset(false);
     }
   } else if (PlatformUtils.isDesktop) {
@@ -169,9 +153,7 @@ void main() async {
     final windowOptions = WindowOptions(
       minimumSize: const Size(400, 720),
       skipTaskbar: false,
-      titleBarStyle: Pref.showWindowTitleBar
-          ? TitleBarStyle.normal
-          : TitleBarStyle.hidden,
+      titleBarStyle: Pref.showWindowTitleBar ? .normal : .hidden,
       title: Constants.appName,
     );
     windowManager.waitUntilReadyToShow(windowOptions, () async {
@@ -295,14 +277,11 @@ class MyApp extends StatelessWidget {
       getPages: Routes.getPages,
       defaultTransition: Pref.pageTransition,
       builder: FlutterSmartDialog.init(
-        toastBuilder: (msg) => CustomToast(msg: msg),
-        loadingBuilder: (msg) => LoadingWidget(msg: msg),
+        toastBuilder: CustomToast.new,
+        loadingBuilder: LoadingWidget.new,
         builder: _builder,
       ),
-      navigatorObservers: [
-        routeObserver,
-        FlutterSmartDialog.observer,
-      ],
+      navigatorObservers: [routeObserver],
       scrollBehavior: PlatformUtils.isDesktop
           ? const CustomScrollBehavior(desktopDragDevices)
           : null,

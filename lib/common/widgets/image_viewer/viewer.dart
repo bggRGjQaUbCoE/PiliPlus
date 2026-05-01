@@ -22,7 +22,7 @@ import 'package:PiliPlus/common/widgets/gesture/horizontal_drag_gesture_recogniz
 import 'package:PiliPlus/common/widgets/gesture/image_horizontal_drag_gesture_recognizer.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:easy_debounce/easy_throttle.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart' show clampDouble;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/physics.dart' show FrictionSimulation;

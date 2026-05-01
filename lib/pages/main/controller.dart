@@ -13,11 +13,9 @@ import 'package:PiliPlus/pages/mine/view.dart';
 import 'package:PiliPlus/services/account_service.dart';
 import 'package:PiliPlus/utils/extension/get_ext.dart';
 import 'package:PiliPlus/utils/extension/iterable_ext.dart';
-import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
-import 'package:PiliPlus/utils/update.dart';
 import 'package:collection/collection.dart';
 import 'package:easy_debounce/easy_throttle.dart';
 import 'package:flutter/material.dart';
@@ -35,7 +33,7 @@ class MainController extends GetxController
   late final bool hideBottomBar;
   late final barHideType = Pref.barHideType;
   bool useBottomNav = false;
-  late dynamic controller;
+  late PageController controller;
   final RxInt selectedIndex = 0.obs;
 
   final RxInt dynCount = 0.obs;
@@ -54,11 +52,7 @@ class MainController extends GetxController
   late final RxString msgUnReadCount = ''.obs;
   late int lastCheckUnreadAt = 0;
 
-  final enableMYBar = Pref.enableMYBar;
   final floatingNavBar = Pref.floatingNavBar;
-  final useSideBar = Pref.useSideBar;
-  final mainTabBarView = Pref.mainTabBarView;
-  late final optTabletNav = Pref.optTabletNav;
 
   late bool directExitOnBack = Pref.directExitOnBack;
   late bool showTrayIcon = Pref.showTrayIcon;
@@ -72,22 +66,11 @@ class MainController extends GetxController
   @override
   void onInit() {
     super.onInit();
-    if (Pref.autoUpdate) {
-      Update.checkUpdate();
-    }
-
     setNavBarConfig();
 
-    controller = mainTabBarView
-        ? TabController(
-            vsync: this,
-            initialIndex: selectedIndex.value,
-            length: navigationBars.length,
-          )
-        : PageController(initialPage: selectedIndex.value);
+    controller = PageController(initialPage: selectedIndex.value);
 
-    hideBottomBar =
-        !useSideBar && navigationBars.length > 1 && Pref.hideBottomBar;
+    hideBottomBar = navigationBars.length > 1 && Pref.hideBottomBar;
     if (hideBottomBar) {
       switch (barHideType) {
         case .instant:
@@ -235,21 +218,6 @@ class MainController extends GetxController
     selectedIndex.value = Pref.defaultHomePageIndex;
   }
 
-  void checkDefaultSearch([bool shouldCheck = false]) {
-    if (hasHome && homeController.enableSearchWord) {
-      if (shouldCheck &&
-          navigationBars[selectedIndex.value] != NavigationBarType.home) {
-        return;
-      }
-      int now = DateTime.now().millisecondsSinceEpoch;
-      if (now - homeController.lateCheckSearchAt >= _period) {
-        homeController
-          ..lateCheckSearchAt = now
-          ..querySearchDefault();
-      }
-    }
-  }
-
   void checkUnread([bool shouldCheck = false]) {
     if (accountService.isLogin.value &&
         hasHome &&
@@ -284,18 +252,11 @@ class MainController extends GetxController
   }
 
   void setIndex(int value) {
-    feedBack();
-
     final currentNav = navigationBars[value];
     if (value != selectedIndex.value) {
       selectedIndex.value = value;
-      if (mainTabBarView) {
-        controller.animateTo(value);
-      } else {
-        controller.jumpToPage(value);
-      }
+      controller.jumpToPage(value);
       if (currentNav == NavigationBarType.home) {
-        checkDefaultSearch();
         checkUnread();
       } else if (currentNav == NavigationBarType.dynamics) {
         setDynCount();

@@ -5,8 +5,6 @@ import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/floating_navigation_bar.dart';
 import 'package:PiliPlus/common/widgets/flutter/pop_scope.dart';
-import 'package:PiliPlus/common/widgets/flutter/tabs.dart';
-import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/route_aware_mixin.dart';
 import 'package:PiliPlus/models/common/nav_bar_config.dart';
 import 'package:PiliPlus/pages/home/view.dart';
@@ -73,15 +71,10 @@ class _MainAppState extends PopScopeState<MainApp>
     super.didChangeDependencies();
     _padding = MediaQuery.viewPaddingOf(context);
     theme = Theme.of(context);
-    final brightness = theme.brightness;
-    NetworkImgLayer.reduce =
-        NetworkImgLayer.reduceLuxColor != null && brightness.isDark;
     if (PlatformUtils.isDesktop) {
-      windowManager.setBrightness(brightness);
+      windowManager.setBrightness(theme.brightness);
     }
-    if (!_mainController.useSideBar) {
-      _mainController.useBottomNav = MediaQuery.sizeOf(context).isPortrait;
-    }
+    _mainController.useBottomNav = MediaQuery.sizeOf(context).isPortrait;
   }
 
   @override
@@ -89,7 +82,6 @@ class _MainAppState extends PopScopeState<MainApp>
     addObserverMobile(this);
     _mainController
       ..checkUnreadDynamic()
-      ..checkDefaultSearch(true)
       ..checkUnread(_mainController.useBottomNav);
     super.didPopNext();
   }
@@ -102,10 +94,9 @@ class _MainAppState extends PopScopeState<MainApp>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
+    if (state == .resumed) {
       _mainController
         ..checkUnreadDynamic()
-        ..checkDefaultSearch(true)
         ..checkUnread(_mainController.useBottomNav);
     }
   }
@@ -291,7 +282,7 @@ class _MainAppState extends PopScopeState<MainApp>
                 .toList(),
           ),
         );
-      } else if (_mainController.enableMYBar) {
+      } else {
         bottomNav = Obx(
           () => NavigationBar(
             maintainBottomViewPadding: true,
@@ -303,26 +294,6 @@ class _MainAppState extends PopScopeState<MainApp>
                     label: e.label,
                     icon: _buildIcon(type: e),
                     selectedIcon: _buildIcon(type: e, selected: true),
-                  ),
-                )
-                .toList(),
-          ),
-        );
-      } else {
-        bottomNav = Obx(
-          () => BottomNavigationBar(
-            currentIndex: _mainController.selectedIndex.value,
-            onTap: _mainController.setIndex,
-            iconSize: 16,
-            selectedFontSize: 12,
-            unselectedFontSize: 12,
-            type: .fixed,
-            items: _mainController.navigationBars
-                .map(
-                  (e) => BottomNavigationBarItem(
-                    label: e.label,
-                    icon: _buildIcon(type: e),
-                    activeIcon: _buildIcon(type: e, selected: true),
                   ),
                 )
                 .toList(),
@@ -360,7 +331,7 @@ class _MainAppState extends PopScopeState<MainApp>
 
   Widget _sideBar(ThemeData theme) {
     return _mainController.navigationBars.length > 1
-        ? context.isTablet && _mainController.optTabletNav
+        ? context.isTablet
               ? Column(
                   children: [
                     const SizedBox(height: 25),
@@ -427,21 +398,11 @@ class _MainAppState extends PopScopeState<MainApp>
 
   @override
   Widget build(BuildContext context) {
-    Widget child;
-    if (_mainController.mainTabBarView) {
-      child = CustomTabBarView(
-        scrollDirection: _mainController.useBottomNav ? .horizontal : .vertical,
-        physics: const NeverScrollableScrollPhysics(),
-        controller: _mainController.controller,
-        children: _mainController.navigationBars.map((i) => i.page).toList(),
-      );
-    } else {
-      child = PageView(
-        physics: const NeverScrollableScrollPhysics(),
-        controller: _mainController.controller,
-        children: _mainController.navigationBars.map((i) => i.page).toList(),
-      );
-    }
+    Widget child = PageView(
+      physics: const NeverScrollableScrollPhysics(),
+      controller: _mainController.controller,
+      children: _mainController.navigationBars.map((i) => i.page).toList(),
+    );
 
     Widget? bottomNav;
     if (_mainController.useBottomNav) {
@@ -466,7 +427,7 @@ class _MainAppState extends PopScopeState<MainApp>
       resizeToAvoidBottomInset: false,
       appBar: AppBar(toolbarHeight: 0),
       body: Padding(
-        padding: EdgeInsets.only(
+        padding: .only(
           left: _mainController.useBottomNav ? _padding.left : 0.0,
           right: _padding.right,
         ),

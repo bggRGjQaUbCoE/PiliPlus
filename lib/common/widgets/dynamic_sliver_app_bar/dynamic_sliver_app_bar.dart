@@ -22,7 +22,7 @@ import 'package:PiliPlus/common/widgets/dynamic_sliver_app_bar/rendering/sliver_
 import 'package:PiliPlus/common/widgets/dynamic_sliver_app_bar/sliver_persistent_header.dart';
 import 'package:PiliPlus/common/widgets/only_layout_widget.dart'
     show LayoutCallback;
-import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart' show describeIdentity, clampDouble;
 import 'package:flutter/material.dart'
     hide SliverPersistentHeader, SliverPersistentHeaderDelegate;
 import 'package:flutter/rendering.dart' show RenderOpacity, OpacityLayer;

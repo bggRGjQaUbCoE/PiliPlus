@@ -2,9 +2,6 @@ import 'dart:io';
 import 'dart:math' as math;
 
 import 'package:PiliPlus/common/widgets/color_palette.dart';
-import 'package:PiliPlus/common/widgets/custom_toast.dart';
-import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
-import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/scale_app.dart';
 import 'package:PiliPlus/common/widgets/stateful_builder.dart';
 import 'package:PiliPlus/models/common/bar_hide_type.dart';
@@ -18,7 +15,6 @@ import 'package:PiliPlus/models/common/theme/theme_type.dart';
 import 'package:PiliPlus/pages/main/controller.dart';
 import 'package:PiliPlus/pages/mine/controller.dart';
 import 'package:PiliPlus/pages/setting/models/model.dart';
-import 'package:PiliPlus/pages/setting/slide_color_picker.dart';
 import 'package:PiliPlus/pages/setting/widgets/dual_slider_dialog.dart';
 import 'package:PiliPlus/pages/setting/widgets/multi_select_dialog.dart';
 import 'package:PiliPlus/pages/setting/widgets/select_dialog.dart';
@@ -74,27 +70,6 @@ List<SettingsModel> get styleSettings => [
       }
     },
   ),
-  const SwitchModel(
-    title: '改用侧边栏',
-    subtitle: '开启后底栏与顶栏被替换，且相关设置失效',
-    leading: Icon(Icons.chrome_reader_mode_outlined),
-    setKey: SettingBoxKey.useSideBar,
-    defaultVal: false,
-    needReboot: true,
-  ),
-  SplitModel(
-    normalModel: const NormalModel.split(
-      title: 'App字体字重',
-      subtitle: '点击设置',
-      leading: Icon(Icons.text_fields),
-    ),
-    switchModel: SwitchModel.split(
-      defaultVal: false,
-      setKey: SettingBoxKey.appFontWeight,
-      onChanged: (_) => Get.updateMyAppTheme(),
-      onTap: _showFontWeightDialog,
-    ),
-  ),
   NormalModel(
     title: '界面缩放',
     getSubtitle: () => '当前缩放比例：${Pref.uiScale.toStringAsFixed(2)}',
@@ -106,21 +81,6 @@ List<SettingsModel> get styleSettings => [
     leading: const Icon(Icons.animation),
     getSubtitle: () => '当前：${Pref.pageTransition.name}',
     onTap: _showTransitionDialog,
-  ),
-  const SwitchModel(
-    title: '优化平板导航栏',
-    leading: Icon(Icons.auto_fix_high),
-    setKey: SettingBoxKey.optTabletNav,
-    defaultVal: true,
-    needReboot: true,
-  ),
-  const SwitchModel(
-    title: 'MD3样式底栏',
-    subtitle: 'Material You设计规范底栏，关闭可变窄',
-    leading: Icon(Icons.design_services_outlined),
-    setKey: SettingBoxKey.enableMYBar,
-    defaultVal: true,
-    needReboot: true,
   ),
   const SwitchModel(
     title: '悬浮底栏',
@@ -255,30 +215,6 @@ List<SettingsModel> get styleSettings => [
     ),
   ),
   NormalModel(
-    onTap: _showReduceColorDialog,
-    title: '深色下图片颜色叠加',
-    subtitle: '显示颜色=图片原色x所选颜色，大图查看不受影响',
-    leading: const Icon(Icons.format_color_fill_outlined),
-    getTrailing: (theme) => Container(
-      width: 20,
-      height: 20,
-      decoration: BoxDecoration(
-        color: Pref.reduceLuxColor ?? Colors.white,
-        shape: BoxShape.circle,
-      ),
-    ),
-  ),
-  NormalModel(
-    leading: const Icon(Icons.opacity_outlined),
-    title: '气泡提示不透明度',
-    subtitle: '自定义气泡提示(Toast)不透明度',
-    getTrailing: (theme) => Text(
-      CustomToast.toastOpacity.toStringAsFixed(1),
-      style: theme.textTheme.titleSmall,
-    ),
-    onTap: _showToastDialog,
-  ),
-  NormalModel(
     onTap: _showThemeTypeDialog,
     leading: const Icon(Icons.flashlight_on_outlined),
     title: '主题模式',
@@ -371,12 +307,6 @@ List<SettingsModel> get styleSettings => [
     defaultVal: false,
     onChanged: (value) => Get.find<MainController>().directExitOnBack = value,
   ),
-  if (Platform.isAndroid)
-    NormalModel(
-      onTap: (context, setState) => Get.toNamed('/displayModeSetting'),
-      title: '屏幕帧率',
-      leading: const Icon(Icons.autofps_select_outlined),
-    ),
 ];
 
 void _showQualityDialog({
@@ -633,23 +563,6 @@ void _showSpringDialog(BuildContext context, _) {
   );
 }
 
-Future<void> _showFontWeightDialog(BuildContext context) async {
-  final res = await showDialog<double>(
-    context: context,
-    builder: (context) => SliderDialog(
-      title: 'App字体字重',
-      value: Pref.appFontWeight.toDouble() + 1,
-      min: 1,
-      max: FontWeight.values.length.toDouble(),
-      divisions: FontWeight.values.length - 1,
-    ),
-  );
-  if (res != null) {
-    await GStorage.setting.put(SettingBoxKey.appFontWeight, res.toInt() - 1);
-    Get.updateMyAppTheme();
-  }
-}
-
 Future<void> _showTransitionDialog(
   BuildContext context,
   VoidCallback setState,
@@ -790,79 +703,6 @@ Future<void> _showMsgUnReadDialog(
       SettingBoxKey.msgUnReadTypeV2,
       res.map((item) => item.index).toList()..sort(),
     );
-    SmartDialog.showToast('设置成功');
-    setState();
-  }
-}
-
-void _showReduceColorDialog(
-  BuildContext context,
-  VoidCallback setState,
-) {
-  final reduceLuxColor = Pref.reduceLuxColor;
-  showDialog(
-    context: context,
-    builder: (context) => AlertDialog(
-      clipBehavior: Clip.hardEdge,
-      contentPadding: const EdgeInsets.symmetric(vertical: 16),
-      title: const Text('Color Picker'),
-      content: SlideColorPicker(
-        color: reduceLuxColor ?? Colors.white,
-        onChanged: (Color? color) {
-          if (color != null && color != reduceLuxColor) {
-            if (color == Colors.white) {
-              NetworkImgLayer.reduceLuxColor = null;
-              GStorage.setting.delete(SettingBoxKey.reduceLuxColor);
-              SmartDialog.showToast('设置成功');
-              setState();
-            } else {
-              void onConfirm() {
-                NetworkImgLayer.reduceLuxColor = color;
-                GStorage.setting.put(
-                  SettingBoxKey.reduceLuxColor,
-                  color.toARGB32(),
-                );
-                SmartDialog.showToast('设置成功');
-                setState();
-              }
-
-              if (color.computeLuminance() < 0.2) {
-                showConfirmDialog(
-                  context: context,
-                  title: Text(
-                    '确认使用#${(color.toARGB32() & 0xFFFFFF).toRadixString(16).toUpperCase().padLeft(6)}？',
-                  ),
-                  content: const Text('所选颜色过于昏暗，可能会影响图片观看'),
-                  onConfirm: onConfirm,
-                );
-              } else {
-                onConfirm();
-              }
-            }
-          }
-        },
-      ),
-    ),
-  );
-}
-
-Future<void> _showToastDialog(
-  BuildContext context,
-  VoidCallback setState,
-) async {
-  final res = await showDialog<double>(
-    context: context,
-    builder: (context) => SliderDialog(
-      title: 'Toast不透明度',
-      value: CustomToast.toastOpacity,
-      min: 0.0,
-      max: 1.0,
-      divisions: 10,
-    ),
-  );
-  if (res != null) {
-    CustomToast.toastOpacity = res;
-    await GStorage.setting.put(SettingBoxKey.defaultToastOp, res);
     SmartDialog.showToast('设置成功');
     setState();
   }

@@ -27,7 +27,6 @@ import java.io.File
 
 class MainActivity : AudioServiceActivity() {
     private lateinit var methodChannel: MethodChannel
-    private var isFoldable = false
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
@@ -181,23 +180,11 @@ class MainActivity : AudioServiceActivity() {
                     }
                 }
 
-                "isFoldable" -> {
-                    result.success(isFoldable)
+                "sdkInt" -> {
+                    result.success(Build.VERSION.SDK_INT)
                 }
 
                 else -> result.notImplemented()
-            }
-        }
-    }
-
-    override fun onConfigurationChanged(newConfig: Configuration) {
-        super.onConfigurationChanged(newConfig)
-        if (isFoldable) {
-            maxScreenSize()?.let {
-                MethodChannel(
-                    flutterEngine!!.dartExecutor.binaryMessenger,
-                    "ScreenChannel"
-                ).invokeMethod("onConfigChanged", it)
             }
         }
     }
@@ -237,14 +224,6 @@ class MainActivity : AudioServiceActivity() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             window.attributes.layoutInDisplayCutoutMode =
                 LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
-        }
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            try {
-                isFoldable =
-                    packageManager.hasSystemFeature(PackageManager.FEATURE_SENSOR_HINGE_ANGLE)
-            } catch (e: Exception) {
-            }
         }
     }
 

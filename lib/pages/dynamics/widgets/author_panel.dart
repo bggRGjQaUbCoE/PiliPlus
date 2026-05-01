@@ -19,7 +19,6 @@ import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/extension/context_ext.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
-import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/request_utils.dart';
@@ -95,10 +94,7 @@ class AuthorPanel extends StatelessWidget {
     }
     Widget header = GestureDetector(
       onTap: moduleAuthor.type == 'AUTHOR_TYPE_NORMAL'
-          ? () {
-              feedBack();
-              Get.toNamed('/member?mid=${moduleAuthor.mid}');
-            }
+          ? () => Get.toNamed('/member?mid=${moduleAuthor.mid}')
           : null,
       child: ExtraHitTestWidget(
         width: 50,

@@ -1,4 +1,3 @@
-import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:flutter/material.dart';
 
 class ActionRowLineItem extends StatelessWidget {
@@ -27,10 +26,7 @@ class ActionRowLineItem extends StatelessWidget {
       borderRadius: const BorderRadius.all(Radius.circular(30)),
       child: InkWell(
         borderRadius: const BorderRadius.all(Radius.circular(30)),
-        onTap: () => {
-          feedBack(),
-          onTap?.call(),
-        },
+        onTap: () => onTap?.call(),
         child: Container(
           padding: const EdgeInsets.fromLTRB(13, 5.5, 13, 4.5),
           decoration: BoxDecoration(

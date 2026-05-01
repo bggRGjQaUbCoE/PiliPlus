@@ -1172,13 +1172,8 @@ class RichTextNodeItem {
 class Emoji {
   String? url;
   late num size;
-
-  /// remove gif
   Emoji.fromJson(Map<String, dynamic> json) {
-    url =
-        // noneNullOrEmptyString(json['webp_url']) ??
-        // noneNullOrEmptyString(json['gif_url']) ??
-        nonNullOrEmptyString(json['icon_url']);
+    url = nonNullOrEmptyString(json['icon_url']);
     size = json['size'] ?? 1;
   }
 }

@@ -773,8 +773,10 @@ class PlPlayerController with BlockConfigMixin {
       opt['ao'] = Pref.audioOutput;
       if (PlatformUtils.isTV) {
         opt['opengl-es'] = 'yes';
+        opt['gpu-dumb-mode'] = 'yes';
         opt['demuxer-max-bytes'] = '2MiB';
         opt['demuxer-max-back-bytes'] = '512KiB';
+        opt['vd-lavc-threads'] = '4';
       }
     } else if (PlatformUtils.isDesktop) {
       opt['volume'] = (volume.value * 100).toString();
@@ -804,7 +806,8 @@ class PlPlayerController with BlockConfigMixin {
       player,
       configuration: VideoControllerConfiguration(
         enableHardwareAcceleration: hwdec != null,
-        androidAttachSurfaceAfterVideoParameters: false,
+        androidAttachSurfaceAfterVideoParameters:
+            PlatformUtils.isTV && hwdec == null,
         hwdec: hwdec,
       ),
     );

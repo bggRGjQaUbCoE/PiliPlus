@@ -456,71 +456,83 @@ class ReplyItemGrpc extends StatelessWidget {
       padding: WidgetStatePropertyAll(.zero),
     );
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.end,
       children: [
         const SizedBox(width: 36),
-        SizedBox(
-          height: 32,
-          child: TextButton(
-            style: buttonStyle,
-            onPressed: () {
-              feedBack();
-              onReply?.call(replyItem);
-            },
-            child: Row(
-              spacing: 3,
-              mainAxisSize: .min,
-              children: [
-                Icon(
-                  Icons.reply,
-                  size: 18,
-                  color: theme.colorScheme.outline.withValues(alpha: 0.8),
+        Expanded(
+          child: Wrap(
+            spacing: 2,
+            runSpacing: 0,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              SizedBox(
+                height: 32,
+                child: TextButton(
+                  style: buttonStyle,
+                  onPressed: () {
+                    feedBack();
+                    onReply?.call(replyItem);
+                  },
+                  child: Row(
+                    spacing: 3,
+                    mainAxisSize: .min,
+                    children: [
+                      Icon(
+                        Icons.reply,
+                        size: 18,
+                        color: theme.colorScheme.outline.withValues(
+                          alpha: 0.8,
+                        ),
+                      ),
+                      Text('回复', style: textStyle),
+                    ],
+                  ),
                 ),
-                Text('回复', style: textStyle),
+              ),
+              if (replyControl.translationSwitch ==
+                  .TRANSLATION_SWITCH_SHOW_TRANSLATION) ...[
+                _buildTranslateBtn(
+                  context,
+                  theme,
+                  replyControl,
+                  textStyle,
+                  buttonStyle,
+                ),
+              ] else if (replyItem.replyControl.cardLabels.isNotEmpty) ...[
+                Text(
+                  replyItem.replyControl.cardLabels
+                      .map((e) => e.textContent)
+                      .join('  '),
+                  style: textStyle.copyWith(
+                    color: theme.colorScheme.secondary,
+                  ),
+                ),
               ],
-            ),
+              if (replyLevel == 2 &&
+                  needDivider &&
+                  replyItem.id != replyItem.dialog)
+                SizedBox(
+                  height: 32,
+                  child: TextButton(
+                    onPressed: showDialogue,
+                    style: buttonStyle,
+                    child: Text('查看对话', style: textStyle),
+                  ),
+                )
+              else if (replyLevel == 3 &&
+                  needDivider &&
+                  replyItem.parent != replyItem.root)
+                SizedBox(
+                  height: 32,
+                  child: TextButton(
+                    onPressed: jumpToDialogue,
+                    style: buttonStyle,
+                    child: Text('跳转回复', style: textStyle),
+                  ),
+                ),
+            ],
           ),
         ),
-        const SizedBox(width: 2),
-        if (replyControl.translationSwitch ==
-            .TRANSLATION_SWITCH_SHOW_TRANSLATION) ...[
-          _buildTranslateBtn(
-            context,
-            theme,
-            replyControl,
-            textStyle,
-            buttonStyle,
-          ),
-          const SizedBox(width: 2),
-        ] else if (replyItem.replyControl.cardLabels.isNotEmpty) ...[
-          Text(
-            replyItem.replyControl.cardLabels
-                .map((e) => e.textContent)
-                .join('  '),
-            style: textStyle.copyWith(color: theme.colorScheme.secondary),
-          ),
-          const SizedBox(width: 2),
-        ],
-        if (replyLevel == 2 && needDivider && replyItem.id != replyItem.dialog)
-          SizedBox(
-            height: 32,
-            child: TextButton(
-              onPressed: showDialogue,
-              style: buttonStyle,
-              child: Text('查看对话', style: textStyle),
-            ),
-          )
-        else if (replyLevel == 3 &&
-            needDivider &&
-            replyItem.parent != replyItem.root)
-          SizedBox(
-            height: 32,
-            child: TextButton(
-              onPressed: jumpToDialogue,
-              style: buttonStyle,
-              child: Text('跳转回复', style: textStyle),
-            ),
-          ),
-        const Spacer(),
         ZanButtonGrpc(replyItem: replyItem),
         const SizedBox(width: 5),
       ],

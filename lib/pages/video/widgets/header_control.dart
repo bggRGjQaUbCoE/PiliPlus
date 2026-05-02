@@ -16,7 +16,6 @@ import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/video.dart';
 import 'package:PiliPlus/models/common/super_resolution_type.dart';
 import 'package:PiliPlus/models/common/video/audio_quality.dart';
-import 'package:PiliPlus/models/common/video/cdn_type.dart';
 import 'package:PiliPlus/models/common/video/video_decode_type.dart';
 import 'package:PiliPlus/models/common/video/video_quality.dart';
 import 'package:PiliPlus/models/video/play/url.dart';
@@ -483,21 +482,19 @@ class HeaderControlState extends State<HeaderControl>
                     title: const Text('CDN 设置', style: titleStyle),
                     leading: const Icon(MdiIcons.cloudPlusOutline, size: 20),
                     subtitle: Text(
-                      '当前：${VideoUtils.cdnService.desc}，无法播放请切换',
+                      '当前：${VideoUtils.effectiveCdnDesc()}，无法播放请切换',
                       style: subTitleStyle,
                     ),
                     onTap: () async {
                       Get.back();
-                      final result = await showDialog<CDNService>(
+                      final result = await showDialog<CdnSelectResult>(
                         context: context,
                         builder: (context) => CdnSelectDialog(
                           sample: videoInfo.dash?.video?.firstOrNull,
                         ),
                       );
                       if (result != null) {
-                        VideoUtils.cdnService = result;
-                        setting.put(SettingBoxKey.CDNService, result.name);
-                        SmartDialog.showToast('已设置为 ${result.desc}，正在重载视频');
+                        await _saveCdnSelectResult(result);
                         videoDetailCtr.queryVideoUrl(
                           defaultST: videoDetailCtr.playedTime,
                           fromReset: true,
@@ -757,6 +754,27 @@ class HeaderControlState extends State<HeaderControl>
         );
       },
     );
+  }
+
+  Future<void> _saveCdnSelectResult(CdnSelectResult result) async {
+    switch (result.type) {
+      case CdnSelectResultType.builtIn:
+        final service = result.service!;
+        VideoUtils.cdnService = service;
+        VideoUtils.customCDNUrl = null;
+        await setting.put(SettingBoxKey.CDNService, service.name);
+        await setting.delete(SettingBoxKey.customCDNUrl);
+        SmartDialog.showToast('已设置为 ${service.desc}，正在重载视频');
+      case CdnSelectResultType.custom:
+        final host = result.customCDNUrl!;
+        VideoUtils.customCDNUrl = host;
+        await setting.put(SettingBoxKey.customCDNUrl, host);
+        SmartDialog.showToast('已设置自定义 CDN：$host，正在重载视频');
+      case CdnSelectResultType.clearCustom:
+        VideoUtils.customCDNUrl = null;
+        await setting.delete(SettingBoxKey.customCDNUrl);
+        SmartDialog.showToast('已清除自定义 CDN，正在重载视频');
+    }
   }
 
   static void showPlayerInfo(

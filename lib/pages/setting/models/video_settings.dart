@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:PiliPlus/models/common/video/audio_quality.dart';
-import 'package:PiliPlus/models/common/video/cdn_type.dart';
 import 'package:PiliPlus/models/common/video/live_quality.dart';
 import 'package:PiliPlus/models/common/video/video_decode_type.dart';
 import 'package:PiliPlus/models/common/video/video_quality.dart';
@@ -58,7 +57,7 @@ List<SettingsModel> get videoSettings => [
     title: 'CDN 设置',
     leading: const Icon(MdiIcons.cloudPlusOutline),
     getSubtitle: () =>
-        '当前使用：${VideoUtils.cdnService.desc}，部分 CDN 可能失效，如无法播放请尝试切换',
+        '当前使用：${VideoUtils.effectiveCdnDesc()}，部分 CDN 可能失效，如无法播放请尝试切换',
     onTap: _showCDNDialog,
   ),
   NormalModel(
@@ -172,14 +171,33 @@ List<SettingsModel> get videoSettings => [
 ];
 
 Future<void> _showCDNDialog(BuildContext context, VoidCallback setState) async {
-  final res = await showDialog<CDNService>(
+  final res = await showDialog<CdnSelectResult>(
     context: context,
     builder: (context) => const CdnSelectDialog(),
   );
   if (res != null) {
-    VideoUtils.cdnService = res;
-    await GStorage.setting.put(SettingBoxKey.CDNService, res.name);
+    await _saveCdnSelectResult(res);
     setState();
+  }
+}
+
+Future<void> _saveCdnSelectResult(CdnSelectResult result) async {
+  switch (result.type) {
+    case CdnSelectResultType.builtIn:
+      final service = result.service!;
+      VideoUtils.cdnService = service;
+      VideoUtils.customCDNUrl = null;
+      await GStorage.setting.put(SettingBoxKey.CDNService, service.name);
+      await GStorage.setting.delete(SettingBoxKey.customCDNUrl);
+    case CdnSelectResultType.custom:
+      final host = result.customCDNUrl!;
+      VideoUtils.customCDNUrl = host;
+      await GStorage.setting.put(SettingBoxKey.customCDNUrl, host);
+      SmartDialog.showToast('已设置自定义 CDN：$host');
+    case CdnSelectResultType.clearCustom:
+      VideoUtils.customCDNUrl = null;
+      await GStorage.setting.delete(SettingBoxKey.customCDNUrl);
+      SmartDialog.showToast('已清除自定义 CDN');
   }
 }
 

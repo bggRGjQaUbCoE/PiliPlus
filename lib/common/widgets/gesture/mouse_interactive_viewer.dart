@@ -677,6 +677,10 @@ class _MouseInteractiveViewerState extends State<MouseInteractiveViewer>
 
   void _onPointerDown(PointerDownEvent event) {
     widget.onPointerDown?.call(event);
+    final localPosition = event.localPosition;
+    if (localPosition.dx < 40 || localPosition.dy < 40) {
+      return;
+    }
     _scaleGestureRecognizer.addPointer(event);
   }
 

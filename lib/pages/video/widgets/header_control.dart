@@ -1843,21 +1843,10 @@ class HeaderControlState extends State<HeaderControl>
                       tooltip: '提交片段',
                       style: btnStyle,
                       onPressed: () => videoDetailCtr.onBlock(context),
-                      icon: const Stack(
-                        clipBehavior: Clip.none,
-                        alignment: Alignment.center,
-                        children: [
-                          Icon(
-                            Icons.shield_outlined,
-                            size: 19,
-                            color: Colors.white,
-                          ),
-                          Icon(
-                            Icons.play_arrow_rounded,
-                            size: 13,
-                            color: Colors.white,
-                          ),
-                        ],
+                      icon: const Icon(
+                        CustomIcons.shield_play_arrow,
+                        size: 20,
+                        color: Colors.white,
                       ),
                     ),
                   ),

@@ -1,3 +1,4 @@
+import 'package:PiliPlus/common/widgets/custom_icon.dart';
 import 'package:PiliPlus/http/user.dart';
 import 'package:PiliPlus/http/video.dart';
 import 'package:PiliPlus/models/common/account_type.dart';
@@ -52,13 +53,7 @@ class VideoPopupMenu extends StatelessWidget {
                 if (videoItem.bvid?.isNotEmpty == true) ...[
                   _VideoCustomAction(
                     videoItem.bvid!,
-                    const Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        Icon(MdiIcons.identifier, size: 16),
-                        Icon(MdiIcons.circleOutline, size: 16),
-                      ],
-                    ),
+                    const Icon(CustomIcons.identifier_circle, size: 16),
                     () => Utils.copyText(videoItem.bvid!),
                   ),
                   _VideoCustomAction(
@@ -69,30 +64,7 @@ class VideoPopupMenu extends StatelessWidget {
                   if (videoItem.cid != null && Pref.enableAi)
                     _VideoCustomAction(
                       'AI总结',
-                      const Stack(
-                        alignment: Alignment.center,
-                        clipBehavior: Clip.none,
-                        children: [
-                          Icon(Icons.circle_outlined, size: 16),
-                          ExcludeSemantics(
-                            child: Text(
-                              'AI',
-                              style: TextStyle(
-                                fontSize: 10,
-                                height: 1,
-                                fontWeight: FontWeight.w700,
-                              ),
-                              strutStyle: StrutStyle(
-                                fontSize: 10,
-                                height: 1,
-                                leading: 0,
-                                fontWeight: FontWeight.w700,
-                              ),
-                              textScaler: TextScaler.noScaling,
-                            ),
-                          ),
-                        ],
-                      ),
+                      const Icon(CustomIcons.ai_circle, size: 16),
                       () async {
                         final res = await UgcIntroController.getAiConclusion(
                           videoItem.bvid!,

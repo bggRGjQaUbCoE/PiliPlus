@@ -4,6 +4,7 @@ import 'package:PiliPlus/common/assets.dart';
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/badge.dart';
+import 'package:PiliPlus/common/widgets/custom_icon.dart';
 import 'package:PiliPlus/common/widgets/dialog/report.dart';
 import 'package:PiliPlus/common/widgets/extra_hit_test_widget.dart';
 import 'package:PiliPlus/common/widgets/flutter/text/text.dart' as custom_text;
@@ -1093,14 +1094,7 @@ class ReplyItemGrpc extends StatelessWidget {
                 onCheckReply?.call(item);
               },
               minLeadingWidth: 0,
-              leading: const Stack(
-                clipBehavior: Clip.none,
-                alignment: Alignment.center,
-                children: [
-                  Icon(Icons.shield_outlined, size: 19),
-                  Icon(Icons.reply, size: 12),
-                ],
-              ),
+              leading: const Icon(CustomIcons.shield_reply, size: 19),
               title: Text('检查评论', style: style),
             ),
         ],

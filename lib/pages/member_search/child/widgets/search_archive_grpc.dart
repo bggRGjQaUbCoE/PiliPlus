@@ -1,5 +1,6 @@
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/badge.dart';
+import 'package:PiliPlus/common/widgets/custom_icon.dart';
 import 'package:PiliPlus/common/widgets/flutter/layout_builder.dart';
 import 'package:PiliPlus/common/widgets/image/image_save.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
@@ -132,13 +133,7 @@ class SearchArchiveGrpc extends StatelessWidget {
                   child: Row(
                     spacing: 6,
                     children: [
-                      const Stack(
-                        clipBehavior: Clip.none,
-                        children: [
-                          Icon(MdiIcons.identifier, size: 16),
-                          Icon(MdiIcons.circleOutline, size: 16),
-                        ],
-                      ),
+                      const Icon(CustomIcons.identifier_circle, size: 16),
                       Text(bvid, style: const TextStyle(fontSize: 13)),
                     ],
                   ),

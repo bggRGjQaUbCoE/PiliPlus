@@ -900,6 +900,8 @@ class PlPlayerController with BlockConfigMixin {
     return null;
   }
 
+  bool _recoveringHwdec = false;
+
   // 开始播放
   Future<void> _initializePlayer() async {
     if (_instance == null) return;
@@ -1687,6 +1689,53 @@ class PlPlayerController with BlockConfigMixin {
     onlyPlayAudio.value = !onlyPlayAudio.value;
     videoPlayerController?.setVideoTrack(
       onlyPlayAudio.value ? VideoTrack.no() : VideoTrack.auto(),
+    );
+  }
+
+  // iOS 从后台恢复时，重建解码链路并恢复 hwdec。
+  Future<void> _recoverIosHwdecAfterResume({
+    bool shouldResumePlayback = false,
+  }) async {
+    if (!Platform.isIOS || hwdec == null) {
+      return;
+    }
+
+    final player = _videoPlayerController;
+    if (player == null || player.current.isEmpty || _recoveringHwdec) {
+      return;
+    }
+
+    _recoveringHwdec = true;
+    try {
+      final shouldPlay = shouldResumePlayback || player.state.playing;
+      final resumePosition = player.state.position;
+      final media = player.current.last.copyWith(start: resumePosition);
+
+      player.setProperty('hwdec', hwdec!);
+      await player.open(media, play: false);
+      await player.setRate(_playbackSpeed.value);
+
+      position = resumePosition;
+      updatePositionSecond();
+      sliderPosition = resumePosition;
+      updateSliderPositionSecond();
+
+      if (shouldPlay) {
+        await player.play();
+      }
+    } catch (err, stackTrace) {
+      if (kDebugMode) {
+        debugPrint('recover hwdec after resume failed: $err');
+        debugPrint(stackTrace.toString());
+      }
+    } finally {
+      _recoveringHwdec = false;
+    }
+  }
+
+  Future<void> onAppResumed({bool shouldResumePlayback = false}) async {
+    await _recoverIosHwdecAfterResume(
+      shouldResumePlayback: shouldResumePlayback,
     );
   }
 

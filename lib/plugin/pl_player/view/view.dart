@@ -300,18 +300,27 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (!plPlayerController.continuePlayInBackground.value) {
-      late final player = plPlayerController.videoPlayerController;
-      if (const <AppLifecycleState>[.paused, .detached].contains(state)) {
-        if (player != null && player.state.playing) {
-          _pauseDueToPauseUponEnteringBackgroundMode = true;
-          player.pause();
-        }
-      } else {
-        if (_pauseDueToPauseUponEnteringBackgroundMode) {
-          _pauseDueToPauseUponEnteringBackgroundMode = false;
-          player?.play();
-        }
+    final player = plPlayerController.videoPlayerController;
+    if (!plPlayerController.continuePlayInBackground.value &&
+        const <AppLifecycleState>[.paused, .detached].contains(state)) {
+      if (player != null && player.state.playing) {
+        _pauseDueToPauseUponEnteringBackgroundMode = true;
+        player.pause();
+      }
+    }
+
+    if (state == AppLifecycleState.resumed) {
+      final shouldResumePlayback = _pauseDueToPauseUponEnteringBackgroundMode;
+      _pauseDueToPauseUponEnteringBackgroundMode = false;
+      if (Platform.isIOS) {
+        // iOS 恢复前台时交由 controller 恢复硬解链路
+        unawaited(
+          plPlayerController.onAppResumed(
+            shouldResumePlayback: shouldResumePlayback,
+          ),
+        );
+      } else if (shouldResumePlayback) {
+        player?.play();
       }
     }
   }

@@ -1,8 +1,57 @@
 diff --git a/packages/flutter/lib/src/cupertino/route.dart b/packages/flutter/lib/src/cupertino/route.dart
-index 5ce4479480e..0e6387596c5 100644
+index 5ce4479480e..d5fa9478210 100644
 --- a/packages/flutter/lib/src/cupertino/route.dart
 +++ b/packages/flutter/lib/src/cupertino/route.dart
-@@ -883,7 +883,7 @@ class _CupertinoBackGestureController<T> {
+@@ -252,6 +252,7 @@ mixin CupertinoRouteTransitionMixin<T> on PageRoute<T> {
+         linearTransition: linearTransition,
+         child: _CupertinoBackGestureDetector<T>(
+           enabledCallback: () => route.popGestureEnabled,
++          popGestureEnabled_: () => route.popGestureEnabled_,
+           onStartPopGesture: () => _startPopGesture<T>(route),
+           child: child,
+         ),
+@@ -698,6 +699,7 @@ class _CupertinoBackGestureDetector<T> extends StatefulWidget {
+   const _CupertinoBackGestureDetector({
+     super.key,
+     required this.enabledCallback,
++    required this.popGestureEnabled_,
+     required this.onStartPopGesture,
+     required this.child,
+   });
+@@ -706,6 +708,8 @@ class _CupertinoBackGestureDetector<T> extends StatefulWidget {
+ 
+   final ValueGetter<bool> enabledCallback;
+ 
++  final ValueGetter<bool> popGestureEnabled_;
++
+   final ValueGetter<_CupertinoBackGestureController<T>> onStartPopGesture;
+ 
+   @override
+@@ -720,7 +724,7 @@ class _CupertinoBackGestureDetectorState<T> extends State<_CupertinoBackGestureD
+   @override
+   void initState() {
+     super.initState();
+-    _recognizer = HorizontalDragGestureRecognizer(debugOwner: this)
++    _recognizer = _HorizontalDragGestureRecognizer(debugOwner: this)
+       ..onStart = _handleDragStart
+       ..onUpdate = _handleDragUpdate
+       ..onEnd = _handleDragEnd
+@@ -776,7 +780,13 @@ class _CupertinoBackGestureDetectorState<T> extends State<_CupertinoBackGestureD
+ 
+   void _handlePointerDown(PointerDownEvent event) {
+     if (widget.enabledCallback()) {
+-      _recognizer.addPointer(event);
++      _recognizer
++        ..gestureSettings = null
++        ..addPointer(event);
++    } else if (widget.popGestureEnabled_()) {
++      _recognizer
++        ..gestureSettings = const DeviceGestureSettings(touchSlop: 28)
++        ..addPointer(event);
+     }
+   }
+ 
+@@ -883,7 +893,7 @@ class _CupertinoBackGestureController<T> {
      } else {
        if (isCurrent) {
          // This route is destined to pop at this point. Reuse navigator's pop.
@@ -11,6 +60,26 @@ index 5ce4479480e..0e6387596c5 100644
        }
  
        // The popping may have finished inline if already at the target destination.
+@@ -1548,3 +1558,18 @@ class CupertinoDialogRoute<T> extends RawDialogRoute<T> {
+   // transitions.
+   static final Tween<double> _dialogScaleTween = Tween<double>(begin: 1.3, end: 1.0);
+ }
++
++class _HorizontalDragGestureRecognizer extends HorizontalDragGestureRecognizer {
++  _HorizontalDragGestureRecognizer({
++    super.debugOwner,
++    super.supportedDevices,
++    super.allowedButtonsFilter,
++  });
++
++
++  @override
++  void didStopTrackingLastPointer(int pointer) {
++    gestureSettings = null;
++    super.didStopTrackingLastPointer(pointer);
++  }
++}
+\ No newline at end of file
 diff --git a/packages/flutter/lib/src/material/scaffold.dart b/packages/flutter/lib/src/material/scaffold.dart
 index d121d10f1d6..92fa155c168 100644
 --- a/packages/flutter/lib/src/material/scaffold.dart
@@ -24,7 +93,7 @@ index d121d10f1d6..92fa155c168 100644
                if (!removedEntry && _currentBottomSheet?._widget == bottomSheet && !doingDispose) {
                  removeCurrentBottomSheet();
 diff --git a/packages/flutter/lib/src/widgets/routes.dart b/packages/flutter/lib/src/widgets/routes.dart
-index 5c4a8982617..d3fa530e250 100644
+index 5c4a8982617..47db0368a85 100644
 --- a/packages/flutter/lib/src/widgets/routes.dart
 +++ b/packages/flutter/lib/src/widgets/routes.dart
 @@ -709,7 +709,11 @@ class LocalHistoryEntry {
@@ -64,18 +133,18 @@ index 5c4a8982617..d3fa530e250 100644
        final LocalHistoryEntry entry = _localHistory!.removeLast();
        assert(entry._owner == this);
        entry._owner = null;
-@@ -968,7 +982,9 @@ mixin LocalHistoryRoute<T> on Route<T> {
- 
-   @override
+@@ -970,6 +984,10 @@ mixin LocalHistoryRoute<T> on Route<T> {
    bool get willHandlePopInternally {
--    return _localHistory != null && _localHistory!.isNotEmpty;
-+    return _localHistory != null &&
-+        _localHistory!.isNotEmpty &&
-+        !_localHistory!.last.popGestureEnabled;
+     return _localHistory != null && _localHistory!.isNotEmpty;
    }
++
++  bool get popGestureEnabled_ {
++    return _localHistory?.lastOrNull?.popGestureEnabled ?? false;
++  }
  }
  
-@@ -2839,3 +2855,9 @@ abstract class PopEntry<T> {
+ class _DismissModalAction extends DismissAction {
+@@ -2839,3 +2857,9 @@ abstract class PopEntry<T> {
      return 'PopEntry canPop: ${canPopNotifier.value}, onPopInvoked: $onPopInvokedWithResult';
    }
  }

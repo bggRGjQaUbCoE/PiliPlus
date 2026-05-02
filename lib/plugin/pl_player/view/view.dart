@@ -501,13 +501,10 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                 iconSize: 22,
                 color: Colors.white,
                 disable: !show,
-                child: Transform.rotate(
-                  angle: math.pi / 2,
-                  child: const Icon(
-                    Icons.reorder,
-                    size: 22,
-                    color: Colors.white,
-                  ),
+                child: const Icon(
+                  CustomIcons.view_headline_rotate_90,
+                  size: 22,
+                  color: Colors.white,
                 ),
               ),
               onTap: widget.showViewPoints,

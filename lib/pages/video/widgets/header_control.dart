@@ -1,7 +1,6 @@
 import 'dart:async' show Timer;
 import 'dart:convert' show jsonDecode, utf8;
 import 'dart:io' show Platform, File;
-import 'dart:math';
 import 'dart:typed_data' show Uint8List;
 
 import 'package:PiliPlus/common/constants.dart';
@@ -528,15 +527,12 @@ class HeaderControlState extends State<HeaderControl>
                         () {
                           final flipY = plPlayerController.flipY.value;
                           return ActionRowLineItem(
-                            icon: Transform.rotate(
-                              angle: pi / 2,
-                              child: Icon(
-                                Icons.flip,
-                                size: 13,
-                                color: flipY
-                                    ? theme.colorScheme.onSecondaryContainer
-                                    : theme.colorScheme.outline,
-                              ),
+                            icon: Icon(
+                              CustomIcons.flip_rotate_90,
+                              size: 13,
+                              color: flipY
+                                  ? theme.colorScheme.onSecondaryContainer
+                                  : theme.colorScheme.outline,
                             ),
                             onTap: () {
                               plPlayerController.flipY.value = !flipY;

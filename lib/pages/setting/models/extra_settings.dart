@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'dart:math' show pi, max;
+import 'dart:math' show max;
 
 import 'package:PiliPlus/common/widgets/custom_icon.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
@@ -107,12 +107,9 @@ List<SettingsModel> get extraSettings => [
       onTap: _showDynDialog,
     ),
   ),
-  SwitchModel(
+  const SwitchModel(
     title: '显示视频分段信息',
-    leading: Transform.rotate(
-      angle: pi / 2,
-      child: const Icon(MdiIcons.viewHeadline),
-    ),
+    leading: Icon(CustomIcons.view_headline_rotate_90),
     setKey: SettingBoxKey.showViewPoints,
     defaultVal: true,
   ),
@@ -424,10 +421,7 @@ List<SettingsModel> get extraSettings => [
   ),
   SwitchModel(
     title: '侧滑关闭二级页面',
-    leading: Transform.rotate(
-      angle: pi * 1.5,
-      child: const Icon(Icons.touch_app),
-    ),
+    leading: const Icon(CustomIcons.touch_app_rotate_270),
     setKey: SettingBoxKey.slideDismissReplyPage,
     defaultVal: Platform.isIOS,
     onChanged: (value) => CommonSlideMixin.slideDismissReplyPage = value,

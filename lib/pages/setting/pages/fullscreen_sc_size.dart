@@ -1,6 +1,7 @@
 import 'dart:io' show Platform;
 import 'dart:math' as math;
 
+import 'package:PiliPlus/common/widgets/custom_icon.dart';
 import 'package:PiliPlus/common/widgets/extra_hittest_stack.dart';
 import 'package:PiliPlus/models_new/live/live_superchat/item.dart';
 import 'package:PiliPlus/pages/live_room/superchat/superchat_card.dart';
@@ -113,13 +114,10 @@ class _FullScreenScSizeState extends State<FullScreenScSize> {
                       alpha: .8,
                     ),
                   ),
-                  child: Transform.rotate(
-                    angle: math.pi / 4,
-                    child: Icon(
-                      size: 18,
-                      Icons.open_in_full,
-                      color: _colorScheme.onSecondaryContainer,
-                    ),
+                  child: Icon(
+                    size: 18,
+                    CustomIcons.open_in_full_rotate_45,
+                    color: _colorScheme.onSecondaryContainer,
                   ),
                 ),
               ),

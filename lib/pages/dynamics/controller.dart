@@ -13,8 +13,7 @@ import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/extension/scroll_controller_ext.dart';
 import 'package:PiliPlus/utils/extension/string_ext.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
-import 'package:easy_debounce/easy_throttle.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' show ScrollController, TabController;
 import 'package:get/get.dart';
 
 class DynamicsController extends GetxController
@@ -207,28 +206,6 @@ class DynamicsController extends GetxController
   void animateToTop() {
     controller?.animateToTop();
     scrollController.animToTop();
-  }
-
-  @override
-  void toTopOrRefresh() {
-    final ctr = controller;
-    if (ctr?.scrollController.hasClients == true) {
-      if (ctr!.scrollController.position.pixels == 0) {
-        if (scrollController.hasClients &&
-            scrollController.position.pixels != 0) {
-          scrollController.animToTop();
-        }
-        EasyThrottle.throttle(
-          'topOrRefresh',
-          const Duration(milliseconds: 500),
-          onRefresh,
-        );
-      } else {
-        animateToTop();
-      }
-    } else {
-      super.toTopOrRefresh();
-    }
   }
 
   @override

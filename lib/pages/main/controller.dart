@@ -17,7 +17,6 @@ import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:collection/collection.dart';
-import 'package:easy_debounce/easy_throttle.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -256,30 +255,24 @@ class MainController extends GetxController
     if (value != selectedIndex.value) {
       selectedIndex.value = value;
       controller.jumpToPage(value);
-      if (currentNav == NavigationBarType.home) {
+      if (currentNav == .home) {
         checkUnread();
-      } else if (currentNav == NavigationBarType.dynamics) {
+      } else if (currentNav == .dynamics) {
         setDynCount();
       }
     } else {
       int now = DateTime.now().millisecondsSinceEpoch;
       if (now - _lastSelectTime < 500) {
-        EasyThrottle.throttle(
-          'topOrRefresh',
-          const Duration(milliseconds: 500),
-          () {
-            if (currentNav == NavigationBarType.home) {
-              homeController.onRefresh();
-            } else if (currentNav == NavigationBarType.dynamics) {
-              dynamicController.onRefresh();
-            }
-          },
-        );
+        if (currentNav == .home) {
+          homeController.onRefresh();
+        } else if (currentNav == .dynamics) {
+          dynamicController.onRefresh();
+        }
       } else {
-        if (currentNav == NavigationBarType.home) {
-          homeController.toTopOrRefresh();
-        } else if (currentNav == NavigationBarType.dynamics) {
-          dynamicController.toTopOrRefresh();
+        if (currentNav == .home) {
+          homeController.animateToTop();
+        } else if (currentNav == .dynamics) {
+          dynamicController.animateToTop();
         }
       }
       _lastSelectTime = now;

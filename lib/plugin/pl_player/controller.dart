@@ -1601,9 +1601,7 @@ class PlPlayerController with BlockConfigMixin {
 
   void dispose() {
     // 每次减1，最后销毁
-    if (isFullScreen.value) {
-      resetScreenRotation();
-    }
+    resetScreenRotation();
     cancelLongPressTimer();
     _cancelSubForSeek();
     if (!_isCloseAll && _playerCount > 1) {

@@ -1,7 +1,16 @@
 diff --git a/packages/flutter/lib/src/cupertino/route.dart b/packages/flutter/lib/src/cupertino/route.dart
-index 5ce4479480e..d5fa9478210 100644
+index 5ce4479480e..2551c6613ae 100644
 --- a/packages/flutter/lib/src/cupertino/route.dart
 +++ b/packages/flutter/lib/src/cupertino/route.dart
+@@ -201,7 +201,7 @@ mixin CupertinoRouteTransitionMixin<T> on PageRoute<T> {
+   // gesture is detected. The returned controller handles all of the subsequent
+   // drag events.
+   static _CupertinoBackGestureController<T> _startPopGesture<T>(PageRoute<T> route) {
+-    assert(route.popGestureEnabled);
++    assert(route.popGestureEnabled || route.popGestureEnabled_);
+ 
+     return _CupertinoBackGestureController<T>(
+       navigator: route.navigator!,
 @@ -252,6 +252,7 @@ mixin CupertinoRouteTransitionMixin<T> on PageRoute<T> {
          linearTransition: linearTransition,
          child: _CupertinoBackGestureDetector<T>(

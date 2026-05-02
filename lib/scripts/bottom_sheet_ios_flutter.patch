@@ -102,7 +102,7 @@ index d121d10f1d6..92fa155c168 100644
                if (!removedEntry && _currentBottomSheet?._widget == bottomSheet && !doingDispose) {
                  removeCurrentBottomSheet();
 diff --git a/packages/flutter/lib/src/widgets/routes.dart b/packages/flutter/lib/src/widgets/routes.dart
-index 5c4a8982617..47db0368a85 100644
+index 5c4a8982617..6621148781a 100644
 --- a/packages/flutter/lib/src/widgets/routes.dart
 +++ b/packages/flutter/lib/src/widgets/routes.dart
 @@ -709,7 +709,11 @@ class LocalHistoryEntry {
@@ -142,18 +142,21 @@ index 5c4a8982617..47db0368a85 100644
        final LocalHistoryEntry entry = _localHistory!.removeLast();
        assert(entry._owner == this);
        entry._owner = null;
-@@ -970,6 +984,10 @@ mixin LocalHistoryRoute<T> on Route<T> {
+@@ -970,6 +984,13 @@ mixin LocalHistoryRoute<T> on Route<T> {
    bool get willHandlePopInternally {
      return _localHistory != null && _localHistory!.isNotEmpty;
    }
 +
 +  bool get popGestureEnabled_ {
++    if (popDisposition == RoutePopDisposition.doNotPop) {
++      return false;
++    }
 +    return _localHistory?.lastOrNull?.popGestureEnabled ?? false;
 +  }
  }
  
  class _DismissModalAction extends DismissAction {
-@@ -2839,3 +2857,9 @@ abstract class PopEntry<T> {
+@@ -2839,3 +2860,9 @@ abstract class PopEntry<T> {
      return 'PopEntry canPop: ${canPopNotifier.value}, onPopInvoked: $onPopInvokedWithResult';
    }
  }

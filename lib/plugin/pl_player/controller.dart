@@ -164,6 +164,9 @@ class PlPlayerController with BlockConfigMixin {
 
   late DataSource dataSource;
 
+  /// After iOS hwdec recovery [Player.open], mirroring [setDataSource] `onInit` (e.g. subtitles).
+  Future<void> Function()? onAfterIosMediaReopened;
+
   Timer? _timer;
   StreamSubscription<Duration>? _subForSeek;
 
@@ -1625,6 +1628,7 @@ class PlPlayerController with BlockConfigMixin {
       showSystemBar();
     }
     danmakuController = null;
+    onAfterIosMediaReopened = null;
     _stopOrientationListener();
     _disableAutoEnterPip();
     setPlayCallBack(null);
@@ -1723,6 +1727,7 @@ class PlPlayerController with BlockConfigMixin {
       if (shouldPlay) {
         await player.play();
       }
+      await onAfterIosMediaReopened?.call();
     } catch (err, stackTrace) {
       if (kDebugMode) {
         debugPrint('recover hwdec after resume failed: $err');

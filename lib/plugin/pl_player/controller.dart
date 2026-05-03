@@ -1718,15 +1718,32 @@ class PlPlayerController with BlockConfigMixin {
       danmakuController?.clear();
       player.setProperty('hwdec', hwdec!);
       await player.open(media, play: false);
-      await player.setRate(_playbackSpeed.value);
+
+      if (isLive) {
+        await setPlaybackSpeed(1.0);
+      } else if (_videoPlayerController?.state.rate != _playbackSpeed.value) {
+        await setPlaybackSpeed(_playbackSpeed.value);
+      }
+
+      if (isAnim && superResolutionType.value != SuperResolutionType.disable) {
+        try {
+          await setShader();
+        } catch (e, st) {
+          if (kDebugMode) {
+            debugPrint('recover: setShader failed: $e\n$st');
+          }
+        }
+      }
+      _initVideoFit();
 
       position = resumePosition;
       updatePositionSecond();
       sliderPosition = resumePosition;
       updateSliderPositionSecond();
+      _heartDuration = resumePosition.inSeconds;
 
       if (shouldPlay) {
-        await player.play();
+        await play(hideControls: true);
       }
       await onAfterIosMediaReopened?.call();
     } catch (err, stackTrace) {

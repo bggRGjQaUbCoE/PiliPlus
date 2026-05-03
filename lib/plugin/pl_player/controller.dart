@@ -1715,6 +1715,7 @@ class PlPlayerController with BlockConfigMixin {
       final resumePosition = player.state.position;
       final media = player.current.last.copyWith(start: resumePosition);
 
+      danmakuController?.clear();
       player.setProperty('hwdec', hwdec!);
       await player.open(media, play: false);
       await player.setRate(_playbackSpeed.value);

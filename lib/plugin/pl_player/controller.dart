@@ -164,6 +164,9 @@ class PlPlayerController with BlockConfigMixin {
 
   late DataSource dataSource;
 
+  /// After iOS hwdec recovery [Player.open], mirroring [setDataSource] `onInit` (e.g. subtitles).
+  Future<void> Function()? onAfterIosMediaReopened;
+
   Timer? _timer;
   StreamSubscription<Duration>? _subForSeek;
 
@@ -900,6 +903,8 @@ class PlPlayerController with BlockConfigMixin {
     return null;
   }
 
+  bool _recoveringHwdec = false;
+
   // 开始播放
   Future<void> _initializePlayer() async {
     if (_instance == null) return;
@@ -1623,6 +1628,7 @@ class PlPlayerController with BlockConfigMixin {
       showSystemBar();
     }
     danmakuController = null;
+    onAfterIosMediaReopened = null;
     _stopOrientationListener();
     _disableAutoEnterPip();
     setPlayCallBack(null);
@@ -1688,6 +1694,83 @@ class PlPlayerController with BlockConfigMixin {
     videoPlayerController?.setVideoTrack(
       onlyPlayAudio.value ? VideoTrack.no() : VideoTrack.auto(),
     );
+  }
+
+  // iOS 从后台恢复时，重建解码链路并恢复 hwdec。
+  Future<void> _recoverIosHwdecAfterResume({
+    bool shouldResumePlayback = false,
+  }) async {
+    if (!Platform.isIOS || hwdec == null) {
+      return;
+    }
+
+    final player = _videoPlayerController;
+    if (player == null || player.current.isEmpty || _recoveringHwdec) {
+      return;
+    }
+
+    _recoveringHwdec = true;
+    try {
+      final shouldPlay = shouldResumePlayback || player.state.playing;
+      final resumePosition = player.state.position;
+      final media = player.current.last.copyWith(start: resumePosition);
+
+      danmakuController?.clear();
+      player.setProperty('hwdec', hwdec!);
+      await player.open(media, play: false);
+
+      if (isLive) {
+        await setPlaybackSpeed(1.0);
+      } else if (_videoPlayerController?.state.rate != _playbackSpeed.value) {
+        await setPlaybackSpeed(_playbackSpeed.value);
+      }
+
+      if (isAnim && superResolutionType.value != SuperResolutionType.disable) {
+        try {
+          await setShader();
+        } catch (e, st) {
+          if (kDebugMode) {
+            debugPrint('recover: setShader failed: $e\n$st');
+          }
+        }
+      }
+      _initVideoFit();
+
+      position = resumePosition;
+      updatePositionSecond();
+      sliderPosition = resumePosition;
+      updateSliderPositionSecond();
+      _heartDuration = resumePosition.inSeconds;
+
+      if (shouldPlay) {
+        await play(hideControls: true);
+      }
+      await onAfterIosMediaReopened?.call();
+    } catch (err, stackTrace) {
+      if (kDebugMode) {
+        debugPrint('recover hwdec after resume failed: $err');
+        debugPrint(stackTrace.toString());
+      }
+    } finally {
+      _recoveringHwdec = false;
+    }
+  }
+
+  Future<void> onAppResumed({bool shouldResumePlayback = false}) async {
+    if (!Platform.isIOS) {
+      return;
+    }
+    final player = _videoPlayerController;
+    final needsIosHwdecRecovery = hwdec != null &&
+        !onlyPlayAudio.value &&
+        (shouldResumePlayback || (player?.state.playing ?? false));
+    if (needsIosHwdecRecovery) {
+      await _recoverIosHwdecAfterResume(
+        shouldResumePlayback: shouldResumePlayback,
+      );
+    } else if (shouldResumePlayback) {
+      await player?.play();
+    }
   }
 
   late final Map<String, ui.Image?> previewCache = {};

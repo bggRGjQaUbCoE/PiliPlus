@@ -747,6 +747,8 @@ class VideoDetailController extends GetxController
     if (seek == null || seek == Duration.zero) {
       seek = getFirstSegment();
     }
+    plPlayerController.onAfterIosMediaReopened =
+        () => setSubtitle(vttSubtitlesIndex.value);
     await plPlayerController.setDataSource(
       isFileSource
           ? FileSource(
@@ -1262,6 +1264,7 @@ class VideoDetailController extends GetxController
 
   @override
   void onClose() {
+    plPlayerController.onAfterIosMediaReopened = null;
     cid.close();
     if (isFileSource) {
       cacheLocalProgress();

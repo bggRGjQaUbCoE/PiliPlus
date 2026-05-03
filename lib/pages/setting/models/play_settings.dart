@@ -251,6 +251,13 @@ List<SettingsModel> get playSettings => [
       onChanged: (value) =>
           videoPlayerServiceHandler!.enableBackgroundPlay = value,
     ),
+  const SwitchModel(
+    title: '自动播放下一集',
+    subtitle: '播放完当前视频后自动播放下一集（播放顺序为"播完暂停"时生效）',
+    leading: Icon(Icons.skip_next_outlined),
+    setKey: SettingBoxKey.autoPlayNext,
+    defaultVal: true,
+  ),
   PopupModel(
     title: '播放顺序',
     leading: const Icon(Icons.repeat),

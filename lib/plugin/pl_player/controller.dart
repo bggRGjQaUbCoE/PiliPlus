@@ -1734,9 +1734,20 @@ class PlPlayerController with BlockConfigMixin {
   }
 
   Future<void> onAppResumed({bool shouldResumePlayback = false}) async {
-    await _recoverIosHwdecAfterResume(
-      shouldResumePlayback: shouldResumePlayback,
-    );
+    if (!Platform.isIOS) {
+      return;
+    }
+    final player = _videoPlayerController;
+    final needsIosHwdecRecovery = hwdec != null &&
+        !onlyPlayAudio.value &&
+        (shouldResumePlayback || (player?.state.playing ?? false));
+    if (needsIosHwdecRecovery) {
+      await _recoverIosHwdecAfterResume(
+        shouldResumePlayback: shouldResumePlayback,
+      );
+    } else if (shouldResumePlayback) {
+      await player?.play();
+    }
   }
 
   late final Map<String, ui.Image?> previewCache = {};

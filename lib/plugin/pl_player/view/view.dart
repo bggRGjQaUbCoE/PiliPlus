@@ -313,7 +313,6 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       final shouldResumePlayback = _pauseDueToPauseUponEnteringBackgroundMode;
       _pauseDueToPauseUponEnteringBackgroundMode = false;
       if (Platform.isIOS) {
-        // iOS 恢复前台时交由 controller 恢复硬解链路
         unawaited(
           plPlayerController.onAppResumed(
             shouldResumePlayback: shouldResumePlayback,

@@ -836,6 +836,9 @@ abstract final class Pref {
   static double get defaultToastOp =>
       _setting.get(SettingBoxKey.defaultToastOp, defaultValue: 1.0);
 
+  static bool get autoPlayNext =>
+      _setting.get(SettingBoxKey.autoPlayNext, defaultValue: true);
+
   static PlayRepeat get playRepeat =>
       PlayRepeat.values[_video.get(
         VideoBoxKey.playRepeat,

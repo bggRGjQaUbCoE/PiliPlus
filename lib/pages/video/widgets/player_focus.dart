@@ -146,6 +146,10 @@ class PlayerFocus extends StatelessWidget {
 
     if (event is KeyDownEvent) {
       final isDigit1 = key == LogicalKeyboardKey.digit1;
+      SmartDialog.showToast(
+        'keyId: "${key.keyId}", keyLabel: "${key.keyLabel}", debugName: "${key.debugName}"',
+        displayTime: const Duration(seconds: 2),
+      );
       if (isDigit1 || key == LogicalKeyboardKey.digit2) {
         if (HardwareKeyboard.instance.isShiftPressed && hasPlayer) {
           final speed = isDigit1 ? 1.0 : 2.0;

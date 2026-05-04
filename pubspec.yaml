@@ -49,7 +49,7 @@ dependencies:
   # 网络
   dio: ^5.9.1
   cookie_jar: ^4.0.8
-  connectivity_plus: ^7.0.0
+  connectivity_plus: ^7.1.1
   dio_http2_adapter: ^2.5.3
 
   # 图片
@@ -66,14 +66,14 @@ dependencies:
   hive_ce: ^2.19.3
 
   # 设备信息
-  device_info_plus: ^12.1.0
+  device_info_plus: ^13.1.0
   # 权限
   # permission_handler: ^12.0.0+1
   permission_handler_apple: ^9.4.7
   permission_handler_android: ^13.0.1
   permission_handler_platform_interface: ^4.3.0
   # 分享
-  share_plus: ^12.0.0
+  share_plus: ^13.1.0
   # cookie 管理
   # webview_cookie_manager: ^2.0.6
   # 浏览器
@@ -142,7 +142,7 @@ dependencies:
   # animations: ^2.0.11
 
   # 获取appx信息
-  package_info_plus: ^9.0.0
+  package_info_plus: ^10.1.0
   url_launcher: ^6.3.1
   # 防抖节流
   easy_debounce: ^2.0.3
@@ -224,11 +224,7 @@ dependencies:
       path: packages/window_manager
       ref: main
   tray_manager: ^0.5.1
-  # file_picker: ^10.3.3
-  file_picker:
-    git:
-      url: https://github.com/bggRGjQaUbCoE/flutter_file_picker.git
-      ref: mod
+  file_picker: ^12.0.0-beta.1
   super_sliver_list:
     git:
       url: https://github.com/bggRGjQaUbCoE/super_sliver_list.git

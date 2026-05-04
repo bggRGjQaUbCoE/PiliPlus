@@ -188,6 +188,14 @@ List<SettingsModel> get playSettings => [
       setKey: SettingBoxKey.continuePlayInBackground,
       defaultVal: false,
     ),
+  if (PlatformUtils.isMobile)
+    const SwitchModel(
+      title: '平板模式竖屏播放页转横屏时全屏',
+      subtitle: '当开启时，在平板/横屏布局模式下，竖屏旋转到横屏自动全屏',
+      leading: Icon(Icons.screen_rotation_alt_outlined),
+      setKey: SettingBoxKey.enableLandscapeAutoFullscreen,
+      defaultVal: false,
+    ),
   if (Platform.isAndroid) ...[
     SwitchModel(
       title: '后台画中画',

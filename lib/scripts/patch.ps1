@@ -20,6 +20,8 @@ $ScrollViewPatch = "lib/scripts/scroll_view.patch"
 
 $TextSelectionPatch = "lib/scripts/text_selection.patch"
 
+$NavigatorPatch = "lib/scripts/navigator.patch"
+
 # TODO: remove
 # https://github.com/flutter/flutter/issues/90223
 $ModalBarrierPatch = "lib/scripts/modal_barrier.patch"
@@ -46,10 +48,12 @@ switch ($platform.ToLower()) {
         $reverts += $NewOverScrollIndicator
         $patches += $BottomSheetAndroidPatch
         $patches += $ScrollViewPatch
+        $patches += $NavigatorPatch
     }
     "ios" {
         $patches += $ScrollViewPatch
         $patches += $BottomSheetIOSFlutterPatch
+        $patches += $NavigatorPatch
     }
     "linux" {
         $picks += $ToolTipFix

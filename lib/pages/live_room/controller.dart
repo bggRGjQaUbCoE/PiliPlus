@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math' as math;
 
 import 'package:PiliPlus/common/widgets/dialog/report.dart';
 import 'package:PiliPlus/common/widgets/flutter/text_field/controller.dart';
@@ -39,7 +40,7 @@ import 'package:PiliPlus/utils/utils.dart';
 import 'package:PiliPlus/utils/video_utils.dart';
 import 'package:canvas_danmaku/canvas_danmaku.dart';
 import 'package:easy_debounce/easy_throttle.dart';
-import 'package:flutter/foundation.dart' show kDebugMode;
+import 'package:flutter/foundation.dart' show kDebugMode, kReleaseMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -503,9 +504,13 @@ class LiveRoomController extends GetxController {
         case 'SUPER_CHAT_MESSAGE' when showSuperChat:
           final item = SuperChatItem.fromJson(obj['data']);
           superChatMsg.insert(0, item);
-          if (isFullScreen || plPlayerController.isDesktopPip) {
+          if (plPlayerController.showDanmaku &&
+              (isFullScreen || plPlayerController.isDesktopPip)) {
             fsSC.value = item.copyWith(
-              endTime: DateTime.now().millisecondsSinceEpoch ~/ 1000 + 10,
+              endTime: math.min(
+                item.endTime,
+                DateTime.now().millisecondsSinceEpoch ~/ 1000 + 10,
+              ),
             );
           }
           addDm(item);
@@ -588,12 +593,13 @@ class LiveRoomController extends GetxController {
   }
 
   void onSendDanmaku([bool fromEmote = false]) {
-    if (!isLogin) {
+    if (kReleaseMode && !isLogin) {
       SmartDialog.showToast('账号未登录');
       return;
     }
     Get.key.currentState!.push(
       PublishRoute(
+        barrierColor: Colors.transparent,
         pageBuilder: (context, animation, secondaryAnimation) {
           return LiveSendDmPanel(
             fromEmote: fromEmote,

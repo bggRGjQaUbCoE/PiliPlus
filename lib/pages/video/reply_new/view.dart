@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:math' show max;
 
 import 'package:PiliPlus/common/widgets/button/toolbar_icon_button.dart';
+import 'package:PiliPlus/common/widgets/custom_icon.dart';
 import 'package:PiliPlus/common/widgets/flutter/text_field/controller.dart'
     show RichTextType;
 import 'package:PiliPlus/common/widgets/flutter/text_field/text_field.dart';
@@ -194,46 +195,19 @@ class _ReplyPageState extends CommonRichTextPubPageState<ReplyPage> {
             atBtn,
             const SizedBox(width: 8),
             moreBtn,
-            Expanded(
-              child: Center(
-                child: Obx(
-                  () {
-                    final syncToDynamic = _syncToDynamic.value;
-                    return TextButton(
-                      style: TextButton.styleFrom(
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        padding: const EdgeInsets.all(13),
-                        visualDensity: VisualDensity.compact,
-                        foregroundColor: syncToDynamic
-                            ? themeData.colorScheme.secondary
-                            : themeData.colorScheme.outline,
-                      ),
-                      onPressed: () => _syncToDynamic.value = !syncToDynamic,
-                      child: Row(
-                        spacing: 4,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            syncToDynamic
-                                ? Icons.check_box
-                                : Icons.check_box_outline_blank,
-                            size: 22,
-                          ),
-                          const Flexible(
-                            child: Text(
-                              '转到动态',
-                              maxLines: 1,
-                              style: TextStyle(height: 1),
-                              strutStyle: StrutStyle(leading: 0, height: 1),
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
+            const SizedBox(width: 8),
+            Obx(
+              () => ToolbarIconButton(
+                tooltip: '转到动态',
+                onPressed: _syncToDynamic.toggle,
+                icon: const Icon(
+                  CustomIcons.repeat_rounded_rotate_90,
+                  size: 22,
                 ),
+                selected: _syncToDynamic.value,
               ),
             ),
+            const Spacer(),
             Obx(
               () => FilledButton.tonal(
                 onPressed: enablePublish.value ? onPublish : null,

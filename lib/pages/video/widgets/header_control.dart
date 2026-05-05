@@ -1,7 +1,7 @@
-import 'dart:async';
+import 'dart:async' show Timer;
 import 'dart:convert' show jsonDecode, utf8;
-import 'dart:io';
-import 'dart:math';
+import 'dart:io' show Platform, File;
+import 'dart:typed_data' show Uint8List;
 
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/widgets/button/icon_button.dart';
@@ -59,7 +59,7 @@ import 'package:dio/dio.dart';
 import 'package:easy_debounce/easy_throttle.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:floating/floating.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart' show compute;
 import 'package:flutter/material.dart' hide showBottomSheet;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -527,15 +527,12 @@ class HeaderControlState extends State<HeaderControl>
                         () {
                           final flipY = plPlayerController.flipY.value;
                           return ActionRowLineItem(
-                            icon: Transform.rotate(
-                              angle: pi / 2,
-                              child: Icon(
-                                Icons.flip,
-                                size: 13,
-                                color: flipY
-                                    ? theme.colorScheme.onSecondaryContainer
-                                    : theme.colorScheme.outline,
-                              ),
+                            icon: Icon(
+                              CustomIcons.flip_rotate_90,
+                              size: 13,
+                              color: flipY
+                                  ? theme.colorScheme.onSecondaryContainer
+                                  : theme.colorScheme.outline,
                             ),
                             onTap: () {
                               plPlayerController.flipY.value = !flipY;
@@ -1846,21 +1843,10 @@ class HeaderControlState extends State<HeaderControl>
                       tooltip: '提交片段',
                       style: btnStyle,
                       onPressed: () => videoDetailCtr.onBlock(context),
-                      icon: const Stack(
-                        clipBehavior: Clip.none,
-                        alignment: Alignment.center,
-                        children: [
-                          Icon(
-                            Icons.shield_outlined,
-                            size: 19,
-                            color: Colors.white,
-                          ),
-                          Icon(
-                            Icons.play_arrow_rounded,
-                            size: 13,
-                            color: Colors.white,
-                          ),
-                        ],
+                      icon: const Icon(
+                        CustomIcons.shield_play_arrow,
+                        size: 20,
+                        color: Colors.white,
                       ),
                     ),
                   ),

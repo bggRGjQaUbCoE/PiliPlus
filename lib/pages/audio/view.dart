@@ -13,6 +13,7 @@ import 'package:PiliPlus/grpc/bilibili/app/listener/v1.pb.dart';
 import 'package:PiliPlus/models/common/image_preview_type.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/pages/audio/controller.dart';
+import 'package:PiliPlus/pages/audio/volume_button.dart';
 import 'package:PiliPlus/pages/video/introduction/ugc/widgets/action_item.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_repeat.dart';
 import 'package:PiliPlus/services/shutdown_timer_service.dart';
@@ -29,6 +30,7 @@ import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/utils.dart';
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart' hide DraggableScrollableSheet;
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
@@ -792,6 +794,15 @@ class _AudioPageState extends State<AudioPage> {
               },
             ),
           ),
+        ],
+      );
+    }
+    if (kDebugMode || PlatformUtils.isDesktop) {
+      child = Row(
+        spacing: 10,
+        children: [
+          Expanded(child: child),
+          VolumeButton(controller: _controller),
         ],
       );
     }

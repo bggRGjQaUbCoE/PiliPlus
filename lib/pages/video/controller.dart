@@ -248,13 +248,15 @@ class VideoDetailController extends GetxController
       if (width == null || height == null) {
         if (isUgc && !isFileSource) {
           final ugcIntroCtr = Get.find<UgcIntroController>(tag: heroTag);
-          final data = ugcIntroCtr.videoDetail.value;
-          if (data.cid == cid.value) {
-            final dimension = data.dimension!;
+          final cid = this.cid.value;
+          final part = ugcIntroCtr.videoDetail.value.pages?.firstWhereOrNull(
+            (e) => e.cid == cid,
+          );
+          if (part != null) {
+            final dimension = part.dimension!;
             width = dimension.width!;
             height = dimension.height!;
           } else {
-            ugcIntroCtr.queryVideoIntro().whenComplete(_setVideoHeight);
             return;
           }
         } else {

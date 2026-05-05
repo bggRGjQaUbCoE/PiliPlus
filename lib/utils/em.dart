@@ -1,6 +1,8 @@
 abstract final class Em {
   static final _exp = RegExp('<[^>]*>([^<]*)</[^>]*>');
-  static final _htmlRegExp = RegExp(r'&(lt|gt|quot|apos|nbsp|amp);');
+  static final _htmlRegExp = RegExp(
+    r'&(lt|gt|quot|apos|nbsp|amp|#x[a-fA-F\d]{2,4});',
+  );
 
   static String regCate(String origin) {
     Iterable<Match> matches = _exp.allMatches(origin);
@@ -29,6 +31,9 @@ abstract final class Em {
                 'apos' => "'",
                 'nbsp' => ' ',
                 'amp' => '&',
+                var i? when (i.startsWith('#x')) => String.fromCharCode(
+                  int.parse(i.substring(2), radix: 16),
+                ),
                 _ => m.group(0)!,
               },
             ),

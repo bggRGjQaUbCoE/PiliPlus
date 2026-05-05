@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:PiliPlus/common/assets.dart';
 import 'package:PiliPlus/common/style.dart';
+import 'package:PiliPlus/common/widgets/custom_icon.dart';
 import 'package:PiliPlus/common/widgets/dialog/report.dart';
 import 'package:PiliPlus/common/widgets/extra_hit_test_widget.dart';
 import 'package:PiliPlus/common/widgets/pendant_avatar.dart';
@@ -395,14 +396,7 @@ class AuthorPanel extends StatelessWidget {
                     );
                   },
                   minLeadingWidth: 0,
-                  leading: const Stack(
-                    clipBehavior: Clip.none,
-                    alignment: Alignment.center,
-                    children: [
-                      Icon(Icons.shield_outlined, size: 19),
-                      Icon(Icons.published_with_changes_sharp, size: 12),
-                    ],
-                  ),
+                  leading: const Icon(CustomIcons.shield_published, size: 19),
                   title: Text('检查动态', style: theme.textTheme.titleSmall!),
                 ),
                 if (onSetTop != null)

@@ -17,6 +17,7 @@ import 'package:PiliPlus/pages/common/publish/publish_route.dart';
 import 'package:PiliPlus/pages/contact/view.dart';
 import 'package:PiliPlus/pages/fav_panel/view.dart';
 import 'package:PiliPlus/pages/share/view.dart';
+import 'package:PiliPlus/pages/webview/view.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
 import 'package:PiliPlus/utils/extension/context_ext.dart';
 import 'package:PiliPlus/utils/extension/extension.dart';
@@ -26,7 +27,6 @@ import 'package:PiliPlus/utils/extension/string_ext.dart';
 import 'package:PiliPlus/utils/global_data.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
-import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/url_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:floating/floating.dart';
@@ -180,10 +180,7 @@ abstract final class PageUtils {
   }
 
   static void reportVideo(int aid) {
-    Get.toNamed(
-      '/webview',
-      parameters: {'url': 'https://www.bilibili.com/appeal/?avid=$aid'},
-    );
+    WebViewPage.toWebView('https://www.bilibili.com/appeal/?avid=$aid');
   }
 
   static void enterPip({int? width, int? height, bool isAuto = false}) {
@@ -366,7 +363,7 @@ abstract final class PageUtils {
                 },
               );
             } else {
-              handleWebview(url.http2https);
+              PiliScheme.routePushFromUrl(url.http2https);
             }
           }
         }
@@ -411,29 +408,6 @@ abstract final class PageUtils {
     );
   }
 
-  static void inAppWebview(
-    String url, {
-    bool off = false,
-  }) {
-    if (Pref.openInBrowser) {
-      launchURL(url);
-    } else {
-      if (off) {
-        Get.offNamed(
-          '/webview',
-          parameters: {'url': url},
-          arguments: {'inApp': true},
-        );
-      } else {
-        Get.toNamed(
-          '/webview',
-          parameters: {'url': url},
-          arguments: {'inApp': true},
-        );
-      }
-    }
-  }
-
   static Future<void> launchURL(
     String url, {
     LaunchMode mode = LaunchMode.externalApplication,
@@ -445,31 +419,6 @@ abstract final class PageUtils {
       }
     } catch (e) {
       SmartDialog.showToast(e.toString());
-    }
-  }
-
-  static Future<void> handleWebview(
-    String url, {
-    bool off = false,
-    bool inApp = false,
-    Map? parameters,
-  }) async {
-    if (!inApp && Pref.openInBrowser) {
-      if (!await PiliScheme.routePushFromUrl(url, selfHandle: true)) {
-        launchURL(url);
-      }
-    } else {
-      if (off) {
-        Get.offNamed(
-          '/webview',
-          parameters: {
-            'url': url,
-            ...?parameters,
-          },
-        );
-      } else {
-        PiliScheme.routePushFromUrl(url, parameters: parameters);
-      }
     }
   }
 

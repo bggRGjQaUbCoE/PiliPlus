@@ -1,6 +1,5 @@
 import 'package:PiliPlus/models_new/live/live_medal_wall/uinfo_medal.dart';
 import 'package:PiliPlus/models_new/live/live_superchat/user_info.dart';
-import 'package:PiliPlus/utils/global_data.dart';
 import 'package:PiliPlus/utils/parse_int.dart';
 import 'package:PiliPlus/utils/parse_string.dart';
 import 'package:PiliPlus/utils/utils.dart';
@@ -78,7 +77,7 @@ class SuperChatItem {
     token: json['token'],
     ts: safeToInt(json['ts'])!,
     userInfo: UserInfo.fromJson(json['user_info'] as Map<String, dynamic>),
-    medalInfo: !GlobalData().showMedal || json['uinfo']?['medal'] == null
+    medalInfo: json['uinfo']?['medal'] == null
         ? null
         : UinfoMedal.fromJson(json['uinfo']['medal']),
   );

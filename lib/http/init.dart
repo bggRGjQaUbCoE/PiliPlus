@@ -19,7 +19,6 @@ import 'package:brotli/brotli.dart';
 import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
 import 'package:dio_http2_adapter/dio_http2_adapter.dart';
-import 'package:flutter/foundation.dart' show kDebugMode;
 
 class Request {
   static const _gzipDecoder = GZipDecoder();
@@ -116,41 +115,16 @@ class Request {
   }
 
   static (IOHttpClientAdapter, ConnectionManager?) _createPool() {
-    final bool enableSystemProxy;
-    late final String systemProxyHost;
-    late final int? systemProxyPort;
-    if (Pref.enableSystemProxy) {
-      systemProxyHost = Pref.systemProxyHost;
-      systemProxyPort = int.tryParse(Pref.systemProxyPort);
-      enableSystemProxy = systemProxyPort != null && systemProxyHost.isNotEmpty;
-    } else {
-      enableSystemProxy = false;
-    }
-
     final http11Adapter = IOHttpClientAdapter(
-      createHttpClient: enableSystemProxy
-          ? () => HttpClient()
-              ..idleTimeout = const Duration(seconds: 15)
-              ..autoUncompress = false
-              ..findProxy = ((_) => 'PROXY $systemProxyHost:$systemProxyPort')
-              ..badCertificateCallback = (cert, host, port) => true
-          : () => HttpClient()
-              ..idleTimeout = const Duration(seconds: 15)
-              ..autoUncompress = false, // Http2Adapter没有自动解压, 统一行为
+      createHttpClient: () => HttpClient()
+        ..idleTimeout = const Duration(seconds: 15)
+        ..autoUncompress = false, // Http2Adapter没有自动解压, 统一行为
     );
 
     final connectionManager = _enableHttp2
         ? ConnectionManager(
             idleTimeout: const Duration(seconds: 15),
-            onClientCreate: enableSystemProxy
-                ? (_, config) => config
-                    ..proxy = Uri(
-                      scheme: 'http',
-                      host: systemProxyHost,
-                      port: systemProxyPort,
-                    )
-                    ..onBadCertificate = (_) => true
-                : Pref.badCertificateCallback
+            onClientCreate: Pref.badCertificateCallback
                 ? (_, config) => config.onBadCertificate = (_) => true
                 : null,
           )
@@ -195,15 +169,15 @@ class Request {
     }
 
     // 日志拦截器 输出请求、响应内容
-    if (kDebugMode) {
-      dio.interceptors.add(
-        LogInterceptor(
-          request: false,
-          requestHeader: false,
-          responseHeader: false,
-        ),
-      );
-    }
+    // if (kDebugMode) {
+    //   dio.interceptors.add(
+    //     LogInterceptor(
+    //       request: false,
+    //       requestHeader: false,
+    //       responseHeader: false,
+    //     ),
+    //   );
+    // }
 
     dio
       ..transformer = BackgroundTransformer()

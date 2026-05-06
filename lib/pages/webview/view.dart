@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:PiliPlus/common/widgets/flutter/pop_scope.dart';
+import 'package:PiliPlus/common/widgets/scaffold.dart';
 import 'package:PiliPlus/http/browser_ua.dart';
 import 'package:PiliPlus/main.dart';
 import 'package:PiliPlus/models/common/webview_menu_type.dart';
@@ -15,8 +16,8 @@ import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 
-class WebviewPage extends StatefulWidget {
-  const WebviewPage({
+class WebViewPage extends StatefulWidget {
+  const WebViewPage({
     super.key,
     this.url,
     this.oid,
@@ -32,16 +33,32 @@ class WebviewPage extends StatefulWidget {
   final String? userAgent;
 
   @override
-  State<WebviewPage> createState() => _WebviewPageState();
+  State<WebViewPage> createState() => _WebViewPageState();
+
+  static Future<void>? toWebView(
+    String url, {
+    String? uaType,
+    bool getBack = false,
+  }) {
+    if (getBack) {
+      Get.back();
+    }
+    return Get.toNamed(
+      '/webview',
+      parameters: {
+        'url': url,
+        'uaType': ?uaType,
+      },
+      preventDuplicates: false,
+    );
+  }
 }
 
-class _WebviewPageState extends State<WebviewPage> {
+class _WebViewPageState extends State<WebViewPage> {
   late final String _url = widget.url ?? Get.parameters['url'] ?? '';
   late final String userAgent;
   final RxString title = ''.obs;
   final RxDouble progress = 1.0.obs;
-  bool _inApp = false;
-  bool _off = false;
 
   InAppWebViewController? _webViewController;
 
@@ -60,10 +77,6 @@ class _WebviewPageState extends State<WebviewPage> {
           'mob' => BrowserUa.mob,
           _ => BrowserUa.platform,
         };
-    if (Get.arguments case final Map map) {
-      _inApp = map['inApp'] ?? false;
-      _off = map['off'] ?? false;
-    }
   }
 
   @override
@@ -75,9 +88,8 @@ class _WebviewPageState extends State<WebviewPage> {
   @override
   Widget build(BuildContext context) {
     if (Platform.isLinux) {
-      return Scaffold(
+      return scaffold(
         appBar: AppBar(),
-        resizeToAvoidBottomInset: false,
         body: Center(
           child: TextButton(
             onPressed: () => PageUtils.launchURL(_url),
@@ -318,14 +330,10 @@ class _WebviewPageState extends State<WebviewPage> {
             return null;
           },
           shouldOverrideUrlLoading: (controller, navigationAction) async {
-            if (_inApp) {
-              return NavigationActionPolicy.ALLOW;
-            }
             late String url = navigationAction.request.url.toString();
             bool hasMatch = await PiliScheme.routePush(
               navigationAction.request.url?.uriValue ?? Uri(),
               selfHandle: true,
-              off: _off,
             );
             // if (kDebugMode) debugPrint('webview: [$url], [$hasMatch]');
             if (hasMatch) {
@@ -333,16 +341,17 @@ class _WebviewPageState extends State<WebviewPage> {
               return NavigationActionPolicy.CANCEL;
             } else if (_prefixRegex.hasMatch(url)) {
               if (context.mounted) {
-                SnackBar snackBar = SnackBar(
-                  content: const Text('当前网页将要打开外部链接，是否打开'),
-                  showCloseIcon: true,
-                  persist: false,
-                  action: SnackBarAction(
-                    label: '打开',
-                    onPressed: () => PageUtils.launchURL(url),
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: const Text('当前网页将要打开外部链接，是否打开'),
+                    showCloseIcon: true,
+                    persist: false,
+                    action: SnackBarAction(
+                      label: '打开',
+                      onPressed: () => PageUtils.launchURL(url),
+                    ),
                   ),
                 );
-                ScaffoldMessenger.of(context).showSnackBar(snackBar);
               }
               progress.value = 1;
               return NavigationActionPolicy.CANCEL;

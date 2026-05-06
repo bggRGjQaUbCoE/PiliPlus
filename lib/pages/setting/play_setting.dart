@@ -1,3 +1,4 @@
+import 'package:PiliPlus/common/widgets/scaffold.dart';
 import 'package:PiliPlus/pages/setting/models/play_settings.dart';
 import 'package:flutter/material.dart';
 
@@ -17,8 +18,7 @@ class _PlaySettingState extends State<PlaySetting> {
   Widget build(BuildContext context) {
     final showAppBar = widget.showAppBar;
     final padding = MediaQuery.viewPaddingOf(context);
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
+    return scaffold(
       appBar: showAppBar ? AppBar(title: const Text('播放器设置')) : null,
       body: ListView.builder(
         padding: EdgeInsets.only(

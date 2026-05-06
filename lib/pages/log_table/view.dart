@@ -1,5 +1,6 @@
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
+import 'package:PiliPlus/common/widgets/scaffold.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/pages/log_table/controller.dart';
 import 'package:PiliPlus/utils/extension/widget_ext.dart';
@@ -19,8 +20,7 @@ class _LogPageState<T> extends State<LogPage<T>> {
   @override
   Widget build(BuildContext context) {
     final padding = MediaQuery.viewPaddingOf(context);
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
+    return scaffold(
       appBar: AppBar(title: Text(_controller.title)),
       body: CustomScrollView(
         slivers: [

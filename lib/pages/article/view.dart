@@ -4,6 +4,7 @@ import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/custom_icon.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
+import 'package:PiliPlus/common/widgets/scaffold.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart';
 import 'package:PiliPlus/models/common/badge_type.dart';
 import 'package:PiliPlus/models/common/image_preview_type.dart';
@@ -15,6 +16,7 @@ import 'package:PiliPlus/pages/article/widgets/html_render.dart';
 import 'package:PiliPlus/pages/article/widgets/opus_content.dart';
 import 'package:PiliPlus/pages/common/dyn/common_dyn_page.dart';
 import 'package:PiliPlus/pages/dynamics_repost/view.dart';
+import 'package:PiliPlus/pages/webview/view.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/extension/get_ext.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
@@ -64,17 +66,25 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
+    return scaffold(
       appBar: _buildAppBar(),
-      body: Padding(
-        padding: EdgeInsets.only(left: padding.left, right: padding.right),
-        child: _buildPage(theme),
-      ),
-      floatingActionButtonLocation: floatingActionButtonLocation,
-      floatingActionButton: SlideTransition(
-        position: fabAnimation,
-        child: _buildBottom(theme),
+      body: Stack(
+        clipBehavior: .none,
+        children: [
+          Padding(
+            padding: .only(left: padding.left, right: padding.right),
+            child: _buildPage(theme),
+          ),
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: SlideTransition(
+              position: fabAnimation,
+              child: _buildBottom(theme),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -422,7 +432,7 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
       if (!isPortrait) ratioWidget(maxWidth),
       IconButton(
         tooltip: '浏览器打开',
-        onPressed: () => PageUtils.inAppWebview(controller.url),
+        onPressed: () => WebViewPage.toWebView(controller.url),
         icon: const Icon(Icons.open_in_browser_outlined, size: 19),
       ),
       PopupMenuButton(
@@ -496,10 +506,6 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
   );
 
   Widget _buildBottom(ThemeData theme) {
-    if (!controller.showDynActionBar) {
-      return fabButton;
-    }
-
     late final primary = theme.colorScheme.primary;
     late final outline = theme.colorScheme.outline;
     late final btnStyle = TextButton.styleFrom(

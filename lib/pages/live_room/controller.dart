@@ -7,7 +7,6 @@ import 'package:PiliPlus/common/widgets/flutter/text_field/controller.dart';
 import 'package:PiliPlus/http/live.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/video.dart';
-import 'package:PiliPlus/models/common/super_chat_type.dart';
 import 'package:PiliPlus/models/common/video/live_quality.dart';
 import 'package:PiliPlus/models/model_owner.dart';
 import 'package:PiliPlus/models_new/live/live_danmaku/danmaku_msg.dart';
@@ -31,7 +30,6 @@ import 'package:PiliPlus/utils/connectivity_utils.dart';
 import 'package:PiliPlus/utils/danmaku_utils.dart';
 import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:PiliPlus/utils/extension/iterable_ext.dart';
-import 'package:PiliPlus/utils/global_data.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
@@ -111,7 +109,7 @@ class LiveRoomController extends GetxController {
   LiveMessageStream? _msgStream;
   late final ScrollController scrollController;
   late final RxInt pageIndex = 0.obs;
-  PageController? pageController;
+  late final PageController pageController;
 
   int? currentQn = PlatformUtils.isMobile ? null : Pref.liveQuality;
   RxString currentQnDesc = ''.obs;
@@ -124,9 +122,6 @@ class LiveRoomController extends GetxController {
   String? videoUrl;
   bool? isPlaying;
   late bool isFullScreen = false;
-
-  final superChatType = Pref.superChatType;
-  late final showSuperChat = superChatType != SuperChatType.disable;
 
   final headerKey = GlobalKey<TimeBatteryMixin>();
 
@@ -160,9 +155,7 @@ class LiveRoomController extends GetxController {
     if (Accounts.heartbeat.isLogin && !Pref.historyPause) {
       VideoHttp.roomEntryAction(roomId: roomId);
     }
-    if (showSuperChat) {
-      pageController = PageController();
-    }
+    pageController = PageController();
   }
 
   Future<void>? playerInit({
@@ -177,7 +170,6 @@ class LiveRoomController extends GetxController {
       isLive: true,
       autoplay: autoplay,
       isVertical: isPortrait.value,
-      autoFullScreenFlag: autoFullScreenFlag,
     );
   }
 
@@ -338,9 +330,7 @@ class LiveRoomController extends GetxController {
   void startLiveMsg() {
     if (messages.isEmpty) {
       prefetch();
-      if (showSuperChat) {
-        getSuperChatMsg();
-      }
+      getSuperChatMsg();
     }
     if (_msgStream != null) {
       return;
@@ -385,14 +375,12 @@ class LiveRoomController extends GetxController {
     savedDanmaku?.clear();
     savedDanmaku = null;
     messages.clear();
-    if (showSuperChat) {
-      superChatMsg.clear();
-      fsSC.value = null;
-    }
+    superChatMsg.clear();
+    fsSC.value = null;
     scrollController
       ..removeListener(listener)
       ..dispose();
-    pageController?.dispose();
+    pageController.dispose();
     danmakuController = null;
     super.onClose();
   }
@@ -485,7 +473,7 @@ class LiveRoomController extends GetxController {
               uemote: uemote,
               extra: liveExtra,
               reply: reply,
-              medalInfo: !GlobalData().showMedal || user['medal'] == null
+              medalInfo: user['medal'] == null
                   ? null
                   : UinfoMedal.fromJson(user['medal']),
             ),
@@ -501,7 +489,7 @@ class LiveRoomController extends GetxController {
             ),
           );
           break;
-        case 'SUPER_CHAT_MESSAGE' when showSuperChat:
+        case 'SUPER_CHAT_MESSAGE':
           final item = SuperChatItem.fromJson(obj['data']);
           superChatMsg.insert(0, item);
           if (plPlayerController.showDanmaku &&
@@ -515,27 +503,6 @@ class LiveRoomController extends GetxController {
           }
           addDm(item);
           break;
-        // case 'SUPER_CHAT_MESSAGE_DELETE' when showSuperChat:
-        //   if (obj['roomid'] == roomId) {
-        //     final ids = obj['data']?['ids'] as List?;
-        //     if (ids != null && ids.isNotEmpty) {
-        //       if (superChatType == .valid) {
-        //         superChatMsg.removeWhere((e) => ids.contains(e.id));
-        //       } else {
-        //         bool? refresh;
-        //         for (final id in ids) {
-        //           if (superChatMsg.firstWhereOrNull((e) => e.id == id)
-        //               case final item?) {
-        //             item.deleted = true;
-        //             refresh ??= true;
-        //           }
-        //         }
-        //         if (refresh ?? false) {
-        //           superChatMsg.refresh();
-        //         }
-        //       }
-        //     }
-        //   }
         case 'WATCHED_CHANGE':
           watchedShow.value = obj['data']['text_large'];
           break;

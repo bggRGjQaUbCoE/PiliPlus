@@ -4,28 +4,11 @@ import 'package:PiliPlus/grpc/bilibili/pagination.pb.dart';
 import 'package:PiliPlus/grpc/grpc_req.dart';
 import 'package:PiliPlus/grpc/url.dart';
 import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:fixnum/fixnum.dart';
 
 abstract final class ReplyGrpc {
-  static bool antiGoodsReply = Pref.antiGoodsReply;
-  static RegExp replyRegExp = RegExp(
-    Pref.banWordForReply,
-    caseSensitive: false,
-  );
-  static bool enableFilter = replyRegExp.pattern.isNotEmpty;
-
-  // static Future replyInfo({required int rpid}) {
-  //   return _request(
-  //     GrpcUrl.replyInfo,
-  //     ReplyInfoReq(rpid: Int64(rpid)),
-  //     ReplyInfoReply.fromBuffer,
-  //     onSuccess: (response) => response.reply,
-  //   );
-  // }
-
   // ref BiliRoamingX
-  static bool needRemoveGoodGrpc(ReplyInfo reply) {
+  static bool needRemoveGrpc(ReplyInfo reply) {
     return (reply.content.urls.isNotEmpty &&
             reply.content.urls.values.any((url) {
               return url.hasExtra() &&
@@ -34,11 +17,6 @@ abstract final class ReplyGrpc {
                       url.extra.hasGoodsPrefetchedCache());
             })) ||
         reply.content.message.contains(Constants.goodsUrlPrefix);
-  }
-
-  static bool needRemoveGrpc(ReplyInfo reply) {
-    return (enableFilter && replyRegExp.hasMatch(reply.content.message)) ||
-        (antiGoodsReply && needRemoveGoodGrpc(reply));
   }
 
   static Future<LoadingState<MainListReply>> mainList({

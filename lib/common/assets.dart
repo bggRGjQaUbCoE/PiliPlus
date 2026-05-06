@@ -34,23 +34,4 @@ abstract final class Assets {
   static const right = 'assets/images/paycoins/ic_right.png';
   static const rightDisable = 'assets/images/paycoins/ic_right_disable.png';
   static const panelClose = 'assets/images/paycoins/ic_panel_close.png';
-
-  static const List<String> mpvAnime4KShaders = [
-    'Anime4K_Clamp_Highlights.glsl',
-    'Anime4K_Restore_CNN_VL.glsl',
-    'Anime4K_Upscale_CNN_x2_VL.glsl',
-    'Anime4K_AutoDownscalePre_x2.glsl',
-    'Anime4K_AutoDownscalePre_x4.glsl',
-    'Anime4K_Upscale_CNN_x2_M.glsl',
-  ];
-
-  static const mpvAnime4KShadersLite = [
-    'Anime4K_Clamp_Highlights.glsl',
-    'Anime4K_Restore_CNN_M.glsl',
-    'Anime4K_Restore_CNN_S.glsl',
-    'Anime4K_Upscale_CNN_x2_M.glsl',
-    'Anime4K_AutoDownscalePre_x2.glsl',
-    'Anime4K_AutoDownscalePre_x4.glsl',
-    'Anime4K_Upscale_CNN_x2_S.glsl',
-  ];
 }

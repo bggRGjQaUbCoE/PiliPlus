@@ -16,13 +16,24 @@ class FavSearchController
         CommonMultiSelectMixin<FavDetailItemModel>,
         DeleteItemMixin,
         BaseFavController {
-  int type = Get.arguments['type'];
+  late int type;
   @override
-  int mediaId = Get.arguments['mediaId'];
+  late int mediaId;
   @override
-  bool isOwner = Get.arguments['isOwner'];
-  dynamic count = Get.arguments['count'];
-  dynamic title = Get.arguments['title'];
+  late bool isOwner;
+  late dynamic count;
+  late dynamic title;
+
+  @override
+  void onInit() {
+    final args = Get.arguments;
+    type = args['type'];
+    mediaId = args['mediaId'];
+    isOwner = args['isOwner'];
+    count = args['count'];
+    title = args['title'];
+    super.onInit();
+  }
 
   final Rx<FavOrderType> order = FavOrderType.mtime.obs;
 

@@ -5,6 +5,7 @@ import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/pair.dart';
+import 'package:PiliPlus/common/widgets/scaffold.dart';
 import 'package:PiliPlus/grpc/bilibili/app/im/v1.pbenum.dart'
     show IMSettingType;
 import 'package:PiliPlus/http/loading_state.dart';
@@ -27,12 +28,18 @@ class LikeMePage extends StatefulWidget {
 
 class _LikeMePageState extends State<LikeMePage> {
   final LikeMeController _likeMeController = Get.put(LikeMeController());
+  late EdgeInsets padding;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    padding = MediaQuery.viewPaddingOf(context);
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
+    return scaffold(
       appBar: AppBar(
         title: const Text('收到的赞'),
         actions: [
@@ -57,9 +64,7 @@ class _LikeMePageState extends State<LikeMePage> {
           physics: const AlwaysScrollableScrollPhysics(),
           slivers: [
             SliverPadding(
-              padding: EdgeInsets.only(
-                bottom: MediaQuery.viewPaddingOf(context).bottom + 100,
-              ),
+              padding: .only(bottom: padding.bottom + 100),
               sliver: Obx(
                 () => _buildBody(theme, _likeMeController.loadingState.value),
               ),
@@ -142,17 +147,13 @@ class _LikeMePageState extends State<LikeMePage> {
   }
 
   Widget _buildHeader(ThemeData theme, String title) {
-    return SliverSafeArea(
-      top: false,
-      bottom: false,
-      sliver: SliverToBoxAdapter(
-        child: Padding(
-          padding: const EdgeInsets.only(left: 16),
-          child: Text(
-            title,
-            style: theme.textTheme.labelLarge!.copyWith(
-              color: theme.colorScheme.secondary,
-            ),
+    return SliverToBoxAdapter(
+      child: Padding(
+        padding: EdgeInsets.only(left: padding.left + 16, right: padding.right),
+        child: Text(
+          title,
+          style: theme.textTheme.labelLarge!.copyWith(
+            color: theme.colorScheme.secondary,
           ),
         ),
       ),

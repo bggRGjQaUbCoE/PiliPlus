@@ -16,44 +16,10 @@ import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/video_utils.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart' show FilteringTextInputFormatter;
-import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
 List<SettingsModel> get videoSettings => [
-  const SwitchModel(
-    title: '开启硬解',
-    subtitle: '以较低功耗播放视频，若异常卡死请关闭',
-    leading: Icon(Icons.flash_on_outlined),
-    setKey: SettingBoxKey.enableHA,
-    defaultVal: true,
-  ),
-  const SwitchModel(
-    title: '免登录1080P',
-    subtitle: '免登录查看1080P视频',
-    leading: Icon(Icons.hd_outlined),
-    setKey: SettingBoxKey.p1080,
-    defaultVal: true,
-  ),
-  NormalModel(
-    title: 'B站定向流量支持',
-    subtitle: '若套餐含B站定向流量，则会自动使用。可查阅运营商的流量记录确认。',
-    leading: const Icon(Icons.perm_data_setting_outlined),
-    getTrailing: (theme) => IgnorePointer(
-      child: Transform.scale(
-        scale: 0.8,
-        alignment: Alignment.centerRight,
-        child: Switch(
-          value: true,
-          onChanged: (_) {},
-          thumbIcon: WidgetStateProperty.all(
-            const Icon(Icons.lock_outline_rounded),
-          ),
-        ),
-      ),
-    ),
-  ),
   NormalModel(
     title: 'CDN 设置',
     leading: const Icon(MdiIcons.cloudPlusOutline),
@@ -73,14 +39,6 @@ List<SettingsModel> get videoSettings => [
     subtitle: '测速通过模拟加载视频实现，注意流量消耗，结果仅供参考',
     setKey: SettingBoxKey.cdnSpeedTest,
     defaultVal: true,
-  ),
-  SwitchModel(
-    title: '音频不跟随 CDN 设置',
-    subtitle: '直接采用备用 URL，可解决部分视频无声',
-    leading: const Icon(MdiIcons.musicNotePlus),
-    setKey: SettingBoxKey.disableAudioCDN,
-    defaultVal: false,
-    onChanged: (value) => VideoUtils.disableAudioCDN = value,
   ),
   NormalModel(
     title: '默认画质',
@@ -144,19 +102,6 @@ List<SettingsModel> get videoSettings => [
       getSubtitle: () => '当前：${Pref.audioOutput}',
       onTap: _showAudioOutputDialog,
     ),
-  const SwitchModel(
-    title: '扩大缓冲区',
-    leading: Icon(Icons.storage_outlined),
-    subtitle: '默认缓冲区为视频4MB/直播16MB，开启后为32MB/64MB，加载时间变长',
-    setKey: SettingBoxKey.expandBuffer,
-    defaultVal: false,
-  ),
-  NormalModel(
-    title: '自动同步',
-    leading: const Icon(Icons.sync_rounded),
-    getSubtitle: () => '当前：${Pref.autosync}（此项即mpv的--autosync）',
-    onTap: _showAutoSyncDialog,
-  ),
   NormalModel(
     title: '视频同步',
     leading: const Icon(Icons.view_timeline_outlined),
@@ -453,44 +398,4 @@ Future<void> _showHwDecDialog(
     );
     setState();
   }
-}
-
-void _showAutoSyncDialog(BuildContext context, VoidCallback setState) {
-  String autosync = Pref.autosync.toString();
-  showDialog(
-    context: context,
-    builder: (context) => AlertDialog(
-      title: const Text('自动同步'),
-      content: TextFormField(
-        autofocus: true,
-        initialValue: autosync,
-        keyboardType: TextInputType.number,
-        onChanged: (value) => autosync = value,
-        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-      ),
-      actions: [
-        TextButton(
-          onPressed: Get.back,
-          child: Text(
-            '取消',
-            style: TextStyle(color: ColorScheme.of(context).outline),
-          ),
-        ),
-        TextButton(
-          onPressed: () async {
-            try {
-              // validate
-              int.parse(autosync);
-              Get.back();
-              await GStorage.setting.put(SettingBoxKey.autosync, autosync);
-              setState();
-            } catch (e) {
-              SmartDialog.showToast(e.toString());
-            }
-          },
-          child: const Text('确定'),
-        ),
-      ],
-    ),
-  );
 }

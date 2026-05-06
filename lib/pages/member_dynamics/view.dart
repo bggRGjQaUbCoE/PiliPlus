@@ -1,5 +1,6 @@
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
+import 'package:PiliPlus/common/widgets/scaffold.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/dynamics/result.dart';
 import 'package:PiliPlus/pages/dynamics/widgets/dynamic_panel.dart';
@@ -45,8 +46,7 @@ class _MemberDynamicsPageState extends State<MemberDynamicsPage>
     super.build(context);
     final padding = MediaQuery.viewPaddingOf(context);
     return widget.mid == null
-        ? Scaffold(
-            resizeToAvoidBottomInset: false,
+        ? scaffold(
             appBar: AppBar(title: const Text('我的动态')),
             body: Padding(
               padding: EdgeInsets.only(

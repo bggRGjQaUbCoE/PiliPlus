@@ -15,8 +15,8 @@ import 'package:get/get_navigation/src/extension_navigation.dart';
 import 'package:intl/intl.dart' show DateFormat;
 import 'package:re_highlight/languages/json.dart';
 import 'package:re_highlight/re_highlight.dart';
-import 'package:re_highlight/styles/base16/github.dart';
 import 'package:re_highlight/styles/github-dark.dart';
+import 'package:re_highlight/styles/github.dart';
 
 void exportToClipBoard({
   required ValueGetter<String> onExport,

@@ -6,7 +6,6 @@ import 'package:flutter/foundation.dart' show kDebugMode, debugPrint;
 abstract final class VideoUtils {
   static CDNService cdnService = Pref.defaultCDNService;
   static String? liveCdnUrl = Pref.liveCdnUrl;
-  static bool disableAudioCDN = Pref.disableAudioCDN;
 
   static const _proxyTf = 'proxy-tf-all-ws.bilivideo.com';
 
@@ -41,8 +40,7 @@ abstract final class VideoUtils {
           // upos-sz-mirrorcoso1.bilivideo.com os=mcdn
           mcdnUpgcxcode = url;
         } else {
-          if (defaultCDNService == CDNService.backupUrl ||
-              (isAudio && disableAudioCDN)) {
+          if (defaultCDNService == CDNService.backupUrl) {
             return url;
           }
           return uri.replace(host: defaultCDNService.host).toString();

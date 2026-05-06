@@ -4,7 +4,7 @@ import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/select_mask.dart';
 import 'package:PiliPlus/models_new/fav/fav_note/list.dart';
 import 'package:PiliPlus/pages/fav/note/controller.dart';
-import 'package:PiliPlus/utils/page_utils.dart';
+import 'package:PiliPlus/utils/app_scheme.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:flutter/material.dart' hide LayoutBuilder;
 
@@ -39,10 +39,7 @@ class FavNoteItem extends StatelessWidget {
             return;
           }
           if (item.webUrl?.isNotEmpty == true) {
-            PageUtils.handleWebview(
-              item.webUrl!,
-              inApp: true,
-            );
+            PiliScheme.routePushFromUrl(item.webUrl!);
           }
         },
         onLongPress: onLongPress,

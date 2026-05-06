@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:PiliPlus/models/model_owner.dart';
 import 'package:PiliPlus/models/user/danmaku_rule_adapter.dart';
@@ -10,7 +9,6 @@ import 'package:PiliPlus/utils/accounts/account_type_adapter.dart';
 import 'package:PiliPlus/utils/accounts/cookie_jar_adapter.dart';
 import 'package:PiliPlus/utils/path_utils.dart';
 import 'package:PiliPlus/utils/set_int_adapter.dart';
-import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:hive_ce/hive.dart';
 import 'package:path/path.dart' as path;
@@ -22,7 +20,6 @@ abstract final class GStorage {
   static late final Box<dynamic> setting;
   static late final Box<dynamic> video;
   static late final Box<int> watchProgress;
-  static late final Box<Uint8List>? reply;
 
   static Future<void> init() async {
     Hive.init(path.join(appSupportDirPath, 'hive'));
@@ -63,18 +60,6 @@ abstract final class GStorage {
         },
       ).then((res) => watchProgress = res),
     ]);
-
-    if (Pref.saveReply) {
-      reply = await Hive.openBox<Uint8List>(
-        'reply',
-        keyComparator: _intStrDescKeyComparator,
-        compactionStrategy: (entries, deletedEntries) {
-          return deletedEntries > 10;
-        },
-      );
-    } else {
-      reply = null;
-    }
   }
 
   static String exportAllSettings() {
@@ -117,7 +102,6 @@ abstract final class GStorage {
       video.compact(),
       Accounts.account.compact(),
       watchProgress.compact(),
-      ?reply?.compact(),
     ]);
   }
 
@@ -130,7 +114,6 @@ abstract final class GStorage {
       video.close(),
       Accounts.account.close(),
       watchProgress.close(),
-      ?reply?.close(),
     ]);
   }
 
@@ -143,7 +126,6 @@ abstract final class GStorage {
       video.clear(),
       Accounts.clear(),
       watchProgress.clear(),
-      ?reply?.clear(),
     ]);
   }
 

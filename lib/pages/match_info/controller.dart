@@ -10,9 +10,6 @@ class MatchInfoController extends CommonDynController {
   @override
   final int replyType = 27;
 
-  @override
-  dynamic get sourceId => oid.toString();
-
   final Rx<LoadingState<MatchContest?>> infoState =
       LoadingState<MatchContest?>.loading().obs;
 

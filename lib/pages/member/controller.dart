@@ -16,7 +16,6 @@ import 'package:PiliPlus/pages/common/common_data_controller.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/request_utils.dart';
 import 'package:PiliPlus/utils/share_utils.dart';
-import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart'
     show ExtendedNestedScrollViewState;
 import 'package:flutter/material.dart';
@@ -110,21 +109,12 @@ class MemberController extends CommonDataController<SpaceData, SpaceData?>
         tab2!.removeAt(0);
       }
       if (tab2!.isNotEmpty) {
-        int initialIndex = -1;
-        MemberTabType memberTab = Pref.memberTab;
-        if (memberTab != MemberTabType.def) {
-          initialIndex = tab2!.indexWhere((item) {
-            return item.param == memberTab.name;
-          });
+        if (data.defaultTab == 'video') {
+          data.defaultTab = 'contribute';
         }
-        if (initialIndex == -1) {
-          if (data.defaultTab == 'video') {
-            data.defaultTab = 'contribute';
-          }
-          initialIndex = tab2!.indexWhere((item) {
-            return item.param == data.defaultTab;
-          });
-        }
+        final initialIndex = tab2!.indexWhere(
+          (item) => item.param == data.defaultTab,
+        );
         tabs = tab2!.map((item) => Tab(text: item.title ?? '')).toList();
         tabController?.dispose();
         tabController = TabController(

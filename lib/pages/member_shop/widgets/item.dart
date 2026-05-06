@@ -3,9 +3,9 @@ import 'package:PiliPlus/common/widgets/flutter/layout_builder.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/models/common/badge_type.dart';
 import 'package:PiliPlus/models_new/space/space_shop/item.dart';
+import 'package:PiliPlus/pages/webview/view.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:flutter/material.dart' hide LayoutBuilder;
-import 'package:get/get.dart';
 
 class MemberShopItem extends StatelessWidget {
   const MemberShopItem({
@@ -27,7 +27,7 @@ class MemberShopItem extends StatelessWidget {
       child: InkWell(
         onTap: () {
           if (item.cardUrl case final cardUrl?) {
-            Get.toNamed('/webview', parameters: {'url': cardUrl});
+            WebViewPage.toWebView(cardUrl);
           }
         },
         child: Column(

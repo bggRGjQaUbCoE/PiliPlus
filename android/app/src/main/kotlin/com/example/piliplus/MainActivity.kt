@@ -26,12 +26,10 @@ import kotlin.system.exitProcess
 import java.io.File
 
 class MainActivity : AudioServiceActivity() {
-    private lateinit var methodChannel: MethodChannel
-
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
 
-        methodChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "PiliPlus")
+        val methodChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "PiliPlus")
         methodChannel.setMethodCallHandler { call, result ->
             when (call.method) {
                 "back" -> back();
@@ -174,40 +172,12 @@ class MainActivity : AudioServiceActivity() {
                     }
                 }
 
-                "maxScreenSize" -> {
-                    maxScreenSize()?.let {
-                        result.success(it)
-                    }
-                }
-
                 "sdkInt" -> {
                     result.success(Build.VERSION.SDK_INT)
                 }
 
                 else -> result.notImplemented()
             }
-        }
-    }
-
-    private fun maxScreenSize(): Map<String, Int>? {
-        try {
-            val density = resources.displayMetrics.density
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                val maxBounds = windowManager.maximumWindowMetrics.bounds
-                return mapOf(
-                    "maxWidth" to (maxBounds.width() / density).roundToInt(),
-                    "maxHeight" to (maxBounds.height() / density).roundToInt(),
-                )
-            } else {
-                val realSizePoint = Point()
-                windowManager.defaultDisplay.getRealSize(realSizePoint)
-                return mapOf(
-                    "maxWidth" to (realSizePoint.x / density).roundToInt(),
-                    "maxHeight" to (realSizePoint.y / density).roundToInt(),
-                )
-            }
-        } catch (e: Exception) {
-            return null
         }
     }
 
@@ -230,11 +200,6 @@ class MainActivity : AudioServiceActivity() {
     override fun onDestroy() {
         stopService(Intent(this, com.ryanheise.audioservice.AudioService::class.java))
         super.onDestroy()
-    }
-
-    override fun onUserLeaveHint() {
-        super.onUserLeaveHint()
-        methodChannel.invokeMethod("onUserLeaveHint", null)
     }
 
     override fun onPictureInPictureModeChanged(

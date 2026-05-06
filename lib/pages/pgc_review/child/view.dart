@@ -12,6 +12,7 @@ import 'package:PiliPlus/models/common/pgc_review_type.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_review/list.dart';
 import 'package:PiliPlus/pages/pgc_review/child/controller.dart';
 import 'package:PiliPlus/pages/pgc_review/post/view.dart';
+import 'package:PiliPlus/pages/webview/view.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/bili_utils.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
@@ -174,15 +175,10 @@ class _PgcReviewChildPageState extends State<PgcReviewChildPage>
                 '举报',
                 style: TextStyle(fontSize: 14),
               ),
-              onTap: () => Get
-                ..back()
-                ..toNamed(
-                  '/webview',
-                  parameters: {
-                    'url':
-                        'https://www.bilibili.com/appeal/?reviewId=${item.reviewId}&type=shortComment&mediaId=${widget.mediaId}',
-                  },
-                ),
+              onTap: () => WebViewPage.toWebView(
+                'https://www.bilibili.com/appeal/?reviewId=${item.reviewId}&type=shortComment&mediaId=${widget.mediaId}',
+                getBack: true,
+              ),
             ),
           ],
         ),

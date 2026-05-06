@@ -24,7 +24,6 @@ mixin BlockConfigMixin {
   late final enableSponsorBlock = Pref.enableSponsorBlock;
   late final enableBlock = enableSponsorBlock || enablePgcSkip;
   late final blockColor = Pref.blockColor;
-  late final blockLimit = Pref.blockLimit;
   late final blockSettings = Pref.blockSettings;
   late final enableList = blockSettings
       .where((item) => item.second != SkipType.disable)
@@ -244,9 +243,6 @@ mixin BlockMixin on GetxController {
   void _skipToast(SegmentModel item) {
     if (autoPlay && Pref.blockToast) {
       _showBlockToast('已跳过${item.segmentType.shortTitle}片段');
-    }
-    if (isBlock && Pref.blockTrack) {
-      SponsorBlock.viewedVideoSponsorTime(item.uuid);
     }
   }
 

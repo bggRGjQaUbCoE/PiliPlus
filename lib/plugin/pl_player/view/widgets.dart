@@ -1,56 +1,5 @@
 part of 'view.dart';
 
-Widget buildDmChart(
-  Color color,
-  List<double> dmTrend,
-  VideoDetailController videoDetailController, [
-  double offset = 0,
-]) {
-  return IgnorePointer(
-    child: Container(
-      height: 12,
-      margin: EdgeInsets.only(
-        bottom:
-            videoDetailController.viewPointList.isNotEmpty &&
-                videoDetailController.showVP.value
-            ? 19.25 + offset
-            : 4.25 + offset,
-      ),
-      child: LineChart(
-        LineChartData(
-          titlesData: const FlTitlesData(show: false),
-          lineTouchData: const LineTouchData(enabled: false),
-          gridData: const FlGridData(show: false),
-          borderData: FlBorderData(show: false),
-          minX: 0,
-          maxX: (dmTrend.length - 1).toDouble(),
-          minY: 0,
-          maxY: dmTrend.max,
-          lineBarsData: [
-            LineChartBarData(
-              spots: List.generate(
-                dmTrend.length,
-                (index) => FlSpot(
-                  index.toDouble(),
-                  dmTrend[index],
-                ),
-              ),
-              isCurved: true,
-              barWidth: 1,
-              color: color,
-              dotData: const FlDotData(show: false),
-              belowBarData: BarAreaData(
-                show: true,
-                color: color.withValues(alpha: 0.4),
-              ),
-            ),
-          ],
-        ),
-      ),
-    ),
-  );
-}
-
 Widget buildSeekPreviewWidget(
   PlPlayerController plPlayerController,
   double maxWidth,
@@ -291,94 +240,6 @@ class _VideoShotImageState extends State<VideoShotImage> {
   }
 }
 
-const double _triangleHeight = 5.6;
-
-class _DanmakuTip extends SingleChildRenderObjectWidget {
-  const _DanmakuTip({
-    this.offset = 0,
-    super.child,
-  });
-
-  final double offset;
-
-  @override
-  RenderObject createRenderObject(BuildContext context) {
-    return _RenderDanmakuTip(offset: offset);
-  }
-
-  @override
-  void updateRenderObject(
-    BuildContext context,
-    _RenderDanmakuTip renderObject,
-  ) {
-    renderObject.offset = offset;
-  }
-}
-
-class _RenderDanmakuTip extends RenderProxyBox {
-  _RenderDanmakuTip({
-    required double offset,
-  }) : _offset = offset;
-
-  double _offset;
-  double get offset => _offset;
-  set offset(double value) {
-    if (_offset == value) return;
-    _offset = value;
-    markNeedsPaint();
-  }
-
-  @override
-  void paint(PaintingContext context, Offset offset) {
-    final paint = Paint()
-      ..color = const Color(0xB3000000)
-      ..style = .fill;
-
-    final radius = size.height / 2;
-    const triangleBase = _triangleHeight * 2 / 3;
-
-    final triangleCenterX = (size.width / 2 + _offset).clamp(
-      radius + triangleBase,
-      size.width - radius - triangleBase,
-    );
-    final path = Path()
-      // triangle (exceed)
-      ..moveTo(triangleCenterX - triangleBase, 0)
-      ..lineTo(triangleCenterX, -_triangleHeight)
-      ..lineTo(triangleCenterX + triangleBase, 0)
-      // top
-      ..lineTo(size.width - radius, 0)
-      // right
-      ..arcToPoint(
-        Offset(size.width - radius, size.height),
-        radius: Radius.circular(radius),
-      )
-      // bottom
-      ..lineTo(radius, size.height)
-      // left
-      ..arcToPoint(
-        Offset(radius, 0),
-        radius: Radius.circular(radius),
-      )
-      ..close();
-
-    context.canvas
-      ..save()
-      ..translate(offset.dx, offset.dy)
-      ..drawPath(path, paint)
-      ..drawPath(
-        path,
-        paint
-          ..color = const Color(0x7EFFFFFF)
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 1.25,
-      )
-      ..restore();
-
-    super.paint(context, offset);
-  }
-}
-
 class _VideoTime extends LeafRenderObjectWidget {
   const _VideoTime({
     required this.position,
@@ -463,12 +324,6 @@ class _RenderVideoTime extends RenderBox {
       _duration,
     );
     return Size(paragraph.maxIntrinsicWidth, paragraph.height * 2);
-  }
-
-  @override
-  void describeSemanticsConfiguration(SemanticsConfiguration config) {
-    super.describeSemanticsConfiguration(config);
-    config.label = 'position:$_position\nduration:$_duration';
   }
 
   @override

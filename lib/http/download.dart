@@ -31,7 +31,7 @@ abstract final class DownloadHttp {
       seasonId: entry.seasonId,
       epid: ep?.episodeId,
       qn: entry.preferedVideoQuality,
-      tryLook: !isLogin && Pref.p1080,
+      tryLook: !isLogin,
       videoType: switch (ep?.from) {
         'pugv' => VideoType.pugv,
         != null when isLogin => VideoType.pgc,

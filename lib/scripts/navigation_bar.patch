@@ -1,0 +1,167 @@
+diff --git a/packages/flutter/lib/src/material/navigation_bar.dart b/packages/flutter/lib/src/material/navigation_bar.dart
+index 20c66878abd..40ca477568f 100644
+--- a/packages/flutter/lib/src/material/navigation_bar.dart
++++ b/packages/flutter/lib/src/material/navigation_bar.dart
+@@ -288,8 +288,8 @@ class NavigationBar extends StatelessWidget {
+       shadowColor: shadowColor ?? navigationBarTheme.shadowColor ?? defaults.shadowColor,
+       surfaceTintColor:
+           surfaceTintColor ?? navigationBarTheme.surfaceTintColor ?? defaults.surfaceTintColor,
+-      child: SafeArea(
+-        maintainBottomViewPadding: maintainBottomViewPadding,
++      child: Padding(
++        padding: MediaQuery.viewPaddingOf(context).copyWith(top: 0),
+         child: Semantics(
+           role: SemanticsRole.tabBar,
+           explicitChildNodes: true,
+@@ -595,26 +595,23 @@ class _NavigationDestinationBuilderState extends State<_NavigationDestinationBui
+ 
+     return _NavigationBarDestinationSemantics(
+       enabled: widget.enabled,
+-      child: _NavigationBarDestinationTooltip(
+-        message: widget.tooltip ?? widget.label,
+-        child: _IndicatorInkWell(
+-          iconKey: iconKey,
+-          labelBehavior: info.labelBehavior,
+-          customBorder:
+-              info.indicatorShape ?? navigationBarTheme.indicatorShape ?? defaults.indicatorShape,
+-          overlayColor: info.overlayColor ?? navigationBarTheme.overlayColor,
+-          onTap: widget.enabled ? info.onTap : null,
+-          child: Row(
+-            children: <Widget>[
+-              Expanded(
+-                child: _NavigationBarDestinationLayout(
+-                  icon: widget.buildIcon(context),
+-                  iconKey: iconKey,
+-                  label: widget.buildLabel(context),
+-                ),
++      child: _IndicatorInkWell(
++        iconKey: iconKey,
++        labelBehavior: info.labelBehavior,
++        customBorder:
++            info.indicatorShape ?? navigationBarTheme.indicatorShape ?? defaults.indicatorShape,
++        overlayColor: info.overlayColor ?? navigationBarTheme.overlayColor,
++        onTap: widget.enabled ? info.onTap : null,
++        child: Row(
++          children: <Widget>[
++            Expanded(
++              child: _NavigationBarDestinationLayout(
++                icon: widget.buildIcon(context),
++                iconKey: iconKey,
++                label: widget.buildLabel(context),
+               ),
+-            ],
+-          ),
++            ),
++          ],
+         ),
+       ),
+     );
+diff --git a/packages/flutter/lib/src/material/navigation_drawer.dart b/packages/flutter/lib/src/material/navigation_drawer.dart
+index 6f78f50c68b..acee3cfdb56 100644
+--- a/packages/flutter/lib/src/material/navigation_drawer.dart
++++ b/packages/flutter/lib/src/material/navigation_drawer.dart
+@@ -186,8 +186,8 @@ class NavigationDrawer extends StatelessWidget {
+       shadowColor: shadowColor ?? navigationDrawerTheme.shadowColor,
+       surfaceTintColor: surfaceTintColor ?? navigationDrawerTheme.surfaceTintColor,
+       elevation: elevation ?? navigationDrawerTheme.elevation,
+-      child: SafeArea(
+-        bottom: false,
++      child: Padding(
++        padding: MediaQuery.viewPaddingOf(context).copyWith(right: 0, top: 0),
+         child: Column(
+           children: <Widget>[
+             ?header,
+@@ -367,36 +367,47 @@ class _NavigationDestinationBuilder extends StatelessWidget {
+     final NavigationDrawerThemeData navigationDrawerTheme = NavigationDrawerTheme.of(context);
+     final NavigationDrawerThemeData defaults = _NavigationDrawerDefaultsM3(context);
+ 
+-    final inkWell = InkWell(
+-      highlightColor: Colors.transparent,
+-      onTap: enabled ? info.onTap : null,
+-      customBorder:
+-          info.indicatorShape ?? navigationDrawerTheme.indicatorShape ?? defaults.indicatorShape!,
+-      child: Stack(
+-        alignment: Alignment.center,
+-        children: <Widget>[
+-          NavigationIndicator(
+-            animation: info.selectedAnimation,
+-            color:
+-                info.indicatorColor ??
+-                navigationDrawerTheme.indicatorColor ??
+-                defaults.indicatorColor!,
+-            shape:
+-                info.indicatorShape ??
+-                navigationDrawerTheme.indicatorShape ??
+-                defaults.indicatorShape!,
+-            width: (navigationDrawerTheme.indicatorSize ?? defaults.indicatorSize!).width,
+-            height: (navigationDrawerTheme.indicatorSize ?? defaults.indicatorSize!).height,
+-          ),
+-          Row(
+-            children: <Widget>[
+-              const SizedBox(width: 16),
+-              buildIcon(context),
+-              const SizedBox(width: 12),
+-              buildLabel(context),
+-            ],
+-          ),
+-        ],
++    final inkWell = Material(
++      type: MaterialType.transparency,
++      child: InkWell(
++        highlightColor: Colors.transparent,
++        onTap: enabled ? info.onTap : null,
++        customBorder:
++            info.indicatorShape ??
++            navigationDrawerTheme.indicatorShape ??
++            defaults.indicatorShape!,
++        child: Stack(
++          alignment: Alignment.center,
++          children: <Widget>[
++            NavigationIndicator(
++              animation: info.selectedAnimation,
++              color:
++                  info.indicatorColor ??
++                  navigationDrawerTheme.indicatorColor ??
++                  defaults.indicatorColor!,
++              shape:
++                  info.indicatorShape ??
++                  navigationDrawerTheme.indicatorShape ??
++                  defaults.indicatorShape!,
++              width:
++                  (navigationDrawerTheme.indicatorSize ??
++                          defaults.indicatorSize!)
++                      .width,
++              height:
++                  (navigationDrawerTheme.indicatorSize ??
++                          defaults.indicatorSize!)
++                      .height,
++            ),
++            Row(
++              children: <Widget>[
++                const SizedBox(width: 16),
++                buildIcon(context),
++                const SizedBox(width: 12),
++                buildLabel(context),
++              ],
++            ),
++          ],
++        ),
+       ),
+     );
+ 
+diff --git a/packages/flutter/lib/src/material/navigation_rail.dart b/packages/flutter/lib/src/material/navigation_rail.dart
+index 3b17f5047f0..57a0e0858a7 100644
+--- a/packages/flutter/lib/src/material/navigation_rail.dart
++++ b/packages/flutter/lib/src/material/navigation_rail.dart
+@@ -533,9 +533,8 @@ class _NavigationRailState extends State<NavigationRail> with TickerProviderStat
+           child: Material(
+             elevation: elevation,
+             color: backgroundColor,
+-            child: SafeArea(
+-              right: isRTLDirection,
+-              left: !isRTLDirection,
++            child: Padding(
++              padding: MediaQuery.viewPaddingOf(context).copyWith(right: 0, top: 0),
+               child: Column(
+                 children: <Widget>[
+                   _verticalSpacer,

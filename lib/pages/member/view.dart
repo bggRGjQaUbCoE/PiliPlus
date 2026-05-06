@@ -32,6 +32,7 @@ import 'package:PiliPlus/pages/member_pgc/view.dart';
 import 'package:PiliPlus/pages/member_shop/view.dart';
 import 'package:PiliPlus/pages/member_video_web/archive/view.dart';
 import 'package:PiliPlus/pages/member_video_web/season_series/view.dart';
+import 'package:PiliPlus/pages/webview/view.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/extension/context_ext.dart';
 import 'package:PiliPlus/utils/extension/string_ext.dart';
@@ -303,11 +304,8 @@ class _MemberPageState extends State<MemberPage> {
                                   recognizer:
                                       lottery.jumpUrl?.isNotEmpty == true
                                       ? (NoDeadlineTapGestureRecognizer()
-                                          ..onTap = () => Get.toNamed(
-                                            '/webview',
-                                            parameters: {
-                                              'url': lottery.jumpUrl!,
-                                            },
+                                          ..onTap = () => WebViewPage.toWebView(
+                                            lottery.jumpUrl!,
                                           ))
                                       : null,
                                 ),

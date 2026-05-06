@@ -1,12 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/widgets/button/icon_button.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
+import 'package:PiliPlus/common/widgets/scaffold.dart';
 import 'package:PiliPlus/services/logger.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
-import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
@@ -16,8 +15,6 @@ import 'package:catcher_2/model/report.dart' as catcher;
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
-
-const _snackBarDisplayDuration = Duration(seconds: 1);
 
 class LogsPage extends StatefulWidget {
   const LogsPage({super.key});
@@ -75,29 +72,13 @@ class _LogsPageState extends State<LogsPage> {
   }
 
   void copyLogs() {
-    Utils.copyText(
-      '```\n${logsContent.join('\n\n')}```',
-      needToast: false,
-    );
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('复制成功'),
-          duration: _snackBarDisplayDuration,
-        ),
-      );
-    }
+    Utils.copyText('```\n${logsContent.join('\n\n')}```');
   }
 
   Future<void> clearLogs() async {
     if (await LoggerUtils.clearLogs()) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('已清空'),
-            duration: _snackBarDisplayDuration,
-          ),
-        );
+        SmartDialog.showToast('已清空');
         logsContent.clear();
         setState(() {});
       }
@@ -107,8 +88,7 @@ class _LogsPageState extends State<LogsPage> {
   @override
   Widget build(BuildContext context) {
     final padding = MediaQuery.viewPaddingOf(context);
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
+    return scaffold(
       appBar: AppBar(
         title: const Text('日志'),
         actions: [
@@ -139,11 +119,6 @@ class _LogsPageState extends State<LogsPage> {
               PopupMenuItem(
                 onTap: copyLogs,
                 child: const Text('复制日志'),
-              ),
-              PopupMenuItem(
-                onTap: () =>
-                    PageUtils.launchURL('${Constants.sourceCodeUrl}/issues'),
-                child: const Text('错误反馈'),
               ),
               PopupMenuItem(
                 onTap: () {
@@ -334,15 +309,7 @@ class ReportCard extends StatelessWidget {
           iconButton(
             size: 34,
             iconSize: 22,
-            onPressed: () {
-              Utils.copyText('```\n$report```', needToast: false);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('已将 $dateTime 复制至剪贴板'),
-                  duration: _snackBarDisplayDuration,
-                ),
-              );
-            },
+            onPressed: () => Utils.copyText('```\n$report```'),
             icon: const Icon(
               Icons.copy_outlined,
               size: 16,

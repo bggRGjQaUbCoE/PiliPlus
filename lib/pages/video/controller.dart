@@ -20,7 +20,6 @@ import 'package:PiliPlus/models/common/sponsor_block/segment_model.dart';
 import 'package:PiliPlus/models/common/sponsor_block/segment_type.dart';
 import 'package:PiliPlus/models/common/video/audio_quality.dart';
 import 'package:PiliPlus/models/common/video/source_type.dart';
-import 'package:PiliPlus/models/common/video/subtitle_pref_type.dart';
 import 'package:PiliPlus/models/common/video/video_decode_type.dart';
 import 'package:PiliPlus/models/common/video/video_quality.dart';
 import 'package:PiliPlus/models/common/video/video_type.dart';
@@ -31,7 +30,6 @@ import 'package:PiliPlus/models_new/pgc/pgc_info_model/result.dart';
 import 'package:PiliPlus/models_new/video/video_detail/data.dart';
 import 'package:PiliPlus/models_new/video/video_detail/episode.dart' as ugc;
 import 'package:PiliPlus/models_new/video/video_detail/page.dart';
-import 'package:PiliPlus/models_new/video/video_pbp/data.dart';
 import 'package:PiliPlus/models_new/video/video_play_info/subtitle.dart';
 import 'package:PiliPlus/models_new/video/video_stein_edgeinfo/data.dart';
 import 'package:PiliPlus/pages/audio/view.dart';
@@ -70,7 +68,6 @@ import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
-import 'package:flutter_volume_controller/flutter_volume_controller.dart';
 import 'package:get/get.dart';
 import 'package:hive_ce/hive.dart';
 import 'package:media_kit/media_kit.dart' hide Subtitle;
@@ -117,15 +114,12 @@ class VideoDetailController extends GetxController
   late VideoDecodeFormatType currentDecodeFormats;
 
   // 是否开始自动播放 存在多p的情况下，第二p需要为true
-  final RxBool _autoPlay = Pref.autoPlayEnable.obs;
+  final RxBool _autoPlay = false.obs;
 
   final videoPlayerKey = GlobalKey();
   final childKey = GlobalKey<ScaffoldState>();
 
-  final plPlayerController = PlPlayerController.getInstance()
-    ..brightness.value = -1;
-  bool get setSystemBrightness => plPlayerController.setSystemBrightness;
-  bool get removeSafeArea => plPlayerController.removeSafeArea;
+  final plPlayerController = PlPlayerController.getInstance();
 
   late VideoItem firstVideo;
   String? videoUrl;
@@ -137,9 +131,6 @@ class VideoDetailController extends GetxController
     return pos == null || pos == 0 ? '' : '?t=${pos / 1000}';
   }
 
-  // 亮度
-  double? brightness;
-
   late final headerCtrKey = GlobalKey<TimeBatteryMixin>();
 
   Box setting = GStorage.setting;
@@ -148,14 +139,9 @@ class VideoDetailController extends GetxController
   late String cacheDecode = Pref.defaultDecode; // def avc
   late String cacheSecondDecode = Pref.secondDecode; // def av1
 
-  bool get showReply => isFileSource
-      ? false
-      : isUgc
-      ? plPlayerController.showVideoReply
-      : plPlayerController.showBangumiReply;
+  bool get showReply => !isFileSource;
 
-  bool get showRelatedVideo =>
-      isFileSource ? false : plPlayerController.showRelatedVideo;
+  bool get showRelatedVideo => !isFileSource;
 
   ScrollController? introScrollCtr;
   ScrollController get effectiveIntroScrollCtr =>
@@ -174,48 +160,15 @@ class VideoDetailController extends GetxController
   ScrollController get scrollCtr =>
       _scrollCtr ??= ScrollController()..addListener(scrollListener);
 
-  late bool isExpanding = false;
-  late bool isCollapsing = false;
-
   late double minVideoHeight;
   late double maxVideoHeight;
   late double videoHeight;
-  late double animHeight;
-
-  AnimationController? animController;
-  AnimationController get animationController =>
-      animController ??= (AnimationController(
-        vsync: this,
-        duration: const Duration(milliseconds: 200),
-      )..addListener(_animListener));
+  double? tmpVideoHeight;
+  late double lastPinnedHeight = maxVideoHeight;
 
   void refreshPage() {
     if (scrollKey.currentState?.mounted ?? false) {
       (scrollKey.currentState!.context as Element).markNeedsBuild();
-    }
-  }
-
-  void _animListener() {
-    if (animationController.isForwardOrCompleted) {
-      _calcAnimHeight();
-      refreshPage();
-    }
-  }
-
-  void _calcAnimHeight() {
-    if (isExpanding) {
-      animHeight = clampDouble(
-        videoHeight * animationController.value,
-        kToolbarHeight,
-        videoHeight,
-      );
-    } else if (isCollapsing) {
-      animHeight = clampDouble(
-        maxVideoHeight -
-            (maxVideoHeight - minVideoHeight) * animationController.value,
-        minVideoHeight,
-        maxVideoHeight,
-      );
     }
   }
 
@@ -230,7 +183,7 @@ class VideoDetailController extends GetxController
     }
   }
 
-  bool _needAnimOnDimensionChanged(bool isVertical) {
+  bool _needRefreshOnDimensionChanged(bool isVertical) {
     if (isFullScreen) {
       if (PlatformUtils.isMobile) {
         plPlayerController.changeOrientation(isVertical: isVertical);
@@ -271,56 +224,53 @@ class VideoDetailController extends GetxController
       }
       if (this.isVertical.value != isVertical) {
         this.isVertical.value = isVertical;
-        double videoHeight = isVertical ? maxVideoHeight : minVideoHeight;
-        if (this.videoHeight != videoHeight) {
-          if (videoHeight > this.videoHeight) {
+        final newVideoHeight = isVertical ? maxVideoHeight : minVideoHeight;
+        if (videoHeight != newVideoHeight) {
+          if (newVideoHeight > videoHeight) {
             // current minVideoHeight
-            if (_needAnimOnDimensionChanged(isVertical)) {
-              isExpanding = true;
-              animationController.forward(
-                from: (minVideoHeight - scrollCtr.offset) / maxVideoHeight,
-              );
+            videoHeight = maxVideoHeight;
+            if (_needRefreshOnDimensionChanged(isVertical)) {
+              tmpVideoHeight = maxVideoHeight;
+              refreshPage();
             }
-            this.videoHeight = maxVideoHeight;
           } else {
             // current maxVideoHeight
             final currentHeight = (maxVideoHeight - scrollCtr.offset)
                 .toPrecision(2);
             double minVideoHeightPrecise = minVideoHeight.toPrecision(2);
             if (currentHeight == minVideoHeightPrecise) {
-              if (_needAnimOnDimensionChanged(isVertical)) {
-                isExpanding = true;
-                this.videoHeight = minVideoHeight;
+              videoHeight = minVideoHeight;
+              if (_needRefreshOnDimensionChanged(isVertical)) {
+                tmpVideoHeight = minVideoHeight;
+                refreshPage();
               }
-              animationController.forward(from: 1);
             } else if (currentHeight < minVideoHeightPrecise) {
               // expand
-              if (_needAnimOnDimensionChanged(isVertical)) {
-                isExpanding = true;
-                animationController.forward(
-                  from: currentHeight / minVideoHeight,
-                );
+              videoHeight = minVideoHeight;
+              if (_needRefreshOnDimensionChanged(isVertical)) {
+                tmpVideoHeight = minVideoHeight;
+                refreshPage();
               }
-              this.videoHeight = minVideoHeight;
             } else {
               // collapse
-              if (_needAnimOnDimensionChanged(isVertical)) {
-                isCollapsing = true;
-                animationController.forward(
-                  from: scrollCtr.offset / (maxVideoHeight - minVideoHeight),
-                );
+              videoHeight = minVideoHeight;
+              if (_needRefreshOnDimensionChanged(isVertical)) {
+                tmpVideoHeight = minVideoHeight;
+                refreshPage();
               }
-              this.videoHeight = minVideoHeight;
             }
           }
         }
       } else {
         if (scrollCtr.offset != 0) {
-          isExpanding = true;
-          animationController.forward(from: 1 - scrollCtr.offset / videoHeight);
+          tmpVideoHeight = maxVideoHeight;
+          refreshPage();
         }
       }
-    } catch (_) {}
+    } catch (_) {
+    } finally {
+      scrollRatio.value = 0;
+    }
   }
 
   void scrollListener() {
@@ -408,11 +358,7 @@ class VideoDetailController extends GetxController
       getMediaList();
     }
 
-    tabCtr = TabController(
-      length: 2,
-      vsync: this,
-      initialIndex: Pref.defaultShowComment ? 1 : 0,
-    );
+    tabCtr = TabController(length: 2, vsync: this);
   }
 
   Future<void> getMediaList({
@@ -526,9 +472,7 @@ class VideoDetailController extends GetxController
       if (plPlayerController.isFullScreen.value || showVideoSheet) {
         PageUtils.showVideoBottomSheet(
           context,
-          child: plPlayerController.darkVideoPage
-              ? Theme(data: ThemeUtils.darkTheme, child: panel())
-              : panel(),
+          child: panel(),
           isFullScreen: () => plPlayerController.isFullScreen.value,
         );
       } else {
@@ -564,7 +508,7 @@ class VideoDetailController extends GetxController
   bool get autoPlay => _autoPlay.value;
   set autoPlay(bool value) => _autoPlay.value = value;
   @override
-  bool get preInitPlayer => plPlayerController.preInitPlayer;
+  bool get preInitPlayer => false;
   @override
   int get currPosInMilliseconds =>
       defaultST?.inMilliseconds ?? plPlayerController.position.inMilliseconds;
@@ -655,7 +599,6 @@ class VideoDetailController extends GetxController
               savedDanmaku = null;
               plPlayerController.danmakuController?.addDanmaku(danmakuModel);
             },
-            darkVideoPage: plPlayerController.darkVideoPage,
             dmConfig: dmConfig,
             onSaveDmConfig: (dmConfig) => this.dmConfig = dmConfig,
           );
@@ -724,11 +667,7 @@ class VideoDetailController extends GetxController
   }
 
   Future<void>? _initPlayerIfNeeded(bool autoFullScreenFlag) {
-    if (_autoPlay.value ||
-        (plPlayerController.preInitPlayer && !plPlayerController.processing) &&
-            (isFileSource
-                ? true
-                : videoPlayerKey.currentState?.mounted == true)) {
+    if (_autoPlay.value) {
       return playerInit(
         autoFullScreenFlag: autoFullScreenFlag && _autoPlay.value,
       );
@@ -783,7 +722,6 @@ class VideoDetailController extends GetxController
       width: firstVideo.width,
       height: firstVideo.height,
       volume: volume ?? this.volume,
-      autoFullScreenFlag: autoFullScreenFlag,
     );
 
     if (isClosed) return;
@@ -795,10 +733,6 @@ class VideoDetailController extends GetxController
 
       if (vttSubtitlesIndex.value == -1) {
         _queryPlayInfo();
-      }
-
-      if (plPlayerController.showDmChart && dmTrend.value == null) {
-        _getDmTrend();
       }
     }
 
@@ -856,7 +790,6 @@ class VideoDetailController extends GetxController
       tryLook: plPlayerController.tryLook,
       videoType: _actualVideoType ?? videoType,
       language: currLang.value,
-      voiceBalance: plPlayerController.enableAudioNormalization,
     );
 
     if (result case Success(:final response)) {
@@ -1031,20 +964,11 @@ class VideoDetailController extends GetxController
     if (plPlayerController.isFullScreen.value || showVideoSheet) {
       PageUtils.showVideoBottomSheet(
         context,
-        child: plPlayerController.darkVideoPage
-            ? Theme(
-                data: ThemeUtils.darkTheme,
-                child: PostPanel(
-                  enableSlide: false,
-                  videoDetailController: this,
-                  plPlayerController: plPlayerController,
-                ),
-              )
-            : PostPanel(
-                enableSlide: false,
-                videoDetailController: this,
-                plPlayerController: plPlayerController,
-              ),
+        child: PostPanel(
+          enableSlide: false,
+          videoDetailController: this,
+          plPlayerController: plPlayerController,
+        ),
         isFullScreen: () => plPlayerController.isFullScreen.value,
       );
     } else {
@@ -1142,14 +1066,10 @@ class VideoDetailController extends GetxController
     }
   }
 
-  late bool continuePlayingPart = Pref.continuePlayingPart;
-
   Future<void> _queryPlayInfo() async {
     vttSubtitles.clear();
     vttSubtitlesIndex.value = 0;
-    if (plPlayerController.showViewPoints) {
-      viewPointList.clear();
-    }
+    viewPointList.clear();
     final res = await VideoHttp.playInfo(
       bvid: bvid,
       cid: cid.value,
@@ -1170,8 +1090,7 @@ class VideoDetailController extends GetxController
         }
       }
 
-      if (isUgc && continuePlayingPart) {
-        continuePlayingPart = false;
+      if (isUgc) {
         try {
           UgcIntroController ugcIntroController = Get.find<UgcIntroController>(
             tag: heroTag,
@@ -1190,8 +1109,7 @@ class VideoDetailController extends GetxController
         } catch (_) {}
       }
 
-      if (plPlayerController.showViewPoints &&
-          response.viewPoints?.firstOrNull?.type == 2) {
+      if (response.viewPoints?.firstOrNull?.type == 2) {
         try {
           viewPointList.value = response.viewPoints!.map((item) {
             final end = (item.to! / (data.timeLength! / 1000)).clamp(0.0, 1.0);
@@ -1204,25 +1122,6 @@ class VideoDetailController extends GetxController
             );
           }).toList();
         } catch (_) {}
-      }
-
-      if (response.subtitle?.subtitles?.isNotEmpty == true) {
-        subtitles.value = response.subtitle!.subtitles!;
-
-        final idx = switch (Pref.subtitlePreferenceV2) {
-          SubtitlePrefType.off => 0,
-          SubtitlePrefType.on => 1,
-          SubtitlePrefType.withoutAi =>
-            subtitles.first.lan.startsWith('ai') ? 0 : 1,
-          SubtitlePrefType.auto =>
-            !subtitles.first.lan.startsWith('ai') ||
-                    (PlatformUtils.isMobile &&
-                        (await FlutterVolumeController.getVolume() ?? 0.0) <=
-                            0.0)
-                ? 1
-                : 0,
-        };
-        await setSubtitle(idx);
       }
     }
   }
@@ -1274,9 +1173,6 @@ class VideoDetailController extends GetxController
     _scrollCtr
       ?..removeListener(scrollListener)
       ..dispose();
-    animController
-      ?..removeListener(_animListener)
-      ..dispose();
     subtitles.clear();
     vttSubtitles.clear();
     super.onClose();
@@ -1309,15 +1205,8 @@ class VideoDetailController extends GetxController
       languages.value = null;
       currLang.value = null;
 
-      // dm trend
-      if (plPlayerController.showDmChart) {
-        dmTrend.value = null;
-      }
-
       // view point
-      if (plPlayerController.showViewPoints) {
-        viewPointList.clear();
-      }
+      viewPointList.clear();
 
       // sponsor block
       if (blockConfig.enableBlock) {
@@ -1337,29 +1226,6 @@ class VideoDetailController extends GetxController
       Rx<LoadingState<List<double>>?>(null);
   late final RxBool showDmTrendChart = true.obs;
 
-  Future<void> _getDmTrend() async {
-    dmTrend.value = LoadingState<List<double>>.loading();
-    try {
-      final res = await Request().get(
-        'https://bvc.bilivideo.com/pbp/data',
-        queryParameters: {
-          'bvid': bvid,
-          'cid': cid.value,
-        },
-      );
-      PbpData data = PbpData.fromJson(res.data);
-      int stepSec = data.stepSec ?? 0;
-      if (stepSec != 0 && data.events?.eDefault?.isNotEmpty == true) {
-        dmTrend.value = Success(data.events!.eDefault!);
-        return;
-      }
-      dmTrend.value = const Error(null);
-    } catch (e) {
-      dmTrend.value = const Error(null);
-      if (kDebugMode) debugPrint('_getDmTrend: $e');
-    }
-  }
-
   void showNoteList(BuildContext context) {
     String? title;
     try {
@@ -1370,24 +1236,13 @@ class VideoDetailController extends GetxController
     if (plPlayerController.isFullScreen.value || showVideoSheet) {
       PageUtils.showVideoBottomSheet(
         context,
-        child: plPlayerController.darkVideoPage
-            ? Theme(
-                data: ThemeUtils.darkTheme,
-                child: NoteListPage(
-                  oid: aid,
-                  enableSlide: false,
-                  heroTag: heroTag,
-                  isStein: graphVersion != null,
-                  title: title,
-                ),
-              )
-            : NoteListPage(
-                oid: aid,
-                enableSlide: false,
-                heroTag: heroTag,
-                isStein: graphVersion != null,
-                title: title,
-              ),
+        child: NoteListPage(
+          oid: aid,
+          enableSlide: false,
+          heroTag: heroTag,
+          isStein: graphVersion != null,
+          title: title,
+        ),
         isFullScreen: () => plPlayerController.isFullScreen.value,
       );
     } else {

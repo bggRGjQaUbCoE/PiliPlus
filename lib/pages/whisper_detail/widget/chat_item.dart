@@ -347,7 +347,7 @@ class ChatItem extends StatelessWidget {
                     }
                   } else {
                     SmartDialog.showToast('未匹配到 BV 号');
-                    PageUtils.handleWebview(i['jump_url']);
+                    PiliScheme.routePushFromUrl(i['jump_url']);
                   }
                 },
                 child: Row(

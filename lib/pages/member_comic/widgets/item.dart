@@ -3,9 +3,9 @@ import 'package:PiliPlus/common/widgets/flutter/layout_builder.dart';
 import 'package:PiliPlus/common/widgets/image/image_save.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/models_new/space/space_archive/item.dart';
+import 'package:PiliPlus/pages/webview/view.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:flutter/material.dart' hide LayoutBuilder;
-import 'package:get/get.dart';
 
 class MemberComicItem extends StatelessWidget {
   const MemberComicItem({super.key, required this.item});
@@ -21,16 +21,11 @@ class MemberComicItem extends StatelessWidget {
     );
     void onLongPress() => imageSaveDialog(title: item.title, cover: item.cover);
     return Material(
-      type: MaterialType.transparency,
+      type: .transparency,
       child: InkWell(
-        onTap: () {
-          Get.toNamed(
-            '/webview',
-            parameters: {
-              'url': 'https://manga.bilibili.com/detail/mc${item.param}',
-            },
-          );
-        },
+        onTap: () => WebViewPage.toWebView(
+          'https://manga.bilibili.com/detail/mc${item.param}',
+        ),
         onLongPress: onLongPress,
         onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
         child: Padding(

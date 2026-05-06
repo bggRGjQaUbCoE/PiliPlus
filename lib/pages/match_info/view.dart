@@ -1,5 +1,6 @@
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
+import 'package:PiliPlus/common/widgets/scaffold.dart';
 import 'package:PiliPlus/common/widgets/view_safe_area.dart';
 import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
     show ReplyInfo;
@@ -8,8 +9,6 @@ import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/models_new/match/match_info/contest.dart';
 import 'package:PiliPlus/models_new/match/match_info/team.dart';
 import 'package:PiliPlus/pages/common/dyn/common_dyn_page.dart';
-import 'package:PiliPlus/pages/common/fab_mixin.dart'
-    show NoBottomPaddingFabLocation;
 import 'package:PiliPlus/pages/match_info/controller.dart';
 import 'package:PiliPlus/pages/video/reply_reply/view.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
@@ -41,27 +40,40 @@ class _MatchInfoPageState extends CommonDynPageState<MatchInfoPage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
+    return scaffold(
       appBar: AppBar(title: const Text('比赛详情')),
-      body: ViewSafeArea(
-        child: refreshIndicator(
-          onRefresh: controller.onRefresh,
-          child: CustomScrollView(
-            controller: scrollController,
-            physics: const AlwaysScrollableScrollPhysics(),
-            slivers: [
-              Obx(() => _buildInfo(theme, controller.infoState.value)),
-              buildReplyHeader(theme),
-              Obx(() => replyList(theme, controller.loadingState.value)),
-            ],
+      body: Stack(
+        clipBehavior: .none,
+        children: [
+          ViewSafeArea(
+            child: refreshIndicator(
+              onRefresh: controller.onRefresh,
+              child: CustomScrollView(
+                controller: scrollController,
+                physics: const AlwaysScrollableScrollPhysics(),
+                slivers: [
+                  Obx(() => _buildInfo(theme, controller.infoState.value)),
+                  buildReplyHeader(theme),
+                  Obx(() => replyList(theme, controller.loadingState.value)),
+                ],
+              ),
+            ),
+          ).constraintWidth(),
+          Positioned(
+            right: 0,
+            bottom: 0,
+            child: SlideTransition(
+              position: fabAnimation,
+              child: Padding(
+                padding: .only(
+                  right: kFloatingActionButtonMargin,
+                  bottom: padding.bottom + kFloatingActionButtonMargin,
+                ),
+                child: replyButton,
+              ),
+            ),
           ),
-        ),
-      ).constraintWidth(),
-      floatingActionButtonLocation: const NoBottomPaddingFabLocation(),
-      floatingActionButton: SlideTransition(
-        position: fabAnimation,
-        child: fabButton,
+        ],
       ),
     );
   }
@@ -198,8 +210,7 @@ class _MatchInfoPageState extends CommonDynPageState<MatchInfoPage> {
       int oid = replyItem.oid.toInt();
       int rpid = replyItem.id.toInt();
       Get.to(
-        Scaffold(
-          resizeToAvoidBottomInset: false,
+        scaffold(
           appBar: AppBar(
             title: const Text('评论详情'),
             shape: Border(

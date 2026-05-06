@@ -1,3 +1,4 @@
+import 'package:PiliPlus/common/widgets/scaffold.dart';
 import 'package:PiliPlus/pages/setting/models/style_settings.dart';
 import 'package:flutter/material.dart';
 
@@ -17,8 +18,7 @@ class _StyleSettingState extends State<StyleSetting> {
   Widget build(BuildContext context) {
     final showAppBar = widget.showAppBar;
     final padding = MediaQuery.viewPaddingOf(context);
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
+    return scaffold(
       appBar: showAppBar ? AppBar(title: const Text('外观设置')) : null,
       body: ListView.builder(
         padding: EdgeInsets.only(

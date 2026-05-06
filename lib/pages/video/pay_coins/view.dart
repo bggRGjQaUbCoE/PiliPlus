@@ -105,8 +105,8 @@ class _PayCoinsPageState extends State<PayCoinsPage>
     return index == 0 ? Assets.mario : Assets.gunSister;
   }
 
-  late final color = Colors.black.withValues(alpha: 0.4);
-  Color _getPayFilter(int index) => _canPay(index) ? Colors.transparent : color;
+  Color _getPayFilter(int index) =>
+      _canPay(index) ? Colors.transparent : const Color(0x66000000);
 
   @override
   void initState() {

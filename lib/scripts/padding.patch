@@ -1,0 +1,522 @@
+diff --git a/packages/flutter/lib/src/cupertino/context_menu.dart b/packages/flutter/lib/src/cupertino/context_menu.dart
+index cf322d7c5d4..a9bc2b31f09 100644
+--- a/packages/flutter/lib/src/cupertino/context_menu.dart
++++ b/packages/flutter/lib/src/cupertino/context_menu.dart
+@@ -573,7 +573,7 @@ class _CupertinoContextMenuState extends State<CupertinoContextMenu> with Ticker
+     final Rect childRect = _getRect(_childGlobalKey);
+     _scaleFactor = _getScaleFactor(
+       childRect,
+-      MediaQuery.paddingOf(context),
++      MediaQuery.viewPaddingOf(context),
+       MediaQuery.sizeOf(context),
+     );
+     _decoyChildEndRect = Rect.fromCenter(
+@@ -1210,7 +1210,7 @@ class _ContextMenuRouteStaticState extends State<_ContextMenuRouteStatic>
+   // the original child.
+   Widget _getChild(Orientation orientation, _ContextMenuLocation contextMenuLocation) {
+     final Size screenSize = MediaQuery.sizeOf(context);
+-    final EdgeInsets padding = MediaQuery.paddingOf(context);
++    final EdgeInsets padding = MediaQuery.viewPaddingOf(context);
+     final screenBounds = Rect.fromLTWH(
+       0,
+       0,
+diff --git a/packages/flutter/lib/src/cupertino/desktop_text_selection.dart b/packages/flutter/lib/src/cupertino/desktop_text_selection.dart
+index 0cfe4c5533c..172c6e4ea19 100644
+--- a/packages/flutter/lib/src/cupertino/desktop_text_selection.dart
++++ b/packages/flutter/lib/src/cupertino/desktop_text_selection.dart
+@@ -165,7 +165,7 @@ class _CupertinoDesktopTextSelectionControlsToolbarState
+     }
+ 
+     assert(debugCheckHasMediaQuery(context));
+-    final EdgeInsets mediaQueryPadding = MediaQuery.paddingOf(context);
++    final EdgeInsets mediaQueryPadding = MediaQuery.viewPaddingOf(context);
+ 
+     final midpointAnchor = Offset(
+       clampDouble(
+diff --git a/packages/flutter/lib/src/cupertino/desktop_text_selection_toolbar.dart b/packages/flutter/lib/src/cupertino/desktop_text_selection_toolbar.dart
+index b578290b268..c0a9f2a71fc 100644
+--- a/packages/flutter/lib/src/cupertino/desktop_text_selection_toolbar.dart
++++ b/packages/flutter/lib/src/cupertino/desktop_text_selection_toolbar.dart
+@@ -129,7 +129,7 @@ class CupertinoDesktopTextSelectionToolbar extends StatelessWidget {
+   Widget build(BuildContext context) {
+     assert(debugCheckHasMediaQuery(context));
+ 
+-    final double paddingAbove = MediaQuery.paddingOf(context).top + _kToolbarScreenPadding;
++    final double paddingAbove = MediaQuery.viewPaddingOf(context).top + _kToolbarScreenPadding;
+     final localAdjustment = Offset(_kToolbarScreenPadding, paddingAbove);
+ 
+     return Padding(
+diff --git a/packages/flutter/lib/src/cupertino/dialog.dart b/packages/flutter/lib/src/cupertino/dialog.dart
+index f2f6db5c650..3ff03586700 100644
+--- a/packages/flutter/lib/src/cupertino/dialog.dart
++++ b/packages/flutter/lib/src/cupertino/dialog.dart
+@@ -379,7 +379,7 @@ class _CupertinoAlertDialogState extends State<CupertinoAlertDialog> {
+     // Remove view padding here because the `Scrollbar` widget uses the view
+     // padding as padding, which is unwanted.
+     // https://github.com/flutter/flutter/issues/150544
+-    return MediaQuery.removePadding(
++    return MediaQuery.removeViewPadding(
+       removeLeft: true,
+       removeTop: true,
+       removeRight: true,
+diff --git a/packages/flutter/lib/src/cupertino/nav_bar.dart b/packages/flutter/lib/src/cupertino/nav_bar.dart
+index 69d2cc836fc..ed2b7240b11 100644
+--- a/packages/flutter/lib/src/cupertino/nav_bar.dart
++++ b/packages/flutter/lib/src/cupertino/nav_bar.dart
+@@ -758,7 +758,7 @@ class _CupertinoNavigationBarState extends State<CupertinoNavigationBar> {
+ 
+     final double bottomHeight = widget.bottom?.preferredSize.height ?? 0.0;
+     final double persistentHeight =
+-        _kNavBarPersistentHeight + bottomHeight + MediaQuery.paddingOf(context).top;
++        _kNavBarPersistentHeight + bottomHeight + MediaQuery.viewPaddingOf(context).top;
+     final double largeHeight = persistentHeight + _kNavBarLargeTitleHeightExtension;
+ 
+     final components = _NavigationBarStaticComponents(
+@@ -1398,7 +1398,7 @@ class _CupertinoSliverNavigationBarState extends State<CupertinoSliverNavigation
+               actionsForegroundColor: CupertinoTheme.of(context).primaryColor,
+               transitionBetweenRoutes: widget.transitionBetweenRoutes,
+               heroTag: widget.heroTag,
+-              persistentHeight: persistentHeightAnimation.value + MediaQuery.paddingOf(context).top,
++              persistentHeight: persistentHeightAnimation.value + MediaQuery.viewPaddingOf(context).top,
+               largeTitleHeight: largeTitleHeightAnimation.value,
+               alwaysShowMiddle: widget.alwaysShowMiddle && effectiveMiddle != null,
+               stretchConfiguration: widget.stretch && !searchIsActive
+@@ -1860,7 +1860,7 @@ class _PersistentNavigationBar extends StatelessWidget {
+     }
+ 
+     return SizedBox(
+-      height: _kNavBarPersistentHeight + MediaQuery.paddingOf(context).top,
++      height: _kNavBarPersistentHeight + MediaQuery.viewPaddingOf(context).top,
+       child: SafeArea(
+         top: !CupertinoSheetRoute.hasParentSheet(context),
+         bottom: false,
+@@ -2698,7 +2698,7 @@ class _NavigationBarTransition extends StatelessWidget {
+     // The text scaling is disabled to avoid odd transitions between pages.
+     return MediaQuery.withNoTextScaling(
+       child: SizedBox(
+-        height: math.max(heightTween.begin!, heightTween.end!) + MediaQuery.paddingOf(context).top,
++        height: math.max(heightTween.begin!, heightTween.end!) + MediaQuery.viewPaddingOf(context).top,
+         width: double.infinity,
+         child: Stack(children: children),
+       ),
+diff --git a/packages/flutter/lib/src/cupertino/route.dart b/packages/flutter/lib/src/cupertino/route.dart
+index 5ce4479480e..ad479bb11fc 100644
+--- a/packages/flutter/lib/src/cupertino/route.dart
++++ b/packages/flutter/lib/src/cupertino/route.dart
+@@ -793,8 +793,8 @@ class _CupertinoBackGestureDetectorState<T> extends State<_CupertinoBackGestureD
+     // For devices with notches, the drag area needs to be larger on the side
+     // that has the notch.
+     final double dragAreaWidth = switch (Directionality.of(context)) {
+-      TextDirection.rtl => MediaQuery.paddingOf(context).right,
+-      TextDirection.ltr => MediaQuery.paddingOf(context).left,
++      TextDirection.rtl => MediaQuery.viewPaddingOf(context).right,
++      TextDirection.ltr => MediaQuery.viewPaddingOf(context).left,
+     };
+     return Stack(
+       fit: StackFit.passthrough,
+diff --git a/packages/flutter/lib/src/cupertino/scrollbar.dart b/packages/flutter/lib/src/cupertino/scrollbar.dart
+index cf2b5d80a54..5dfc843aea6 100644
+--- a/packages/flutter/lib/src/cupertino/scrollbar.dart
++++ b/packages/flutter/lib/src/cupertino/scrollbar.dart
+@@ -165,7 +165,7 @@ class _CupertinoScrollbarState extends RawScrollbarState<CupertinoScrollbar> {
+       ..mainAxisMargin = widget.mainAxisMargin
+       ..crossAxisMargin = _kScrollbarCrossAxisMargin
+       ..radius = _radius
+-      ..padding = MediaQuery.paddingOf(context)
++      ..padding = MediaQuery.viewPaddingOf(context)
+       ..minLength = _kScrollbarMinLength
+       ..minOverscrollLength = _kScrollbarMinOverscrollLength
+       ..scrollbarOrientation = widget.scrollbarOrientation;
+diff --git a/packages/flutter/lib/src/cupertino/sheet.dart b/packages/flutter/lib/src/cupertino/sheet.dart
+index ff9dcd72a8a..749e370219e 100644
+--- a/packages/flutter/lib/src/cupertino/sheet.dart
++++ b/packages/flutter/lib/src/cupertino/sheet.dart
+@@ -655,7 +655,7 @@ class CupertinoSheetRoute<T> extends PageRoute<T> with _CupertinoSheetRouteTrans
+ 
+   @override
+   Widget buildContent(BuildContext context) {
+-    return MediaQuery.removePadding(
++    return MediaQuery.removeViewPadding(
+       context: context,
+       removeTop: true,
+       child: ClipRSuperellipse(
+diff --git a/packages/flutter/lib/src/cupertino/tab_scaffold.dart b/packages/flutter/lib/src/cupertino/tab_scaffold.dart
+index a5810ab979a..8ca8f2e9c98 100644
+--- a/packages/flutter/lib/src/cupertino/tab_scaffold.dart
++++ b/packages/flutter/lib/src/cupertino/tab_scaffold.dart
+@@ -332,7 +332,7 @@ class _CupertinoTabScaffoldState extends State<CupertinoTabScaffold> with Restor
+       // obstructed area.
+       if (widget.tabBar.opaque(context)) {
+         contentPadding = EdgeInsets.only(bottom: bottomPadding);
+-        newMediaQuery = newMediaQuery.removePadding(removeBottom: true);
++        newMediaQuery = newMediaQuery.removeViewPadding(removeBottom: true);
+       } else {
+         newMediaQuery = newMediaQuery.copyWith(
+           padding: newMediaQuery.padding.copyWith(bottom: bottomPadding),
+diff --git a/packages/flutter/lib/src/cupertino/text_selection.dart b/packages/flutter/lib/src/cupertino/text_selection.dart
+index 1c8e2b0b482..192cf7cf35c 100644
+--- a/packages/flutter/lib/src/cupertino/text_selection.dart
++++ b/packages/flutter/lib/src/cupertino/text_selection.dart
+@@ -256,7 +256,7 @@ class _CupertinoTextSelectionControlsToolbarState
+     }
+ 
+     assert(debugCheckHasMediaQuery(context));
+-    final EdgeInsets mediaQueryPadding = MediaQuery.paddingOf(context);
++    final EdgeInsets mediaQueryPadding = MediaQuery.viewPaddingOf(context);
+ 
+     // The toolbar should appear below the TextField when there is not enough
+     // space above the TextField to show it, assuming there's always enough
+diff --git a/packages/flutter/lib/src/cupertino/text_selection_toolbar.dart b/packages/flutter/lib/src/cupertino/text_selection_toolbar.dart
+index c23ac7a4fa9..a9ae667fc46 100644
+--- a/packages/flutter/lib/src/cupertino/text_selection_toolbar.dart
++++ b/packages/flutter/lib/src/cupertino/text_selection_toolbar.dart
+@@ -147,7 +147,7 @@ class CupertinoTextSelectionToolbar extends StatelessWidget {
+   @override
+   Widget build(BuildContext context) {
+     assert(debugCheckHasMediaQuery(context));
+-    final EdgeInsets mediaQueryPadding = MediaQuery.paddingOf(context);
++    final EdgeInsets mediaQueryPadding = MediaQuery.viewPaddingOf(context);
+ 
+     final double paddingAbove = mediaQueryPadding.top + kToolbarScreenPadding;
+ 
+diff --git a/packages/flutter/lib/src/material/app_bar.dart b/packages/flutter/lib/src/material/app_bar.dart
+index 7f6fc971faa..4abaaddfcf3 100644
+--- a/packages/flutter/lib/src/material/app_bar.dart
++++ b/packages/flutter/lib/src/material/app_bar.dart
+@@ -2091,7 +2091,7 @@ class _SliverAppBarState extends State<SliverAppBar> with TickerProviderStateMix
+   Widget build(BuildContext context) {
+     assert(!widget.primary || debugCheckHasMediaQuery(context));
+     final double bottomHeight = widget.bottom?.preferredSize.height ?? 0.0;
+-    final double topPadding = widget.primary ? MediaQuery.paddingOf(context).top : 0.0;
++    final double topPadding = widget.primary ? MediaQuery.viewPaddingOf(context).top : 0.0;
+     final double collapsedHeight = (widget.pinned && widget.floating && widget.bottom != null)
+         ? (widget.collapsedHeight ?? 0.0) + bottomHeight + topPadding
+         : (widget.collapsedHeight ?? widget.toolbarHeight) + bottomHeight + topPadding;
+@@ -2135,7 +2135,7 @@ class _SliverAppBarState extends State<SliverAppBar> with TickerProviderStateMix
+             );
+     }
+ 
+-    return MediaQuery.removePadding(
++    return MediaQuery.removeViewPadding(
+       context: context,
+       removeBottom: true,
+       child: SliverPersistentHeader(
+diff --git a/packages/flutter/lib/src/material/bottom_navigation_bar.dart b/packages/flutter/lib/src/material/bottom_navigation_bar.dart
+index 3b0c0811a43..d19ad6a697e 100644
+--- a/packages/flutter/lib/src/material/bottom_navigation_bar.dart
++++ b/packages/flutter/lib/src/material/bottom_navigation_bar.dart
+@@ -1131,7 +1131,7 @@ class _BottomNavigationBarState extends State<BottomNavigationBar> with TickerPr
+               type: MaterialType.transparency,
+               child: Padding(
+                 padding: EdgeInsets.only(bottom: additionalBottomPadding),
+-                child: MediaQuery.removePadding(
++                child: MediaQuery.removeViewPadding(
+                   context: context,
+                   removeBottom: true,
+                   child: DefaultTextStyle.merge(
+diff --git a/packages/flutter/lib/src/material/bottom_sheet.dart b/packages/flutter/lib/src/material/bottom_sheet.dart
+index d54435455ba..faa081ffb48 100644
+--- a/packages/flutter/lib/src/material/bottom_sheet.dart
++++ b/packages/flutter/lib/src/material/bottom_sheet.dart
+@@ -1120,7 +1120,7 @@ class ModalBottomSheetRoute<T> extends PopupRoute<T> {
+ 
+     Widget bottomSheet = useSafeArea
+         ? SafeArea(bottom: false, child: content)
+-        : MediaQuery.removePadding(context: context, removeTop: true, child: content);
++        : MediaQuery.removeViewPadding(context: context, removeTop: true, child: content);
+ 
+     // Prevent clicks inside the bottom sheet from passing through to the barrier
+     bottomSheet = Semantics(hitTestBehavior: SemanticsHitTestBehavior.opaque, child: bottomSheet);
+diff --git a/packages/flutter/lib/src/material/desktop_text_selection.dart b/packages/flutter/lib/src/material/desktop_text_selection.dart
+index c3a28e9df7b..0c619c553fc 100644
+--- a/packages/flutter/lib/src/material/desktop_text_selection.dart
++++ b/packages/flutter/lib/src/material/desktop_text_selection.dart
+@@ -182,7 +182,7 @@ class _DesktopTextSelectionControlsToolbarState
+       return const SizedBox.shrink();
+     }
+ 
+-    final EdgeInsets mediaQueryPadding = MediaQuery.paddingOf(context);
++    final EdgeInsets mediaQueryPadding = MediaQuery.viewPaddingOf(context);
+     final midpointAnchor = Offset(
+       clampDouble(
+         widget.selectionMidpoint.dx - widget.globalEditableRegion.left,
+diff --git a/packages/flutter/lib/src/material/desktop_text_selection_toolbar.dart b/packages/flutter/lib/src/material/desktop_text_selection_toolbar.dart
+index b51f086f6e9..c61564af117 100644
+--- a/packages/flutter/lib/src/material/desktop_text_selection_toolbar.dart
++++ b/packages/flutter/lib/src/material/desktop_text_selection_toolbar.dart
+@@ -66,7 +66,7 @@ class DesktopTextSelectionToolbar extends StatelessWidget {
+   Widget build(BuildContext context) {
+     assert(debugCheckHasMediaQuery(context));
+ 
+-    final double paddingAbove = MediaQuery.paddingOf(context).top + _kToolbarScreenPadding;
++    final double paddingAbove = MediaQuery.viewPaddingOf(context).top + _kToolbarScreenPadding;
+     final localAdjustment = Offset(_kToolbarScreenPadding, paddingAbove);
+ 
+     return Padding(
+diff --git a/packages/flutter/lib/src/material/drawer.dart b/packages/flutter/lib/src/material/drawer.dart
+index de7383e9327..0b64b687419 100644
+--- a/packages/flutter/lib/src/material/drawer.dart
++++ b/packages/flutter/lib/src/material/drawer.dart
+@@ -402,11 +402,11 @@ class DrawerController extends StatefulWidget {
+   /// drawer.
+   ///
+   /// By default, the value used is 20.0 added to the padding edge of
+-  /// `MediaQuery.paddingOf(context)` that corresponds to [alignment].
++  /// `MediaQuery.viewPaddingOf(context)` that corresponds to [alignment].
+   /// This ensures that the drag area for notched devices is not obscured. For
+   /// example, if [alignment] is set to [DrawerAlignment.start] and
+   /// `TextDirection.of(context)` is set to [TextDirection.ltr],
+-  /// 20.0 will be added to `MediaQuery.paddingOf(context).left`.
++  /// 20.0 will be added to `MediaQuery.viewPaddingOf(context).left`.
+   final double? edgeDragWidth;
+ 
+   /// Whether or not the drawer is opened or closed.
+@@ -658,10 +658,10 @@ class DrawerControllerState extends State<DrawerController> with SingleTickerPro
+         widget.edgeDragWidth ??
+         _kEdgeDragWidth +
+             switch ((widget.alignment, Directionality.of(context))) {
+-              (DrawerAlignment.start, TextDirection.ltr) => MediaQuery.paddingOf(context).left,
+-              (DrawerAlignment.start, TextDirection.rtl) => MediaQuery.paddingOf(context).right,
+-              (DrawerAlignment.end, TextDirection.rtl) => MediaQuery.paddingOf(context).left,
+-              (DrawerAlignment.end, TextDirection.ltr) => MediaQuery.paddingOf(context).right,
++              (DrawerAlignment.start, TextDirection.ltr) => MediaQuery.viewPaddingOf(context).left,
++              (DrawerAlignment.start, TextDirection.rtl) => MediaQuery.viewPaddingOf(context).right,
++              (DrawerAlignment.end, TextDirection.rtl) => MediaQuery.viewPaddingOf(context).left,
++              (DrawerAlignment.end, TextDirection.ltr) => MediaQuery.viewPaddingOf(context).right,
+             };
+ 
+     if (_controller.isDismissed) {
+diff --git a/packages/flutter/lib/src/material/drawer_header.dart b/packages/flutter/lib/src/material/drawer_header.dart
+index d7259826096..56985a36ae4 100644
+--- a/packages/flutter/lib/src/material/drawer_header.dart
++++ b/packages/flutter/lib/src/material/drawer_header.dart
+@@ -81,7 +81,7 @@ class DrawerHeader extends StatelessWidget {
+     assert(debugCheckHasMaterial(context));
+     assert(debugCheckHasMediaQuery(context));
+     final ThemeData theme = Theme.of(context);
+-    final double statusBarHeight = MediaQuery.paddingOf(context).top;
++    final double statusBarHeight = MediaQuery.viewPaddingOf(context).top;
+     return Container(
+       height: statusBarHeight + _kDrawerHeaderHeight,
+       margin: margin,
+@@ -95,7 +95,7 @@ class DrawerHeader extends StatelessWidget {
+             ? null
+             : DefaultTextStyle(
+                 style: theme.textTheme.bodyLarge!,
+-                child: MediaQuery.removePadding(context: context, removeTop: true, child: child!),
++                child: MediaQuery.removeViewPadding(context: context, removeTop: true, child: child!),
+               ),
+       ),
+     );
+diff --git a/packages/flutter/lib/src/material/dropdown.dart b/packages/flutter/lib/src/material/dropdown.dart
+index a892b7f58cf..fc157f89dae 100644
+--- a/packages/flutter/lib/src/material/dropdown.dart
++++ b/packages/flutter/lib/src/material/dropdown.dart
+@@ -720,7 +720,7 @@ class _DropdownRoutePageState<T> extends State<_DropdownRoutePage<T>> {
+       mouseCursor: widget.mouseCursor,
+     );
+ 
+-    return MediaQuery.removePadding(
++    return MediaQuery.removeViewPadding(
+       context: context,
+       removeTop: true,
+       removeBottom: true,
+diff --git a/packages/flutter/lib/src/material/popup_menu.dart b/packages/flutter/lib/src/material/popup_menu.dart
+index 29711a68632..dfb22b728fd 100644
+--- a/packages/flutter/lib/src/material/popup_menu.dart
++++ b/packages/flutter/lib/src/material/popup_menu.dart
+@@ -1040,7 +1040,7 @@ class _PopupMenuRoute<T> extends PopupRoute<T> {
+       clipBehavior: clipBehavior,
+     );
+     final MediaQueryData mediaQuery = MediaQuery.of(context);
+-    return MediaQuery.removePadding(
++    return MediaQuery.removeViewPadding(
+       context: context,
+       removeTop: true,
+       removeBottom: true,
+diff --git a/packages/flutter/lib/src/material/scaffold.dart b/packages/flutter/lib/src/material/scaffold.dart
+index d121d10f1d6..e1afd52c7d6 100644
+--- a/packages/flutter/lib/src/material/scaffold.dart
++++ b/packages/flutter/lib/src/material/scaffold.dart
+@@ -1970,11 +1970,11 @@ class Scaffold extends StatefulWidget {
+   /// drawer.
+   ///
+   /// By default, the value used is 20.0 added to the padding edge of
+-  /// `MediaQuery.paddingOf(context)` that corresponds to the surrounding
++  /// `MediaQuery.viewPaddingOf(context)` that corresponds to the surrounding
+   /// [TextDirection]. This ensures that the drag area for notched devices is
+   /// not obscured. For example, if `TextDirection.of(context)` is set to
+   /// [TextDirection.ltr], 20.0 will be added to
+-  /// `MediaQuery.paddingOf(context).left`.
++  /// `MediaQuery.viewPaddingOf(context).left`.
+   final double? drawerEdgeDragWidth;
+ 
+   /// Determines if the [Scaffold.drawer] can be opened with a drag
+@@ -3048,7 +3048,7 @@ class ScaffoldState extends State<Scaffold>
+     }
+ 
+     if (widget.appBar != null) {
+-      final double topPadding = widget.primary ? MediaQuery.paddingOf(context).top : 0.0;
++      final double topPadding = widget.primary ? MediaQuery.viewPaddingOf(context).top : 0.0;
+       _appBarMaxHeight =
+           AppBar.preferredHeightFor(context, widget.appBar!.preferredSize) + topPadding;
+       assert(_appBarMaxHeight! >= 0.0 && _appBarMaxHeight!.isFinite);
+@@ -3219,7 +3219,7 @@ class ScaffoldState extends State<Scaffold>
+     }
+ 
+     // The minimum insets for contents of the Scaffold to keep visible.
+-    final EdgeInsets minInsets = MediaQuery.paddingOf(
++    final EdgeInsets minInsets = MediaQuery.viewPaddingOf(
+       context,
+     ).copyWith(bottom: _resizeToAvoidBottomInset ? MediaQuery.viewInsetsOf(context).bottom : 0.0);
+ 
+diff --git a/packages/flutter/lib/src/material/scrollbar.dart b/packages/flutter/lib/src/material/scrollbar.dart
+index 0b8653c88f0..99c79a1a71d 100644
+--- a/packages/flutter/lib/src/material/scrollbar.dart
++++ b/packages/flutter/lib/src/material/scrollbar.dart
+@@ -357,7 +357,7 @@ class _MaterialScrollbarState extends RawScrollbarState<_MaterialScrollbar> {
+           _scrollbarTheme.crossAxisMargin ?? (_useAndroidScrollbar ? 0.0 : _kScrollbarMargin)
+       ..mainAxisMargin = _scrollbarTheme.mainAxisMargin ?? 0.0
+       ..minLength = _scrollbarTheme.minThumbLength ?? _kScrollbarMinLength
+-      ..padding = MediaQuery.paddingOf(context)
++      ..padding = MediaQuery.viewPaddingOf(context)
+       ..scrollbarOrientation = widget.scrollbarOrientation
+       ..ignorePointer = !enableGestures;
+   }
+diff --git a/packages/flutter/lib/src/material/search_anchor.dart b/packages/flutter/lib/src/material/search_anchor.dart
+index 0964bd27c05..d3e2b8360a3 100644
+--- a/packages/flutter/lib/src/material/search_anchor.dart
++++ b/packages/flutter/lib/src/material/search_anchor.dart
+@@ -802,7 +802,7 @@ class _SearchViewRoute extends PopupRoute<_SearchViewRoute> {
+ 
+           final Rect viewRect = _rectTween.evaluate(curvedAnimation!)!;
+           final double topPadding = showFullScreenView
+-              ? lerpDouble(0.0, MediaQuery.paddingOf(context).top, curvedAnimation!.value)!
++              ? lerpDouble(0.0, MediaQuery.viewPaddingOf(context).top, curvedAnimation!.value)!
+               : 0.0;
+ 
+           viewFadeOnIntervalCurve ??= CurvedAnimation(
+@@ -1190,7 +1190,7 @@ class _ViewContentState extends State<_ViewContent> {
+                           child: FadeTransition(
+                             opacity: viewListFadeOnIntervalCurve,
+                             child: widget.viewBuilder == null
+-                                ? MediaQuery.removePadding(
++                                ? MediaQuery.removeViewPadding(
+                                     context: context,
+                                     removeTop: true,
+                                     child: ListView(
+diff --git a/packages/flutter/lib/src/material/text_selection_toolbar.dart b/packages/flutter/lib/src/material/text_selection_toolbar.dart
+index ec871e317e1..f0d7e69826c 100644
+--- a/packages/flutter/lib/src/material/text_selection_toolbar.dart
++++ b/packages/flutter/lib/src/material/text_selection_toolbar.dart
+@@ -106,7 +106,7 @@ class TextSelectionToolbar extends StatelessWidget {
+     final Offset anchorBelowPadded = anchorBelow + const Offset(0.0, kToolbarContentDistanceBelow);
+ 
+     const double screenPadding = CupertinoTextSelectionToolbar.kToolbarScreenPadding;
+-    final double paddingAbove = MediaQuery.paddingOf(context).top + screenPadding;
++    final double paddingAbove = MediaQuery.viewPaddingOf(context).top + screenPadding;
+     final double availableHeight = anchorAbovePadded.dy - _kToolbarContentDistance - paddingAbove;
+     final bool fitsAbove = _kToolbarHeight <= availableHeight;
+     // Makes up for the Padding above the Stack.
+diff --git a/packages/flutter/lib/src/widgets/animated_scroll_view.dart b/packages/flutter/lib/src/widgets/animated_scroll_view.dart
+index 514d37da2d7..c346d3cbc51 100644
+--- a/packages/flutter/lib/src/widgets/animated_scroll_view.dart
++++ b/packages/flutter/lib/src/widgets/animated_scroll_view.dart
+@@ -46,7 +46,7 @@ import 'ticker_provider.dart';
+ ///
+ /// ```dart
+ /// Widget myWidget(BuildContext context) {
+-///   return MediaQuery.removePadding(
++///   return MediaQuery.removeViewPadding(
+ ///     context: context,
+ ///     removeTop: true,
+ ///     removeBottom: true,
+@@ -115,7 +115,7 @@ class AnimatedList extends _AnimatedScrollView {
+   ///
+   /// ```dart
+   /// Widget myWidget(BuildContext context) {
+-  ///   return MediaQuery.removePadding(
++  ///   return MediaQuery.removeViewPadding(
+   ///     context: context,
+   ///     removeTop: true,
+   ///     removeBottom: true,
+@@ -342,7 +342,7 @@ class AnimatedListState extends _AnimatedScrollViewState<AnimatedList> {
+ ///
+ /// ```dart
+ /// Widget myWidget(BuildContext context) {
+-///   return MediaQuery.removePadding(
++///   return MediaQuery.removeViewPadding(
+ ///     context: context,
+ ///     removeTop: true,
+ ///     removeBottom: true,
+diff --git a/packages/flutter/lib/src/widgets/safe_area.dart b/packages/flutter/lib/src/widgets/safe_area.dart
+index dcb1b036c94..c429c15145d 100644
+--- a/packages/flutter/lib/src/widgets/safe_area.dart
++++ b/packages/flutter/lib/src/widgets/safe_area.dart
+@@ -112,12 +112,7 @@ class SafeArea extends StatelessWidget {
+   @override
+   Widget build(BuildContext context) {
+     assert(debugCheckHasMediaQuery(context));
+-    EdgeInsets padding = MediaQuery.paddingOf(context);
+-    // Bottom padding has been consumed - i.e. by the keyboard
+-    if (maintainBottomViewPadding) {
+-      padding = padding.copyWith(bottom: MediaQuery.viewPaddingOf(context).bottom);
+-    }
+-
++    EdgeInsets padding = MediaQuery.viewPaddingOf(context);
+     return Padding(
+       padding: EdgeInsets.only(
+         left: math.max(left ? padding.left : 0.0, minimum.left),
+@@ -125,7 +120,7 @@ class SafeArea extends StatelessWidget {
+         right: math.max(right ? padding.right : 0.0, minimum.right),
+         bottom: math.max(bottom ? padding.bottom : 0.0, minimum.bottom),
+       ),
+-      child: MediaQuery.removePadding(
++      child: MediaQuery.removeViewPadding(
+         context: context,
+         removeLeft: left,
+         removeTop: top,
+@@ -205,7 +200,7 @@ class SliverSafeArea extends StatelessWidget {
+   @override
+   Widget build(BuildContext context) {
+     assert(debugCheckHasMediaQuery(context));
+-    final EdgeInsets padding = MediaQuery.paddingOf(context);
++    final EdgeInsets padding = MediaQuery.viewPaddingOf(context);
+     return SliverPadding(
+       padding: EdgeInsets.only(
+         left: math.max(left ? padding.left : 0.0, minimum.left),
+@@ -213,7 +208,7 @@ class SliverSafeArea extends StatelessWidget {
+         right: math.max(right ? padding.right : 0.0, minimum.right),
+         bottom: math.max(bottom ? padding.bottom : 0.0, minimum.bottom),
+       ),
+-      sliver: MediaQuery.removePadding(
++      sliver: MediaQuery.removeViewPadding(
+         context: context,
+         removeLeft: left,
+         removeTop: top,
+diff --git a/packages/flutter/lib/src/widgets/scroll_view.dart b/packages/flutter/lib/src/widgets/scroll_view.dart
+index f5cc546eebb..cbabbdf44e7 100644
+--- a/packages/flutter/lib/src/widgets/scroll_view.dart
++++ b/packages/flutter/lib/src/widgets/scroll_view.dart
+@@ -1873,7 +1873,7 @@ class ListView extends BoxScrollView {
+ ///
+ /// ```dart
+ /// Widget myWidget(BuildContext context) {
+-///   return MediaQuery.removePadding(
++///   return MediaQuery.removeViewPadding(
+ ///     context: context,
+ ///     removeTop: true,
+ ///     child: GridView.builder(
+diff --git a/packages/flutter/lib/src/widgets/scrollbar.dart b/packages/flutter/lib/src/widgets/scrollbar.dart
+index 1c8f2ce4a7f..f31a7e6ef07 100644
+--- a/packages/flutter/lib/src/widgets/scrollbar.dart
++++ b/packages/flutter/lib/src/widgets/scrollbar.dart
+@@ -1579,7 +1579,7 @@ class RawScrollbarState<T extends RawScrollbar> extends State<T> with TickerProv
+       ..textDirection = textDirection
+       ..thickness = widget.thickness ?? _kScrollbarThickness
+       ..radius = widget.radius
+-      ..padding = (widget.padding ?? MediaQuery.paddingOf(context)).resolve(textDirection)
++      ..padding = (widget.padding ?? MediaQuery.viewPaddingOf(context)).resolve(textDirection)
+       ..scrollbarOrientation = widget.scrollbarOrientation
+       ..mainAxisMargin = widget.mainAxisMargin
+       ..shape = widget.shape

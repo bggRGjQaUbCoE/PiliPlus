@@ -5,10 +5,10 @@ import 'package:PiliPlus/http/dynamics.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/dynamics/result.dart';
 import 'package:PiliPlus/pages/dynamics/widgets/vote.dart';
+import 'package:PiliPlus/pages/webview/view.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 
 Widget? addWidget(
   BuildContext context, {
@@ -124,14 +124,9 @@ Widget? addWidget(
                                   recognizer: reserve.desc3!.jumpUrl == null
                                       ? null
                                       : (NoDeadlineTapGestureRecognizer()
-                                          ..onTap = () {
-                                            Get.toNamed(
-                                              '/webview',
-                                              parameters: {
-                                                'url': reserve.desc3!.jumpUrl!,
-                                              },
-                                            );
-                                          }),
+                                          ..onTap = () => WebViewPage.toWebView(
+                                            reserve.desc3!.jumpUrl!,
+                                          )),
                                 ),
                               ],
                             ],
@@ -261,14 +256,9 @@ Widget? addWidget(
                                 recognizer: content.desc!.jumpUrl == null
                                     ? null
                                     : (NoDeadlineTapGestureRecognizer()
-                                        ..onTap = () {
-                                          Get.toNamed(
-                                            '/webview',
-                                            parameters: {
-                                              'url': content.desc!.jumpUrl!,
-                                            },
-                                          );
-                                        }),
+                                        ..onTap = () => WebViewPage.toWebView(
+                                          content.desc!.jumpUrl!,
+                                        )),
                               ),
                             ],
                           ),

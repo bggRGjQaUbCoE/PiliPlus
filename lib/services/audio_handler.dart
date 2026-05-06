@@ -12,7 +12,6 @@ import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
 import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:PiliPlus/utils/path_utils.dart';
-import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:audio_service/audio_service.dart';
 import 'package:path/path.dart' as path;
 
@@ -34,7 +33,6 @@ Future<VideoPlayerServiceHandler> initAudioService() {
 
 class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
   static final List<MediaItem> _item = [];
-  bool enableBackgroundPlay = Pref.enableBackgroundPlay;
 
   Future<void>? Function()? onPlay;
   Future<void>? Function()? onPause;
@@ -45,13 +43,11 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
     return onPlay?.call() ??
         PlPlayerController.playIfExists() ??
         Future.syncValue(null);
-    // player.play();
   }
 
   @override
   Future<void> pause() {
     return onPause?.call() ?? PlPlayerController.pauseIfExists();
-    // player.pause();
   }
 
   @override
@@ -63,17 +59,9 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
     );
     return (onSeek?.call(position) ??
         PlPlayerController.seekToIfExists(position, isSeek: false));
-    // await player.seekTo(position);
   }
 
   void setMediaItem(MediaItem newMediaItem) {
-    if (!enableBackgroundPlay) return;
-    // if (kDebugMode) {
-    //   debugPrint("此时调用栈为：");
-    //   debugPrint(newMediaItem);
-    //   debugPrint(newMediaItem.title);
-    //   debugPrint(StackTrace.current.toString());
-    // }
     if (!mediaItem.isClosed) mediaItem.add(newMediaItem);
   }
 
@@ -82,12 +70,6 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
     bool isBuffering,
     bool isLive,
   ) {
-    if (!enableBackgroundPlay ||
-        _item.isEmpty ||
-        !PlPlayerController.instanceExists()) {
-      return;
-    }
-
     final AudioProcessingState processingState;
     if (status.isCompleted) {
       processingState = AudioProcessingState.completed;
@@ -123,8 +105,6 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
   }
 
   void onStatusChange(PlayerStatus status, bool isBuffering, isLive) {
-    if (!enableBackgroundPlay) return;
-
     if (_item.isEmpty) return;
     setPlaybackState(status, isBuffering, isLive);
   }
@@ -136,11 +116,6 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
     String? artist,
     String? cover,
   }) {
-    if (!enableBackgroundPlay) return;
-    // if (kDebugMode) {
-    //   debugPrint('当前调用栈为：');
-    //   debugPrint(StackTrace.current);
-    // }
     if (!PlPlayerController.instanceExists()) return;
     if (data == null) return;
 
@@ -219,15 +194,12 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
       default:
         return;
     }
-    // if (kDebugMode) debugPrint("exist: ${PlPlayerController.instanceExists()}");
     if (!PlPlayerController.instanceExists()) return;
     _item.add(mediaItem);
     setMediaItem(mediaItem);
   }
 
   void onVideoDetailDispose(String herotag) {
-    if (!enableBackgroundPlay) return;
-
     if (_item.isNotEmpty) {
       _item.removeWhere((item) => item.id.endsWith(herotag));
     }
@@ -244,15 +216,8 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
   }
 
   void clear() {
-    if (!enableBackgroundPlay) return;
     mediaItem.add(null);
     _item.clear();
-    /**
-     * if (playbackState.processingState == AudioProcessingState.idle &&
-            previousState?.processingState != AudioProcessingState.idle) {
-          await AudioService._stop();
-        }
-     */
     if (playbackState.value.processingState == AudioProcessingState.idle) {
       playbackState.add(
         PlaybackState(
@@ -270,12 +235,6 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
   }
 
   void onPositionChange(Duration position) {
-    if (!enableBackgroundPlay ||
-        _item.isEmpty ||
-        !PlPlayerController.instanceExists()) {
-      return;
-    }
-
     playbackState.add(
       playbackState.value.copyWith(
         updatePosition: position,

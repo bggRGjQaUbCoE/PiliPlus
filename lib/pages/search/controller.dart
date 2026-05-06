@@ -4,14 +4,12 @@ import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/search.dart';
 import 'package:PiliPlus/models/search/suggest.dart';
-import 'package:PiliPlus/models_new/search/search_rcmd/data.dart';
 import 'package:PiliPlus/models_new/search/search_trending/data.dart';
 import 'package:PiliPlus/utils/extension/get_ext.dart';
 import 'package:PiliPlus/utils/extension/string_ext.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
-import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:get/get.dart';
@@ -59,19 +57,12 @@ class BaseSearchController extends GetxController {
 
   late final Rx<LoadingState<SearchTrendingData>> trendingState;
 
-  final recordSearchHistory = Pref.recordSearchHistory.obs;
-  final searchSuggestion = Pref.searchSuggestion;
-  final enableTrending = Pref.enableTrending;
-  final enableSearchRcmd = Pref.enableSearchRcmd;
-
   @override
   void onInit() {
     super.onInit();
 
-    if (enableTrending) {
-      trendingState = LoadingState<SearchTrendingData>.loading().obs;
-      queryTrendingList();
-    }
+    trendingState = LoadingState<SearchTrendingData>.loading().obs;
+    queryTrendingList();
   }
 
   // 获取热搜关键词
@@ -97,21 +88,14 @@ class SSearchController extends GetxController
   final RxBool showUidBtn = false.obs;
 
   // history
-  RxBool get recordSearchHistory => _baseCtr.recordSearchHistory;
   RxList<String> get historyList => _baseCtr.historyList;
 
   // suggestion
-  bool get searchSuggestion => _baseCtr.searchSuggestion;
   late final RxList<SearchSuggestItem> searchSuggestList;
 
   // trending
-  bool get enableTrending => _baseCtr.enableTrending;
   Rx<LoadingState<SearchTrendingData>> get trendingState =>
       _baseCtr.trendingState;
-
-  // rcmd
-  bool get enableSearchRcmd => _baseCtr.enableSearchRcmd;
-  late final Rx<LoadingState<SearchRcmdData>> recommendData;
 
   Future<void> Function() get queryTrendingList => _baseCtr.queryTrendingList;
 
@@ -125,15 +109,8 @@ class SSearchController extends GetxController
       controller.text = text;
     }
 
-    if (searchSuggestion) {
-      subInit();
-      searchSuggestList = <SearchSuggestItem>[].obs;
-    }
-
-    if (enableSearchRcmd) {
-      recommendData = LoadingState<SearchRcmdData>.loading().obs;
-      queryRecommendList();
-    }
+    subInit();
+    searchSuggestList = <SearchSuggestItem>[].obs;
   }
 
   void validateUid() {
@@ -142,19 +119,17 @@ class SSearchController extends GetxController
 
   void onChange(String value) {
     validateUid();
-    if (searchSuggestion) {
-      if (value.isEmpty) {
-        searchSuggestList.clear();
-      } else {
-        ctr!.add(value);
-      }
+    if (value.isEmpty) {
+      searchSuggestList.clear();
+    } else {
+      ctr!.add(value);
     }
   }
 
   void onClear() {
     if (controller.value.text != '') {
       controller.clear();
-      if (searchSuggestion) searchSuggestList.clear();
+      searchSuggestList.clear();
       searchFocusNode.requestFocus();
       showUidBtn.value = false;
     } else {
@@ -172,12 +147,10 @@ class SSearchController extends GetxController
       validateUid();
     }
 
-    if (recordSearchHistory.value) {
-      historyList
-        ..remove(controller.text)
-        ..insert(0, controller.text);
-      GStorage.historyWord.put('cacheList', historyList);
-    }
+    historyList
+      ..remove(controller.text)
+      ..insert(0, controller.text);
+    GStorage.historyWord.put('cacheList', historyList);
 
     searchFocusNode.unfocus();
     await Get.toNamed(
@@ -201,15 +174,11 @@ class SSearchController extends GetxController
     }
   }
 
-  Future<void> queryRecommendList() async {
-    recommendData.value = await SearchHttp.searchRecommend();
-  }
-
   void onClickKeyword(String keyword) {
     controller.text = keyword;
     validateUid();
 
-    if (searchSuggestion) searchSuggestList.clear();
+    searchSuggestList.clear();
     submit();
   }
 

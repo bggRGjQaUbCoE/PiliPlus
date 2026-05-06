@@ -34,285 +34,182 @@ dependencies:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
-  # The following adds the Cupertino Icons font to your application.
-  # Use with the CupertinoIcons class for iOS style icons.
-  cupertino_icons: ^1.0.8
-  # 动态取色
-  dynamic_color: ^1.8.1
 
-  # get: ^4.7.2
-  get:
-    git:
-      url: https://github.com/bggRGjQaUbCoE/getx.git
-      ref: version_4.7.2
-
-  # 网络
-  dio: ^5.9.1
-  cookie_jar: ^4.0.8
-  connectivity_plus: ^7.1.1
-  dio_http2_adapter: ^2.5.3
-
-  # 图片
-  cached_network_image: ^3.4.1
-  # extended_image: ^9.0.7
-  saver_gallery: ^4.1.0
-
-  # QRCode
-  # qr_flutter: ^4.1.0
-  pretty_qr_code: ^3.3.0
-
-  # 存储
-  path_provider: ^2.1.5
-  hive_ce: ^2.19.3
-
-  # 设备信息
-  device_info_plus: ^13.1.0
-  # 权限
-  # permission_handler: ^12.0.0+1
-  permission_handler_apple: ^9.4.7
-  permission_handler_android: ^13.0.1
-  permission_handler_platform_interface: ^4.3.0
-  # 分享
-  share_plus: ^13.1.0
-  # cookie 管理
-  # webview_cookie_manager: ^2.0.6
-  # 浏览器
-  # webview_flutter: ^4.10.0
-  flutter_inappwebview: ^6.1.5
-  desktop_webview_window:
-    git:
-      url: https://github.com/Predidit/linux_webview_window
-      ref: main
-  # 解决sliver滑动不同步
-  # extended_nested_scroll_view: ^6.2.1
-  extended_nested_scroll_view:
-    git:
-      url: https://github.com/bggRGjQaUbCoE/extended_nested_scroll_view.git
-      ref: mod
-  # 上拉加载
-  # loading_more_list: ^7.1.0
-  # 下拉刷新
-  # pull_to_refresh_notification: ^3.1.0
-  # 图标
-  font_awesome_flutter: 10.9.0
-  # material_design_icons_flutter: ^7.0.7296
-  material_design_icons_flutter:
-    git:
-      url: https://github.com/bggRGjQaUbCoE/material_design_icons_flutter.git
-      ref: const
-  # toast
-  flutter_smart_dialog:
-    git:
-      url: https://github.com/bggRGjQaUbCoE/flutter_smart_dialog.git
-      ref: main
-  # 下滑关闭
-  # dismissible_page: ^1.0.2
-  # custom_sliding_segmented_control: ^1.8.4
-  # 加密
-  crypto: ^3.0.6
-  encrypt: ^5.0.3
-
-  # 视频播放器
-  media_kit: 1.1.11 # Primary package.
-  # media_kit_video: ^1.2.5 # For video rendering.
-  media_kit_video:
-    git:
-      url: https://github.com/bggRGjQaUbCoE/media-kit.git
-      path: media_kit_video
-      ref: version_1.2.5
-  media_kit_libs_video: 1.0.5
-
-  # 媒体通知
+  app_links: ^7.0.0
+  archive: ^4.0.0
   audio_service: ^0.18.15
   audio_session: ^0.2.2
-
-  # 音量、亮度、屏幕控制
-  flutter_volume_controller: ^1.3.3
-  wakelock_plus: ^1.2.8
-  # universal_platform: ^1.1.0
-  # auto_orientation:
-  #   git:
-  #     url: https://github.com/bggRGjQaUbCoE/auto_orientation.git
-  #     ref: master
-  native_device_orientation:
-    git:
-      url: https://github.com/bggRGjQaUbCoE/flutter_native_device_orientation.git
-      ref: master
-  protobuf: ^6.0.0
-  # animations: ^2.0.11
-
-  # 获取appx信息
-  package_info_plus: ^10.1.0
-  url_launcher: ^6.3.1
-  # 防抖节流
-  easy_debounce: ^2.0.3
-  # 高帧率
-  # flutter_displaymode: ^0.7.0
-  # scheme跳转
-  app_links: ^7.0.0
-  # 弹幕
-  # ns_danmaku:
-  #   git:
-  #     url: https://github.com/bggRGjQaUbCoE/flutter_ns_danmaku.git
-  #     ref: master
+  battery_plus: ^7.0.0
+  brotli: ^0.6.0
+  cached_network_image: ^3.4.1
   canvas_danmaku:
     git:
       url: https://github.com/bggRGjQaUbCoE/canvas_danmaku.git
       ref: main
-  # 状态栏图标控制
-  # status_bar_control: ^3.2.1
-  # 代理
-  # system_proxy: ^0.1.0
-  # pip
-  # floating: ^3.0.0
-  floating:
-    git:
-      url: https://github.com/bggRGjQaUbCoE/floating.git
-      ref: version-3
-  # html解析
-  html: ^0.15.4
-  # html渲染
-  flutter_html: ^3.0.0-beta.2
-  # 极验
-  gt3_flutter_plugin: ^0.1.0
-  uuid: ^4.5.1
-  # scrollable_positioned_list: ^0.3.8
-  # nil: ^1.1.1
   catcher_2: ^2.1.0
-  logger: ^2.5.0
-  #瀑布流
-  waterfall_flow: ^3.1.0
-  #跑马灯
-  # marquee: ^2.3.0
-  #富文本
-  # extended_text: ^14.1.0
-  # chat_bottom_container: ^0.2.0
+  characters: ^1.4.1
   chat_bottom_container:
     git:
       url: https://github.com/bggRGjQaUbCoE/flutter_chat_packages.git
       ref: main
       path: packages/chat_bottom_container
-  image_picker: ^1.1.2
-  intl: ^0.20.2
-  archive: ^4.0.0
-  flutter_svg: ^2.0.14
-  image_cropper: ^12.0.0
-  #解压直播消息
-  brotli: ^0.6.0
+  collection: ^1.19.1
+  connectivity_plus: ^7.1.1
+  cookie_jar: ^4.0.8
+  crypto: ^3.0.6
+  device_info_plus: ^13.1.0
+  dio: ^5.9.1
+  dio_http2_adapter: ^2.5.3
+  dynamic_color: ^1.8.1
+  easy_debounce: ^2.0.3
+  encrypt: ^5.0.3
   expandable: ^5.0.1
-  flex_seed_scheme: ^4.0.1
-  live_photo_maker: ^0.0.6
-  fl_chart: ^1.0.0
-  synchronized: ^3.3.0
-  # document_file_save_plus: ^2.0.0
-  # webdav_client: ^1.2.2
-  webdav_client:
+  extended_nested_scroll_view:
     git:
-      url: https://github.com/wgh136/webdav_client.git
+      url: https://github.com/bggRGjQaUbCoE/extended_nested_scroll_view.git
+      ref: mod
+  file_picker: ^12.0.0-beta.1
+  fixnum: ^1.1.1
+  flex_seed_scheme: ^4.0.1
+  floating:
+    git:
+      url: https://github.com/bggRGjQaUbCoE/floating.git
+      ref: version-3
+  flutter_cache_manager: ^3.4.1
+  flutter_html: ^3.0.0-beta.2
+  flutter_inappwebview: ^6.1.5
+  flutter_smart_dialog:
+    git:
+      url: https://github.com/bggRGjQaUbCoE/flutter_smart_dialog.git
       ref: main
-  re_highlight: ^0.0.3
   flutter_sortable_wrap:
     git:
       url: https://github.com/bggRGjQaUbCoE/flutter_sortable_wrap.git
       ref: master
+  flutter_svg: ^2.0.14
+  flutter_volume_controller: ^1.3.3
+  font_awesome_flutter: 10.9.0
+  get:
+    git:
+      url: https://github.com/bggRGjQaUbCoE/getx.git
+      ref: dev
+  hive_ce: ^2.19.3
+  html: ^0.15.4
+  http2: ^2.3.1
+  image_cropper: ^12.0.0
+  image_picker: ^1.1.2
+  intl: ^0.20.2
+  json_annotation: ^4.11.0
+  live_photo_maker: ^0.0.6
+  logger: ^2.5.0
+  material_color_utilities: ^0.13.0
+  material_design_icons_flutter:
+    git:
+      url: https://github.com/bggRGjQaUbCoE/material_design_icons_flutter.git
+      ref: const
+  material_new_shapes: ^1.0.0
+  media_kit: 1.1.11
+  media_kit_libs_video: 1.0.5
+  media_kit_video:
+    git:
+      url: https://github.com/bggRGjQaUbCoE/media-kit.git
+      path: media_kit_video
+      ref: version_1.2.5
+  mime: ^2.0.0
+  native_device_orientation:
+    git:
+      url: https://github.com/bggRGjQaUbCoE/flutter_native_device_orientation.git
+      ref: master
+  package_info_plus: ^10.1.0
+  path: ^1.9.1
+  path_provider: ^2.1.5
+  permission_handler_android: ^13.0.1
+  permission_handler_apple: ^9.4.7
+  permission_handler_platform_interface: ^4.3.0
+  pretty_qr_code: ^3.3.0
+  protobuf: ^6.0.0
+  re_highlight: ^0.0.3
+  saver_gallery: ^4.1.0
+  screen_brightness_platform_interface: ^2.1.0
+  screen_retriever: ^0.2.0
+  share_plus: ^13.1.0
+  stream_transform: ^2.1.1
+  super_sliver_list:
+    git:
+      url: https://github.com/bggRGjQaUbCoE/super_sliver_list.git
+      ref: mod
+  synchronized: ^3.3.0
+  tray_manager: ^0.5.1
+  url_launcher: ^6.3.1
+  uuid: ^4.5.1
+  vector_math: ^2.2.0
+  wakelock_plus: ^1.2.8
+  waterfall_flow: ^3.1.0
   web_socket_channel: ^3.0.3
-  # image: ^4.7.1
-  # window_manager: ^0.5.1
   window_manager:
     git:
       url: https://github.com/bggRGjQaUbCoE/window_manager.git
       path: packages/window_manager
       ref: main
-  tray_manager: ^0.5.1
-  file_picker: ^12.0.0-beta.1
-  super_sliver_list:
-    git:
-      url: https://github.com/bggRGjQaUbCoE/super_sliver_list.git
-      ref: mod
-  dlna_dart: ^0.1.0
-  battery_plus: ^7.0.0
-  material_new_shapes: ^1.0.0
-
-  vector_math: any
-  fixnum: any
-  json_annotation: any
-  stream_transform: any
-  screen_brightness_platform_interface: any
-  mime: any
-  path: any
-  collection: any
-  material_color_utilities: any
-  flutter_cache_manager: any
-  http2: any
-  screen_retriever: any
-  characters: any
 
 dependency_overrides:
-  # screen_brightness: ^2.1.
-  screen_brightness_ios: ^2.1.2
-  screen_brightness_android:
-    git:
-      url: https://github.com/bggRGjQaUbCoE/screen_brightness.git
-      path: screen_brightness_android
-      ref: dev
-  screen_brightness_platform_interface:
-    git:
-      url: https://github.com/bggRGjQaUbCoE/screen_brightness.git
-      path: screen_brightness_platform_interface
-      ref: dev
-  path: ^1.9.1
-  mime: ^2.0.0
-  rxdart: ^0.28.0
+  font_awesome_flutter: 10.9.0
   media_kit:
     git:
       url: https://github.com/My-Responsitories/media-kit.git
       path: media_kit
-      ref: version_1.2.5
-  media_kit_video:
-    git:
-      url: https://github.com/My-Responsitories/media-kit.git
-      path: media_kit_video
-      ref: version_1.2.5
-  media_kit_libs_video:
-    git:
-      url: https://github.com/My-Responsitories/media-kit.git
-      path: libs/universal/media_kit_libs_video
-      ref: version_1.2.5
-  media_kit_native_event_loop:
-    git:
-      url: https://github.com/My-Responsitories/media-kit.git
-      path: media_kit_native_event_loop
       ref: version_1.2.5
   media_kit_libs_android_video:
     git:
       url: https://github.com/My-Responsitories/media-kit.git
       path: libs/android/media_kit_libs_android_video
       ref: version_1.2.5
-  media_kit_libs_windows_video:
-    git:
-      url: https://github.com/My-Responsitories/media-kit.git
-      path: libs/windows/media_kit_libs_windows_video
-      ref: version_1.2.5
   media_kit_libs_ios_video:
     git:
       url: https://github.com/bggRGjQaUbCoE/media-kit.git
       path: libs/ios/media_kit_libs_ios_video
       ref: dev
-  font_awesome_flutter: 10.9.0
+  media_kit_libs_video:
+    git:
+      url: https://github.com/My-Responsitories/media-kit.git
+      path: libs/universal/media_kit_libs_video
+      ref: version_1.2.5
+  media_kit_libs_windows_video:
+    git:
+      url: https://github.com/My-Responsitories/media-kit.git
+      path: libs/windows/media_kit_libs_windows_video
+      ref: version_1.2.5
+  media_kit_native_event_loop:
+    git:
+      url: https://github.com/My-Responsitories/media-kit.git
+      path: media_kit_native_event_loop
+      ref: version_1.2.5
+  media_kit_video:
+    git:
+      url: https://github.com/My-Responsitories/media-kit.git
+      path: media_kit_video
+      ref: version_1.2.5
+  mime: ^2.0.0
+  path: ^1.9.1
+  rxdart: ^0.28.0
+  screen_brightness_android:
+    git:
+      url: https://github.com/bggRGjQaUbCoE/screen_brightness.git
+      path: screen_brightness_android
+      ref: dev
+  screen_brightness_ios: ^2.1.2
+  screen_brightness_platform_interface:
+    git:
+      url: https://github.com/bggRGjQaUbCoE/screen_brightness.git
+      path: screen_brightness_platform_interface
+      ref: dev
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-
-  # The "flutter_lints" package below contains a set of recommended lints to
-  # encourage good coding practices. The lint set provided by the package is
-  # activated in the `analysis_options.yaml` file located at the root of your
-  # package. See that file for information about deactivating specific lint
-  # rules and activating additional ones.
-  flutter_lints: ^6.0.0
-  flutter_launcher_icons: ^0.14.4
-  # hive_generator: ^2.0.1
   build_runner: ^2.10.3
+  flutter_launcher_icons: ^0.14.4
+  flutter_lints: ^6.0.0
   flutter_native_splash: ^2.4.6
 
 flutter_launcher_icons:
@@ -338,40 +235,21 @@ flutter_native_splash:
   image: assets/images/logo/logo_2.png
   image_dark: assets/images/logo/logo_2.png
 
-# For information on the generic Dart part of this file, see the
-# following page: https://dart.dev/tools/pub/pubspec
-
-# The following section is specific to Flutter packages.
 flutter:
-  # The following line ensures that the Material Icons font is
-  # included with your application, so that you can use the icons in
-  # the material Icons class.
   uses-material-design: true
 
-  # To add assets to your application, add an assets section, like this:
   assets:
     - path: assets/images/
     - path: assets/images/lv/
     - path: assets/images/logo/
     - path: assets/images/logo/ico/
-      platforms: [ windows ]
+      platforms: [windows]
     - path: assets/images/logo/desktop/
-      platforms: [ linux, macos ]
+      platforms: [linux, macos]
     - path: assets/images/live/
     - path: assets/images/video/
     - path: assets/images/paycoins/
-    - path: assets/shaders/
-  # An image asset can refer to one or more resolution-specific "variants", see
-  # https://flutter.dev/assets-and-images/#resolution-aware
 
-  # For details regarding adding assets from package dependencies, see
-  # https://flutter.dev/assets-and-images/#from-packages
-
-  # To add custom fonts to your application, add a fonts section here,
-  # in this "flutter" section. Each entry in this list should have a
-  # "family" key with the font family name, and a "fonts" key with a
-  # list giving the asset and other descriptors for the font. For
-  # example:
   fonts:
     - family: digital_id_num
       fonts:
@@ -379,12 +257,3 @@ flutter:
     - family: custom_icon
       fonts:
         - asset: assets/fonts/custom_icon.ttf
-  #   - family: Jura-Bold
-  #     fonts:
-  #       - asset: assets/fonts/Jura-Bold.ttf
-  # - family: HarmonyOS
-  #   fonts:
-  #     - asset: assets/fonts/HarmonyOS_Sans_SC_Regular.ttf
-
-  # For details regarding fonts from package dependencies,
-  # see https://flutter.dev/custom-fonts/#from-packages

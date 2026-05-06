@@ -4,6 +4,7 @@ import 'package:PiliPlus/common/widgets/custom_icon.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/flutter/text_field/controller.dart';
 import 'package:PiliPlus/common/widgets/pair.dart';
+import 'package:PiliPlus/common/widgets/scaffold.dart';
 import 'package:PiliPlus/http/constants.dart';
 import 'package:PiliPlus/http/dynamics.dart';
 import 'package:PiliPlus/http/loading_state.dart';
@@ -58,22 +59,30 @@ class _DynamicDetailPageState extends CommonDynPageState<DynamicDetailPage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
+    return scaffold(
       appBar: _buildAppBar(),
-      body: Padding(
-        padding: EdgeInsets.only(left: padding.left, right: padding.right),
-        child: isPortrait
-            ? refreshIndicator(
-                onRefresh: controller.onRefresh,
-                child: _buildBody(theme),
-              )
-            : _buildBody(theme),
-      ),
-      floatingActionButtonLocation: floatingActionButtonLocation,
-      floatingActionButton: SlideTransition(
-        position: fabAnimation,
-        child: _buildBottom(theme),
+      body: Stack(
+        clipBehavior: .none,
+        children: [
+          Padding(
+            padding: .only(left: padding.left, right: padding.right),
+            child: isPortrait
+                ? refreshIndicator(
+                    onRefresh: controller.onRefresh,
+                    child: _buildBody(theme),
+                  )
+                : _buildBody(theme),
+          ),
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: SlideTransition(
+              position: fabAnimation,
+              child: _buildBottom(theme),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -328,10 +337,6 @@ class _DynamicDetailPageState extends CommonDynPageState<DynamicDetailPage> {
   }
 
   Widget _buildBottom(ThemeData theme) {
-    if (!controller.showDynActionBar) {
-      return fabButton;
-    }
-
     final primary = theme.colorScheme.primary;
     final outline = theme.colorScheme.outline;
     final btnStyle = TextButton.styleFrom(

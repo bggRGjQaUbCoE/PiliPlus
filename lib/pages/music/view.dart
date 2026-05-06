@@ -7,6 +7,7 @@ import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/image_viewer/hero.dart';
 import 'package:PiliPlus/common/widgets/marquee.dart';
+import 'package:PiliPlus/common/widgets/scaffold.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/music.dart';
 import 'package:PiliPlus/models/common/badge_type.dart';
@@ -17,7 +18,6 @@ import 'package:PiliPlus/pages/common/dyn/common_dyn_page.dart';
 import 'package:PiliPlus/pages/music/controller.dart';
 import 'package:PiliPlus/pages/music/video/view.dart';
 import 'package:PiliPlus/utils/accounts.dart';
-import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/extension/get_ext.dart';
 import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
@@ -27,7 +27,6 @@ import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/share_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
-import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -53,8 +52,7 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
+    return scaffold(
       appBar: _buildAppBar(),
       body: Padding(
         padding: EdgeInsets.only(left: padding.left, right: padding.right),
@@ -101,10 +99,7 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
     ),
     actions: isPortrait
         ? null
-        : [
-            ratioWidget(maxWidth),
-            const SizedBox(width: 16),
-          ],
+        : [ratioWidget(maxWidth), const SizedBox(width: 16)],
   );
 
   Widget _buildBody(ThemeData theme) => Obx(() {
@@ -121,9 +116,6 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
               slivers: [
                 SliverToBoxAdapter(
                   child: _buildCard(theme, response, maxWidth),
-                ),
-                SliverToBoxAdapter(
-                  child: _buildChart(theme, response, maxWidth),
                 ),
                 buildReplyHeader(theme),
                 Obx(() => replyList(theme, controller.loadingState.value)),
@@ -151,15 +143,6 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
                       ),
                       sliver: SliverToBoxAdapter(
                         child: _buildCard(theme, response, leftWidth),
-                      ),
-                    ),
-                    SliverPadding(
-                      padding: EdgeInsets.only(
-                        left: padding,
-                        bottom: this.padding.bottom + 100,
-                      ),
-                      sliver: SliverToBoxAdapter(
-                        child: _buildChart(theme, response, leftWidth),
                       ),
                     ),
                   ],
@@ -205,17 +188,6 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
   });
 
   Widget _buildBottom(ThemeData theme, MusicDetail item) {
-    if (!controller.showDynActionBar) {
-      return Positioned(
-        right: kFloatingActionButtonMargin,
-        bottom: 0,
-        child: SlideTransition(
-          position: fabAnimation,
-          child: fabButton,
-        ),
-      );
-    }
-
     final primary = theme.colorScheme.primary;
     final outline = theme.colorScheme.outline;
     final style = TextButton.styleFrom(
@@ -585,108 +557,6 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  Widget? _buildChart(ThemeData theme, MusicDetail item, double maxWidth) {
-    final heat = item.hotSongHeat?.songHeat;
-    if (heat == null || heat.isEmpty) return null;
-    final colorScheme = theme.colorScheme;
-    int maxHeat = heat.first.heat;
-    int minHeat = heat.first.heat;
-    for (int i = 1; i < heat.length; i++) {
-      final h = heat[i].heat;
-      if (h > maxHeat) maxHeat = h;
-      if (h < minHeat) minHeat = h;
-    }
-    return Padding(
-      padding: const EdgeInsets.only(top: 8),
-      child: Column(
-        spacing: 8,
-        children: [
-          Text('近${heat.length}日热度趋势', style: theme.textTheme.titleMedium),
-          SizedBox(
-            width: maxWidth,
-            height: maxWidth * 0.5,
-            child: Padding(
-              padding: const EdgeInsetsGeometry.only(top: 4, right: 22),
-              child: LineChart(
-                LineChartData(
-                  lineTouchData: const LineTouchData(enabled: false),
-                  titlesData: FlTitlesData(
-                    show: true,
-                    rightTitles: const AxisTitles(
-                      sideTitles: SideTitles(showTitles: false),
-                    ),
-                    topTitles: const AxisTitles(
-                      sideTitles: SideTitles(showTitles: false),
-                    ),
-                    leftTitles: const AxisTitles(
-                      sideTitles: SideTitles(
-                        reservedSize: 55,
-                        showTitles: true,
-                      ),
-                    ),
-                    bottomTitles: AxisTitles(
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        reservedSize: 30 * sqrt2,
-                        getTitlesWidget: (index, meta) {
-                          return SideTitleWidget(
-                            angle: -pi / 4,
-                            space: 8 * sqrt2,
-                            meta: meta,
-                            child: Text(
-                              DateFormatUtils.shortFormat.format(
-                                DateTime.fromMillisecondsSinceEpoch(
-                                  heat[index.toInt()].date * 1000,
-                                ),
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  ),
-                  borderData: FlBorderData(
-                    show: true,
-                    border: Border.all(color: colorScheme.onSurface),
-                  ),
-                  minX: 0,
-                  maxX: (heat.length - 1).toDouble(),
-                  minY: minHeat.toDouble(),
-                  maxY: maxHeat.toDouble(),
-                  lineBarsData: [
-                    LineChartBarData(
-                      spots: List.generate(
-                        heat.length,
-                        (index) => FlSpot(
-                          index.toDouble(),
-                          heat[index].heat.toDouble(),
-                        ),
-                      ),
-                      color: colorScheme.primary,
-                      barWidth: 1,
-                      dotData: const FlDotData(show: false),
-                      belowBarData: BarAreaData(
-                        show: true,
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            colorScheme.primary.withValues(alpha: 0.5),
-                            colorScheme.onPrimary.withValues(alpha: 0.5),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }

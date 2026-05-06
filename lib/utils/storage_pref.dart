@@ -3,33 +3,21 @@ import 'dart:math' show pow, sqrt;
 
 import 'package:PiliPlus/common/widgets/pair.dart';
 import 'package:PiliPlus/http/constants.dart';
-import 'package:PiliPlus/models/common/bar_hide_type.dart';
 import 'package:PiliPlus/models/common/dynamic/dynamic_badge_mode.dart';
-import 'package:PiliPlus/models/common/dynamic/dynamics_type.dart';
 import 'package:PiliPlus/models/common/dynamic/up_panel_position.dart';
 import 'package:PiliPlus/models/common/follow_order_type.dart';
-import 'package:PiliPlus/models/common/member/tab_type.dart';
 import 'package:PiliPlus/models/common/msg/msg_unread_type.dart';
-import 'package:PiliPlus/models/common/nav_bar_config.dart';
-import 'package:PiliPlus/models/common/reply/reply_sort_type.dart';
 import 'package:PiliPlus/models/common/sponsor_block/segment_type.dart';
 import 'package:PiliPlus/models/common/sponsor_block/skip_type.dart';
-import 'package:PiliPlus/models/common/super_chat_type.dart';
-import 'package:PiliPlus/models/common/super_resolution_type.dart';
 import 'package:PiliPlus/models/common/theme/theme_type.dart';
 import 'package:PiliPlus/models/common/video/audio_quality.dart';
 import 'package:PiliPlus/models/common/video/cdn_type.dart';
 import 'package:PiliPlus/models/common/video/live_quality.dart';
-import 'package:PiliPlus/models/common/video/subtitle_pref_type.dart';
 import 'package:PiliPlus/models/common/video/video_decode_type.dart';
 import 'package:PiliPlus/models/common/video/video_quality.dart';
 import 'package:PiliPlus/models/user/danmaku_rule.dart';
 import 'package:PiliPlus/models/user/info.dart';
-import 'package:PiliPlus/pages/setting/pages/fullscreen_sc_size.dart'
-    show kFullScreenSCWidth;
 import 'package:PiliPlus/plugin/pl_player/models/audio_output_type.dart';
-import 'package:PiliPlus/plugin/pl_player/models/bottom_progress_behavior.dart';
-import 'package:PiliPlus/plugin/pl_player/models/fullscreen_mode.dart';
 import 'package:PiliPlus/plugin/pl_player/models/hwdec_type.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_repeat.dart';
 import 'package:PiliPlus/utils/device_utils.dart';
@@ -43,7 +31,7 @@ import 'package:PiliPlus/utils/utils.dart';
 import 'package:crypto/crypto.dart';
 import 'package:flex_seed_scheme/flex_seed_scheme.dart' show FlexSchemeVariant;
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:get/get_navigation/src/routes/transitions_type.dart';
 import 'package:hive_ce/hive.dart';
 
 abstract final class Pref {
@@ -81,12 +69,6 @@ abstract final class Pref {
     LocalCacheKey.blackMids,
     GlobalData().blackMids..remove(mid),
   );
-
-  static MemberTabType get memberTab =>
-      MemberTabType.values[_setting.get(
-        SettingBoxKey.memberTab,
-        defaultValue: 0,
-      )];
 
   static int get _themeTypeInt => _setting.get(
     SettingBoxKey.themeMode,
@@ -165,14 +147,6 @@ abstract final class Pref {
           .toSet() ??
       MsgUnReadType.values.toSet();
 
-  static NavigationBarType get defaultHomePage =>
-      NavigationBarType.values[defaultHomePageIndex];
-
-  static int get defaultHomePageIndex => _setting.get(
-    SettingBoxKey.defaultHomePage,
-    defaultValue: NavigationBarType.home.index,
-  );
-
   static int get previewQ =>
       _setting.get(SettingBoxKey.previewQuality, defaultValue: 100);
 
@@ -187,33 +161,6 @@ abstract final class Pref {
         SettingBoxKey.upPanelPosition,
         defaultValue: UpPanelPosition.leftFixed.index,
       )];
-
-  static FullScreenMode get fullScreenMode {
-    int? index = _setting.get(SettingBoxKey.fullScreenMode);
-    if (index == null) {
-      final FullScreenMode mode = horizontalScreen && DeviceUtils.isTablet
-          ? .none
-          : .auto;
-      _setting.put(SettingBoxKey.fullScreenMode, mode.index);
-      return mode;
-    }
-    return FullScreenMode.values[index];
-  }
-
-  static BtmProgressBehavior get btmProgressBehavior =>
-      BtmProgressBehavior.values[_setting.get(
-        SettingBoxKey.btmProgressBehavior,
-        defaultValue: BtmProgressBehavior.alwaysShow.index,
-      )];
-
-  static SubtitlePrefType get subtitlePreferenceV2 =>
-      SubtitlePrefType.values[_setting.get(
-        SettingBoxKey.subtitlePreferenceV2,
-        defaultValue: SubtitlePrefType.off.index,
-      )];
-
-  static bool get useRelativeSlide =>
-      _setting.get(SettingBoxKey.useRelativeSlide, defaultValue: false);
 
   static int get sliderDuration =>
       _setting.get(SettingBoxKey.sliderDuration, defaultValue: 90);
@@ -258,49 +205,12 @@ abstract final class Pref {
   static String get videoSync =>
       _setting.get(SettingBoxKey.videoSync, defaultValue: 'display-resample');
 
-  static String get autosync => _setting.get(
-    SettingBoxKey.autosync,
-    defaultValue: Platform.isAndroid ? '30' : '0',
-  );
-
   static CDNService get defaultCDNService {
     if (_setting.get(SettingBoxKey.CDNService) case final String cdnName) {
       return CDNService.values.byName(cdnName);
     }
     return CDNService.backupUrl;
   }
-
-  static String get banWordForRecommend =>
-      _setting.get(SettingBoxKey.banWordForRecommend, defaultValue: '');
-
-  static String get banWordForReply =>
-      _setting.get(SettingBoxKey.banWordForReply, defaultValue: '');
-
-  static String get banWordForZone =>
-      _setting.get(SettingBoxKey.banWordForZone, defaultValue: '');
-
-  static bool get appRcmd =>
-      _setting.get(SettingBoxKey.appRcmd, defaultValue: true);
-
-  static String get systemProxyHost =>
-      _setting.get(SettingBoxKey.systemProxyHost, defaultValue: '');
-
-  static String get systemProxyPort =>
-      _setting.get(SettingBoxKey.systemProxyPort, defaultValue: '');
-
-  static DynamicsTabType get defaultDynamicType =>
-      DynamicsTabType.values[defaultDynamicTypeIndex];
-
-  static int get defaultDynamicTypeIndex => _setting.get(
-    SettingBoxKey.defaultDynamicType,
-    defaultValue: DynamicsTabType.all.index,
-  );
-
-  static bool get showDynInteraction =>
-      _setting.get(SettingBoxKey.showDynInteraction, defaultValue: true);
-
-  static double get blockLimit =>
-      _setting.get(SettingBoxKey.blockLimit, defaultValue: 0.0);
 
   static double get refreshDragPercentage =>
       _setting.get(SettingBoxKey.refreshDragPercentage, defaultValue: 0.25);
@@ -329,15 +239,6 @@ abstract final class Pref {
     defaultValue: HttpString.sponsorBlockBaseUrl,
   );
 
-  static bool get blockTrack =>
-      _setting.get(SettingBoxKey.blockTrack, defaultValue: false);
-
-  static bool get checkDynamic =>
-      _setting.get(SettingBoxKey.checkDynamic, defaultValue: true);
-
-  static int get dynamicPeriod =>
-      _setting.get(SettingBoxKey.dynamicPeriod, defaultValue: 5);
-
   static FlexSchemeVariant get schemeVariant =>
       FlexSchemeVariant.values[_setting.get(
         SettingBoxKey.schemeVariant,
@@ -364,24 +265,6 @@ abstract final class Pref {
   static double get subtitleFontScaleFS =>
       _setting.get(SettingBoxKey.subtitleFontScaleFS, defaultValue: 1.5);
 
-  static bool get showViewPoints =>
-      _setting.get(SettingBoxKey.showViewPoints, defaultValue: true);
-
-  static bool get showRelatedVideo =>
-      _setting.get(SettingBoxKey.showRelatedVideo, defaultValue: true);
-
-  static bool get showVideoReply =>
-      _setting.get(SettingBoxKey.showVideoReply, defaultValue: true);
-
-  static bool get showBangumiReply =>
-      _setting.get(SettingBoxKey.showBangumiReply, defaultValue: true);
-
-  static bool get alwaysExpandIntroPanel =>
-      _setting.get(SettingBoxKey.alwaysExpandIntroPanel, defaultValue: false);
-
-  static bool get expandIntroPanelH =>
-      _setting.get(SettingBoxKey.expandIntroPanelH, defaultValue: false);
-
   static bool get horizontalSeasonPanel => _setting.get(
     SettingBoxKey.horizontalSeasonPanel,
     defaultValue: horizontalScreen,
@@ -397,12 +280,6 @@ abstract final class Pref {
 
   static double get danmakuLineHeight =>
       _setting.get(SettingBoxKey.danmakuLineHeight, defaultValue: 1.6);
-
-  static bool get showArgueMsg =>
-      _setting.get(SettingBoxKey.showArgueMsg, defaultValue: true);
-
-  static bool get reverseFromFirst =>
-      _setting.get(SettingBoxKey.reverseFromFirst, defaultValue: true);
 
   static int get subtitlePaddingH =>
       _setting.get(SettingBoxKey.subtitlePaddingH, defaultValue: 24);
@@ -422,112 +299,19 @@ abstract final class Pref {
   static bool get badCertificateCallback =>
       _setting.get(SettingBoxKey.badCertificateCallback, defaultValue: false);
 
-  static bool get continuePlayingPart =>
-      _setting.get(SettingBoxKey.continuePlayingPart, defaultValue: true);
-
   static bool get cdnSpeedTest =>
       _setting.get(SettingBoxKey.cdnSpeedTest, defaultValue: true);
 
   static bool get horizontalPreview =>
       _setting.get(SettingBoxKey.horizontalPreview, defaultValue: false);
 
-  static bool get openInBrowser =>
-      _setting.get(SettingBoxKey.openInBrowser, defaultValue: false);
-
-  static bool get savedRcmdTip =>
-      _setting.get(SettingBoxKey.savedRcmdTip, defaultValue: true);
-
-  static bool get showVipDanmaku =>
-      _setting.get(SettingBoxKey.showVipDanmaku, defaultValue: true);
-
-  static bool get mergeDanmaku =>
-      _setting.get(SettingBoxKey.mergeDanmaku, defaultValue: false);
-
-  static bool get showHotRcmd =>
-      _setting.get(SettingBoxKey.showHotRcmd, defaultValue: false);
-
-  static String get audioNormalization =>
-      _setting.get(SettingBoxKey.audioNormalization, defaultValue: '0');
-
-  static String get fallbackNormalization =>
-      _setting.get(SettingBoxKey.fallbackNormalization, defaultValue: '0');
-
-  static SuperResolutionType get superResolutionType {
-    SuperResolutionType? superResolutionType;
-    final index = _setting.get(SettingBoxKey.superResolutionType);
-    if (index != null) {
-      superResolutionType = SuperResolutionType.values.elementAtOrNull(index);
-    }
-    return superResolutionType ?? SuperResolutionType.disable;
-  }
-
-  static bool get preInitPlayer =>
-      _setting.get(SettingBoxKey.preInitPlayer, defaultValue: false);
-
-  static bool get searchSuggestion =>
-      _setting.get(SettingBoxKey.searchSuggestion, defaultValue: true);
-
-  static bool get showDecorate =>
-      _setting.get(SettingBoxKey.showDecorate, defaultValue: true);
-
-  static bool get showMedal =>
-      _setting.get(SettingBoxKey.showMedal, defaultValue: true);
-
-  static bool get enableLivePhoto =>
-      _setting.get(SettingBoxKey.enableLivePhoto, defaultValue: true);
-
-  static bool get showSeekPreview =>
-      _setting.get(SettingBoxKey.showSeekPreview, defaultValue: true);
-
-  static bool get showDmChart =>
-      _setting.get(SettingBoxKey.showDmChart, defaultValue: false);
-
-  static bool get enableCommAntifraud =>
-      _setting.get(SettingBoxKey.enableCommAntifraud, defaultValue: false);
-
-  static bool get biliSendCommAntifraud =>
-      Platform.isAndroid &&
-      _setting.get(SettingBoxKey.biliSendCommAntifraud, defaultValue: false);
-
-  static bool get enableCreateDynAntifraud =>
-      _setting.get(SettingBoxKey.enableCreateDynAntifraud, defaultValue: false);
-
   static bool get coinWithLike =>
       _setting.get(SettingBoxKey.coinWithLike, defaultValue: false);
-
-  static bool get isPureBlackTheme =>
-      _setting.get(SettingBoxKey.isPureBlackTheme, defaultValue: false);
-
-  static bool get antiGoodsDyn =>
-      _setting.get(SettingBoxKey.antiGoodsDyn, defaultValue: false);
-
-  static bool get antiGoodsReply =>
-      _setting.get(SettingBoxKey.antiGoodsReply, defaultValue: false);
-
-  static bool get expandDynLivePanel =>
-      _setting.get(SettingBoxKey.expandDynLivePanel, defaultValue: false);
 
   static bool get slideDismissReplyPage => _setting.get(
     SettingBoxKey.slideDismissReplyPage,
     defaultValue: Platform.isIOS,
   );
-
-  static bool get showFSActionItem =>
-      _setting.get(SettingBoxKey.showFSActionItem, defaultValue: true);
-
-  static bool get showDynActionBar =>
-      _setting.get(SettingBoxKey.showDynActionBar, defaultValue: true);
-
-  static bool get darkVideoPage =>
-      _setting.get(SettingBoxKey.darkVideoPage, defaultValue: false);
-
-  static bool get enableSlideVolumeBrightness => _setting.get(
-    SettingBoxKey.enableSlideVolumeBrightness,
-    defaultValue: true,
-  );
-
-  static bool get enableSlideFS =>
-      _setting.get(SettingBoxKey.enableSlideFS, defaultValue: true);
 
   static int get retryCount =>
       _setting.get(SettingBoxKey.retryCount, defaultValue: 2);
@@ -545,26 +329,8 @@ abstract final class Pref {
     defaultValue: LiveQuality.superHD.code,
   );
 
-  static bool get enableDragSubtitle =>
-      _setting.get(SettingBoxKey.enableDragSubtitle, defaultValue: false);
-
   static int get fastForBackwardDuration =>
       _setting.get(SettingBoxKey.fastForBackwardDuration, defaultValue: 10);
-
-  static bool get recordSearchHistory =>
-      _setting.get(SettingBoxKey.recordSearchHistory, defaultValue: true);
-
-  static String get webdavUri =>
-      _setting.get(SettingBoxKey.webdavUri, defaultValue: '');
-
-  static String get webdavUsername =>
-      _setting.get(SettingBoxKey.webdavUsername, defaultValue: '');
-
-  static String get webdavPassword =>
-      _setting.get(SettingBoxKey.webdavPassword, defaultValue: '');
-
-  static String get webdavDirectory =>
-      _setting.get(SettingBoxKey.webdavDirectory, defaultValue: '/');
 
   static bool get showPgcTimeline =>
       _setting.get(SettingBoxKey.showPgcTimeline, defaultValue: true);
@@ -588,71 +354,9 @@ abstract final class Pref {
   static bool get enableLog =>
       _setting.get(SettingBoxKey.enableLog, defaultValue: true);
 
-  static bool get disableAudioCDN =>
-      _setting.get(SettingBoxKey.disableAudioCDN, defaultValue: false);
-
-  static int get minDurationForRcmd =>
-      _setting.get(SettingBoxKey.minDurationForRcmd, defaultValue: 0);
-
-  static int get minPlayForRcmd =>
-      _setting.get(SettingBoxKey.minPlayForRcmd, defaultValue: 0);
-
-  static int get minLikeRatioForRecommend =>
-      _setting.get(SettingBoxKey.minLikeRatioForRecommend, defaultValue: 0);
-
-  static bool get exemptFilterForFollowed =>
-      _setting.get(SettingBoxKey.exemptFilterForFollowed, defaultValue: true);
-
-  static bool get applyFilterToRelatedVideos => _setting.get(
-    SettingBoxKey.applyFilterToRelatedVideos,
-    defaultValue: true,
-  );
-
-  static bool get enableBackgroundPlay =>
-      _setting.get(SettingBoxKey.enableBackgroundPlay, defaultValue: true);
-
-  static bool get autoExitFullscreen =>
-      _setting.get(SettingBoxKey.enableAutoExit, defaultValue: true);
-
-  static bool get autoPlayEnable =>
-      _setting.get(SettingBoxKey.autoPlayEnable, defaultValue: false);
-
-  static bool get pipNoDanmaku =>
-      _setting.get(SettingBoxKey.pipNoDanmaku, defaultValue: false);
-
-  static bool get enableVerticalExpand =>
-      _setting.get(SettingBoxKey.enableVerticalExpand, defaultValue: false);
-
-  static double get defaultTextScale =>
-      _setting.get(SettingBoxKey.defaultTextScale, defaultValue: 1.0);
-
-  static double get uiScale =>
-      _setting.get(SettingBoxKey.uiScale, defaultValue: 1.0);
-
   static bool get dynamicsWaterfallFlow => _setting.get(
     SettingBoxKey.dynamicsWaterfallFlow,
     defaultValue: horizontalScreen,
-  );
-
-  static bool get hideTopBar => _setting.get(
-    SettingBoxKey.hideTopBar,
-    defaultValue: PlatformUtils.isMobile,
-  );
-
-  static bool get hideBottomBar => _setting.get(
-    SettingBoxKey.hideBottomBar,
-    defaultValue: PlatformUtils.isMobile,
-  );
-
-  static BarHideType get barHideType =>
-      BarHideType.values[_setting.get(
-        SettingBoxKey.barHideType,
-        defaultValue: BarHideType.sync.index,
-      )];
-
-  static bool get dynamicsShowAllFollowedUp => _setting.get(
-    SettingBoxKey.dynamicsShowAllFollowedUp,
-    defaultValue: false,
   );
 
   static bool get enableShowDanmaku =>
@@ -664,9 +368,6 @@ abstract final class Pref {
   static bool get enableQuickFav =>
       _setting.get(SettingBoxKey.enableQuickFav, defaultValue: false);
 
-  static bool get p1080 =>
-      _setting.get(SettingBoxKey.p1080, defaultValue: true);
-
   static int get customColor =>
       _setting.get(SettingBoxKey.customColor, defaultValue: 0);
 
@@ -674,20 +375,8 @@ abstract final class Pref {
       !Platform.isIOS &&
       _setting.get(SettingBoxKey.dynamicColor, defaultValue: true);
 
-  static bool get autoClearCache =>
-      _setting.get(SettingBoxKey.autoClearCache, defaultValue: false);
-
-  static bool get enableSystemProxy =>
-      _setting.get(SettingBoxKey.enableSystemProxy, defaultValue: false);
-
   static bool get enableHttp2 =>
       _setting.get(SettingBoxKey.enableHttp2, defaultValue: false);
-
-  static ReplySortType get replySortType =>
-      ReplySortType.values[_setting.get(
-        SettingBoxKey.replySortType,
-        defaultValue: ReplySortType.hot.index,
-      )];
 
   static DynamicBadgeMode get dynamicBadgeMode =>
       DynamicBadgeMode.values[_setting.get(
@@ -701,20 +390,8 @@ abstract final class Pref {
         defaultValue: Transition.native.index,
       )];
 
-  static bool get enableQuickDouble =>
-      _setting.get(SettingBoxKey.enableQuickDouble, defaultValue: true);
-
-  static bool get fullScreenGestureReverse =>
-      _setting.get(SettingBoxKey.fullScreenGestureReverse, defaultValue: false);
-
-  static bool get autoPiP =>
-      _setting.get(SettingBoxKey.autoPiP, defaultValue: false);
-
   static bool get enableSponsorBlock =>
       _setting.get(SettingBoxKey.enableSponsorBlock, defaultValue: false);
-
-  static bool get enableHA =>
-      _setting.get(SettingBoxKey.enableHA, defaultValue: true);
 
   static Set<int> get danmakuBlockType => Set<int>.from(
     _setting.get(SettingBoxKey.danmakuBlockType, defaultValue: const <int>{}),
@@ -750,43 +427,19 @@ abstract final class Pref {
     defaultValue: PlatformUtils.isMobile ? 5 : 6,
   );
 
-  static bool get expandBuffer =>
-      _setting.get(SettingBoxKey.expandBuffer, defaultValue: false);
-
   static String get audioOutput => _setting.get(
     SettingBoxKey.audioOutput,
     defaultValue: AudioOutput.defaultValue,
   );
 
-  static bool get enableAi =>
-      _setting.get(SettingBoxKey.enableAi, defaultValue: false);
-
   static bool get enableOnlineTotal =>
       _setting.get(SettingBoxKey.enableOnlineTotal, defaultValue: false);
-
-  static bool get autoEnterFullScreen =>
-      _setting.get(SettingBoxKey.enableAutoEnter, defaultValue: false);
-
-  static bool get enableAutoLongPressSpeed =>
-      _setting.get(SettingBoxKey.enableAutoLongPressSpeed, defaultValue: false);
 
   static double get playSpeedDefault =>
       _video.get(VideoBoxKey.playSpeedDefault, defaultValue: 1.0);
 
   static double get longPressSpeedDefault =>
       _video.get(VideoBoxKey.longPressSpeedDefault, defaultValue: 3.0);
-
-  static bool get defaultShowComment =>
-      _setting.get(SettingBoxKey.defaultShowComment, defaultValue: false);
-
-  static bool get enableTrending =>
-      _setting.get(SettingBoxKey.enableHotKey, defaultValue: true);
-
-  static bool get enableSearchRcmd =>
-      _setting.get(SettingBoxKey.enableSearchRcmd, defaultValue: true);
-
-  static bool get enableSaveLastData =>
-      _setting.get(SettingBoxKey.enableSaveLastData, defaultValue: true);
 
   static PlayRepeat get playRepeat =>
       PlayRepeat.values[_video.get(
@@ -800,51 +453,12 @@ abstract final class Pref {
   static bool get continuePlayInBackground =>
       _setting.get(SettingBoxKey.continuePlayInBackground, defaultValue: false);
 
-  static bool get directExitOnBack =>
-      _setting.get(SettingBoxKey.directExitOnBack, defaultValue: false);
-
   static bool get historyPause =>
       _localCache.get(LocalCacheKey.historyPause, defaultValue: false);
 
   static int? get quickFavId => _setting.get(SettingBoxKey.quickFavId);
 
-  static bool get tempPlayerConf =>
-      _setting.get(SettingBoxKey.tempPlayerConf, defaultValue: false);
-
-  static bool get showFsScreenshotBtn =>
-      _setting.get(SettingBoxKey.showFsScreenshotBtn, defaultValue: true);
-
-  static bool get showFsLockBtn =>
-      _setting.get(SettingBoxKey.showFsLockBtn, defaultValue: true);
-
-  static bool get silentDownImg =>
-      _setting.get(SettingBoxKey.silentDownImg, defaultValue: false);
-
-  static String get buvid {
-    String? buvid = _localCache.get(LocalCacheKey.buvid);
-    if (buvid == null) {
-      buvid = LoginUtils.generateBuvid();
-      _localCache.put(LocalCacheKey.buvid, buvid);
-    }
-    return buvid;
-  }
-
-  static bool get showMemberShop =>
-      _setting.get(SettingBoxKey.showMemberShop, defaultValue: false);
-
-  static SuperChatType get superChatType =>
-      SuperChatType.values[_setting.get(
-        SettingBoxKey.superChatType,
-        defaultValue: SuperChatType.valid.index,
-      )];
-
-  static double get fullScreenSCWidth => _setting.get(
-    SettingBoxKey.fullScreenSCWidth,
-    defaultValue: kFullScreenSCWidth,
-  );
-
-  static bool get minimizeOnExit =>
-      _setting.get(SettingBoxKey.minimizeOnExit, defaultValue: true);
+  static final String buvid = LoginUtils.generateBuvid();
 
   static Size get windowSize {
     final List<double>? size = (_setting.get(SettingBoxKey.windowSize) as List?)
@@ -863,12 +477,6 @@ abstract final class Pref {
     defaultValue: PlatformUtils.isDesktop,
   );
 
-  static bool get pauseOnMinimize =>
-      _setting.get(SettingBoxKey.pauseOnMinimize, defaultValue: false);
-
-  static bool get showWindowTitleBar =>
-      _setting.get(SettingBoxKey.showWindowTitleBar, defaultValue: true);
-
   static double get desktopVolume =>
       _setting.get(SettingBoxKey.desktopVolume, defaultValue: 1.0);
 
@@ -882,15 +490,6 @@ abstract final class Pref {
 
   static bool get enablePlayAll =>
       _setting.get(SettingBoxKey.enablePlayAll, defaultValue: true);
-
-  static bool get enableTapDm =>
-      _setting.get(SettingBoxKey.enableTapDm, defaultValue: true);
-
-  static bool get showTrayIcon =>
-      _setting.get(SettingBoxKey.showTrayIcon, defaultValue: true);
-
-  static bool get setSystemBrightness =>
-      _setting.get(SettingBoxKey.setSystemBrightness, defaultValue: false);
 
   static String? get downloadPath => _setting.get(SettingBoxKey.downloadPath);
 
@@ -910,18 +509,9 @@ abstract final class Pref {
   static bool get enableImgMenu =>
       _setting.get(SettingBoxKey.enableImgMenu, defaultValue: false);
 
-  static bool get showDynDispute =>
-      _setting.get(SettingBoxKey.showDynDispute, defaultValue: false);
-
   static double get touchSlopH =>
       _setting.get(SettingBoxKey.touchSlopH, defaultValue: 24.0);
 
-  static bool get saveReply =>
-      _setting.get(SettingBoxKey.saveReply, defaultValue: true);
-
   static bool get floatingNavBar =>
       _setting.get(SettingBoxKey.floatingNavBar, defaultValue: false);
-
-  static bool get removeSafeArea =>
-      _setting.get(SettingBoxKey.removeSafeArea, defaultValue: false);
 }

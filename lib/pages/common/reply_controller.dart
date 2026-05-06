@@ -9,7 +9,6 @@ import 'package:PiliPlus/pages/common/common_list_controller.dart';
 import 'package:PiliPlus/pages/common/publish/publish_route.dart';
 import 'package:PiliPlus/pages/video/reply_new/view.dart';
 import 'package:PiliPlus/utils/reply_utils.dart';
-import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:fixnum/fixnum.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -18,8 +17,8 @@ import 'package:get/get.dart';
 abstract class ReplyController<R> extends CommonListController<R, ReplyInfo> {
   final RxInt count = (-1).obs;
 
-  late final Rx<ReplySortType> sortType;
-  late final Rx<Mode> mode;
+  late final Rx<ReplySortType> sortType = Rx(.hot);
+  Mode mode = Mode.MAIN_LIST_HOT;
 
   final savedReplies = <Object, List<RichTextItem>?>{};
 
@@ -31,22 +30,6 @@ abstract class ReplyController<R> extends CommonListController<R, ReplyInfo> {
 
   @override
   bool? get hasFooter => true;
-
-  // comment antifraud
-  late final _enableCommAntifraud = Pref.enableCommAntifraud;
-  late final _biliSendCommAntifraud = Pref.biliSendCommAntifraud;
-  bool get enableCommAntifraud =>
-      _enableCommAntifraud || _biliSendCommAntifraud;
-  dynamic get sourceId;
-
-  @override
-  void onInit() {
-    super.onInit();
-    final cacheSortType = Pref.replySortType;
-    sortType = cacheSortType.obs;
-    mode =
-        (cacheSortType == .time ? Mode.MAIN_LIST_TIME : Mode.MAIN_LIST_HOT).obs;
-  }
 
   @override
   void checkIsEnd(int length) {
@@ -89,15 +72,15 @@ abstract class ReplyController<R> extends CommonListController<R, ReplyInfo> {
   void queryBySort() {
     if (isLoading) return;
     switch (sortType.value) {
-      case ReplySortType.time:
-        sortType.value = ReplySortType.hot;
-        mode.value = Mode.MAIN_LIST_HOT;
+      case .time:
+        sortType.value = .hot;
+        mode = Mode.MAIN_LIST_HOT;
         break;
-      case ReplySortType.hot:
-        sortType.value = ReplySortType.time;
-        mode.value = Mode.MAIN_LIST_TIME;
+      case .hot:
+        sortType.value = .time;
+        mode = Mode.MAIN_LIST_TIME;
         break;
-      case ReplySortType.select:
+      case .select:
         return;
     }
     onReload();
@@ -193,9 +176,7 @@ abstract class ReplyController<R> extends CommonListController<R, ReplyInfo> {
               count.value += 1;
 
               // check reply
-              if (enableCommAntifraud) {
-                onCheckReply(replyInfo, isManual: false);
-              }
+              onCheckReply(replyInfo, isManual: false);
             }
           },
         );
@@ -216,8 +197,6 @@ abstract class ReplyController<R> extends CommonListController<R, ReplyInfo> {
   void onCheckReply(ReplyInfo replyInfo, {required bool isManual}) {
     ReplyUtils.onCheckReply(
       replyInfo: replyInfo,
-      biliSendCommAntifraud: _biliSendCommAntifraud,
-      sourceId: sourceId,
       isManual: isManual,
     );
   }

@@ -3,10 +3,11 @@ import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/colored_box_transition.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
+import 'package:PiliPlus/common/widgets/scaffold.dart';
 import 'package:PiliPlus/common/widgets/sliver/sliver_pinned_header.dart';
 import 'package:PiliPlus/common/widgets/view_safe_area.dart';
 import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
-    show ReplyInfo, Mode;
+    show ReplyInfo;
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/pages/common/slide/common_slide_page.dart';
 import 'package:PiliPlus/pages/video/reply/widgets/reply_item_grpc.dart';
@@ -65,8 +66,7 @@ class VideoReplyReplyPanel extends CommonSlidePage {
         'type': type,
         'enterUri': ?uri?.toString(), // save panel
       },
-      () => Scaffold(
-        resizeToAvoidBottomInset: false,
+      () => scaffold(
         appBar: AppBar(
           title: const Text('评论详情'),
           actions: [
@@ -272,7 +272,7 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
               ),
               label: Obx(
                 () => Text(
-                  _controller.mode.value == Mode.MAIN_LIST_HOT ? '按热度' : '按时间',
+                  _controller.sortType.value.text!,
                   style: TextStyle(
                     fontSize: 13,
                     color: theme.colorScheme.secondary,

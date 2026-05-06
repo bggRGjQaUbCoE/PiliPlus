@@ -1,19 +1,14 @@
-import 'dart:convert' show jsonEncode;
-import 'dart:io' show Platform;
-
 import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
     show ReplyInfo;
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/reply.dart';
 import 'package:PiliPlus/models/common/reply/reply_sort_type.dart';
-import 'package:PiliPlus/utils/accounts.dart';
-import 'package:PiliPlus/utils/accounts/account.dart';
+import 'package:PiliPlus/pages/webview/view.dart';
 import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:PiliPlus/utils/theme_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
-import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -21,8 +16,6 @@ import 'package:get/get.dart';
 abstract final class ReplyUtils {
   static void onCheckReply({
     required ReplyInfo replyInfo,
-    required bool biliSendCommAntifraud,
-    required sourceId,
     required bool isManual,
   }) {
     try {
@@ -41,8 +34,6 @@ abstract final class ReplyUtils {
         mid: replyInfo.mid.toInt(),
         //
         isManual: isManual,
-        biliSendCommAntifraud: biliSendCommAntifraud,
-        sourceId: sourceId,
       );
     } catch (e) {
       SmartDialog.showToast(e.toString());
@@ -61,40 +52,7 @@ abstract final class ReplyUtils {
     List? pictures,
     dynamic mid,
     bool isManual = false,
-    required bool biliSendCommAntifraud,
-    required sourceId,
   }) async {
-    // biliSendCommAntifraud
-    if (Platform.isAndroid && biliSendCommAntifraud) {
-      try {
-        final String cookieString = Accounts.main.cookieJar
-            .toJson()
-            .entries
-            .map((i) => '${i.key}=${i.value}')
-            .join(';');
-        Utils.channel.invokeMethod(
-          'biliSendCommAntifraud',
-          {
-            'action': 0,
-            'oid': oid,
-            'type': type,
-            'rpid': id,
-            'root': root,
-            'parent': parent,
-            'ctime': ctime,
-            'comment_text': message,
-            if (pictures?.isNotEmpty == true) 'pictures': jsonEncode(pictures),
-            'source_id': '$sourceId',
-            'uid': mid,
-            'cookies': [cookieString],
-          },
-        );
-      } catch (e) {
-        if (kDebugMode) debugPrint('biliSendCommAntifraud: $e');
-      }
-      return;
-    }
-
     // CommAntifraud
     if (!isManual) {
       await Future.delayed(const Duration(seconds: 8));
@@ -116,12 +74,8 @@ abstract final class ReplyUtils {
               if (uri != null) {
                 Utils.copyText(uri);
               }
-              Get.toNamed(
-                '/webview',
-                parameters: {
-                  'url':
-                      'https://www.bilibili.com/h5/comment/appeal?${ThemeUtils.themeUrl(theme.isDark)}',
-                },
+              WebViewPage.toWebView(
+                'https://www.bilibili.com/h5/comment/appeal?${ThemeUtils.themeUrl(theme.isDark)}',
               );
             },
             child: const Text('申诉'),

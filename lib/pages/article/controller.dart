@@ -33,9 +33,6 @@ class ArticleController extends CommonDynController {
 
   late final RxInt topIndex = 0.obs;
 
-  @override
-  dynamic get sourceId => commentType == 12 ? 'cv$commentId' : id;
-
   final RxBool isLoaded = false.obs;
   DynamicItemModel? opusData; // 标题信息从summary获取, 动态没有favorite
   ArticleViewData? articleData;
@@ -99,12 +96,10 @@ class ArticleController extends CommonDynController {
       opusData = response;
       commentType = response.basic!.commentType!;
       commentId = int.parse(response.basic!.commentIdStr!);
-      if (showDynActionBar) {
-        if (response.modules.moduleStat != null) {
-          stats.value = response.modules.moduleStat;
-        } else {
-          getArticleInfo();
-        }
+      if (response.modules.moduleStat != null) {
+        stats.value = response.modules.moduleStat;
+      } else {
+        getArticleInfo();
       }
       summary
         ..author ??= response.modules.moduleAuthor
@@ -125,9 +120,7 @@ class ArticleController extends CommonDynController {
         ..title ??= response.title
         ..cover ??= response.originImageUrls?.firstOrNull;
 
-      if (showDynActionBar) {
-        getArticleInfo();
-      }
+      getArticleInfo();
       return true;
     } else {
       loadingState.value = res as Error;

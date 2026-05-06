@@ -1,3 +1,4 @@
+import 'package:PiliPlus/common/widgets/scaffold.dart';
 import 'package:PiliPlus/pages/setting/models/privacy_settings.dart';
 import 'package:flutter/material.dart';
 
@@ -17,11 +18,10 @@ class _PrivacySettingState extends State<PrivacySetting> {
   Widget build(BuildContext context) {
     final showAppBar = widget.showAppBar;
     final padding = MediaQuery.viewPaddingOf(context);
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
+    return scaffold(
       appBar: showAppBar ? AppBar(title: const Text('隐私设置')) : null,
       body: ListView(
-        padding: EdgeInsets.only(
+        padding: .only(
           left: showAppBar ? padding.left : 0,
           right: showAppBar ? padding.right : 0,
           bottom: padding.bottom + 100,

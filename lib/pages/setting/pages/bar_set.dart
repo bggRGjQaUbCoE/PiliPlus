@@ -1,5 +1,6 @@
 import 'package:PiliPlus/common/widgets/pair.dart';
 import 'package:PiliPlus/common/widgets/reorder_mixin.dart';
+import 'package:PiliPlus/common/widgets/scaffold.dart';
 import 'package:PiliPlus/models/common/enum_with_label.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:flutter/material.dart';
@@ -60,8 +61,7 @@ class _BarSetPageState extends State<BarSetPage> with ReorderMixin {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
+    return scaffold(
       appBar: AppBar(
         title: Text('$title编辑'),
         actions: [
@@ -76,7 +76,7 @@ class _BarSetPageState extends State<BarSetPage> with ReorderMixin {
         footer: Padding(
           padding:
               MediaQuery.viewPaddingOf(context).copyWith(top: 0, left: 0) +
-              const EdgeInsets.only(right: 34, top: 10),
+              const .only(right: 34, top: 10),
           child: const Align(
             alignment: Alignment.centerRight,
             child: Text('*长按拖动排序'),

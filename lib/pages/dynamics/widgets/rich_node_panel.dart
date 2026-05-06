@@ -11,6 +11,7 @@ import 'package:PiliPlus/models/common/image_preview_type.dart'
 import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/models/dynamics/result.dart';
 import 'package:PiliPlus/pages/dynamics/widgets/vote.dart';
+import 'package:PiliPlus/utils/app_scheme.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
@@ -128,7 +129,8 @@ TextSpan? richNode(
                   style: style,
                   recognizer: hasLink
                       ? (NoDeadlineTapGestureRecognizer()
-                          ..onTap = () => PageUtils.handleWebview(i.jumpUrl!))
+                          ..onTap = () =>
+                              PiliScheme.routePushFromUrl(i.jumpUrl!))
                       : null,
                 ),
               );
@@ -193,12 +195,8 @@ TextSpan? richNode(
                   text: '${i.origText} ',
                   style: style,
                   recognizer: NoDeadlineTapGestureRecognizer()
-                    ..onTap = () => Get.toNamed(
-                      '/webview',
-                      parameters: {
-                        'url':
-                            'https://www.bilibili.com/h5/lottery/result?business_id=${item.idStr}',
-                      },
+                    ..onTap = () => PiliScheme.routePushFromUrl(
+                      'https://www.bilibili.com/h5/lottery/result?business_id=${item.idStr}',
                     ),
                 ),
               );
@@ -223,7 +221,8 @@ TextSpan? richNode(
                   recognizer: i.jumpUrl == null
                       ? null
                       : (NoDeadlineTapGestureRecognizer()
-                          ..onTap = () => PageUtils.handleWebview(i.jumpUrl!)),
+                          ..onTap = () =>
+                              PiliScheme.routePushFromUrl(i.jumpUrl!)),
                 ),
               );
             break;
@@ -347,7 +346,8 @@ TextSpan? richNode(
                   recognizer: i.jumpUrl == null
                       ? null
                       : (NoDeadlineTapGestureRecognizer()
-                          ..onTap = () => PageUtils.handleWebview(i.jumpUrl!)),
+                          ..onTap = () =>
+                              PiliScheme.routePushFromUrl(i.jumpUrl!)),
                 ),
               );
             break;
@@ -359,7 +359,8 @@ TextSpan? richNode(
                 recognizer: i.jumpUrl == null
                     ? null
                     : (NoDeadlineTapGestureRecognizer()
-                        ..onTap = () => PageUtils.handleWebview(i.jumpUrl!)),
+                        ..onTap = () =>
+                            PiliScheme.routePushFromUrl(i.jumpUrl!)),
               ),
             );
             break;

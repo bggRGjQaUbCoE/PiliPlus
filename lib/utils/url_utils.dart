@@ -1,6 +1,7 @@
 import 'package:PiliPlus/http/init.dart';
 import 'package:PiliPlus/http/search.dart';
 import 'package:PiliPlus/utils/accounts/account.dart';
+import 'package:PiliPlus/utils/app_scheme.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:dio/dio.dart';
@@ -60,7 +61,7 @@ abstract final class UrlUtils {
       }
     } else {
       if (redirectUrl.isNotEmpty) {
-        PageUtils.handleWebview(redirectUrl);
+        PiliScheme.routePushFromUrl(redirectUrl);
       } else {
         SmartDialog.showToast('matchUrlPush: $pathSegment');
       }

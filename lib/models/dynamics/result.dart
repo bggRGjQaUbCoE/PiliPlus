@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:PiliPlus/common/widgets/pendant_avatar.dart';
 import 'package:PiliPlus/models/common/dynamic/dynamics_type.dart';
 import 'package:PiliPlus/models/dynamics/article_content_model.dart';
 import 'package:PiliPlus/models/model_avatar.dart';
@@ -44,8 +43,6 @@ class DynamicsDataModel {
   );
   static bool enableFilter = banWordForDyn.pattern.isNotEmpty;
 
-  static bool antiGoodsDyn = Pref.antiGoodsDyn;
-
   DynamicsDataModel.fromJson(
     Map<String, dynamic> json, {
     DynamicsTabType type = DynamicsTabType.all,
@@ -60,11 +57,10 @@ class DynamicsDataModel {
           type != DynamicsTabType.up && tempBannedList?.isNotEmpty == true;
       for (final e in list) {
         DynamicItemModel item = DynamicItemModel.fromJson(e);
-        if (antiGoodsDyn &&
-            (item.orig?.modules.moduleDynamic?.additional?.type ==
-                    'ADDITIONAL_TYPE_GOODS' ||
-                item.modules.moduleDynamic?.additional?.type ==
-                    'ADDITIONAL_TYPE_GOODS')) {
+        if ((item.orig?.modules.moduleDynamic?.additional?.type ==
+                'ADDITIONAL_TYPE_GOODS' ||
+            item.modules.moduleDynamic?.additional?.type ==
+                'ADDITIONAL_TYPE_GOODS')) {
           continue;
         }
         if (enableFilter) {
@@ -163,7 +159,6 @@ class ItemModulesModel {
   ModuleDynamicModel? moduleDynamic;
   // ModuleInterModel? moduleInter;
   ModuleInteraction? moduleInteraction;
-  ModuleDispute? moduleDispute;
 
   // 专栏
   ModuleTop? moduleTop;
@@ -172,9 +167,6 @@ class ItemModulesModel {
   List<ArticleContentModel>? moduleContent;
   ModuleBlocked? moduleBlocked;
   ModuleFold? moduleFold;
-
-  static bool showDynDispute = Pref.showDynDispute;
-  static bool showDynInteraction = Pref.showDynInteraction;
 
   ItemModulesModel.fromJson(Map<String, dynamic> json) {
     moduleAuthor = json['module_author'] != null
@@ -192,16 +184,9 @@ class ItemModulesModel {
     moduleFold = json['module_fold'] != null
         ? ModuleFold.fromJson(json['module_fold'])
         : null;
-    if (showDynInteraction) {
-      moduleInteraction = json['module_interaction'] != null
-          ? ModuleInteraction.fromJson(json['module_interaction'])
-          : null;
-    }
-    if (showDynDispute) {
-      moduleDispute = json['module_dispute'] != null
-          ? ModuleDispute.fromJson(json['module_dispute'])
-          : null;
-    }
+    moduleInteraction = json['module_interaction'] != null
+        ? ModuleInteraction.fromJson(json['module_interaction'])
+        : null;
   }
 
   ItemModulesModel.fromOpusJson(List json) {
@@ -249,18 +234,6 @@ class ItemModulesModel {
           break;
       }
     }
-  }
-}
-
-class ModuleDispute {
-  String? title;
-  String? desc;
-  String? jumpUrl;
-
-  ModuleDispute.fromJson(Map<String, dynamic> json) {
-    title = json['title'];
-    desc = json['desc'];
-    jumpUrl = json['jump_url'];
   }
 }
 
@@ -424,13 +397,9 @@ class ModuleAuthorModel extends Avatar {
     pubTime = json['pub_time'];
     pubTs = json['pub_ts'] == 0 ? null : safeToInt(json['pub_ts']);
     type = json['type'];
-    if (PendantAvatar.showDecorate) {
-      decorate = json['decorate'] == null
-          ? null
-          : Decorate.fromJson(json['decorate']);
-    } else {
-      pendant = null;
-    }
+    decorate = json['decorate'] == null
+        ? null
+        : Decorate.fromJson(json['decorate']);
     isTop = json['is_top'];
     badgeText = nonNullOrEmptyString(json['icon_badge']?['text']);
   }

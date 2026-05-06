@@ -100,7 +100,7 @@ class _RepostPanelState extends CommonRichTextPubPageState<RepostPanel> {
         if (_isMax) ...[
           Expanded(
             child: ListView(
-              padding: EdgeInsets.zero,
+              padding: .zero,
               controller: scrollController,
               physics: const ClampingScrollPhysics(),
               children: _buildEditPanel(theme),

@@ -164,7 +164,7 @@ class _NoteListPageState extends State<NoteListPage>
                 }
                 Scaffold.of(context).showBottomSheet(
                   constraints: const BoxConstraints(),
-                  (context) => WebviewPage(
+                  (context) => WebViewPage(
                     oid: widget.oid,
                     title: widget.title,
                     url:

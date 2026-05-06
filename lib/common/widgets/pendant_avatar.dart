@@ -6,7 +6,6 @@ import 'package:PiliPlus/models/common/avatar_badge_type.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
-import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:flutter/material.dart';
 
 class PendantAvatar extends StatelessWidget {
@@ -35,8 +34,6 @@ class PendantAvatar extends StatelessWidget {
            ? .institution
            : .none;
 
-  static bool showDecorate = Pref.showDecorate;
-
   final BadgeType badgeType;
   final String? url;
   final double preferredSize;
@@ -51,7 +48,7 @@ class PendantAvatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final showPendant = showDecorate && pendantImage?.isNotEmpty == true;
+    final showPendant = pendantImage?.isNotEmpty == true;
     final size = showPendant ? preferredSize - pendentOffset : preferredSize;
     Widget? pendant;
     if (showPendant) {

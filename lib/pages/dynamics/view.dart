@@ -3,12 +3,10 @@ import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/dynamic/dynamics_type.dart';
 import 'package:PiliPlus/models/common/dynamic/up_panel_position.dart';
 import 'package:PiliPlus/models/dynamics/up.dart';
-import 'package:PiliPlus/pages/common/common_page.dart';
 import 'package:PiliPlus/pages/dynamics/controller.dart';
 import 'package:PiliPlus/pages/dynamics/widgets/up_panel.dart';
 import 'package:PiliPlus/pages/dynamics_create/view.dart';
 import 'package:PiliPlus/pages/dynamics_tab/view.dart';
-import 'package:PiliPlus/pages/main/controller.dart';
 import 'package:PiliPlus/utils/extension/get_ext.dart';
 import 'package:flutter/material.dart' hide DraggableScrollableSheet;
 import 'package:get/get.dart';
@@ -20,11 +18,10 @@ class DynamicsPage extends StatefulWidget {
   State<DynamicsPage> createState() => _DynamicsPageState();
 }
 
-class _DynamicsPageState extends CommonPageState<DynamicsPage>
+class _DynamicsPageState extends State<DynamicsPage>
     with AutomaticKeepAliveClientMixin {
   final _dynamicsController = Get.putOrFind(DynamicsController.new);
   UpPanelPosition get upPanelPosition => _dynamicsController.upPanelPosition;
-  late final MainController _mainController = Get.find<MainController>();
 
   @override
   bool get wantKeepAlive => true;
@@ -52,8 +49,7 @@ class _DynamicsPageState extends CommonPageState<DynamicsPage>
     ),
   );
 
-  Widget upPanelPart(ThemeData theme) {
-    final isTop = upPanelPosition == .top;
+  Widget upPanelPart(ThemeData theme, {bool isTop = false}) {
     final needBg = upPanelPosition.index > 2;
     return Material(
       type: needBg ? .canvas : .transparency,
@@ -92,33 +88,10 @@ class _DynamicsPageState extends CommonPageState<DynamicsPage>
     };
   }
 
-  bool get checkPage =>
-      _mainController.navigationBars[0] != .dynamics &&
-      _mainController.selectedIndex.value == 0;
-
-  @override
-  bool onNotificationType1(UserScrollNotification notification) {
-    if (checkPage) {
-      return false;
-    }
-    return super.onNotificationType1(notification);
-  }
-
-  @override
-  bool onNotificationType2(ScrollNotification notification) {
-    if (checkPage) {
-      return false;
-    }
-    return super.onNotificationType2(notification);
-  }
-
   @override
   Widget build(BuildContext context) {
     super.build(context);
     final theme = Theme.of(context);
-
-    Widget? drawer;
-    Widget? endDrawer;
 
     Widget? leading;
     List<Widget>? actions;
@@ -134,7 +107,7 @@ class _DynamicsPageState extends CommonPageState<DynamicsPage>
       case UpPanelPosition.top:
         child = Column(
           children: [
-            upPanelPart(theme),
+            upPanelPart(theme, isTop: true),
             Expanded(child: child),
           ],
         );
@@ -155,52 +128,44 @@ class _DynamicsPageState extends CommonPageState<DynamicsPage>
           ],
         );
         actions = [_createDynamicBtn(theme)];
-      case UpPanelPosition.leftDrawer:
-        drawer = upPanelPart(theme);
-        actions = [_createDynamicBtn(theme)];
-      case UpPanelPosition.rightDrawer:
-        endDrawer = upPanelPart(theme);
-        leading = _createDynamicBtn(theme, isRight: false);
     }
 
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
-      backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        primary: false,
-        leading: leading,
-        leadingWidth: 50,
-        toolbarHeight: 50,
-        backgroundColor: Colors.transparent,
-        title: SizedBox(
-          height: 50,
-          child: TabBar(
-            dividerHeight: 0,
-            isScrollable: true,
-            tabAlignment: .center,
-            dividerColor: Colors.transparent,
-            labelColor: theme.colorScheme.primary,
-            indicatorColor: theme.colorScheme.primary,
-            controller: _dynamicsController.tabController,
-            unselectedLabelColor: theme.colorScheme.onSurface,
-            labelStyle:
-                TabBarTheme.of(context).labelStyle?.copyWith(fontSize: 13) ??
-                const TextStyle(fontSize: 13),
-            tabs: DynamicsTabType.values
-                .map((e) => Tab(text: e.label))
-                .toList(),
-            onTap: (index) {
-              if (!_dynamicsController.tabController.indexIsChanging) {
-                _dynamicsController.animateToTop();
-              }
-            },
+    return Column(
+      children: [
+        AppBar(
+          primary: false,
+          leading: leading,
+          leadingWidth: 50,
+          toolbarHeight: 50,
+          backgroundColor: Colors.transparent,
+          title: SizedBox(
+            height: 50,
+            child: TabBar(
+              dividerHeight: 0,
+              isScrollable: true,
+              tabAlignment: .center,
+              dividerColor: Colors.transparent,
+              labelColor: theme.colorScheme.primary,
+              indicatorColor: theme.colorScheme.primary,
+              controller: _dynamicsController.tabController,
+              unselectedLabelColor: theme.colorScheme.onSurface,
+              labelStyle:
+                  TabBarTheme.of(context).labelStyle?.copyWith(fontSize: 13) ??
+                  const TextStyle(fontSize: 13),
+              tabs: DynamicsTabType.values
+                  .map((e) => Tab(text: e.label))
+                  .toList(),
+              onTap: (index) {
+                if (!_dynamicsController.tabController.indexIsChanging) {
+                  _dynamicsController.animateToTop();
+                }
+              },
+            ),
           ),
+          actions: actions,
         ),
-        actions: actions,
-      ),
-      drawer: drawer,
-      endDrawer: endDrawer,
-      body: onBuild(child),
+        Expanded(child: child),
+      ],
     );
   }
 }

@@ -1,11 +1,11 @@
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
+import 'package:PiliPlus/common/widgets/scaffold.dart';
 import 'package:PiliPlus/common/widgets/view_sliver_safe_area.dart';
 import 'package:PiliPlus/pages/search/controller.dart' show DebounceStreamState;
 import 'package:PiliPlus/pages/setting/models/extra_settings.dart';
 import 'package:PiliPlus/pages/setting/models/model.dart';
 import 'package:PiliPlus/pages/setting/models/play_settings.dart';
 import 'package:PiliPlus/pages/setting/models/privacy_settings.dart';
-import 'package:PiliPlus/pages/setting/models/recommend_settings.dart';
 import 'package:PiliPlus/pages/setting/models/style_settings.dart';
 import 'package:PiliPlus/pages/setting/models/video_settings.dart';
 import 'package:PiliPlus/utils/grid.dart';
@@ -29,7 +29,6 @@ class _SettingsSearchPageState
   late final _settings = [
     ...extraSettings,
     ...privacySettings,
-    ...recommendSettings,
     ...videoSettings,
     ...playSettings,
     ...styleSettings,
@@ -59,7 +58,7 @@ class _SettingsSearchPageState
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return scaffold(
       appBar: AppBar(
         actions: [
           IconButton(

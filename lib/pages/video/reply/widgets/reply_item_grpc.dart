@@ -33,11 +33,8 @@ import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:PiliPlus/utils/extension/context_ext.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
-import 'package:PiliPlus/utils/global_data.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
-import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
-import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/url_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -46,7 +43,6 @@ import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
-import 'package:protobuf/protobuf.dart';
 
 class ReplyItemGrpc extends StatelessWidget {
   const ReplyItemGrpc({
@@ -188,8 +184,7 @@ class ReplyItemGrpc extends StatelessWidget {
                           isStack: false,
                           fontSize: 9,
                         )
-                      else if (GlobalData().showMedal &&
-                          member.hasFansMedalLevel())
+                      else if (member.hasFansMedalLevel())
                         MedalWidget(
                           medalName: member.fansMedalName,
                           level: member.fansMedalLevel.toInt(),
@@ -240,47 +235,45 @@ class ReplyItemGrpc extends StatelessWidget {
         ),
       ),
     );
-    if (PendantAvatar.showDecorate) {
-      final garb = replyItem.memberV2.garb;
-      if (garb.hasCardImage()) {
-        const double height = 38.0;
-        return Stack(
-          clipBehavior: .none,
-          children: [
+    final garb = replyItem.memberV2.garb;
+    if (garb.hasCardImage()) {
+      const double height = 38.0;
+      return Stack(
+        clipBehavior: .none,
+        children: [
+          Positioned(
+            top: 0,
+            right: 0,
+            height: height,
+            child: CachedNetworkImage(
+              height: height,
+              memCacheHeight: height.cacheSize(context),
+              imageUrl: ImageUtils.safeThumbnailUrl(garb.cardImage),
+              placeholder: (_, _) => const SizedBox.shrink(),
+            ),
+          ),
+          if (garb.hasCardNumber())
             Positioned(
               top: 0,
               right: 0,
               height: height,
-              child: CachedNetworkImage(
-                height: height,
-                memCacheHeight: height.cacheSize(context),
-                imageUrl: ImageUtils.safeThumbnailUrl(garb.cardImage),
-                placeholder: (_, _) => const SizedBox.shrink(),
-              ),
-            ),
-            if (garb.hasCardNumber())
-              Positioned(
-                top: 0,
-                right: 0,
-                height: height,
-                child: Center(
-                  child: Text(
-                    '${garb.fanNumPrefix}\n${garb.cardNumber}',
-                    style: TextStyle(
-                      fontSize: 8,
-                      fontFamily: Assets.digitalNum,
-                      color: ColourUtils.parseColor(garb.cardFanColor),
-                    ),
+              child: Center(
+                child: Text(
+                  '${garb.fanNumPrefix}\n${garb.cardNumber}',
+                  style: TextStyle(
+                    fontSize: 8,
+                    fontFamily: Assets.digitalNum,
+                    color: ColourUtils.parseColor(garb.cardFanColor),
                   ),
                 ),
               ),
-            Padding(
-              padding: const .only(right: 80),
-              child: header,
             ),
-          ],
-        );
-      }
+          Padding(
+            padding: const .only(right: 80),
+            child: header,
+          ),
+        ],
+      );
     }
     return header;
   }
@@ -669,7 +662,7 @@ class ReplyItemGrpc extends StatelessWidget {
                     );
                     return;
                   }
-                  PageUtils.handleWebview(matchStr);
+                  PiliScheme.routePushFromUrl(matchStr);
                 }
               } else {
                 if (url.extra.isWordSearch) {
@@ -678,7 +671,7 @@ class ReplyItemGrpc extends StatelessWidget {
                     parameters: {'keyword': url.title},
                   );
                 } else {
-                  PageUtils.handleWebview(matchStr);
+                  PiliScheme.routePushFromUrl(matchStr);
                 }
               }
             },
@@ -800,7 +793,7 @@ class ReplyItemGrpc extends StatelessWidget {
                 text: matchStr,
                 style: TextStyle(color: theme.colorScheme.primary),
                 recognizer: NoDeadlineTapGestureRecognizer()
-                  ..onTap = () => PageUtils.handleWebview(matchStr),
+                  ..onTap = () => PiliScheme.routePushFromUrl(matchStr),
               ),
             );
           } else {
@@ -895,55 +888,6 @@ class ReplyItemGrpc extends StatelessWidget {
               ),
             ),
           ),
-          if (kDebugMode && GStorage.reply != null) ...[
-            ListTile(
-              onTap: () {
-                Get.back();
-                GStorage.reply!.put(
-                  item.id.toString(),
-                  (item.deepCopy()
-                        ..unknownFields.clear()
-                        ..replies.clear()
-                        ..clearTrackInfo())
-                      .writeToBuffer(),
-                );
-              },
-              title: Text(
-                'save to local',
-                style: style.copyWith(color: theme.colorScheme.primary),
-              ),
-            ),
-            ListTile(
-              onTap: () {
-                Get.back();
-                onDelete();
-                GStorage.reply!.delete(item.id.toString());
-              },
-              title: Text(
-                'remove from local',
-                style: style.copyWith(color: theme.colorScheme.primary),
-              ),
-            ),
-            ListTile(
-              onTap: () {
-                Get.back();
-                final oid = item.oid.toInt();
-                final data =
-                    (item.deepCopy()
-                          ..unknownFields.clear()
-                          ..replies.clear()
-                          ..clearTrackInfo())
-                        .writeToBuffer();
-                GStorage.reply!.putAll({
-                  for (var i = oid; i < oid + 1000; i++) i.toString(): data,
-                });
-              },
-              title: Text(
-                'save to local (x1000)',
-                style: style.copyWith(color: theme.colorScheme.primary),
-              ),
-            ),
-          ],
           if (ownerMid == upMid || ownerMid == item.member.mid)
             ListTile(
               onTap: () async {

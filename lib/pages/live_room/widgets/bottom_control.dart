@@ -103,12 +103,10 @@ class _BottomControlState extends State<BottomControl> with HeaderMixin {
                 onTap: () {
                   final newVal = !enableShowLiveDanmaku;
                   plPlayerController.enableShowDanmaku.value = newVal;
-                  if (!plPlayerController.tempPlayerConf) {
-                    GStorage.setting.put(
-                      SettingBoxKey.enableShowLiveDanmaku,
-                      newVal,
-                    );
-                  }
+                  GStorage.setting.put(
+                    SettingBoxKey.enableShowLiveDanmaku,
+                    newVal,
+                  );
                 },
               );
             },

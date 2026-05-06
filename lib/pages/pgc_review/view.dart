@@ -2,6 +2,7 @@ import 'package:PiliPlus/models/common/pgc_review_type.dart';
 import 'package:PiliPlus/pages/pgc_review/child/controller.dart';
 import 'package:PiliPlus/pages/pgc_review/child/view.dart';
 import 'package:PiliPlus/pages/pgc_review/post/view.dart';
+import 'package:PiliPlus/pages/webview/view.dart';
 import 'package:PiliPlus/utils/extension/scroll_controller_ext.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:flutter/material.dart';
@@ -148,15 +149,10 @@ class _PgcReviewPageState extends State<PgcReviewPage>
                         '写长评',
                         style: TextStyle(fontSize: 14),
                       ),
-                      onTap: () => Get
-                        ..back()
-                        ..toNamed(
-                          '/webview',
-                          parameters: {
-                            'url':
-                                'https://member.bilibili.com/article-text/mobile?theme=${theme.isDark ? 1 : 0}&media_id=${widget.mediaId}',
-                          },
-                        ),
+                      onTap: () => WebViewPage.toWebView(
+                        'https://member.bilibili.com/article-text/mobile?theme=${theme.isDark ? 1 : 0}&media_id=${widget.mediaId}',
+                        getBack: true,
+                      ),
                     ),
                   ],
                 ),

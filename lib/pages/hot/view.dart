@@ -2,15 +2,12 @@ import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/video_card/video_card_h.dart';
-import 'package:PiliPlus/common/widgets/view_safe_area.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/home_tab_type.dart';
 import 'package:PiliPlus/models/model_hot_video_item.dart';
 import 'package:PiliPlus/pages/home/controller.dart';
 import 'package:PiliPlus/pages/hot/controller.dart';
-import 'package:PiliPlus/pages/rank/view.dart';
 import 'package:PiliPlus/utils/grid.dart';
-import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -64,53 +61,37 @@ class _HotPageState extends State<HotPage>
         physics: const AlwaysScrollableScrollPhysics(),
         controller: controller.scrollController,
         slivers: [
-          if (Pref.showHotRcmd)
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const .only(left: 12, top: 12, right: 12),
-                child: Row(
-                  mainAxisAlignment: .spaceEvenly,
-                  children: [
-                    _buildEntranceItem(
-                      iconUrl:
-                          'https://i0.hdslb.com/bfs/archive/a3f11218aaf4521b4967db2ae164ecd3052586b9.png',
-                      title: '排行榜',
-                      onTap: () {
-                        try {
-                          final homeController = Get.find<HomeController>();
-                          final index = homeController.tabs.indexOf(
-                            HomeTabType.rank,
-                          );
-                          if (index != -1) {
-                            homeController.tabController.animateTo(index);
-                          } else {
-                            Get.to(
-                              Scaffold(
-                                resizeToAvoidBottomInset: false,
-                                appBar: AppBar(title: const Text('排行榜')),
-                                body: const ViewSafeArea(child: RankPage()),
-                              ),
-                            );
-                          }
-                        } catch (_) {}
-                      },
-                    ),
-                    _buildEntranceItem(
-                      iconUrl:
-                          'https://i0.hdslb.com/bfs/archive/552ebe8c4794aeef30ebd1568b59ad35f15e21ad.png',
-                      title: '每周必看',
-                      onTap: () => Get.toNamed('/popularSeries'),
-                    ),
-                    _buildEntranceItem(
-                      iconUrl:
-                          'https://i0.hdslb.com/bfs/archive/3693ec9335b78ca57353ac0734f36a46f3d179a9.png',
-                      title: '入站必刷',
-                      onTap: () => Get.toNamed('/popularPrecious'),
-                    ),
-                  ],
-                ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const .only(left: 12, top: 12, right: 12),
+              child: Row(
+                mainAxisAlignment: .spaceEvenly,
+                children: [
+                  _buildEntranceItem(
+                    iconUrl:
+                        'https://i0.hdslb.com/bfs/archive/a3f11218aaf4521b4967db2ae164ecd3052586b9.png',
+                    title: '排行榜',
+                    onTap: () =>
+                        Get.find<HomeController>().tabController.animateTo(
+                          HomeTabType.rank.index,
+                        ),
+                  ),
+                  _buildEntranceItem(
+                    iconUrl:
+                        'https://i0.hdslb.com/bfs/archive/552ebe8c4794aeef30ebd1568b59ad35f15e21ad.png',
+                    title: '每周必看',
+                    onTap: () => Get.toNamed('/popularSeries'),
+                  ),
+                  _buildEntranceItem(
+                    iconUrl:
+                        'https://i0.hdslb.com/bfs/archive/3693ec9335b78ca57353ac0734f36a46f3d179a9.png',
+                    title: '入站必刷',
+                    onTap: () => Get.toNamed('/popularPrecious'),
+                  ),
+                ],
               ),
             ),
+          ),
           SliverPadding(
             padding: const EdgeInsets.only(top: 7, bottom: 100),
             sliver: Obx(

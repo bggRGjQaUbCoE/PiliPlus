@@ -4,11 +4,13 @@ import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/keep_alive_wrapper.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
+import 'package:PiliPlus/common/widgets/scaffold.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/models_new/upower_rank/rank_info.dart';
 import 'package:PiliPlus/pages/member_upower_rank/controller.dart';
+import 'package:PiliPlus/pages/webview/view.dart';
 import 'package:PiliPlus/utils/extension/widget_ext.dart';
 import 'package:flutter/material.dart' hide ListTile;
 import 'package:get/get.dart';
@@ -86,18 +88,13 @@ class _UpowerRankPageState extends State<UpowerRankPage>
       ),
     );
     if (widget.privilegeType == null) {
-      return Scaffold(
-        resizeToAvoidBottomInset: false,
+      return scaffold(
         appBar: AppBar(
           title: Text('$_name的充电排行榜${_count == null ? '' : '($_count)'}'),
           actions: [
             TextButton(
-              onPressed: () => Get.toNamed(
-                '/webview',
-                parameters: {
-                  'url':
-                      'https://member.bilibili.com/mall/upower-pay?mid=$_upMid&oid=$_upMid',
-                },
+              onPressed: () => WebViewPage.toWebView(
+                'https://member.bilibili.com/mall/upower-pay?mid=$_upMid&oid=$_upMid',
               ),
               style: TextButton.styleFrom(visualDensity: VisualDensity.compact),
               child: const Text('充电'),

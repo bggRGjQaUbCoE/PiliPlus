@@ -1,8 +1,8 @@
 import 'dart:math';
 
 import 'package:PiliPlus/common/widgets/flutter/list_tile.dart';
+import 'package:PiliPlus/common/widgets/scaffold.dart';
 import 'package:PiliPlus/common/widgets/view_safe_area.dart';
-import 'package:PiliPlus/pages/setting/widgets/switch_item.dart';
 import 'package:PiliPlus/utils/extension/context_ext.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
@@ -24,7 +24,6 @@ class _PlaySpeedPageState extends State<PlaySpeedPage> {
   late double playSpeedDefault = Pref.playSpeedDefault;
   late double longPressSpeedDefault = Pref.longPressSpeedDefault;
   late List<double> speedList = Pref.speedList;
-  late bool enableAutoLongPressSpeed = Pref.enableAutoLongPressSpeed;
   List<({int id, String title, Icon icon})> sheetMenu = [
     (
       id: 1,
@@ -130,9 +129,6 @@ class _PlaySpeedPageState extends State<PlaySpeedPage> {
             const SizedBox(height: 10),
             ...sheetMenu.map(
               (item) => ListTile(
-                enabled: enableAutoLongPressSpeed && item.id == 2
-                    ? false
-                    : true,
                 onTap: () {
                   Get.back();
                   menuAction(index, item.id);
@@ -183,8 +179,7 @@ class _PlaySpeedPageState extends State<PlaySpeedPage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
+    return scaffold(
       appBar: AppBar(
         title: const Text('倍速设置'),
         actions: [
@@ -201,6 +196,7 @@ class _PlaySpeedPageState extends State<PlaySpeedPage> {
       ),
       body: ViewSafeArea(
         child: ListView(
+          padding: .zero,
           children: [
             Padding(
               padding: const EdgeInsets.only(
@@ -218,19 +214,10 @@ class _PlaySpeedPageState extends State<PlaySpeedPage> {
               title: const Text('默认倍速'),
               subtitle: Text(playSpeedDefault.toString()),
             ),
-            SetSwitchItem(
-              title: '动态长按倍速',
-              subtitle: '根据默认倍速长按时自动双倍',
-              setKey: SettingBoxKey.enableAutoLongPressSpeed,
-              defaultVal: enableAutoLongPressSpeed,
-              onChanged: (val) =>
-                  setState(() => enableAutoLongPressSpeed = val),
+            ListTile(
+              title: const Text('默认长按倍速'),
+              subtitle: Text(longPressSpeedDefault.toString()),
             ),
-            if (!enableAutoLongPressSpeed)
-              ListTile(
-                title: const Text('默认长按倍速'),
-                subtitle: Text(longPressSpeedDefault.toString()),
-              ),
             Padding(
               padding: const EdgeInsets.only(
                 left: 14,

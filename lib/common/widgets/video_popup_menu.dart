@@ -7,10 +7,7 @@ import 'package:PiliPlus/models/model_video.dart';
 import 'package:PiliPlus/models_new/space/space_archive/item.dart';
 import 'package:PiliPlus/pages/mine/controller.dart';
 import 'package:PiliPlus/pages/search/widgets/search_text.dart';
-import 'package:PiliPlus/pages/video/ai_conclusion/view.dart';
-import 'package:PiliPlus/pages/video/introduction/ugc/controller.dart';
 import 'package:PiliPlus/utils/accounts.dart';
-import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -61,34 +58,6 @@ class VideoPopupMenu extends StatelessWidget {
                     const Icon(MdiIcons.clockTimeEightOutline, size: 16),
                     () => UserHttp.toViewLater(bvid: videoItem.bvid),
                   ),
-                  if (videoItem.cid != null && Pref.enableAi)
-                    _VideoCustomAction(
-                      'AI总结',
-                      const Icon(CustomIcons.ai_circle, size: 16),
-                      () async {
-                        final res = await UgcIntroController.getAiConclusion(
-                          videoItem.bvid!,
-                          videoItem.cid!,
-                          videoItem.owner.mid,
-                        );
-                        if (res != null && context.mounted) {
-                          showDialog(
-                            context: context,
-                            builder: (context) => Dialog(
-                              child: Padding(
-                                padding: const .symmetric(vertical: 14),
-                                child: AiConclusionPanel.buildContent(
-                                  context,
-                                  Theme.of(context),
-                                  res,
-                                  tap: false,
-                                ),
-                              ),
-                            ),
-                          );
-                        }
-                      },
-                    ),
                 ],
                 if (videoItem is! SpaceArchiveItem) ...[
                   _VideoCustomAction(

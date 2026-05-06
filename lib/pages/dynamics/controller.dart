@@ -1,15 +1,12 @@
 import 'dart:async';
 
 import 'package:PiliPlus/http/dynamics.dart';
-import 'package:PiliPlus/http/follow.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/dynamic/dynamics_type.dart';
 import 'package:PiliPlus/models/dynamics/up.dart';
-import 'package:PiliPlus/models_new/follow/data.dart';
 import 'package:PiliPlus/pages/common/common_controller.dart';
 import 'package:PiliPlus/pages/dynamics_tab/controller.dart';
 import 'package:PiliPlus/services/account_service.dart';
-import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/extension/scroll_controller_ext.dart';
 import 'package:PiliPlus/utils/extension/string_ext.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
@@ -29,11 +26,8 @@ class DynamicsController extends GetxController
 
   final Rx<LoadingState<FollowUpModel>> upState =
       LoadingState<FollowUpModel>.loading().obs;
-  late int _upPage = 1;
   late bool _upEnd = false;
-  Set<UpItem>? _cacheUpList;
-  late final _showAllUp = Pref.dynamicsShowAllFollowedUp;
-  late bool showLiveUp = Pref.expandDynLivePanel;
+  late bool showLiveUp = false;
 
   final upPanelPosition = Pref.upPanelPosition;
 
@@ -56,17 +50,12 @@ class DynamicsController extends GetxController
     tabController = TabController(
       length: DynamicsTabType.values.length,
       vsync: this,
-      initialIndex: Pref.defaultDynamicTypeIndex,
     );
     queryFollowUp();
   }
 
   void onLoadMoreUp() {
-    if (_showAllUp) {
-      queryAllUp();
-    } else {
-      queryUpList();
-    }
+    queryUpList();
   }
 
   Future<void> queryUpList() async {
@@ -92,33 +81,6 @@ class DynamicsController extends GetxController
     isQuerying = false;
   }
 
-  Future<void> queryAllUp() async {
-    if (isQuerying || _upEnd) return;
-    isQuerying = true;
-
-    final res = await FollowHttp.followings(
-      vmid: Accounts.main.mid,
-      pn: _upPage,
-      orderType: 'attention',
-      ps: 50,
-    );
-
-    if (res case Success(:final response)) {
-      _upPage++;
-      final list = response.list;
-      if (list.isEmpty) {
-        _upEnd = true;
-      }
-      upState
-        ..value.data.upList.addAll(
-          list..removeWhere((e) => _cacheUpList?.contains(e) == true),
-        )
-        ..refresh();
-    }
-
-    isQuerying = false;
-  }
-
   late bool isQuerying = false;
   Future<void> queryFollowUp() async {
     if (isQuerying) return;
@@ -132,39 +94,13 @@ class DynamicsController extends GetxController
 
     // reset
     _upEnd = false;
-    if (_showAllUp) _upPage = 1;
 
-    final res = await Future.wait([
-      DynamicsHttp.followUp(),
-      if (_showAllUp)
-        FollowHttp.followings(
-          vmid: Accounts.main.mid,
-          pn: _upPage,
-          orderType: 'attention',
-          ps: 50,
-        ),
-    ]);
+    final res = await DynamicsHttp.followUp();
 
-    final first = res.first;
-    if (first case final Success<FollowUpModel> i) {
+    if (res case final Success<FollowUpModel> i) {
       final data = i.response;
-      final second = res.elementAtOrNull(1);
-      if (second case final Success<FollowData> j) {
-        final data1 = j.response;
-        final list1 = data1.list;
-
-        _upPage++;
-        if (list1.isEmpty || list1.length >= (data1.total ?? 0)) {
-          _upEnd = true;
-        }
-
-        final list = data.upList;
-        list.addAll(list1..removeWhere((_cacheUpList = list.toSet()).contains));
-      }
-      if (!_showAllUp) {
-        if (data.hasMore == false || data.offset.isNullOrEmpty) {
-          _upEnd = true;
-        }
+      if (data.hasMore == false || data.offset.isNullOrEmpty) {
+        _upEnd = true;
       }
       upState.value = Success(data);
     } else {
@@ -195,10 +131,6 @@ class DynamicsController extends GetxController
   }
 
   void _refreshFollowUp() {
-    if (_showAllUp) {
-      _upPage = 1;
-      _cacheUpList = null;
-    }
     queryFollowUp();
   }
 

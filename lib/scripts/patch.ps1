@@ -22,6 +22,10 @@ $TextSelectionPatch = "lib/scripts/text_selection.patch"
 
 $NavigatorPatch = "lib/scripts/navigator.patch"
 
+$NavigationBarPatch = "lib/scripts/navigation_bar.patch"
+
+$PaddingPatch = "lib/scripts/padding.patch"
+
 # TODO: remove
 # https://github.com/flutter/flutter/issues/90223
 $ModalBarrierPatch = "lib/scripts/modal_barrier.patch"
@@ -41,19 +45,17 @@ Set-Location $env:FLUTTER_ROOT
 
 $picks   = @()
 $reverts = @()
-$patches = @($ModalBarrierPatch, $TextSelectionPatch, $MouseCursorPatch)
+$patches = @($ModalBarrierPatch, $TextSelectionPatch, $MouseCursorPatch, $NavigationBarPatch, $PaddingPatch)
 
 switch ($platform.ToLower()) {
     "android" {
         $reverts += $NewOverScrollIndicator
         $patches += $BottomSheetAndroidPatch
         $patches += $ScrollViewPatch
-        $patches += $NavigatorPatch
     }
     "ios" {
         $patches += $ScrollViewPatch
         $patches += $BottomSheetIOSFlutterPatch
-        $patches += $NavigatorPatch
     }
     "linux" {
         $picks += $ToolTipFix

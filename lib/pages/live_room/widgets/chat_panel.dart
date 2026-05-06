@@ -137,7 +137,7 @@ class LiveRoomChatPanel extends StatelessWidget {
             },
           ),
         ),
-        if (kDebugMode && liveRoomController.showSuperChat) ...[
+        if (kDebugMode) ...[
           Positioned(
             top: 50,
             right: 0,
@@ -164,55 +164,53 @@ class LiveRoomChatPanel extends StatelessWidget {
             ),
           ),
         ],
-        if (liveRoomController.showSuperChat)
-          Positioned(
-            top: 12,
-            right: 12,
-            child: Obx(() {
-              final isEmpty = liveRoomController.superChatMsg.isEmpty;
-              return AnimatedOpacity(
-                opacity: isEmpty ? 0 : 1,
-                duration: const Duration(milliseconds: 120),
-                child: GestureDetector(
-                  onTap: isEmpty
-                      ? null
-                      : () => liveRoomController.pageController?.animateToPage(
-                          1,
-                          duration: const Duration(milliseconds: 200),
-                          curve: Curves.easeInOut,
-                        ),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      borderRadius: const BorderRadius.all(Radius.circular(8)),
-                      color: const Color(0x2FFFFFFF),
-                      border: Border.all(color: Colors.white24, width: 0.7),
-                    ),
-                    padding: const EdgeInsets.fromLTRB(10, 4, 4, 4),
-                    child: Text.rich(
-                      style: const TextStyle(color: Colors.white, height: 1),
-                      strutStyle: const StrutStyle(height: 1, leading: 0),
-                      TextSpan(
-                        children: [
-                          TextSpan(
-                            text:
-                                'SC(${liveRoomController.superChatMsg.length})',
-                          ),
-                          const WidgetSpan(
-                            alignment: PlaceholderAlignment.middle,
-                            child: Icon(
-                              size: 18,
-                              Icons.keyboard_arrow_right,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ],
+        Positioned(
+          top: 12,
+          right: 12,
+          child: Obx(() {
+            final isEmpty = liveRoomController.superChatMsg.isEmpty;
+            return AnimatedOpacity(
+              opacity: isEmpty ? 0 : 1,
+              duration: const Duration(milliseconds: 120),
+              child: GestureDetector(
+                onTap: isEmpty
+                    ? null
+                    : () => liveRoomController.pageController.animateToPage(
+                        1,
+                        duration: const Duration(milliseconds: 200),
+                        curve: Curves.easeInOut,
                       ),
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: const BorderRadius.all(Radius.circular(8)),
+                    color: const Color(0x2FFFFFFF),
+                    border: Border.all(color: Colors.white24, width: 0.7),
+                  ),
+                  padding: const EdgeInsets.fromLTRB(10, 4, 4, 4),
+                  child: Text.rich(
+                    style: const TextStyle(color: Colors.white, height: 1),
+                    strutStyle: const StrutStyle(height: 1, leading: 0),
+                    TextSpan(
+                      children: [
+                        TextSpan(
+                          text: 'SC(${liveRoomController.superChatMsg.length})',
+                        ),
+                        const WidgetSpan(
+                          alignment: PlaceholderAlignment.middle,
+                          child: Icon(
+                            size: 18,
+                            Icons.keyboard_arrow_right,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
-              );
-            }),
-          ),
+              ),
+            );
+          }),
+        ),
         Obx(
           () => liveRoomController.disableAutoScroll.value
               ? Positioned(

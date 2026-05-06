@@ -120,7 +120,7 @@ class _IntroDetailState extends State<PgcIntroPanel>
     return ListView(
       controller: _controller,
       physics: const AlwaysScrollableScrollPhysics(),
-      padding: EdgeInsets.only(
+      padding: .only(
         left: 14,
         right: 14,
         top: 14,

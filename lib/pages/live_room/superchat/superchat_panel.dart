@@ -1,7 +1,5 @@
-import 'package:PiliPlus/models/common/super_chat_type.dart';
 import 'package:PiliPlus/pages/live_room/controller.dart';
 import 'package:PiliPlus/pages/live_room/superchat/superchat_card.dart';
-import 'package:PiliPlus/pages/search/controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
 
@@ -17,14 +15,8 @@ class SuperChatPanel extends StatefulWidget {
   State<SuperChatPanel> createState() => _SuperChatPanelState();
 }
 
-class _SuperChatPanelState extends DebounceStreamState<SuperChatPanel, bool>
+class _SuperChatPanelState extends State<SuperChatPanel>
     with AutomaticKeepAliveClientMixin {
-  @override
-  Duration get duration => const Duration(milliseconds: 300);
-
-  late final persistentSC =
-      widget.controller.superChatType == SuperChatType.persist;
-
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -46,8 +38,7 @@ class _SuperChatPanelState extends DebounceStreamState<SuperChatPanel, bool>
           return SuperChatCard(
             key: ValueKey(item.id),
             item: item,
-            onRemove: () => ctr?.add(true),
-            persistentSC: persistentSC,
+            persistentSC: true,
             onReport: () => widget.controller.reportSC(item),
           );
         },
@@ -55,9 +46,6 @@ class _SuperChatPanelState extends DebounceStreamState<SuperChatPanel, bool>
       ),
     );
   }
-
-  @override
-  void onValueChanged(value) => widget.controller.clearSC();
 
   @override
   bool get wantKeepAlive => true;

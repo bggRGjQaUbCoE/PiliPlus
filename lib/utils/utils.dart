@@ -30,14 +30,8 @@ abstract final class Utils {
     );
   }
 
-  static Future<void> copyText(
-    String text, {
-    bool needToast = true,
-    String? toastText,
-  }) {
-    if (needToast) {
-      SmartDialog.showToast(toastText ?? '已复制');
-    }
+  static Future<void> copyText(String text, {String? toastText}) {
+    SmartDialog.showToast(toastText ?? '已复制');
     return Clipboard.setData(ClipboardData(text: text));
   }
 

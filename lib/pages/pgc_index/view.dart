@@ -1,6 +1,7 @@
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
+import 'package:PiliPlus/common/widgets/scaffold.dart';
 import 'package:PiliPlus/common/widgets/self_sized_horizontal_list.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_index_condition/data.dart';
@@ -44,8 +45,7 @@ class _PgcIndexPageState extends State<PgcIndexPage>
     super.build(context);
     final theme = Theme.of(context);
     return widget.indexType == null
-        ? Scaffold(
-            resizeToAvoidBottomInset: false,
+        ? scaffold(
             appBar: AppBar(title: const Text('索引')),
             body: Obx(() => _buildBody(theme, _ctr.conditionState.value)),
           )

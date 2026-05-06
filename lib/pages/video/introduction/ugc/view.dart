@@ -1,4 +1,3 @@
-import 'package:PiliPlus/common/assets.dart';
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
@@ -11,7 +10,6 @@ import 'package:PiliPlus/common/widgets/stat/stat.dart';
 import 'package:PiliPlus/http/sponsor_block.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/models/common/stat_type.dart';
-import 'package:PiliPlus/models_new/video/video_ai_conclusion/model_result.dart';
 import 'package:PiliPlus/models_new/video/video_detail/data.dart';
 import 'package:PiliPlus/models_new/video/video_detail/staff.dart';
 import 'package:PiliPlus/models_new/video/video_tag/data.dart';
@@ -27,12 +25,10 @@ import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:PiliPlus/utils/extension/get_ext.dart';
 import 'package:PiliPlus/utils/extension/iterable_ext.dart';
-import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/string_ext.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
-import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/request_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
@@ -47,14 +43,12 @@ class UgcIntroPanel extends StatefulWidget {
   const UgcIntroPanel({
     super.key,
     required this.heroTag,
-    required this.showAiBottomSheet,
     required this.showEpisodes,
     required this.onShowMemberPage,
     required this.isPortrait,
     required this.isHorizontal,
   });
   final String heroTag;
-  final Function showAiBottomSheet;
   final Function showEpisodes;
   final ValueChanged<int?> onShowMemberPage;
   final bool isPortrait;
@@ -195,15 +189,8 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
                       theme: expandTheme,
                     ),
                   const SizedBox(height: 8),
-                  Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      _buildInfo(theme, videoDetail),
-                      if (introController.enableAi) _aiBtn,
-                    ],
-                  ),
-                  if (introController.showArgueMsg &&
-                      videoDetail.argueInfo?.argueMsg?.isNotEmpty == true) ...[
+                  _buildInfo(theme, videoDetail),
+                  if (videoDetail.argueInfo?.argueMsg?.isNotEmpty == true) ...[
                     const SizedBox(height: 2),
                     Text.rich(
                       TextSpan(
@@ -690,7 +677,7 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
                             }
                           }
                         }
-                        PageUtils.handleWebview(matchStr);
+                        PiliScheme.routePushFromUrl(matchStr);
                       },
                   ),
                 );
@@ -987,37 +974,6 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
           ),
         ),
     ],
-  );
-
-  Widget get _aiBtn => Positioned(
-    right: 8,
-    child: Center(
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: () async {
-          if (introController.aiConclusionResult == null) {
-            await introController.aiConclusion();
-          }
-          if (introController.aiConclusionResult case AiConclusionResult(
-            :final summary,
-            :final outline,
-          )) {
-            if (summary?.isNotEmpty == true || outline?.isNotEmpty == true) {
-              widget.showAiBottomSheet();
-            } else {
-              SmartDialog.showToast("当前视频不支持AI视频总结");
-            }
-          }
-        },
-        child: Image.asset(
-          semanticLabel: 'AI总结',
-          Assets.ai,
-          height: 18,
-          width: 18,
-          cacheHeight: 18.cacheSize(context),
-        ),
-      ),
-    ),
   );
 
   Widget _buildTags(List<VideoTagItem> tags) {

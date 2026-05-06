@@ -30,8 +30,6 @@ import 'package:PiliPlus/pages/video/reply/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_repeat.dart';
 import 'package:PiliPlus/services/service_locator.dart';
 import 'package:PiliPlus/utils/accounts.dart';
-import 'package:PiliPlus/utils/device_utils.dart';
-import 'package:PiliPlus/utils/extension/size_ext.dart';
 import 'package:PiliPlus/utils/extension/string_ext.dart';
 import 'package:PiliPlus/utils/global_data.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
@@ -61,29 +59,14 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
   // 是否点踩
   final RxBool hasDislike = false.obs;
 
-  late final showArgueMsg = Pref.showArgueMsg;
-  late final enableAi = Pref.enableAi;
   late final horizontalMemberPage = Pref.horizontalMemberPage;
-
-  AiConclusionResult? aiConclusionResult;
 
   late final Map<int?, bool> seasonFavState = {};
 
   @override
   void onInit() {
     super.onInit();
-    bool alwaysExpandIntroPanel = Pref.alwaysExpandIntroPanel;
-    expandableCtr = ExpandableController(
-      initialExpanded: alwaysExpandIntroPanel,
-    );
-    if (!alwaysExpandIntroPanel && Pref.expandIntroPanelH) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!expandableCtr.expanded && !DeviceUtils.size.isPortrait) {
-          expandableCtr.toggle();
-        }
-      });
-    }
-
+    expandableCtr = ExpandableController(initialExpanded: false);
     videoDetail.value.title = Get.arguments['title'] ?? '';
   }
 
@@ -530,20 +513,17 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
 
       if (this.bvid != bvid) {
         reload = true;
-        aiConclusionResult = null;
 
         if (cover != null && cover.isNotEmpty) {
           videoDetailCtr.cover.value = cover;
         }
 
         // 重新请求相关视频
-        if (videoDetailCtr.plPlayerController.showRelatedVideo) {
-          try {
-            Get.find<RelatedController>(tag: heroTag)
-              ..bvid = bvid
-              ..queryData();
-          } catch (_) {}
-        }
+        try {
+          Get.find<RelatedController>(tag: heroTag)
+            ..bvid = bvid
+            ..queryData();
+        } catch (_) {}
 
         // 重新请求评论
         if (videoDetailCtr.showReply) {
@@ -684,8 +664,7 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
           videoDetailCtr.plPlayerController.play(repeat: true);
           return true;
         }
-        if (playRepeat == PlayRepeat.autoPlayRelated &&
-            videoDetailCtr.plPlayerController.showRelatedVideo) {
+        if (playRepeat == PlayRepeat.autoPlayRelated) {
           return playRelated();
         }
         return false;
@@ -718,8 +697,7 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
 
         if (playRepeat == PlayRepeat.listCycle) {
           nextIndex = 0;
-        } else if (playRepeat == PlayRepeat.autoPlayRelated &&
-            videoDetailCtr.plPlayerController.showRelatedVideo) {
+        } else if (playRepeat == PlayRepeat.autoPlayRelated) {
           return playRelated();
         } else {
           return false;
@@ -801,13 +779,5 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
       SmartDialog.showToast("当前视频暂不支持AI视频总结");
     }
     return null;
-  }
-
-  Future<void> aiConclusion() async {
-    aiConclusionResult = await getAiConclusion(
-      bvid,
-      cid.value,
-      videoDetail.value.owner?.mid,
-    );
   }
 }

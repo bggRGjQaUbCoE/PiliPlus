@@ -595,6 +595,7 @@ class UserInfoCard extends StatelessWidget {
         initialPage: controller.page?.round() ?? 0,
         imgList: imgUrls.map((e) => SourceModel(url: e.fullCover)).toList(),
         onPageChanged: controller.jumpToPage,
+        tag: hashCode.toString(),
       ),
       child: Stack(
         children: [
@@ -608,7 +609,7 @@ class UserInfoCard extends StatelessWidget {
               itemBuilder: (context, index) {
                 final img = imgUrls[index];
                 return fromHero(
-                  tag: img.fullCover,
+                  tag: '${img.fullCover}$hashCode',
                   child: CachedNetworkImage(
                     fit: .cover,
                     alignment: Alignment(0.0, img.dy),
@@ -681,9 +682,12 @@ class UserInfoCard extends StatelessWidget {
     final img = fullCover ?? imgUrl;
     return GestureDetector(
       behavior: .opaque,
-      onTap: () => PageUtils.imageView(imgList: [SourceModel(url: img)]),
+      onTap: () => PageUtils.imageView(
+        imgList: [SourceModel(url: img)],
+        tag: hashCode.toString(),
+      ),
       child: fromHero(
-        tag: img,
+        tag: '$img$hashCode',
         child: CachedNetworkImage(
           fit: .cover,
           alignment: alignment,
@@ -762,7 +766,7 @@ class UserInfoCard extends StatelessWidget {
     );
     if (prInfo.url?.isNotEmpty ?? false) {
       return GestureDetector(
-        onTap: () => PageUtils.handleWebview(prInfo.url!),
+        onTap: () => PiliScheme.routePushFromUrl(prInfo.url!),
         child: child,
       );
     }

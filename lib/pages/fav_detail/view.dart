@@ -4,13 +4,12 @@ import 'package:PiliPlus/common/widgets/flutter/pop_scope.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
+import 'package:PiliPlus/common/widgets/scaffold.dart';
 import 'package:PiliPlus/http/fav.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/fav_order_type.dart';
 import 'package:PiliPlus/models_new/fav/fav_detail/media.dart';
 import 'package:PiliPlus/models_new/fav/fav_folder/list.dart';
-import 'package:PiliPlus/pages/common/fab_mixin.dart'
-    show NoRightMarginFabLocation;
 import 'package:PiliPlus/pages/dynamics_repost/view.dart';
 import 'package:PiliPlus/pages/fav_detail/controller.dart';
 import 'package:PiliPlus/pages/fav_detail/widget/fav_video_card.dart';
@@ -60,68 +59,73 @@ class _FavDetailPageState extends State<FavDetailPage> with GridMixin {
               _favDetailController.handleSelect();
             }
           },
-          child: Scaffold(
-            resizeToAvoidBottomInset: false,
-            floatingActionButtonLocation: const NoRightMarginFabLocation(),
-            floatingActionButton: Padding(
-              padding: const EdgeInsets.only(
-                right: kFloatingActionButtonMargin,
-              ),
-              child: Obx(
-                () => _favDetailController.folderInfo.value.mediaCount > 0
-                    ? AnimatedSlide(
-                        offset: _favDetailController.isPlayAll.value
-                            ? Offset.zero
-                            : const Offset(0.75, 0),
-                        duration: const Duration(milliseconds: 120),
-                        child: GestureDetector(
-                          onHorizontalDragDown: (details) =>
-                              _favDetailController.dx =
-                                  details.localPosition.dx,
-                          onHorizontalDragStart: (details) =>
-                              _favDetailController.setIsPlayAll(
-                                details.localPosition.dx <
-                                    _favDetailController.dx,
-                              ),
-                          child: FloatingActionButton.extended(
-                            onPressed: () {
-                              if (_favDetailController.isPlayAll.value) {
-                                _favDetailController.toViewPlayAll();
-                              } else {
-                                _favDetailController.setIsPlayAll(true);
-                              }
-                            },
-                            label: const Text('播放全部'),
-                            icon: const Icon(Icons.playlist_play),
+          child: scaffold(
+            body: Stack(
+              clipBehavior: .none,
+              children: [
+                refreshIndicator(
+                  onRefresh: _favDetailController.onRefresh,
+                  child: CustomScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    controller: _favDetailController.scrollController,
+                    slivers: [
+                      _buildHeader(enableMultiSelect, theme),
+                      SliverPadding(
+                        padding: EdgeInsets.only(
+                          left: padding.left,
+                          right: padding.right,
+                          bottom: padding.bottom + 100,
+                        ),
+                        sliver: Obx(
+                          () => _buildBody(
+                            enableMultiSelect,
+                            theme,
+                            _favDetailController.loadingState.value,
                           ),
                         ),
-                      )
-                    : const SizedBox.shrink(),
-              ),
-            ),
-            body: refreshIndicator(
-              onRefresh: _favDetailController.onRefresh,
-              child: CustomScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                controller: _favDetailController.scrollController,
-                slivers: [
-                  _buildHeader(enableMultiSelect, theme),
-                  SliverPadding(
-                    padding: EdgeInsets.only(
-                      left: padding.left,
-                      right: padding.right,
-                      bottom: padding.bottom + 100,
-                    ),
-                    sliver: Obx(
-                      () => _buildBody(
-                        enableMultiSelect,
-                        theme,
-                        _favDetailController.loadingState.value,
                       ),
+                    ],
+                  ),
+                ),
+                Positioned(
+                  right: 0,
+                  bottom: padding.bottom + kFloatingActionButtonMargin,
+                  child: Padding(
+                    padding: const .only(right: kFloatingActionButtonMargin),
+                    child: Obx(
+                      () => _favDetailController.folderInfo.value.mediaCount > 0
+                          ? AnimatedSlide(
+                              offset: _favDetailController.isPlayAll.value
+                                  ? Offset.zero
+                                  : const Offset(0.75, 0),
+                              duration: const Duration(milliseconds: 120),
+                              child: GestureDetector(
+                                onHorizontalDragDown: (details) =>
+                                    _favDetailController.dx =
+                                        details.localPosition.dx,
+                                onHorizontalDragStart: (details) =>
+                                    _favDetailController.setIsPlayAll(
+                                      details.localPosition.dx <
+                                          _favDetailController.dx,
+                                    ),
+                                child: FloatingActionButton.extended(
+                                  onPressed: () {
+                                    if (_favDetailController.isPlayAll.value) {
+                                      _favDetailController.toViewPlayAll();
+                                    } else {
+                                      _favDetailController.setIsPlayAll(true);
+                                    }
+                                  },
+                                  label: const Text('播放全部'),
+                                  icon: const Icon(Icons.playlist_play),
+                                ),
+                              ),
+                            )
+                          : const SizedBox.shrink(),
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         );

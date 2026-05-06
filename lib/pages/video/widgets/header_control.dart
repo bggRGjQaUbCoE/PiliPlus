@@ -14,7 +14,6 @@ import 'package:PiliPlus/http/init.dart';
 import 'package:PiliPlus/http/live.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/video.dart';
-import 'package:PiliPlus/models/common/super_resolution_type.dart';
 import 'package:PiliPlus/models/common/video/audio_quality.dart';
 import 'package:PiliPlus/models/common/video/cdn_type.dart';
 import 'package:PiliPlus/models/common/video/video_decode_type.dart';
@@ -35,7 +34,6 @@ import 'package:PiliPlus/pages/video/widgets/header_mixin.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/models/data_source.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_repeat.dart';
-import 'package:PiliPlus/services/service_locator.dart';
 import 'package:PiliPlus/services/shutdown_timer_service.dart'
     show shutdownTimerService;
 import 'package:PiliPlus/utils/accounts.dart';
@@ -372,7 +370,7 @@ class HeaderControlState extends State<HeaderControl>
             color: theme.colorScheme.surface,
             borderRadius: const BorderRadius.all(Radius.circular(12)),
             child: ListView(
-              padding: const EdgeInsets.symmetric(vertical: 14),
+              padding: const .symmetric(vertical: 14),
               children: [
                 ListTile(
                   dense: true,
@@ -456,27 +454,6 @@ class HeaderControlState extends State<HeaderControl>
                     title: const Text('重载视频', style: titleStyle),
                   ),
                 ],
-                PopupListTile<SuperResolutionType>(
-                  dense: true,
-                  leading: const Icon(
-                    Icons.stay_current_landscape_outlined,
-                    size: 20,
-                  ),
-                  title: const Text('超分辨率'),
-                  value: () {
-                    final value = plPlayerController.superResolutionType.value;
-                    return (value, value.label);
-                  },
-                  itemBuilder: (_) => enumItemBuilder(
-                    SuperResolutionType.values,
-                  ),
-                  onSelected: (value, setState) {
-                    plPlayerController.setShader(value);
-                    setState();
-                  },
-                  descFontSize: 12,
-                  descPosType: .subtitle,
-                ),
                 if (!isFileSource)
                   ListTile(
                     dense: true,
@@ -976,14 +953,12 @@ class HeaderControlState extends State<HeaderControl>
                         SmartDialog.showToast("画质已变为：${newQa.desc}");
 
                         // update
-                        if (!plPlayerController.tempPlayerConf) {
-                          setting.put(
-                            await ConnectivityUtils.isWiFi
-                                ? SettingBoxKey.defaultVideoQa
-                                : SettingBoxKey.defaultVideoQaCellular,
-                            quality,
-                          );
-                        }
+                        setting.put(
+                          await ConnectivityUtils.isWiFi
+                              ? SettingBoxKey.defaultVideoQa
+                              : SettingBoxKey.defaultVideoQaCellular,
+                          quality,
+                        );
                       },
                       // 可能包含会员解锁画质
                       enabled: index >= totalQaSam - usefulQaSam,
@@ -1056,14 +1031,12 @@ class HeaderControlState extends State<HeaderControl>
                         SmartDialog.showToast("音质已变为：${newQa.desc}");
 
                         // update
-                        if (!plPlayerController.tempPlayerConf) {
-                          setting.put(
-                            await ConnectivityUtils.isWiFi
-                                ? SettingBoxKey.defaultAudioQa
-                                : SettingBoxKey.defaultAudioQaCellular,
-                            quality,
-                          );
-                        }
+                        setting.put(
+                          await ConnectivityUtils.isWiFi
+                              ? SettingBoxKey.defaultAudioQa
+                              : SettingBoxKey.defaultAudioQaCellular,
+                          quality,
+                        );
                       },
                       contentPadding: const EdgeInsets.symmetric(
                         horizontal: 20,
@@ -1310,15 +1283,15 @@ class HeaderControlState extends State<HeaderControl>
         }
 
         return Padding(
-          padding: const EdgeInsets.all(12),
+          padding: const .all(12),
           child: Material(
-            clipBehavior: Clip.hardEdge,
+            clipBehavior: .hardEdge,
             color: theme.colorScheme.surface,
-            borderRadius: const BorderRadius.all(Radius.circular(12)),
+            borderRadius: const .all(.circular(12)),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 14),
+              padding: const .symmetric(horizontal: 14),
               child: ListView(
-                padding: EdgeInsets.zero,
+                padding: .zero,
                 children: [
                   const SizedBox(
                     height: 45,
@@ -1326,7 +1299,7 @@ class HeaderControlState extends State<HeaderControl>
                   ),
                   const SizedBox(height: 10),
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    mainAxisAlignment: .spaceBetween,
                     children: [
                       Text(
                         '字体大小 ${(subtitleFontScale * 100).toStringAsFixed(1)}%',
@@ -1662,8 +1635,7 @@ class HeaderControlState extends State<HeaderControl>
   Widget build(BuildContext context) {
     final isFullScreen = this.isFullScreen;
     final isFSOrPip = isFullScreen || plPlayerController.isDesktopPip;
-    final showFSActionItem =
-        !isFileSource && plPlayerController.showFSActionItem && isFSOrPip;
+    final showFSActionItem = !isFileSource && isFSOrPip;
     showCurrTimeIfNeeded(isFullScreen);
     Widget title;
     if (introController.videoDetail.value.title != null &&
@@ -1897,12 +1869,10 @@ class HeaderControlState extends State<HeaderControl>
                         onPressed: () {
                           final newVal = !enableShowDanmaku;
                           plPlayerController.enableShowDanmaku.value = newVal;
-                          if (!plPlayerController.tempPlayerConf) {
-                            setting.put(
-                              SettingBoxKey.enableShowDanmaku,
-                              newVal,
-                            );
-                          }
+                          setting.put(
+                            SettingBoxKey.enableShowDanmaku,
+                            newVal,
+                          );
                         },
                         icon: enableShowDanmaku
                             ? const Icon(
@@ -1948,81 +1918,6 @@ class HeaderControlState extends State<HeaderControl>
                         return;
                       }
                       if (await Floating().isPipAvailable) {
-                        if (context.mounted &&
-                            !videoPlayerServiceHandler!.enableBackgroundPlay) {
-                          final theme = Theme.of(context);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Column(
-                                children: [
-                                  const Row(
-                                    children: [
-                                      Icon(
-                                        Icons.check,
-                                        color: Colors.green,
-                                      ),
-                                      SizedBox(width: 10),
-                                      Text(
-                                        '画中画',
-                                        style: TextStyle(
-                                          fontSize: 15,
-                                          height: 1.5,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 10),
-                                  const Text(
-                                    '建议开启【后台音频服务】\n'
-                                    '避免画中画没有暂停按钮',
-                                    style: TextStyle(
-                                      fontSize: 12.5,
-                                      height: 1.5,
-                                    ),
-                                  ),
-                                  Row(
-                                    children: [
-                                      TextButton(
-                                        style: ButtonStyle(
-                                          foregroundColor:
-                                              WidgetStatePropertyAll(
-                                                theme
-                                                    .snackBarTheme
-                                                    .actionTextColor,
-                                              ),
-                                        ),
-                                        onPressed: () {
-                                          plPlayerController.setBackgroundPlay(
-                                            true,
-                                          );
-                                          SmartDialog.showToast("请重新载入本页面刷新");
-                                        },
-                                        child: const Text('启用后台音频服务'),
-                                      ),
-                                      const SizedBox(width: 10),
-                                      TextButton(
-                                        style: ButtonStyle(
-                                          foregroundColor:
-                                              WidgetStatePropertyAll(
-                                                theme
-                                                    .snackBarTheme
-                                                    .actionTextColor,
-                                              ),
-                                        ),
-                                        onPressed: () {},
-                                        child: const Text('不启用'),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                              duration: const Duration(seconds: 2),
-                              showCloseIcon: true,
-                            ),
-                          );
-                          await Future.delayed(const Duration(seconds: 3));
-                        }
-                        if (!context.mounted) return;
                         plPlayerController.enterPip();
                       }
                     },

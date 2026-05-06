@@ -12,7 +12,6 @@ import 'package:PiliPlus/utils/path_utils.dart';
 import 'package:PiliPlus/utils/permission_handler.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/share_utils.dart';
-import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:dio/dio.dart';
 import 'package:file_picker/file_picker.dart';
@@ -27,7 +26,6 @@ import 'package:share_plus/share_plus.dart';
 abstract final class ImageUtils {
   static String get time =>
       DateFormat('yyyy-MM-dd_HH-mm-ss').format(DateTime.now());
-  static bool silentDownImg = Pref.silentDownImg;
   static const _androidRelativePath = 'Pictures/${Constants.appName}';
 
   // 图片分享
@@ -101,7 +99,7 @@ abstract final class ImageUtils {
       if (PlatformUtils.isMobile && !await checkPermissionDependOnSdkInt()) {
         return false;
       }
-      if (!silentDownImg) SmartDialog.showLoading(msg: '正在下载');
+      SmartDialog.showLoading(msg: '正在下载');
 
       late String imageName = "cover_${Utils.getFileName(url)}";
       late String imagePath = '$tmpDirPath/$imageName';
@@ -114,7 +112,7 @@ abstract final class ImageUtils {
       if (Platform.isIOS) {
         final res1 = await Request().downloadFile(url.http2https, imagePath);
         if (res1.statusCode != 200) throw '${res1.statusCode}';
-        if (!silentDownImg) SmartDialog.showLoading(msg: '正在保存');
+        SmartDialog.showLoading(msg: '正在保存');
         bool success =
             await LivePhotoMaker.create(
               coverImage: imagePath,
@@ -135,7 +133,7 @@ abstract final class ImageUtils {
           return false;
         }
       } else {
-        if (!silentDownImg) SmartDialog.showLoading(msg: '正在保存');
+        SmartDialog.showLoading(msg: '正在保存');
         await saveFileImg(
           filePath: videoPath,
           fileName: videoName,
@@ -148,7 +146,7 @@ abstract final class ImageUtils {
       SmartDialog.showToast(err.toString());
       return false;
     } finally {
-      if (!silentDownImg) SmartDialog.dismiss(status: SmartStatus.loading);
+      SmartDialog.dismiss(status: SmartStatus.loading);
     }
   }
 
@@ -160,14 +158,12 @@ abstract final class ImageUtils {
       return false;
     }
     CancelToken? cancelToken;
-    if (!silentDownImg) {
-      cancelToken = CancelToken();
-      SmartDialog.showLoading(
-        msg: '正在下载原图',
-        clickMaskDismiss: true,
-        onDismiss: cancelToken.cancel,
-      );
-    }
+    cancelToken = CancelToken();
+    SmartDialog.showLoading(
+      msg: '正在下载原图',
+      clickMaskDismiss: true,
+      onDismiss: cancelToken.cancel,
+    );
     try {
       final futures = imgList.map((url) async {
         final name = Utils.getFileName(url);
@@ -234,7 +230,7 @@ abstract final class ImageUtils {
           }
         }
       }
-      if (cancelToken?.isCancelled == true) {
+      if (cancelToken.isCancelled) {
         SmartDialog.showToast('已取消下载');
         return false;
       } else {
@@ -242,14 +238,14 @@ abstract final class ImageUtils {
       }
       return success;
     } catch (e) {
-      if (cancelToken?.isCancelled == true) {
+      if (cancelToken.isCancelled) {
         SmartDialog.showToast('已取消下载');
       } else {
         SmartDialog.showToast(e.toString());
       }
       return false;
     } finally {
-      if (!silentDownImg) SmartDialog.dismiss(status: SmartStatus.loading);
+      SmartDialog.dismiss(status: SmartStatus.loading);
     }
   }
 

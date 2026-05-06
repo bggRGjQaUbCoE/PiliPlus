@@ -8,10 +8,10 @@ import 'package:PiliPlus/models_new/article/article_list/article.dart';
 import 'package:PiliPlus/models_new/article/article_list/list.dart';
 import 'package:PiliPlus/pages/article_list/controller.dart';
 import 'package:PiliPlus/pages/article_list/widgets/item.dart';
+import 'package:PiliPlus/pages/webview/view.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/grid.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
-import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -193,7 +193,7 @@ class _ArticleListPageState extends State<ArticleListPage> with GridMixin {
       actions: [
         IconButton(
           tooltip: '浏览器打开',
-          onPressed: () => PageUtils.inAppWebview(
+          onPressed: () => WebViewPage.toWebView(
             '${HttpString.baseUrl}/read/mobile-readlist/rl${_controller.id}',
           ),
           icon: const Icon(Icons.open_in_browser_outlined, size: 19),

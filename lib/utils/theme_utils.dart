@@ -1,6 +1,5 @@
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
-import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:flutter/cupertino.dart' show CupertinoThemeData;
 import 'package:flutter/foundation.dart' show PlatformDispatcher;
 import 'package:flutter/material.dart';
@@ -118,62 +117,6 @@ abstract final class ThemeUtils {
         },
       ),
     );
-    if (isDark) {
-      if (Pref.isPureBlackTheme) {
-        themeData = darkenTheme(themeData);
-      }
-    }
     return themeData;
-  }
-
-  static ThemeData darkenTheme(ThemeData themeData) {
-    final colorScheme = themeData.colorScheme;
-    final color = colorScheme.surfaceContainerHighest.darken(0.7);
-    return themeData.copyWith(
-      scaffoldBackgroundColor: Colors.black,
-      appBarTheme: themeData.appBarTheme.copyWith(
-        backgroundColor: Colors.black,
-      ),
-      cardTheme: themeData.cardTheme.copyWith(
-        color: Colors.black,
-      ),
-      dialogTheme: themeData.dialogTheme.copyWith(
-        backgroundColor: color,
-      ),
-      bottomSheetTheme: themeData.bottomSheetTheme.copyWith(
-        backgroundColor: color,
-      ),
-      bottomNavigationBarTheme: themeData.bottomNavigationBarTheme.copyWith(
-        backgroundColor: color,
-      ),
-      navigationBarTheme: themeData.navigationBarTheme.copyWith(
-        backgroundColor: color,
-      ),
-      navigationRailTheme: themeData.navigationRailTheme.copyWith(
-        backgroundColor: Colors.black,
-      ),
-      colorScheme: colorScheme.copyWith(
-        primary: colorScheme.primary.darken(0.1),
-        onPrimary: colorScheme.onPrimary.darken(0.1),
-        primaryContainer: colorScheme.primaryContainer.darken(0.1),
-        onPrimaryContainer: colorScheme.onPrimaryContainer.darken(0.1),
-        inversePrimary: colorScheme.inversePrimary.darken(0.1),
-        secondary: colorScheme.secondary.darken(0.1),
-        onSecondary: colorScheme.onSecondary.darken(0.1),
-        secondaryContainer: colorScheme.secondaryContainer.darken(0.1),
-        onSecondaryContainer: colorScheme.onSecondaryContainer.darken(0.1),
-        error: colorScheme.error.darken(0.1),
-        surface: Colors.black,
-        onSurface: colorScheme.onSurface.darken(0.15),
-        surfaceTint: colorScheme.surfaceTint.darken(),
-        inverseSurface: colorScheme.inverseSurface.darken(),
-        onInverseSurface: colorScheme.onInverseSurface.darken(),
-        surfaceContainer: colorScheme.surfaceContainer.darken(),
-        surfaceContainerHigh: colorScheme.surfaceContainerHigh.darken(),
-        surfaceContainerHighest: colorScheme.surfaceContainerHighest.darken(
-          0.4,
-        ),
-      ),
-    );
   }
 }

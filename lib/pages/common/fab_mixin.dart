@@ -40,39 +40,3 @@ mixin FabMixin<T extends StatefulWidget> on State<T>, TickerProvider {
     super.dispose();
   }
 }
-
-mixin _NoRightMarginMixin on StandardFabLocation {
-  @override
-  double getOffsetX(scaffoldGeometry, _) {
-    return scaffoldGeometry.scaffoldSize.width -
-        scaffoldGeometry.minInsets.right -
-        scaffoldGeometry.floatingActionButtonSize.width;
-  }
-}
-
-mixin _NoBottomPaddingMixin on StandardFabLocation {
-  @override
-  double getOffsetY(scaffoldGeometry, _) {
-    return scaffoldGeometry.contentBottom -
-        scaffoldGeometry.floatingActionButtonSize.height;
-  }
-}
-
-class NoRightMarginFabLocation extends StandardFabLocation
-    with FabFloatOffsetY, _NoRightMarginMixin {
-  const NoRightMarginFabLocation();
-}
-
-class NoBottomPaddingFabLocation extends StandardFabLocation
-    with FabEndOffsetX, _NoBottomPaddingMixin {
-  const NoBottomPaddingFabLocation();
-}
-
-class ActionBarLocation extends StandardFabLocation with _NoBottomPaddingMixin {
-  const ActionBarLocation();
-
-  @override
-  double getOffsetX(scaffoldGeometry, _) {
-    return 0.0;
-  }
-}

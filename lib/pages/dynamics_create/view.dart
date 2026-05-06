@@ -136,7 +136,7 @@ class _CreateDynPanelState extends CommonRichTextPubPageState<CreateDynPanel> {
         _buildAppBar(theme),
         Expanded(
           child: ListView(
-            padding: EdgeInsets.zero,
+            padding: .zero,
             controller: widget.scrollController,
             physics: const ClampingScrollPhysics(),
             children: [

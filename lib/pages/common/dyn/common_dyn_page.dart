@@ -2,6 +2,7 @@ import 'package:PiliPlus/common/skeleton/video_reply.dart';
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/custom_icon.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
+import 'package:PiliPlus/common/widgets/scaffold.dart';
 import 'package:PiliPlus/common/widgets/sliver/sliver_pinned_header.dart';
 import 'package:PiliPlus/common/widgets/view_safe_area.dart';
 import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
@@ -190,8 +191,7 @@ abstract class CommonDynPageState<T extends StatefulWidget> extends State<T>
           ),
         );
         if (showBackBtn) {
-          return Scaffold(
-            resizeToAvoidBottomInset: false,
+          return scaffold(
             appBar: AppBar(
               title: const Text('评论详情'),
               shape: Border(
@@ -267,16 +267,6 @@ abstract class CommonDynPageState<T extends StatefulWidget> extends State<T>
       ),
     ),
     icon: const Icon(CustomIcons.splitscreen_rotate_90, size: 19),
-  );
-
-  FloatingActionButtonLocation get floatingActionButtonLocation =>
-      controller.showDynActionBar
-      ? const ActionBarLocation()
-      : const NoBottomPaddingFabLocation();
-
-  Widget get fabButton => Padding(
-    padding: .only(bottom: padding.bottom + kFloatingActionButtonMargin),
-    child: replyButton,
   );
 
   Widget get replyButton => FloatingActionButton(

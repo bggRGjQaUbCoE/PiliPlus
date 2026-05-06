@@ -1,11 +1,10 @@
 import 'package:PiliPlus/common/widgets/pair.dart';
+import 'package:PiliPlus/common/widgets/scaffold.dart';
 import 'package:PiliPlus/http/constants.dart';
 import 'package:PiliPlus/http/init.dart';
-import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/sponsor_block.dart';
 import 'package:PiliPlus/models/common/sponsor_block/segment_type.dart';
 import 'package:PiliPlus/models/common/sponsor_block/skip_type.dart';
-import 'package:PiliPlus/models_new/sponsor_block/user_info.dart';
 import 'package:PiliPlus/pages/setting/slide_color_picker.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
@@ -15,7 +14,6 @@ import 'package:PiliPlus/utils/utils.dart';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show FilteringTextInputFormatter;
-import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:hive_ce/hive.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
@@ -30,15 +28,12 @@ class SponsorBlockPage extends StatefulWidget {
 class _SponsorBlockPageState extends State<SponsorBlockPage> {
   final _url = 'https://github.com/hanydd/BilibiliSponsorBlock';
   final _textController = TextEditingController();
-  double _blockLimit = Pref.blockLimit;
   final _blockSettings = Pref.blockSettings;
   final List<Color> _blockColor = Pref.blockColor;
   String _userId = Pref.blockUserID;
   bool _blockToast = Pref.blockToast;
   String _blockServer = Pref.blockServer;
-  bool _blockTrack = Pref.blockTrack;
   final _serverStatus = Rxn<bool>();
-  final _userInfo = LoadingState<UserInfo>.loading().obs;
 
   Box setting = GStorage.setting;
 
@@ -46,7 +41,6 @@ class _SponsorBlockPageState extends State<SponsorBlockPage> {
   void initState() {
     super.initState();
     _checkServerStatus();
-    _getUserInfo();
   }
 
   @override
@@ -58,77 +52,6 @@ class _SponsorBlockPageState extends State<SponsorBlockPage> {
   Future<void> _checkServerStatus() async {
     _serverStatus.value = (await SponsorBlock.uptimeStatus()).isSuccess;
   }
-
-  Future<void> _getUserInfo() async {
-    _userInfo.value = await SponsorBlock.userInfo(const [
-      'viewCount',
-      'minutesSaved',
-      'segmentCount',
-    ], userId: _userId);
-  }
-
-  Widget _blockLimitItem(
-    ThemeData theme,
-    TextStyle titleStyle,
-    TextStyle subTitleStyle,
-  ) => Builder(
-    builder: (context) {
-      return ListTile(
-        dense: true,
-        onTap: () {
-          _textController.text = _blockLimit.toString();
-          showDialog(
-            context: context,
-            builder: (_) => AlertDialog(
-              title: Text('最短片段时长', style: titleStyle),
-              content: TextFormField(
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                controller: _textController,
-                autofocus: true,
-                decoration: const InputDecoration(suffixText: 's'),
-                inputFormatters: [
-                  FilteringTextInputFormatter.allow(RegExp(r'[\d\.]+')),
-                ],
-              ),
-              actions: [
-                TextButton(
-                  onPressed: Get.back,
-                  child: Text(
-                    '取消',
-                    style: TextStyle(color: theme.colorScheme.outline),
-                  ),
-                ),
-                TextButton(
-                  onPressed: () {
-                    try {
-                      _blockLimit = double.parse(_textController.text);
-                      Get.back();
-                      setting.put(SettingBoxKey.blockLimit, _blockLimit);
-                      (context as Element).markNeedsBuild();
-                    } catch (e) {
-                      SmartDialog.showToast(e.toString());
-                    }
-                  },
-                  child: const Text('确定'),
-                ),
-              ],
-            ),
-          );
-        },
-        title: Text('最短片段时长', style: titleStyle),
-        subtitle: Text(
-          '忽略短于此时长的片段',
-          style: subTitleStyle,
-        ),
-        trailing: Text(
-          '${_blockLimit}s',
-          style: const TextStyle(fontSize: 13),
-        ),
-      );
-    },
-  );
 
   Widget _aboutItem(TextStyle titleStyle, TextStyle subTitleStyle) => ListTile(
     dense: true,
@@ -240,72 +163,6 @@ class _SponsorBlockPageState extends State<SponsorBlockPage> {
     },
   );
 
-  Widget _blockTrackItem(
-    TextStyle titleStyle,
-    TextStyle subTitleStyle,
-  ) => Builder(
-    builder: (context) {
-      void update() {
-        _blockTrack = !_blockTrack;
-        setting.put(SettingBoxKey.blockTrack, _blockTrack);
-        (context as Element).markNeedsBuild();
-      }
-
-      return ListTile(
-        dense: true,
-        onTap: update,
-        title: Text(
-          '跳过次数统计跟踪',
-          style: titleStyle,
-        ),
-        subtitle: Text(
-          // from origin extension
-          '此功能追踪您跳过了哪些片段，让用户知道他们提交的片段帮助了多少人。同时点赞会作为依据，确保垃圾信息不会污染数据库。在您每次跳过片段时，我们都会向服务器发送一条消息。希望大家开启此项设置，以便得到更准确的统计数据。:)',
-          style: subTitleStyle,
-        ),
-        trailing: Transform.scale(
-          alignment: Alignment.centerRight,
-          scale: 0.8,
-          child: Switch(
-            value: _blockTrack,
-            onChanged: (val) => update(),
-          ),
-        ),
-      );
-    },
-  );
-
-  Widget _blockUserInfo(
-    ThemeData theme,
-    TextStyle titleStyle,
-    TextStyle subTitleStyle,
-  ) => Obx(
-    () {
-      return ListTile(
-        dense: true,
-        onTap: () {
-          _userInfo.value = LoadingState.loading();
-          _getUserInfo();
-        },
-        title: Text(
-          '您的信息',
-          style: titleStyle,
-        ),
-        subtitle: switch (_userInfo.value) {
-          Loading() => const SizedBox.shrink(),
-          Success<UserInfo>(:final response) => Text(
-            response.toString(),
-            style: subTitleStyle,
-          ),
-          Error(:final errMsg) => Text(
-            errMsg ?? '服务器错误',
-            style: subTitleStyle.copyWith(color: theme.colorScheme.error),
-          ),
-        },
-      );
-    },
-  );
-
   Widget _blockServerItem(
     ThemeData theme,
     TextStyle titleStyle,
@@ -352,7 +209,6 @@ class _SponsorBlockPageState extends State<SponsorBlockPage> {
                     setting.put(SettingBoxKey.blockServer, _blockServer);
                     Request.accountManager.blockServer = _blockServer;
                     _checkServerStatus();
-                    _getUserInfo();
                     (context as Element).markNeedsBuild();
                   },
                   child: const Text('确定'),
@@ -473,57 +329,40 @@ class _SponsorBlockPageState extends State<SponsorBlockPage> {
       color: theme.colorScheme.outline.withValues(alpha: 0.1),
     );
 
-    final sliverDivider = SliverToBoxAdapter(child: divider);
-
-    final dividerL = SliverToBoxAdapter(
-      child: Divider(
-        thickness: 16,
-        color: theme.colorScheme.outline.withValues(alpha: 0.1),
-      ),
+    final dividerLarge = Divider(
+      thickness: 16,
+      color: theme.colorScheme.outline.withValues(alpha: 0.1),
     );
 
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
+    return scaffold(
       appBar: AppBar(title: const Text('空降助手')),
-      body: CustomScrollView(
-        slivers: [
-          dividerL,
-          SliverToBoxAdapter(child: _serverStatusItem(theme, titleStyle)),
-          dividerL,
-          SliverToBoxAdapter(
-            child: _blockLimitItem(theme, titleStyle, subTitleStyle),
-          ),
-          sliverDivider,
-          SliverToBoxAdapter(child: _blockToastItem(titleStyle)),
-          sliverDivider,
-          SliverToBoxAdapter(child: _blockTrackItem(titleStyle, subTitleStyle)),
-          sliverDivider,
-          SliverToBoxAdapter(
-            child: _blockUserInfo(theme, titleStyle, subTitleStyle),
-          ),
-          dividerL,
-          SliverList.separated(
-            itemCount: _blockSettings.length,
-            itemBuilder: (context, index) =>
-                _buildItem(theme, index, _blockSettings[index]),
-            separatorBuilder: (context, index) => divider,
-          ),
-          dividerL,
-          SliverToBoxAdapter(
-            child: _userIdItem(theme, titleStyle, subTitleStyle),
-          ),
-          sliverDivider,
-          SliverToBoxAdapter(
-            child: _blockServerItem(theme, titleStyle, subTitleStyle),
-          ),
-          dividerL,
-          SliverToBoxAdapter(child: _aboutItem(titleStyle, subTitleStyle)),
-          dividerL,
-          SliverToBoxAdapter(
-            child: SizedBox(
-              height: 55 + MediaQuery.viewPaddingOf(context).bottom,
-            ),
-          ),
+      body: ListView(
+        padding: .only(bottom: 55 + MediaQuery.viewPaddingOf(context).bottom),
+        children: [
+          dividerLarge,
+          _serverStatusItem(theme, titleStyle),
+          dividerLarge,
+          divider,
+          _blockToastItem(titleStyle),
+          divider,
+          divider,
+          dividerLarge,
+          ...List.generate(
+                _blockSettings.length,
+                (index) => _buildItem(theme, index, _blockSettings[index]),
+              )
+              .expand((e) sync* {
+                yield divider;
+                yield e;
+              })
+              .skip(1),
+          dividerLarge,
+          _userIdItem(theme, titleStyle, subTitleStyle),
+          divider,
+          _blockServerItem(theme, titleStyle, subTitleStyle),
+          dividerLarge,
+          _aboutItem(titleStyle, subTitleStyle),
+          dividerLarge,
         ],
       ),
     );

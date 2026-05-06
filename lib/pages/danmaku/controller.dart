@@ -17,11 +17,10 @@ class PlDanmakuController {
     this._cid,
     this._plPlayerController,
     this._isFileSource,
-  ) : _mergeDanmaku = _plPlayerController.mergeDanmaku;
+  );
 
   final int _cid;
   final PlPlayerController _plPlayerController;
-  final bool _mergeDanmaku;
   final bool _isFileSource;
 
   late final _isLogin = Accounts.main.isLogin;
@@ -66,7 +65,6 @@ class PlDanmakuController {
 
   void handleDanmaku(List<DanmakuElem> elems) {
     if (elems.isEmpty) return;
-    final uniques = HashMap<String, DanmakuElem>();
 
     final filters = _plPlayerController.filters;
     final danmakuWeight = DanmakuOptions.danmakuWeight;
@@ -77,16 +75,6 @@ class PlDanmakuController {
       }
 
       if (!element.isSelf) {
-        if (_mergeDanmaku) {
-          final elem = uniques[element.content];
-          if (elem == null) {
-            uniques[element.content] = element..count = 1;
-          } else {
-            elem.count++;
-            continue;
-          }
-        }
-
         if (element.weight < danmakuWeight ||
             (shouldFilter && filters.remove(element))) {
           continue;

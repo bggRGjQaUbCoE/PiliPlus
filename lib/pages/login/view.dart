@@ -1,12 +1,12 @@
 import 'dart:ui';
 
 import 'package:PiliPlus/common/constants.dart';
-import 'package:PiliPlus/common/dial_prefix.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/pages/login/controller.dart';
+import 'package:PiliPlus/pages/webview/view.dart';
 import 'package:PiliPlus/utils/extension/size_ext.dart';
 import 'package:PiliPlus/utils/extension/widget_ext.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
@@ -34,11 +34,15 @@ class _LoginPageState extends State<LoginPage> {
   // 二维码生成时间
   bool showPassword = false;
   GlobalKey globalKey = GlobalKey();
+  late EdgeInsets padding;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     _loginPageCtr.didChangeDependencies(context);
+    padding =
+        MediaQuery.viewPaddingOf(context).copyWith(top: 0) +
+        const EdgeInsets.only(bottom: 25);
   }
 
   Widget loginByQRCode(ThemeData theme) {
@@ -293,17 +297,10 @@ class _LoginPageState extends State<LoginPage> {
                           'https://passport.bilibili.com/h5-app/passport/login/findPassword',
                         ),
                         dense: false,
-                        onTap: () => Get
-                          ..back()
-                          ..toNamed(
-                            '/webview',
-                            parameters: {
-                              'url':
-                                  'https://passport.bilibili.com/h5-app/passport/login/findPassword',
-                              'type': 'url',
-                              'pageTitle': '忘记密码',
-                            },
-                          ),
+                        onTap: () => WebViewPage.toWebView(
+                          'https://passport.bilibili.com/h5-app/passport/login/findPassword',
+                          getBack: true,
+                        ),
                       ),
                       ListTile(
                         title: const Text(
@@ -314,18 +311,11 @@ class _LoginPageState extends State<LoginPage> {
                           'https://passport.bilibili.com/pc/passport/findPassword',
                         ),
                         dense: false,
-                        onTap: () => Get
-                          ..back()
-                          ..toNamed(
-                            '/webview',
-                            parameters: {
-                              'url':
-                                  'https://passport.bilibili.com/pc/passport/findPassword',
-                              'type': 'url',
-                              'pageTitle': '忘记密码',
-                              'uaType': 'pc',
-                            },
-                          ),
+                        onTap: () => WebViewPage.toWebView(
+                          'https://passport.bilibili.com/pc/passport/findPassword',
+                          uaType: 'pc',
+                          getBack: true,
+                        ),
                       ),
                     ],
                   ),
@@ -359,245 +349,87 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Widget loginBySmS(ThemeData theme) {
-    return Column(
-      children: [
-        const SizedBox(height: 20),
-        const Text('使用手机短信验证码登录'),
-        const SizedBox(height: 10),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-          child: DecoratedBox(
-            decoration: UnderlineTabIndicator(
-              borderSide: BorderSide(
-                color: theme.colorScheme.outline.withValues(alpha: 0.4),
-              ),
-            ),
-            child: Row(
-              children: [
-                const SizedBox(width: 12),
-                Builder(
-                  builder: (context) {
-                    return PopupMenuButton(
-                      padding: EdgeInsets.zero,
-                      tooltip:
-                          '选择国际冠码，'
-                          '当前为${_loginPageCtr.selectedCountryCodeId.cname}，'
-                          '+${_loginPageCtr.selectedCountryCodeId.countryId}',
-                      onSelected: (item) {
-                        _loginPageCtr.selectedCountryCodeId = item;
-                        (context as Element).markNeedsBuild();
-                      },
-                      initialValue: _loginPageCtr.selectedCountryCodeId,
-                      itemBuilder: (_) => Login.dialPrefix.map((item) {
-                        return PopupMenuItem(
-                          value: item,
-                          child: Row(
-                            children: [
-                              Text(item.cname),
-                              const Spacer(),
-                              Text("+${item.countryId}"),
-                            ],
-                          ),
-                        );
-                      }).toList(),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.phone,
-                            color: theme.colorScheme.onSurfaceVariant,
-                          ),
-                          const SizedBox(width: 12),
-                          Text(
-                            "+${_loginPageCtr.selectedCountryCodeId.countryId}",
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-                const SizedBox(width: 6),
-                SizedBox(
-                  height: 24,
-                  child: VerticalDivider(
-                    color: theme.colorScheme.outline.withValues(alpha: 0.5),
-                  ),
-                ),
-                const SizedBox(width: 6),
-                Expanded(
-                  child: TextField(
-                    controller: _loginPageCtr.telTextController,
-                    keyboardType: TextInputType.number,
-                    inputFormatters: <TextInputFormatter>[
-                      FilteringTextInputFormatter.digitsOnly,
-                    ],
-                    decoration: InputDecoration(
-                      border: InputBorder.none,
-                      labelText: '手机号',
-                      suffixIcon: IconButton(
-                        onPressed: _loginPageCtr.telTextController.clear,
-                        icon: const Icon(Icons.clear),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-          child: DecoratedBox(
-            decoration: UnderlineTabIndicator(
-              borderSide: BorderSide(
-                color: theme.colorScheme.outline.withValues(alpha: 0.4),
-              ),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _loginPageCtr.smsCodeTextController,
-                    decoration: const InputDecoration(
-                      prefixIcon: Icon(Icons.sms_outlined),
-                      border: InputBorder.none,
-                      labelText: '验证码',
-                    ),
-                    keyboardType: TextInputType.number,
-                    inputFormatters: <TextInputFormatter>[
-                      FilteringTextInputFormatter.digitsOnly,
-                    ],
-                  ),
-                ),
-                Obx(
-                  () => TextButton.icon(
-                    onPressed: _loginPageCtr.smsSendCooldown > 0
-                        ? null
-                        : _loginPageCtr.sendSmsCode,
-                    icon: const Icon(Icons.send),
-                    label: Text(
-                      _loginPageCtr.smsSendCooldown > 0
-                          ? '等待${_loginPageCtr.smsSendCooldown}秒'
-                          : '获取验证码',
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(height: 20),
-        OutlinedButton.icon(
-          onPressed: _loginPageCtr.loginBySmsCode,
-          icon: const Icon(Icons.login),
-          label: const Text('登录'),
-        ),
-        const SizedBox(height: 20),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Text(
-            '手机号仅用于 bilibili 官方发送验证码与登录接口，不予保存；\n'
-            '本地仅存储登录凭证。\n'
-            '请务必在 ${Constants.appName} 开源仓库等可信渠道下载安装。',
-            textAlign: TextAlign.center,
-            style: theme.textTheme.labelSmall!.copyWith(
-              color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  late EdgeInsets padding;
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    padding =
-        MediaQuery.viewPaddingOf(context).copyWith(top: 0) +
-        const EdgeInsets.only(bottom: 25);
-    final isLandscape = !MediaQuery.sizeOf(context).isPortrait;
-    return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          tooltip: '关闭',
-          icon: const Icon(Icons.close_outlined),
-          onPressed: Get.back,
-        ),
-        title: Row(
-          children: [
-            const Text('登录'),
-            if (isLandscape)
-              Expanded(
-                child: Align(
-                  alignment: Alignment.centerRight,
-                  child: TabBar(
-                    isScrollable: true,
-                    dividerHeight: 0,
-                    tabs: const [
-                      Tab(
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [Icon(Icons.password), Text(' 密码')],
-                        ),
+    final isPortrait = MediaQuery.sizeOf(context).isPortrait;
+    return Material(
+      child: Column(
+        children: [
+          AppBar(
+            leading: IconButton(
+              tooltip: '关闭',
+              icon: const Icon(Icons.close_outlined),
+              onPressed: Get.back,
+            ),
+            title: Row(
+              children: [
+                const Text('登录'),
+                if (!isPortrait)
+                  Expanded(
+                    child: Align(
+                      alignment: Alignment.centerRight,
+                      child: TabBar(
+                        isScrollable: true,
+                        dividerHeight: 0,
+                        tabs: const [
+                          Tab(
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [Icon(Icons.password), Text(' 密码')],
+                            ),
+                          ),
+                          Tab(
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [Icon(Icons.qr_code), Text(' 扫码')],
+                            ),
+                          ),
+                          Tab(
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.cookie_outlined),
+                                Text(' Cookie'),
+                              ],
+                            ),
+                          ),
+                        ],
+                        controller: _loginPageCtr.tabController,
                       ),
-                      Tab(
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [Icon(Icons.sms_outlined), Text(' 短信')],
-                        ),
-                      ),
-                      Tab(
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [Icon(Icons.qr_code), Text(' 扫码')],
-                        ),
-                      ),
-                      Tab(
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.cookie_outlined),
-                            Text(' Cookie'),
-                          ],
-                        ),
-                      ),
-                    ],
-                    controller: _loginPageCtr.tabController,
+                    ),
                   ),
-                ),
-              ),
-          ],
-        ),
-        bottom: !isLandscape
-            ? TabBar(
-                tabs: const [
-                  Tab(icon: Icon(Icons.password), text: '密码'),
-                  Tab(icon: Icon(Icons.sms_outlined), text: '短信'),
-                  Tab(icon: Icon(Icons.qr_code), text: '扫码'),
-                  Tab(icon: Icon(Icons.cookie_outlined), text: 'Cookie'),
-                ],
+              ],
+            ),
+          ),
+          if (isPortrait)
+            TabBar(
+              tabs: const [
+                Tab(icon: Icon(Icons.password), text: '密码'),
+                Tab(icon: Icon(Icons.qr_code), text: '扫码'),
+                Tab(icon: Icon(Icons.cookie_outlined), text: 'Cookie'),
+              ],
+              controller: _loginPageCtr.tabController,
+            ),
+          Expanded(
+            child: NotificationListener<ScrollStartNotification>(
+              onNotification: (notification) {
+                if (notification.metrics.axis == Axis.horizontal) {
+                  FocusScope.of(context).unfocus();
+                }
+                return false;
+              },
+              child: tabBarView(
                 controller: _loginPageCtr.tabController,
-              )
-            : null,
-      ),
-      body: NotificationListener<ScrollStartNotification>(
-        onNotification: (notification) {
-          if (notification.metrics.axis == Axis.horizontal) {
-            FocusScope.of(context).unfocus();
-          }
-          return false;
-        },
-        child: tabBarView(
-          controller: _loginPageCtr.tabController,
-          children: [
-            tabViewOuter(loginByPassword(theme)),
-            tabViewOuter(loginBySmS(theme)),
-            tabViewOuter(loginByQRCode(theme)),
-            tabViewOuter(loginByCookie(theme)),
-          ],
-        ),
+                children: [
+                  tabViewOuter(loginByPassword(theme)),
+                  tabViewOuter(loginByQRCode(theme)),
+                  tabViewOuter(loginByCookie(theme)),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

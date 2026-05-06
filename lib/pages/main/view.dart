@@ -2,15 +2,14 @@ import 'dart:io';
 
 import 'package:PiliPlus/common/assets.dart';
 import 'package:PiliPlus/common/constants.dart';
-import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/floating_navigation_bar.dart';
 import 'package:PiliPlus/common/widgets/flutter/pop_scope.dart';
 import 'package:PiliPlus/common/widgets/route_aware_mixin.dart';
+import 'package:PiliPlus/common/widgets/scaffold.dart';
 import 'package:PiliPlus/models/common/nav_bar_config.dart';
 import 'package:PiliPlus/pages/home/view.dart';
 import 'package:PiliPlus/pages/main/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
-import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
 import 'package:PiliPlus/utils/extension/context_ext.dart';
 import 'package:PiliPlus/utils/extension/size_ext.dart';
@@ -56,10 +55,8 @@ class _MainAppState extends PopScopeState<MainApp>
       windowManager
         ..addListener(this)
         ..setPreventClose(true);
-      if (_mainController.showTrayIcon) {
-        trayManager.addListener(this);
-        _handleTray();
-      }
+      trayManager.addListener(this);
+      _handleTray();
     } else {
       // FlutterSmartDialog throws
       PiliScheme.init();
@@ -82,7 +79,7 @@ class _MainAppState extends PopScopeState<MainApp>
     addObserverMobile(this);
     _mainController
       ..checkUnreadDynamic()
-      ..checkUnread(_mainController.useBottomNav);
+      ..checkUnread();
     super.didPopNext();
   }
 
@@ -97,7 +94,7 @@ class _MainAppState extends PopScopeState<MainApp>
     if (state == .resumed) {
       _mainController
         ..checkUnreadDynamic()
-        ..checkUnread(_mainController.useBottomNav);
+        ..checkUnread();
     }
   }
 
@@ -146,12 +143,7 @@ class _MainAppState extends PopScopeState<MainApp>
 
   @override
   void onWindowClose() {
-    if (_mainController.showTrayIcon && _mainController.minimizeOnExit) {
-      windowManager.hide();
-      _onHideWindow();
-    } else {
-      _onClose();
-    }
+    windowManager.hide();
   }
 
   Future<void> _onClose() async {
@@ -166,40 +158,10 @@ class _MainAppState extends PopScopeState<MainApp>
   }
 
   @override
-  void onWindowMinimize() {
-    _onHideWindow();
-  }
-
-  @override
-  void onWindowRestore() {
-    _onShowWindow();
-  }
-
-  void _onHideWindow() {
-    if (_mainController.pauseOnMinimize) {
-      if (PlPlayerController.instance case final player?) {
-        if (_mainController.isPlaying = player.playerStatus.isPlaying) {
-          player.pause();
-        }
-      } else {
-        _mainController.isPlaying = false;
-      }
-    }
-  }
-
-  void _onShowWindow() {
-    if (_mainController.pauseOnMinimize && _mainController.isPlaying) {
-      PlPlayerController.instance?.play();
-    }
-  }
-
-  @override
   Future<void> onTrayIconMouseDown() async {
     if (await windowManager.isVisible()) {
-      _onHideWindow();
       windowManager.hide();
     } else {
-      _onShowWindow();
       windowManager.show();
     }
   }
@@ -248,151 +210,107 @@ class _MainAppState extends PopScopeState<MainApp>
 
   @override
   void onPopInvokedWithResult(bool didPop, Object? result) {
-    if (_mainController.directExitOnBack) {
-      _onBack();
+    if (_mainController.selectedIndex.value != 0) {
+      _mainController.setIndex(0);
     } else {
-      if (_mainController.selectedIndex.value != 0) {
-        _mainController
-          ..setIndex(0)
-          ..barOffset?.value = 0.0
-          ..showBottomBar?.value = true
-          ..setSearchBar();
-      } else {
-        _onBack();
-      }
+      _onBack();
     }
   }
 
   Widget? get _bottomNav {
-    Widget? bottomNav;
-    if (_mainController.navigationBars.length > 1) {
-      if (_mainController.floatingNavBar) {
-        bottomNav = Obx(
-          () => FloatingNavigationBar(
-            onDestinationSelected: _mainController.setIndex,
-            selectedIndex: _mainController.selectedIndex.value,
-            destinations: _mainController.navigationBars
-                .map(
-                  (e) => FloatingNavigationDestination(
-                    label: e.label,
-                    icon: _buildIcon(type: e),
-                    selectedIcon: _buildIcon(type: e, selected: true),
-                  ),
-                )
-                .toList(),
-          ),
-        );
-      } else {
-        bottomNav = Obx(
-          () => NavigationBar(
-            maintainBottomViewPadding: true,
-            onDestinationSelected: _mainController.setIndex,
-            selectedIndex: _mainController.selectedIndex.value,
-            destinations: _mainController.navigationBars
-                .map(
-                  (e) => NavigationDestination(
-                    label: e.label,
-                    icon: _buildIcon(type: e),
-                    selectedIcon: _buildIcon(type: e, selected: true),
-                  ),
-                )
-                .toList(),
-          ),
-        );
-      }
-
-      if (_mainController.hideBottomBar) {
-        if (_mainController.barOffset case final barOffset?) {
-          return Obx(
-            () => FractionalTranslation(
-              translation: Offset(
-                0.0,
-                barOffset.value / Style.topBarHeight,
-              ),
-              child: bottomNav,
-            ),
-          );
-        }
-        if (_mainController.showBottomBar case final showBottomBar?) {
-          return Obx(
-            () => AnimatedSlide(
-              curve: Curves.easeInOutCubicEmphasized,
-              duration: const Duration(milliseconds: 500),
-              offset: Offset(0, showBottomBar.value ? 0 : 1),
-              child: bottomNav,
-            ),
-          );
-        }
-      }
+    if (_mainController.floatingNavBar) {
+      return Obx(
+        () => FloatingNavigationBar(
+          onDestinationSelected: _mainController.setIndex,
+          selectedIndex: _mainController.selectedIndex.value,
+          destinations: NavigationBarType.values
+              .map(
+                (e) => FloatingNavigationDestination(
+                  label: e.label,
+                  icon: _buildIcon(type: e),
+                  selectedIcon: _buildIcon(type: e, selected: true),
+                ),
+              )
+              .toList(),
+        ),
+      );
     }
-
-    return bottomNav;
+    return Obx(
+      () => NavigationBar(
+        maintainBottomViewPadding: true,
+        onDestinationSelected: _mainController.setIndex,
+        selectedIndex: _mainController.selectedIndex.value,
+        destinations: NavigationBarType.values
+            .map(
+              (e) => NavigationDestination(
+                label: e.label,
+                icon: _buildIcon(type: e),
+                selectedIcon: _buildIcon(type: e, selected: true),
+              ),
+            )
+            .toList(),
+      ),
+    );
   }
 
   Widget _sideBar(ThemeData theme) {
-    return _mainController.navigationBars.length > 1
-        ? context.isTablet
-              ? Column(
-                  children: [
-                    const SizedBox(height: 25),
-                    userAndSearchVertical(theme),
-                    const Spacer(flex: 2),
-                    Expanded(
-                      flex: 5,
-                      child: SizedBox(
-                        width: 130,
-                        child: Obx(
-                          () => NavigationDrawer(
-                            backgroundColor: Colors.transparent,
-                            tilePadding: const .symmetric(
-                              vertical: 5,
-                              horizontal: 12,
-                            ),
-                            indicatorShape: const RoundedRectangleBorder(
-                              borderRadius: .all(.circular(16)),
-                            ),
-                            onDestinationSelected: _mainController.setIndex,
-                            selectedIndex: _mainController.selectedIndex.value,
-                            children: _mainController.navigationBars
-                                .map(
-                                  (e) => NavigationDrawerDestination(
-                                    label: Text(e.label),
-                                    icon: _buildIcon(type: e),
-                                    selectedIcon: _buildIcon(
-                                      type: e,
-                                      selected: true,
-                                    ),
-                                  ),
-                                )
-                                .toList(),
-                          ),
-                        ),
+    return context.isTablet
+        ? Column(
+            children: [
+              const SizedBox(height: 25),
+              userAndSearchVertical(theme),
+              const Spacer(flex: 2),
+              Expanded(
+                flex: 5,
+                child: SizedBox(
+                  width: 130,
+                  child: Obx(
+                    () => NavigationDrawer(
+                      backgroundColor: Colors.transparent,
+                      tilePadding: const .symmetric(
+                        vertical: 5,
+                        horizontal: 12,
                       ),
+                      indicatorShape: const RoundedRectangleBorder(
+                        borderRadius: .all(.circular(16)),
+                      ),
+                      onDestinationSelected: _mainController.setIndex,
+                      selectedIndex: _mainController.selectedIndex.value,
+                      children: NavigationBarType.values
+                          .map(
+                            (e) => NavigationDrawerDestination(
+                              label: Text(e.label),
+                              icon: _buildIcon(type: e),
+                              selectedIcon: _buildIcon(
+                                type: e,
+                                selected: true,
+                              ),
+                            ),
+                          )
+                          .toList(),
                     ),
-                  ],
-                )
-              : Obx(
-                  () => NavigationRail(
-                    groupAlignment: 0.5,
-                    selectedIndex: _mainController.selectedIndex.value,
-                    onDestinationSelected: _mainController.setIndex,
-                    labelType: .selected,
-                    leading: userAndSearchVertical(theme),
-                    destinations: _mainController.navigationBars
-                        .map(
-                          (e) => NavigationRailDestination(
-                            label: Text(e.label),
-                            icon: _buildIcon(type: e),
-                            selectedIcon: _buildIcon(type: e, selected: true),
-                          ),
-                        )
-                        .toList(),
                   ),
-                )
-        : Container(
-            width: 80,
-            padding: const .only(top: 10),
-            child: userAndSearchVertical(theme),
+                ),
+              ),
+            ],
+          )
+        : Obx(
+            () => NavigationRail(
+              groupAlignment: 0.5,
+              selectedIndex: _mainController.selectedIndex.value,
+              onDestinationSelected: _mainController.setIndex,
+              labelType: .selected,
+              leading: userAndSearchVertical(theme),
+              destinations: NavigationBarType.values
+                  .map(
+                    (e) => NavigationRailDestination(
+                      label: Text(e.label),
+                      icon: _buildIcon(type: e),
+                      selectedIcon: _buildIcon(type: e, selected: true),
+                    ),
+                  )
+                  .toList(),
+            ),
           );
   }
 
@@ -401,7 +319,7 @@ class _MainAppState extends PopScopeState<MainApp>
     Widget child = PageView(
       physics: const NeverScrollableScrollPhysics(),
       controller: _mainController.controller,
-      children: _mainController.navigationBars.map((i) => i.page).toList(),
+      children: NavigationBarType.values.map((i) => i.page).toList(),
     );
 
     Widget? bottomNav;
@@ -422,18 +340,36 @@ class _MainAppState extends PopScopeState<MainApp>
       );
     }
 
-    child = Scaffold(
-      extendBody: true,
-      resizeToAvoidBottomInset: false,
-      appBar: AppBar(toolbarHeight: 0),
-      body: Padding(
-        padding: .only(
-          left: _mainController.useBottomNav ? _padding.left : 0.0,
-          right: _padding.right,
-        ),
-        child: child,
+    child = Padding(
+      padding: .only(
+        left: _mainController.useBottomNav ? _padding.left : 0.0,
+        right: _padding.right,
       ),
-      bottomNavigationBar: bottomNav,
+      child: child,
+    );
+
+    child = scaffold(
+      appBar: AppBar(toolbarHeight: 0),
+      body: _mainController.floatingNavBar
+          ? Stack(
+              clipBehavior: .none,
+              children: [
+                child,
+                if (bottomNav != null)
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    child: bottomNav,
+                  ),
+              ],
+            )
+          : Column(
+              children: [
+                Expanded(child: child),
+                ?bottomNav,
+              ],
+            ),
     );
 
     if (PlatformUtils.isMobile) {

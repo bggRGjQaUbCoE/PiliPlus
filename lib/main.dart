@@ -5,7 +5,6 @@ import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/widgets/back_detector.dart';
 import 'package:PiliPlus/common/widgets/custom_toast.dart';
 import 'package:PiliPlus/common/widgets/route_aware_mixin.dart';
-import 'package:PiliPlus/common/widgets/scale_app.dart';
 import 'package:PiliPlus/common/widgets/scroll_behavior.dart';
 import 'package:PiliPlus/http/init.dart';
 import 'package:PiliPlus/models/common/theme/theme_color_type.dart';
@@ -20,7 +19,6 @@ import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/device_utils.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/json_file_handler.dart';
-import 'package:PiliPlus/utils/max_screen_size.dart';
 import 'package:PiliPlus/utils/path_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/request_utils.dart';
@@ -45,8 +43,6 @@ import 'package:screen_brightness_platform_interface/screen_brightness_platform_
 import 'package:window_manager/window_manager.dart' hide calcWindowPosition;
 
 WebViewEnvironment? webViewEnvironment;
-
-EdgeInsets? tmpPadding;
 
 Future<void> _initDownPath() async {
   if (PlatformUtils.isDesktop) {
@@ -91,7 +87,7 @@ Future<void> _initSdkInt() async {
 }
 
 void main() async {
-  ScaledWidgetsFlutterBinding.ensureInitialized();
+  WidgetsFlutterBinding.ensureInitialized();
   MediaKit.ensureInitialized();
   await _initAppPath();
   try {
@@ -101,7 +97,6 @@ void main() async {
     if (kDebugMode) debugPrint('GStorage init error: $e');
     exit(0);
   }
-  ScaledWidgetsFlutterBinding.instance.scaleFactor = Pref.uiScale;
   await Future.wait([_initDownPath(), _initTmpPath()]);
   Get
     ..lazyPut(AccountService.new)
@@ -112,7 +107,7 @@ void main() async {
 
   if (PlatformUtils.isMobile) {
     await Future.wait([
-      if (Platform.isAndroid) ...[_initSdkInt(), MaxScreenSize.init()],
+      if (Platform.isAndroid) _initSdkInt(),
       if (Pref.horizontalScreen) ?fullMode() else ?portraitUpMode(),
       setupServiceLocator(),
     ]);
@@ -150,21 +145,23 @@ void main() async {
   } else if (PlatformUtils.isDesktop) {
     await windowManager.ensureInitialized();
 
-    final windowOptions = WindowOptions(
-      minimumSize: const Size(400, 720),
-      skipTaskbar: false,
-      titleBarStyle: Pref.showWindowTitleBar ? .normal : .hidden,
-      title: Constants.appName,
+    windowManager.waitUntilReadyToShow(
+      const WindowOptions(
+        minimumSize: Size(400, 720),
+        skipTaskbar: false,
+        titleBarStyle: .normal,
+        title: Constants.appName,
+      ),
+      () async {
+        final windowSize = Pref.windowSize;
+        await windowManager.setBounds(
+          await calcWindowPosition(windowSize) & windowSize,
+        );
+        if (Pref.isWindowMaximized) await windowManager.maximize();
+        await windowManager.show();
+        await windowManager.focus();
+      },
     );
-    windowManager.waitUntilReadyToShow(windowOptions, () async {
-      final windowSize = Pref.windowSize;
-      await windowManager.setBounds(
-        await calcWindowPosition(windowSize) & windowSize,
-      );
-      if (Pref.isWindowMaximized) await windowManager.maximize();
-      await windowManager.show();
-      await windowManager.focus();
-    });
   }
 
   if (Pref.dynamicColor) {
@@ -289,38 +286,13 @@ class MyApp extends StatelessWidget {
   }
 
   static Widget _builder(BuildContext context, Widget? child) {
-    final uiScale = Pref.uiScale;
-    final mediaQuery = MediaQuery.of(context);
-    final textScaler = TextScaler.linear(Pref.defaultTextScale);
-    if (uiScale != 1.0) {
-      child = MediaQuery(
-        data: mediaQuery.copyWith(
-          textScaler: textScaler,
-          size: mediaQuery.size / uiScale,
-          padding: (tmpPadding ?? mediaQuery.padding) / uiScale,
-          viewInsets: mediaQuery.viewInsets / uiScale,
-          viewPadding: (tmpPadding ?? mediaQuery.viewPadding) / uiScale,
-          devicePixelRatio: mediaQuery.devicePixelRatio * uiScale,
-        ),
-        child: child!,
-      );
-    } else {
-      child = MediaQuery(
-        data: mediaQuery.copyWith(
-          textScaler: textScaler,
-          padding: tmpPadding,
-          viewPadding: tmpPadding,
-        ),
-        child: child!,
-      );
-    }
     if (PlatformUtils.isDesktop) {
       return BackDetector(
         onBack: _onBack,
-        child: child,
+        child: child!,
       );
     }
-    return child;
+    return child!;
   }
 
   /// from [DynamicColorBuilderState.initPlatformState]
@@ -335,7 +307,7 @@ class MyApp extends StatelessWidget {
           debugPrint('dynamic_color: Core palette detected.');
         }
         _light = corePalette.toColorScheme();
-        _dark = corePalette.toColorScheme(brightness: Brightness.dark);
+        _dark = corePalette.toColorScheme(brightness: .dark);
         return true;
       }
     } on PlatformException {

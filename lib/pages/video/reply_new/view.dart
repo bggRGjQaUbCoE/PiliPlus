@@ -24,8 +24,6 @@ import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:PiliPlus/utils/extension/context_ext.dart';
 import 'package:PiliPlus/utils/grid.dart';
 import 'package:PiliPlus/utils/path_utils.dart';
-import 'package:PiliPlus/utils/storage_pref.dart';
-import 'package:PiliPlus/utils/theme_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart' hide TextField;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -73,16 +71,14 @@ class _ReplyPageState extends CommonRichTextPubPageState<ReplyPage> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    themeData = darkVideoPage ? ThemeUtils.darkTheme : Theme.of(context);
+    themeData = Theme.of(context);
   }
 
-  late final darkVideoPage =
-      Get.currentRoute == '/videoV' && Pref.darkVideoPage;
   late ThemeData themeData;
 
   @override
   Widget build(BuildContext context) {
-    Widget child = ViewSafeArea(
+    return ViewSafeArea(
       child: Align(
         alignment: Alignment.bottomCenter,
         child: Container(
@@ -105,7 +101,6 @@ class _ReplyPageState extends CommonRichTextPubPageState<ReplyPage> {
         ),
       ),
     );
-    return darkVideoPage ? Theme(data: themeData, child: child) : child;
   }
 
   @override

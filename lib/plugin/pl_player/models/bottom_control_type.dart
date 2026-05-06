@@ -9,8 +9,6 @@ enum BottomControlType {
   speed,
   fullscreen,
   viewPoints,
-  superResolution,
-  dmChart,
   qa,
   aiTranslate,
 }

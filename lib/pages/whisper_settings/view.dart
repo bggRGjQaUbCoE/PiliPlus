@@ -1,10 +1,12 @@
 import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
+import 'package:PiliPlus/common/widgets/scaffold.dart';
 import 'package:PiliPlus/grpc/bilibili/app/im/v1.pb.dart'
     show IMSettingType, Setting;
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/pages/whisper_block/view.dart';
 import 'package:PiliPlus/pages/whisper_settings/controller.dart';
 import 'package:PiliPlus/pages/whisper_settings/widgets/item.dart';
+import 'package:PiliPlus/utils/app_scheme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -38,11 +40,8 @@ class _WhisperSettingsPageState extends State<WhisperSettingsPage> {
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
-      appBar: AppBar(
-        title: Obx(() => Text(_controller.title.value)),
-      ),
+    return scaffold(
+      appBar: AppBar(title: Obx(() => Text(_controller.title.value))),
       body: Obx(() => _buildBody(theme, _controller.loadingState.value)),
     );
   }
@@ -131,10 +130,7 @@ class _WhisperSettingsPageState extends State<WhisperSettingsPage> {
       if (item.redirect.title == '黑名单') {
         Get.toNamed('/blackListPage');
       } else if (item.redirect.otherPage.url.startsWith('http')) {
-        Get.toNamed(
-          '/webview',
-          parameters: {'url': item.redirect.otherPage.url},
-        );
+        PiliScheme.routePushFromUrl(item.redirect.otherPage.url);
       } else {
         SmartDialog.showToast(item.redirect.otherPage.url);
       }
@@ -142,10 +138,7 @@ class _WhisperSettingsPageState extends State<WhisperSettingsPage> {
       if (item.redirect.title == '消息屏蔽词') {
         Get.to(const WhisperBlockPage());
       } else if (item.redirect.settingPage.url.startsWith('http')) {
-        Get.toNamed(
-          '/webview',
-          parameters: {'url': item.redirect.settingPage.url},
-        );
+        PiliScheme.routePushFromUrl(item.redirect.settingPage.url);
       } else {
         SmartDialog.showToast(item.redirect.settingPage.url);
       }

@@ -3,6 +3,7 @@ import 'dart:io' show File;
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
+import 'package:PiliPlus/common/widgets/scaffold.dart';
 import 'package:PiliPlus/http/constants.dart';
 import 'package:PiliPlus/http/init.dart';
 import 'package:PiliPlus/http/loading_state.dart';
@@ -10,13 +11,13 @@ import 'package:PiliPlus/models/common/member/profile_type.dart';
 import 'package:PiliPlus/models/user/info.dart';
 import 'package:PiliPlus/models_new/account_myinfo/data.dart';
 import 'package:PiliPlus/pages/mine/controller.dart';
+import 'package:PiliPlus/pages/webview/view.dart';
 import 'package:PiliPlus/services/account_service.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/app_sign.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/extension/file_ext.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
-import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
@@ -61,8 +62,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
+    return scaffold(
       appBar: AppBar(title: const Text('账号资料')),
       body: _buildBody(theme, _loadingState),
     );
@@ -129,7 +129,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
     return switch (loadingState) {
       Loading() => m3eLoading,
       Success(:final response) => ListView(
-        padding: EdgeInsets.only(
+        padding: .only(
           bottom: MediaQuery.viewPaddingOf(context).bottom + 25,
         ),
         children: [
@@ -216,7 +216,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
           _item(
             theme: theme,
             title: '头像挂件',
-            onTap: () => PageUtils.inAppWebview(
+            onTap: () => WebViewPage.toWebView(
               'https://www.bilibili.com/h5/mall/pendant/home',
             ),
           ),
@@ -232,7 +232,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
           _item(
             theme: theme,
             title: '哔哩哔哩认证',
-            onTap: () => PageUtils.inAppWebview(
+            onTap: () => WebViewPage.toWebView(
               'https://account.bilibili.com/official/mobile/home',
             ),
           ),

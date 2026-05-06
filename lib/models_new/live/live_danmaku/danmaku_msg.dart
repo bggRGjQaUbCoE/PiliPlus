@@ -2,7 +2,6 @@ import 'package:PiliPlus/models/model_owner.dart';
 import 'package:PiliPlus/models_new/live/live_danmaku/live_emote.dart';
 import 'package:PiliPlus/models_new/live/live_medal_wall/uinfo_medal.dart';
 import 'package:PiliPlus/pages/danmaku/danmaku_model.dart';
-import 'package:PiliPlus/utils/global_data.dart';
 
 class DanmakuMsg {
   final String name;
@@ -56,9 +55,7 @@ class DanmakuMsg {
         ts: checkInfo['ts'],
         ct: checkInfo['ct'],
       ),
-      medalInfo: !GlobalData().showMedal || medal == null
-          ? null
-          : UinfoMedal.fromJson(medal),
+      medalInfo: medal == null ? null : UinfoMedal.fromJson(medal),
     );
   }
 

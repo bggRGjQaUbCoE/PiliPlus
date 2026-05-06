@@ -2,7 +2,6 @@ import 'package:PiliPlus/common/widgets/progress_bar/audio_video_progress_bar.da
 import 'package:PiliPlus/common/widgets/progress_bar/segment_progress_bar.dart';
 import 'package:PiliPlus/pages/video/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
-import 'package:PiliPlus/plugin/pl_player/view/view.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:flutter/material.dart';
@@ -29,16 +28,14 @@ class BottomControl extends StatelessWidget {
   }
 
   void onDragUpdate(ThumbDragDetails duration) {
-    if (!controller.isFileSource && controller.showSeekPreview) {
+    if (!controller.isFileSource) {
       controller.updatePreviewIndex(duration.timeStamp.inSeconds);
     }
     controller.onUpdatedSliderProgress(duration.timeStamp);
   }
 
   void onSeek(Duration duration) {
-    if (controller.showSeekPreview) {
-      controller.showPreview.value = false;
-    }
+    controller.showPreview.value = false;
     controller
       ..onChangedSliderEnd()
       ..onChangedSlider(duration.inSeconds)
@@ -100,8 +97,7 @@ class BottomControl extends StatelessWidget {
                           segments: videoDetailController.segmentProgressList,
                         ),
                       ),
-                    if (controller.showViewPoints &&
-                        videoDetailController.viewPointList.isNotEmpty &&
+                    if (videoDetailController.viewPointList.isNotEmpty &&
                         videoDetailController.showVP.value)
                       Padding(
                         padding: const .only(bottom: 8.75),
@@ -113,10 +109,6 @@ class BottomControl extends StatelessWidget {
                               : null,
                         ),
                       ),
-                    if (videoDetailController.showDmTrendChart.value)
-                      if (videoDetailController.dmTrend.value?.dataOrNull
-                          case final list?)
-                        buildDmChart(primary, list, videoDetailController, 4.5),
                   ],
                 ),
               ),

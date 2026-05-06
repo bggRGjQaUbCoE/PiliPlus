@@ -21,12 +21,7 @@ mixin HeaderMixin<T extends StatefulWidget> on State<T> {
       isFullScreen: () => isFullScreen,
       padding: padding,
       child: StatefulBuilder(
-        builder: (context, setState) => plPlayerController.darkVideoPage
-            ? Theme(
-                data: Theme.of(this.context),
-                child: builder(this.context, setState),
-              )
-            : builder(context, setState),
+        builder: (context, setState) => builder(context, setState),
       ),
     );
   }
@@ -151,15 +146,15 @@ mixin HeaderMixin<T extends StatefulWidget> on State<T> {
         }
 
         return Padding(
-          padding: const EdgeInsets.all(12),
+          padding: const .all(12),
           child: Material(
-            clipBehavior: Clip.hardEdge,
+            clipBehavior: .hardEdge,
             color: theme.colorScheme.surface,
-            borderRadius: const BorderRadius.all(Radius.circular(12)),
+            borderRadius: const .all(.circular(12)),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 14),
+              padding: const .symmetric(horizontal: 14),
               child: ListView(
-                padding: EdgeInsets.zero,
+                padding: .zero,
                 children: [
                   const SizedBox(
                     height: 45,

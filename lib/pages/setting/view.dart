@@ -1,4 +1,5 @@
 import 'package:PiliPlus/common/widgets/flutter/list_tile.dart';
+import 'package:PiliPlus/common/widgets/scaffold.dart';
 import 'package:PiliPlus/common/widgets/view_safe_area.dart';
 import 'package:PiliPlus/http/login.dart';
 import 'package:PiliPlus/models/common/setting_type.dart';
@@ -7,18 +8,15 @@ import 'package:PiliPlus/pages/login/controller.dart';
 import 'package:PiliPlus/pages/setting/extra_setting.dart';
 import 'package:PiliPlus/pages/setting/play_setting.dart';
 import 'package:PiliPlus/pages/setting/privacy_setting.dart';
-import 'package:PiliPlus/pages/setting/recommend_setting.dart';
 import 'package:PiliPlus/pages/setting/style_setting.dart';
 import 'package:PiliPlus/pages/setting/video_setting.dart';
 import 'package:PiliPlus/pages/setting/widgets/multi_select_dialog.dart';
-import 'package:PiliPlus/pages/webdav/view.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/accounts/account.dart';
 import 'package:PiliPlus/utils/extension/size_ext.dart';
 import 'package:flutter/material.dart' hide ListTile;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
-import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
 class _SettingsModel {
   final SettingType type;
@@ -51,11 +49,6 @@ class _SettingPageState extends State<SettingPage> {
       icon: Icon(Icons.privacy_tip_outlined),
     ),
     _SettingsModel(
-      type: SettingType.recommendSetting,
-      subtitle: '推荐来源（web/app）、刷新保留内容、过滤器',
-      icon: Icon(Icons.explore_outlined),
-    ),
-    _SettingsModel(
       type: SettingType.videoSetting,
       subtitle: '画质、音质、解码、缓冲、音频输出等',
       icon: Icon(Icons.video_settings_outlined),
@@ -76,10 +69,6 @@ class _SettingPageState extends State<SettingPage> {
       icon: Icon(Icons.extension_outlined),
     ),
     _SettingsModel(
-      type: SettingType.webdavSetting,
-      icon: Icon(MdiIcons.databaseCogOutline),
-    ),
-    _SettingsModel(
       type: SettingType.about,
       icon: Icon(Icons.info_outline),
     ),
@@ -89,11 +78,8 @@ class _SettingPageState extends State<SettingPage> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     _isPortrait = MediaQuery.sizeOf(context).isPortrait;
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
-      appBar: AppBar(
-        title: _isPortrait ? const Text('设置') : Text(_type.title),
-      ),
+    return scaffold(
+      appBar: AppBar(title: _isPortrait ? const Text('设置') : Text(_type.title)),
       body: ViewSafeArea(
         child: _isPortrait
             ? _buildList(theme)
@@ -114,9 +100,6 @@ class _SettingPageState extends State<SettingPage> {
                       SettingType.privacySetting => const PrivacySetting(
                         showAppBar: false,
                       ),
-                      SettingType.recommendSetting => const RecommendSetting(
-                        showAppBar: false,
-                      ),
                       SettingType.videoSetting => const VideoSetting(
                         showAppBar: false,
                       ),
@@ -127,9 +110,6 @@ class _SettingPageState extends State<SettingPage> {
                         showAppBar: false,
                       ),
                       SettingType.extraSetting => const ExtraSetting(
-                        showAppBar: false,
-                      ),
-                      SettingType.webdavSetting => const WebDavSettingPage(
                         showAppBar: false,
                       ),
                       SettingType.about => const AboutPage(showAppBar: false),
@@ -171,7 +151,7 @@ class _SettingPageState extends State<SettingPage> {
       color: theme.colorScheme.outline,
     );
     return ListView(
-      padding: EdgeInsets.only(bottom: padding.bottom + 100),
+      padding: .only(bottom: padding.bottom + 100),
       children: [
         _buildSearchItem(theme),
         ..._items

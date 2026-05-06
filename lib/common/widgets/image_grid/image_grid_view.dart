@@ -55,12 +55,9 @@ class ImageModel {
 
   bool get isLongPic =>
       _isLongPic ??= (height / width) > Style.imgMaxRatio && width > 100;
-  bool get isLivePhoto =>
-      _isLivePhoto ??= enableLivePhoto && liveUrl?.isNotEmpty == true;
+  bool get isLivePhoto => _isLivePhoto ??= liveUrl?.isNotEmpty == true;
 
   bool get isGif => url.endsWith(ImageUtils.kSuffixGIF);
-
-  static bool enableLivePhoto = Pref.enableLivePhoto;
 }
 
 class ImageGridView extends StatelessWidget {

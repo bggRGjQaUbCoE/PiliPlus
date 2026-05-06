@@ -2,12 +2,11 @@ import 'package:PiliPlus/common/widgets/appbar/appbar.dart';
 import 'package:PiliPlus/common/widgets/flutter/page/tabs.dart';
 import 'package:PiliPlus/common/widgets/flutter/pop_scope.dart';
 import 'package:PiliPlus/common/widgets/gesture/horizontal_drag_gesture_recognizer.dart';
+import 'package:PiliPlus/common/widgets/scaffold.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart';
 import 'package:PiliPlus/common/widgets/view_safe_area.dart';
 import 'package:PiliPlus/models/common/later_view_type.dart';
 import 'package:PiliPlus/models_new/later/list.dart';
-import 'package:PiliPlus/pages/common/fab_mixin.dart'
-    show NoRightMarginFabLocation;
 import 'package:PiliPlus/pages/later/base_controller.dart';
 import 'package:PiliPlus/pages/later/controller.dart';
 import 'package:PiliPlus/utils/accounts.dart';
@@ -73,78 +72,91 @@ class _LaterPageState extends State<LaterPage>
               currCtr().handleSelect();
             }
           },
-          child: Scaffold(
-            resizeToAvoidBottomInset: false,
+          child: scaffold(
             appBar: _buildAppbar(enableMultiSelect),
-            floatingActionButtonLocation: const NoRightMarginFabLocation(),
-            floatingActionButton: Padding(
-              padding: const .only(right: kFloatingActionButtonMargin),
-              child: Obx(
-                () => currCtr().loadingState.value.isSuccess
-                    ? AnimatedSlide(
-                        offset: _baseCtr.isPlayAll.value
-                            ? Offset.zero
-                            : const Offset(0.75, 0),
-                        duration: const Duration(milliseconds: 120),
-                        child: GestureDetector(
-                          onHorizontalDragDown: (details) =>
-                              _baseCtr.dx = details.localPosition.dx,
-                          onHorizontalDragStart: (details) =>
-                              _baseCtr.setIsPlayAll(
-                                details.localPosition.dx < _baseCtr.dx,
-                              ),
-                          child: FloatingActionButton.extended(
-                            onPressed: () {
-                              if (_baseCtr.isPlayAll.value) {
-                                currCtr().toViewPlayAll();
-                              } else {
-                                _baseCtr.setIsPlayAll(true);
-                              }
-                            },
-                            label: const Text('播放全部'),
-                            icon: const Icon(Icons.playlist_play),
-                          ),
-                        ),
-                      )
-                    : const SizedBox.shrink(),
-              ),
-            ),
-            body: ViewSafeArea(
-              child: Column(
-                children: [
-                  TabBar(
-                    // isScrollable: true,
-                    // tabAlignment: TabAlignment.start,
-                    controller: _tabController,
-                    tabs: LaterViewType.values.map((item) {
-                      final count = _baseCtr.counts[item.index];
-                      return Tab(
-                        text: '${item.title}${count != -1 ? '($count)' : ''}',
-                      );
-                    }).toList(),
-                    onTap: (_) {
-                      if (!_tabController.indexIsChanging) {
-                        currCtr().scrollController.animToTop();
-                      } else if (enableMultiSelect) {
-                        currCtr(_tabController.previousIndex).handleSelect();
-                      }
-                    },
+            body: Stack(
+              clipBehavior: .none,
+              children: [
+                ViewSafeArea(
+                  child: Column(
+                    children: [
+                      TabBar(
+                        // isScrollable: true,
+                        // tabAlignment: TabAlignment.start,
+                        controller: _tabController,
+                        tabs: LaterViewType.values.map((item) {
+                          final count = _baseCtr.counts[item.index];
+                          return Tab(
+                            text:
+                                '${item.title}${count != -1 ? '($count)' : ''}',
+                          );
+                        }).toList(),
+                        onTap: (_) {
+                          if (!_tabController.indexIsChanging) {
+                            currCtr().scrollController.animToTop();
+                          } else if (enableMultiSelect) {
+                            currCtr(
+                              _tabController.previousIndex,
+                            ).handleSelect();
+                          }
+                        },
+                      ),
+                      Expanded(
+                        child:
+                            TabBarView<CustomHorizontalDragGestureRecognizer>(
+                              physics: enableMultiSelect
+                                  ? const NeverScrollableScrollPhysics()
+                                  : clampingScrollPhysics,
+                              controller: _tabController,
+                              horizontalDragGestureRecognizer:
+                                  CustomHorizontalDragGestureRecognizer.new,
+                              children: LaterViewType.values
+                                  .map((item) => item.page)
+                                  .toList(),
+                            ),
+                      ),
+                    ],
                   ),
-                  Expanded(
-                    child: TabBarView<CustomHorizontalDragGestureRecognizer>(
-                      physics: enableMultiSelect
-                          ? const NeverScrollableScrollPhysics()
-                          : clampingScrollPhysics,
-                      controller: _tabController,
-                      horizontalDragGestureRecognizer:
-                          CustomHorizontalDragGestureRecognizer.new,
-                      children: LaterViewType.values
-                          .map((item) => item.page)
-                          .toList(),
+                ),
+                Positioned(
+                  right: 0,
+                  bottom:
+                      MediaQuery.viewPaddingOf(context).bottom +
+                      kFloatingActionButtonMargin,
+                  child: Padding(
+                    padding: const .only(right: kFloatingActionButtonMargin),
+                    child: Obx(
+                      () => currCtr().loadingState.value.isSuccess
+                          ? AnimatedSlide(
+                              offset: _baseCtr.isPlayAll.value
+                                  ? Offset.zero
+                                  : const Offset(0.75, 0),
+                              duration: const Duration(milliseconds: 120),
+                              child: GestureDetector(
+                                onHorizontalDragDown: (details) =>
+                                    _baseCtr.dx = details.localPosition.dx,
+                                onHorizontalDragStart: (details) =>
+                                    _baseCtr.setIsPlayAll(
+                                      details.localPosition.dx < _baseCtr.dx,
+                                    ),
+                                child: FloatingActionButton.extended(
+                                  onPressed: () {
+                                    if (_baseCtr.isPlayAll.value) {
+                                      currCtr().toViewPlayAll();
+                                    } else {
+                                      _baseCtr.setIsPlayAll(true);
+                                    }
+                                  },
+                                  label: const Text('播放全部'),
+                                  icon: const Icon(Icons.playlist_play),
+                                ),
+                              ),
+                            )
+                          : const SizedBox.shrink(),
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         );

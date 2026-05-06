@@ -2,6 +2,7 @@ import 'package:PiliPlus/common/skeleton/video_reply.dart';
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
+import 'package:PiliPlus/common/widgets/scaffold.dart';
 import 'package:PiliPlus/common/widgets/sliver/sliver_floating_header.dart';
 import 'package:PiliPlus/common/widgets/view_safe_area.dart';
 import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
@@ -56,58 +57,71 @@ class _MainReplyPageState extends State<MainReplyPage>
   @override
   Widget build(BuildContext context) {
     final colorScheme = ColorScheme.of(context);
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
+    return scaffold(
       appBar: AppBar(title: const Text('查看评论')),
-      body: NotificationListener<UserScrollNotification>(
-        onNotification: (notification) {
-          final direction = notification.direction;
-          if (direction == .forward) {
-            showFab();
-          } else if (direction == .reverse) {
-            hideFab();
-          }
-          return false;
-        },
-        child: refreshIndicator(
-          onRefresh: _controller.onRefresh,
-          child: Padding(
-            padding: EdgeInsets.only(
-              left: padding.left,
-              right: padding.right,
-            ),
-            child: CustomScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              slivers: [
-                buildReplyHeader(colorScheme),
-                Obx(
-                  () => _buildBody(colorScheme, _controller.loadingState.value),
-                ),
-              ],
-            ),
-          ),
-        ).constraintWidth(),
-      ),
-      floatingActionButtonLocation: const NoBottomPaddingFabLocation(),
-      floatingActionButton: SlideTransition(
-        position: fabAnimation,
-        child: Padding(
-          padding: .only(bottom: padding.bottom + kFloatingActionButtonMargin),
-          child: FloatingActionButton(
-            heroTag: null,
-            onPressed: () {
-              try {
-                _controller.onReply(
-                  null,
-                  oid: _controller.oid,
-                  replyType: _controller.replyType,
-                );
-              } catch (_) {}
+      body: Stack(
+        clipBehavior: .none,
+        children: [
+          NotificationListener<UserScrollNotification>(
+            onNotification: (notification) {
+              final direction = notification.direction;
+              if (direction == .forward) {
+                showFab();
+              } else if (direction == .reverse) {
+                hideFab();
+              }
+              return false;
             },
-            tooltip: '评论',
-            child: const Icon(Icons.reply),
+            child: refreshIndicator(
+              onRefresh: _controller.onRefresh,
+              child: Padding(
+                padding: EdgeInsets.only(
+                  left: padding.left,
+                  right: padding.right,
+                ),
+                child: CustomScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  slivers: [
+                    buildReplyHeader(colorScheme),
+                    Obx(
+                      () => _buildBody(
+                        colorScheme,
+                        _controller.loadingState.value,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ).constraintWidth(),
           ),
-        ),
+          Positioned(
+            right: 0,
+            bottom: 0,
+            child: SlideTransition(
+              position: fabAnimation,
+              child: Padding(
+                padding: .only(
+                  right: kFloatingActionButtonMargin,
+                  bottom: padding.bottom + kFloatingActionButtonMargin,
+                ),
+                child: FloatingActionButton(
+                  heroTag: null,
+                  onPressed: () {
+                    try {
+                      _controller.onReply(
+                        null,
+                        oid: _controller.oid,
+                        replyType: _controller.replyType,
+                      );
+                    } catch (_) {}
+                  },
+                  tooltip: '评论',
+                  child: const Icon(Icons.reply),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -218,8 +232,7 @@ class _MainReplyPageState extends State<MainReplyPage>
       int oid = replyItem.oid.toInt();
       int rpid = replyItem.id.toInt();
       Get.to(
-        Scaffold(
-          resizeToAvoidBottomInset: false,
+        scaffold(
           appBar: AppBar(
             title: const Text('评论详情'),
             shape: Border(

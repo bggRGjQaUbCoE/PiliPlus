@@ -5,13 +5,10 @@
 import 'dart:math' as math;
 import 'dart:ui' show SemanticsRole, lerpDouble;
 
-import 'package:PiliPlus/pages/main/controller.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart' show DragStartBehavior;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:get/get_core/src/get_main.dart';
-import 'package:get/get_instance/src/extension_instance.dart';
 
 const double _kTabWidth = 51.0;
 const double _kTextAndIconTabWidth = 72.0;
@@ -1626,8 +1623,6 @@ class _VerticalTabBarState extends State<VerticalTabBar> {
 
   int get maxTabIndex => _indicatorPainter!.maxTabIndex;
 
-  final _mainCtr = Get.find<MainController>();
-
   double _tabScrollOffset(
     int index,
     double viewportWidth,
@@ -1650,16 +1645,7 @@ class _VerticalTabBarState extends State<VerticalTabBar> {
     final double paddingTop =
         widget.padding?.resolve(TextDirection.ltr).top ?? 0;
     return clampDouble(
-      tabCenter +
-          paddingTop -
-          viewportWidth / 2.0 +
-          (_mainCtr.useBottomNav &&
-                  switch (_mainCtr.barHideType) {
-                    .instant => _mainCtr.showBottomBar?.value ?? true,
-                    .sync => (_mainCtr.barOffset?.value ?? 0) == 0,
-                  }
-              ? 80.0
-              : 0.0),
+      tabCenter + paddingTop - viewportWidth / 2.0,
       minExtent,
       maxExtent,
     );

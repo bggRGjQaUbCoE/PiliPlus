@@ -10,9 +10,6 @@ class MusicDetailController extends CommonDynController {
   @override
   late final int replyType;
 
-  @override
-  dynamic get sourceId => oid.toString();
-
   final infoState = LoadingState<MusicDetail>.loading().obs;
 
   late final String musicId;

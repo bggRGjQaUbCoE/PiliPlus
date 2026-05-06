@@ -1,4 +1,5 @@
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
+import 'package:PiliPlus/common/widgets/scaffold.dart';
 import 'package:PiliPlus/common/widgets/view_safe_area.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/member/contribute_type.dart';
@@ -78,8 +79,7 @@ class _SeasonSeriesPageState extends State<SeasonSeriesPage>
                           ? item.meta!.seasonId
                           : item.meta!.seriesId;
                       Get.to(
-                        Scaffold(
-                          resizeToAvoidBottomInset: false,
+                        scaffold(
                           appBar: AppBar(title: Text(item.meta!.name!)),
                           body: ViewSafeArea(
                             child: MemberVideo(

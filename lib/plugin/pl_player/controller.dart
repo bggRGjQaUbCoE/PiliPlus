@@ -12,6 +12,7 @@ import 'package:PiliPlus/http/video.dart';
 import 'package:PiliPlus/models/common/account_type.dart';
 import 'package:PiliPlus/models/common/audio_normalization.dart';
 import 'package:PiliPlus/models/common/super_resolution_type.dart';
+import 'package:PiliPlus/models/common/video/video_quality.dart';
 import 'package:PiliPlus/models/common/video/video_type.dart';
 import 'package:PiliPlus/models/user/danmaku_rule.dart';
 import 'package:PiliPlus/models/video/play/url.dart';
@@ -600,11 +601,130 @@ class PlPlayerController with BlockConfigMixin {
       .._playerCount += 1;
   }
 
+  static const _normalVideoBufferSize = 4 * 1024 * 1024;
+  static const _normalLiveBufferSize = 16 * 1024 * 1024;
+  static const _expandedVideoBufferSize = 32 * 1024 * 1024;
+  static const _expandedLiveBufferSize = 64 * 1024 * 1024;
+  static const _iosHighLoadRateThreshold = 2.5;
+
   bool _processing = false;
   bool get processing => _processing;
 
   // offline
   bool get isFileSource => dataSource is FileSource;
+
+  int? _videoQualityCode;
+  String? _frameRate;
+
+  bool get _isIosHighLoadVideo {
+    if (!Platform.isIOS || isFileSource || isLive) {
+      return false;
+    }
+    if ((_videoQualityCode ?? 0) >= VideoQuality.high108060.code) {
+      return true;
+    }
+    final frameRate = _parseFrameRate(_frameRate);
+    final width = this.width ?? 0;
+    final height = this.height ?? 0;
+    final longSide = max(width, height);
+    final shortSide = min(width, height);
+    return frameRate != null &&
+        frameRate >= 50 &&
+        longSide >= 1920 &&
+        shortSide >= 1080;
+  }
+
+  double? _parseFrameRate(String? value) {
+    if (value == null) {
+      return null;
+    }
+    final match = RegExp(
+      r'^\s*(\d+(?:\.\d+)?)(?:/(\d+(?:\.\d+)?))?',
+    ).firstMatch(value);
+    if (match == null) {
+      return null;
+    }
+    final numerator = double.parse(match.group(1)!);
+    final denominator = double.tryParse(match.group(2) ?? '') ?? 1;
+    if (denominator == 0) {
+      return null;
+    }
+    return numerator / denominator;
+  }
+
+  int get _bufferSize {
+    if (Pref.expandBuffer) {
+      return isLive ? _expandedLiveBufferSize : _expandedVideoBufferSize;
+    }
+    if (_isIosHighLoadVideo) {
+      return _expandedVideoBufferSize;
+    }
+    return isLive ? _normalLiveBufferSize : _normalVideoBufferSize;
+  }
+
+  bool _iosHighLoadRateMode = false;
+  String? _iosHighLoadFramedrop;
+  String? _iosHighLoadVideoSync;
+  String? _iosHighLoadInterpolation;
+
+  String? _getPlayerProperty(NativePlayer player, String property) {
+    try {
+      final value = player.getProperty(property);
+      return value.isEmpty ? null : value;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  void _setPlayerProperty(
+    NativePlayer player,
+    String property,
+    String value,
+  ) {
+    try {
+      player.setProperty(property, value);
+    } catch (_) {}
+  }
+
+  void _applyBufferSize(NativePlayer player) {
+    final value = _bufferSize.toString();
+    _setPlayerProperty(player, 'demuxer-max-bytes', value);
+    _setPlayerProperty(player, 'demuxer-max-back-bytes', value);
+  }
+
+  void _applyIosHighLoadRateMode(NativePlayer player, double speed) {
+    final enable =
+        _isIosHighLoadVideo &&
+        !onlyPlayAudio.value &&
+        speed >= _iosHighLoadRateThreshold;
+    if (_iosHighLoadRateMode == enable) {
+      return;
+    }
+    if (enable) {
+      _iosHighLoadFramedrop ??= _getPlayerProperty(player, 'framedrop');
+      _iosHighLoadVideoSync ??= _getPlayerProperty(player, 'video-sync');
+      _iosHighLoadInterpolation ??= _getPlayerProperty(player, 'interpolation');
+      _setPlayerProperty(player, 'framedrop', 'decoder+vo');
+      _setPlayerProperty(player, 'video-sync', 'audio');
+      _setPlayerProperty(player, 'interpolation', 'no');
+    } else {
+      _setPlayerProperty(player, 'framedrop', _iosHighLoadFramedrop ?? 'vo');
+      _setPlayerProperty(
+        player,
+        'video-sync',
+        _iosHighLoadVideoSync ?? Pref.videoSync,
+      );
+      _setPlayerProperty(
+        player,
+        'interpolation',
+        _iosHighLoadInterpolation ?? 'no',
+      );
+      _iosHighLoadFramedrop = null;
+      _iosHighLoadVideoSync = null;
+      _iosHighLoadInterpolation = null;
+    }
+    _iosHighLoadRateMode = enable;
+  }
 
   late final _audioNormalization = Pref.audioNormalization;
   late final enableAudioNormalization =
@@ -621,8 +741,10 @@ class PlPlayerController with BlockConfigMixin {
     Duration? seekTo,
     // 初始化播放速度
     double speed = 1.0,
+    int? videoQualityCode,
     int? width,
     int? height,
+    String? frameRate,
     Duration? duration,
     // 方向
     bool? isVertical,
@@ -642,8 +764,10 @@ class PlPlayerController with BlockConfigMixin {
       _processing = true;
       this.isLive = isLive;
       _videoType = videoType ?? VideoType.ugc;
+      _videoQualityCode = videoQualityCode;
       this.width = width;
       this.height = height;
+      _frameRate = frameRate;
       this.dataSource = dataSource;
       _autoPlay = autoplay;
       // 初始化视频倍速
@@ -780,9 +904,7 @@ class PlPlayerController with BlockConfigMixin {
 
     final player = await Player.create(
       configuration: PlayerConfiguration(
-        bufferSize: Pref.expandBuffer
-            ? (isLive ? 64 * 1024 * 1024 : 32 * 1024 * 1024)
-            : (isLive ? 16 * 1024 * 1024 : 4 * 1024 * 1024),
+        bufferSize: _bufferSize,
         logLevel: kDebugMode ? .warn : .error,
         options: opt,
       ),
@@ -876,6 +998,9 @@ class PlPlayerController with BlockConfigMixin {
         }
       }
     }
+
+    _applyBufferSize(player);
+    _applyIosHighLoadRateMode(player, playbackSpeed);
 
     await player.open(
       Media(
@@ -1147,11 +1272,15 @@ class PlPlayerController with BlockConfigMixin {
   Future<void> setPlaybackSpeed(double speed) async {
     lastPlaybackSpeed = playbackSpeed;
 
-    if (speed == _videoPlayerController?.state.rate) {
+    final player = _videoPlayerController;
+    if (speed == player?.state.rate) {
       return;
     }
 
-    await _videoPlayerController?.setRate(speed);
+    if (player != null) {
+      _applyIosHighLoadRateMode(player, speed);
+    }
+    await player?.setRate(speed);
     _playbackSpeed.value = speed;
     if (danmakuController != null) {
       try {

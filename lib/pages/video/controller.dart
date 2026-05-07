@@ -631,6 +631,12 @@ class VideoDetailController extends GetxController
   ({int mode, int fontSize, Color color})? dmConfig;
   String? savedDanmaku;
 
+  bool _preferHevcForIosHighQa(int qa) =>
+      Platform.isIOS && qa >= VideoQuality.high108060.code;
+
+  bool _isHevcCodec(String codec) =>
+      VideoDecodeFormatType.HEVC.codes.any(codec.startsWith);
+
   /// 发送弹幕
   Future<void> showShootDanmakuSheet() async {
     if (plPlayerController.dmState.contains(cid.value)) {
@@ -670,6 +676,14 @@ class VideoDetailController extends GetxController
   VideoItem findVideoByQa(int qa) {
     /// 根据currentVideoQa和currentDecodeFormats 重新设置videoUrl
     final videoList = data.dash!.video!.where((i) => i.id == qa).toList();
+
+    if (_preferHevcForIosHighQa(qa)) {
+      for (final i in videoList) {
+        if (_isHevcCodec(i.codecs!)) {
+          return i;
+        }
+      }
+    }
 
     final currentDecodeFormats = this.currentDecodeFormats.codes;
     final defaultDecodeFormats = VideoDecodeFormatType.fromString(
@@ -780,8 +794,10 @@ class VideoDetailController extends GetxController
         videoState.value = true;
         setSubtitle(vttSubtitlesIndex.value);
       },
+      videoQualityCode: firstVideo.quality.code,
       width: firstVideo.width,
       height: firstVideo.height,
+      frameRate: firstVideo.frameRate,
       volume: volume ?? this.volume,
       autoFullScreenFlag: autoFullScreenFlag,
     );
@@ -951,22 +967,27 @@ class VideoDetailController extends GetxController
       currentDecodeFormats = VideoDecodeFormatType.fromString(cacheDecode);
       VideoDecodeFormatType secondDecodeFormats =
           VideoDecodeFormatType.fromString(cacheSecondDecode);
-      // 当前视频没有对应格式返回第一个
-      int flag = 0;
-      for (final e in supportDecodeFormats) {
-        if (currentDecodeFormats.codes.any(e.startsWith)) {
-          flag = 1;
-          break;
-        } else if (secondDecodeFormats.codes.any(e.startsWith)) {
-          flag = 2;
+      if (_preferHevcForIosHighQa(targetVideoQa) &&
+          supportDecodeFormats.any(_isHevcCodec)) {
+        currentDecodeFormats = VideoDecodeFormatType.HEVC;
+      } else {
+        // 当前视频没有对应格式返回第一个
+        int flag = 0;
+        for (final e in supportDecodeFormats) {
+          if (currentDecodeFormats.codes.any(e.startsWith)) {
+            flag = 1;
+            break;
+          } else if (secondDecodeFormats.codes.any(e.startsWith)) {
+            flag = 2;
+          }
         }
-      }
-      if (flag == 2) {
-        currentDecodeFormats = secondDecodeFormats;
-      } else if (flag == 0) {
-        currentDecodeFormats = VideoDecodeFormatType.fromString(
-          supportDecodeFormats.first,
-        );
+        if (flag == 2) {
+          currentDecodeFormats = secondDecodeFormats;
+        } else if (flag == 0) {
+          currentDecodeFormats = VideoDecodeFormatType.fromString(
+            supportDecodeFormats.first,
+          );
+        }
       }
 
       /// 取出符合当前解码格式的videoItem

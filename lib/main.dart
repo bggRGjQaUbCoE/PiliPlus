@@ -7,6 +7,7 @@ import 'package:PiliPlus/common/widgets/custom_toast.dart';
 import 'package:PiliPlus/common/widgets/route_aware_mixin.dart';
 import 'package:PiliPlus/common/widgets/scale_app.dart';
 import 'package:PiliPlus/common/widgets/scroll_behavior.dart';
+import 'package:PiliPlus/http/app_dns.dart';
 import 'package:PiliPlus/http/init.dart';
 import 'package:PiliPlus/models/common/theme/theme_color_type.dart';
 import 'package:PiliPlus/plugin/pl_player/utils/fullscreen.dart';
@@ -397,8 +398,19 @@ class _CustomHttpOverrides extends HttpOverrides {
     // ..maxConnectionsPerHost = 32
     /// The default value is 15 seconds.
     //   ..idleTimeout = const Duration(seconds: 15);
-    if (kDebugMode || Pref.badCertificateCallback) {
+    final acceptBadCertificate = kDebugMode || Pref.badCertificateCallback;
+    if (acceptBadCertificate) {
       client.badCertificateCallback = (cert, host, port) => true;
+    }
+    if (Pref.enableAppDns) {
+      client.connectionFactory = (uri, proxyHost, proxyPort) =>
+          AppDns.connectionTask(
+            uri,
+            proxyHost,
+            proxyPort,
+            context: context,
+            acceptBadCertificate: acceptBadCertificate,
+          );
     }
     return client;
   }

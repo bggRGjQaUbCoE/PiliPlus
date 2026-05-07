@@ -9,7 +9,9 @@ import 'package:PiliPlus/common/widgets/image_grid/image_grid_view.dart'
     show ImageGridView, ImageModel;
 import 'package:PiliPlus/common/widgets/pendant_avatar.dart';
 import 'package:PiliPlus/grpc/reply.dart';
+import 'package:PiliPlus/http/app_dns.dart';
 import 'package:PiliPlus/http/fav.dart';
+import 'package:PiliPlus/http/init.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/audio_normalization.dart';
 import 'package:PiliPlus/models/common/dynamic/dynamics_type.dart';
@@ -536,6 +538,19 @@ List<SettingsModel> get extraSettings => [
     setKey: SettingBoxKey.enableHttp2,
     defaultVal: false,
     needReboot: true,
+  ),
+  SplitModel(
+    normalModel: const NormalModel.split(
+      title: '使用内置 DNS',
+      subtitle: '点击设置 DNS 服务器',
+      leading: Icon(Icons.dns_outlined),
+    ),
+    switchModel: SwitchModel.split(
+      setKey: SettingBoxKey.enableAppDns,
+      defaultVal: false,
+      onTap: _showDnsDialog,
+      onChanged: (_) => Request.resetAdapters(),
+    ),
   ),
   const NormalModel(
     title: '连接重试次数',
@@ -1156,6 +1171,80 @@ Future<void> _showMemberTabDialog(
     await GStorage.setting.put(SettingBoxKey.memberTab, res.index);
     setState();
   }
+}
+
+void _showDnsDialog(BuildContext context) {
+  String dnsServers = Pref.appDnsServers.isEmpty
+      ? AppDns.defaultServersText
+      : Pref.appDnsServers;
+
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Text('设置 DNS'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const SizedBox(height: 6),
+          TextFormField(
+            autofocus: true,
+            initialValue: dnsServers,
+            minLines: 4,
+            maxLines: 8,
+            decoration: const InputDecoration(
+              isDense: true,
+              labelText: '每行一个 DNS 服务器 IP，可填写 IP:端口',
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.all(Radius.circular(6)),
+              ),
+            ),
+            onChanged: (value) => dnsServers = value,
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () async {
+            Get.back();
+            await GStorage.setting.delete(SettingBoxKey.appDnsServers);
+            Request.resetAdapters();
+            SmartDialog.showToast('已恢复默认');
+          },
+          child: const Text('恢复默认'),
+        ),
+        TextButton(
+          onPressed: Get.back,
+          child: Text(
+            '取消',
+            style: TextStyle(color: ColorScheme.of(context).outline),
+          ),
+        ),
+        TextButton(
+          onPressed: () async {
+            final normalized = AppDns.normalizeServersText(dnsServers);
+            if (dnsServers.trim().isNotEmpty &&
+                (!AppDns.isValidServersText(dnsServers) ||
+                    normalized.isEmpty)) {
+              SmartDialog.showToast('DNS 地址格式错误');
+              return;
+            }
+            Get.back();
+            if (normalized.isEmpty) {
+              await GStorage.setting.delete(SettingBoxKey.appDnsServers);
+            } else {
+              await GStorage.setting.put(
+                SettingBoxKey.appDnsServers,
+                normalized,
+              );
+            }
+            Request.resetAdapters();
+            SmartDialog.showToast('已保存');
+          },
+          child: const Text('确认'),
+        ),
+      ],
+    ),
+  );
 }
 
 void _showProxyDialog(BuildContext context) {

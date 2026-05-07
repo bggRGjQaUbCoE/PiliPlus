@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:PiliPlus/http/app_dns.dart';
+import 'package:PiliPlus/http/app_dns_connection_manager.dart';
 import 'package:PiliPlus/http/api.dart';
 import 'package:PiliPlus/http/constants.dart';
 import 'package:PiliPlus/http/loading_state.dart';
@@ -133,6 +135,58 @@ class Request {
     Connectivity().onConnectivityChanged.skip(1).listen(_onConnectivityChanged);
   }
 
+  static void resetAdapters() => _resetAdaptersForNetworkChange();
+
+  static HttpClient _createHttpClient({
+    required bool enableSystemProxy,
+    required String systemProxyHost,
+    required int? systemProxyPort,
+    required bool enableAppDns,
+  }) {
+    final acceptBadCertificate =
+        enableSystemProxy || Pref.badCertificateCallback;
+    final client = HttpClient()
+      ..idleTimeout = const Duration(seconds: 15)
+      ..autoUncompress = false;
+    if (enableSystemProxy) {
+      client
+        ..findProxy = ((_) => 'PROXY $systemProxyHost:$systemProxyPort')
+        ..badCertificateCallback = (cert, host, port) => true;
+    } else if (Pref.badCertificateCallback) {
+      client.badCertificateCallback = (cert, host, port) => true;
+    }
+    if (enableAppDns) {
+      client.connectionFactory = (uri, proxyHost, proxyPort) =>
+          AppDns.connectionTask(
+            uri,
+            proxyHost,
+            proxyPort,
+            acceptBadCertificate: acceptBadCertificate,
+          );
+    }
+    return client;
+  }
+
+  static void Function(Uri, ClientSetting)? _http2ClientCreate({
+    required bool enableSystemProxy,
+    required String systemProxyHost,
+    required int? systemProxyPort,
+  }) {
+    if (enableSystemProxy) {
+      return (_, config) => config
+        ..proxy = Uri(
+          scheme: 'http',
+          host: systemProxyHost,
+          port: systemProxyPort,
+        )
+        ..onBadCertificate = (_) => true;
+    }
+    if (Pref.badCertificateCallback) {
+      return (_, config) => config.onBadCertificate = (_) => true;
+    }
+    return null;
+  }
+
   static (IOHttpClientAdapter, ConnectionManager?) _createPool() {
     final bool enableSystemProxy;
     late final String systemProxyHost;
@@ -144,34 +198,32 @@ class Request {
     } else {
       enableSystemProxy = false;
     }
+    final enableAppDns = Pref.enableAppDns;
 
     final http11Adapter = IOHttpClientAdapter(
-      createHttpClient: enableSystemProxy
-          ? () => HttpClient()
-              ..idleTimeout = const Duration(seconds: 15)
-              ..autoUncompress = false
-              ..findProxy = ((_) => 'PROXY $systemProxyHost:$systemProxyPort')
-              ..badCertificateCallback = (cert, host, port) => true
-          : () => HttpClient()
-              ..idleTimeout = const Duration(seconds: 15)
-              ..autoUncompress = false, // Http2Adapter没有自动解压, 统一行为
+      createHttpClient: () => _createHttpClient(
+        enableSystemProxy: enableSystemProxy,
+        systemProxyHost: enableSystemProxy ? systemProxyHost : '',
+        systemProxyPort: enableSystemProxy ? systemProxyPort : null,
+        enableAppDns: enableAppDns,
+      ), // Http2Adapter没有自动解压, 统一行为
     );
 
+    final onClientCreate = _http2ClientCreate(
+      enableSystemProxy: enableSystemProxy,
+      systemProxyHost: enableSystemProxy ? systemProxyHost : '',
+      systemProxyPort: enableSystemProxy ? systemProxyPort : null,
+    );
     final connectionManager = _enableHttp2
-        ? ConnectionManager(
-            idleTimeout: const Duration(seconds: 15),
-            onClientCreate: enableSystemProxy
-                ? (_, config) => config
-                    ..proxy = Uri(
-                      scheme: 'http',
-                      host: systemProxyHost,
-                      port: systemProxyPort,
-                    )
-                    ..onBadCertificate = (_) => true
-                : Pref.badCertificateCallback
-                ? (_, config) => config.onBadCertificate = (_) => true
-                : null,
-          )
+        ? enableAppDns
+              ? AppDnsConnectionManager(
+                  idleTimeout: const Duration(seconds: 15),
+                  onClientCreate: onClientCreate,
+                )
+              : ConnectionManager(
+                  idleTimeout: const Duration(seconds: 15),
+                  onClientCreate: onClientCreate,
+                )
         : null;
     return (http11Adapter, connectionManager);
   }
@@ -179,6 +231,7 @@ class Request {
   @pragma('vm:notify-debugger-on-exception')
   static void _resetAdaptersForNetworkChange() {
     try {
+      AppDns.clearCache();
       final (h11, connectionManager) = _createPool();
       if (connectionManager != null) {
         (dio.httpClientAdapter as Http2Adapter)

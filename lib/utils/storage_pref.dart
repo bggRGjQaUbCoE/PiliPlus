@@ -292,6 +292,9 @@ abstract final class Pref {
   static String get systemProxyPort =>
       _setting.get(SettingBoxKey.systemProxyPort, defaultValue: '');
 
+  static String get appDnsServers =>
+      _setting.get(SettingBoxKey.appDnsServers, defaultValue: '');
+
   static DynamicsTabType get defaultDynamicType =>
       DynamicsTabType.values[defaultDynamicTypeIndex];
 
@@ -718,6 +721,9 @@ abstract final class Pref {
 
   static bool get enableSystemProxy =>
       _setting.get(SettingBoxKey.enableSystemProxy, defaultValue: false);
+
+  static bool get enableAppDns =>
+      _setting.get(SettingBoxKey.enableAppDns, defaultValue: false);
 
   static bool get enableHttp2 =>
       _setting.get(SettingBoxKey.enableHttp2, defaultValue: false);

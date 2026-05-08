@@ -137,6 +137,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
 
   final _playerKey = GlobalKey();
   final _videoKey = GlobalKey();
+  final _mouseRegionKey = GlobalKey();
 
   final RxDouble _brightnessValue = 0.0.obs;
   final RxBool _brightnessIndicator = false.obs;
@@ -2019,11 +2020,26 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     if (PlatformUtils.isDesktop) {
       return Obx(
         () => MouseRegion(
+          key: _mouseRegionKey,
           cursor: !plPlayerController.showControls.value && isFullScreen
               ? SystemMouseCursors.none
               : MouseCursor.defer,
-          onEnter: (_) => plPlayerController.controls = true,
-          onHover: (_) => plPlayerController.controls = true,
+          onEnter: (_) {
+            if (animationController.status == AnimationStatus.reverse) {
+              return;
+            }
+            if (!plPlayerController.showControls.value) {
+              plPlayerController.controls = true;
+            }
+          },
+          onHover: (_) {
+            if (animationController.status == AnimationStatus.reverse) {
+              return;
+            }
+            if (!plPlayerController.showControls.value) {
+              plPlayerController.controls = true;
+            }
+          },
           onExit: (_) => plPlayerController.controls =
               widget.videoDetailController?.showSteinEdgeInfo.value ?? false,
           child: child,

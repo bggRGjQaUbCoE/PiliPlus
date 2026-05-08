@@ -1308,6 +1308,8 @@ class PlPlayerController with BlockConfigMixin {
   }
 
   set controls(bool visible) {
+    // 如果状态未变化，避免不必要的 Rx 通知和定时器重置
+    if (showControls.value == visible) return;
     showControls.value = visible;
     _timer?.cancel();
     if (visible) {

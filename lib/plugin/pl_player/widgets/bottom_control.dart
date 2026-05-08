@@ -124,7 +124,12 @@ class BottomControl extends StatelessWidget {
               ),
             ),
           ),
-          buildBottomControl(),
+          Obx(
+            () => IgnorePointer(
+              ignoring: !controller.showControls.value,
+              child: buildBottomControl(),
+            ),
+          ),
         ],
       ),
     );

@@ -807,8 +807,8 @@ class VideoDetailController extends GetxController
 
   bool isQuerying = false;
 
-  final Rx<List<LanguageItem>?> languages = Rx<List<LanguageItem>?>(null);
-  final Rx<String?> currLang = Rx<String?>(null);
+  final languages = Rxn<List<LanguageItem>>();
+  final currLang = Rxn<String>();
   void setLanguage(String language) {
     if (currLang.value == language) return;
     if (!isLoginVideo) {

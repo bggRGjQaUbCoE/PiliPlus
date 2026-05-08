@@ -33,7 +33,7 @@ class VideoReplyReplyController extends ReplyController
   int replyType;
 
   bool hasRoot = false;
-  final Rx<ReplyInfo?> firstFloor = Rx(null);
+  final firstFloor = Rxn<ReplyInfo>();
 
   final index = RxnInt();
 

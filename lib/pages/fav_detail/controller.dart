@@ -80,11 +80,11 @@ class FavDetailController
   late int mediaId;
   late String heroTag;
   final Rx<FavFolderInfo> folderInfo = FavFolderInfo().obs;
-  final Rx<bool?> _isOwner = Rx<bool?>(null);
+  final RxBool _isOwner = false.obs;
   final Rx<FavOrderType> order = FavOrderType.mtime.obs;
 
   @override
-  bool get isOwner => _isOwner.value ?? false;
+  bool get isOwner => _isOwner.value;
 
   late final account = Accounts.main;
 

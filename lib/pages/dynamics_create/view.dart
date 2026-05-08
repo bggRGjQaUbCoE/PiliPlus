@@ -104,8 +104,8 @@ class _CreateDynPanelState extends CommonRichTextPubPageState<CreateDynPanel> {
   late final Rx<Pair<int, String>?> _topic;
   late final Rx<ReplyOptionType> _replyOption;
   late final TextEditingController _titleEditCtr;
-  late final Rx<DateTime?> _publishTime = Rx<DateTime?>(null);
-  final Rx<ReserveInfoData?> _reserveCard = Rx<ReserveInfoData?>(null);
+  late final _publishTime = Rxn<DateTime>();
+  final _reserveCard = Rxn<ReserveInfoData>();
 
   @override
   void initState() {

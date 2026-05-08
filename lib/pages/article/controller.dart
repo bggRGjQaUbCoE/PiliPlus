@@ -39,7 +39,7 @@ class ArticleController extends CommonDynController {
   final RxBool isLoaded = false.obs;
   DynamicItemModel? opusData; // 标题信息从summary获取, 动态没有favorite
   ArticleViewData? articleData;
-  final Rx<ModuleStatModel?> stats = Rx<ModuleStatModel?>(null);
+  final stats = Rxn<ModuleStatModel>();
 
   List<ArticleContentModel>? get opus =>
       opusData?.modules.moduleContent ?? articleData?.opus?.content;

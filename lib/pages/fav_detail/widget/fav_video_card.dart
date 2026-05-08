@@ -39,7 +39,7 @@ class FavVideoCardH extends StatelessWidget {
   Widget build(BuildContext context) {
     final isOwner = !isSort && ctr!.isOwner;
     late final enableMultiSelect = ctr?.enableMultiSelect.value ?? false;
-    final theme = Theme.of(context);
+    final colorScheme = ColorScheme.of(context);
 
     final onLongPress = isSort || enableMultiSelect
         ? null
@@ -135,7 +135,7 @@ class FavVideoCardH extends StatelessWidget {
                         if (!isSort)
                           Positioned.fill(
                             child: selectMask(
-                              theme,
+                              colorScheme,
                               item.checked,
                             ),
                           ),
@@ -145,7 +145,7 @@ class FavVideoCardH extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 10),
-              content(context, theme, isOwner),
+              content(context, colorScheme, isOwner),
             ],
           ),
         ),
@@ -153,7 +153,7 @@ class FavVideoCardH extends StatelessWidget {
     );
   }
 
-  Widget content(BuildContext context, ThemeData theme, isOwner) {
+  Widget content(BuildContext context, ColorScheme colorScheme, bool isOwner) {
     return Expanded(
       child: Stack(
         clipBehavior: Clip.none,
@@ -178,7 +178,7 @@ class FavVideoCardH extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     fontSize: 13,
-                    color: theme.colorScheme.outline,
+                    color: colorScheme.outline,
                   ),
                 ),
               const Spacer(),
@@ -189,7 +189,7 @@ class FavVideoCardH extends StatelessWidget {
                 style: TextStyle(
                   height: 1,
                   fontSize: 12,
-                  color: theme.colorScheme.outline,
+                  color: colorScheme.outline,
                 ),
               ),
               if (item.type != 24)
@@ -215,7 +215,7 @@ class FavVideoCardH extends StatelessWidget {
               child: iconButton(
                 icon: const Icon(Icons.clear),
                 tooltip: '取消收藏',
-                iconColor: theme.colorScheme.outline,
+                iconColor: colorScheme.outline,
                 onPressed: () => showDialog(
                   context: context,
                   builder: (context) => AlertDialog(
@@ -226,7 +226,7 @@ class FavVideoCardH extends StatelessWidget {
                         onPressed: Get.back,
                         child: Text(
                           '取消',
-                          style: TextStyle(color: theme.colorScheme.outline),
+                          style: TextStyle(color: colorScheme.outline),
                         ),
                       ),
                       TextButton(

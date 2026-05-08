@@ -34,7 +34,7 @@ class FavPgcItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final colorScheme = ColorScheme.of(context);
     return Material(
       type: MaterialType.transparency,
       child: Stack(
@@ -86,7 +86,7 @@ class FavPgcItem extends StatelessWidget {
                             ),
                             Positioned.fill(
                               child: selectMask(
-                                theme,
+                                colorScheme,
                                 item.checked,
                                 borderRadius: const BorderRadius.all(
                                   Radius.circular(4),
@@ -111,7 +111,7 @@ class FavPgcItem extends StatelessWidget {
                             '${item.newEp!.indexShow}${item.isFinish == 0 && item.renewalTime?.isNotEmpty == true ? '，${item.renewalTime}' : ''}',
                             style: TextStyle(
                               fontSize: 13,
-                              color: theme.colorScheme.onSurfaceVariant,
+                              color: colorScheme.onSurfaceVariant,
                             ),
                           ),
                         ],
@@ -123,7 +123,7 @@ class FavPgcItem extends StatelessWidget {
                             item.progress!,
                             style: TextStyle(
                               fontSize: 13,
-                              color: theme.colorScheme.onSurfaceVariant,
+                              color: colorScheme.onSurfaceVariant,
                             ),
                           ),
                         ],
@@ -141,7 +141,7 @@ class FavPgcItem extends StatelessWidget {
               iconSize: 18,
               onPressed: onUpdateStatus,
               icon: const Icon(Icons.more_vert),
-              iconColor: theme.colorScheme.outline,
+              iconColor: colorScheme.outline,
             ),
           ),
         ],

@@ -50,14 +50,14 @@ class LiveRoomController extends GetxController {
   int roomId = Get.arguments;
   int? ruid;
   DanmakuController<DanmakuExtra>? danmakuController;
-  PlPlayerController plPlayerController = PlPlayerController.getInstance(
+  final plPlayerController = PlPlayerController.getInstance(
     isLive: true,
   );
 
-  RxBool isLoaded = false.obs;
-  Rx<RoomInfoH5Data?> roomInfoH5 = Rx<RoomInfoH5Data?>(null);
+  final isLoaded = false.obs;
+  final roomInfoH5 = Rxn<RoomInfoH5Data>();
 
-  Rx<int?> liveTime = Rx<int?>(null);
+  final liveTime = Rxn<int>();
   Timer? liveTimeTimer;
 
   void startLiveTimer() {
@@ -100,11 +100,11 @@ class LiveRoomController extends GetxController {
   LiveDmInfoData? dmInfo;
   List<RichTextItem>? savedDanmaku;
   int builtLength = 0;
-  RxList<dynamic> messages = <dynamic>[].obs;
+  final messages = <dynamic>[].obs;
   bool get shouldRefresh => builtLength != messages.length;
-  late final Rx<SuperChatItem?> fsSC = Rx<SuperChatItem?>(null);
+  late final fsSC = Rxn<SuperChatItem>();
   late final RxList<SuperChatItem> superChatMsg = <SuperChatItem>[].obs;
-  RxBool disableAutoScroll = false.obs;
+  final disableAutoScroll = false.obs;
   bool autoScroll = true;
   LiveMessageStream? _msgStream;
   late final ScrollController scrollController;
@@ -112,7 +112,7 @@ class LiveRoomController extends GetxController {
   late final PageController pageController;
 
   int? currentQn = PlatformUtils.isMobile ? null : Pref.liveQuality;
-  RxString currentQnDesc = ''.obs;
+  final currentQnDesc = ''.obs;
   final RxBool isPortrait = false.obs;
   late List<({int code, String desc})> acceptQnList = [];
 

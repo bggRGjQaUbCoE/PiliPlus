@@ -14,7 +14,7 @@ class PopularSeriesController
     with ReloadMixin {
   late int number;
 
-  final Rx<PopularSeriesConfig?> config = Rx<PopularSeriesConfig?>(null);
+  final config = Rxn<PopularSeriesConfig>();
   String? reminder;
   List<PopularSeriesListItem>? seriesList;
 

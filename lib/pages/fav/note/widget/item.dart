@@ -29,7 +29,7 @@ class FavNoteItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final colorScheme = ColorScheme.of(context);
     return Material(
       type: MaterialType.transparency,
       child: InkWell(
@@ -68,7 +68,7 @@ class FavNoteItem extends StatelessWidget {
                           ),
                           Positioned.fill(
                             child: selectMask(
-                              theme,
+                              colorScheme,
                               item.checked,
                             ),
                           ),
@@ -97,7 +97,7 @@ class FavNoteItem extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 14,
                         height: 1,
-                        color: theme.colorScheme.outline,
+                        color: colorScheme.outline,
                       ),
                     ),
                     const Spacer(),
@@ -107,7 +107,7 @@ class FavNoteItem extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 13,
                         height: 1,
-                        color: theme.colorScheme.outline,
+                        color: colorScheme.outline,
                       ),
                     ),
                   ],

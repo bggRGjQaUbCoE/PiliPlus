@@ -14,9 +14,9 @@ class PgcReviewController
   final PgcReviewType type;
   final dynamic mediaId;
 
-  Rx<int?> count = Rx<int?>(null);
+  final count = RxnInt();
   String? next;
-  Rx<PgcReviewSortType> sortType = PgcReviewSortType.def.obs;
+  final sortType = PgcReviewSortType.def.obs;
 
   @override
   void onInit() {

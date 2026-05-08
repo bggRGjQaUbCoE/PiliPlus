@@ -287,17 +287,12 @@ abstract final class MemberHttp {
     required int mid,
     String token = '',
   }) async {
-    String dmImgStr = Utils.base64EncodeRandomString(16, 64);
-    String dmCoverImgStr = Utils.base64EncodeRandomString(32, 128);
     final params = await WbiSign.makSign({
       'mid': mid,
       'token': token,
       'platform': 'web',
       'web_location': 1550101,
-      'dm_img_list': '[]',
-      'dm_img_str': dmImgStr,
-      'dm_cover_img_str': dmCoverImgStr,
-      'dm_img_inter': '{"ds":[],"wh":[0,0,0],"of":[0,0,0]}',
+      ...Utils.buildWebDmParams(),
     });
     final res = await Request().get(
       Api.memberInfo,
@@ -355,8 +350,6 @@ abstract final class MemberHttp {
     String? specialType, // e.g. 'charging'
     ArchiveOrderTypeWeb order = .pubdate,
   }) async {
-    String dmImgStr = Utils.base64EncodeRandomString(16, 64);
-    String dmCoverImgStr = Utils.base64EncodeRandomString(32, 128);
     final params = await WbiSign.makSign({
       'mid': mid,
       'ps': ps,
@@ -368,10 +361,7 @@ abstract final class MemberHttp {
       'platform': 'web',
       'web_location': 333.1387,
       'order_avoided': true,
-      'dm_img_list': '[]',
-      'dm_img_str': dmImgStr,
-      'dm_cover_img_str': dmCoverImgStr,
-      'dm_img_inter': '{"ds":[],"wh":[0,0,0],"of":[0,0,0]}',
+      ...Utils.buildWebDmParams(),
     });
     final res = await Request().get(
       Api.searchArchive,
@@ -440,8 +430,6 @@ abstract final class MemberHttp {
     String? offset,
     required int mid,
   }) async {
-    String dmImgStr = Utils.base64EncodeRandomString(16, 64);
-    String dmCoverImgStr = Utils.base64EncodeRandomString(32, 128);
     final params = await WbiSign.makSign({
       'offset': offset ?? '',
       'host_mid': mid,
@@ -449,10 +437,7 @@ abstract final class MemberHttp {
       'features': Constants.dynFeatures,
       'platform': 'web',
       'web_location': '333.1387',
-      'dm_img_list': '[]',
-      'dm_img_str': dmImgStr,
-      'dm_cover_img_str': dmCoverImgStr,
-      'dm_img_inter': '{"ds":[],"wh":[0,0,0],"of":[0,0,0]}',
+      ...Utils.buildWebDmParams(),
       'x-bili-device-req-json':
           '{"platform":"web","device":"pc","spmid":"333.1387"}',
     });

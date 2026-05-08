@@ -225,6 +225,7 @@ abstract final class VideoHttp {
       'gaia_source': 'pre-load',
       'isGaiaAvoided': true,
       'web_location': 1315873,
+      ...Utils.buildWebDmParams(),
       // 免登录查看1080p
       if (tryLook) 'try_look': 1,
       'cur_language': ?language,

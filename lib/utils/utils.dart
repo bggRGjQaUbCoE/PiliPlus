@@ -9,6 +9,7 @@ import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 
 abstract final class Utils {
   static final random = Random();
+  static const _defaultDmImgInter = '{"ds":[],"wh":[0,0,0],"of":[0,0,0]}';
 
   static const channel = MethodChannel(Constants.appName);
 
@@ -56,6 +57,15 @@ abstract final class Utils {
     final randomBytes = generateRandomBytes(minLength, maxLength);
     final randomBase64 = base64.encode(randomBytes);
     return randomBase64.substring(0, randomBase64.length - 2);
+  }
+
+  static Map<String, String> buildWebDmParams() {
+    return {
+      'dm_img_list': '[]',
+      'dm_img_str': base64EncodeRandomString(16, 64),
+      'dm_cover_img_str': base64EncodeRandomString(32, 128),
+      'dm_img_inter': _defaultDmImgInter,
+    };
   }
 
   static String getFileName(String uri, {bool fileExt = true}) {

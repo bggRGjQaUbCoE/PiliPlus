@@ -31,46 +31,7 @@ abstract final class Accounts {
         return deletedEntries > 2;
       },
     );
-    // await _migrate();
   }
-
-  // static Future<void> _migrate() async {
-  //   final Directory tempDir = await getApplicationSupportDirectory();
-  //   final String tempPath = "${tempDir.path}/.plpl/";
-  //   final Directory dir = Directory(tempPath);
-  //   if (dir.existsSync()) {
-  //     if (kDebugMode) debugPrint('migrating...');
-  //     final cookieJar = PersistCookieJar(
-  //       ignoreExpires: true,
-  //       storage: FileStorage(tempPath),
-  //     );
-  //     await cookieJar.forceInit();
-  //     final cookies = DefaultCookieJar(ignoreExpires: true)
-  //       ..domainCookies.addAll(cookieJar.domainCookies);
-  //     final localAccessKey = GStorage.localCache.get(
-  //       'accessKey',
-  //       defaultValue: {},
-  //     );
-
-  //     final isLogin =
-  //         cookies.domainCookies['bilibili.com']?['/']?['SESSDATA'] != null;
-
-  //     await Future.wait([
-  //       GStorage.localCache.delete('accessKey'),
-  //       GStorage.localCache.delete('danmakuFilterRule'),
-  //       GStorage.localCache.delete('blackMidsList'),
-  //       dir.delete(recursive: true),
-  //       if (isLogin)
-  //         LoginAccount(
-  //           cookies,
-  //           localAccessKey['value'],
-  //           localAccessKey['refresh'],
-  //           AccountType.values.toSet(),
-  //         ).onChange(),
-  //     ]);
-  //     if (kDebugMode) debugPrint('migrated successfully');
-  //   }
-  // }
 
   static Future<void> refresh() {
     for (final a in account.values) {

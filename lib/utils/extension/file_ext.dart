@@ -1,11 +1,8 @@
 import 'dart:io' show FileSystemEntity, Directory;
 
 extension FileSystemEntityExt on FileSystemEntity {
-  Future<void> tryDel({bool recursive = false}) async {
-    try {
-      await delete(recursive: recursive);
-    } catch (_) {}
-  }
+  Future<void> tryDel({bool recursive = false}) =>
+      delete(recursive: recursive).catchError((_) => this);
 }
 
 extension DirectoryExt on Directory {

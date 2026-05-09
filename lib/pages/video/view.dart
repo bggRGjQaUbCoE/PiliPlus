@@ -399,7 +399,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
       ..isPortrait = isPortrait = maxHeight >= maxWidth
       ..minVideoHeight = minVideoHeight
       ..maxVideoHeight = maxVideoHeight
-      ..videoHeight = videoDetailController.isVertical.value
+      ..videoHeight = videoDetailController.isVertical
           ? maxVideoHeight
           : minVideoHeight;
 

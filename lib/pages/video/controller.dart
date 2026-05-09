@@ -153,7 +153,7 @@ class VideoDetailController extends GetxController
   PlayerStatus? playerStatus;
 
   late final scrollKey = GlobalKey<ExtendedNestedScrollViewState>();
-  late final RxBool isVertical;
+  late bool isVertical;
   late final RxDouble scrollRatio = 0.0.obs;
 
   ScrollController? _scrollCtr;
@@ -216,20 +216,23 @@ class VideoDetailController extends GetxController
           return;
         }
       }
-      final isVertical = height > width;
+      final newIsVertical = height > width;
       if (_scrollCtr?.hasClients != true) {
-        videoHeight = isVertical ? maxVideoHeight : minVideoHeight;
-        this.isVertical.value = isVertical;
+        videoHeight = newIsVertical ? maxVideoHeight : minVideoHeight;
+        if (isVertical != newIsVertical) {
+          isVertical = newIsVertical;
+          _needRefreshOnDimensionChanged(newIsVertical);
+        }
         return;
       }
-      if (this.isVertical.value != isVertical) {
-        this.isVertical.value = isVertical;
-        final newVideoHeight = isVertical ? maxVideoHeight : minVideoHeight;
+      if (isVertical != newIsVertical) {
+        isVertical = newIsVertical;
+        final newVideoHeight = newIsVertical ? maxVideoHeight : minVideoHeight;
         if (videoHeight != newVideoHeight) {
           if (newVideoHeight > videoHeight) {
             // current minVideoHeight
             videoHeight = maxVideoHeight;
-            if (_needRefreshOnDimensionChanged(isVertical)) {
+            if (_needRefreshOnDimensionChanged(newIsVertical)) {
               tmpVideoHeight = maxVideoHeight;
               refreshPage();
             }
@@ -240,21 +243,21 @@ class VideoDetailController extends GetxController
             double minVideoHeightPrecise = minVideoHeight.toPrecision(2);
             if (currentHeight == minVideoHeightPrecise) {
               videoHeight = minVideoHeight;
-              if (_needRefreshOnDimensionChanged(isVertical)) {
+              if (_needRefreshOnDimensionChanged(newIsVertical)) {
                 tmpVideoHeight = minVideoHeight;
                 refreshPage();
               }
             } else if (currentHeight < minVideoHeightPrecise) {
               // expand
               videoHeight = minVideoHeight;
-              if (_needRefreshOnDimensionChanged(isVertical)) {
+              if (_needRefreshOnDimensionChanged(newIsVertical)) {
                 tmpVideoHeight = minVideoHeight;
                 refreshPage();
               }
             } else {
               // collapse
               videoHeight = minVideoHeight;
-              if (_needRefreshOnDimensionChanged(isVertical)) {
+              if (_needRefreshOnDimensionChanged(newIsVertical)) {
                 tmpVideoHeight = minVideoHeight;
                 refreshPage();
               }
@@ -345,7 +348,7 @@ class VideoDetailController extends GetxController
     pgcType = args['pgcType'];
     heroTag = args['heroTag'];
     cover = RxString(args['cover'] ?? '');
-    isVertical = RxBool(args['isVertical'] ?? false);
+    isVertical = args['isVertical'] ?? false;
 
     sourceType = args['sourceType'] ?? SourceType.normal;
     isFileSource = sourceType == SourceType.file;
@@ -706,7 +709,7 @@ class VideoDetailController extends GetxController
           (data.timeLength == null
               ? null
               : Duration(milliseconds: data.timeLength!)),
-      isVertical: isVertical.value,
+      isVertical: isVertical,
       aid: aid,
       bvid: bvid,
       cid: cid.value,

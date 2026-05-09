@@ -1,11 +1,14 @@
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
 import 'package:PiliPlus/http/fav.dart';
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/http/video.dart';
 import 'package:PiliPlus/models/common/fav_order_type.dart';
 import 'package:PiliPlus/models/common/video/source_type.dart';
 import 'package:PiliPlus/models_new/fav/fav_detail/data.dart';
 import 'package:PiliPlus/models_new/fav/fav_detail/media.dart';
 import 'package:PiliPlus/models_new/fav/fav_folder/list.dart';
+import 'package:PiliPlus/models_new/video/video_detail/data.dart';
+import 'package:PiliPlus/models_new/video/video_detail/page.dart';
 import 'package:PiliPlus/pages/common/common_list_controller.dart';
 import 'package:PiliPlus/pages/common/multi_select/base.dart';
 import 'package:PiliPlus/pages/common/multi_select/multi_select_controller.dart';
@@ -16,6 +19,7 @@ import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/widgets.dart' show Text, ValueChanged;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -211,16 +215,25 @@ class FavDetailController
   }
 
   @override
-  void onViewFav(FavDetailItemModel item, int? index) {
-    final folder = folderInfo.value;
-    // TODO: dimension
+  Future<void> onViewFav(FavDetailItemModel item, int? index) async {
+    final cid = item.ugc!.firstCid!;
+    Part? part;
+    VideoDetailData? videoIntro;
+    final res = await VideoHttp.videoIntro(bvid: item.bvid!);
+    if (res case Success(:final response)) {
+      videoIntro = response;
+      part = response.pages?.firstWhereOrNull((e) => e.cid == cid);
+    }
+    late final folder = folderInfo.value;
     PageUtils.toVideoPage(
       bvid: item.bvid,
-      cid: item.ugc!.firstCid!,
+      cid: cid,
       cover: item.cover,
       title: item.title,
+      dimension: part?.dimension,
       extraArguments: isPlayAll.value
           ? {
+              'videoIntro': videoIntro,
               'sourceType': SourceType.fav,
               'mediaId': folder.id,
               'oid': item.id,
@@ -230,7 +243,7 @@ class FavDetailController
               if (index != null) 'isContinuePlaying': index != 0,
               'isOwner': isOwner,
             }
-          : null,
+          : {'videoIntro': videoIntro},
     );
   }
 }

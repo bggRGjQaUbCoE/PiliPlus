@@ -15,6 +15,7 @@ import 'package:PiliPlus/models/common/video/source_type.dart';
 import 'package:PiliPlus/models_new/member_card_info/data.dart';
 import 'package:PiliPlus/models_new/relation/data.dart';
 import 'package:PiliPlus/models_new/video/video_ai_conclusion/model_result.dart';
+import 'package:PiliPlus/models_new/video/video_detail/data.dart';
 import 'package:PiliPlus/models_new/video/video_detail/dimension.dart';
 import 'package:PiliPlus/models_new/video/video_detail/episode.dart';
 import 'package:PiliPlus/models_new/video/video_detail/page.dart';
@@ -70,54 +71,28 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
     videoDetail.value.title = Get.arguments['title'] ?? '';
   }
 
+  @override
+  void initQueryVideoIntro(Map args) {
+    if (args['videoIntro'] case final VideoDetailData videoIntro?) {
+      handleIntroRes(videoIntro);
+      queryVideoTags();
+      if (isLogin) {
+        queryAllStatus();
+        queryFollowStatus();
+      }
+    } else {
+      queryVideoIntro();
+    }
+  }
+
   // 获取视频简介&分p
   @override
   Future<void> queryVideoIntro() async {
     queryVideoTags();
+
     final res = await VideoHttp.videoIntro(bvid: bvid);
     if (res case Success(:final response)) {
-      if (response.redirectUrl != null &&
-          videoDetailCtr.epId == null &&
-          videoDetailCtr.seasonId == null) {
-        if (!isClosed) {
-          PageUtils.viewPgcFromUri(response.redirectUrl!, off: true);
-        }
-        return;
-      }
-      videoPlayerServiceHandler?.onVideoDetailChange(
-        response,
-        cid.value,
-        heroTag,
-      );
-      if (videoDetail.value.ugcSeason?.id == response.ugcSeason?.id) {
-        // keep reversed season
-        response.ugcSeason = videoDetail.value.ugcSeason;
-      }
-      if (videoDetail.value.cid == response.cid) {
-        // keep reversed pages
-        response
-          ..pages = videoDetail.value.pages
-          ..isPageReversed = videoDetail.value.isPageReversed;
-      }
-      videoDetail.value = response;
-      try {
-        if (videoDetailCtr.cover.value.isEmpty ||
-            (videoDetailCtr.videoUrl.isNullOrEmpty &&
-                !videoDetailCtr.isQuerying)) {
-          videoDetailCtr.cover.value = response.pic ?? '';
-        }
-        if (videoDetailCtr.showReply) {
-          try {
-            Get.find<VideoReplyController>(tag: heroTag).count.value =
-                response.stat?.reply ?? 0;
-          } catch (_) {}
-        }
-      } catch (_) {}
-      final pages = videoDetail.value.pages;
-      if (pages != null && pages.isNotEmpty && cid.value == 0) {
-        cid.value = pages.first.cid!;
-      }
-      queryUserStat(response.staff);
+      handleIntroRes(response);
     } else {
       res.toast();
       status.value = false;
@@ -127,6 +102,51 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
       queryAllStatus();
       queryFollowStatus();
     }
+  }
+
+  void handleIntroRes(VideoDetailData response) {
+    if (response.redirectUrl != null &&
+        videoDetailCtr.epId == null &&
+        videoDetailCtr.seasonId == null) {
+      if (!isClosed) {
+        PageUtils.viewPgcFromUri(response.redirectUrl!, off: true);
+      }
+      return;
+    }
+    videoPlayerServiceHandler?.onVideoDetailChange(
+      response,
+      cid.value,
+      heroTag,
+    );
+    if (videoDetail.value.ugcSeason?.id == response.ugcSeason?.id) {
+      // keep reversed season
+      response.ugcSeason = videoDetail.value.ugcSeason;
+    }
+    if (videoDetail.value.cid == response.cid) {
+      // keep reversed pages
+      response
+        ..pages = videoDetail.value.pages
+        ..isPageReversed = videoDetail.value.isPageReversed;
+    }
+    videoDetail.value = response;
+    try {
+      if (videoDetailCtr.cover.value.isEmpty ||
+          (videoDetailCtr.videoUrl.isNullOrEmpty &&
+              !videoDetailCtr.isQuerying)) {
+        videoDetailCtr.cover.value = response.pic ?? '';
+      }
+      if (videoDetailCtr.showReply) {
+        try {
+          Get.find<VideoReplyController>(tag: heroTag).count.value =
+              response.stat?.reply ?? 0;
+        } catch (_) {}
+      }
+    } catch (_) {}
+    final pages = videoDetail.value.pages;
+    if (pages != null && pages.isNotEmpty && cid.value == 0) {
+      cid.value = pages.first.cid!;
+    }
+    queryUserStat(response.staff);
   }
 
   // 获取up主粉丝数

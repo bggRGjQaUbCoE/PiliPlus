@@ -11,6 +11,7 @@ import 'package:PiliPlus/pages/common/multi_select/base.dart';
 import 'package:PiliPlus/pages/common/search/common_search_controller.dart';
 import 'package:PiliPlus/pages/fav_detail/controller.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
+import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:collection/collection.dart';
 import 'package:get/get.dart';
 
@@ -27,6 +28,8 @@ class FavSearchController
   late bool isOwner;
   late dynamic count;
   late dynamic title;
+
+  late final enablePlayAll = Pref.enablePlayAll;
 
   @override
   void onInit() {
@@ -76,16 +79,18 @@ class FavSearchController
       cover: item.cover,
       title: item.title,
       dimension: part?.dimension,
-      extraArguments: {
-        'videoIntro': videoIntro,
-        'sourceType': SourceType.fav,
-        'mediaId': mediaId,
-        'oid': item.id,
-        'favTitle': title,
-        'count': count,
-        'desc': true,
-        'isContinuePlaying': true,
-      },
+      extraArguments: enablePlayAll
+          ? {
+              'videoIntro': videoIntro,
+              'sourceType': SourceType.fav,
+              'mediaId': mediaId,
+              'oid': item.id,
+              'favTitle': title,
+              'count': count,
+              'desc': true,
+              'isContinuePlaying': true,
+            }
+          : {'videoIntro': videoIntro},
     );
   }
 }

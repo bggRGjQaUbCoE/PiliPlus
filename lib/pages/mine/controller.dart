@@ -70,7 +70,7 @@ class MineController extends CommonDataController<FavFolderData, FavFolderData>
           },
         ),
         (
-          size: 22,
+          size: 21,
           icon: Icons.watch_later_outlined,
           title: '稍后再看',
           onTap: () {

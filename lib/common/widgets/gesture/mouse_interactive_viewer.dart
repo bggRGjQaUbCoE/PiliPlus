@@ -16,29 +16,30 @@ import 'package:vector_math/vector_math_64.dart' show Quad, Vector3;
 class MouseInteractiveViewer extends StatefulWidget {
   const MouseInteractiveViewer({
     super.key,
-    this.clipBehavior = Clip.hardEdge,
-    this.panAxis = PanAxis.free,
-    this.boundaryMargin = EdgeInsets.zero,
+    this.clipBehavior = .hardEdge,
+    this.panAxis = .free,
+    this.boundaryMargin = .zero,
     this.constrained = true,
     this.maxScale = 2.5,
     this.minScale = 0.8,
     this.interactionEndFrictionCoefficient = _kDrag,
-    this.pointerSignalFallback,
+    required this.pointerSignalFallback,
     this.onPointerPanZoomUpdate,
     this.onPointerPanZoomEnd,
-    this.onPointerDown,
-    this.onInteractionEnd,
-    this.onInteractionStart,
-    this.onInteractionUpdate,
+    required this.onPointerDown,
+    required this.onPanEnd,
+    required this.onPanStart,
+    required this.onPanUpdate,
+    required this.onScaleUpdate,
     this.panEnabled = true,
     this.scaleEnabled = true,
     this.scaleFactor = kDefaultMouseScrollToScaleFactor,
-    this.transformationController,
+    required this.transformationController,
     this.alignment,
     this.trackpadScrollCausesScale = false,
     required this.childKey,
     required this.child,
-    required this.onTranslate,
+    required this.scaleGestureRecognizer,
   }) : assert(minScale > 0),
        assert(interactionEndFrictionCoefficient > 0),
        assert(maxScale > 0),
@@ -57,16 +58,17 @@ class MouseInteractiveViewer extends StatefulWidget {
   final double maxScale;
   final double minScale;
   final double interactionEndFrictionCoefficient;
-  final PointerSignalEventListener? pointerSignalFallback;
+  final PointerSignalEventListener pointerSignalFallback;
   final PointerPanZoomUpdateEventListener? onPointerPanZoomUpdate;
   final PointerPanZoomEndEventListener? onPointerPanZoomEnd;
-  final PointerDownEventListener? onPointerDown;
-  final GestureScaleEndCallback? onInteractionEnd;
-  final GestureScaleStartCallback? onInteractionStart;
-  final GestureScaleUpdateCallback? onInteractionUpdate;
-  final TransformationController? transformationController;
+  final PointerDownEventListener onPointerDown;
+  final GestureScaleEndCallback onPanEnd;
+  final GestureScaleStartCallback onPanStart;
+  final GestureScaleUpdateCallback onPanUpdate;
+  final ValueChanged<double> onScaleUpdate;
+  final TransformationController transformationController;
   final GlobalKey childKey;
-  final VoidCallback onTranslate;
+  final ScaleGestureRecognizer scaleGestureRecognizer;
 
   static const double _kDrag = 0.0000135;
 
@@ -76,8 +78,7 @@ class MouseInteractiveViewer extends StatefulWidget {
 
 class _MouseInteractiveViewerState extends State<MouseInteractiveViewer>
     with TickerProviderStateMixin {
-  late TransformationController _transformer =
-      widget.transformationController ?? TransformationController();
+  late TransformationController _transformer;
 
   final GlobalKey _parentKey = GlobalKey();
   Animation<Offset>? _animation;
@@ -234,6 +235,9 @@ class _MouseInteractiveViewerState extends State<MouseInteractiveViewer>
       widget.minScale,
       widget.maxScale,
     );
+
+    widget.onScaleUpdate(clampedTotalScale);
+
     final double clampedScale = clampedTotalScale / currentScale;
     return matrix.clone()
       ..scaleByDouble(clampedScale, clampedScale, clampedScale, 1);
@@ -270,10 +274,15 @@ class _MouseInteractiveViewerState extends State<MouseInteractiveViewer>
     }
   }
 
+  bool _isSinglePointer = false;
+
   // Handle the start of a gesture. All of pan, scale, and rotate are handled
   // with GestureDetector's scale gesture.
   void _onScaleStart(ScaleStartDetails details) {
-    widget.onInteractionStart?.call(details);
+    if (_isSinglePointer = details.pointerCount == 1) {
+      widget.onPanStart(details);
+      return;
+    }
 
     if (_controller.isAnimating) {
       _controller
@@ -300,6 +309,11 @@ class _MouseInteractiveViewerState extends State<MouseInteractiveViewer>
   // Handle an update to an ongoing gesture. All of pan, scale, and rotate are
   // handled with GestureDetector's scale gesture.
   void _onScaleUpdate(ScaleUpdateDetails details) {
+    if (_isSinglePointer) {
+      widget.onPanUpdate(details);
+      return;
+    }
+
     final double scale = _transformer.value.getMaxScaleOnAxis();
     _scaleAnimationFocalPoint = details.localFocalPoint;
     final Offset focalPointScene = _transformer.toScene(
@@ -316,7 +330,6 @@ class _MouseInteractiveViewerState extends State<MouseInteractiveViewer>
       _gestureType ??= _getGestureType(details);
     }
     if (!_gestureIsSupported(_gestureType)) {
-      widget.onInteractionUpdate?.call(details);
       return;
     }
 
@@ -356,7 +369,6 @@ class _MouseInteractiveViewerState extends State<MouseInteractiveViewer>
 
       case _GestureType.rotate:
         if (details.rotation == 0.0) {
-          widget.onInteractionUpdate?.call(details);
           return;
         }
         final double desiredRotation = _rotationStart! + details.rotation;
@@ -373,7 +385,6 @@ class _MouseInteractiveViewerState extends State<MouseInteractiveViewer>
         // In an effort to keep the behavior similar whether or not scaleEnabled
         // is true, these gestures are thrown away.
         if (details.scale != 1.0) {
-          widget.onInteractionUpdate?.call(details);
           return;
         }
         _currentAxis ??= _getPanAxis(_referenceFocalPoint!, focalPointScene);
@@ -387,13 +398,16 @@ class _MouseInteractiveViewerState extends State<MouseInteractiveViewer>
         );
         _referenceFocalPoint = _transformer.toScene(details.localFocalPoint);
     }
-    widget.onInteractionUpdate?.call(details);
   }
 
   // Handle the end of a gesture of _GestureType. All of pan, scale, and rotate
   // are handled with GestureDetector's scale gesture.
   void _onScaleEnd(ScaleEndDetails details) {
-    widget.onInteractionEnd?.call(details);
+    if (_isSinglePointer) {
+      widget.onPanEnd(details);
+      return;
+    }
+
     _scaleStart = null;
     _rotationStart = null;
     _referenceFocalPoint = null;
@@ -481,10 +495,6 @@ class _MouseInteractiveViewerState extends State<MouseInteractiveViewer>
     final double scaleChange;
     if (event is PointerScrollEvent) {
       if (event.kind == PointerDeviceKind.trackpad) {
-        widget.onInteractionStart?.call(
-          ScaleStartDetails(focalPoint: global, localFocalPoint: local),
-        );
-
         final Offset localDelta = PointerEvent.transformDeltaViaPositions(
           untransformedEndPosition: global + event.scrollDelta,
           untransformedDelta: event.scrollDelta,
@@ -501,14 +511,6 @@ class _MouseInteractiveViewerState extends State<MouseInteractiveViewer>
           newFocalPointScene - focalPointScene,
         );
 
-        widget.onInteractionUpdate?.call(
-          ScaleUpdateDetails(
-            focalPoint: global - event.scrollDelta,
-            localFocalPoint: local - localDelta,
-            focalPointDelta: -localDelta,
-          ),
-        );
-        widget.onInteractionEnd?.call(ScaleEndDetails());
         return;
       }
       _handlePointerScrollEvent(event);
@@ -518,19 +520,8 @@ class _MouseInteractiveViewerState extends State<MouseInteractiveViewer>
     } else {
       return;
     }
-    widget.onInteractionStart?.call(
-      ScaleStartDetails(focalPoint: global, localFocalPoint: local),
-    );
 
     if (!_gestureIsSupported(_GestureType.scale)) {
-      widget.onInteractionUpdate?.call(
-        ScaleUpdateDetails(
-          focalPoint: global,
-          localFocalPoint: local,
-          scale: scaleChange,
-        ),
-      );
-      widget.onInteractionEnd?.call(ScaleEndDetails());
       return;
     }
 
@@ -544,22 +535,12 @@ class _MouseInteractiveViewerState extends State<MouseInteractiveViewer>
       _transformer.value,
       focalPointSceneScaled - focalPointScene,
     );
-
-    widget.onInteractionUpdate?.call(
-      ScaleUpdateDetails(
-        focalPoint: global,
-        localFocalPoint: local,
-        scale: scaleChange,
-      ),
-    );
-    widget.onInteractionEnd?.call(ScaleEndDetails());
   }
 
   void _handlePointerScrollEvent(PointerScrollEvent event) {
-    final Offset local = event.localPosition;
-    final Offset global = event.position;
-
     if (_gestureIsSupported(_GestureType.scale)) {
+      final Offset local = event.localPosition;
+      final Offset global = event.position;
       if (HardwareKeyboard.instance.isControlPressed) {
         _handleMouseWheelScale(event, local, global);
         return;
@@ -569,16 +550,8 @@ class _MouseInteractiveViewerState extends State<MouseInteractiveViewer>
         _handleMouseWheelPanAsScale(event, local, global, shift);
         return;
       }
-      widget.pointerSignalFallback?.call(event);
+      widget.pointerSignalFallback(event);
     }
-    widget.onInteractionUpdate?.call(
-      ScaleUpdateDetails(
-        focalPoint: global,
-        localFocalPoint: local,
-        scale: math.exp(-event.scrollDelta.dy / widget.scaleFactor),
-      ),
-    );
-    widget.onInteractionEnd?.call(ScaleEndDetails());
   }
 
   void _handleMouseWheelScale(
@@ -597,15 +570,6 @@ class _MouseInteractiveViewerState extends State<MouseInteractiveViewer>
       _transformer.value,
       focalPointSceneScaled - focalPointScene,
     );
-
-    widget.onInteractionUpdate?.call(
-      ScaleUpdateDetails(
-        focalPoint: global,
-        localFocalPoint: local,
-        scale: scaleChange,
-      ),
-    );
-    widget.onInteractionEnd?.call(ScaleEndDetails());
   }
 
   void _handleMouseWheelPanAsScale(
@@ -625,8 +589,6 @@ class _MouseInteractiveViewerState extends State<MouseInteractiveViewer>
       _transformer.value,
       newFocalPointScene - focalPointScene,
     );
-
-    widget.onTranslate();
   }
 
   void _handleInertiaAnimation() {
@@ -675,33 +637,18 @@ class _MouseInteractiveViewerState extends State<MouseInteractiveViewer>
     setState(() {});
   }
 
-  void _onPointerDown(PointerDownEvent event) {
-    final localPosition = event.localPosition;
-    if (localPosition.dx < 40 || localPosition.dy < 40) {
-      return;
-    }
-    widget.onPointerDown?.call(event);
-    _scaleGestureRecognizer.addPointer(event);
-  }
-
   @override
   void initState() {
     super.initState();
-    _scaleGestureRecognizer =
-        ScaleGestureRecognizer(
-            debugOwner: this,
-            dragStartBehavior: .start,
-            allowedButtonsFilter: (buttons) => buttons == kPrimaryButton,
-            trackpadScrollToScaleFactor: Offset(0, -1 / widget.scaleFactor),
-            trackpadScrollCausesScale: widget.trackpadScrollCausesScale,
-          )
-          ..gestureSettings = gestureSettings
-          ..onStart = _onScaleStart
-          ..onUpdate = _onScaleUpdate
-          ..onEnd = _onScaleEnd;
+    _scaleGestureRecognizer = widget.scaleGestureRecognizer
+      ..gestureSettings = gestureSettings
+      ..onStart = _onScaleStart
+      ..onUpdate = _onScaleUpdate
+      ..onEnd = _onScaleEnd;
     _controller = AnimationController(vsync: this);
     _scaleController = AnimationController(vsync: this);
 
+    _transformer = widget.transformationController;
     _transformer.addListener(_handleTransformation);
   }
 
@@ -709,28 +656,20 @@ class _MouseInteractiveViewerState extends State<MouseInteractiveViewer>
   void didUpdateWidget(MouseInteractiveViewer oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    final TransformationController? newController =
-        widget.transformationController;
+    final newController = widget.transformationController;
     if (newController == oldWidget.transformationController) {
       return;
     }
     _transformer.removeListener(_handleTransformation);
-    if (oldWidget.transformationController == null) {
-      _transformer.dispose();
-    }
-    _transformer = newController ?? TransformationController();
+    _transformer = newController;
     _transformer.addListener(_handleTransformation);
   }
 
   @override
   void dispose() {
-    _scaleGestureRecognizer.dispose();
     _controller.dispose();
     _scaleController.dispose();
     _transformer.removeListener(_handleTransformation);
-    if (widget.transformationController == null) {
-      _transformer.dispose();
-    }
     super.dispose();
   }
 
@@ -742,7 +681,7 @@ class _MouseInteractiveViewerState extends State<MouseInteractiveViewer>
       key: _parentKey,
       behavior: HitTestBehavior.opaque,
       onPointerSignal: _receivedPointerSignal,
-      onPointerDown: _onPointerDown,
+      onPointerDown: widget.onPointerDown,
       onPointerPanZoomStart: _scaleGestureRecognizer.addPointerPanZoom,
       onPointerPanZoomUpdate: widget.onPointerPanZoomUpdate,
       onPointerPanZoomEnd: widget.onPointerPanZoomEnd,

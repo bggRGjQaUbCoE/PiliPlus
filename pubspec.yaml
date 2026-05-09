@@ -68,7 +68,10 @@ dependencies:
     git:
       url: https://github.com/bggRGjQaUbCoE/extended_nested_scroll_view.git
       ref: mod
-  file_picker: ^12.0.0-beta.1
+  file_picker:
+    git:
+      url: https://github.com/bggRGjQaUbCoE/flutter_file_picker.git
+      ref: dev
   fixnum: ^1.1.1
   flex_seed_scheme: ^4.0.1
   floating:

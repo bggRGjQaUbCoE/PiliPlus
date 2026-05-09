@@ -1052,16 +1052,13 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
 
     final controlsUnlock = !plPlayerController.controlsLock.value;
     if (PlatformUtils.isMobile) {
-      _tapGestureRecognizer.addPointer(event);
-      if (controlsUnlock) {
-        final flag = _isPositionAllowed(event.localPosition);
-        if (!plPlayerController.isLive) {
-          _doubleTapGestureRecognizer.addPointer(event);
-          if (flag) {
+      if (_isPositionAllowed(event.localPosition)) {
+        _tapGestureRecognizer.addPointer(event);
+        if (controlsUnlock) {
+          if (!plPlayerController.isLive) {
+            _doubleTapGestureRecognizer.addPointer(event);
             longPressRecognizer.addPointer(event);
           }
-        }
-        if (flag) {
           _scaleGestureRecognizer.addPointer(event);
         }
       }

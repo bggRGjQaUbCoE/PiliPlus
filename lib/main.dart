@@ -123,7 +123,7 @@ void main() async {
     await setupServiceLocator();
   }
 
-  Request();
+  Request.init();
   Request.setCookie();
   RequestUtils.syncHistoryStatus();
 

@@ -90,7 +90,7 @@ class DynamicCardSkeleton extends StatelessWidget {
               height: 13,
               margin: const EdgeInsets.only(bottom: 7),
             ),
-            if (GlobalData().dynamicsWaterfallFlow) const Spacer(),
+            if (GlobalData.dynamicsWaterfallFlow) const Spacer(),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: const ['转发', '评论', '点赞']

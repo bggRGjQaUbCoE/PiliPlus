@@ -78,38 +78,36 @@ class _EditProfilePageState extends State<EditProfilePage> {
       's_locale': 'zh_CN',
       'statistics': Constants.statistics,
     };
-    Request()
-        .get(
-          '${HttpString.appBaseUrl}/x/v2/account/myinfo',
-          queryParameters: data,
-        )
-        .then((res) {
-          if (mounted) {
-            setState(() {
-              if (res.data['code'] == 0) {
-                AccountMyInfoData data = AccountMyInfoData.fromJson(
-                  res.data['data'],
-                );
-                _loadingState = Success(data);
-                accountService.face.value = data.face!;
-                try {
-                  UserInfoData userInfo = Pref.userInfoCache!
-                    ..uname = data.name
-                    ..face = data.face;
-                  GStorage.userInfo.put('userInfoCache', userInfo);
-                } catch (_) {}
-                try {
-                  Get.find<MineController>().userInfo
-                    ..value.uname = data.name
-                    ..value.face = data.face
-                    ..refresh();
-                } catch (_) {}
-              } else {
-                _loadingState = Error(res.data['message']);
-              }
-            });
+    Request.get(
+      '${HttpString.appBaseUrl}/x/v2/account/myinfo',
+      queryParameters: data,
+    ).then((res) {
+      if (mounted) {
+        setState(() {
+          if (res.data['code'] == 0) {
+            AccountMyInfoData data = AccountMyInfoData.fromJson(
+              res.data['data'],
+            );
+            _loadingState = Success(data);
+            accountService.face.value = data.face!;
+            try {
+              UserInfoData userInfo = Pref.userInfoCache!
+                ..uname = data.name
+                ..face = data.face;
+              GStorage.userInfo.put('userInfoCache', userInfo);
+            } catch (_) {}
+            try {
+              Get.find<MineController>().userInfo
+                ..value.uname = data.name
+                ..value.face = data.face
+                ..refresh();
+            } catch (_) {}
+          } else {
+            _loadingState = Error(res.data['message']);
           }
         });
+      }
+    });
   }
 
   Widget _buildBody(
@@ -371,49 +369,47 @@ class _EditProfilePageState extends State<EditProfilePage> {
         'sex': datum.toString(),
     };
     AppSign.appSign(data);
-    Request()
-        .post(
-          '/x/member/app/${type.name}/update',
-          data: data,
-          options: Options(
-            contentType: Headers.formUrlEncodedContentType,
-          ),
-        )
-        .then((res) {
-          if (res.data['code'] == 0) {
-            AccountMyInfoData data = _loadingState.data;
-            if (type == ProfileType.uname) {
-              data
-                ..name = _textController.text
-                ..coins = data.coins! - 6;
-              try {
-                UserInfoData userInfo = Pref.userInfoCache!
-                  ..uname = _textController.text;
-                GStorage.userInfo.put('userInfoCache', userInfo);
-              } catch (_) {}
-              try {
-                Get.find<MineController>().userInfo
-                  ..value.uname = _textController.text
-                  ..refresh();
-              } catch (_) {}
-            } else if (type == ProfileType.sign) {
-              data.sign = _textController.text;
-            } else if (type == ProfileType.birthday) {
-              data.birthday = datum;
-            } else if (type == ProfileType.sex) {
-              data.sex = datum;
-            }
-            SmartDialog.showToast('修改成功');
-            if (mounted) {
-              setState(() {});
-            }
-            if (type == ProfileType.uname || type == ProfileType.sign) {
-              Get.back();
-            }
-          } else {
-            SmartDialog.showToast(res.data['message']);
-          }
-        });
+    Request.post(
+      '/x/member/app/${type.name}/update',
+      data: data,
+      options: Options(
+        contentType: Headers.formUrlEncodedContentType,
+      ),
+    ).then((res) {
+      if (res.data['code'] == 0) {
+        AccountMyInfoData data = _loadingState.data;
+        if (type == ProfileType.uname) {
+          data
+            ..name = _textController.text
+            ..coins = data.coins! - 6;
+          try {
+            UserInfoData userInfo = Pref.userInfoCache!
+              ..uname = _textController.text;
+            GStorage.userInfo.put('userInfoCache', userInfo);
+          } catch (_) {}
+          try {
+            Get.find<MineController>().userInfo
+              ..value.uname = _textController.text
+              ..refresh();
+          } catch (_) {}
+        } else if (type == ProfileType.sign) {
+          data.sign = _textController.text;
+        } else if (type == ProfileType.birthday) {
+          data.birthday = datum;
+        } else if (type == ProfileType.sex) {
+          data.sex = datum;
+        }
+        SmartDialog.showToast('修改成功');
+        if (mounted) {
+          setState(() {});
+        }
+        if (type == ProfileType.uname || type == ProfileType.sign) {
+          Get.back();
+        }
+      } else {
+        SmartDialog.showToast(res.data['message']);
+      }
+    });
   }
 
   String _sex(int sex) {
@@ -517,33 +513,31 @@ class _EditProfilePageState extends State<EditProfilePage> {
           imagePath = croppedFile?.path;
         }
         if (imagePath != null) {
-          Request()
-              .post(
-                '/x/member/web/face/update',
-                queryParameters: {
-                  'csrf': Accounts.main.csrf,
-                },
-                data: FormData.fromMap({
-                  'dopost': 'save',
-                  'DisplayRank': 10000,
-                  'face': await MultipartFile.fromFile(imagePath),
-                }),
-              )
-              .then((res) {
-                if (res.data['code'] == 0) {
-                  SmartDialog.showToast('修改成功');
-                  Future.delayed(const Duration(milliseconds: 500), () {
-                    if (mounted) {
-                      _getInfo();
-                    }
-                  });
-                } else {
-                  SmartDialog.showToast(res.data['message']);
-                }
-                if (PlatformUtils.isMobile && imagePath != null) {
-                  File(imagePath).tryDel();
+          Request.post(
+            '/x/member/web/face/update',
+            queryParameters: {
+              'csrf': Accounts.main.csrf,
+            },
+            data: FormData.fromMap({
+              'dopost': 'save',
+              'DisplayRank': 10000,
+              'face': await MultipartFile.fromFile(imagePath),
+            }),
+          ).then((res) {
+            if (res.data['code'] == 0) {
+              SmartDialog.showToast('修改成功');
+              Future.delayed(const Duration(milliseconds: 500), () {
+                if (mounted) {
+                  _getInfo();
                 }
               });
+            } else {
+              SmartDialog.showToast(res.data['message']);
+            }
+            if (PlatformUtils.isMobile && imagePath != null) {
+              File(imagePath).tryDel();
+            }
+          });
         }
       }
     } catch (e) {

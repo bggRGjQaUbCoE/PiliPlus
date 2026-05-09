@@ -443,7 +443,7 @@ class AudioController extends GetxController
       hasLike.value = true;
       if (response.coinOk && !hasCoin) {
         coinNum.value = 2;
-        GlobalData().afterCoin(2);
+        GlobalData.afterCoin(2);
         try {
           audioItem.value!.stat
             ..hasCoin_8 = true
@@ -479,7 +479,7 @@ class AudioController extends GetxController
       return;
     }
 
-    if (GlobalData().coins != null && GlobalData().coins! < 1) {
+    if (GlobalData.coins != null && GlobalData.coins! < 1) {
       SmartDialog.showToast('硬币不足');
       // return;
     }
@@ -516,7 +516,7 @@ class AudioController extends GetxController
         }
         audioItem.refresh();
       } catch (_) {}
-      GlobalData().afterCoin(coin);
+      GlobalData.afterCoin(coin);
     } else {
       res.toast();
     }

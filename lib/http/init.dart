@@ -17,18 +17,16 @@ import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
 import 'package:dio_http2_adapter/dio_http2_adapter.dart';
 
-class Request {
+abstract final class Request {
   static const _gzipDecoder = GZipDecoder();
   static const _brotliDecoder = BrotliDecoder();
 
-  static final Request _instance = Request._internal();
-  static late AccountManager accountManager;
+  static late final AccountManager accountManager;
   static final _enableHttp2 = Pref.enableHttp2;
   static late final Dio dio;
   static Dio? _http11Dio;
   static Dio get http11Dio =>
       _http11Dio ??= _enableHttp2 ? _cloneHttp11Dio() : dio;
-  factory Request() => _instance;
 
   /// 设置cookie
   static void setCookie() {
@@ -42,7 +40,7 @@ class Request {
       if (coin == null) {
         setCoin();
       } else {
-        GlobalData().coins = coin;
+        GlobalData.coins = coin;
       }
     }
   }
@@ -50,7 +48,7 @@ class Request {
   static Future<void> setCoin() async {
     final res = await UserHttp.getCoin();
     if (res case Success(:final response)) {
-      GlobalData().coins = response;
+      GlobalData.coins = response;
     }
   }
 
@@ -132,9 +130,9 @@ class Request {
   /*
    * config it and create
    */
-  Request._internal() {
+  static void init() {
     //BaseOptions、Options、RequestOptions 都可以配置参数，优先级别依次递增，且可以根据优先级别覆盖参数
-    BaseOptions options = BaseOptions(
+    final options = BaseOptions(
       //请求基地址,可以包含子路径
       baseUrl: HttpString.apiBaseUrl,
       //连接服务器超时时间，单位是毫秒.
@@ -186,7 +184,7 @@ class Request {
   /*
    * get请求
    */
-  Future<Response> get<T>(
+  static Future<Response> get<T>(
     String url, {
     Map<String, dynamic>? queryParameters,
     Options? options,
@@ -213,7 +211,7 @@ class Request {
   /*
    * post请求
    */
-  Future<Response> post<T>(
+  static Future<Response> post<T>(
     String url, {
     Object? data,
     Map<String, dynamic>? queryParameters,
@@ -244,7 +242,7 @@ class Request {
   /*
    * 下载文件
    */
-  Future<Response> downloadFile(
+  static Future<Response> downloadFile(
     String urlPath,
     String savePath, {
     CancelToken? cancelToken,

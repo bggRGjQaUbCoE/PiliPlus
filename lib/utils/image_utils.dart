@@ -33,7 +33,7 @@ abstract final class ImageUtils {
     try {
       SmartDialog.showLoading();
       final path = '$tmpDirPath/${Utils.getFileName(url)}';
-      final res = await Request().downloadFile(url.http2https, path);
+      final res = await Request.downloadFile(url.http2https, path);
       SmartDialog.dismiss();
       if (res.statusCode == 200) {
         await SharePlus.instance
@@ -106,11 +106,11 @@ abstract final class ImageUtils {
       String videoName = "video_${Utils.getFileName(liveUrl)}";
       String videoPath = '$tmpDirPath/$videoName';
 
-      final res = await Request().downloadFile(liveUrl.http2https, videoPath);
+      final res = await Request.downloadFile(liveUrl.http2https, videoPath);
       if (res.statusCode != 200) throw '${res.statusCode}';
 
       if (Platform.isIOS) {
-        final res1 = await Request().downloadFile(url.http2https, imagePath);
+        final res1 = await Request.downloadFile(url.http2https, imagePath);
         if (res1.statusCode != 200) throw '${res1.statusCode}';
         SmartDialog.showLoading(msg: '正在保存');
         bool success =
@@ -174,7 +174,7 @@ abstract final class ImageUtils {
 
         if (file == null) {
           final String filePath = '$tmpDirPath/$name';
-          final response = await Request().downloadFile(
+          final response = await Request.downloadFile(
             url.http2https,
             filePath,
             cancelToken: cancelToken,
@@ -275,7 +275,7 @@ abstract final class ImageUtils {
     String suffix = kSuffixWEBP,
   }) {
     if (src != null && maxQuality != 100) {
-      maxQuality = math.max(maxQuality, GlobalData().imgQuality);
+      maxQuality = math.max(maxQuality, GlobalData.imgQuality);
       bool hasMatch = false;
       src = src.splitMapJoin(
         _thumbRegex,

@@ -40,7 +40,7 @@ abstract final class LoginHttp {
       'mobi_app': 'android_hd',
     };
     AppSign.appSign(params);
-    final res = await Request().post(Api.getTVCode, queryParameters: params);
+    final res = await Request.post(Api.getTVCode, queryParameters: params);
 
     if (res.data['code'] == 0) {
       try {
@@ -60,7 +60,7 @@ abstract final class LoginHttp {
       'local_id': '0',
     };
     AppSign.appSign(params);
-    final res = await Request().post(Api.qrcodePoll, queryParameters: params);
+    final res = await Request.post(Api.qrcodePoll, queryParameters: params);
     return {
       'status': res.data['code'] == 0,
       'code': res.data['code'],
@@ -70,7 +70,7 @@ abstract final class LoginHttp {
   }
 
   static Future queryCaptcha() async {
-    final res = await Request().get(Api.getCaptcha);
+    final res = await Request.get(Api.getCaptcha);
     if (res.data['code'] == 0) {
       return {
         'status': true,
@@ -83,7 +83,7 @@ abstract final class LoginHttp {
 
   // 获取salt与PubKey
   static Future getWebKey() async {
-    final res = await Request().get(Api.getWebKey);
+    final res = await Request.get(Api.getWebKey);
     //data: {'disable_rcmd': 0, 'local_id': LoginUtils.generateBuvid()});
     if (res.data['code'] == 0) {
       return {'status': true, 'data': res.data['data']};
@@ -128,7 +128,7 @@ abstract final class LoginHttp {
     };
     AppSign.appSign(data);
 
-    final res = await Request().post(
+    final res = await Request.post(
       Api.appSmsCode,
       data: data,
       options: Options(
@@ -174,7 +174,7 @@ abstract final class LoginHttp {
   //     Constants.appKey,
   //     Constants.appSec,
   //   );
-  //   final res = await Request().post(Api.getGuestId,
+  //   final res = await Request.post(Api.getGuestId,
   //       queryParameters: {...params, 'sign': sign},
   //       options: Options(
   //         contentType: Headers.formUrlEncodedContentType,
@@ -237,7 +237,7 @@ abstract final class LoginHttp {
       'username': username,
     };
     AppSign.appSign(data);
-    final res = await Request().post(
+    final res = await Request.post(
       Api.loginByPwdApi,
       data: data,
       options: Options(
@@ -303,7 +303,7 @@ abstract final class LoginHttp {
       'tel': tel,
     };
     AppSign.appSign(data);
-    final res = await Request().post(
+    final res = await Request.post(
       Api.logInByAppSms,
       data: data,
       options: Options(
@@ -329,7 +329,7 @@ abstract final class LoginHttp {
   static Future safeCenterGetInfo({
     required String tmpCode,
   }) async {
-    final res = await Request().get(
+    final res = await Request.get(
       Api.safeCenterGetInfo,
       queryParameters: {
         'tmp_code': tmpCode,
@@ -349,7 +349,7 @@ abstract final class LoginHttp {
 
   // 风控验证手机前的极验验证码
   static Future preCapture() async {
-    final res = await Request().post(Api.preCapture);
+    final res = await Request.post(Api.preCapture);
 
     if (res.data['code'] == 0) {
       return {'status': true, 'data': res.data['data']};
@@ -383,7 +383,7 @@ abstract final class LoginHttp {
       'recaptcha_token': ?recaptchaToken,
     };
     AppSign.appSign(data);
-    final res = await Request().post(
+    final res = await Request.post(
       Api.safeCenterSmsCode,
       data: data,
       options: Options(
@@ -425,7 +425,7 @@ abstract final class LoginHttp {
       'captcha_key': captchaKey,
     };
     AppSign.appSign(data);
-    final res = await Request().post(
+    final res = await Request.post(
       Api.safeCenterSmsVerify,
       data: data,
       options: Options(
@@ -471,7 +471,7 @@ abstract final class LoginHttp {
       // 'statistics': Constants.statistics,
     };
     AppSign.appSign(data);
-    final res = await Request().post(
+    final res = await Request.post(
       Api.oauth2AccessToken,
       data: data,
       options: Options(
@@ -493,7 +493,7 @@ abstract final class LoginHttp {
   }
 
   static Future<Map> logout(Account account) async {
-    final res = await Request().post(
+    final res = await Request.post(
       Api.logout,
       data: {'biliCSRF': account.csrf},
       options: Options(
@@ -519,7 +519,7 @@ abstract final class LoginHttp {
       'statistics': Constants.statistics,
     };
     AppSign.appSign(params);
-    final res = await Request().get(
+    final res = await Request.get(
       Api.loginDevices,
       queryParameters: params,
     );

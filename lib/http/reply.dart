@@ -27,7 +27,7 @@ abstract final class ReplyHttp {
     int sort = 1,
   }) async {
     final res = !isLogin
-        ? await Request().get(
+        ? await Request.get(
             '${Api.replyList}/main',
             queryParameters: {
               'oid': oid,
@@ -38,7 +38,7 @@ abstract final class ReplyHttp {
             },
             options: !isLogin ? options : null,
           )
-        : await Request().get(
+        : await Request.get(
             Api.replyList,
             queryParameters: {
               'oid': oid,
@@ -64,7 +64,7 @@ abstract final class ReplyHttp {
     required int type,
     bool isCheck = false,
   }) async {
-    final res = await Request().get(
+    final res = await Request.get(
       Api.replyReplyList,
       queryParameters: {
         'oid': oid,
@@ -94,7 +94,7 @@ abstract final class ReplyHttp {
     required int oid,
     required int rpid,
   }) async {
-    final res = await Request().post(
+    final res = await Request.post(
       Api.hateReply,
       data: {
         'type': type,
@@ -119,7 +119,7 @@ abstract final class ReplyHttp {
     required int rpid,
     required int action,
   }) async {
-    final res = await Request().post(
+    final res = await Request.post(
       Api.likeReply,
       data: {
         'type': type,
@@ -140,7 +140,7 @@ abstract final class ReplyHttp {
   static Future<LoadingState<List<Package>?>> getEmoteList({
     String? business,
   }) async {
-    final res = await Request().get(
+    final res = await Request.get(
       Api.myEmote,
       queryParameters: {
         'business': business ?? 'reply',
@@ -160,7 +160,7 @@ abstract final class ReplyHttp {
     required Object rpid,
     required bool isUpTop,
   }) async {
-    final res = await Request().post(
+    final res = await Request.post(
       Api.replyTop,
       data: {
         'oid': oid,
@@ -185,7 +185,7 @@ abstract final class ReplyHttp {
     bool banUid = true,
     String? reasonDesc,
   }) async {
-    final res = await Request().post(
+    final res = await Request.post(
       '/x/v2/reply/report',
       data: {
         'add_blacklist': banUid,
@@ -213,7 +213,7 @@ abstract final class ReplyHttp {
     required Object oid,
     required Object type,
   }) async {
-    final res = await Request().get(
+    final res = await Request.get(
       Api.replyInteraction,
       queryParameters: {
         'oid': oid,
@@ -237,7 +237,7 @@ abstract final class ReplyHttp {
     required int type,
     required int action,
   }) async {
-    final res = await Request().post(
+    final res = await Request.post(
       Api.replySubjectModify,
       data: {
         'oid': oid,

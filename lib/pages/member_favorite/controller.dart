@@ -81,7 +81,7 @@ class MemberFavoriteCtr
 
   Future<void> userFavFolder() async {
     try {
-      final res = await Request().get(
+      final res = await Request.get(
         Api.userFavFolder,
         queryParameters: {
           'pn': favPage,
@@ -117,7 +117,7 @@ class MemberFavoriteCtr
 
   Future<void> userSubFolder() async {
     try {
-      final res = await Request().get(
+      final res = await Request.get(
         Api.userSubFolder,
         queryParameters: {
           'up_mid': mid,

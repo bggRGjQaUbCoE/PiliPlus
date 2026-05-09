@@ -126,7 +126,7 @@ class PgcIntroController extends CommonIntroController {
       return;
     }
 
-    if (GlobalData().coins != null && GlobalData().coins! < 1) {
+    if (GlobalData.coins != null && GlobalData.coins! < 1) {
       SmartDialog.showToast('硬币不足');
       // return;
     }
@@ -435,7 +435,7 @@ class PgcIntroController extends CommonIntroController {
       if (response.coin == 1 && !hasCoin) {
         stat?.coin += 2;
         coinNum.value = 2;
-        GlobalData().afterCoin(2);
+        GlobalData.afterCoin(2);
       }
       if (response.favorite == 1 && !hasFav.value) {
         stat?.favorite++;

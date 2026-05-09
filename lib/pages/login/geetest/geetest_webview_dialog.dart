@@ -22,7 +22,7 @@ class GeetestWebviewDialog extends StatelessWidget {
     String gt,
     String challenge,
   ) async {
-    final res = await Request().get<String>(
+    final res = await Request.get<String>(
       'https://api.geetest.com/gettype.php',
       queryParameters: {'gt': gt},
       options: Options(

@@ -23,7 +23,7 @@ abstract final class SearchHttp {
   static Future<LoadingState<SearchSuggestModel>> searchSuggest({
     required String term,
   }) async {
-    final res = await Request().get(
+    final res = await Request.get(
       Api.searchSuggest,
       queryParameters: {
         'term': term,
@@ -76,7 +76,7 @@ abstract final class SearchHttp {
       'web_location': 1430654,
       'gaia_vtoken': ?gaiaVtoken,
     });
-    final res = await Request().get(
+    final res = await Request.get(
       Api.searchByType,
       queryParameters: params,
       options: Options(
@@ -155,7 +155,7 @@ abstract final class SearchHttp {
       'pubtime_begin_s': ?pubBegin,
       'pubtime_end_s': ?pubEnd,
     });
-    final res = await Request().get(
+    final res = await Request.get(
       Api.searchAll,
       queryParameters: params,
     );
@@ -182,7 +182,7 @@ abstract final class SearchHttp {
     dynamic bvid,
     int? part,
   }) async {
-    final res = await Request().get(
+    final res = await Request.get(
       Api.ab2c,
       queryParameters: {
         'aid': ?aid,
@@ -214,7 +214,7 @@ abstract final class SearchHttp {
     dynamic seasonId,
     dynamic epId,
   }) async {
-    final res = await Request().get(
+    final res = await Request.get(
       Api.pgcInfo,
       queryParameters: {
         'season_id': ?seasonId,
@@ -232,7 +232,7 @@ abstract final class SearchHttp {
     dynamic seasonId,
     dynamic epId,
   }) async {
-    final res = await Request().get(
+    final res = await Request.get(
       Api.pugvInfo,
       queryParameters: {
         'season_id': ?seasonId,
@@ -247,7 +247,7 @@ abstract final class SearchHttp {
   }
 
   // static Future<LoadingState> episodeInfo({dynamic epId}) async {
-  //   final res = await Request().get(
+  //   final res = await Request.get(
   //     Api.episodeInfo,
   //     queryParameters: {
   //       'ep_id': ?epId,
@@ -263,7 +263,7 @@ abstract final class SearchHttp {
   static Future<LoadingState<SearchTrendingData>> searchTrending({
     int limit = 30,
   }) async {
-    final res = await Request().get(
+    final res = await Request.get(
       Api.searchTrending,
       queryParameters: {
         'limit': limit,
@@ -277,7 +277,7 @@ abstract final class SearchHttp {
   }
 
   static Future<LoadingState<SearchRcmdData>> searchRecommend() async {
-    final res = await Request().get(
+    final res = await Request.get(
       Api.searchRecommend,
       queryParameters: {
         'build': 8430300,
@@ -302,7 +302,7 @@ abstract final class SearchHttp {
     String content = '',
     required int pageNum,
   }) async {
-    final res = await Request().get(
+    final res = await Request.get(
       Api.topicPubSearch,
       queryParameters: {
         'keywords': keywords,

@@ -83,7 +83,7 @@ class _MemberSearchChildPageState extends State<MemberSearchChildPage>
                   itemCount: response.length,
                 ),
                 MemberSearchType.dynamic =>
-                  GlobalData().dynamicsWaterfallFlow
+                  GlobalData.dynamicsWaterfallFlow
                       ? SliverWaterfallFlow(
                           gridDelegate: dynGridDelegate,
                           delegate: SliverChildBuilderDelegate(

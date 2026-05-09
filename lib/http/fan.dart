@@ -11,7 +11,7 @@ abstract final class FanHttp {
     int ps = 20,
     String? orderType,
   }) async {
-    final res = await Request().get(
+    final res = await Request.get(
       Api.fans,
       queryParameters: {
         'vmid': vmid,

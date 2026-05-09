@@ -47,7 +47,7 @@ abstract final class DanmakuHttp {
       // 'access_key': access_key,
     };
 
-    final res = await Request().post(
+    final res = await Request.post(
       Api.shootDanmaku,
       data: data,
       options: Options(contentType: Headers.formUrlEncodedContentType),
@@ -77,7 +77,7 @@ abstract final class DanmakuHttp {
       'statistics': '{"appId":100,"platform":5,"abtest":"","version":""}',
       'csrf': Accounts.main.csrf,
     };
-    final res = await Request().post(
+    final res = await Request.post(
       Api.danmakuLike,
       data: data,
       options: Options(contentType: Headers.formUrlEncodedContentType),
@@ -110,7 +110,7 @@ abstract final class DanmakuHttp {
       'statistics': '{"appId":100,"platform":5,"abtest":"","version":""}',
       'csrf': Accounts.main.csrf,
     };
-    final res = await Request().post(
+    final res = await Request.post(
       Api.danmakuReport,
       data: data,
       options: Options(contentType: Headers.formUrlEncodedContentType),
@@ -144,7 +144,7 @@ abstract final class DanmakuHttp {
       'type': 1,
       'csrf': Accounts.main.csrf,
     };
-    final res = await Request().post(
+    final res = await Request.post(
       Api.danmakuRecall,
       data: data,
       options: Options(contentType: Headers.formUrlEncodedContentType),
@@ -172,7 +172,7 @@ abstract final class DanmakuHttp {
       'type': 1,
       'csrf': Accounts.main.csrf,
     };
-    final res = await Request().post(
+    final res = await Request.post(
       Api.danmakuRecall,
       data: data,
       options: Options(contentType: Headers.formUrlEncodedContentType),

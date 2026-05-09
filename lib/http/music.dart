@@ -9,7 +9,7 @@ import 'package:dio/dio.dart';
 
 abstract final class MusicHttp {
   static Future<LoadingState<MusicDetail>> bgmDetail(String musicId) async {
-    final res = await Request().get(
+    final res = await Request.get(
       Api.bgmDetail,
       queryParameters: await WbiSign.makSign({
         'music_id': musicId,
@@ -27,7 +27,7 @@ abstract final class MusicHttp {
     String musicId,
     bool hasLike,
   ) async {
-    final res = await Request().post(
+    final res = await Request.post(
       Api.wishUpdate,
       data: {
         'music_id': musicId,
@@ -46,7 +46,7 @@ abstract final class MusicHttp {
   static Future<LoadingState<List<BgmRecommend>?>> bgmRecommend(
     String musicId,
   ) async {
-    final res = await Request().get(
+    final res = await Request.get(
       Api.bgmRecommend,
       queryParameters: {
         'music_id': musicId,

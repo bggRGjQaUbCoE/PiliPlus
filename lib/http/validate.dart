@@ -6,7 +6,7 @@ import 'package:dio/dio.dart';
 
 abstract final class ValidateHttp {
   static Future<LoadingState<Map?>> gaiaVgateRegister(String vVoucher) async {
-    final res = await Request().post(
+    final res = await Request.post(
       Api.gaiaVgateRegister,
       queryParameters: {
         if (Accounts.main.isLogin) 'csrf': Accounts.main.csrf,
@@ -31,7 +31,7 @@ abstract final class ValidateHttp {
     required dynamic token,
     required dynamic validate,
   }) async {
-    final res = await Request().post(
+    final res = await Request.post(
       Api.gaiaVgateValidate,
       queryParameters: {
         if (Accounts.main.isLogin) 'csrf': Accounts.main.csrf,

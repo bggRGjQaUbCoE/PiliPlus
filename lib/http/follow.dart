@@ -13,7 +13,7 @@ abstract final class FollowHttp {
     int ps = 20,
     String orderType = '', // ''=>最近关注，'attention'=>最常访问
   }) async {
-    final res = await Request().get(
+    final res = await Request.get(
       Api.followings,
       queryParameters: {
         'vmid': vmid,
@@ -33,7 +33,7 @@ abstract final class FollowHttp {
   static Future<LoadingState<void>> sortFollowTag({
     required String tagids,
   }) async {
-    final res = await Request().post(
+    final res = await Request.post(
       Api.sortFollowTag,
       queryParameters: {
         'x-bili-device-req-json':

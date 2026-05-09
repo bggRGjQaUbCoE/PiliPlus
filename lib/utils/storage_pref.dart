@@ -62,12 +62,12 @@ abstract final class Pref {
 
   static void setBlackMid(int mid) => _localCache.put(
     LocalCacheKey.blackMids,
-    GlobalData().blackMids..add(mid),
+    GlobalData.blackMids..add(mid),
   );
 
   static void removeBlackMid(int mid) => _localCache.put(
     LocalCacheKey.blackMids,
-    GlobalData().blackMids..remove(mid),
+    GlobalData.blackMids..remove(mid),
   );
 
   static int get _themeTypeInt => _setting.get(

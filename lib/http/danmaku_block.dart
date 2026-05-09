@@ -7,7 +7,7 @@ import 'package:dio/dio.dart';
 
 abstract final class DanmakuFilterHttp {
   static Future<LoadingState<DanmakuBlockDataModel>> danmakuFilter() async {
-    final res = await Request().get(Api.danmakuFilter);
+    final res = await Request.get(Api.danmakuFilter);
     if (res.data['code'] == 0) {
       return Success(DanmakuBlockDataModel.fromJson(res.data['data']));
     } else {
@@ -16,7 +16,7 @@ abstract final class DanmakuFilterHttp {
   }
 
   static Future<LoadingState<void>> danmakuFilterDel({required int ids}) async {
-    final res = await Request().post(
+    final res = await Request.post(
       Api.danmakuFilterDel,
       data: {
         'ids': ids,
@@ -35,7 +35,7 @@ abstract final class DanmakuFilterHttp {
     required String filter,
     required int type,
   }) async {
-    final res = await Request().post(
+    final res = await Request.post(
       Api.danmakuFilterAdd,
       data: {
         'type': type,

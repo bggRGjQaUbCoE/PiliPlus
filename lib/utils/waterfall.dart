@@ -16,7 +16,7 @@ mixin DynMixin {
       );
 
   Widget buildPage(Widget child) {
-    if (GlobalData().dynamicsWaterfallFlow) {
+    if (GlobalData.dynamicsWaterfallFlow) {
       return child;
     }
     return SliverLayoutBuilder(
@@ -43,7 +43,7 @@ mixin DynMixin {
   );
 
   Widget get dynSkeleton {
-    if (GlobalData().dynamicsWaterfallFlow) {
+    if (GlobalData.dynamicsWaterfallFlow) {
       return SliverGrid.builder(
         gridDelegate: skeDelegate,
         itemBuilder: (_, _) => const DynamicCardSkeleton(),

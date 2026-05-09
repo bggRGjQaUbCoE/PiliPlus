@@ -101,7 +101,7 @@ List<SettingsModel> get styleSettings => [
       title: '图片质量',
       initValue: Pref.picQuality,
       onChanged: (picQuality) async {
-        GlobalData().imgQuality = picQuality;
+        GlobalData.imgQuality = picQuality;
         await GStorage.setting.put(SettingBoxKey.defaultPicQa, picQuality);
         setState();
       },

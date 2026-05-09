@@ -27,7 +27,7 @@ class _BlackListPageState extends State<BlackListPage> {
   void dispose() {
     if (_blackListController.loadingState.value case Success(:final response)) {
       final blackMids = response?.map((e) => e.mid!).toSet() ?? {};
-      GlobalData().blackMids = blackMids;
+      GlobalData.blackMids = blackMids;
       Pref.blackMids = blackMids;
     }
     super.dispose();

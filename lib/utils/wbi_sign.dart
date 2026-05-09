@@ -76,7 +76,7 @@ abstract final class WbiSign {
   }
 
   static Future<String> _getWbiKeys() async {
-    final resp = await Request().get(Api.userInfo);
+    final resp = await Request.get(Api.userInfo);
     try {
       final wbiUrls = resp.data['data']['wbi_img'];
 

@@ -24,7 +24,7 @@ import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 
 abstract final class UserHttp {
   // static Future<dynamic> userStat({required int mid}) async {
-  //   final res = await Request().get(
+  //   final res = await Request.get(
   //     Api.userStat,
   //     queryParameters: {'vmid': mid},
   //   );
@@ -36,10 +36,10 @@ abstract final class UserHttp {
   // }
 
   static Future<LoadingState<UserInfoData>> userInfo() async {
-    final res = await Request().get(Api.userInfo);
+    final res = await Request.get(Api.userInfo);
     if (res.data['code'] == 0) {
       UserInfoData data = UserInfoData.fromJson(res.data['data']);
-      GlobalData().coins = data.money;
+      GlobalData.coins = data.money;
       return Success(data);
     } else {
       return Error(res.data['message']);
@@ -47,7 +47,7 @@ abstract final class UserHttp {
   }
 
   static Future<LoadingState<UserStat>> userStatOwner() async {
-    final res = await Request().get(Api.userStatOwner);
+    final res = await Request.get(Api.userStatOwner);
     if (res.data['code'] == 0) {
       return Success(UserStat.fromJson(res.data['data']));
     } else {
@@ -62,7 +62,7 @@ abstract final class UserHttp {
     String keyword = '',
     bool asc = false,
   }) async {
-    final res = await Request().get(
+    final res = await Request.get(
       Api.seeYouLater,
       queryParameters: await WbiSign.makSign({
         'pn': page,
@@ -88,7 +88,7 @@ abstract final class UserHttp {
     int? viewAt,
     Account? account,
   }) async {
-    final res = await Request().get(
+    final res = await Request.get(
       Api.historyList,
       queryParameters: {
         'type': type,
@@ -112,7 +112,7 @@ abstract final class UserHttp {
   }) async {
     // 暂停switchStatus传true 否则false
     account ??= Accounts.history;
-    final res = await Request().post(
+    final res = await Request.post(
       Api.pauseHistory,
       data: {
         'switch': switchStatus,
@@ -133,7 +133,7 @@ abstract final class UserHttp {
 
   // 观看历史暂停状态
   static Future<LoadingState<bool>> historyStatus({Account? account}) async {
-    final res = await Request().get(
+    final res = await Request.get(
       Api.historyStatus,
       options: Options(extra: {'account': account ?? Accounts.history}),
     );
@@ -147,7 +147,7 @@ abstract final class UserHttp {
   // 清空历史记录
   static Future<LoadingState<void>> clearHistory({Account? account}) async {
     account ??= Accounts.history;
-    final res = await Request().post(
+    final res = await Request.post(
       Api.clearHistory,
       data: {
         'jsonp': 'jsonp',
@@ -171,7 +171,7 @@ abstract final class UserHttp {
     Object? aid,
   }) async {
     assert(aid != null || bvid != null);
-    final res = await Request().post(
+    final res = await Request.post(
       Api.toViewLater,
       data: {
         'aid': ?aid,
@@ -195,7 +195,7 @@ abstract final class UserHttp {
       'csrf': Accounts.main.csrf,
       'resources': aids,
     };
-    final res = await Request().post(
+    final res = await Request.post(
       Api.toViewDel,
       data: params,
       options: Options(contentType: Headers.formUrlEncodedContentType),
@@ -211,7 +211,7 @@ abstract final class UserHttp {
 
   // 获取用户凭证 失效
   // static Future thirdLogin() async {
-  //   final res = await Request().get(
+  //   final res = await Request.get(
   //     'https://passport.bilibili.com/login/app/third',
   //     queryParameters: {
   //       'appkey': Constants.appKey,
@@ -221,7 +221,7 @@ abstract final class UserHttp {
   //   );
   //   try {
   //     if (res.data['code'] == 0 && res.data['data']['has_login'] == 1) {
-  //       Request().get(res.data['data']['confirm_uri']);
+  //       Request.get(res.data['data']['confirm_uri']);
   //     }
   //   } catch (err) {
   //     SmartDialog.showNotify(msg: '获取用户凭证: $err', notifyType: NotifyType.error);
@@ -230,7 +230,7 @@ abstract final class UserHttp {
 
   // 清空稍后再看 // clean_type: null->all, 1->invalid, 2->viewed
   static Future<LoadingState<void>> toViewClear([int? cleanType]) async {
-    final res = await Request().post(
+    final res = await Request.post(
       Api.toViewClear,
       data: {
         'clean_type': ?cleanType,
@@ -251,7 +251,7 @@ abstract final class UserHttp {
     Account? account,
   }) async {
     account ??= Accounts.history;
-    final res = await Request().post(
+    final res = await Request.post(
       Api.delHistory,
       data: {
         'kid': kid,
@@ -271,7 +271,7 @@ abstract final class UserHttp {
   }
 
   static Future<LoadingState<RelationData>> userRelation(int mid) async {
-    final res = await Request().get(
+    final res = await Request.get(
       Api.relation,
       queryParameters: {
         'fid': mid,
@@ -290,7 +290,7 @@ abstract final class UserHttp {
     required String keyword,
     Account? account,
   }) async {
-    final res = await Request().get(
+    final res = await Request.get(
       Api.searchHistory,
       queryParameters: {
         'pn': pn,
@@ -312,7 +312,7 @@ abstract final class UserHttp {
     required int pn,
     required int ps,
   }) async {
-    final res = await Request().get(
+    final res = await Request.get(
       Api.userSubFolder,
       queryParameters: {
         'up_mid': mid,
@@ -332,7 +332,7 @@ abstract final class UserHttp {
     required String bvid,
     Object? cid,
   }) async {
-    final res = await Request().get(
+    final res = await Request.get(
       Api.videoTags,
       queryParameters: {'bvid': bvid, 'cid': ?cid},
     );
@@ -359,7 +359,7 @@ abstract final class UserHttp {
     dynamic sortField = 1,
     bool direction = false,
   }) async {
-    final res = await Request().get(
+    final res = await Request.get(
       Api.mediaList,
       queryParameters: {
         'mobi_app': 'web',
@@ -383,7 +383,7 @@ abstract final class UserHttp {
   }
 
   static Future<LoadingState<num?>> getCoin() async {
-    final res = await Request().get(Api.getCoin);
+    final res = await Request.get(Api.getCoin);
     if (res.data['code'] == 0) {
       return Success(res.data['data']?['money']);
     } else {
@@ -397,7 +397,7 @@ abstract final class UserHttp {
     required int reasonType,
     String? reasonDesc,
   }) async {
-    final res = await Request().post(
+    final res = await Request.post(
       Api.dynamicReport,
       queryParameters: {
         'csrf': Accounts.main.csrf,
@@ -418,7 +418,7 @@ abstract final class UserHttp {
   }
 
   static Future<LoadingState<SpaceSettingData>> spaceSetting() async {
-    final res = await Request().get(
+    final res = await Request.get(
       Api.spaceSetting,
       queryParameters: {
         'mid': Accounts.main.mid,
@@ -434,7 +434,7 @@ abstract final class UserHttp {
   static Future<LoadingState<void>> spaceSettingMod(
     Map<String, dynamic> data,
   ) async {
-    final res = await Request().post(
+    final res = await Request.post(
       Api.spaceSettingMod,
       queryParameters: {
         'csrf': Accounts.main.csrf,
@@ -450,7 +450,7 @@ abstract final class UserHttp {
   }
 
   static Future<LoadingState<void>> vipExpAdd() async {
-    final res = await Request().post(
+    final res = await Request.post(
       Api.vipExpAdd,
       queryParameters: {
         'mid': Accounts.main.mid,
@@ -465,7 +465,7 @@ abstract final class UserHttp {
   }
 
   static Future<LoadingState<CoinLogData>> coinLog() async {
-    final res = await Request().get(
+    final res = await Request.get(
       Api.coinLog,
       queryParameters: {
         'jsonp': 'jsonp',
@@ -480,7 +480,7 @@ abstract final class UserHttp {
   }
 
   static Future<LoadingState<LoginLogData>> loginLog() async {
-    final res = await Request().get(
+    final res = await Request.get(
       Api.loginLog,
       queryParameters: {
         'jsonp': 'jsonp',
@@ -495,7 +495,7 @@ abstract final class UserHttp {
   }
 
   static Future<LoadingState<CoinLogData>> expLog() async {
-    final res = await Request().get(
+    final res = await Request.get(
       Api.expLog,
       queryParameters: {
         'jsonp': 'jsonp',
@@ -517,7 +517,7 @@ abstract final class UserHttp {
       'up_mid': mid,
     };
     AppSign.appSign(params);
-    final res = await Request().get(
+    final res = await Request.get(
       Api.userRealName,
       queryParameters: params,
     );
@@ -532,7 +532,7 @@ abstract final class UserHttp {
     required Object mid,
     required int pn,
   }) async {
-    final res = await Request().get(
+    final res = await Request.get(
       Api.followedUp,
       queryParameters: {
         'csrf': Accounts.main.csrf,
@@ -554,7 +554,7 @@ abstract final class UserHttp {
     required Object mid,
     int? pn,
   }) async {
-    final res = await Request().get(
+    final res = await Request.get(
       Api.sameFollowing,
       queryParameters: {
         'csrf': Accounts.main.csrf,
@@ -576,7 +576,7 @@ abstract final class UserHttp {
     required Object sid,
     required bool isFollow,
   }) async {
-    final res = await Request().post(
+    final res = await Request.post(
       isFollow ? Api.spaceReserveCancel : Api.spaceReserve,
       data: {
         'sid': sid,

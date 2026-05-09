@@ -19,7 +19,7 @@ import 'package:dio/dio.dart';
 
 abstract final class FavHttp {
   static Future<LoadingState<void>> favFavFolder(Object mediaId) async {
-    final res = await Request().post(
+    final res = await Request.post(
       Api.favFavFolder,
       data: {
         'media_id': mediaId,
@@ -35,7 +35,7 @@ abstract final class FavHttp {
   }
 
   static Future<LoadingState<void>> unfavFavFolder(Object mediaId) async {
-    final res = await Request().post(
+    final res = await Request.post(
       Api.unfavFavFolder,
       data: {
         'media_id': mediaId,
@@ -58,7 +58,7 @@ abstract final class FavHttp {
     FavOrderType order = FavOrderType.mtime,
     int type = 0,
   }) async {
-    final res = await Request().get(
+    final res = await Request.get(
       Api.favResourceList,
       queryParameters: {
         'media_id': mediaId,
@@ -84,7 +84,7 @@ abstract final class FavHttp {
     required int type,
   }) async {
     final res = type == 11
-        ? await Request().post(
+        ? await Request.post(
             Api.unfavFolder,
             data: {
               'media_id': id,
@@ -92,7 +92,7 @@ abstract final class FavHttp {
             },
             options: Options(contentType: Headers.formUrlEncodedContentType),
           )
-        : await Request().post(
+        : await Request.post(
             Api.unfavSeason,
             data: {
               'platform': 'web',
@@ -113,7 +113,7 @@ abstract final class FavHttp {
     required int pn,
     required int ps,
   }) async {
-    final res = await Request().get(
+    final res = await Request.get(
       Api.favSeasonList,
       queryParameters: {
         'season_id': id,
@@ -132,7 +132,7 @@ abstract final class FavHttp {
     required int mid,
     required int page,
   }) async {
-    final res = await Request().get(
+    final res = await Request.get(
       Api.favPugv,
       queryParameters: {
         'mid': mid,
@@ -149,7 +149,7 @@ abstract final class FavHttp {
   }
 
   static Future<LoadingState<void>> addFavPugv(Object seasonId) async {
-    final res = await Request().post(
+    final res = await Request.post(
       Api.addFavPugv,
       data: {
         'season_id': seasonId,
@@ -165,7 +165,7 @@ abstract final class FavHttp {
   }
 
   static Future<LoadingState<void>> delFavPugv(Object seasonId) async {
-    final res = await Request().post(
+    final res = await Request.post(
       Api.delFavPugv,
       data: {
         'season_id': seasonId,
@@ -183,7 +183,7 @@ abstract final class FavHttp {
   static Future<LoadingState<FavTopicData>> favTopic({
     required int page,
   }) async {
-    final res = await Request().get(
+    final res = await Request.get(
       Api.favTopicList,
       queryParameters: {
         'page_size': 24,
@@ -199,7 +199,7 @@ abstract final class FavHttp {
   }
 
   static Future<LoadingState<void>> addFavTopic(Object topicId) async {
-    final res = await Request().post(
+    final res = await Request.post(
       Api.addFavTopic,
       data: {
         'topic_id': topicId,
@@ -215,7 +215,7 @@ abstract final class FavHttp {
   }
 
   static Future<LoadingState<void>> delFavTopic(Object topicId) async {
-    final res = await Request().post(
+    final res = await Request.post(
       Api.delFavTopic,
       data: {
         'topic_id': topicId,
@@ -234,7 +234,7 @@ abstract final class FavHttp {
     Object topicId,
     bool isLike,
   ) async {
-    final res = await Request().post(
+    final res = await Request.post(
       Api.likeTopic,
       data: {
         'action': isLike ? 'cancel_like' : 'like',
@@ -255,7 +255,7 @@ abstract final class FavHttp {
   static Future<LoadingState<FavArticleData>> favArticle({
     required int page,
   }) async {
-    final res = await Request().get(
+    final res = await Request.get(
       Api.favArticle,
       queryParameters: {
         'page_size': 20,
@@ -272,7 +272,7 @@ abstract final class FavHttp {
   static Future<LoadingState<void>> addFavArticle({
     required Object id,
   }) async {
-    final res = await Request().post(
+    final res = await Request.post(
       Api.addFavArticle,
       data: {
         'id': id,
@@ -292,7 +292,7 @@ abstract final class FavHttp {
   static Future<LoadingState<void>> delFavArticle({
     required Object id,
   }) async {
-    final res = await Request().post(
+    final res = await Request.post(
       Api.delFavArticle,
       data: {
         'id': id,
@@ -312,7 +312,7 @@ abstract final class FavHttp {
   static Future<LoadingState<List<FavNoteItemModel>?>> userNoteList({
     required int page,
   }) async {
-    final res = await Request().get(
+    final res = await Request.get(
       Api.userNoteList,
       queryParameters: {
         'pn': page,
@@ -333,7 +333,7 @@ abstract final class FavHttp {
   static Future<LoadingState<List<FavNoteItemModel>?>> noteList({
     required int page,
   }) async {
-    final res = await Request().get(
+    final res = await Request.get(
       Api.noteList,
       queryParameters: {
         'pn': page,
@@ -355,7 +355,7 @@ abstract final class FavHttp {
     required bool isPublish,
     required String noteIds,
   }) async {
-    final res = await Request().post(
+    final res = await Request.post(
       isPublish ? Api.delPublishNote : Api.delNote,
       data: {
         isPublish ? 'cvids' : 'note_ids': noteIds,
@@ -378,7 +378,7 @@ abstract final class FavHttp {
     int? followStatus,
     Object? mid,
   }) async {
-    final res = await Request().get(
+    final res = await Request.get(
       Api.favPgc,
       queryParameters: {
         'vmid': mid ?? Accounts.main.mid,
@@ -400,7 +400,7 @@ abstract final class FavHttp {
     required int ps,
     required dynamic mid,
   }) async {
-    final res = await Request().get(
+    final res = await Request.get(
       Api.userFavFolder,
       queryParameters: {
         'pn': pn,
@@ -423,7 +423,7 @@ abstract final class FavHttp {
       'csrf': Accounts.main.csrf,
     };
     AppSign.appSign(data);
-    final res = await Request().post(
+    final res = await Request.post(
       Api.sortFavFolder,
       data: data,
       options: Options(
@@ -447,7 +447,7 @@ abstract final class FavHttp {
       'csrf': Accounts.main.csrf,
     };
     AppSign.appSign(data);
-    final res = await Request().post(
+    final res = await Request.post(
       Api.sortFav,
       data: data,
       options: Options(
@@ -464,7 +464,7 @@ abstract final class FavHttp {
   static Future<LoadingState<void>> cleanFav({
     required Object mediaId,
   }) async {
-    final res = await Request().post(
+    final res = await Request.post(
       Api.cleanFav,
       data: {
         'media_id': mediaId,
@@ -485,7 +485,7 @@ abstract final class FavHttp {
   static Future<LoadingState<void>> deleteFolder({
     required String mediaIds,
   }) async {
-    final res = await Request().post(
+    final res = await Request.post(
       Api.deleteFolder,
       data: {
         'media_ids': mediaIds,
@@ -511,7 +511,7 @@ abstract final class FavHttp {
     required String cover,
     required String intro,
   }) async {
-    final res = await Request().post(
+    final res = await Request.post(
       isAdd ? Api.addFolder : Api.editFolder,
       data: {
         'title': title,
@@ -535,7 +535,7 @@ abstract final class FavHttp {
   static Future<LoadingState<FavFolderInfo>> favFolderInfo({
     required Object mediaId,
   }) async {
-    final res = await Request().get(
+    final res = await Request.get(
       Api.favFolderInfo,
       queryParameters: {
         'media_id': mediaId,
@@ -552,7 +552,7 @@ abstract final class FavHttp {
     required bool isFav,
     required dynamic seasonId,
   }) async {
-    final res = await Request().post(
+    final res = await Request.post(
       isFav ? Api.unfavSeason : Api.favSeason,
       data: {
         'platform': 'web',
@@ -584,7 +584,7 @@ abstract final class FavHttp {
       'statistics': Constants.statisticsApp,
       'up_mid': mid,
     };
-    final res = await Request().get(
+    final res = await Request.get(
       Api.spaceFav,
       queryParameters: params,
       options: Options(
@@ -609,7 +609,7 @@ abstract final class FavHttp {
     required Object opusId,
     required Object action,
   }) async {
-    final res = await Request().post(
+    final res = await Request.post(
       Api.communityAction,
       queryParameters: {
         'csrf': Accounts.main.csrf,
@@ -635,7 +635,7 @@ abstract final class FavHttp {
     String? addIds,
     String? delIds,
   }) async {
-    final res = await Request().post(
+    final res = await Request.post(
       Api.favVideo,
       data: {
         'resources': resources,
@@ -657,7 +657,7 @@ abstract final class FavHttp {
     required Object rid,
     required Object type,
   }) async {
-    final res = await Request().post(
+    final res = await Request.post(
       Api.unfavAll,
       data: {
         'rid': rid,
@@ -681,7 +681,7 @@ abstract final class FavHttp {
     dynamic mid,
     required String resources,
   }) async {
-    final res = await Request().post(
+    final res = await Request.post(
       isFav
           ? isCopy
                 ? Api.copyFav
@@ -707,7 +707,7 @@ abstract final class FavHttp {
   }
 
   static Future<LoadingState<FavFolderData>> allFavFolders(Object mid) async {
-    final res = await Request().get(
+    final res = await Request.get(
       Api.favFolder,
       queryParameters: {'up_mid': mid},
     );
@@ -724,7 +724,7 @@ abstract final class FavHttp {
     dynamic rid,
     dynamic type,
   }) async {
-    final res = await Request().get(
+    final res = await Request.get(
       Api.favFolder,
       queryParameters: {
         'up_mid': mid,

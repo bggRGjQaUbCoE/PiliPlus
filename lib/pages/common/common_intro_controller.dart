@@ -132,7 +132,7 @@ abstract class CommonIntroController extends GetxController
     if (res.isSuccess) {
       SmartDialog.showToast('投币成功');
       coinNum.value += coin;
-      GlobalData().afterCoin(coin);
+      GlobalData.afterCoin(coin);
       stat.coin += coin;
       if (selectLike && !hasLike.value) {
         stat.like++;

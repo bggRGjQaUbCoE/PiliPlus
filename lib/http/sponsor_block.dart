@@ -48,7 +48,7 @@ abstract final class SponsorBlock {
     required String bvid,
     required int cid,
   }) async {
-    final res = await Request().get(
+    final res = await Request.get(
       _api(SponsorBlockApi.skipSegments),
       queryParameters: {
         'videoID': bvid,
@@ -71,7 +71,7 @@ abstract final class SponsorBlock {
     SegmentType? category,
   }) async {
     assert((type == null) == (category == null));
-    final res = await Request().post(
+    final res = await Request.post(
       _api(SponsorBlockApi.voteOnSponsorTime),
       queryParameters: {
         'UUID': uuid,
@@ -85,7 +85,7 @@ abstract final class SponsorBlock {
   }
 
   static Future<LoadingState<void>> viewedVideoSponsorTime(String uuid) async {
-    final res = await Request().post(
+    final res = await Request.post(
       _api(SponsorBlockApi.viewedVideoSponsorTime),
       data: {'UUID': uuid},
       options: options,
@@ -94,7 +94,7 @@ abstract final class SponsorBlock {
   }
 
   static Future<LoadingState<void>> uptimeStatus() async {
-    final res = await Request().get(
+    final res = await Request.get(
       _api(SponsorBlockApi.uptimeStatus),
       options: options,
     );
@@ -110,7 +110,7 @@ abstract final class SponsorBlock {
     List<String> query, {
     String? userId,
   }) async {
-    final res = await Request().get(
+    final res = await Request.get(
       _api(SponsorBlockApi.userInfo),
       queryParameters: {
         'userID': userId ?? Pref.blockUserID,
@@ -130,7 +130,7 @@ abstract final class SponsorBlock {
     required double videoDuration,
     required List<PostSegmentModel> segments,
   }) async {
-    final res = await Request().post(
+    final res = await Request.post(
       _api(SponsorBlockApi.skipSegments),
       data: {
         'videoID': bvid,
@@ -172,7 +172,7 @@ abstract final class SponsorBlock {
     required String bvid,
     required int cid,
   }) async {
-    final res = await Request().get(
+    final res = await Request.get(
       _api(SponsorBlockApi.portVideo),
       queryParameters: {
         'videoID': bvid,
@@ -197,7 +197,7 @@ abstract final class SponsorBlock {
     required String ytbId,
     required int videoDuration,
   }) async {
-    final res = await Request().post(
+    final res = await Request.post(
       _api(SponsorBlockApi.portVideo),
       data: {
         'bvID': bvid,

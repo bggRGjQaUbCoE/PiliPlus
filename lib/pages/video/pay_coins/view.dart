@@ -86,7 +86,7 @@ class _PayCoinsPageState extends State<PayCoinsPage>
     _timer = null;
   }
 
-  final num? _coins = GlobalData().coins;
+  final num? _coins = GlobalData.coins;
 
   bool _canPay(int index) {
     if (index == 1 && widget.hasCoin) {

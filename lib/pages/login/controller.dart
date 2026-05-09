@@ -137,7 +137,7 @@ class LoginPageController extends GetxController
       return;
     }
     try {
-      final result = await Request().get(
+      final result = await Request.get(
         "/x/member/web/account",
         options: Options(
           headers: {

@@ -132,7 +132,7 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
   // 获取up主粉丝数
   Future<void> queryUserStat(List<Staff>? staff) async {
     if (staff != null && staff.isNotEmpty) {
-      final res = await Request().get(
+      final res = await Request.get(
         Api.relations,
         queryParameters: {'fids': staff.map((item) => item.mid).join(',')},
       );
@@ -190,7 +190,7 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
       if (response.coin == true && !hasCoin) {
         stat?.coin += 2;
         coinNum.value = 2;
-        GlobalData().afterCoin(2);
+        GlobalData.afterCoin(2);
       }
       if (response.fav == true && !hasFav.value) {
         stat?.favorite++;
@@ -271,7 +271,7 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
       return;
     }
 
-    if (GlobalData().coins != null && GlobalData().coins! < 1) {
+    if (GlobalData.coins != null && GlobalData.coins! < 1) {
       SmartDialog.showToast('硬币不足');
       // return;
     }

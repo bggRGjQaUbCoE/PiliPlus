@@ -24,7 +24,7 @@ abstract final class MsgHttp {
     int? cursor,
     int? cursorTime,
   }) async {
-    final res = await Request().get(
+    final res = await Request.get(
       Api.msgFeedReply,
       queryParameters: {
         'id': ?cursor,
@@ -46,7 +46,7 @@ abstract final class MsgHttp {
     int? cursor,
     int? cursorTime,
   }) async {
-    final res = await Request().get(
+    final res = await Request.get(
       Api.msgFeedAt,
       queryParameters: {
         'id': ?cursor,
@@ -68,7 +68,7 @@ abstract final class MsgHttp {
     int? cursor,
     int? cursorTime,
   }) async {
-    final res = await Request().get(
+    final res = await Request.get(
       Api.msgFeedLike,
       queryParameters: {
         'id': ?cursor,
@@ -91,7 +91,7 @@ abstract final class MsgHttp {
     required int pn,
     Object lastMid = 0,
   }) async {
-    final res = await Request().get(
+    final res = await Request.get(
       Api.msgLikeDetail,
       queryParameters: {
         'card_id': cardId,
@@ -114,7 +114,7 @@ abstract final class MsgHttp {
     int? cursor,
     int pageSize = 20,
   }) async {
-    final res = await Request().get(
+    final res = await Request.get(
       Api.msgSysNotify,
       queryParameters: {
         'cursor': ?cursor,
@@ -137,7 +137,7 @@ abstract final class MsgHttp {
 
   static Future<LoadingState<void>> msgSysUpdateCursor(int cursor) async {
     String csrf = Accounts.main.csrf;
-    final res = await Request().get(
+    final res = await Request.get(
       Api.msgSysUpdateCursor,
       queryParameters: {
         'csrf': csrf,
@@ -156,7 +156,7 @@ abstract final class MsgHttp {
     required String bucket,
     required String dir,
   }) async {
-    final res = await Request().post(
+    final res = await Request.post(
       Api.uploadImage,
       data: FormData.fromMap({
         'bucket': bucket,
@@ -178,7 +178,7 @@ abstract final class MsgHttp {
     String? biz,
     CancelToken? cancelToken,
   }) async {
-    final res = await Request().post(
+    final res = await Request.post(
       Api.uploadBfs,
       data: FormData.fromMap({
         'file_up': await MultipartFile.fromFile(path),
@@ -207,7 +207,7 @@ abstract final class MsgHttp {
       'csrf_token': csrf,
       'csrf': csrf,
     });
-    final res = await Request().post(
+    final res = await Request.post(
       HttpString.tUrl + Api.createTextDynamic,
       data: data,
       options: Options(contentType: Headers.formUrlEncodedContentType),
@@ -224,7 +224,7 @@ abstract final class MsgHttp {
     Object? dynType,
     Object? ridStr,
   }) async {
-    final res = await Request().post(
+    final res = await Request.post(
       Api.removeDynamic,
       queryParameters: {
         'platform': 'web',
@@ -255,7 +255,7 @@ abstract final class MsgHttp {
       'csrf_token': csrf,
       'csrf': csrf,
     });
-    final res = await Request().post(
+    final res = await Request.post(
       HttpString.tUrl + Api.removeMsg,
       data: data,
       options: Options(contentType: Headers.formUrlEncodedContentType),
@@ -272,7 +272,7 @@ abstract final class MsgHttp {
     dynamic id,
   ) async {
     String csrf = Accounts.main.csrf;
-    final res = await Request().post(
+    final res = await Request.post(
       Api.delMsgfeed,
       data: {
         'tp': tp,
@@ -295,7 +295,7 @@ abstract final class MsgHttp {
     Object id,
   ) async {
     String csrf = Accounts.main.csrf;
-    final res = await Request().post(
+    final res = await Request.post(
       HttpString.messageBaseUrl + Api.delSysMsg,
       queryParameters: {
         'mobi_app': 'android',
@@ -330,7 +330,7 @@ abstract final class MsgHttp {
       'csrf_token': csrf,
       'csrf': csrf,
     });
-    final res = await Request().post(
+    final res = await Request.post(
       HttpString.tUrl + Api.setTop,
       data: data,
       options: Options(contentType: Headers.formUrlEncodedContentType),
@@ -357,7 +357,7 @@ abstract final class MsgHttp {
       'csrf_token': csrf,
       'csrf': csrf,
     });
-    final res = await Request().get(Api.ackSessionMsg, queryParameters: params);
+    final res = await Request.get(Api.ackSessionMsg, queryParameters: params);
     if (res.data['code'] == 0) {
       return const Success(null);
     } else {
@@ -397,7 +397,7 @@ abstract final class MsgHttp {
   //     'csrf': csrf,
   //   };
   //   Map<String, dynamic> params = await WbiSign.makSign(data);
-  //   final res = await Request().post(
+  //   final res = await Request.post(
   //     Api.sendMsg,
   //     queryParameters: <String, dynamic>{
   //       'w_sender_uid': senderUid,
@@ -427,7 +427,7 @@ abstract final class MsgHttp {
     required int noticeState,
   }) async {
     final csrf = Accounts.main.csrf;
-    final res = await Request().post(
+    final res = await Request.post(
       Api.msgSetNotice,
       data: {
         'mobi_app': 'web',
@@ -456,7 +456,7 @@ abstract final class MsgHttp {
     required dndUid,
   }) async {
     final csrf = Accounts.main.csrf;
-    final res = await Request().post(
+    final res = await Request.post(
       Api.setMsgDnd,
       data: {
         'uid': uid,
@@ -481,7 +481,7 @@ abstract final class MsgHttp {
     required talkerUid,
   }) async {
     final csrf = Accounts.main.csrf;
-    final res = await Request().post(
+    final res = await Request.post(
       Api.setPushSs,
       data: {
         'setting': setting,
@@ -504,7 +504,7 @@ abstract final class MsgHttp {
     required String uids,
   }) async {
     final csrf = Accounts.main.csrf;
-    final res = await Request().get(
+    final res = await Request.get(
       Api.imUserInfos,
       queryParameters: {
         'uids': uids,
@@ -529,7 +529,7 @@ abstract final class MsgHttp {
     required Object talkerUid,
   }) async {
     final csrf = Accounts.main.csrf;
-    final res = await Request().get(
+    final res = await Request.get(
       Api.getSessionSs,
       queryParameters: {
         'talker_uid': talkerUid,
@@ -550,7 +550,7 @@ abstract final class MsgHttp {
     required Object uidsStr,
   }) async {
     final csrf = Accounts.main.csrf;
-    final res = await Request().get(
+    final res = await Request.get(
       Api.getMsgDnd,
       queryParameters: {
         'own_uid': Accounts.main.mid,
@@ -573,7 +573,7 @@ abstract final class MsgHttp {
   }
 
   static Future<LoadingState<SingleUnreadData>> msgUnread() async {
-    final res = await Request().get(
+    final res = await Request.get(
       Api.msgUnread,
       queryParameters: {
         'build': 0,
@@ -590,7 +590,7 @@ abstract final class MsgHttp {
   }
 
   static Future<LoadingState<MsgFeedUnreadData>> msgFeedUnread() async {
-    final res = await Request().get(
+    final res = await Request.get(
       Api.msgFeedUnread,
       queryParameters: {
         'build': 0,
@@ -612,7 +612,7 @@ abstract final class MsgHttp {
     required Map comment,
     required Map extra,
   }) async {
-    final res = await Request().post(
+    final res = await Request.post(
       Api.imMsgReport,
       data: {
         'biz_code': 4,

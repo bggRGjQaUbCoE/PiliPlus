@@ -1049,7 +1049,7 @@ class VideoDetailController extends GetxController
   Future<void> getSteinEdgeInfo([int? edgeId]) async {
     steinEdgeInfo = null;
     try {
-      final res = await Request().get(
+      final res = await Request.get(
         '/x/stein/edgeinfo_v2',
         queryParameters: {
           'bvid': bvid,

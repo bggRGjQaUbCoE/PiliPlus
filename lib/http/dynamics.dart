@@ -47,7 +47,7 @@ abstract final class DynamicsHttp {
       'offset': offset,
       'features': Constants.dynFeatures,
     };
-    final res = await Request().get(Api.followDynamic, queryParameters: data);
+    final res = await Request.get(Api.followDynamic, queryParameters: data);
     final code = res.data['code'];
     if (code == 0) {
       try {
@@ -74,7 +74,7 @@ abstract final class DynamicsHttp {
   }
 
   static Future<LoadingState<FollowUpModel>> followUp() async {
-    final res = await Request().get(
+    final res = await Request.get(
       Api.followUp,
       queryParameters: {
         'up_list_more': 1,
@@ -89,7 +89,7 @@ abstract final class DynamicsHttp {
   }
 
   static Future<LoadingState<DynUpList>> dynUpList(String? offset) async {
-    final res = await Request().get(
+    final res = await Request.get(
       Api.dynUplist,
       queryParameters: {
         'offset': offset,
@@ -109,7 +109,7 @@ abstract final class DynamicsHttp {
   //   required String? dynamicId,
   //   required int? up,
   // }) async {
-  //   final res = await Request().post(
+  //   final res = await Request.post(
   //     Api.likeDynamic,
   //     queryParameters: {
   //       'dynamic_id': dynamicId,
@@ -132,7 +132,7 @@ abstract final class DynamicsHttp {
     required String? dynamicId,
     required int? up,
   }) async {
-    final res = await Request().post(
+    final res = await Request.post(
       Api.thumbDynamic,
       queryParameters: {
         'csrf': Accounts.main.csrf,
@@ -170,7 +170,7 @@ abstract final class DynamicsHttp {
     String? title,
     Map? attachCard,
   }) async {
-    final res = await Request().post(
+    final res = await Request.post(
       Api.createDynamic,
       queryParameters: {
         'platform': 'web',
@@ -249,7 +249,7 @@ abstract final class DynamicsHttp {
     dynamic type,
     bool clearCookie = false,
   }) async {
-    final res = await Request().get(
+    final res = await Request.get(
       Api.dynamicDetail,
       queryParameters: {
         'timezone_offset': -480,
@@ -279,7 +279,7 @@ abstract final class DynamicsHttp {
   static Future<LoadingState<void>> setTop({
     required Object dynamicId,
   }) async {
-    final res = await Request().post(
+    final res = await Request.post(
       Api.setTopDyn,
       queryParameters: {
         'csrf': Accounts.main.csrf,
@@ -298,7 +298,7 @@ abstract final class DynamicsHttp {
   static Future<LoadingState<void>> rmTop({
     required Object dynamicId,
   }) async {
-    final res = await Request().post(
+    final res = await Request.post(
       Api.rmTopDyn,
       queryParameters: {
         'csrf': Accounts.main.csrf,
@@ -317,7 +317,7 @@ abstract final class DynamicsHttp {
   static Future<LoadingState<ArticleInfoData>> articleInfo({
     required Object cvId,
   }) async {
-    final res = await Request().get(
+    final res = await Request.get(
       Api.articleInfo,
       queryParameters: await WbiSign.makSign({
         'id': cvId,
@@ -336,7 +336,7 @@ abstract final class DynamicsHttp {
   static Future<LoadingState<ArticleViewData>> articleView({
     required dynamic cvId,
   }) async {
-    final res = await Request().get(
+    final res = await Request.get(
       Api.articleView,
       queryParameters: await WbiSign.makSign({
         'id': cvId,
@@ -354,7 +354,7 @@ abstract final class DynamicsHttp {
   static Future<LoadingState<DynamicItemModel>> opusDetail({
     required dynamic opusId,
   }) async {
-    final res = await Request().get(
+    final res = await Request.get(
       Api.opusDetail,
       queryParameters: await WbiSign.makSign({
         'timezone_offset': '-480',
@@ -370,7 +370,7 @@ abstract final class DynamicsHttp {
   }
 
   static Future<LoadingState<VoteInfo>> voteInfo(dynamic voteId) async {
-    final res = await Request().get(
+    final res = await Request.get(
       Api.voteInfo,
       queryParameters: {'vote_id': voteId},
     );
@@ -398,7 +398,7 @@ abstract final class DynamicsHttp {
       'csrf_token': csrf,
       'csrf': csrf,
     };
-    final res = await Request().post(
+    final res = await Request.post(
       Api.doVote,
       queryParameters: {'csrf': csrf},
       data: data,
@@ -414,7 +414,7 @@ abstract final class DynamicsHttp {
   static Future<LoadingState<TopDetails?>> topicTop({
     required Object topicId,
   }) async {
-    final res = await Request().get(
+    final res = await Request.get(
       Api.topicTop,
       queryParameters: {
         'topic_id': topicId,
@@ -436,7 +436,7 @@ abstract final class DynamicsHttp {
     required String offset,
     required int sortBy,
   }) async {
-    final res = await Request().get(
+    final res = await Request.get(
       Api.topicFeed,
       queryParameters: {
         'topic_id': topicId,
@@ -460,7 +460,7 @@ abstract final class DynamicsHttp {
   static Future<LoadingState<ArticleListData>> articleList({
     required Object id,
   }) async {
-    final res = await Request().get(
+    final res = await Request.get(
       Api.articleList,
       queryParameters: {
         'id': id,
@@ -480,7 +480,7 @@ abstract final class DynamicsHttp {
     required Object dynamicIdStr,
     required Object? reserveTotal,
   }) async {
-    final res = await Request().post(
+    final res = await Request.post(
       Api.dynReserve,
       queryParameters: {
         'csrf': Accounts.main.csrf,
@@ -502,7 +502,7 @@ abstract final class DynamicsHttp {
   static Future<LoadingState<List<TopicItem>?>> dynTopicRcmd({
     int ps = 25,
   }) async {
-    final res = await Request().get(
+    final res = await Request.get(
       Api.dynTopicRcmd,
       queryParameters: {
         'source': 'Web',
@@ -522,7 +522,7 @@ abstract final class DynamicsHttp {
   }
 
   static Future<LoadingState<List<OpusPicModel>?>> dynPic(dynamic id) async {
-    final res = await Request().get(
+    final res = await Request.get(
       Api.dynPic,
       queryParameters: {
         'id': id,
@@ -543,7 +543,7 @@ abstract final class DynamicsHttp {
   static Future<LoadingState<List<MentionGroup>?>> dynMention({
     String? keyword,
   }) async {
-    final res = await Request().get(
+    final res = await Request.get(
       Api.dynMention,
       queryParameters: {
         if (keyword != null && keyword.isNotEmpty) 'keyword': keyword,
@@ -560,7 +560,7 @@ abstract final class DynamicsHttp {
   }
 
   static Future<LoadingState<int?>> createVote(VoteInfo voteInfo) async {
-    final res = await Request().post(
+    final res = await Request.post(
       Api.createVote,
       queryParameters: {'csrf': Accounts.main.csrf},
       data: {'vote_info': voteInfo.toJson()},
@@ -573,7 +573,7 @@ abstract final class DynamicsHttp {
   }
 
   static Future<LoadingState<int?>> updateVote(VoteInfo voteInfo) async {
-    final res = await Request().post(
+    final res = await Request.post(
       Api.updateVote,
       queryParameters: {'csrf': Accounts.main.csrf},
       data: {'vote_info': voteInfo.toJson()},
@@ -590,7 +590,7 @@ abstract final class DynamicsHttp {
     required String title,
     required int livePlanStartTime,
   }) async {
-    final res = await Request().post(
+    final res = await Request.post(
       Api.createReserve,
       data: {
         'type': 2,
@@ -615,7 +615,7 @@ abstract final class DynamicsHttp {
     required int livePlanStartTime,
     required int sid,
   }) async {
-    final res = await Request().post(
+    final res = await Request.post(
       Api.updateReserve,
       data: {
         'type': 2,
@@ -638,7 +638,7 @@ abstract final class DynamicsHttp {
   static Future<LoadingState<ReserveInfoData>> reserveInfo({
     required dynamic sid,
   }) async {
-    final res = await Request().get(
+    final res = await Request.get(
       Api.reserveInfo,
       queryParameters: {
         'from': 1,
@@ -656,7 +656,7 @@ abstract final class DynamicsHttp {
   static Future<LoadingState<List<FolloweeVote>?>> followeeVotes({
     required dynamic voteId,
   }) async {
-    final res = await Request().get(
+    final res = await Request.get(
       Api.followeeVotes,
       queryParameters: {
         'vote_id': voteId,
@@ -678,7 +678,7 @@ abstract final class DynamicsHttp {
     int? dynType,
     required String action,
   }) async {
-    final res = await Request().post(
+    final res = await Request.post(
       Api.dynPrivatePubSetting,
       queryParameters: {
         'platform': 'web',
@@ -714,7 +714,7 @@ abstract final class DynamicsHttp {
   }) async {
     final uploadId =
         "${Accounts.main.mid}_${DateTime.now().millisecondsSinceEpoch ~/ 1000}_${Utils.random.nextInt(9000) + 1000}";
-    final res = await Request().post(
+    final res = await Request.post(
       Api.editDyn,
       queryParameters: await WbiSign.makSign({
         'platform': 'web',
@@ -785,7 +785,7 @@ abstract final class DynamicsHttp {
     int? sortType,
     required int page,
   }) async {
-    final res = await Request().get(
+    final res = await Request.get(
       Api.bubble,
       queryParameters: {
         'tribee_id': tribeId,

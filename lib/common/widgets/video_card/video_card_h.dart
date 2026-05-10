@@ -21,12 +21,10 @@ class VideoCardH extends StatelessWidget {
     super.key,
     required this.videoItem,
     this.onTap,
-    this.onViewLater,
     this.onRemove,
   });
   final HorizontalVideoModel videoItem;
   final VoidCallback? onTap;
-  final ValueChanged<int>? onViewLater;
   final VoidCallback? onRemove;
 
   @override

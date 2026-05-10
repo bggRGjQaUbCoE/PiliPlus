@@ -1,4 +1,3 @@
-import 'package:PiliPlus/common/skeleton/skeleton.dart';
 import 'package:flutter/material.dart';
 
 class WhisperItemSkeleton extends StatelessWidget {
@@ -7,34 +6,32 @@ class WhisperItemSkeleton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = Theme.of(context).colorScheme.onInverseSurface;
-    return Skeleton(
-      child: ListTile(
-        leading: Container(
-          width: 45,
-          height: 45,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: color,
-          ),
-        ),
-        title: UnconstrainedBox(
-          alignment: Alignment.centerLeft,
-          child: Container(
-            width: 100,
-            height: 11,
-            color: color,
-          ),
-        ),
-        subtitle: Container(
+    return ListTile(
+      leading: Container(
+        width: 45,
+        height: 45,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
           color: color,
-          width: 125,
-          height: 11,
         ),
-        trailing: Container(
+      ),
+      title: UnconstrainedBox(
+        alignment: Alignment.centerLeft,
+        child: Container(
+          width: 100,
+          height: 11,
           color: color,
-          width: 50,
-          height: 11,
         ),
+      ),
+      subtitle: Container(
+        color: color,
+        width: 125,
+        height: 11,
+      ),
+      trailing: Container(
+        color: color,
+        width: 50,
+        height: 11,
       ),
     );
   }

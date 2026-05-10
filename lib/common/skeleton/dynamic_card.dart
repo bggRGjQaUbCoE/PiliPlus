@@ -1,4 +1,3 @@
-import 'package:PiliPlus/common/skeleton/skeleton.dart';
 import 'package:PiliPlus/utils/global_data.dart';
 import 'package:flutter/material.dart';
 
@@ -16,99 +15,97 @@ class DynamicCardSkeleton extends StatelessWidget {
         alpha: 0.2,
       ),
     );
-    return Skeleton(
-      child: Container(
-        padding: const EdgeInsets.only(left: 12, right: 12, top: 12),
-        decoration: BoxDecoration(
-          border: Border(
-            bottom: BorderSide(
-              width: 8,
-              color: theme.dividerColor.withValues(alpha: 0.05),
-            ),
+    return Container(
+      padding: const EdgeInsets.only(left: 12, right: 12, top: 12),
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            width: 8,
+            color: theme.dividerColor.withValues(alpha: 0.05),
           ),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: color,
+                  borderRadius: const BorderRadius.all(Radius.circular(20)),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
                     color: color,
-                    borderRadius: const BorderRadius.all(Radius.circular(20)),
+                    width: 100,
+                    height: 13,
+                    margin: const EdgeInsets.only(bottom: 5),
                   ),
-                ),
-                const SizedBox(width: 10),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      color: color,
-                      width: 100,
-                      height: 13,
-                      margin: const EdgeInsets.only(bottom: 5),
+                  Container(
+                    color: color,
+                    width: 50,
+                    height: 11,
+                  ),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Container(
+            color: color,
+            width: double.infinity,
+            height: 13,
+            margin: const EdgeInsets.only(bottom: 7),
+          ),
+          Container(
+            color: color,
+            width: double.infinity,
+            height: 13,
+            margin: const EdgeInsets.only(bottom: 7),
+          ),
+          Container(
+            color: color,
+            width: 300,
+            height: 13,
+            margin: const EdgeInsets.only(bottom: 7),
+          ),
+          Container(
+            color: color,
+            width: 250,
+            height: 13,
+            margin: const EdgeInsets.only(bottom: 7),
+          ),
+          Container(
+            color: color,
+            width: 100,
+            height: 13,
+            margin: const EdgeInsets.only(bottom: 7),
+          ),
+          if (GlobalData.dynamicsWaterfallFlow) const Spacer(),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: const ['转发', '评论', '点赞']
+                .map(
+                  (e) => TextButton.icon(
+                    onPressed: () {},
+                    icon: const Icon(
+                      Icons.radio_button_unchecked_outlined,
+                      size: 20,
                     ),
-                    Container(
-                      color: color,
-                      width: 50,
-                      height: 11,
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            Container(
-              color: color,
-              width: double.infinity,
-              height: 13,
-              margin: const EdgeInsets.only(bottom: 7),
-            ),
-            Container(
-              color: color,
-              width: double.infinity,
-              height: 13,
-              margin: const EdgeInsets.only(bottom: 7),
-            ),
-            Container(
-              color: color,
-              width: 300,
-              height: 13,
-              margin: const EdgeInsets.only(bottom: 7),
-            ),
-            Container(
-              color: color,
-              width: 250,
-              height: 13,
-              margin: const EdgeInsets.only(bottom: 7),
-            ),
-            Container(
-              color: color,
-              width: 100,
-              height: 13,
-              margin: const EdgeInsets.only(bottom: 7),
-            ),
-            if (GlobalData.dynamicsWaterfallFlow) const Spacer(),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: const ['转发', '评论', '点赞']
-                  .map(
-                    (e) => TextButton.icon(
-                      onPressed: () {},
-                      icon: const Icon(
-                        Icons.radio_button_unchecked_outlined,
-                        size: 20,
-                      ),
-                      style: buttonStyle,
-                      label: Text(e),
-                    ),
-                  )
-                  .toList(),
-            ),
-          ],
-        ),
+                    style: buttonStyle,
+                    label: Text(e),
+                  ),
+                )
+                .toList(),
+          ),
+        ],
       ),
     );
   }

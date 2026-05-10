@@ -39,7 +39,6 @@ abstract final class AudioGrpc {
     Int64? oid,
     List<Int64>? subId,
     int? itemType,
-    PageOption? pageOpt,
     Int64? extraId,
     String? next,
     int qn = 80,
@@ -56,7 +55,6 @@ abstract final class AudioGrpc {
           subId: subId,
           itemType: itemType,
         ),
-        pageOpt: pageOpt,
         playerArgs: PlayerArgs(
           qn: Int64(qn),
           fnval: Int64(fnval),

@@ -90,10 +90,8 @@ class ActionItem extends StatelessWidget {
   }
 
   Widget _buildText(ThemeData theme) {
-    final hasText = text != null;
-    final child = Text(
-      hasText ? text! : '-',
-      key: hasText ? ValueKey(text!) : null,
+    return Text(
+      text != null ? text! : '-',
       style: TextStyle(
         color: selectStatus
             ? theme.colorScheme.primary
@@ -101,15 +99,5 @@ class ActionItem extends StatelessWidget {
         fontSize: theme.textTheme.labelSmall!.fontSize,
       ),
     );
-    if (hasText) {
-      return AnimatedSwitcher(
-        duration: const Duration(milliseconds: 300),
-        transitionBuilder: (Widget child, Animation<double> animation) {
-          return ScaleTransition(scale: animation, child: child);
-        },
-        child: child,
-      );
-    }
-    return child;
   }
 }

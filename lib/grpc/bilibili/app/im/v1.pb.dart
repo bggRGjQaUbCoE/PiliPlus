@@ -15,369 +15,12 @@ import 'dart:core' as $core;
 import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import '../../account/service/v1.pb.dart' as $1;
 import '../../dagw/component/avatar/v1.pb.dart' as $0;
 import 'v1.pbenum.dart';
 
 export 'package:protobuf/protobuf.dart' show GeneratedMessageGenericExtensions;
 
 export 'v1.pbenum.dart';
-
-class AirDropShareUserInfo extends $pb.GeneratedMessage {
-  factory AirDropShareUserInfo({
-    $fixnum.Int64? mid,
-    $core.String? face,
-    $core.String? url,
-    $core.String? name,
-  }) {
-    final result = create();
-    if (mid != null) result.mid = mid;
-    if (face != null) result.face = face;
-    if (url != null) result.url = url;
-    if (name != null) result.name = name;
-    return result;
-  }
-
-  AirDropShareUserInfo._();
-
-  factory AirDropShareUserInfo.fromBuffer($core.List<$core.int> data,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
-  factory AirDropShareUserInfo.fromJson($core.String json,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'AirDropShareUserInfo',
-      package:
-          const $pb.PackageName(_omitMessageNames ? '' : 'bilibili.app.im.v1'),
-      createEmptyInstance: create)
-    ..aInt64(1, _omitFieldNames ? '' : 'mid')
-    ..aOS(2, _omitFieldNames ? '' : 'face')
-    ..aOS(3, _omitFieldNames ? '' : 'url')
-    ..aOS(4, _omitFieldNames ? '' : 'name')
-    ..hasRequiredFields = false;
-
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  AirDropShareUserInfo clone() => deepCopy();
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  AirDropShareUserInfo copyWith(void Function(AirDropShareUserInfo) updates) =>
-      super.copyWith((message) => updates(message as AirDropShareUserInfo))
-          as AirDropShareUserInfo;
-
-  @$core.override
-  $pb.BuilderInfo get info_ => _i;
-
-  @$core.pragma('dart2js:noInline')
-  static AirDropShareUserInfo create() => AirDropShareUserInfo._();
-  @$core.override
-  AirDropShareUserInfo createEmptyInstance() => create();
-  @$core.pragma('dart2js:noInline')
-  static AirDropShareUserInfo getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<AirDropShareUserInfo>(create);
-  static AirDropShareUserInfo? _defaultInstance;
-
-  @$pb.TagNumber(1)
-  $fixnum.Int64 get mid => $_getI64(0);
-  @$pb.TagNumber(1)
-  set mid($fixnum.Int64 value) => $_setInt64(0, value);
-  @$pb.TagNumber(1)
-  $core.bool hasMid() => $_has(0);
-  @$pb.TagNumber(1)
-  void clearMid() => $_clearField(1);
-
-  @$pb.TagNumber(2)
-  $core.String get face => $_getSZ(1);
-  @$pb.TagNumber(2)
-  set face($core.String value) => $_setString(1, value);
-  @$pb.TagNumber(2)
-  $core.bool hasFace() => $_has(1);
-  @$pb.TagNumber(2)
-  void clearFace() => $_clearField(2);
-
-  @$pb.TagNumber(3)
-  $core.String get url => $_getSZ(2);
-  @$pb.TagNumber(3)
-  set url($core.String value) => $_setString(2, value);
-  @$pb.TagNumber(3)
-  $core.bool hasUrl() => $_has(2);
-  @$pb.TagNumber(3)
-  void clearUrl() => $_clearField(3);
-
-  @$pb.TagNumber(4)
-  $core.String get name => $_getSZ(3);
-  @$pb.TagNumber(4)
-  set name($core.String value) => $_setString(3, value);
-  @$pb.TagNumber(4)
-  $core.bool hasName() => $_has(3);
-  @$pb.TagNumber(4)
-  void clearName() => $_clearField(4);
-}
-
-class AirDropToImReply extends $pb.GeneratedMessage {
-  factory AirDropToImReply({
-    $core.Iterable<AirDropShareUserInfo>? userInfos,
-  }) {
-    final result = create();
-    if (userInfos != null) result.userInfos.addAll(userInfos);
-    return result;
-  }
-
-  AirDropToImReply._();
-
-  factory AirDropToImReply.fromBuffer($core.List<$core.int> data,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
-  factory AirDropToImReply.fromJson($core.String json,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'AirDropToImReply',
-      package:
-          const $pb.PackageName(_omitMessageNames ? '' : 'bilibili.app.im.v1'),
-      createEmptyInstance: create)
-    ..pPM<AirDropShareUserInfo>(1, _omitFieldNames ? '' : 'userInfos',
-        subBuilder: AirDropShareUserInfo.create)
-    ..hasRequiredFields = false;
-
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  AirDropToImReply clone() => deepCopy();
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  AirDropToImReply copyWith(void Function(AirDropToImReply) updates) =>
-      super.copyWith((message) => updates(message as AirDropToImReply))
-          as AirDropToImReply;
-
-  @$core.override
-  $pb.BuilderInfo get info_ => _i;
-
-  @$core.pragma('dart2js:noInline')
-  static AirDropToImReply create() => AirDropToImReply._();
-  @$core.override
-  AirDropToImReply createEmptyInstance() => create();
-  @$core.pragma('dart2js:noInline')
-  static AirDropToImReply getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<AirDropToImReply>(create);
-  static AirDropToImReply? _defaultInstance;
-
-  @$pb.TagNumber(1)
-  $pb.PbList<AirDropShareUserInfo> get userInfos => $_getList(0);
-}
-
-class AirDropToImReq extends $pb.GeneratedMessage {
-  factory AirDropToImReq({
-    AirDropFrom? adf,
-  }) {
-    final result = create();
-    if (adf != null) result.adf = adf;
-    return result;
-  }
-
-  AirDropToImReq._();
-
-  factory AirDropToImReq.fromBuffer($core.List<$core.int> data,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
-  factory AirDropToImReq.fromJson($core.String json,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'AirDropToImReq',
-      package:
-          const $pb.PackageName(_omitMessageNames ? '' : 'bilibili.app.im.v1'),
-      createEmptyInstance: create)
-    ..aE<AirDropFrom>(1, _omitFieldNames ? '' : 'adf',
-        enumValues: AirDropFrom.values)
-    ..hasRequiredFields = false;
-
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  AirDropToImReq clone() => deepCopy();
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  AirDropToImReq copyWith(void Function(AirDropToImReq) updates) =>
-      super.copyWith((message) => updates(message as AirDropToImReq))
-          as AirDropToImReq;
-
-  @$core.override
-  $pb.BuilderInfo get info_ => _i;
-
-  @$core.pragma('dart2js:noInline')
-  static AirDropToImReq create() => AirDropToImReq._();
-  @$core.override
-  AirDropToImReq createEmptyInstance() => create();
-  @$core.pragma('dart2js:noInline')
-  static AirDropToImReq getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<AirDropToImReq>(create);
-  static AirDropToImReq? _defaultInstance;
-
-  @$pb.TagNumber(1)
-  AirDropFrom get adf => $_getN(0);
-  @$pb.TagNumber(1)
-  set adf(AirDropFrom value) => $_setField(1, value);
-  @$pb.TagNumber(1)
-  $core.bool hasAdf() => $_has(0);
-  @$pb.TagNumber(1)
-  void clearAdf() => $_clearField(1);
-}
-
-class AutoReplyToast extends $pb.GeneratedMessage {
-  factory AutoReplyToast({
-    $core.String? title,
-    $core.String? url,
-  }) {
-    final result = create();
-    if (title != null) result.title = title;
-    if (url != null) result.url = url;
-    return result;
-  }
-
-  AutoReplyToast._();
-
-  factory AutoReplyToast.fromBuffer($core.List<$core.int> data,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
-  factory AutoReplyToast.fromJson($core.String json,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'AutoReplyToast',
-      package:
-          const $pb.PackageName(_omitMessageNames ? '' : 'bilibili.app.im.v1'),
-      createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'title')
-    ..aOS(2, _omitFieldNames ? '' : 'url')
-    ..hasRequiredFields = false;
-
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  AutoReplyToast clone() => deepCopy();
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  AutoReplyToast copyWith(void Function(AutoReplyToast) updates) =>
-      super.copyWith((message) => updates(message as AutoReplyToast))
-          as AutoReplyToast;
-
-  @$core.override
-  $pb.BuilderInfo get info_ => _i;
-
-  @$core.pragma('dart2js:noInline')
-  static AutoReplyToast create() => AutoReplyToast._();
-  @$core.override
-  AutoReplyToast createEmptyInstance() => create();
-  @$core.pragma('dart2js:noInline')
-  static AutoReplyToast getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<AutoReplyToast>(create);
-  static AutoReplyToast? _defaultInstance;
-
-  @$pb.TagNumber(1)
-  $core.String get title => $_getSZ(0);
-  @$pb.TagNumber(1)
-  set title($core.String value) => $_setString(0, value);
-  @$pb.TagNumber(1)
-  $core.bool hasTitle() => $_has(0);
-  @$pb.TagNumber(1)
-  void clearTitle() => $_clearField(1);
-
-  @$pb.TagNumber(2)
-  $core.String get url => $_getSZ(1);
-  @$pb.TagNumber(2)
-  set url($core.String value) => $_setString(1, value);
-  @$pb.TagNumber(2)
-  $core.bool hasUrl() => $_has(1);
-  @$pb.TagNumber(2)
-  void clearUrl() => $_clearField(2);
-}
-
-class BehaviorAlertToast extends $pb.GeneratedMessage {
-  factory BehaviorAlertToast({
-    $core.String? title,
-    $core.String? content,
-    $core.String? typeStr,
-    AlertToastType? type,
-  }) {
-    final result = create();
-    if (title != null) result.title = title;
-    if (content != null) result.content = content;
-    if (typeStr != null) result.typeStr = typeStr;
-    if (type != null) result.type = type;
-    return result;
-  }
-
-  BehaviorAlertToast._();
-
-  factory BehaviorAlertToast.fromBuffer($core.List<$core.int> data,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
-  factory BehaviorAlertToast.fromJson($core.String json,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'BehaviorAlertToast',
-      package:
-          const $pb.PackageName(_omitMessageNames ? '' : 'bilibili.app.im.v1'),
-      createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'title')
-    ..aOS(2, _omitFieldNames ? '' : 'content')
-    ..aOS(3, _omitFieldNames ? '' : 'typeStr')
-    ..aE<AlertToastType>(4, _omitFieldNames ? '' : 'type',
-        enumValues: AlertToastType.values)
-    ..hasRequiredFields = false;
-
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  BehaviorAlertToast clone() => deepCopy();
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  BehaviorAlertToast copyWith(void Function(BehaviorAlertToast) updates) =>
-      super.copyWith((message) => updates(message as BehaviorAlertToast))
-          as BehaviorAlertToast;
-
-  @$core.override
-  $pb.BuilderInfo get info_ => _i;
-
-  @$core.pragma('dart2js:noInline')
-  static BehaviorAlertToast create() => BehaviorAlertToast._();
-  @$core.override
-  BehaviorAlertToast createEmptyInstance() => create();
-  @$core.pragma('dart2js:noInline')
-  static BehaviorAlertToast getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<BehaviorAlertToast>(create);
-  static BehaviorAlertToast? _defaultInstance;
-
-  @$pb.TagNumber(1)
-  $core.String get title => $_getSZ(0);
-  @$pb.TagNumber(1)
-  set title($core.String value) => $_setString(0, value);
-  @$pb.TagNumber(1)
-  $core.bool hasTitle() => $_has(0);
-  @$pb.TagNumber(1)
-  void clearTitle() => $_clearField(1);
-
-  @$pb.TagNumber(2)
-  $core.String get content => $_getSZ(1);
-  @$pb.TagNumber(2)
-  set content($core.String value) => $_setString(1, value);
-  @$pb.TagNumber(2)
-  $core.bool hasContent() => $_has(1);
-  @$pb.TagNumber(2)
-  void clearContent() => $_clearField(2);
-
-  @$pb.TagNumber(3)
-  $core.String get typeStr => $_getSZ(2);
-  @$pb.TagNumber(3)
-  set typeStr($core.String value) => $_setString(2, value);
-  @$pb.TagNumber(3)
-  $core.bool hasTypeStr() => $_has(2);
-  @$pb.TagNumber(3)
-  void clearTypeStr() => $_clearField(3);
-
-  @$pb.TagNumber(4)
-  AlertToastType get type => $_getN(3);
-  @$pb.TagNumber(4)
-  set type(AlertToastType value) => $_setField(4, value);
-  @$pb.TagNumber(4)
-  $core.bool hasType() => $_has(3);
-  @$pb.TagNumber(4)
-  void clearType() => $_clearField(4);
-}
 
 class BorderedLabel extends $pb.GeneratedMessage {
   factory BorderedLabel({
@@ -444,204 +87,6 @@ class BorderedLabel extends $pb.GeneratedMessage {
   $core.bool hasText() => $_has(1);
   @$pb.TagNumber(2)
   void clearText() => $_clearField(2);
-}
-
-class CancelInterceptInDustbinReply extends $pb.GeneratedMessage {
-  factory CancelInterceptInDustbinReply() => create();
-
-  CancelInterceptInDustbinReply._();
-
-  factory CancelInterceptInDustbinReply.fromBuffer($core.List<$core.int> data,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
-  factory CancelInterceptInDustbinReply.fromJson($core.String json,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'CancelInterceptInDustbinReply',
-      package:
-          const $pb.PackageName(_omitMessageNames ? '' : 'bilibili.app.im.v1'),
-      createEmptyInstance: create)
-    ..hasRequiredFields = false;
-
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  CancelInterceptInDustbinReply clone() => deepCopy();
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  CancelInterceptInDustbinReply copyWith(
-          void Function(CancelInterceptInDustbinReply) updates) =>
-      super.copyWith(
-              (message) => updates(message as CancelInterceptInDustbinReply))
-          as CancelInterceptInDustbinReply;
-
-  @$core.override
-  $pb.BuilderInfo get info_ => _i;
-
-  @$core.pragma('dart2js:noInline')
-  static CancelInterceptInDustbinReply create() =>
-      CancelInterceptInDustbinReply._();
-  @$core.override
-  CancelInterceptInDustbinReply createEmptyInstance() => create();
-  @$core.pragma('dart2js:noInline')
-  static CancelInterceptInDustbinReply getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<CancelInterceptInDustbinReply>(create);
-  static CancelInterceptInDustbinReply? _defaultInstance;
-}
-
-class CancelInterceptInDustbinReq extends $pb.GeneratedMessage {
-  factory CancelInterceptInDustbinReq({
-    SessionId? sessionId,
-  }) {
-    final result = create();
-    if (sessionId != null) result.sessionId = sessionId;
-    return result;
-  }
-
-  CancelInterceptInDustbinReq._();
-
-  factory CancelInterceptInDustbinReq.fromBuffer($core.List<$core.int> data,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
-  factory CancelInterceptInDustbinReq.fromJson($core.String json,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'CancelInterceptInDustbinReq',
-      package:
-          const $pb.PackageName(_omitMessageNames ? '' : 'bilibili.app.im.v1'),
-      createEmptyInstance: create)
-    ..aOM<SessionId>(1, _omitFieldNames ? '' : 'sessionId',
-        subBuilder: SessionId.create)
-    ..hasRequiredFields = false;
-
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  CancelInterceptInDustbinReq clone() => deepCopy();
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  CancelInterceptInDustbinReq copyWith(
-          void Function(CancelInterceptInDustbinReq) updates) =>
-      super.copyWith(
-              (message) => updates(message as CancelInterceptInDustbinReq))
-          as CancelInterceptInDustbinReq;
-
-  @$core.override
-  $pb.BuilderInfo get info_ => _i;
-
-  @$core.pragma('dart2js:noInline')
-  static CancelInterceptInDustbinReq create() =>
-      CancelInterceptInDustbinReq._();
-  @$core.override
-  CancelInterceptInDustbinReq createEmptyInstance() => create();
-  @$core.pragma('dart2js:noInline')
-  static CancelInterceptInDustbinReq getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<CancelInterceptInDustbinReq>(create);
-  static CancelInterceptInDustbinReq? _defaultInstance;
-
-  @$pb.TagNumber(1)
-  SessionId get sessionId => $_getN(0);
-  @$pb.TagNumber(1)
-  set sessionId(SessionId value) => $_setField(1, value);
-  @$pb.TagNumber(1)
-  $core.bool hasSessionId() => $_has(0);
-  @$pb.TagNumber(1)
-  void clearSessionId() => $_clearField(1);
-  @$pb.TagNumber(1)
-  SessionId ensureSessionId() => $_ensure(0);
-}
-
-class ClearAlertReply extends $pb.GeneratedMessage {
-  factory ClearAlertReply() => create();
-
-  ClearAlertReply._();
-
-  factory ClearAlertReply.fromBuffer($core.List<$core.int> data,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
-  factory ClearAlertReply.fromJson($core.String json,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'ClearAlertReply',
-      package:
-          const $pb.PackageName(_omitMessageNames ? '' : 'bilibili.app.im.v1'),
-      createEmptyInstance: create)
-    ..hasRequiredFields = false;
-
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  ClearAlertReply clone() => deepCopy();
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  ClearAlertReply copyWith(void Function(ClearAlertReply) updates) =>
-      super.copyWith((message) => updates(message as ClearAlertReply))
-          as ClearAlertReply;
-
-  @$core.override
-  $pb.BuilderInfo get info_ => _i;
-
-  @$core.pragma('dart2js:noInline')
-  static ClearAlertReply create() => ClearAlertReply._();
-  @$core.override
-  ClearAlertReply createEmptyInstance() => create();
-  @$core.pragma('dart2js:noInline')
-  static ClearAlertReply getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<ClearAlertReply>(create);
-  static ClearAlertReply? _defaultInstance;
-}
-
-class ClearAlertReq extends $pb.GeneratedMessage {
-  factory ClearAlertReq({
-    AlertToastType? type,
-  }) {
-    final result = create();
-    if (type != null) result.type = type;
-    return result;
-  }
-
-  ClearAlertReq._();
-
-  factory ClearAlertReq.fromBuffer($core.List<$core.int> data,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
-  factory ClearAlertReq.fromJson($core.String json,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'ClearAlertReq',
-      package:
-          const $pb.PackageName(_omitMessageNames ? '' : 'bilibili.app.im.v1'),
-      createEmptyInstance: create)
-    ..aE<AlertToastType>(1, _omitFieldNames ? '' : 'type',
-        enumValues: AlertToastType.values)
-    ..hasRequiredFields = false;
-
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  ClearAlertReq clone() => deepCopy();
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  ClearAlertReq copyWith(void Function(ClearAlertReq) updates) =>
-      super.copyWith((message) => updates(message as ClearAlertReq))
-          as ClearAlertReq;
-
-  @$core.override
-  $pb.BuilderInfo get info_ => _i;
-
-  @$core.pragma('dart2js:noInline')
-  static ClearAlertReq create() => ClearAlertReq._();
-  @$core.override
-  ClearAlertReq createEmptyInstance() => create();
-  @$core.pragma('dart2js:noInline')
-  static ClearAlertReq getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<ClearAlertReq>(create);
-  static ClearAlertReq? _defaultInstance;
-
-  @$pb.TagNumber(1)
-  AlertToastType get type => $_getN(0);
-  @$pb.TagNumber(1)
-  set type(AlertToastType value) => $_setField(1, value);
-  @$pb.TagNumber(1)
-  $core.bool hasType() => $_has(0);
-  @$pb.TagNumber(1)
-  void clearType() => $_clearField(1);
 }
 
 class ClearUnreadReply extends $pb.GeneratedMessage {
@@ -752,533 +197,6 @@ class ClearUnreadReq extends $pb.GeneratedMessage {
   void clearSessionId() => $_clearField(2);
   @$pb.TagNumber(2)
   SessionId ensureSessionId() => $_ensure(1);
-}
-
-class Contact extends $pb.GeneratedMessage {
-  factory Contact({
-    $fixnum.Int64? id,
-    $core.String? name,
-    $0.AvatarItem? avatar,
-    $core.String? vipInfo,
-    $core.String? url,
-    $1.NameRender? nameRender,
-    $core.bool? isSpecialFollow,
-    $core.String? face,
-    $core.int? officialType,
-  }) {
-    final result = create();
-    if (id != null) result.id = id;
-    if (name != null) result.name = name;
-    if (avatar != null) result.avatar = avatar;
-    if (vipInfo != null) result.vipInfo = vipInfo;
-    if (url != null) result.url = url;
-    if (nameRender != null) result.nameRender = nameRender;
-    if (isSpecialFollow != null) result.isSpecialFollow = isSpecialFollow;
-    if (face != null) result.face = face;
-    if (officialType != null) result.officialType = officialType;
-    return result;
-  }
-
-  Contact._();
-
-  factory Contact.fromBuffer($core.List<$core.int> data,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
-  factory Contact.fromJson($core.String json,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'Contact',
-      package:
-          const $pb.PackageName(_omitMessageNames ? '' : 'bilibili.app.im.v1'),
-      createEmptyInstance: create)
-    ..aInt64(1, _omitFieldNames ? '' : 'id')
-    ..aOS(2, _omitFieldNames ? '' : 'name')
-    ..aOM<$0.AvatarItem>(3, _omitFieldNames ? '' : 'avatar',
-        subBuilder: $0.AvatarItem.create)
-    ..aOS(4, _omitFieldNames ? '' : 'vipInfo')
-    ..aOS(5, _omitFieldNames ? '' : 'url')
-    ..aOM<$1.NameRender>(6, _omitFieldNames ? '' : 'nameRender',
-        subBuilder: $1.NameRender.create)
-    ..aOB(7, _omitFieldNames ? '' : 'isSpecialFollow')
-    ..aOS(8, _omitFieldNames ? '' : 'face')
-    ..aI(9, _omitFieldNames ? '' : 'officialType')
-    ..hasRequiredFields = false;
-
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  Contact clone() => deepCopy();
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  Contact copyWith(void Function(Contact) updates) =>
-      super.copyWith((message) => updates(message as Contact)) as Contact;
-
-  @$core.override
-  $pb.BuilderInfo get info_ => _i;
-
-  @$core.pragma('dart2js:noInline')
-  static Contact create() => Contact._();
-  @$core.override
-  Contact createEmptyInstance() => create();
-  @$core.pragma('dart2js:noInline')
-  static Contact getDefault() =>
-      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Contact>(create);
-  static Contact? _defaultInstance;
-
-  @$pb.TagNumber(1)
-  $fixnum.Int64 get id => $_getI64(0);
-  @$pb.TagNumber(1)
-  set id($fixnum.Int64 value) => $_setInt64(0, value);
-  @$pb.TagNumber(1)
-  $core.bool hasId() => $_has(0);
-  @$pb.TagNumber(1)
-  void clearId() => $_clearField(1);
-
-  @$pb.TagNumber(2)
-  $core.String get name => $_getSZ(1);
-  @$pb.TagNumber(2)
-  set name($core.String value) => $_setString(1, value);
-  @$pb.TagNumber(2)
-  $core.bool hasName() => $_has(1);
-  @$pb.TagNumber(2)
-  void clearName() => $_clearField(2);
-
-  @$pb.TagNumber(3)
-  $0.AvatarItem get avatar => $_getN(2);
-  @$pb.TagNumber(3)
-  set avatar($0.AvatarItem value) => $_setField(3, value);
-  @$pb.TagNumber(3)
-  $core.bool hasAvatar() => $_has(2);
-  @$pb.TagNumber(3)
-  void clearAvatar() => $_clearField(3);
-  @$pb.TagNumber(3)
-  $0.AvatarItem ensureAvatar() => $_ensure(2);
-
-  @$pb.TagNumber(4)
-  $core.String get vipInfo => $_getSZ(3);
-  @$pb.TagNumber(4)
-  set vipInfo($core.String value) => $_setString(3, value);
-  @$pb.TagNumber(4)
-  $core.bool hasVipInfo() => $_has(3);
-  @$pb.TagNumber(4)
-  void clearVipInfo() => $_clearField(4);
-
-  @$pb.TagNumber(5)
-  $core.String get url => $_getSZ(4);
-  @$pb.TagNumber(5)
-  set url($core.String value) => $_setString(4, value);
-  @$pb.TagNumber(5)
-  $core.bool hasUrl() => $_has(4);
-  @$pb.TagNumber(5)
-  void clearUrl() => $_clearField(5);
-
-  @$pb.TagNumber(6)
-  $1.NameRender get nameRender => $_getN(5);
-  @$pb.TagNumber(6)
-  set nameRender($1.NameRender value) => $_setField(6, value);
-  @$pb.TagNumber(6)
-  $core.bool hasNameRender() => $_has(5);
-  @$pb.TagNumber(6)
-  void clearNameRender() => $_clearField(6);
-  @$pb.TagNumber(6)
-  $1.NameRender ensureNameRender() => $_ensure(5);
-
-  @$pb.TagNumber(7)
-  $core.bool get isSpecialFollow => $_getBF(6);
-  @$pb.TagNumber(7)
-  set isSpecialFollow($core.bool value) => $_setBool(6, value);
-  @$pb.TagNumber(7)
-  $core.bool hasIsSpecialFollow() => $_has(6);
-  @$pb.TagNumber(7)
-  void clearIsSpecialFollow() => $_clearField(7);
-
-  @$pb.TagNumber(8)
-  $core.String get face => $_getSZ(7);
-  @$pb.TagNumber(8)
-  set face($core.String value) => $_setString(7, value);
-  @$pb.TagNumber(8)
-  $core.bool hasFace() => $_has(7);
-  @$pb.TagNumber(8)
-  void clearFace() => $_clearField(8);
-
-  @$pb.TagNumber(9)
-  $core.int get officialType => $_getIZ(8);
-  @$pb.TagNumber(9)
-  set officialType($core.int value) => $_setSignedInt32(8, value);
-  @$pb.TagNumber(9)
-  $core.bool hasOfficialType() => $_has(8);
-  @$pb.TagNumber(9)
-  void clearOfficialType() => $_clearField(9);
-}
-
-class ContactTab extends $pb.GeneratedMessage {
-  factory ContactTab({
-    ContactTabType? tab,
-    $core.String? name,
-  }) {
-    final result = create();
-    if (tab != null) result.tab = tab;
-    if (name != null) result.name = name;
-    return result;
-  }
-
-  ContactTab._();
-
-  factory ContactTab.fromBuffer($core.List<$core.int> data,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
-  factory ContactTab.fromJson($core.String json,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'ContactTab',
-      package:
-          const $pb.PackageName(_omitMessageNames ? '' : 'bilibili.app.im.v1'),
-      createEmptyInstance: create)
-    ..aE<ContactTabType>(1, _omitFieldNames ? '' : 'tab',
-        enumValues: ContactTabType.values)
-    ..aOS(2, _omitFieldNames ? '' : 'name')
-    ..hasRequiredFields = false;
-
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  ContactTab clone() => deepCopy();
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  ContactTab copyWith(void Function(ContactTab) updates) =>
-      super.copyWith((message) => updates(message as ContactTab)) as ContactTab;
-
-  @$core.override
-  $pb.BuilderInfo get info_ => _i;
-
-  @$core.pragma('dart2js:noInline')
-  static ContactTab create() => ContactTab._();
-  @$core.override
-  ContactTab createEmptyInstance() => create();
-  @$core.pragma('dart2js:noInline')
-  static ContactTab getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<ContactTab>(create);
-  static ContactTab? _defaultInstance;
-
-  @$pb.TagNumber(1)
-  ContactTabType get tab => $_getN(0);
-  @$pb.TagNumber(1)
-  set tab(ContactTabType value) => $_setField(1, value);
-  @$pb.TagNumber(1)
-  $core.bool hasTab() => $_has(0);
-  @$pb.TagNumber(1)
-  void clearTab() => $_clearField(1);
-
-  @$pb.TagNumber(2)
-  $core.String get name => $_getSZ(1);
-  @$pb.TagNumber(2)
-  set name($core.String value) => $_setString(1, value);
-  @$pb.TagNumber(2)
-  $core.bool hasName() => $_has(1);
-  @$pb.TagNumber(2)
-  void clearName() => $_clearField(2);
-}
-
-class ContactsReply extends $pb.GeneratedMessage {
-  factory ContactsReply({
-    $core.Iterable<Contact>? contacts,
-    $core.Iterable<ContactTab>? tab,
-    ContactTabType? currentTab,
-    PaginationParams? paginationParams,
-  }) {
-    final result = create();
-    if (contacts != null) result.contacts.addAll(contacts);
-    if (tab != null) result.tab.addAll(tab);
-    if (currentTab != null) result.currentTab = currentTab;
-    if (paginationParams != null) result.paginationParams = paginationParams;
-    return result;
-  }
-
-  ContactsReply._();
-
-  factory ContactsReply.fromBuffer($core.List<$core.int> data,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
-  factory ContactsReply.fromJson($core.String json,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'ContactsReply',
-      package:
-          const $pb.PackageName(_omitMessageNames ? '' : 'bilibili.app.im.v1'),
-      createEmptyInstance: create)
-    ..pPM<Contact>(1, _omitFieldNames ? '' : 'contacts',
-        subBuilder: Contact.create)
-    ..pPM<ContactTab>(2, _omitFieldNames ? '' : 'tab',
-        subBuilder: ContactTab.create)
-    ..aE<ContactTabType>(3, _omitFieldNames ? '' : 'currentTab',
-        enumValues: ContactTabType.values)
-    ..aOM<PaginationParams>(4, _omitFieldNames ? '' : 'paginationParams',
-        subBuilder: PaginationParams.create)
-    ..hasRequiredFields = false;
-
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  ContactsReply clone() => deepCopy();
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  ContactsReply copyWith(void Function(ContactsReply) updates) =>
-      super.copyWith((message) => updates(message as ContactsReply))
-          as ContactsReply;
-
-  @$core.override
-  $pb.BuilderInfo get info_ => _i;
-
-  @$core.pragma('dart2js:noInline')
-  static ContactsReply create() => ContactsReply._();
-  @$core.override
-  ContactsReply createEmptyInstance() => create();
-  @$core.pragma('dart2js:noInline')
-  static ContactsReply getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<ContactsReply>(create);
-  static ContactsReply? _defaultInstance;
-
-  @$pb.TagNumber(1)
-  $pb.PbList<Contact> get contacts => $_getList(0);
-
-  @$pb.TagNumber(2)
-  $pb.PbList<ContactTab> get tab => $_getList(1);
-
-  @$pb.TagNumber(3)
-  ContactTabType get currentTab => $_getN(2);
-  @$pb.TagNumber(3)
-  set currentTab(ContactTabType value) => $_setField(3, value);
-  @$pb.TagNumber(3)
-  $core.bool hasCurrentTab() => $_has(2);
-  @$pb.TagNumber(3)
-  void clearCurrentTab() => $_clearField(3);
-
-  @$pb.TagNumber(4)
-  PaginationParams get paginationParams => $_getN(3);
-  @$pb.TagNumber(4)
-  set paginationParams(PaginationParams value) => $_setField(4, value);
-  @$pb.TagNumber(4)
-  $core.bool hasPaginationParams() => $_has(3);
-  @$pb.TagNumber(4)
-  void clearPaginationParams() => $_clearField(4);
-  @$pb.TagNumber(4)
-  PaginationParams ensurePaginationParams() => $_ensure(3);
-}
-
-class ContactsReq extends $pb.GeneratedMessage {
-  factory ContactsReq({
-    ContactTabType? tab,
-    PaginationParams? paginationParams,
-  }) {
-    final result = create();
-    if (tab != null) result.tab = tab;
-    if (paginationParams != null) result.paginationParams = paginationParams;
-    return result;
-  }
-
-  ContactsReq._();
-
-  factory ContactsReq.fromBuffer($core.List<$core.int> data,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
-  factory ContactsReq.fromJson($core.String json,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'ContactsReq',
-      package:
-          const $pb.PackageName(_omitMessageNames ? '' : 'bilibili.app.im.v1'),
-      createEmptyInstance: create)
-    ..aE<ContactTabType>(1, _omitFieldNames ? '' : 'tab',
-        enumValues: ContactTabType.values)
-    ..aOM<PaginationParams>(2, _omitFieldNames ? '' : 'paginationParams',
-        subBuilder: PaginationParams.create)
-    ..hasRequiredFields = false;
-
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  ContactsReq clone() => deepCopy();
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  ContactsReq copyWith(void Function(ContactsReq) updates) =>
-      super.copyWith((message) => updates(message as ContactsReq))
-          as ContactsReq;
-
-  @$core.override
-  $pb.BuilderInfo get info_ => _i;
-
-  @$core.pragma('dart2js:noInline')
-  static ContactsReq create() => ContactsReq._();
-  @$core.override
-  ContactsReq createEmptyInstance() => create();
-  @$core.pragma('dart2js:noInline')
-  static ContactsReq getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<ContactsReq>(create);
-  static ContactsReq? _defaultInstance;
-
-  @$pb.TagNumber(1)
-  ContactTabType get tab => $_getN(0);
-  @$pb.TagNumber(1)
-  set tab(ContactTabType value) => $_setField(1, value);
-  @$pb.TagNumber(1)
-  $core.bool hasTab() => $_has(0);
-  @$pb.TagNumber(1)
-  void clearTab() => $_clearField(1);
-
-  @$pb.TagNumber(2)
-  PaginationParams get paginationParams => $_getN(1);
-  @$pb.TagNumber(2)
-  set paginationParams(PaginationParams value) => $_setField(2, value);
-  @$pb.TagNumber(2)
-  $core.bool hasPaginationParams() => $_has(1);
-  @$pb.TagNumber(2)
-  void clearPaginationParams() => $_clearField(2);
-  @$pb.TagNumber(2)
-  PaginationParams ensurePaginationParams() => $_ensure(1);
-}
-
-class ContactsSearchReply extends $pb.GeneratedMessage {
-  factory ContactsSearchReply({
-    $core.Iterable<Contact>? contacts,
-    PaginationParams? paginationParams,
-  }) {
-    final result = create();
-    if (contacts != null) result.contacts.addAll(contacts);
-    if (paginationParams != null) result.paginationParams = paginationParams;
-    return result;
-  }
-
-  ContactsSearchReply._();
-
-  factory ContactsSearchReply.fromBuffer($core.List<$core.int> data,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
-  factory ContactsSearchReply.fromJson($core.String json,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'ContactsSearchReply',
-      package:
-          const $pb.PackageName(_omitMessageNames ? '' : 'bilibili.app.im.v1'),
-      createEmptyInstance: create)
-    ..pPM<Contact>(1, _omitFieldNames ? '' : 'contacts',
-        subBuilder: Contact.create)
-    ..aOM<PaginationParams>(2, _omitFieldNames ? '' : 'paginationParams',
-        subBuilder: PaginationParams.create)
-    ..hasRequiredFields = false;
-
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  ContactsSearchReply clone() => deepCopy();
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  ContactsSearchReply copyWith(void Function(ContactsSearchReply) updates) =>
-      super.copyWith((message) => updates(message as ContactsSearchReply))
-          as ContactsSearchReply;
-
-  @$core.override
-  $pb.BuilderInfo get info_ => _i;
-
-  @$core.pragma('dart2js:noInline')
-  static ContactsSearchReply create() => ContactsSearchReply._();
-  @$core.override
-  ContactsSearchReply createEmptyInstance() => create();
-  @$core.pragma('dart2js:noInline')
-  static ContactsSearchReply getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<ContactsSearchReply>(create);
-  static ContactsSearchReply? _defaultInstance;
-
-  @$pb.TagNumber(1)
-  $pb.PbList<Contact> get contacts => $_getList(0);
-
-  @$pb.TagNumber(2)
-  PaginationParams get paginationParams => $_getN(1);
-  @$pb.TagNumber(2)
-  set paginationParams(PaginationParams value) => $_setField(2, value);
-  @$pb.TagNumber(2)
-  $core.bool hasPaginationParams() => $_has(1);
-  @$pb.TagNumber(2)
-  void clearPaginationParams() => $_clearField(2);
-  @$pb.TagNumber(2)
-  PaginationParams ensurePaginationParams() => $_ensure(1);
-}
-
-class ContactsSearchReq extends $pb.GeneratedMessage {
-  factory ContactsSearchReq({
-    $core.String? keyword,
-    ContactTabType? tab,
-    PaginationParams? paginationParams,
-  }) {
-    final result = create();
-    if (keyword != null) result.keyword = keyword;
-    if (tab != null) result.tab = tab;
-    if (paginationParams != null) result.paginationParams = paginationParams;
-    return result;
-  }
-
-  ContactsSearchReq._();
-
-  factory ContactsSearchReq.fromBuffer($core.List<$core.int> data,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
-  factory ContactsSearchReq.fromJson($core.String json,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'ContactsSearchReq',
-      package:
-          const $pb.PackageName(_omitMessageNames ? '' : 'bilibili.app.im.v1'),
-      createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'keyword')
-    ..aE<ContactTabType>(2, _omitFieldNames ? '' : 'tab',
-        enumValues: ContactTabType.values)
-    ..aOM<PaginationParams>(3, _omitFieldNames ? '' : 'paginationParams',
-        subBuilder: PaginationParams.create)
-    ..hasRequiredFields = false;
-
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  ContactsSearchReq clone() => deepCopy();
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  ContactsSearchReq copyWith(void Function(ContactsSearchReq) updates) =>
-      super.copyWith((message) => updates(message as ContactsSearchReq))
-          as ContactsSearchReq;
-
-  @$core.override
-  $pb.BuilderInfo get info_ => _i;
-
-  @$core.pragma('dart2js:noInline')
-  static ContactsSearchReq create() => ContactsSearchReq._();
-  @$core.override
-  ContactsSearchReq createEmptyInstance() => create();
-  @$core.pragma('dart2js:noInline')
-  static ContactsSearchReq getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<ContactsSearchReq>(create);
-  static ContactsSearchReq? _defaultInstance;
-
-  @$pb.TagNumber(1)
-  $core.String get keyword => $_getSZ(0);
-  @$pb.TagNumber(1)
-  set keyword($core.String value) => $_setString(0, value);
-  @$pb.TagNumber(1)
-  $core.bool hasKeyword() => $_has(0);
-  @$pb.TagNumber(1)
-  void clearKeyword() => $_clearField(1);
-
-  @$pb.TagNumber(2)
-  ContactTabType get tab => $_getN(1);
-  @$pb.TagNumber(2)
-  set tab(ContactTabType value) => $_setField(2, value);
-  @$pb.TagNumber(2)
-  $core.bool hasTab() => $_has(1);
-  @$pb.TagNumber(2)
-  void clearTab() => $_clearField(2);
-
-  @$pb.TagNumber(3)
-  PaginationParams get paginationParams => $_getN(2);
-  @$pb.TagNumber(3)
-  set paginationParams(PaginationParams value) => $_setField(3, value);
-  @$pb.TagNumber(3)
-  $core.bool hasPaginationParams() => $_has(2);
-  @$pb.TagNumber(3)
-  void clearPaginationParams() => $_clearField(3);
-  @$pb.TagNumber(3)
-  PaginationParams ensurePaginationParams() => $_ensure(2);
 }
 
 class CustomerId extends $pb.GeneratedMessage {
@@ -1443,103 +361,6 @@ class DeleteSessionListReq extends $pb.GeneratedMessage {
   void clearPageType() => $_clearField(1);
 }
 
-class DeleteSessionReply extends $pb.GeneratedMessage {
-  factory DeleteSessionReply() => create();
-
-  DeleteSessionReply._();
-
-  factory DeleteSessionReply.fromBuffer($core.List<$core.int> data,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
-  factory DeleteSessionReply.fromJson($core.String json,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'DeleteSessionReply',
-      package:
-          const $pb.PackageName(_omitMessageNames ? '' : 'bilibili.app.im.v1'),
-      createEmptyInstance: create)
-    ..hasRequiredFields = false;
-
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  DeleteSessionReply clone() => deepCopy();
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  DeleteSessionReply copyWith(void Function(DeleteSessionReply) updates) =>
-      super.copyWith((message) => updates(message as DeleteSessionReply))
-          as DeleteSessionReply;
-
-  @$core.override
-  $pb.BuilderInfo get info_ => _i;
-
-  @$core.pragma('dart2js:noInline')
-  static DeleteSessionReply create() => DeleteSessionReply._();
-  @$core.override
-  DeleteSessionReply createEmptyInstance() => create();
-  @$core.pragma('dart2js:noInline')
-  static DeleteSessionReply getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<DeleteSessionReply>(create);
-  static DeleteSessionReply? _defaultInstance;
-}
-
-class DeleteSessionReq extends $pb.GeneratedMessage {
-  factory DeleteSessionReq({
-    SessionId? sessionId,
-  }) {
-    final result = create();
-    if (sessionId != null) result.sessionId = sessionId;
-    return result;
-  }
-
-  DeleteSessionReq._();
-
-  factory DeleteSessionReq.fromBuffer($core.List<$core.int> data,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
-  factory DeleteSessionReq.fromJson($core.String json,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'DeleteSessionReq',
-      package:
-          const $pb.PackageName(_omitMessageNames ? '' : 'bilibili.app.im.v1'),
-      createEmptyInstance: create)
-    ..aOM<SessionId>(1, _omitFieldNames ? '' : 'sessionId',
-        subBuilder: SessionId.create)
-    ..hasRequiredFields = false;
-
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  DeleteSessionReq clone() => deepCopy();
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  DeleteSessionReq copyWith(void Function(DeleteSessionReq) updates) =>
-      super.copyWith((message) => updates(message as DeleteSessionReq))
-          as DeleteSessionReq;
-
-  @$core.override
-  $pb.BuilderInfo get info_ => _i;
-
-  @$core.pragma('dart2js:noInline')
-  static DeleteSessionReq create() => DeleteSessionReq._();
-  @$core.override
-  DeleteSessionReq createEmptyInstance() => create();
-  @$core.pragma('dart2js:noInline')
-  static DeleteSessionReq getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<DeleteSessionReq>(create);
-  static DeleteSessionReq? _defaultInstance;
-
-  @$pb.TagNumber(1)
-  SessionId get sessionId => $_getN(0);
-  @$pb.TagNumber(1)
-  set sessionId(SessionId value) => $_setField(1, value);
-  @$pb.TagNumber(1)
-  $core.bool hasSessionId() => $_has(0);
-  @$pb.TagNumber(1)
-  void clearSessionId() => $_clearField(1);
-  @$pb.TagNumber(1)
-  SessionId ensureSessionId() => $_ensure(0);
-}
-
 class FilledLabel extends $pb.GeneratedMessage {
   factory FilledLabel({
     $core.String? text,
@@ -1593,69 +414,6 @@ class FilledLabel extends $pb.GeneratedMessage {
   $core.bool hasText() => $_has(0);
   @$pb.TagNumber(1)
   void clearText() => $_clearField(1);
-}
-
-class FilterConfig extends $pb.GeneratedMessage {
-  factory FilterConfig({
-    $core.Iterable<SessionsFilter>? filters,
-    SessionFilterType? currentFilter,
-  }) {
-    final result = create();
-    if (filters != null) result.filters.addAll(filters);
-    if (currentFilter != null) result.currentFilter = currentFilter;
-    return result;
-  }
-
-  FilterConfig._();
-
-  factory FilterConfig.fromBuffer($core.List<$core.int> data,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
-  factory FilterConfig.fromJson($core.String json,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'FilterConfig',
-      package:
-          const $pb.PackageName(_omitMessageNames ? '' : 'bilibili.app.im.v1'),
-      createEmptyInstance: create)
-    ..pPM<SessionsFilter>(1, _omitFieldNames ? '' : 'filters',
-        subBuilder: SessionsFilter.create)
-    ..aE<SessionFilterType>(2, _omitFieldNames ? '' : 'currentFilter',
-        enumValues: SessionFilterType.values)
-    ..hasRequiredFields = false;
-
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  FilterConfig clone() => deepCopy();
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  FilterConfig copyWith(void Function(FilterConfig) updates) =>
-      super.copyWith((message) => updates(message as FilterConfig))
-          as FilterConfig;
-
-  @$core.override
-  $pb.BuilderInfo get info_ => _i;
-
-  @$core.pragma('dart2js:noInline')
-  static FilterConfig create() => FilterConfig._();
-  @$core.override
-  FilterConfig createEmptyInstance() => create();
-  @$core.pragma('dart2js:noInline')
-  static FilterConfig getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<FilterConfig>(create);
-  static FilterConfig? _defaultInstance;
-
-  @$pb.TagNumber(1)
-  $pb.PbList<SessionsFilter> get filters => $_getList(0);
-
-  @$pb.TagNumber(2)
-  SessionFilterType get currentFilter => $_getN(1);
-  @$pb.TagNumber(2)
-  set currentFilter(SessionFilterType value) => $_setField(2, value);
-  @$pb.TagNumber(2)
-  $core.bool hasCurrentFilter() => $_has(1);
-  @$pb.TagNumber(2)
-  void clearCurrentFilter() => $_clearField(2);
 }
 
 class FoldId extends $pb.GeneratedMessage {
@@ -1834,193 +592,6 @@ class GetImSettingsReq extends $pb.GeneratedMessage {
   $core.bool hasType() => $_has(0);
   @$pb.TagNumber(1)
   void clearType() => $_clearField(1);
-}
-
-class GetQuickLinkUnreadReply extends $pb.GeneratedMessage {
-  factory GetQuickLinkUnreadReply({
-    $core.Iterable<QuickLinkUnreadItem>? items,
-  }) {
-    final result = create();
-    if (items != null) result.items.addAll(items);
-    return result;
-  }
-
-  GetQuickLinkUnreadReply._();
-
-  factory GetQuickLinkUnreadReply.fromBuffer($core.List<$core.int> data,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
-  factory GetQuickLinkUnreadReply.fromJson($core.String json,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'GetQuickLinkUnreadReply',
-      package:
-          const $pb.PackageName(_omitMessageNames ? '' : 'bilibili.app.im.v1'),
-      createEmptyInstance: create)
-    ..pPM<QuickLinkUnreadItem>(1, _omitFieldNames ? '' : 'items',
-        subBuilder: QuickLinkUnreadItem.create)
-    ..hasRequiredFields = false;
-
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  GetQuickLinkUnreadReply clone() => deepCopy();
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  GetQuickLinkUnreadReply copyWith(
-          void Function(GetQuickLinkUnreadReply) updates) =>
-      super.copyWith((message) => updates(message as GetQuickLinkUnreadReply))
-          as GetQuickLinkUnreadReply;
-
-  @$core.override
-  $pb.BuilderInfo get info_ => _i;
-
-  @$core.pragma('dart2js:noInline')
-  static GetQuickLinkUnreadReply create() => GetQuickLinkUnreadReply._();
-  @$core.override
-  GetQuickLinkUnreadReply createEmptyInstance() => create();
-  @$core.pragma('dart2js:noInline')
-  static GetQuickLinkUnreadReply getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<GetQuickLinkUnreadReply>(create);
-  static GetQuickLinkUnreadReply? _defaultInstance;
-
-  @$pb.TagNumber(1)
-  $pb.PbList<QuickLinkUnreadItem> get items => $_getList(0);
-}
-
-class GetQuickLinkUnreadReq extends $pb.GeneratedMessage {
-  factory GetQuickLinkUnreadReq() => create();
-
-  GetQuickLinkUnreadReq._();
-
-  factory GetQuickLinkUnreadReq.fromBuffer($core.List<$core.int> data,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
-  factory GetQuickLinkUnreadReq.fromJson($core.String json,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'GetQuickLinkUnreadReq',
-      package:
-          const $pb.PackageName(_omitMessageNames ? '' : 'bilibili.app.im.v1'),
-      createEmptyInstance: create)
-    ..hasRequiredFields = false;
-
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  GetQuickLinkUnreadReq clone() => deepCopy();
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  GetQuickLinkUnreadReq copyWith(
-          void Function(GetQuickLinkUnreadReq) updates) =>
-      super.copyWith((message) => updates(message as GetQuickLinkUnreadReq))
-          as GetQuickLinkUnreadReq;
-
-  @$core.override
-  $pb.BuilderInfo get info_ => _i;
-
-  @$core.pragma('dart2js:noInline')
-  static GetQuickLinkUnreadReq create() => GetQuickLinkUnreadReq._();
-  @$core.override
-  GetQuickLinkUnreadReq createEmptyInstance() => create();
-  @$core.pragma('dart2js:noInline')
-  static GetQuickLinkUnreadReq getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<GetQuickLinkUnreadReq>(create);
-  static GetQuickLinkUnreadReq? _defaultInstance;
-}
-
-class GetTotalUnreadReply extends $pb.GeneratedMessage {
-  factory GetTotalUnreadReply({
-    Unread? total,
-  }) {
-    final result = create();
-    if (total != null) result.total = total;
-    return result;
-  }
-
-  GetTotalUnreadReply._();
-
-  factory GetTotalUnreadReply.fromBuffer($core.List<$core.int> data,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
-  factory GetTotalUnreadReply.fromJson($core.String json,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'GetTotalUnreadReply',
-      package:
-          const $pb.PackageName(_omitMessageNames ? '' : 'bilibili.app.im.v1'),
-      createEmptyInstance: create)
-    ..aOM<Unread>(1, _omitFieldNames ? '' : 'total', subBuilder: Unread.create)
-    ..hasRequiredFields = false;
-
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  GetTotalUnreadReply clone() => deepCopy();
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  GetTotalUnreadReply copyWith(void Function(GetTotalUnreadReply) updates) =>
-      super.copyWith((message) => updates(message as GetTotalUnreadReply))
-          as GetTotalUnreadReply;
-
-  @$core.override
-  $pb.BuilderInfo get info_ => _i;
-
-  @$core.pragma('dart2js:noInline')
-  static GetTotalUnreadReply create() => GetTotalUnreadReply._();
-  @$core.override
-  GetTotalUnreadReply createEmptyInstance() => create();
-  @$core.pragma('dart2js:noInline')
-  static GetTotalUnreadReply getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<GetTotalUnreadReply>(create);
-  static GetTotalUnreadReply? _defaultInstance;
-
-  @$pb.TagNumber(1)
-  Unread get total => $_getN(0);
-  @$pb.TagNumber(1)
-  set total(Unread value) => $_setField(1, value);
-  @$pb.TagNumber(1)
-  $core.bool hasTotal() => $_has(0);
-  @$pb.TagNumber(1)
-  void clearTotal() => $_clearField(1);
-  @$pb.TagNumber(1)
-  Unread ensureTotal() => $_ensure(0);
-}
-
-class GetTotalUnreadReq extends $pb.GeneratedMessage {
-  factory GetTotalUnreadReq() => create();
-
-  GetTotalUnreadReq._();
-
-  factory GetTotalUnreadReq.fromBuffer($core.List<$core.int> data,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
-  factory GetTotalUnreadReq.fromJson($core.String json,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'GetTotalUnreadReq',
-      package:
-          const $pb.PackageName(_omitMessageNames ? '' : 'bilibili.app.im.v1'),
-      createEmptyInstance: create)
-    ..hasRequiredFields = false;
-
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  GetTotalUnreadReq clone() => deepCopy();
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  GetTotalUnreadReq copyWith(void Function(GetTotalUnreadReq) updates) =>
-      super.copyWith((message) => updates(message as GetTotalUnreadReq))
-          as GetTotalUnreadReq;
-
-  @$core.override
-  $pb.BuilderInfo get info_ => _i;
-
-  @$core.pragma('dart2js:noInline')
-  static GetTotalUnreadReq create() => GetTotalUnreadReq._();
-  @$core.override
-  GetTotalUnreadReq createEmptyInstance() => create();
-  @$core.pragma('dart2js:noInline')
-  static GetTotalUnreadReq getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<GetTotalUnreadReq>(create);
-  static GetTotalUnreadReq? _defaultInstance;
 }
 
 class GroupId extends $pb.GeneratedMessage {
@@ -2944,73 +1515,6 @@ class Offset extends $pb.GeneratedMessage {
   void clearTopOffset() => $_clearField(2);
 }
 
-class OperationContent extends $pb.GeneratedMessage {
-  factory OperationContent({
-    $core.bool? show,
-    $core.String? text,
-  }) {
-    final result = create();
-    if (show != null) result.show = show;
-    if (text != null) result.text = text;
-    return result;
-  }
-
-  OperationContent._();
-
-  factory OperationContent.fromBuffer($core.List<$core.int> data,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
-  factory OperationContent.fromJson($core.String json,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'OperationContent',
-      package:
-          const $pb.PackageName(_omitMessageNames ? '' : 'bilibili.app.im.v1'),
-      createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'show')
-    ..aOS(2, _omitFieldNames ? '' : 'text')
-    ..hasRequiredFields = false;
-
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  OperationContent clone() => deepCopy();
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  OperationContent copyWith(void Function(OperationContent) updates) =>
-      super.copyWith((message) => updates(message as OperationContent))
-          as OperationContent;
-
-  @$core.override
-  $pb.BuilderInfo get info_ => _i;
-
-  @$core.pragma('dart2js:noInline')
-  static OperationContent create() => OperationContent._();
-  @$core.override
-  OperationContent createEmptyInstance() => create();
-  @$core.pragma('dart2js:noInline')
-  static OperationContent getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<OperationContent>(create);
-  static OperationContent? _defaultInstance;
-
-  @$pb.TagNumber(1)
-  $core.bool get show => $_getBF(0);
-  @$pb.TagNumber(1)
-  set show($core.bool value) => $_setBool(0, value);
-  @$pb.TagNumber(1)
-  $core.bool hasShow() => $_has(0);
-  @$pb.TagNumber(1)
-  void clearShow() => $_clearField(1);
-
-  @$pb.TagNumber(2)
-  $core.String get text => $_getSZ(1);
-  @$pb.TagNumber(2)
-  set text($core.String value) => $_setString(1, value);
-  @$pb.TagNumber(2)
-  $core.bool hasText() => $_has(1);
-  @$pb.TagNumber(2)
-  void clearText() => $_clearField(2);
-}
-
 class PaginationParams extends $pb.GeneratedMessage {
   factory PaginationParams({
     $core.Iterable<$core.MapEntry<$core.int, Offset>>? offsets,
@@ -3281,388 +1785,6 @@ class PrivateId extends $pb.GeneratedMessage {
   void clearTalkerUid() => $_clearField(1);
 }
 
-class QuickLinkBubble extends $pb.GeneratedMessage {
-  factory QuickLinkBubble({
-    $fixnum.Int64? mid,
-    $core.String? avatar,
-    $core.String? nickName,
-    $core.String? content,
-    QuickLinkItemType? quickLinkItem,
-    QuickLinkMsgType? msgType,
-  }) {
-    final result = create();
-    if (mid != null) result.mid = mid;
-    if (avatar != null) result.avatar = avatar;
-    if (nickName != null) result.nickName = nickName;
-    if (content != null) result.content = content;
-    if (quickLinkItem != null) result.quickLinkItem = quickLinkItem;
-    if (msgType != null) result.msgType = msgType;
-    return result;
-  }
-
-  QuickLinkBubble._();
-
-  factory QuickLinkBubble.fromBuffer($core.List<$core.int> data,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
-  factory QuickLinkBubble.fromJson($core.String json,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'QuickLinkBubble',
-      package:
-          const $pb.PackageName(_omitMessageNames ? '' : 'bilibili.app.im.v1'),
-      createEmptyInstance: create)
-    ..aInt64(1, _omitFieldNames ? '' : 'mid')
-    ..aOS(2, _omitFieldNames ? '' : 'avatar')
-    ..aOS(3, _omitFieldNames ? '' : 'nickName')
-    ..aOS(4, _omitFieldNames ? '' : 'content')
-    ..aE<QuickLinkItemType>(5, _omitFieldNames ? '' : 'quickLinkItem',
-        enumValues: QuickLinkItemType.values)
-    ..aE<QuickLinkMsgType>(6, _omitFieldNames ? '' : 'msgType',
-        enumValues: QuickLinkMsgType.values)
-    ..hasRequiredFields = false;
-
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  QuickLinkBubble clone() => deepCopy();
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  QuickLinkBubble copyWith(void Function(QuickLinkBubble) updates) =>
-      super.copyWith((message) => updates(message as QuickLinkBubble))
-          as QuickLinkBubble;
-
-  @$core.override
-  $pb.BuilderInfo get info_ => _i;
-
-  @$core.pragma('dart2js:noInline')
-  static QuickLinkBubble create() => QuickLinkBubble._();
-  @$core.override
-  QuickLinkBubble createEmptyInstance() => create();
-  @$core.pragma('dart2js:noInline')
-  static QuickLinkBubble getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<QuickLinkBubble>(create);
-  static QuickLinkBubble? _defaultInstance;
-
-  @$pb.TagNumber(1)
-  $fixnum.Int64 get mid => $_getI64(0);
-  @$pb.TagNumber(1)
-  set mid($fixnum.Int64 value) => $_setInt64(0, value);
-  @$pb.TagNumber(1)
-  $core.bool hasMid() => $_has(0);
-  @$pb.TagNumber(1)
-  void clearMid() => $_clearField(1);
-
-  @$pb.TagNumber(2)
-  $core.String get avatar => $_getSZ(1);
-  @$pb.TagNumber(2)
-  set avatar($core.String value) => $_setString(1, value);
-  @$pb.TagNumber(2)
-  $core.bool hasAvatar() => $_has(1);
-  @$pb.TagNumber(2)
-  void clearAvatar() => $_clearField(2);
-
-  @$pb.TagNumber(3)
-  $core.String get nickName => $_getSZ(2);
-  @$pb.TagNumber(3)
-  set nickName($core.String value) => $_setString(2, value);
-  @$pb.TagNumber(3)
-  $core.bool hasNickName() => $_has(2);
-  @$pb.TagNumber(3)
-  void clearNickName() => $_clearField(3);
-
-  @$pb.TagNumber(4)
-  $core.String get content => $_getSZ(3);
-  @$pb.TagNumber(4)
-  set content($core.String value) => $_setString(3, value);
-  @$pb.TagNumber(4)
-  $core.bool hasContent() => $_has(3);
-  @$pb.TagNumber(4)
-  void clearContent() => $_clearField(4);
-
-  @$pb.TagNumber(5)
-  QuickLinkItemType get quickLinkItem => $_getN(4);
-  @$pb.TagNumber(5)
-  set quickLinkItem(QuickLinkItemType value) => $_setField(5, value);
-  @$pb.TagNumber(5)
-  $core.bool hasQuickLinkItem() => $_has(4);
-  @$pb.TagNumber(5)
-  void clearQuickLinkItem() => $_clearField(5);
-
-  @$pb.TagNumber(6)
-  QuickLinkMsgType get msgType => $_getN(5);
-  @$pb.TagNumber(6)
-  set msgType(QuickLinkMsgType value) => $_setField(6, value);
-  @$pb.TagNumber(6)
-  $core.bool hasMsgType() => $_has(5);
-  @$pb.TagNumber(6)
-  void clearMsgType() => $_clearField(6);
-}
-
-class QuickLinkConfig extends $pb.GeneratedMessage {
-  factory QuickLinkConfig({
-    $core.Iterable<QuickLinkItem>? items,
-    QuickLinkBubble? bubble,
-    $core.bool? isLegacyStyle,
-  }) {
-    final result = create();
-    if (items != null) result.items.addAll(items);
-    if (bubble != null) result.bubble = bubble;
-    if (isLegacyStyle != null) result.isLegacyStyle = isLegacyStyle;
-    return result;
-  }
-
-  QuickLinkConfig._();
-
-  factory QuickLinkConfig.fromBuffer($core.List<$core.int> data,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
-  factory QuickLinkConfig.fromJson($core.String json,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'QuickLinkConfig',
-      package:
-          const $pb.PackageName(_omitMessageNames ? '' : 'bilibili.app.im.v1'),
-      createEmptyInstance: create)
-    ..pPM<QuickLinkItem>(1, _omitFieldNames ? '' : 'items',
-        subBuilder: QuickLinkItem.create)
-    ..aOM<QuickLinkBubble>(2, _omitFieldNames ? '' : 'bubble',
-        subBuilder: QuickLinkBubble.create)
-    ..aOB(3, _omitFieldNames ? '' : 'isLegacyStyle')
-    ..hasRequiredFields = false;
-
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  QuickLinkConfig clone() => deepCopy();
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  QuickLinkConfig copyWith(void Function(QuickLinkConfig) updates) =>
-      super.copyWith((message) => updates(message as QuickLinkConfig))
-          as QuickLinkConfig;
-
-  @$core.override
-  $pb.BuilderInfo get info_ => _i;
-
-  @$core.pragma('dart2js:noInline')
-  static QuickLinkConfig create() => QuickLinkConfig._();
-  @$core.override
-  QuickLinkConfig createEmptyInstance() => create();
-  @$core.pragma('dart2js:noInline')
-  static QuickLinkConfig getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<QuickLinkConfig>(create);
-  static QuickLinkConfig? _defaultInstance;
-
-  @$pb.TagNumber(1)
-  $pb.PbList<QuickLinkItem> get items => $_getList(0);
-
-  @$pb.TagNumber(2)
-  QuickLinkBubble get bubble => $_getN(1);
-  @$pb.TagNumber(2)
-  set bubble(QuickLinkBubble value) => $_setField(2, value);
-  @$pb.TagNumber(2)
-  $core.bool hasBubble() => $_has(1);
-  @$pb.TagNumber(2)
-  void clearBubble() => $_clearField(2);
-  @$pb.TagNumber(2)
-  QuickLinkBubble ensureBubble() => $_ensure(1);
-
-  @$pb.TagNumber(3)
-  $core.bool get isLegacyStyle => $_getBF(2);
-  @$pb.TagNumber(3)
-  set isLegacyStyle($core.bool value) => $_setBool(2, value);
-  @$pb.TagNumber(3)
-  $core.bool hasIsLegacyStyle() => $_has(2);
-  @$pb.TagNumber(3)
-  void clearIsLegacyStyle() => $_clearField(3);
-}
-
-class QuickLinkItem extends $pb.GeneratedMessage {
-  factory QuickLinkItem({
-    $core.String? title,
-    $core.String? icon,
-    $core.String? iconDark,
-    $core.String? url,
-    Unread? unread,
-    QuickLinkItemType? itemType,
-  }) {
-    final result = create();
-    if (title != null) result.title = title;
-    if (icon != null) result.icon = icon;
-    if (iconDark != null) result.iconDark = iconDark;
-    if (url != null) result.url = url;
-    if (unread != null) result.unread = unread;
-    if (itemType != null) result.itemType = itemType;
-    return result;
-  }
-
-  QuickLinkItem._();
-
-  factory QuickLinkItem.fromBuffer($core.List<$core.int> data,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
-  factory QuickLinkItem.fromJson($core.String json,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'QuickLinkItem',
-      package:
-          const $pb.PackageName(_omitMessageNames ? '' : 'bilibili.app.im.v1'),
-      createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'title')
-    ..aOS(2, _omitFieldNames ? '' : 'icon')
-    ..aOS(3, _omitFieldNames ? '' : 'iconDark')
-    ..aOS(4, _omitFieldNames ? '' : 'url')
-    ..aOM<Unread>(5, _omitFieldNames ? '' : 'unread', subBuilder: Unread.create)
-    ..aE<QuickLinkItemType>(6, _omitFieldNames ? '' : 'itemType',
-        enumValues: QuickLinkItemType.values)
-    ..hasRequiredFields = false;
-
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  QuickLinkItem clone() => deepCopy();
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  QuickLinkItem copyWith(void Function(QuickLinkItem) updates) =>
-      super.copyWith((message) => updates(message as QuickLinkItem))
-          as QuickLinkItem;
-
-  @$core.override
-  $pb.BuilderInfo get info_ => _i;
-
-  @$core.pragma('dart2js:noInline')
-  static QuickLinkItem create() => QuickLinkItem._();
-  @$core.override
-  QuickLinkItem createEmptyInstance() => create();
-  @$core.pragma('dart2js:noInline')
-  static QuickLinkItem getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<QuickLinkItem>(create);
-  static QuickLinkItem? _defaultInstance;
-
-  @$pb.TagNumber(1)
-  $core.String get title => $_getSZ(0);
-  @$pb.TagNumber(1)
-  set title($core.String value) => $_setString(0, value);
-  @$pb.TagNumber(1)
-  $core.bool hasTitle() => $_has(0);
-  @$pb.TagNumber(1)
-  void clearTitle() => $_clearField(1);
-
-  @$pb.TagNumber(2)
-  $core.String get icon => $_getSZ(1);
-  @$pb.TagNumber(2)
-  set icon($core.String value) => $_setString(1, value);
-  @$pb.TagNumber(2)
-  $core.bool hasIcon() => $_has(1);
-  @$pb.TagNumber(2)
-  void clearIcon() => $_clearField(2);
-
-  @$pb.TagNumber(3)
-  $core.String get iconDark => $_getSZ(2);
-  @$pb.TagNumber(3)
-  set iconDark($core.String value) => $_setString(2, value);
-  @$pb.TagNumber(3)
-  $core.bool hasIconDark() => $_has(2);
-  @$pb.TagNumber(3)
-  void clearIconDark() => $_clearField(3);
-
-  @$pb.TagNumber(4)
-  $core.String get url => $_getSZ(3);
-  @$pb.TagNumber(4)
-  set url($core.String value) => $_setString(3, value);
-  @$pb.TagNumber(4)
-  $core.bool hasUrl() => $_has(3);
-  @$pb.TagNumber(4)
-  void clearUrl() => $_clearField(4);
-
-  @$pb.TagNumber(5)
-  Unread get unread => $_getN(4);
-  @$pb.TagNumber(5)
-  set unread(Unread value) => $_setField(5, value);
-  @$pb.TagNumber(5)
-  $core.bool hasUnread() => $_has(4);
-  @$pb.TagNumber(5)
-  void clearUnread() => $_clearField(5);
-  @$pb.TagNumber(5)
-  Unread ensureUnread() => $_ensure(4);
-
-  @$pb.TagNumber(6)
-  QuickLinkItemType get itemType => $_getN(5);
-  @$pb.TagNumber(6)
-  set itemType(QuickLinkItemType value) => $_setField(6, value);
-  @$pb.TagNumber(6)
-  $core.bool hasItemType() => $_has(5);
-  @$pb.TagNumber(6)
-  void clearItemType() => $_clearField(6);
-}
-
-class QuickLinkUnreadItem extends $pb.GeneratedMessage {
-  factory QuickLinkUnreadItem({
-    QuickLinkItemType? itemType,
-    Unread? unread,
-  }) {
-    final result = create();
-    if (itemType != null) result.itemType = itemType;
-    if (unread != null) result.unread = unread;
-    return result;
-  }
-
-  QuickLinkUnreadItem._();
-
-  factory QuickLinkUnreadItem.fromBuffer($core.List<$core.int> data,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
-  factory QuickLinkUnreadItem.fromJson($core.String json,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'QuickLinkUnreadItem',
-      package:
-          const $pb.PackageName(_omitMessageNames ? '' : 'bilibili.app.im.v1'),
-      createEmptyInstance: create)
-    ..aE<QuickLinkItemType>(1, _omitFieldNames ? '' : 'itemType',
-        enumValues: QuickLinkItemType.values)
-    ..aOM<Unread>(2, _omitFieldNames ? '' : 'unread', subBuilder: Unread.create)
-    ..hasRequiredFields = false;
-
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  QuickLinkUnreadItem clone() => deepCopy();
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  QuickLinkUnreadItem copyWith(void Function(QuickLinkUnreadItem) updates) =>
-      super.copyWith((message) => updates(message as QuickLinkUnreadItem))
-          as QuickLinkUnreadItem;
-
-  @$core.override
-  $pb.BuilderInfo get info_ => _i;
-
-  @$core.pragma('dart2js:noInline')
-  static QuickLinkUnreadItem create() => QuickLinkUnreadItem._();
-  @$core.override
-  QuickLinkUnreadItem createEmptyInstance() => create();
-  @$core.pragma('dart2js:noInline')
-  static QuickLinkUnreadItem getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<QuickLinkUnreadItem>(create);
-  static QuickLinkUnreadItem? _defaultInstance;
-
-  @$pb.TagNumber(1)
-  QuickLinkItemType get itemType => $_getN(0);
-  @$pb.TagNumber(1)
-  set itemType(QuickLinkItemType value) => $_setField(1, value);
-  @$pb.TagNumber(1)
-  $core.bool hasItemType() => $_has(0);
-  @$pb.TagNumber(1)
-  void clearItemType() => $_clearField(1);
-
-  @$pb.TagNumber(2)
-  Unread get unread => $_getN(1);
-  @$pb.TagNumber(2)
-  set unread(Unread value) => $_setField(2, value);
-  @$pb.TagNumber(2)
-  $core.bool hasUnread() => $_has(1);
-  @$pb.TagNumber(2)
-  void clearUnread() => $_clearField(2);
-  @$pb.TagNumber(2)
-  Unread ensureUnread() => $_ensure(1);
-}
-
 class RestrictedMode extends $pb.GeneratedMessage {
   factory RestrictedMode({
     $core.bool? teenagers,
@@ -3819,8 +1941,6 @@ class Session extends $pb.GeneratedMessage {
     $fixnum.Int64? sequenceNumber,
     $core.bool? isMuted,
     $core.String? chatUrl,
-    SessionOperation? operation,
-    $core.Iterable<$core.MapEntry<$core.String, $core.String>>? traceParams,
   }) {
     final result = create();
     if (id != null) result.id = id;
@@ -3832,8 +1952,6 @@ class Session extends $pb.GeneratedMessage {
     if (sequenceNumber != null) result.sequenceNumber = sequenceNumber;
     if (isMuted != null) result.isMuted = isMuted;
     if (chatUrl != null) result.chatUrl = chatUrl;
-    if (operation != null) result.operation = operation;
-    if (traceParams != null) result.traceParams.addEntries(traceParams);
     return result;
   }
 
@@ -3863,13 +1981,6 @@ class Session extends $pb.GeneratedMessage {
     ..aInt64(7, _omitFieldNames ? '' : 'sequenceNumber')
     ..aOB(8, _omitFieldNames ? '' : 'isMuted')
     ..aOS(9, _omitFieldNames ? '' : 'chatUrl')
-    ..aOM<SessionOperation>(10, _omitFieldNames ? '' : 'operation',
-        subBuilder: SessionOperation.create)
-    ..m<$core.String, $core.String>(11, _omitFieldNames ? '' : 'traceParams',
-        entryClassName: 'Session.TraceParamsEntry',
-        keyFieldType: $pb.PbFieldType.OS,
-        valueFieldType: $pb.PbFieldType.OS,
-        packageName: const $pb.PackageName('bilibili.app.im.v1'))
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -3978,20 +2089,6 @@ class Session extends $pb.GeneratedMessage {
   $core.bool hasChatUrl() => $_has(8);
   @$pb.TagNumber(9)
   void clearChatUrl() => $_clearField(9);
-
-  @$pb.TagNumber(10)
-  SessionOperation get operation => $_getN(9);
-  @$pb.TagNumber(10)
-  set operation(SessionOperation value) => $_setField(10, value);
-  @$pb.TagNumber(10)
-  $core.bool hasOperation() => $_has(9);
-  @$pb.TagNumber(10)
-  void clearOperation() => $_clearField(10);
-  @$pb.TagNumber(10)
-  SessionOperation ensureOperation() => $_ensure(9);
-
-  @$pb.TagNumber(11)
-  $pb.PbMap<$core.String, $core.String> get traceParams => $_getMap(10);
 }
 
 enum SessionId_Id { privateId, groupId, foldId, systemId, customerId, notSet }
@@ -4137,7 +2234,6 @@ class SessionId extends $pb.GeneratedMessage {
 class SessionInfo extends $pb.GeneratedMessage {
   factory SessionInfo({
     $core.String? sessionName,
-    $1.NameRender? nameRender,
     $0.AvatarItem? avatar,
     $core.String? vipInfo,
     UserLabel? userLabel,
@@ -4145,7 +2241,6 @@ class SessionInfo extends $pb.GeneratedMessage {
   }) {
     final result = create();
     if (sessionName != null) result.sessionName = sessionName;
-    if (nameRender != null) result.nameRender = nameRender;
     if (avatar != null) result.avatar = avatar;
     if (vipInfo != null) result.vipInfo = vipInfo;
     if (userLabel != null) result.userLabel = userLabel;
@@ -4168,8 +2263,6 @@ class SessionInfo extends $pb.GeneratedMessage {
           const $pb.PackageName(_omitMessageNames ? '' : 'bilibili.app.im.v1'),
       createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'sessionName')
-    ..aOM<$1.NameRender>(2, _omitFieldNames ? '' : 'nameRender',
-        subBuilder: $1.NameRender.create)
     ..aOM<$0.AvatarItem>(3, _omitFieldNames ? '' : 'avatar',
         subBuilder: $0.AvatarItem.create)
     ..aOS(4, _omitFieldNames ? '' : 'vipInfo')
@@ -4206,344 +2299,62 @@ class SessionInfo extends $pb.GeneratedMessage {
   @$pb.TagNumber(1)
   void clearSessionName() => $_clearField(1);
 
-  @$pb.TagNumber(2)
-  $1.NameRender get nameRender => $_getN(1);
-  @$pb.TagNumber(2)
-  set nameRender($1.NameRender value) => $_setField(2, value);
-  @$pb.TagNumber(2)
-  $core.bool hasNameRender() => $_has(1);
-  @$pb.TagNumber(2)
-  void clearNameRender() => $_clearField(2);
-  @$pb.TagNumber(2)
-  $1.NameRender ensureNameRender() => $_ensure(1);
-
   @$pb.TagNumber(3)
-  $0.AvatarItem get avatar => $_getN(2);
+  $0.AvatarItem get avatar => $_getN(1);
   @$pb.TagNumber(3)
   set avatar($0.AvatarItem value) => $_setField(3, value);
   @$pb.TagNumber(3)
-  $core.bool hasAvatar() => $_has(2);
+  $core.bool hasAvatar() => $_has(1);
   @$pb.TagNumber(3)
   void clearAvatar() => $_clearField(3);
   @$pb.TagNumber(3)
-  $0.AvatarItem ensureAvatar() => $_ensure(2);
+  $0.AvatarItem ensureAvatar() => $_ensure(1);
 
   @$pb.TagNumber(4)
-  $core.String get vipInfo => $_getSZ(3);
+  $core.String get vipInfo => $_getSZ(2);
   @$pb.TagNumber(4)
-  set vipInfo($core.String value) => $_setString(3, value);
+  set vipInfo($core.String value) => $_setString(2, value);
   @$pb.TagNumber(4)
-  $core.bool hasVipInfo() => $_has(3);
+  $core.bool hasVipInfo() => $_has(2);
   @$pb.TagNumber(4)
   void clearVipInfo() => $_clearField(4);
 
   @$pb.TagNumber(5)
-  UserLabel get userLabel => $_getN(4);
+  UserLabel get userLabel => $_getN(3);
   @$pb.TagNumber(5)
   set userLabel(UserLabel value) => $_setField(5, value);
   @$pb.TagNumber(5)
-  $core.bool hasUserLabel() => $_has(4);
+  $core.bool hasUserLabel() => $_has(3);
   @$pb.TagNumber(5)
   void clearUserLabel() => $_clearField(5);
   @$pb.TagNumber(5)
-  UserLabel ensureUserLabel() => $_ensure(4);
+  UserLabel ensureUserLabel() => $_ensure(3);
 
   @$pb.TagNumber(6)
-  $core.bool get isLive => $_getBF(5);
+  $core.bool get isLive => $_getBF(4);
   @$pb.TagNumber(6)
-  set isLive($core.bool value) => $_setBool(5, value);
+  set isLive($core.bool value) => $_setBool(4, value);
   @$pb.TagNumber(6)
-  $core.bool hasIsLive() => $_has(5);
+  $core.bool hasIsLive() => $_has(4);
   @$pb.TagNumber(6)
   void clearIsLive() => $_clearField(6);
-}
-
-class SessionListExtraInfo extends $pb.GeneratedMessage {
-  factory SessionListExtraInfo({
-    AutoReplyToast? autoReplyToast,
-    $core.bool? showAntiHarassmentPopup,
-    $core.String? customerHintTitle,
-    BehaviorAlertToast? behaviorAlertToast,
-  }) {
-    final result = create();
-    if (autoReplyToast != null) result.autoReplyToast = autoReplyToast;
-    if (showAntiHarassmentPopup != null)
-      result.showAntiHarassmentPopup = showAntiHarassmentPopup;
-    if (customerHintTitle != null) result.customerHintTitle = customerHintTitle;
-    if (behaviorAlertToast != null)
-      result.behaviorAlertToast = behaviorAlertToast;
-    return result;
-  }
-
-  SessionListExtraInfo._();
-
-  factory SessionListExtraInfo.fromBuffer($core.List<$core.int> data,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
-  factory SessionListExtraInfo.fromJson($core.String json,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'SessionListExtraInfo',
-      package:
-          const $pb.PackageName(_omitMessageNames ? '' : 'bilibili.app.im.v1'),
-      createEmptyInstance: create)
-    ..aOM<AutoReplyToast>(1, _omitFieldNames ? '' : 'autoReplyToast',
-        subBuilder: AutoReplyToast.create)
-    ..aOB(2, _omitFieldNames ? '' : 'showAntiHarassmentPopup')
-    ..aOS(3, _omitFieldNames ? '' : 'customerHintTitle')
-    ..aOM<BehaviorAlertToast>(4, _omitFieldNames ? '' : 'behaviorAlertToast',
-        subBuilder: BehaviorAlertToast.create)
-    ..hasRequiredFields = false;
-
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  SessionListExtraInfo clone() => deepCopy();
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  SessionListExtraInfo copyWith(void Function(SessionListExtraInfo) updates) =>
-      super.copyWith((message) => updates(message as SessionListExtraInfo))
-          as SessionListExtraInfo;
-
-  @$core.override
-  $pb.BuilderInfo get info_ => _i;
-
-  @$core.pragma('dart2js:noInline')
-  static SessionListExtraInfo create() => SessionListExtraInfo._();
-  @$core.override
-  SessionListExtraInfo createEmptyInstance() => create();
-  @$core.pragma('dart2js:noInline')
-  static SessionListExtraInfo getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<SessionListExtraInfo>(create);
-  static SessionListExtraInfo? _defaultInstance;
-
-  @$pb.TagNumber(1)
-  AutoReplyToast get autoReplyToast => $_getN(0);
-  @$pb.TagNumber(1)
-  set autoReplyToast(AutoReplyToast value) => $_setField(1, value);
-  @$pb.TagNumber(1)
-  $core.bool hasAutoReplyToast() => $_has(0);
-  @$pb.TagNumber(1)
-  void clearAutoReplyToast() => $_clearField(1);
-  @$pb.TagNumber(1)
-  AutoReplyToast ensureAutoReplyToast() => $_ensure(0);
-
-  @$pb.TagNumber(2)
-  $core.bool get showAntiHarassmentPopup => $_getBF(1);
-  @$pb.TagNumber(2)
-  set showAntiHarassmentPopup($core.bool value) => $_setBool(1, value);
-  @$pb.TagNumber(2)
-  $core.bool hasShowAntiHarassmentPopup() => $_has(1);
-  @$pb.TagNumber(2)
-  void clearShowAntiHarassmentPopup() => $_clearField(2);
-
-  @$pb.TagNumber(3)
-  $core.String get customerHintTitle => $_getSZ(2);
-  @$pb.TagNumber(3)
-  set customerHintTitle($core.String value) => $_setString(2, value);
-  @$pb.TagNumber(3)
-  $core.bool hasCustomerHintTitle() => $_has(2);
-  @$pb.TagNumber(3)
-  void clearCustomerHintTitle() => $_clearField(3);
-
-  @$pb.TagNumber(4)
-  BehaviorAlertToast get behaviorAlertToast => $_getN(3);
-  @$pb.TagNumber(4)
-  set behaviorAlertToast(BehaviorAlertToast value) => $_setField(4, value);
-  @$pb.TagNumber(4)
-  $core.bool hasBehaviorAlertToast() => $_has(3);
-  @$pb.TagNumber(4)
-  void clearBehaviorAlertToast() => $_clearField(4);
-  @$pb.TagNumber(4)
-  BehaviorAlertToast ensureBehaviorAlertToast() => $_ensure(3);
-}
-
-class SessionListUpdateReply extends $pb.GeneratedMessage {
-  factory SessionListUpdateReply({
-    $core.Iterable<Session>? sessions,
-    UpdateSessionParams? updateSessionParams,
-  }) {
-    final result = create();
-    if (sessions != null) result.sessions.addAll(sessions);
-    if (updateSessionParams != null)
-      result.updateSessionParams = updateSessionParams;
-    return result;
-  }
-
-  SessionListUpdateReply._();
-
-  factory SessionListUpdateReply.fromBuffer($core.List<$core.int> data,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
-  factory SessionListUpdateReply.fromJson($core.String json,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'SessionListUpdateReply',
-      package:
-          const $pb.PackageName(_omitMessageNames ? '' : 'bilibili.app.im.v1'),
-      createEmptyInstance: create)
-    ..pPM<Session>(1, _omitFieldNames ? '' : 'sessions',
-        subBuilder: Session.create)
-    ..aOM<UpdateSessionParams>(2, _omitFieldNames ? '' : 'updateSessionParams',
-        subBuilder: UpdateSessionParams.create)
-    ..hasRequiredFields = false;
-
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  SessionListUpdateReply clone() => deepCopy();
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  SessionListUpdateReply copyWith(
-          void Function(SessionListUpdateReply) updates) =>
-      super.copyWith((message) => updates(message as SessionListUpdateReply))
-          as SessionListUpdateReply;
-
-  @$core.override
-  $pb.BuilderInfo get info_ => _i;
-
-  @$core.pragma('dart2js:noInline')
-  static SessionListUpdateReply create() => SessionListUpdateReply._();
-  @$core.override
-  SessionListUpdateReply createEmptyInstance() => create();
-  @$core.pragma('dart2js:noInline')
-  static SessionListUpdateReply getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<SessionListUpdateReply>(create);
-  static SessionListUpdateReply? _defaultInstance;
-
-  @$pb.TagNumber(1)
-  $pb.PbList<Session> get sessions => $_getList(0);
-
-  @$pb.TagNumber(2)
-  UpdateSessionParams get updateSessionParams => $_getN(1);
-  @$pb.TagNumber(2)
-  set updateSessionParams(UpdateSessionParams value) => $_setField(2, value);
-  @$pb.TagNumber(2)
-  $core.bool hasUpdateSessionParams() => $_has(1);
-  @$pb.TagNumber(2)
-  void clearUpdateSessionParams() => $_clearField(2);
-  @$pb.TagNumber(2)
-  UpdateSessionParams ensureUpdateSessionParams() => $_ensure(1);
-}
-
-class SessionListUpdateReq extends $pb.GeneratedMessage {
-  factory SessionListUpdateReq({
-    RestrictedMode? restrictedMode,
-    UpdateSessionParams? updateParams,
-    SessionPageType? pageType,
-    SessionFilterType? filterType,
-  }) {
-    final result = create();
-    if (restrictedMode != null) result.restrictedMode = restrictedMode;
-    if (updateParams != null) result.updateParams = updateParams;
-    if (pageType != null) result.pageType = pageType;
-    if (filterType != null) result.filterType = filterType;
-    return result;
-  }
-
-  SessionListUpdateReq._();
-
-  factory SessionListUpdateReq.fromBuffer($core.List<$core.int> data,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
-  factory SessionListUpdateReq.fromJson($core.String json,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'SessionListUpdateReq',
-      package:
-          const $pb.PackageName(_omitMessageNames ? '' : 'bilibili.app.im.v1'),
-      createEmptyInstance: create)
-    ..aOM<RestrictedMode>(1, _omitFieldNames ? '' : 'restrictedMode',
-        subBuilder: RestrictedMode.create)
-    ..aOM<UpdateSessionParams>(2, _omitFieldNames ? '' : 'updateParams',
-        subBuilder: UpdateSessionParams.create)
-    ..aE<SessionPageType>(3, _omitFieldNames ? '' : 'pageType',
-        enumValues: SessionPageType.values)
-    ..aE<SessionFilterType>(4, _omitFieldNames ? '' : 'filterType',
-        enumValues: SessionFilterType.values)
-    ..hasRequiredFields = false;
-
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  SessionListUpdateReq clone() => deepCopy();
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  SessionListUpdateReq copyWith(void Function(SessionListUpdateReq) updates) =>
-      super.copyWith((message) => updates(message as SessionListUpdateReq))
-          as SessionListUpdateReq;
-
-  @$core.override
-  $pb.BuilderInfo get info_ => _i;
-
-  @$core.pragma('dart2js:noInline')
-  static SessionListUpdateReq create() => SessionListUpdateReq._();
-  @$core.override
-  SessionListUpdateReq createEmptyInstance() => create();
-  @$core.pragma('dart2js:noInline')
-  static SessionListUpdateReq getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<SessionListUpdateReq>(create);
-  static SessionListUpdateReq? _defaultInstance;
-
-  @$pb.TagNumber(1)
-  RestrictedMode get restrictedMode => $_getN(0);
-  @$pb.TagNumber(1)
-  set restrictedMode(RestrictedMode value) => $_setField(1, value);
-  @$pb.TagNumber(1)
-  $core.bool hasRestrictedMode() => $_has(0);
-  @$pb.TagNumber(1)
-  void clearRestrictedMode() => $_clearField(1);
-  @$pb.TagNumber(1)
-  RestrictedMode ensureRestrictedMode() => $_ensure(0);
-
-  @$pb.TagNumber(2)
-  UpdateSessionParams get updateParams => $_getN(1);
-  @$pb.TagNumber(2)
-  set updateParams(UpdateSessionParams value) => $_setField(2, value);
-  @$pb.TagNumber(2)
-  $core.bool hasUpdateParams() => $_has(1);
-  @$pb.TagNumber(2)
-  void clearUpdateParams() => $_clearField(2);
-  @$pb.TagNumber(2)
-  UpdateSessionParams ensureUpdateParams() => $_ensure(1);
-
-  @$pb.TagNumber(3)
-  SessionPageType get pageType => $_getN(2);
-  @$pb.TagNumber(3)
-  set pageType(SessionPageType value) => $_setField(3, value);
-  @$pb.TagNumber(3)
-  $core.bool hasPageType() => $_has(2);
-  @$pb.TagNumber(3)
-  void clearPageType() => $_clearField(3);
-
-  @$pb.TagNumber(4)
-  SessionFilterType get filterType => $_getN(3);
-  @$pb.TagNumber(4)
-  set filterType(SessionFilterType value) => $_setField(4, value);
-  @$pb.TagNumber(4)
-  $core.bool hasFilterType() => $_has(3);
-  @$pb.TagNumber(4)
-  void clearFilterType() => $_clearField(4);
 }
 
 class SessionMainReply extends $pb.GeneratedMessage {
   factory SessionMainReply({
     PaginationParams? paginationParams,
     UpdateSessionParams? updateSessionParams,
-    QuickLinkConfig? quickLinkConfig,
-    FilterConfig? filterConfig,
     $core.Iterable<Session>? sessions,
     $core.Iterable<ThreeDotItem>? threeDotItems,
     $core.Iterable<ThreeDotItem>? outsideItem,
-    SessionListExtraInfo? extraInfo,
   }) {
     final result = create();
     if (paginationParams != null) result.paginationParams = paginationParams;
     if (updateSessionParams != null)
       result.updateSessionParams = updateSessionParams;
-    if (quickLinkConfig != null) result.quickLinkConfig = quickLinkConfig;
-    if (filterConfig != null) result.filterConfig = filterConfig;
     if (sessions != null) result.sessions.addAll(sessions);
     if (threeDotItems != null) result.threeDotItems.addAll(threeDotItems);
     if (outsideItem != null) result.outsideItem.addAll(outsideItem);
-    if (extraInfo != null) result.extraInfo = extraInfo;
     return result;
   }
 
@@ -4565,18 +2376,12 @@ class SessionMainReply extends $pb.GeneratedMessage {
         subBuilder: PaginationParams.create)
     ..aOM<UpdateSessionParams>(2, _omitFieldNames ? '' : 'updateSessionParams',
         subBuilder: UpdateSessionParams.create)
-    ..aOM<QuickLinkConfig>(3, _omitFieldNames ? '' : 'quickLinkConfig',
-        subBuilder: QuickLinkConfig.create)
-    ..aOM<FilterConfig>(4, _omitFieldNames ? '' : 'filterConfig',
-        subBuilder: FilterConfig.create)
     ..pPM<Session>(5, _omitFieldNames ? '' : 'sessions',
         subBuilder: Session.create)
     ..pPM<ThreeDotItem>(6, _omitFieldNames ? '' : 'threeDotItems',
         subBuilder: ThreeDotItem.create)
     ..pPM<ThreeDotItem>(7, _omitFieldNames ? '' : 'outsideItem',
         subBuilder: ThreeDotItem.create)
-    ..aOM<SessionListExtraInfo>(8, _omitFieldNames ? '' : 'extraInfo',
-        subBuilder: SessionListExtraInfo.create)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -4620,47 +2425,14 @@ class SessionMainReply extends $pb.GeneratedMessage {
   @$pb.TagNumber(2)
   UpdateSessionParams ensureUpdateSessionParams() => $_ensure(1);
 
-  @$pb.TagNumber(3)
-  QuickLinkConfig get quickLinkConfig => $_getN(2);
-  @$pb.TagNumber(3)
-  set quickLinkConfig(QuickLinkConfig value) => $_setField(3, value);
-  @$pb.TagNumber(3)
-  $core.bool hasQuickLinkConfig() => $_has(2);
-  @$pb.TagNumber(3)
-  void clearQuickLinkConfig() => $_clearField(3);
-  @$pb.TagNumber(3)
-  QuickLinkConfig ensureQuickLinkConfig() => $_ensure(2);
-
-  @$pb.TagNumber(4)
-  FilterConfig get filterConfig => $_getN(3);
-  @$pb.TagNumber(4)
-  set filterConfig(FilterConfig value) => $_setField(4, value);
-  @$pb.TagNumber(4)
-  $core.bool hasFilterConfig() => $_has(3);
-  @$pb.TagNumber(4)
-  void clearFilterConfig() => $_clearField(4);
-  @$pb.TagNumber(4)
-  FilterConfig ensureFilterConfig() => $_ensure(3);
-
   @$pb.TagNumber(5)
-  $pb.PbList<Session> get sessions => $_getList(4);
+  $pb.PbList<Session> get sessions => $_getList(2);
 
   @$pb.TagNumber(6)
-  $pb.PbList<ThreeDotItem> get threeDotItems => $_getList(5);
+  $pb.PbList<ThreeDotItem> get threeDotItems => $_getList(3);
 
   @$pb.TagNumber(7)
-  $pb.PbList<ThreeDotItem> get outsideItem => $_getList(6);
-
-  @$pb.TagNumber(8)
-  SessionListExtraInfo get extraInfo => $_getN(7);
-  @$pb.TagNumber(8)
-  set extraInfo(SessionListExtraInfo value) => $_setField(8, value);
-  @$pb.TagNumber(8)
-  $core.bool hasExtraInfo() => $_has(7);
-  @$pb.TagNumber(8)
-  void clearExtraInfo() => $_clearField(8);
-  @$pb.TagNumber(8)
-  SessionListExtraInfo ensureExtraInfo() => $_ensure(7);
+  $pb.PbList<ThreeDotItem> get outsideItem => $_getList(4);
 }
 
 class SessionMainReq extends $pb.GeneratedMessage {
@@ -4747,124 +2519,6 @@ class SessionMainReq extends $pb.GeneratedMessage {
   $core.bool hasFilterType() => $_has(2);
   @$pb.TagNumber(3)
   void clearFilterType() => $_clearField(3);
-}
-
-class SessionOperation extends $pb.GeneratedMessage {
-  factory SessionOperation({
-    OperationContent? pin,
-    OperationContent? unpin,
-    OperationContent? delete,
-    OperationContent? clearUnread,
-    OperationContent? unblock,
-  }) {
-    final result = create();
-    if (pin != null) result.pin = pin;
-    if (unpin != null) result.unpin = unpin;
-    if (delete != null) result.delete = delete;
-    if (clearUnread != null) result.clearUnread = clearUnread;
-    if (unblock != null) result.unblock = unblock;
-    return result;
-  }
-
-  SessionOperation._();
-
-  factory SessionOperation.fromBuffer($core.List<$core.int> data,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
-  factory SessionOperation.fromJson($core.String json,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'SessionOperation',
-      package:
-          const $pb.PackageName(_omitMessageNames ? '' : 'bilibili.app.im.v1'),
-      createEmptyInstance: create)
-    ..aOM<OperationContent>(1, _omitFieldNames ? '' : 'pin',
-        subBuilder: OperationContent.create)
-    ..aOM<OperationContent>(2, _omitFieldNames ? '' : 'unpin',
-        subBuilder: OperationContent.create)
-    ..aOM<OperationContent>(3, _omitFieldNames ? '' : 'delete',
-        subBuilder: OperationContent.create)
-    ..aOM<OperationContent>(4, _omitFieldNames ? '' : 'clearUnread',
-        subBuilder: OperationContent.create)
-    ..aOM<OperationContent>(5, _omitFieldNames ? '' : 'unblock',
-        subBuilder: OperationContent.create)
-    ..hasRequiredFields = false;
-
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  SessionOperation clone() => deepCopy();
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  SessionOperation copyWith(void Function(SessionOperation) updates) =>
-      super.copyWith((message) => updates(message as SessionOperation))
-          as SessionOperation;
-
-  @$core.override
-  $pb.BuilderInfo get info_ => _i;
-
-  @$core.pragma('dart2js:noInline')
-  static SessionOperation create() => SessionOperation._();
-  @$core.override
-  SessionOperation createEmptyInstance() => create();
-  @$core.pragma('dart2js:noInline')
-  static SessionOperation getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<SessionOperation>(create);
-  static SessionOperation? _defaultInstance;
-
-  @$pb.TagNumber(1)
-  OperationContent get pin => $_getN(0);
-  @$pb.TagNumber(1)
-  set pin(OperationContent value) => $_setField(1, value);
-  @$pb.TagNumber(1)
-  $core.bool hasPin() => $_has(0);
-  @$pb.TagNumber(1)
-  void clearPin() => $_clearField(1);
-  @$pb.TagNumber(1)
-  OperationContent ensurePin() => $_ensure(0);
-
-  @$pb.TagNumber(2)
-  OperationContent get unpin => $_getN(1);
-  @$pb.TagNumber(2)
-  set unpin(OperationContent value) => $_setField(2, value);
-  @$pb.TagNumber(2)
-  $core.bool hasUnpin() => $_has(1);
-  @$pb.TagNumber(2)
-  void clearUnpin() => $_clearField(2);
-  @$pb.TagNumber(2)
-  OperationContent ensureUnpin() => $_ensure(1);
-
-  @$pb.TagNumber(3)
-  OperationContent get delete => $_getN(2);
-  @$pb.TagNumber(3)
-  set delete(OperationContent value) => $_setField(3, value);
-  @$pb.TagNumber(3)
-  $core.bool hasDelete() => $_has(2);
-  @$pb.TagNumber(3)
-  void clearDelete() => $_clearField(3);
-  @$pb.TagNumber(3)
-  OperationContent ensureDelete() => $_ensure(2);
-
-  @$pb.TagNumber(4)
-  OperationContent get clearUnread => $_getN(3);
-  @$pb.TagNumber(4)
-  set clearUnread(OperationContent value) => $_setField(4, value);
-  @$pb.TagNumber(4)
-  $core.bool hasClearUnread() => $_has(3);
-  @$pb.TagNumber(4)
-  void clearClearUnread() => $_clearField(4);
-  @$pb.TagNumber(4)
-  OperationContent ensureClearUnread() => $_ensure(3);
-
-  @$pb.TagNumber(5)
-  OperationContent get unblock => $_getN(4);
-  @$pb.TagNumber(5)
-  set unblock(OperationContent value) => $_setField(5, value);
-  @$pb.TagNumber(5)
-  $core.bool hasUnblock() => $_has(4);
-  @$pb.TagNumber(5)
-  void clearUnblock() => $_clearField(5);
-  @$pb.TagNumber(5)
-  OperationContent ensureUnblock() => $_ensure(4);
 }
 
 class SessionSecondaryReply extends $pb.GeneratedMessage {
@@ -5176,74 +2830,6 @@ class SessionUpdateReq extends $pb.GeneratedMessage {
   $core.bool hasPageType() => $_has(1);
   @$pb.TagNumber(2)
   void clearPageType() => $_clearField(2);
-}
-
-class SessionsFilter extends $pb.GeneratedMessage {
-  factory SessionsFilter({
-    SessionFilterType? stype,
-    $core.String? title,
-  }) {
-    final result = create();
-    if (stype != null) result.stype = stype;
-    if (title != null) result.title = title;
-    return result;
-  }
-
-  SessionsFilter._();
-
-  factory SessionsFilter.fromBuffer($core.List<$core.int> data,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
-  factory SessionsFilter.fromJson($core.String json,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'SessionsFilter',
-      package:
-          const $pb.PackageName(_omitMessageNames ? '' : 'bilibili.app.im.v1'),
-      createEmptyInstance: create)
-    ..aE<SessionFilterType>(1, _omitFieldNames ? '' : 'stype',
-        enumValues: SessionFilterType.values)
-    ..aOS(2, _omitFieldNames ? '' : 'title')
-    ..hasRequiredFields = false;
-
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  SessionsFilter clone() => deepCopy();
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  SessionsFilter copyWith(void Function(SessionsFilter) updates) =>
-      super.copyWith((message) => updates(message as SessionsFilter))
-          as SessionsFilter;
-
-  @$core.override
-  $pb.BuilderInfo get info_ => _i;
-
-  @$core.pragma('dart2js:noInline')
-  static SessionsFilter create() => SessionsFilter._();
-  @$core.override
-  SessionsFilter createEmptyInstance() => create();
-  @$core.pragma('dart2js:noInline')
-  static SessionsFilter getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<SessionsFilter>(create);
-  static SessionsFilter? _defaultInstance;
-
-  @$pb.TagNumber(1)
-  SessionFilterType get stype => $_getN(0);
-  @$pb.TagNumber(1)
-  set stype(SessionFilterType value) => $_setField(1, value);
-  @$pb.TagNumber(1)
-  $core.bool hasStype() => $_has(0);
-  @$pb.TagNumber(1)
-  void clearStype() => $_clearField(1);
-
-  @$pb.TagNumber(2)
-  $core.String get title => $_getSZ(1);
-  @$pb.TagNumber(2)
-  set title($core.String value) => $_setString(1, value);
-  @$pb.TagNumber(2)
-  $core.bool hasTitle() => $_has(1);
-  @$pb.TagNumber(2)
-  void clearTitle() => $_clearField(2);
 }
 
 class SetImSettingsReply extends $pb.GeneratedMessage {
@@ -6494,85 +4080,6 @@ class redirect2OtherPage extends $pb.GeneratedMessage {
   void clearUrl() => $_clearField(1);
 }
 
-class redirect2Popup extends $pb.GeneratedMessage {
-  factory redirect2Popup({
-    $core.String? title,
-    $core.String? subtitle,
-    $core.String? url,
-  }) {
-    final result = create();
-    if (title != null) result.title = title;
-    if (subtitle != null) result.subtitle = subtitle;
-    if (url != null) result.url = url;
-    return result;
-  }
-
-  redirect2Popup._();
-
-  factory redirect2Popup.fromBuffer($core.List<$core.int> data,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
-  factory redirect2Popup.fromJson($core.String json,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'redirect2Popup',
-      package:
-          const $pb.PackageName(_omitMessageNames ? '' : 'bilibili.app.im.v1'),
-      createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'title')
-    ..aOS(2, _omitFieldNames ? '' : 'subtitle')
-    ..aOS(3, _omitFieldNames ? '' : 'url')
-    ..hasRequiredFields = false;
-
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  redirect2Popup clone() => deepCopy();
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  redirect2Popup copyWith(void Function(redirect2Popup) updates) =>
-      super.copyWith((message) => updates(message as redirect2Popup))
-          as redirect2Popup;
-
-  @$core.override
-  $pb.BuilderInfo get info_ => _i;
-
-  @$core.pragma('dart2js:noInline')
-  static redirect2Popup create() => redirect2Popup._();
-  @$core.override
-  redirect2Popup createEmptyInstance() => create();
-  @$core.pragma('dart2js:noInline')
-  static redirect2Popup getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<redirect2Popup>(create);
-  static redirect2Popup? _defaultInstance;
-
-  @$pb.TagNumber(1)
-  $core.String get title => $_getSZ(0);
-  @$pb.TagNumber(1)
-  set title($core.String value) => $_setString(0, value);
-  @$pb.TagNumber(1)
-  $core.bool hasTitle() => $_has(0);
-  @$pb.TagNumber(1)
-  void clearTitle() => $_clearField(1);
-
-  @$pb.TagNumber(2)
-  $core.String get subtitle => $_getSZ(1);
-  @$pb.TagNumber(2)
-  set subtitle($core.String value) => $_setString(1, value);
-  @$pb.TagNumber(2)
-  $core.bool hasSubtitle() => $_has(1);
-  @$pb.TagNumber(2)
-  void clearSubtitle() => $_clearField(2);
-
-  @$pb.TagNumber(3)
-  $core.String get url => $_getSZ(2);
-  @$pb.TagNumber(3)
-  set url($core.String value) => $_setString(2, value);
-  @$pb.TagNumber(3)
-  $core.bool hasUrl() => $_has(2);
-  @$pb.TagNumber(3)
-  void clearUrl() => $_clearField(3);
-}
-
 class redirect2SettingPage extends $pb.GeneratedMessage {
   factory redirect2SettingPage({
     $core.Iterable<$core.MapEntry<$core.int, Setting>>? subSettings,
@@ -6663,6 +4170,85 @@ class redirect2SettingPage extends $pb.GeneratedMessage {
   $core.bool hasParentSettingType() => $_has(3);
   @$pb.TagNumber(4)
   void clearParentSettingType() => $_clearField(4);
+}
+
+class redirect2Popup extends $pb.GeneratedMessage {
+  factory redirect2Popup({
+    $core.String? title,
+    $core.String? subtitle,
+    $core.String? url,
+  }) {
+    final result = create();
+    if (title != null) result.title = title;
+    if (subtitle != null) result.subtitle = subtitle;
+    if (url != null) result.url = url;
+    return result;
+  }
+
+  redirect2Popup._();
+
+  factory redirect2Popup.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory redirect2Popup.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'redirect2Popup',
+      package:
+          const $pb.PackageName(_omitMessageNames ? '' : 'bilibili.app.im.v1'),
+      createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'title')
+    ..aOS(2, _omitFieldNames ? '' : 'subtitle')
+    ..aOS(3, _omitFieldNames ? '' : 'url')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  redirect2Popup clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  redirect2Popup copyWith(void Function(redirect2Popup) updates) =>
+      super.copyWith((message) => updates(message as redirect2Popup))
+          as redirect2Popup;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static redirect2Popup create() => redirect2Popup._();
+  @$core.override
+  redirect2Popup createEmptyInstance() => create();
+  @$core.pragma('dart2js:noInline')
+  static redirect2Popup getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<redirect2Popup>(create);
+  static redirect2Popup? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get title => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set title($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasTitle() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearTitle() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get subtitle => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set subtitle($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasSubtitle() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearSubtitle() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get url => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set url($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasUrl() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearUrl() => $_clearField(3);
 }
 
 class redirectWindowSelect extends $pb.GeneratedMessage {

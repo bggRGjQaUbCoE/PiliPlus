@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
-import 'package:PiliPlus/grpc/bilibili/im/type.pbenum.dart';
+import 'package:PiliPlus/grpc/bilibili/im/type.pbenum.dart' show MsgType;
 import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
     show ReplyInfo;
 import 'package:PiliPlus/grpc/im.dart';

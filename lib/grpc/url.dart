@@ -1,16 +1,7 @@
 abstract final class GrpcUrl {
-  // static const playerOnline =
-  //     '/bilibili.app.playeronline.v1.PlayerOnline/PlayerOnline';
-  // static const popular = '/bilibili.app.show.v1.Popular/Index';
-
   // dynamic
   static const dynV1 = '/bilibili.app.dynamic.v1.Dynamic';
-  // static const dynV2 = '/bilibili.app.dynamic.v2.Dynamic';
-  static const opusV2 = '/bilibili.app.dynamic.v2.Opus';
   static const dynRed = '$dynV1/DynRed';
-  static const opusSpaceFlow = '$opusV2/OpusSpaceFlow';
-  static const opusDetail = '$opusV2/OpusDetail';
-  // static const dynSpace = '$dynV2/DynSpace';
 
   // danmaku
   static const dmSegMobile = '/bilibili.community.service.dm.v1.DM/DmSegMobile';
@@ -20,9 +11,7 @@ abstract final class GrpcUrl {
   static const mainList = '$reply/MainList';
   static const detailList = '$reply/DetailList';
   static const dialogList = '$reply/DialogList';
-  // static const replyInfo = '$reply/ReplyInfo';
   static const searchItem = '$reply/SearchItem';
-  static const translateReply = '$reply/TranslateReply';
 
   // im
   static const im = '/bilibili.im.interface.v1.ImInterface';
@@ -43,10 +32,6 @@ abstract final class GrpcUrl {
   static const keywordBlockingDelete = '$im2/KeywordBlockingDelete';
   static const syncFetchSessionMsgs = '$im/SyncFetchSessionMsgs';
   static const getTotalUnread = '$im/GetTotalUnread';
-
-  // view
-  static const viewunite = '/bilibili.app.viewunite.v1.View';
-  static const view = '$viewunite/View';
 
   // audio
   static const audio = '/bilibili.app.listener.v1.Listener';

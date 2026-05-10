@@ -548,7 +548,6 @@ class RefreshIndicatorState extends State<RefreshIndicator>
     }
     return ScrollConfiguration(
       behavior: RefreshScrollBehavior(
-        desktopDragDevices,
         scrollPhysics: RefreshScrollPhysics(
           parent: const RangeMaintainingScrollPhysics(),
           onDrag: _onDrag,
@@ -611,8 +610,7 @@ class RefreshIndicatorState extends State<RefreshIndicator>
 typedef refreshIndicator = RefreshIndicator;
 
 class RefreshScrollBehavior extends CustomScrollBehavior {
-  const RefreshScrollBehavior(
-    super.dragDevices, {
+  const RefreshScrollBehavior({
     required this.scrollPhysics,
   });
 

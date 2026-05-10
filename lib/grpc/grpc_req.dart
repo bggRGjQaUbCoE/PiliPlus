@@ -109,23 +109,4 @@ abstract final class GrpcReq {
       }
     }
   }
-
-  // static Future playerOnline({
-  //   int aid = 0,
-  //   int cid = 0,
-  // }) {
-  //   return _request(
-  //       GrpcUrl.playerOnline,
-  //       PlayerOnlineReq(aid: Int64(aid), cid: Int64(cid), playOpen: true),
-  //       PlayerOnlineReply.fromBuffer,
-  //       onSuccess: (response) => response.totalNumberText);
-  // }
-
-  // static Future popular(int idx) {
-  //   return _request(GrpcUrl.popular, PopularResultReq(idx: Int64(idx)),
-  //       PopularReply.fromBuffer, onSuccess: (response) {
-  //     response.items.retainWhere((item) => item.smallCoverV5.base.goto == 'av');
-  //     return {'status': true, 'data': response.items};
-  //   });
-  // }
 }

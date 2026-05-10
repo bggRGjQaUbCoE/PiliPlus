@@ -852,23 +852,13 @@ class _LiveRoomPageState extends State<LiveRoomPage>
                               if (likeClickTime == 0) {
                                 return const SizedBox.shrink();
                               }
-                              return AnimatedSwitcher(
-                                duration: const Duration(milliseconds: 160),
-                                transitionBuilder: (child, animation) {
-                                  return ScaleTransition(
-                                    scale: animation,
-                                    child: child,
-                                  );
-                                },
-                                child: Text(
-                                  key: ValueKey(likeClickTime),
-                                  'x$likeClickTime',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    color: colorScheme.isDark
-                                        ? colorScheme.primary
-                                        : colorScheme.inversePrimary,
-                                  ),
+                              return Text(
+                                'x$likeClickTime',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: colorScheme.isDark
+                                      ? colorScheme.primary
+                                      : colorScheme.inversePrimary,
                                 ),
                               );
                             }),

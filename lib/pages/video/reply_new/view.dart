@@ -388,7 +388,7 @@ class _ReplyPageState extends CommonRichTextPubPageState<ReplyPage> {
       root: widget.root,
       parent: widget.parent,
       message: widget.replyItem != null && widget.replyItem!.root != 0
-          ? ' 回复 @${widget.replyItem!.member.name} : $message'
+          ? ' 回复 @${widget.replyItem!.memberV2.basic.name} : $message'
           : message,
       atNameToMid: atNameToMid,
       pictures: pictures,

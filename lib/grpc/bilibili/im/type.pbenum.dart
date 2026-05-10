@@ -14,23 +14,6 @@ import 'dart:core' as $core;
 
 import 'package:protobuf/protobuf.dart' as $pb;
 
-class Exp extends $pb.ProtobufEnum {
-  static const Exp Invalid = Exp._(0, _omitEnumNames ? '' : 'Invalid');
-  static const Exp New_Ava = Exp._(1, _omitEnumNames ? '' : 'New_Ava');
-
-  static const $core.List<Exp> values = <Exp>[
-    Invalid,
-    New_Ava,
-  ];
-
-  static final $core.List<Exp?> _byValue =
-      $pb.ProtobufEnum.$_initByValueList(values, 1);
-  static Exp? valueOf($core.int value) =>
-      value < 0 || value >= _byValue.length ? null : _byValue[value];
-
-  const Exp._(super.value, super.name);
-}
-
 class MsgType extends $pb.ProtobufEnum {
   static const MsgType EN_INVALID_MSG_TYPE =
       MsgType._(0, _omitEnumNames ? '' : 'EN_INVALID_MSG_TYPE');

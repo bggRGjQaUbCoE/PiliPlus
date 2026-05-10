@@ -129,7 +129,13 @@ class ReplyItemGrpc extends StatelessWidget {
   }
 
   Widget _buildHeader(BuildContext context, ThemeData theme) {
-    final member = replyItem.member;
+    final memberV2 = replyItem.memberV2;
+    final vip = memberV2.vip;
+    final garb = memberV2.garb;
+    final basic = memberV2.basic;
+    final senior = memberV2.senior;
+    late final medal = memberV2.medal;
+    final official = memberV2.official;
     Widget header = GestureDetector(
       onTap: () => Get.toNamed('/member?mid=${replyItem.mid}'),
       child: ExtraHitTestWidget(
@@ -139,14 +145,12 @@ class ReplyItemGrpc extends StatelessWidget {
           spacing: 12,
           children: [
             PendantAvatar(
-              member.face,
+              basic.face,
               size: 34,
               badgeSize: 14,
-              vipStatus: member.vipStatus.toInt(),
-              officialType: member.officialVerifyType.toInt(),
-              pendantImage: member.hasGarbPendantImage()
-                  ? member.garbPendantImage
-                  : null,
+              vipStatus: vip.status.toInt(),
+              officialType: official.verifyType.toInt(),
+              pendantImage: garb.hasPendantImage() ? garb.pendantImage : null,
             ),
             Expanded(
               child: Column(
@@ -158,11 +162,11 @@ class ReplyItemGrpc extends StatelessWidget {
                     children: [
                       Flexible(
                         child: Text(
-                          member.name,
+                          basic.name,
                           maxLines: 1,
                           overflow: .ellipsis,
                           style: TextStyle(
-                            color: (member.vipStatus > 0 && member.vipType == 2)
+                            color: (vip.status > 0 && vip.type == 2)
                                 ? theme.colorScheme.vipColor
                                 : theme.colorScheme.outline,
                             fontSize: 13,
@@ -171,8 +175,8 @@ class ReplyItemGrpc extends StatelessWidget {
                       ),
                       Image.asset(
                         BiliUtils.levelName(
-                          member.level,
-                          isSeniorMember: member.isSeniorMember == 1,
+                          basic.level,
+                          isSeniorMember: senior.isSeniorMember == 1,
                         ),
                         height: 11,
                         cacheHeight: 11.cacheSize(context),
@@ -184,15 +188,15 @@ class ReplyItemGrpc extends StatelessWidget {
                           isStack: false,
                           fontSize: 9,
                         )
-                      else if (member.hasFansMedalLevel())
+                      else if (memberV2.hasMedal())
                         MedalWidget(
-                          medalName: member.fansMedalName,
-                          level: member.fansMedalLevel.toInt(),
+                          medalName: medal.name,
+                          level: medal.level.toInt(),
                           backgroundColor: DmUtils.decimalToColor(
-                            member.fansMedalColor.toInt(),
+                            medal.colorStart.toInt(),
                           ),
                           nameColor: DmUtils.decimalToColor(
-                            member.fansMedalColorName.toInt(),
+                            medal.colorName.toInt(),
                           ),
                           padding: const .symmetric(
                             horizontal: 6,
@@ -235,7 +239,6 @@ class ReplyItemGrpc extends StatelessWidget {
         ),
       ),
     );
-    final garb = replyItem.memberV2.garb;
     if (garb.hasCardImage()) {
       const double height = 38.0;
       return Stack(
@@ -479,6 +482,7 @@ class ReplyItemGrpc extends StatelessWidget {
                     );
                   },
                 );
+                final basic = childReply.memberV2.basic;
                 return InkWell(
                   onTap: () =>
                       replyReply?.call(replyItem, childReply.id.toInt()),
@@ -499,14 +503,13 @@ class ReplyItemGrpc extends StatelessWidget {
                       TextSpan(
                         children: [
                           TextSpan(
-                            text: childReply.member.name,
+                            text: basic.name,
                             style: TextStyle(
                               color: theme.colorScheme.primary,
                             ),
                             recognizer: NoDeadlineTapGestureRecognizer()
-                              ..onTap = () => Get.toNamed(
-                                '/member?mid=${childReply.member.mid}',
-                              ),
+                              ..onTap = () =>
+                                  Get.toNamed('/member?mid=${basic.mid}'),
                           ),
                           if (childReply.mid == upMid) ...[
                             const TextSpan(text: ' '),
@@ -864,6 +867,7 @@ class ReplyItemGrpc extends StatelessWidget {
     final theme = Theme.of(context);
     final errorColor = theme.colorScheme.error;
     final style = theme.textTheme.titleSmall!;
+    late final basic = item.memberV2.basic;
 
     return Padding(
       padding: EdgeInsets.only(
@@ -889,7 +893,7 @@ class ReplyItemGrpc extends StatelessWidget {
               ),
             ),
           ),
-          if (ownerMid == upMid || ownerMid == item.member.mid)
+          if (ownerMid == upMid || ownerMid == basic.mid)
             ListTile(
               onTap: () async {
                 Get.back();
@@ -903,9 +907,9 @@ class ReplyItemGrpc extends StatelessWidget {
                         TextSpan(
                           children: [
                             const TextSpan(text: '确定删除这条评论吗？\n\n'),
-                            if (ownerMid != item.member.mid.toInt()) ...[
+                            if (ownerMid != basic.mid.toInt()) ...[
                               TextSpan(
-                                text: '@${item.member.name}',
+                                text: '@${basic.name}',
                                 style: TextStyle(
                                   color: theme.colorScheme.primary,
                                 ),

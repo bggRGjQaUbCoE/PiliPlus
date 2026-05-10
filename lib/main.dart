@@ -279,9 +279,7 @@ class MyApp extends StatelessWidget {
         builder: _builder,
       ),
       navigatorObservers: [routeObserver],
-      scrollBehavior: PlatformUtils.isDesktop
-          ? const CustomScrollBehavior(desktopDragDevices)
-          : null,
+      scrollBehavior: const CustomScrollBehavior(),
     );
   }
 

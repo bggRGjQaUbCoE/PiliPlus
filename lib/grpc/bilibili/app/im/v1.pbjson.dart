@@ -15,52 +15,6 @@ import 'dart:convert' as $convert;
 import 'dart:core' as $core;
 import 'dart:typed_data' as $typed_data;
 
-@$core.Deprecated('Use airDropFromDescriptor instead')
-const AirDropFrom$json = {
-  '1': 'AirDropFrom',
-  '2': [
-    {'1': 'ADF_UNKNOWN', '2': 0},
-    {'1': 'ADF_INSIDE_APP', '2': 1},
-    {'1': 'ADF_OUTSIDE_APP', '2': 2},
-  ],
-};
-
-/// Descriptor for `AirDropFrom`. Decode as a `google.protobuf.EnumDescriptorProto`.
-final $typed_data.Uint8List airDropFromDescriptor = $convert.base64Decode(
-    'CgtBaXJEcm9wRnJvbRIPCgtBREZfVU5LTk9XThAAEhIKDkFERl9JTlNJREVfQVBQEAESEwoPQU'
-    'RGX09VVFNJREVfQVBQEAI=');
-
-@$core.Deprecated('Use alertToastTypeDescriptor instead')
-const AlertToastType$json = {
-  '1': 'AlertToastType',
-  '2': [
-    {'1': 'ALERT_TOAST_TYPE_UNSPECIFIED', '2': 0},
-    {'1': 'ALERT_TOAST_TYPE_BANNED', '2': 1},
-    {'1': 'ALERT_TOAST_TYPE_REPORT', '2': 2},
-  ],
-};
-
-/// Descriptor for `AlertToastType`. Decode as a `google.protobuf.EnumDescriptorProto`.
-final $typed_data.Uint8List alertToastTypeDescriptor = $convert.base64Decode(
-    'Cg5BbGVydFRvYXN0VHlwZRIgChxBTEVSVF9UT0FTVF9UWVBFX1VOU1BFQ0lGSUVEEAASGwoXQU'
-    'xFUlRfVE9BU1RfVFlQRV9CQU5ORUQQARIbChdBTEVSVF9UT0FTVF9UWVBFX1JFUE9SVBAC');
-
-@$core.Deprecated('Use contactTabTypeDescriptor instead')
-const ContactTabType$json = {
-  '1': 'ContactTabType',
-  '2': [
-    {'1': 'TAB_UNKNOWN', '2': 0},
-    {'1': 'TAB_GROUP', '2': 1},
-    {'1': 'TAB_FOLLOW', '2': 2},
-    {'1': 'TAB_FANS', '2': 3},
-  ],
-};
-
-/// Descriptor for `ContactTabType`. Decode as a `google.protobuf.EnumDescriptorProto`.
-final $typed_data.Uint8List contactTabTypeDescriptor = $convert.base64Decode(
-    'Cg5Db250YWN0VGFiVHlwZRIPCgtUQUJfVU5LTk9XThAAEg0KCVRBQl9HUk9VUBABEg4KClRBQl'
-    '9GT0xMT1cQAhIMCghUQUJfRkFOUxAD');
-
 @$core.Deprecated('Use iMSettingTypeDescriptor instead')
 const IMSettingType$json = {
   '1': 'IMSettingType',
@@ -159,49 +113,6 @@ final $typed_data.Uint8List msgSummaryPrefixTypeDescriptor = $convert.base64Deco
     'ASKAokTVNHX1NVTU1BUllfUFJFRklYX1RZUEVfTk9USUZJQ0FUSU9OEAESKQolTVNHX1NVTU1B'
     'UllfUFJFRklYX1RZUEVfR1JPVVBfQkxPQ0tFRBACEiUKIU1TR19TVU1NQVJZX1BSRUZJWF9UWV'
     'BFX01FTlRJT05FRBADEiIKHk1TR19TVU1NQVJZX1BSRUZJWF9UWVBFX1VOUkVBRBAE');
-
-@$core.Deprecated('Use quickLinkItemTypeDescriptor instead')
-const QuickLinkItemType$json = {
-  '1': 'QuickLinkItemType',
-  '2': [
-    {'1': 'QUICK_LINK_ITEM_TYPE_UNKNOWN', '2': 0},
-    {'1': 'QUICK_LINK_ITEM_TYPE_OLD_LIKE', '2': 1},
-    {'1': 'QUICK_LINK_ITEM_TYPE_OLD_REPLY', '2': 2},
-    {'1': 'QUICK_LINK_ITEM_TYPE_AT', '2': 3},
-    {'1': 'QUICK_LINK_ITEM_TYPE_SYSTEM', '2': 4},
-    {'1': 'QUICK_LINK_ITEM_TYPE_HUA_HUO', '2': 5},
-    {'1': 'QUICK_LINK_ITEM_TYPE_FOLLOW', '2': 6},
-    {'1': 'QUICK_LINK_ITEM_TYPE_REPLY', '2': 100},
-    {'1': 'QUICK_LINK_ITEM_TYPE_LIKE', '2': 101},
-  ],
-};
-
-/// Descriptor for `QuickLinkItemType`. Decode as a `google.protobuf.EnumDescriptorProto`.
-final $typed_data.Uint8List quickLinkItemTypeDescriptor = $convert.base64Decode(
-    'ChFRdWlja0xpbmtJdGVtVHlwZRIgChxRVUlDS19MSU5LX0lURU1fVFlQRV9VTktOT1dOEAASIQ'
-    'odUVVJQ0tfTElOS19JVEVNX1RZUEVfT0xEX0xJS0UQARIiCh5RVUlDS19MSU5LX0lURU1fVFlQ'
-    'RV9PTERfUkVQTFkQAhIbChdRVUlDS19MSU5LX0lURU1fVFlQRV9BVBADEh8KG1FVSUNLX0xJTk'
-    'tfSVRFTV9UWVBFX1NZU1RFTRAEEiAKHFFVSUNLX0xJTktfSVRFTV9UWVBFX0hVQV9IVU8QBRIf'
-    'ChtRVUlDS19MSU5LX0lURU1fVFlQRV9GT0xMT1cQBhIeChpRVUlDS19MSU5LX0lURU1fVFlQRV'
-    '9SRVBMWRBkEh0KGVFVSUNLX0xJTktfSVRFTV9UWVBFX0xJS0UQZQ==');
-
-@$core.Deprecated('Use quickLinkMsgTypeDescriptor instead')
-const QuickLinkMsgType$json = {
-  '1': 'QuickLinkMsgType',
-  '2': [
-    {'1': 'LikeMsg', '2': 0},
-    {'1': 'ReplyMsg', '2': 1},
-    {'1': 'AtMsg', '2': 2},
-    {'1': 'DanmuMsg', '2': 3},
-    {'1': 'CoinMsg', '2': 4},
-    {'1': 'FavoriteMsg', '2': 5},
-  ],
-};
-
-/// Descriptor for `QuickLinkMsgType`. Decode as a `google.protobuf.EnumDescriptorProto`.
-final $typed_data.Uint8List quickLinkMsgTypeDescriptor = $convert.base64Decode(
-    'ChBRdWlja0xpbmtNc2dUeXBlEgsKB0xpa2VNc2cQABIMCghSZXBseU1zZxABEgkKBUF0TXNnEA'
-    'ISDAoIRGFubXVNc2cQAxILCgdDb2luTXNnEAQSDwoLRmF2b3JpdGVNc2cQBQ==');
 
 @$core.Deprecated('Use sessionFilterTypeDescriptor instead')
 const SessionFilterType$json = {
@@ -311,100 +222,6 @@ final $typed_data.Uint8List unreadStyleDescriptor = $convert.base64Decode(
     'CgtVbnJlYWRTdHlsZRIVChFVTlJFQURfU1RZTEVfTk9ORRAAEhQKEFVOUkVBRF9TVFlMRV9ET1'
     'QQARIXChNVTlJFQURfU1RZTEVfTlVNQkVSEAI=');
 
-@$core.Deprecated('Use airDropShareUserInfoDescriptor instead')
-const AirDropShareUserInfo$json = {
-  '1': 'AirDropShareUserInfo',
-  '2': [
-    {'1': 'mid', '3': 1, '4': 1, '5': 3, '10': 'mid'},
-    {'1': 'face', '3': 2, '4': 1, '5': 9, '10': 'face'},
-    {'1': 'url', '3': 3, '4': 1, '5': 9, '10': 'url'},
-    {'1': 'name', '3': 4, '4': 1, '5': 9, '10': 'name'},
-  ],
-};
-
-/// Descriptor for `AirDropShareUserInfo`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List airDropShareUserInfoDescriptor = $convert.base64Decode(
-    'ChRBaXJEcm9wU2hhcmVVc2VySW5mbxIQCgNtaWQYASABKANSA21pZBISCgRmYWNlGAIgASgJUg'
-    'RmYWNlEhAKA3VybBgDIAEoCVIDdXJsEhIKBG5hbWUYBCABKAlSBG5hbWU=');
-
-@$core.Deprecated('Use airDropToImReplyDescriptor instead')
-const AirDropToImReply$json = {
-  '1': 'AirDropToImReply',
-  '2': [
-    {
-      '1': 'user_infos',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.bilibili.app.im.v1.AirDropShareUserInfo',
-      '10': 'userInfos'
-    },
-  ],
-};
-
-/// Descriptor for `AirDropToImReply`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List airDropToImReplyDescriptor = $convert.base64Decode(
-    'ChBBaXJEcm9wVG9JbVJlcGx5EkcKCnVzZXJfaW5mb3MYASADKAsyKC5iaWxpYmlsaS5hcHAuaW'
-    '0udjEuQWlyRHJvcFNoYXJlVXNlckluZm9SCXVzZXJJbmZvcw==');
-
-@$core.Deprecated('Use airDropToImReqDescriptor instead')
-const AirDropToImReq$json = {
-  '1': 'AirDropToImReq',
-  '2': [
-    {
-      '1': 'adf',
-      '3': 1,
-      '4': 1,
-      '5': 14,
-      '6': '.bilibili.app.im.v1.AirDropFrom',
-      '10': 'adf'
-    },
-  ],
-};
-
-/// Descriptor for `AirDropToImReq`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List airDropToImReqDescriptor = $convert.base64Decode(
-    'Cg5BaXJEcm9wVG9JbVJlcRIxCgNhZGYYASABKA4yHy5iaWxpYmlsaS5hcHAuaW0udjEuQWlyRH'
-    'JvcEZyb21SA2FkZg==');
-
-@$core.Deprecated('Use autoReplyToastDescriptor instead')
-const AutoReplyToast$json = {
-  '1': 'AutoReplyToast',
-  '2': [
-    {'1': 'title', '3': 1, '4': 1, '5': 9, '10': 'title'},
-    {'1': 'url', '3': 2, '4': 1, '5': 9, '10': 'url'},
-  ],
-};
-
-/// Descriptor for `AutoReplyToast`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List autoReplyToastDescriptor = $convert.base64Decode(
-    'Cg5BdXRvUmVwbHlUb2FzdBIUCgV0aXRsZRgBIAEoCVIFdGl0bGUSEAoDdXJsGAIgASgJUgN1cm'
-    'w=');
-
-@$core.Deprecated('Use behaviorAlertToastDescriptor instead')
-const BehaviorAlertToast$json = {
-  '1': 'BehaviorAlertToast',
-  '2': [
-    {'1': 'title', '3': 1, '4': 1, '5': 9, '10': 'title'},
-    {'1': 'content', '3': 2, '4': 1, '5': 9, '10': 'content'},
-    {'1': 'type_str', '3': 3, '4': 1, '5': 9, '10': 'typeStr'},
-    {
-      '1': 'type',
-      '3': 4,
-      '4': 1,
-      '5': 14,
-      '6': '.bilibili.app.im.v1.AlertToastType',
-      '10': 'type'
-    },
-  ],
-};
-
-/// Descriptor for `BehaviorAlertToast`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List behaviorAlertToastDescriptor = $convert.base64Decode(
-    'ChJCZWhhdmlvckFsZXJ0VG9hc3QSFAoFdGl0bGUYASABKAlSBXRpdGxlEhgKB2NvbnRlbnQYAi'
-    'ABKAlSB2NvbnRlbnQSGQoIdHlwZV9zdHIYAyABKAlSB3R5cGVTdHISNgoEdHlwZRgEIAEoDjIi'
-    'LmJpbGliaWxpLmFwcC5pbS52MS5BbGVydFRvYXN0VHlwZVIEdHlwZQ==');
-
 @$core.Deprecated('Use borderedLabelDescriptor instead')
 const BorderedLabel$json = {
   '1': 'BorderedLabel',
@@ -418,65 +235,6 @@ const BorderedLabel$json = {
 final $typed_data.Uint8List borderedLabelDescriptor = $convert.base64Decode(
     'Cg1Cb3JkZXJlZExhYmVsEhIKBGljb24YASABKAlSBGljb24SEgoEdGV4dBgCIAEoCVIEdGV4dA'
     '==');
-
-@$core.Deprecated('Use cancelInterceptInDustbinReplyDescriptor instead')
-const CancelInterceptInDustbinReply$json = {
-  '1': 'CancelInterceptInDustbinReply',
-};
-
-/// Descriptor for `CancelInterceptInDustbinReply`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List cancelInterceptInDustbinReplyDescriptor =
-    $convert.base64Decode('Ch1DYW5jZWxJbnRlcmNlcHRJbkR1c3RiaW5SZXBseQ==');
-
-@$core.Deprecated('Use cancelInterceptInDustbinReqDescriptor instead')
-const CancelInterceptInDustbinReq$json = {
-  '1': 'CancelInterceptInDustbinReq',
-  '2': [
-    {
-      '1': 'session_id',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.bilibili.app.im.v1.SessionId',
-      '10': 'sessionId'
-    },
-  ],
-};
-
-/// Descriptor for `CancelInterceptInDustbinReq`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List cancelInterceptInDustbinReqDescriptor =
-    $convert.base64Decode(
-        'ChtDYW5jZWxJbnRlcmNlcHRJbkR1c3RiaW5SZXESPAoKc2Vzc2lvbl9pZBgBIAEoCzIdLmJpbG'
-        'liaWxpLmFwcC5pbS52MS5TZXNzaW9uSWRSCXNlc3Npb25JZA==');
-
-@$core.Deprecated('Use clearAlertReplyDescriptor instead')
-const ClearAlertReply$json = {
-  '1': 'ClearAlertReply',
-};
-
-/// Descriptor for `ClearAlertReply`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List clearAlertReplyDescriptor =
-    $convert.base64Decode('Cg9DbGVhckFsZXJ0UmVwbHk=');
-
-@$core.Deprecated('Use clearAlertReqDescriptor instead')
-const ClearAlertReq$json = {
-  '1': 'ClearAlertReq',
-  '2': [
-    {
-      '1': 'type',
-      '3': 1,
-      '4': 1,
-      '5': 14,
-      '6': '.bilibili.app.im.v1.AlertToastType',
-      '10': 'type'
-    },
-  ],
-};
-
-/// Descriptor for `ClearAlertReq`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List clearAlertReqDescriptor = $convert.base64Decode(
-    'Cg1DbGVhckFsZXJ0UmVxEjYKBHR5cGUYASABKA4yIi5iaWxpYmlsaS5hcHAuaW0udjEuQWxlcn'
-    'RUb2FzdFR5cGVSBHR5cGU=');
 
 @$core.Deprecated('Use clearUnreadReplyDescriptor instead')
 const ClearUnreadReply$json = {
@@ -515,203 +273,6 @@ final $typed_data.Uint8List clearUnreadReqDescriptor = $convert.base64Decode(
     'Cg5DbGVhclVucmVhZFJlcRJACglwYWdlX3R5cGUYASABKA4yIy5iaWxpYmlsaS5hcHAuaW0udj'
     'EuU2Vzc2lvblBhZ2VUeXBlUghwYWdlVHlwZRI8CgpzZXNzaW9uX2lkGAIgASgLMh0uYmlsaWJp'
     'bGkuYXBwLmltLnYxLlNlc3Npb25JZFIJc2Vzc2lvbklk');
-
-@$core.Deprecated('Use contactDescriptor instead')
-const Contact$json = {
-  '1': 'Contact',
-  '2': [
-    {'1': 'id', '3': 1, '4': 1, '5': 3, '10': 'id'},
-    {'1': 'name', '3': 2, '4': 1, '5': 9, '10': 'name'},
-    {
-      '1': 'avatar',
-      '3': 3,
-      '4': 1,
-      '5': 11,
-      '6': '.bilibili.dagw.component.avatar.v1.AvatarItem',
-      '10': 'avatar'
-    },
-    {'1': 'vip_info', '3': 4, '4': 1, '5': 9, '10': 'vipInfo'},
-    {'1': 'url', '3': 5, '4': 1, '5': 9, '10': 'url'},
-    {
-      '1': 'name_render',
-      '3': 6,
-      '4': 1,
-      '5': 11,
-      '6': '.bilibili.account.service.v1.NameRender',
-      '10': 'nameRender'
-    },
-    {'1': 'is_special_follow', '3': 7, '4': 1, '5': 8, '10': 'isSpecialFollow'},
-    {'1': 'face', '3': 8, '4': 1, '5': 9, '10': 'face'},
-    {'1': 'official_type', '3': 9, '4': 1, '5': 5, '10': 'officialType'},
-  ],
-};
-
-/// Descriptor for `Contact`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List contactDescriptor = $convert.base64Decode(
-    'CgdDb250YWN0Eg4KAmlkGAEgASgDUgJpZBISCgRuYW1lGAIgASgJUgRuYW1lEkUKBmF2YXRhch'
-    'gDIAEoCzItLmJpbGliaWxpLmRhZ3cuY29tcG9uZW50LmF2YXRhci52MS5BdmF0YXJJdGVtUgZh'
-    'dmF0YXISGQoIdmlwX2luZm8YBCABKAlSB3ZpcEluZm8SEAoDdXJsGAUgASgJUgN1cmwSSAoLbm'
-    'FtZV9yZW5kZXIYBiABKAsyJy5iaWxpYmlsaS5hY2NvdW50LnNlcnZpY2UudjEuTmFtZVJlbmRl'
-    'clIKbmFtZVJlbmRlchIqChFpc19zcGVjaWFsX2ZvbGxvdxgHIAEoCFIPaXNTcGVjaWFsRm9sbG'
-    '93EhIKBGZhY2UYCCABKAlSBGZhY2USIwoNb2ZmaWNpYWxfdHlwZRgJIAEoBVIMb2ZmaWNpYWxU'
-    'eXBl');
-
-@$core.Deprecated('Use contactTabDescriptor instead')
-const ContactTab$json = {
-  '1': 'ContactTab',
-  '2': [
-    {
-      '1': 'tab',
-      '3': 1,
-      '4': 1,
-      '5': 14,
-      '6': '.bilibili.app.im.v1.ContactTabType',
-      '10': 'tab'
-    },
-    {'1': 'name', '3': 2, '4': 1, '5': 9, '10': 'name'},
-  ],
-};
-
-/// Descriptor for `ContactTab`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List contactTabDescriptor = $convert.base64Decode(
-    'CgpDb250YWN0VGFiEjQKA3RhYhgBIAEoDjIiLmJpbGliaWxpLmFwcC5pbS52MS5Db250YWN0VG'
-    'FiVHlwZVIDdGFiEhIKBG5hbWUYAiABKAlSBG5hbWU=');
-
-@$core.Deprecated('Use contactsReplyDescriptor instead')
-const ContactsReply$json = {
-  '1': 'ContactsReply',
-  '2': [
-    {
-      '1': 'contacts',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.bilibili.app.im.v1.Contact',
-      '10': 'contacts'
-    },
-    {
-      '1': 'tab',
-      '3': 2,
-      '4': 3,
-      '5': 11,
-      '6': '.bilibili.app.im.v1.ContactTab',
-      '10': 'tab'
-    },
-    {
-      '1': 'current_tab',
-      '3': 3,
-      '4': 1,
-      '5': 14,
-      '6': '.bilibili.app.im.v1.ContactTabType',
-      '10': 'currentTab'
-    },
-    {
-      '1': 'pagination_params',
-      '3': 4,
-      '4': 1,
-      '5': 11,
-      '6': '.bilibili.app.im.v1.PaginationParams',
-      '10': 'paginationParams'
-    },
-  ],
-};
-
-/// Descriptor for `ContactsReply`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List contactsReplyDescriptor = $convert.base64Decode(
-    'Cg1Db250YWN0c1JlcGx5EjcKCGNvbnRhY3RzGAEgAygLMhsuYmlsaWJpbGkuYXBwLmltLnYxLk'
-    'NvbnRhY3RSCGNvbnRhY3RzEjAKA3RhYhgCIAMoCzIeLmJpbGliaWxpLmFwcC5pbS52MS5Db250'
-    'YWN0VGFiUgN0YWISQwoLY3VycmVudF90YWIYAyABKA4yIi5iaWxpYmlsaS5hcHAuaW0udjEuQ2'
-    '9udGFjdFRhYlR5cGVSCmN1cnJlbnRUYWISUQoRcGFnaW5hdGlvbl9wYXJhbXMYBCABKAsyJC5i'
-    'aWxpYmlsaS5hcHAuaW0udjEuUGFnaW5hdGlvblBhcmFtc1IQcGFnaW5hdGlvblBhcmFtcw==');
-
-@$core.Deprecated('Use contactsReqDescriptor instead')
-const ContactsReq$json = {
-  '1': 'ContactsReq',
-  '2': [
-    {
-      '1': 'tab',
-      '3': 1,
-      '4': 1,
-      '5': 14,
-      '6': '.bilibili.app.im.v1.ContactTabType',
-      '10': 'tab'
-    },
-    {
-      '1': 'pagination_params',
-      '3': 2,
-      '4': 1,
-      '5': 11,
-      '6': '.bilibili.app.im.v1.PaginationParams',
-      '10': 'paginationParams'
-    },
-  ],
-};
-
-/// Descriptor for `ContactsReq`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List contactsReqDescriptor = $convert.base64Decode(
-    'CgtDb250YWN0c1JlcRI0CgN0YWIYASABKA4yIi5iaWxpYmlsaS5hcHAuaW0udjEuQ29udGFjdF'
-    'RhYlR5cGVSA3RhYhJRChFwYWdpbmF0aW9uX3BhcmFtcxgCIAEoCzIkLmJpbGliaWxpLmFwcC5p'
-    'bS52MS5QYWdpbmF0aW9uUGFyYW1zUhBwYWdpbmF0aW9uUGFyYW1z');
-
-@$core.Deprecated('Use contactsSearchReplyDescriptor instead')
-const ContactsSearchReply$json = {
-  '1': 'ContactsSearchReply',
-  '2': [
-    {
-      '1': 'contacts',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.bilibili.app.im.v1.Contact',
-      '10': 'contacts'
-    },
-    {
-      '1': 'pagination_params',
-      '3': 2,
-      '4': 1,
-      '5': 11,
-      '6': '.bilibili.app.im.v1.PaginationParams',
-      '10': 'paginationParams'
-    },
-  ],
-};
-
-/// Descriptor for `ContactsSearchReply`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List contactsSearchReplyDescriptor = $convert.base64Decode(
-    'ChNDb250YWN0c1NlYXJjaFJlcGx5EjcKCGNvbnRhY3RzGAEgAygLMhsuYmlsaWJpbGkuYXBwLm'
-    'ltLnYxLkNvbnRhY3RSCGNvbnRhY3RzElEKEXBhZ2luYXRpb25fcGFyYW1zGAIgASgLMiQuYmls'
-    'aWJpbGkuYXBwLmltLnYxLlBhZ2luYXRpb25QYXJhbXNSEHBhZ2luYXRpb25QYXJhbXM=');
-
-@$core.Deprecated('Use contactsSearchReqDescriptor instead')
-const ContactsSearchReq$json = {
-  '1': 'ContactsSearchReq',
-  '2': [
-    {'1': 'keyword', '3': 1, '4': 1, '5': 9, '10': 'keyword'},
-    {
-      '1': 'tab',
-      '3': 2,
-      '4': 1,
-      '5': 14,
-      '6': '.bilibili.app.im.v1.ContactTabType',
-      '10': 'tab'
-    },
-    {
-      '1': 'pagination_params',
-      '3': 3,
-      '4': 1,
-      '5': 11,
-      '6': '.bilibili.app.im.v1.PaginationParams',
-      '10': 'paginationParams'
-    },
-  ],
-};
-
-/// Descriptor for `ContactsSearchReq`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List contactsSearchReqDescriptor = $convert.base64Decode(
-    'ChFDb250YWN0c1NlYXJjaFJlcRIYCgdrZXl3b3JkGAEgASgJUgdrZXl3b3JkEjQKA3RhYhgCIA'
-    'EoDjIiLmJpbGliaWxpLmFwcC5pbS52MS5Db250YWN0VGFiVHlwZVIDdGFiElEKEXBhZ2luYXRp'
-    'b25fcGFyYW1zGAMgASgLMiQuYmlsaWJpbGkuYXBwLmltLnYxLlBhZ2luYXRpb25QYXJhbXNSEH'
-    'BhZ2luYXRpb25QYXJhbXM=');
 
 @$core.Deprecated('Use customerIdDescriptor instead')
 const CustomerId$json = {
@@ -756,35 +317,6 @@ final $typed_data.Uint8List deleteSessionListReqDescriptor = $convert.base64Deco
     'ChREZWxldGVTZXNzaW9uTGlzdFJlcRJACglwYWdlX3R5cGUYASABKA4yIy5iaWxpYmlsaS5hcH'
     'AuaW0udjEuU2Vzc2lvblBhZ2VUeXBlUghwYWdlVHlwZQ==');
 
-@$core.Deprecated('Use deleteSessionReplyDescriptor instead')
-const DeleteSessionReply$json = {
-  '1': 'DeleteSessionReply',
-};
-
-/// Descriptor for `DeleteSessionReply`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List deleteSessionReplyDescriptor =
-    $convert.base64Decode('ChJEZWxldGVTZXNzaW9uUmVwbHk=');
-
-@$core.Deprecated('Use deleteSessionReqDescriptor instead')
-const DeleteSessionReq$json = {
-  '1': 'DeleteSessionReq',
-  '2': [
-    {
-      '1': 'session_id',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.bilibili.app.im.v1.SessionId',
-      '10': 'sessionId'
-    },
-  ],
-};
-
-/// Descriptor for `DeleteSessionReq`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List deleteSessionReqDescriptor = $convert.base64Decode(
-    'ChBEZWxldGVTZXNzaW9uUmVxEjwKCnNlc3Npb25faWQYASABKAsyHS5iaWxpYmlsaS5hcHAuaW'
-    '0udjEuU2Vzc2lvbklkUglzZXNzaW9uSWQ=');
-
 @$core.Deprecated('Use filledLabelDescriptor instead')
 const FilledLabel$json = {
   '1': 'FilledLabel',
@@ -796,35 +328,6 @@ const FilledLabel$json = {
 /// Descriptor for `FilledLabel`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List filledLabelDescriptor =
     $convert.base64Decode('CgtGaWxsZWRMYWJlbBISCgR0ZXh0GAEgASgJUgR0ZXh0');
-
-@$core.Deprecated('Use filterConfigDescriptor instead')
-const FilterConfig$json = {
-  '1': 'FilterConfig',
-  '2': [
-    {
-      '1': 'filters',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.bilibili.app.im.v1.SessionsFilter',
-      '10': 'filters'
-    },
-    {
-      '1': 'current_filter',
-      '3': 2,
-      '4': 1,
-      '5': 14,
-      '6': '.bilibili.app.im.v1.SessionFilterType',
-      '10': 'currentFilter'
-    },
-  ],
-};
-
-/// Descriptor for `FilterConfig`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List filterConfigDescriptor = $convert.base64Decode(
-    'CgxGaWx0ZXJDb25maWcSPAoHZmlsdGVycxgBIAMoCzIiLmJpbGliaWxpLmFwcC5pbS52MS5TZX'
-    'NzaW9uc0ZpbHRlclIHZmlsdGVycxJMCg5jdXJyZW50X2ZpbHRlchgCIAEoDjIlLmJpbGliaWxp'
-    'LmFwcC5pbS52MS5TZXNzaW9uRmlsdGVyVHlwZVINY3VycmVudEZpbHRlcg==');
 
 @$core.Deprecated('Use foldIdDescriptor instead')
 const FoldId$json = {
@@ -907,65 +410,6 @@ const GetImSettingsReq$json = {
 final $typed_data.Uint8List getImSettingsReqDescriptor = $convert.base64Decode(
     'ChBHZXRJbVNldHRpbmdzUmVxEjUKBHR5cGUYASABKA4yIS5iaWxpYmlsaS5hcHAuaW0udjEuSU'
     '1TZXR0aW5nVHlwZVIEdHlwZQ==');
-
-@$core.Deprecated('Use getQuickLinkUnreadReplyDescriptor instead')
-const GetQuickLinkUnreadReply$json = {
-  '1': 'GetQuickLinkUnreadReply',
-  '2': [
-    {
-      '1': 'items',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.bilibili.app.im.v1.QuickLinkUnreadItem',
-      '10': 'items'
-    },
-  ],
-};
-
-/// Descriptor for `GetQuickLinkUnreadReply`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getQuickLinkUnreadReplyDescriptor =
-    $convert.base64Decode(
-        'ChdHZXRRdWlja0xpbmtVbnJlYWRSZXBseRI9CgVpdGVtcxgBIAMoCzInLmJpbGliaWxpLmFwcC'
-        '5pbS52MS5RdWlja0xpbmtVbnJlYWRJdGVtUgVpdGVtcw==');
-
-@$core.Deprecated('Use getQuickLinkUnreadReqDescriptor instead')
-const GetQuickLinkUnreadReq$json = {
-  '1': 'GetQuickLinkUnreadReq',
-};
-
-/// Descriptor for `GetQuickLinkUnreadReq`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getQuickLinkUnreadReqDescriptor =
-    $convert.base64Decode('ChVHZXRRdWlja0xpbmtVbnJlYWRSZXE=');
-
-@$core.Deprecated('Use getTotalUnreadReplyDescriptor instead')
-const GetTotalUnreadReply$json = {
-  '1': 'GetTotalUnreadReply',
-  '2': [
-    {
-      '1': 'total',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.bilibili.app.im.v1.Unread',
-      '10': 'total'
-    },
-  ],
-};
-
-/// Descriptor for `GetTotalUnreadReply`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getTotalUnreadReplyDescriptor = $convert.base64Decode(
-    'ChNHZXRUb3RhbFVucmVhZFJlcGx5EjAKBXRvdGFsGAEgASgLMhouYmlsaWJpbGkuYXBwLmltLn'
-    'YxLlVucmVhZFIFdG90YWw=');
-
-@$core.Deprecated('Use getTotalUnreadReqDescriptor instead')
-const GetTotalUnreadReq$json = {
-  '1': 'GetTotalUnreadReq',
-};
-
-/// Descriptor for `GetTotalUnreadReq`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getTotalUnreadReqDescriptor =
-    $convert.base64Decode('ChFHZXRUb3RhbFVucmVhZFJlcQ==');
 
 @$core.Deprecated('Use groupIdDescriptor instead')
 const GroupId$json = {
@@ -1185,20 +629,6 @@ final $typed_data.Uint8List offsetDescriptor = $convert.base64Decode(
     'CgZPZmZzZXQSIwoNbm9ybWFsX29mZnNldBgBIAEoA1IMbm9ybWFsT2Zmc2V0Eh0KCnRvcF9vZm'
     'ZzZXQYAiABKANSCXRvcE9mZnNldA==');
 
-@$core.Deprecated('Use operationContentDescriptor instead')
-const OperationContent$json = {
-  '1': 'OperationContent',
-  '2': [
-    {'1': 'show', '3': 1, '4': 1, '5': 8, '10': 'show'},
-    {'1': 'text', '3': 2, '4': 1, '5': 9, '10': 'text'},
-  ],
-};
-
-/// Descriptor for `OperationContent`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List operationContentDescriptor = $convert.base64Decode(
-    'ChBPcGVyYXRpb25Db250ZW50EhIKBHNob3cYASABKAhSBHNob3cSEgoEdGV4dBgCIAEoCVIEdG'
-    'V4dA==');
-
 @$core.Deprecated('Use paginationParamsDescriptor instead')
 const PaginationParams$json = {
   '1': 'PaginationParams',
@@ -1289,136 +719,6 @@ const PrivateId$json = {
 final $typed_data.Uint8List privateIdDescriptor = $convert
     .base64Decode('CglQcml2YXRlSWQSHQoKdGFsa2VyX3VpZBgBIAEoA1IJdGFsa2VyVWlk');
 
-@$core.Deprecated('Use quickLinkBubbleDescriptor instead')
-const QuickLinkBubble$json = {
-  '1': 'QuickLinkBubble',
-  '2': [
-    {'1': 'mid', '3': 1, '4': 1, '5': 3, '10': 'mid'},
-    {'1': 'avatar', '3': 2, '4': 1, '5': 9, '10': 'avatar'},
-    {'1': 'nick_name', '3': 3, '4': 1, '5': 9, '10': 'nickName'},
-    {'1': 'content', '3': 4, '4': 1, '5': 9, '10': 'content'},
-    {
-      '1': 'quick_link_item',
-      '3': 5,
-      '4': 1,
-      '5': 14,
-      '6': '.bilibili.app.im.v1.QuickLinkItemType',
-      '10': 'quickLinkItem'
-    },
-    {
-      '1': 'msg_type',
-      '3': 6,
-      '4': 1,
-      '5': 14,
-      '6': '.bilibili.app.im.v1.QuickLinkMsgType',
-      '10': 'msgType'
-    },
-  ],
-};
-
-/// Descriptor for `QuickLinkBubble`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List quickLinkBubbleDescriptor = $convert.base64Decode(
-    'Cg9RdWlja0xpbmtCdWJibGUSEAoDbWlkGAEgASgDUgNtaWQSFgoGYXZhdGFyGAIgASgJUgZhdm'
-    'F0YXISGwoJbmlja19uYW1lGAMgASgJUghuaWNrTmFtZRIYCgdjb250ZW50GAQgASgJUgdjb250'
-    'ZW50Ek0KD3F1aWNrX2xpbmtfaXRlbRgFIAEoDjIlLmJpbGliaWxpLmFwcC5pbS52MS5RdWlja0'
-    'xpbmtJdGVtVHlwZVINcXVpY2tMaW5rSXRlbRI/Cghtc2dfdHlwZRgGIAEoDjIkLmJpbGliaWxp'
-    'LmFwcC5pbS52MS5RdWlja0xpbmtNc2dUeXBlUgdtc2dUeXBl');
-
-@$core.Deprecated('Use quickLinkConfigDescriptor instead')
-const QuickLinkConfig$json = {
-  '1': 'QuickLinkConfig',
-  '2': [
-    {
-      '1': 'items',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.bilibili.app.im.v1.QuickLinkItem',
-      '10': 'items'
-    },
-    {
-      '1': 'bubble',
-      '3': 2,
-      '4': 1,
-      '5': 11,
-      '6': '.bilibili.app.im.v1.QuickLinkBubble',
-      '10': 'bubble'
-    },
-    {'1': 'is_legacy_style', '3': 3, '4': 1, '5': 8, '10': 'isLegacyStyle'},
-  ],
-};
-
-/// Descriptor for `QuickLinkConfig`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List quickLinkConfigDescriptor = $convert.base64Decode(
-    'Cg9RdWlja0xpbmtDb25maWcSNwoFaXRlbXMYASADKAsyIS5iaWxpYmlsaS5hcHAuaW0udjEuUX'
-    'VpY2tMaW5rSXRlbVIFaXRlbXMSOwoGYnViYmxlGAIgASgLMiMuYmlsaWJpbGkuYXBwLmltLnYx'
-    'LlF1aWNrTGlua0J1YmJsZVIGYnViYmxlEiYKD2lzX2xlZ2FjeV9zdHlsZRgDIAEoCFINaXNMZW'
-    'dhY3lTdHlsZQ==');
-
-@$core.Deprecated('Use quickLinkItemDescriptor instead')
-const QuickLinkItem$json = {
-  '1': 'QuickLinkItem',
-  '2': [
-    {'1': 'title', '3': 1, '4': 1, '5': 9, '10': 'title'},
-    {'1': 'icon', '3': 2, '4': 1, '5': 9, '10': 'icon'},
-    {'1': 'icon_dark', '3': 3, '4': 1, '5': 9, '10': 'iconDark'},
-    {'1': 'url', '3': 4, '4': 1, '5': 9, '10': 'url'},
-    {
-      '1': 'unread',
-      '3': 5,
-      '4': 1,
-      '5': 11,
-      '6': '.bilibili.app.im.v1.Unread',
-      '10': 'unread'
-    },
-    {
-      '1': 'item_type',
-      '3': 6,
-      '4': 1,
-      '5': 14,
-      '6': '.bilibili.app.im.v1.QuickLinkItemType',
-      '10': 'itemType'
-    },
-  ],
-};
-
-/// Descriptor for `QuickLinkItem`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List quickLinkItemDescriptor = $convert.base64Decode(
-    'Cg1RdWlja0xpbmtJdGVtEhQKBXRpdGxlGAEgASgJUgV0aXRsZRISCgRpY29uGAIgASgJUgRpY2'
-    '9uEhsKCWljb25fZGFyaxgDIAEoCVIIaWNvbkRhcmsSEAoDdXJsGAQgASgJUgN1cmwSMgoGdW5y'
-    'ZWFkGAUgASgLMhouYmlsaWJpbGkuYXBwLmltLnYxLlVucmVhZFIGdW5yZWFkEkIKCWl0ZW1fdH'
-    'lwZRgGIAEoDjIlLmJpbGliaWxpLmFwcC5pbS52MS5RdWlja0xpbmtJdGVtVHlwZVIIaXRlbVR5'
-    'cGU=');
-
-@$core.Deprecated('Use quickLinkUnreadItemDescriptor instead')
-const QuickLinkUnreadItem$json = {
-  '1': 'QuickLinkUnreadItem',
-  '2': [
-    {
-      '1': 'item_type',
-      '3': 1,
-      '4': 1,
-      '5': 14,
-      '6': '.bilibili.app.im.v1.QuickLinkItemType',
-      '10': 'itemType'
-    },
-    {
-      '1': 'unread',
-      '3': 2,
-      '4': 1,
-      '5': 11,
-      '6': '.bilibili.app.im.v1.Unread',
-      '10': 'unread'
-    },
-  ],
-};
-
-/// Descriptor for `QuickLinkUnreadItem`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List quickLinkUnreadItemDescriptor = $convert.base64Decode(
-    'ChNRdWlja0xpbmtVbnJlYWRJdGVtEkIKCWl0ZW1fdHlwZRgBIAEoDjIlLmJpbGliaWxpLmFwcC'
-    '5pbS52MS5RdWlja0xpbmtJdGVtVHlwZVIIaXRlbVR5cGUSMgoGdW5yZWFkGAIgASgLMhouYmls'
-    'aWJpbGkuYXBwLmltLnYxLlVucmVhZFIGdW5yZWFk');
-
 @$core.Deprecated('Use restrictedModeDescriptor instead')
 const RestrictedMode$json = {
   '1': 'RestrictedMode',
@@ -1489,34 +789,7 @@ const Session$json = {
     {'1': 'sequence_number', '3': 7, '4': 1, '5': 3, '10': 'sequenceNumber'},
     {'1': 'is_muted', '3': 8, '4': 1, '5': 8, '10': 'isMuted'},
     {'1': 'chat_url', '3': 9, '4': 1, '5': 9, '10': 'chatUrl'},
-    {
-      '1': 'operation',
-      '3': 10,
-      '4': 1,
-      '5': 11,
-      '6': '.bilibili.app.im.v1.SessionOperation',
-      '10': 'operation'
-    },
-    {
-      '1': 'trace_params',
-      '3': 11,
-      '4': 3,
-      '5': 11,
-      '6': '.bilibili.app.im.v1.Session.TraceParamsEntry',
-      '10': 'traceParams'
-    },
   ],
-  '3': [Session_TraceParamsEntry$json],
-};
-
-@$core.Deprecated('Use sessionDescriptor instead')
-const Session_TraceParamsEntry$json = {
-  '1': 'TraceParamsEntry',
-  '2': [
-    {'1': 'key', '3': 1, '4': 1, '5': 9, '10': 'key'},
-    {'1': 'value', '3': 2, '4': 1, '5': 9, '10': 'value'},
-  ],
-  '7': {'7': true},
 };
 
 /// Descriptor for `Session`. Decode as a `google.protobuf.DescriptorProto`.
@@ -1528,10 +801,7 @@ final $typed_data.Uint8List sessionDescriptor = $convert.base64Decode(
     'U3VtbWFyeVIKbXNnU3VtbWFyeRIcCgl0aW1lc3RhbXAYBSABKANSCXRpbWVzdGFtcBIbCglpc1'
     '9waW5uZWQYBiABKAhSCGlzUGlubmVkEicKD3NlcXVlbmNlX251bWJlchgHIAEoA1IOc2VxdWVu'
     'Y2VOdW1iZXISGQoIaXNfbXV0ZWQYCCABKAhSB2lzTXV0ZWQSGQoIY2hhdF91cmwYCSABKAlSB2'
-    'NoYXRVcmwSQgoJb3BlcmF0aW9uGAogASgLMiQuYmlsaWJpbGkuYXBwLmltLnYxLlNlc3Npb25P'
-    'cGVyYXRpb25SCW9wZXJhdGlvbhJPCgx0cmFjZV9wYXJhbXMYCyADKAsyLC5iaWxpYmlsaS5hcH'
-    'AuaW0udjEuU2Vzc2lvbi5UcmFjZVBhcmFtc0VudHJ5Ugt0cmFjZVBhcmFtcxo+ChBUcmFjZVBh'
-    'cmFtc0VudHJ5EhAKA2tleRgBIAEoCVIDa2V5EhQKBXZhbHVlGAIgASgJUgV2YWx1ZToCOAE=');
+    'NoYXRVcmw=');
 
 @$core.Deprecated('Use sessionIdDescriptor instead')
 const SessionId$json = {
@@ -1603,14 +873,6 @@ const SessionInfo$json = {
   '2': [
     {'1': 'session_name', '3': 1, '4': 1, '5': 9, '10': 'sessionName'},
     {
-      '1': 'name_render',
-      '3': 2,
-      '4': 1,
-      '5': 11,
-      '6': '.bilibili.account.service.v1.NameRender',
-      '10': 'nameRender'
-    },
-    {
       '1': 'avatar',
       '3': 3,
       '4': 1,
@@ -1633,136 +895,11 @@ const SessionInfo$json = {
 
 /// Descriptor for `SessionInfo`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List sessionInfoDescriptor = $convert.base64Decode(
-    'CgtTZXNzaW9uSW5mbxIhCgxzZXNzaW9uX25hbWUYASABKAlSC3Nlc3Npb25OYW1lEkgKC25hbW'
-    'VfcmVuZGVyGAIgASgLMicuYmlsaWJpbGkuYWNjb3VudC5zZXJ2aWNlLnYxLk5hbWVSZW5kZXJS'
-    'Cm5hbWVSZW5kZXISRQoGYXZhdGFyGAMgASgLMi0uYmlsaWJpbGkuZGFndy5jb21wb25lbnQuYX'
-    'ZhdGFyLnYxLkF2YXRhckl0ZW1SBmF2YXRhchIZCgh2aXBfaW5mbxgEIAEoCVIHdmlwSW5mbxI8'
-    'Cgp1c2VyX2xhYmVsGAUgASgLMh0uYmlsaWJpbGkuYXBwLmltLnYxLlVzZXJMYWJlbFIJdXNlck'
-    'xhYmVsEhcKB2lzX2xpdmUYBiABKAhSBmlzTGl2ZQ==');
-
-@$core.Deprecated('Use sessionListExtraInfoDescriptor instead')
-const SessionListExtraInfo$json = {
-  '1': 'SessionListExtraInfo',
-  '2': [
-    {
-      '1': 'auto_reply_toast',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.bilibili.app.im.v1.AutoReplyToast',
-      '10': 'autoReplyToast'
-    },
-    {
-      '1': 'show_anti_harassment_popup',
-      '3': 2,
-      '4': 1,
-      '5': 8,
-      '10': 'showAntiHarassmentPopup'
-    },
-    {
-      '1': 'customer_hint_title',
-      '3': 3,
-      '4': 1,
-      '5': 9,
-      '10': 'customerHintTitle'
-    },
-    {
-      '1': 'behavior_alert_toast',
-      '3': 4,
-      '4': 1,
-      '5': 11,
-      '6': '.bilibili.app.im.v1.BehaviorAlertToast',
-      '10': 'behaviorAlertToast'
-    },
-  ],
-};
-
-/// Descriptor for `SessionListExtraInfo`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List sessionListExtraInfoDescriptor = $convert.base64Decode(
-    'ChRTZXNzaW9uTGlzdEV4dHJhSW5mbxJMChBhdXRvX3JlcGx5X3RvYXN0GAEgASgLMiIuYmlsaW'
-    'JpbGkuYXBwLmltLnYxLkF1dG9SZXBseVRvYXN0Ug5hdXRvUmVwbHlUb2FzdBI7ChpzaG93X2Fu'
-    'dGlfaGFyYXNzbWVudF9wb3B1cBgCIAEoCFIXc2hvd0FudGlIYXJhc3NtZW50UG9wdXASLgoTY3'
-    'VzdG9tZXJfaGludF90aXRsZRgDIAEoCVIRY3VzdG9tZXJIaW50VGl0bGUSWAoUYmVoYXZpb3Jf'
-    'YWxlcnRfdG9hc3QYBCABKAsyJi5iaWxpYmlsaS5hcHAuaW0udjEuQmVoYXZpb3JBbGVydFRvYX'
-    'N0UhJiZWhhdmlvckFsZXJ0VG9hc3Q=');
-
-@$core.Deprecated('Use sessionListUpdateReplyDescriptor instead')
-const SessionListUpdateReply$json = {
-  '1': 'SessionListUpdateReply',
-  '2': [
-    {
-      '1': 'sessions',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.bilibili.app.im.v1.Session',
-      '10': 'sessions'
-    },
-    {
-      '1': 'update_session_params',
-      '3': 2,
-      '4': 1,
-      '5': 11,
-      '6': '.bilibili.app.im.v1.UpdateSessionParams',
-      '10': 'updateSessionParams'
-    },
-  ],
-};
-
-/// Descriptor for `SessionListUpdateReply`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List sessionListUpdateReplyDescriptor = $convert.base64Decode(
-    'ChZTZXNzaW9uTGlzdFVwZGF0ZVJlcGx5EjcKCHNlc3Npb25zGAEgAygLMhsuYmlsaWJpbGkuYX'
-    'BwLmltLnYxLlNlc3Npb25SCHNlc3Npb25zElsKFXVwZGF0ZV9zZXNzaW9uX3BhcmFtcxgCIAEo'
-    'CzInLmJpbGliaWxpLmFwcC5pbS52MS5VcGRhdGVTZXNzaW9uUGFyYW1zUhN1cGRhdGVTZXNzaW'
-    '9uUGFyYW1z');
-
-@$core.Deprecated('Use sessionListUpdateReqDescriptor instead')
-const SessionListUpdateReq$json = {
-  '1': 'SessionListUpdateReq',
-  '2': [
-    {
-      '1': 'restricted_mode',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.bilibili.app.im.v1.RestrictedMode',
-      '10': 'restrictedMode'
-    },
-    {
-      '1': 'update_params',
-      '3': 2,
-      '4': 1,
-      '5': 11,
-      '6': '.bilibili.app.im.v1.UpdateSessionParams',
-      '10': 'updateParams'
-    },
-    {
-      '1': 'page_type',
-      '3': 3,
-      '4': 1,
-      '5': 14,
-      '6': '.bilibili.app.im.v1.SessionPageType',
-      '10': 'pageType'
-    },
-    {
-      '1': 'filter_type',
-      '3': 4,
-      '4': 1,
-      '5': 14,
-      '6': '.bilibili.app.im.v1.SessionFilterType',
-      '10': 'filterType'
-    },
-  ],
-};
-
-/// Descriptor for `SessionListUpdateReq`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List sessionListUpdateReqDescriptor = $convert.base64Decode(
-    'ChRTZXNzaW9uTGlzdFVwZGF0ZVJlcRJLCg9yZXN0cmljdGVkX21vZGUYASABKAsyIi5iaWxpYm'
-    'lsaS5hcHAuaW0udjEuUmVzdHJpY3RlZE1vZGVSDnJlc3RyaWN0ZWRNb2RlEkwKDXVwZGF0ZV9w'
-    'YXJhbXMYAiABKAsyJy5iaWxpYmlsaS5hcHAuaW0udjEuVXBkYXRlU2Vzc2lvblBhcmFtc1IMdX'
-    'BkYXRlUGFyYW1zEkAKCXBhZ2VfdHlwZRgDIAEoDjIjLmJpbGliaWxpLmFwcC5pbS52MS5TZXNz'
-    'aW9uUGFnZVR5cGVSCHBhZ2VUeXBlEkYKC2ZpbHRlcl90eXBlGAQgASgOMiUuYmlsaWJpbGkuYX'
-    'BwLmltLnYxLlNlc3Npb25GaWx0ZXJUeXBlUgpmaWx0ZXJUeXBl');
+    'CgtTZXNzaW9uSW5mbxIhCgxzZXNzaW9uX25hbWUYASABKAlSC3Nlc3Npb25OYW1lEkUKBmF2YX'
+    'RhchgDIAEoCzItLmJpbGliaWxpLmRhZ3cuY29tcG9uZW50LmF2YXRhci52MS5BdmF0YXJJdGVt'
+    'UgZhdmF0YXISGQoIdmlwX2luZm8YBCABKAlSB3ZpcEluZm8SPAoKdXNlcl9sYWJlbBgFIAEoCz'
+    'IdLmJpbGliaWxpLmFwcC5pbS52MS5Vc2VyTGFiZWxSCXVzZXJMYWJlbBIXCgdpc19saXZlGAYg'
+    'ASgIUgZpc0xpdmU=');
 
 @$core.Deprecated('Use sessionMainReplyDescriptor instead')
 const SessionMainReply$json = {
@@ -1783,22 +920,6 @@ const SessionMainReply$json = {
       '5': 11,
       '6': '.bilibili.app.im.v1.UpdateSessionParams',
       '10': 'updateSessionParams'
-    },
-    {
-      '1': 'quick_link_config',
-      '3': 3,
-      '4': 1,
-      '5': 11,
-      '6': '.bilibili.app.im.v1.QuickLinkConfig',
-      '10': 'quickLinkConfig'
-    },
-    {
-      '1': 'filter_config',
-      '3': 4,
-      '4': 1,
-      '5': 11,
-      '6': '.bilibili.app.im.v1.FilterConfig',
-      '10': 'filterConfig'
     },
     {
       '1': 'sessions',
@@ -1824,14 +945,6 @@ const SessionMainReply$json = {
       '6': '.bilibili.app.im.v1.ThreeDotItem',
       '10': 'outsideItem'
     },
-    {
-      '1': 'extra_info',
-      '3': 8,
-      '4': 1,
-      '5': 11,
-      '6': '.bilibili.app.im.v1.SessionListExtraInfo',
-      '10': 'extraInfo'
-    },
   ],
 };
 
@@ -1840,15 +953,11 @@ final $typed_data.Uint8List sessionMainReplyDescriptor = $convert.base64Decode(
     'ChBTZXNzaW9uTWFpblJlcGx5ElEKEXBhZ2luYXRpb25fcGFyYW1zGAEgASgLMiQuYmlsaWJpbG'
     'kuYXBwLmltLnYxLlBhZ2luYXRpb25QYXJhbXNSEHBhZ2luYXRpb25QYXJhbXMSWwoVdXBkYXRl'
     'X3Nlc3Npb25fcGFyYW1zGAIgASgLMicuYmlsaWJpbGkuYXBwLmltLnYxLlVwZGF0ZVNlc3Npb2'
-    '5QYXJhbXNSE3VwZGF0ZVNlc3Npb25QYXJhbXMSTwoRcXVpY2tfbGlua19jb25maWcYAyABKAsy'
-    'Iy5iaWxpYmlsaS5hcHAuaW0udjEuUXVpY2tMaW5rQ29uZmlnUg9xdWlja0xpbmtDb25maWcSRQ'
-    'oNZmlsdGVyX2NvbmZpZxgEIAEoCzIgLmJpbGliaWxpLmFwcC5pbS52MS5GaWx0ZXJDb25maWdS'
-    'DGZpbHRlckNvbmZpZxI3CghzZXNzaW9ucxgFIAMoCzIbLmJpbGliaWxpLmFwcC5pbS52MS5TZX'
-    'NzaW9uUghzZXNzaW9ucxJICg90aHJlZV9kb3RfaXRlbXMYBiADKAsyIC5iaWxpYmlsaS5hcHAu'
-    'aW0udjEuVGhyZWVEb3RJdGVtUg10aHJlZURvdEl0ZW1zEkMKDG91dHNpZGVfaXRlbRgHIAMoCz'
-    'IgLmJpbGliaWxpLmFwcC5pbS52MS5UaHJlZURvdEl0ZW1SC291dHNpZGVJdGVtEkcKCmV4dHJh'
-    'X2luZm8YCCABKAsyKC5iaWxpYmlsaS5hcHAuaW0udjEuU2Vzc2lvbkxpc3RFeHRyYUluZm9SCW'
-    'V4dHJhSW5mbw==');
+    '5QYXJhbXNSE3VwZGF0ZVNlc3Npb25QYXJhbXMSNwoIc2Vzc2lvbnMYBSADKAsyGy5iaWxpYmls'
+    'aS5hcHAuaW0udjEuU2Vzc2lvblIIc2Vzc2lvbnMSSAoPdGhyZWVfZG90X2l0ZW1zGAYgAygLMi'
+    'AuYmlsaWJpbGkuYXBwLmltLnYxLlRocmVlRG90SXRlbVINdGhyZWVEb3RJdGVtcxJDCgxvdXRz'
+    'aWRlX2l0ZW0YByADKAsyIC5iaWxpYmlsaS5hcHAuaW0udjEuVGhyZWVEb3RJdGVtUgtvdXRzaW'
+    'RlSXRlbQ==');
 
 @$core.Deprecated('Use sessionMainReqDescriptor instead')
 const SessionMainReq$json = {
@@ -1888,62 +997,6 @@ final $typed_data.Uint8List sessionMainReqDescriptor = $convert.base64Decode(
     'YW1zGAIgASgLMiQuYmlsaWJpbGkuYXBwLmltLnYxLlBhZ2luYXRpb25QYXJhbXNSEHBhZ2luYX'
     'Rpb25QYXJhbXMSRgoLZmlsdGVyX3R5cGUYAyABKA4yJS5iaWxpYmlsaS5hcHAuaW0udjEuU2Vz'
     'c2lvbkZpbHRlclR5cGVSCmZpbHRlclR5cGU=');
-
-@$core.Deprecated('Use sessionOperationDescriptor instead')
-const SessionOperation$json = {
-  '1': 'SessionOperation',
-  '2': [
-    {
-      '1': 'pin',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.bilibili.app.im.v1.OperationContent',
-      '10': 'pin'
-    },
-    {
-      '1': 'unpin',
-      '3': 2,
-      '4': 1,
-      '5': 11,
-      '6': '.bilibili.app.im.v1.OperationContent',
-      '10': 'unpin'
-    },
-    {
-      '1': 'delete',
-      '3': 3,
-      '4': 1,
-      '5': 11,
-      '6': '.bilibili.app.im.v1.OperationContent',
-      '10': 'delete'
-    },
-    {
-      '1': 'clear_unread',
-      '3': 4,
-      '4': 1,
-      '5': 11,
-      '6': '.bilibili.app.im.v1.OperationContent',
-      '10': 'clearUnread'
-    },
-    {
-      '1': 'unblock',
-      '3': 5,
-      '4': 1,
-      '5': 11,
-      '6': '.bilibili.app.im.v1.OperationContent',
-      '10': 'unblock'
-    },
-  ],
-};
-
-/// Descriptor for `SessionOperation`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List sessionOperationDescriptor = $convert.base64Decode(
-    'ChBTZXNzaW9uT3BlcmF0aW9uEjYKA3BpbhgBIAEoCzIkLmJpbGliaWxpLmFwcC5pbS52MS5PcG'
-    'VyYXRpb25Db250ZW50UgNwaW4SOgoFdW5waW4YAiABKAsyJC5iaWxpYmlsaS5hcHAuaW0udjEu'
-    'T3BlcmF0aW9uQ29udGVudFIFdW5waW4SPAoGZGVsZXRlGAMgASgLMiQuYmlsaWJpbGkuYXBwLm'
-    'ltLnYxLk9wZXJhdGlvbkNvbnRlbnRSBmRlbGV0ZRJHCgxjbGVhcl91bnJlYWQYBCABKAsyJC5i'
-    'aWxpYmlsaS5hcHAuaW0udjEuT3BlcmF0aW9uQ29udGVudFILY2xlYXJVbnJlYWQSPgoHdW5ibG'
-    '9jaxgFIAEoCzIkLmJpbGliaWxpLmFwcC5pbS52MS5PcGVyYXRpb25Db250ZW50Ugd1bmJsb2Nr');
 
 @$core.Deprecated('Use sessionSecondaryReplyDescriptor instead')
 const SessionSecondaryReply$json = {
@@ -2090,27 +1143,6 @@ final $typed_data.Uint8List sessionUpdateReqDescriptor = $convert.base64Decode(
     'ChBTZXNzaW9uVXBkYXRlUmVxEjwKCnNlc3Npb25faWQYASABKAsyHS5iaWxpYmlsaS5hcHAuaW'
     '0udjEuU2Vzc2lvbklkUglzZXNzaW9uSWQSQAoJcGFnZV90eXBlGAIgASgOMiMuYmlsaWJpbGku'
     'YXBwLmltLnYxLlNlc3Npb25QYWdlVHlwZVIIcGFnZVR5cGU=');
-
-@$core.Deprecated('Use sessionsFilterDescriptor instead')
-const SessionsFilter$json = {
-  '1': 'SessionsFilter',
-  '2': [
-    {
-      '1': 'stype',
-      '3': 1,
-      '4': 1,
-      '5': 14,
-      '6': '.bilibili.app.im.v1.SessionFilterType',
-      '10': 'stype'
-    },
-    {'1': 'title', '3': 2, '4': 1, '5': 9, '10': 'title'},
-  ],
-};
-
-/// Descriptor for `SessionsFilter`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List sessionsFilterDescriptor = $convert.base64Decode(
-    'Cg5TZXNzaW9uc0ZpbHRlchI7CgVzdHlwZRgBIAEoDjIlLmJpbGliaWxpLmFwcC5pbS52MS5TZX'
-    'NzaW9uRmlsdGVyVHlwZVIFc3R5cGUSFAoFdGl0bGUYAiABKAlSBXRpdGxl');
 
 @$core.Deprecated('Use setImSettingsReplyDescriptor instead')
 const SetImSettingsReply$json = {
@@ -2562,21 +1594,6 @@ const redirect2OtherPage$json = {
 final $typed_data.Uint8List redirect2OtherPageDescriptor = $convert
     .base64Decode('ChJyZWRpcmVjdDJPdGhlclBhZ2USEAoDdXJsGAEgASgJUgN1cmw=');
 
-@$core.Deprecated('Use redirect2PopupDescriptor instead')
-const redirect2Popup$json = {
-  '1': 'redirect2Popup',
-  '2': [
-    {'1': 'title', '3': 1, '4': 1, '5': 9, '10': 'title'},
-    {'1': 'subtitle', '3': 2, '4': 1, '5': 9, '10': 'subtitle'},
-    {'1': 'url', '3': 3, '4': 1, '5': 9, '10': 'url'},
-  ],
-};
-
-/// Descriptor for `redirect2Popup`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List redirect2PopupDescriptor = $convert.base64Decode(
-    'Cg5yZWRpcmVjdDJQb3B1cBIUCgV0aXRsZRgBIAEoCVIFdGl0bGUSGgoIc3VidGl0bGUYAiABKA'
-    'lSCHN1YnRpdGxlEhAKA3VybBgDIAEoCVIDdXJs');
-
 @$core.Deprecated('Use redirect2SettingPageDescriptor instead')
 const redirect2SettingPage$json = {
   '1': 'redirect2SettingPage',
@@ -2629,6 +1646,21 @@ final $typed_data.Uint8List redirect2SettingPageDescriptor = $convert.base64Deco
     'aW5nVHlwZVIRcGFyZW50U2V0dGluZ1R5cGUaWwoQU3ViU2V0dGluZ3NFbnRyeRIQCgNrZXkYAS'
     'ABKAVSA2tleRIxCgV2YWx1ZRgCIAEoCzIbLmJpbGliaWxpLmFwcC5pbS52MS5TZXR0aW5nUgV2'
     'YWx1ZToCOAE=');
+
+@$core.Deprecated('Use redirect2PopupDescriptor instead')
+const redirect2Popup$json = {
+  '1': 'redirect2Popup',
+  '2': [
+    {'1': 'title', '3': 1, '4': 1, '5': 9, '10': 'title'},
+    {'1': 'subtitle', '3': 2, '4': 1, '5': 9, '10': 'subtitle'},
+    {'1': 'url', '3': 3, '4': 1, '5': 9, '10': 'url'},
+  ],
+};
+
+/// Descriptor for `redirect2Popup`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List redirect2PopupDescriptor = $convert.base64Decode(
+    'Cg5yZWRpcmVjdDJQb3B1cBIUCgV0aXRsZRgBIAEoCVIFdGl0bGUSGgoIc3VidGl0bGUYAiABKA'
+    'lSCHN1YnRpdGxlEhAKA3VybBgDIAEoCVIDdXJs');
 
 @$core.Deprecated('Use redirectWindowSelectDescriptor instead')
 const redirectWindowSelect$json = {

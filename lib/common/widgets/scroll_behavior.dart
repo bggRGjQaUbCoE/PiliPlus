@@ -2,7 +2,7 @@ import 'package:flutter/gestures.dart' show PointerDeviceKind;
 import 'package:flutter/material.dart';
 
 class CustomScrollBehavior extends MaterialScrollBehavior {
-  const CustomScrollBehavior(this.dragDevices);
+  const CustomScrollBehavior();
 
   @override
   Widget buildScrollbar(
@@ -12,7 +12,14 @@ class CustomScrollBehavior extends MaterialScrollBehavior {
   ) => child;
 
   @override
-  final Set<PointerDeviceKind> dragDevices;
+  Widget buildOverscrollIndicator(
+    BuildContext context,
+    Widget child,
+    ScrollableDetails details,
+  ) => child;
+
+  @override
+  Set<PointerDeviceKind> get dragDevices => desktopDragDevices;
 }
 
 const Set<PointerDeviceKind> desktopDragDevices = <PointerDeviceKind>{

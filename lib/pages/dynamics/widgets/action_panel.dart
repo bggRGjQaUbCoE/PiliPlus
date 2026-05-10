@@ -103,15 +103,9 @@ class ActionPanel extends StatelessWidget {
                 ),
                 icon: likeIcon,
                 style: btnStyle,
-                label: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 400),
-                  transitionBuilder: (child, animation) =>
-                      ScaleTransition(scale: animation, child: child),
-                  child: Text(
-                    like.count != null ? NumUtils.numFormat(like.count) : '点赞',
-                    key: ValueKey<int?>(like.count),
-                    style: TextStyle(color: like.status! ? primary : outline),
-                  ),
+                label: Text(
+                  like.count != null ? NumUtils.numFormat(like.count) : '点赞',
+                  style: TextStyle(color: like.status! ? primary : outline),
                 ),
               );
             },

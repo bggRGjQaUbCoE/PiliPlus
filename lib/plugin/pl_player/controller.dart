@@ -5,6 +5,7 @@ import 'dart:math' show max, min;
 import 'dart:ui' as ui;
 
 import 'package:PiliPlus/common/assets.dart';
+import 'package:PiliPlus/http/app_dns_native_resolver.dart';
 import 'package:PiliPlus/http/browser_ua.dart';
 import 'package:PiliPlus/http/constants.dart';
 import 'package:PiliPlus/http/loading_state.dart';
@@ -901,7 +902,6 @@ class PlPlayerController with BlockConfigMixin {
     if (autosync != '0') {
       opt['autosync'] = autosync;
     }
-
     final player = await Player.create(
       configuration: PlayerConfiguration(
         bufferSize: _bufferSize,
@@ -999,6 +999,10 @@ class PlPlayerController with BlockConfigMixin {
       }
     }
 
+    await AppDnsNativeResolver.prepareUrls([
+      video,
+      if (!onlyPlayAudio.value) ?dataSource.audioSource,
+    ]);
     _applyBufferSize(player);
     _applyIosHighLoadRateMode(player, playbackSpeed);
 

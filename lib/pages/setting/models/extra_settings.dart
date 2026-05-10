@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:math' show max;
 
@@ -10,6 +11,7 @@ import 'package:PiliPlus/common/widgets/image_grid/image_grid_view.dart'
 import 'package:PiliPlus/common/widgets/pendant_avatar.dart';
 import 'package:PiliPlus/grpc/reply.dart';
 import 'package:PiliPlus/http/app_dns.dart';
+import 'package:PiliPlus/http/app_dns_native_resolver.dart';
 import 'package:PiliPlus/http/fav.dart';
 import 'package:PiliPlus/http/init.dart';
 import 'package:PiliPlus/http/loading_state.dart';
@@ -549,7 +551,10 @@ List<SettingsModel> get extraSettings => [
       setKey: SettingBoxKey.enableAppDns,
       defaultVal: false,
       onTap: _showDnsDialog,
-      onChanged: (_) => Request.resetAdapters(),
+      onChanged: (_) {
+        Request.resetAdapters();
+        unawaited(AppDnsNativeResolver.clear());
+      },
     ),
   ),
   const NormalModel(

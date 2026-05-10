@@ -15,6 +15,7 @@
  * along with PiliPlus.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import 'dart:async';
 import 'dart:io' show File, Platform;
 
 import 'package:PiliPlus/common/widgets/colored_box_transition.dart';
@@ -26,6 +27,7 @@ import 'package:PiliPlus/common/widgets/image_viewer/loading_indicator.dart';
 import 'package:PiliPlus/common/widgets/image_viewer/viewer.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart';
 import 'package:PiliPlus/main.dart' show tmpPadding;
+import 'package:PiliPlus/http/app_dns_native_resolver.dart';
 import 'package:PiliPlus/models/common/image_preview_type.dart';
 import 'package:PiliPlus/plugin/pl_player/utils/fullscreen.dart';
 import 'package:PiliPlus/utils/device_utils.dart';
@@ -119,6 +121,7 @@ class _GalleryViewerState extends State<GalleryViewer>
     _player = player;
     final currItem = widget.sources[_currIndex.value];
     if (currItem.sourceType == .livePhoto) {
+      await AppDnsNativeResolver.prepareUrls([currItem.liveUrl]);
       player.open(Media(currItem.liveUrl!));
       _currIndex.refresh();
     }
@@ -382,7 +385,12 @@ class _GalleryViewerState extends State<GalleryViewer>
   void _playIfNeeded(SourceModel item) {
     if (item.sourceType == .livePhoto) {
       if (_player != null) {
-        _player!.open(Media(item.liveUrl!));
+        final player = _player!;
+        unawaited(
+          AppDnsNativeResolver.prepareUrls([item.liveUrl]).then(
+            (_) => player.open(Media(item.liveUrl!)),
+          ),
+        );
       } else if (!_hasInit) {
         _hasInit = true;
         _initPlayer();

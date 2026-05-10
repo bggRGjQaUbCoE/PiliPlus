@@ -142,6 +142,7 @@ class DynamicsController extends GetxController
 
   @override
   void onClose() {
+    mid.close();
     tabController.dispose();
     scrollController.dispose();
     super.onClose();

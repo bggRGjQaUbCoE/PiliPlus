@@ -33,18 +33,18 @@ class _DynamicsTabPageState extends State<DynamicsTabPage>
   late final DynamicsTabController controller;
 
   @override
-  bool get wantKeepAlive => true;
+  bool get wantKeepAlive => widget.dynamicsType == .all;
 
   @override
   void initState() {
+    super.initState();
     controller = Get.putOrFind(
       () =>
           DynamicsTabController(dynamicsType: widget.dynamicsType)
             ..mid = dynamicsController.mid.value,
       tag: widget.dynamicsType.name,
     );
-    super.initState();
-    if (widget.dynamicsType == DynamicsTabType.up) {
+    if (widget.dynamicsType == .up) {
       _listener = dynamicsController.mid.listen((mid) {
         if (mid != -1) {
           controller
@@ -58,7 +58,6 @@ class _DynamicsTabPageState extends State<DynamicsTabPage>
   @override
   void dispose() {
     _listener?.cancel();
-    dynamicsController.mid.close();
     super.dispose();
   }
 
@@ -71,6 +70,9 @@ class _DynamicsTabPageState extends State<DynamicsTabPage>
         return controller.onRefresh();
       },
       child: CustomScrollView(
+        key: widget.dynamicsType == .all
+            ? null
+            : PageStorageKey(widget.dynamicsType),
         physics: const AlwaysScrollableScrollPhysics(),
         controller: controller.scrollController,
         slivers: [

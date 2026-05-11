@@ -382,10 +382,10 @@ abstract final class UserHttp {
     }
   }
 
-  static Future<LoadingState<double?>> getCoin() async {
+  static Future<LoadingState<double>> getCoin() async {
     final res = await Request.get(Api.getCoin);
     if (res.data['code'] == 0) {
-      return Success((res.data['data']?['money'] as num?)?.toDouble());
+      return Success((res.data['data']?['money'] as num?)?.toDouble() ?? 0.0);
     } else {
       return Error(res.data['message']);
     }

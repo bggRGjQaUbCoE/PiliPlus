@@ -778,7 +778,8 @@ class UserInfoCard extends StatelessWidget {
         crossAxisAlignment: .start,
         children: [
           // _buildHeader(context),
-          const SizedBox(height: kToolbarHeight),
+          // const SizedBox(height: kToolbarHeight),
+          const SizedBox(height: 30),
           Row(
             children: [
               const SizedBox(width: 20),

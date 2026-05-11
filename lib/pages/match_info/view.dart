@@ -66,7 +66,7 @@ class _MatchInfoPageState extends CommonDynPageState<MatchInfoPage> {
               position: fabAnimation,
               child: Padding(
                 padding: .only(
-                  right: kFloatingActionButtonMargin,
+                  right: padding.right + kFloatingActionButtonMargin,
                   bottom: padding.bottom + kFloatingActionButtonMargin,
                 ),
                 child: replyButton,

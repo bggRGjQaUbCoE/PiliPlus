@@ -131,7 +131,7 @@ class _DynTopicPageState extends State<DynTopicPage> with DynMixin {
             ),
           ),
           Positioned(
-            right: kFloatingActionButtonMargin,
+            right: padding.right + kFloatingActionButtonMargin,
             bottom: padding.bottom + kFloatingActionButtonMargin,
             child: FloatingActionButton.extended(
               onPressed: () {

@@ -1,29 +1,21 @@
 package com.example.piliplus
 
 import android.app.PendingIntent
-import android.app.PictureInPictureParams
 import android.app.SearchManager
-import android.content.ComponentName
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.pm.ShortcutInfo
 import android.content.pm.ShortcutManager
 import android.content.res.Configuration
 import android.graphics.BitmapFactory
-import android.graphics.Point
 import android.graphics.drawable.Icon
 import android.os.Build
-import android.os.Bundle
 import android.provider.MediaStore
 import android.provider.Settings
-import android.view.WindowManager.LayoutParams
 import androidx.core.net.toUri
 import com.ryanheise.audioservice.AudioServiceActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
-import kotlin.math.roundToInt
-import kotlin.system.exitProcess
-import java.io.File
 
 class MainActivity : AudioServiceActivity() {
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
@@ -32,7 +24,7 @@ class MainActivity : AudioServiceActivity() {
         val methodChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "PiliPlus")
         methodChannel.setMethodCallHandler { call, result ->
             when (call.method) {
-                "back" -> back();
+                "back" -> back()
 
                 "linkVerifySettings" -> {
                     val uri = ("package:" + context.packageName).toUri()
@@ -119,7 +111,7 @@ class MainActivity : AudioServiceActivity() {
                                     pendingIntent.intentSender
                                 )
                             }
-                        } catch (e: Exception) {
+                        } catch (_: Exception) {
                         }
                     }
                 }

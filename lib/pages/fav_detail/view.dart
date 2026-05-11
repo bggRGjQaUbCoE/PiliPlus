@@ -88,7 +88,7 @@ class _FavDetailPageState extends State<FavDetailPage> with GridMixin {
                   ),
                 ),
                 Positioned(
-                  right: 0,
+                  right: padding.right,
                   bottom: padding.bottom + kFloatingActionButtonMargin,
                   child: Padding(
                     padding: const .only(right: kFloatingActionButtonMargin),

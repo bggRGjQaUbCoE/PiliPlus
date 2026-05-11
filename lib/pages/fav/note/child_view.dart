@@ -36,7 +36,7 @@ class _FavNoteChildPageState extends State<FavNoteChildPage>
   Widget build(BuildContext context) {
     super.build(context);
     final theme = Theme.of(context);
-    final padding = MediaQuery.viewPaddingOf(context);
+    final padding = MediaQuery.viewPaddingOf(context).copyWith(top: 0);
     final bottomH = 50 + padding.bottom;
     return Stack(
       clipBehavior: Clip.none,

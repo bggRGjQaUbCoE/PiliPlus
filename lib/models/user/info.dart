@@ -92,7 +92,7 @@ class UserInfoData {
         : null;
     mid = json['mid'];
     mobileVerified = json['mobile_verified'];
-    money = json['money'] is int ? json['money'].toDouble() : json['money'];
+    money = (json['money'] as num?)?.toDouble() ?? 0.0;
     moral = json['moral'];
     official = json['official'];
     officialVerify = json['officialVerify'];

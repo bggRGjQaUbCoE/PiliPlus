@@ -101,7 +101,7 @@ class _MainReplyPageState extends State<MainReplyPage>
               position: fabAnimation,
               child: Padding(
                 padding: .only(
-                  right: kFloatingActionButtonMargin,
+                  right: padding.right + kFloatingActionButtonMargin,
                   bottom: padding.bottom + kFloatingActionButtonMargin,
                 ),
                 child: FloatingActionButton(

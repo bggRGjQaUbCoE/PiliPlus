@@ -62,6 +62,7 @@ class _LaterPageState extends State<LaterPage>
 
   @override
   Widget build(BuildContext context) {
+    final padding = MediaQuery.viewPaddingOf(context);
     return Obx(
       () {
         final enableMultiSelect = _baseCtr.enableMultiSelect.value;
@@ -119,10 +120,8 @@ class _LaterPageState extends State<LaterPage>
                   ),
                 ),
                 Positioned(
-                  right: 0,
-                  bottom:
-                      MediaQuery.viewPaddingOf(context).bottom +
-                      kFloatingActionButtonMargin,
+                  right: padding.right,
+                  bottom: padding.bottom + kFloatingActionButtonMargin,
                   child: Padding(
                     padding: const .only(right: kFloatingActionButtonMargin),
                     child: Obx(

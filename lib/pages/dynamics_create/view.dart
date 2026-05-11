@@ -801,7 +801,7 @@ class _CreateDynPanelState extends CommonRichTextPubPageState<CreateDynPanel> {
       SmartDialog.showToast('发布成功');
       final id = response?['dyn_id'];
       RequestUtils.insertCreatedDyn(id);
-      if (!_isPrivate.value) {
+      if (!_isPrivate.value && _publishTime.value == null) {
         RequestUtils.checkCreatedDyn(
           id: id,
           dynText: editController.rawText,

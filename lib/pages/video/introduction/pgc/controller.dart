@@ -181,8 +181,14 @@ class PgcIntroController extends CommonIntroController {
                   style: TextStyle(fontSize: 14),
                 ),
                 onTap: () {
+                  final item = pgcItem.episodes?.firstWhereOrNull(
+                    (item) => item.epId == epId,
+                  );
                   Get.back();
-                  ShareUtils.shareText(videoUrl);
+                  ShareUtils.shareText(
+                    '${pgcItem.title}${item != null ? ' ${item.showTitle}' : ''}'
+                    ' - $videoUrl',
+                  );
                 },
               ),
             ListTile(

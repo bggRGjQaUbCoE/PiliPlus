@@ -400,7 +400,7 @@ class _GalleryViewerState extends State<GalleryViewer>
         child = Image(
           key: _key,
           image: ResizeImage.resizeIfNeeded(
-            _containerSize.width.cacheSize(context),
+            _containerSize.width,
             null,
             CachedNetworkImageProvider(_getActualUrl(item.url)),
           ),
@@ -420,7 +420,7 @@ class _GalleryViewerState extends State<GalleryViewer>
               } else {
                 return Image(
                   image: ResizeImage.resizeIfNeeded(
-                    _containerSize.width.cacheSize(context),
+                    _containerSize.width,
                     null,
                     CachedNetworkImageProvider(
                       ImageUtils.thumbnailUrl(

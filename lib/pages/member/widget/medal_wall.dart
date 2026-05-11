@@ -4,7 +4,6 @@ import 'package:PiliPlus/common/widgets/pendant_avatar.dart';
 import 'package:PiliPlus/models_new/live/live_medal_wall/data.dart';
 import 'package:PiliPlus/pages/member/widget/medal_widget.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
-import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:flutter/material.dart';
@@ -109,7 +108,7 @@ class MedalWall extends StatelessWidget {
                         child: Image.asset(
                           Assets.livingStatic,
                           height: 16,
-                          cacheHeight: 16.cacheSize(context),
+                          cacheHeight: 16,
                           color: colorScheme.primary,
                         ),
                       ),

@@ -27,7 +27,6 @@ import 'package:PiliPlus/utils/app_scheme.dart';
 import 'package:PiliPlus/utils/bili_utils.dart';
 import 'package:PiliPlus/utils/color_utils.dart';
 import 'package:PiliPlus/utils/extension/context_ext.dart';
-import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/string_ext.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
@@ -223,7 +222,7 @@ class UserInfoCard extends StatelessWidget {
               isSeniorMember: card.levelInfo?.identity == 2,
             ),
             height: 11,
-            cacheHeight: 11.cacheSize(context),
+            cacheHeight: 11,
             semanticLabel: '等级${card.levelInfo?.currentLevel}',
           ),
           if (card.vip?.status == 1)
@@ -588,7 +587,7 @@ class UserInfoCard extends StatelessWidget {
       );
     }
     final controller = headerControllerBuilder();
-    final memCacheWidth = width.cacheSize(context);
+    final memCacheWidth = width;
     return GestureDetector(
       behavior: .opaque,
       onTap: () => PageUtils.imageView(
@@ -693,7 +692,7 @@ class UserInfoCard extends StatelessWidget {
           alignment: alignment,
           height: kHeaderHeight,
           width: width,
-          memCacheWidth: width.cacheSize(context),
+          memCacheWidth: width,
           imageUrl: ImageUtils.thumbnailUrl(imgUrl),
           placeholder: (_, _) =>
               const SizedBox(width: .infinity, height: kHeaderHeight),
@@ -740,7 +739,7 @@ class UserInfoCard extends StatelessWidget {
           if (icon != null) ...[
             CachedNetworkImage(
               height: 20,
-              memCacheHeight: 20.cacheSize(context),
+              memCacheHeight: 20,
               imageUrl: ImageUtils.thumbnailUrl(icon),
               placeholder: (_, _) => const SizedBox.shrink(),
               fadeInDuration: .zero,

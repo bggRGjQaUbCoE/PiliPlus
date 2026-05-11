@@ -16,7 +16,6 @@ import 'package:PiliPlus/pages/download/downloading/view.dart';
 import 'package:PiliPlus/services/download/download_service.dart';
 import 'package:PiliPlus/utils/cache_manager.dart';
 import 'package:PiliPlus/utils/duration_utils.dart';
-import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/path_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
@@ -177,11 +176,11 @@ class DetailItem extends StatelessWidget {
                         );
                         final maxWidth = constraints.maxWidth;
                         final maxHeight = constraints.maxHeight;
-                        int? cacheWidth, cacheHeight;
+                        double? cacheWidth, cacheHeight;
                         if (entry.pageData?.cacheWidth ?? false) {
-                          cacheWidth = maxWidth.cacheSize(context);
+                          cacheWidth = maxWidth;
                         } else {
-                          cacheHeight = maxHeight.cacheSize(context);
+                          cacheHeight = maxHeight;
                         }
                         return cover.existsSync()
                             ? ClipRRect(

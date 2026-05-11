@@ -10,7 +10,6 @@ import 'package:PiliPlus/grpc/bilibili/app/im/v1.pb.dart'
 import 'package:PiliPlus/models/common/badge_type.dart';
 import 'package:PiliPlus/pages/whisper_secondary/view.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
-import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
@@ -281,7 +280,7 @@ class WhisperSessionItem extends StatelessWidget {
                   Image.asset(
                     Assets.livingRect,
                     height: 15,
-                    cacheHeight: 15.cacheSize(context),
+                    cacheHeight: 15,
                     filterQuality: FilterQuality.low,
                   ),
               ],

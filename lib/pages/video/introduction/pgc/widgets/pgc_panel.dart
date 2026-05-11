@@ -7,7 +7,6 @@ import 'package:PiliPlus/models_new/video/video_detail/episode.dart'
     hide EpisodeItem;
 import 'package:PiliPlus/pages/video/controller.dart';
 import 'package:PiliPlus/utils/accounts.dart';
-import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
@@ -194,7 +193,7 @@ class _PgcPanelState extends State<PgcPanel> {
                                     Assets.livingStatic,
                                     color: theme.primary,
                                     height: 12,
-                                    cacheHeight: 12.cacheSize(context),
+                                    cacheHeight: 12,
                                     semanticLabel: "正在播放：",
                                   ),
                                 ),
@@ -216,7 +215,7 @@ class _PgcPanelState extends State<PgcPanel> {
                         Image.asset(
                           Assets.vipIcon,
                           height: 16,
-                          cacheHeight: 16.cacheSize(context),
+                          cacheHeight: 16,
                           semanticLabel: "大会员",
                         )
                       else

@@ -1,0 +1,165 @@
+diff --git a/packages/flutter/lib/src/painting/image_provider.dart b/packages/flutter/lib/src/painting/image_provider.dart
+index 995fd68d748..261264df3f3 100644
+--- a/packages/flutter/lib/src/painting/image_provider.dart
++++ b/packages/flutter/lib/src/painting/image_provider.dart
+@@ -1273,12 +1273,12 @@ class ResizeImage extends ImageProvider<ResizeImageKey> {
+   /// The width the image should decode to and cache.
+   ///
+   /// At least one of this and [height] must be non-null.
+-  final int? width;
++  final num? width;
+ 
+   /// The height the image should decode to and cache.
+   ///
+   /// At least one of this and [width] must be non-null.
+-  final int? height;
++  final num? height;
+ 
+   /// The policy that determines how [width] and [height] are interpreted.
+   ///
+@@ -1300,8 +1300,8 @@ class ResizeImage extends ImageProvider<ResizeImageKey> {
+   /// When `cacheWidth` and `cacheHeight` are both null, this will return the
+   /// `provider` directly.
+   static ImageProvider<Object> resizeIfNeeded(
+-    int? cacheWidth,
+-    int? cacheHeight,
++    num? cacheWidth,
++    num? cacheHeight,
+     ImageProvider<Object> provider,
+   ) {
+     if (cacheWidth != null || cacheHeight != null) {
+@@ -1329,8 +1329,8 @@ class ResizeImage extends ImageProvider<ResizeImageKey> {
+       );
+       return decode(
+         buffer,
+-        cacheWidth: width,
+-        cacheHeight: height,
++        cacheWidth: key._width,
++        cacheHeight: key._height,
+         allowUpscaling: this.allowUpscaling,
+       );
+     }
+@@ -1348,6 +1348,9 @@ class ResizeImage extends ImageProvider<ResizeImageKey> {
+ 
+   @override
+   ImageStreamCompleter loadImage(ResizeImageKey key, ImageDecoderCallback decode) {
++    final int? effectiveWidth = key._width;
++    final int? effectiveHeight = key._height;
++
+     Future<ui.Codec> decodeResize(
+       ui.ImmutableBuffer buffer, {
+       ui.TargetImageSizeCallback? getTargetSize,
+@@ -1362,8 +1365,9 @@ class ResizeImage extends ImageProvider<ResizeImageKey> {
+         getTargetSize: (int intrinsicWidth, int intrinsicHeight) {
+           switch (policy) {
+             case ResizeImagePolicy.exact:
+-              int? targetWidth = width;
+-              int? targetHeight = height;
++              var targetWidth = effectiveWidth;
++              var targetHeight = effectiveHeight;
++
+ 
+               if (!allowUpscaling) {
+                 if (targetWidth != null && targetWidth > intrinsicWidth) {
+@@ -1377,8 +1381,8 @@ class ResizeImage extends ImageProvider<ResizeImageKey> {
+               return ui.TargetImageSize(width: targetWidth, height: targetHeight);
+             case ResizeImagePolicy.fit:
+               final double aspectRatio = intrinsicWidth / intrinsicHeight;
+-              final int maxWidth = width ?? intrinsicWidth;
+-              final int maxHeight = height ?? intrinsicHeight;
++              final int maxWidth = effectiveWidth ?? intrinsicWidth;
++              final int maxHeight = effectiveHeight ?? intrinsicHeight;
+               var targetWidth = intrinsicWidth;
+               var targetHeight = intrinsicHeight;
+ 
+@@ -1393,12 +1397,12 @@ class ResizeImage extends ImageProvider<ResizeImageKey> {
+               }
+ 
+               if (allowUpscaling) {
+-                if (width == null) {
+-                  assert(height != null);
+-                  targetHeight = height!;
++                if (effectiveWidth == null) {
++                  assert(effectiveHeight != null);
++                  targetHeight = effectiveHeight!;
+                   targetWidth = (targetHeight * aspectRatio).floor();
+-                } else if (height == null) {
+-                  targetWidth = width!;
++                } else if (effectiveHeight == null) {
++                  targetWidth = effectiveWidth;
+                   targetHeight = targetWidth ~/ aspectRatio;
+                 } else {
+                   final int derivedMaxWidth = (maxHeight * aspectRatio).floor();
+@@ -1439,6 +1443,10 @@ class ResizeImage extends ImageProvider<ResizeImageKey> {
+ 
+   @override
+   Future<ResizeImageKey> obtainKey(ImageConfiguration configuration) {
++    final double devicePixelRatio = configuration.devicePixelRatio ?? 1.0;
++    final int? effectiveWidth = width != null ? (width! * devicePixelRatio).round() : null;
++    final int? effectiveHeight = height != null ? (height! * devicePixelRatio).round() : null;
++
+     Completer<ResizeImageKey>? completer;
+     // If the imageProvider.obtainKey future is synchronous, then we will be able to fill in result with
+     // a value before completer is initialized below.
+@@ -1448,11 +1456,11 @@ class ResizeImage extends ImageProvider<ResizeImageKey> {
+         // This future has completed synchronously (completer was never assigned),
+         // so we can directly create the synchronous result to return.
+         result = SynchronousFuture<ResizeImageKey>(
+-          ResizeImageKey._(key, policy, width, height, allowUpscaling),
++          ResizeImageKey._(key, policy, effectiveWidth, effectiveHeight, allowUpscaling),
+         );
+       } else {
+         // This future did not synchronously complete.
+-        completer.complete(ResizeImageKey._(key, policy, width, height, allowUpscaling));
++        completer.complete(ResizeImageKey._(key, policy, effectiveWidth, effectiveHeight, allowUpscaling));
+       }
+     });
+     if (result != null) {
+diff --git a/packages/flutter/lib/src/widgets/image.dart b/packages/flutter/lib/src/widgets/image.dart
+index e1d2d257e56..30429ea5e02 100644
+--- a/packages/flutter/lib/src/widgets/image.dart
++++ b/packages/flutter/lib/src/widgets/image.dart
+@@ -469,8 +469,8 @@ class Image extends StatefulWidget {
+     this.filterQuality = FilterQuality.medium,
+     this.isAntiAlias = false,
+     Map<String, String>? headers,
+-    int? cacheWidth,
+-    int? cacheHeight,
++    num? cacheWidth,
++    num? cacheHeight,
+     WebHtmlElementStrategy webHtmlElementStrategy = WebHtmlElementStrategy.never,
+   }) : image = ResizeImage.resizeIfNeeded(
+          cacheWidth,
+@@ -538,8 +538,8 @@ class Image extends StatefulWidget {
+     this.gaplessPlayback = false,
+     this.isAntiAlias = false,
+     this.filterQuality = FilterQuality.medium,
+-    int? cacheWidth,
+-    int? cacheHeight,
++    num? cacheWidth,
++    num? cacheHeight,
+   }) : // FileImage is not supported on Flutter Web therefore neither this method.
+        assert(
+          !kIsWeb,
+@@ -701,8 +701,8 @@ class Image extends StatefulWidget {
+     this.isAntiAlias = false,
+     String? package,
+     this.filterQuality = FilterQuality.medium,
+-    int? cacheWidth,
+-    int? cacheHeight,
++    num? cacheWidth,
++    num? cacheHeight,
+   }) : image = ResizeImage.resizeIfNeeded(
+          cacheWidth,
+          cacheHeight,
+@@ -763,8 +763,8 @@ class Image extends StatefulWidget {
+     this.gaplessPlayback = false,
+     this.isAntiAlias = false,
+     this.filterQuality = FilterQuality.medium,
+-    int? cacheWidth,
+-    int? cacheHeight,
++    num? cacheWidth,
++    num? cacheHeight,
+   }) : image = ResizeImage.resizeIfNeeded(
+          cacheWidth,
+          cacheHeight,

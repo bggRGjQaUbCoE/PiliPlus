@@ -15,7 +15,6 @@ import 'package:PiliPlus/pages/pgc_review/post/view.dart';
 import 'package:PiliPlus/pages/webview/view.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/bili_utils.dart';
-import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
@@ -243,7 +242,7 @@ class _PgcReviewChildPageState extends State<PgcReviewChildPage>
                             Image.asset(
                               BiliUtils.levelName(item.author!.level!),
                               height: 11,
-                              cacheHeight: 11.cacheSize(context),
+                              cacheHeight: 11,
                             ),
                           ],
                         ),

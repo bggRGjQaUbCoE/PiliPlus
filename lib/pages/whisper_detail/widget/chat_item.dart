@@ -18,7 +18,6 @@ import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/duration_utils.dart';
-import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
@@ -796,7 +795,7 @@ class ChatItem extends StatelessWidget {
           borderRadius: Style.mdRadius,
           child: CachedNetworkImage(
             width: maxWidth,
-            memCacheWidth: maxWidth.cacheSize(context),
+            memCacheWidth: maxWidth,
             imageUrl: ImageUtils.thumbnailUrl(content['pic_url']),
             placeholder: (_, _) => const SizedBox.shrink(),
           ),

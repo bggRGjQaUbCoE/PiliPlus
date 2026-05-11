@@ -41,7 +41,11 @@ dependencies:
   audio_session: ^0.2.2
   battery_plus: ^7.0.0
   brotli: ^0.6.0
-  cached_network_image: ^3.4.1
+  cached_network_image:
+    git:
+      url: https://github.com/bggRGjQaUbCoE/flutter_cached_network_image.git
+      path: cached_network_image
+      ref: dev
   canvas_danmaku:
     git:
       url: https://github.com/bggRGjQaUbCoE/canvas_danmaku.git

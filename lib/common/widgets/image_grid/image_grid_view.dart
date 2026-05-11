@@ -24,7 +24,6 @@ import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/image_grid/image_grid_builder.dart';
 import 'package:PiliPlus/models/common/image_preview_type.dart';
 import 'package:PiliPlus/utils/extension/context_ext.dart';
-import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/size_ext.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
@@ -215,7 +214,7 @@ class ImageGridView extends StatelessWidget {
               Assets.loading,
               width: width,
               height: height,
-              cacheWidth: width.cacheSize(context),
+              cacheWidth: width,
             ),
           );
           return List.generate(picArr.length, (index) {

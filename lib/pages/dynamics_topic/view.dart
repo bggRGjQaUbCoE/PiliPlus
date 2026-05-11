@@ -15,7 +15,6 @@ import 'package:PiliPlus/pages/dynamics/widgets/dynamic_panel.dart';
 import 'package:PiliPlus/pages/dynamics_create/view.dart';
 import 'package:PiliPlus/pages/dynamics_topic/controller.dart';
 import 'package:PiliPlus/pages/webview/view.dart';
-import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/global_data.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
@@ -172,7 +171,7 @@ class _DynTopicPageState extends State<DynTopicPage> with DynMixin {
           decoration: BoxDecoration(
             image: DecorationImage(
               image: ResizeImage(
-                width: MediaQuery.widthOf(context).cacheSize(context),
+                width: MediaQuery.widthOf(context),
                 const AssetImage(Assets.topicHeader),
               ),
               filterQuality: FilterQuality.low,

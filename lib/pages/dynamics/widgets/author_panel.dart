@@ -18,7 +18,6 @@ import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/color_utils.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/extension/context_ext.dart';
-import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
@@ -183,7 +182,7 @@ class AuthorPanel extends StatelessWidget {
             child: Center(
               child: CachedNetworkImage(
                 height: height,
-                memCacheHeight: height.cacheSize(context),
+                memCacheHeight: height,
                 imageUrl: ImageUtils.safeThumbnailUrl(
                   moduleAuthor.decorate!.cardUrl,
                 ),

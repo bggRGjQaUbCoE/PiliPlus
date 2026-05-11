@@ -15,7 +15,6 @@ import 'package:PiliPlus/models_new/live/live_emote/emoticon.dart';
 import 'package:PiliPlus/pages/common/publish/common_publish_page.dart';
 import 'package:PiliPlus/pages/dynamics_mention/view.dart';
 import 'package:PiliPlus/utils/extension/file_ext.dart';
-import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/string_ext.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
@@ -145,13 +144,13 @@ abstract class CommonRichTextPubPageState<T extends CommonRichTextPubPage>
                   File(e.path),
                   height: height,
                   filterQuality: .low,
-                  cacheHeight: height.cacheSize(context),
+                  cacheHeight: height,
                 ),
                 OpusPicModel e => CachedNetworkImage(
                   imageUrl: ImageUtils.thumbnailUrl(e.url!),
                   height: height,
                   filterQuality: .low,
-                  memCacheHeight: height.cacheSize(context),
+                  memCacheHeight: height,
                   fadeInDuration: .zero,
                   fadeOutDuration: .zero,
                   placeholder: (_, _) => const SizedBox(width: 42),

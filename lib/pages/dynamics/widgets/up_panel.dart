@@ -6,7 +6,6 @@ import 'package:PiliPlus/models/dynamics/up.dart';
 import 'package:PiliPlus/pages/dynamics/controller.dart';
 import 'package:PiliPlus/pages/live_follow/view.dart';
 import 'package:PiliPlus/utils/accounts.dart';
-import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:flutter/material.dart';
@@ -161,7 +160,7 @@ class _UpPanelState extends State<UpPanel> {
         child: Image.asset(
           width: 38,
           height: 38,
-          cacheWidth: 38.cacheSize(context),
+          cacheWidth: 38,
           Assets.logo,
         ),
       );

@@ -1,7 +1,6 @@
 import 'package:PiliPlus/common/widgets/pendant_avatar.dart';
 import 'package:PiliPlus/models/search/result.dart';
 import 'package:PiliPlus/utils/bili_utils.dart';
-import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get_core/src/get_main.dart';
@@ -58,7 +57,7 @@ class SearchUserItem extends StatelessWidget {
                         isSeniorMember: item.isSeniorMember == 1,
                       ),
                       height: 11,
-                      cacheHeight: 11.cacheSize(context),
+                      cacheHeight: 11,
                       semanticLabel: '等级${item.level}',
                     ),
                   ],

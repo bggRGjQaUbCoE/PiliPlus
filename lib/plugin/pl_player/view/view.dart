@@ -41,7 +41,6 @@ import 'package:PiliPlus/plugin/pl_player/widgets/forward_seek.dart';
 import 'package:PiliPlus/plugin/pl_player/widgets/play_pause_btn.dart';
 import 'package:PiliPlus/utils/connectivity_utils.dart';
 import 'package:PiliPlus/utils/duration_utils.dart';
-import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
@@ -1667,7 +1666,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                       Image.asset(
                         Assets.buffering,
                         height: 25,
-                        cacheHeight: 25.cacheSize(context),
+                        cacheHeight: 25,
                         semanticLabel: "加载中",
                         color: Colors.white,
                       ),

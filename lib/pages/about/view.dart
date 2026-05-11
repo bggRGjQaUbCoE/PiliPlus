@@ -17,7 +17,6 @@ import 'package:PiliPlus/utils/app_scheme.dart';
 import 'package:PiliPlus/utils/cache_manager.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/device_utils.dart';
-import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/login_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
@@ -109,7 +108,7 @@ class _AboutPageState extends State<AboutPage> {
               width: 150,
               height: 150,
               excludeFromSemantics: true,
-              cacheWidth: 150.cacheSize(context),
+              cacheWidth: 150,
               Assets.logo,
             ),
           ),

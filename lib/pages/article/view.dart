@@ -19,7 +19,6 @@ import 'package:PiliPlus/pages/dynamics_repost/view.dart';
 import 'package:PiliPlus/pages/webview/view.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/extension/get_ext.dart';
-import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/grid.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
@@ -274,15 +273,15 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
                               itemCount: length,
                               itemBuilder: (context, index) {
                                 final pic = pics[index];
-                                int? memCacheWidth, memCacheHeight;
+                                double? memCacheWidth, memCacheHeight;
                                 if (pic.isLongPic ?? false) {
-                                  memCacheWidth = maxWidth.cacheSize(context);
+                                  memCacheWidth = maxWidth;
                                 } else if (pic.width != null &&
                                     pic.height != null) {
                                   if (pic.width! > pic.height!) {
-                                    memCacheWidth = maxWidth.cacheSize(context);
+                                    memCacheWidth = maxWidth;
                                   } else {
-                                    memCacheHeight = height.cacheSize(context);
+                                    memCacheHeight = height;
                                   }
                                 }
                                 return GestureDetector(

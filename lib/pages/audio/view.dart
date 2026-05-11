@@ -298,9 +298,7 @@ class _AudioPageState extends State<AudioPage> {
                                         Assets.livingStatic,
                                         width: 16,
                                         height: 16,
-                                        cacheWidth: 16.cacheSize(
-                                          context,
-                                        ),
+                                        cacheWidth: 16,
                                         color: colorScheme.primary,
                                       ),
                                     ),
@@ -342,9 +340,7 @@ class _AudioPageState extends State<AudioPage> {
                                   Assets.livingStatic,
                                   width: 16,
                                   height: 16,
-                                  cacheWidth: 16.cacheSize(
-                                    context,
-                                  ),
+                                  cacheWidth: 16,
                                   color: colorScheme.primary,
                                 ),
                               ),

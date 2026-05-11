@@ -31,7 +31,6 @@ import 'package:PiliPlus/utils/danmaku_utils.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:PiliPlus/utils/extension/context_ext.dart';
-import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
@@ -179,7 +178,7 @@ class ReplyItemGrpc extends StatelessWidget {
                           isSeniorMember: senior.isSeniorMember == 1,
                         ),
                         height: 11,
-                        cacheHeight: 11.cacheSize(context),
+                        cacheHeight: 11,
                       ),
                       if (replyItem.mid == upMid)
                         const PBadge(
@@ -250,7 +249,7 @@ class ReplyItemGrpc extends StatelessWidget {
             height: height,
             child: CachedNetworkImage(
               height: height,
-              memCacheHeight: height.cacheSize(context),
+              memCacheHeight: height,
               imageUrl: ImageUtils.safeThumbnailUrl(garb.cardImage),
               placeholder: (_, _) => const SizedBox.shrink(),
             ),
@@ -630,7 +629,7 @@ class ReplyItemGrpc extends StatelessWidget {
           WidgetSpan(
             child: CachedNetworkImage(
               height: 19,
-              memCacheHeight: 19.cacheSize(context),
+              memCacheHeight: 19,
               color: theme.colorScheme.primary,
               imageUrl: ImageUtils.thumbnailUrl(url.prefixIcon),
               placeholder: (_, _) => const SizedBox.shrink(),

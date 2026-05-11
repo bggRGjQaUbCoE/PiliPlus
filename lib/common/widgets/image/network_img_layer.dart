@@ -1,7 +1,6 @@
 import 'package:PiliPlus/common/assets.dart';
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
-import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -60,11 +59,11 @@ class NetworkImgLayer extends StatelessWidget {
     required bool isEmote,
     required bool isAvatar,
   }) {
-    int? memCacheWidth, memCacheHeight;
+    double? memCacheWidth, memCacheHeight;
     if (cacheWidth ?? width <= height) {
-      memCacheWidth = width.cacheSize(context);
+      memCacheWidth = width;
     } else {
-      memCacheHeight = height.cacheSize(context);
+      memCacheHeight = height;
     }
     return CachedNetworkImage(
       imageUrl: ImageUtils.thumbnailUrl(
@@ -112,7 +111,7 @@ class NetworkImgLayer extends StatelessWidget {
           isAvatar ? Assets.avatarPlaceHolder : Assets.loading,
           width: width,
           height: height,
-          cacheWidth: width.cacheSize(context),
+          cacheWidth: width,
         ),
       ),
     );

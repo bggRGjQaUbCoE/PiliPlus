@@ -399,7 +399,11 @@ class _GalleryViewerState extends State<GalleryViewer>
         final isLongPic = item.isLongPic;
         child = Image(
           key: _key,
-          image: CachedNetworkImageProvider(_getActualUrl(item.url)),
+          image: ResizeImage.resizeIfNeeded(
+            _containerSize.width.cacheSize(context),
+            null,
+            CachedNetworkImageProvider(_getActualUrl(item.url)),
+          ),
           minScale: widget.minScale,
           maxScale: widget.maxScale,
           containerSize: _containerSize,

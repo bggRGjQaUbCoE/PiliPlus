@@ -138,7 +138,7 @@ Widget videoSeasonWidget(
         if (video.title case final title?)
           Text(
             title,
-            maxLines: isDetail ? null : 1,
+            maxLines: isDetail ? null : 2,
             style: const TextStyle(fontWeight: FontWeight.bold),
             overflow: isDetail ? null : TextOverflow.ellipsis,
           ),

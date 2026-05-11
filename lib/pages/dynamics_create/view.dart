@@ -771,15 +771,17 @@ class _CreateDynPanelState extends CommonRichTextPubPageState<CreateDynPanel> {
     }
 
     final reserveCard = _reserveCard.value;
+    final publishTime = _publishTime.value;
+    final isPrivate = _isPrivate.value;
     final res = await DynamicsHttp.createDynamic(
       mid: Accounts.main.mid,
       rawText: hasRichText ? null : editController.text,
       pics: pictures,
-      publishTime: _publishTime.value != null
-          ? _publishTime.value!.millisecondsSinceEpoch ~/ 1000
+      publishTime: publishTime != null
+          ? publishTime.millisecondsSinceEpoch ~/ 1000
           : null,
       replyOption: _replyOption.value,
-      privatePub: _isPrivate.value ? 1 : null,
+      privatePub: isPrivate ? 1 : null,
       title: _titleEditCtr.text,
       topic: _topic.value,
       extraContent: extraContent,
@@ -801,7 +803,7 @@ class _CreateDynPanelState extends CommonRichTextPubPageState<CreateDynPanel> {
       SmartDialog.showToast('发布成功');
       final id = response?['dyn_id'];
       RequestUtils.insertCreatedDyn(id);
-      if (!_isPrivate.value && _publishTime.value == null) {
+      if (!isPrivate && publishTime == null) {
         RequestUtils.checkCreatedDyn(
           id: id,
           dynText: editController.rawText,

@@ -1,3 +1,5 @@
+import 'dart:async' show StreamSubscription;
+
 import 'package:PiliPlus/http/dynamics.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/msg.dart';
@@ -20,11 +22,20 @@ class DynamicsTabController
   int? mid;
   late final MainController mainController = Get.find<MainController>();
   final dynamicsController = Get.find<DynamicsController>();
+  StreamSubscription? _listener;
 
   @override
   void onInit() {
     super.onInit();
     queryData();
+    if (dynamicsType == .up) {
+      _listener = dynamicsController.mid.listen((mid) {
+        if (mid != -1) {
+          this.mid = mid;
+          onReload();
+        }
+      });
+    }
   }
 
   @override
@@ -92,4 +103,10 @@ class DynamicsTabController
 
   @override
   void onChangeAccount(bool isLogin) => onReload();
+
+  @override
+  void onClose() {
+    _listener?.cancel();
+    super.onClose();
+  }
 }

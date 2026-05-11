@@ -153,7 +153,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
 
   // 获取视频资源，初始化播放器
   void videoSourceInit() {
-    videoDetailController.queryVideoUrl(autoFullScreenFlag: true);
+    videoDetailController.queryVideoUrl();
     if (videoDetailController.autoPlay) {
       plPlayerController = videoDetailController.plPlayerController;
       plPlayerController!
@@ -284,10 +284,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     plPlayerController
       ..addStatusLister(playerListener)
       ..addPositionListener(positionListener);
-    return videoDetailController.playerInit(
-      autoplay: true,
-      autoFullScreenFlag: true,
-    );
+    return videoDetailController.playerInit(autoplay: true);
   }
 
   @override

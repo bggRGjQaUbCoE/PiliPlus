@@ -34,10 +34,7 @@ Widget? addWidget(
               ? null
               : () => PiliScheme.routePushFromUrl(ugc.jumpUrl!),
           child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 12,
-              vertical: 8,
-            ),
+            padding: const .symmetric(horizontal: 12, vertical: 8),
             child: Row(
               children: [
                 NetworkImgLayer(
@@ -48,13 +45,9 @@ Widget? addWidget(
                 const SizedBox(width: 10),
                 Expanded(
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: .start,
                     children: [
-                      Text(
-                        ugc.title!,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                      Text(ugc.title!),
                       const SizedBox(height: 4),
                       Text(
                         ugc.descSecond!,
@@ -78,18 +71,14 @@ Widget? addWidget(
             onTap: () {},
             borderRadius: borderRadius,
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              padding: const .symmetric(horizontal: 12, vertical: 10),
               child: Row(
                 children: [
                   Expanded(
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      crossAxisAlignment: .start,
                       children: [
-                        Text(
-                          reserve.title!,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
+                        Text(reserve.title!),
                         const SizedBox(height: 1),
                         Text.rich(
                           TextSpan(
@@ -109,7 +98,7 @@ Widget? addWidget(
                               if (reserve.desc3?.text?.isNotEmpty == true) ...[
                                 const TextSpan(text: '\n'),
                                 WidgetSpan(
-                                  alignment: PlaceholderAlignment.middle,
+                                  alignment: .middle,
                                   child: Icon(
                                     size: 17,
                                     Icons.card_giftcard,
@@ -158,16 +147,12 @@ Widget? addWidget(
                                     alpha: 0.12,
                                   )
                                 : null,
-                            visualDensity: VisualDensity.compact,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                            ),
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            visualDensity: .compact,
+                            tapTargetSize: .shrinkWrap,
+                            padding: const .symmetric(horizontal: 16),
                           ),
                           onPressed: canJump
-                              ? () => PiliScheme.routePushFromUrl(
-                                  btn.jumpUrl!,
-                                )
+                              ? () => PiliScheme.routePushFromUrl(btn.jumpUrl!)
                               : btn.disable == 1
                               ? null
                               : () async {
@@ -216,14 +201,14 @@ Widget? addWidget(
               ? null
               : () => PiliScheme.routePushFromUrl(content.jumpUrl!),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            padding: const .symmetric(horizontal: 12, vertical: 8),
             child: Row(
               children: [
                 Expanded(
                   child: Column(
                     spacing: 2,
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: .min,
+                    crossAxisAlignment: .start,
                     children: [
                       if (content.title?.isNotEmpty == true)
                         Text(content.title!),
@@ -240,7 +225,7 @@ Widget? addWidget(
                           TextSpan(
                             children: [
                               WidgetSpan(
-                                alignment: PlaceholderAlignment.middle,
+                                alignment: .middle,
                                 child: Icon(
                                   size: 17,
                                   Icons.card_giftcard,
@@ -276,14 +261,14 @@ Widget? addWidget(
                           ),
                     style: FilledButton.styleFrom(
                       shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(6)),
+                        borderRadius: .all(.circular(6)),
                       ),
-                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      padding: const .symmetric(horizontal: 10),
                       visualDensity: const VisualDensity(
                         horizontal: -2,
                         vertical: -3,
                       ),
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      tapTargetSize: .shrinkWrap,
                     ),
                     child: Text(
                       content.button!.jumpStyle?.text ??
@@ -302,16 +287,13 @@ Widget? addWidget(
         final content = additional.goods!;
         if (content.items?.isNotEmpty == true) {
           child = Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: .start,
             children: content.items!.map((e) {
               return InkWell(
                 borderRadius: borderRadius,
                 onTap: () => PiliScheme.routePushFromUrl(e.jumpUrl!),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 8,
-                  ),
+                  padding: const .symmetric(horizontal: 12, vertical: 8),
                   child: Row(
                     children: [
                       if (e.cover?.isNotEmpty == true) ...[
@@ -319,20 +301,18 @@ Widget? addWidget(
                           width: 45,
                           height: 45,
                           src: e.cover,
-                          borderRadius: const BorderRadius.all(
-                            Radius.circular(6),
-                          ),
+                          borderRadius: const .all(.circular(6)),
                         ),
                         const SizedBox(width: 10),
                       ],
                       Expanded(
                         child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                          crossAxisAlignment: .start,
                           children: [
                             Text(
                               e.name!,
                               maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
+                              overflow: .ellipsis,
                             ),
                             if (e.price?.isNotEmpty == true)
                               Text.rich(
@@ -361,18 +341,14 @@ Widget? addWidget(
                               PiliScheme.routePushFromUrl(e.jumpUrl!),
                           style: FilledButton.styleFrom(
                             shape: const RoundedRectangleBorder(
-                              borderRadius: BorderRadius.all(
-                                Radius.circular(6),
-                              ),
+                              borderRadius: .all(.circular(6)),
                             ),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                            ),
+                            padding: const .symmetric(horizontal: 10),
                             visualDensity: const VisualDensity(
                               horizontal: -2,
                               vertical: -3,
                             ),
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            tapTargetSize: .shrinkWrap,
                           ),
                           child: Text(e.jumpDesc!),
                         ),
@@ -399,7 +375,7 @@ Widget? addWidget(
                 : null,
           ),
           child: Padding(
-            padding: const EdgeInsets.symmetric(
+            padding: const .symmetric(
               horizontal: 12,
               vertical: 8,
             ),
@@ -410,9 +386,7 @@ Widget? addWidget(
                     color: floor == 1
                         ? theme.colorScheme.surface
                         : theme.dividerColor.withValues(alpha: 0.08),
-                    borderRadius: const BorderRadius.all(
-                      Radius.circular(8),
-                    ),
+                    borderRadius: const .all(.circular(8)),
                   ),
                   width: 70,
                   height: 50,
@@ -424,18 +398,11 @@ Widget? addWidget(
                 const SizedBox(width: 10),
                 Expanded(
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: .start,
                     children: [
-                      if (vote.title case final title?)
-                        Text(
-                          title,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
+                      if (vote.title case final title?) Text(title),
                       Text(
                         '${NumUtils.numFormat(vote.joinNum)}人参与',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           fontSize: 13,
                           color: theme.colorScheme.outline,
@@ -457,14 +424,14 @@ Widget? addWidget(
                   ),
                   style: FilledButton.styleFrom(
                     shape: const RoundedRectangleBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(6)),
+                      borderRadius: .all(.circular(6)),
                     ),
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    padding: const .symmetric(horizontal: 10),
                     visualDensity: const VisualDensity(
                       horizontal: -2,
                       vertical: -3,
                     ),
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    tapTargetSize: .shrinkWrap,
                   ),
                   child: const Text('参与'),
                 ),
@@ -481,7 +448,7 @@ Widget? addWidget(
               ? null
               : () => PiliScheme.routePushFromUrl(content.jumpUrl!),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            padding: const .symmetric(horizontal: 12, vertical: 8),
             child: Row(
               children: [
                 if (content.cover?.isNotEmpty == true) ...[
@@ -489,8 +456,8 @@ Widget? addWidget(
                     width: 45,
                     height: 45,
                     src: content.cover,
-                    borderRadius: const BorderRadius.all(
-                      Radius.circular(6),
+                    borderRadius: const .all(
+                      .circular(6),
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -498,8 +465,8 @@ Widget? addWidget(
                 Expanded(
                   child: Column(
                     spacing: 2,
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: .min,
+                    crossAxisAlignment: .start,
                     children: [
                       if (content.title?.isNotEmpty == true)
                         Text(content.title!),
@@ -530,14 +497,14 @@ Widget? addWidget(
                     ),
                     style: FilledButton.styleFrom(
                       shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(6)),
+                        borderRadius: .all(.circular(6)),
                       ),
-                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      padding: const .symmetric(horizontal: 10),
                       visualDensity: const VisualDensity(
                         horizontal: -2,
                         vertical: -3,
                       ),
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      tapTargetSize: .shrinkWrap,
                     ),
                     child: Text(content.button!.jumpStyle?.text ?? ''),
                   ),
@@ -586,7 +553,7 @@ Widget? addWidget(
         }
         if (content.matchInfo?.subTitle?.isNotEmpty == true) {
           title = Column(
-            mainAxisSize: MainAxisSize.min,
+            mainAxisSize: .min,
             children: [
               ?title,
               Text(
@@ -605,7 +572,7 @@ Widget? addWidget(
               ? null
               : () => PiliScheme.routePushFromUrl(content.jumpUrl!),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            padding: const .symmetric(horizontal: 12, vertical: 8),
             child: Row(
               children: [
                 ?title,
@@ -620,11 +587,11 @@ Widget? addWidget(
                     if (content.matchInfo?.centerTop?.isNotEmpty == true)
                       Container(
                         height: 35,
-                        alignment: Alignment.center,
+                        alignment: .center,
                         child: Text(
                           content.matchInfo!.centerTop!.join(' '),
                           style: const TextStyle(
-                            fontWeight: FontWeight.bold,
+                            fontWeight: .bold,
                             fontSize: 16,
                           ),
                         ),
@@ -651,14 +618,14 @@ Widget? addWidget(
                         PiliScheme.routePushFromUrl(button.jumpUrl!),
                     style: FilledButton.styleFrom(
                       shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(6)),
+                        borderRadius: .all(.circular(6)),
                       ),
-                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      padding: const .symmetric(horizontal: 10),
                       visualDensity: const VisualDensity(
                         horizontal: -2,
                         vertical: -3,
                       ),
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      tapTargetSize: .shrinkWrap,
                     ),
                     child: Text(button.jumpStyle?.text ?? ''),
                   ),
@@ -669,7 +636,7 @@ Widget? addWidget(
     }
     if (child != null) {
       return Padding(
-        padding: const EdgeInsets.only(top: 6),
+        padding: const .only(top: 6),
         child: Material(
           borderRadius: borderRadius,
           color: bgColor,
@@ -681,7 +648,7 @@ Widget? addWidget(
     }
   } catch (e) {
     return Padding(
-      padding: const EdgeInsets.all(12),
+      padding: const .all(12),
       child: SelectableText(
         '''
 additional panel error

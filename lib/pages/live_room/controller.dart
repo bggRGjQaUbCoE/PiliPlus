@@ -50,9 +50,7 @@ class LiveRoomController extends GetxController {
   int roomId = Get.arguments;
   int? ruid;
   DanmakuController<DanmakuExtra>? danmakuController;
-  final plPlayerController = PlPlayerController.getInstance(
-    isLive: true,
-  );
+  final plPlayerController = PlPlayerController.getInstance(isLive: true);
 
   final isLoaded = false.obs;
   final roomInfoH5 = Rxn<RoomInfoH5Data>();
@@ -89,10 +87,7 @@ class LiveRoomController extends GetxController {
     }
     return Text(
       text,
-      style: const TextStyle(
-        fontSize: 12,
-        color: Colors.white,
-      ),
+      style: const TextStyle(fontSize: 12, color: Colors.white),
     );
   });
 
@@ -107,6 +102,7 @@ class LiveRoomController extends GetxController {
   final disableAutoScroll = false.obs;
   bool autoScroll = true;
   LiveMessageStream? _msgStream;
+  LiveMessageStream? get msgStream => _msgStream;
   late final ScrollController scrollController;
   late final RxInt pageIndex = 0.obs;
   late final PageController pageController;
@@ -150,7 +146,7 @@ class LiveRoomController extends GetxController {
     final account = Accounts.main;
     isLogin = account.isLogin;
     mid = account.mid;
-    queryLiveUrl(autoFullScreenFlag: true);
+    queryLiveUrl();
     queryLiveInfoH5();
     if (Accounts.heartbeat.isLogin && !Pref.historyPause) {
       VideoHttp.roomEntryAction(roomId: roomId);
@@ -158,10 +154,7 @@ class LiveRoomController extends GetxController {
     pageController = PageController();
   }
 
-  Future<void>? playerInit({
-    bool autoplay = true,
-    bool autoFullScreenFlag = false,
-  }) {
+  Future<void>? playerInit({bool autoplay = true}) {
     if (videoUrl == null) {
       return null;
     }
@@ -173,7 +166,7 @@ class LiveRoomController extends GetxController {
     );
   }
 
-  Future<void> queryLiveUrl({bool autoFullScreenFlag = false}) async {
+  Future<void> queryLiveUrl() async {
     currentQn ??= await ConnectivityUtils.isWiFi
         ? Pref.liveQuality
         : Pref.liveQualityCellular;
@@ -195,7 +188,12 @@ class LiveRoomController extends GetxController {
       if (response.roomId != null) {
         roomId = response.roomId!;
       }
-      liveTime.value = response.liveTime;
+      final liveTime = response.liveTime;
+      if (liveTime != null &&
+          DateTime.now().millisecondsSinceEpoch ~/ 1000 - liveTime <
+              Duration.secondsPerDay * 2) {
+        this.liveTime.value = liveTime;
+      }
       startLiveTimer();
       isPortrait.value = response.isPortrait ?? false;
       List<CodecItem> codec =
@@ -212,7 +210,7 @@ class LiveRoomController extends GetxController {
       currentQnDesc.value =
           LiveQuality.fromCode(currentQn)?.desc ?? currentQn.toString();
       videoUrl = VideoUtils.getLiveCdnUrl(item);
-      await playerInit(autoFullScreenFlag: autoFullScreenFlag);
+      await playerInit();
       isLoaded.value = true;
     } else {
       _showDialog(res.toString());
@@ -321,10 +319,6 @@ class LiveRoomController extends GetxController {
     if (res.dataOrNull?.list case final list?) {
       superChatMsg.addAll(list);
     }
-  }
-
-  void clearSC() {
-    superChatMsg.removeWhere((e) => e.expired);
   }
 
   void startLiveMsg() {
@@ -530,7 +524,7 @@ class LiveRoomController extends GetxController {
 
   void onLikeTapDown([_]) {
     cancelLikeTimer();
-    likeClickTime.value++;
+    likeClickTime.value += 2;
   }
 
   void onLikeTapUp([_]) {
@@ -568,19 +562,22 @@ class LiveRoomController extends GetxController {
       PublishRoute(
         barrierColor: Colors.transparent,
         pageBuilder: (context, animation, secondaryAnimation) {
-          return LiveSendDmPanel(
-            fromEmote: fromEmote,
-            liveRoomController: this,
-            items: savedDanmaku,
-            autofocus: !fromEmote,
-            onSave: (msg) {
-              if (msg.isEmpty) {
-                savedDanmaku?.clear();
-                savedDanmaku = null;
-              } else {
-                savedDanmaku = msg.toList();
-              }
-            },
+          return Theme(
+            data: ThemeUtils.darkTheme,
+            child: LiveSendDmPanel(
+              fromEmote: fromEmote,
+              liveRoomController: this,
+              items: savedDanmaku,
+              autofocus: !fromEmote,
+              onSave: (msg) {
+                if (msg.isEmpty) {
+                  savedDanmaku?.clear();
+                  savedDanmaku = null;
+                } else {
+                  savedDanmaku = msg.toList();
+                }
+              },
+            ),
           );
         },
         transitionDuration: fromEmote

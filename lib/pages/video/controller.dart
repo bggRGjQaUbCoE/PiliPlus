@@ -669,11 +669,9 @@ class VideoDetailController extends GetxController
     playerInit();
   }
 
-  Future<void>? _initPlayerIfNeeded(bool autoFullScreenFlag) {
+  Future<void>? _initPlayerIfNeeded() {
     if (_autoPlay.value) {
-      return playerInit(
-        autoFullScreenFlag: autoFullScreenFlag && _autoPlay.value,
-      );
+      return playerInit();
     }
     return null;
   }
@@ -685,7 +683,6 @@ class VideoDetailController extends GetxController
     Duration? duration,
     bool? autoplay,
     Volume? volume,
-    bool autoFullScreenFlag = false,
   }) async {
     Duration? seek = seekToTime ?? defaultST ?? playedTime;
     if (seek == null || seek == Duration.zero) {
@@ -762,10 +759,9 @@ class VideoDetailController extends GetxController
   Future<void> queryVideoUrl({
     Duration? defaultST,
     bool fromReset = false,
-    bool autoFullScreenFlag = false,
   }) async {
     if (isFileSource) {
-      return _initPlayerIfNeeded(autoFullScreenFlag);
+      return _initPlayerIfNeeded();
     }
     if (isQuerying) {
       return;
@@ -839,7 +835,7 @@ class VideoDetailController extends GetxController
         _setVideoHeight();
         currentDecodeFormats = VideoDecodeFormatType.fromString('avc1');
         currentVideoQa.value = videoQuality;
-        await _initPlayerIfNeeded(autoFullScreenFlag);
+        await _initPlayerIfNeeded();
         isQuerying = false;
         return;
       }
@@ -938,7 +934,7 @@ class VideoDetailController extends GetxController
       } else {
         audioUrl = '';
       }
-      await _initPlayerIfNeeded(autoFullScreenFlag);
+      await _initPlayerIfNeeded();
     } else {
       _autoPlay.value = false;
       videoState.value = false;

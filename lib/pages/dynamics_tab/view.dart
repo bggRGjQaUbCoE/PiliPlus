@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/http/loading_state.dart';
@@ -27,8 +25,6 @@ class DynamicsTabPage extends StatefulWidget {
 
 class _DynamicsTabPageState extends State<DynamicsTabPage>
     with AutomaticKeepAliveClientMixin, DynMixin {
-  StreamSubscription? _listener;
-
   DynamicsController dynamicsController = Get.putOrFind(DynamicsController.new);
   late final DynamicsTabController controller;
 
@@ -44,21 +40,6 @@ class _DynamicsTabPageState extends State<DynamicsTabPage>
             ..mid = dynamicsController.mid.value,
       tag: widget.dynamicsType.name,
     );
-    if (widget.dynamicsType == .up) {
-      _listener = dynamicsController.mid.listen((mid) {
-        if (mid != -1) {
-          controller
-            ..mid = mid
-            ..onReload();
-        }
-      });
-    }
-  }
-
-  @override
-  void dispose() {
-    _listener?.cancel();
-    super.dispose();
   }
 
   @override

@@ -164,53 +164,6 @@ class LiveRoomChatPanel extends StatelessWidget {
             ),
           ),
         ],
-        Positioned(
-          top: 12,
-          right: 12,
-          child: Obx(() {
-            final isEmpty = liveRoomController.superChatMsg.isEmpty;
-            return AnimatedOpacity(
-              opacity: isEmpty ? 0 : 1,
-              duration: const Duration(milliseconds: 120),
-              child: GestureDetector(
-                onTap: isEmpty
-                    ? null
-                    : () => liveRoomController.pageController.animateToPage(
-                        1,
-                        duration: const Duration(milliseconds: 200),
-                        curve: Curves.easeInOut,
-                      ),
-                child: Container(
-                  decoration: BoxDecoration(
-                    borderRadius: const BorderRadius.all(Radius.circular(8)),
-                    color: const Color(0x2FFFFFFF),
-                    border: Border.all(color: Colors.white24, width: 0.7),
-                  ),
-                  padding: const EdgeInsets.fromLTRB(10, 4, 4, 4),
-                  child: Text.rich(
-                    style: const TextStyle(color: Colors.white, height: 1),
-                    strutStyle: const StrutStyle(height: 1, leading: 0),
-                    TextSpan(
-                      children: [
-                        TextSpan(
-                          text: 'SC(${liveRoomController.superChatMsg.length})',
-                        ),
-                        const WidgetSpan(
-                          alignment: PlaceholderAlignment.middle,
-                          child: Icon(
-                            size: 18,
-                            Icons.keyboard_arrow_right,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            );
-          }),
-        ),
         Obx(
           () => liveRoomController.disableAutoScroll.value
               ? Positioned(
@@ -224,6 +177,38 @@ class LiveRoomChatPanel extends StatelessWidget {
                   ),
                 )
               : const SizedBox.shrink(),
+        ),
+        Positioned(
+          top: 0,
+          right: 12,
+          width: 32,
+          height: 32,
+          child: PopupMenuButton(
+            iconSize: 19,
+            padding: .zero,
+            itemBuilder: (context) => [
+              if (liveRoomController.msgStream != null)
+                PopupMenuItem(
+                  height: 35,
+                  onTap: liveRoomController.closeLiveMsg,
+                  child: const Text('Pause'),
+                )
+              else
+                PopupMenuItem(
+                  height: 35,
+                  onTap: liveRoomController.startLiveMsg,
+                  child: const Text('Resume'),
+                ),
+              PopupMenuItem(
+                height: 35,
+                onTap: () => liveRoomController
+                  ..danmakuController?.clear()
+                  ..messages.clear()
+                  ..disableAutoScroll.value = false,
+                child: const Text('Clear'),
+              ),
+            ],
+          ),
         ),
       ],
     );
@@ -274,10 +259,7 @@ class LiveRoomChatPanel extends StatelessWidget {
           spanChildren.add(
             TextSpan(
               text: nonMatchStr,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 14,
-              ),
+              style: const TextStyle(color: Colors.white, fontSize: 14),
             ),
           );
           return '';
@@ -287,10 +269,7 @@ class LiveRoomChatPanel extends StatelessWidget {
     } else {
       return TextSpan(
         text: obj.text,
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 14,
-        ),
+        style: const TextStyle(color: Colors.white, fontSize: 14),
       );
     }
   }

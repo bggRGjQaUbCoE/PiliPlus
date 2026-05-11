@@ -1,13 +1,18 @@
+import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 
 abstract final class GlobalData {
   static int imgQuality = Pref.picQuality;
 
-  static num? coins;
+  static double? coins;
 
   static void afterCoin(num coin) {
     if (coins != null) {
       coins = coins! - coin;
+      GStorage.userInfo.put(
+        'userInfoCache',
+        Pref.userInfoCache!..money = coins,
+      );
     }
   }
 

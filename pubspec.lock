@@ -498,10 +498,10 @@ packages:
     description:
       path: "."
       ref: dev
-      resolved-ref: "5d269611e493420302aeba4d8305c1d44a67281f"
+      resolved-ref: "8cf6cfa7078aa69c2c7b08d9ad636a1040456852"
       url: "https://github.com/bggRGjQaUbCoE/flutter_file_picker.git"
     source: git
-    version: "12.0.0-beta.1"
+    version: "12.0.0-beta.3"
   file_selector_linux:
     dependency: transitive
     description:
@@ -694,7 +694,7 @@ packages:
     description:
       path: "."
       ref: main
-      resolved-ref: b87bda5672e1c8494853bb44bbf08515ef748bca
+      resolved-ref: "1dbede0ee22f161ec2c928e1e82f0ae9339a097d"
       url: "https://github.com/bggRGjQaUbCoE/flutter_smart_dialog.git"
     source: git
     version: "5.1.0"
@@ -1884,10 +1884,10 @@ packages:
     dependency: transitive
     description:
       name: vector_graphics
-      sha256: "6409a25046024f0f8c5d8a59fec314081e81f9d436b66ca4015a8b49772bf445"
+      sha256: "4d35a36400983c3457c289d4d553b5308f506ea84f7e51c7a564651b5525209a"
       url: "https://pub.dev"
     source: hosted
-    version: "1.2.0"
+    version: "1.2.1"
   vector_graphics_codec:
     dependency: transitive
     description:
@@ -1900,10 +1900,10 @@ packages:
     dependency: transitive
     description:
       name: vector_graphics_compiler
-      sha256: "06f0c50f88a1a020f95138dcc14ef4d5a039ced3f89b386209e6763dfa2cefa0"
+      sha256: "98e7e94de127b46a86ef46197fff84ff99f3d3b80a708390d717ad731efef598"
       url: "https://pub.dev"
     source: hosted
-    version: "1.2.1"
+    version: "1.2.2"
   vector_math:
     dependency: "direct main"
     description:
@@ -1940,10 +1940,10 @@ packages:
     dependency: transitive
     description:
       name: wakelock_plus_platform_interface
-      sha256: "14b2e5b9e35c2631e656913c47adecdd71633ae92896a27a64c8f1fcfabc21cc"
+      sha256: b13f99e992e7ae6a152e16c5559d3c07ff445b13330192662494e614ca3e7d7b
       url: "https://pub.dev"
     source: hosted
-    version: "1.5.0"
+    version: "1.5.1"
   watcher:
     dependency: transitive
     description:

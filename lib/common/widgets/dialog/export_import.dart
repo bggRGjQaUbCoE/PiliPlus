@@ -69,12 +69,12 @@ Future<void> importFromClipBoard<T>(
       executeImport = await showDialog<bool>(
         context: context,
         builder: (context) {
-          final theme = Theme.of(context);
-          final isDark = theme.brightness.isDark;
+          final colorScheme = ColorScheme.of(context);
+          final isDark = colorScheme.isDark;
           if (isDark != isDarkMode) {
             isDarkMode = isDark;
             renderer = TextSpanRenderer(
-              const TextStyle(),
+              null,
               isDark ? githubDarkTheme : githubTheme,
             );
             result.render(renderer);
@@ -87,12 +87,7 @@ Future<void> importFromClipBoard<T>(
             actions: [
               TextButton(
                 onPressed: Get.back,
-                child: Text(
-                  '取消',
-                  style: TextStyle(
-                    color: theme.colorScheme.outline,
-                  ),
-                ),
+                child: Text('取消', style: TextStyle(color: colorScheme.outline)),
               ),
               TextButton(
                 onPressed: () => Get.back(result: true),

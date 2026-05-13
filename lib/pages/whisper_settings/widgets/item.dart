@@ -25,8 +25,8 @@ class ImSettingsItem extends StatelessWidget {
     }
 
     const titleStyle = TextStyle(fontSize: 14);
-    final theme = Theme.of(context);
-    final outline = theme.colorScheme.outline;
+    final colorScheme = ColorScheme.of(context);
+    final outline = colorScheme.outline;
     final subtitleStyle = TextStyle(fontSize: 13, color: outline);
 
     if (item.hasSwitch_1()) {
@@ -156,11 +156,7 @@ class ImSettingsItem extends StatelessWidget {
               },
               title: Text(e.text, style: titleStyle),
               trailing: e.selected
-                  ? Icon(
-                      size: 20,
-                      Icons.check,
-                      color: theme.colorScheme.primary,
-                    )
+                  ? Icon(size: 20, Icons.check, color: colorScheme.primary)
                   : null,
             );
           },

@@ -185,7 +185,7 @@ class _LocalIntroPanelState extends State<LocalIntroPanel>
                           ),
                         Align(
                           alignment: Alignment.bottomRight,
-                          child: entry.moreBtn(theme),
+                          child: entry.moreBtn(theme.colorScheme),
                         ),
                       ],
                     ),

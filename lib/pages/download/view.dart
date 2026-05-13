@@ -385,7 +385,7 @@ class _DownloadPageState extends State<DownloadPage> {
                             color: theme.colorScheme.outline,
                           ),
                         ),
-                        pageInfo.entries.first.moreBtn(theme),
+                        pageInfo.entries.first.moreBtn(theme.colorScheme),
                       ],
                     ),
                   ],

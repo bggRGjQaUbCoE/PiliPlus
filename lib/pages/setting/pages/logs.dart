@@ -53,7 +53,7 @@ class _LogsPageState extends State<LogsPage> {
     logsContent = (await logsPath.readAsLines()).reversed.map((i) {
       try {
         final log = Report.fromJson(jsonDecode(i));
-        latestLog ??= log.copyWith();
+        latestLog ??= log;
         return log;
       } catch (e, s) {
         return Report(
@@ -464,30 +464,7 @@ class Report extends catcher.Report {
     null,
   );
 
-  Report copyWith({
-    dynamic error,
-    dynamic stackTrace,
-    DateTime? dateTime,
-    Map<String, dynamic>? deviceParameters,
-    Map<String, dynamic>? applicationParameters,
-    Map<String, dynamic>? customParameters,
-    FlutterErrorDetails? errorDetails,
-    PlatformType? platformType,
-  }) {
-    return Report(
-      error ?? this.error,
-      stackTrace ?? this.stackTrace,
-      dateTime ?? this.dateTime,
-      deviceParameters ?? this.deviceParameters,
-      applicationParameters ?? this.applicationParameters,
-      customParameters ?? this.customParameters,
-      errorDetails ?? this.errorDetails,
-      platformType ?? this.platformType,
-      null,
-    );
-  }
-
-  String _params2String(Map<String, dynamic> params) {
+  static String _params2String(Map<String, dynamic> params) {
     return params.entries
         .map((entry) => '${entry.key}: ${entry.value}\n')
         .join();

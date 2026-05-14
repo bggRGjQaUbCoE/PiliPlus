@@ -175,7 +175,6 @@ class _UpowerRankPageState extends State<UpowerRankPage>
     ThemeData theme,
     LoadingState<List<UpowerRankInfo>?> loadingState,
   ) {
-    late final width = MediaQuery.textScalerOf(context).scale(32);
     return switch (loadingState) {
       Loading() => const SliverFillRemaining(child: m3eLoading),
       Success<List<UpowerRankInfo>?>(:final response) =>
@@ -192,7 +191,7 @@ class _UpowerRankPageState extends State<UpowerRankPage>
                     child: ListTile(
                       onTap: () => Get.toNamed('/member?mid=${item.mid}'),
                       leading: SizedBox(
-                        width: width,
+                        width: 32,
                         child: Center(
                           child: Text(
                             (index + 1).toString(),

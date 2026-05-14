@@ -18,7 +18,7 @@ class _VideoSettingState extends State<VideoSetting> {
   Widget build(BuildContext context) {
     final showAppBar = widget.showAppBar;
     final padding = MediaQuery.viewPaddingOf(context);
-    return scaffold(
+    return scaffold_(
       appBar: showAppBar ? AppBar(title: const Text('音视频设置')) : null,
       body: ListView.builder(
         padding: EdgeInsets.only(

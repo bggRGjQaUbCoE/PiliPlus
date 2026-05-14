@@ -20,7 +20,6 @@ class SubDetailPage extends StatefulWidget {
 
   static void toSubDetailPage(
     int id, {
-    String? heroTag,
     SubItemModel? subInfo,
   }) {
     Get.toNamed(
@@ -28,7 +27,6 @@ class SubDetailPage extends StatefulWidget {
       arguments: {
         'id': id,
         'subInfo': subInfo,
-        'heroTag': heroTag,
       },
     );
   }
@@ -122,17 +120,6 @@ class _SubDetailPageState extends State<SubDetailPage> with GridMixin {
       fontSize: 12.5,
       color: theme.colorScheme.outline,
     );
-    Widget cover = NetworkImgLayer(
-      width: 176,
-      height: 110,
-      src: info.cover,
-    );
-    if (_subDetailController.heroTag != null) {
-      cover = Hero(
-        tag: _subDetailController.heroTag!,
-        child: cover,
-      );
-    }
     return SliverAppBar.medium(
       expandedHeight: kToolbarHeight + 132,
       pinned: true,
@@ -170,7 +157,11 @@ class _SubDetailPageState extends State<SubDetailPage> with GridMixin {
             spacing: 12,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              cover,
+              NetworkImgLayer(
+                width: 176,
+                height: 110,
+                src: info.cover,
+              ),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

@@ -357,10 +357,7 @@ abstract final class PageUtils {
             if (url.contains('medialist/detail/ml')) {
               Get.toNamed(
                 '/favDetail',
-                parameters: {
-                  'heroTag': '${medialist.cover}',
-                  'mediaId': '${medialist.id}',
-                },
+                parameters: {'mediaId': '${medialist.id}'},
               );
             } else {
               PiliScheme.routePushFromUrl(url.http2https);

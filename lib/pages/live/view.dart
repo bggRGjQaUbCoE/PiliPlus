@@ -38,14 +38,6 @@ class _LivePageState extends State<LivePage>
   @override
   bool get wantKeepAlive => true;
 
-  late TextScaler textScaler;
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    textScaler = MediaQuery.textScalerOf(context);
-  }
-
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -89,7 +81,7 @@ class _LivePageState extends State<LivePage>
                     Expanded(
                       child: SizedBox(
                         // 10+14*textScaler
-                        height: 10.0 + textScaler.scale(14),
+                        height: 24,
                         child: Obx(() {
                           final areaIndex = controller.areaIndex.value;
                           return ListView.separated(
@@ -174,7 +166,7 @@ class _LivePageState extends State<LivePage>
     crossAxisSpacing: Style.cardSpace,
     maxCrossAxisExtent: Grid.smallCardWidth,
     childAspectRatio: Style.aspectRatio,
-    mainAxisExtent: textScaler.scale(90),
+    mainAxisExtent: 90,
   );
 
   Widget _buildBody(ThemeData theme, LoadingState<List?> loadingState) {
@@ -191,7 +183,7 @@ class _LivePageState extends State<LivePage>
               SliverToBoxAdapter(
                 child: SizedBox(
                   // 8+10+13*textScaler
-                  height: 18.0 + textScaler.scale(13),
+                  height: 31,
                   child: Obx(() {
                     final tagIndex = controller.tagIndex.value;
                     return ListView.separated(
@@ -305,7 +297,7 @@ class _LivePageState extends State<LivePage>
     return SliverToBoxAdapter(
       child: SizedBox(
         // 3+4+45+6+10+12*textScaler
-        height: 68.0 + textScaler.scale(12),
+        height: 80,
         child: CustomScrollView(
           scrollDirection: Axis.horizontal,
           controller: controller.followController,

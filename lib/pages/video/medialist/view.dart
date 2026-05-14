@@ -5,7 +5,6 @@ import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/image/image_save.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/stat/stat.dart';
-import 'package:PiliPlus/models/common/badge_type.dart';
 import 'package:PiliPlus/models/common/stat_type.dart';
 import 'package:PiliPlus/models_new/media_list/media_list.dart';
 import 'package:PiliPlus/models_new/video/video_detail/episode.dart';
@@ -131,7 +130,7 @@ class _MediaListPanelState extends State<MediaListPanel>
           ),
           sliver: Obx(
             () => SliverFixedExtentList.builder(
-              itemExtent: 100,
+              itemExtent: 112,
               itemCount: widget.mediaList.length,
               itemBuilder: (context, index) {
                 if (index == widget.mediaList.length - 1 &&
@@ -164,11 +163,11 @@ class _MediaListPanelState extends State<MediaListPanel>
       bvid: item.bvid,
     );
     return Padding(
-      padding: const EdgeInsets.only(bottom: 2),
+      padding: const .only(bottom: 2),
       child: SizedBox(
-        height: 98,
+        height: 110,
         child: Material(
-          type: MaterialType.transparency,
+          type: .transparency,
           child: InkWell(
             onTap: () {
               if (item.type != 2) {
@@ -181,23 +180,20 @@ class _MediaListPanelState extends State<MediaListPanel>
             onLongPress: onLongPress,
             onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
             child: Stack(
-              clipBehavior: Clip.none,
+              clipBehavior: .none,
               children: [
                 Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 5,
-                  ),
+                  padding: const .symmetric(horizontal: 12, vertical: 5),
                   child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: .start,
                     children: [
                       Stack(
-                        clipBehavior: Clip.none,
+                        clipBehavior: .none,
                         children: [
                           NetworkImgLayer(
                             src: item.cover,
-                            width: 140.8,
-                            height: 88,
+                            width: 160,
+                            height: 110,
                           ),
                           if (item.badge?.isNotEmpty == true)
                             PBadge(
@@ -205,8 +201,8 @@ class _MediaListPanelState extends State<MediaListPanel>
                               right: 6.0,
                               top: 6.0,
                               type: switch (item.badge) {
-                                '充电专属' => PBadgeType.error,
-                                _ => PBadgeType.primary,
+                                '充电专属' => .error,
+                                _ => .primary,
                               },
                             ),
                           PBadge(
@@ -215,7 +211,7 @@ class _MediaListPanelState extends State<MediaListPanel>
                             ),
                             right: 6.0,
                             bottom: 6.0,
-                            type: PBadgeType.gray,
+                            type: .gray,
                           ),
                         ],
                       ),

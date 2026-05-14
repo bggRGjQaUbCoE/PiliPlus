@@ -20,11 +20,8 @@ class FavSearchPage extends StatefulWidget {
 
 class _FavSearchPageState
     extends
-        CommonSearchPageState<
-          FavSearchPage,
-          FavDetailData,
-          FavDetailItemModel
-        > {
+        CommonSearchPageState<FavSearchPage, FavDetailData, FavDetailItemModel>
+    with GridMixin {
   @override
   final FavSearchController controller = Get.put(
     FavSearchController(),
@@ -87,8 +84,6 @@ class _FavSearchPageState
       },
     ),
   ];
-
-  late final gridDelegate = Grid.videoCardHDelegate(context, minHeight: 110);
 
   @override
   Widget buildList(List<FavDetailItemModel> list) {

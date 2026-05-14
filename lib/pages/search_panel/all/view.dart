@@ -68,9 +68,7 @@ class _SearchAllPanelState
                       child: SearchPgcItem(item: e.first),
                     )
                   : SizedBox(
-                      height:
-                          Grid.smallCardWidth / 2 / 0.75 +
-                          MediaQuery.textScalerOf(context).scale(60),
+                      height: Grid.smallCardWidth / 2 / 0.75 + 60,
                       child: ListView.builder(
                         padding: const EdgeInsets.only(bottom: 7),
                         physics: const AlwaysScrollableScrollPhysics(),
@@ -104,7 +102,7 @@ class _SearchAllPanelState
 
   @override
   Widget get buildLoading => SliverGrid.builder(
-    gridDelegate: Grid.videoCardHDelegate(context),
+    gridDelegate: Grid.videoCardHDelegate(),
     itemBuilder: (context, index) => const VideoCardHSkeleton(),
     itemCount: 10,
   );

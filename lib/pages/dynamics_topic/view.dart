@@ -5,7 +5,6 @@ import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/pair.dart';
-import 'package:PiliPlus/common/widgets/scaffold.dart';
 import 'package:PiliPlus/common/widgets/sliver/sliver_pinned_header.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
@@ -47,8 +46,8 @@ class _DynTopicPageState extends State<DynTopicPage> with DynMixin {
   Widget build(BuildContext context) {
     final colorScheme = ColorScheme.of(context);
     final padding = MediaQuery.viewPaddingOf(context);
-    return scaffold(
-      body: Stack(
+    return Material(
+      child: Stack(
         clipBehavior: .none,
         children: [
           refreshIndicator(

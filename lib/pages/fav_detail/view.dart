@@ -4,7 +4,6 @@ import 'package:PiliPlus/common/widgets/flutter/pop_scope.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
-import 'package:PiliPlus/common/widgets/scaffold.dart';
 import 'package:PiliPlus/http/fav.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/fav_order_type.dart';
@@ -59,8 +58,8 @@ class _FavDetailPageState extends State<FavDetailPage> with GridMixin {
               _favDetailController.handleSelect();
             }
           },
-          child: scaffold(
-            body: Stack(
+          child: Material(
+            child: Stack(
               clipBehavior: .none,
               children: [
                 refreshIndicator(
@@ -381,13 +380,10 @@ class _FavDetailPageState extends State<FavDetailPage> with GridMixin {
                   Stack(
                     clipBehavior: Clip.none,
                     children: [
-                      Hero(
-                        tag: _favDetailController.heroTag,
-                        child: NetworkImgLayer(
-                          width: 176,
-                          height: 110,
-                          src: folderInfo.cover,
-                        ),
+                      NetworkImgLayer(
+                        width: 176,
+                        height: 110,
+                        src: folderInfo.cover,
                       ),
                       Positioned(
                         right: 6,

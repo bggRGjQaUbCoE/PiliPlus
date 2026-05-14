@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
-import 'package:PiliPlus/models/common/badge_type.dart';
 import 'package:PiliPlus/models/common/video/video_quality.dart';
 import 'package:PiliPlus/models_new/download/bili_download_entry_info.dart';
 import 'package:PiliPlus/pages/video/introduction/local/controller.dart';
@@ -41,7 +40,7 @@ class _LocalIntroPanelState extends State<LocalIntroPanel>
           final item = _controller.list[index];
           return _buildItem(theme, currIndex == index, index, item);
         },
-        itemExtent: 100,
+        itemExtent: 112,
       );
     });
   }
@@ -56,11 +55,11 @@ class _LocalIntroPanelState extends State<LocalIntroPanel>
     final cover = File(path.join(entry.entryDirPath, PathUtils.coverName));
     final cacheWidth = entry.pageData?.cacheWidth ?? false;
     return Padding(
-      padding: const EdgeInsets.only(bottom: 2),
+      padding: const .only(bottom: 2),
       child: SizedBox(
-        height: 98,
+        height: 110,
         child: Material(
-          type: MaterialType.transparency,
+          type: .transparency,
           child: InkWell(
             onTap: () {
               if (isCurr) {
@@ -69,7 +68,7 @@ class _LocalIntroPanelState extends State<LocalIntroPanel>
               _controller.playIndex(index, entry: entry);
             },
             child: Padding(
-              padding: const EdgeInsets.symmetric(
+              padding: const .symmetric(
                 horizontal: Style.safeSpace,
                 vertical: 5,
               ),
@@ -77,24 +76,24 @@ class _LocalIntroPanelState extends State<LocalIntroPanel>
                 spacing: 10,
                 children: [
                   Stack(
-                    clipBehavior: Clip.none,
+                    clipBehavior: .none,
                     children: [
                       cover.existsSync()
                           ? ClipRRect(
                               borderRadius: Style.mdRadius,
                               child: Image.file(
                                 cover,
-                                width: 140.8,
-                                height: 88,
+                                width: 160,
+                                height: 110,
                                 fit: BoxFit.cover,
-                                cacheWidth: cacheWidth ? 140.8 : null,
-                                cacheHeight: cacheWidth ? null : 88,
+                                cacheWidth: cacheWidth ? 160 : null,
+                                cacheHeight: cacheWidth ? null : 110,
                               ),
                             )
                           : NetworkImgLayer(
                               src: entry.cover,
-                              width: 140.8,
-                              height: 88,
+                              width: 160,
+                              height: 110,
                             ),
                       PBadge(
                         text: DurationUtils.formatDuration(
@@ -102,14 +101,14 @@ class _LocalIntroPanelState extends State<LocalIntroPanel>
                         ),
                         right: 6.0,
                         bottom: 6.0,
-                        type: PBadgeType.gray,
+                        type: .gray,
                       ),
                       if (entry.videoQuality case final videoQuality?)
                         PBadge(
                           text: VideoQuality.fromCode(videoQuality).shortDesc,
                           right: 6.0,
                           top: 6.0,
-                          type: PBadgeType.gray,
+                          type: .gray,
                         ),
                     ],
                   ),

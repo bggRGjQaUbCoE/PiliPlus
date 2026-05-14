@@ -1,4 +1,3 @@
-import 'package:PiliPlus/common/widgets/scaffold.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart';
 import 'package:PiliPlus/pages/fan/view.dart';
 import 'package:PiliPlus/pages/follow/child/child_view.dart';
@@ -40,46 +39,52 @@ class _ContactPageState extends State<ContactPage>
 
   @override
   Widget build(BuildContext context) {
-    return scaffold(
-      appBar: AppBar(
-        title: const Text('通讯录'),
-        bottom: TabBar(
-          controller: _controller,
-          tabs: const [
-            Tab(text: '我的关注'),
-            Tab(text: '我的粉丝'),
-          ],
-        ),
-        actions: [
-          IconButton(
-            onPressed: () async {
-              final UserModel? userModel = await Navigator.of(context).push(
-                GetPageRoute(
-                  page: () => FollowSearchPage(
-                    mid: mid,
-                    isFromSelect: widget.isFromSelect,
-                  ),
-                ),
-              );
-              if (userModel != null) {
-                Get.back(result: userModel);
-              }
-            },
-            icon: const Icon(Icons.search),
-          ),
-          const SizedBox(width: 16),
-        ],
-      ),
-      body: tabBarView(
-        controller: _controller,
+    return Material(
+      child: Column(
         children: [
-          FollowChildPage(
-            mid: mid,
-            onSelect: widget.isFromSelect ? onSelect : null,
+          AppBar(
+            title: const Text('通讯录'),
+            actions: [
+              IconButton(
+                onPressed: () async {
+                  final UserModel? userModel = await Navigator.of(context).push(
+                    GetPageRoute(
+                      page: () => FollowSearchPage(
+                        mid: mid,
+                        isFromSelect: widget.isFromSelect,
+                      ),
+                    ),
+                  );
+                  if (userModel != null) {
+                    Get.back(result: userModel);
+                  }
+                },
+                icon: const Icon(Icons.search),
+              ),
+              const SizedBox(width: 16),
+            ],
           ),
-          FansPage(
-            showName: false,
-            onSelect: widget.isFromSelect ? onSelect : null,
+          TabBar(
+            controller: _controller,
+            tabs: const [
+              Tab(text: '我的关注'),
+              Tab(text: '我的粉丝'),
+            ],
+          ),
+          Expanded(
+            child: tabBarView(
+              controller: _controller,
+              children: [
+                FollowChildPage(
+                  mid: mid,
+                  onSelect: widget.isFromSelect ? onSelect : null,
+                ),
+                FansPage(
+                  showName: false,
+                  onSelect: widget.isFromSelect ? onSelect : null,
+                ),
+              ],
+            ),
           ),
         ],
       ),

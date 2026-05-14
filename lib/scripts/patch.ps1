@@ -12,15 +12,9 @@ $NewOverScrollIndicator = "362b1de29974ffc1ed6faa826e1df870d7bec75f";
 
 $BottomSheetAndroidPatch = "lib/scripts/bottom_sheet_android.patch"
 
-# https://github.com/bggRGjQaUbCoE/PiliPlus/issues/1906
-$BottomSheetIOSFlutterPatch = "lib/scripts/bottom_sheet_ios_flutter.patch"
-$BottomSheetIOSPiliPlusPatch = "lib/scripts/bottom_sheet_ios_piliplus.patch"
-
 $ScrollViewPatch = "lib/scripts/scroll_view.patch"
 
 $TextSelectionPatch = "lib/scripts/text_selection.patch"
-
-$NavigatorPatch = "lib/scripts/navigator.patch"
 
 $NavigationBarPatch = "lib/scripts/navigation_bar.patch"
 
@@ -38,13 +32,6 @@ $ModalBarrierPatch = "lib/scripts/modal_barrier.patch"
 # https://github.com/flutter/flutter/issues/182466
 $MouseCursorPatch = "lib/scripts/mouse_cursor.patch"
 
-if ($platform.ToLower() -eq "ios") {
-    git apply $BottomSheetIOSPiliPlusPatch
-    if ($LASTEXITCODE -eq 0) {
-        Write-Host "$BottomSheetIOSPiliPlusPatch applied"
-    }
-}
-
 Set-Location $env:FLUTTER_ROOT
 
 $picks   = @()
@@ -60,7 +47,6 @@ switch ($platform.ToLower()) {
     }
     "ios" {
         $patches += $ScrollViewPatch
-        $patches += $BottomSheetIOSFlutterPatch
     }
     "linux" {
         $picks += $ToolTipFix

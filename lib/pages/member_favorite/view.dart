@@ -1,4 +1,3 @@
-import 'package:PiliPlus/common/skeleton/video_card_h.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/sliver/sliver_pinned_header.dart';
@@ -69,11 +68,7 @@ class _MemberFavoriteState extends State<MemberFavorite>
     return switch (loadingState) {
       Loading() => SliverPadding(
         padding: const EdgeInsets.only(top: 7),
-        sliver: SliverGrid.builder(
-          gridDelegate: Grid.videoCardHDelegate(context),
-          itemBuilder: (context, index) => const VideoCardHSkeleton(),
-          itemCount: 10,
-        ),
+        sliver: gridSkeleton,
       ),
       Success(:final response) =>
         response != null && response.isNotEmpty
@@ -168,18 +163,15 @@ class _MemberFavoriteState extends State<MemberFavorite>
               itemCount: list.length,
               itemBuilder: (context, index) {
                 final item = list[index];
-                return SizedBox(
-                  height: 98,
-                  child: MemberFavItem(
-                    item: item,
-                    onDelete: (isDeleted) {
-                      if (isDeleted ?? false) {
-                        _controller.favState
-                          ..value.mediaListResponse?.list?.remove(item)
-                          ..refresh();
-                      }
-                    },
-                  ),
+                return MemberFavItem(
+                  item: item,
+                  onDelete: (isDeleted) {
+                    if (isDeleted ?? false) {
+                      _controller.favState
+                        ..value.mediaListResponse?.list?.remove(item)
+                        ..refresh();
+                    }
+                  },
                 );
               },
             );

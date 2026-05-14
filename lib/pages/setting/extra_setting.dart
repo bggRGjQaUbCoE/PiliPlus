@@ -18,7 +18,7 @@ class _ExtraSettingState extends State<ExtraSetting> {
   Widget build(BuildContext context) {
     final showAppBar = widget.showAppBar;
     final padding = MediaQuery.viewPaddingOf(context);
-    return scaffold(
+    return scaffold_(
       appBar: showAppBar ? AppBar(title: const Text('其它设置')) : null,
       body: ListView.builder(
         padding: EdgeInsets.only(

@@ -31,9 +31,14 @@ class _ArticleListPageState extends State<ArticleListPage> with GridMixin {
   late EdgeInsets padding;
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    padding = MediaQuery.viewPaddingOf(context);
+  }
+
+  @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
-    padding = MediaQuery.viewPaddingOf(context);
     return Material(
       color: theme.colorScheme.surface,
       child: refreshIndicator(

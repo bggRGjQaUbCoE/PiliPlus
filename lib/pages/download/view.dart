@@ -34,7 +34,7 @@ class DownloadPage extends StatefulWidget {
   State<DownloadPage> createState() => _DownloadPageState();
 }
 
-class _DownloadPageState extends State<DownloadPage> {
+class _DownloadPageState extends State<DownloadPage> with GridMixin {
   final _downloadService = Get.find<DownloadService>();
   final _controller = Get.put(DownloadPageController());
   final _progress = ChangeNotifier();
@@ -139,7 +139,7 @@ class _DownloadPageState extends State<DownloadPage> {
                         ),
                         SliverToBoxAdapter(
                           child: SizedBox(
-                            height: 100,
+                            height: 110,
                             child: DetailItem(
                               entry: entry,
                               progress: _progress,
@@ -172,12 +172,7 @@ class _DownloadPageState extends State<DownloadPage> {
                           ),
                         ),
                         SliverGrid.builder(
-                          gridDelegate:
-                              SliverGridDelegateWithMaxCrossAxisExtent(
-                                mainAxisSpacing: 2,
-                                mainAxisExtent: 100,
-                                maxCrossAxisExtent: Grid.smallCardWidth * 2,
-                              ),
+                          gridDelegate: gridDelegate,
                           itemBuilder: (context, index) {
                             final item = _controller.pages[index];
                             if (item.entries.length == 1) {

@@ -95,7 +95,7 @@ class _VotePanelState extends State<VotePanel> {
                     maxCrossAxisExtent: 100,
                     mainAxisSpacing: 10,
                     crossAxisSpacing: 10,
-                    mainAxisExtent: MediaQuery.textScalerOf(context).scale(50),
+                    mainAxisExtent: 50,
                   ),
                   itemBuilder: (context, index) =>
                       _buildPicOptions(index, theme.colorScheme),

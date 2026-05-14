@@ -255,7 +255,6 @@ class _SearchPageState extends State<SearchPage> {
     );
   }
 
-  late final mainAxisExtent = 16 + MediaQuery.textScalerOf(context).scale(14);
   Widget get _buildHistory {
     return Obx(
       () {
@@ -314,7 +313,7 @@ class _SearchPageState extends State<SearchPage> {
                 ),
               ),
               SliverFixedWrap(
-                mainAxisExtent: mainAxisExtent,
+                mainAxisExtent: 30,
                 spacing: 8,
                 runSpacing: 8,
                 delegate: SliverChildBuilderDelegate(

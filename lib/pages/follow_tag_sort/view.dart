@@ -71,20 +71,14 @@ class _FollowTagSortPageState extends State<FollowTagSortPage>
     );
   }
 
-  void onReorder(int oldIndex, int newIndex) {
-    if (newIndex > oldIndex) {
-      newIndex -= 1;
-    }
-
-    final tabsItem = _customTags.removeAt(oldIndex);
-    _customTags.insert(newIndex, tabsItem);
-
+  void onReorderItem(int oldIndex, int newIndex) {
+    _customTags.insert(newIndex, _customTags.removeAt(oldIndex));
     setState(() {});
   }
 
   Widget get _buildBody {
     return ReorderableListView.builder(
-      onReorder: onReorder,
+      onReorderItem: onReorderItem,
       proxyDecorator: proxyDecorator,
       physics: const AlwaysScrollableScrollPhysics(),
       padding: EdgeInsets.only(

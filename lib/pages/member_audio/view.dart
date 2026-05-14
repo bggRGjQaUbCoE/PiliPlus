@@ -67,7 +67,6 @@ class _MemberAudioState extends State<MemberAudio>
     mainAxisSpacing: 2,
     maxCrossAxisExtent: Grid.smallCardWidth * 2,
     childAspectRatio: Style.aspectRatio * 2.6,
-    minHeight: MediaQuery.textScalerOf(context).scale(90),
   );
 
   Widget _buildBody(

@@ -3,7 +3,6 @@ import 'package:PiliPlus/common/widgets/image/image_save.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/models_new/space/space_fav/list.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
-import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -24,10 +23,7 @@ class MemberFavItem extends StatelessWidget {
         onTap: () {
           Get.toNamed(
             '/favDetail',
-            parameters: {
-              'mediaId': item.mediaId.toString(),
-              'heroTag': Utils.makeHeroTag(item.mediaId),
-            },
+            parameters: {'mediaId': item.mediaId.toString()},
           );
         },
         onLongPress: onLongPress,
@@ -42,8 +38,8 @@ class MemberFavItem extends StatelessWidget {
             children: [
               NetworkImgLayer(
                 src: item.cover,
-                width: 140.8,
-                height: 88,
+                width: 160,
+                height: 110,
               ),
               const SizedBox(width: 10),
               Expanded(

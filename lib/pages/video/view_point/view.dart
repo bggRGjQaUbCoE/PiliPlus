@@ -94,7 +94,7 @@ class _ViewPointsPageState extends State<ViewPointsPage>
     final child = ListView.builder(
       key: _key,
       physics: const AlwaysScrollableScrollPhysics(),
-      padding: EdgeInsets.only(
+      padding: .only(
         top: 7,
         bottom: MediaQuery.viewPaddingOf(context).bottom + 100,
       ),
@@ -125,7 +125,7 @@ class _ViewPointsPageState extends State<ViewPointsPage>
   Widget _buildItem(ThemeData theme, ViewPointSegment segment, bool isCurr) {
     final theme = Theme.of(context);
     return Material(
-      type: MaterialType.transparency,
+      type: .transparency,
       child: InkWell(
         onTap: segment.from != null
             ? () {
@@ -137,29 +137,26 @@ class _ViewPointsPageState extends State<ViewPointsPage>
               }
             : null,
         child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: Style.safeSpace,
-            vertical: 5,
-          ),
+          padding: const .symmetric(horizontal: Style.safeSpace, vertical: 5),
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: .start,
             children: [
               NetworkImgLayer(
                 src: segment.url,
-                width: 140.8,
-                height: 88,
+                width: 160,
+                height: 110,
               ),
               const SizedBox(width: 10),
               Expanded(
                 child: Column(
                   spacing: 10,
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: .min,
+                  crossAxisAlignment: .start,
                   children: [
                     Text(
                       segment.title ?? '',
                       maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
+                      overflow: .ellipsis,
                       style: isCurr
                           ? TextStyle(
                               fontWeight: FontWeight.bold,

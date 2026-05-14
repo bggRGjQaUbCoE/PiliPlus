@@ -17,6 +17,7 @@
 
 import 'dart:math' as math;
 
+import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:flutter/foundation.dart' show clampDouble;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart'
@@ -36,9 +37,15 @@ class SliverFloatingHeaderWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (PlatformUtils.isDesktop) {
+      return _SliverFloatingHeaderWidget(
+        backgroundColor: backgroundColor,
+        child: _SliverFloatingHeaderScroll(child: child),
+      );
+    }
     return _SliverFloatingHeaderWidget(
       backgroundColor: backgroundColor,
-      child: _SliverFloatingHeaderScroll(child: child),
+      child: child,
     );
   }
 }

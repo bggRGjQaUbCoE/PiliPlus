@@ -408,7 +408,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     return Obx(
       () {
         final isFullScreen = this.isFullScreen;
-        return scaffold(
+        return scaffold_(
           appBar: removeAppBar(isFullScreen)
               ? null
               : PreferredSize(
@@ -693,7 +693,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
   Widget get childWhenDisabledLandscape => Obx(
     () {
       final isFullScreen = this.isFullScreen;
-      return scaffold(
+      return scaffold_(
         appBar: removeAppBar(isFullScreen)
             ? null
             : AppBar(backgroundColor: Colors.black, toolbarHeight: 0),
@@ -859,7 +859,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
 
   Widget get childWhenDisabledAlmostSquare => Obx(() {
     final isFullScreen = this.isFullScreen;
-    return scaffold(
+    return scaffold_(
       appBar: removeAppBar(isFullScreen)
           ? null
           : AppBar(backgroundColor: Colors.black, toolbarHeight: 0),
@@ -1236,6 +1236,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                   left: 0,
                   right: 0,
                   top: 0,
+                  height: height,
                   child: GestureDetector(
                     onTap: handlePlay,
                     behavior: .opaque,
@@ -1344,7 +1345,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
           Positioned(
             left: 16,
             bottom: isFullScreen ? max(75, maxHeight * 0.25) : 75,
-            width: MediaQuery.textScalerOf(context).scale(120),
+            width: 120,
             child: AnimatedList(
               padding: EdgeInsets.zero,
               key: videoDetailController.listKey,

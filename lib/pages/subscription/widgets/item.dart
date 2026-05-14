@@ -6,7 +6,6 @@ import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/models_new/sub/sub/list.dart';
 import 'package:PiliPlus/pages/subscription_detail/view.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
-import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart' hide LayoutBuilder;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -22,7 +21,6 @@ class SubItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String heroTag = Utils.makeHeroTag(item.id);
     final type = switch (item.type) {
       11 => '收藏夹',
       21 => '合集',
@@ -45,13 +43,11 @@ class SubItem extends StatelessWidget {
               '/favDetail',
               parameters: {
                 'mediaId': item.id!.toString(),
-                'heroTag': heroTag,
               },
             );
           } else {
             SubDetailPage.toSubDetailPage(
               item.id!,
-              heroTag: heroTag,
               subInfo: item,
             );
           }
@@ -72,13 +68,10 @@ class SubItem extends StatelessWidget {
                     return Stack(
                       clipBehavior: Clip.none,
                       children: [
-                        Hero(
-                          tag: heroTag,
-                          child: NetworkImgLayer(
-                            src: item.cover,
-                            width: maxWidth,
-                            height: maxHeight,
-                          ),
+                        NetworkImgLayer(
+                          src: item.cover,
+                          width: maxWidth,
+                          height: maxHeight,
                         ),
                         PBadge(
                           right: 6,

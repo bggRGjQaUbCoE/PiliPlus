@@ -19,7 +19,6 @@ import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/request_utils.dart';
 import 'package:PiliPlus/utils/url_utils.dart';
-import 'package:PiliPlus/utils/utils.dart';
 import 'package:app_links/app_links.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
@@ -306,10 +305,7 @@ abstract final class PiliScheme {
             if (mediaId != null) {
               PageUtils.toDupNamed(
                 '/favDetail',
-                parameters: {
-                  'mediaId': mediaId,
-                  'heroTag': Utils.makeHeroTag(mediaId),
-                },
+                parameters: {'mediaId': mediaId},
                 off: off,
               );
               return true;
@@ -387,10 +383,7 @@ abstract final class PiliScheme {
               if (mediaId != null) {
                 Get.toNamed(
                   '/favDetail',
-                  parameters: {
-                    'mediaId': mediaId,
-                    'heroTag': Utils.makeHeroTag(mediaId),
-                  },
+                  parameters: {'mediaId': mediaId},
                 );
                 return true;
               }
@@ -731,10 +724,7 @@ abstract final class PiliScheme {
         if (mediaId != null) {
           PageUtils.toDupNamed(
             '/favDetail',
-            parameters: {
-              'mediaId': mediaId,
-              'heroTag': Utils.makeHeroTag(mediaId),
-            },
+            parameters: {'mediaId': mediaId},
             off: off,
           );
           return true;

@@ -199,13 +199,14 @@ class _PayCoinsPageState extends State<PayCoinsPage>
   }
 
   Widget _buildCoinWidget(int index, double factor) {
+    final filter = _getPayFilter(index);
+    final coinSize = 35 + (factor * 15);
     return Center(
-      child: SizedBox(
-        height: 70 + (factor * 30),
-        width: 70 + (factor * 30),
+      child: SizedBox.square(
+        dimension: 70 + (factor * 30),
         child: ColorFiltered(
           colorFilter: ColorFilter.mode(
-            _getPayFilter(index),
+            filter,
             BlendMode.srcATop,
           ),
           child: Stack(
@@ -221,8 +222,8 @@ class _PayCoinsPageState extends State<PayCoinsPage>
                 child: FadeTransition(
                   opacity: _coinFadeAnim,
                   child: Image.asset(
-                    height: 35 + (factor * 15),
-                    width: 35 + (factor * 15),
+                    height: coinSize,
+                    width: coinSize,
                     index == 0 ? Assets.coinsOne : Assets.coinsTwo,
                   ),
                 ),

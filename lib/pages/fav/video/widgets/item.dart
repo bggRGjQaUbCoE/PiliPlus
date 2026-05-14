@@ -7,7 +7,6 @@ import 'package:PiliPlus/utils/bili_utils.dart';
 import 'package:flutter/material.dart' hide LayoutBuilder;
 
 class FavVideoItem extends StatelessWidget {
-  final String heroTag;
   final FavFolderInfo item;
   final VoidCallback? onTap;
   final VoidCallback? onLongPress;
@@ -16,14 +15,13 @@ class FavVideoItem extends StatelessWidget {
     super.key,
     this.onTap,
     this.onLongPress,
-    required this.heroTag,
     required this.item,
   });
 
   @override
   Widget build(BuildContext context) {
     return Material(
-      type: MaterialType.transparency,
+      type: .transparency,
       child: InkWell(
         onTap: onTap,
         onLongPress:
@@ -43,13 +41,10 @@ class FavVideoItem extends StatelessWidget {
                 aspectRatio: Style.aspectRatio,
                 child: LayoutBuilder(
                   builder: (context, boxConstraints) {
-                    return Hero(
-                      tag: heroTag,
-                      child: NetworkImgLayer(
-                        src: item.cover,
-                        width: boxConstraints.maxWidth,
-                        height: boxConstraints.maxHeight,
-                      ),
+                    return NetworkImgLayer(
+                      src: item.cover,
+                      width: boxConstraints.maxWidth,
+                      height: boxConstraints.maxHeight,
                     );
                   },
                 ),

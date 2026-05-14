@@ -57,7 +57,7 @@ class _FavTopicPageState extends State<FavTopicPage>
     mainAxisSpacing: 12,
     crossAxisSpacing: 12,
     maxCrossAxisExtent: Grid.smallCardWidth,
-    mainAxisExtent: MediaQuery.textScalerOf(context).scale(30),
+    mainAxisExtent: 30,
   );
 
   Widget _buildBody(

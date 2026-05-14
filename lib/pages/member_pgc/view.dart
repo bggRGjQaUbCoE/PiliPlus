@@ -71,7 +71,7 @@ class _MemberBangumiState extends State<MemberBangumi>
     crossAxisSpacing: Style.cardSpace,
     maxCrossAxisExtent: Grid.smallCardWidth * 0.6,
     childAspectRatio: 0.75,
-    mainAxisExtent: MediaQuery.textScalerOf(context).scale(52),
+    mainAxisExtent: 52,
   );
 
   Widget _buildBody(LoadingState<List<SpaceArchiveItem>?> loadingState) {

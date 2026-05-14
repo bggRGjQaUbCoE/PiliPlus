@@ -2,7 +2,6 @@ import 'package:PiliPlus/common/widgets/button/icon_button.dart';
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
 import 'package:PiliPlus/common/widgets/keep_alive_wrapper.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
-import 'package:PiliPlus/common/widgets/scaffold.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart';
 import 'package:PiliPlus/models/common/dm_block_type.dart';
 import 'package:PiliPlus/models/user/danmaku_block.dart';
@@ -50,46 +49,53 @@ class _DanmakuBlockPageState extends State<DanmakuBlockPage> {
 
   @override
   Widget build(BuildContext context) {
-    return scaffold(
-      appBar: AppBar(
-        title: const Text('弹幕屏蔽'),
-        bottom: TabBar(
-          controller: _controller.tabController,
-          tabs: DmBlockType.values
-              .map(
-                (e) => Obx(
-                  () => Tab(
-                    text: '${e.label}(${_controller.rules[e.index].length})',
-                  ),
-                ),
-              )
-              .toList(),
-        ),
-      ),
-      body: Stack(
-        clipBehavior: .none,
+    return Material(
+      child: Column(
         children: [
-          tabBarView(
+          AppBar(title: const Text('弹幕屏蔽')),
+          TabBar(
             controller: _controller.tabController,
-            children: DmBlockType.values
+            tabs: DmBlockType.values
                 .map(
-                  (e) => KeepAliveWrapper(
-                    child: Obx(
-                      () => tabViewBuilder(e.index, _controller.rules[e.index]),
+                  (e) => Obx(
+                    () => Tab(
+                      text: '${e.label}(${_controller.rules[e.index].length})',
                     ),
                   ),
                 )
                 .toList(),
           ),
-          Positioned(
-            right: kFloatingActionButtonMargin,
-            bottom: padding.bottom + kFloatingActionButtonMargin,
-            child: FloatingActionButton(
-              tooltip: '添加',
-              onPressed: () => _showAddDialog(
-                DmBlockType.values[_controller.tabController.index],
-              ),
-              child: const Icon(Icons.add),
+          Expanded(
+            child: Stack(
+              clipBehavior: .none,
+              children: [
+                tabBarView(
+                  controller: _controller.tabController,
+                  children: DmBlockType.values
+                      .map(
+                        (e) => KeepAliveWrapper(
+                          child: Obx(
+                            () => tabViewBuilder(
+                              e.index,
+                              _controller.rules[e.index],
+                            ),
+                          ),
+                        ),
+                      )
+                      .toList(),
+                ),
+                Positioned(
+                  right: kFloatingActionButtonMargin,
+                  bottom: padding.bottom + kFloatingActionButtonMargin,
+                  child: FloatingActionButton(
+                    tooltip: '添加',
+                    onPressed: () => _showAddDialog(
+                      DmBlockType.values[_controller.tabController.index],
+                    ),
+                    child: const Icon(Icons.add),
+                  ),
+                ),
+              ],
             ),
           ),
         ],

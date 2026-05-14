@@ -56,25 +56,20 @@ class _FavFolderSortPageState extends State<FavFolderSortPage>
     );
   }
 
-  void onReorder(int oldIndex, int newIndex) {
+  void onReorderItem(int oldIndex, int newIndex) {
     if (oldIndex == 0 || newIndex == 0) {
       SmartDialog.showToast('默认收藏夹不支持排序');
       return;
     }
 
-    if (newIndex > oldIndex) {
-      newIndex -= 1;
-    }
-
-    final tabsItem = sortList.removeAt(oldIndex);
-    sortList.insert(newIndex, tabsItem);
+    sortList.insert(newIndex, sortList.removeAt(oldIndex));
 
     setState(() {});
   }
 
   Widget get _buildBody {
     return ReorderableListView.builder(
-      onReorder: onReorder,
+      onReorderItem: onReorderItem,
       proxyDecorator: proxyDecorator,
       physics: const AlwaysScrollableScrollPhysics(),
       itemCount: sortList.length,
@@ -83,12 +78,10 @@ class _FavFolderSortPageState extends State<FavFolderSortPage>
           const EdgeInsets.only(bottom: 100),
       itemBuilder: (context, index) {
         final item = sortList[index];
-        final key = item.id.toString();
         return SizedBox(
-          key: Key(key),
-          height: 98,
+          key: ValueKey(item.id),
+          height: 110,
           child: FavVideoItem(
-            heroTag: key,
             item: item,
             onLongPress: index == 0
                 ? () => SmartDialog.showToast('默认收藏夹不支持排序')

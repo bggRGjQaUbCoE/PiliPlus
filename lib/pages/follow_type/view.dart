@@ -20,7 +20,7 @@ abstract class FollowTypePageState<T extends StatefulWidget> extends State<T> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context).colorScheme;
-    return scaffold(
+    return scaffold_(
       appBar: appBar,
       body: refreshIndicator(
         onRefresh: controller.onRefresh,

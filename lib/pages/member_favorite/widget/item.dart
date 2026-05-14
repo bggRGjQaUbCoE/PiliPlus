@@ -8,7 +8,6 @@ import 'package:PiliPlus/pages/subscription_detail/view.dart';
 import 'package:PiliPlus/utils/bili_utils.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
-import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart' hide LayoutBuilder;
 import 'package:get/get.dart';
 
@@ -37,10 +36,7 @@ class MemberFavItem extends StatelessWidget {
           if (item.type == 0 || item.type == 11) {
             final isDeleted = await Get.toNamed(
               '/favDetail',
-              parameters: {
-                'mediaId': item.id.toString(),
-                'heroTag': Utils.makeHeroTag(item.id),
-              },
+              parameters: {'mediaId': item.id.toString()},
             );
             onDelete?.call(isDeleted);
           } else {

@@ -14,7 +14,6 @@ import 'package:PiliPlus/utils/bili_utils.dart';
 import 'package:PiliPlus/utils/extension/get_ext.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
-import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart' hide ListTile;
 import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
@@ -485,7 +484,6 @@ class _MediaPageState extends State<MinePage>
                   );
                 } else {
                   return FavFolderItem(
-                    heroTag: Utils.generateRandomString(8),
                     item: response.list[index],
                     onPop: _autoRefresh,
                   );

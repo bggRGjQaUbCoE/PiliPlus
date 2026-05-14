@@ -18,7 +18,7 @@ class _StyleSettingState extends State<StyleSetting> {
   Widget build(BuildContext context) {
     final showAppBar = widget.showAppBar;
     final padding = MediaQuery.viewPaddingOf(context);
-    return scaffold(
+    return scaffold_(
       appBar: showAppBar ? AppBar(title: const Text('外观设置')) : null,
       body: ListView.builder(
         padding: EdgeInsets.only(

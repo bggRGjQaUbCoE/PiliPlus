@@ -177,7 +177,7 @@ class _HorizontalMemberPageState extends State<HorizontalMemberPage> {
       Loading() => SliverFixedExtentList.builder(
         itemCount: 10,
         itemBuilder: (_, _) => const VideoCardHSkeleton(),
-        itemExtent: 100,
+        itemExtent: 112,
       ),
       Success(:final response) =>
         response != null && response.isNotEmpty
@@ -191,7 +191,7 @@ class _HorizontalMemberPageState extends State<HorizontalMemberPage> {
                       }
                       final videoItem = response[index];
                       return Padding(
-                        padding: const EdgeInsets.only(bottom: 2),
+                        padding: const .only(bottom: 2),
                         child: VideoCardHMemberVideo(
                           videoItem: videoItem,
                           bvid: _bvid,
@@ -209,7 +209,7 @@ class _HorizontalMemberPageState extends State<HorizontalMemberPage> {
                       );
                     },
                     itemCount: response.length,
-                    itemExtent: 100,
+                    itemExtent: 112,
                   ),
                 ],
               )

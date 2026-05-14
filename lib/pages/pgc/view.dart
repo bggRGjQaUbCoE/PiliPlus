@@ -66,9 +66,7 @@ class _PgcPageState extends State<PgcPage> with AutomaticKeepAliveClientMixin {
           if (controller.showPgcTimeline)
             SliverToBoxAdapter(
               child: SizedBox(
-                height:
-                    Grid.smallCardWidth / 2 / 0.75 +
-                    MediaQuery.textScalerOf(context).scale(96),
+                height: Grid.smallCardWidth / 2 / 0.75 + 96,
                 child: Obx(
                   () => _buildTimeline(theme, controller.timelineState.value),
                 ),
@@ -305,7 +303,7 @@ class _PgcPageState extends State<PgcPage> with AutomaticKeepAliveClientMixin {
     crossAxisSpacing: Style.cardSpace,
     maxCrossAxisExtent: Grid.smallCardWidth * 0.6,
     childAspectRatio: 0.75,
-    mainAxisExtent: MediaQuery.textScalerOf(context).scale(50),
+    mainAxisExtent: 50,
   );
 
   Widget _buildRcmdBody(LoadingState<List<PgcIndexItem>?> loadingState) {
@@ -338,9 +336,7 @@ class _PgcPageState extends State<PgcPage> with AutomaticKeepAliveClientMixin {
               children: [
                 _buildFollowTitle(theme),
                 SizedBox(
-                  height:
-                      Grid.smallCardWidth / 2 / 0.75 +
-                      MediaQuery.textScalerOf(context).scale(50),
+                  height: Grid.smallCardWidth / 2 / 0.75 + 50,
                   child: Obx(
                     () => _buildFollowBody(controller.followState.value),
                   ),

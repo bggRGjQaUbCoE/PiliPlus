@@ -4,7 +4,6 @@ import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/stat/stat.dart';
-import 'package:PiliPlus/models/common/badge_type.dart';
 import 'package:PiliPlus/models/common/stat_type.dart';
 import 'package:PiliPlus/models/common/video/video_quality.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_info_model/episode.dart' as pgc;
@@ -364,11 +363,11 @@ class _DownloadPanelState extends State<DownloadPanel> {
     return Padding(
       padding: const EdgeInsets.only(bottom: 2),
       child: SizedBox(
-        height: 98,
+        height: 110,
         child: Builder(
           builder: (context) {
             return Material(
-              type: MaterialType.transparency,
+              type: .transparency,
               child: InkWell(
                 onTap: () {
                   if (_onDownload(
@@ -389,12 +388,12 @@ class _DownloadPanelState extends State<DownloadPanel> {
                     children: [
                       if (cover?.isNotEmpty == true)
                         Stack(
-                          clipBehavior: Clip.none,
+                          clipBehavior: .none,
                           children: [
                             NetworkImgLayer(
                               src: cover,
-                              width: 140.8,
-                              height: 88,
+                              width: 160,
+                              height: 110,
                               cacheWidth: cacheWidth,
                             ),
                             if (duration != null && duration > 0)
@@ -402,14 +401,14 @@ class _DownloadPanelState extends State<DownloadPanel> {
                                 text: DurationUtils.formatDuration(duration),
                                 right: 6.0,
                                 bottom: 6.0,
-                                type: PBadgeType.gray,
+                                type: .gray,
                               ),
                             if (isCharging == true)
                               const PBadge(
                                 text: '充电专属',
                                 top: 6,
                                 right: 6,
-                                type: PBadgeType.error,
+                                type: .error,
                               )
                             else if (episode.badge != null)
                               PBadge(
@@ -417,9 +416,9 @@ class _DownloadPanelState extends State<DownloadPanel> {
                                 top: 6,
                                 right: 6,
                                 type: switch (episode.badge) {
-                                  '预告' => PBadgeType.gray,
-                                  '限免' => PBadgeType.free,
-                                  _ => PBadgeType.primary,
+                                  '预告' => .gray,
+                                  '限免' => .free,
+                                  _ => .primary,
                                 },
                               ),
                           ],

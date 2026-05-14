@@ -49,7 +49,7 @@ class _SearchLivePanelState
     crossAxisSpacing: Style.cardSpace,
     mainAxisSpacing: Style.cardSpace,
     childAspectRatio: Style.aspectRatio,
-    mainAxisExtent: MediaQuery.textScalerOf(context).scale(80),
+    mainAxisExtent: 80,
   );
 
   @override

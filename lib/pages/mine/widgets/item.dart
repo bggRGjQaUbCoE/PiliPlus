@@ -9,12 +9,10 @@ class FavFolderItem extends StatelessWidget {
     super.key,
     required this.item,
     required this.onPop,
-    required this.heroTag,
   });
 
   final FavFolderInfo item;
   final VoidCallback onPop;
-  final String heroTag;
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +24,6 @@ class FavFolderItem extends StatelessWidget {
           arguments: item,
           parameters: {
             'mediaId': item.id.toString(),
-            'heroTag': heroTag,
           },
         )?.whenComplete(onPop);
       },
@@ -48,13 +45,10 @@ class FavFolderItem extends StatelessWidget {
                 ),
               ],
             ),
-            child: Hero(
-              tag: heroTag,
-              child: NetworkImgLayer(
-                src: item.cover,
-                width: 180,
-                height: 110,
-              ),
+            child: NetworkImgLayer(
+              src: item.cover,
+              width: 180,
+              height: 110,
             ),
           ),
           const SizedBox(height: 8),

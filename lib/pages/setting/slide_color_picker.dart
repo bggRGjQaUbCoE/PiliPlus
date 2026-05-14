@@ -48,7 +48,7 @@ class _SlideColorPickerState extends State<SlideColorPicker> {
       children: [
         const SizedBox(width: 16),
         SizedBox(
-          width: MediaQuery.textScalerOf(context).scale(16),
+          width: 16,
           child: Text(title),
         ),
         const SizedBox(width: 12),
@@ -70,7 +70,7 @@ class _SlideColorPickerState extends State<SlideColorPicker> {
         ),
         const SizedBox(width: 12),
         SizedBox(
-          width: MediaQuery.textScalerOf(context).scale(25) + 16,
+          width: 41,
           child: Text(
             value.toString(),
             textAlign: TextAlign.start,

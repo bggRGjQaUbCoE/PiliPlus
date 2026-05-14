@@ -18,7 +18,7 @@ class _PrivacySettingState extends State<PrivacySetting> {
   Widget build(BuildContext context) {
     final showAppBar = widget.showAppBar;
     final padding = MediaQuery.viewPaddingOf(context);
-    return scaffold(
+    return scaffold_(
       appBar: showAppBar ? AppBar(title: const Text('隐私设置')) : null,
       body: ListView(
         padding: .only(

@@ -24,7 +24,7 @@ class ZonePage extends StatelessWidget {
       tag: tag,
     );
 
-    final gridDelegate = Grid.videoCardHDelegate(context);
+    final gridDelegate = Grid.videoCardHDelegate();
 
     Widget buildBody(LoadingState<List<dynamic>?> loadingState) {
       return switch (loadingState) {

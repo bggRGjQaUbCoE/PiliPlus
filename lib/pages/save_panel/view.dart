@@ -337,7 +337,6 @@ class _SavePanelState extends State<SavePanel> {
     final theme = Theme.of(context);
     final padding = MediaQuery.viewPaddingOf(context);
     final maxWidth = context.mediaQueryShortestSide;
-    late final coverSize = MediaQuery.textScalerOf(context).scale(65);
     return Stack(
       clipBehavior: .none,
       alignment: .center,
@@ -401,10 +400,10 @@ class _SavePanelState extends State<SavePanel> {
                             children: [
                               NetworkImgLayer(
                                 src: cover!,
-                                height: coverSize,
+                                height: 65,
                                 width: coverType == .def16_9
-                                    ? coverSize * Style.aspectRatio16x9
-                                    : coverSize,
+                                    ? 65 * Style.aspectRatio16x9
+                                    : 65,
                                 quality: 100,
                                 borderRadius: const .all(.circular(6)),
                               ),

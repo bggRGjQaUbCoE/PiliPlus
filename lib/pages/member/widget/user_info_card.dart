@@ -779,7 +779,7 @@ class UserInfoCard extends StatelessWidget {
         children: [
           // _buildHeader(context),
           // const SizedBox(height: kToolbarHeight),
-          const SizedBox(height: 30),
+          const SizedBox(height: 45),
           Row(
             children: [
               const SizedBox(width: 20),

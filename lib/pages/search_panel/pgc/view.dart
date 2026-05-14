@@ -70,7 +70,6 @@ class _SearchPgcPanelState
       mainAxisSpacing: 2,
       maxCrossAxisExtent: Grid.smallCardWidth * 2,
       childAspectRatio: Style.aspectRatio * 1.5,
-      minHeight: MediaQuery.textScalerOf(context).scale(155),
     ),
     itemBuilder: (context, index) => const MediaPgcSkeleton(),
     itemCount: 10,

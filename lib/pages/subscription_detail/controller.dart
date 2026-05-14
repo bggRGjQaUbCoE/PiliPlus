@@ -9,7 +9,6 @@ import 'package:get/get.dart';
 class SubDetailController
     extends CommonListController<SubDetailData, SubDetailItemModel> {
   late int id;
-  String? heroTag;
   SubItemModel? subInfo;
 
   @override
@@ -18,7 +17,6 @@ class SubDetailController
     final args = Get.arguments;
     id = args['id'];
     subInfo = args['subInfo'];
-    heroTag = args['heroTag'];
 
     queryData();
   }

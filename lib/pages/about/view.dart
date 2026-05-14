@@ -87,7 +87,7 @@ class _AboutPageState extends State<AboutPage> {
     final subTitleStyle = TextStyle(fontSize: 13, color: outline);
     final showAppBar = widget.showAppBar;
     final padding = MediaQuery.viewPaddingOf(context);
-    return scaffold(
+    return scaffold_(
       appBar: showAppBar ? AppBar(title: const Text('关于')) : null,
       body: ListView(
         padding: EdgeInsets.only(

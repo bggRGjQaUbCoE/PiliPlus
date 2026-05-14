@@ -82,7 +82,6 @@ class FavDetailController
     with BaseFavController {
   @override
   late int mediaId;
-  late String heroTag;
   final Rx<FavFolderInfo> folderInfo = FavFolderInfo().obs;
   final RxBool _isOwner = false.obs;
   final Rx<FavOrderType> order = FavOrderType.mtime.obs;
@@ -104,10 +103,7 @@ class FavDetailController
   @override
   void onInit() {
     super.onInit();
-
     mediaId = int.parse(Get.parameters['mediaId']!);
-    heroTag = Get.parameters['heroTag']!;
-
     queryData();
   }
 

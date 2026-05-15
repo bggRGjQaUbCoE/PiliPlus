@@ -1,4 +1,5 @@
 import 'package:PiliPlus/utils/storage_pref.dart';
+import 'package:flutter/foundation.dart' show PlatformDispatcher;
 import 'package:flutter/gestures.dart';
 
 mixin InitialPositionMixin on GestureRecognizer {
@@ -50,20 +51,30 @@ bool _computeHitSlop(
   Offset lastPosition,
 ) {
   switch (kind) {
-    case PointerDeviceKind.mouse:
+    case .mouse:
       return globalDistanceMoved > kPrecisePointerHitSlop;
-    case PointerDeviceKind.stylus:
-    case PointerDeviceKind.invertedStylus:
-    case PointerDeviceKind.unknown:
-    case PointerDeviceKind.touch:
+    case .stylus:
+    case .invertedStylus:
+    case .unknown:
+    case .touch:
       return globalDistanceMoved > settings.touchSlop! &&
-          _calc(initialPosition!, lastPosition);
-    case PointerDeviceKind.trackpad:
+          _calcAngle(initialPosition!, lastPosition);
+    case .trackpad:
       return globalDistanceMoved > settings.touchSlop!;
   }
 }
 
-bool _calc(Offset initialPosition, Offset lastPosition) {
+bool _calcAngle(Offset initialPosition, Offset lastPosition) {
   final offset = lastPosition - initialPosition;
   return offset.dx.abs() > offset.dy.abs() * 3;
+}
+
+final deviceTouchSlop = _calcDeviceTouchSlop();
+
+double _calcDeviceTouchSlop() {
+  final view = PlatformDispatcher.instance.views.first;
+  final physicalTouchSlop = view.gestureSettings.physicalTouchSlop;
+  return physicalTouchSlop == null
+      ? kTouchSlop
+      : physicalTouchSlop / view.devicePixelRatio;
 }

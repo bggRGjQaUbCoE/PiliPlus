@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'dart:math' show pow, sqrt;
 
+import 'package:PiliPlus/common/widgets/gesture/horizontal_drag_gesture_recognizer.dart'
+    show deviceTouchSlop;
 import 'package:PiliPlus/common/widgets/pair.dart';
 import 'package:PiliPlus/http/constants.dart';
 import 'package:PiliPlus/models/common/dynamic/dynamic_badge_mode.dart';
@@ -509,8 +511,10 @@ abstract final class Pref {
   static bool get enableImgMenu =>
       _setting.get(SettingBoxKey.enableImgMenu, defaultValue: false);
 
-  static double get touchSlopH =>
-      _setting.get(SettingBoxKey.touchSlopH, defaultValue: 24.0);
+  static double get touchSlopH => _setting.get(
+    SettingBoxKey.touchSlopH,
+    defaultValue: deviceTouchSlop + 6.0,
+  );
 
   static bool get floatingNavBar =>
       _setting.get(SettingBoxKey.floatingNavBar, defaultValue: false);

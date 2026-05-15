@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:PiliPlus/common/widgets/custom_icon.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/gesture/horizontal_drag_gesture_recognizer.dart'
-    show touchSlopH;
+    show deviceTouchSlop, touchSlopH;
 import 'package:PiliPlus/common/widgets/image_grid/image_grid_view.dart'
     show ImageGridView;
 import 'package:PiliPlus/http/fav.dart';
@@ -94,7 +94,7 @@ List<SettingsModel> get extraSettings => [
   ),
   NormalModel(
     title: '横向滑动阈值',
-    getSubtitle: () => '当前:「${Pref.touchSlopH}」',
+    getSubtitle: () => '当前:「${Pref.touchSlopH}」，系统默认值: $deviceTouchSlop',
     onTap: _showTouchSlopDialog,
     leading: const Icon(Icons.pan_tool_alt_outlined),
   ),

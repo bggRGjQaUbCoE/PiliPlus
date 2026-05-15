@@ -58,7 +58,7 @@ class BiliDownloadEntryInfo with MultiSelectData {
     return title;
   }
 
-  Widget moreBtn(ThemeData theme) => SizedBox(
+  Widget moreBtn(ColorScheme colorScheme) => SizedBox(
     width: 29,
     height: 29,
     child: PopupMenuButton(
@@ -66,7 +66,7 @@ class BiliDownloadEntryInfo with MultiSelectData {
       position: PopupMenuPosition.under,
       icon: Icon(
         Icons.more_vert_outlined,
-        color: theme.colorScheme.outline,
+        color: colorScheme.outline,
         size: 18,
       ),
       itemBuilder: (_) => [

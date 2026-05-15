@@ -18,10 +18,10 @@ import 'package:PiliPlus/pages/download/detail/widgets/item.dart';
 import 'package:PiliPlus/pages/download/search/view.dart';
 import 'package:PiliPlus/services/download/download_service.dart';
 import 'package:PiliPlus/utils/cache_manager.dart';
-import 'package:PiliPlus/utils/extension/iterable_ext.dart' show IterableExt;
 import 'package:PiliPlus/utils/grid.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart'
     hide SliverGridDelegateWithMaxCrossAxisExtent, LayoutBuilder;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -380,7 +380,7 @@ class _DownloadPageState extends State<DownloadPage> with GridMixin {
                             color: theme.colorScheme.outline,
                           ),
                         ),
-                        pageInfo.entries.first.moreBtn(theme),
+                        pageInfo.entries.first.moreBtn(theme.colorScheme),
                       ],
                     ),
                   ],

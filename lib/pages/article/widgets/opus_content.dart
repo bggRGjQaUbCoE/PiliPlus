@@ -632,7 +632,7 @@ class OpusContent extends StatelessWidget {
               );
             case 7 when (element.code != null):
               final renderer = TextSpanRenderer(
-                const TextStyle(),
+                null,
                 isDarkMode ? githubDarkTheme : githubTheme,
               );
               highlight

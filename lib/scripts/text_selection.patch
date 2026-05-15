@@ -1,20 +1,111 @@
 diff --git a/packages/flutter/lib/src/gestures/tap_and_drag.dart b/packages/flutter/lib/src/gestures/tap_and_drag.dart
-index 2409d19eabd..9460b61c00a 100644
+index 2409d19eabd..fac71cdb383 100644
 --- a/packages/flutter/lib/src/gestures/tap_and_drag.dart
 +++ b/packages/flutter/lib/src/gestures/tap_and_drag.dart
-@@ -1407,6 +1407,7 @@ class TapAndHorizontalDragGestureRecognizer extends BaseTapAndDragGestureRecogni
+@@ -1407,6 +1407,9 @@ class TapAndHorizontalDragGestureRecognizer extends BaseTapAndDragGestureRecogni
  
    @override
    bool _hasSufficientGlobalDistanceToAccept(PointerDeviceKind pointerDeviceKind) {
-+    return false;
++    if (pointerDeviceKind != PointerDeviceKind.mouse) {
++      return false;
++    }
      return _globalDistanceMoved.abs() > computeHitSlop(pointerDeviceKind, gestureSettings);
    }
  
-@@ -1442,6 +1443,7 @@ class TapAndPanGestureRecognizer extends BaseTapAndDragGestureRecognizer {
+diff --git a/packages/flutter/lib/src/widgets/selectable_region.dart b/packages/flutter/lib/src/widgets/selectable_region.dart
+index 59de8bae20b..174a224913b 100644
+--- a/packages/flutter/lib/src/widgets/selectable_region.dart
++++ b/packages/flutter/lib/src/widgets/selectable_region.dart
+@@ -448,7 +448,7 @@ class SelectableRegionState extends State<SelectableRegion>
+   void initState() {
+     super.initState();
+     _focusNode.addListener(_handleFocusChanged);
+-    _initMouseGestureRecognizer();
++    // _initMouseGestureRecognizer();
+     _initTouchGestureRecognizer();
+     // Right clicks.
+     _gestureRecognizers[TapGestureRecognizer] =
+@@ -682,12 +682,7 @@ class SelectableRegionState extends State<SelectableRegion>
+     // ancestor Scrollable gestures in common scenarios like a vertically scrolling list view.
+     _gestureRecognizers[TapAndHorizontalDragGestureRecognizer] =
+         GestureRecognizerFactoryWithHandlers<TapAndHorizontalDragGestureRecognizer>(
+-          () => TapAndHorizontalDragGestureRecognizer(
+-            debugOwner: this,
+-            supportedDevices: PointerDeviceKind.values.where((PointerDeviceKind device) {
+-              return device != PointerDeviceKind.mouse;
+-            }).toSet(),
+-          ),
++          () => TapAndHorizontalDragGestureRecognizer(debugOwner: this),
+           (TapAndHorizontalDragGestureRecognizer instance) {
+             instance
+               // iOS does not provide a device specific touch slop
+diff --git a/packages/flutter/lib/src/widgets/text_selection.dart b/packages/flutter/lib/src/widgets/text_selection.dart
+index 6da7274a82f..78dd5d0e7ec 100644
+--- a/packages/flutter/lib/src/widgets/text_selection.dart
++++ b/packages/flutter/lib/src/widgets/text_selection.dart
+@@ -3693,10 +3693,10 @@ class _TextSelectionGestureDetectorState extends State<TextSelectionGestureDetec
+     if (widget.onDragSelectionStart != null ||
+         widget.onDragSelectionUpdate != null ||
+         widget.onDragSelectionEnd != null) {
+-      switch (defaultTargetPlatform) {
+-        case TargetPlatform.android:
+-        case TargetPlatform.fuchsia:
+-        case TargetPlatform.iOS:
++      // switch (defaultTargetPlatform) {
++      //   case TargetPlatform.android:
++      //   case TargetPlatform.fuchsia:
++      //   case TargetPlatform.iOS:
+           gestures[TapAndHorizontalDragGestureRecognizer] =
+               GestureRecognizerFactoryWithHandlers<TapAndHorizontalDragGestureRecognizer>(
+                 () => TapAndHorizontalDragGestureRecognizer(debugOwner: this),
+@@ -3716,28 +3716,28 @@ class _TextSelectionGestureDetectorState extends State<TextSelectionGestureDetec
+                     ..onCancel = _handleTapCancel;
+                 },
+               );
+-        case TargetPlatform.linux:
+-        case TargetPlatform.macOS:
+-        case TargetPlatform.windows:
+-          gestures[TapAndPanGestureRecognizer] =
+-              GestureRecognizerFactoryWithHandlers<TapAndPanGestureRecognizer>(
+-                () => TapAndPanGestureRecognizer(debugOwner: this),
+-                (TapAndPanGestureRecognizer instance) {
+-                  instance
+-                    // Text selection should start from the position of the first pointer
+-                    // down event.
+-                    ..dragStartBehavior = DragStartBehavior.down
+-                    ..onTapTrackStart = _handleTapTrackStart
+-                    ..onTapTrackReset = _handleTapTrackReset
+-                    ..onTapDown = _handleTapDown
+-                    ..onDragStart = _handleDragStart
+-                    ..onDragUpdate = _handleDragUpdate
+-                    ..onDragEnd = _handleDragEnd
+-                    ..onTapUp = _handleTapUp
+-                    ..onCancel = _handleTapCancel;
+-                },
+-              );
+-      }
++      //   case TargetPlatform.linux:
++      //   case TargetPlatform.macOS:
++      //   case TargetPlatform.windows:
++      //     gestures[TapAndPanGestureRecognizer] =
++      //         GestureRecognizerFactoryWithHandlers<TapAndPanGestureRecognizer>(
++      //           () => TapAndPanGestureRecognizer(debugOwner: this),
++      //           (TapAndPanGestureRecognizer instance) {
++      //             instance
++      //               // Text selection should start from the position of the first pointer
++      //               // down event.
++      //               ..dragStartBehavior = DragStartBehavior.down
++      //               ..onTapTrackStart = _handleTapTrackStart
++      //               ..onTapTrackReset = _handleTapTrackReset
++      //               ..onTapDown = _handleTapDown
++      //               ..onDragStart = _handleDragStart
++      //               ..onDragUpdate = _handleDragUpdate
++      //               ..onDragEnd = _handleDragEnd
++      //               ..onTapUp = _handleTapUp
++      //               ..onCancel = _handleTapCancel;
++      //           },
++      //         );
++      // }
+     }
  
-   @override
-   bool _hasSufficientGlobalDistanceToAccept(PointerDeviceKind pointerDeviceKind) {
-+    return true;
-     return _globalDistanceMoved.abs() > computePanSlop(pointerDeviceKind, gestureSettings);
-   }
- 
+     if (widget.onForcePressStart != null || widget.onForcePressEnd != null) {

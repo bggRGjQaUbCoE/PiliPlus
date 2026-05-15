@@ -375,7 +375,10 @@ abstract final class DynamicsHttp {
       queryParameters: {'vote_id': voteId},
     );
     if (res.data['code'] == 0) {
-      return Success(VoteInfo.fromSeparatedJson(res.data['data']));
+      final voteInfo = VoteInfo.fromSeparatedJson(res.data['data']);
+      return voteInfo.voteId == null
+          ? const Error('无效的投票id')
+          : Success(voteInfo);
     } else {
       return Error(res.data['message']);
     }

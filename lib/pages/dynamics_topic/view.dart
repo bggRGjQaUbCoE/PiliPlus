@@ -6,6 +6,7 @@ import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/pair.dart';
 import 'package:PiliPlus/common/widgets/sliver/sliver_pinned_header.dart';
+import 'package:PiliPlus/http/constants.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/models_new/dynamic/dyn_topic_feed/item.dart';
@@ -315,7 +316,7 @@ class _DynTopicPageState extends State<DynTopicPage> with DynMixin {
                       return;
                     }
                     PageUtils.inAppWebview(
-                      'https://www.bilibili.com/h5/topic-active/topic-report?topic_id=${_controller.topicId}&topic_name=${_controller.topicName}&${ThemeUtils.themeUrl(colorScheme.isDark)}',
+                      '${HttpString.baseUrl}/h5/topic-active/topic-report?topic_id=${_controller.topicId}&topic_name=${_controller.topicName}&${ThemeUtils.themeUrl(colorScheme.isDark)}',
                     );
                   },
                 ),

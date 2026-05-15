@@ -48,7 +48,7 @@ class _VotePanelState extends State<VotePanel> {
   late bool _showPercentage = !_enabled;
   late final _maxCnt = _voteInfo.choiceCnt ?? _voteInfo.options.length;
   final isLogin = Accounts.main.isLogin;
-  late final Rxn<List<FolloweeVote>> followeeVote = Rxn<List<FolloweeVote>>();
+  late final followeeVote = Rxn<List<FolloweeVote>>();
 
   @override
   void initState() {
@@ -551,18 +551,15 @@ Future<void> showVoteDialog(
 ]) async {
   final voteInfo = await DynamicsHttp.voteInfo(voteId);
   if (context.mounted) {
-    if (voteInfo.isSuccess) {
+    if (voteInfo case Success(:final response)) {
       showDialog(
         context: context,
         builder: (context) => Dialog(
-          constraints: const BoxConstraints(
-            minWidth: 280,
-            maxWidth: 625,
-          ),
+          constraints: const BoxConstraints(minWidth: 280, maxWidth: 625),
           child: Padding(
-            padding: const EdgeInsets.all(24),
+            padding: const .all(24),
             child: VotePanel(
-              voteInfo: voteInfo.data,
+              voteInfo: response,
               onVote: (votes, anonymous) => DynamicsHttp.doVote(
                 voteId: voteId,
                 votes: votes.toList(),

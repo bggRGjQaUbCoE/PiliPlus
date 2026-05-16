@@ -15,7 +15,7 @@ import 'package:PiliPlus/pages/setting/models/model.dart';
 import 'package:PiliPlus/pages/setting/widgets/slider_dialog.dart';
 import 'package:PiliPlus/services/download/download_service.dart';
 import 'package:PiliPlus/utils/accounts.dart';
-import 'package:PiliPlus/utils/cache_manager.dart';
+import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/path_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
@@ -162,7 +162,7 @@ List<SettingsModel> get extraSettings => [
     title: '最大缓存大小',
     getSubtitle: () {
       final num = Pref.maxCacheSize;
-      return '当前最大缓存大小: 「${num == 0 ? '无限' : CacheManager.formatSize(Pref.maxCacheSize)}」';
+      return '当前最大缓存大小: 「${num == 0 ? '无限' : Pref.maxCacheSize.formatSize}」';
     },
     leading: const Icon(Icons.delete_outlined),
     onTap: _showCacheDialog,

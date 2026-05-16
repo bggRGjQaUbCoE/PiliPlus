@@ -2057,11 +2057,13 @@ class Picture extends $pb.GeneratedMessage {
     $core.String? imgSrc,
     $core.double? imgWidth,
     $core.double? imgHeight,
+    $core.double? imgSize,
   }) {
     final result = create();
     if (imgSrc != null) result.imgSrc = imgSrc;
     if (imgWidth != null) result.imgWidth = imgWidth;
     if (imgHeight != null) result.imgHeight = imgHeight;
+    if (imgSize != null) result.imgSize = imgSize;
     return result;
   }
 
@@ -2082,6 +2084,7 @@ class Picture extends $pb.GeneratedMessage {
     ..aOS(1, _omitFieldNames ? '' : 'imgSrc')
     ..aD(2, _omitFieldNames ? '' : 'imgWidth')
     ..aD(3, _omitFieldNames ? '' : 'imgHeight')
+    ..aD(4, _omitFieldNames ? '' : 'imgSize')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -2128,6 +2131,15 @@ class Picture extends $pb.GeneratedMessage {
   $core.bool hasImgHeight() => $_has(2);
   @$pb.TagNumber(3)
   void clearImgHeight() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.double get imgSize => $_getN(3);
+  @$pb.TagNumber(4)
+  set imgSize($core.double value) => $_setDouble(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasImgSize() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearImgSize() => $_clearField(4);
 }
 
 class ReplyCardLabel extends $pb.GeneratedMessage {

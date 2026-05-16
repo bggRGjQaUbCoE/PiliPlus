@@ -1200,7 +1200,9 @@ class OpusPicModel extends PicModel {
     src = json['src'];
     url = json['url'];
     liveUrl = json['live_url'];
-    size = json['size'];
+    if (json['size'] case num size) {
+      this.size = size * 1024;
+    }
   }
 
   Map<String, dynamic> toJson() => {

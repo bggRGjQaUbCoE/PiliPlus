@@ -278,6 +278,7 @@ TextSpan? richNode(
                               url: item.src ?? '',
                               width: item.width,
                               height: item.height,
+                              size: item.size,
                             ),
                           )
                           .toList(),
@@ -294,7 +295,9 @@ TextSpan? richNode(
                       void onView(List<OpusPicModel> list) {
                         PageUtils.imageView(
                           imgList: list
-                              .map((e) => SourceModel(url: e.src!))
+                              .map(
+                                (e) => SourceModel(url: e.src!, size: e.size),
+                              )
                               .toList(),
                         );
                       }

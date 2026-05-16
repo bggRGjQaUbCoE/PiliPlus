@@ -1,5 +1,20 @@
 import 'dart:math' show pow;
 
+const unitArr = ['B', 'K', 'M', 'G', 'T', 'P'];
+
+extension NumExt on num {
+  String get formatSize {
+    var value = this;
+    int index = 0;
+    while (value >= 1024) {
+      index++;
+      value = value / 1024;
+    }
+    String size = value.toStringAsFixed(2);
+    return size + (unitArr.elementAtOrNull(index) ?? '');
+  }
+}
+
 extension IntExt on int? {
   int? operator +(int other) => this == null ? null : this! + other;
   int? operator -(int other) => this == null ? null : this! - other;

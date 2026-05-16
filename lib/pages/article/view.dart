@@ -289,7 +289,12 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
                                   onTap: () => PageUtils.imageView(
                                     quality: 60,
                                     imgList: pics
-                                        .map((e) => SourceModel(url: e.url!))
+                                        .map(
+                                          (e) => SourceModel(
+                                            url: e.url!,
+                                            size: e.size,
+                                          ),
+                                        )
                                         .toList(),
                                     initialPage: index,
                                   ),

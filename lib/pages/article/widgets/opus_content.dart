@@ -258,6 +258,7 @@ class OpusContent extends StatelessWidget {
                           width: e.width,
                           height: e.height,
                           url: e.url!,
+                          size: e.size,
                         ),
                       )
                       .toList(),

@@ -17,7 +17,7 @@ import 'package:PiliPlus/pages/download/detail/view.dart';
 import 'package:PiliPlus/pages/download/detail/widgets/item.dart';
 import 'package:PiliPlus/pages/download/search/view.dart';
 import 'package:PiliPlus/services/download/download_service.dart';
-import 'package:PiliPlus/utils/cache_manager.dart';
+import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/grid.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
@@ -373,7 +373,7 @@ class _DownloadPageState extends State<DownloadPage> with GridMixin {
                       mainAxisAlignment: .spaceBetween,
                       children: [
                         Text(
-                          '${CacheManager.formatSize(pageInfo.entries.fold(0, (p, n) => p + n.totalBytes))}  ${first.ownerName ?? ""}',
+                          '${pageInfo.entries.fold(0, (p, n) => p + n.totalBytes).formatSize}  ${first.ownerName ?? ""}',
                           style: TextStyle(
                             fontSize: 12,
                             height: 1.6,

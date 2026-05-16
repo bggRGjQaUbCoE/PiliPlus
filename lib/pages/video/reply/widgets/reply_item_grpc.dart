@@ -334,6 +334,7 @@ class ReplyItemGrpc extends StatelessWidget {
                       width: item.imgWidth,
                       height: item.imgHeight,
                       url: item.imgSrc,
+                      size: item.imgSize * 1024,
                     ),
                   )
                   .toList(),

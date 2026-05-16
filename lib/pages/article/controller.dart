@@ -42,10 +42,11 @@ class ArticleController extends CommonDynController {
       opusData?.modules.moduleContent ?? articleData?.opus?.content;
 
   List<SourceModel>? _images;
-  List<SourceModel> images() => _images ??= opus!
-      .where((e) => e.paraType == 2 && e.pic != null)
-      .map((e) => SourceModel(url: e.pic!.pics!.first.url!))
-      .toList();
+  List<SourceModel> images() =>
+      _images ??= opus!.where((e) => e.paraType == 2 && e.pic != null).map((e) {
+        final pic = e.pic!.pics!.first;
+        return SourceModel(url: pic.url!, size: pic.size);
+      }).toList();
 
   @override
   void onInit() {

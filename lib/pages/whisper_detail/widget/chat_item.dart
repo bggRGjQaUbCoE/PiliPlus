@@ -624,6 +624,10 @@ class ChatItem extends StatelessWidget {
     final url = content['url'];
     final imgWidth = (content['width'] as num).toDouble();
     final imgHeight = (content['height'] as num).toDouble();
+    num? size;
+    if (content['size'] case num value) {
+      size = value * 1000;
+    }
     final width = math.min(220.0, imgWidth);
     final ratio = imgHeight / imgWidth;
     Widget child = NetworkImgLayer(
@@ -638,7 +642,9 @@ class ChatItem extends StatelessWidget {
       );
     }
     return GestureDetector(
-      onTap: () => PageUtils.imageView(imgList: [SourceModel(url: url)]),
+      onTap: () => PageUtils.imageView(
+        imgList: [SourceModel(url: url, size: size)],
+      ),
       child: child,
     );
   }

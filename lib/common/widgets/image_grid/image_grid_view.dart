@@ -24,6 +24,7 @@ import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/image_grid/image_grid_builder.dart';
 import 'package:PiliPlus/models/common/image_preview_type.dart';
 import 'package:PiliPlus/utils/extension/context_ext.dart';
+import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/size_ext.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
@@ -40,6 +41,7 @@ class ImageModel {
     required num? height,
     required this.url,
     this.liveUrl,
+    this.size,
   }) {
     this.width = width == null || width == 0 ? 1 : width;
     this.height = height == null || height == 0 ? 1 : height;
@@ -51,6 +53,7 @@ class ImageModel {
   String? liveUrl;
   bool? _isLongPic;
   bool? _isLivePhoto;
+  num? size;
 
   bool get isLongPic =>
       _isLongPic ??= (height / width) > Style.imgMaxRatio && width > 100;
@@ -85,6 +88,7 @@ class ImageGridView extends StatelessWidget {
           width: isLive ? item.width.toInt() : null,
           height: isLive ? item.height.toInt() : null,
           isLongPic: item.isLongPic,
+          size: item.size,
         );
       },
     ).toList();
@@ -153,7 +157,20 @@ class ImageGridView extends StatelessWidget {
         PopupMenuItem(
           height: 42,
           onTap: () => ImageUtils.downloadImg([item.url]),
-          child: const Text('保存图片', style: TextStyle(fontSize: 14)),
+          child: item.size == null
+              ? const Text('保存图片', style: TextStyle(fontSize: 14))
+              : Text.rich(
+                  TextSpan(
+                    text: '保存图片',
+                    children: [
+                      TextSpan(
+                        text: '(${item.size!.formatSize})',
+                        style: const TextStyle(fontSize: 12),
+                      ),
+                    ],
+                  ),
+                  style: const TextStyle(fontSize: 14),
+                ),
         ),
         if (PlatformUtils.isDesktop)
           PopupMenuItem(

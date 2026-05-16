@@ -533,7 +533,20 @@ class _GalleryViewerState extends State<GalleryViewer>
                 ImageUtils.downloadImg([item.url]);
               },
               dense: true,
-              title: const Text('保存图片', style: TextStyle(fontSize: 14)),
+              title: item.size == null
+                  ? const Text('保存图片', style: TextStyle(fontSize: 14))
+                  : Text.rich(
+                      TextSpan(
+                        text: '保存图片',
+                        children: [
+                          TextSpan(
+                            text: '(${item.size!.formatSize})',
+                            style: const TextStyle(fontSize: 12),
+                          ),
+                        ],
+                      ),
+                      style: const TextStyle(fontSize: 14),
+                    ),
             ),
             if (PlatformUtils.isDesktop)
               ListTile(
@@ -593,7 +606,20 @@ class _GalleryViewerState extends State<GalleryViewer>
         PopupMenuItem(
           height: 42,
           onTap: () => ImageUtils.downloadImg([item.url]),
-          child: const Text('保存图片', style: TextStyle(fontSize: 14)),
+          child: item.size == null
+              ? const Text('保存图片', style: TextStyle(fontSize: 14))
+              : Text.rich(
+                  TextSpan(
+                    text: '保存图片',
+                    children: [
+                      TextSpan(
+                        text: '(${item.size!.formatSize})',
+                        style: const TextStyle(fontSize: 12),
+                      ),
+                    ],
+                  ),
+                  style: const TextStyle(fontSize: 14),
+                ),
         ),
         PopupMenuItem(
           height: 42,

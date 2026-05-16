@@ -44,18 +44,6 @@ abstract final class CacheManager {
     return total;
   }
 
-  // 缓存大小格式转换
-  static String formatSize(num value) {
-    const unitArr = ['B', 'K', 'M', 'G', 'T', 'P'];
-    int index = 0;
-    while (value >= 1024) {
-      index++;
-      value = value / 1024;
-    }
-    String size = value.toStringAsFixed(2);
-    return size + (unitArr.elementAtOrNull(index) ?? '');
-  }
-
   // 清除 Library/Caches 目录及文件缓存
   static Future<void> clearLibraryCache() async {
     try {

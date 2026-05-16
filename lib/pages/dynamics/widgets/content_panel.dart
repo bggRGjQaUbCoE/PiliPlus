@@ -98,6 +98,7 @@ Widget content(
                     height: item.height,
                     url: item.url ?? '',
                     liveUrl: item.liveUrl,
+                    size: item.size,
                   ),
                 )
                 .toList(),

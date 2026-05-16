@@ -807,13 +807,15 @@ const Picture$json = {
     {'1': 'img_src', '3': 1, '4': 1, '5': 9, '10': 'imgSrc'},
     {'1': 'img_width', '3': 2, '4': 1, '5': 1, '10': 'imgWidth'},
     {'1': 'img_height', '3': 3, '4': 1, '5': 1, '10': 'imgHeight'},
+    {'1': 'img_size', '3': 4, '4': 1, '5': 1, '10': 'imgSize'},
   ],
 };
 
 /// Descriptor for `Picture`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List pictureDescriptor = $convert.base64Decode(
     'CgdQaWN0dXJlEhcKB2ltZ19zcmMYASABKAlSBmltZ1NyYxIbCglpbWdfd2lkdGgYAiABKAFSCG'
-    'ltZ1dpZHRoEh0KCmltZ19oZWlnaHQYAyABKAFSCWltZ0hlaWdodA==');
+    'ltZ1dpZHRoEh0KCmltZ19oZWlnaHQYAyABKAFSCWltZ0hlaWdodBIZCghpbWdfc2l6ZRgEIAEo'
+    'AVIHaW1nU2l6ZQ==');
 
 @$core.Deprecated('Use replyCardLabelDescriptor instead')
 const ReplyCardLabel$json = {

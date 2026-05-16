@@ -44,7 +44,9 @@ class Pic {
     url = json['url'];
     width = (json['width'] as num?)?.toDouble();
     height = (json['height'] as num?)?.toDouble();
-    size = json['size'];
+    if (json['size'] case num size) {
+      this.size = size * 1024;
+    }
     pics = (json['pics'] as List?)?.map((item) => Pic.fromJson(item)).toList();
     style = json['style'];
     liveUrl = json['live_url'];

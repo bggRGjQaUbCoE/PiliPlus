@@ -122,6 +122,7 @@ abstract class CommonRichTextPubPageState<T extends CommonRichTextPubPage>
                       OpusPicModel e => SourceModel(
                         url: e.url!,
                         sourceType: .networkImage,
+                        size: e.size,
                       ),
                     },
                   )

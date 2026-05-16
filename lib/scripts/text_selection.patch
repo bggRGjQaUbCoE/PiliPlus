@@ -1,12 +1,12 @@
 diff --git a/packages/flutter/lib/src/gestures/tap_and_drag.dart b/packages/flutter/lib/src/gestures/tap_and_drag.dart
-index 2409d19eabd..fac71cdb383 100644
+index 2409d19eabd..3d26609d1ce 100644
 --- a/packages/flutter/lib/src/gestures/tap_and_drag.dart
 +++ b/packages/flutter/lib/src/gestures/tap_and_drag.dart
 @@ -1407,6 +1407,9 @@ class TapAndHorizontalDragGestureRecognizer extends BaseTapAndDragGestureRecogni
  
    @override
    bool _hasSufficientGlobalDistanceToAccept(PointerDeviceKind pointerDeviceKind) {
-+    if (pointerDeviceKind != PointerDeviceKind.mouse) {
++    if (pointerDeviceKind == PointerDeviceKind.touch) {
 +      return false;
 +    }
      return _globalDistanceMoved.abs() > computeHitSlop(pointerDeviceKind, gestureSettings);

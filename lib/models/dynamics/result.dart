@@ -43,9 +43,22 @@ class DynamicsDataModel {
   );
   static bool enableFilter = banWordForDyn.pattern.isNotEmpty;
 
+  static const kAdditionalGoodsType = 'ADDITIONAL_TYPE_GOODS';
+  static const kRichTextGoodsType = 'RICH_TEXT_NODE_TYPE_GOODS';
+  static bool hasGoods(DynamicItemModel? item) {
+    if (item?.modules.moduleDynamic case final moduleDynamic?) {
+      return moduleDynamic.additional?.type == kAdditionalGoodsType ||
+          (moduleDynamic.major?.opus?.summary?.richTextNodes?.any(
+                (e) => e.type == kRichTextGoodsType,
+              ) ??
+              false);
+    }
+    return false;
+  }
+
   DynamicsDataModel.fromJson(
     Map<String, dynamic> json, {
-    DynamicsTabType type = DynamicsTabType.all,
+    DynamicsTabType type = .all,
     Set<int>? tempBannedList,
   }) {
     hasMore = json['has_more'];
@@ -53,14 +66,10 @@ class DynamicsDataModel {
     List? list = json['items'] as List?;
     if (list != null && list.isNotEmpty) {
       items = <DynamicItemModel>[];
-      late final filterBan =
-          type != DynamicsTabType.up && tempBannedList?.isNotEmpty == true;
+      late final filterBan = type != .up && tempBannedList?.isNotEmpty == true;
       for (final e in list) {
         DynamicItemModel item = DynamicItemModel.fromJson(e);
-        if ((item.orig?.modules.moduleDynamic?.additional?.type ==
-                'ADDITIONAL_TYPE_GOODS' ||
-            item.modules.moduleDynamic?.additional?.type ==
-                'ADDITIONAL_TYPE_GOODS')) {
+        if (hasGoods(item.orig) || hasGoods(item)) {
           continue;
         }
         if (enableFilter) {

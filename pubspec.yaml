@@ -20,8 +20,8 @@ publish_to: "none" # Remove this line if you wish to publish to pub.dev
 version: 2.0.7+1
 
 environment:
-  sdk: ">=3.10.0"
-  flutter: 3.41.9 # update `.fvmrc` config
+  sdk: ">=3.12.0"
+  flutter: 3.44.0
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -95,7 +95,10 @@ dependencies:
       ref: master
   flutter_svg: ^2.0.14
   flutter_volume_controller: ^1.3.3
-  font_awesome_flutter: 10.9.0
+  font_awesome_flutter:
+    git:
+      url: https://github.com/bggRGjQaUbCoE/font_awesome_flutter.git
+      ref: v10.9.0
   get:
     git:
       url: https://github.com/bggRGjQaUbCoE/getx.git
@@ -160,7 +163,11 @@ dependencies:
       ref: main
 
 dependency_overrides:
-  font_awesome_flutter: 10.9.0
+  flutter_inappwebview_android:
+    git:
+      url: https://github.com/bggRGjQaUbCoE/flutter_inappwebview.git
+      path: flutter_inappwebview_android
+      ref: v6.1.5
   media_kit:
     git:
       url: https://github.com/My-Responsitories/media-kit.git

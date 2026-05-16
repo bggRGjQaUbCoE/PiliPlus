@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// ignore_for_file: dangling_library_doc_comments, prefer_initializing_formals
+
 /// @docImport 'package:flutter/material.dart';
 ///
 /// @docImport 'overscroll_indicator.dart';
 /// @docImport 'viewport.dart';
-
-// ignore_for_file: dangling_library_doc_comments
 
 import 'dart:math' as math;
 

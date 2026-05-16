@@ -268,10 +268,9 @@ class _VideoTime extends LeafRenderObjectWidget {
 
 class _RenderVideoTime extends RenderBox {
   _RenderVideoTime({
-    required String position,
-    required String duration,
-  }) : _position = position,
-       _duration = duration;
+    required this._position,
+    required this._duration,
+  });
 
   String _duration;
   set duration(String value) {

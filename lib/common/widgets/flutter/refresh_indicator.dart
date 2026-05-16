@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// ignore_for_file: prefer_initializing_formals
+
 import 'dart:async' show Completer;
 import 'dart:io' show Platform;
 
@@ -517,7 +519,7 @@ class RefreshIndicatorState extends State<RefreshIndicator>
             left: 0.0,
             right: 0.0,
             child: SizeTransition(
-              axisAlignment: 1.0,
+              alignment: .bottomStart,
               sizeFactor: _positionFactor, // This is what brings it down.
               child: Padding(
                 padding: EdgeInsets.only(top: displacement),

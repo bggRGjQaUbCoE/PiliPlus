@@ -135,12 +135,10 @@ class _RenderHotKeywordGrid extends RenderBox
         ContainerRenderObjectMixin<RenderBox, MultiChildLayoutParentData>,
         RenderBoxContainerDefaultsMixin<RenderBox, MultiChildLayoutParentData> {
   _RenderHotKeywordGrid({
-    required int crossAxisCount,
-    required double mainAxisSpacing,
-    required double crossAxisSpacing,
-  }) : _crossAxisCount = crossAxisCount,
-       _mainAxisSpacing = mainAxisSpacing,
-       _crossAxisSpacing = crossAxisSpacing;
+    required this._crossAxisCount,
+    required this._mainAxisSpacing,
+    required this._crossAxisSpacing,
+  });
 
   int _crossAxisCount;
   int get crossAxisCount => _crossAxisCount;

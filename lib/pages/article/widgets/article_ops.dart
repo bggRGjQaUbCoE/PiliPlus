@@ -12,9 +12,9 @@ import 'package:get/get.dart';
 class ArticleOpus extends StatelessWidget {
   const ArticleOpus({
     super.key,
-    required List<ArticleOps>? ops,
+    required this._ops,
     required this.maxWidth,
-  }) : _ops = ops;
+  });
 
   final List<ArticleOps>? _ops;
   final double maxWidth;

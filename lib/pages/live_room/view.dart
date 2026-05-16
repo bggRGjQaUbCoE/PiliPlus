@@ -947,10 +947,9 @@ class _BorderIndicator extends LeafRenderObjectWidget {
 
 class _RenderBorderIndicator extends RenderBox {
   _RenderBorderIndicator({
-    required Radius radius,
-    required bool isLeft,
-  }) : _radius = radius,
-       _isLeft = isLeft;
+    required this._radius,
+    required this._isLeft,
+  });
 
   Radius _radius;
   Radius get radius => _radius;

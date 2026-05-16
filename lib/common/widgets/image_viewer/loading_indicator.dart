@@ -55,10 +55,9 @@ class LoadingIndicator extends LeafRenderObjectWidget {
 
 class RenderLoadingIndicator extends RenderBox {
   RenderLoadingIndicator({
-    required double preferredSize,
-    required double progress,
-  }) : _preferredSize = preferredSize,
-       _progress = progress;
+    required this._preferredSize,
+    required this._progress,
+  });
 
   double _preferredSize;
   double get preferredSize => _preferredSize;

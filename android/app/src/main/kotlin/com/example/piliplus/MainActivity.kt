@@ -16,6 +16,7 @@ import androidx.core.net.toUri
 import com.ryanheise.audioservice.AudioServiceActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
+import io.flutter.SystemChrome
 
 class MainActivity : AudioServiceActivity() {
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
@@ -118,6 +119,22 @@ class MainActivity : AudioServiceActivity() {
 
                 "sdkInt" -> {
                     result.success(Build.VERSION.SDK_INT)
+                }
+
+                "SystemChrome.setEnabledSystemUIMode" -> {
+                    SystemChrome.onMethodCall(
+                        this,
+                        "SystemChrome.setEnabledSystemUIMode",
+                        call.argument("arguments")
+                    )
+                }
+
+                "SystemChrome.setEnabledSystemUIOverlays" -> {
+                    SystemChrome.onMethodCall(
+                        this,
+                        "SystemChrome.setEnabledSystemUIOverlays",
+                        call.argument("arguments")
+                    )
                 }
 
                 else -> result.notImplemented()

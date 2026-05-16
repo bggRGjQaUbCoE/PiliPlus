@@ -94,11 +94,10 @@ class RenderImageGrid extends RenderBox
         RenderBoxContainerDefaultsMixin<RenderBox, MultiChildLayoutParentData>,
         RenderObjectWithLayoutCallbackMixin {
   RenderImageGrid({
-    required ValueChanged<int> onTap,
+    required this._onTap,
     required OnShowMenu? onSecondaryTapUp,
     required OnShowMenu? onLongPressStart,
-  }) : _onTap = onTap,
-       _onSecondaryTapUp = onSecondaryTapUp,
+  }) : _onSecondaryTapUp = onSecondaryTapUp,
        _onLongPressStart = onLongPressStart {
     _tapGestureRecognizer = TapGestureRecognizer()..onTap = _handleOnTap;
     if (onSecondaryTapUp != null) {

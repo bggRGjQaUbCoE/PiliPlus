@@ -115,15 +115,13 @@ class BounceMarquee extends Marquee {
 abstract class MarqueeRender extends RenderBox
     with RenderObjectWithChildMixin<RenderBox> {
   MarqueeRender({
-    required Axis direction,
-    required double velocity,
+    required this._direction,
+    required this._velocity,
     required double spacing,
     required this.clipBehavior,
     required ContextSingleTicker provider,
   }) : _ticker = provider,
        _spacing = spacing,
-       _velocity = velocity,
-       _direction = direction,
        assert(spacing.isFinite && !spacing.isNaN);
 
   Clip clipBehavior;

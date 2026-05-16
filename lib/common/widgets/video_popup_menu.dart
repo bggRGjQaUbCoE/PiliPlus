@@ -10,6 +10,7 @@ import 'package:PiliPlus/pages/search/widgets/search_text.dart';
 import 'package:PiliPlus/pages/video/ai_conclusion/view.dart';
 import 'package:PiliPlus/pages/video/introduction/ugc/controller.dart';
 import 'package:PiliPlus/utils/accounts.dart';
+import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart';
@@ -55,6 +56,11 @@ class VideoPopupMenu extends StatelessWidget {
                     videoItem.bvid!,
                     const Icon(CustomIcons.identifier_circle, size: 16),
                     () => Utils.copyText(videoItem.bvid!),
+                  ),
+                  _VideoCustomAction(
+                    'av${IdUtils.bv2av(videoItem.bvid!)}',
+                    const Icon(CustomIcons.identifier_circle, size: 16),
+                    () => Utils.copyText('av${IdUtils.bv2av(videoItem.bvid!)}'),
                   ),
                   _VideoCustomAction(
                     '稍后再看',

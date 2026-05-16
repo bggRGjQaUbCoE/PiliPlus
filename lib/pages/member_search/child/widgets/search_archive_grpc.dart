@@ -32,7 +32,8 @@ class SearchArchiveGrpc extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final arc = item.archive;
-    final bvid = IdUtils.av2bv(arc.aid.toInt());
+    final aid = arc.aid.toInt();
+    final bvid = IdUtils.av2bv(aid);
     final regTitle = Em.regTitle(arc.title);
     final titleStr = regTitle.map((e) => e.text).join();
     void onLongPress() => imageSaveDialog(
@@ -135,6 +136,20 @@ class SearchArchiveGrpc extends StatelessWidget {
                     children: [
                       const Icon(CustomIcons.identifier_circle, size: 16),
                       Text(bvid, style: const TextStyle(fontSize: 13)),
+                    ],
+                  ),
+                ),
+                PopupMenuItem(
+                  height: 45,
+                  onTap: () => Utils.copyText('av$aid'),
+                  child: Row(
+                    spacing: 6,
+                    children: [
+                      const Icon(CustomIcons.identifier_circle, size: 16),
+                      Text(
+                        'av$aid',
+                        style: const TextStyle(fontSize: 13),
+                      ),
                     ],
                   ),
                 ),

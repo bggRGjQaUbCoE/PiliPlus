@@ -343,6 +343,17 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
         ),
       ),
     ),
+    if (videoDetail.aid != null)
+      GestureDetector(
+        onTap: () => Utils.copyText('av${videoDetail.aid}'),
+        child: Text(
+          'av${videoDetail.aid}',
+          style: TextStyle(
+            fontSize: 14,
+            color: theme.colorScheme.secondary,
+          ),
+        ),
+      ),
     if (videoDetail.descV2?.isNotEmpty == true) ...[
       const SizedBox(height: 8),
       selectableRichText(

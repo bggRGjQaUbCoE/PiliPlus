@@ -16,6 +16,7 @@
  */
 
 import 'dart:io' show File, Platform;
+import 'dart:math' as math;
 
 import 'package:PiliPlus/common/widgets/colored_box_transition.dart';
 import 'package:PiliPlus/common/widgets/flutter/layout_builder.dart';
@@ -33,6 +34,7 @@ import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
+import 'package:PiliPlus/utils/theme_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_debounce/easy_throttle.dart';
@@ -52,7 +54,7 @@ class GalleryViewer extends StatefulWidget {
     super.key,
     this.minScale = 1.0,
     this.maxScale = 8.0,
-    required this.quality,
+    required this.thumbQ,
     required this.sources,
     this.initIndex = 0,
     this.onPageChanged,
@@ -61,7 +63,7 @@ class GalleryViewer extends StatefulWidget {
 
   final double minScale;
   final double maxScale;
-  final int quality;
+  final int thumbQ;
   final List<SourceModel> sources;
   final int initIndex;
   final ValueChanged<int>? onPageChanged;
@@ -73,8 +75,11 @@ class GalleryViewer extends StatefulWidget {
 
 class _GalleryViewerState extends State<GalleryViewer>
     with SingleTickerProviderStateMixin {
+  late final sources = widget.sources;
   late Size _containerSize;
-  late final int _quality;
+  late final int _previewQ;
+  late final bool _isOrigin;
+  List<bool>? _isOrigPic;
   late final RxInt _currIndex;
   GlobalKey? _key;
   late EdgeInsets _padding;
@@ -98,10 +103,10 @@ class _GalleryViewerState extends State<GalleryViewer>
   Offset _offset = Offset.zero;
   bool _dragging = false;
 
-  String _getActualUrl(String url) {
-    return _quality != 100
-        ? ImageUtils.thumbnailUrl(url, maxQuality: _quality)
-        : url.http2https;
+  String _getActualUrl(String url, {required int index}) {
+    return _isOrigin || _isOrigPic![index]
+        ? url.http2https
+        : ImageUtils.thumbnailUrl(url, maxQuality: _previewQ);
   }
 
   Future<void> _initPlayer() async {
@@ -114,7 +119,7 @@ class _GalleryViewerState extends State<GalleryViewer>
       return;
     }
     _player = player;
-    final currItem = widget.sources[_currIndex.value];
+    final currItem = sources[_currIndex.value];
     if (currItem.sourceType == .livePhoto) {
       player.open(Media(currItem.liveUrl!));
       _currIndex.refresh();
@@ -124,9 +129,13 @@ class _GalleryViewerState extends State<GalleryViewer>
   @override
   void initState() {
     super.initState();
-    _quality = Pref.previewQ;
+    _previewQ = Pref.previewQ;
+    _isOrigin = _previewQ == 100;
+    if (!_isOrigin) {
+      _isOrigPic = List.filled(sources.length, false);
+    }
     _currIndex = widget.initIndex.obs;
-    final item = widget.sources[widget.initIndex];
+    final item = sources[widget.initIndex];
     _playIfNeeded(item);
 
     if (!item.isLongPic) {
@@ -258,13 +267,27 @@ class _GalleryViewerState extends State<GalleryViewer>
       ..onDoubleTap = null
       ..dispose();
     _longPressGestureRecognizer.dispose();
-    if (widget.quality != _quality) {
-      for (final item in widget.sources) {
-        if (item.sourceType == SourceType.networkImage) {
-          CachedNetworkImageProvider(_getActualUrl(item.url)).evict();
+    if (_isOrigPic != null) {
+      for (int i = 0; i < _isOrigPic!.length; i++) {
+        if (_isOrigPic![i]) {
+          final item = sources[i];
+          if (item.sourceType == .networkImage) {
+            CachedNetworkImageProvider(
+              _getActualUrl(item.url, index: i),
+            ).evict();
+          }
         }
       }
     }
+    if (widget.thumbQ != _previewQ) {
+      for (int i = 0; i < sources.length; i++) {
+        final item = sources[i];
+        if (item.sourceType == .networkImage) {
+          CachedNetworkImageProvider(_getActualUrl(item.url, index: i)).evict();
+        }
+      }
+    }
+
     Future.delayed(const Duration(milliseconds: 200), _currIndex.close);
     super.dispose();
   }
@@ -299,7 +322,7 @@ class _GalleryViewerState extends State<GalleryViewer>
                   physics: const CustomTabBarViewScrollPhysics(
                     parent: AlwaysScrollableScrollPhysics(),
                   ),
-                  itemCount: widget.sources.length,
+                  itemCount: sources.length,
                   itemBuilder: _itemBuilder,
                   horizontalDragGestureRecognizer: () =>
                       _horizontalDragGestureRecognizer,
@@ -308,38 +331,86 @@ class _GalleryViewerState extends State<GalleryViewer>
             },
           ),
           _buildIndicator,
+          if (!_isOrigin) _originButton,
         ],
       ),
     );
   }
 
-  Widget get _buildIndicator => Positioned(
-    bottom: 0,
-    left: 0,
-    right: 0,
-    child: IgnorePointer(
-      child: Container(
-        padding: _padding + const EdgeInsets.fromLTRB(12, 8, 20, 8),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Colors.transparent,
-              Colors.black.withValues(alpha: 0.3),
-            ],
+  Widget get _originButton {
+    return Positioned(
+      top: 18 + _padding.top,
+      child: Center(
+        child: Obx(() {
+          final index = _currIndex.value;
+          if (!_isOrigPic![index]) {
+            final item = sources[index];
+            if (item.sourceType == .networkImage) {
+              return FilledButton.tonal(
+                style: FilledButton.styleFrom(
+                  minimumSize: .zero,
+                  visualDensity: .standard,
+                  tapTargetSize: .shrinkWrap,
+                  padding: const .symmetric(horizontal: 8, vertical: 5.5),
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: .all(.circular(4)),
+                  ),
+                  backgroundColor:
+                      ThemeUtils.darkTheme.colorScheme.secondaryContainer,
+                  foregroundColor:
+                      ThemeUtils.darkTheme.colorScheme.onSecondaryContainer,
+                ),
+                onPressed: () {
+                  _isOrigPic![index] = true;
+                  setState(() {});
+                },
+                child: Text(
+                  '查看原图${item.size == null ? '' : '(${item.size!.formatSize})'}',
+                  style: const TextStyle(height: 1, fontSize: 13),
+                  strutStyle: const StrutStyle(
+                    height: 1,
+                    leading: 0,
+                    fontSize: 13,
+                  ),
+                ),
+              );
+            }
+          }
+          return const SizedBox.shrink();
+        }),
+      ),
+    );
+  }
+
+  Widget get _buildIndicator {
+    return Positioned(
+      bottom: 0,
+      left: 0,
+      right: 0,
+      child: IgnorePointer(
+        child: Container(
+          padding: _padding + const .fromLTRB(12, 8, 20, 8),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: .topCenter,
+              end: .bottomCenter,
+              colors: [
+                Colors.transparent,
+                Colors.black.withValues(alpha: 0.3),
+              ],
+            ),
           ),
-        ),
-        alignment: Alignment.center,
-        child: Obx(
-          () => Text(
-            "${_currIndex.value + 1}/${widget.sources.length}",
-            style: const TextStyle(color: Colors.white),
+          alignment: .center,
+          child: Obx(
+            () => Text(
+              "${_currIndex.value + 1}/${sources.length}",
+              style: const TextStyle(color: Colors.white),
+            ),
           ),
         ),
       ),
-    ),
-  );
+    );
+  }
 
   void _playIfNeeded(SourceModel item) {
     if (item.sourceType == .livePhoto) {
@@ -354,18 +425,18 @@ class _GalleryViewerState extends State<GalleryViewer>
 
   void _onPageChanged(int index) {
     _player?.pause();
-    _playIfNeeded(widget.sources[index]);
+    _playIfNeeded(sources[index]);
     _currIndex.value = index;
     widget.onPageChanged?.call(index);
   }
 
-  late final ValueChanged<int>? _onChangePage = widget.sources.length == 1
+  late final ValueChanged<int>? _onChangePage = sources.length == 1
       ? null
       : (int offset) {
           final currPage = _pageController.page?.round() ?? 0;
           final nextPage = (currPage + offset).clamp(
             0,
-            widget.sources.length - 1,
+            sources.length - 1,
           );
           if (nextPage != currPage) {
             _pageController.animateToPage(
@@ -377,10 +448,10 @@ class _GalleryViewerState extends State<GalleryViewer>
         };
 
   Widget _itemBuilder(BuildContext context, int index) {
-    final item = widget.sources[index];
+    final item = sources[index];
     final Widget child;
     switch (item.sourceType) {
-      case SourceType.fileImage:
+      case .fileImage:
         child = Image.file(
           key: _key,
           File(item.url),
@@ -395,14 +466,22 @@ class _GalleryViewerState extends State<GalleryViewer>
           horizontalDragGestureRecognizer: _horizontalDragGestureRecognizer,
           onChangePage: _onChangePage,
         );
-      case SourceType.networkImage:
+      case .networkImage:
         final isLongPic = item.isLongPic;
+        double? cacheWidth, cacheHeight;
+        if (item.isLongPic) {
+          cacheWidth = math.min(650.0, _containerSize.width);
+        } else if (_containerSize.width < _containerSize.height) {
+          cacheWidth = _containerSize.width;
+        } else {
+          cacheHeight = _containerSize.height;
+        }
         child = Image(
           key: _key,
           image: ResizeImage.resizeIfNeeded(
-            _containerSize.width,
-            null,
-            CachedNetworkImageProvider(_getActualUrl(item.url)),
+            cacheWidth,
+            cacheHeight,
+            CachedNetworkImageProvider(_getActualUrl(item.url, index: index)),
           ),
           minScale: widget.minScale,
           maxScale: widget.maxScale,
@@ -415,17 +494,17 @@ class _GalleryViewerState extends State<GalleryViewer>
               return child;
             }
             if (frame == null) {
-              if (widget.quality == _quality) {
+              if (widget.thumbQ == _previewQ && _isOrigPic?[index] != true) {
                 return child;
               } else {
                 return Image(
                   image: ResizeImage.resizeIfNeeded(
-                    _containerSize.width,
-                    null,
+                    cacheWidth,
+                    cacheHeight,
                     CachedNetworkImageProvider(
                       ImageUtils.thumbnailUrl(
                         item.url,
-                        maxQuality: widget.quality,
+                        maxQuality: widget.thumbQ,
                       ),
                     ),
                   ),
@@ -461,7 +540,7 @@ class _GalleryViewerState extends State<GalleryViewer>
         if (isLongPic) {
           return child;
         }
-      case SourceType.livePhoto:
+      case .livePhoto:
         child = Obx(
           key: _key,
           () => _currIndex.value == index && _videoController != null
@@ -499,7 +578,7 @@ class _GalleryViewerState extends State<GalleryViewer>
   }
 
   void _onLongPress() {
-    final item = widget.sources[_currIndex.value];
+    final item = sources[_currIndex.value];
     if (item.sourceType == .fileImage) return;
     HapticFeedback.mediumImpact();
     showDialog(
@@ -557,18 +636,18 @@ class _GalleryViewerState extends State<GalleryViewer>
                 dense: true,
                 title: const Text('网页打开', style: TextStyle(fontSize: 14)),
               )
-            else if (widget.sources.length > 1)
+            else if (sources.length > 1)
               ListTile(
                 onTap: () {
                   Get.back();
                   ImageUtils.downloadImg(
-                    widget.sources.map((item) => item.url).toList(),
+                    sources.map((item) => item.url).toList(),
                   );
                 },
                 dense: true,
                 title: const Text('保存全部图片', style: TextStyle(fontSize: 14)),
               ),
-            if (item.sourceType == SourceType.livePhoto)
+            if (item.sourceType == .livePhoto)
               ListTile(
                 onTap: () {
                   Get.back();
@@ -592,7 +671,7 @@ class _GalleryViewerState extends State<GalleryViewer>
   }
 
   void _showDesktopMenu(TapUpDetails details) {
-    final item = widget.sources[_currIndex.value];
+    final item = sources[_currIndex.value];
     if (item.sourceType == .fileImage) return;
     showMenu(
       context: context,
@@ -626,7 +705,7 @@ class _GalleryViewerState extends State<GalleryViewer>
           onTap: () => PageUtils.launchURL(item.url),
           child: const Text('网页打开', style: TextStyle(fontSize: 14)),
         ),
-        if (item.sourceType == SourceType.livePhoto)
+        if (item.sourceType == .livePhoto)
           PopupMenuItem(
             height: 42,
             onTap: () => ImageUtils.downloadLivePhoto(

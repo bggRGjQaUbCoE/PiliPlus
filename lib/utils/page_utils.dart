@@ -53,7 +53,7 @@ abstract final class PageUtils {
         pageBuilder: (context, animation, secondaryAnimation) => GalleryViewer(
           sources: imgList,
           initIndex: initialPage,
-          quality: quality ?? GlobalData.imgQuality,
+          thumbQ: quality ?? GlobalData.imgQuality,
           onPageChanged: onPageChanged,
           tag: tag,
         ),
@@ -396,7 +396,7 @@ abstract final class PageUtils {
       (context) => GalleryViewer(
         sources: imgList,
         initIndex: index,
-        quality: GlobalData.imgQuality,
+        thumbQ: GlobalData.imgQuality,
       ),
       enableDrag: false,
       elevation: 0.0,

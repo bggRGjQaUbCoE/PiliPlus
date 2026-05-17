@@ -16,6 +16,7 @@ import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 mixin BaseLaterController
     on
@@ -58,7 +59,7 @@ mixin BaseLaterController
         content: const Text('即将移除该视频，确定是否移除'),
         actions: [
           TextButton(
-            onPressed: Get.back,
+            onPressed: () => Nav.back(),
             child: Text(
               '取消',
               style: TextStyle(color: Theme.of(context).colorScheme.outline),
@@ -66,7 +67,7 @@ mixin BaseLaterController
           ),
           TextButton(
             onPressed: () async {
-              Get.back();
+              Nav.back();
               final res = await UserHttp.toViewDel(aids: aid.toString());
               if (res.isSuccess) {
                 loadingState

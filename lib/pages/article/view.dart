@@ -28,6 +28,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:PiliPlus/utils/nav.dart';
 import 'package:get/get.dart';
 import 'package:html/parser.dart' as parser;
 
@@ -42,7 +43,7 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
   @override
   final ArticleController controller = Get.putOrFind(
     ArticleController.new,
-    tag: Get.parameters['type']! + Get.parameters['id']!,
+    tag: Nav.parameters['type']! + Nav.parameters['id']!,
   );
 
   @override
@@ -352,7 +353,7 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
                 child: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 10),
                   child: GestureDetector(
-                    onTap: () => Get.toNamed(
+                    onTap: () => Nav.push(
                       '/member?mid=${controller.summary.author?.mid}',
                     ),
                     child: Row(

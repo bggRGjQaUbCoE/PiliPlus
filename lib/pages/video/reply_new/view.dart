@@ -30,6 +30,7 @@ import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart' hide TextField;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class ReplyPage extends CommonRichTextPubPage {
   final int oid;
@@ -60,7 +61,7 @@ class ReplyPage extends CommonRichTextPubPage {
 
 class _ReplyPageState extends CommonRichTextPubPageState<ReplyPage> {
   final RxBool _syncToDynamic = false.obs;
-  final heroTag = Get.arguments?['heroTag'];
+  final heroTag = Nav.arguments?['heroTag'];
 
   @override
   void dispose() {
@@ -77,7 +78,7 @@ class _ReplyPageState extends CommonRichTextPubPageState<ReplyPage> {
   }
 
   late final darkVideoPage =
-      Get.currentRoute == '/videoV' && Pref.darkVideoPage;
+      Nav.currentRoute.startsWith('/video') && Pref.darkVideoPage;
   late ThemeData themeData;
 
   @override
@@ -310,7 +311,7 @@ class _ReplyPageState extends CommonRichTextPubPageState<ReplyPage> {
             // if (isRoot)
             //   item(
             //     onTap: () {
-            //       Get.back();
+            //       Nav.back();
             //       try {
             //         Get.find<VideoDetailController>(tag: heroTag)
             //             .showNoteList(context);
@@ -402,7 +403,7 @@ class _ReplyPageState extends CommonRichTextPubPageState<ReplyPage> {
     if (res case Success(:final response)) {
       hasPub = true;
       SmartDialog.showToast('发送成功');
-      Get.back(result: response);
+      Nav.back(response);
     } else {
       res.toast();
     }

@@ -4,7 +4,7 @@ import 'package:PiliPlus/utils/extension/string_ext.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
-import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 Future<void> autoWrapReportDialog(
   BuildContext context,
@@ -95,7 +95,7 @@ Future<void> autoWrapReportDialog(
       ),
       actions: [
         TextButton(
-          onPressed: Get.back,
+          onPressed: () => Nav.back(),
           child: Text(
             '取消',
             style: TextStyle(color: ColorScheme.of(context).outline),
@@ -112,7 +112,7 @@ Future<void> autoWrapReportDialog(
               final res = await onSuccess(reasonType!, reasonDesc, banUid);
               SmartDialog.dismiss();
               if (res.isSuccess) {
-                Get.back();
+                Nav.back();
                 SmartDialog.showToast('举报成功');
               } else {
                 res.toast();

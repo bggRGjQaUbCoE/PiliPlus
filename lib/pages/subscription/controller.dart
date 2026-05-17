@@ -8,6 +8,7 @@ import 'package:PiliPlus/utils/accounts.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class SubController extends CommonListController<SubData, SubItemModel> {
   late final account = Accounts.main;
@@ -36,7 +37,7 @@ class SubController extends CommonListController<SubData, SubItemModel> {
         content: const Text('确定取消订阅吗？'),
         actions: [
           TextButton(
-            onPressed: Get.back,
+            onPressed: () => Nav.back(),
             child: Text(
               '取消',
               style: TextStyle(color: Theme.of(context).colorScheme.outline),
@@ -56,7 +57,7 @@ class SubController extends CommonListController<SubData, SubItemModel> {
               } else {
                 res.toast();
               }
-              Get.back();
+              Nav.back();
             },
             child: const Text('确定'),
           ),

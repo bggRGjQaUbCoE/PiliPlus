@@ -1,6 +1,6 @@
 import 'package:PiliPlus/pages/common/common_list_controller.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 abstract class CommonSearchController<R, T> extends CommonListController<R, T> {
   final editController = TextEditingController();
@@ -10,7 +10,7 @@ abstract class CommonSearchController<R, T> extends CommonListController<R, T> {
     if (editController.text.isNotEmpty) {
       editController.clear();
     } else {
-      Get.back();
+      Nav.back();
     }
   }
 

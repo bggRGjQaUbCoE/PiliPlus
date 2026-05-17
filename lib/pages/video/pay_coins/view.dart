@@ -14,6 +14,7 @@ import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class PayCoinsPage extends StatefulWidget {
   const PayCoinsPage({
@@ -35,7 +36,7 @@ class PayCoinsPage extends StatefulWidget {
     int copyright = 1,
     bool hasCoin = false,
   }) {
-    Get.key.currentState!.push(
+    Nav.pushRoute(
       PublishRoute(
         pageBuilder: (buildContext, animation, secondaryAnimation) {
           return PayCoinsPage(
@@ -444,7 +445,7 @@ class _PayCoinsPageState extends State<PayCoinsPage>
                   ),
                   Center(
                     child: GestureDetector(
-                      onTap: Get.back,
+                      onTap: () => Nav.back(),
                       behavior: HitTestBehavior.opaque,
                       child: SizedBox(
                         width: 30,
@@ -522,7 +523,7 @@ class _PayCoinsPageState extends State<PayCoinsPage>
         }
         _boxAnimController.forward().whenComplete(_boxAnimController.reverse);
         _coinController.forward().whenComplete(() {
-          Get.back();
+          Nav.back();
           widget.onPayCoin(_pageIndex.value + 1, _coinWithLike.value);
         });
       });

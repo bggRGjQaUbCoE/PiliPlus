@@ -26,6 +26,7 @@ import 'package:flutter/material.dart' hide ListTile;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class AboutPage extends StatefulWidget {
   const AboutPage({super.key, this.showAppBar = true});
@@ -70,7 +71,7 @@ class _AboutPageState extends State<AboutPage> {
       content: TextField(
         autofocus: true,
         onSubmitted: (value) {
-          Get.back();
+          Nav.back();
           if (value.isNotEmpty) {
             PageUtils.handleWebview(value, inApp: true);
           }
@@ -198,7 +199,7 @@ Commit Hash: ${BuildConfig.commitHash}''',
             ),
           ),
           ListTile(
-            onTap: () => Get.toNamed('/logs'),
+            onTap: () => Nav.push('/logs'),
             onLongPress: LoggerUtils.clearLogs,
             onSecondaryTap: PlatformUtils.isMobile
                 ? null
@@ -206,6 +207,13 @@ Commit Hash: ${BuildConfig.commitHash}''',
             leading: const Icon(Icons.bug_report_outlined),
             title: const Text('错误日志'),
             subtitle: Text('长按清除日志', style: subTitleStyle),
+            trailing: Icon(Icons.arrow_forward, size: 16, color: outline),
+          ),
+          ListTile(
+            onTap: () => Nav.push('/netDebug'),
+            leading: const Icon(Icons.network_check_outlined),
+            title: const Text('网络调试日志'),
+            subtitle: Text('HTTP请求/播放器缓冲诊断', style: subTitleStyle),
             trailing: Icon(Icons.arrow_forward, size: 16, color: outline),
           ),
           ListTile(
@@ -286,7 +294,7 @@ Commit Hash: ${BuildConfig.commitHash}''',
                     ListTile(
                       dense: true,
                       onTap: () async {
-                        Get.back();
+                        Nav.back();
                         await Future.wait([
                           GStorage.setting.clear(),
                           GStorage.video.clear(),
@@ -298,7 +306,7 @@ Commit Hash: ${BuildConfig.commitHash}''',
                     ListTile(
                       dense: true,
                       onTap: () async {
-                        Get.back();
+                        Nav.back();
                         await GStorage.clear();
                         SmartDialog.showToast('重置成功');
                       },

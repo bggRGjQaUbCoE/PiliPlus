@@ -5,6 +5,7 @@ import 'package:PiliPlus/utils/accounts.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class FollowController extends GetxController with GetTickerProviderStateMixin {
   late final int mid;
@@ -18,7 +19,7 @@ class FollowController extends GetxController with GetTickerProviderStateMixin {
   @override
   void onInit() {
     super.onInit();
-    final Map? args = Get.arguments;
+    final Map? args = Nav.arguments;
     final ownerMid = Accounts.main.mid;
     final int? mid = args?['mid'];
     this.mid = mid ?? ownerMid;

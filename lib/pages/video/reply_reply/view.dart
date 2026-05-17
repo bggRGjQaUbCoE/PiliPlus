@@ -21,6 +21,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:super_sliver_list/super_sliver_list.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class VideoReplyReplyPanel extends CommonSlidePage {
   const VideoReplyReplyPanel({
@@ -163,7 +164,7 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
                       IconButton(
                         tooltip: '关闭',
                         icon: const Icon(Icons.close, size: 20),
-                        onPressed: Get.back,
+                        onPressed: () => Nav.back(),
                       ),
                     ],
                   ),

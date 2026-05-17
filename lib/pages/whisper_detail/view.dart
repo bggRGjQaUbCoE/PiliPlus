@@ -26,6 +26,7 @@ import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart' hide TextField;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
+import 'package:PiliPlus/utils/nav.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mime/mime.dart';
@@ -44,7 +45,7 @@ class _WhisperDetailPageState
     extends CommonRichTextPubPageState<WhisperDetailPage> {
   final _whisperDetailController = Get.put(
     WhisperDetailController(),
-    tag: Utils.makeHeroTag(Get.parameters['talkerId']),
+    tag: Utils.makeHeroTag(Nav.parameters['talkerId']),
   );
 
   @override
@@ -64,7 +65,7 @@ class _WhisperDetailPageState
           onTap: () {
             if (_whisperDetailController.mid != null) {
               feedBack();
-              Get.toNamed('/member?mid=${_whisperDetailController.mid}');
+              Nav.push('/member?mid=${_whisperDetailController.mid}');
             }
           },
           child: Row(
@@ -240,7 +241,7 @@ class _WhisperDetailPageState
         content: isOwner
             ? ListTile(
                 onTap: () {
-                  Get.back();
+                  Nav.back();
                   _whisperDetailController.sendMsg(
                     message: '${item.msgKey}',
                     onClearText: editController.clear,
@@ -253,7 +254,7 @@ class _WhisperDetailPageState
               )
             : ListTile(
                 onTap: () {
-                  Get.back();
+                  Nav.back();
                   autoWrapReportDialog(
                     context,
                     ban: false,

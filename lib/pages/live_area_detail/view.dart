@@ -11,6 +11,7 @@ import 'package:PiliPlus/pages/live_search/view.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class LiveAreaDetailPage extends StatefulWidget {
   const LiveAreaDetailPage({
@@ -210,7 +211,7 @@ class _LiveAreaDetailPageState extends State<LiveAreaDetailPage> {
                   title: Text(widget.parentName),
                   actions: [
                     IconButton(
-                      onPressed: Get.back,
+                      onPressed: () => Nav.back(),
                       icon: const Icon(Icons.clear),
                     ),
                     const SizedBox(width: 12),
@@ -236,7 +237,7 @@ class _LiveAreaDetailPageState extends State<LiveAreaDetailPage> {
                         theme: theme,
                         item: list[index],
                         onTap: () {
-                          Get.back();
+                          Nav.back();
                           _controller.tabController?.index = index;
                         },
                       );

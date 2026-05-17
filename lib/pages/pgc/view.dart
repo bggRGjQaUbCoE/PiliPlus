@@ -23,6 +23,7 @@ import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:PiliPlus/utils/grid.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class PgcPage extends StatefulWidget {
   const PgcPage({
@@ -379,9 +380,9 @@ class _PgcPageState extends State<PgcPage> with AutomaticKeepAliveClientMixin {
                   padding: const EdgeInsets.symmetric(horizontal: 10),
                   child: moreTextButton(
                     text: '查看全部',
-                    onTap: () => Get.toNamed(
+                    onTap: () => Nav.push(
                       '/fav',
-                      arguments: widget.tabType == HomeTabType.bangumi
+                      extra: widget.tabType == HomeTabType.bangumi
                           ? FavTabType.bangumi.index
                           : FavTabType.cinema.index,
                     ),

@@ -13,6 +13,7 @@ import 'package:PiliPlus/utils/grid.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class HotPage extends StatefulWidget {
   const HotPage({super.key});
@@ -99,13 +100,13 @@ class _HotPageState extends State<HotPage>
                       iconUrl:
                           'https://i0.hdslb.com/bfs/archive/552ebe8c4794aeef30ebd1568b59ad35f15e21ad.png',
                       title: '每周必看',
-                      onTap: () => Get.toNamed('/popularSeries'),
+                      onTap: () => Nav.push('/popularSeries'),
                     ),
                     _buildEntranceItem(
                       iconUrl:
                           'https://i0.hdslb.com/bfs/archive/3693ec9335b78ca57353ac0734f36a46f3d179a9.png',
                       title: '入站必刷',
-                      onTap: () => Get.toNamed('/popularPrecious'),
+                      onTap: () => Nav.push('/popularPrecious'),
                     ),
                   ],
                 ),

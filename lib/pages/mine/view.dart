@@ -24,6 +24,7 @@ import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart' hide ListTile;
 import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class MinePage extends StatefulWidget {
   const MinePage({super.key, this.showBackBtn = false});
@@ -158,7 +159,7 @@ class _MediaPageState extends CommonPageState<MinePage>
             padding: padding,
             style: style,
             tooltip: '搜索',
-            onPressed: () => Get.toNamed('/search'),
+            onPressed: () => Nav.push('/search'),
             icon: const Icon(Icons.search),
           ),
           msgBadge(_mainController),
@@ -169,7 +170,7 @@ class _MediaPageState extends CommonPageState<MinePage>
             padding: padding,
             style: style,
             tooltip: '评论记录',
-            onPressed: () => Get.toNamed('/myReply'),
+            onPressed: () => Nav.push('/myReply'),
             icon: const Icon(Icons.message_outlined),
           ),
         Obx(
@@ -212,7 +213,7 @@ class _MediaPageState extends CommonPageState<MinePage>
           padding: padding,
           style: style,
           tooltip: '设置',
-          onPressed: () => Get.toNamed('/setting', preventDuplicates: false),
+          onPressed: () => Nav.push('/setting'),
           icon: const Icon(Icons.settings_outlined),
         ),
         const SizedBox(width: 16),
@@ -455,7 +456,7 @@ class _MediaPageState extends CommonPageState<MinePage>
           color: theme.dividerColor.withValues(alpha: 0.1),
         ),
         ListTile(
-          onTap: () => Get.toNamed('/fav')?.whenComplete(_autoRefresh),
+          onTap: () => Nav.push('/fav')?.whenComplete(_autoRefresh),
           dense: true,
           title: Padding(
             padding: const EdgeInsets.only(left: 10),
@@ -535,7 +536,7 @@ class _MediaPageState extends CommonPageState<MinePage>
                           ),
                         ),
                         onPressed: () =>
-                            Get.toNamed('/fav')?.whenComplete(_autoRefresh),
+                            Nav.push('/fav')?.whenComplete(_autoRefresh),
                         icon: Icon(
                           Icons.arrow_forward_ios,
                           size: 18,

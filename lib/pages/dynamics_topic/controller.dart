@@ -9,12 +9,13 @@ import 'package:PiliPlus/pages/common/common_list_controller.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/extension/scroll_controller_ext.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
+import 'package:PiliPlus/utils/nav.dart';
 import 'package:get/get.dart';
 
 class DynTopicController
     extends CommonListController<TopicCardList?, TopicCardItem> {
-  final topicId = Get.parameters['id']!;
-  String topicName = Get.parameters['name'] ?? '';
+  final topicId = Nav.parameters['id']!;
+  String topicName = Nav.parameters['name'] ?? '';
 
   int sortBy = 0;
   String offset = '';

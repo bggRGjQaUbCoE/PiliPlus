@@ -9,6 +9,7 @@ import 'package:PiliPlus/pages/common/search/common_search_controller.dart';
 import 'package:PiliPlus/pages/fav_detail/controller.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class FavSearchController
     extends CommonSearchController<FavDetailData, FavDetailItemModel>
@@ -26,7 +27,7 @@ class FavSearchController
 
   @override
   void onInit() {
-    final args = Get.arguments;
+    final args = Nav.arguments;
     type = args['type'];
     mediaId = args['mediaId'];
     isOwner = args['isOwner'];

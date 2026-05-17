@@ -8,6 +8,7 @@ import 'package:PiliPlus/pages/member_video_web/base/view.dart';
 import 'package:PiliPlus/pages/search/widgets/search_text.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class MemberVideoWeb extends StatefulWidget {
   const MemberVideoWeb({super.key});
@@ -19,9 +20,9 @@ class MemberVideoWeb extends StatefulWidget {
     required Object mid,
     required String name,
   }) {
-    return Get.toNamed(
+    return Nav.push(
       '/videoWeb',
-      arguments: {
+      extra: {
         'mid': mid,
         'name': name,
       },

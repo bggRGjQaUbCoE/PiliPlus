@@ -22,6 +22,7 @@ import 'package:PiliPlus/utils/theme_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class LivePage extends StatefulWidget {
   const LivePage({super.key});
@@ -149,7 +150,7 @@ class _LivePageState extends State<LivePage>
                       context: context,
                       tooltip: '游戏赛事',
                       icon: const Icon(Icons.gamepad),
-                      onPressed: () => Get.toNamed(
+                      onPressed: () => Nav.push(
                         '/webview',
                         parameters: {
                           'uaType': 'mob',
@@ -351,11 +352,11 @@ class _LivePageState extends State<LivePage>
                       onTap: () => PageUtils.toLiveRoom(item.roomid),
                       onLongPress: () {
                         Feedback.forLongPress(context);
-                        Get.toNamed('/member?mid=${item.uid}');
+                        Nav.push('/member?mid=${item.uid}');
                       },
                       onSecondaryTap: PlatformUtils.isMobile
                           ? null
-                          : () => Get.toNamed('/member?mid=${item.uid}'),
+                          : () => Nav.push('/member?mid=${item.uid}'),
                       child: Column(
                         mainAxisSize: .min,
                         children: [

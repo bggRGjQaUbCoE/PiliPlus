@@ -19,6 +19,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' hide ListTile;
 import 'package:flutter/services.dart' show SystemUiOverlayStyle;
 import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class SearchTrendingPage extends StatefulWidget {
   const SearchTrendingPage({super.key});
@@ -165,7 +166,7 @@ class _SearchTrendingPageState extends State<SearchTrendingPage> {
                   final item = response[index];
                   return ListTile(
                     dense: true,
-                    onTap: () => Get.toNamed(
+                    onTap: () => Nav.push(
                       '/searchResult',
                       parameters: {
                         'keyword': item.keyword!,

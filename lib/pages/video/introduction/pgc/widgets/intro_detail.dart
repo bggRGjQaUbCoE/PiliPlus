@@ -12,7 +12,7 @@ import 'package:PiliPlus/pages/search/widgets/search_text.dart';
 import 'package:PiliPlus/utils/extension/scroll_controller_ext.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart' hide TabBarView;
-import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class PgcIntroPanel extends CommonSlidePage {
   final PgcInfoModel item;
@@ -79,7 +79,7 @@ class _IntroDetailState extends State<PgcIntroPanel>
               IconButton(
                 tooltip: '关闭',
                 icon: const Icon(Icons.close, size: 20),
-                onPressed: Get.back,
+                onPressed: () => Nav.back(),
               ),
               const SizedBox(width: 2),
             ],
@@ -198,7 +198,7 @@ class _IntroDetailState extends State<PgcIntroPanel>
                   (item) => SearchText(
                     fontSize: 13,
                     text: item.tagName!,
-                    onTap: (tagName) => Get.toNamed(
+                    onTap: (tagName) => Nav.push(
                       '/searchResult',
                       parameters: {'keyword': tagName},
                     ),

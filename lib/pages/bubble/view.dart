@@ -13,6 +13,7 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart'
     hide ListTile, SliverGridDelegateWithMaxCrossAxisExtent;
 import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class BubblePage extends StatefulWidget {
   const BubblePage({super.key, this.categoryId});
@@ -103,7 +104,7 @@ class _BubblePageState extends State<BubblePage>
                                 dense: true,
                                 enabled: !isSelected,
                                 onTap: () {
-                                  Get.back();
+                                  Nav.back();
                                   if (!isSelected) {
                                     _controller.onSort(e.sortType);
                                   }
@@ -206,7 +207,7 @@ class _BubblePageState extends State<BubblePage>
                   safeArea: false,
                   visualDensity: .standard,
                   // PageUtils.pushDynFromId(id: item.dynId);
-                  onTap: () => Get.toNamed(
+                  onTap: () => Nav.push(
                     '/articlePage',
                     parameters: {
                       'id': item.dynId!,

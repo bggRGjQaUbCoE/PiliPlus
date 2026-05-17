@@ -14,6 +14,7 @@ import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:PiliPlus/utils/nav.dart';
 import 'package:get/get.dart';
 import 'package:stream_transform/stream_transform.dart';
 
@@ -118,7 +119,7 @@ class SSearchController extends GetxController
   @override
   void onInit() {
     super.onInit();
-    final params = Get.parameters;
+    final params = Nav.parameters;
     hintText = params['hintText'];
     final text = params['text'];
     if (text != null) {
@@ -158,7 +159,7 @@ class SSearchController extends GetxController
       searchFocusNode.requestFocus();
       showUidBtn.value = false;
     } else {
-      Get.back();
+      Nav.back();
     }
   }
 
@@ -180,13 +181,13 @@ class SSearchController extends GetxController
     }
 
     searchFocusNode.unfocus();
-    await Get.toNamed(
+    await Nav.push(
       '/searchResult',
       parameters: {
         'tag': tag,
         'keyword': controller.text,
       },
-      arguments: {
+      extra: {
         'initIndex': initIndex,
         'fromSearch': true,
       },

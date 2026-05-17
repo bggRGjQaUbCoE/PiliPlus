@@ -13,6 +13,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class SuperChatCard extends StatefulWidget {
   const SuperChatCard({
@@ -103,7 +104,7 @@ class _SuperChatCardState extends State<SuperChatCard> {
       items: [
         PopupMenuItem(
           height: 38,
-          onTap: () => Get.toNamed('/member?mid=${item.uid}'),
+          onTap: () => Nav.push('/member?mid=${item.uid}'),
           child: Text(
             '访问: ${item.userInfo.uname}',
             style: const TextStyle(fontSize: 13),

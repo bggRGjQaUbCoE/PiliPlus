@@ -32,6 +32,7 @@ import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class PgcIntroController extends CommonIntroController {
   int? seasonId;
@@ -56,11 +57,15 @@ class PgcIntroController extends CommonIntroController {
 
   @override
   void onInit() {
-    final args = Get.arguments;
+    final args = Nav.arguments;
     seasonId = args['seasonId'];
     epId = args['epId'];
     isPgc = args['videoType'] == VideoType.pgc;
     pgcItem = args['pgcItem'];
+
+    if (pgcItem.title?.isNotEmpty == true) {
+      Nav.updateTabTitle(pgcItem.title!);
+    }
 
     super.onInit();
 
@@ -158,7 +163,7 @@ class PgcIntroController extends CommonIntroController {
                 style: TextStyle(fontSize: 14),
               ),
               onTap: () {
-                Get.back();
+                Nav.back();
                 Utils.copyText(videoUrl);
               },
             ),
@@ -169,7 +174,7 @@ class PgcIntroController extends CommonIntroController {
                 style: TextStyle(fontSize: 14),
               ),
               onTap: () {
-                Get.back();
+                Nav.back();
                 PageUtils.launchURL(videoUrl);
               },
             ),
@@ -184,7 +189,7 @@ class PgcIntroController extends CommonIntroController {
                   final item = pgcItem.episodes?.firstWhereOrNull(
                     (item) => item.epId == epId,
                   );
-                  Get.back();
+                  Nav.back();
                   ShareUtils.shareText(
                     '${pgcItem.title}${item != null ? ' ${item.showTitle}' : ''}'
                     ' - $videoUrl',
@@ -198,7 +203,7 @@ class PgcIntroController extends CommonIntroController {
                 style: TextStyle(fontSize: 14),
               ),
               onTap: () {
-                Get.back();
+                Nav.back();
                 final item = pgcItem.episodes?.firstWhereOrNull(
                   (item) => item.epId == epId,
                 );
@@ -240,7 +245,7 @@ class PgcIntroController extends CommonIntroController {
                 style: TextStyle(fontSize: 14),
               ),
               onTap: () {
-                Get.back();
+                Nav.back();
                 try {
                   EpisodeItem item = pgcItem.episodes!.firstWhere(
                     (item) => item.epId == epId,

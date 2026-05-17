@@ -11,6 +11,7 @@ import 'package:PiliPlus/pages/live_room/controller.dart';
 import 'package:flutter/material.dart' hide TextField;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class LiveSendDmPanel extends CommonRichTextPubPage {
   final bool fromEmote;
@@ -180,7 +181,7 @@ class _ReplyPageState extends CommonRichTextPubPageState<LiveSendDmPanel> {
     );
     if (res.isSuccess) {
       hasPub = true;
-      Get.back();
+      Nav.back();
       liveRoomController
         ..savedDanmaku?.clear()
         ..savedDanmaku = null;

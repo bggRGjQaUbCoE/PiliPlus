@@ -10,6 +10,7 @@ import 'package:PiliPlus/utils/grid.dart';
 import 'package:PiliPlus/utils/waterfall.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 import 'package:waterfall_flow/waterfall_flow.dart'
     hide SliverWaterfallFlowDelegateWithMaxCrossAxisExtent;
 
@@ -87,7 +88,7 @@ class _MemberOpusState extends State<MemberOpus>
                               if (e == _controller.type.value) {
                                 return;
                               }
-                              Get.back();
+                              Nav.back();
                               _controller
                                 ..type.value = e
                                 ..onReload();

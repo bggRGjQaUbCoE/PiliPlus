@@ -44,12 +44,13 @@ import 'package:flutter/foundation.dart' show kDebugMode, kReleaseMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class LiveRoomController extends GetxController {
   LiveRoomController(this.heroTag);
   final String heroTag;
 
-  int roomId = Get.arguments;
+  int roomId = Nav.arguments;
   int? ruid;
   DanmakuController<DanmakuExtra>? danmakuController;
   final plPlayerController = PlPlayerController.getInstance(
@@ -232,6 +233,9 @@ class LiveRoomController extends GetxController {
     if (res case Success(:final response)) {
       roomInfoH5.value = response;
       title.value = response.roomInfo?.title ?? '';
+      if (title.value.isNotEmpty) {
+        Nav.updateTabTitle(title.value);
+      }
       watchedShow.value = response.watchedShow?.textLarge;
       videoPlayerServiceHandler?.onVideoDetailChange(response, roomId, heroTag);
     } else {
@@ -246,7 +250,7 @@ class LiveRoomController extends GetxController {
         title: Text(title),
         actions: [
           TextButton(
-            onPressed: Get.back,
+            onPressed: () => Nav.back(),
             child: Text(
               '关闭',
               style: TextStyle(color: ThemeUtils.theme.colorScheme.outline),
@@ -257,9 +261,8 @@ class LiveRoomController extends GetxController {
               if (plPlayerController.isDesktopPip) {
                 plPlayerController.exitDesktopPip();
               }
-              Get
-                ..back()
-                ..back();
+              Nav.back();
+              Nav.back();
             },
             child: const Text('退出'),
           ),
@@ -597,7 +600,7 @@ class LiveRoomController extends GetxController {
       SmartDialog.showToast('账号未登录');
       return;
     }
-    Get.key.currentState!.push(
+    Nav.pushRoute(
       PublishRoute(
         barrierColor: Colors.transparent,
         pageBuilder: (context, animation, secondaryAnimation) {

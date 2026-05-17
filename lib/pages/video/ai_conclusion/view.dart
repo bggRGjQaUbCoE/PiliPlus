@@ -7,6 +7,7 @@ import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class AiConclusionPanel extends CommonSlidePage {
   final AiConclusionResult item;
@@ -103,7 +104,7 @@ class AiConclusionPanel extends CommonSlidePage {
                                             ..onTap = () {
                                               try {
                                                 Get.find<VideoDetailController>(
-                                                  tag: Get.arguments['heroTag'],
+                                                  tag: Nav.arguments['heroTag'],
                                                 ).plPlayerController.seekTo(
                                                   Duration(
                                                     seconds: item.timestamp!,
@@ -142,7 +143,7 @@ class _AiDetailState extends State<AiConclusionPanel>
       child: Column(
         children: [
           GestureDetector(
-            onTap: Get.back,
+            onTap: () => Nav.back(),
             child: SizedBox(
               height: 35,
               child: Center(

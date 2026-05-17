@@ -30,6 +30,7 @@ import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class AuthorPanel extends StatelessWidget {
   final DynamicItemModel item;
@@ -98,7 +99,7 @@ class AuthorPanel extends StatelessWidget {
       onTap: moduleAuthor.type == 'AUTHOR_TYPE_NORMAL'
           ? () {
               feedBack();
-              Get.toNamed('/member?mid=${moduleAuthor.mid}');
+              Nav.push('/member?mid=${moduleAuthor.mid}');
             }
           : null,
       child: ExtraHitTestWidget(
@@ -274,7 +275,7 @@ class AuthorPanel extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               InkWell(
-                onTap: Get.back,
+                onTap: () => Nav.back(),
                 borderRadius: Style.bottomSheetRadius,
                 child: SizedBox(
                   height: 35,
@@ -293,7 +294,7 @@ class AuthorPanel extends StatelessWidget {
               if (bvid != null)
                 ListTile(
                   onTap: () {
-                    Get.back();
+                    Nav.back();
                     UserHttp.toViewLater(bvid: bvid);
                   },
                   minLeadingWidth: 0,
@@ -305,7 +306,7 @@ class AuthorPanel extends StatelessWidget {
                 ),
               ListTile(
                 onTap: () {
-                  Get.back();
+                  Nav.back();
                   SavePanel.toSavePanel(item: item);
                 },
                 minLeadingWidth: 0,
@@ -319,7 +320,7 @@ class AuthorPanel extends StatelessWidget {
                 ),
                 leading: const Icon(Icons.share_outlined, size: 19),
                 onTap: () {
-                  Get.back();
+                  Nav.back();
                   ShareUtils.shareText(
                     '${HttpString.dynamicShareBaseUrl}/${item.idStr}',
                   );
@@ -336,7 +337,7 @@ class AuthorPanel extends StatelessWidget {
                   ),
                   leading: const Icon(Icons.forward_to_inbox, size: 19),
                   onTap: () {
-                    Get.back();
+                    Nav.back();
                     try {
                       bool isDyn = item.basic!.commentType == 17;
                       String id = isDyn ? item.idStr : item.basic!.ridStr!;
@@ -373,7 +374,7 @@ class AuthorPanel extends StatelessWidget {
                 ),
                 leading: const Icon(Icons.visibility_off_outlined, size: 19),
                 onTap: () {
-                  Get.back();
+                  Nav.back();
                   onBlock?.call();
                   try {
                     Get.find<DynamicsController>().tempBannedList.add(
@@ -389,7 +390,7 @@ class AuthorPanel extends StatelessWidget {
               if (kDebugMode || moduleAuthor.mid == Accounts.main.mid) ...[
                 ListTile(
                   onTap: () {
-                    Get.back();
+                    Nav.back();
                     RequestUtils.checkCreatedDyn(
                       id: item.idStr,
                       isManual: true,
@@ -402,7 +403,7 @@ class AuthorPanel extends StatelessWidget {
                 if (onSetTop != null)
                   ListTile(
                     onTap: () {
-                      Get.back();
+                      Nav.back();
                       onSetTop!(moduleAuthor.isTop ?? false, item.idStr);
                     },
                     minLeadingWidth: 0,
@@ -415,7 +416,7 @@ class AuthorPanel extends StatelessWidget {
                 if (onSetReplySubject != null)
                   ListTile(
                     onTap: () async {
-                      Get.back();
+                      Nav.back();
                       final res = await ReplyHttp.replyInteraction(
                         oid: item.basic!.commentIdStr!,
                         type: item.basic!.commentType!,
@@ -446,7 +447,7 @@ class AuthorPanel extends StatelessWidget {
                                         style: const TextStyle(fontSize: 14),
                                       ),
                                       onTap: () {
-                                        Get.back();
+                                        Nav.back();
                                         onSetReplySubject!(
                                           enableSelection ? 2 : 1,
                                         );
@@ -460,7 +461,7 @@ class AuthorPanel extends StatelessWidget {
                                         style: const TextStyle(fontSize: 14),
                                       ),
                                       onTap: () {
-                                        Get.back();
+                                        Nav.back();
                                         onSetReplySubject!(enableReply ? 3 : 4);
                                       },
                                     ),
@@ -487,11 +488,11 @@ class AuthorPanel extends StatelessWidget {
                 if (onSetPubSetting != null)
                   ListTile(
                     onTap: () {
-                      Get.back();
+                      Nav.back();
 
                       final isPrivate = moduleAuthor.badgeText != null;
                       Future<void> onTap() async {
-                        Get.back();
+                        Nav.back();
                         if ((await onSetPubSetting!(
                           isPrivate,
                           item.idStr,
@@ -540,7 +541,7 @@ class AuthorPanel extends StatelessWidget {
                 if (onEdit != null)
                   ListTile(
                     onTap: () {
-                      Get.back();
+                      Nav.back();
                       onEdit!();
                     },
                     minLeadingWidth: 0,
@@ -550,14 +551,14 @@ class AuthorPanel extends StatelessWidget {
                 if (onRemove != null)
                   ListTile(
                     onTap: () {
-                      Get.back();
+                      Nav.back();
                       showDialog(
                         context: context,
                         builder: (context) => AlertDialog(
                           title: const Text('确定删除该动态?'),
                           actions: [
                             TextButton(
-                              onPressed: Get.back,
+                              onPressed: () => Nav.back(),
                               child: Text(
                                 '取消',
                                 style: TextStyle(
@@ -567,7 +568,7 @@ class AuthorPanel extends StatelessWidget {
                             ),
                             TextButton(
                               onPressed: () {
-                                Get.back();
+                                Nav.back();
                                 onRemove!(item.idStr);
                               },
                               child: const Text('确定'),
@@ -604,7 +605,7 @@ class AuthorPanel extends StatelessWidget {
                     color: theme.colorScheme.error,
                   ),
                   onTap: () {
-                    Get.back();
+                    Nav.back();
                     autoWrapReportDialog(
                       context,
                       ReportOptions.dynamicReport,
@@ -629,7 +630,7 @@ class AuthorPanel extends StatelessWidget {
                 ),
               const Divider(thickness: 0.1, height: 1),
               ListTile(
-                onTap: Get.back,
+                onTap: () => Nav.back(),
                 minLeadingWidth: 0,
                 dense: true,
                 title: Text(

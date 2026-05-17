@@ -27,6 +27,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:tray_manager/tray_manager.dart';
 import 'package:window_manager/window_manager.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class MainApp extends StatefulWidget {
   const MainApp({super.key});
@@ -519,7 +520,7 @@ class _MainAppState extends PopScopeState<MainApp>
             Icons.search_outlined,
             semanticLabel: '搜索',
           ),
-          onPressed: () => Get.toNamed('/search'),
+          onPressed: () => Nav.push('/search'),
         ),
       ],
     );

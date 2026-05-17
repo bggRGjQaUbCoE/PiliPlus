@@ -18,6 +18,7 @@ import 'package:flutter/material.dart'
     hide SliverGridDelegateWithMaxCrossAxisExtent;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class DownloadDetailPage extends StatefulWidget {
   const DownloadDetailPage({
@@ -168,7 +169,7 @@ class _DownloadDetailPageState extends State<DownloadDetailPage>
                                 pageDirPath: entry.pageDirPath,
                               );
                               if (mounted) {
-                                Get.back();
+                                Nav.back();
                               }
                             } else {
                               _downloadService.deleteDownload(
@@ -219,7 +220,7 @@ class _DownloadDetailPageState extends State<DownloadDetailPage>
         if (isDeleteAll) {
           SmartDialog.dismiss();
           if (mounted) {
-            Get.back();
+            Nav.back();
           }
         } else {
           if (enableMultiSelect.value) {

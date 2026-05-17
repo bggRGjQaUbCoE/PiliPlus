@@ -24,6 +24,7 @@ import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class DynamicDetailPage extends StatefulWidget {
   const DynamicDetailPage({super.key});
@@ -36,7 +37,7 @@ class _DynamicDetailPageState extends CommonDynPageState<DynamicDetailPage> {
   @override
   final DynamicDetailController controller = Get.putOrFind(
     DynamicDetailController.new,
-    tag: (Get.arguments['item'] as DynamicItemModel).idStr.toString(),
+    tag: (Nav.arguments['item'] as DynamicItemModel).idStr.toString(),
   );
 
   @override

@@ -15,6 +15,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 abstract class BaseVideoWebState<
   S extends StatefulWidget,
@@ -30,7 +31,7 @@ abstract class BaseVideoWebState<
   @override
   void initState() {
     super.initState();
-    final args = Get.arguments;
+    final args = Nav.arguments;
     name = args['name'];
   }
 
@@ -211,7 +212,7 @@ abstract class BaseVideoWebState<
         ),
         inputFormatters: [FilteringTextInputFormatter.digitsOnly],
         onFieldSubmitted: (_) {
-          Get.back();
+          Nav.back();
           onSubmit();
         },
       ),

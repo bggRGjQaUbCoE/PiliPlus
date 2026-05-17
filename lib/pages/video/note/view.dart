@@ -16,6 +16,7 @@ import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class NoteListPage extends CommonSlidePage {
   const NoteListPage({
@@ -82,7 +83,7 @@ class _NoteListPageState extends State<NoteListPage>
                 IconButton(
                   tooltip: '关闭',
                   icon: const Icon(Icons.close, size: 20),
-                  onPressed: Get.back,
+                  onPressed: () => Nav.back(),
                 ),
                 const SizedBox(width: 2),
               ],
@@ -218,7 +219,7 @@ class _NoteListPageState extends State<NoteListPage>
     return Material(
       type: MaterialType.transparency,
       child: InkWell(
-        onTap: () => Get.toNamed(
+        onTap: () => Nav.push(
           '/articlePage',
           parameters: {
             'id': item.cvid!.toString(),
@@ -231,7 +232,7 @@ class _NoteListPageState extends State<NoteListPage>
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               GestureDetector(
-                onTap: () => Get.toNamed('/member?mid=${item.author!.mid}'),
+                onTap: () => Nav.push('/member?mid=${item.author!.mid}'),
                 child: NetworkImgLayer(
                   height: 34,
                   width: 34,
@@ -247,7 +248,7 @@ class _NoteListPageState extends State<NoteListPage>
                   children: [
                     GestureDetector(
                       onTap: () =>
-                          Get.toNamed('/member?mid=${item.author!.mid}'),
+                          Nav.push('/member?mid=${item.author!.mid}'),
                       child: Row(
                         children: [
                           Text(

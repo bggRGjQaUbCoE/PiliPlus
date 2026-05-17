@@ -12,6 +12,7 @@ import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class UpPanel extends StatefulWidget {
   const UpPanel({
@@ -147,7 +148,7 @@ class _UpPanelState extends State<UpPanel> {
     final isCurrent = isLive || currentMid == data.mid || currentMid == -1;
 
     final isAll = data.mid == -1;
-    void toMemberPage() => Get.toNamed('/member?mid=${data.mid}');
+    void toMemberPage() => Nav.push('/member?mid=${data.mid}');
 
     Widget avatar;
     if (isAll) {

@@ -25,7 +25,7 @@ import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart' hide LayoutBuilder;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
-import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class ChatItem extends StatelessWidget {
   static MsgType msgTypeFromValue(int value) {
@@ -247,7 +247,7 @@ class ChatItem extends StatelessWidget {
 
   Widget msgTypeArticleCard_12(dynamic content, Color textColor) {
     return GestureDetector(
-      onTap: () => Get.toNamed(
+      onTap: () => Nav.push(
         '/articlePage',
         parameters: {
           'id': '${content['rid']}',
@@ -546,7 +546,7 @@ class ChatItem extends StatelessWidget {
       // article
       case 6:
         type = '专栏';
-        onTap = () => Get.toNamed(
+        onTap = () => Nav.push(
           '/articlePage',
           parameters: {
             'id': '${content['id']}',

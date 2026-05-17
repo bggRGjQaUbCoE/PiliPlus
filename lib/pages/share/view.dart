@@ -8,7 +8,7 @@ import 'package:PiliPlus/utils/request_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show LengthLimitingTextInputFormatter;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
-import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class UserModel {
   UserModel({
@@ -95,7 +95,7 @@ class _SharePanelState extends State<SharePanel> {
                 iconSize: 18,
                 tooltip: '关闭',
                 icon: const Icon(Icons.clear),
-                onPressed: Get.back,
+                onPressed: () => Nav.back(),
               ),
             ],
           ),
@@ -178,7 +178,7 @@ class _SharePanelState extends State<SharePanel> {
                 onTap: () async {
                   _focusNode.unfocus();
                   final UserModel? userModel = await Navigator.of(context).push(
-                    GetPageRoute(page: () => const ContactPage()),
+                    MaterialPageRoute(builder: (_) => const ContactPage()),
                   );
                   if (userModel != null) {
                     _userList
@@ -284,7 +284,7 @@ class _SharePanelState extends State<SharePanel> {
     );
     SmartDialog.dismiss();
     if (res.every((e) => e)) {
-      Get.back();
+      Nav.back();
       SmartDialog.showToast('分享成功');
     } else if (res.every((e) => !e)) {
       SmartDialog.showToast('分享失败');

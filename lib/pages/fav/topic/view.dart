@@ -12,6 +12,7 @@ import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:flutter/material.dart'
     hide SliverGridDelegateWithMaxCrossAxisExtent;
 import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class FavTopicPage extends StatefulWidget {
   const FavTopicPage({super.key});
@@ -91,7 +92,7 @@ class _FavTopicPageState extends State<FavTopicPage>
                     color: theme.colorScheme.onInverseSurface,
                     borderRadius: const BorderRadius.all(Radius.circular(6)),
                     child: InkWell(
-                      onTap: () => Get.toNamed(
+                      onTap: () => Nav.push(
                         '/dynTopic',
                         parameters: {
                           'id': item.id!.toString(),

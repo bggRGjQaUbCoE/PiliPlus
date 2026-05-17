@@ -2,7 +2,7 @@ import 'package:PiliPlus/utils/danmaku_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'
     show LengthLimitingTextInputFormatter, FilteringTextInputFormatter;
-import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class SlideColorPicker extends StatefulWidget {
   const SlideColorPicker({
@@ -149,7 +149,7 @@ class _SlideColorPickerState extends State<SlideColorPicker> {
                 const SizedBox(width: 16),
                 TextButton(
                   onPressed: () {
-                    Get.back();
+                    Nav.back();
                     widget.onChanged(null);
                   },
                   child: const Text('重置'),
@@ -157,7 +157,7 @@ class _SlideColorPickerState extends State<SlideColorPicker> {
               ],
               const Spacer(),
               TextButton(
-                onPressed: Get.back,
+                onPressed: () => Nav.back(),
                 child: Text(
                   '取消',
                   style: TextStyle(
@@ -167,7 +167,7 @@ class _SlideColorPickerState extends State<SlideColorPicker> {
               ),
               TextButton(
                 onPressed: () {
-                  Get.back();
+                  Nav.back();
                   widget.onChanged(DmUtils.decimalToColor(_rgb));
                 },
                 child: const Text('确定'),

@@ -21,6 +21,7 @@ import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart'
     show ExtendedNestedScrollViewState;
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
+import 'package:PiliPlus/utils/nav.dart';
 import 'package:get/get.dart';
 
 class MemberController extends CommonDataController<SpaceData, SpaceData?>
@@ -57,7 +58,7 @@ class MemberController extends CommonDataController<SpaceData, SpaceData?>
 
   List<ReservationCardItem>? reserves;
 
-  final fromViewAid = Get.parameters['from_view_aid'];
+  final fromViewAid = Nav.parameters['from_view_aid'];
 
   final key = GlobalKey<ExtendedNestedScrollViewState>();
 
@@ -182,7 +183,7 @@ class MemberController extends CommonDataController<SpaceData, SpaceData?>
         content: Text(relation.value != 128 ? '确定拉黑UP主?' : '从黑名单移除UP主'),
         actions: [
           TextButton(
-            onPressed: Get.back,
+            onPressed: () => Nav.back(),
             child: Text(
               '点错了',
               style: TextStyle(color: Theme.of(context).colorScheme.outline),
@@ -190,7 +191,7 @@ class MemberController extends CommonDataController<SpaceData, SpaceData?>
           ),
           TextButton(
             onPressed: () {
-              Get.back();
+              Nav.back();
               _onBlock();
             },
             child: const Text('确认'),
@@ -218,7 +219,7 @@ class MemberController extends CommonDataController<SpaceData, SpaceData?>
 
   void onFollow(BuildContext context) {
     if (mid == account.mid) {
-      Get.toNamed('/editProfile');
+      Nav.push('/editProfile');
     } else if (relation.value == 128) {
       _onBlock();
     } else {

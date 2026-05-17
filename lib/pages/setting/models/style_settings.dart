@@ -4,6 +4,7 @@ import 'dart:math' as math;
 import 'package:PiliPlus/common/widgets/color_palette.dart';
 import 'package:PiliPlus/common/widgets/custom_toast.dart';
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
+import 'package:PiliPlus/main.dart' show MyApp;
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/scale_app.dart';
 import 'package:PiliPlus/common/widgets/stateful_builder.dart';
@@ -41,22 +42,30 @@ import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:path/path.dart' as path;
+import 'package:PiliPlus/utils/nav.dart';
 
 List<SettingsModel> get styleSettings => [
   if (PlatformUtils.isDesktop) ...[
-    const SwitchModel(
-      title: '显示窗口标题栏',
-      leading: Icon(Icons.window),
-      setKey: SettingBoxKey.showWindowTitleBar,
-      defaultVal: true,
-      needReboot: true,
-    ),
     const SwitchModel(
       title: '显示托盘图标',
       leading: Icon(Icons.donut_large_rounded),
       setKey: SettingBoxKey.showTrayIcon,
       defaultVal: true,
       needReboot: true,
+    ),
+    const SwitchModel(
+      title: '点击主页按钮时关闭当前标签页',
+      subtitle: '在视频播放器等页面中点击主页按钮后，自动关闭当前标签页',
+      leading: Icon(Icons.tab_unselected),
+      setKey: SettingBoxKey.closeTabOnHome,
+      defaultVal: false,
+    ),
+    const SwitchModel(
+      title: '返回主页时暂停视频',
+      subtitle: '不关闭标签页时，切换到主页后暂停当前播放的视频',
+      leading: Icon(Icons.pause_circle_outline),
+      setKey: SettingBoxKey.pauseOnHome,
+      defaultVal: true,
     ),
   ],
   if (Platform.isLinux) _useSSDModel(),
@@ -296,7 +305,7 @@ List<SettingsModel> get styleSettings => [
     },
   ),
   NormalModel(
-    onTap: (context, setState) => Get.toNamed('/colorSetting'),
+    onTap: (context, setState) => Nav.push('/colorSetting'),
     leading: const Icon(Icons.color_lens_outlined),
     title: '应用主题',
     getSubtitle: () => '当前主题：${Pref.dynamicColor ? '动态取色' : '指定颜色'}',
@@ -325,7 +334,7 @@ List<SettingsModel> get styleSettings => [
   ),
   NormalModel(
     onTap: (context, setState) async {
-      final res = await Get.toNamed('/fontSizeSetting');
+      final res = await Nav.push('/fontSizeSetting');
       if (res != null) {
         setState();
       }
@@ -338,9 +347,9 @@ List<SettingsModel> get styleSettings => [
     },
   ),
   NormalModel(
-    onTap: (context, setState) => Get.toNamed(
+    onTap: (context, setState) => Nav.push(
       '/barSetting',
-      arguments: {
+      extra: {
         'key': SettingBoxKey.tabBarSort,
         'defaultBars': HomeTabType.values,
         'title': '首页标签页',
@@ -351,9 +360,9 @@ List<SettingsModel> get styleSettings => [
     leading: const Icon(Icons.toc_outlined),
   ),
   NormalModel(
-    onTap: (context, setState) => Get.toNamed(
+    onTap: (context, setState) => Nav.push(
       '/barSetting',
-      arguments: {
+      extra: {
         'key': SettingBoxKey.navBarSort,
         'defaultBars': NavigationBarType.values,
         'title': 'Navbar',
@@ -373,7 +382,7 @@ List<SettingsModel> get styleSettings => [
   ),
   if (Platform.isAndroid)
     NormalModel(
-      onTap: (context, setState) => Get.toNamed('/displayModeSetting'),
+      onTap: (context, setState) => Nav.push('/displayModeSetting'),
       title: '屏幕帧率',
       leading: const Icon(Icons.autofps_select_outlined),
     ),
@@ -599,14 +608,14 @@ void _showSpringDialog(BuildContext context, _) {
       actions: [
         TextButton(
           onPressed: () {
-            Get.back();
+            Nav.back();
             GStorage.setting.delete(SettingBoxKey.springDescription);
             SmartDialog.showToast('重置成功，重启生效');
           },
           child: const Text('重置'),
         ),
         TextButton(
-          onPressed: Get.back,
+          onPressed: () => Nav.back(),
           child: Text(
             '取消',
             style: TextStyle(color: ColorScheme.of(context).outline),
@@ -619,7 +628,7 @@ void _showSpringDialog(BuildContext context, _) {
                 duration2Physical();
               }
               final res = springDescription.map(double.parse).toList();
-              Get.back();
+              Nav.back();
               GStorage.setting.put(SettingBoxKey.springDescription, res);
               SmartDialog.showToast('设置成功，重启生效');
             } catch (e) {
@@ -885,7 +894,7 @@ Future<void> _showThemeTypeDialog(
       Get.find<MineController>().themeType.value = res;
     } catch (_) {}
     GStorage.setting.put(SettingBoxKey.themeMode, res.index);
-    Get.changeThemeMode(ThemeUtils.themeMode = res.toThemeMode);
+    MyApp.rebuildTheme();
     setState();
   }
 }

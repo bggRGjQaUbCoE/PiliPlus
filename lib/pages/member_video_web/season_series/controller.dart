@@ -6,6 +6,7 @@ import 'package:PiliPlus/models_new/member/season_web/archive.dart';
 import 'package:PiliPlus/models_new/member/season_web/data.dart';
 import 'package:PiliPlus/pages/member_video_web/base/controller.dart';
 import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class MemberSSWebCtr
     extends BaseVideoWebCtr<SeasonWebData, SeasonArchive, ArchiveSortTypeApp> {
@@ -16,7 +17,7 @@ class MemberSSWebCtr
 
   @override
   void onInit() {
-    final args = Get.arguments;
+    final args = Nav.arguments;
     _type = args['type'];
     _id = args['id'];
     super.onInit();

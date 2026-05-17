@@ -49,6 +49,7 @@ import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 List<SettingsModel> get extraSettings => [
   if (PlatformUtils.isDesktop) ...[
@@ -79,7 +80,7 @@ List<SettingsModel> get extraSettings => [
     switchModel: SwitchModel.split(
       defaultVal: false,
       setKey: SettingBoxKey.enableSponsorBlock,
-      onTap: (context) => Get.toNamed('/sponsorBlock'),
+      onTap: (context) => Nav.push('/sponsorBlock'),
     ),
   ),
   PopupModel<SkipType>(
@@ -686,7 +687,7 @@ Future<void> audioNormalization(
           ),
           actions: [
             TextButton(
-              onPressed: Get.back,
+              onPressed: () => Nav.back(),
               child: Text(
                 '取消',
                 style: TextStyle(color: ColorScheme.of(context).outline),
@@ -694,7 +695,7 @@ Future<void> audioNormalization(
             ),
             TextButton(
               onPressed: () {
-                Get.back();
+                Nav.back();
                 GStorage.setting.put(key, param);
                 if (!fallback &&
                     PlPlayerController.loudnormRegExp.hasMatch(param)) {
@@ -728,7 +729,7 @@ void _showDownPathDialog(BuildContext context, VoidCallback setState) {
         children: [
           ListTile(
             onTap: () {
-              Get.back();
+              Nav.back();
               Utils.copyText(downloadPath);
             },
             dense: true,
@@ -736,7 +737,7 @@ void _showDownPathDialog(BuildContext context, VoidCallback setState) {
           ),
           ListTile(
             onTap: () {
-              Get.back();
+              Nav.back();
               final defPath = defDownloadPath;
               if (downloadPath == defPath) return;
               downloadPath = defPath;
@@ -749,7 +750,7 @@ void _showDownPathDialog(BuildContext context, VoidCallback setState) {
           ),
           ListTile(
             onTap: () async {
-              Get.back();
+              Nav.back();
               final path = await FilePicker.getDirectoryPath();
               if (path == null || path == downloadPath) return;
               downloadPath = path;
@@ -782,7 +783,7 @@ void _showDynDialog(BuildContext context) {
       ),
       actions: [
         TextButton(
-          onPressed: Get.back,
+          onPressed: () => Nav.back(),
           child: Text(
             '取消',
             style: TextStyle(color: ColorScheme.of(context).outline),
@@ -792,7 +793,7 @@ void _showDynDialog(BuildContext context) {
           onPressed: () {
             try {
               final val = int.parse(dynamicPeriod);
-              Get.back();
+              Nav.back();
               GStorage.setting.put(SettingBoxKey.dynamicPeriod, val);
               Get.find<MainController>().dynamicPeriod = val * 60 * 1000;
             } catch (e) {
@@ -822,7 +823,7 @@ void _showReplyLengthDialog(BuildContext context, VoidCallback setState) {
       ),
       actions: [
         TextButton(
-          onPressed: Get.back,
+          onPressed: () => Nav.back(),
           child: Text(
             '取消',
             style: TextStyle(color: ColorScheme.of(context).outline),
@@ -832,7 +833,7 @@ void _showReplyLengthDialog(BuildContext context, VoidCallback setState) {
           onPressed: () async {
             try {
               final val = int.parse(replyLengthLimit);
-              Get.back();
+              Nav.back();
               ReplyItemGrpc.replyLengthLimit = val == 0 ? null : val;
               await GStorage.setting.put(SettingBoxKey.replyLengthLimit, val);
               setState();
@@ -864,7 +865,7 @@ void _showDmHeightDialog(BuildContext context, VoidCallback setState) {
       ),
       actions: [
         TextButton(
-          onPressed: Get.back,
+          onPressed: () => Nav.back(),
           child: Text(
             '取消',
             style: TextStyle(color: ColorScheme.of(context).outline),
@@ -877,7 +878,7 @@ void _showDmHeightDialog(BuildContext context, VoidCallback setState) {
                 1.0,
                 double.parse(danmakuLineHeight).toPrecision(1),
               );
-              Get.back();
+              Nav.back();
               await GStorage.setting.put(SettingBoxKey.danmakuLineHeight, val);
               setState();
             } catch (e) {
@@ -908,7 +909,7 @@ void _showTouchSlopDialog(BuildContext context, VoidCallback setState) {
       ),
       actions: [
         TextButton(
-          onPressed: Get.back,
+          onPressed: () => Nav.back(),
           child: Text(
             '取消',
             style: TextStyle(color: ColorScheme.of(context).outline),
@@ -918,7 +919,7 @@ void _showTouchSlopDialog(BuildContext context, VoidCallback setState) {
           onPressed: () async {
             try {
               final val = double.parse(initialValue);
-              Get.back();
+              Nav.back();
               touchSlopH = val;
               await GStorage.setting.put(SettingBoxKey.touchSlopH, val);
               setState();
@@ -1029,7 +1030,7 @@ Future<void> _showFavDialog(BuildContext context) async {
           content: SingleChildScrollView(
             child: RadioGroup(
               onChanged: (value) {
-                Get.back();
+                Nav.back();
                 GStorage.setting.put(SettingBoxKey.quickFavId, value);
                 SmartDialog.showToast('设置成功');
               },
@@ -1199,7 +1200,7 @@ void _showProxyDialog(BuildContext context) {
       ),
       actions: [
         TextButton(
-          onPressed: Get.back,
+          onPressed: () => Nav.back(),
           child: Text(
             '取消',
             style: TextStyle(color: ColorScheme.of(context).outline),
@@ -1207,7 +1208,7 @@ void _showProxyDialog(BuildContext context) {
         ),
         TextButton(
           onPressed: () {
-            Get.back();
+            Nav.back();
             GStorage.setting.put(
               SettingBoxKey.systemProxyHost,
               systemProxyHost,
@@ -1241,7 +1242,7 @@ void _showCacheDialog(BuildContext context, VoidCallback setState) {
       ),
       actions: [
         TextButton(
-          onPressed: Get.back,
+          onPressed: () => Nav.back(),
           child: Text(
             '取消',
             style: TextStyle(color: ColorScheme.of(context).outline),
@@ -1251,7 +1252,7 @@ void _showCacheDialog(BuildContext context, VoidCallback setState) {
           onPressed: () async {
             try {
               final val = num.parse(valueStr);
-              Get.back();
+              Nav.back();
               await GStorage.setting.put(
                 SettingBoxKey.maxCacheSize,
                 val * 1024 * 1024,

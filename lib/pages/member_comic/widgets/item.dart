@@ -5,7 +5,7 @@ import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/models_new/space/space_archive/item.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:flutter/material.dart' hide LayoutBuilder;
-import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class MemberComicItem extends StatelessWidget {
   const MemberComicItem({super.key, required this.item});
@@ -24,7 +24,7 @@ class MemberComicItem extends StatelessWidget {
       type: MaterialType.transparency,
       child: InkWell(
         onTap: () {
-          Get.toNamed(
+          Nav.push(
             '/webview',
             parameters: {
               'url': 'https://manga.bilibili.com/detail/mc${item.param}',

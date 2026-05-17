@@ -29,6 +29,7 @@ import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class HorizontalMemberPage extends StatefulWidget {
   const HorizontalMemberPage({
@@ -197,7 +198,7 @@ class _HorizontalMemberPageState extends State<HorizontalMemberPage> {
                           videoItem: videoItem,
                           bvid: _bvid,
                           onTap: () {
-                            Get.back();
+                            Nav.back();
                             widget.ugcIntroController.onChangeEpisode(
                               BaseEpisodeItem(
                                 bvid: videoItem.bvid,
@@ -313,7 +314,7 @@ class _HorizontalMemberPageState extends State<HorizontalMemberPage> {
               ),
               onPressed: () {
                 if (widget.mid == account.mid) {
-                  Get.toNamed('/editProfile');
+                  Nav.push('/editProfile');
                 } else {
                   if (!account.isLogin) {
                     SmartDialog.showToast('账号未登录');
@@ -349,7 +350,7 @@ class _HorizontalMemberPageState extends State<HorizontalMemberPage> {
                 tapTargetSize: .shrinkWrap,
                 visualDensity: const VisualDensity(vertical: -2),
               ),
-              onPressed: () => Get.toNamed('/member?mid=${widget.mid}'),
+              onPressed: () => Nav.push('/member?mid=${widget.mid}'),
               child: const Text(
                 '查看主页',
                 maxLines: 1,

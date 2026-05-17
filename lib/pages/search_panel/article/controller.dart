@@ -7,6 +7,7 @@ import 'package:PiliPlus/pages/search_panel/controller.dart';
 import 'package:PiliPlus/utils/extension/context_ext.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class SearchArticleController
     extends SearchPanelController<SearchArticleData, SearchArticleItemModel> {
@@ -30,7 +31,7 @@ class SearchArticleController
     ).matchAsPrefix(keyword)?.group(2);
     if (cvid != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        Get.toNamed(
+        Nav.push(
           '/articlePage',
           parameters: {
             'id': cvid,

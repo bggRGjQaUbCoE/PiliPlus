@@ -9,6 +9,7 @@ import 'package:flutter/material.dart' hide PopupMenuItemSelected;
 import 'package:flutter/services.dart' show FilteringTextInputFormatter;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 @immutable
 sealed class SettingsModel {
@@ -240,7 +241,7 @@ SettingsModel getBanWordModel({
           ),
           actions: [
             TextButton(
-              onPressed: Get.back,
+              onPressed: () => Nav.back(),
               child: Text(
                 '取消',
                 style: TextStyle(color: ColorScheme.of(context).outline),
@@ -249,7 +250,7 @@ SettingsModel getBanWordModel({
             TextButton(
               child: const Text('保存'),
               onPressed: () {
-                Get.back();
+                Nav.back();
                 banWord = editValue;
                 setState();
                 onChanged(RegExp(banWord, caseSensitive: false));
@@ -316,7 +317,7 @@ SettingsModel getVideoFilterSelectModel({
               ),
               actions: [
                 TextButton(
-                  onPressed: Get.back,
+                  onPressed: () => Nav.back(),
                   child: Text(
                     '取消',
                     style: TextStyle(color: ColorScheme.of(context).outline),
@@ -326,7 +327,7 @@ SettingsModel getVideoFilterSelectModel({
                   onPressed: () {
                     try {
                       result = int.parse(valueStr);
-                      Get.back();
+                      Nav.back();
                     } catch (e) {
                       SmartDialog.showToast(e.toString());
                     }

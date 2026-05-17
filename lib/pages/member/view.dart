@@ -44,6 +44,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:PiliPlus/utils/nav.dart';
 import 'package:get/get.dart';
 
 class MemberPage extends StatefulWidget {
@@ -64,7 +65,7 @@ class _MemberPageState extends State<MemberPage> {
   @override
   void initState() {
     super.initState();
-    _mid = int.tryParse(Get.parameters['mid']!) ?? -1;
+    _mid = int.tryParse(Nav.parameters['mid']!) ?? -1;
     _heroTag = Utils.makeHeroTag(_mid);
     _userController = Get.put(
       MemberController(mid: _mid),
@@ -194,7 +195,7 @@ class _MemberPageState extends State<MemberPage> {
             mainAxisSize: .min,
             children: [
               InkWell(
-                onTap: Get.back,
+                onTap: () => Nav.back(),
                 borderRadius: Style.bottomSheetRadius,
                 child: SizedBox(
                   height: 35,
@@ -303,7 +304,7 @@ class _MemberPageState extends State<MemberPage> {
                                   recognizer:
                                       lottery.jumpUrl?.isNotEmpty == true
                                       ? (NoDeadlineTapGestureRecognizer()
-                                          ..onTap = () => Get.toNamed(
+                                          ..onTap = () => Nav.push(
                                             '/webview',
                                             parameters: {
                                               'url': lottery.jumpUrl!,
@@ -333,7 +334,7 @@ class _MemberPageState extends State<MemberPage> {
       _reserveBtn(_userController.reserves!, theme),
     IconButton(
       tooltip: '搜索',
-      onPressed: () => Get.toNamed(
+      onPressed: () => Nav.push(
         '/memberSearch?mid=$_mid&uname=${_userController.username}',
       ),
       icon: const Icon(Icons.search_outlined),
@@ -514,7 +515,7 @@ class _MemberPageState extends State<MemberPage> {
               ),
             ),
             PopupMenuItem(
-              onTap: () => Get.toNamed('/spaceSetting'),
+              onTap: () => Nav.push('/spaceSetting'),
               child: const Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -611,7 +612,7 @@ class _MemberPageState extends State<MemberPage> {
           content: Text(_cacheFollowTime!),
           actions: [
             TextButton(
-              onPressed: Get.back,
+              onPressed: () => Nav.back(),
               child: Text(
                 '关闭',
                 style: TextStyle(color: ColorScheme.of(context).outline),

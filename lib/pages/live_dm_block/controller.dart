@@ -3,11 +3,12 @@ import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/live/live_dm_silent_type.dart';
 import 'package:PiliPlus/models_new/live/live_dm_block/shield_user_list.dart';
 import 'package:flutter/material.dart';
+import 'package:PiliPlus/utils/nav.dart';
 import 'package:get/get.dart';
 
 class LiveDmBlockController extends GetxController
     with GetSingleTickerProviderStateMixin {
-  final roomId = Get.parameters['roomId']!;
+  final roomId = Nav.parameters['roomId']!;
 
   @override
   void onInit() {

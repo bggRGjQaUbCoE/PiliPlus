@@ -5,6 +5,7 @@ import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class HistoryBaseController extends GetxController {
   RxBool pauseStatus = false.obs;
@@ -23,7 +24,7 @@ class HistoryBaseController extends GetxController {
         content: const Text('啊叻？你要清空历史记录功能吗？'),
         actions: [
           TextButton(
-            onPressed: Get.back,
+            onPressed: () => Nav.back(),
             child: Text(
               '取消',
               style: TextStyle(color: Theme.of(context).colorScheme.outline),
@@ -31,7 +32,7 @@ class HistoryBaseController extends GetxController {
           ),
           TextButton(
             onPressed: () async {
-              Get.back();
+              Nav.back();
               SmartDialog.showLoading(msg: '请求中');
               final res = await UserHttp.clearHistory(account: account);
               SmartDialog.dismiss();
@@ -59,7 +60,7 @@ class HistoryBaseController extends GetxController {
         content: Text(pauseStatus ? '啊叻？你要暂停历史记录功能吗？' : '啊叻？要恢复历史记录功能吗？'),
         actions: [
           TextButton(
-            onPressed: Get.back,
+            onPressed: () => Nav.back(),
             child: Text(
               '取消',
               style: TextStyle(color: Theme.of(context).colorScheme.outline),
@@ -83,7 +84,7 @@ class HistoryBaseController extends GetxController {
               } else {
                 res.toast();
               }
-              Get.back();
+              Nav.back();
             },
             child: Text(pauseStatus ? '确认暂停' : '确认恢复'),
           ),

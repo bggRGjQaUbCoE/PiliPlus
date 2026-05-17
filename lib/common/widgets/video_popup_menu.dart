@@ -14,8 +14,8 @@ import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
-import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class _VideoCustomAction {
   final String title;
@@ -94,7 +94,7 @@ class VideoPopupMenu extends StatelessWidget {
                   _VideoCustomAction(
                     '访问：${videoItem.owner.name}',
                     const Icon(MdiIcons.accountCircleOutline, size: 16),
-                    () => Get.toNamed('/member?mid=${videoItem.owner.mid}'),
+                    () => Nav.push('/member?mid=${videoItem.owner.mid}'),
                   ),
                   _VideoCustomAction(
                     '不感兴趣',
@@ -123,7 +123,7 @@ class VideoPopupMenu extends StatelessWidget {
                           return SearchText(
                             text: r?.name ?? f?.name ?? '未知',
                             onTap: (_) async {
-                              Get.back();
+                              Nav.back();
                               SmartDialog.showLoading(msg: '正在提交');
                               final res = await VideoHttp.feedDislike(
                                 reasonId: r?.id,
@@ -195,7 +195,7 @@ class VideoPopupMenu extends StatelessWidget {
                                                 ? "成功"
                                                 : res.toString(),
                                           );
-                                          Get.back();
+                                          Nav.back();
                                         },
                                         style: FilledButton.styleFrom(
                                           visualDensity: VisualDensity.compact,
@@ -225,7 +225,7 @@ class VideoPopupMenu extends StatelessWidget {
                                     children: [
                                       FilledButton.tonal(
                                         onPressed: () async {
-                                          Get.back();
+                                          Nav.back();
                                           SmartDialog.showLoading(
                                             msg: '正在提交',
                                           );
@@ -249,7 +249,7 @@ class VideoPopupMenu extends StatelessWidget {
                                       ),
                                       FilledButton.tonal(
                                         onPressed: () async {
-                                          Get.back();
+                                          Nav.back();
                                           SmartDialog.showLoading(
                                             msg: '正在提交',
                                           );
@@ -294,7 +294,7 @@ class VideoPopupMenu extends StatelessWidget {
                           ),
                           actions: [
                             TextButton(
-                              onPressed: Get.back,
+                              onPressed: () => Nav.back(),
                               child: Text(
                                 '点错了',
                                 style: TextStyle(
@@ -306,7 +306,7 @@ class VideoPopupMenu extends StatelessWidget {
                             ),
                             TextButton(
                               onPressed: () async {
-                                Get.back();
+                                Nav.back();
                                 final res = await VideoHttp.relationMod(
                                   mid: videoItem.owner.mid!,
                                   act: 5,

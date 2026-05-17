@@ -10,6 +10,7 @@ import 'package:PiliPlus/utils/grid.dart';
 import 'package:PiliPlus/utils/waterfall.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 import 'package:waterfall_flow/waterfall_flow.dart'
     hide SliverWaterfallFlowDelegateWithMaxCrossAxisExtent;
 
@@ -109,7 +110,7 @@ class _MemberShopState extends State<MemberShop>
                             clickUrl,
                           ).queryParameters['url'];
                           if (url case final url?) {
-                            Get.toNamed(
+                            Nav.push(
                               '/webview',
                               parameters: {'url': url},
                             );

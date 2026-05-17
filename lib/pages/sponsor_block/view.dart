@@ -19,6 +19,7 @@ import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:hive_ce/hive.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class SponsorBlockPage extends StatefulWidget {
   const SponsorBlockPage({super.key});
@@ -94,7 +95,7 @@ class _SponsorBlockPageState extends State<SponsorBlockPage> {
               ),
               actions: [
                 TextButton(
-                  onPressed: Get.back,
+                  onPressed: () => Nav.back(),
                   child: Text(
                     '取消',
                     style: TextStyle(color: theme.colorScheme.outline),
@@ -104,7 +105,7 @@ class _SponsorBlockPageState extends State<SponsorBlockPage> {
                   onPressed: () {
                     try {
                       _blockLimit = double.parse(_textController.text);
-                      Get.back();
+                      Nav.back();
                       setting.put(SettingBoxKey.blockLimit, _blockLimit);
                       (context as Element).markNeedsBuild();
                     } catch (e) {
@@ -175,7 +176,7 @@ class _SponsorBlockPageState extends State<SponsorBlockPage> {
                 actions: [
                   TextButton(
                     onPressed: () {
-                      Get.back();
+                      Nav.back();
                       _userId = Digest(
                         List.generate(16, (_) => Utils.random.nextInt(256)),
                       ).toString();
@@ -185,7 +186,7 @@ class _SponsorBlockPageState extends State<SponsorBlockPage> {
                     child: const Text('随机'),
                   ),
                   TextButton(
-                    onPressed: Get.back,
+                    onPressed: () => Nav.back(),
                     child: Text(
                       '取消',
                       style: TextStyle(
@@ -196,7 +197,7 @@ class _SponsorBlockPageState extends State<SponsorBlockPage> {
                   TextButton(
                     onPressed: () {
                       if (key.currentState?.validate() == true) {
-                        Get.back();
+                        Nav.back();
                         _userId = _textController.text;
                         setting.put(SettingBoxKey.blockUserID, _userId);
                         (context as Element).markNeedsBuild();
@@ -328,7 +329,7 @@ class _SponsorBlockPageState extends State<SponsorBlockPage> {
               actions: [
                 TextButton(
                   onPressed: () {
-                    Get.back();
+                    Nav.back();
                     _blockServer = HttpString.sponsorBlockBaseUrl;
                     setting.put(SettingBoxKey.blockServer, _blockServer);
                     Request.accountManager.blockServer = _blockServer;
@@ -337,7 +338,7 @@ class _SponsorBlockPageState extends State<SponsorBlockPage> {
                   child: const Text('重置'),
                 ),
                 TextButton(
-                  onPressed: Get.back,
+                  onPressed: () => Nav.back(),
                   child: Text(
                     '取消',
                     style: TextStyle(
@@ -347,7 +348,7 @@ class _SponsorBlockPageState extends State<SponsorBlockPage> {
                 ),
                 TextButton(
                   onPressed: () {
-                    Get.back();
+                    Nav.back();
                     _blockServer = _textController.text;
                     setting.put(SettingBoxKey.blockServer, _blockServer);
                     Request.accountManager.blockServer = _blockServer;

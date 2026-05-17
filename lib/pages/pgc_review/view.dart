@@ -6,6 +6,7 @@ import 'package:PiliPlus/utils/extension/scroll_controller_ext.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class PgcReviewPage extends StatefulWidget {
   const PgcReviewPage({
@@ -128,7 +129,7 @@ class _PgcReviewPageState extends State<PgcReviewPage>
                         style: TextStyle(fontSize: 14),
                       ),
                       onTap: () {
-                        Get.back();
+                        Nav.back();
                         showModalBottomSheet(
                           context: context,
                           useSafeArea: true,
@@ -148,15 +149,16 @@ class _PgcReviewPageState extends State<PgcReviewPage>
                         '写长评',
                         style: TextStyle(fontSize: 14),
                       ),
-                      onTap: () => Get
-                        ..back()
-                        ..toNamed(
+                      onTap: () {
+                        Nav.back();
+                        Nav.push(
                           '/webview',
                           parameters: {
                             'url':
                                 'https://member.bilibili.com/article-text/mobile?theme=${theme.isDark ? 1 : 0}&media_id=${widget.mediaId}',
                           },
-                        ),
+                        );
+                      },
                     ),
                   ],
                 ),

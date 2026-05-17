@@ -19,7 +19,7 @@ import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show FilteringTextInputFormatter;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
-import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class PostPanel extends CommonSlidePage {
   const PostPanel({
@@ -119,7 +119,7 @@ class PostPanel extends CommonSlidePage {
                     ),
                     actions: [
                       TextButton(
-                        onPressed: Get.back,
+                        onPressed: () => Nav.back(),
                         child: Text(
                           '取消',
                           style: TextStyle(
@@ -128,7 +128,7 @@ class PostPanel extends CommonSlidePage {
                         ),
                       ),
                       TextButton(
-                        onPressed: () => Get.back(result: initV),
+                        onPressed: () => Nav.back(initV),
                         child: const Text('确定'),
                       ),
                     ],
@@ -225,7 +225,7 @@ class _PostPanelState extends State<PostPanel>
             size: 32,
             context: context,
             tooltip: '关闭',
-            onPressed: Get.back,
+            onPressed: () => Nav.back(),
             icon: const Icon(Icons.close),
           ),
           const SizedBox(width: 16),
@@ -282,7 +282,7 @@ class _PostPanelState extends State<PostPanel>
                 title: const Text('确定无误再提交'),
                 actions: [
                   TextButton(
-                    onPressed: Get.back,
+                    onPressed: () => Nav.back(),
                     child: Text(
                       '取消',
                       style: TextStyle(color: theme.colorScheme.outline),
@@ -303,7 +303,7 @@ class _PostPanelState extends State<PostPanel>
   }
 
   Future<void> _onPost() async {
-    Get.back();
+    Nav.back();
     final res = await SponsorBlock.postSkipSegments(
       bvid: videoDetailController.bvid,
       cid: videoDetailController.cid.value,
@@ -312,7 +312,7 @@ class _PostPanelState extends State<PostPanel>
     );
 
     if (res case Success(:final response)) {
-      Get.back();
+      Nav.back();
       SmartDialog.showToast('提交成功');
       list.clear();
       videoDetailController.handleSBData(response);

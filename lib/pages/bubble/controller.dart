@@ -7,6 +7,7 @@ import 'package:PiliPlus/models_new/bubble/sort_info.dart';
 import 'package:PiliPlus/pages/common/common_list_controller.dart';
 import 'package:flutter/material.dart' show TabController;
 import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class BubbleController extends CommonListController<BubbleData, DynList>
     with GetSingleTickerProviderStateMixin {
@@ -24,7 +25,7 @@ class BubbleController extends CommonListController<BubbleData, DynList>
   @override
   void onInit() {
     super.onInit();
-    tribeId = Get.arguments['id'];
+    tribeId = Nav.arguments['id'];
     queryData();
   }
 

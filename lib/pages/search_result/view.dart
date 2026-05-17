@@ -9,6 +9,7 @@ import 'package:PiliPlus/pages/search_panel/user/view.dart';
 import 'package:PiliPlus/pages/search_panel/video/view.dart';
 import 'package:PiliPlus/pages/search_result/controller.dart';
 import 'package:flutter/material.dart';
+import 'package:PiliPlus/utils/nav.dart';
 import 'package:get/get.dart';
 
 class SearchResultPage extends StatefulWidget {
@@ -23,7 +24,7 @@ class _SearchResultPageState extends State<SearchResultPage>
   late SearchResultController _searchResultController;
   late TabController _tabController;
   final String _tag = DateTime.now().millisecondsSinceEpoch.toString();
-  final bool _isFromSearch = Get.arguments?['fromSearch'] ?? false;
+  final bool _isFromSearch = Nav.arguments?['fromSearch'] ?? false;
   SSearchController? sSearchController;
 
   @override
@@ -36,14 +37,14 @@ class _SearchResultPageState extends State<SearchResultPage>
 
     _tabController = TabController(
       vsync: this,
-      initialIndex: Get.arguments?['initIndex'] ?? 0,
+      initialIndex: Nav.arguments?['initIndex'] ?? 0,
       length: SearchType.values.length,
     );
 
     if (_isFromSearch) {
       try {
         sSearchController = Get.find<SSearchController>(
-          tag: Get.parameters['tag'],
+          tag: Nav.parameters['tag'],
         );
         _tabController.addListener(listener);
       } catch (_) {}
@@ -77,9 +78,9 @@ class _SearchResultPageState extends State<SearchResultPage>
         title: GestureDetector(
           onTap: () {
             if (_isFromSearch) {
-              Get.back();
+              Nav.back();
             } else {
-              Get.offNamed(
+              Nav.pushReplacement(
                 '/search',
                 parameters: {'text': _searchResultController.keyword},
               );

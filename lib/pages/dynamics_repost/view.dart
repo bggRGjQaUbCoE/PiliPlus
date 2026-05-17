@@ -14,6 +14,7 @@ import 'package:PiliPlus/utils/request_utils.dart';
 import 'package:flutter/material.dart' hide TextField;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class RepostPanel extends CommonRichTextPubPage {
   const RepostPanel({
@@ -299,7 +300,7 @@ class _RepostPanelState extends CommonRichTextPubPageState<RepostPanel> {
                         theme.colorScheme.secondaryContainer,
                       ),
                     ),
-                    onPressed: Get.back,
+                    onPressed: () => Nav.back(),
                     icon: Icon(
                       Icons.arrow_back_outlined,
                       size: 18,
@@ -355,7 +356,7 @@ class _RepostPanelState extends CommonRichTextPubPageState<RepostPanel> {
     ),
     ListTile(
       dense: true,
-      onTap: Get.back,
+      onTap: () => Nav.back(),
       title: Center(
         child: Text(
           '取消',
@@ -430,7 +431,7 @@ class _RepostPanelState extends CommonRichTextPubPageState<RepostPanel> {
     SmartDialog.dismiss();
     if (res case Success(:final response)) {
       hasPub = true;
-      Get.back();
+      Nav.back();
       SmartDialog.showToast('转发成功');
       widget.onSuccess?.call();
       final id = response?['dyn_id'];

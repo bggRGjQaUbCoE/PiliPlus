@@ -6,6 +6,7 @@ import 'package:PiliPlus/pages/follow_type/controller.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class FansController extends FollowTypeController {
   FansController(this.showName);
@@ -14,7 +15,7 @@ class FansController extends FollowTypeController {
 
   @override
   void init() {
-    final Map? args = Get.arguments;
+    final Map? args = Nav.arguments;
     final ownerMid = Accounts.main.mid;
     final int? mid = args?['mid'];
     this.mid = mid ?? ownerMid;

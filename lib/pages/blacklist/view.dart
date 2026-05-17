@@ -11,6 +11,7 @@ import 'package:PiliPlus/utils/global_data.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class BlackListPage extends StatefulWidget {
   const BlackListPage({super.key});
@@ -81,7 +82,7 @@ class _BlackListPageState extends State<BlackListPage> {
                   final item = response[index];
                   return ListTile(
                     visualDensity: .standard,
-                    onTap: () => Get.toNamed('/member?mid=${item.mid}'),
+                    onTap: () => Nav.push('/member?mid=${item.mid}'),
                     leading: NetworkImgLayer(
                       width: 45,
                       height: 45,

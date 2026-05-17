@@ -5,6 +5,7 @@ import 'package:PiliPlus/pages/log_table/controller.dart';
 import 'package:PiliPlus/utils/extension/widget_ext.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class LogPage<T> extends StatefulWidget {
   const LogPage({super.key});
@@ -14,7 +15,7 @@ class LogPage<T> extends StatefulWidget {
 }
 
 class _LogPageState<T> extends State<LogPage<T>> {
-  final _controller = Get.put<LogController<dynamic, T>>(Get.arguments);
+  final _controller = Get.put<LogController<dynamic, T>>(Nav.arguments);
 
   @override
   Widget build(BuildContext context) {

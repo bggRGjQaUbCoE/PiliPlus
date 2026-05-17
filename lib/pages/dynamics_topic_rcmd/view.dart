@@ -8,6 +8,7 @@ import 'package:PiliPlus/pages/dynamics_select_topic/widgets/item.dart';
 import 'package:PiliPlus/pages/dynamics_topic_rcmd/controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class DynTopicRcmdPage extends StatefulWidget {
   const DynTopicRcmdPage({super.key});
@@ -48,7 +49,7 @@ class _DynTopicRcmdPageState extends State<DynTopicRcmdPage> {
                 itemBuilder: (context, index) {
                   return DynTopicItem(
                     item: response[index],
-                    onTap: (item) => Get.toNamed(
+                    onTap: (item) => Nav.push(
                       '/dynTopic',
                       parameters: {
                         'id': item.id.toString(),

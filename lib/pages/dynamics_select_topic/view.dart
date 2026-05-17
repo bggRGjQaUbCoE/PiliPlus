@@ -12,6 +12,7 @@ import 'package:PiliPlus/utils/extension/context_ext.dart';
 import 'package:PiliPlus/utils/extension/scroll_controller_ext.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class SelectTopicPanel extends StatefulWidget {
   const SelectTopicPanel({
@@ -201,7 +202,7 @@ class _SelectTopicPanelState
                   }
                   return DynTopicItem(
                     item: response[index],
-                    onTap: (item) => Get.back(result: item),
+                    onTap: (item) => Nav.back(item),
                   );
                 },
                 itemCount: response.length,

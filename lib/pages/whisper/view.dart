@@ -11,6 +11,7 @@ import 'package:PiliPlus/utils/theme_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class WhisperPage extends StatefulWidget {
   const WhisperPage({super.key});
@@ -33,7 +34,7 @@ class _WhisperPageState extends State<WhisperPage> {
         actions: [
           IconButton(
             tooltip: '新增粉丝',
-            onPressed: () => Get.toNamed(
+            onPressed: () => Nav.push(
               '/webview',
               parameters: {
                 'url':
@@ -199,7 +200,7 @@ class _WhisperPageState extends State<WhisperPage> {
                   return;
                 }
                 _controller.unreadCounts[index] = 0;
-                Get.toNamed(item.route);
+                Nav.push(item.route);
               },
             );
           }),

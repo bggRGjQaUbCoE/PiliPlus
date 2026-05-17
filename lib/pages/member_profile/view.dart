@@ -30,6 +30,7 @@ import 'package:get/get.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mime/mime.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class EditProfilePage extends StatefulWidget {
   const EditProfilePage({super.key});
@@ -278,7 +279,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
       ),
       trailing: current == sex ? const Icon(size: 22, Icons.check) : null,
       onTap: () {
-        Get.back();
+        Nav.back();
         _update(type: ProfileType.sex, datum: sex);
       },
     );
@@ -321,7 +322,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
           ),
           actions: [
             TextButton(
-              onPressed: Get.back,
+              onPressed: () => Nav.back(),
               child: Text(
                 '取消',
                 style: TextStyle(color: theme.colorScheme.outline),
@@ -408,7 +409,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
               setState(() {});
             }
             if (type == ProfileType.uname || type == ProfileType.sign) {
-              Get.back();
+              Nav.back();
             }
           } else {
             SmartDialog.showToast(res.data['message']);

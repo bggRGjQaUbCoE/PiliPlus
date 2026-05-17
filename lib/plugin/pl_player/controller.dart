@@ -20,6 +20,8 @@ import 'package:PiliPlus/pages/danmaku/danmaku_model.dart';
 import 'package:PiliPlus/pages/sponsor_block/block_mixin.dart';
 import 'package:PiliPlus/plugin/pl_player/models/data_source.dart';
 import 'package:PiliPlus/plugin/pl_player/models/data_status.dart';
+import 'package:PiliPlus/services/net_debug_logger.dart';
+import 'package:PiliPlus/services/video_stream_proxy.dart';
 import 'package:PiliPlus/plugin/pl_player/models/double_tap_type.dart';
 import 'package:PiliPlus/plugin/pl_player/models/duration.dart';
 import 'package:PiliPlus/plugin/pl_player/models/fullscreen_mode.dart';
@@ -62,6 +64,7 @@ import 'package:path/path.dart' as path;
 import 'package:screen_brightness_platform_interface/screen_brightness_platform_interface.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import 'package:window_manager/window_manager.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 typedef PlayCallback = Future<void>? Function();
 
@@ -101,6 +104,9 @@ class PlPlayerController with BlockConfigMixin {
   /// 视频缓冲
   final Rx<Duration> buffered = Rx(Duration.zero);
   final RxInt bufferedSeconds = 0.obs;
+
+  /// 向后缓冲毫秒数（buffered - position）
+  final RxInt bufferAheadMs = 0.obs;
 
   int _playerCount = 0;
 
@@ -197,6 +203,13 @@ class PlPlayerController with BlockConfigMixin {
 
   final RxBool isBuffering = true.obs;
 
+  // 缓冲统计
+  int _bufferCount = 0;
+  int _bufferTotalMs = 0;
+  int _bufferMaxMs = 0;
+  int _bufferStartMs = 0;
+  int _lastLoggedPosSec = -1;
+
   /// 全屏方向
   bool get isVertical => _isVertical;
 
@@ -276,16 +289,26 @@ class PlPlayerController with BlockConfigMixin {
 
   late bool _shouldSetPip = false;
 
-  static bool get _isCurrVideoPage {
-    final routing = Get.routing;
-    if (routing.route is! GetPageRoute) {
-      return false;
-    }
-    return _isVideoPage(routing.current);
+  bool get _isCurrVideoPage {
+    final location = Nav.router.routeInformationProvider.value.uri.path;
+    return location.startsWith('/video') ||
+        location.startsWith('/liveRoom');
+  }
+
+  bool get _isPreviousVideoPage {
+    final navigator = Nav.navigatorKey.currentState;
+    if (navigator == null) return false;
+    String? previousRoute;
+    navigator.popUntil((route) {
+      previousRoute = route.settings.name;
+      return true;
+    });
+    return previousRoute?.startsWith('/video') == true ||
+        previousRoute?.startsWith('/liveRoom') == true;
   }
 
   static bool _isVideoPage(String routeName) {
-    return routeName == '/videoV' || routeName == '/liveRoom';
+    return routeName.startsWith('/video') || routeName.startsWith('/liveRoom');
   }
 
   void enterPip({bool isAuto = false}) {
@@ -457,6 +480,8 @@ class PlPlayerController with BlockConfigMixin {
     if (bufferedSeconds.value != newSecond) {
       bufferedSeconds.value = newSecond;
     }
+    final aheadMs = buffered.value.inMilliseconds - position.inMilliseconds;
+    bufferAheadMs.value = aheadMs.clamp(0, 9999999);
   }
 
   static PlPlayerController? get instance => _instance;
@@ -781,13 +806,33 @@ class PlPlayerController with BlockConfigMixin {
 
     final player = await Player.create(
       configuration: PlayerConfiguration(
-        bufferSize: Pref.expandBuffer
-            ? (isLive ? 64 * 1024 * 1024 : 32 * 1024 * 1024)
-            : (isLive ? 16 * 1024 * 1024 : 4 * 1024 * 1024),
-        logLevel: kDebugMode ? .warn : .error,
+        bufferSize: isLive
+            ? (Pref.expandBuffer ? 64 * 1024 * 1024 : 16 * 1024 * 1024)
+            : (Pref.expandBuffer ? 128 * 1024 * 1024 : 32 * 1024 * 1024),
+        logLevel: .warn,
         options: opt,
       ),
     );
+
+    // 覆盖 media_kit 默认的 network-timeout=5（海外高延迟易触发超时）
+    // 并设置 demuxer-readahead-secs（允许预缓冲更多数据）
+    if (!isLive) {
+      player
+        ..setProperty('network-timeout', '120')
+        ..setProperty('demuxer-readahead-secs', '120');
+    }
+
+    // 音频设备被占用时降级为静音而非卡死
+    player.setProperty('audio-fallback-to-null', 'yes');
+
+    netLog.info('PLAYER', 'mpv created', extra: {
+      'bufferSize': isLive
+          ? (Pref.expandBuffer ? '64MB' : '16MB')
+          : (Pref.expandBuffer ? '128MB' : '32MB'),
+      'videoSync': opt['video-sync'],
+      'hwdec': hwdec,
+      'isLive': isLive,
+    });
 
     assert(_videoController == null);
 
@@ -817,6 +862,7 @@ class PlPlayerController with BlockConfigMixin {
     Duration? seekTo,
     Volume? volume,
   ) async {
+    _flushBufferStats();
     isBuffering.value = false;
     buffered.value = Duration.zero;
     _heartDuration = 0;
@@ -878,6 +924,23 @@ class PlPlayerController with BlockConfigMixin {
       }
     }
 
+    // Android mbedTLS 与海外 CDN 存在连接不稳定问题，
+    // 通过本地 BoringSSL 代理绕过 mpv 内置的 mbedTLS
+    if (Platform.isAndroid && video.startsWith('http')) {
+      final proxy = VideoStreamProxy.instance;
+      await proxy.start();
+      video = proxy.proxyUrl(video);
+      if (extras.containsKey('audio-files')) {
+        final raw = extras['audio-files']!;
+        // 去掉两端引号并还原转义的冒号，得到原始音频 URL
+        final audioUrl = raw.substring(1, raw.length - 1)
+            .replaceAll(r'\:', ':');
+        final proxied = proxy.proxyUrl(audioUrl);
+        // 代理 URL 全是 ASCII，冒号仅出现在 http://127.0.0.1:PORT，需要重新转义
+        extras['audio-files'] = '"${proxied.replaceAll(':', r'\:')}"';
+      }
+    }
+
     await player.open(
       Media(
         video,
@@ -886,6 +949,13 @@ class PlPlayerController with BlockConfigMixin {
       ),
       play: false,
     );
+
+    netLog.info('PLAYER', 'media opened', extra: {
+      'videoHost': Uri.tryParse(dataSource.videoSource)?.host,
+      'hasAudio': dataSource.audioSource?.isNotEmpty == true,
+      'seekTo': seekTo?.inMilliseconds,
+      'isFile': dataSource is FileSource,
+    });
   }
 
   Future<void>? refreshPlayer() {
@@ -983,6 +1053,17 @@ class PlPlayerController with BlockConfigMixin {
       stream.position.listen((event) {
         position = event;
         updatePositionSecond();
+        final sec = event.inSeconds;
+        if (sec > 0 && sec != _lastLoggedPosSec) {
+          if (sec <= 5 || sec % 10 == 0) {
+            _lastLoggedPosSec = sec;
+            netLog.info('PLAYER', 'pos tick', extra: {
+              'pos': sec,
+              'buffered': buffered.value.inMilliseconds,
+              'duration': duration.value.inSeconds,
+            });
+          }
+        }
         if (!isSliderMoving.value) {
           sliderPosition = event;
           updateSliderPositionSecond();
@@ -1003,49 +1084,70 @@ class PlPlayerController with BlockConfigMixin {
       }),
       stream.buffering.listen((bool event) {
         isBuffering.value = event;
+        if (event) {
+          _bufferStartMs = DateTime.now().millisecondsSinceEpoch;
+        } else if (_bufferStartMs > 0) {
+          final dur = DateTime.now().millisecondsSinceEpoch - _bufferStartMs;
+          _bufferCount++;
+          _bufferTotalMs += dur;
+          if (dur > _bufferMaxMs) _bufferMaxMs = dur;
+          _bufferStartMs = 0;
+        }
+        netLog.info('PLAYER', event ? 'buffering start' : 'buffering end', extra: {
+          'pos': position.inSeconds,
+          'buffered': buffered.value.inSeconds,
+        });
         videoPlayerServiceHandler?.onStatusChange(
           playerStatus.value,
           event,
           isLive,
         );
       }),
-      if (kDebugMode)
-        stream.log.listen(((PlayerLog log) {
-          if (log.level == 'error' || log.level == 'fatal') {
-            Utils.reportError('${log.level}: ${log.prefix}: ${log.text}', null);
-          } else {
-            debugPrint(log.toString());
-          }
-        })),
+      stream.log.listen(((PlayerLog log) {
+        if (log.level == 'error' || log.level == 'fatal') {
+          netLog.error('MPV', '${log.prefix}: ${log.text}');
+          Utils.reportError('${log.level}: ${log.prefix}: ${log.text}', null);
+        } else if (log.level == 'warn') {
+          netLog.warn('MPV', '${log.prefix}: ${log.text}');
+        } else if (kDebugMode) {
+          debugPrint(log.toString());
+        }
+      })),
       stream.error.listen((String event) {
         if (dataSource is FileSource &&
             event.startsWith("Failed to open file")) {
           return;
         }
+        final isProxyUrl = event.contains('127.0.0.1') && event.contains('/proxy');
         if (isLive) {
           if (event.startsWith('tcp: ffurl_read returned ') ||
               event.startsWith("Failed to open https://") ||
-              event.startsWith("Can not open external file https://")) {
+              event.startsWith("Failed to open http://") ||
+              event.startsWith("Can not open external file https://") ||
+              event.startsWith("Can not open external file http://")) {
             Future.delayed(const Duration(milliseconds: 3000), refreshPlayer);
           }
           return;
         }
         if (event.startsWith("Failed to open https://") ||
+            event.startsWith("Failed to open http://") ||
             event.startsWith("Can not open external file https://") ||
+            event.startsWith("Can not open external file http://") ||
             //tcp: ffurl_read returned 0xdfb9b0bb
             //tcp: ffurl_read returned 0xffffff99
             event.startsWith('tcp: ffurl_read returned ')) {
+          // 代理 URL 的所有连接错误都由代理层处理重试，播放器不应重载
+          if (isProxyUrl) {
+            netLog.warn('PLAYER', 'proxy error (suppressed refresh)', extra: {
+              'error': event.substring(0, event.length.clamp(0, 80)),
+            });
+            return;
+          }
           EasyThrottle.throttle(
             'controllerStream.error.listen',
             const Duration(milliseconds: 10000),
             () {
               Future.delayed(const Duration(milliseconds: 3000), () {
-                // if (kDebugMode) {
-                //   debugPrint("isBuffering.value: ${isBuffering.value}");
-                // }
-                // if (kDebugMode) {
-                //   debugPrint("_buffered.value: ${_buffered.value}");
-                // }
                 if (isBuffering.value && buffered.value == Duration.zero) {
                   SmartDialog.showToast(
                     '视频链接打开失败，重试中',
@@ -1594,6 +1696,9 @@ class PlPlayerController with BlockConfigMixin {
   bool _isCloseAll = false;
   bool get isCloseAll => _isCloseAll;
 
+  /// 播放器设置面板打开时为 true，防止 didPushNext 暂停播放
+  bool isShowingPlayerSheet = false;
+
   Future<void>? resetScreenRotation() {
     if (horizontalScreen) {
       return fullMode();
@@ -1602,10 +1707,43 @@ class PlPlayerController with BlockConfigMixin {
     }
   }
 
+  void _flushBufferStats() {
+    if (_bufferCount > 0) {
+      netLog.info('PLAYER', 'buffer stats', extra: {
+        'count': _bufferCount,
+        'avg_ms': _bufferTotalMs ~/ _bufferCount,
+        'max_ms': _bufferMaxMs,
+        'total_ms': _bufferTotalMs,
+      });
+    }
+    _bufferCount = 0;
+    _bufferTotalMs = 0;
+    _bufferMaxMs = 0;
+    _bufferStartMs = 0;
+    _lastLoggedPosSec = -1;
+  }
+
   void onCloseAll() {
-    _isCloseAll = true;
-    dispose();
-    Get.until((route) => route.isFirst);
+    if (PlatformUtils.isDesktop) {
+      final setting = GStorage.setting;
+      final closeTab =
+          setting.get(SettingBoxKey.closeTabOnHome, defaultValue: false);
+      if (closeTab) {
+        _isCloseAll = true;
+        dispose();
+      } else {
+        final pauseOnHome =
+            setting.get(SettingBoxKey.pauseOnHome, defaultValue: true);
+        if (pauseOnHome && playerStatus.isPlaying) {
+          pause();
+        }
+      }
+      Nav.goHome(closeCurrentTab: closeTab);
+    } else {
+      _isCloseAll = true;
+      dispose();
+      Nav.popUntil((route) => route.isFirst);
+    }
   }
 
   void dispose() {
@@ -1659,6 +1797,7 @@ class PlPlayerController with BlockConfigMixin {
     if (kDebugMode) {
       debugPrint('dispose player');
     }
+    _flushBufferStats();
     _videoPlayerController?.dispose();
     _videoPlayerController = null;
     _videoController = null;
@@ -1735,7 +1874,7 @@ class PlPlayerController with BlockConfigMixin {
           context: Get.context!,
           builder: (context) => GestureDetector(
             onTap: () {
-              Get.back();
+              Nav.back();
               ImageUtils.saveByteImg(
                 bytes: value,
                 fileName: 'screenshot_${ImageUtils.time}',
@@ -1802,6 +1941,6 @@ class PlPlayerController with BlockConfigMixin {
       triggerFullScreen(status: false);
       return;
     }
-    Get.back();
+    Nav.back();
   }
 }

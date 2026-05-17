@@ -15,6 +15,7 @@ import 'package:PiliPlus/utils/extension/scroll_controller_ext.dart';
 import 'package:PiliPlus/utils/grid.dart';
 import 'package:flutter/material.dart' hide TabBarView;
 import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class HistoryPage extends StatefulWidget {
   const HistoryPage({super.key, this.type});
@@ -162,7 +163,7 @@ class _HistoryPageState extends State<HistoryPage>
     actions: [
       IconButton(
         tooltip: '搜索',
-        onPressed: () => Get.toNamed('/historySearch'),
+        onPressed: () => Nav.push('/historySearch'),
         icon: const Icon(Icons.search_outlined),
       ),
       PopupMenuButton(

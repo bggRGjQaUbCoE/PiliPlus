@@ -15,6 +15,7 @@ import 'package:fixnum/fixnum.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 abstract class ReplyController<R> extends CommonListController<R, ReplyInfo> {
   final RxInt count = (-1).obs;
@@ -144,7 +145,7 @@ abstract class ReplyController<R> extends CommonListController<R, ReplyInfo> {
     }
 
     final key = oid ?? replyItem!.oid + replyItem.id;
-    Get.key.currentState!
+    Nav.navigatorKey.currentState!
         .push(
           PublishRoute(
             pageBuilder: (buildContext, animation, secondaryAnimation) {
@@ -168,7 +169,7 @@ abstract class ReplyController<R> extends CommonListController<R, ReplyInfo> {
                 },
               );
             },
-            settings: RouteSettings(arguments: Get.arguments),
+            settings: RouteSettings(arguments: Nav.arguments),
           ),
         )
         .then(

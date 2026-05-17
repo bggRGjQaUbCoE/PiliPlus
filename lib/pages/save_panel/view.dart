@@ -26,6 +26,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 import 'package:intl/intl.dart' show DateFormat;
 import 'package:pretty_qr_code/pretty_qr_code.dart';
 import 'package:share_plus/share_plus.dart';
@@ -45,7 +46,7 @@ class SavePanel extends StatefulWidget {
   State<SavePanel> createState() => _SavePanelState();
 
   static void toSavePanel({dynamic upMid, dynamic item}) {
-    Get.key.currentState!.push(
+    Nav.pushRoute(
       PublishRoute(
         pageBuilder: (context, animation, secondaryAnimation) {
           return SavePanel(upMid: upMid, item: item);
@@ -57,7 +58,7 @@ class SavePanel extends StatefulWidget {
             child: child,
           );
         },
-        settings: RouteSettings(arguments: Get.arguments),
+        settings: RouteSettings(arguments: Nav.arguments),
       ),
     );
   }
@@ -88,7 +89,7 @@ class _SavePanelState extends State<SavePanel> {
     super.initState();
     if (_item case final ReplyInfo reply) {
       itemType = '评论';
-      final currentRoute = Get.currentRoute;
+      final currentRoute = Nav.currentRoute;
       late final hasRoot = reply.hasRoot();
 
       if (currentRoute == '/videoV') {
@@ -97,8 +98,8 @@ class _SavePanelState extends State<SavePanel> {
         uri =
             'https://www.bilibili.com/video/av${reply.oid}?comment_on=1&comment_root_id=$rootId${hasRoot ? '&comment_secondary_id=${reply.id}' : ''}';
         try {
-          final heroTag = Get.arguments['heroTag'];
-          final videoType = Get.arguments['videoType'];
+          final heroTag = Nav.arguments['heroTag'];
+          final videoType = Nav.arguments['videoType'];
           if (videoType == VideoType.pgc || videoType == VideoType.pugv) {
             final ctr = Get.find<PgcIntroController>(tag: heroTag);
             final pgcItem = ctr.pgcItem;
@@ -136,7 +137,7 @@ class _SavePanelState extends State<SavePanel> {
       } else if (currentRoute.startsWith('/dynamicDetail')) {
         DynamicItemModel? dynItem;
         try {
-          dynItem = Get.arguments['item'] as DynamicItemModel;
+          dynItem = Nav.arguments['item'] as DynamicItemModel;
           uname = dynItem.modules.moduleAuthor?.name;
         } catch (_) {}
         final type = reply.type.toInt();
@@ -156,13 +157,13 @@ class _SavePanelState extends State<SavePanel> {
       } else if (currentRoute.startsWith('/Scaffold')) {
         try {
           final type = reply.type.toInt();
-          final oid = Get.arguments['oid'] ?? reply.oid;
+          final oid = Nav.arguments['oid'] ?? reply.oid;
           final rootId = hasRoot ? reply.root : reply.id;
           if (type == 1) {
             uri =
                 'https://www.bilibili.com/video/av$oid?comment_on=1&comment_root_id=$rootId${hasRoot ? '&comment_secondary_id=${reply.id}' : ''}';
           } else {
-            String enterUri = Get.arguments['enterUri'] ?? '';
+            String enterUri = Nav.arguments['enterUri'] ?? '';
             if (enterUri.isNotEmpty) {
               enterUri = 'enterUri=${Uri.encodeComponent(enterUri)}';
             } else if (const [11, 12, 17].contains(type)) {
@@ -179,7 +180,7 @@ class _SavePanelState extends State<SavePanel> {
           final rootId = hasRoot ? reply.root : reply.id;
           final anchor = hasRoot ? 'anchor=${reply.id}&' : '';
           final enterUri =
-              'bilibili://following/detail/${Get.parameters['id'] ?? Get.arguments?['id']}';
+              'bilibili://following/detail/${Nav.parameters['id'] ?? Nav.arguments?['id']}';
           uri =
               'bilibili://comment/detail/$type/$oid/$rootId/?${anchor}enterUri=$enterUri';
         } catch (_) {}
@@ -191,7 +192,7 @@ class _SavePanelState extends State<SavePanel> {
         String enterUri = '';
         try {
           final ctr = Get.find<MusicDetailController>(
-            tag: Get.parameters['musicId'],
+            tag: Nav.parameters['musicId'],
           );
           enterUri =
               'enterUri=${Uri.encodeComponent(ctr.shareUrl)}'; // official client cannot parse it
@@ -302,7 +303,7 @@ class _SavePanelState extends State<SavePanel> {
       final picName =
           "${Constants.appName}_${itemType}_${DateFormat('yyyyMMddHHmmss').format(DateTime.now())}";
       if (isShare) {
-        Get.back();
+        Nav.back();
         SmartDialog.dismiss();
         SharePlus.instance.share(
           ShareParams(
@@ -323,7 +324,7 @@ class _SavePanelState extends State<SavePanel> {
         );
         if (result != null) {
           if (result.isSuccess) {
-            Get.back();
+            Nav.back();
           }
         }
       }
@@ -555,7 +556,7 @@ class _SavePanelState extends State<SavePanel> {
                     size: 42,
                     tooltip: '关闭',
                     icon: const Icon(Icons.clear),
-                    onPressed: Get.back,
+                    onPressed: () => Nav.back(),
                     bgColor: theme.colorScheme.onInverseSurface,
                     iconColor: theme.colorScheme.onSurfaceVariant,
                   ),

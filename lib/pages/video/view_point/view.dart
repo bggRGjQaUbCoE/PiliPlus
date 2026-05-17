@@ -9,6 +9,7 @@ import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class ViewPointsPage extends CommonSlidePage {
   const ViewPointsPage({
@@ -64,7 +65,7 @@ class _ViewPointsPageState extends State<ViewPointsPage>
             size: 30,
             icon: const Icon(Icons.clear),
             tooltip: '关闭',
-            onPressed: Get.back,
+            onPressed: () => Nav.back(),
           ),
           const SizedBox(width: 16),
         ],
@@ -129,7 +130,7 @@ class _ViewPointsPageState extends State<ViewPointsPage>
       child: InkWell(
         onTap: segment.from != null
             ? () {
-                Get.back();
+                Nav.back();
                 plPlayerController?.seekTo(
                   Duration(seconds: segment.from!),
                   isSeek: false,

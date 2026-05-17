@@ -25,6 +25,7 @@ import 'package:flutter/material.dart' hide LayoutBuilder;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:path/path.dart' as path;
+import 'package:PiliPlus/utils/nav.dart';
 
 class DetailItem extends StatelessWidget {
   const DetailItem({
@@ -70,7 +71,7 @@ class DetailItem extends StatelessWidget {
                 children: [
                   ListTile(
                     onTap: () {
-                      Get.back();
+                      Nav.back();
                       showConfirmDialog(
                         context: context,
                         title: const Text('确定删除该视频？'),
@@ -85,7 +86,7 @@ class DetailItem extends StatelessWidget {
                   ),
                   ListTile(
                     onTap: () async {
-                      Get.back();
+                      Nav.back();
                       final res = await downloadService.downloadDanmaku(
                         entry: entry,
                         isUpdate: true,

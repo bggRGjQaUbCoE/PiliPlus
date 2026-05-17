@@ -13,6 +13,7 @@ import 'package:PiliPlus/utils/grid.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:flutter/material.dart';
+import 'package:PiliPlus/utils/nav.dart';
 import 'package:get/get.dart';
 
 class ArticleListPage extends StatefulWidget {
@@ -25,7 +26,7 @@ class ArticleListPage extends StatefulWidget {
 class _ArticleListPageState extends State<ArticleListPage> with GridMixin {
   final _controller = Get.put(
     ArticleListController(),
-    tag: Get.parameters['id']!,
+    tag: Nav.parameters['id']!,
   );
 
   late EdgeInsets padding;
@@ -140,7 +141,7 @@ class _ArticleListPageState extends State<ArticleListPage> with GridMixin {
                     GestureDetector(
                       behavior: HitTestBehavior.opaque,
                       onTap: () =>
-                          Get.toNamed('/member?mid=${_controller.author!.mid}'),
+                          Nav.push('/member?mid=${_controller.author!.mid}'),
                       child: Row(
                         spacing: 10,
                         mainAxisSize: MainAxisSize.min,

@@ -7,6 +7,7 @@ import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/widgets.dart' show Text;
 import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class CreateVoteController extends GetxController {
   CreateVoteController(this.voteId);
@@ -73,7 +74,7 @@ class CreateVoteController extends GetxController {
       showConfirmDialog(
         context: Get.context!,
         title: Text(res.toString()),
-        onConfirm: Get.back,
+        onConfirm: () => Nav.back(),
       );
     }
   }
@@ -103,7 +104,7 @@ class CreateVoteController extends GetxController {
         : DynamicsHttp.updateVote(voteInfo));
     if (res case Success(:final response)) {
       voteInfo.voteId = response;
-      Get.back(result: voteInfo);
+      Nav.back(voteInfo);
     } else {
       res.toast();
     }

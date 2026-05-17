@@ -19,6 +19,7 @@ import 'package:flutter/material.dart' hide ListTile;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class _SettingsModel {
   final SettingType type;
@@ -149,7 +150,7 @@ class _SettingPageState extends State<SettingPage> {
 
   void _toPage(SettingType type) {
     if (_isPortrait) {
-      Get.toNamed('/${type.name}');
+      Nav.push('/${type.name}');
     } else {
       _type = type;
       setState(() {});
@@ -239,7 +240,7 @@ class _SettingPageState extends State<SettingPage> {
           ),
           actions: [
             TextButton(
-              onPressed: Get.back,
+              onPressed: () => Nav.back(),
               child: Text(
                 '点错了',
                 style: TextStyle(
@@ -249,7 +250,7 @@ class _SettingPageState extends State<SettingPage> {
             ),
             TextButton(
               onPressed: () {
-                Get.back();
+                Nav.back();
                 logout();
               },
               child: Text(
@@ -264,7 +265,7 @@ class _SettingPageState extends State<SettingPage> {
                 if (res['status']) {
                   SmartDialog.dismiss();
                   logout();
-                  Get.back();
+                  Nav.back();
                 } else {
                   SmartDialog.dismiss();
                   SmartDialog.showToast(res['msg'].toString());
@@ -287,7 +288,7 @@ class _SettingPageState extends State<SettingPage> {
     child: Material(
       type: MaterialType.transparency,
       child: InkWell(
-        onTap: () => Get.toNamed('/settingsSearch'),
+        onTap: () => Nav.push('/settingsSearch'),
         borderRadius: const BorderRadius.all(Radius.circular(50)),
         child: Ink(
           padding: const EdgeInsets.symmetric(vertical: 8),

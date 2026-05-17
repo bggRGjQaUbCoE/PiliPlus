@@ -6,6 +6,7 @@ import 'package:PiliPlus/pages/audio/controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart' show RenderProxyBox, BoxHitTestResult;
 import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class VolumeButton extends StatefulWidget {
   const VolumeButton({
@@ -171,7 +172,7 @@ class _VolumeButtonState extends State<VolumeButton> {
     final offset = renderBox.localToGlobal(
       renderBox.size.topCenter(const Offset(0, -6)),
     );
-    Get.key.currentState!.push(
+    Nav.pushRoute(
       DialogRoute(
         context: context,
         useSafeArea: false,

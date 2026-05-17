@@ -25,6 +25,7 @@ import 'package:flutter/material.dart'
     hide SliverGridDelegateWithMaxCrossAxisExtent, LayoutBuilder;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class DownloadPage extends StatefulWidget {
   const DownloadPage({super.key});
@@ -241,7 +242,7 @@ class _DownloadPageState extends State<DownloadPage> {
                 children: [
                   ListTile(
                     onTap: () {
-                      Get.back();
+                      Nav.back();
                       showConfirmDialog(
                         context: context,
                         title: const Text('确定删除？'),
@@ -263,7 +264,7 @@ class _DownloadPageState extends State<DownloadPage> {
                   ),
                   ListTile(
                     onTap: () async {
-                      Get.back();
+                      Nav.back();
                       final res = await Future.wait(
                         pageInfo.entries.map(
                           (e) => _downloadService.downloadDanmaku(

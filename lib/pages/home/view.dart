@@ -12,6 +12,7 @@ import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -151,7 +152,7 @@ class _HomePageState extends CommonPageState<HomePage>
             splashColor: theme.colorScheme.primaryContainer.withValues(
               alpha: 0.3,
             ),
-            onTap: () => Get.toNamed(
+            onTap: () => Nav.push(
               '/search',
               parameters: _homeController.enableSearchWord
                   ? {'hintText': _homeController.defaultSearch.value}
@@ -275,7 +276,7 @@ Widget msgBadge(MainController mainController) {
             mainController
               ..msgUnReadCount.value = ''
               ..lastCheckUnreadAt = DateTime.now().millisecondsSinceEpoch;
-            Get.toNamed('/whisper');
+            Nav.push('/whisper');
           },
           icon: Badge(
             isLabelVisible:

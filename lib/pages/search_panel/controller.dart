@@ -12,6 +12,7 @@ import 'package:PiliPlus/pages/search_result/controller.dart';
 import 'package:PiliPlus/utils/extension/scroll_controller_ext.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class SearchPanelController<R extends SearchNumData<T>, T>
     extends CommonListController<R, T> {
@@ -47,7 +48,7 @@ class SearchPanelController<R extends SearchNumData<T>, T>
     bool getBack = true,
     String? label,
   }) {
-    if (getBack) Get.back();
+    if (getBack) Nav.back();
     SmartDialog.dismiss();
     if (label != null) {
       SmartDialog.showToast("「$label」的筛选结果");

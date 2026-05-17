@@ -10,7 +10,7 @@ import 'package:desktop_webview_window/desktop_webview_window.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
-import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class GeetestWebviewDialog extends StatefulWidget {
   const GeetestWebviewDialog(this.gt, this.challenge, {super.key});
@@ -91,7 +91,7 @@ class _GeetestWebviewDialogState extends State<GeetestWebviewDialog> {
 
     if (config is Error) {
       config.toast();
-      Get.back();
+      Nav.back();
       return;
     }
 
@@ -116,7 +116,7 @@ class _GeetestWebviewDialogState extends State<GeetestWebviewDialog> {
         final dataStr = msgStr.substring("success:".length);
         try {
           final data = jsonDecode(dataStr);
-          Get.back(result: data);
+          Nav.back(data);
         } catch (e) {
           debugPrint('geetest decode error: $e');
         }
@@ -127,7 +127,7 @@ class _GeetestWebviewDialogState extends State<GeetestWebviewDialog> {
 
     _linuxWebview!.onClose.whenComplete(() {
       if (mounted) {
-        Get.back();
+        Nav.back();
       }
     });
 
@@ -192,7 +192,7 @@ class _GeetestWebviewDialogState extends State<GeetestWebviewDialog> {
         ),
         actions: [
           TextButton(
-            onPressed: Get.back,
+            onPressed: () => Nav.back(),
             child: Text(
               '取消',
               style: TextStyle(color: ColorScheme.of(context).outline),
@@ -230,7 +230,7 @@ class _GeetestWebviewDialogState extends State<GeetestWebviewDialog> {
                 callback: (args) {
                   if (args.isNotEmpty) {
                     if (args[0] case Map<String, dynamic> data) {
-                      Get.back(result: data);
+                      Nav.back(data);
                       return;
                     }
                   }
@@ -254,14 +254,14 @@ class _GeetestWebviewDialogState extends State<GeetestWebviewDialog> {
               );
             } else {
               config.toast();
-              Get.back();
+              Nav.back();
             }
           },
         ),
       ),
       actions: [
         TextButton(
-          onPressed: Get.back,
+          onPressed: () => Nav.back(),
           child: Text(
             '取消',
             style: TextStyle(color: ColorScheme.of(context).outline),

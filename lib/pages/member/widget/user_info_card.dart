@@ -39,7 +39,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
-import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class UserInfoCard extends StatelessWidget {
   const UserInfoCard({
@@ -426,9 +426,9 @@ class UserInfoCard extends StatelessWidget {
               onPressed: () {
                 if (Accounts.main.isLogin) {
                   int mid = int.parse(card.mid!);
-                  Get.toNamed(
+                  Nav.push(
                     '/whisperDetail',
-                    arguments: {
+                    extra: {
                       'talkerId': mid,
                       'name': card.name,
                       'face': card.face,

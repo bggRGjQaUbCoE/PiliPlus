@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class MultiSelectDialog<T> extends StatefulWidget {
   final Iterable<T> initValues;
@@ -66,7 +66,7 @@ class _MultiSelectDialogState<T> extends State<MultiSelectDialog<T>> {
       actionsPadding: const EdgeInsets.only(left: 16, right: 16, bottom: 12),
       actions: [
         TextButton(
-          onPressed: Get.back,
+          onPressed: () => Nav.back(),
           child: Text(
             '取消',
             style: TextStyle(
@@ -75,7 +75,7 @@ class _MultiSelectDialogState<T> extends State<MultiSelectDialog<T>> {
           ),
         ),
         TextButton(
-          onPressed: () => Get.back(result: _tempValues),
+          onPressed: () => Nav.back(_tempValues),
           child: const Text('确定'),
         ),
       ],

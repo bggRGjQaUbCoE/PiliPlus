@@ -5,7 +5,7 @@ import 'package:PiliPlus/pages/follow_search/view.dart';
 import 'package:PiliPlus/pages/share/view.dart' show UserModel;
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class ContactPage extends StatefulWidget {
   const ContactPage({super.key, this.isFromSelect = true});
@@ -34,7 +34,7 @@ class _ContactPageState extends State<ContactPage>
   }
 
   void onSelect(UserModel userModel) {
-    Get.back(result: userModel);
+    Nav.back(userModel);
   }
 
   @override
@@ -54,15 +54,15 @@ class _ContactPageState extends State<ContactPage>
           IconButton(
             onPressed: () async {
               final UserModel? userModel = await Navigator.of(context).push(
-                GetPageRoute(
-                  page: () => FollowSearchPage(
+                MaterialPageRoute(
+                  builder: (_) => FollowSearchPage(
                     mid: mid,
                     isFromSelect: widget.isFromSelect,
                   ),
                 ),
               );
               if (userModel != null) {
-                Get.back(result: userModel);
+                Nav.back(userModel);
               }
             },
             icon: const Icon(Icons.search),

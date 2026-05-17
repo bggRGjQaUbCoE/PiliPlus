@@ -4,7 +4,7 @@ import 'package:PiliPlus/models_new/sub/sub/list.dart';
 import 'package:PiliPlus/models_new/sub/sub_detail/data.dart';
 import 'package:PiliPlus/models_new/sub/sub_detail/media.dart';
 import 'package:PiliPlus/pages/common/common_list_controller.dart';
-import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class SubDetailController
     extends CommonListController<SubDetailData, SubDetailItemModel> {
@@ -15,7 +15,7 @@ class SubDetailController
   @override
   void onInit() {
     super.onInit();
-    final args = Get.arguments;
+    final args = Nav.arguments;
     id = args['id'];
     subInfo = args['subInfo'];
     heroTag = args['heroTag'];

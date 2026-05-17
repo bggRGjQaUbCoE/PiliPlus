@@ -3,8 +3,7 @@ import 'package:PiliPlus/http/member.dart';
 import 'package:PiliPlus/models_new/member_guard/data.dart';
 import 'package:PiliPlus/models_new/member_guard/guard_top_list.dart';
 import 'package:PiliPlus/pages/common/common_list_controller.dart';
-import 'package:get/get_core/src/get_main.dart';
-import 'package:get/get_navigation/get_navigation.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class MemberGuardController
     extends CommonListController<MemberGuardData, GuardItem> {
@@ -14,7 +13,7 @@ class MemberGuardController
     queryData();
   }
 
-  final Object ruid = Get.arguments['ruid'];
+  final Object ruid = Nav.arguments['ruid'];
 
   late List<GuardItem> tops;
 

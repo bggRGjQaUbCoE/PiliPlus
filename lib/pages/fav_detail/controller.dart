@@ -18,6 +18,7 @@ import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:flutter/widgets.dart' show Text, ValueChanged;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
+import 'package:PiliPlus/utils/nav.dart';
 import 'package:get/get.dart';
 
 mixin BaseFavController
@@ -101,8 +102,8 @@ class FavDetailController
   void onInit() {
     super.onInit();
 
-    mediaId = int.parse(Get.parameters['mediaId']!);
-    heroTag = Get.parameters['heroTag']!;
+    mediaId = int.parse(Nav.parameters['mediaId']!);
+    heroTag = Nav.parameters['heroTag']!;
 
     queryData();
   }

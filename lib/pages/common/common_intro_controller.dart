@@ -23,6 +23,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 abstract class CommonIntroController extends GetxController
     with GetSingleTickerProviderStateMixin, TripleMixin, FavMixin {
@@ -74,7 +75,7 @@ abstract class CommonIntroController extends GetxController
   @override
   void onInit() {
     super.onInit();
-    final args = Get.arguments;
+    final args = Nav.arguments;
     heroTag = args['heroTag'];
     bvid = args['bvid'];
     cid = RxInt(args['cid']);
@@ -276,7 +277,7 @@ mixin FavMixin on TripleMixin {
     );
     SmartDialog.dismiss();
     if (result.isSuccess) {
-      Get.back();
+      Nav.back();
       final newVal =
           addMediaIdsNew.isNotEmpty || favIds?.length != delMediaIdsNew.length;
       if (hasFav.value != newVal) {

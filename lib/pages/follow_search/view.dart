@@ -6,6 +6,7 @@ import 'package:PiliPlus/pages/follow_search/controller.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class FollowSearchPage extends StatefulWidget {
   const FollowSearchPage({
@@ -31,7 +32,7 @@ class _FollowSearchPageState
   void initState() {
     super.initState();
     controller = Get.put(
-      FollowSearchController(widget.mid ?? Get.arguments['mid']),
+      FollowSearchController(widget.mid ?? Nav.arguments['mid']),
       tag: Utils.generateRandomString(8),
     );
   }
@@ -47,7 +48,7 @@ class _FollowSearchPageState
         return FollowItem(
           item: list[index],
           onSelect: widget.mid != null && widget.isFromSelect
-              ? (userModel) => Get.back(result: userModel)
+              ? (userModel) => Nav.back(userModel)
               : null,
         );
       }),

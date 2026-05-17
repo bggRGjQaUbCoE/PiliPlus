@@ -5,11 +5,12 @@ import 'package:PiliPlus/models_new/article/article_list/article.dart';
 import 'package:PiliPlus/models_new/article/article_list/data.dart';
 import 'package:PiliPlus/models_new/article/article_list/list.dart';
 import 'package:PiliPlus/pages/common/common_list_controller.dart';
+import 'package:PiliPlus/utils/nav.dart';
 import 'package:get/get.dart';
 
 class ArticleListController
     extends CommonListController<ArticleListData, ArticleListItemModel> {
-  final id = Get.parameters['id']!;
+  final id = Nav.parameters['id']!;
 
   @override
   void onInit() {

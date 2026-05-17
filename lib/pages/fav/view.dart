@@ -10,6 +10,8 @@ import 'package:PiliPlus/pages/fav_folder_sort/view.dart';
 import 'package:PiliPlus/utils/extension/scroll_controller_ext.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
+import 'package:PiliPlus/models_new/fav/fav_folder/list.dart';
+import 'package:PiliPlus/utils/nav.dart';
 import 'package:get/get.dart';
 
 class FavPage extends StatefulWidget {
@@ -31,7 +33,7 @@ class _FavPageState extends State<FavPage> with SingleTickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    int initialIndex = Get.arguments is int ? Get.arguments as int : 0;
+    int initialIndex = Nav.arguments is int ? Nav.arguments as int : 0;
     _showVideoFavMenu = (initialIndex == 0).obs;
     _tabController = TabController(
       length: FavTabType.values.length,
@@ -59,7 +61,7 @@ class _FavPageState extends State<FavPage> with SingleTickerProviderStateMixin {
           Obx(
             () => _showVideoFavMenu.value
                 ? IconButton(
-                    onPressed: () => Get.toNamed('/createFav')?.then(
+                    onPressed: () => Nav.push<FavFolderInfo>('/createFav').then(
                       (data) {
                         if (data != null) {
                           final list =
@@ -106,9 +108,9 @@ class _FavPageState extends State<FavPage> with SingleTickerProviderStateMixin {
                       )) {
                         try {
                           final item = response!.first;
-                          Get.toNamed(
+                          Nav.push(
                             '/favSearch',
-                            arguments: {
+                            extra: {
                               'type': 1,
                               'mediaId': item.id,
                               'title': item.title,

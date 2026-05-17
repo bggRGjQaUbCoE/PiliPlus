@@ -18,6 +18,7 @@ import 'package:PiliPlus/utils/extension/widget_ext.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:easy_debounce/easy_throttle.dart';
 import 'package:flutter/material.dart';
+import 'package:PiliPlus/utils/nav.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
@@ -32,7 +33,7 @@ class _MatchInfoPageState extends CommonDynPageState<MatchInfoPage> {
   @override
   final MatchInfoController controller = Get.putOrFind(
     MatchInfoController.new,
-    tag: Get.parameters['cid']!,
+    tag: Nav.parameters['cid']!,
   );
 
   @override

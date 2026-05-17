@@ -8,7 +8,7 @@ import 'package:PiliPlus/pages/dynamics/widgets/vote.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 Widget? addWidget(
   BuildContext context, {
@@ -125,7 +125,7 @@ Widget? addWidget(
                                       ? null
                                       : (NoDeadlineTapGestureRecognizer()
                                           ..onTap = () {
-                                            Get.toNamed(
+                                            Nav.push(
                                               '/webview',
                                               parameters: {
                                                 'url': reserve.desc3!.jumpUrl!,
@@ -262,7 +262,7 @@ Widget? addWidget(
                                     ? null
                                     : (NoDeadlineTapGestureRecognizer()
                                         ..onTap = () {
-                                          Get.toNamed(
+                                          Nav.push(
                                             '/webview',
                                             parameters: {
                                               'url': content.desc!.jumpUrl!,

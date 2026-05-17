@@ -17,6 +17,7 @@ import 'package:PiliPlus/utils/request_utils.dart';
 import 'package:flutter/material.dart' hide TabBarView;
 import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class LaterPage extends StatefulWidget {
   const LaterPage({super.key});
@@ -197,9 +198,9 @@ class _LaterPageState extends State<LaterPage>
             tooltip: '搜索',
             onPressed: () {
               final mid = Accounts.main.mid;
-              Get.toNamed(
+              Nav.push(
                 '/laterSearch',
-                arguments: {
+                extra: {
                   'type': 0,
                   'mediaId': mid,
                   'mid': mid,

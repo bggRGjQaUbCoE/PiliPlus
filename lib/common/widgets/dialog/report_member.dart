@@ -1,7 +1,7 @@
 import 'package:PiliPlus/http/member.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
-import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 const _reason = ['头像违规', '昵称违规', '签名违规'];
 
@@ -139,7 +139,7 @@ Future<void> showMemberReportDialog(
         ),
         actions: [
           TextButton(
-            onPressed: Get.back,
+            onPressed: () => Nav.back(),
             child: Text(
               '取消',
               style: TextStyle(color: theme.colorScheme.outline),
@@ -150,7 +150,7 @@ Future<void> showMemberReportDialog(
               if (reason.isEmpty) {
                 SmartDialog.showToast('至少选择一项作为举报内容');
               } else {
-                Get.back();
+                Nav.back();
                 MemberHttp.reportMember(
                   mid,
                   reason: reason.join(','),

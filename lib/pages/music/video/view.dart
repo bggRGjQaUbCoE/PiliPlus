@@ -10,6 +10,7 @@ import 'package:PiliPlus/utils/extension/get_ext.dart';
 import 'package:PiliPlus/utils/grid.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class MusicRecommendPage extends StatefulWidget {
   const MusicRecommendPage({super.key});
@@ -22,7 +23,7 @@ class _MusicRecommendPageState extends State<MusicRecommendPage>
     with GridMixin {
   final MusicRecommendController _controller = Get.putOrFind(
     MusicRecommendController.new,
-    tag: (Get.arguments as MusicRecommendArgs).id,
+    tag: (Nav.arguments as MusicRecommendArgs).id,
   );
 
   @override

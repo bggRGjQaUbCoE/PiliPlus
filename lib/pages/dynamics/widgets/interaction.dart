@@ -3,8 +3,7 @@ import 'package:PiliPlus/models/dynamics/result.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get_core/src/get_main.dart';
-import 'package:get/get_navigation/src/extension_navigation.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 Widget dynInteraction({
   required ThemeData theme,
@@ -79,7 +78,7 @@ Widget _item(
                   : TextStyle(color: theme.colorScheme.onSurfaceVariant),
               recognizer: isAt
                   ? (NoDeadlineTapGestureRecognizer()
-                      ..onTap = () => Get.toNamed('/member?mid=${e.rid}'))
+                      ..onTap = () => Nav.push('/member?mid=${e.rid}'))
                   : null,
             );
           },

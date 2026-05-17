@@ -56,6 +56,7 @@ import 'package:flutter/material.dart' hide PageView;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:screen_brightness_platform_interface/screen_brightness_platform_interface.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class LiveRoomPage extends StatefulWidget {
   const LiveRoomPage({super.key});
@@ -560,7 +561,7 @@ class _LiveRoomPageState extends State<LiveRoomPage>
                 return GestureDetector(
                   behavior: HitTestBehavior.opaque,
                   onTap: () =>
-                      Get.toNamed('/member?mid=${roomInfoH5.roomInfo?.uid}'),
+                      Nav.push('/member?mid=${roomInfoH5.roomInfo?.uid}'),
                   child: Row(
                     spacing: 10,
                     mainAxisSize: MainAxisSize.min,

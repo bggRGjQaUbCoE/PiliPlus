@@ -23,13 +23,12 @@ import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart' hide LayoutBuilder;
-import 'package:get/get_core/src/get_main.dart';
-import 'package:get/get_navigation/src/extension_navigation.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:re_highlight/languages/all.dart';
 import 'package:re_highlight/re_highlight.dart';
 import 'package:re_highlight/styles/github-dark.dart';
 import 'package:re_highlight/styles/github.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class OpusContent extends StatelessWidget {
   final List<ArticleContentModel> opus;
@@ -78,7 +77,7 @@ class OpusContent extends StatelessWidget {
                 ..onTap = () {
                   switch (rich.type) {
                     case 'RICH_TEXT_NODE_TYPE_AT':
-                      Get.toNamed('/member?mid=${rich.rid}');
+                      Nav.push('/member?mid=${rich.rid}');
                     // case 'RICH_TEXT_NODE_TYPE_TOPIC':
                     default:
                       if (rich.jumpUrl != null) {
@@ -882,7 +881,7 @@ Widget opusCollection(ThemeData theme, ModuleCollection item) {
       color: theme.colorScheme.onInverseSurface,
       child: InkWell(
         borderRadius: const BorderRadius.all(Radius.circular(8)),
-        onTap: () => Get.toNamed(
+        onTap: () => Nav.push(
           '/articleList',
           parameters: {'id': '${item.id}'},
         ),

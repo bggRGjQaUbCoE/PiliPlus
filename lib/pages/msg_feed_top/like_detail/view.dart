@@ -12,6 +12,7 @@ import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class LikeDetailPage extends StatefulWidget {
   const LikeDetailPage({super.key});
@@ -111,7 +112,7 @@ class _LikeDetailPageState extends State<LikeDetailPage> {
 
   Widget _buildItem(ThemeData theme, MsgLikeDetailItem item) {
     return ListTile(
-      onTap: () => Get.toNamed('/member?mid=${item.user!.mid}'),
+      onTap: () => Nav.push('/member?mid=${item.user!.mid}'),
       leading: NetworkImgLayer(
         width: 45,
         height: 45,

@@ -3,6 +3,7 @@ import 'package:PiliPlus/pages/member_search/child/controller.dart';
 import 'package:PiliPlus/utils/extension/scroll_controller_ext.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart';
+import 'package:PiliPlus/utils/nav.dart';
 import 'package:get/get.dart';
 
 class MemberSearchController extends GetxController
@@ -11,8 +12,8 @@ class MemberSearchController extends GetxController
   late final TabController tabController;
   late final TextEditingController editingController;
 
-  final mid = Get.parameters['mid']!;
-  final uname = Get.parameters['uname'];
+  final mid = Nav.parameters['mid']!;
+  final uname = Nav.parameters['uname'];
 
   final RxBool hasData = false.obs;
   final RxList<int> counts = <int>[-1, -1].obs;
@@ -43,7 +44,7 @@ class MemberSearchController extends GetxController
       hasData.value = false;
       focusNode.requestFocus();
     } else {
-      Get.back();
+      Nav.back();
     }
   }
 

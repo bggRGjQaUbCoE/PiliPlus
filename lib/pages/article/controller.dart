@@ -16,6 +16,7 @@ import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/url_utils.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
+import 'package:PiliPlus/utils/nav.dart';
 import 'package:get/get.dart';
 
 class ArticleController extends CommonDynController {
@@ -53,7 +54,7 @@ class ArticleController extends CommonDynController {
   @override
   void onInit() {
     super.onInit();
-    final params = Get.parameters;
+    final params = Nav.parameters;
     id = params['id']!;
     type = params['type']!;
 

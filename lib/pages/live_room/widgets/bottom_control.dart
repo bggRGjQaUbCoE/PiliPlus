@@ -10,6 +10,7 @@ import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class BottomControl extends StatefulWidget {
   const BottomControl({
@@ -70,7 +71,7 @@ class _BottomControlState extends State<BottomControl> with HeaderMixin {
             ),
             onTap: () {
               if (liveRoomCtr.isLogin) {
-                Get.toNamed(
+                Nav.push(
                   '/liveDmBlockPage',
                   parameters: {
                     'roomId': liveRoomCtr.roomId.toString(),

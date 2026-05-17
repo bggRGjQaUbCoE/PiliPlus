@@ -11,6 +11,8 @@ import 'package:PiliPlus/utils/extension/widget_ext.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:flutter/material.dart' hide ListTile;
 import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class MemberGuard extends StatefulWidget {
   const MemberGuard({super.key});
@@ -23,9 +25,9 @@ class MemberGuard extends StatefulWidget {
     required String name,
     required Object? count,
   }) {
-    return Get.toNamed(
+    return Nav.push(
       '/memberGuard',
-      arguments: {
+      extra: {
         'ruid': mid,
         'name': name,
         'count': count,
@@ -42,7 +44,7 @@ class _MemberGuardState extends State<MemberGuard> {
   @override
   void initState() {
     super.initState();
-    final args = Get.arguments;
+    final args = Nav.arguments;
     _userName = args['name'];
     _count = args['count'];
     _controller = Get.put(
@@ -93,7 +95,7 @@ class _MemberGuardState extends State<MemberGuard> {
                     return ListTile(
                       safeArea: false,
                       visualDensity: .comfortable,
-                      onTap: () => Get.toNamed('/member?mid=${item.uid}'),
+                      onTap: () => Nav.push('/member?mid=${item.uid}'),
                       leading: _avatar(item.face, 32, item.guardLevel),
                       title: Text(
                         item.username,
@@ -114,7 +116,7 @@ class _MemberGuardState extends State<MemberGuard> {
   Widget _buildTopItem(GuardItem item, double size) {
     final child = GestureDetector(
       behavior: .opaque,
-      onTap: () => Get.toNamed('/member?mid=${item.uid}'),
+      onTap: () => Nav.push('/member?mid=${item.uid}'),
       child: Padding(
         padding: const .symmetric(vertical: 10.0),
         child: Column(

@@ -3,7 +3,7 @@ import 'package:PiliPlus/http/music.dart';
 import 'package:PiliPlus/models_new/music/bgm_detail.dart';
 import 'package:PiliPlus/models_new/music/bgm_recommend_list.dart';
 import 'package:PiliPlus/pages/common/common_list_controller.dart';
-import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 typedef MusicRecommendArgs = ({String id, MusicDetail item});
 
@@ -15,7 +15,7 @@ class MusicRecommendController
   @override
   void onInit() {
     super.onInit();
-    final MusicRecommendArgs args = Get.arguments;
+    final MusicRecommendArgs args = Nav.arguments;
     musicId = args.id;
     musicDetail = args.item;
     queryData();

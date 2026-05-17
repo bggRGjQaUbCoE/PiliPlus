@@ -10,6 +10,7 @@ import 'package:PiliPlus/utils/grid.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart';
+import 'package:PiliPlus/utils/nav.dart';
 import 'package:get/get.dart';
 
 class SubDetailPage extends StatefulWidget {
@@ -23,9 +24,9 @@ class SubDetailPage extends StatefulWidget {
     String? heroTag,
     SubItemModel? subInfo,
   }) {
-    Get.toNamed(
+    Nav.push(
       '/subDetail',
-      arguments: {
+      extra: {
         'id': id,
         'subInfo': subInfo,
         'heroTag': heroTag,
@@ -42,7 +43,7 @@ class _SubDetailPageState extends State<SubDetailPage> with GridMixin {
     super.initState();
     _subDetailController = Get.put(
       SubDetailController(),
-      tag: Utils.makeHeroTag(Get.parameters['id']),
+      tag: Utils.makeHeroTag(Nav.parameters['id']),
     );
   }
 
@@ -188,7 +189,7 @@ class _SubDetailPageState extends State<SubDetailPage> with GridMixin {
                     ),
                     GestureDetector(
                       onTap: () =>
-                          Get.toNamed('/member?mid=${info.upper!.mid}'),
+                          Nav.push('/member?mid=${info.upper!.mid}'),
                       child: Text(
                         info.upper!.name!,
                         style: TextStyle(color: theme.colorScheme.primary),

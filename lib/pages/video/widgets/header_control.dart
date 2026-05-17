@@ -67,6 +67,7 @@ import 'package:get/get.dart';
 import 'package:hive_ce/hive.dart';
 import 'package:intl/intl.dart' show DateFormat;
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 mixin TimeBatteryMixin<T extends StatefulWidget> on State<T> {
   PlPlayerController get plPlayerController;
@@ -377,7 +378,7 @@ class HeaderControlState extends State<HeaderControl>
                 ListTile(
                   dense: true,
                   onTap: () {
-                    Get.back();
+                    Nav.back();
                     introController.viewLater();
                   },
                   leading: const Icon(Icons.watch_later_outlined, size: 20),
@@ -387,7 +388,7 @@ class HeaderControlState extends State<HeaderControl>
                   ListTile(
                     dense: true,
                     onTap: () {
-                      Get.back();
+                      Nav.back();
                       videoDetailCtr.showNoteList(context);
                     },
                     leading: const Icon(Icons.note_alt_outlined, size: 20),
@@ -397,7 +398,7 @@ class HeaderControlState extends State<HeaderControl>
                   ListTile(
                     dense: true,
                     onTap: () {
-                      Get.back();
+                      Nav.back();
                       videoDetailCtr.onDownload(this.context);
                     },
                     leading: const Icon(
@@ -410,7 +411,7 @@ class HeaderControlState extends State<HeaderControl>
                   ListTile(
                     dense: true,
                     onTap: () {
-                      Get.back();
+                      Nav.back();
                       ImageUtils.downloadImg([
                         widget.videoDetailCtr.cover.value,
                       ]);
@@ -421,7 +422,7 @@ class HeaderControlState extends State<HeaderControl>
                 ListTile(
                   dense: true,
                   onTap: () {
-                    Get.back();
+                    Nav.back();
                     shutdownTimerService.showScheduleExitDialog(
                       this.context,
                       isFullScreen: isFullScreen,
@@ -434,7 +435,7 @@ class HeaderControlState extends State<HeaderControl>
                   ListTile(
                     dense: true,
                     onTap: () {
-                      Get.back();
+                      Nav.back();
                       videoDetailCtr.editPlayUrl();
                     },
                     leading: const Icon(
@@ -446,7 +447,7 @@ class HeaderControlState extends State<HeaderControl>
                   ListTile(
                     dense: true,
                     onTap: () {
-                      Get.back();
+                      Nav.back();
                       videoDetailCtr.queryVideoUrl(
                         defaultST: videoDetailCtr.playedTime,
                         fromReset: true,
@@ -487,7 +488,7 @@ class HeaderControlState extends State<HeaderControl>
                       style: subTitleStyle,
                     ),
                     onTap: () async {
-                      Get.back();
+                      Nav.back();
                       final result = await showDialog<CDNService>(
                         context: context,
                         builder: (context) => CdnSelectDialog(
@@ -582,7 +583,7 @@ class HeaderControlState extends State<HeaderControl>
                   ListTile(
                     dense: true,
                     onTap: () {
-                      Get.back();
+                      Nav.back();
                       showSetVideoQa();
                     },
                     leading: const Icon(Icons.play_circle_outline, size: 20),
@@ -596,7 +597,7 @@ class HeaderControlState extends State<HeaderControl>
                     ListTile(
                       dense: true,
                       onTap: () {
-                        Get.back();
+                        Nav.back();
                         showSetAudioQa();
                       },
                       leading: const Icon(Icons.album_outlined, size: 20),
@@ -609,7 +610,7 @@ class HeaderControlState extends State<HeaderControl>
                   ListTile(
                     dense: true,
                     onTap: () {
-                      Get.back();
+                      Nav.back();
                       showSetDecodeFormats();
                     },
                     leading: const Icon(Icons.av_timer_outlined, size: 20),
@@ -639,7 +640,7 @@ class HeaderControlState extends State<HeaderControl>
                 ListTile(
                   dense: true,
                   onTap: () {
-                    Get.back();
+                    Nav.back();
                     showDanmakuPool();
                   },
                   leading: const Icon(CustomIcons.dm_on, size: 20),
@@ -648,7 +649,7 @@ class HeaderControlState extends State<HeaderControl>
                 ListTile(
                   dense: true,
                   onTap: () {
-                    Get.back();
+                    Nav.back();
                     showSetDanmaku();
                   },
                   leading: const Icon(CustomIcons.dm_settings, size: 20),
@@ -657,7 +658,7 @@ class HeaderControlState extends State<HeaderControl>
                 ListTile(
                   dense: true,
                   onTap: () {
-                    Get.back();
+                    Nav.back();
                     showSetSubtitle();
                   },
                   leading: const Icon(Icons.subtitles_outlined, size: 20),
@@ -666,7 +667,7 @@ class HeaderControlState extends State<HeaderControl>
                 ListTile(
                   dense: true,
                   onTap: () async {
-                    Get.back();
+                    Nav.back();
                     try {
                       final result = await FilePicker.pickFiles(
                         type: .custom,
@@ -726,7 +727,7 @@ class HeaderControlState extends State<HeaderControl>
                   ListTile(
                     dense: true,
                     onTap: () {
-                      Get.back();
+                      Nav.back();
                       onExportSubtitle();
                     },
                     leading: const Icon(Icons.download_outlined, size: 20),
@@ -748,7 +749,7 @@ class HeaderControlState extends State<HeaderControl>
                       SmartDialog.showToast('账号未登录');
                       return;
                     }
-                    Get.back();
+                    Nav.back();
                     PageUtils.reportVideo(videoDetailCtr.aid);
                   },
                   leading: const Icon(Icons.error_outline, size: 20),
@@ -886,7 +887,7 @@ class HeaderControlState extends State<HeaderControl>
           ),
           actions: [
             TextButton(
-              onPressed: Get.back,
+              onPressed: () => Nav.back(),
               child: Text(
                 '确定',
                 style: TextStyle(color: colorScheme.outline),
@@ -968,7 +969,7 @@ class HeaderControlState extends State<HeaderControl>
                         if (isCurr) {
                           return;
                         }
-                        Get.back();
+                        Nav.back();
                         final int quality = item.quality!;
                         final newQa = VideoQuality.fromCode(quality);
                         videoDetailCtr
@@ -1048,7 +1049,7 @@ class HeaderControlState extends State<HeaderControl>
                         if (isCurr) {
                           return;
                         }
-                        Get.back();
+                        Nav.back();
                         final int quality = item.id!;
                         final newQa = AudioQuality.fromCode(quality);
                         videoDetailCtr
@@ -1143,7 +1144,7 @@ class HeaderControlState extends State<HeaderControl>
                               if (isCurr) {
                                 return;
                               }
-                              Get.back();
+                              Nav.back();
                               videoDetailCtr
                                 ..currentDecodeFormats = format
                                 ..updatePlayer();
@@ -1187,7 +1188,7 @@ class HeaderControlState extends State<HeaderControl>
                   (item) => ListTile(
                     dense: true,
                     onTap: () async {
-                      Get.back();
+                      Nav.back();
                       final url = item.subtitleUrl;
                       if (url == null || url.isEmpty) return;
                       try {

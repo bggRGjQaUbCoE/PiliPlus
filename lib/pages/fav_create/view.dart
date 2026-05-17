@@ -13,7 +13,7 @@ import 'package:easy_debounce/easy_throttle.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show LengthLimitingTextInputFormatter;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
-import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -39,7 +39,7 @@ class _CreateFavPageState extends State<CreateFavPage> {
     super.initState();
     _titleController = TextEditingController();
     _introController = TextEditingController();
-    _mediaId = Get.parameters['mediaId'];
+    _mediaId = Nav.parameters['mediaId'];
     if (_mediaId != null) {
       _getFolderInfo();
     }
@@ -92,7 +92,7 @@ class _CreateFavPageState extends State<CreateFavPage> {
                 if (res case Success(:final response)) {
                   SmartDialog.showToast('${_mediaId != null ? '编辑' : '创建'}成功');
                   if (mounted) {
-                    Get.back(result: response);
+                    Nav.back(response);
                   }
                 } else {
                   res.toast();
@@ -203,7 +203,7 @@ class _CreateFavPageState extends State<CreateFavPage> {
                                 ListTile(
                                   dense: true,
                                   onTap: () {
-                                    Get.back();
+                                    Nav.back();
                                     _pickImg(context, theme);
                                   },
                                   title: const Text(
@@ -214,7 +214,7 @@ class _CreateFavPageState extends State<CreateFavPage> {
                                 ListTile(
                                   dense: true,
                                   onTap: () {
-                                    Get.back();
+                                    Nav.back();
                                     _cover = null;
                                     (context as Element).markNeedsBuild();
                                   },

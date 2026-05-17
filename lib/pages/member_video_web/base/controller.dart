@@ -2,12 +2,13 @@ import 'package:PiliPlus/common/widgets/scroll_physics.dart' show ReloadMixin;
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/pages/common/common_list_controller.dart';
 import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 const int ps = 30;
 
 abstract class BaseVideoWebCtr<R, T, V> extends CommonListController<R, T>
     with ReloadMixin {
-  final Object mid = Get.arguments['mid'];
+  final Object mid = Nav.arguments['mid'];
 
   int? totalPage;
   int? count;

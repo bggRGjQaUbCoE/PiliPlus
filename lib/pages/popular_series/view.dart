@@ -15,6 +15,7 @@ import 'package:PiliPlus/utils/grid.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class PopularSeriesPage extends StatefulWidget {
   const PopularSeriesPage({super.key});
@@ -146,7 +147,7 @@ class _PopularSeriesPageState extends State<PopularSeriesPage> with GridMixin {
                     minTileHeight: 44,
                     enabled: !isCurr,
                     onTap: () {
-                      Get.back();
+                      Nav.back();
                       if (!isCurr) {
                         _controller
                           ..number = item.number!

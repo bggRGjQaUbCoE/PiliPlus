@@ -12,6 +12,7 @@ import 'package:fixnum/fixnum.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 import 'package:super_sliver_list/super_sliver_list.dart';
 
 class VideoReplyReplyController extends ReplyController
@@ -162,7 +163,7 @@ class VideoReplyReplyController extends ReplyController
     final root = replyItem.id.toInt();
     final key = oid + root;
 
-    Get.key.currentState!
+    Nav.navigatorKey.currentState!
         .push(
           PublishRoute(
             pageBuilder: (buildContext, animation, secondaryAnimation) {

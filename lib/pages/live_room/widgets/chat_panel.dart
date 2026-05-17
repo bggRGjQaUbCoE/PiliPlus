@@ -14,6 +14,7 @@ import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class LiveRoomChatPanel extends StatelessWidget {
   const LiveRoomChatPanel({
@@ -115,7 +116,7 @@ class LiveRoomChatPanel extends StatelessWidget {
                                   ),
                                   recognizer: NoDeadlineTapGestureRecognizer()
                                     ..onTap = () =>
-                                        Get.toNamed('/member?mid=${reply.mid}'),
+                                        Nav.push('/member?mid=${reply.mid}'),
                                 ),
                               _buildMsg(devicePixelRatio, item),
                             ],
@@ -338,7 +339,7 @@ class LiveRoomChatPanel extends StatelessWidget {
         ),
         PopupMenuItem(
           height: 38,
-          onTap: () => Get.toNamed('/member?mid=${item.extra.mid}'),
+          onTap: () => Nav.push('/member?mid=${item.extra.mid}'),
           child: const Text(
             '去TA的个人空间',
             style: TextStyle(fontSize: 13),

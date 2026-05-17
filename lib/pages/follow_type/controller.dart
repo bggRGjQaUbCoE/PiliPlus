@@ -4,6 +4,7 @@ import 'package:PiliPlus/models_new/follow/list.dart';
 import 'package:PiliPlus/pages/common/common_list_controller.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 abstract class FollowTypeController
     extends CommonListController<FollowData, FollowItemModel> {
@@ -20,7 +21,7 @@ abstract class FollowTypeController
 
   void init() {
     final ownerMid = Accounts.main.mid;
-    final Map? args = Get.arguments;
+    final Map? args = Nav.arguments;
     mid = args?['mid'] ?? ownerMid;
     final String? name = args?['name'];
     this.name = RxnString(name);

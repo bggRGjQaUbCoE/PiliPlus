@@ -17,6 +17,7 @@ import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:flutter/material.dart' hide ListTile;
 import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class LikeMePage extends StatefulWidget {
   const LikeMePage({super.key});
@@ -208,7 +209,7 @@ class _LikeMePageState extends State<LikeMePage> {
             children: [
               ListTile(
                 onTap: () {
-                  Get.back();
+                  Nav.back();
                   showConfirmDialog(
                     context: context,
                     title: const Text('删除'),
@@ -224,7 +225,7 @@ class _LikeMePageState extends State<LikeMePage> {
               ),
               ListTile(
                 onTap: () {
-                  Get.back();
+                  Nav.back();
                   if (isNotice) {
                     showConfirmDialog(
                       context: context,
@@ -255,9 +256,9 @@ class _LikeMePageState extends State<LikeMePage> {
         bool isInvalid =
             nativeUri == null || nativeUri.isEmpty || nativeUri.startsWith('?');
         if (item.counts! > 1) {
-          Get.toNamed(
+          Nav.push(
             'msgLikeDetail',
-            arguments: {
+            extra: {
               'id': item.id!.toString(),
               if (!isInvalid) 'uri': nativeUri,
               'counts': item.counts,

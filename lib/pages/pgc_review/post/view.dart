@@ -4,6 +4,7 @@ import 'package:PiliPlus/utils/accounts.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class PgcReviewPostPanel extends StatefulWidget {
   const PgcReviewPostPanel({
@@ -69,7 +70,7 @@ class _PgcReviewPostPanelState extends State<PgcReviewPostPanel> {
             actions: [
               IconButton(
                 icon: const Icon(Icons.clear, size: 20),
-                onPressed: Get.back,
+                onPressed: () => Nav.back(),
               ),
               const SizedBox(width: 2),
             ],
@@ -229,7 +230,7 @@ class _PgcReviewPostPanelState extends State<PgcReviewPostPanel> {
         reviewId: widget.reviewId,
       );
       if (res.isSuccess) {
-        Get.back();
+        Nav.back();
         SmartDialog.showToast('编辑成功');
       } else {
         res.toast();
@@ -247,7 +248,7 @@ class _PgcReviewPostPanelState extends State<PgcReviewPostPanel> {
       shareFeed: _isMod ? false : _shareFeed.value,
     );
     if (res.isSuccess) {
-      Get.back();
+      Nav.back();
       SmartDialog.showToast('点评成功');
     } else {
       res.toast();

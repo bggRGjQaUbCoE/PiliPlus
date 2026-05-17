@@ -15,6 +15,7 @@ import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:PiliPlus/utils/extension/scroll_controller_ext.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class DynMentionPanel extends StatefulWidget {
   const DynMentionPanel({
@@ -213,7 +214,7 @@ class _DynMentionPanelState
                           _controller.showBtn.value = false;
                           return;
                         }
-                        Get.back(result: _controller.mentionList);
+                        Nav.back(_controller.mentionList);
                         _controller.showBtn.value = false;
                       },
                       child: const Icon(Icons.check),
@@ -262,7 +263,7 @@ class _DynMentionPanelState
                           final item = group.items![index];
                           return DynMentionItem(
                             item: item,
-                            onTap: () => Get.back(result: item),
+                            onTap: () => Nav.back(item),
                             onCheck: (value) =>
                                 _controller.onCheck(value, item),
                           );

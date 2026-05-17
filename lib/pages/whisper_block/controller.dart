@@ -4,6 +4,7 @@ import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/pages/common/common_list_controller.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class WhisperBlockController
     extends
@@ -33,7 +34,7 @@ class WhisperBlockController
   Future<void> onAdd(String keyword) async {
     final res = await ImGrpc.keywordBlockingAdd(keyword);
     if (res.isSuccess) {
-      Get.back();
+      Nav.back();
       loadingState
         ..value.data!.add(KeywordBlockingItem(keyword: keyword))
         ..refresh();

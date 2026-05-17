@@ -8,6 +8,7 @@ import 'package:PiliPlus/utils/global_data.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:PiliPlus/utils/waterfall.dart';
 import 'package:flutter/material.dart';
+import 'package:PiliPlus/utils/nav.dart';
 import 'package:get/get.dart';
 import 'package:waterfall_flow/waterfall_flow.dart'
     hide SliverWaterfallFlowDelegateWithMaxCrossAxisExtent;
@@ -32,7 +33,7 @@ class _MemberDynamicsPageState extends State<MemberDynamicsPage>
   @override
   void initState() {
     super.initState();
-    mid = widget.mid ?? int.parse(Get.parameters['mid']!);
+    mid = widget.mid ?? int.parse(Nav.parameters['mid']!);
     final String heroTag = Utils.makeHeroTag(mid);
     _memberDynamicController = Get.put(
       MemberDynamicsController(mid),

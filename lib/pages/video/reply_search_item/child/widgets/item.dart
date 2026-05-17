@@ -10,7 +10,7 @@ import 'package:PiliPlus/models/common/reply/reply_search_type.dart';
 import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:flutter/material.dart' hide LayoutBuilder;
-import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class ReplySearchItem extends StatelessWidget {
   const ReplySearchItem({
@@ -56,7 +56,7 @@ class ReplySearchItem extends StatelessWidget {
     return Material(
       type: MaterialType.transparency,
       child: InkWell(
-        onTap: () => Get.back(result: (title: title, url: item.url)),
+        onTap: () => Nav.back((title: title, url: item.url)),
         onLongPress: onLongPress,
         onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
         child: Padding(

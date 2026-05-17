@@ -5,7 +5,7 @@ import 'package:PiliPlus/models_new/space/space_fav/list.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class MemberFavItem extends StatelessWidget {
   const MemberFavItem({super.key, required this.item});
@@ -22,7 +22,7 @@ class MemberFavItem extends StatelessWidget {
       type: MaterialType.transparency,
       child: InkWell(
         onTap: () {
-          Get.toNamed(
+          Nav.push(
             '/favDetail',
             parameters: {
               'mediaId': item.mediaId.toString(),

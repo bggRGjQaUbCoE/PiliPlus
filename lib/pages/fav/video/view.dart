@@ -8,6 +8,7 @@ import 'package:PiliPlus/utils/grid.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class FavVideoPage extends StatefulWidget {
   const FavVideoPage({super.key});
@@ -63,9 +64,9 @@ class _FavVideoPageState extends State<FavVideoPage>
                     heroTag: heroTag,
                     item: item,
                     onTap: () async {
-                      final res = await Get.toNamed(
+                      final res = await Nav.push(
                         '/favDetail',
-                        arguments: item,
+                        extra: item,
                         parameters: {
                           'heroTag': heroTag,
                           'mediaId': item.id.toString(),

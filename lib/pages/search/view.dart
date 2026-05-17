@@ -16,6 +16,7 @@ import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart' hide LayoutBuilder;
 import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
@@ -98,7 +99,7 @@ class _SearchPageState extends State<SearchPage> {
             ? IconButton(
                 tooltip: 'UID搜索用户',
                 icon: const Icon(Icons.person_outline, size: 22),
-                onPressed: () => Get.toNamed(
+                onPressed: () => Nav.push(
                   '/member?mid=${_searchController.controller.text}',
                 ),
               )
@@ -222,7 +223,7 @@ class _SearchPageState extends State<SearchPage> {
                                   .symmetric(horizontal: 10),
                                 ),
                               ),
-                              onPressed: () => Get.toNamed('/searchTrending'),
+                              onPressed: () => Nav.push('/searchTrending'),
                               child: Row(
                                 children: [
                                   Text(

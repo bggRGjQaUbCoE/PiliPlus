@@ -3,6 +3,7 @@ import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models_new/dynamic/dyn_reserve_info/data.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class CreateReserveController extends GetxController {
   CreateReserveController(this.sid);
@@ -57,8 +58,8 @@ class CreateReserveController extends GetxController {
             livePlanStartTime: livePlanStartTime,
           );
     if (res case Success(:final response)) {
-      Get.back(
-        result: ReserveInfoData(
+      Nav.back(
+        ReserveInfoData(
           id: response,
           title: title.value,
           livePlanStartTime: livePlanStartTime,

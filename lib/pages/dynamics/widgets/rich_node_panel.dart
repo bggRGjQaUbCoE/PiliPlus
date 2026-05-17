@@ -15,7 +15,7 @@ import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
-import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 const _linkFoldedText = '网页链接';
 
@@ -82,7 +82,7 @@ TextSpan? richNode(
                 text: ' ${i.text}',
                 style: style,
                 recognizer: NoDeadlineTapGestureRecognizer()
-                  ..onTap = () => Get.toNamed('/member?mid=${i.rid}'),
+                  ..onTap = () => Nav.push('/member?mid=${i.rid}'),
               ),
             );
             break;
@@ -93,7 +93,7 @@ TextSpan? richNode(
                 text: i.origText,
                 style: style,
                 recognizer: NoDeadlineTapGestureRecognizer()
-                  ..onTap = () => Get.toNamed(
+                  ..onTap = () => Nav.push(
                     '/searchResult',
                     parameters: {
                       'keyword': i.origText!.substring(
@@ -193,7 +193,7 @@ TextSpan? richNode(
                   text: '${i.origText} ',
                   style: style,
                   recognizer: NoDeadlineTapGestureRecognizer()
-                    ..onTap = () => Get.toNamed(
+                    ..onTap = () => Nav.push(
                       '/webview',
                       parameters: {
                         'url':

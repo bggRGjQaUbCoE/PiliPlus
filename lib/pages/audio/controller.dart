@@ -46,6 +46,7 @@ import 'package:fixnum/fixnum.dart' show Int64;
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 import 'package:media_kit/media_kit.dart';
 
 class AudioController extends GetxController
@@ -128,7 +129,7 @@ class AudioController extends GetxController
   @override
   void onInit() {
     super.onInit();
-    final args = Get.arguments;
+    final args = Nav.arguments;
     oid = Int64(args['oid']);
     final id = args['id'];
     this.id = id != null ? Int64(id) : oid;
@@ -565,7 +566,7 @@ class AudioController extends GetxController
                 style: TextStyle(fontSize: 14),
               ),
               onTap: () {
-                Get.back();
+                Nav.back();
                 Utils.copyText(audioUrl);
               },
             ),
@@ -576,7 +577,7 @@ class AudioController extends GetxController
                 style: TextStyle(fontSize: 14),
               ),
               onTap: () {
-                Get.back();
+                Nav.back();
                 PageUtils.launchURL(audioUrl);
               },
             ),
@@ -588,7 +589,7 @@ class AudioController extends GetxController
                   style: TextStyle(fontSize: 14),
                 ),
                 onTap: () {
-                  Get.back();
+                  Nav.back();
                   if (audioItem.value case DetailItem(
                     :final arc,
                     :final owner,
@@ -608,7 +609,7 @@ class AudioController extends GetxController
                 style: TextStyle(fontSize: 14),
               ),
               onTap: () {
-                Get.back();
+                Nav.back();
                 if (audioItem.value case DetailItem(
                   :final arc,
                   :final owner,
@@ -636,7 +637,7 @@ class AudioController extends GetxController
                   style: TextStyle(fontSize: 14),
                 ),
                 onTap: () {
-                  Get.back();
+                  Nav.back();
                   if (audioItem.value case DetailItem(
                     :final arc,
                     :final owner,

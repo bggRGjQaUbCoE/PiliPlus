@@ -7,6 +7,7 @@ import 'package:PiliPlus/pages/dynamics/widgets/rich_node_panel.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 Widget content(
   BuildContext context, {
@@ -34,7 +35,7 @@ Widget content(
       children: [
         if (moduleDynamic?.topic case final topic?)
           GestureDetector(
-            onTap: () => Get.toNamed(
+            onTap: () => Nav.push(
               '/dynTopic',
               parameters: {
                 'id': topic.id!.toString(),

@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:protobuf/protobuf.dart' show PbMap;
+import 'package:PiliPlus/utils/nav.dart';
 
 class WhisperSettingsPage extends StatefulWidget {
   const WhisperSettingsPage({
@@ -96,7 +97,7 @@ class _WhisperSettingsPageState extends State<WhisperSettingsPage> {
                   dense: true,
                   onTap: () async {
                     if (!e.selected) {
-                      Get.back();
+                      Nav.back();
                       for (final j in item.redirect.windowSelect.item) {
                         j.selected = false;
                       }
@@ -129,9 +130,9 @@ class _WhisperSettingsPageState extends State<WhisperSettingsPage> {
       );
     } else if (item.redirect.otherPage.hasUrl()) {
       if (item.redirect.title == '黑名单') {
-        Get.toNamed('/blackListPage');
+        Nav.push('/blackListPage');
       } else if (item.redirect.otherPage.url.startsWith('http')) {
-        Get.toNamed(
+        Nav.push(
           '/webview',
           parameters: {'url': item.redirect.otherPage.url},
         );
@@ -142,7 +143,7 @@ class _WhisperSettingsPageState extends State<WhisperSettingsPage> {
       if (item.redirect.title == '消息屏蔽词') {
         Get.to(const WhisperBlockPage());
       } else if (item.redirect.settingPage.url.startsWith('http')) {
-        Get.toNamed(
+        Nav.push(
           '/webview',
           parameters: {'url': item.redirect.settingPage.url},
         );

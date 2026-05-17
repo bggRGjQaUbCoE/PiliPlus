@@ -14,6 +14,7 @@ import 'package:PiliPlus/utils/extension/dimension_ext.dart';
 import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
+import 'package:PiliPlus/utils/nav.dart';
 import 'package:get/get.dart';
 
 class MemberVideoCtr
@@ -70,7 +71,7 @@ class MemberVideoCtr
   void onInit() {
     super.onInit();
     if (isVideo) {
-      fromViewAid = Get.parameters['from_view_aid'];
+      fromViewAid = Nav.parameters['from_view_aid'];
     }
     page = 0;
     queryData();

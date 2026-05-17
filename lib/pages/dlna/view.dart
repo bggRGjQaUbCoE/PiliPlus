@@ -5,7 +5,7 @@ import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
 import 'package:PiliPlus/common/widgets/view_sliver_safe_area.dart';
 import 'package:dlna_dart/dlna.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class DLNAPage extends StatefulWidget {
   const DLNAPage({super.key});
@@ -17,8 +17,8 @@ class DLNAPage extends StatefulWidget {
 class _DLNAPageState extends State<DLNAPage> {
   final _searcher = DLNAManager();
   final Map<String, DLNADevice> _deviceList = {};
-  late final _url = Get.parameters['url']!;
-  late final _title = Get.parameters['title'];
+  late final _url = Nav.parameters['url']!;
+  late final _title = Nav.parameters['title'];
 
   Timer? _timer;
   bool _isSearching = false;

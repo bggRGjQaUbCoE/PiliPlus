@@ -52,7 +52,9 @@ import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 import 'package:protobuf/protobuf.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class ReplyItemGrpc extends StatelessWidget {
   const ReplyItemGrpc({
@@ -145,7 +147,7 @@ class ReplyItemGrpc extends StatelessWidget {
     Widget header = GestureDetector(
       onTap: () {
         feedBack();
-        Get.toNamed('/member?mid=${replyItem.mid}');
+        Nav.push('/member?mid=${replyItem.mid}');
       },
       child: ExtraHitTestWidget(
         width: 46,
@@ -605,7 +607,7 @@ class ReplyItemGrpc extends StatelessWidget {
                             recognizer: NoDeadlineTapGestureRecognizer()
                               ..onTap = () {
                                 feedBack();
-                                Get.toNamed(
+                                Nav.push(
                                   '/member?mid=${childReply.member.mid}',
                                 );
                               },
@@ -756,7 +758,7 @@ class ReplyItemGrpc extends StatelessWidget {
                   String? cvid =
                       match?.group(1) ?? match?.group(2) ?? match?.group(3);
                   if (cvid != null) {
-                    Get.toNamed(
+                    Nav.push(
                       '/articlePage',
                       parameters: {
                         'id': cvid,
@@ -769,7 +771,7 @@ class ReplyItemGrpc extends StatelessWidget {
                 }
               } else {
                 if (url.extra.isWordSearch) {
-                  Get.toNamed(
+                  Nav.push(
                     '/searchResult',
                     parameters: {'keyword': url.title},
                   );
@@ -821,7 +823,7 @@ class ReplyItemGrpc extends StatelessWidget {
               style: TextStyle(color: theme.colorScheme.primary),
               recognizer: NoDeadlineTapGestureRecognizer()
                 ..onTap = () =>
-                    Get.toNamed('/member?mid=${content.atNameToMid[name]}'),
+                    Nav.push('/member?mid=${content.atNameToMid[name]}'),
             ),
           );
         } else if (_voteRegExp.hasMatch(matchStr)) {
@@ -839,7 +841,7 @@ class ReplyItemGrpc extends StatelessWidget {
           bool isValid = false;
           try {
             final ctr = Get.find<VideoDetailController>(
-              tag: getTag?.call() ?? Get.arguments['heroTag'],
+              tag: getTag?.call() ?? Nav.arguments['heroTag'],
             );
             isValid =
                 DurationUtils.parseDuration(matchStr) * 1000 <=
@@ -860,7 +862,7 @@ class ReplyItemGrpc extends StatelessWidget {
                         try {
                           SmartDialog.showToast('跳转至：$matchStr');
                           Get.find<VideoDetailController>(
-                            tag: Get.arguments['heroTag'],
+                            tag: Nav.arguments['heroTag'],
                           ).plPlayerController.seekTo(
                             Duration(
                               seconds: DurationUtils.parseDuration(matchStr),
@@ -887,7 +889,7 @@ class ReplyItemGrpc extends StatelessWidget {
                 style: TextStyle(color: theme.colorScheme.primary),
                 recognizer: NoDeadlineTapGestureRecognizer()
                   ..onTap = () {
-                    Get.toNamed(
+                    Nav.push(
                       '/searchResult',
                       parameters: {'keyword': topic},
                     );
@@ -936,7 +938,7 @@ class ReplyItemGrpc extends StatelessWidget {
         recognizer = NoDeadlineTapGestureRecognizer()
           ..onTap = () => hasClickUrl
               ? PiliScheme.routePushFromUrl(content.richText.note.clickUrl)
-              : Get.toNamed(
+              : Nav.push(
                   '/articlePage',
                   parameters: {
                     'id': content.richText.opus.opusId.toString(),
@@ -979,7 +981,7 @@ class ReplyItemGrpc extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           InkWell(
-            onTap: Get.back,
+            onTap: () => Nav.back(),
             borderRadius: Style.bottomSheetRadius,
             child: SizedBox(
               height: 35,
@@ -998,7 +1000,7 @@ class ReplyItemGrpc extends StatelessWidget {
           if (kDebugMode && GStorage.reply != null) ...[
             ListTile(
               onTap: () {
-                Get.back();
+                Nav.back();
                 GStorage.reply!.put(
                   item.id.toString(),
                   (item.deepCopy()
@@ -1015,7 +1017,7 @@ class ReplyItemGrpc extends StatelessWidget {
             ),
             ListTile(
               onTap: () {
-                Get.back();
+                Nav.back();
                 onDelete();
                 GStorage.reply!.delete(item.id.toString());
               },
@@ -1026,7 +1028,7 @@ class ReplyItemGrpc extends StatelessWidget {
             ),
             ListTile(
               onTap: () {
-                Get.back();
+                Nav.back();
                 final oid = item.oid.toInt();
                 final data =
                     (item.deepCopy()
@@ -1047,7 +1049,7 @@ class ReplyItemGrpc extends StatelessWidget {
           if (ownerMid == upMid || ownerMid == item.member.mid)
             ListTile(
               onTap: () async {
-                Get.back();
+                Nav.back();
                 bool? isDelete = await showDialog<bool>(
                   context: context,
                   builder: (context) {
@@ -1073,7 +1075,7 @@ class ReplyItemGrpc extends StatelessWidget {
                       ),
                       actions: [
                         TextButton(
-                          onPressed: () => Get.back(result: false),
+                          onPressed: () => Nav.back(false),
                           child: Text(
                             '取消',
                             style: TextStyle(
@@ -1082,7 +1084,7 @@ class ReplyItemGrpc extends StatelessWidget {
                           ),
                         ),
                         TextButton(
-                          onPressed: () => Get.back(result: true),
+                          onPressed: () => Nav.back(true),
                           child: const Text('确定'),
                         ),
                       ],
@@ -1113,7 +1115,7 @@ class ReplyItemGrpc extends StatelessWidget {
           if (ownerMid != Int64.ZERO)
             ListTile(
               onTap: () {
-                Get.back();
+                Nav.back();
                 autoWrapReportDialog(
                   context,
                   ReportOptions.commentReport,
@@ -1139,7 +1141,7 @@ class ReplyItemGrpc extends StatelessWidget {
           if (replyLevel == 1 && !isSubReply && ownerMid == upMid)
             ListTile(
               onTap: () {
-                Get.back();
+                Nav.back();
                 onToggleTop?.call(item);
               },
               minLeadingWidth: 0,
@@ -1151,7 +1153,7 @@ class ReplyItemGrpc extends StatelessWidget {
             ),
           ListTile(
             onTap: () {
-              Get.back();
+              Nav.back();
               Utils.copyText(message);
             },
             minLeadingWidth: 0,
@@ -1160,7 +1162,7 @@ class ReplyItemGrpc extends StatelessWidget {
           ),
           ListTile(
             onTap: () {
-              Get.back();
+              Nav.back();
               showDialog(
                 context: context,
                 builder: (context) => Dialog(
@@ -1182,7 +1184,7 @@ class ReplyItemGrpc extends StatelessWidget {
           ),
           ListTile(
             onTap: () {
-              Get.back();
+              Nav.back();
               SavePanel.toSavePanel(upMid: upMid, item: item);
             },
             minLeadingWidth: 0,
@@ -1192,7 +1194,7 @@ class ReplyItemGrpc extends StatelessWidget {
           if (kDebugMode || item.mid == ownerMid)
             ListTile(
               onTap: () {
-                Get.back();
+                Nav.back();
                 onCheckReply?.call(item);
               },
               minLeadingWidth: 0,

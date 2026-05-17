@@ -12,6 +12,7 @@ import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/theme_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class EmotePanel extends StatefulWidget {
   final Function(Emote emote, double? width, double? height) onChoose;
@@ -47,7 +48,7 @@ class _EmotePanelState extends State<EmotePanel>
     late final color = ElevationOverlay.colorWithOverlay(
       theme.colorScheme.surface,
       theme.hoverColor,
-      Get.currentRoute.startsWith('/whisperDetail') ? 8 : 2,
+      Nav.currentRoute.startsWith('/whisperDetail') ? 8 : 2,
     );
     return switch (loadingState) {
       Loading() => m3eLoading,
@@ -178,7 +179,7 @@ class _EmotePanelState extends State<EmotePanel>
                           iconSize: 20,
                           iconColor: theme.colorScheme.onSurfaceVariant
                               .withValues(alpha: 0.8),
-                          onPressed: () => Get.toNamed(
+                          onPressed: () => Nav.push(
                             '/webview',
                             parameters: {
                               'url':

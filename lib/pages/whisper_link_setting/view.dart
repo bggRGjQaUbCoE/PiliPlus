@@ -8,6 +8,7 @@ import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class WhisperLinkSettingPage extends StatefulWidget {
   const WhisperLinkSettingPage({
@@ -123,7 +124,7 @@ class _WhisperLinkSettingPageState extends State<WhisperLinkSettingPage> {
                     builder: (context) {
                       final ImUserInfosData item = response.first;
                       return ListTile(
-                        onTap: () => Get.toNamed('/member?mid=${item.mid}'),
+                        onTap: () => Nav.push('/member?mid=${item.mid}'),
                         leading: PendantAvatar(
                           item.face,
                           size: 42,

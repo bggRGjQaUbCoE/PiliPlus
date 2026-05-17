@@ -1,4 +1,4 @@
-name: PiliPlus
+﻿name: PiliPlus
 description: A new Flutter project.
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
@@ -106,6 +106,7 @@ dependencies:
     git:
       url: https://github.com/bggRGjQaUbCoE/getx.git
       ref: version_4.7.2
+  go_router: ^14.8.1
   gt3_flutter_plugin: ^0.1.0
   hive_ce: ^2.19.3
   html: ^0.15.4

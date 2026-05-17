@@ -13,12 +13,12 @@ import 'package:PiliPlus/plugin/pl_player/models/hwdec_type.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
+import 'package:PiliPlus/utils/nav.dart';
 import 'package:PiliPlus/utils/video_utils.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show FilteringTextInputFormatter;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
-import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
 List<SettingsModel> get videoSettings => [
@@ -81,6 +81,13 @@ List<SettingsModel> get videoSettings => [
     setKey: SettingBoxKey.disableAudioCDN,
     defaultVal: false,
     onChanged: (value) => VideoUtils.disableAudioCDN = value,
+  ),
+  SwitchModel(
+    title: 'CDN 自动切换',
+    subtitle: '当前 CDN 连续失败时自动尝试其他 CDN 节点',
+    leading: const Icon(Icons.swap_horiz),
+    setKey: SettingBoxKey.enableCdnAutoSwitch,
+    defaultVal: false,
   ),
   NormalModel(
     title: '默认画质',
@@ -151,6 +158,39 @@ List<SettingsModel> get videoSettings => [
     setKey: SettingBoxKey.expandBuffer,
     defaultVal: false,
   ),
+  const SwitchModel(
+    title: '加载时显示缓冲时间点',
+    leading: Icon(Icons.access_time_outlined),
+    subtitle: '显示已缓冲到的绝对时间位置',
+    setKey: SettingBoxKey.showBufferTime,
+    defaultVal: false,
+  ),
+  const SwitchModel(
+    title: '加载时显示向后缓冲秒数',
+    leading: Icon(Icons.timelapse_outlined),
+    subtitle: '显示当前位置到缓冲点的秒数（精确到毫秒）',
+    setKey: SettingBoxKey.showBufferAhead,
+    defaultVal: true,
+  ),
+  const SwitchModel(
+    title: '加载时显示缓冲网速',
+    leading: Icon(Icons.speed_outlined),
+    subtitle: '显示实际下载速度',
+    setKey: SettingBoxKey.showBufferSpeed,
+    defaultVal: true,
+  ),
+  NormalModel(
+    title: '缓冲信息排序',
+    leading: const Icon(Icons.sort_outlined),
+    getSubtitle: () {
+      const labels = {'time': '时间点', 'ahead': '缓冲秒数', 'speed': '网速'};
+      return Pref.bufferInfoOrder
+          .split(',')
+          .map((k) => labels[k] ?? k)
+          .join(' → ');
+    },
+    onTap: _showBufferInfoOrderDialog,
+  ),
   NormalModel(
     title: '自动同步',
     leading: const Icon(Icons.sync_rounded),
@@ -199,14 +239,14 @@ Future<void> _showLiveCDNDialog(
       ),
       actions: [
         TextButton(
-          onPressed: Get.back,
+          onPressed: () => Nav.back(),
           child: Text(
             '取消',
             style: TextStyle(color: ColorScheme.of(context).outline),
           ),
         ),
         TextButton(
-          onPressed: () => Get.back(result: host),
+          onPressed: () => Nav.back(host),
           child: const Text('确定'),
         ),
       ],
@@ -470,7 +510,7 @@ void _showAutoSyncDialog(BuildContext context, VoidCallback setState) {
       ),
       actions: [
         TextButton(
-          onPressed: Get.back,
+          onPressed: () => Nav.back(),
           child: Text(
             '取消',
             style: TextStyle(color: ColorScheme.of(context).outline),
@@ -481,7 +521,7 @@ void _showAutoSyncDialog(BuildContext context, VoidCallback setState) {
             try {
               // validate
               int.parse(autosync);
-              Get.back();
+              Nav.back();
               await GStorage.setting.put(SettingBoxKey.autosync, autosync);
               setState();
             } catch (e) {
@@ -493,4 +533,64 @@ void _showAutoSyncDialog(BuildContext context, VoidCallback setState) {
       ],
     ),
   );
+}
+
+void _showBufferInfoOrderDialog(
+    BuildContext context, VoidCallback setState) async {
+  const labels = {'time': '时间点', 'ahead': '缓冲秒数', 'speed': '网速'};
+  final current = Pref.bufferInfoOrder.split(',');
+  final items = <String>[...current];
+  for (final key in labels.keys) {
+    if (!items.contains(key)) items.add(key);
+  }
+
+  final result = await showDialog<List<String>>(
+    context: context,
+    builder: (context) {
+      final ordered = List<String>.from(items);
+      return StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text('拖拽排序'),
+          content: SizedBox(
+            width: 280,
+            height: 200,
+            child: ReorderableListView(
+              shrinkWrap: true,
+              onReorder: (old, neu) {
+                setDialogState(() {
+                  final item = ordered.removeAt(old);
+                  ordered.insert(neu > old ? neu - 1 : neu, item);
+                });
+              },
+              children: [
+                for (int i = 0; i < ordered.length; i++)
+                  ListTile(
+                    key: ValueKey(ordered[i]),
+                    leading: const Icon(Icons.drag_handle),
+                    title: Text(labels[ordered[i]] ?? ordered[i]),
+                  ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Nav.back(),
+              child: Text(
+                '取消',
+                style: TextStyle(color: ColorScheme.of(context).outline),
+              ),
+            ),
+            TextButton(
+              onPressed: () => Nav.back(ordered),
+              child: const Text('确定'),
+            ),
+          ],
+        ),
+      );
+    },
+  );
+  if (result != null) {
+    GStorage.setting.put(SettingBoxKey.bufferInfoOrder, result.join(','));
+    setState();
+  }
 }

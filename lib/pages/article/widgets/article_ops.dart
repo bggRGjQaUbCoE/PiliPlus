@@ -8,7 +8,7 @@ import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class ArticleOpus extends StatelessWidget {
   const ArticleOpus({
@@ -49,7 +49,7 @@ class ArticleOpus extends StatelessWidget {
                       switch (item.attributes?.clazz) {
                         case 'article-card card':
                           if (card.id != null) {
-                            Get.toNamed(
+                            Nav.push(
                               '/articlePage',
                               parameters: {
                                 'id': card.id!.substring(2),

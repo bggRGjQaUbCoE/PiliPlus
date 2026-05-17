@@ -6,6 +6,8 @@ import 'dart:ui' as ui;
 import 'package:PiliPlus/common/assets.dart';
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/style.dart';
+import 'package:PiliPlus/services/video_stream_proxy.dart';
+import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/common/widgets/cropped_image.dart';
 import 'package:PiliPlus/common/widgets/custom_icon.dart';
 import 'package:PiliPlus/common/widgets/disabled_icon.dart';
@@ -83,6 +85,7 @@ import 'package:material_design_icons_flutter/material_design_icons_flutter.dart
 import 'package:media_kit_video/media_kit_video.dart';
 import 'package:screen_brightness_platform_interface/screen_brightness_platform_interface.dart';
 import 'package:window_manager/window_manager.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 part 'widgets.dart';
 
@@ -1898,8 +1901,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
 
         Obx(() {
           if (plPlayerController.dataStatus.loading ||
-              (plPlayerController.isBuffering.value &&
-                  plPlayerController.playerStatus.isPlaying)) {
+              plPlayerController.isBuffering.value) {
             return Center(
               child: GestureDetector(
                 onTap: plPlayerController.refreshPlayer,
@@ -1922,26 +1924,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                         color: Colors.white,
                       ),
                       if (plPlayerController.isBuffering.value)
-                        Obx(() {
-                          if (plPlayerController.bufferedSeconds.value == 0) {
-                            return const Text(
-                              '加载中...',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 12,
-                              ),
-                            );
-                          }
-                          String bufferStr = plPlayerController.buffered
-                              .toString();
-                          return Text(
-                            bufferStr.substring(0, bufferStr.length - 3),
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 12,
-                            ),
-                          );
-                        }),
+                        _buildBufferInfo(plPlayerController),
                     ],
                   ),
                 ),
@@ -2164,7 +2147,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
             ),
             actions: [
               TextButton(
-                onPressed: Get.back,
+                onPressed: () => Nav.back(),
                 child: Text(
                   '取消',
                   style: TextStyle(
@@ -2175,7 +2158,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
               TextButton(
                 onPressed: () {
                   if (segment.first < segment.second) {
-                    Get.back(result: true);
+                    Nav.back(true);
                   }
                 },
                 child: const Text('确定'),
@@ -2406,7 +2389,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                   MdiIcons.accountOutline,
                   color: Colors.white,
                 ),
-                onTap: () => Get.toNamed('/member?mid=${extra.mid}'),
+                onTap: () => Nav.push('/member?mid=${extra.mid}'),
               ),
               _dmActionItem(
                 const Icon(
@@ -2437,4 +2420,57 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       ),
     );
   }
+}
+
+const _infoStyle = TextStyle(color: Colors.white, fontSize: 12);
+
+Widget _buildBufferInfo(PlPlayerController c) {
+  final aheadMs = c.bufferAheadMs.value;
+  final buf = c.buffered.value;
+  final speed = VideoStreamProxy.instance.speedKBps.value;
+
+  final order = Pref.bufferInfoOrder.split(',');
+  final showTime = Pref.showBufferTime;
+  final showAhead = Pref.showBufferAhead;
+  final showSpeed = Pref.showBufferSpeed;
+
+  final items = <String, Widget>{};
+
+  if (showTime) {
+    final h = buf.inHours;
+    final m = buf.inMinutes.remainder(60).toString().padLeft(2, '0');
+    final s = buf.inSeconds.remainder(60).toString().padLeft(2, '0');
+    final timeStr = h > 0 ? '$h:$m:$s' : '$m:$s';
+    items['time'] = Text(timeStr, style: _infoStyle);
+  }
+
+  if (showAhead) {
+    final sec = (aheadMs / 1000).toStringAsFixed(3);
+    items['ahead'] = Text('缓冲 ${sec}s', style: _infoStyle);
+  }
+
+  if (showSpeed) {
+    final speedStr = speed >= 1024
+        ? '${(speed / 1024).toStringAsFixed(1)} MB/s'
+        : '$speed KB/s';
+    items['speed'] = Text(speedStr, style: _infoStyle);
+  }
+
+  if (items.isEmpty) {
+    return const Text('加载中...', style: _infoStyle);
+  }
+
+  final sorted = <Widget>[];
+  for (final key in order) {
+    final w = items.remove(key);
+    if (w != null) sorted.add(w);
+  }
+  for (final w in items.values) {
+    sorted.add(w);
+  }
+
+  return Column(
+    mainAxisSize: MainAxisSize.min,
+    children: sorted,
+  );
 }

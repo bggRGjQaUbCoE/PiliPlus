@@ -14,6 +14,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class DanmakuBlockPage extends StatefulWidget {
   const DanmakuBlockPage({super.key});
@@ -29,7 +30,7 @@ class _DanmakuBlockPageState extends State<DanmakuBlockPage> {
   @override
   void initState() {
     super.initState();
-    plPlayerController = Get.arguments as PlPlayerController;
+    plPlayerController = Nav.arguments as PlPlayerController;
   }
 
   @override
@@ -170,7 +171,7 @@ class _DanmakuBlockPageState extends State<DanmakuBlockPage> {
         ),
         actions: [
           TextButton(
-            onPressed: Get.back,
+            onPressed: () => Nav.back(),
             child: Text(
               '取消',
               style: TextStyle(color: Theme.of(context).colorScheme.outline),
@@ -180,7 +181,7 @@ class _DanmakuBlockPageState extends State<DanmakuBlockPage> {
             child: const Text('确定'),
             onPressed: () async {
               if (filter != initFilter) {
-                Get.back();
+                Nav.back();
                 if (itemId != null) {
                   await _controller.danmakuFilterDel(
                     type.index,

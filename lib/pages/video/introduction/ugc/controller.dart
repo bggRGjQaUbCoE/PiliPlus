@@ -47,6 +47,7 @@ import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class UgcIntroController extends CommonIntroController with ReloadMixin {
   late ExpandableController expandableCtr;
@@ -85,7 +86,7 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
       });
     }
 
-    videoDetail.value.title = Get.arguments['title'] ?? '';
+    videoDetail.value.title = Nav.arguments['title'] ?? '';
   }
 
   // 获取视频简介&分p
@@ -118,6 +119,9 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
           ..isPageReversed = videoDetail.value.isPageReversed;
       }
       videoDetail.value = response;
+      if (response.title?.isNotEmpty == true) {
+        Nav.updateTabTitle(response.title!);
+      }
       try {
         if (videoDetailCtr.cover.value.isEmpty ||
             (videoDetailCtr.videoUrl.isNullOrEmpty &&
@@ -329,7 +333,7 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
                 style: TextStyle(fontSize: 14),
               ),
               onTap: () {
-                Get.back();
+                Nav.back();
                 Utils.copyText(videoUrl);
               },
               trailing: playedTimePos.isNotEmpty
@@ -337,7 +341,7 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
                       tooltip: '精确分享',
                       icon: const Icon(Icons.timer_outlined),
                       onPressed: () {
-                        Get.back();
+                        Nav.back();
                         Utils.copyText('$videoUrl$playedTimePos');
                       },
                     )
@@ -350,7 +354,7 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
                 style: TextStyle(fontSize: 14),
               ),
               onTap: () {
-                Get.back();
+                Nav.back();
                 PageUtils.launchURL(videoUrl);
               },
             ),
@@ -362,7 +366,7 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
                   style: TextStyle(fontSize: 14),
                 ),
                 onTap: () {
-                  Get.back();
+                  Nav.back();
                   ShareUtils.shareText(
                     '${videoDetail.title} '
                     'UP主: ${videoDetail.owner!.name!}'
@@ -377,7 +381,7 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
                 style: TextStyle(fontSize: 14),
               ),
               onTap: () {
-                Get.back();
+                Nav.back();
                 showModalBottomSheet(
                   context: context,
                   isScrollControlled: true,
@@ -399,7 +403,7 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
                 style: TextStyle(fontSize: 14),
               ),
               onTap: () {
-                Get.back();
+                Nav.back();
                 try {
                   PageUtils.pmShare(
                     context,

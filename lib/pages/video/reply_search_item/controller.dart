@@ -4,6 +4,7 @@ import 'package:PiliPlus/utils/extension/scroll_controller_ext.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class ReplySearchController extends GetxController
     with GetSingleTickerProviderStateMixin {
@@ -29,7 +30,7 @@ class ReplySearchController extends GetxController
       editingController.clear();
       focusNode.requestFocus();
     } else {
-      Get.back();
+      Nav.back();
     }
   }
 

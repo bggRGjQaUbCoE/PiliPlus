@@ -18,6 +18,7 @@ import 'package:fixnum/fixnum.dart';
 import 'package:flutter/material.dart' hide ListTile;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class WhisperSessionItem extends StatelessWidget {
   const WhisperSessionItem({
@@ -67,7 +68,7 @@ class WhisperSessionItem extends StatelessWidget {
                 ListTile(
                   dense: true,
                   onTap: () {
-                    Get.back();
+                    Nav.back();
                     onSetTop(item.isPinned, item.id);
                   },
                   title: Text(item.isPinned ? '移除置顶' : '置顶'),
@@ -76,7 +77,7 @@ class WhisperSessionItem extends StatelessWidget {
                   ListTile(
                     dense: true,
                     onTap: () {
-                      Get.back();
+                      Nav.back();
                       onSetMute(item.isMuted, item.id.privateId.talkerUid);
                     },
                     title: Text('${item.isMuted ? '关闭' : '开启'}免打扰'),
@@ -85,7 +86,7 @@ class WhisperSessionItem extends StatelessWidget {
                   ListTile(
                     dense: true,
                     onTap: () {
-                      Get.back();
+                      Nav.back();
                       showConfirmDialog(
                         context: context,
                         title: const Text('确定删除该对话？'),
@@ -139,9 +140,9 @@ class WhisperSessionItem extends StatelessWidget {
           }
         }
         if (item.id.privateId.hasTalkerUid()) {
-          Get.toNamed(
+          Nav.push(
             '/whisperDetail',
-            arguments: {
+            extra: {
               'talkerId': item.id.privateId.talkerUid.toInt(),
               'name': item.sessionInfo.sessionName,
               'face': avatar,
@@ -191,7 +192,7 @@ class WhisperSessionItem extends StatelessWidget {
         if (item.id.hasSystemId()) {
           switch (item.id.systemId.type) {
             case SessionType.SESSION_TYPE_SYSTEM:
-              Get.toNamed('/sysMsg');
+              Nav.push('/sysMsg');
             case SessionType.SESSION_TYPE_AI_FOLD:
             case SessionType.SESSION_TYPE_CUSTOMER_ACCOUNT:
             case SessionType.SESSION_TYPE_CUSTOMER_FOLD:
@@ -224,7 +225,7 @@ class WhisperSessionItem extends StatelessWidget {
           return GestureDetector(
             onTap: item.sessionInfo.avatar.hasMid()
                 ? () =>
-                      Get.toNamed('/member?mid=${item.sessionInfo.avatar.mid}')
+                      Nav.push('/member?mid=${item.sessionInfo.avatar.mid}')
                 : null,
             child: PendantAvatar(
               avatar,

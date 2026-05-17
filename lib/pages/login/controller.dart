@@ -20,6 +20,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:gt3_flutter_plugin/gt3_flutter_plugin.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class LoginPageController extends GetxController
     with GetSingleTickerProviderStateMixin {
@@ -99,7 +100,7 @@ class LoginPageController extends GetxController
               value['data'],
               value['data']['cookie_info']['cookies'],
             );
-            Get.back();
+            Nav.back();
           } else if (value['code'] == 86038) {
             t.cancel();
             qrCodeLeftTime.value = 0;
@@ -268,7 +269,7 @@ class LoginPageController extends GetxController
           ).onChange();
           if (!Accounts.main.isLogin) await switchAccountDialog(Get.context!);
           SmartDialog.showToast('登录成功');
-          Get.back();
+          Nav.back();
         } catch (e) {
           SmartDialog.showToast("登录失败: $e");
         }
@@ -437,7 +438,7 @@ class LoginPageController extends GetxController
                 },
               ),
               TextButton(
-                onPressed: Get.back,
+                onPressed: () => Nav.back(),
                 child: Text(
                   "取消",
                   style: TextStyle(color: ThemeUtils.theme.colorScheme.outline),
@@ -491,9 +492,8 @@ class LoginPageController extends GetxController
                     data['token_info'],
                     data['cookie_info']['cookies'],
                   );
-                  Get
-                    ..back()
-                    ..back();
+                  Nav.back();
+                  Nav.back();
                 },
                 child: const Text("确认"),
               ),
@@ -511,7 +511,7 @@ class LoginPageController extends GetxController
       }
       SmartDialog.showToast('正在保存身份信息');
       await setAccount(data['token_info'], data['cookie_info']['cookies']);
-      Get.back();
+      Nav.back();
     } else {
       // handle login result
       switch (res['code']) {
@@ -572,7 +572,7 @@ class LoginPageController extends GetxController
       SmartDialog.showToast('登录成功');
       final data = res['data'];
       await setAccount(data['token_info'], data['cookie_info']['cookies']);
-      Get.back();
+      Nav.back();
     } else {
       SmartDialog.showToast(res['msg']);
     }
@@ -726,7 +726,7 @@ class LoginPageController extends GetxController
   static Future<void>? switchAccountDialog(BuildContext context) {
     if (Accounts.account.isEmpty) {
       SmartDialog.showToast('请先登录');
-      return Get.toNamed('/loginPage');
+      return Nav.push('/loginPage');
     }
     final selectAccount = List.of(Accounts.accountMode);
     final options = {
@@ -828,7 +828,7 @@ class LoginPageController extends GetxController
         ),
         actions: [
           TextButton(
-            onPressed: Get.back,
+            onPressed: () => Nav.back(),
             child: Text(
               '取消',
               style: TextStyle(color: ColorScheme.of(context).outline),
@@ -836,7 +836,7 @@ class LoginPageController extends GetxController
           ),
           TextButton(
             onPressed: () {
-              Get.back();
+              Nav.back();
               for (final type in AccountType.values) {
                 final index = type.index;
                 final account = quickSelect

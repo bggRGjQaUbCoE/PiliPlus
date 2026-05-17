@@ -18,6 +18,7 @@ import 'package:PiliPlus/utils/utils.dart';
 import 'package:easy_debounce/easy_throttle.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class MainReplyPage extends StatefulWidget {
   const MainReplyPage({super.key});
@@ -29,9 +30,9 @@ class MainReplyPage extends StatefulWidget {
     required int oid,
     required int replyType,
   }) {
-    Get.toNamed(
+    Nav.push(
       '/mainReply',
-      arguments: {
+      extra: {
         'oid': oid,
         'replyType': replyType,
       },

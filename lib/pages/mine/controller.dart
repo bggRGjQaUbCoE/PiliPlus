@@ -1,3 +1,4 @@
+import 'package:PiliPlus/main.dart';
 import 'package:PiliPlus/http/fav.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/user.dart';
@@ -20,6 +21,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class MineController extends CommonDataController<FavFolderData, FavFolderData>
     with AccountMixin {
@@ -47,7 +49,7 @@ class MineController extends CommonDataController<FavFolderData, FavFolderData>
           size: 23,
           icon: MdiIcons.folderDownloadOutline,
           title: '离线缓存',
-          onTap: () => Get.toNamed('/download'),
+          onTap: () => Nav.push('/download'),
         ),
         (
           size: 23,
@@ -55,7 +57,7 @@ class MineController extends CommonDataController<FavFolderData, FavFolderData>
           title: '观看记录',
           onTap: () {
             if (isLogin) {
-              Get.toNamed('/history');
+              Nav.push('/history');
             }
           },
         ),
@@ -65,7 +67,7 @@ class MineController extends CommonDataController<FavFolderData, FavFolderData>
           title: '我的订阅',
           onTap: () {
             if (isLogin) {
-              Get.toNamed('/subscription');
+              Nav.push('/subscription');
             }
           },
         ),
@@ -75,7 +77,7 @@ class MineController extends CommonDataController<FavFolderData, FavFolderData>
           title: '稍后再看',
           onTap: () {
             if (isLogin) {
-              Get.toNamed('/later');
+              Nav.push('/later');
             }
           },
         ),
@@ -267,21 +269,21 @@ class MineController extends CommonDataController<FavFolderData, FavFolderData>
     final newVal = nextThemeType;
     themeType.value = newVal;
     GStorage.setting.put(SettingBoxKey.themeMode, newVal.index);
-    Get.changeThemeMode(ThemeUtils.themeMode = newVal.toThemeMode);
+    MyApp.rebuildTheme();
   }
 
   void push(String name) {
     late final mid = userInfo.value.mid;
     if (isLogin && mid != null) {
-      Get.toNamed('/$name?mid=$mid');
+      Nav.push('/$name?mid=$mid');
     }
   }
 
   void onLogin([bool longPress = false]) {
     if (!accountService.isLogin.value || longPress) {
-      Get.toNamed('/loginPage');
+      Nav.push('/loginPage');
     } else {
-      Get.toNamed('/member?mid=${userInfo.value.mid}');
+      Nav.push('/member?mid=${userInfo.value.mid}');
     }
   }
 

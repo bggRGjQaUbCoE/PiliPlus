@@ -6,7 +6,7 @@ import 'package:PiliPlus/common/widgets/stat/stat.dart';
 import 'package:PiliPlus/models/common/stat_type.dart';
 import 'package:PiliPlus/models_new/fav/fav_article/item.dart';
 import 'package:flutter/material.dart' hide LayoutBuilder;
-import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class FavArticleItem extends StatelessWidget {
   const FavArticleItem({
@@ -27,7 +27,7 @@ class FavArticleItem extends StatelessWidget {
         clipBehavior: Clip.none,
         children: [
           InkWell(
-            onTap: () => Get.toNamed(
+            onTap: () => Nav.push(
               '/articlePage',
               parameters: {
                 'id': item.opusId!.toString(),

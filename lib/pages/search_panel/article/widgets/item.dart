@@ -6,7 +6,7 @@ import 'package:PiliPlus/models/search/result.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:flutter/material.dart' hide LayoutBuilder;
-import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class SearchArticleItem extends StatelessWidget {
   const SearchArticleItem({super.key, required this.item});
@@ -27,7 +27,7 @@ class SearchArticleItem extends StatelessWidget {
     return Material(
       type: MaterialType.transparency,
       child: InkWell(
-        onTap: () => Get.toNamed(
+        onTap: () => Nav.push(
           '/articlePage',
           parameters: {
             'id': '${item.id}',

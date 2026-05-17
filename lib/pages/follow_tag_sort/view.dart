@@ -6,7 +6,7 @@ import 'package:PiliPlus/pages/follow/controller.dart';
 import 'package:PiliPlus/utils/bili_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
-import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class FollowTagSortPage extends StatefulWidget {
   const FollowTagSortPage({super.key, required this.controller});
@@ -55,7 +55,7 @@ class _FollowTagSortPageState extends State<FollowTagSortPage>
                         ..onInitTab()
                         ..followState.value = Success(tabs.hashCode);
                       if (mounted) {
-                        Get.back();
+                        Nav.back();
                       }
                     } else {
                       res.toast();

@@ -18,7 +18,7 @@ import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:flutter/material.dart' hide LayoutBuilder;
-import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 // 收藏视频卡片 - 水平布局
 class FavVideoCardH extends StatelessWidget {
@@ -64,7 +64,7 @@ class FavVideoCardH extends StatelessWidget {
             ? () => ctr!.onSelect(item)
             : () {
                 if (!const [0, 16].contains(item.attr)) {
-                  Get.toNamed('/member?mid=${item.upper?.mid}');
+                  Nav.push('/member?mid=${item.upper?.mid}');
                   return;
                 }
 
@@ -223,7 +223,7 @@ class FavVideoCardH extends StatelessWidget {
                     content: const Text('要取消收藏吗?'),
                     actions: [
                       TextButton(
-                        onPressed: Get.back,
+                        onPressed: () => Nav.back(),
                         child: Text(
                           '取消',
                           style: TextStyle(color: colorScheme.outline),
@@ -231,7 +231,7 @@ class FavVideoCardH extends StatelessWidget {
                       ),
                       TextButton(
                         onPressed: () {
-                          Get.back();
+                          Nav.back();
                           ctr!.onCancelFav(index!, item.id!, item.type!);
                         },
                         child: const Text('确定取消'),

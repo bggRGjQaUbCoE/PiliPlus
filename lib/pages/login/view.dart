@@ -21,6 +21,7 @@ import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:pretty_qr_code/pretty_qr_code.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -293,9 +294,9 @@ class _LoginPageState extends State<LoginPage> {
                           'https://passport.bilibili.com/h5-app/passport/login/findPassword',
                         ),
                         dense: false,
-                        onTap: () => Get
-                          ..back()
-                          ..toNamed(
+                        onTap: () {
+                          Nav.back();
+                          Nav.push(
                             '/webview',
                             parameters: {
                               'url':
@@ -303,7 +304,8 @@ class _LoginPageState extends State<LoginPage> {
                               'type': 'url',
                               'pageTitle': '忘记密码',
                             },
-                          ),
+                          );
+                        },
                       ),
                       ListTile(
                         title: const Text(
@@ -314,9 +316,9 @@ class _LoginPageState extends State<LoginPage> {
                           'https://passport.bilibili.com/pc/passport/findPassword',
                         ),
                         dense: false,
-                        onTap: () => Get
-                          ..back()
-                          ..toNamed(
+                        onTap: () {
+                          Nav.back();
+                          Nav.push(
                             '/webview',
                             parameters: {
                               'url':
@@ -325,7 +327,8 @@ class _LoginPageState extends State<LoginPage> {
                               'pageTitle': '忘记密码',
                               'uaType': 'pc',
                             },
-                          ),
+                          );
+                        },
                       ),
                     ],
                   ),
@@ -523,7 +526,7 @@ class _LoginPageState extends State<LoginPage> {
         leading: IconButton(
           tooltip: '关闭',
           icon: const Icon(Icons.close_outlined),
-          onPressed: Get.back,
+          onPressed: () => Nav.back(),
         ),
         title: Row(
           children: [

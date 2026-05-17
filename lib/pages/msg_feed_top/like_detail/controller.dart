@@ -4,7 +4,7 @@ import 'package:PiliPlus/models_new/msg/msg_like_detail/card.dart';
 import 'package:PiliPlus/models_new/msg/msg_like_detail/data.dart';
 import 'package:PiliPlus/models_new/msg/msg_like_detail/item.dart';
 import 'package:PiliPlus/pages/common/common_list_controller.dart';
-import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class LikeDetailController
     extends CommonListController<MsgLikeDetailData, MsgLikeDetailItem> {
@@ -17,7 +17,7 @@ class LikeDetailController
   @override
   void onInit() {
     super.onInit();
-    final args = Get.arguments;
+    final args = Nav.arguments;
     cardId = args['id'];
     uri = args['uri'];
     counts = args['counts'];

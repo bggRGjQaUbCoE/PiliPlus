@@ -12,6 +12,7 @@ import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
+import 'package:PiliPlus/utils/nav.dart';
 import 'package:get/get.dart';
 
 class WebviewPage extends StatefulWidget {
@@ -35,7 +36,7 @@ class WebviewPage extends StatefulWidget {
 }
 
 class _WebviewPageState extends State<WebviewPage> {
-  late final String _url = widget.url ?? Get.parameters['url'] ?? '';
+  late final String _url = widget.url ?? Nav.parameters['url'] ?? '';
   late final String userAgent;
   final RxString title = ''.obs;
   final RxDouble progress = 1.0.obs;
@@ -54,12 +55,12 @@ class _WebviewPageState extends State<WebviewPage> {
     super.initState();
     userAgent =
         widget.userAgent ??
-        switch (Get.parameters['uaType']) {
+        switch (Nav.parameters['uaType']) {
           'pc' => BrowserUa.pc,
           'mob' => BrowserUa.mob,
           _ => BrowserUa.platform,
         };
-    if (Get.arguments case final Map map) {
+    if (Nav.arguments case final Map map) {
       _inApp = map['inApp'] ?? false;
       _off = map['off'] ?? false;
     }
@@ -136,7 +137,7 @@ class _WebviewPageState extends State<WebviewPage> {
                         if (await _webViewController?.canGoBack() == true) {
                           _webViewController?.goBack();
                         } else {
-                          Get.back();
+                          Nav.back();
                         }
                         break;
                       case WebviewMenuItem.resetCookie:
@@ -190,7 +191,7 @@ class _WebviewPageState extends State<WebviewPage> {
               ..addJavaScriptHandler(
                 handlerName: 'finishButtonClicked',
                 callback: (args) {
-                  Get.back();
+                  Nav.back();
                 },
               )
               ..addJavaScriptHandler(
@@ -212,7 +213,7 @@ class _WebviewPageState extends State<WebviewPage> {
           onTitleChanged: (controller, title) {
             this.title.value = title ?? '';
           },
-          onCloseWindow: (controller) => Get.back(),
+          onCloseWindow: (controller) => Nav.back(),
           onLoadStop: (controller, uri) {
             final url = uri.toString();
             if (url.startsWith('https://www.bilibili.com/h5/note-app')) {
@@ -271,7 +272,7 @@ class _WebviewPageState extends State<WebviewPage> {
                         content: SelectableText(request.url.toString()),
                         actions: [
                           TextButton(
-                            onPressed: Get.back,
+                            onPressed: () => Nav.back(),
                             child: Text(
                               '取消',
                               style: TextStyle(
@@ -281,7 +282,7 @@ class _WebviewPageState extends State<WebviewPage> {
                           ),
                           TextButton(
                             onPressed: () {
-                              Get.back();
+                              Nav.back();
                               PageUtils.launchURL(request.url.toString());
                             },
                             child: Text('确定 ($fileSize)'),

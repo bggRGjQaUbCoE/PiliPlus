@@ -35,6 +35,7 @@ import 'package:flutter/material.dart' hide showTimePicker;
 import 'package:flutter/services.dart' show LengthLimitingTextInputFormatter;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 class CreateDynPanel extends CommonRichTextPubPage {
   const CreateDynPanel({
@@ -342,7 +343,7 @@ class _CreateDynPanelState extends CommonRichTextPubPageState<CreateDynPanel> {
                   theme.colorScheme.secondaryContainer,
                 ),
               ),
-              onPressed: Get.back,
+              onPressed: () => Nav.back(),
               icon: Icon(
                 Icons.arrow_back_outlined,
                 size: 18,
@@ -657,9 +658,9 @@ class _CreateDynPanelState extends CommonRichTextPubPageState<CreateDynPanel> {
       final voteItem = editController.items.firstWhereOrNull(
         (e) => e.type == RichTextType.vote,
       );
-      final voteInfo = await Navigator.of(context).push<VoteInfo>(
-        GetPageRoute(
-          page: () => CreateVotePage(
+      final VoteInfo? voteInfo = await Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => CreateVotePage(
             voteId: voteItem?.id == null ? null : int.parse(voteItem!.id!),
           ),
         ),
@@ -761,7 +762,7 @@ class _CreateDynPanelState extends CommonRichTextPubPageState<CreateDynPanel> {
       SmartDialog.dismiss();
       if (res.isSuccess) {
         hasPub = true;
-        Get.back();
+        Nav.back();
         SmartDialog.showToast('发布成功');
         widget.onSuccess?.call();
       } else {
@@ -797,7 +798,7 @@ class _CreateDynPanelState extends CommonRichTextPubPageState<CreateDynPanel> {
     SmartDialog.dismiss();
     if (res case Success(:final response)) {
       hasPub = true;
-      Get.back();
+      Nav.back();
       SmartDialog.showToast('发布成功');
       final id = response?['dyn_id'];
       RequestUtils.insertCreatedDyn(id);
@@ -883,8 +884,8 @@ class _CreateDynPanelState extends CommonRichTextPubPageState<CreateDynPanel> {
   Future<void> _onReserve() async {
     controller.keepChatPanel();
     final ReserveInfoData? reserveInfo = await Navigator.of(context).push(
-      GetPageRoute(
-        page: () => CreateReservePage(sid: _reserveCard.value?.id),
+      MaterialPageRoute(
+        builder: (_) => CreateReservePage(sid: _reserveCard.value?.id),
       ),
     );
     if (reserveInfo != null) {

@@ -13,6 +13,7 @@ import 'package:PiliPlus/http/init.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/user.dart';
 import 'package:PiliPlus/http/video.dart';
+import 'package:PiliPlus/services/net_debug_logger.dart';
 import 'package:PiliPlus/models/common/account_type.dart';
 import 'package:PiliPlus/models/common/sponsor_block/action_type.dart';
 import 'package:PiliPlus/models/common/sponsor_block/post_segment_model.dart';
@@ -73,6 +74,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:flutter_volume_controller/flutter_volume_controller.dart';
 import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 import 'package:hive_ce/hive.dart';
 import 'package:media_kit/media_kit.dart' hide Subtitle;
 import 'package:path/path.dart' as path;
@@ -382,7 +384,7 @@ class VideoDetailController extends GetxController
   @override
   void onInit() {
     super.onInit();
-    args = Get.arguments;
+    args = Nav.arguments;
     videoType = args['videoType'];
     if (videoType == VideoType.pgc) {
       if (!isLoginVideo) {
@@ -647,7 +649,7 @@ class VideoDetailController extends GetxController
     if (isPlaying) {
       await plPlayerController.pause();
     }
-    await Get.key.currentState!.push(
+    await Nav.pushRoute(
       PublishRoute(
         pageBuilder: (buildContext, animation, secondaryAnimation) {
           return SendDanmakuPanel(
@@ -867,6 +869,15 @@ class VideoDetailController extends GetxController
     if (result case Success(:final response)) {
       data = response;
 
+      netLog.info('VIDEO', 'playUrl resolved', extra: {
+        'bvid': bvid,
+        'cid': cid.value,
+        'dash': data.dash != null,
+        'durl': data.durl != null,
+        'quality': data.quality,
+        'acceptQuality': data.acceptQuality?.toString(),
+      });
+
       languages.value = data.language?.items;
       currLang.value = data.curLanguage;
 
@@ -1007,6 +1018,15 @@ class VideoDetailController extends GetxController
       } else {
         audioUrl = '';
       }
+
+      netLog.info('VIDEO', 'player source ready', extra: {
+        'videoQuality': currentVideoQa.value?.desc,
+        'codec': currentDecodeFormats.name,
+        'videoHost': Uri.tryParse(videoUrl ?? '')?.host,
+        'audioHost': audioUrl?.isNotEmpty == true ? Uri.tryParse(audioUrl!)?.host : null,
+        'bandwidth': firstVideo.bandWidth,
+      });
+
       await _initPlayerIfNeeded(autoFullScreenFlag);
     } else {
       _autoPlay.value = false;
@@ -1582,7 +1602,7 @@ class VideoDetailController extends GetxController
         actions: [
           TextButton(
             onPressed: () {
-              Get.back();
+              Nav.back();
               this.videoUrl = videoUrl;
               this.audioUrl = audioUrl;
               playerInit();
@@ -1627,7 +1647,7 @@ class VideoDetailController extends GetxController
       if (kDebugMode) {
         debugPrint(title);
       }
-      Get.toNamed(
+      Nav.push(
         '/dlna',
         parameters: {
           'url': url,

@@ -6,7 +6,7 @@ import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 Widget forwardPanel(
   BuildContext context, {
@@ -112,7 +112,7 @@ Widget _forwardAuthor({
     children: [
       GestureDetector(
         onTap: isNormalAuth
-            ? () => Get.toNamed('/member?mid=${moduleAuthor.mid}')
+            ? () => Nav.push('/member?mid=${moduleAuthor.mid}')
             : null,
         child: Text(
           '${isNormalAuth ? '@' : ''}${moduleAuthor.name}',

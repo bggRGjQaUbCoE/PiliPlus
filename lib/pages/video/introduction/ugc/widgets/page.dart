@@ -10,6 +10,7 @@ import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 // TODO refa
 class PagesPanel extends StatefulWidget {
@@ -175,7 +176,7 @@ class _PagesPanelState extends State<PagesPanel> {
                         return;
                       }
                       if (widget.showEpisodes == null) {
-                        Get.back();
+                        Nav.back();
                       }
                       widget.ugcIntroController.onChangeEpisode(
                         item

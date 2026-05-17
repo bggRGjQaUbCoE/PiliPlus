@@ -7,6 +7,7 @@ import 'package:PiliPlus/http/constants.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/retry_interceptor.dart';
 import 'package:PiliPlus/http/user.dart';
+import 'package:PiliPlus/services/net_debug_logger.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/accounts/account.dart';
 import 'package:PiliPlus/utils/accounts/account_manager/account_mgr.dart';
@@ -230,6 +231,12 @@ class Request {
         RetryInterceptor(dio, Pref.retryCount, Pref.retryDelay),
       );
     }
+
+    // 网络调试日志
+    dio.interceptors.addAll([
+      NetDebugTimingInterceptor(),
+      NetDebugInterceptor(),
+    ]);
 
     // 日志拦截器 输出请求、响应内容
     if (kDebugMode) {

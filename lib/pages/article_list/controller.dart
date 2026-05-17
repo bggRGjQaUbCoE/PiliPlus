@@ -17,7 +17,7 @@ class ArticleListController
     queryData();
   }
 
-  Rx<ArticleListInfo?> list = Rx<ArticleListInfo?>(null);
+  final list = Rxn<ArticleListInfo>();
   Owner? author;
 
   @override

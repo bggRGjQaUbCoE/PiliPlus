@@ -210,6 +210,8 @@ abstract final class VideoHttp {
     String? language,
     bool voiceBalance = false,
   }) async {
+    final dmImgStr = Utils.base64EncodeRandomString(16, 64);
+    final dmCoverImgStr = Utils.base64EncodeRandomString(32, 128);
     final params = await WbiSign.makSign({
       'avid': ?avid,
       'bvid': ?bvid,
@@ -227,6 +229,10 @@ abstract final class VideoHttp {
       'web_location': 1315873,
       // 免登录查看1080p
       if (tryLook) 'try_look': 1,
+      'dm_img_list': '[]',
+      'dm_img_str': dmImgStr,
+      'dm_cover_img_str': dmCoverImgStr,
+      'dm_img_inter': '{"ds":[],"wh":[0,0,0],"of":[0,0,0]}',
       'cur_language': ?language,
     });
 

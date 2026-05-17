@@ -2,7 +2,7 @@ import 'package:PiliPlus/common/style.dart';
 import 'package:flutter/material.dart';
 
 Widget selectMask(
-  ThemeData theme,
+  ColorScheme colorScheme,
   bool checked, {
   BorderRadiusGeometry borderRadius = Style.mdRadius,
 }) {
@@ -23,12 +23,12 @@ Widget selectMask(
           width: 34,
           height: 34,
           decoration: BoxDecoration(
-            color: theme.colorScheme.surface.withValues(alpha: 0.8),
+            color: colorScheme.surface.withValues(alpha: 0.8),
             shape: BoxShape.circle,
           ),
           child: Icon(
             Icons.done_all_outlined,
-            color: theme.colorScheme.primary,
+            color: colorScheme.primary,
             semanticLabel: '取消选择',
           ),
         ),

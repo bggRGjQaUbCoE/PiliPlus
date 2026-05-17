@@ -744,8 +744,9 @@ class RenderProgressBar extends RenderBox implements MouseTrackerAnnotation {
     final capRadius = _barHeight / 2;
     final adjustedWidth = availableSize.width - barHeight;
     final dx = widthProportion * adjustedWidth + capRadius;
-    final startPoint = Offset(capRadius, availableSize.height / 2);
-    final endPoint = Offset(dx, availableSize.height / 2);
+    final dy = availableSize.height / 2;
+    final startPoint = Offset(capRadius, dy);
+    final endPoint = Offset(dx, dy);
     canvas.drawLine(startPoint, endPoint, baseBarPaint);
   }
 

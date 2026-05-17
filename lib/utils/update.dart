@@ -45,7 +45,7 @@ abstract final class Update {
         SmartDialog.show(
           animationType: SmartAnimationType.centerFade_otherSlide,
           builder: (context) {
-            final ThemeData theme = Theme.of(context);
+            final colorScheme = ColorScheme.of(context);
             Widget downloadBtn(String text, {String? ext}) => TextButton(
               onPressed: () => onDownload(data, ext: ext),
               child: Text(text),
@@ -70,9 +70,7 @@ abstract final class Update {
                         ),
                         child: Text(
                           "点此查看完整更新(即commit)内容",
-                          style: TextStyle(
-                            color: theme.colorScheme.primary,
-                          ),
+                          style: TextStyle(color: colorScheme.primary),
                         ),
                       ),
                     ],
@@ -88,18 +86,14 @@ abstract final class Update {
                     },
                     child: Text(
                       '不再提醒',
-                      style: TextStyle(
-                        color: theme.colorScheme.outline,
-                      ),
+                      style: TextStyle(color: colorScheme.outline),
                     ),
                   ),
                 TextButton(
                   onPressed: SmartDialog.dismiss,
                   child: Text(
                     '取消',
-                    style: TextStyle(
-                      color: theme.colorScheme.outline,
-                    ),
+                    style: TextStyle(color: colorScheme.outline),
                   ),
                 ),
                 if (Platform.isWindows) ...[

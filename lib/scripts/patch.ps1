@@ -16,11 +16,17 @@ $BottomSheetAndroidPatch = "lib/scripts/bottom_sheet_android.patch"
 $BottomSheetIOSFlutterPatch = "lib/scripts/bottom_sheet_ios_flutter.patch"
 $BottomSheetIOSPiliPlusPatch = "lib/scripts/bottom_sheet_ios_piliplus.patch"
 
+# https://github.com/bggRGjQaUbCoE/PiliPlus/issues/1662
 $ScrollViewPatch = "lib/scripts/scroll_view.patch"
 
+# https://github.com/bggRGjQaUbCoE/PiliPlus/issues/2106
 $TextSelectionPatch = "lib/scripts/text_selection.patch"
 
+# https://github.com/bggRGjQaUbCoE/PiliPlus/issues/1947
 $NavigatorPatch = "lib/scripts/navigator.patch"
+
+# https://github.com/bggRGjQaUbCoE/PiliPlus/issues/2107
+$ImageAnimPatch = "lib/scripts/image_anim.patch"
 
 # TODO: remove
 # https://github.com/flutter/flutter/issues/90223
@@ -41,7 +47,8 @@ Set-Location $env:FLUTTER_ROOT
 
 $picks   = @()
 $reverts = @()
-$patches = @($ModalBarrierPatch, $TextSelectionPatch, $MouseCursorPatch)
+$patches = @($ModalBarrierPatch, $TextSelectionPatch, $MouseCursorPatch,
+            $ImageAnimPatch)
 
 switch ($platform.ToLower()) {
     "android" {

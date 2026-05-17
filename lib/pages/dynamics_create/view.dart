@@ -28,9 +28,9 @@ import 'package:PiliPlus/pages/emote/view.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/extension/context_ext.dart';
-import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:PiliPlus/utils/grid.dart';
 import 'package:PiliPlus/utils/request_utils.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart' hide showTimePicker;
 import 'package:flutter/services.dart' show LengthLimitingTextInputFormatter;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -104,8 +104,8 @@ class _CreateDynPanelState extends CommonRichTextPubPageState<CreateDynPanel> {
   late final Rx<Pair<int, String>?> _topic;
   late final Rx<ReplyOptionType> _replyOption;
   late final TextEditingController _titleEditCtr;
-  late final Rx<DateTime?> _publishTime = Rx<DateTime?>(null);
-  final Rx<ReserveInfoData?> _reserveCard = Rx<ReserveInfoData?>(null);
+  late final _publishTime = Rxn<DateTime>();
+  final _reserveCard = Rxn<ReserveInfoData>();
 
   @override
   void initState() {
@@ -654,10 +654,10 @@ class _CreateDynPanelState extends CommonRichTextPubPageState<CreateDynPanel> {
   Widget get voteBtn => ToolbarIconButton(
     onPressed: () async {
       controller.keepChatPanel();
-      RichTextItem? voteItem = editController.items.firstWhereOrNull(
+      final voteItem = editController.items.firstWhereOrNull(
         (e) => e.type == RichTextType.vote,
       );
-      final VoteInfo? voteInfo = await Navigator.of(context).push(
+      final voteInfo = await Navigator.of(context).push<VoteInfo>(
         GetPageRoute(
           page: () => CreateVotePage(
             voteId: voteItem?.id == null ? null : int.parse(voteItem!.id!),
@@ -801,7 +801,7 @@ class _CreateDynPanelState extends CommonRichTextPubPageState<CreateDynPanel> {
       SmartDialog.showToast('发布成功');
       final id = response?['dyn_id'];
       RequestUtils.insertCreatedDyn(id);
-      if (!_isPrivate.value) {
+      if (!_isPrivate.value && _publishTime.value == null) {
         RequestUtils.checkCreatedDyn(
           id: id,
           dynText: editController.rawText,

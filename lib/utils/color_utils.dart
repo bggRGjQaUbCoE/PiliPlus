@@ -2,11 +2,12 @@ import 'package:flutter/rendering.dart' show Color;
 
 abstract final class ColourUtils {
   static Color parseColor(String color) =>
-      Color(int.parse('FF${color.substring(1)}', radix: 16));
+      Color(0xFF000000 | int.parse(color.substring(1), radix: 16));
 
-  static Color parseMedalColor(String color) => Color(
-    int.parse('${color.substring(7)}${color.substring(1, 7)}', radix: 16),
-  );
+  static Color parseMedalColor(String color) {
+    final rgba = int.parse(color.substring(1), radix: 16);
+    return Color.fromARGB(rgba, rgba >> 24, rgba >> 16, rgba >> 8);
+  }
 
   static Color index2Color(int index, Color color) => switch (index) {
     0 => const Color(0xFFfdad13),

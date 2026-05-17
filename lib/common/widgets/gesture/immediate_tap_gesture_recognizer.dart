@@ -151,6 +151,14 @@ class ImmediateTapGestureRecognizer extends OneSequenceGestureRecognizer {
   }
 
   @override
+  void resolve(GestureDisposition disposition) {
+    if (_wonArena && disposition == GestureDisposition.rejected) {
+      _cancelGesture('spontaneous');
+    }
+    super.resolve(disposition);
+  }
+
+  @override
   String get debugDescription => 'immediate tap';
 
   @override

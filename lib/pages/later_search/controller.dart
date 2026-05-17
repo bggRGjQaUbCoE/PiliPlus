@@ -13,8 +13,16 @@ class LaterSearchController
         CommonMultiSelectMixin<LaterItemModel>,
         DeleteItemMixin,
         BaseLaterController {
-  dynamic mid = Get.arguments['mid'];
-  dynamic count = Get.arguments['count'];
+  dynamic mid;
+  dynamic count;
+
+  @override
+  void onInit() {
+    final args = Get.arguments;
+    mid = args['mid'];
+    count = args['count'];
+    super.onInit();
+  }
 
   @override
   Future<LoadingState<LaterData>> customGetData() => UserHttp.seeYouLater(

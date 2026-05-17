@@ -158,7 +158,7 @@ class VideoCardHLater extends StatelessWidget {
                           ),
                         Positioned.fill(
                           child: selectMask(
-                            theme,
+                            theme.colorScheme,
                             videoItem.checked,
                           ),
                         ),

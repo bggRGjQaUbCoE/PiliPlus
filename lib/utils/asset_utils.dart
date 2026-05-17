@@ -61,7 +61,7 @@ abstract final class AssetUtils {
       }
 
       try {
-        final data = await rootBundle.load(file);
+        final data = await rootBundle.load('$src/$file');
         await targetFile.writeAsBytes(data.buffer.asUint8List());
       } catch (_) {}
     }

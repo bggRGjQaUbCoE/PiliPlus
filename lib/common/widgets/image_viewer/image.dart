@@ -390,9 +390,7 @@ class _ImageState extends State<Image> with WidgetsBindingObserver {
   void didChangeDependencies() {
     _resolveImage();
 
-    _isPaused =
-        !TickerMode.valuesOf(context).enabled ||
-        (MediaQuery.maybeDisableAnimationsOf(context) ?? false);
+    _isPaused = !TickerMode.valuesOf(context).enabled;
 
     if (_isPaused && _frameNumber != null) {
       _stopListeningToStream(keepStreamAlive: true);

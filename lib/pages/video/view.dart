@@ -200,6 +200,11 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
   }
 
   Future<void>? playCallBack() {
+    if (!isShowing) {
+      plPlayerController
+        ?..addStatusLister(playerListener)
+        ..addPositionListener(positionListener);
+    }
     return plPlayerController?.play();
   }
 
@@ -455,8 +460,8 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     maxWidth = size.width;
     maxHeight = size.height;
     isWindowMode = MaxScreenSize.isWindowMode(
-      width: maxWidth,
-      height: maxHeight,
+      width: maxWidth * videoDetailController.uiScale,
+      height: maxHeight * videoDetailController.uiScale,
     );
     videoDetailController.plPlayerController.screenRatio = maxHeight / maxWidth;
 

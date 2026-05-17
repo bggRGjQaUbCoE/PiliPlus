@@ -13,7 +13,7 @@ class LiveFollowController
     queryData();
   }
 
-  Rx<int?> count = Rx<int?>(null);
+  final count = RxnInt();
 
   @override
   void checkIsEnd(int length) {

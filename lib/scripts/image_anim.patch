@@ -1,0 +1,13 @@
+diff --git a/packages/flutter/lib/src/widgets/image.dart b/packages/flutter/lib/src/widgets/image.dart
+index 30429ea5e02..b58f4343440 100644
+--- a/packages/flutter/lib/src/widgets/image.dart
++++ b/packages/flutter/lib/src/widgets/image.dart
+@@ -1148,7 +1148,7 @@ class _ImageState extends State<Image> with WidgetsBindingObserver {
+     _updateInvertColors();
+     _resolveImage();
+ 
+-    _isPaused = !TickerMode.of(context) || (MediaQuery.maybeDisableAnimationsOf(context) ?? false);
++    _isPaused = !TickerMode.of(context);
+ 
+     if (_isPaused && _frameNumber != null) {
+       _stopListeningToStream(keepStreamAlive: true);

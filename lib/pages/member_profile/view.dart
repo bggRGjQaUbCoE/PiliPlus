@@ -480,14 +480,14 @@ class _EditProfilePageState extends State<EditProfilePage> {
         imageQuality: 100,
       );
       if (pickedFile != null && mounted) {
-        String? mimeType = lookupMimeType(
-          pickedFile.path,
-        )?.split('/').elementAtOrNull(1);
+        String? imagePath = pickedFile.path;
+        String? mimeType = (pickedFile.mimeType ?? lookupMimeType(imagePath))
+            ?.split('/')
+            .elementAtOrNull(1);
         if (mimeType == 'gif') {
           SmartDialog.showToast('不能选GIF');
           return;
         }
-        String? imagePath = pickedFile.path;
         if (PlatformUtils.isMobile) {
           final croppedFile = await ImageCropper.platform.cropImage(
             sourcePath: imagePath,

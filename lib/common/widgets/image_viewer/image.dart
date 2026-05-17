@@ -10,7 +10,7 @@ import 'package:PiliPlus/common/widgets/gesture/image_horizontal_drag_gesture_re
 import 'package:PiliPlus/common/widgets/image_viewer/viewer.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart' show DoubleTapGestureRecognizer;
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Image;
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/semantics.dart';
 

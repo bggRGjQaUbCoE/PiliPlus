@@ -1,13 +1,71 @@
 diff --git a/packages/flutter/lib/src/widgets/image.dart b/packages/flutter/lib/src/widgets/image.dart
-index 30429ea5e02..b58f4343440 100644
+index 30429ea5e02..79f727ab472 100644
 --- a/packages/flutter/lib/src/widgets/image.dart
 +++ b/packages/flutter/lib/src/widgets/image.dart
-@@ -1148,7 +1148,7 @@ class _ImageState extends State<Image> with WidgetsBindingObserver {
+@@ -381,6 +381,7 @@ class Image extends StatefulWidget {
+     this.gaplessPlayback = false,
+     this.isAntiAlias = false,
+     this.filterQuality = FilterQuality.medium,
++    this.isPaused = true,
+   });
+ 
+   /// Creates a widget that displays an [ImageStream] obtained from the network.
+@@ -471,6 +472,7 @@ class Image extends StatefulWidget {
+     Map<String, String>? headers,
+     num? cacheWidth,
+     num? cacheHeight,
++    this.isPaused = true,
+     WebHtmlElementStrategy webHtmlElementStrategy = WebHtmlElementStrategy.never,
+   }) : image = ResizeImage.resizeIfNeeded(
+          cacheWidth,
+@@ -540,6 +542,7 @@ class Image extends StatefulWidget {
+     this.filterQuality = FilterQuality.medium,
+     num? cacheWidth,
+     num? cacheHeight,
++    this.isPaused = true,
+   }) : // FileImage is not supported on Flutter Web therefore neither this method.
+        assert(
+          !kIsWeb,
+@@ -703,6 +706,7 @@ class Image extends StatefulWidget {
+     this.filterQuality = FilterQuality.medium,
+     num? cacheWidth,
+     num? cacheHeight,
++    this.isPaused = true,
+   }) : image = ResizeImage.resizeIfNeeded(
+          cacheWidth,
+          cacheHeight,
+@@ -765,6 +769,7 @@ class Image extends StatefulWidget {
+     this.filterQuality = FilterQuality.medium,
+     num? cacheWidth,
+     num? cacheHeight,
++    this.isPaused = true,
+   }) : image = ResizeImage.resizeIfNeeded(
+          cacheWidth,
+          cacheHeight,
+@@ -1078,6 +1083,8 @@ class Image extends StatefulWidget {
+   /// Anti-aliasing alleviates the sawtooth artifact when the image is rotated.
+   final bool isAntiAlias;
+ 
++  final bool isPaused;
++
+   @override
+   State<Image> createState() => _ImageState();
+ 
+@@ -1123,7 +1130,7 @@ class _ImageState extends State<Image> with WidgetsBindingObserver {
+   /// True when animations are disabled and the image should not update, such as
+   /// when [TickerMode] is disabled or [MediaQueryData.disableAnimations] is
+   /// true.
+-  bool _isPaused = false;
++  bool get _isPaused => widget.isPaused;
+ 
+   @override
+   void initState() {
+@@ -1148,8 +1155,6 @@ class _ImageState extends State<Image> with WidgetsBindingObserver {
      _updateInvertColors();
      _resolveImage();
  
 -    _isPaused = !TickerMode.of(context) || (MediaQuery.maybeDisableAnimationsOf(context) ?? false);
-+    _isPaused = !TickerMode.of(context);
- 
+-
      if (_isPaused && _frameNumber != null) {
        _stopListeningToStream(keepStreamAlive: true);
+     } else {

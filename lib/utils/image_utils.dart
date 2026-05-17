@@ -265,7 +265,7 @@ abstract final class ImageUtils {
     caseSensitive: false,
   );
 
-  static const kSuffixJPG = '.jpg';
+  // static const kSuffixJPG = '.jpg';
   static const kSuffixGIF = '.gif';
   static const kSuffixWEBP = '.webp';
 

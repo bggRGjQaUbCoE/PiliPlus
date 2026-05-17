@@ -1693,6 +1693,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                         cacheHeight: 25,
                         semanticLabel: "加载中",
                         color: Colors.white,
+                        isPaused: false,
                       ),
                       if (plPlayerController.isBuffering.value)
                         Obx(() {

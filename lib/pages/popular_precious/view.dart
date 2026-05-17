@@ -6,6 +6,7 @@ import 'package:PiliPlus/common/widgets/view_sliver_safe_area.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/video/source_type.dart';
 import 'package:PiliPlus/models/model_hot_video_item.dart';
+import 'package:PiliPlus/pages/common/play_all_btn_mixin.dart';
 import 'package:PiliPlus/pages/popular_precious/controller.dart';
 import 'package:PiliPlus/utils/grid.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
@@ -20,24 +21,67 @@ class PopularPreciousPage extends StatefulWidget {
 }
 
 class _PopularPreciousPageState extends State<PopularPreciousPage>
-    with GridMixin {
+    with GridMixin, PlayAllBtnMixin {
   final _controller = Get.put(PopularPreciousController());
 
   @override
   Widget build(BuildContext context) {
+    final padding = MediaQuery.viewPaddingOf(context);
     return scaffold(
       appBar: AppBar(title: const Text('入站必刷')),
-      body: refreshIndicator(
-        onRefresh: _controller.onRefresh,
-        child: CustomScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          slivers: [
-            ViewSliverSafeArea(
-              sliver: Obx(() => _buildBody(_controller.loadingState.value)),
+      body: Stack(
+        clipBehavior: .none,
+        children: [
+          refreshIndicator(
+            onRefresh: _controller.onRefresh,
+            child: CustomScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              slivers: [
+                ViewSliverSafeArea(
+                  sliver: Obx(() => _buildBody(_controller.loadingState.value)),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+          Positioned(
+            right: padding.right,
+            bottom: padding.bottom + kFloatingActionButtonMargin,
+            child: Padding(
+              padding: const .only(right: kFloatingActionButtonMargin),
+              child: Obx(() {
+                if (_controller.loadingState.value case Success(
+                  :final response,
+                )) {
+                  return playAllBtn(() => toVideoPage(response!.first));
+                }
+                return const SizedBox.shrink();
+              }),
+            ),
+          ),
+        ],
       ),
+    );
+  }
+
+  void toVideoPage(
+    HotVideoItemModel item, {
+    int index = 0,
+    bool isPlayAll = true,
+  }) {
+    PageUtils.toVideoPage(
+      bvid: item.bvid,
+      cid: item.cid!,
+      dimension: item.dimension,
+      extraArguments: isPlayAll
+          ? {
+              'sourceType': SourceType.playlist,
+              'favTitle': '入站必刷',
+              'mediaId': _controller.mediaId,
+              'desc': true,
+              'oid': item.aid,
+              'isContinuePlaying': index != 0,
+            }
+          : null,
     );
   }
 
@@ -53,21 +97,11 @@ class _PopularPreciousPageState extends State<PopularPreciousPage>
             final item = response[index];
             return VideoCardH(
               videoItem: item,
-              onTap: () {
-                PageUtils.toVideoPage(
-                  bvid: item.bvid,
-                  cid: item.cid!,
-                  dimension: item.dimension,
-                  extraArguments: {
-                    'sourceType': SourceType.playlist,
-                    'favTitle': '入站必刷',
-                    'mediaId': _controller.mediaId,
-                    'desc': true,
-                    'oid': item.aid,
-                    'isContinuePlaying': index != 0,
-                  },
-                );
-              },
+              onTap: () => toVideoPage(
+                item,
+                index: index,
+                isPlayAll: isPlayAll.value,
+              ),
             );
           },
         );

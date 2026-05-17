@@ -126,31 +126,7 @@ class _LaterPageState extends State<LaterPage>
                     padding: const .only(right: kFloatingActionButtonMargin),
                     child: Obx(
                       () => currCtr().loadingState.value.isSuccess
-                          ? AnimatedSlide(
-                              offset: _baseCtr.isPlayAll.value
-                                  ? Offset.zero
-                                  : const Offset(0.75, 0),
-                              duration: const Duration(milliseconds: 120),
-                              child: GestureDetector(
-                                onHorizontalDragDown: (details) =>
-                                    _baseCtr.dx = details.localPosition.dx,
-                                onHorizontalDragStart: (details) =>
-                                    _baseCtr.setIsPlayAll(
-                                      details.localPosition.dx < _baseCtr.dx,
-                                    ),
-                                child: FloatingActionButton.extended(
-                                  onPressed: () {
-                                    if (_baseCtr.isPlayAll.value) {
-                                      currCtr().toViewPlayAll();
-                                    } else {
-                                      _baseCtr.setIsPlayAll(true);
-                                    }
-                                  },
-                                  label: const Text('播放全部'),
-                                  icon: const Icon(Icons.playlist_play),
-                                ),
-                              ),
-                            )
+                          ? _baseCtr.playAllBtn(currCtr().toViewPlayAll)
                           : const SizedBox.shrink(),
                     ),
                   ),

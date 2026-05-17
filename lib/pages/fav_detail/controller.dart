@@ -12,13 +12,11 @@ import 'package:PiliPlus/models_new/video/video_detail/page.dart';
 import 'package:PiliPlus/pages/common/common_list_controller.dart';
 import 'package:PiliPlus/pages/common/multi_select/base.dart';
 import 'package:PiliPlus/pages/common/multi_select/multi_select_controller.dart';
+import 'package:PiliPlus/pages/common/play_all_btn_mixin.dart';
 import 'package:PiliPlus/pages/fav_sort/view.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/extension/scroll_controller_ext.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
-import 'package:PiliPlus/utils/storage.dart';
-import 'package:PiliPlus/utils/storage_key.dart';
-import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/widgets.dart' show Text, ValueChanged;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -79,7 +77,7 @@ mixin BaseFavController
 
 class FavDetailController
     extends MultiSelectController<FavDetailData, FavDetailItemModel>
-    with BaseFavController {
+    with BaseFavController, PlayAllBtnMixin {
   @override
   late int mediaId;
   final Rx<FavFolderInfo> folderInfo = FavFolderInfo().obs;
@@ -90,15 +88,6 @@ class FavDetailController
   bool get isOwner => _isOwner.value;
 
   late final account = Accounts.main;
-
-  late double dx = 0;
-  late final RxBool isPlayAll = Pref.enablePlayAll.obs;
-
-  void setIsPlayAll(bool isPlayAll) {
-    if (this.isPlayAll.value == isPlayAll) return;
-    this.isPlayAll.value = isPlayAll;
-    GStorage.setting.put(SettingBoxKey.enablePlayAll, isPlayAll);
-  }
 
   @override
   void onInit() {

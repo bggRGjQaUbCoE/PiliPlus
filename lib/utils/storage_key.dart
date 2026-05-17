@@ -15,6 +15,10 @@ abstract final class SettingBoxKey {
       enableHA = 'enableHA',
       audioOutput = 'audioOutput',
       expandBuffer = 'expandBuffer',
+      showBufferTime = 'showBufferTime',
+      showBufferAhead = 'showBufferAhead',
+      showBufferSpeed = 'showBufferSpeed',
+      bufferInfoOrder = 'bufferInfoOrder',
       hardwareDecoding = 'hardwareDecoding',
       videoSync = 'videoSync',
       autosync = 'autosync',
@@ -36,6 +40,7 @@ abstract final class SettingBoxKey {
       horizontalScreen = 'horizontalScreen',
       CDNService = 'CDNService',
       disableAudioCDN = 'disableAudioCDN',
+      enableCdnAutoSwitch = 'enableCdnAutoSwitch',
       autoPiP = 'autoPiP',
       enableAutoLongPressSpeed = 'enableAutoLongPressSpeed',
       useRelativeSlide = 'useRelativeSlide',
@@ -134,6 +139,7 @@ abstract final class SettingBoxKey {
       optTabletNav = 'optTabletNav',
       banWordForDyn = 'banWordForDyn',
       enableLog = 'enableLog',
+      enableNetLog = 'enableNetLog',
       memberTab = 'memberTab',
       dynamicDetailRatio = 'dynamicDetailRatio',
       directExitOnBack = 'directExitOnBack',
@@ -160,7 +166,9 @@ abstract final class SettingBoxKey {
       showWindowTitleBar = 'showWindowTitleBar',
       desktopVolume = 'desktopVolume',
       showTrayIcon = 'showTrayIcon',
-      uiScale = 'uiScale';
+      uiScale = 'uiScale',
+      closeTabOnHome = 'closeTabOnHome',
+      pauseOnHome = 'pauseOnHome';
 
   static const String subtitlePreferenceV2 = 'subtitlePreferenceV2',
       enableDragSubtitle = 'enableDragSubtitle',

@@ -6,10 +6,6 @@ extension GetExt on GetInterface {
       GetInstance().putOrFind(dep, tag: tag);
 
   void updateMyAppTheme() {
-    final (light, dark) = MyApp.getAllTheme();
-    rootController
-      ..theme = light
-      ..darkTheme = dark
-      ..update();
+    MyApp.rebuildTheme();
   }
 }

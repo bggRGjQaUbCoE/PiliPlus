@@ -569,7 +569,7 @@ class _DownloadPanelState extends State<DownloadPanel> {
           _buildBottomBtn(
             text: '查看缓存',
             onTap: () => Navigator.of(context).push(
-              GetPageRoute(page: () => const DownloadPage()),
+              MaterialPageRoute(builder: (_) => const DownloadPage()),
             ),
           ),
         ],

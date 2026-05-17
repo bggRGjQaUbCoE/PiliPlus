@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 extension ThreeDotItemTypeExt on ThreeDotItemType {
   Icon get icon => switch (this) {
@@ -68,9 +69,9 @@ extension ThreeDotItemTypeExt on ThreeDotItemType {
         dynamic talkerId = RegExp(r'/(\d{3,})').firstMatch(item.url)?.group(1);
         if (talkerId != null) {
           talkerId = int.parse(talkerId);
-          Get.toNamed(
+          Nav.push(
             '/whisperDetail',
-            arguments: {
+            extra: {
               'talkerId': talkerId,
               'name': item.title,
               'face': switch (talkerId) {

@@ -34,7 +34,7 @@ import 'package:floating/floating.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
-import 'package:get/get.dart';
+import 'package:PiliPlus/utils/nav.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 abstract final class PageUtils {
@@ -49,7 +49,7 @@ abstract final class PageUtils {
     ValueChanged<int>? onPageChanged,
     String tag = '',
   }) {
-    return Get.key.currentState!.push<void>(
+    return Nav.pushRoute<void>(
       HeroDialogRoute(
         pageBuilder: (context, animation, secondaryAnimation) => GalleryViewer(
           sources: imgList,
@@ -87,7 +87,7 @@ abstract final class PageUtils {
 
     if (userList.isEmpty && context.mounted) {
       final UserModel? userModel = await Navigator.of(context).push(
-        GetPageRoute(page: () => const ContactPage()),
+        MaterialPageRoute(builder: (_) => const ContactPage()),
       );
       if (userModel != null) {
         userList.add(userModel);
@@ -181,7 +181,7 @@ abstract final class PageUtils {
   }
 
   static void reportVideo(int aid) {
-    Get.toNamed(
+    Nav.push(
       '/webview',
       parameters: {'url': 'https://www.bilibili.com/appeal/?avid=$aid'},
     );
@@ -361,7 +361,7 @@ abstract final class PageUtils {
           final String? url = medialist.jumpUrl;
           if (url != null) {
             if (url.contains('medialist/detail/ml')) {
-              Get.toNamed(
+              Nav.push(
                 '/favDetail',
                 parameters: {
                   'heroTag': '${medialist.cover}',
@@ -422,16 +422,16 @@ abstract final class PageUtils {
       launchURL(url);
     } else {
       if (off) {
-        Get.offNamed(
+        Nav.pushReplacement(
           '/webview',
           parameters: {'url': url},
-          arguments: {'inApp': true},
+          extra: {'inApp': true},
         );
       } else {
-        Get.toNamed(
+        Nav.push(
           '/webview',
           parameters: {'url': url},
-          arguments: {'inApp': true},
+          extra: {'inApp': true},
         );
       }
     }
@@ -463,11 +463,11 @@ abstract final class PageUtils {
       }
     } else {
       if (off) {
-        Get.offNamed(
+        Nav.pushReplacement(
           '/webview',
           parameters: {
             'url': url,
-            ...?parameters,
+            ...?parameters?.cast<String, String>(),
           },
         );
       } else {
@@ -485,7 +485,7 @@ abstract final class PageUtils {
     if (!context.mounted) {
       return null;
     }
-    return Get.key.currentState!.push(
+    return Nav.pushRoute(
       PublishRoute(
         pageBuilder: (context, animation, secondaryAnimation) {
           if (context.isPortrait) {
@@ -527,7 +527,7 @@ abstract final class PageUtils {
             child: child,
           );
         },
-        settings: RouteSettings(arguments: Get.arguments),
+        settings: RouteSettings(arguments: Nav.arguments),
       ),
     );
   }
@@ -540,9 +540,9 @@ abstract final class PageUtils {
       return;
     }
     if (off) {
-      Get.offNamed('/liveRoom', arguments: roomId);
+      Nav.pushReplacement('/liveRoom', extra: roomId);
     } else {
-      PageUtils.toDupNamed('/liveRoom', arguments: roomId);
+      Nav.push('/liveRoom', extra: roomId);
     }
   }
 
@@ -578,17 +578,10 @@ abstract final class PageUtils {
       ...?extraArguments,
     };
     if (off) {
-      return Get.offNamed(
-        '/videoV',
-        arguments: arguments,
-        preventDuplicates: false,
-      );
+      Nav.pushReplacement('/videoV', extra: arguments);
+      return null;
     } else {
-      return Get.toNamed(
-        '/videoV',
-        arguments: arguments,
-        preventDuplicates: false,
-      );
+      return Nav.push('/videoV', extra: arguments);
     }
   }
 
@@ -793,19 +786,9 @@ abstract final class PageUtils {
     bool off = false,
   }) {
     if (off) {
-      Get.offNamed(
-        page,
-        arguments: arguments,
-        parameters: parameters,
-        preventDuplicates: false,
-      );
+      Nav.pushReplacement(page, extra: arguments, parameters: parameters);
     } else {
-      Get.toNamed(
-        page,
-        arguments: arguments,
-        parameters: parameters,
-        preventDuplicates: false,
-      );
+      Nav.push(page, extra: arguments, parameters: parameters);
     }
   }
 }

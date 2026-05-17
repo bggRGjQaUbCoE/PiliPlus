@@ -86,7 +86,7 @@ class _ColorSelectPageState extends State<ColorSelectPage> {
                 } catch (_) {}
                 ctr.themeType.value = result;
                 GStorage.setting.put(SettingBoxKey.themeMode, result.index);
-                Get.changeThemeMode(ThemeUtils.themeMode = result.toThemeMode);
+                MyApp.rebuildTheme();
               }
             },
             leading: const Icon(Icons.flashlight_on_outlined),

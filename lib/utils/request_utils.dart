@@ -44,6 +44,7 @@ import 'package:flutter/services.dart' show LengthLimitingTextInputFormatter;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:gt3_flutter_plugin/gt3_flutter_plugin.dart';
+import 'package:PiliPlus/utils/nav.dart';
 
 abstract final class RequestUtils {
   static Future<void> syncHistoryStatus() async {
@@ -180,7 +181,7 @@ abstract final class RequestUtils {
                 ListTile(
                   dense: true,
                   onTap: () async {
-                    Get.back();
+                    Nav.back();
                     final res = await MemberHttp.specialAction(
                       fid: mid,
                       isAdd: !isSpecialFollowed,
@@ -200,7 +201,7 @@ abstract final class RequestUtils {
                 ListTile(
                   dense: true,
                   onTap: () async {
-                    Get.back();
+                    Nav.back();
                     final result = await showModalBottomSheet<Set<int>>(
                       context: context,
                       useSafeArea: true,
@@ -244,7 +245,7 @@ abstract final class RequestUtils {
                 ListTile(
                   dense: true,
                   onTap: () async {
-                    Get.back();
+                    Nav.back();
                     final res = await VideoHttp.relationMod(
                       mid: mid,
                       act: 2,
@@ -351,9 +352,9 @@ abstract final class RequestUtils {
             if (!isSuccess)
               TextButton(
                 onPressed: () {
-                  Get.back();
+                  Nav.back();
                   Utils.copyText('https://www.bilibili.com/opus/$id');
-                  Get.toNamed(
+                  Nav.push(
                     '/webview',
                     parameters: {
                       'url':
@@ -365,7 +366,7 @@ abstract final class RequestUtils {
               ),
             if (!isManual)
               TextButton(
-                onPressed: Get.back,
+                onPressed: () => Nav.back(),
                 child: Text(
                   '关闭',
                   style: TextStyle(color: theme.colorScheme.outline),
@@ -461,7 +462,7 @@ abstract final class RequestUtils {
               ),
               actions: [
                 TextButton(
-                  onPressed: Get.back,
+                  onPressed: () => Nav.back(),
                   child: Text(
                     '取消',
                     style: TextStyle(
@@ -499,7 +500,7 @@ abstract final class RequestUtils {
                           }
                           SmartDialog.dismiss();
                           SmartDialog.showToast('${isCopy ? '复制' : '移动'}成功');
-                          Get.back();
+                          Nav.back();
                         } else {
                           SmartDialog.dismiss();
                           res.toast();
@@ -701,7 +702,7 @@ abstract final class RequestUtils {
           content: show ? null : Text(response.rejectPage?.text ?? ''),
           actions: [
             TextButton(
-              onPressed: Get.back,
+              onPressed: () => Nav.back(),
               child: const Text('关闭'),
             ),
           ],

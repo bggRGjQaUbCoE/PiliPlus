@@ -617,8 +617,14 @@ abstract final class Pref {
   static bool get enableLog =>
       _setting.get(SettingBoxKey.enableLog, defaultValue: true);
 
+  static bool get enableNetLog =>
+      _setting.get(SettingBoxKey.enableNetLog, defaultValue: true);
+
   static bool get disableAudioCDN =>
       _setting.get(SettingBoxKey.disableAudioCDN, defaultValue: false);
+
+  static bool get enableCdnAutoSwitch =>
+      _setting.get(SettingBoxKey.enableCdnAutoSwitch, defaultValue: false);
 
   static int get minDurationForRcmd =>
       _setting.get(SettingBoxKey.minDurationForRcmd, defaultValue: 0);
@@ -798,7 +804,20 @@ abstract final class Pref {
       _setting.get(SettingBoxKey.enableLongShowControl, defaultValue: false);
 
   static bool get expandBuffer =>
-      _setting.get(SettingBoxKey.expandBuffer, defaultValue: false);
+      _setting.get(SettingBoxKey.expandBuffer, defaultValue: true);
+
+  static bool get showBufferTime =>
+      _setting.get(SettingBoxKey.showBufferTime, defaultValue: false);
+
+  static bool get showBufferAhead =>
+      _setting.get(SettingBoxKey.showBufferAhead, defaultValue: true);
+
+  static bool get showBufferSpeed =>
+      _setting.get(SettingBoxKey.showBufferSpeed, defaultValue: true);
+
+  /// 排序: 逗号分隔的 id 列表，如 "ahead,speed,time"
+  static String get bufferInfoOrder =>
+      _setting.get(SettingBoxKey.bufferInfoOrder, defaultValue: 'ahead,speed,time');
 
   static String get audioOutput => _setting.get(
     SettingBoxKey.audioOutput,

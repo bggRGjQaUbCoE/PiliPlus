@@ -230,8 +230,8 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: main
-      resolved-ref: af10fe3cd4d1f7071988f4d9d13cc17616f4de30
+      ref: dom
+      resolved-ref: dd75f0a2d01e1c5f1934424410e28499e8079190
       url: "https://github.com/bggRGjQaUbCoE/canvas_danmaku.git"
     source: git
     version: "0.2.6"

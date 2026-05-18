@@ -22,7 +22,6 @@ import 'package:PiliPlus/pages/live_room/send_danmaku/view.dart';
 import 'package:PiliPlus/pages/video/widgets/header_control.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/models/data_source.dart';
-import 'package:PiliPlus/plugin/pl_player/utils/danmaku_options.dart';
 import 'package:PiliPlus/services/service_locator.dart';
 import 'package:PiliPlus/tcp/live.dart';
 import 'package:PiliPlus/utils/accounts.dart';
@@ -49,7 +48,7 @@ class LiveRoomController extends GetxController {
 
   int roomId = Get.arguments;
   int? ruid;
-  DanmakuController<DanmakuExtra>? danmakuController;
+  DanmakuController? danmakuController;
   final plPlayerController = PlPlayerController.getInstance(isLive: true);
 
   final isLoaded = false.obs;
@@ -407,7 +406,7 @@ class LiveRoomController extends GetxController {
           ..init();
   }
 
-  void addDm(dynamic msg, [DanmakuContentItem<DanmakuExtra>? item]) {
+  void addDm(dynamic msg, [DanmakuContentItem? item]) {
     if (plPlayerController.showDanmaku) {
       if (item != null) {
         danmakuController?.addDanmaku(item);
@@ -473,13 +472,10 @@ class LiveRoomController extends GetxController {
             ),
             DanmakuContentItem(
               msg,
-              color: DanmakuOptions.blockColorful
-                  ? Colors.white
-                  : DmUtils.decimalToColor(extra['color']),
+              color: DmUtils.decimalToColor(extra['color']),
               type: DmUtils.getPosition(extra['mode']),
               // extra['send_from_me'] is invalid
               selfSend: isLogin && uid == mid,
-              extra: liveExtra,
             ),
           );
           break;

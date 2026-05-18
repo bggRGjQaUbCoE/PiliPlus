@@ -1443,49 +1443,4 @@ class VideoDetailController extends GetxController
       ),
     );
   }
-
-  @pragma('vm:notify-debugger-on-exception')
-  Future<void> onCast() async {
-    SmartDialog.showLoading();
-    final res = await VideoHttp.tvPlayUrl(
-      cid: cid.value,
-      objectId: epId ?? aid,
-      playurlType: epId != null ? 2 : 1,
-      qn: currentVideoQa.value?.code,
-    );
-    SmartDialog.dismiss();
-    if (res case Success(:final response)) {
-      final first = response.durl?.firstOrNull;
-      if (first == null || first.playUrls.isEmpty) {
-        SmartDialog.showToast('不支持投屏');
-        return;
-      }
-      final url = VideoUtils.getCdnUrl(first.playUrls);
-
-      String? title;
-      try {
-        if (isUgc) {
-          title = Get.find<UgcIntroController>(
-            tag: heroTag,
-          ).videoDetail.value.title;
-        } else {
-          title = Get.find<PgcIntroController>(
-            tag: heroTag,
-          ).videoDetail.value.title;
-        }
-      } catch (_) {}
-      if (kDebugMode) {
-        debugPrint(title);
-      }
-      Get.toNamed(
-        '/dlna',
-        parameters: {
-          'url': url,
-          'title': ?title,
-        },
-      );
-    } else {
-      res.toast();
-    }
-  }
 }

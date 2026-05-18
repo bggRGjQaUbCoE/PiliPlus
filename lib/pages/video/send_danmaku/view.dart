@@ -6,9 +6,7 @@ import 'package:PiliPlus/http/danmaku.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/publish_panel_type.dart';
 import 'package:PiliPlus/pages/common/publish/common_text_pub_page.dart';
-import 'package:PiliPlus/pages/danmaku/danmaku_model.dart';
 import 'package:PiliPlus/pages/setting/slide_color_picker.dart';
-import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:canvas_danmaku/models/danmaku_content_item.dart';
 import 'package:flutter/material.dart';
@@ -22,7 +20,7 @@ class SendDanmakuPanel extends CommonTextPubPage {
   final dynamic bvid;
   final dynamic progress;
 
-  final ValueChanged<DanmakuContentItem<DanmakuExtra>> onSuccess;
+  final ValueChanged<DanmakuContentItem> onSuccess;
 
   // config
   final ({int? mode, int? fontSize, Color? color})? dmConfig;
@@ -460,17 +458,10 @@ class _SendDanmakuPanelState extends CommonTextPubPageState<SendDanmakuPanel> {
       colorful: isColorful,
     );
     SmartDialog.dismiss();
-    if (res case Success(:final response)) {
+    if (res is Success) {
       hasPub = true;
       Get.back();
       SmartDialog.showToast('发送成功');
-      VideoDanmaku? extra;
-      if (response.dmid case final dmid?) {
-        extra = VideoDanmaku(
-          id: dmid,
-          mid: PlPlayerController.instance!.midHash,
-        );
-      }
       widget.onSuccess(
         DanmakuContentItem(
           editController.text,
@@ -482,7 +473,6 @@ class _SendDanmakuPanelState extends CommonTextPubPageState<SendDanmakuPanel> {
           },
           selfSend: true,
           isColorful: isColorful,
-          extra: extra,
         ),
       );
     } else {

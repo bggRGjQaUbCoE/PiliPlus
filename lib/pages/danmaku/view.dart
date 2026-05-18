@@ -1,8 +1,5 @@
-import 'dart:convert';
-
 import 'package:PiliPlus/grpc/bilibili/community/service/dm/v1.pb.dart';
 import 'package:PiliPlus/pages/danmaku/controller.dart';
-import 'package:PiliPlus/pages/danmaku/danmaku_model.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
 import 'package:PiliPlus/plugin/pl_player/utils/danmaku_options.dart';
@@ -40,7 +37,7 @@ class _PlDanmakuState extends State<PlDanmaku> {
   PlPlayerController get playerController => widget.playerController;
 
   late final PlDanmakuController _plDanmakuController;
-  DanmakuController<DanmakuExtra>? _controller;
+  DanmakuController? _controller;
   int latestAddedPosition = -1;
 
   @override
@@ -113,42 +110,17 @@ class _PlDanmakuState extends State<PlDanmaku> {
     List<DanmakuElem>? currentDanmakuList = _plDanmakuController
         .getCurrentDanmaku(currentPosition);
     if (currentDanmakuList != null) {
-      final blockColorful = DanmakuOptions.blockColorful;
       for (DanmakuElem e in currentDanmakuList) {
-        if (e.mode == 7) {
-          try {
-            _controller!.addDanmaku(
-              SpecialDanmakuContentItem.fromList(
-                DmUtils.decimalToColor(e.color),
-                e.fontsize.toDouble(),
-                jsonDecode(e.content.replaceAll('\n', '\\n')),
-                extra: VideoDanmaku(
-                  id: e.id.toInt(),
-                  mid: e.midHash,
-                  like: e.likeCount.toInt(),
-                ),
-              ),
-            );
-          } catch (_) {}
-        } else {
-          _controller!.addDanmaku(
-            DanmakuContentItem(
-              e.content,
-              color: blockColorful
-                  ? Colors.white
-                  : DmUtils.decimalToColor(e.color),
-              type: DmUtils.getPosition(e.mode),
-              isColorful: e.colorful == DmColorfulType.VipGradualColor,
-              count: e.count > 1 ? e.count : null,
-              selfSend: e.isSelf,
-              extra: VideoDanmaku(
-                id: e.id.toInt(),
-                mid: e.midHash,
-                like: e.likeCount.toInt(),
-              ),
-            ),
-          );
-        }
+        _controller!.addDanmaku(
+          DanmakuContentItem(
+            e.content,
+            color: DmUtils.decimalToColor(e.color),
+            type: DmUtils.getPosition(e.mode),
+            isColorful: e.colorful == DmColorfulType.VipGradualColor,
+            count: e.count > 1 ? e.count : null,
+            selfSend: e.isSelf,
+          ),
+        );
       }
     }
   }
@@ -175,7 +147,7 @@ class _PlDanmakuState extends State<PlDanmaku> {
             ? playerController.danmakuOpacity.value
             : 0,
         duration: const Duration(milliseconds: 100),
-        child: DanmakuScreen<DanmakuExtra>(
+        child: DanmakuScreen(
           createdController: (e) {
             playerController.danmakuController = _controller = e;
           },

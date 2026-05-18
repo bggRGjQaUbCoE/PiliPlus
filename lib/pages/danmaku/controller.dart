@@ -70,6 +70,8 @@ class PlDanmakuController {
     final danmakuWeight = DanmakuOptions.danmakuWeight;
     final shouldFilter = filters.count != 0;
     for (final element in elems) {
+      if (element.mode == 7) continue;
+
       if (_isLogin) {
         element.isSelf = element.midHash == _plPlayerController.midHash;
       }

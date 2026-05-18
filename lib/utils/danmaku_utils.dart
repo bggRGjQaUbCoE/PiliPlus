@@ -10,7 +10,6 @@ abstract final class DmUtils {
   static DanmakuItemType getPosition(int mode) => switch (mode) {
     4 => DanmakuItemType.bottom,
     5 => DanmakuItemType.top,
-    7 => DanmakuItemType.special,
     _ => DanmakuItemType.scroll,
   };
 }

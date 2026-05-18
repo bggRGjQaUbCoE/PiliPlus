@@ -6,7 +6,6 @@ import 'package:canvas_danmaku/canvas_danmaku.dart';
 
 abstract final class DanmakuOptions {
   static final Set<int> blockTypes = Pref.danmakuBlockType;
-  static bool blockColorful = blockTypes.contains(6);
 
   static int danmakuWeight = Pref.danmakuWeight;
   static double danmakuFontScaleFS = Pref.danmakuFontScaleFS;
@@ -36,7 +35,6 @@ abstract final class DanmakuOptions {
       hideBottom: blockTypes.contains(4),
       hideScroll: blockTypes.contains(2),
       hideTop: blockTypes.contains(5),
-      hideSpecial: blockTypes.contains(7),
       strokeWidth: danmakuStrokeWidth,
       scrollFixedVelocity: danmakuFixedV,
       massiveMode: danmakuMassiveMode,

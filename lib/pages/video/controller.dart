@@ -765,6 +765,7 @@ class VideoDetailController extends GetxController
           : NetworkSource(
               videoSource: video ?? videoUrl!,
               audioSource: audio ?? audioUrl,
+              qualityCode: currentVideoQa.value?.code,
             ),
       seekTo: seek,
       duration:
@@ -1073,9 +1074,8 @@ class VideoDetailController extends GetxController
   // 设定字幕轨道
   Future<void> setSubtitle(int index) async {
     if (index <= 0) {
-      await plPlayerController.videoPlayerController?.setSubtitleTrack(
-        SubtitleTrack.no(),
-      );
+      await plPlayerController.setSubtitleTrack(SubtitleTrack.no());
+      plPlayerController.setExternalSubtitleData(null);
       vttSubtitlesIndex.value = index;
       return;
     }
@@ -1090,7 +1090,11 @@ class VideoDetailController extends GetxController
         file = File(subUri);
         if (!file.existsSync()) {
           await file.writeAsString(subtitle.id);
-          if (plPlayerController.videoPlayerController?.disposed == false) {
+          if (plPlayerController.isAndroidHdrBackend) {
+            // The HDR backend reads timed text in Flutter; keep the temp file
+            // for the current process and let the OS clean it if needed.
+          } else if (plPlayerController.videoPlayerController?.disposed ==
+              false) {
             plPlayerController.videoPlayerController!.release.add(file.tryDel);
           } else {
             file.tryDel();
@@ -1098,9 +1102,10 @@ class VideoDetailController extends GetxController
           }
         }
       }
-      await plPlayerController.videoPlayerController?.setSubtitleTrack(
+      await plPlayerController.setSubtitleTrack(
         SubtitleTrack(subUri, sub.lanDoc, sub.lan, uri: true),
       );
+      plPlayerController.setExternalSubtitleData(subtitle.id);
       vttSubtitlesIndex.value = index;
     }
 

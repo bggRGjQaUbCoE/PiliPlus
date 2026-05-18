@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
+import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
 import 'package:flutter/material.dart';
-import 'package:media_kit/media_kit.dart';
 
 class PlayOrPauseButton extends StatefulWidget {
   final PlPlayerController plPlayerController;
@@ -19,20 +19,18 @@ class PlayOrPauseButton extends StatefulWidget {
 class PlayOrPauseButtonState extends State<PlayOrPauseButton>
     with SingleTickerProviderStateMixin {
   late final AnimationController controller;
-  late final StreamSubscription<bool> subscription;
-  late Player player;
+  StreamSubscription? subscription;
 
   @override
   void initState() {
     super.initState();
-    player = widget.plPlayerController.videoPlayerController!;
     controller = AnimationController(
       vsync: this,
-      value: player.state.playing ? 1 : 0,
+      value: widget.plPlayerController.playerStatus.isPlaying ? 1 : 0,
       duration: const Duration(milliseconds: 200),
     );
-    subscription = player.stream.playing.listen((playing) {
-      if (playing) {
+    subscription = widget.plPlayerController.playerStatus.listen((status) {
+      if (status == PlayerStatus.playing) {
         controller.forward();
       } else {
         controller.reverse();
@@ -42,7 +40,7 @@ class PlayOrPauseButtonState extends State<PlayOrPauseButton>
 
   @override
   void dispose() {
-    subscription.cancel();
+    subscription?.cancel();
     controller.dispose();
     super.dispose();
   }
@@ -57,7 +55,9 @@ class PlayOrPauseButtonState extends State<PlayOrPauseButton>
         onTap: widget.plPlayerController.onDoubleTapCenter,
         child: Center(
           child: AnimatedIcon(
-            semanticLabel: player.state.playing ? '暂停' : '播放',
+            semanticLabel: widget.plPlayerController.playerStatus.isPlaying
+                ? '暂停'
+                : '播放',
             progress: controller,
             icon: AnimatedIcons.play_pause,
             color: Colors.white,

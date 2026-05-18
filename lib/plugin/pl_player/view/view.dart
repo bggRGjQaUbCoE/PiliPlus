@@ -131,7 +131,6 @@ class PLVideoPlayer extends StatefulWidget {
 class _PLVideoPlayerState extends State<PLVideoPlayer>
     with WidgetsBindingObserver, TickerProviderStateMixin {
   late AnimationController _animationController;
-  late VideoController videoController;
   late final CommonIntroController introController = widget.introController!;
   late final VideoDetailController videoDetailController =
       widget.videoDetailController!;
@@ -217,8 +216,6 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       vsync: this,
       duration: const Duration(milliseconds: 100),
     );
-    videoController = plPlayerController.videoController!;
-
     if (PlatformUtils.isMobile) {
       Future.microtask(() async {
         try {
@@ -305,16 +302,15 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (!plPlayerController.continuePlayInBackground.value) {
-      late final player = plPlayerController.videoPlayerController;
       if (const <AppLifecycleState>[.paused, .detached].contains(state)) {
-        if (player != null && player.state.playing) {
+        if (plPlayerController.playerStatus.isPlaying) {
           _pauseDueToPauseUponEnteringBackgroundMode = true;
-          player.pause();
+          plPlayerController.pause();
         }
       } else {
         if (_pauseDueToPauseUponEnteringBackgroundMode) {
           _pauseDueToPauseUponEnteringBackgroundMode = false;
-          player?.play();
+          plPlayerController.play();
         }
       }
     }
@@ -470,7 +466,9 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                       height: 35,
                       padding: const EdgeInsets.only(left: 30),
                       value: type,
-                      onTap: () => plPlayerController.setShader(type),
+                      onTap: () async {
+                        await plPlayerController.setShader(type);
+                      },
                       child: Text(
                         type.label,
                         style: const TextStyle(
@@ -1379,12 +1377,34 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
             child: IgnorePointer(
               ignoring: !plPlayerController.enableDragSubtitle,
               child: Obx(
-                () => SubtitleView(
-                  controller: videoController,
-                  configuration: plPlayerController.subtitleConfig.value,
-                  enableDragSubtitle: plPlayerController.enableDragSubtitle,
-                  onUpdatePadding: plPlayerController.onUpdatePadding,
-                ),
+                () {
+                  if (plPlayerController.isAndroidHdrBackend) {
+                    final text = plPlayerController.currentSubtitleText.value;
+                    if (text.isEmpty) return const SizedBox.shrink();
+                    final config = plPlayerController.subtitleConfig.value;
+                    return Padding(
+                      padding: config.padding,
+                      child: Align(
+                        alignment: Alignment.bottomCenter,
+                        child: Text(
+                          text,
+                          textAlign: TextAlign.center,
+                          style: config.style,
+                        ),
+                      ),
+                    );
+                  }
+                  final videoController = plPlayerController.videoController;
+                  if (videoController == null) {
+                    return const SizedBox.shrink();
+                  }
+                  return SubtitleView(
+                    controller: videoController,
+                    configuration: plPlayerController.subtitleConfig.value,
+                    enableDragSubtitle: plPlayerController.enableDragSubtitle,
+                    onUpdatePadding: plPlayerController.onUpdatePadding,
+                  );
+                },
               ),
             ),
           ),
@@ -2055,21 +2075,38 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
           panAxis: .aligned,
           transformationController: _transformationController,
           childKey: _videoKey,
-          child: RepaintBoundary(
+          child: KeyedSubtree(
             key: _videoKey,
             child: Obx(
               () {
                 final videoFit = plPlayerController.videoFit.value;
-                return Transform.flip(
-                  flipX: plPlayerController.flipX.value,
-                  flipY: plPlayerController.flipY.value,
-                  child: FittedBox(
-                    fit: videoFit.boxFit,
-                    alignment: widget.alignment,
-                    child: SimpleVideo(
-                      controller: plPlayerController.videoController!,
-                      fill: widget.fill,
-                      aspectRatio: videoFit.aspectRatio,
+                final hdrBackend = plPlayerController.androidHdrBackend;
+                if (hdrBackend != null) {
+                  return SizedBox.expand(
+                    child:
+                        hdrBackend.buildView(
+                          fill: widget.fill,
+                          fit: videoFit,
+                        ) ??
+                        ColoredBox(color: widget.fill),
+                  );
+                }
+                final videoController = plPlayerController.videoController;
+                if (videoController == null) {
+                  return ColoredBox(color: widget.fill);
+                }
+                return RepaintBoundary(
+                  child: Transform.flip(
+                    flipX: plPlayerController.flipX.value,
+                    flipY: plPlayerController.flipY.value,
+                    child: FittedBox(
+                      fit: videoFit.boxFit,
+                      alignment: widget.alignment,
+                      child: SimpleVideo(
+                        controller: videoController,
+                        fill: widget.fill,
+                        aspectRatio: videoFit.aspectRatio,
+                      ),
                     ),
                   ),
                 );

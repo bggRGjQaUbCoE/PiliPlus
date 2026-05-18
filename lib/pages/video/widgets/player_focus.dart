@@ -58,7 +58,7 @@ class PlayerFocus extends StatelessWidget {
   }
 
   bool get isFullScreen => plPlayerController.isFullScreen.value;
-  bool get hasPlayer => plPlayerController.videoPlayerController != null;
+  bool get hasPlayer => plPlayerController.hasVideoView;
 
   void _setVolume({required bool isIncrease}) {
     final volume = isIncrease
@@ -204,10 +204,7 @@ class PlayerFocus extends StatelessWidget {
         case LogicalKeyboardKey.keyM:
           if (hasPlayer) {
             final isMuted = !plPlayerController.isMuted;
-            plPlayerController.videoPlayerController!.setVolume(
-              isMuted ? 0 : plPlayerController.volume.value * 100,
-            );
-            plPlayerController.isMuted = isMuted;
+            plPlayerController.setMuted(isMuted);
             SmartDialog.showToast('${isMuted ? '' : '取消'}静音');
           }
           return true;

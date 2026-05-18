@@ -699,7 +699,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                               : Positioned.fill(
                                   bottom: -2,
                                   child: GestureDetector(
-                                    onTap: () async {
+                                    onTap: () {
                                       if (!videoDetailController.isFileSource) {
                                         if (videoDetailController.isQuerying) {
                                           if (kDebugMode) {
@@ -729,21 +729,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                                               null) {
                                         handlePlay();
                                       } else {
-                                        if (plPlayerController!
-                                            .videoPlayerController!
-                                            .state
-                                            .completed) {
-                                          await plPlayerController!
-                                              .videoPlayerController!
-                                              .seek(Duration.zero);
-                                          plPlayerController!
-                                              .videoPlayerController!
-                                              .play();
-                                        } else {
-                                          plPlayerController!
-                                              .videoPlayerController!
-                                              .playOrPause();
-                                        }
+                                        plPlayerController!.onDoubleTapCenter();
                                       }
                                     },
                                     behavior: HitTestBehavior.opaque,
@@ -1271,7 +1257,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
       () =>
           !videoDetailController.videoState.value ||
               !videoDetailController.autoPlay ||
-              plPlayerController?.videoController == null
+              plPlayerController?.hasVideoView != true
           ? const SizedBox.shrink()
           : PLVideoPlayer(
               maxWidth: width,

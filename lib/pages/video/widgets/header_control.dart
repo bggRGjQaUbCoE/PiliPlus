@@ -470,8 +470,8 @@ class HeaderControlState extends State<HeaderControl>
                   itemBuilder: (_) => enumItemBuilder(
                     SuperResolutionType.values,
                   ),
-                  onSelected: (value, setState) {
-                    plPlayerController.setShader(value);
+                  onSelected: (value, setState) async {
+                    await plPlayerController.setShader(value);
                     setState();
                   },
                   descFontSize: 12,
@@ -516,8 +516,7 @@ class HeaderControlState extends State<HeaderControl>
                           final flipX = plPlayerController.flipX.value;
                           return ActionRowLineItem(
                             iconData: Icons.flip,
-                            onTap: () =>
-                                plPlayerController.flipX.value = !flipX,
+                            onTap: () => plPlayerController.setFlipX(!flipX),
                             text: " 左右翻转 ",
                             selectStatus: flipX,
                           );
@@ -534,9 +533,7 @@ class HeaderControlState extends State<HeaderControl>
                                   ? theme.colorScheme.onSecondaryContainer
                                   : theme.colorScheme.outline,
                             ),
-                            onTap: () {
-                              plPlayerController.flipY.value = !flipY;
-                            },
+                            onTap: () => plPlayerController.setFlipY(!flipY),
                             text: " 上下翻转 ",
                             selectStatus: flipY,
                           );
@@ -553,10 +550,11 @@ class HeaderControlState extends State<HeaderControl>
                                 plPlayerController.onlyPlayAudio.value;
                             return ActionRowLineItem(
                               iconData: Icons.headphones,
-                              onTap: () {
-                                plPlayerController.onlyPlayAudio.value =
-                                    !onlyPlayAudio;
-                                widget.videoDetailCtr.playerInit();
+                              onTap: () async {
+                                await plPlayerController.setOnlyPlayAudio();
+                                if (!plPlayerController.isAndroidHdrBackend) {
+                                  widget.videoDetailCtr.playerInit();
+                                }
                               },
                               text: " 听视频 ",
                               selectStatus: onlyPlayAudio,

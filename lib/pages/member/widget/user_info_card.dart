@@ -577,7 +577,8 @@ class UserInfoCard extends StatelessWidget {
   ) {
     if (imgUrls.length == 1) {
       final img = imgUrls.first;
-      return _buildHeader(
+      final title = img.title;
+      Widget child = _buildHeader(
         context,
         isLight,
         width,
@@ -586,6 +587,20 @@ class UserInfoCard extends StatelessWidget {
         fullCover: img.fullCover,
         alignment: Alignment(0.0, img.dy),
       );
+      if (title != null) {
+        return Stack(
+          clipBehavior: .none,
+          children: [
+            child,
+            Positioned(
+              right: 0,
+              bottom: 0,
+              child: _headerWrapper(_headerTitle(title)),
+            ),
+          ],
+        );
+      }
+      return child;
     }
     final controller = headerControllerBuilder();
     final memCacheWidth = width.cacheSize(context);
@@ -597,6 +612,7 @@ class UserInfoCard extends StatelessWidget {
         onPageChanged: controller.jumpToPage,
       ),
       child: Stack(
+        clipBehavior: .none,
         children: [
           SizedBox(
             width: .infinity,
@@ -628,30 +644,10 @@ class UserInfoCard extends StatelessWidget {
           Positioned(
             right: 0,
             bottom: 3.5,
-            child: IgnorePointer(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 125),
-                child: DecoratedBox(
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: .centerLeft,
-                      end: .centerRight,
-                      colors: [
-                        Colors.transparent,
-                        Colors.black12,
-                        Colors.black38,
-                        Colors.black45,
-                      ],
-                    ),
-                  ),
-                  child: Padding(
-                    padding: const .only(left: 15, right: 5, bottom: 2),
-                    child: HeaderTitle(
-                      images: imgUrls,
-                      pageController: controller,
-                    ),
-                  ),
-                ),
+            child: _headerWrapper(
+              HeaderTitle(
+                images: imgUrls,
+                pageController: controller,
               ),
             ),
           ),
@@ -1042,36 +1038,66 @@ class _HeaderTitleState extends State<HeaderTitle> {
   Widget build(BuildContext context) {
     final title = widget.images[_index].title;
     if (title == null) return const SizedBox.shrink();
-    try {
-      return Column(
-        crossAxisAlignment: .end,
-        children: [
-          Text(
-            title.title!,
-            maxLines: 1,
-            overflow: .ellipsis,
-            style: const TextStyle(fontSize: 12, color: Colors.white),
-          ),
-          if (title.subTitle?.isNotEmpty ?? false)
-            Text(
-              title.subTitle!,
-              style: TextStyle(
-                fontSize: 12,
-                fontFamily: Assets.digitalNum,
-                color: title.subTitleColorFormat?.colors?.isNotEmpty == true
-                    ? ColourUtils.parseMedalColor(
-                        title.subTitleColorFormat!.colors!.last,
-                      )
-                    : Colors.white,
-              ),
-            ),
-        ],
-      );
-    } catch (e, s) {
-      if (kDebugMode) {
-        Utils.reportError(e, s);
-      }
-      return const SizedBox.shrink();
-    }
+    return _headerTitle(title);
   }
+}
+
+Widget _headerTitle(TopTitle title) {
+  try {
+    return Column(
+      crossAxisAlignment: .end,
+      children: [
+        Text(
+          title.title!,
+          maxLines: 1,
+          overflow: .ellipsis,
+          style: const TextStyle(fontSize: 12, color: Colors.white),
+        ),
+        if (title.subTitle?.isNotEmpty ?? false)
+          Text(
+            title.subTitle!,
+            style: TextStyle(
+              fontSize: 12,
+              fontFamily: Assets.digitalNum,
+              color: title.subTitleColorFormat?.colors?.isNotEmpty == true
+                  ? ColourUtils.parseMedalColor(
+                      title.subTitleColorFormat!.colors!.last,
+                    )
+                  : Colors.white,
+            ),
+          ),
+      ],
+    );
+  } catch (e, s) {
+    if (kDebugMode) {
+      Utils.reportError(e, s);
+    }
+    return const SizedBox.shrink();
+  }
+}
+
+Widget _headerWrapper(Widget child) {
+  return IgnorePointer(
+    child: ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 125),
+      child: DecoratedBox(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: .centerLeft,
+            end: .centerRight,
+            colors: [
+              Colors.transparent,
+              Colors.black12,
+              Colors.black38,
+              Colors.black45,
+            ],
+          ),
+        ),
+        child: Padding(
+          padding: const .only(left: 15, right: 5, bottom: 2),
+          child: child,
+        ),
+      ),
+    ),
+  );
 }

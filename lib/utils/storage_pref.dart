@@ -982,4 +982,7 @@ abstract final class Pref {
 
   static bool get removeSafeArea =>
       _setting.get(SettingBoxKey.removeSafeArea, defaultValue: false);
+
+  static int get angleDegrees =>
+      _setting.get(SettingBoxKey.angleDegrees, defaultValue: 30);
 }

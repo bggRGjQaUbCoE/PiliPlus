@@ -230,7 +230,7 @@ packages:
     description:
       path: "."
       ref: main
-      resolved-ref: af10fe3cd4d1f7071988f4d9d13cc17616f4de30
+      resolved-ref: b442c6c8309a17d8b9d395d08eadc401b42f4f8f
       url: "https://github.com/bggRGjQaUbCoE/canvas_danmaku.git"
     source: git
     version: "0.2.6"
@@ -734,7 +734,7 @@ packages:
     description:
       path: "."
       ref: main
-      resolved-ref: b87bda5672e1c8494853bb44bbf08515ef748bca
+      resolved-ref: "1dbede0ee22f161ec2c928e1e82f0ae9339a097d"
       url: "https://github.com/bggRGjQaUbCoE/flutter_smart_dialog.git"
     source: git
     version: "5.1.0"
@@ -1035,10 +1035,10 @@ packages:
     dependency: "direct main"
     description:
       name: json_annotation
-      sha256: cb09e7dac6210041fad964ed7fbee004f14258b4eca4040f72d1234062ace4c8
+      sha256: "2a743920d81b7910627f68ee2c9ac1fc0bfee32b9fc3403587d7c6791ca12f80"
       url: "https://pub.dev"
     source: hosted
-    version: "4.11.0"
+    version: "4.12.0"
   leak_tracker:
     dependency: transitive
     description:
@@ -1252,7 +1252,7 @@ packages:
     description:
       path: "."
       ref: master
-      resolved-ref: a987a459f17af0002397e49800ba4f68912b375c
+      resolved-ref: "9cbe7c07a697a199b36ab050248091a3aab8dd3f"
       url: "https://github.com/bggRGjQaUbCoE/flutter_native_device_orientation.git"
     source: git
     version: "2.0.5"
@@ -1531,11 +1531,10 @@ packages:
   screen_brightness_android:
     dependency: "direct overridden"
     description:
-      path: screen_brightness_android
-      ref: dev
-      resolved-ref: "9823a66d9a0af8d9f5d0d9e98f87bb17e399235e"
-      url: "https://github.com/bggRGjQaUbCoE/screen_brightness.git"
-    source: git
+      name: screen_brightness_android
+      sha256: "2df5e0488a22a73271a43d92dbcd80643df6910cf69690faacaf9929ae9ade3b"
+      url: "https://pub.dev"
+    source: hosted
     version: "2.1.4"
   screen_brightness_ios:
     dependency: "direct overridden"
@@ -1548,11 +1547,10 @@ packages:
   screen_brightness_platform_interface:
     dependency: "direct main"
     description:
-      path: screen_brightness_platform_interface
-      ref: dev
-      resolved-ref: "9823a66d9a0af8d9f5d0d9e98f87bb17e399235e"
-      url: "https://github.com/bggRGjQaUbCoE/screen_brightness.git"
-    source: git
+      name: screen_brightness_platform_interface
+      sha256: "59d50850d6735d677780fc7359c8e997d0ff6df91c8465161c9e617a7b0a11d8"
+      url: "https://pub.dev"
+    source: hosted
     version: "2.1.1"
   screen_retriever:
     dependency: "direct main"
@@ -1980,10 +1978,10 @@ packages:
     dependency: "direct main"
     description:
       name: wakelock_plus
-      sha256: "2b09acadd7a2862d33c3577e77e7a2aabb684f47ccca1711f1413bd7307a6a72"
+      sha256: "824c5bba0f800e86d32e57d3d1843c531f090005cc89d9a837933e6601093d53"
       url: "https://pub.dev"
     source: hosted
-    version: "1.6.0"
+    version: "1.6.1"
   wakelock_plus_platform_interface:
     dependency: transitive
     description:

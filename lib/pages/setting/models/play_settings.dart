@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'dart:io' show Platform;
 
 import 'package:PiliPlus/common/widgets/custom_icon.dart';
 import 'package:PiliPlus/models/common/super_chat_type.dart';
@@ -7,6 +7,7 @@ import 'package:PiliPlus/pages/main/controller.dart';
 import 'package:PiliPlus/pages/setting/models/model.dart';
 import 'package:PiliPlus/pages/setting/pages/fullscreen_sc_size.dart';
 import 'package:PiliPlus/pages/setting/widgets/select_dialog.dart';
+import 'package:PiliPlus/pages/setting/widgets/slider_dialog.dart';
 import 'package:PiliPlus/plugin/pl_player/models/bottom_progress_behavior.dart';
 import 'package:PiliPlus/plugin/pl_player/models/fullscreen_mode.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_repeat.dart';
@@ -42,6 +43,13 @@ List<SettingsModel> get playSettings => [
     title: '倍速设置',
     subtitle: '设置视频播放速度',
   ),
+  if (Platform.isAndroid)
+    NormalModel(
+      onTap: _showAngleDegreesDialog,
+      leading: const Icon(MdiIcons.angleAcute),
+      title: '倾斜角度阈值',
+      getSubtitle: () => '当前:「${Pref.angleDegrees}°」',
+    ),
   const SwitchModel(
     title: '自动播放',
     subtitle: '进入详情页自动播放',
@@ -343,6 +351,28 @@ Future<void> _showProgressBehaviorDialog(
       SettingBoxKey.btmProgressBehavior,
       res.index,
     );
+    setState();
+  }
+}
+
+Future<void> _showAngleDegreesDialog(
+  BuildContext context,
+  VoidCallback setState,
+) async {
+  final res = await showDialog<double>(
+    context: context,
+    builder: (context) => SliderDialog(
+      title: '倾斜角度阈值',
+      min: 10.0,
+      max: 90.0,
+      divisions: 90,
+      precise: 0,
+      value: Pref.angleDegrees.toDouble(),
+      suffix: '°',
+    ),
+  );
+  if (res != null) {
+    await GStorage.setting.put(SettingBoxKey.angleDegrees, res.toInt());
     setState();
   }
 }

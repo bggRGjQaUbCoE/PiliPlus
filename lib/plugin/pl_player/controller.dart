@@ -842,6 +842,16 @@ class PlPlayerController with BlockConfigMixin {
       onlyPlayAudio.value ||
       superResolutionType.value != SuperResolutionType.disable;
 
+  bool shouldUseAndroidHdrForCurrentSource([int? qualityCode]) {
+    final targetQuality = qualityCode ?? _currentQualityCode;
+    return Pref.androidHdrPlayback &&
+        Platform.isAndroid &&
+        !isLive &&
+        targetQuality != null &&
+        _hdrQualityCodes.contains(targetQuality) &&
+        !_requiresMpvOnlyFeature;
+  }
+
   Future<bool> _shouldUseAndroidHdrBackend() async {
     final enabled = Pref.androidHdrPlayback;
     final android = Platform.isAndroid;

@@ -71,32 +71,48 @@ class HdrPlayerPlugin private constructor(
                     val qualityCode = call.argument<Number>("qualityCode")?.toInt()
                     result.success(supportsHdr(activity, qualityCode))
                 }
-                "open" -> session(call)?.open(call, result)
+                "open" -> {
+                    val session = requireSession(call, result) ?: return
+                    session.open(call, result)
+                }
                 "play" -> {
-                    session(call)?.play()
+                    val session = requireSession(call, result) ?: return
+                    session.play()
                     result.success(null)
                 }
                 "pause" -> {
-                    session(call)?.pause()
+                    val session = requireSession(call, result) ?: return
+                    session.pause()
                     result.success(null)
                 }
                 "seekTo" -> {
-                    session(call)?.seekTo(call.argument<Number>("positionMs")?.toLong() ?: 0L)
+                    val session = requireSession(call, result) ?: return
+                    session.seekTo(call.argument<Number>("positionMs")?.toLong() ?: 0L)
                     result.success(null)
                 }
                 "setPlaybackSpeed" -> {
-                    session(call)?.setPlaybackSpeed(call.argument<Number>("speed")?.toFloat() ?: 1f)
+                    val session = requireSession(call, result) ?: return
+                    session.setPlaybackSpeed(call.argument<Number>("speed")?.toFloat() ?: 1f)
+                    result.success(null)
+                }
+                "setVolume" -> {
+                    val session = requireSession(call, result) ?: return
+                    session.setVolume(call.argument<Number>("volume")?.toFloat() ?: 1f)
                     result.success(null)
                 }
                 "setFitMode" -> {
-                    session(call)?.setFitMode(call.argument<String>("fitMode") ?: "contain")
+                    val session = requireSession(call, result) ?: return
+                    session.setFitMode(call.argument<String>("fitMode") ?: "contain")
                     result.success(null)
                 }
                 "setHdrMode" -> {
                     updateHdrMode(call.argument<Boolean>("enabled") == true)
                     result.success(null)
                 }
-                "screenshot" -> session(call)?.screenshot(result)
+                "screenshot" -> {
+                    val session = requireSession(call, result) ?: return
+                    session.screenshot(result)
+                }
                 "dispose" -> {
                     val sessionId = call.argument<Int>("sessionId")
                     if (sessionId != null) {
@@ -123,6 +139,21 @@ class HdrPlayerPlugin private constructor(
     private fun session(call: MethodCall): HdrPlayerSession? {
         val sessionId = call.argument<Int>("sessionId") ?: return null
         return sessions[sessionId]
+    }
+
+    private fun requireSession(
+        call: MethodCall,
+        result: MethodChannel.Result,
+    ): HdrPlayerSession? {
+        val sessionId = call.argument<Int>("sessionId")
+        if (sessionId == null) {
+            result.error("missing_session", "sessionId is required", null)
+            return null
+        }
+        return sessions[sessionId] ?: run {
+            result.error("invalid_session", "session $sessionId does not exist", null)
+            null
+        }
     }
 
     private fun sendEvent(sessionId: Int, type: String, data: Map<String, Any?> = emptyMap()) {
@@ -265,6 +296,10 @@ private class HdrPlayerSession(
 
     fun setPlaybackSpeed(speed: Float) {
         player.setPlaybackSpeed(speed.coerceAtLeast(0.1f))
+    }
+
+    fun setVolume(volume: Float) {
+        player.volume = volume.coerceIn(0f, 1f)
     }
 
     fun setFitMode(fitMode: String) {

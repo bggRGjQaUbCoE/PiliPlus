@@ -2042,11 +2042,8 @@ class PlPlayerController with BlockConfigMixin {
     if (kDebugMode) {
       debugPrint('dispose player');
     }
-    _videoPlayerController?.dispose();
-    _androidHdrBackend?.dispose();
-    _videoPlayerController = null;
-    _videoController = null;
-    _androidHdrBackend = null;
+    _disposeMediaKitPlayer();
+    _disposeAndroidHdrBackend();
     _instance = null;
     videoPlayerServiceHandler?.clear();
   }
@@ -2089,9 +2086,8 @@ class PlPlayerController with BlockConfigMixin {
 
   Future<void> setMuted(bool muted) async {
     isMuted = muted;
-    await _videoPlayerController?.setVolume(
-      muted ? 0 : volume.value * 100,
-    );
+    await (_androidHdrBackend?.setVolume(muted ? 0 : volume.value) ??
+        _videoPlayerController?.setVolume(muted ? 0 : volume.value * 100));
   }
 
   late final Map<String, ui.Image?> previewCache = {};

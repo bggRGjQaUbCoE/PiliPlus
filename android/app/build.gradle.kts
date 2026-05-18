@@ -91,33 +91,3 @@ dependencies {
     implementation("androidx.media3:media3-exoplayer-dash:1.10.0")
     implementation("androidx.media3:media3-ui:1.10.0")
 }
-
-tasks.register("patchGeneratedPluginRegistrant") {
-    val registrant = layout.projectDirectory.file(
-        "src/main/java/io/flutter/plugins/GeneratedPluginRegistrant.java"
-    )
-    inputs.file(registrant)
-    outputs.upToDateWhen { false }
-
-    doLast {
-        val file = registrant.asFile
-        if (!file.exists()) return@doLast
-        val source = file.readText()
-        val patched = source
-            .replace(
-                "io.flutter.plugins.sharedpreferences.SharedPreferencesPlugin",
-                "io.flutter.plugins.sharedpreferences.LegacySharedPreferencesPlugin",
-            )
-        if (patched != source) {
-            file.writeText(patched)
-        }
-    }
-}
-
-tasks.named("patchGeneratedPluginRegistrant").configure {
-    mustRunAfter(tasks.matching { it.name.startsWith("compileFlutterBuild") })
-}
-
-tasks.withType<JavaCompile>().configureEach {
-    dependsOn("patchGeneratedPluginRegistrant")
-}

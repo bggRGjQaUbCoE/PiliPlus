@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io' show Platform;
+import 'dart:typed_data';
 
 import 'package:PiliPlus/plugin/pl_player/models/data_source.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
@@ -9,7 +10,7 @@ import 'package:flutter/foundation.dart' show Factory;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter/services.dart' hide Uint8List;
 
 class AndroidHdrPlaybackBackend extends PlaybackBackend {
   AndroidHdrPlaybackBackend();
@@ -88,7 +89,10 @@ class AndroidHdrPlaybackBackend extends PlaybackBackend {
   );
 
   @override
-  Future<void> setVolume(double volume) async {}
+  Future<void> setVolume(double volume) => _invoke(
+    'setVolume',
+    {'volume': volume.clamp(0.0, 1.0)},
+  );
 
   Future<void> setFit(VideoFitType fit) => _invoke(
     'setFitMode',
@@ -160,13 +164,15 @@ class AndroidHdrPlaybackBackend extends PlaybackBackend {
   void _handleEvent(Map<dynamic, dynamic> event) {
     final type = event['type'] as String?;
     if (type == null) return;
-    PlaybackBackendEvent backendEvent;
     switch (type) {
       case 'ready':
-        backendEvent = const PlaybackBackendEvent(
-          ready: true,
-          buffering: false,
+        _events.add(
+          const PlaybackBackendEvent(
+            ready: true,
+            buffering: false,
+          ),
         );
+        return;
       case 'playing':
         _state = PlaybackStateSnapshot(
           playing: true,
@@ -177,10 +183,13 @@ class AndroidHdrPlaybackBackend extends PlaybackBackend {
           height: _state.height,
           rate: _state.rate,
         );
-        backendEvent = const PlaybackBackendEvent(
-          status: PlayerStatus.playing,
-          buffering: false,
+        _events.add(
+          const PlaybackBackendEvent(
+            status: PlayerStatus.playing,
+            buffering: false,
+          ),
         );
+        return;
       case 'paused':
         _state = PlaybackStateSnapshot(
           playing: false,
@@ -191,10 +200,13 @@ class AndroidHdrPlaybackBackend extends PlaybackBackend {
           height: _state.height,
           rate: _state.rate,
         );
-        backendEvent = const PlaybackBackendEvent(
-          status: PlayerStatus.paused,
-          buffering: false,
+        _events.add(
+          const PlaybackBackendEvent(
+            status: PlayerStatus.paused,
+            buffering: false,
+          ),
         );
+        return;
       case 'completed':
         _state = PlaybackStateSnapshot(
           playing: false,
@@ -205,11 +217,15 @@ class AndroidHdrPlaybackBackend extends PlaybackBackend {
           height: _state.height,
           rate: _state.rate,
         );
-        backendEvent = const PlaybackBackendEvent(
-          status: PlayerStatus.completed,
+        _events.add(
+          const PlaybackBackendEvent(
+            status: PlayerStatus.completed,
+          ),
         );
+        return;
       case 'buffering':
-        backendEvent = PlaybackBackendEvent(buffering: event['value'] == true);
+        _events.add(PlaybackBackendEvent(buffering: event['value'] == true));
+        return;
       case 'position':
         final position = _duration(event['positionMs']);
         final duration = _duration(event['durationMs']);
@@ -223,11 +239,14 @@ class AndroidHdrPlaybackBackend extends PlaybackBackend {
           height: _state.height,
           rate: _state.rate,
         );
-        backendEvent = PlaybackBackendEvent(
-          position: position,
-          duration: duration == Duration.zero ? null : duration,
-          buffered: buffered,
+        _events.add(
+          PlaybackBackendEvent(
+            position: position,
+            duration: duration == Duration.zero ? null : duration,
+            buffered: buffered,
+          ),
         );
+        return;
       case 'duration':
         final duration = _duration(event['durationMs']);
         _state = PlaybackStateSnapshot(
@@ -239,11 +258,15 @@ class AndroidHdrPlaybackBackend extends PlaybackBackend {
           height: _state.height,
           rate: _state.rate,
         );
-        backendEvent = PlaybackBackendEvent(duration: duration);
+        _events.add(PlaybackBackendEvent(duration: duration));
+        return;
       case 'buffered':
-        backendEvent = PlaybackBackendEvent(
-          buffered: _duration(event['bufferedMs']),
+        _events.add(
+          PlaybackBackendEvent(
+            buffered: _duration(event['bufferedMs']),
+          ),
         );
+        return;
       case 'size':
         final width = (event['width'] as num?)?.toInt() ?? 0;
         final height = (event['height'] as num?)?.toInt() ?? 0;
@@ -256,7 +279,8 @@ class AndroidHdrPlaybackBackend extends PlaybackBackend {
           height: height,
           rate: _state.rate,
         );
-        backendEvent = PlaybackBackendEvent(width: width, height: height);
+        _events.add(PlaybackBackendEvent(width: width, height: height));
+        return;
       case 'error':
         final message = event['message'] as String?;
         final errorCodeName = event['errorCodeName'] as String?;
@@ -264,20 +288,22 @@ class AndroidHdrPlaybackBackend extends PlaybackBackend {
         final rendererName = event['rendererName'] as String?;
         final rendererFormat = event['rendererFormat'] as String?;
         final isAudioError = event['isAudioError'] == true;
-        backendEvent = PlaybackBackendEvent(
-          error: [
-            if (isAudioError) 'AUDIO_RENDERER_ERROR',
-            if (errorCodeName?.isNotEmpty == true) errorCodeName,
-            if (rendererName?.isNotEmpty == true) rendererName,
-            if (rendererFormat?.isNotEmpty == true) rendererFormat,
-            if (message?.isNotEmpty == true) message,
-            if (cause?.isNotEmpty == true) cause,
-          ].join(' | '),
+        _events.add(
+          PlaybackBackendEvent(
+            error: [
+              if (isAudioError) 'AUDIO_RENDERER_ERROR',
+              if (errorCodeName?.isNotEmpty == true) errorCodeName,
+              if (rendererName?.isNotEmpty == true) rendererName,
+              if (rendererFormat?.isNotEmpty == true) rendererFormat,
+              if (message?.isNotEmpty == true) message,
+              if (cause?.isNotEmpty == true) cause,
+            ].join(' | '),
+          ),
         );
+        return;
       default:
         return;
     }
-    _events.add(backendEvent);
   }
 
   static Future<bool> supportsHdr({int? qualityCode}) async {

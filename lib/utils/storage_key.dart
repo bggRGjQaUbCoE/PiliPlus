@@ -52,7 +52,8 @@ abstract final class SettingBoxKey {
       followOrderType = 'followOrderType',
       enableImgMenu = 'enableImgMenu',
       touchSlopH = 'touchSlopH',
-      floatingNavBar = 'floatingNavBar';
+      floatingNavBar = 'floatingNavBar',
+      angleDegrees = 'angleDegrees';
 
   static const String windowSize = 'windowSize',
       windowPosition = 'windowPosition',

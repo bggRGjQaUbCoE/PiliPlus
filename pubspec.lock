@@ -1203,7 +1203,7 @@ packages:
     description:
       path: "."
       ref: master
-      resolved-ref: a987a459f17af0002397e49800ba4f68912b375c
+      resolved-ref: "2c74f4d534dfd9b8f66382f82b3540f32be9abd9"
       url: "https://github.com/bggRGjQaUbCoE/flutter_native_device_orientation.git"
     source: git
     version: "2.0.5"

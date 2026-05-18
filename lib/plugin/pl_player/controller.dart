@@ -487,7 +487,9 @@ class PlPlayerController with BlockConfigMixin {
   PlPlayerController._() {
     if (PlatformUtils.isMobile) {
       _orientationListener = NativeDeviceOrientationPlatform.instance
-          .onOrientationChanged(useSensor: Platform.isAndroid)
+          .onOrientationChanged(
+            angleDegrees: Platform.isAndroid ? Pref.angleDegrees : null,
+          )
           .listen(_onOrientationChanged);
     }
 

@@ -1,5 +1,8 @@
+import 'dart:io' show Platform;
+
 import 'package:PiliPlus/common/widgets/custom_icon.dart';
 import 'package:PiliPlus/pages/setting/models/model.dart';
+import 'package:PiliPlus/pages/setting/widgets/slider_dialog.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_repeat.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
@@ -7,6 +10,7 @@ import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
 List<SettingsModel> get playSettings => [
   const SwitchModel(
@@ -22,6 +26,13 @@ List<SettingsModel> get playSettings => [
     title: '倍速设置',
     subtitle: '设置视频播放速度',
   ),
+  if (Platform.isAndroid)
+    NormalModel(
+      onTap: _showAngleDegreesDialog,
+      leading: const Icon(MdiIcons.angleAcute),
+      title: '倾斜角度阈值',
+      getSubtitle: () => '当前:「${Pref.angleDegrees}°」',
+    ),
   SwitchModel(
     title: '全屏显示电池电量',
     leading: const Icon(Icons.battery_3_bar),
@@ -76,3 +87,25 @@ List<SettingsModel> get playSettings => [
         .whenComplete(setState),
   ),
 ];
+
+Future<void> _showAngleDegreesDialog(
+  BuildContext context,
+  VoidCallback setState,
+) async {
+  final res = await showDialog<double>(
+    context: context,
+    builder: (context) => SliderDialog(
+      title: '倾斜角度阈值',
+      min: 10.0,
+      max: 90.0,
+      divisions: 80,
+      precise: 0,
+      value: Pref.angleDegrees.toDouble(),
+      suffix: '°',
+    ),
+  );
+  if (res != null) {
+    await GStorage.setting.put(SettingBoxKey.angleDegrees, res.toInt());
+    setState();
+  }
+}

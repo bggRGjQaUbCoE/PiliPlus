@@ -518,4 +518,7 @@ abstract final class Pref {
 
   static bool get floatingNavBar =>
       _setting.get(SettingBoxKey.floatingNavBar, defaultValue: false);
+
+  static int get angleDegrees =>
+      _setting.get(SettingBoxKey.angleDegrees, defaultValue: 30);
 }

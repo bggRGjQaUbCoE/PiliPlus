@@ -1385,8 +1385,11 @@ class PlPlayerController with BlockConfigMixin {
 
   bool _isAndroidHdrAudioError(String event) {
     final text = event.toLowerCase();
-    return text.contains('audiorenderer') ||
+    return text.contains('audio_renderer_error') ||
+        text.contains('audiorenderer') ||
         text.contains('mediacodecaudiorenderer') ||
+        text.contains('audiosink') ||
+        text.contains('exoplayer.audio') ||
         text.contains('audio/') ||
         text.contains('dolby.eac3') ||
         text.contains('eac3') ||

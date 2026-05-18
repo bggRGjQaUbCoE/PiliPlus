@@ -262,9 +262,15 @@ class AndroidHdrPlaybackBackend extends PlaybackBackend {
         final message = event['message'] as String?;
         final errorCodeName = event['errorCodeName'] as String?;
         final cause = event['cause'] as String?;
+        final rendererName = event['rendererName'] as String?;
+        final rendererFormat = event['rendererFormat'] as String?;
+        final isAudioError = event['isAudioError'] == true;
         backendEvent = PlaybackBackendEvent(
           error: [
+            if (isAudioError) 'AUDIO_RENDERER_ERROR',
             if (errorCodeName?.isNotEmpty == true) errorCodeName,
+            if (rendererName?.isNotEmpty == true) rendererName,
+            if (rendererFormat?.isNotEmpty == true) rendererFormat,
             if (message?.isNotEmpty == true) message,
             if (cause?.isNotEmpty == true) cause,
           ].join(' | '),

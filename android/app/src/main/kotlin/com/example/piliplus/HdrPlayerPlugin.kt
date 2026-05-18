@@ -22,6 +22,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.datasource.HttpDataSource
+import androidx.media3.exoplayer.ExoPlaybackException
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.dash.DashMediaSource
 import androidx.media3.exoplayer.source.MergingMediaSource
@@ -336,6 +337,7 @@ private class HdrPlayerSession(
     }
 
     override fun onPlayerError(error: PlaybackException) {
+        val exoError = error as? ExoPlaybackException
         sendEvent(
             sessionId,
             "error",
@@ -344,8 +346,26 @@ private class HdrPlayerSession(
                 "errorCode" to error.errorCode,
                 "errorCodeName" to error.errorCodeName,
                 "cause" to error.cause?.toString(),
+                "rendererName" to exoError?.rendererName,
+                "rendererFormat" to exoError?.rendererFormat?.toString(),
+                "isAudioError" to isAudioPlaybackError(error),
             ),
         )
+    }
+
+    private fun isAudioPlaybackError(error: PlaybackException): Boolean {
+        val exoError = error as? ExoPlaybackException
+        if (exoError?.rendererName?.contains("audio", ignoreCase = true) == true) {
+            return true
+        }
+        val sampleMimeType = exoError?.rendererFormat?.sampleMimeType
+        if (sampleMimeType?.startsWith("audio/", ignoreCase = true) == true) {
+            return true
+        }
+        val stack = error.cause?.stackTraceToString() ?: error.stackTraceToString()
+        return stack.contains("exoplayer.audio", ignoreCase = true) ||
+            stack.contains("AudioRenderer", ignoreCase = true) ||
+            stack.contains("AudioSink", ignoreCase = true)
     }
 
     override fun onVideoSizeChanged(videoSize: androidx.media3.common.VideoSize) {

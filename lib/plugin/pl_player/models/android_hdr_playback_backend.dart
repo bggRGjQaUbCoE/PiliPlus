@@ -259,17 +259,29 @@ class AndroidHdrPlaybackBackend extends PlaybackBackend {
         );
         backendEvent = PlaybackBackendEvent(width: width, height: height);
       case 'error':
-        backendEvent = PlaybackBackendEvent(error: event['message'] as String?);
+        final message = event['message'] as String?;
+        final errorCodeName = event['errorCodeName'] as String?;
+        final cause = event['cause'] as String?;
+        backendEvent = PlaybackBackendEvent(
+          error: [
+            if (errorCodeName?.isNotEmpty == true) errorCodeName,
+            if (message?.isNotEmpty == true) message,
+            if (cause?.isNotEmpty == true) cause,
+          ].join(' | '),
+        );
       default:
         return;
     }
     _events.add(backendEvent);
   }
 
-  static Future<bool> supportsHdr() async {
+  static Future<bool> supportsHdr({int? qualityCode}) async {
     if (!Platform.isAndroid) return false;
     try {
-      return await _channel.invokeMethod<bool>('supportsHdr') ?? false;
+      return await _channel.invokeMethod<bool>('supportsHdr', {
+            'qualityCode': qualityCode,
+          }) ??
+          false;
     } catch (_) {
       return false;
     }

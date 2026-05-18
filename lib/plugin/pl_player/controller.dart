@@ -851,7 +851,9 @@ class PlPlayerController with BlockConfigMixin {
       );
       return false;
     }
-    final supportsHdr = await AndroidHdrPlaybackBackend.supportsHdr();
+    final supportsHdr = await AndroidHdrPlaybackBackend.supportsHdr(
+      qualityCode: _currentQualityCode,
+    );
     debugPrint('Android HDR backend supportsHdr=$supportsHdr');
     return supportsHdr;
   }
@@ -1359,6 +1361,7 @@ class PlPlayerController with BlockConfigMixin {
 
   void _handleBackendError(String event) {
     if (!isAndroidHdrBackend) return;
+    debugPrint('Android HDR backend runtime error: $event');
     Future.microtask(() async {
       final seekTo = position;
       await _disposeAndroidHdrBackend();

@@ -762,7 +762,7 @@ abstract final class Pref {
 
   static bool get androidHdrPlayback =>
       Platform.isAndroid &&
-      _setting.get(SettingBoxKey.androidHdrPlayback, defaultValue: true);
+      _setting.get(SettingBoxKey.androidHdrPlayback, defaultValue: false);
 
   static Set<int> get danmakuBlockType => Set<int>.from(
     _setting.get(SettingBoxKey.danmakuBlockType, defaultValue: const <int>{}),

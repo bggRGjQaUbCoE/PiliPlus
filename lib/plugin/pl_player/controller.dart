@@ -72,6 +72,7 @@ class PlPlayerController with BlockConfigMixin {
   VideoController? _videoController;
   AndroidHdrPlaybackBackend? _androidHdrBackend;
   StreamSubscription<PlaybackBackendEvent>? _backendSubscription;
+  bool _androidHdrAudioDisabled = false;
 
   // 添加一个私有静态变量来保存实例
   static PlPlayerController? _instance;
@@ -690,6 +691,7 @@ class PlPlayerController with BlockConfigMixin {
       this.width = width;
       this.height = height;
       this.dataSource = dataSource;
+      _androidHdrAudioDisabled = false;
       _autoPlay = autoplay;
       // 初始化视频倍速
       // _playbackSpeed.value = speed;
@@ -890,7 +892,11 @@ class PlPlayerController with BlockConfigMixin {
     _androidHdrBackend = backend;
     _startBackendListeners(backend);
     await backend.open(
-      dataSource,
+      _androidHdrAudioDisabled
+          ? _withoutAudio(
+              dataSource,
+            ) // 忽略音频解码错误，例如在 Pixel 7 Pro 上，杜比全景声不支持解码，会导致（开启了强制 HDR 时）杜比视界被回退为 SDR。
+          : dataSource,
       start: seekTo,
       duration: duration,
       headers: const {
@@ -1359,11 +1365,43 @@ class PlPlayerController with BlockConfigMixin {
     if (!isAndroidHdrBackend) return;
     Future.microtask(() async {
       final seekTo = position;
+      if (!_androidHdrAudioDisabled && _isAndroidHdrAudioError(event)) {
+        _androidHdrAudioDisabled = true;
+        final wasPlaying = playerStatus.isPlaying;
+        await _disposeAndroidHdrBackend();
+        await _createAndroidHdrBackend(dataSource, seekTo, duration.value);
+        await _initializePlayer();
+        if (!wasPlaying) {
+          await pause(notify: false);
+        }
+        return;
+      }
       await _disposeAndroidHdrBackend();
       SmartDialog.showToast('已使用兼容播放');
       await _createVideoController(dataSource, seekTo, null);
       await _initializePlayer();
     });
+  }
+
+  bool _isAndroidHdrAudioError(String event) {
+    final text = event.toLowerCase();
+    return text.contains('audiorenderer') ||
+        text.contains('mediacodecaudiorenderer') ||
+        text.contains('audio/') ||
+        text.contains('dolby.eac3') ||
+        text.contains('eac3') ||
+        text.contains('ec-3');
+  }
+
+  DataSource _withoutAudio(DataSource source) {
+    return switch (source) {
+      NetworkSource() => NetworkSource(
+        videoSource: source.videoSource,
+        audioSource: null,
+        qualityCode: source.qualityCode,
+      ),
+      FileSource() => source,
+    };
   }
 
   Future<void> _disposeMediaKitPlayer() async {

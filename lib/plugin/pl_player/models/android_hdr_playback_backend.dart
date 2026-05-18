@@ -227,7 +227,6 @@ class AndroidHdrPlaybackBackend extends PlaybackBackend {
           position: position,
           duration: duration == Duration.zero ? null : duration,
           buffered: buffered,
-          buffering: false,
         );
       case 'duration':
         final duration = _duration(event['durationMs']);

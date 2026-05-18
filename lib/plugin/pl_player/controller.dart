@@ -194,6 +194,8 @@ class PlPlayerController with BlockConfigMixin {
 
   bool get isAndroidHdrBackend => _androidHdrBackend != null;
 
+  final RxInt videoViewVersion = 0.obs;
+
   bool get hasVideoView =>
       _videoController != null || _androidHdrBackend != null;
 
@@ -885,11 +887,16 @@ class PlPlayerController with BlockConfigMixin {
     isBuffering.value = false;
     buffered.value = Duration.zero;
     _heartDuration = 0;
-    position = Duration.zero;
+    position = seekTo ?? Duration.zero;
+    sliderPosition = position;
+    updatePositionSecond();
+    updateSliderPositionSecond();
+    updateBufferedSecond();
     danmakuController?.clear();
 
     final backend = AndroidHdrPlaybackBackend();
     _androidHdrBackend = backend;
+    videoViewVersion.value++;
     _startBackendListeners(backend);
     await backend.open(
       _androidHdrAudioDisabled
@@ -1012,6 +1019,7 @@ class PlPlayerController with BlockConfigMixin {
         return;
       }
       _videoPlayerController = player;
+      videoViewVersion.value++;
       if (isAnim && superResolutionType.value != .disable) {
         await setShader();
       }
@@ -1068,6 +1076,9 @@ class PlPlayerController with BlockConfigMixin {
     if (dataSource is FileSource) {
       return null;
     }
+    if (_androidHdrBackend != null) {
+      return _refreshAndroidHdrPlayer();
+    }
     if (_videoPlayerController?.current.isNotEmpty ?? false) {
       return _videoPlayerController!.open(
         _videoPlayerController!.current.last.copyWith(start: position),
@@ -1075,6 +1086,18 @@ class PlPlayerController with BlockConfigMixin {
       );
     }
     return null;
+  }
+
+  Future<void> _refreshAndroidHdrPlayer() async {
+    if (!isAndroidHdrBackend || _processing || _playerCount == 0) return;
+    final wasPlaying = playerStatus.isPlaying;
+    final seekTo = position;
+    await _disposeAndroidHdrBackend();
+    await _createAndroidHdrBackend(dataSource, seekTo, duration.value);
+    await _initializePlayer();
+    if (!wasPlaying) {
+      await pause(notify: false);
+    }
   }
 
   // 开始播放
@@ -1409,9 +1432,14 @@ class PlPlayerController with BlockConfigMixin {
 
   Future<void> _disposeMediaKitPlayer() async {
     _removeListeners();
+    final hadPlayer =
+        _videoPlayerController != null || _videoController != null;
     await _videoPlayerController?.dispose();
     _videoPlayerController = null;
     _videoController = null;
+    if (hadPlayer) {
+      videoViewVersion.value++;
+    }
   }
 
   Future<void> _disposeAndroidHdrBackend() async {
@@ -1419,6 +1447,9 @@ class PlPlayerController with BlockConfigMixin {
     _backendSubscription = null;
     final backend = _androidHdrBackend;
     _androidHdrBackend = null;
+    if (backend != null) {
+      videoViewVersion.value++;
+    }
     await backend?.dispose();
   }
 

@@ -226,7 +226,8 @@ private class HdrPlayerSession(
     init {
         view.useController = false
         view.player = player
-        view.setShutterBackgroundColor(android.graphics.Color.BLACK)
+        view.setKeepContentOnPlayerReset(true)
+        view.setShutterBackgroundColor(android.graphics.Color.TRANSPARENT)
         view.descendantFocusability = android.view.ViewGroup.FOCUS_BLOCK_DESCENDANTS
         player.addListener(this)
     }
@@ -320,9 +321,13 @@ private class HdrPlayerSession(
             Player.STATE_READY -> {
                 sendTimeline()
                 sendEvent(sessionId, "ready", emptyMap())
+                sendEvent(sessionId, "buffering", mapOf("value" to false))
                 if (player.playWhenReady) startProgress()
             }
-            Player.STATE_BUFFERING -> sendEvent(sessionId, "buffering", mapOf("value" to true))
+            Player.STATE_BUFFERING -> {
+                sendEvent(sessionId, "buffering", mapOf("value" to true))
+                if (player.playWhenReady) startProgress()
+            }
             Player.STATE_ENDED -> {
                 sendEvent(sessionId, "completed", emptyMap())
                 stopProgress()
@@ -332,8 +337,18 @@ private class HdrPlayerSession(
     }
 
     override fun onIsPlayingChanged(isPlaying: Boolean) {
-        sendEvent(sessionId, if (isPlaying) "playing" else "paused", emptyMap())
-        if (isPlaying) startProgress() else stopProgress()
+        if (isPlaying) {
+            sendEvent(sessionId, "playing", emptyMap())
+            startProgress()
+            return
+        }
+        if (player.playWhenReady && player.playbackState == Player.STATE_BUFFERING) {
+            sendEvent(sessionId, "buffering", mapOf("value" to true))
+            startProgress()
+            return
+        }
+        sendEvent(sessionId, "paused", emptyMap())
+        stopProgress()
     }
 
     override fun onPlayerError(error: PlaybackException) {

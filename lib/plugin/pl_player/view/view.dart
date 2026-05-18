@@ -2079,10 +2079,15 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
             key: _videoKey,
             child: Obx(
               () {
+                final videoViewVersion =
+                    plPlayerController.videoViewVersion.value;
                 final videoFit = plPlayerController.videoFit.value;
                 final hdrBackend = plPlayerController.androidHdrBackend;
                 if (hdrBackend != null) {
                   return SizedBox.expand(
+                    key: ValueKey(
+                      'hdr-${hdrBackend.sessionId}-$videoViewVersion',
+                    ),
                     child:
                         hdrBackend.buildView(
                           fill: widget.fill,

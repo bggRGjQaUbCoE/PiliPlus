@@ -9,7 +9,6 @@ import android.hardware.display.DisplayManager
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import android.view.Display
 import android.view.PixelCopy
 import android.view.SurfaceView
@@ -40,8 +39,6 @@ import io.flutter.plugin.platform.PlatformViewFactory
 import io.flutter.plugin.common.StandardMessageCodec
 import java.io.ByteArrayOutputStream
 import java.util.concurrent.ConcurrentHashMap
-
-private const val TAG = "PiliPlusHdrPlayer"
 
 class HdrPlayerPlugin private constructor(
     private val activity: Activity,
@@ -170,7 +167,7 @@ class HdrPlayerPlugin private constructor(
                     .getDisplay(Display.DEFAULT_DISPLAY)
             }
             val types = display?.hdrCapabilities?.supportedHdrTypes ?: intArrayOf()
-            val supported = when (qualityCode) {
+            when (qualityCode) {
                 125 -> types.contains(Display.HdrCapabilities.HDR_TYPE_HDR10)
                 // Some devices do not advertise Dolby Vision but can still show a
                 // Dolby Vision source through an HDR10-compatible output path.
@@ -178,10 +175,7 @@ class HdrPlayerPlugin private constructor(
                 129 -> types.isNotEmpty()
                 else -> types.isNotEmpty()
             }
-            Log.d(TAG, "supportsHdr quality=$qualityCode types=${types.joinToString()} supported=$supported")
-            supported
-        } catch (e: Throwable) {
-            Log.w(TAG, "supportsHdr failed", e)
+        } catch (_: Throwable) {
             false
         }
     }
@@ -247,7 +241,6 @@ private class HdrPlayerSession(
         val startMs = call.argument<Number>("startMs")?.toLong() ?: 0L
         val headers = call.argument<Map<String, String>>("headers") ?: emptyMap()
         setFitMode(call.argument<String>("fitMode") ?: "contain")
-        Log.d(TAG, "open session=$sessionId video=$videoUrl audio=${!audioUrl.isNullOrEmpty()} file=$isFileSource startMs=$startMs")
         player.setMediaSource(buildMediaSource(videoUrl, audioUrl, isFileSource, headers))
         player.prepare()
         if (startMs > 0L) {
@@ -343,11 +336,6 @@ private class HdrPlayerSession(
     }
 
     override fun onPlayerError(error: PlaybackException) {
-        Log.e(
-            TAG,
-            "player error session=$sessionId code=${error.errorCodeName} message=${error.message}",
-            error,
-        )
         sendEvent(
             sessionId,
             "error",

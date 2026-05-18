@@ -5,7 +5,7 @@ import 'package:PiliPlus/plugin/pl_player/models/data_source.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
 import 'package:PiliPlus/plugin/pl_player/models/playback_backend.dart';
 import 'package:PiliPlus/plugin/pl_player/models/video_fit_type.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart' show Factory;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -297,11 +297,7 @@ class AndroidHdrPlaybackBackend extends PlaybackBackend {
           }
         }
       },
-      onError: (Object error, StackTrace stackTrace) {
-        if (kDebugMode) {
-          debugPrint('Android HDR event error: $error');
-        }
-      },
+      onError: (_, _) {},
     );
   }
 

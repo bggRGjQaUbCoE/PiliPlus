@@ -844,17 +844,11 @@ class PlPlayerController with BlockConfigMixin {
     final hdrQuality = _isHdrQuality;
     final requiresMpv = _requiresMpvOnlyFeature;
     if (!enabled || !android || isLive || !hdrQuality || requiresMpv) {
-      debugPrint(
-        'Android HDR backend disabled: enabled=$enabled android=$android '
-        'isLive=$isLive quality=$_currentQualityCode hdrQuality=$hdrQuality '
-        'requiresMpv=$requiresMpv',
-      );
       return false;
     }
     final supportsHdr = await AndroidHdrPlaybackBackend.supportsHdr(
       qualityCode: _currentQualityCode,
     );
-    debugPrint('Android HDR backend supportsHdr=$supportsHdr');
     return supportsHdr;
   }
 
@@ -869,7 +863,9 @@ class PlPlayerController with BlockConfigMixin {
         await _createAndroidHdrBackend(dataSource, seekTo, duration);
         return;
       } catch (err, stackTrace) {
-        debugPrint('Android HDR backend failed: $err\n$stackTrace');
+        if (kDebugMode) {
+          debugPrint('Android HDR backend failed: $err\n$stackTrace');
+        }
         await _disposeAndroidHdrBackend();
         SmartDialog.showToast('已使用兼容播放');
       }
@@ -1361,7 +1357,6 @@ class PlPlayerController with BlockConfigMixin {
 
   void _handleBackendError(String event) {
     if (!isAndroidHdrBackend) return;
-    debugPrint('Android HDR backend runtime error: $event');
     Future.microtask(() async {
       final seekTo = position;
       await _disposeAndroidHdrBackend();

@@ -16,6 +16,8 @@ $NavigationBarPatch = "lib/scripts/navigation_bar.patch"
 
 $PaddingPatch = "lib/scripts/padding.patch"
 
+$LayoutBuilderPatch = "lib/scripts/layout_builder.patch"
+
 # https://github.com/flutter/flutter/issues/56239
 # ref https://github.com/flutter/flutter/pull/184549
 $ImageCachePatch = "lib/scripts/image_cache.patch"
@@ -35,7 +37,8 @@ Set-Location $env:FLUTTER_ROOT
 $picks   = @()
 $reverts = @()
 $patches = @($ModalBarrierPatch, $TextSelectionPatch, $MouseCursorPatch,
-            $NavigationBarPatch, $PaddingPatch, $ImageCachePatch, $ImageAnimPatch)
+            $NavigationBarPatch, $PaddingPatch, $ImageCachePatch, $ImageAnimPatch.
+            $LayoutBuilderPatch)
 
 switch ($platform.ToLower()) {
     "android" {

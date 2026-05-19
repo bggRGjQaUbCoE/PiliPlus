@@ -361,7 +361,7 @@ class _CreateDynPanelState extends CommonRichTextPubPageState<CreateDynPanel> {
           alignment: Alignment.centerRight,
           child: Obx(
             () => FilledButton.tonal(
-              onPressed: enablePublish.value ? onPublish : null,
+              onPressed: enablePublish.value ? onPublishThrottle : null,
               style: FilledButton.styleFrom(
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 padding: const EdgeInsets.symmetric(

@@ -267,7 +267,7 @@ class _RepostPanelState extends CommonRichTextPubPageState<RepostPanel> {
             ),
             const Spacer(),
             TextButton(
-              onPressed: onPublish,
+              onPressed: onPublishThrottle,
               style: TextButton.styleFrom(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 20,
@@ -320,7 +320,7 @@ class _RepostPanelState extends CommonRichTextPubPageState<RepostPanel> {
               Align(
                 alignment: Alignment.centerRight,
                 child: FilledButton.tonal(
-                  onPressed: onPublish,
+                  onPressed: onPublishThrottle,
                   style: FilledButton.styleFrom(
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     padding: const EdgeInsets.symmetric(

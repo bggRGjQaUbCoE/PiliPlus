@@ -413,7 +413,7 @@ class _SendDanmakuPanelState extends CommonTextPubPageState<SendDanmakuPanel> {
               iconColor: enablePublish.value
                   ? themeData.colorScheme.primary
                   : themeData.colorScheme.outline,
-              onPressed: enablePublish.value ? onPublish : null,
+              onPressed: enablePublish.value ? onPublishThrottle : null,
               icon: const Icon(Icons.send),
             ),
           ),

@@ -205,7 +205,7 @@ class _ReplyPageState extends CommonRichTextPubPageState<ReplyPage> {
             const Spacer(),
             Obx(
               () => FilledButton.tonal(
-                onPressed: enablePublish.value ? onPublish : null,
+                onPressed: enablePublish.value ? onPublishThrottle : null,
                 style: FilledButton.styleFrom(
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   padding: const EdgeInsets.symmetric(

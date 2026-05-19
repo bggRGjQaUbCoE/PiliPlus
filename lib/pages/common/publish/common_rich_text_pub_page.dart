@@ -548,6 +548,6 @@ abstract class CommonRichTextPubPageState<T extends CommonRichTextPubPage>
         return;
       }
     }
-    onCustomPublish(pictures: pictures);
+    return onCustomPublish(pictures: pictures);
   }
 }

@@ -615,7 +615,9 @@ class RichTextEditingController extends TextEditingController {
     int? delLength;
     List<RichTextItem>? toDel;
 
-    newSelection = delta.selection;
+    if (Platform.isLinux && delta.composing.isValid) {
+      newSelection = delta.selection;
+    }
 
     switch (delta) {
       case TextEditingDeltaInsertion e:

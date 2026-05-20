@@ -1123,6 +1123,12 @@ class VideoDetailController extends GetxController
           }).toList();
         } catch (_) {}
       }
+
+      final subs = response.subtitle?.subtitles;
+      if (subs != null && subs.isNotEmpty) {
+        subtitles.value = subs;
+        vttSubtitlesIndex.value = 0;
+      }
     }
   }
 

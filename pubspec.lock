@@ -1150,7 +1150,7 @@ packages:
     description:
       path: media_kit
       ref: "version_1.2.5"
-      resolved-ref: "14c3ee41df4f51292b89eaf8f8c97420220fe136"
+      resolved-ref: "4f0f72e5bf21349bc251bf52761628faeae3f233"
       url: "https://github.com/My-Responsitories/media-kit.git"
     source: git
     version: "1.1.11"
@@ -1159,7 +1159,7 @@ packages:
     description:
       path: "libs/android/media_kit_libs_android_video"
       ref: "version_1.2.5"
-      resolved-ref: "14c3ee41df4f51292b89eaf8f8c97420220fe136"
+      resolved-ref: "4f0f72e5bf21349bc251bf52761628faeae3f233"
       url: "https://github.com/My-Responsitories/media-kit.git"
     source: git
     version: "1.3.7"
@@ -1193,7 +1193,7 @@ packages:
     description:
       path: "libs/universal/media_kit_libs_video"
       ref: "version_1.2.5"
-      resolved-ref: "14c3ee41df4f51292b89eaf8f8c97420220fe136"
+      resolved-ref: "4f0f72e5bf21349bc251bf52761628faeae3f233"
       url: "https://github.com/My-Responsitories/media-kit.git"
     source: git
     version: "1.0.5"
@@ -1202,7 +1202,7 @@ packages:
     description:
       path: "libs/windows/media_kit_libs_windows_video"
       ref: "version_1.2.5"
-      resolved-ref: "14c3ee41df4f51292b89eaf8f8c97420220fe136"
+      resolved-ref: "4f0f72e5bf21349bc251bf52761628faeae3f233"
       url: "https://github.com/My-Responsitories/media-kit.git"
     source: git
     version: "1.0.10"
@@ -1211,7 +1211,7 @@ packages:
     description:
       path: media_kit_native_event_loop
       ref: "version_1.2.5"
-      resolved-ref: "14c3ee41df4f51292b89eaf8f8c97420220fe136"
+      resolved-ref: "4f0f72e5bf21349bc251bf52761628faeae3f233"
       url: "https://github.com/My-Responsitories/media-kit.git"
     source: git
     version: "1.0.9"
@@ -1220,7 +1220,7 @@ packages:
     description:
       path: media_kit_video
       ref: "version_1.2.5"
-      resolved-ref: "14c3ee41df4f51292b89eaf8f8c97420220fe136"
+      resolved-ref: "4f0f72e5bf21349bc251bf52761628faeae3f233"
       url: "https://github.com/My-Responsitories/media-kit.git"
     source: git
     version: "1.2.5"

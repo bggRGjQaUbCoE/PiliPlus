@@ -178,7 +178,7 @@ class RichTextItem {
 
     if (insertionOffset == 0 && range.start == 0) {
       final insertedLength = delta.textInserted.length;
-      if (!Platform.isLinux) controller.newSelection = TextSelection.collapsed(offset: insertedLength);
+      if (!Platform.isLinux || !delta.composing.isValid) controller.newSelection = TextSelection.collapsed(offset: insertedLength);
       if (!isRich && delta.isText) {
         text = delta.textInserted + text;
         range = TextRange(start: range.start, end: range.start + text.length);
@@ -210,7 +210,7 @@ class RichTextItem {
 
     if (range.end == insertionOffset) {
       final end = insertionOffset + delta.textInserted.length;
-      if (!Platform.isLinux) controller.newSelection = TextSelection.collapsed(offset: end);
+      if (!Platform.isLinux || !delta.composing.isValid) controller.newSelection = TextSelection.collapsed(offset: end);
       if ((isText && delta.isText) || (isComposing && delta.isComposing)) {
         text += delta.textInserted;
         range = TextRange(start: range.start, end: end);
@@ -234,7 +234,7 @@ class RichTextItem {
       final leadingText = text.substring(0, insertionOffset - range.start);
       final trailingString = text.substring(leadingText.length);
       final insertEnd = insertionOffset + delta.textInserted.length;
-      if (!Platform.isLinux) controller.newSelection = TextSelection.collapsed(offset: insertEnd);
+      if (!Platform.isLinux || !delta.composing.isValid) controller.newSelection = TextSelection.collapsed(offset: insertEnd);
       if (delta.isText) {
         text = leadingText + delta.textInserted + trailingString;
         range = TextRange(
@@ -301,7 +301,7 @@ class RichTextItem {
         '',
       );
       range = TextRange(start: range.start, end: range.start + text.length);
-      if (!Platform.isLinux) {
+      if (!Platform.isLinux || !delta.composing.isValid) {
         controller.newSelection = TextSelection.collapsed(
           offset: deletedRange.start,
         );
@@ -311,7 +311,7 @@ class RichTextItem {
 
     if (range.start >= deletedRange.start && range.end <= deletedRange.end) {
       if (range.start == deletedRange.start) {
-        if (!Platform.isLinux) controller.newSelection = TextSelection.collapsed(offset: range.start);
+        if (!Platform.isLinux || !delta.composing.isValid) controller.newSelection = TextSelection.collapsed(offset: range.start);
       }
       return (remove: true, cal: false);
     }
@@ -330,7 +330,7 @@ class RichTextItem {
         start: range.start,
         end: deletedRange.start,
       );
-      if (!Platform.isLinux) {
+      if (!Platform.isLinux || !delta.composing.isValid) {
         controller.newSelection = TextSelection.collapsed(
           offset: deletedRange.start,
         );
@@ -340,7 +340,7 @@ class RichTextItem {
 
     if (range.start >= deletedRange.start && range.end > deletedRange.end) {
       final start = min(deletedRange.start, range.start);
-      if (!Platform.isLinux || isRich) controller.newSelection = TextSelection.collapsed(offset: start);
+      if (!Platform.isLinux || !delta.composing.isValid || isRich) controller.newSelection = TextSelection.collapsed(offset: start);
       if (isRich) {
         return (remove: true, cal: true);
       }
@@ -386,7 +386,7 @@ class RichTextItem {
           );
           final end = range.start + text.length;
           range = TextRange(start: range.start, end: end);
-          if (!Platform.isLinux) {
+          if (!Platform.isLinux || !delta.composing.isValid) {
             controller.newSelection = TextSelection.collapsed(
               offset: replacedRange.start + delta.replacementText.length,
             );
@@ -399,7 +399,7 @@ class RichTextItem {
           );
           final trailString = text.substring(replacedRange.end - range.start);
           final insertEnd = replacedRange.start + delta.replacementText.length;
-          if (!Platform.isLinux) controller.newSelection = TextSelection.collapsed(offset: insertEnd);
+          if (!Platform.isLinux || !delta.composing.isValid) controller.newSelection = TextSelection.collapsed(offset: insertEnd);
           final config = delta.config;
           final insertedItem = RichTextItem(
             type: config.type,
@@ -437,7 +437,7 @@ class RichTextItem {
       id = config.id;
       final end = range.start + text.length;
       range = TextRange(start: range.start, end: end);
-      if (!Platform.isLinux) controller.newSelection = TextSelection.collapsed(offset: end);
+      if (!Platform.isLinux || !delta.composing.isValid) controller.newSelection = TextSelection.collapsed(offset: end);
       return null;
     }
 
@@ -451,7 +451,7 @@ class RichTextItem {
         id = config.id;
         final end = range.start + text.length;
         range = TextRange(start: range.start, end: end);
-        if (!Platform.isLinux) controller.newSelection = TextSelection.collapsed(offset: end);
+        if (!Platform.isLinux || !delta.composing.isValid) controller.newSelection = TextSelection.collapsed(offset: end);
         return (remove: false, toAdd: null);
       }
       return (remove: true, toAdd: null);
@@ -467,7 +467,7 @@ class RichTextItem {
           );
           final end = range.start + text.length;
           range = TextRange(start: range.start, end: end);
-          if (!Platform.isLinux) controller.newSelection = TextSelection.collapsed(offset: end);
+          if (!Platform.isLinux || !delta.composing.isValid) controller.newSelection = TextSelection.collapsed(offset: end);
           return null;
         } else {
           text = text.replaceRange(
@@ -486,7 +486,7 @@ class RichTextItem {
             id: config.id,
             range: TextRange(start: replacedRange.start, end: end),
           );
-          if (!Platform.isLinux) controller.newSelection = TextSelection.collapsed(offset: end);
+          if (!Platform.isLinux || !delta.composing.isValid) controller.newSelection = TextSelection.collapsed(offset: end);
           return (remove: false, toAdd: [insertedItem]);
         }
       }
@@ -497,7 +497,7 @@ class RichTextItem {
       id = config.id;
       final end = range.start + text.length;
       range = TextRange(start: range.start, end: end);
-      if (!Platform.isLinux) controller.newSelection = TextSelection.collapsed(offset: end);
+      if (!Platform.isLinux || !delta.composing.isValid) controller.newSelection = TextSelection.collapsed(offset: end);
       return null;
     }
 
@@ -520,7 +520,7 @@ class RichTextItem {
           );
           final end = range.start + text.length;
           range = TextRange(start: range.start, end: end);
-          if (!Platform.isLinux) controller.newSelection = TextSelection.collapsed(offset: end);
+          if (!Platform.isLinux || !delta.composing.isValid) controller.newSelection = TextSelection.collapsed(offset: end);
           return null;
         } else {
           final end = range.start + delta.replacementText.length;
@@ -533,7 +533,7 @@ class RichTextItem {
             id: config.id,
             range: TextRange(start: range.start, end: end),
           );
-          if (!Platform.isLinux) controller.newSelection = TextSelection.collapsed(offset: end);
+          if (!Platform.isLinux || !delta.composing.isValid) controller.newSelection = TextSelection.collapsed(offset: end);
           text = text.substring(replacedRange.end - range.start);
           range = TextRange(start: end, end: end + text.length);
           return (remove: true, toAdd: [insertedItem]);
@@ -546,7 +546,7 @@ class RichTextItem {
       id = config.id;
       final end = range.start + text.length;
       range = TextRange(start: range.start, end: end);
-      if (!Platform.isLinux) controller.newSelection = TextSelection.collapsed(offset: end);
+      if (!Platform.isLinux || !delta.composing.isValid) controller.newSelection = TextSelection.collapsed(offset: end);
       return null;
     }
 
@@ -615,9 +615,7 @@ class RichTextEditingController extends TextEditingController {
     int? delLength;
     List<RichTextItem>? toDel;
 
-    if (Platform.isLinux && delta is! TextEditingDeltaNonTextUpdate) {
-      newSelection = delta.selection;
-    }
+    newSelection = delta.selection;
 
     switch (delta) {
       case TextEditingDeltaInsertion e:
@@ -636,7 +634,7 @@ class RichTextEditingController extends TextEditingController {
               id: config.id,
             ),
           );
-          if (!Platform.isLinux) {
+          if (!Platform.isLinux || !delta.composing.isValid) {
             newSelection = TextSelection.collapsed(
               offset: delta.textInserted.length,
             );
@@ -687,7 +685,7 @@ class RichTextEditingController extends TextEditingController {
         }
 
       case TextEditingDeltaNonTextUpdate e:
-        if (!Platform.isLinux) newSelection = e.selection;
+        newSelection = e.selection;
         if (newSelection.isCollapsed) {
           final newPos = dragOffset(newSelection.base);
           newSelection = newSelection.copyWith(

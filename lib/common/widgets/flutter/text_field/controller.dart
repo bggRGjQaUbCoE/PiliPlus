@@ -15,7 +15,7 @@
  * along with PiliPlus.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import 'dart:io';
+import 'dart:io' show Platform;
 import 'dart:math';
 
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';

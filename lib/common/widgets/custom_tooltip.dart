@@ -162,11 +162,9 @@ class _RenderToolTip extends RenderBox
         RenderBoxContainerDefaultsMixin<RenderBox, MultiChildLayoutParentData> {
   _RenderToolTip({
     VoidCallback? onTap,
-    required Offset target,
-    required bool preferBelow,
-  }) : _target = target,
-       _preferBelow = preferBelow,
-       _hitTestSelf = onTap != null {
+    required this._target,
+    required this._preferBelow,
+  }) : _hitTestSelf = onTap != null {
     if (onTap != null) {
       _tapGestureRecognizer = TapGestureRecognizer()..onTap = onTap;
     }
@@ -287,10 +285,9 @@ class Triangle extends LeafRenderObjectWidget {
 
 class RenderTriangle extends RenderBox {
   RenderTriangle({
-    required Color color,
-    required Size preferredSize,
-  }) : _color = color,
-       _preferredSize = preferredSize;
+    required this._color,
+    required this._preferredSize,
+  });
 
   Color _color;
   Color get color => _color;

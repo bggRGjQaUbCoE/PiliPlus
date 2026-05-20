@@ -18,8 +18,8 @@ class ExtraHitTestWidget extends SingleChildRenderObjectWidget {
 
 class RenderExtraHitTestWidget extends RenderProxyBox {
   RenderExtraHitTestWidget({
-    required double width,
-  }) : _width = width;
+    required this._width,
+  });
 
   final double _width;
 

@@ -150,20 +150,19 @@ class RichTextItem {
   RichTextItem({
     this.type = RichTextType.text,
     required this.text,
-    String? rawText,
+    this._rawText,
     required this.range,
     this.emote,
     this.id,
-  }) : _rawText = rawText;
+  });
 
   RichTextItem.fromStart(
     this.text, {
-    String? rawText,
+    this._rawText,
     this.type = RichTextType.text,
     this.emote,
     this.id,
-  }) : range = TextRange(start: 0, end: text.length),
-       _rawText = rawText;
+  }) : range = TextRange(start: 0, end: text.length);
 
   List<RichTextItem>? onInsert(
     TextEditingDeltaInsertion delta,

@@ -1,47 +1,46 @@
 // ignore_for_file: constant_identifier_names
 
-import 'package:flutter/widgets.dart';
+import 'package:flutter/widgets.dart' show IconData;
 
-class CustomIcons {
-  static const IconData ai_circle = _CustomIconData(0xe800);
-  static const IconData coin = _CustomIconData(0xe801);
-  static const IconData dm_off = _CustomIconData(0xe802);
-  static const IconData dm_on = _CustomIconData(0xe803);
-  static const IconData dm_settings = _CustomIconData(0xe804);
-  static const IconData dyn = _CustomIconData(0xe805);
-  static const IconData fav = _CustomIconData(0xe806);
-  static const IconData flip_rotate_90 = _CustomIconData(0xe807);
-  static const IconData identifier_circle = _CustomIconData(0xe808);
-  static const IconData live_reserve = _CustomIconData(0xe809);
-  static const IconData open_in_full_rotate_45 = _CustomIconData(0xe80a);
-  static const IconData player_dm_tip_back = _CustomIconData(0xe80b);
-  static const IconData player_dm_tip_copy = _CustomIconData(0xe80c);
-  static const IconData player_dm_tip_like = _CustomIconData(0xe80d);
-  static const IconData player_dm_tip_like_solid = _CustomIconData(0xe80e);
-  static const IconData player_dm_tip_recall = _CustomIconData(0xe80f);
-  static const IconData repeat_rounded_rotate_90 = _CustomIconData(0xe810);
-  static const IconData share = _CustomIconData(0xe811);
-  static const IconData share_line = _CustomIconData(0xe812);
-  static const IconData share_node = _CustomIconData(0xe813);
-  static const IconData shield_play_arrow = _CustomIconData(0xe814);
-  static const IconData shield_published = _CustomIconData(0xe815);
-  static const IconData shield_reply = _CustomIconData(0xe816);
-  static const IconData shopping_bag_not_interested = _CustomIconData(0xe817);
-  static const IconData splitscreen_rotate_90 = _CustomIconData(0xe818);
-  static const IconData star_favorite_line = _CustomIconData(0xe819);
-  static const IconData star_favorite_solid = _CustomIconData(0xe81a);
-  static const IconData thumbs_down = _CustomIconData(0xe81b);
-  static const IconData thumbs_down_outline = _CustomIconData(0xe81c);
-  static const IconData thumbs_up = _CustomIconData(0xe81d);
-  static const IconData thumbs_up_fill = _CustomIconData(0xe81e);
-  static const IconData thumbs_up_line = _CustomIconData(0xe81f);
-  static const IconData thumbs_up_outline = _CustomIconData(0xe820);
-  static const IconData topic_tag = _CustomIconData(0xe821);
-  static const IconData touch_app_rotate_270 = _CustomIconData(0xe822);
-  static const IconData view_headline_rotate_90 = _CustomIconData(0xe823);
-  static const IconData watch_later = _CustomIconData(0xe824);
-}
+// dart format off
+abstract final class CustomIcons {
+  static const _kFontFam = 'custom_icon';
 
-class _CustomIconData extends IconData {
-  const _CustomIconData(super.codePoint) : super(fontFamily: 'custom_icon');
+  static const IconData ai_circle = IconData(0xe800, fontFamily: _kFontFam);
+  static const IconData coin = IconData(0xe801, fontFamily: _kFontFam);
+  static const IconData dm_off = IconData(0xe802, fontFamily: _kFontFam);
+  static const IconData dm_on = IconData(0xe803, fontFamily: _kFontFam);
+  static const IconData dm_settings = IconData(0xe804, fontFamily: _kFontFam);
+  static const IconData dyn = IconData(0xe805, fontFamily: _kFontFam);
+  static const IconData fav = IconData(0xe806, fontFamily: _kFontFam);
+  static const IconData flip_rotate_90 = IconData(0xe807, fontFamily: _kFontFam);
+  static const IconData identifier_circle = IconData(0xe808, fontFamily: _kFontFam);
+  static const IconData live_reserve = IconData(0xe809, fontFamily: _kFontFam);
+  static const IconData open_in_full_rotate_45 = IconData(0xe80a, fontFamily: _kFontFam);
+  static const IconData player_dm_tip_back = IconData(0xe80b, fontFamily: _kFontFam);
+  static const IconData player_dm_tip_copy = IconData(0xe80c, fontFamily: _kFontFam);
+  static const IconData player_dm_tip_like = IconData(0xe80d, fontFamily: _kFontFam);
+  static const IconData player_dm_tip_like_solid = IconData(0xe80e, fontFamily: _kFontFam);
+  static const IconData player_dm_tip_recall = IconData(0xe80f, fontFamily: _kFontFam);
+  static const IconData repeat_rounded_rotate_90 = IconData(0xe810, fontFamily: _kFontFam);
+  static const IconData share = IconData(0xe811, fontFamily: _kFontFam);
+  static const IconData share_line = IconData(0xe812, fontFamily: _kFontFam);
+  static const IconData share_node = IconData(0xe813, fontFamily: _kFontFam);
+  static const IconData shield_play_arrow = IconData(0xe814, fontFamily: _kFontFam);
+  static const IconData shield_published = IconData(0xe815, fontFamily: _kFontFam);
+  static const IconData shield_reply = IconData(0xe816, fontFamily: _kFontFam);
+  static const IconData shopping_bag_not_interested = IconData(0xe817, fontFamily: _kFontFam);
+  static const IconData splitscreen_rotate_90 = IconData(0xe818, fontFamily: _kFontFam);
+  static const IconData star_favorite_line = IconData(0xe819, fontFamily: _kFontFam);
+  static const IconData star_favorite_solid = IconData(0xe81a, fontFamily: _kFontFam);
+  static const IconData thumbs_down = IconData(0xe81b, fontFamily: _kFontFam);
+  static const IconData thumbs_down_outline = IconData(0xe81c, fontFamily: _kFontFam);
+  static const IconData thumbs_up = IconData(0xe81d, fontFamily: _kFontFam);
+  static const IconData thumbs_up_fill = IconData(0xe81e, fontFamily: _kFontFam);
+  static const IconData thumbs_up_line = IconData(0xe81f, fontFamily: _kFontFam);
+  static const IconData thumbs_up_outline = IconData(0xe820, fontFamily: _kFontFam);
+  static const IconData topic_tag = IconData(0xe821, fontFamily: _kFontFam);
+  static const IconData touch_app_rotate_270 = IconData(0xe822, fontFamily: _kFontFam);
+  static const IconData view_headline_rotate_90 = IconData(0xe823, fontFamily: _kFontFam);
+  static const IconData watch_later = IconData(0xe824, fontFamily: _kFontFam);
 }

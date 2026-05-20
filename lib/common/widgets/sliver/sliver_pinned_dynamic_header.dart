@@ -55,10 +55,9 @@ class SliverPinnedDynamicHeader extends SingleChildRenderObjectWidget {
 
 class RenderSliverPinnedDynamicHeader extends RenderSliverSingleBoxAdapter {
   RenderSliverPinnedDynamicHeader({
-    required double minExtent,
-    required double maxExtent,
-  }) : _minExtent = minExtent,
-       _maxExtent = maxExtent;
+    required this._minExtent,
+    required this._maxExtent,
+  });
 
   double _minExtent;
   double get minExtent => _minExtent;

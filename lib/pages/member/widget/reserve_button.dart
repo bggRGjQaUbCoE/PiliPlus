@@ -45,9 +45,8 @@ class ReserveButton extends SingleChildRenderObjectWidget {
 class RenderReserveBtn extends RenderProxyBox {
   RenderReserveBtn({
     required int count,
-    required Color color,
-  }) : _count = count,
-       _color = color {
+    required this._color,
+  }) : _count = count {
     _textPainter = TextPainter(
       textDirection: .ltr,
       text: _getTextSpan(count),

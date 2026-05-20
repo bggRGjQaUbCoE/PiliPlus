@@ -353,10 +353,9 @@ abstract class BaseSegmentProgressBar<T extends BaseSegment>
 
 class BaseRenderProgressBar<T extends BaseSegment> extends RenderBox {
   BaseRenderProgressBar({
-    required double height,
-    required List<T> segments,
-  }) : _height = height,
-       _segments = segments;
+    required this._height,
+    required this._segments,
+  });
 
   double _height;
   double get height => _height;

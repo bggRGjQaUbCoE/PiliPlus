@@ -50,8 +50,8 @@ class _TopicDraggableScrollableSheetScrollController
     extends _DraggableScrollableSheetScrollController {
   _TopicDraggableScrollableSheetScrollController({
     required super.extent,
-    double initialScrollOffset = 0.0,
-  }) : _initialScrollOffset = initialScrollOffset;
+    this._initialScrollOffset = 0.0,
+  });
 
   @override
   double get initialScrollOffset => _initialScrollOffset;

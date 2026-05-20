@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// ignore_for_file: uri_does_not_exist_in_doc_import
+// ignore_for_file: prefer_initializing_formals, uri_does_not_exist_in_doc_import
 
 /// @docImport 'selectable_text.dart';
 /// @docImport 'selection_area.dart';
@@ -11,7 +11,8 @@ library;
 
 import 'package:PiliPlus/common/widgets/flutter/text_field/editable_text.dart';
 import 'package:flutter/cupertino.dart' hide EditableText, EditableTextState;
-import 'package:flutter/material.dart' hide EditableText, EditableTextState;
+import 'package:flutter/material.dart'
+    hide EditableText, EditableTextState, AdaptiveTextSelectionToolbar;
 import 'package:flutter/rendering.dart';
 
 /// The default context menu for text selection for the current platform.

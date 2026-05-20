@@ -41,14 +41,11 @@ class Arc extends LeafRenderObjectWidget {
 
 class RenderArc extends RenderBox {
   RenderArc({
-    required double preferredSize,
-    required Color color,
-    required double progress,
-    required double strokeWidth,
-  }) : _preferredSize = preferredSize,
-       _color = color,
-       _progress = progress,
-       _strokeWidth = strokeWidth;
+    required this._preferredSize,
+    required this._color,
+    required this._progress,
+    required this._strokeWidth,
+  });
 
   Color _color;
   Color get color => _color;

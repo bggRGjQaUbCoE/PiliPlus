@@ -498,10 +498,10 @@ packages:
     description:
       path: "."
       ref: dev
-      resolved-ref: "8cf6cfa7078aa69c2c7b08d9ad636a1040456852"
+      resolved-ref: c4672374956fa28d117ef7a55a6e708daddbf462
       url: "https://github.com/bggRGjQaUbCoE/flutter_file_picker.git"
     source: git
-    version: "12.0.0-beta.3"
+    version: "12.0.0-beta.4"
   file_selector_linux:
     dependency: transitive
     description:
@@ -725,10 +725,10 @@ packages:
     dependency: "direct main"
     description:
       name: flutter_volume_controller
-      sha256: "22edb0993ad03ecbc8d1164daeb5b39d798d409625db692675a86889403b1532"
+      sha256: "27b95004d8abd7c6b24a63e555d721ef5f958fbe54551246567b72321494c6c8"
       url: "https://pub.dev"
     source: hosted
-    version: "1.3.4"
+    version: "2.0.0"
   flutter_web_plugins:
     dependency: transitive
     description: flutter
@@ -1102,7 +1102,7 @@ packages:
     description:
       path: media_kit
       ref: "version_1.2.5"
-      resolved-ref: "14c3ee41df4f51292b89eaf8f8c97420220fe136"
+      resolved-ref: "4f0f72e5bf21349bc251bf52761628faeae3f233"
       url: "https://github.com/My-Responsitories/media-kit.git"
     source: git
     version: "1.1.11"
@@ -1111,7 +1111,7 @@ packages:
     description:
       path: "libs/android/media_kit_libs_android_video"
       ref: "version_1.2.5"
-      resolved-ref: "14c3ee41df4f51292b89eaf8f8c97420220fe136"
+      resolved-ref: "4f0f72e5bf21349bc251bf52761628faeae3f233"
       url: "https://github.com/My-Responsitories/media-kit.git"
     source: git
     version: "1.3.7"
@@ -1145,7 +1145,7 @@ packages:
     description:
       path: "libs/universal/media_kit_libs_video"
       ref: "version_1.2.5"
-      resolved-ref: "14c3ee41df4f51292b89eaf8f8c97420220fe136"
+      resolved-ref: "4f0f72e5bf21349bc251bf52761628faeae3f233"
       url: "https://github.com/My-Responsitories/media-kit.git"
     source: git
     version: "1.0.5"
@@ -1154,7 +1154,7 @@ packages:
     description:
       path: "libs/windows/media_kit_libs_windows_video"
       ref: "version_1.2.5"
-      resolved-ref: "14c3ee41df4f51292b89eaf8f8c97420220fe136"
+      resolved-ref: "4f0f72e5bf21349bc251bf52761628faeae3f233"
       url: "https://github.com/My-Responsitories/media-kit.git"
     source: git
     version: "1.0.10"
@@ -1163,7 +1163,7 @@ packages:
     description:
       path: media_kit_native_event_loop
       ref: "version_1.2.5"
-      resolved-ref: "14c3ee41df4f51292b89eaf8f8c97420220fe136"
+      resolved-ref: "4f0f72e5bf21349bc251bf52761628faeae3f233"
       url: "https://github.com/My-Responsitories/media-kit.git"
     source: git
     version: "1.0.9"
@@ -1172,7 +1172,7 @@ packages:
     description:
       path: media_kit_video
       ref: "version_1.2.5"
-      resolved-ref: "14c3ee41df4f51292b89eaf8f8c97420220fe136"
+      resolved-ref: "4f0f72e5bf21349bc251bf52761628faeae3f233"
       url: "https://github.com/My-Responsitories/media-kit.git"
     source: git
     version: "1.2.5"
@@ -1229,10 +1229,10 @@ packages:
     dependency: transitive
     description:
       name: objective_c
-      sha256: "100a1c87616ab6ed41ec263b083c0ef3261ee6cd1dc3b0f35f8ddfa4f996fe52"
+      sha256: "02f4ff97ac95fa4abe561242eb033239e08e8903a46eaecf61b047761b89fe1f"
       url: "https://pub.dev"
     source: hosted
-    version: "9.3.0"
+    version: "9.4.0"
   octo_image:
     dependency: transitive
     description:
@@ -1822,10 +1822,10 @@ packages:
     dependency: transitive
     description:
       name: url_launcher_android
-      sha256: "3bb000251e55d4a209aa0e2e563309dc9bb2befea2295fd0cec1f51760aac572"
+      sha256: "17bc677f0b301615530dd1d67e0a9828cafa2d0b6b6eae4cd3679b7eac4a273c"
       url: "https://pub.dev"
     source: hosted
-    version: "6.3.29"
+    version: "6.3.30"
   url_launcher_ios:
     dependency: transitive
     description:

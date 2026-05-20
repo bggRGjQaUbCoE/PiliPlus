@@ -17,7 +17,7 @@ abstract final class StorageUtils {
         allowedExtensions: allowedExtensions,
         type: type,
         fileName: name,
-        bytes: PlatformUtils.isDesktop ? null : bytes,
+        bytes: PlatformUtils.isDesktop ? Uint8List(0) : bytes,
       );
       if (path == null) {
         SmartDialog.showToast("取消保存");

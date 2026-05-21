@@ -2,6 +2,7 @@ import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
     show ReplyInfo;
 import 'package:PiliPlus/http/reply.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
+import 'package:easy_debounce/easy_throttle.dart';
 import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -117,12 +118,16 @@ class ZanButtonGrpc extends StatelessWidget {
           height: 32,
           child: TextButton(
             style: style,
-            onPressed: () => onHateReply(
-              context,
-              isProcessing,
-              () => isProcessing = false,
-              isLike: isLike,
-              isDislike: isDislike,
+            onPressed: () => EasyThrottle.throttle(
+              'interactAction',
+              const Duration(milliseconds: 200),
+              () => onHateReply(
+                context,
+                isProcessing,
+                () => isProcessing = false,
+                isLike: isLike,
+                isDislike: isDislike,
+              ),
             ),
             child: Icon(
               isDislike
@@ -138,12 +143,16 @@ class ZanButtonGrpc extends StatelessWidget {
           height: 32,
           child: TextButton(
             style: style,
-            onPressed: () => onLikeReply(
-              context,
-              isProcessing,
-              () => isProcessing = false,
-              isLike: isLike,
-              isDislike: isDislike,
+            onPressed: () => EasyThrottle.throttle(
+              'interactAction',
+              const Duration(milliseconds: 200),
+              () => onLikeReply(
+                context,
+                isProcessing,
+                () => isProcessing = false,
+                isLike: isLike,
+                isDislike: isDislike,
+              ),
             ),
             child: Row(
               spacing: 4,

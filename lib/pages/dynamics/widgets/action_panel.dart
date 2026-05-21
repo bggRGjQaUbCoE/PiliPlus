@@ -3,6 +3,7 @@ import 'package:PiliPlus/pages/dynamics_repost/view.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/request_utils.dart';
+import 'package:easy_debounce/easy_throttle.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
@@ -34,19 +35,23 @@ class ActionPanel extends StatelessWidget {
           child: Builder(
             builder: (context) {
               return TextButton.icon(
-                onPressed: () => showModalBottomSheet(
-                  context: context,
-                  isScrollControlled: true,
-                  useSafeArea: true,
-                  builder: (_) => RepostPanel(
-                    item: item,
-                    onSuccess: () {
-                      int count = forward.count ?? 0;
-                      forward.count = count + 1;
-                      if (context.mounted) {
-                        (context as Element?)?.markNeedsBuild();
-                      }
-                    },
+                onPressed: () => EasyThrottle.throttle(
+                  'interactAction',
+                  const Duration(milliseconds: 200),
+                  () => showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    useSafeArea: true,
+                    builder: (_) => RepostPanel(
+                      item: item,
+                      onSuccess: () {
+                        int count = forward.count ?? 0;
+                        forward.count = count + 1;
+                        if (context.mounted) {
+                          (context as Element?)?.markNeedsBuild();
+                        }
+                      },
+                    ),
                   ),
                 ),
                 icon: Icon(
@@ -67,7 +72,11 @@ class ActionPanel extends StatelessWidget {
         ),
         Expanded(
           child: TextButton.icon(
-            onPressed: () => PageUtils.pushDynDetail(item, isPush: true),
+            onPressed: () => EasyThrottle.throttle(
+              'interactAction',
+              const Duration(milliseconds: 200),
+              () => PageUtils.pushDynDetail(item, isPush: true),
+            ),
             icon: Icon(
               FontAwesomeIcons.comment,
               size: 16,
@@ -92,14 +101,18 @@ class ActionPanel extends StatelessWidget {
                 semanticLabel: like.status! ? "已赞" : "点赞",
               );
               return TextButton.icon(
-                onPressed: () => RequestUtils.onLikeDynamic(
-                  item,
-                  likeIcon.color == primary,
-                  () {
-                    if (context.mounted) {
-                      (context as Element?)?.markNeedsBuild();
-                    }
-                  },
+                onPressed: () => EasyThrottle.throttle(
+                  'interactAction',
+                  const Duration(milliseconds: 200),
+                  () => RequestUtils.onLikeDynamic(
+                    item,
+                    likeIcon.color == primary,
+                    () {
+                      if (context.mounted) {
+                        (context as Element?)?.markNeedsBuild();
+                      }
+                    },
+                  ),
                 ),
                 icon: likeIcon,
                 style: btnStyle,

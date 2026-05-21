@@ -1,4 +1,4 @@
-import 'dart:collection';
+import 'dart:collection' show HashSet, HashMap;
 import 'dart:io' show File;
 
 import 'package:PiliPlus/grpc/bilibili/community/service/dm/v1.pb.dart';

@@ -1,6 +1,6 @@
-import 'dart:async';
-import 'dart:convert';
-import 'dart:io';
+import 'dart:async' show StreamSubscription, Timer;
+import 'dart:convert' show jsonEncode, utf8, jsonDecode;
+import 'dart:io' show ZLibDecoder;
 import 'dart:typed_data';
 
 import 'package:PiliPlus/services/logger.dart';

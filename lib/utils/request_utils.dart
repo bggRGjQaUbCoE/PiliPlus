@@ -1,6 +1,5 @@
-import 'dart:async';
-import 'dart:convert';
-import 'dart:math';
+import 'dart:convert' show jsonEncode;
+import 'dart:math' as math;
 
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
 import 'package:PiliPlus/grpc/bilibili/im/type.pbenum.dart' show MsgType;
@@ -202,7 +201,7 @@ abstract final class RequestUtils {
                       useSafeArea: true,
                       isScrollControlled: true,
                       constraints: BoxConstraints(
-                        maxWidth: min(640, context.mediaQueryShortestSide),
+                        maxWidth: math.min(640, context.mediaQueryShortestSide),
                       ),
                       builder: (BuildContext context) {
                         final maxChildSize =

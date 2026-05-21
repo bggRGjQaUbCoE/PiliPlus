@@ -1,4 +1,4 @@
-import 'dart:async';
+import 'dart:async' show StreamSubscription;
 
 import 'package:PiliPlus/common/assets.dart';
 import 'package:PiliPlus/models_new/video/video_detail/data.dart';

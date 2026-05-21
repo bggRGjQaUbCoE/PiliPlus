@@ -1,5 +1,5 @@
-import 'dart:io';
-import 'dart:math' show pow, sqrt;
+import 'dart:io' show Platform;
+import 'dart:math' as math;
 
 import 'package:PiliPlus/common/widgets/gesture/horizontal_drag_gesture_recognizer.dart'
     show deviceTouchSlop;
@@ -87,7 +87,7 @@ abstract final class Pref {
 
   static List<double> get springDescription => List<double>.from(
     _setting.get(SettingBoxKey.springDescription) ??
-        [0.5, 100.0, 2.2 * sqrt(50)], // [mass, stiffness, damping]
+        [0.5, 100.0, 2.2 * math.sqrt(50)], // [mass, stiffness, damping]
   );
 
   static List<double> get speedList => List<double>.from(
@@ -338,7 +338,7 @@ abstract final class Pref {
       _setting.get(SettingBoxKey.showPgcTimeline, defaultValue: true);
 
   static num get maxCacheSize =>
-      _setting.get(SettingBoxKey.maxCacheSize) ?? pow(1024, 3);
+      _setting.get(SettingBoxKey.maxCacheSize) ?? math.pow(1024, 3);
 
   static bool get horizontalScreen {
     bool? horizontalScreen = _setting.get(SettingBoxKey.horizontalScreen);

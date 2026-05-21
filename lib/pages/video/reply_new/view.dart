@@ -1,6 +1,5 @@
-import 'dart:async';
-import 'dart:io';
-import 'dart:math' show max;
+import 'dart:io' show File;
+import 'dart:math' as math;
 
 import 'package:PiliPlus/common/widgets/button/toolbar_icon_button.dart';
 import 'package:PiliPlus/common/widgets/custom_icon.dart';
@@ -228,7 +227,7 @@ class _ReplyPageState extends CommonRichTextPubPageState<ReplyPage> {
     double height = context.isTablet ? 300 : 170;
     final keyboardHeight = controller.keyboardHeight;
     if (keyboardHeight != 0) {
-      height = max(height, keyboardHeight);
+      height = math.max(height, keyboardHeight);
     }
 
     Widget item({

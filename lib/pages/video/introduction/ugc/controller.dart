@@ -1,5 +1,4 @@
-import 'dart:async';
-import 'dart:math';
+import 'dart:math' as math;
 
 import 'package:PiliPlus/common/widgets/button/icon_button.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart';
@@ -176,10 +175,10 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
     if (result case Success(:final response)) {
       late final stat = videoDetail.value.stat;
       if (response.like!) {
-        stat?.like = max(1, stat.like);
+        stat?.like = math.max(1, stat.like);
       }
       if (response.favorite!) {
-        stat?.favorite = max(1, stat.favorite);
+        stat?.favorite = math.max(1, stat.favorite);
       }
       hasLike.value = response.like!;
       hasDislike.value = response.dislike!;

@@ -4,7 +4,7 @@
 
 // ignore_for_file: prefer_initializing_formals
 
-import 'dart:async';
+import 'dart:async' show scheduleMicrotask;
 import 'dart:math' as math;
 
 import 'package:PiliPlus/common/widgets/flutter/page/scrollable_helpers.dart';

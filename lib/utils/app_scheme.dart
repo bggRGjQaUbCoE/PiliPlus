@@ -1,4 +1,4 @@
-import 'dart:async';
+import 'dart:async' show StreamSubscription;
 
 import 'package:PiliPlus/common/widgets/scaffold.dart';
 import 'package:PiliPlus/common/widgets/view_safe_area.dart';

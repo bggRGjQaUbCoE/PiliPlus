@@ -6,9 +6,15 @@
 
 import 'dart:math' as math;
 
-import 'package:collection/collection.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/gestures.dart';
+import 'package:collection/collection.dart' show IterableExtension;
+import 'package:flutter/foundation.dart'
+    show
+        kFlutterMemoryAllocationsEnabled,
+        debugMaybeDispatchCreated,
+        clampDouble,
+        debugMaybeDispatchDisposed,
+        objectRuntimeType;
+import 'package:flutter/gestures.dart' show Drag;
 import 'package:flutter/material.dart' hide DraggableScrollableSheet;
 
 part 'package:PiliPlus/common/widgets/draggable_sheet/dyn.dart';

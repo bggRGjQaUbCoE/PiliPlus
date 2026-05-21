@@ -16,7 +16,7 @@
 /// @docImport 'text_selection_toolbar_layout_delegate.dart';
 library;
 
-import 'dart:async';
+import 'dart:async' show Timer, scheduleMicrotask;
 import 'dart:io' show Platform;
 import 'dart:math' as math;
 import 'dart:ui' as ui hide TextStyle;

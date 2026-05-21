@@ -1,4 +1,4 @@
-import 'dart:async';
+import 'dart:async' show Timer;
 
 import 'package:PiliPlus/common/widgets/button/icon_button.dart';
 import 'package:PiliPlus/common/widgets/radio_widget.dart';

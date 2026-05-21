@@ -1,4 +1,4 @@
-import 'dart:async';
+import 'dart:async' show StreamSubscription;
 
 import 'package:PiliPlus/models/user/info.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';

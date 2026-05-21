@@ -1,5 +1,5 @@
-import 'dart:async';
-import 'dart:io';
+import 'dart:async' show Timer, StreamSubscription;
+import 'dart:io' show Platform;
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 

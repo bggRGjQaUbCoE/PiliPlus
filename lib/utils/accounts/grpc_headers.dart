@@ -1,4 +1,4 @@
-import 'dart:convert';
+import 'dart:convert' show base64Encode;
 
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/grpc/bilibili/metadata.pb.dart';

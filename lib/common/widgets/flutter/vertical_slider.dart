@@ -4,7 +4,7 @@
 
 // ignore_for_file: prefer_initializing_formals
 
-import 'dart:async';
+import 'dart:async' show Timer;
 import 'dart:math' as math;
 
 import 'package:flutter/cupertino.dart';

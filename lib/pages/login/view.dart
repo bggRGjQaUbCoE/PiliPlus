@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
@@ -76,9 +74,7 @@ class _LoginPageState extends State<LoginPage> {
                     globalKey.currentContext!.findRenderObject()!
                         as RenderRepaintBoundary;
                 final image = await boundary.toImage(pixelRatio: 3);
-                ByteData? byteData = await image.toByteData(
-                  format: ImageByteFormat.png,
-                );
+                ByteData? byteData = await image.toByteData(format: .png);
                 Uint8List pngBytes = byteData!.buffer.asUint8List();
                 SmartDialog.dismiss();
                 String picName =

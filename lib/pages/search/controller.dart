@@ -1,4 +1,4 @@
-import 'dart:async';
+import 'dart:async' show StreamController, StreamSubscription;
 
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
 import 'package:PiliPlus/http/loading_state.dart';

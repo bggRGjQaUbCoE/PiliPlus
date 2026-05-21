@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/utils/extension/scroll_controller_ext.dart';
 import 'package:flutter/widgets.dart' show ScrollController;

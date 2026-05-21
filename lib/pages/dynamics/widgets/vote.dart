@@ -1,4 +1,4 @@
-import 'dart:async';
+import 'dart:async' show FutureOr;
 
 import 'package:PiliPlus/common/widgets/avatars.dart';
 import 'package:PiliPlus/common/widgets/badge.dart';

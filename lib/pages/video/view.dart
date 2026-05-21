@@ -1,7 +1,5 @@
-import 'dart:async';
-import 'dart:io';
-import 'dart:math';
-import 'dart:ui';
+import 'dart:io' show Platform;
+import 'dart:math' as math;
 
 import 'package:PiliPlus/common/assets.dart';
 import 'package:PiliPlus/common/style.dart';
@@ -59,7 +57,7 @@ import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart';
 import 'package:floating/floating.dart';
-import 'package:flutter/foundation.dart' show kDebugMode;
+import 'package:flutter/foundation.dart' show kDebugMode, clampDouble;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show SystemUiOverlayStyle;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -390,7 +388,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
 
     final shortestSide = size.shortestSide;
     final minVideoHeight = shortestSide / Style.aspectRatio16x9;
-    final maxVideoHeight = max(size.longestSide * 0.65, shortestSide);
+    final maxVideoHeight = math.max(size.longestSide * 0.65, shortestSide);
     videoDetailController
       ..isPortrait = isPortrait = maxHeight >= maxWidth
       ..minVideoHeight = minVideoHeight
@@ -1344,7 +1342,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
         if (videoDetailController.plPlayerController.enableBlock)
           Positioned(
             left: 16,
-            bottom: isFullScreen ? max(75, maxHeight * 0.25) : 75,
+            bottom: isFullScreen ? math.max(75, maxHeight * 0.25) : 75,
             width: 120,
             child: AnimatedList(
               padding: EdgeInsets.zero,

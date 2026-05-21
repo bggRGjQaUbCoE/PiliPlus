@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'dart:io' show File;
 
 import 'package:PiliPlus/utils/json_file_handler.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';

@@ -1,5 +1,5 @@
-import 'dart:async';
-import 'dart:convert';
+import 'dart:async' show Timer;
+import 'dart:convert' show jsonDecode;
 import 'dart:math' as math;
 
 import 'package:PiliPlus/common/widgets/dialog/report.dart';

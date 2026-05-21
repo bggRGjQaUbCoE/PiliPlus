@@ -1,6 +1,6 @@
 // ignore_for_file: constant_identifier_names
 
-import 'dart:ui';
+import 'dart:ui' show Color;
 
 import 'package:PiliPlus/models/common/sponsor_block/action_type.dart';
 

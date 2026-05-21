@@ -1,5 +1,5 @@
-import 'dart:convert';
-import 'dart:io';
+import 'dart:convert' show jsonEncode;
+import 'dart:io' show RandomAccessFile;
 
 import 'package:PiliPlus/services/logger.dart' show LoggerUtils;
 import 'package:catcher_2/model/platform_type.dart';
@@ -16,7 +16,7 @@ class JsonFileHandler extends ReportHandler {
   final bool handleWhenRejected;
 
   static Future<RandomAccessFile> _future = LoggerUtils.getLogsPath()
-      .then((file) => file.open(mode: FileMode.writeOnlyAppend))
+      .then((file) => file.open(mode: .writeOnlyAppend))
       .then((raf) => raf.writeFrom(const []))
       .then(_flush);
 

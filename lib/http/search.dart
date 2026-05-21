@@ -1,4 +1,4 @@
-import 'dart:convert';
+import 'dart:convert' show jsonDecode;
 
 import 'package:PiliPlus/http/api.dart';
 import 'package:PiliPlus/http/init.dart';
@@ -32,7 +32,7 @@ abstract final class SearchHttp {
       },
     );
     if (res.data is String) {
-      Map<String, dynamic> resultMap = json.decode(res.data);
+      Map<String, dynamic> resultMap = jsonDecode(res.data);
       if (resultMap['code'] == 0) {
         if (resultMap['result'] is Map) {
           return Success(SearchSuggestModel.fromJson(resultMap['result']));

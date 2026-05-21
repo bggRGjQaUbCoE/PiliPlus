@@ -1,4 +1,4 @@
-import 'dart:async';
+import 'dart:async' show StreamSubscription;
 
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/grpc/audio.dart';

@@ -1,4 +1,4 @@
-import 'dart:convert';
+import 'dart:convert' show base64Decode, utf8;
 import 'dart:typed_data';
 
 import 'package:PiliPlus/grpc/bilibili/rpc.pb.dart';

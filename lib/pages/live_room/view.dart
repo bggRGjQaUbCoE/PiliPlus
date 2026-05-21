@@ -1,6 +1,5 @@
-import 'dart:io';
-import 'dart:math';
-import 'dart:ui';
+import 'dart:io' show Platform;
+import 'dart:math' as math;
 
 import 'package:PiliPlus/common/assets.dart';
 import 'package:PiliPlus/common/style.dart';
@@ -47,7 +46,7 @@ import 'package:PiliPlus/utils/utils.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:canvas_danmaku/canvas_danmaku.dart';
 import 'package:floating/floating.dart';
-import 'package:flutter/foundation.dart' show kDebugMode;
+import 'package:flutter/foundation.dart' show kDebugMode, clampDouble;
 import 'package:flutter/material.dart' hide PageView;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -432,7 +431,7 @@ class _LiveRoomPageState extends State<LiveRoomPage>
           offstage: isFullScreen,
           child: SizedBox(
             width: maxWidth,
-            height: max(0, bottomHeight),
+            height: math.max(0, bottomHeight),
             child: _buildBottomWidget,
           ),
         ),
@@ -655,7 +654,10 @@ class _LiveRoomPageState extends State<LiveRoomPage>
   Widget _buildBodyH(bool isFullScreen) {
     double videoWidth =
         clampDouble(maxHeight / maxWidth * 1.08, 0.56, 0.7) * maxWidth;
-    final rightWidth = min(400.0, maxWidth - videoWidth - padding.horizontal);
+    final rightWidth = math.min(
+      400.0,
+      maxWidth - videoWidth - padding.horizontal,
+    );
     videoWidth = maxWidth - rightWidth - padding.horizontal;
     final videoHeight = maxHeight - padding.top - kToolbarHeight;
     final width = isFullScreen ? maxWidth : videoWidth;

@@ -1,4 +1,4 @@
-import 'dart:convert';
+import 'dart:convert' show jsonEncode;
 
 import 'package:PiliPlus/http/api.dart';
 import 'package:PiliPlus/http/constants.dart';

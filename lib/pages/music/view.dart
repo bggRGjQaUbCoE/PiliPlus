@@ -1,5 +1,5 @@
-import 'dart:io';
-import 'dart:math';
+import 'dart:io' show Platform;
+import 'dart:math' as math;
 
 import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/custom_icon.dart';
@@ -105,7 +105,7 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
   Widget _buildBody(ThemeData theme) => Obx(() {
     switch (controller.infoState.value) {
       case Success(:final response):
-        double padding = max(maxWidth / 2 - Grid.smallCardWidth, 0);
+        double padding = math.max(maxWidth / 2 - Grid.smallCardWidth, 0);
         final Widget child;
         if (isPortrait) {
           child = Padding(

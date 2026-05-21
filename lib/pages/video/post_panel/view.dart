@@ -1,5 +1,5 @@
-import 'dart:async';
-import 'dart:math';
+import 'dart:async' show Timer;
+import 'dart:math' as math;
 
 import 'package:PiliPlus/common/widgets/button/icon_button.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
@@ -145,7 +145,7 @@ class PostPanel extends CommonSlidePage {
                         .toList();
                     double duration = 0;
                     for (int i = 0; i < split.length; i++) {
-                      duration += split[i] * pow(60, i);
+                      duration += split[i] * math.pow(60, i);
                     }
                     if (duration <= videoDuration) {
                       updateSegment(
@@ -477,7 +477,7 @@ class _PostPanelState extends State<PostPanel>
                   }
                   return;
                 }
-                final seek = max(0, start - 2000);
+                final seek = math.max(0, start - 2000);
                 await player.seek(Duration(milliseconds: seek));
                 if (!player.state.playing) {
                   await player.play();

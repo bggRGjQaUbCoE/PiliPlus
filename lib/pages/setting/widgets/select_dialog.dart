@@ -1,4 +1,4 @@
-import 'dart:async';
+import 'dart:async' show TimeoutException;
 
 import 'package:PiliPlus/http/browser_ua.dart';
 import 'package:PiliPlus/http/constants.dart';

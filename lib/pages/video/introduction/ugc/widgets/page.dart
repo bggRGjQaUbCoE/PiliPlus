@@ -1,5 +1,5 @@
-import 'dart:async';
-import 'dart:math';
+import 'dart:async' show StreamSubscription;
+import 'dart:math' as math;
 
 import 'package:PiliPlus/common/assets.dart';
 import 'package:PiliPlus/models_new/video/video_detail/page.dart';
@@ -62,7 +62,7 @@ class _PagesPanelState extends State<PagesPanel> {
       offset = targetOffset;
       _listener = _videoDetailController.cid.listen((cid) {
         this.cid = cid;
-        pageIndex = max(0, pages.indexWhere((e) => e.cid == cid));
+        pageIndex = math.max(0, pages.indexWhere((e) => e.cid == cid));
         if (!mounted) return;
         setState(() {});
         jumpToCurr();
@@ -73,7 +73,7 @@ class _PagesPanelState extends State<PagesPanel> {
 
   double get targetOffset {
     const double itemWidth = 150;
-    return max(0, pageIndex * itemWidth - itemWidth / 2);
+    return math.max(0, pageIndex * itemWidth - itemWidth / 2);
   }
 
   void jumpToCurr() {

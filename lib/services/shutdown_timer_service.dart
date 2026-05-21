@@ -1,6 +1,7 @@
 // 定时关闭服务
-import 'dart:async';
-import 'dart:io';
+
+import 'dart:async' show Timer;
+import 'dart:io' show exit;
 
 import 'package:PiliPlus/models/common/enum_with_label.dart';
 import 'package:PiliPlus/pages/video/introduction/ugc/widgets/menu_row.dart';

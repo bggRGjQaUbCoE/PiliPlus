@@ -1,6 +1,6 @@
 // code from cached_network_svg_image;
 
-import 'dart:developer';
+import 'dart:developer' show log;
 
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';

@@ -1,7 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/gestures.dart';
+import 'package:flutter/gestures.dart' show HorizontalDragGestureRecognizer;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart'
@@ -311,7 +311,7 @@ class _EagerHorizontalDragGestureRecognizer
   @override
   void addAllowedPointer(PointerDownEvent event) {
     super.addAllowedPointer(event);
-    resolve(GestureDisposition.accepted);
+    resolve(.accepted);
   }
 
   @override

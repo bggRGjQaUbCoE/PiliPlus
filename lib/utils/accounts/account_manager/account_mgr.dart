@@ -1,6 +1,6 @@
 // edit from package:dio_cookie_manager
-import 'dart:async';
-import 'dart:io';
+
+import 'dart:io' show Cookie, HttpHeaders;
 
 import 'package:PiliPlus/http/api.dart';
 import 'package:PiliPlus/http/constants.dart';

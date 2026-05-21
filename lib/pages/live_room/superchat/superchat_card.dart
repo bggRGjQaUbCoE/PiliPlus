@@ -1,4 +1,4 @@
-import 'dart:async';
+import 'dart:async' show Timer;
 
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/models/common/image_type.dart';

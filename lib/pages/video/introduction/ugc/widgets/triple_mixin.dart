@@ -1,4 +1,4 @@
-import 'dart:async';
+import 'dart:async' show Timer;
 
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:flutter/material.dart';

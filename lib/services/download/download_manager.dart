@@ -1,5 +1,4 @@
-import 'dart:async';
-import 'dart:io';
+import 'dart:io' show File;
 
 import 'package:PiliPlus/http/init.dart';
 import 'package:PiliPlus/models_new/download/bili_download_entry_info.dart';
@@ -40,7 +39,7 @@ class DownloadManager {
     }
 
     final sink = file.openWrite(
-      mode: received == 0 ? FileMode.writeOnly : FileMode.writeOnlyAppend,
+      mode: received == 0 ? .writeOnly : .writeOnlyAppend,
     );
 
     Future<void> onError(Object e, {bool delete = false}) async {

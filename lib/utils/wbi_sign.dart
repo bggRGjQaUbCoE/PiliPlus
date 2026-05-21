@@ -2,8 +2,9 @@
 // https://github.com/SocialSisterYi/bilibili-API-collect/blob/master/docs/misc/sign/wbi.md
 // import md5 from 'md5'
 // import axios from 'axios'
-import 'dart:async';
-import 'dart:convert';
+
+import 'dart:async' show FutureOr;
+import 'dart:convert' show utf8;
 
 import 'package:PiliPlus/http/api.dart';
 import 'package:PiliPlus/http/init.dart';

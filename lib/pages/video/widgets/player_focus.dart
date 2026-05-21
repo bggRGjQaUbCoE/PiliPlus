@@ -1,4 +1,4 @@
-import 'dart:async';
+import 'dart:async' show Timer;
 import 'dart:io' show exit, Platform;
 import 'dart:math' as math;
 

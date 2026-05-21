@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:PiliPlus/models/common/rank_type.dart';
 import 'package:PiliPlus/pages/common/common_controller.dart';
 import 'package:PiliPlus/pages/rank/zone/controller.dart';

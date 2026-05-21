@@ -1,5 +1,4 @@
-import 'dart:async';
-import 'dart:math' show max;
+import 'dart:math' as math;
 
 import 'package:PiliPlus/http/constants.dart';
 import 'package:PiliPlus/http/fav.dart';
@@ -82,10 +81,10 @@ class PgcIntroController extends CommonIntroController {
       final hasFav = response.favorite == 1;
       late final stat = pgcItem.stat;
       if (hasLike) {
-        stat?.like = max(1, stat.like);
+        stat?.like = math.max(1, stat.like);
       }
       if (hasFav) {
-        stat?.favorite = max(1, stat.favorite);
+        stat?.favorite = math.max(1, stat.favorite);
       }
       this.hasLike.value = hasLike;
       coinNum.value = response.coinNumber!;

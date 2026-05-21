@@ -1,5 +1,4 @@
-import 'dart:async';
-import 'dart:io';
+import 'dart:io' show Platform;
 import 'dart:math' show max;
 
 import 'package:PiliPlus/models/common/publish_panel_type.dart';

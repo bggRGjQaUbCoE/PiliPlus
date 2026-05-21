@@ -1,4 +1,4 @@
-import 'dart:convert';
+import 'dart:convert' show ascii;
 
 import 'package:PiliPlus/http/danmaku_block.dart';
 import 'package:PiliPlus/http/loading_state.dart';

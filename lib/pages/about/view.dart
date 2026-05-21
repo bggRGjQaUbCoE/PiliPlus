@@ -1,5 +1,4 @@
-import 'dart:async';
-import 'dart:io';
+import 'dart:io' show Platform;
 
 import 'package:PiliPlus/build_config.dart';
 import 'package:PiliPlus/common/assets.dart';

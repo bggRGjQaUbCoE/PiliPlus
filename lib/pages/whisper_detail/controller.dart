@@ -1,5 +1,4 @@
-import 'dart:async';
-import 'dart:convert';
+import 'dart:convert' show jsonEncode;
 
 import 'package:PiliPlus/grpc/bilibili/im/interfaces/v1.pb.dart'
     show EmotionInfo, RspSessionMsg;

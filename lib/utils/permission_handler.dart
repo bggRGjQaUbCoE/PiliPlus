@@ -1,5 +1,5 @@
-import 'dart:async';
-import 'dart:io';
+import 'dart:async' show FutureOr;
+import 'dart:io' show Platform;
 
 import 'package:flutter/foundation.dart' show VoidCallback;
 import 'package:permission_handler_platform_interface/permission_handler_platform_interface.dart';

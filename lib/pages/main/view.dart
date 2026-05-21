@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'dart:io' show Platform, exit;
 
 import 'package:PiliPlus/common/assets.dart';
 import 'package:PiliPlus/common/constants.dart';

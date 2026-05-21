@@ -1,4 +1,4 @@
-import 'dart:convert';
+import 'dart:convert' show ascii;
 
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/http/api.dart';

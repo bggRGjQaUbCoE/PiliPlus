@@ -50,7 +50,10 @@ dependencies:
     git:
       url: https://github.com/bggRGjQaUbCoE/canvas_danmaku.git
       ref: dom
-  catcher_2: ^2.1.0
+  catcher_2:
+    git:
+      url: https://github.com/bggRGjQaUbCoE/catcher_2.git
+      ref: dev
   characters: ^1.4.1
   chat_bottom_container:
     git:

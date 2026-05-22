@@ -238,10 +238,11 @@ packages:
   catcher_2:
     dependency: "direct main"
     description:
-      name: catcher_2
-      sha256: ac9dd03230fa4058d14d46450335ca3c40564f734d793e52f81053f3cbf95009
-      url: "https://pub.dev"
-    source: hosted
+      path: "."
+      ref: dev
+      resolved-ref: a20878e9fe5375252c9ea22697d4dc4823544b1a
+      url: "https://github.com/bggRGjQaUbCoE/catcher_2.git"
+    source: git
     version: "2.1.9"
   characters:
     dependency: "direct main"
@@ -498,7 +499,7 @@ packages:
     description:
       path: "."
       ref: dev
-      resolved-ref: c4672374956fa28d117ef7a55a6e708daddbf462
+      resolved-ref: c7e382200bf8a490347f8705b10b02e694faae1b
       url: "https://github.com/bggRGjQaUbCoE/flutter_file_picker.git"
     source: git
     version: "12.0.0-beta.4"
@@ -670,10 +671,10 @@ packages:
     dependency: transitive
     description:
       name: flutter_mailer
-      sha256: "149e51d4e3ba12f8b61e1923ff4304f308acb856b92e9d09326bec6a1ad943d6"
+      sha256: e1c0b4425e3cc789f8dd914fd08b5da660c3ac46c8ebf3e7db183d39775a8fa6
       url: "https://pub.dev"
     source: hosted
-    version: "3.0.1"
+    version: "3.0.2"
   flutter_native_splash:
     dependency: "direct dev"
     description:
@@ -734,14 +735,6 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
-  fluttertoast:
-    dependency: transitive
-    description:
-      name: fluttertoast
-      sha256: "144ddd74d49c865eba47abe31cbc746c7b311c82d6c32e571fd73c4264b740e2"
-      url: "https://pub.dev"
-    source: hosted
-    version: "9.0.0"
   font_awesome_flutter:
     dependency: "direct main"
     description:

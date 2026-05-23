@@ -37,7 +37,7 @@ Set-Location $env:FLUTTER_ROOT
 $picks   = @()
 $reverts = @()
 $patches = @($ModalBarrierPatch, $TextSelectionPatch, $MouseCursorPatch,
-            $NavigationBarPatch, $PaddingPatch, $ImageCachePatch, $ImageAnimPatch.
+            $NavigationBarPatch, $PaddingPatch, $ImageCachePatch, $ImageAnimPatch,
             $LayoutBuilderPatch)
 
 switch ($platform.ToLower()) {

@@ -6,6 +6,7 @@ import 'package:PiliPlus/http/init.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/login.dart';
 import 'package:PiliPlus/models/common/account_type.dart';
+import 'package:PiliPlus/models/common/login_type.dart';
 import 'package:PiliPlus/models/login/model.dart';
 import 'package:PiliPlus/pages/login/geetest/geetest_webview_dialog.dart';
 import 'package:PiliPlus/utils/accounts.dart';
@@ -40,7 +41,7 @@ class LoginPageController extends GetxController
   @override
   void onInit() {
     super.onInit();
-    tabController = TabController(length: 3, vsync: this)
+    tabController = TabController(length: LoginType.values.length, vsync: this)
       ..addListener(_handleTabChange);
   }
 
@@ -95,7 +96,7 @@ class LoginPageController extends GetxController
   }
 
   void _handleTabChange() {
-    if (tabController.index == 2) {
+    if (tabController.index == LoginType.qrcode.index) {
       if (qrCodeTimer == null || !qrCodeTimer!.isActive) {
         refreshQRCode();
       }
@@ -148,7 +149,7 @@ class LoginPageController extends GetxController
       );
       if (result.data['code'] == 0) {
         try {
-          await LoginAccount(
+          final account = LoginAccount(
             BiliCookieJar.fromJson(
               Map.fromEntries(
                 cookieTextController.text.split(';').map((item) {
@@ -159,8 +160,14 @@ class LoginPageController extends GetxController
             ),
             null,
             null,
-          ).onChange();
-          if (!Accounts.main.isLogin) await switchAccountDialog(Get.context!);
+          );
+          await account.onChange();
+          if (!Accounts.main.isLogin) {
+            await switchAccountDialog(
+              Get.context!,
+              accounts: List.filled(AccountType.values.length, account),
+            );
+          }
           SmartDialog.showToast('登录成功');
           Get.back();
         } catch (e) {
@@ -452,16 +459,22 @@ class LoginPageController extends GetxController
       SmartDialog.showToast('登录成功');
     } else {
       SmartDialog.showToast('登录成功, 请先设置账号模式');
-      await switchAccountDialog(Get.context!);
+      await switchAccountDialog(
+        Get.context!,
+        accounts: List.filled(AccountType.values.length, account),
+      );
     }
   }
 
-  static Future<void>? switchAccountDialog(BuildContext context) {
+  static Future<void>? switchAccountDialog(
+    BuildContext context, {
+    List<Account>? accounts,
+  }) {
     if (Accounts.account.isEmpty) {
       SmartDialog.showToast('请先登录');
       return Get.toNamed('/loginPage');
     }
-    final selectAccount = List.of(Accounts.accountMode);
+    final selectAccount = accounts ?? List.of(Accounts.accountMode);
     final options = {
       AnonymousAccount(): '0',
       ...Accounts.account.toMap().map(
@@ -471,6 +484,7 @@ class LoginPageController extends GetxController
     bool quickSelect = selectAccount.every((e) => e == selectAccount.first);
     return showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (context) => AlertDialog(
         title: Row(
           crossAxisAlignment: .start,

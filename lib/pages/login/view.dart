@@ -3,6 +3,7 @@ import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart';
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/models/common/login_type.dart';
 import 'package:PiliPlus/pages/login/controller.dart';
 import 'package:PiliPlus/pages/webview/view.dart';
 import 'package:PiliPlus/utils/extension/size_ext.dart';
@@ -54,7 +55,7 @@ class _LoginPageState extends State<LoginPage> {
             '剩余有效时间: ${_loginPageCtr.qrCodeLeftTime} 秒',
             style: TextStyle(
               fontFeatures: const [FontFeature.tabularFigures()],
-              color: theme.colorScheme.primaryFixedDim,
+              color: theme.colorScheme.primary,
             ),
           ),
         ),
@@ -368,29 +369,16 @@ class _LoginPageState extends State<LoginPage> {
                       child: TabBar(
                         isScrollable: true,
                         dividerHeight: 0,
-                        tabs: const [
-                          Tab(
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [Icon(Icons.password), Text(' 密码')],
-                            ),
-                          ),
-                          Tab(
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [Icon(Icons.qr_code), Text(' 扫码')],
-                            ),
-                          ),
-                          Tab(
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(Icons.cookie_outlined),
-                                Text(' Cookie'),
-                              ],
-                            ),
-                          ),
-                        ],
+                        tabs: LoginType.values
+                            .map(
+                              (e) => Tab(
+                                child: Row(
+                                  mainAxisSize: .min,
+                                  children: [e.icon, Text(' ${e.label}')],
+                                ),
+                              ),
+                            )
+                            .toList(),
                         controller: _loginPageCtr.tabController,
                       ),
                     ),
@@ -400,11 +388,9 @@ class _LoginPageState extends State<LoginPage> {
           ),
           if (isPortrait)
             TabBar(
-              tabs: const [
-                Tab(icon: Icon(Icons.password), text: '密码'),
-                Tab(icon: Icon(Icons.qr_code), text: '扫码'),
-                Tab(icon: Icon(Icons.cookie_outlined), text: 'Cookie'),
-              ],
+              tabs: LoginType.values
+                  .map((e) => Tab(icon: e.icon, text: e.label))
+                  .toList(),
               controller: _loginPageCtr.tabController,
             ),
           Expanded(

@@ -173,8 +173,10 @@ class FavDetailController
       folderInfo
         ..value.favState = isFav ? 0 : 1
         ..refresh();
+      SmartDialog.showToast('${isFav ? '取消' : ''}收藏成功');
+    } else {
+      res.toast();
     }
-    res.toast();
   }
 
   Future<void> cleanFav() async {

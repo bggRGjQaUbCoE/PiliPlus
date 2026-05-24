@@ -20,7 +20,7 @@ class PayCoinsPage extends StatefulWidget {
     required this.onPayCoin,
     int copyright = 1,
     this.hasCoin = false,
-  }) : hasCopyright = copyright == 1;
+  }) : hasCopyright = copyright != 2;
 
   final Function(int coin, bool coinWithLike) onPayCoin;
   final bool hasCopyright;

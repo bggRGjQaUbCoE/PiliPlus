@@ -24,7 +24,6 @@ import 'package:PiliPlus/models_new/video/video_detail/stat_detail.dart';
 import 'package:PiliPlus/models_new/video/video_detail/ugc_season.dart';
 import 'package:PiliPlus/pages/common/common_intro_controller.dart';
 import 'package:PiliPlus/pages/dynamics_repost/view.dart';
-import 'package:PiliPlus/pages/video/pay_coins/view.dart';
 import 'package:PiliPlus/pages/video/related/controller.dart';
 import 'package:PiliPlus/pages/video/reply/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_repeat.dart';
@@ -276,31 +275,8 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
     }
   }
 
-  // 投币
   @override
-  void actionCoinVideo() {
-    if (!isLogin) {
-      SmartDialog.showToast('账号未登录');
-      return;
-    }
-
-    int copyright = videoDetail.value.copyright ?? 1;
-    if ((copyright != 1 && coinNum.value >= 1) || coinNum.value >= 2) {
-      SmartDialog.showToast('达到投币上限啦~');
-      return;
-    }
-
-    if (GlobalData.coins != null && GlobalData.coins! < 1) {
-      SmartDialog.showToast('硬币不足');
-      // return;
-    }
-
-    PayCoinsPage.toPayCoinsPage(
-      onPayCoin: coinVideo,
-      copyright: copyright,
-      hasCoin: coinNum.value == 1,
-    );
-  }
+  int get copyright => videoDetail.value.copyright ?? 1;
 
   @override
   (Object, int) get getFavRidType => (IdUtils.bv2av(bvid), 2);

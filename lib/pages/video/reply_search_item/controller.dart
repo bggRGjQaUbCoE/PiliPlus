@@ -42,7 +42,7 @@ class ReplySearchController extends GetxController
     submit();
   }
 
-  void submit() {
+  void submit([_]) {
     videoCtr
       ..scrollController.jumpToTop()
       ..onReload();

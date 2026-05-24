@@ -105,6 +105,9 @@ class _SettingsSearchPageState
                     ),
             ),
           ),
+          SliverPadding(
+            padding: .only(bottom: MediaQuery.viewInsetsOf(context).bottom),
+          ),
         ],
       ),
     );

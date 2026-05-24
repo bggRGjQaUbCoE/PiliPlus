@@ -1756,11 +1756,9 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                               child: BackwardSeekIndicator(
                                 duration:
                                     plPlayerController.fastForBackwardDuration,
-                                onSubmitted: (Duration value) {
-                                  plPlayerController
-                                    ..mountSeekBackwardButton.value = false
-                                    ..onBackward(value);
-                                },
+                                onSubmitted: (value) => plPlayerController
+                                  ..mountSeekBackwardButton.value = false
+                                  ..onBackward(value),
                               ),
                             ),
                           ),
@@ -1777,11 +1775,9 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                               child: ForwardSeekIndicator(
                                 duration:
                                     plPlayerController.fastForBackwardDuration,
-                                onSubmitted: (Duration value) {
-                                  plPlayerController
-                                    ..mountSeekForwardButton.value = false
-                                    ..onForward(value);
-                                },
+                                onSubmitted: (value) => plPlayerController
+                                  ..mountSeekForwardButton.value = false
+                                  ..onForward(value),
                               ),
                             ),
                           ),

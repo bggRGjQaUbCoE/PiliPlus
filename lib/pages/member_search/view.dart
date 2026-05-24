@@ -49,7 +49,7 @@ class _MemberSearchPageState extends State<MemberSearchPage> {
               onPressed: _controller.onClear,
             ),
           ),
-          onSubmitted: (value) => _controller.submit(),
+          onSubmitted: _controller.submit,
           onChanged: (value) {
             if (value.isEmpty) {
               _controller.hasData.value = false;

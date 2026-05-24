@@ -62,7 +62,7 @@ class _ReplySearchPageState extends State<ReplySearchPage> {
               onPressed: _controller.onClear,
             ),
           ),
-          onSubmitted: (value) => _controller.submit(),
+          onSubmitted: _controller.submit,
         ),
       ),
       body: ViewSafeArea(

@@ -39,9 +39,12 @@ class _LoginPageState extends State<LoginPage> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     _loginPageCtr.didChangeDependencies(context);
-    padding =
-        MediaQuery.viewPaddingOf(context).copyWith(top: 0) +
-        const EdgeInsets.only(bottom: 25);
+    final padding = MediaQuery.viewPaddingOf(context);
+    this.padding = .only(
+      left: padding.left,
+      right: padding.right,
+      bottom: padding.bottom + MediaQuery.viewInsetsOf(context).bottom + 25,
+    );
   }
 
   Widget loginByQRCode(ThemeData theme) {

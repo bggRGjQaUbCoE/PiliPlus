@@ -38,9 +38,12 @@ class _ReplySearchChildPageState extends State<ReplySearchChildPage>
         physics: const AlwaysScrollableScrollPhysics(),
         slivers: [
           SliverPadding(
-            padding: EdgeInsets.only(
+            padding: .only(
               top: 7,
-              bottom: MediaQuery.viewPaddingOf(context).bottom + 100,
+              bottom:
+                  MediaQuery.viewPaddingOf(context).bottom +
+                  MediaQuery.viewInsetsOf(context).bottom +
+                  100,
             ),
             sliver: Obx(() => _buildBody(_controller.loadingState.value)),
           ),

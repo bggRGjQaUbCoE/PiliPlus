@@ -47,7 +47,7 @@ class MemberSearchController extends GetxController
     }
   }
 
-  void submit() {
+  void submit([_]) {
     if (editingController.text.isNotEmpty) {
       hasData.value = true;
       arcCtr

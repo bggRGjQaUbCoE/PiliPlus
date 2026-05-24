@@ -177,7 +177,12 @@ class _CreateFavPageState extends State<CreateFavPage> {
   final leadingStyle = const TextStyle(fontSize: 14);
 
   Widget _buildBody(ThemeData theme) => SingleChildScrollView(
-    padding: .only(bottom: MediaQuery.viewPaddingOf(context).bottom + 25),
+    padding: .only(
+      bottom:
+          MediaQuery.viewPaddingOf(context).bottom +
+          MediaQuery.viewInsetsOf(context).bottom +
+          25,
+    ),
     child: Column(
       spacing: 12,
       children: [
@@ -234,13 +239,10 @@ class _CreateFavPageState extends State<CreateFavPage> {
                     },
                   );
                 },
-                leading: Text(
-                  '封面',
-                  style: leadingStyle,
-                ),
+                leading: Text('封面', style: leadingStyle),
                 trailing: Row(
                   spacing: 10,
-                  mainAxisSize: MainAxisSize.min,
+                  mainAxisSize: .min,
                   children: [
                     if (_cover?.isNotEmpty == true)
                       Padding(
@@ -309,10 +311,10 @@ class _CreateFavPageState extends State<CreateFavPage> {
                       color: theme.colorScheme.outline,
                     ),
                     border: const OutlineInputBorder(
-                      borderSide: BorderSide.none,
+                      borderSide: .none,
                       gapPadding: 0,
                     ),
-                    contentPadding: EdgeInsets.zero,
+                    contentPadding: .zero,
                   ),
                 ),
               ),
@@ -323,7 +325,7 @@ class _CreateFavPageState extends State<CreateFavPage> {
           ListTile(
             tileColor: theme.colorScheme.onInverseSurface,
             title: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: .start,
               children: [
                 SizedBox(
                   width: 55,
@@ -364,7 +366,7 @@ class _CreateFavPageState extends State<CreateFavPage> {
           ),
         Builder(
           builder: (context) {
-            void onTap() {
+            void onTap([_]) {
               _isPublic = !_isPublic;
               (context as Element).markNeedsBuild();
             }
@@ -381,7 +383,7 @@ class _CreateFavPageState extends State<CreateFavPage> {
                 scale: 0.8,
                 child: Switch(
                   value: _isPublic,
-                  onChanged: (value) => onTap(),
+                  onChanged: onTap,
                 ),
               ),
             );

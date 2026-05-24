@@ -15,7 +15,7 @@ abstract class CommonSearchController<R, T> extends CommonListController<R, T> {
   }
 
   @override
-  Future<void> onRefresh() {
+  Future<void> onRefresh([_]) {
     if (editController.value.text.isEmpty) {
       return Future.syncValue(null);
     }

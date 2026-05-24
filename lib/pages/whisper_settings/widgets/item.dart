@@ -30,7 +30,7 @@ class ImSettingsItem extends StatelessWidget {
     final subtitleStyle = TextStyle(fontSize: 13, color: outline);
 
     if (item.hasSwitch_1()) {
-      Future<void> onChanged() async {
+      Future<void> onChanged([_]) async {
         item.switch_1.switchOn = !item.switch_1.switchOn;
         rebuild();
         if (!await onSet()) {
@@ -54,7 +54,7 @@ class ImSettingsItem extends StatelessWidget {
           scale: 0.8,
           child: Switch(
             value: item.switch_1.switchOn,
-            onChanged: (value) => onChanged(),
+            onChanged: onChanged,
           ),
         ),
       );

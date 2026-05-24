@@ -138,7 +138,7 @@ class SSearchController extends GetxController
   }
 
   // 搜索
-  Future<void> submit() async {
+  Future<void> submit([_]) async {
     if (controller.text.isEmpty) {
       if (hintText.isNullOrEmpty) {
         return;

@@ -85,13 +85,11 @@ class _EditProfilePageState extends State<EditProfilePage> {
       if (mounted) {
         setState(() {
           if (res.data['code'] == 0) {
-            AccountMyInfoData data = AccountMyInfoData.fromJson(
-              res.data['data'],
-            );
+            final data = AccountMyInfoData.fromJson(res.data['data']);
             _loadingState = Success(data);
             accountService.face.value = data.face!;
             try {
-              UserInfoData userInfo = Pref.userInfoCache!
+              final userInfo = Pref.userInfoCache!
                 ..uname = data.name
                 ..face = data.face;
               GStorage.userInfo.put('userInfoCache', userInfo);
@@ -162,7 +160,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 SmartDialog.showToast('硬币不足');
               } else {
                 _editDialog(
-                  type: ProfileType.uname,
+                  type: .uname,
                   title: '昵称',
                   text: response.name!,
                 );
@@ -193,7 +191,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 ).then((res) {
                   if (res != null) {
                     _update(
-                      type: ProfileType.birthday,
+                      type: .birthday,
                       datum: DateFormatUtils.longFormat.format(res),
                     );
                   }
@@ -205,7 +203,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
             title: '个性签名',
             text: response.sign,
             onTap: () => _editDialog(
-              type: ProfileType.sign,
+              type: .sign,
               title: '个性签名',
               text: response.sign ?? '',
             ),
@@ -277,7 +275,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
       trailing: current == sex ? const Icon(size: 22, Icons.check) : null,
       onTap: () {
         Get.back();
-        _update(type: ProfileType.sex, datum: sex);
+        _update(type: .sex, datum: sex);
       },
     );
   }
@@ -288,7 +286,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
     required String text,
   }) {
     _textController.text = text;
-    final lines = type == ProfileType.uname ? 1 : 4;
+    final lines = type == .uname ? 1 : 4;
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -301,13 +299,9 @@ class _EditProfilePageState extends State<EditProfilePage> {
             maxLines: lines,
             autofocus: true,
             style: const TextStyle(fontSize: 14),
-            textInputAction: type == ProfileType.sign
-                ? TextInputAction.newline
-                : null,
+            textInputAction: type == .sign ? .newline : null,
             inputFormatters: [
-              LengthLimitingTextInputFormatter(
-                type == ProfileType.uname ? 16 : 70,
-              ),
+              LengthLimitingTextInputFormatter(type == .uname ? 16 : 70),
             ],
             decoration: InputDecoration(
               hintText: text,
@@ -359,13 +353,13 @@ class _EditProfilePageState extends State<EditProfilePage> {
       'platform': 'android',
       's_locale': 'zh_CN',
       'statistics': Constants.statistics,
-      if (type == ProfileType.uname)
+      if (type == .uname)
         'uname': _textController.text
-      else if (type == ProfileType.sign)
+      else if (type == .sign)
         'user_sign': _textController.text
-      else if (type == ProfileType.birthday)
+      else if (type == .birthday)
         'birthday': datum
-      else if (type == ProfileType.sex)
+      else if (type == .sex)
         'sex': datum.toString(),
     };
     AppSign.appSign(data);
@@ -378,7 +372,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
     ).then((res) {
       if (res.data['code'] == 0) {
         AccountMyInfoData data = _loadingState.data;
-        if (type == ProfileType.uname) {
+        if (type == .uname) {
           data
             ..name = _textController.text
             ..coins = data.coins! - 6;
@@ -392,18 +386,18 @@ class _EditProfilePageState extends State<EditProfilePage> {
               ..value.uname = _textController.text
               ..refresh();
           } catch (_) {}
-        } else if (type == ProfileType.sign) {
+        } else if (type == .sign) {
           data.sign = _textController.text;
-        } else if (type == ProfileType.birthday) {
+        } else if (type == .birthday) {
           data.birthday = datum;
-        } else if (type == ProfileType.sex) {
+        } else if (type == .sex) {
           data.sex = datum;
         }
         SmartDialog.showToast('修改成功');
         if (mounted) {
           setState(() {});
         }
-        if (type == ProfileType.uname || type == ProfileType.sign) {
+        if (type == .uname || type == .sign) {
           Get.back();
         }
       } else {
@@ -436,21 +430,21 @@ class _EditProfilePageState extends State<EditProfilePage> {
         title,
         style: const TextStyle(
           fontSize: 14,
-          fontWeight: FontWeight.normal,
+          fontWeight: .normal,
         ),
       ),
       title: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
+        mainAxisAlignment: .end,
         children: [
           if (text != null)
             Flexible(
               child: Text(
                 text,
                 maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+                overflow: .ellipsis,
                 style: TextStyle(
                   fontSize: 14,
-                  fontWeight: FontWeight.normal,
+                  fontWeight: .normal,
                   color: theme.colorScheme.outline,
                 ),
               ),
@@ -472,7 +466,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   Future<void> _pickImg(ThemeData theme) async {
     try {
       XFile? pickedFile = await _imagePicker.pickImage(
-        source: ImageSource.gallery,
+        source: .gallery,
         imageQuality: 100,
       );
       if (pickedFile != null && mounted) {
@@ -496,13 +490,13 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 aspectRatioPresets: const [CropAspectRatioPresetCustom()],
                 lockAspectRatio: true,
                 hideBottomControls: true,
-                cropStyle: CropStyle.circle,
+                cropStyle: .circle,
                 initAspectRatio: const CropAspectRatioPresetCustom(),
               ),
               IOSUiSettings(
                 title: '裁剪',
                 aspectRatioPresets: const [CropAspectRatioPresetCustom()],
-                cropStyle: CropStyle.circle,
+                cropStyle: .circle,
                 aspectRatioLockEnabled: true,
                 resetAspectRatioEnabled: false,
                 aspectRatioPickerButtonHidden: true,

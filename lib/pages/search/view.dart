@@ -57,10 +57,13 @@ class _SearchPageState extends State<SearchPage> {
               trending,
               _buildHistory,
             ] else
-              SliverCrossAxisGroup(
-                slivers: [trending, _buildHistory],
+              SliverCrossAxisGroup(slivers: [trending, _buildHistory]),
+            SliverPadding(
+              padding: .only(
+                bottom:
+                    padding.bottom + MediaQuery.viewInsetsOf(context).bottom,
               ),
-            SliverPadding(padding: .only(bottom: padding.bottom)),
+            ),
           ],
         ),
       ),
@@ -109,7 +112,7 @@ class _SearchPageState extends State<SearchPage> {
         hintText: _searchController.hintText ?? '搜索',
         border: InputBorder.none,
       ),
-      onSubmitted: (value) => _searchController.submit(),
+      onSubmitted: _searchController.submit,
     ),
   );
 

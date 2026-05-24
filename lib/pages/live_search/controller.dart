@@ -45,7 +45,7 @@ class LiveSearchController extends GetxController
     }
   }
 
-  void submit() {
+  void submit([_]) {
     if (editingController.text.isNotEmpty) {
       if (IdUtils.digitOnlyRegExp.hasMatch(editingController.text)) {
         PageUtils.toLiveRoom(int.parse(editingController.text));

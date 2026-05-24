@@ -46,6 +46,9 @@ abstract class CommonSearchPageState<S extends StatefulWidget, R, T>
           ViewSliverSafeArea(
             sliver: Obx(() => _buildBody(controller.loadingState.value)),
           ),
+          SliverPadding(
+            padding: .only(bottom: MediaQuery.viewInsetsOf(context).bottom),
+          ),
         ],
       ),
     );
@@ -81,7 +84,7 @@ abstract class CommonSearchPageState<S extends StatefulWidget, R, T>
               ..focusNode.requestFocus(),
           ),
         ),
-        onSubmitted: (value) => controller.onRefresh(),
+        onSubmitted: controller.onRefresh,
       ),
     );
     if (multiSelect) {

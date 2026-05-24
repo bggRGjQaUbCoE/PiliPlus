@@ -178,6 +178,8 @@ class ChatItem extends StatelessWidget {
           return msgTypeText_1(theme, content: content, textColor: textColor);
         case MsgType.EN_MSG_TYPE_PIC:
           return msgTypePic_2(content);
+        case MsgType.EN_MSG_TYPE_CUSTOM_FACE:
+          return msgTypePic_2(content, showSize: false);
         case MsgType.EN_MSG_TYPE_SHARE_V2:
           return msgTypeShareV2_7(content, textColor);
         case MsgType.EN_MSG_TYPE_VIDEO_CARD:
@@ -619,13 +621,15 @@ class ChatItem extends StatelessWidget {
     );
   }
 
-  Widget msgTypePic_2(Map content) {
+  Widget msgTypePic_2(Map content, {bool showSize = true}) {
     final url = content['url'];
     final imgWidth = (content['width'] as num).toDouble();
     final imgHeight = (content['height'] as num).toDouble();
     num? size;
-    if (content['size'] case num value) {
-      size = value * 1000;
+    if (showSize) {
+      if (content['size'] case num value) {
+        size = value * 1000;
+      }
     }
     final width = math.min(220.0, imgWidth);
     final ratio = imgHeight / imgWidth;

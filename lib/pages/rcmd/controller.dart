@@ -12,10 +12,18 @@ class RcmdController
   int? lastRefreshAt;
 
   @override
+  bool get isEnd => false;
+
+  @override
   void onInit() {
     super.onInit();
     page = 0;
     queryData();
+  }
+
+  @override
+  bool handleError(String? errMsg) {
+    return true;
   }
 
   @override

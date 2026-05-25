@@ -5,7 +5,6 @@ import 'package:PiliPlus/common/widgets/progress_bar/video_progress_indicator.da
 import 'package:PiliPlus/common/widgets/select_mask.dart';
 import 'package:PiliPlus/http/search.dart';
 import 'package:PiliPlus/http/user.dart';
-import 'package:PiliPlus/models/common/badge_type.dart';
 import 'package:PiliPlus/models_new/history/list.dart';
 import 'package:PiliPlus/models_new/video/video_detail/dimension.dart';
 import 'package:PiliPlus/pages/common/multi_select/base.dart';
@@ -47,7 +46,7 @@ class HistoryItem extends StatelessWidget {
             ..onSelect(item);
 
     return Material(
-      type: MaterialType.transparency,
+      type: .transparency,
       child: InkWell(
         onTap: enableMultiSelect
             ? () => ctr.onSelect(item)
@@ -108,15 +107,15 @@ class HistoryItem extends StatelessWidget {
         onLongPress: onLongPress,
         onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
         child: Stack(
-          clipBehavior: Clip.none,
+          clipBehavior: .none,
           children: [
             Padding(
-              padding: const EdgeInsets.symmetric(
+              padding: const .symmetric(
                 horizontal: Style.safeSpace,
                 vertical: 5,
               ),
               child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: .start,
                 children: [
                   AspectRatio(
                     aspectRatio: Style.aspectRatio,
@@ -125,7 +124,7 @@ class HistoryItem extends StatelessWidget {
                         double maxWidth = boxConstraints.maxWidth;
                         double maxHeight = boxConstraints.maxHeight;
                         return Stack(
-                          clipBehavior: Clip.none,
+                          clipBehavior: .none,
                           children: [
                             NetworkImgLayer(
                               src: item.cover?.isNotEmpty == true
@@ -141,14 +140,14 @@ class HistoryItem extends StatelessWidget {
                                     : '${DurationUtils.formatDuration(item.progress)}/${DurationUtils.formatDuration(item.duration)}',
                                 right: 6.0,
                                 bottom: 8.0,
-                                type: PBadgeType.gray,
+                                type: .gray,
                               ),
                             if (item.isFav == 1)
                               const PBadge(
                                 text: '已收藏',
                                 top: 6.0,
                                 right: 6.0,
-                                type: PBadgeType.gray,
+                                type: .gray,
                               )
                             else if (item.badge?.isNotEmpty == true)
                               PBadge(
@@ -156,8 +155,8 @@ class HistoryItem extends StatelessWidget {
                                 top: 6.0,
                                 right: 6.0,
                                 type: business == 'live' && item.liveStatus != 1
-                                    ? PBadgeType.gray
-                                    : PBadgeType.primary,
+                                    ? .gray
+                                    : .primary,
                               ),
                             if (hasDuration &&
                                 item.progress != null &&
@@ -197,14 +196,14 @@ class HistoryItem extends StatelessWidget {
               width: 29,
               height: 29,
               child: PopupMenuButton(
-                padding: EdgeInsets.zero,
+                padding: .zero,
                 tooltip: '功能菜单',
                 icon: Icon(
                   Icons.more_vert_outlined,
                   color: theme.colorScheme.outline,
                   size: 18,
                 ),
-                position: PopupMenuPosition.under,
+                position: .under,
                 itemBuilder: (_) => [
                   if (item.authorMid != null &&
                       item.authorName?.isNotEmpty == true)
@@ -266,7 +265,7 @@ class HistoryItem extends StatelessWidget {
     return Expanded(
       child: Column(
         spacing: 2,
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: .start,
         children: [
           Text(
             item.title!,
@@ -276,7 +275,7 @@ class HistoryItem extends StatelessWidget {
               letterSpacing: 0.3,
             ),
             maxLines: item.videos! > 1 ? 1 : 2,
-            overflow: TextOverflow.ellipsis,
+            overflow: .ellipsis,
           ),
           if (item.history.business == 'pgc' &&
               item.showTitle?.isNotEmpty == true)
@@ -287,14 +286,14 @@ class HistoryItem extends StatelessWidget {
                 color: theme.colorScheme.outline,
               ),
               maxLines: 2,
-              overflow: TextOverflow.ellipsis,
+              overflow: .ellipsis,
             ),
           const Spacer(),
           if (item.authorName?.isNotEmpty == true)
             Text(
               item.authorName!,
               maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+              overflow: .ellipsis,
               style: TextStyle(
                 fontSize: theme.textTheme.labelMedium!.fontSize,
                 color: theme.colorScheme.outline,

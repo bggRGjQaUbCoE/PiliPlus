@@ -8,6 +8,7 @@ import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
 class SubItem extends StatelessWidget {
   final SubItemModel item;
@@ -30,7 +31,7 @@ class SubItem extends StatelessWidget {
       cover: item.cover,
     );
     return Material(
-      type: MaterialType.transparency,
+      type: .transparency,
       child: InkWell(
         onTap: () {
           if (item.state == 1) {
@@ -54,9 +55,9 @@ class SubItem extends StatelessWidget {
         onLongPress: onLongPress,
         onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+          padding: const .symmetric(horizontal: 12, vertical: 5),
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: .start,
             children: [
               AspectRatio(
                 aspectRatio: Style.aspectRatio,
@@ -65,18 +66,14 @@ class SubItem extends StatelessWidget {
                     double maxWidth = boxConstraints.maxWidth;
                     double maxHeight = boxConstraints.maxHeight;
                     return Stack(
-                      clipBehavior: Clip.none,
+                      clipBehavior: .none,
                       children: [
                         NetworkImgLayer(
                           src: item.cover,
                           width: maxWidth,
                           height: maxHeight,
                         ),
-                        PBadge(
-                          right: 6,
-                          top: 6,
-                          text: type,
-                        ),
+                        PBadge(right: 6, top: 6, text: type),
                       ],
                     );
                   },
@@ -99,17 +96,17 @@ class SubItem extends StatelessWidget {
     );
     return Expanded(
       child: Stack(
-        clipBehavior: Clip.none,
+        clipBehavior: .none,
         children: [
           Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: .start,
             children: [
               Expanded(
                 child: Text(
                   item.title!,
                   maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.start,
+                  overflow: .ellipsis,
+                  textAlign: .start,
                   style: const TextStyle(
                     letterSpacing: 0.3,
                   ),
@@ -117,31 +114,60 @@ class SubItem extends StatelessWidget {
               ),
               Text(
                 'UP主: ${item.upper!.name!}',
-                textAlign: TextAlign.start,
+                textAlign: .start,
                 style: style,
                 maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+                overflow: .ellipsis,
               ),
               const SizedBox(height: 4),
               Text(
                 '${item.mediaCount}个视频',
-                textAlign: TextAlign.start,
+                textAlign: .start,
                 style: style,
               ),
             ],
           ),
           Positioned(
-            bottom: 0,
             right: 0,
-            height: 35,
-            width: 35,
-            child: IconButton(
-              onPressed: cancelSub,
-              style: TextButton.styleFrom(
-                foregroundColor: theme.colorScheme.outline,
-                padding: EdgeInsets.zero,
+            bottom: -8,
+            width: 29,
+            height: 29,
+            child: PopupMenuButton(
+              padding: .zero,
+              tooltip: '功能菜单',
+              icon: Icon(
+                Icons.more_vert_outlined,
+                color: theme.colorScheme.outline,
+                size: 18,
               ),
-              icon: const Icon(Icons.delete_outline, size: 18),
+              position: .under,
+              itemBuilder: (_) => [
+                PopupMenuItem(
+                  onTap: () => Get.toNamed('/member?mid=${item.upper?.mid}'),
+                  height: 38,
+                  child: Row(
+                    children: [
+                      const Icon(MdiIcons.accountCircleOutline, size: 16),
+                      const SizedBox(width: 6),
+                      Text(
+                        '访问：${item.upper?.name}',
+                        style: const TextStyle(fontSize: 13),
+                      ),
+                    ],
+                  ),
+                ),
+                PopupMenuItem(
+                  onTap: cancelSub,
+                  height: 38,
+                  child: const Row(
+                    children: [
+                      Icon(Icons.close_outlined, size: 16),
+                      SizedBox(width: 6),
+                      Text('取消订阅', style: TextStyle(fontSize: 13)),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
         ],

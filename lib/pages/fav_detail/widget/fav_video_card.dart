@@ -1,14 +1,11 @@
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/badge.dart';
-import 'package:PiliPlus/common/widgets/button/icon_button.dart';
 import 'package:PiliPlus/common/widgets/image/image_save.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/select_mask.dart';
 import 'package:PiliPlus/common/widgets/stat/stat.dart';
 import 'package:PiliPlus/grpc/bilibili/app/listener/v1.pbenum.dart'
     show PlaylistSource;
-import 'package:PiliPlus/models/common/badge_type.dart';
-import 'package:PiliPlus/models/common/stat_type.dart';
 import 'package:PiliPlus/models_new/fav/fav_detail/media.dart';
 import 'package:PiliPlus/pages/audio/view.dart';
 import 'package:PiliPlus/pages/fav_detail/controller.dart';
@@ -18,6 +15,7 @@ import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
 // 收藏视频卡片 - 水平布局
 class FavVideoCardH extends StatelessWidget {
@@ -55,7 +53,7 @@ class FavVideoCardH extends StatelessWidget {
           );
 
     return Material(
-      type: MaterialType.transparency,
+      type: .transparency,
       child: InkWell(
         onTap: isSort
             ? null
@@ -89,12 +87,9 @@ class FavVideoCardH extends StatelessWidget {
         onLongPress: onLongPress,
         onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
         child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: Style.safeSpace,
-            vertical: 5,
-          ),
+          padding: const .symmetric(horizontal: Style.safeSpace, vertical: 5),
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: .start,
             children: [
               AspectRatio(
                 aspectRatio: Style.aspectRatio,
@@ -103,7 +98,7 @@ class FavVideoCardH extends StatelessWidget {
                     double maxWidth = boxConstraints.maxWidth;
                     double maxHeight = boxConstraints.maxHeight;
                     return Stack(
-                      clipBehavior: Clip.none,
+                      clipBehavior: .none,
                       children: [
                         NetworkImgLayer(
                           src: item.cover,
@@ -114,14 +109,14 @@ class FavVideoCardH extends StatelessWidget {
                           text: DurationUtils.formatDuration(item.duration),
                           right: 6.0,
                           bottom: 6.0,
-                          type: PBadgeType.gray,
+                          type: .gray,
                         ),
                         if (item.type == 12)
                           const PBadge(
                             text: '音频',
                             top: 6.0,
                             right: 6.0,
-                            type: PBadgeType.gray,
+                            type: .gray,
                           )
                         else
                           PBadge(
@@ -133,10 +128,7 @@ class FavVideoCardH extends StatelessWidget {
                           ),
                         if (!isSort)
                           Positioned.fill(
-                            child: selectMask(
-                              colorScheme,
-                              item.checked,
-                            ),
+                            child: selectMask(colorScheme, item.checked),
                           ),
                       ],
                     );
@@ -155,26 +147,26 @@ class FavVideoCardH extends StatelessWidget {
   Widget content(BuildContext context, ColorScheme colorScheme, bool isOwner) {
     return Expanded(
       child: Stack(
-        clipBehavior: Clip.none,
+        clipBehavior: .none,
         children: [
           Column(
             spacing: 3,
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: .start,
             children: [
               Text(
                 item.title!,
-                textAlign: TextAlign.start,
+                textAlign: .start,
                 style: const TextStyle(
                   letterSpacing: 0.3,
                 ),
                 maxLines: 2,
-                overflow: TextOverflow.ellipsis,
+                overflow: .ellipsis,
               ),
               if (item.type == 24 && item.intro?.isNotEmpty == true)
                 Text(
                   item.intro!,
                   maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
+                  overflow: .ellipsis,
                   style: TextStyle(
                     fontSize: 13,
                     color: colorScheme.outline,
@@ -184,7 +176,7 @@ class FavVideoCardH extends StatelessWidget {
               Text(
                 '${DateFormatUtils.dateFormat(item.favTime)} ${item.upper?.name}',
                 maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+                overflow: .ellipsis,
                 style: TextStyle(
                   height: 1,
                   fontSize: 12,
@@ -196,11 +188,11 @@ class FavVideoCardH extends StatelessWidget {
                   spacing: 8,
                   children: [
                     StatWidget(
-                      type: StatType.play,
+                      type: .play,
                       value: item.cntInfo?.play,
                     ),
                     StatWidget(
-                      type: StatType.danmaku,
+                      type: .danmaku,
                       value: item.cntInfo?.danmaku,
                     ),
                   ],
@@ -211,33 +203,66 @@ class FavVideoCardH extends StatelessWidget {
             Positioned(
               right: 0,
               bottom: -8,
-              child: iconButton(
-                icon: const Icon(Icons.clear),
-                tooltip: '取消收藏',
-                iconColor: colorScheme.outline,
-                onPressed: () => showDialog(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    title: const Text('提示'),
-                    content: const Text('要取消收藏吗?'),
-                    actions: [
-                      TextButton(
-                        onPressed: Get.back,
-                        child: Text(
-                          '取消',
-                          style: TextStyle(color: colorScheme.outline),
-                        ),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          Get.back();
-                          ctr!.onCancelFav(index!, item.id!, item.type!);
-                        },
-                        child: const Text('确定取消'),
-                      ),
-                    ],
-                  ),
+              width: 29,
+              height: 29,
+              child: PopupMenuButton(
+                padding: .zero,
+                tooltip: '功能菜单',
+                icon: Icon(
+                  Icons.more_vert_outlined,
+                  color: colorScheme.outline,
+                  size: 18,
                 ),
+                position: .under,
+                itemBuilder: (_) => [
+                  PopupMenuItem(
+                    onTap: () => Get.toNamed('/member?mid=${item.upper?.mid}'),
+                    height: 38,
+                    child: Row(
+                      children: [
+                        const Icon(MdiIcons.accountCircleOutline, size: 16),
+                        const SizedBox(width: 6),
+                        Text(
+                          '访问：${item.upper?.name}',
+                          style: const TextStyle(fontSize: 13),
+                        ),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem(
+                    onTap: () => showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: const Text('提示'),
+                        content: const Text('要取消收藏吗?'),
+                        actions: [
+                          TextButton(
+                            onPressed: Get.back,
+                            child: Text(
+                              '取消',
+                              style: TextStyle(color: colorScheme.outline),
+                            ),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              Get.back();
+                              ctr!.onCancelFav(index!, item.id!, item.type!);
+                            },
+                            child: const Text('确定取消'),
+                          ),
+                        ],
+                      ),
+                    ),
+                    height: 38,
+                    child: const Row(
+                      children: [
+                        Icon(Icons.close_outlined, size: 16),
+                        SizedBox(width: 6),
+                        Text('取消收藏', style: TextStyle(fontSize: 13)),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
         ],

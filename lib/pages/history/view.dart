@@ -68,10 +68,7 @@ class _HistoryPageState extends State<HistoryPage>
         controller: _historyController.scrollController,
         slivers: [
           SliverPadding(
-            padding: EdgeInsets.only(
-              top: 7,
-              bottom: padding.bottom + 100,
-            ),
+            padding: .only(top: 7, bottom: padding.bottom + 100),
             sliver: Obx(
               () => _buildBody(_historyController.loadingState.value),
             ),
@@ -100,18 +97,16 @@ class _HistoryPageState extends State<HistoryPage>
               child: _buildAppBar,
             ),
             body: Padding(
-              padding: EdgeInsets.only(
-                left: padding.left,
-                right: padding.right,
-              ),
+              padding: .only(left: padding.left, right: padding.right),
               child: Obx(() {
                 final tabs = _historyController.tabs;
                 if (tabs.isEmpty) {
                   return child;
                 }
                 return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: .start,
                   children: [
+                    ?_buildPauseTip,
                     TabBar(
                       controller: _historyController.tabController,
                       onTap: (index) {
@@ -158,7 +153,6 @@ class _HistoryPageState extends State<HistoryPage>
 
   AppBar get _buildAppBar => AppBar(
     title: const Text('观看记录'),
-    bottom: _buildPauseTip,
     actions: [
       IconButton(
         tooltip: '搜索',
@@ -242,7 +236,7 @@ class _HistoryPageState extends State<HistoryPage>
         child: Container(
           height: 38,
           color: theme.secondaryContainer.withValues(alpha: 0.8),
-          padding: const EdgeInsets.only(left: 16, right: 6),
+          padding: const .only(left: 16, right: 6),
           child: Row(
             children: [
               Expanded(
@@ -255,7 +249,7 @@ class _HistoryPageState extends State<HistoryPage>
                   TextSpan(
                     children: [
                       WidgetSpan(
-                        alignment: PlaceholderAlignment.middle,
+                        alignment: .middle,
                         child: Icon(
                           Icons.info_outline,
                           size: 18,
@@ -268,13 +262,10 @@ class _HistoryPageState extends State<HistoryPage>
                 ),
               ),
               GestureDetector(
-                behavior: HitTestBehavior.opaque,
+                behavior: .opaque,
                 onTap: () => _historyController.baseCtr.onPauseHistory(context),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 6,
-                    horizontal: 10,
-                  ),
+                  padding: const .symmetric(vertical: 6, horizontal: 10),
                   child: Text(
                     '点击开启',
                     strutStyle: const StrutStyle(height: 1, leading: 0),

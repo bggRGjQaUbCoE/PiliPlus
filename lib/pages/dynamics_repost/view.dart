@@ -3,7 +3,6 @@ import 'package:PiliPlus/common/widgets/flutter/text_field/text_field.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/http/dynamics.dart';
 import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/models/common/publish_panel_type.dart';
 import 'package:PiliPlus/models/dynamics/result.dart';
 import 'package:PiliPlus/pages/common/publish/common_rich_text_pub_page.dart';
 import 'package:PiliPlus/pages/dynamics_mention/controller.dart';
@@ -93,7 +92,7 @@ class _RepostPanelState extends CommonRichTextPubPageState<RepostPanel> {
     Widget page([ScrollController? scrollController]) => Column(
       key: _isMax ? _key : null,
       mainAxisSize: _isMax ? MainAxisSize.max : MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: .start,
       children: [
         if (!_isMax) const SizedBox(height: 10),
         _buildAppBar(theme),
@@ -181,7 +180,7 @@ class _RepostPanelState extends CommonRichTextPubPageState<RepostPanel> {
           Expanded(
             child: Column(
               mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: .start,
               children: [
                 if (_uname?.isNotEmpty == true)
                   Text(
@@ -231,7 +230,7 @@ class _RepostPanelState extends CommonRichTextPubPageState<RepostPanel> {
   Widget _buildEditWidget(ThemeData theme) => Listener(
     onPointerUp: (event) {
       if (readOnly.value) {
-        updatePanelType(PanelType.keyboard);
+        updatePanelType(.keyboard);
       }
     },
     child: Obx(
@@ -322,11 +321,8 @@ class _RepostPanelState extends CommonRichTextPubPageState<RepostPanel> {
                 child: FilledButton.tonal(
                   onPressed: onPublishThrottle,
                   style: FilledButton.styleFrom(
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 10,
-                    ),
+                    tapTargetSize: .shrinkWrap,
+                    padding: const .symmetric(horizontal: 20, vertical: 10),
                     visualDensity: VisualDensity.compact,
                   ),
                   child: Text(widget.rid != null ? '发布' : '转发'),

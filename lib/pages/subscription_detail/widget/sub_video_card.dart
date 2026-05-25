@@ -4,8 +4,6 @@ import 'package:PiliPlus/common/widgets/image/image_save.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/stat/stat.dart';
 import 'package:PiliPlus/http/search.dart';
-import 'package:PiliPlus/models/common/badge_type.dart';
-import 'package:PiliPlus/models/common/stat_type.dart';
 import 'package:PiliPlus/models_new/sub/sub_detail/media.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/duration_utils.dart';
@@ -77,7 +75,7 @@ class SubVideoCardH extends StatelessWidget {
                           ),
                           right: 6.0,
                           bottom: 6.0,
-                          type: PBadgeType.gray,
+                          type: .gray,
                         ),
                       ],
                     );
@@ -121,11 +119,11 @@ class SubVideoCardH extends StatelessWidget {
             spacing: 8,
             children: [
               StatWidget(
-                type: StatType.play,
+                type: .play,
                 value: videoItem.cntInfo?.play,
               ),
               StatWidget(
-                type: StatType.danmaku,
+                type: .danmaku,
                 value: videoItem.cntInfo?.danmaku,
               ),
             ],

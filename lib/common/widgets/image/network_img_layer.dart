@@ -37,8 +37,8 @@ class NetworkImgLayer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isEmote = type == ImageType.emote;
-    final isAvatar = type == ImageType.avatar;
+    final isEmote = type == .emote;
+    final isAvatar = type == .avatar;
     if (src?.isNotEmpty == true) {
       Widget child = _buildImage(context, isEmote: isEmote, isAvatar: isAvatar);
       if (isEmote) {

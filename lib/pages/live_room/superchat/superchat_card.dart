@@ -1,7 +1,6 @@
 import 'dart:async' show Timer;
 
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
-import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/models_new/live/live_superchat/item.dart';
 import 'package:PiliPlus/pages/member/widget/medal_widget.dart';
 import 'package:PiliPlus/utils/color_utils.dart';
@@ -196,7 +195,7 @@ class _SuperChatCardState extends State<SuperChatCard> {
                   src: item.userInfo.face,
                   width: 45,
                   height: 45,
-                  type: ImageType.avatar,
+                  type: .avatar,
                 ),
                 Expanded(
                   child: Column(

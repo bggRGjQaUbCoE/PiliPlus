@@ -10,8 +10,6 @@ import 'package:PiliPlus/common/widgets/scaffold.dart';
 import 'package:PiliPlus/grpc/bilibili/im/type.pb.dart' show Msg;
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/msg.dart';
-import 'package:PiliPlus/models/common/image_type.dart';
-import 'package:PiliPlus/models/common/publish_panel_type.dart';
 import 'package:PiliPlus/pages/common/publish/common_rich_text_pub_page.dart';
 import 'package:PiliPlus/pages/emote/view.dart';
 import 'package:PiliPlus/pages/whisper_detail/controller.dart';
@@ -69,7 +67,7 @@ class _WhisperDetailPageState
               NetworkImgLayer(
                 width: 34,
                 height: 34,
-                type: ImageType.avatar,
+                type: .avatar,
                 src: _whisperDetailController.face,
               ),
               const SizedBox(width: 6),
@@ -283,9 +281,7 @@ class _WhisperDetailPageState
         children: [
           IconButton(
             onPressed: () => updatePanelType(
-              panelType.value == PanelType.emoji
-                  ? PanelType.keyboard
-                  : PanelType.emoji,
+              panelType.value == .emoji ? .keyboard : .emoji,
             ),
             icon: const Icon(Icons.emoji_emotions),
             tooltip: '表情',
@@ -295,7 +291,7 @@ class _WhisperDetailPageState
               onPointerUp: (event) {
                 // Currently it may be emojiPanel.
                 if (readOnly.value) {
-                  updatePanelType(PanelType.keyboard);
+                  updatePanelType(.keyboard);
                 }
               },
               child: Obx(

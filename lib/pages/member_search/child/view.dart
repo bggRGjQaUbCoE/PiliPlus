@@ -42,17 +42,17 @@ class _MemberSearchChildPageState extends State<MemberSearchChildPage>
         slivers: [
           SliverPadding(
             padding: EdgeInsets.only(
-              top: widget.searchType == MemberSearchType.archive ? 7 : 0,
+              top: widget.searchType == .archive ? 7 : 0,
               bottom:
                   MediaQuery.viewPaddingOf(context).bottom +
                   MediaQuery.viewInsetsOf(context).bottom +
                   100,
             ),
             sliver: switch (widget.searchType) {
-              MemberSearchType.archive => Obx(
+              .archive => Obx(
                 () => _buildBody(_controller.loadingState.value),
               ),
-              MemberSearchType.dynamic => buildPage(
+              .dynamic => buildPage(
                 Obx(() => _buildBody(_controller.loadingState.value)),
               ),
             },
@@ -64,8 +64,8 @@ class _MemberSearchChildPageState extends State<MemberSearchChildPage>
 
   Widget get _buildLoading {
     return switch (widget.searchType) {
-      MemberSearchType.archive => gridSkeleton,
-      MemberSearchType.dynamic => dynSkeleton,
+      .archive => gridSkeleton,
+      .dynamic => dynSkeleton,
     };
   }
 
@@ -75,7 +75,7 @@ class _MemberSearchChildPageState extends State<MemberSearchChildPage>
       Success(:final response) =>
         response != null && response.isNotEmpty
             ? switch (widget.searchType) {
-                MemberSearchType.archive => SliverGrid.builder(
+                .archive => SliverGrid.builder(
                   gridDelegate: gridDelegate,
                   itemBuilder: (context, index) {
                     if (index == response.length - 1) {
@@ -85,7 +85,7 @@ class _MemberSearchChildPageState extends State<MemberSearchChildPage>
                   },
                   itemCount: response.length,
                 ),
-                MemberSearchType.dynamic =>
+                .dynamic =>
                   GlobalData.dynamicsWaterfallFlow
                       ? SliverWaterfallFlow(
                           gridDelegate: dynGridDelegate,

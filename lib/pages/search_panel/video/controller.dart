@@ -1,7 +1,6 @@
 import 'dart:math';
 
 import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/models/common/search/search_type.dart';
 import 'package:PiliPlus/models/common/search/video_search_type.dart';
 import 'package:PiliPlus/models/search/result.dart';
 import 'package:PiliPlus/pages/search/widgets/search_text.dart';
@@ -27,8 +26,8 @@ class SearchVideoController
   @override
   void onInit() {
     super.onInit();
-    videoDurationType = VideoDurationType.all;
-    videoZoneType = VideoZoneType.all;
+    videoDurationType = .all;
+    videoZoneType = .all;
     DateTime now = DateTime.now();
     pubBeginDate = DateTime(now.year, now.month, 1, 0, 0, 0);
     pubEndDate = DateTime(now.year, now.month, now.day, 23, 59, 59);
@@ -45,7 +44,7 @@ class SearchVideoController
   bool customHandleResponse(bool isRefresh, Success<SearchVideoData> response) {
     searchResultController?.count[searchType.index] =
         response.response.numResults ?? 0;
-    if (searchType == SearchType.video && !hasJump2Video && isRefresh) {
+    if (searchType == .video && !hasJump2Video && isRefresh) {
       hasJump2Video = true;
       onPushDetail(response.response.list);
     }
@@ -75,8 +74,8 @@ class SearchVideoController
     }
   }
 
-  final Rx<ArchiveFilterType> selectedType = ArchiveFilterType.totalrank.obs;
-  VideoPubTimeType? pubTimeType = VideoPubTimeType.all;
+  final Rx<ArchiveFilterType> selectedType = Rx(.totalrank);
+  VideoPubTimeType? pubTimeType = .all;
   late DateTime pubBeginDate;
   late DateTime pubEndDate;
   bool customPubBeginDate = false;
@@ -178,7 +177,7 @@ class SearchVideoController
                         onTap: (text) {
                           pubTimeType = e;
                           DateTime now = DateTime.now();
-                          if (e == VideoPubTimeType.all) {
+                          if (e == .all) {
                             pubBegin = null;
                             pubEnd = null;
                           } else {
@@ -187,9 +186,9 @@ class SearchVideoController
                                   now.year,
                                   now.month,
                                   now.day -
-                                      (e == VideoPubTimeType.day
+                                      (e == .day
                                           ? 0
-                                          : e == VideoPubTimeType.week
+                                          : e == .week
                                           ? 6
                                           : 179),
                                   0,

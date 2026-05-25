@@ -19,8 +19,8 @@ class SearchUserController
   @override
   void onInit() {
     super.onInit();
-    userType = UserType.all.obs;
-    userOrderType = UserOrderType.def.obs;
+    userType = Rx(.all);
+    userOrderType = Rx(.def);
   }
 
   void onShowFilterDialog(BuildContext context) {

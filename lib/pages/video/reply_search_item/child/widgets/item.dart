@@ -4,7 +4,6 @@ import 'package:PiliPlus/common/widgets/image/image_save.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
     show SearchItem, SearchItemVideoSubType;
-import 'package:PiliPlus/models/common/badge_type.dart';
 import 'package:PiliPlus/models/common/reply/reply_search_type.dart';
 import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
@@ -29,7 +28,7 @@ class ReplySearchItem extends StatelessWidget {
     String? category;
     int? duration;
     switch (type) {
-      case ReplySearchType.video:
+      case .video:
         if (item.video.type == SearchItemVideoSubType.UGC) {
           final ugc = item.video.ugc;
           title = ugc.title;
@@ -42,7 +41,7 @@ class ReplySearchItem extends StatelessWidget {
           cover = pgc.cover;
           category = pgc.category;
         }
-      case ReplySearchType.article:
+      case .article:
         final article = item.article;
         title = article.title;
         cover = article.covers.firstOrNull ?? '';
@@ -88,7 +87,7 @@ class ReplySearchItem extends StatelessWidget {
                             right: 6,
                             bottom: 6,
                             text: DurationUtils.formatDuration(duration),
-                            type: PBadgeType.gray,
+                            type: .gray,
                           ),
                       ],
                     );

@@ -5,8 +5,6 @@ import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/stat/stat.dart';
 import 'package:PiliPlus/common/widgets/video_card/video_card_v.dart';
 import 'package:PiliPlus/http/search.dart';
-import 'package:PiliPlus/models/common/badge_type.dart';
-import 'package:PiliPlus/models/common/stat_type.dart';
 import 'package:PiliPlus/models_new/member/coin_like_arc/item.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/duration_utils.dart';
@@ -90,7 +88,7 @@ class MemberCoinLikeItem extends StatelessWidget {
                         PBadge(
                           bottom: 6,
                           right: 6,
-                          type: PBadgeType.gray,
+                          type: .gray,
                           text: DurationUtils.formatDuration(item.duration),
                         ),
                     ],
@@ -113,12 +111,12 @@ class MemberCoinLikeItem extends StatelessWidget {
                   Row(
                     children: [
                       StatWidget(
-                        type: StatType.play,
+                        type: .play,
                         value: item.play,
                       ),
                       const SizedBox(width: 8),
                       StatWidget(
-                        type: StatType.danmaku,
+                        type: .danmaku,
                         value: item.danmaku,
                       ),
                       const Spacer(),

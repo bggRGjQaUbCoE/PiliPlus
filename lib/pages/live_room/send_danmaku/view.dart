@@ -1,7 +1,6 @@
 import 'package:PiliPlus/common/widgets/flutter/text_field/text_field.dart';
 import 'package:PiliPlus/common/widgets/view_safe_area.dart';
 import 'package:PiliPlus/http/live.dart';
-import 'package:PiliPlus/models/common/publish_panel_type.dart';
 import 'package:PiliPlus/pages/common/publish/common_rich_text_pub_page.dart';
 import 'package:PiliPlus/pages/live_emote/controller.dart';
 import 'package:PiliPlus/pages/live_emote/view.dart';
@@ -34,7 +33,7 @@ class _ReplyPageState extends CommonRichTextPubPageState<LiveSendDmPanel> {
   void initState() {
     super.initState();
     if (widget.fromEmote) {
-      updatePanelType(PanelType.emoji);
+      updatePanelType(.emoji);
     }
   }
 
@@ -95,7 +94,7 @@ class _ReplyPageState extends CommonRichTextPubPageState<LiveSendDmPanel> {
         child: Listener(
           onPointerUp: (event) {
             if (readOnly.value) {
-              updatePanelType(PanelType.keyboard);
+              updatePanelType(.keyboard);
             }
           },
           child: Obx(

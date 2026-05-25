@@ -40,7 +40,7 @@ class DynamicsTabController
 
   @override
   Future<void> onRefresh() {
-    if (dynamicsType == DynamicsTabType.all) {
+    if (dynamicsType == .all) {
       mainController.setDynCount();
     }
     offset = '';
@@ -81,7 +81,7 @@ class DynamicsTabController
   }
 
   void onBlock(int index) {
-    if (dynamicsType != DynamicsTabType.up) {
+    if (dynamicsType != .up) {
       loadingState
         ..value.data!.removeAt(index)
         ..refresh();

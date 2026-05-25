@@ -7,7 +7,6 @@ import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/sliver/sliver_floating_header.dart';
 import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/models/common/pgc_review_type.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_review/list.dart';
 import 'package:PiliPlus/pages/pgc_review/child/controller.dart';
@@ -215,7 +214,7 @@ class _PgcReviewChildPageState extends State<PgcReviewChildPage>
                       height: 34,
                       width: 34,
                       src: item.author!.avatar,
-                      type: ImageType.avatar,
+                      type: .avatar,
                     ),
                     const SizedBox(width: 10),
                     Column(

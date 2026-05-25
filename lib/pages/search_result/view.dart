@@ -155,33 +155,32 @@ class _SearchResultPageState extends State<SearchResultPage>
                 children: SearchType.values
                     .map(
                       (item) => switch (item) {
-                        // SearchType.all => SearchAllPanel(
+                        // .all => SearchAllPanel(
                         //   tag: _tag,
                         //   searchType: item,
                         //   keyword: _searchResultController.keyword,
                         // ),
-                        SearchType.video => SearchVideoPanel(
+                        .video => SearchVideoPanel(
                           tag: _tag,
                           searchType: item,
                           keyword: _searchResultController.keyword,
                         ),
-                        SearchType.media_bangumi ||
-                        SearchType.media_ft => SearchPgcPanel(
+                        .media_bangumi || .media_ft => SearchPgcPanel(
                           tag: _tag,
                           searchType: item,
                           keyword: _searchResultController.keyword,
                         ),
-                        SearchType.live_room => SearchLivePanel(
+                        .live_room => SearchLivePanel(
                           tag: _tag,
                           searchType: item,
                           keyword: _searchResultController.keyword,
                         ),
-                        SearchType.bili_user => SearchUserPanel(
+                        .bili_user => SearchUserPanel(
                           tag: _tag,
                           searchType: item,
                           keyword: _searchResultController.keyword,
                         ),
-                        SearchType.article => SearchArticlePanel(
+                        .article => SearchArticlePanel(
                           tag: _tag,
                           searchType: item,
                           keyword: _searchResultController.keyword,

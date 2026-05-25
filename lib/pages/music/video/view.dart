@@ -2,7 +2,6 @@ import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/models_new/music/bgm_recommend_list.dart';
 import 'package:PiliPlus/pages/music/video/controller.dart';
 import 'package:PiliPlus/pages/music/widget/music_video_card_h.dart';
@@ -84,7 +83,7 @@ class _MusicRecommendPageState extends State<MusicRecommendPage>
             width: 40,
             height: 40,
             src: info.mvCover,
-            type: ImageType.avatar,
+            type: .avatar,
           ),
           Column(
             mainAxisAlignment: MainAxisAlignment.center,

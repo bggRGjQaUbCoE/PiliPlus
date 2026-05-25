@@ -4,7 +4,6 @@ import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/scaffold.dart';
 import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/models_new/blacklist/list.dart';
 import 'package:PiliPlus/pages/blacklist/controller.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
@@ -85,7 +84,7 @@ class _BlackListPageState extends State<BlackListPage> {
                     leading: NetworkImgLayer(
                       width: 45,
                       height: 45,
-                      type: ImageType.avatar,
+                      type: .avatar,
                       src: item.face,
                     ),
                     title: Text(

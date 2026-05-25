@@ -10,7 +10,7 @@ class SourceModel {
   final num? size;
 
   const SourceModel({
-    this.sourceType = SourceType.networkImage,
+    this.sourceType = .networkImage,
     required this.url,
     this.liveUrl,
     this.width,

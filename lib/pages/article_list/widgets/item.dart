@@ -1,7 +1,6 @@
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/stat/stat.dart';
-import 'package:PiliPlus/models/common/stat_type.dart';
 import 'package:PiliPlus/models_new/article/article_list/article.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -85,15 +84,15 @@ class ArticleListItem extends StatelessWidget {
                         StatWidget(
                           value: item.stats?.view,
                           color: theme.colorScheme.outline,
-                          type: StatType.view,
+                          type: .view,
                         ),
                         StatWidget(
-                          type: StatType.like,
+                          type: .like,
                           value: item.stats?.like,
                           color: theme.colorScheme.outline,
                         ),
                         StatWidget(
-                          type: StatType.reply,
+                          type: .reply,
                           value: item.stats?.reply,
                           color: theme.colorScheme.outline,
                         ),

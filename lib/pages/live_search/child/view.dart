@@ -34,7 +34,7 @@ class _LiveSearchChildPageState extends State<LiveSearchChildPage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    double padding = widget.searchType == LiveSearchType.room ? 12 : 0;
+    double padding = widget.searchType == .room ? 12 : 0;
     return refreshIndicator(
       onRefresh: _controller.onRefresh,
       child: CustomScrollView(
@@ -60,12 +60,12 @@ class _LiveSearchChildPageState extends State<LiveSearchChildPage>
 
   Widget get _buildLoading {
     return switch (widget.searchType) {
-      LiveSearchType.room => SliverGrid.builder(
+      .room => SliverGrid.builder(
         gridDelegate: roomDelegate,
         itemBuilder: (context, index) => const VideoCardVSkeleton(),
         itemCount: 10,
       ),
-      LiveSearchType.user => SliverGrid.builder(
+      .user => SliverGrid.builder(
         gridDelegate: userDelegate,
         itemBuilder: (context, index) => const MsgFeedTopSkeleton(),
         itemCount: 12,
@@ -94,7 +94,7 @@ class _LiveSearchChildPageState extends State<LiveSearchChildPage>
             ? Builder(
                 builder: (context) {
                   return switch (widget.searchType) {
-                    LiveSearchType.room => SliverGrid.builder(
+                    .room => SliverGrid.builder(
                       gridDelegate: roomDelegate,
                       itemBuilder: (context, index) {
                         if (index == response.length - 1) {
@@ -106,7 +106,7 @@ class _LiveSearchChildPageState extends State<LiveSearchChildPage>
                       },
                       itemCount: response.length,
                     ),
-                    LiveSearchType.user => SliverGrid.builder(
+                    .user => SliverGrid.builder(
                       gridDelegate: userDelegate,
                       itemBuilder: (context, index) {
                         if (index == response.length - 1) {

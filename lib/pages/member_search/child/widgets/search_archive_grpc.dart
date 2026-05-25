@@ -6,8 +6,6 @@ import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/stat/stat.dart';
 import 'package:PiliPlus/grpc/bilibili/app/interfaces/v1.pb.dart' show Arc;
 import 'package:PiliPlus/http/user.dart';
-import 'package:PiliPlus/models/common/badge_type.dart';
-import 'package:PiliPlus/models/common/stat_type.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:PiliPlus/utils/em.dart';
@@ -99,7 +97,7 @@ class SearchArchiveGrpc extends StatelessWidget {
                                 ),
                                 right: 6.0,
                                 bottom: 6.0,
-                                type: PBadgeType.gray,
+                                type: .gray,
                               ),
                           ],
                         );
@@ -206,11 +204,11 @@ class SearchArchiveGrpc extends StatelessWidget {
             spacing: 8,
             children: [
               StatWidget(
-                type: StatType.play,
+                type: .play,
                 value: arc.stat.view,
               ),
               StatWidget(
-                type: StatType.danmaku,
+                type: .danmaku,
                 value: arc.stat.danmaku,
               ),
             ],

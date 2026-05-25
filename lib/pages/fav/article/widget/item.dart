@@ -2,7 +2,6 @@ import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/button/icon_button.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/stat/stat.dart';
-import 'package:PiliPlus/models/common/stat_type.dart';
 import 'package:PiliPlus/models_new/fav/fav_article/item.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -86,7 +85,7 @@ class FavArticleItem extends StatelessWidget {
                         Row(
                           children: [
                             StatWidget(
-                              type: StatType.like,
+                              type: .like,
                               value: item.stat!.like,
                               color: theme.colorScheme.outline,
                             ),

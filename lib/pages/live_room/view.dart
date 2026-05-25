@@ -14,7 +14,6 @@ import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/keep_alive_wrapper.dart';
 import 'package:PiliPlus/common/widgets/route_aware_mixin.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart';
-import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/models/common/live/live_contribution_rank_type.dart';
 import 'package:PiliPlus/models_new/live/live_room_info_h5/data.dart';
 import 'package:PiliPlus/models_new/live/live_superchat/item.dart';
@@ -541,7 +540,7 @@ class _LiveRoomPageState extends State<LiveRoomPage>
                       NetworkImgLayer(
                         width: 34,
                         height: 34,
-                        type: ImageType.avatar,
+                        type: .avatar,
                         src: roomInfoH5.anchorInfo!.baseInfo!.face,
                       ),
                       Flexible(

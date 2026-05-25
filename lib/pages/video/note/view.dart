@@ -3,7 +3,6 @@ import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/models_new/video/video_note_list/list.dart';
 import 'package:PiliPlus/pages/common/slide/common_slide_page.dart';
 import 'package:PiliPlus/pages/video/note/controller.dart';
@@ -235,7 +234,7 @@ class _NoteListPageState extends State<NoteListPage>
                   height: 34,
                   width: 34,
                   src: item.author!.face,
-                  type: ImageType.avatar,
+                  type: .avatar,
                 ),
               ),
               const SizedBox(width: 12),

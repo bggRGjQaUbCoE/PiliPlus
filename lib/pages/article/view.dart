@@ -6,9 +6,7 @@ import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/scaffold.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart';
-import 'package:PiliPlus/models/common/badge_type.dart';
 import 'package:PiliPlus/models/common/image_preview_type.dart';
-import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/models/dynamics/result.dart' show DynamicStat;
 import 'package:PiliPlus/pages/article/controller.dart';
 import 'package:PiliPlus/pages/article/widgets/article_ops.dart';
@@ -343,7 +341,7 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
                             () => PBadge(
                               top: 12,
                               right: 12,
-                              type: PBadgeType.gray,
+                              type: .gray,
                               text: '${controller.topIndex.value + 1}/$length',
                             ),
                           ),
@@ -374,7 +372,7 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
                         NetworkImgLayer(
                           width: 40,
                           height: 40,
-                          type: ImageType.avatar,
+                          type: .avatar,
                           src: controller.summary.author?.face,
                         ),
                         const SizedBox(width: 10),

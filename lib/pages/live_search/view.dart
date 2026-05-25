@@ -1,7 +1,6 @@
 import 'package:PiliPlus/common/widgets/scaffold.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart';
 import 'package:PiliPlus/common/widgets/view_safe_area.dart';
-import 'package:PiliPlus/models/common/live/live_search_type.dart';
 import 'package:PiliPlus/pages/live_search/child/view.dart';
 import 'package:PiliPlus/pages/live_search/controller.dart';
 import 'package:PiliPlus/utils/utils.dart';
@@ -95,11 +94,11 @@ class _LiveSearchPageState extends State<LiveSearchPage> {
                     children: [
                       LiveSearchChildPage(
                         controller: _controller.roomCtr,
-                        searchType: LiveSearchType.room,
+                        searchType: .room,
                       ),
                       LiveSearchChildPage(
                         controller: _controller.userCtr,
-                        searchType: LiveSearchType.user,
+                        searchType: .user,
                       ),
                     ],
                   ),

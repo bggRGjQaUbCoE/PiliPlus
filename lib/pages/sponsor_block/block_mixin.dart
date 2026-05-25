@@ -6,7 +6,6 @@ import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/sponsor_block.dart';
 import 'package:PiliPlus/models/common/sponsor_block/segment_model.dart';
 import 'package:PiliPlus/models/common/sponsor_block/segment_type.dart';
-import 'package:PiliPlus/models/common/sponsor_block/skip_type.dart';
 import 'package:PiliPlus/models_new/sponsor_block/segment_item.dart';
 import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
@@ -20,13 +19,13 @@ import 'package:media_kit/media_kit.dart';
 
 mixin BlockConfigMixin {
   late final pgcSkipType = Pref.pgcSkipType;
-  late final enablePgcSkip = pgcSkipType != SkipType.disable;
+  late final enablePgcSkip = pgcSkipType != .disable;
   late final enableSponsorBlock = Pref.enableSponsorBlock;
   late final enableBlock = enableSponsorBlock || enablePgcSkip;
   late final blockColor = Pref.blockColor;
   late final blockSettings = Pref.blockSettings;
   late final enableList = blockSettings
-      .where((item) => item.second != SkipType.disable)
+      .where((item) => item.second != .disable)
       .map((item) => item.first.name)
       .toSet();
 
@@ -90,16 +89,16 @@ mixin BlockMixin on GetxController {
             // }
             if (msPos <= item.segment.$1 && item.segment.$1 <= msPos + 1000) {
               switch (item.skipType) {
-                case SkipType.alwaysSkip:
+                case .alwaysSkip:
                   onSkip(item, isSeek: false);
                   break;
-                case SkipType.skipOnce:
+                case .skipOnce:
                   if (!item.hasSkipped) {
                     item.hasSkipped = true;
                     onSkip(item, isSeek: false);
                   }
                   break;
-                case SkipType.skipManually:
+                case .skipManually:
                   onAddItem(item);
                   break;
                 default:
@@ -144,8 +143,8 @@ mixin BlockMixin on GetxController {
                       _lastBlockPos = currPos;
 
                       switch (segmentModel.skipType) {
-                        case SkipType.alwaysSkip:
-                        case SkipType.skipOnce:
+                        case .alwaysSkip:
+                        case .skipOnce:
                           segmentModel.hasSkipped = true;
                           if (player!.state.playing) {
                             future = onSkip(
@@ -161,7 +160,7 @@ mixin BlockMixin on GetxController {
                             }, orElse: () => false);
                           }
                           break;
-                        case SkipType.skipManually:
+                        case .skipManually:
                           onAddItem(segmentModel);
                           break;
                         default:
@@ -328,11 +327,11 @@ mixin BlockMixin on GetxController {
     showDialog(
       context: Get.context!,
       builder: (context) => AlertDialog(
-        clipBehavior: Clip.hardEdge,
+        clipBehavior: .hardEdge,
         contentPadding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
         content: SingleChildScrollView(
           child: Column(
-            mainAxisSize: MainAxisSize.min,
+            mainAxisSize: .min,
             children: SegmentType.values
                 .map(
                   (item) => ListTile(
@@ -352,7 +351,7 @@ mixin BlockMixin on GetxController {
                       TextSpan(
                         children: [
                           WidgetSpan(
-                            alignment: PlaceholderAlignment.middle,
+                            alignment: .middle,
                             child: Container(
                               height: 10,
                               width: 10,
@@ -402,7 +401,7 @@ mixin BlockMixin on GetxController {
                       TextSpan(
                         children: [
                           WidgetSpan(
-                            alignment: PlaceholderAlignment.middle,
+                            alignment: .middle,
                             child: Container(
                               height: 10,
                               width: 10,
@@ -437,14 +436,14 @@ mixin BlockMixin on GetxController {
                             width: 36,
                             height: 36,
                             child: IconButton(
-                              tooltip: item.skipType == SkipType.showOnly
+                              tooltip: item.skipType == .showOnly
                                   ? '跳至此片段'
                                   : '跳过此片段',
                               onPressed: () {
                                 Get.back();
                                 onSkip(
                                   item,
-                                  isSkip: item.skipType != SkipType.showOnly,
+                                  isSkip: item.skipType != .showOnly,
                                   isSeek: false,
                                 );
                               },
@@ -453,7 +452,7 @@ mixin BlockMixin on GetxController {
                                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                               ),
                               icon: Icon(
-                                item.skipType == SkipType.showOnly
+                                item.skipType == .showOnly
                                     ? Icons.my_location
                                     : MdiIcons.debugStepOver,
                                 size: 18,

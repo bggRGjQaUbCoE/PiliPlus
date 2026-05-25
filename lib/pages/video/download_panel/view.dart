@@ -4,7 +4,6 @@ import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/stat/stat.dart';
-import 'package:PiliPlus/models/common/stat_type.dart';
 import 'package:PiliPlus/models/common/video/video_quality.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_info_model/episode.dart' as pgc;
 import 'package:PiliPlus/models_new/pgc/pgc_info_model/result.dart';
@@ -475,12 +474,12 @@ class _DownloadPanelState extends State<DownloadPanel> {
                                     if (view != null)
                                       StatWidget(
                                         value: view,
-                                        type: StatType.play,
+                                        type: .play,
                                       ),
                                     if (danmaku != null)
                                       StatWidget(
                                         value: danmaku,
-                                        type: StatType.danmaku,
+                                        type: .danmaku,
                                       ),
                                   ],
                                 ),

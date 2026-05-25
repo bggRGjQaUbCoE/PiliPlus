@@ -8,7 +8,6 @@ import 'package:PiliPlus/common/widgets/image_grid/image_grid_view.dart';
 import 'package:PiliPlus/common/widgets/image_viewer/hero.dart';
 import 'package:PiliPlus/http/constants.dart';
 import 'package:PiliPlus/models/common/image_preview_type.dart';
-import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/models/dynamics/article_content_model.dart'
     show ArticleContentModel, Rich, Style, Word, Node;
 import 'package:PiliPlus/models/dynamics/result.dart';
@@ -58,7 +57,7 @@ class OpusContent extends StatelessWidget {
                 width: size,
                 height: size,
                 src: emoji.url,
-                type: ImageType.emote,
+                type: .emote,
               ),
             );
           default:

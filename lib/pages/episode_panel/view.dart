@@ -14,7 +14,6 @@ import 'package:PiliPlus/http/fav.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/video.dart';
 import 'package:PiliPlus/models/common/episode_panel_type.dart';
-import 'package:PiliPlus/models/common/stat_type.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_info_model/episode.dart' as pgc;
 import 'package:PiliPlus/models_new/video/video_detail/episode.dart' as ugc;
 import 'package:PiliPlus/models_new/video/video_detail/page.dart';
@@ -58,7 +57,7 @@ class EpisodePanel extends CommonSlidePage {
     this.onReverse,
     required this.onChangeEpisode,
     this.onClose,
-  }) : assert(type == EpisodeType.pgc || ugcIntroController != null);
+  }) : assert(type == .pgc || ugcIntroController != null);
 
   final UgcIntroController? ugcIntroController;
   final String heroTag;
@@ -91,8 +90,7 @@ class _EpisodePanelState extends State<EpisodePanel>
 
   late final showTitle = widget.showTitle;
 
-  List<ugc.BaseEpisodeItem> get _getCurrEpisodes =>
-      widget.type == EpisodeType.season
+  List<ugc.BaseEpisodeItem> get _getCurrEpisodes => widget.type == .season
       ? widget.list[_currentTabIndex.value].episodes
       : widget.list[_currentTabIndex.value];
 
@@ -170,7 +168,7 @@ class _EpisodePanelState extends State<EpisodePanel>
     );
     _isReversed = List.filled(widget.list.length, false);
 
-    if (widget.type == EpisodeType.season && Accounts.main.isLogin) {
+    if (widget.type == .season && Accounts.main.isLogin) {
       final favState =
           widget.ugcIntroController?.seasonFavState[widget.seasonId];
       if (favState != null) {
@@ -204,8 +202,7 @@ class _EpisodePanelState extends State<EpisodePanel>
     super.dispose();
   }
 
-  late final _isMulti =
-      widget.type == EpisodeType.season && widget.list.length > 1;
+  late final _isMulti = widget.type == .season && widget.list.length > 1;
 
   @override
   Widget buildPage(ThemeData theme) {
@@ -445,7 +442,7 @@ class _EpisodePanelState extends State<EpisodePanel>
                   if (!showTitle) {
                     _currentItemIndex = index;
                   }
-                  if (widget.type == EpisodeType.season) {
+                  if (widget.type == .season) {
                     try {
                       Get.find<VideoDetailController>(
                         tag: widget.ugcIntroController!.heroTag,
@@ -552,12 +549,12 @@ class _EpisodePanelState extends State<EpisodePanel>
                             children: [
                               StatWidget(
                                 value: view,
-                                type: StatType.play,
+                                type: .play,
                               ),
                               if (danmaku != null)
                                 StatWidget(
                                   value: danmaku,
-                                  type: StatType.danmaku,
+                                  type: .danmaku,
                                 ),
                             ],
                           ),

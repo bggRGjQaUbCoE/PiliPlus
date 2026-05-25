@@ -5,7 +5,6 @@ import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/stat/stat.dart';
 import 'package:PiliPlus/common/widgets/video_popup_menu.dart';
 import 'package:PiliPlus/http/search.dart';
-import 'package:PiliPlus/models/common/stat_type.dart';
 import 'package:PiliPlus/models/home/rcmd/result.dart';
 import 'package:PiliPlus/models/model_rec_video_item.dart';
 import 'package:PiliPlus/models_new/video/video_detail/dimension.dart';
@@ -232,13 +231,13 @@ class VideoCardV extends StatelessWidget {
     return Row(
       children: [
         StatWidget(
-          type: StatType.play,
+          type: .play,
           value: videoItem.stat.view,
         ),
         if (videoItem.goto != 'picture') ...[
           const SizedBox(width: 4),
           StatWidget(
-            type: StatType.danmaku,
+            type: .danmaku,
             value: videoItem.stat.danmu,
           ),
         ],

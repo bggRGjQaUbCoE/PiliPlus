@@ -7,7 +7,6 @@ import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/pair.dart';
 import 'package:PiliPlus/common/widgets/sliver/sliver_pinned_header.dart';
 import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/models_new/dynamic/dyn_topic_feed/item.dart';
 import 'package:PiliPlus/models_new/dynamic/dyn_topic_top/top_details.dart';
 import 'package:PiliPlus/pages/dynamics/widgets/dynamic_panel.dart';
@@ -202,7 +201,7 @@ class _DynTopicPageState extends State<DynTopicPage> with DynMixin {
                         width: 28,
                         height: 28,
                         src: response.topicCreator!.face!,
-                        type: ImageType.avatar,
+                        type: .avatar,
                       ),
                       Flexible(
                         child: Text(

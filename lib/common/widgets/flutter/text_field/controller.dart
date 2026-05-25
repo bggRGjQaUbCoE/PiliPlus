@@ -18,7 +18,6 @@
 import 'dart:math';
 
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
-import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -54,7 +53,7 @@ extension TextEditingDeltaExt on TextEditingDelta {
       return (type: e.type, rawText: e.rawText, emote: e.emote, id: e.id);
     }
     return (
-      type: composing.isValid ? RichTextType.composing : RichTextType.text,
+      type: composing.isValid ? .composing : .text,
       rawText: null,
       emote: null,
       id: null,
@@ -63,7 +62,7 @@ extension TextEditingDeltaExt on TextEditingDelta {
 
   bool get isText {
     if (this case final RichTextTypeMixin e) {
-      return e.type == RichTextType.text;
+      return e.type == .text;
     }
     return !composing.isValid;
   }
@@ -85,9 +84,7 @@ class RichTextEditingDeltaInsertion extends TextEditingDeltaInsertion
     this.emote,
     this.id,
     this.rawText,
-  }) : type =
-           type ??
-           (composing.isValid ? RichTextType.composing : RichTextType.text);
+  }) : type = type ?? (composing.isValid ? .composing : .text);
 
   @override
   late final RichTextType type;
@@ -114,9 +111,7 @@ class RichTextEditingDeltaReplacement extends TextEditingDeltaReplacement
     this.emote,
     this.id,
     this.rawText,
-  }) : type =
-           type ??
-           (composing.isValid ? RichTextType.composing : RichTextType.text);
+  }) : type = type ?? (composing.isValid ? .composing : .text);
 
   @override
   late final RichTextType type;
@@ -141,14 +136,14 @@ class RichTextItem {
 
   String get rawText => _rawText ?? text;
 
-  bool get isText => type == RichTextType.text;
+  bool get isText => type == .text;
 
-  bool get isComposing => type == RichTextType.composing;
+  bool get isComposing => type == .composing;
 
   bool get isRich => !isText && !isComposing;
 
   RichTextItem({
-    this.type = RichTextType.text,
+    this.type = .text,
     required this.text,
     this._rawText,
     required this.range,
@@ -159,7 +154,7 @@ class RichTextItem {
   RichTextItem.fromStart(
     this.text, {
     this._rawText,
-    this.type = RichTextType.text,
+    this.type = .text,
     this.emote,
     this.id,
   }) : range = TextRange(start: 0, end: text.length);
@@ -591,7 +586,7 @@ class RichTextEditingController extends TextEditingController {
     }
     final buffer = StringBuffer();
     for (final e in items) {
-      if (e.type == RichTextType.at) {
+      if (e.type == .at) {
         buffer.write(e.text);
       } else {
         buffer.write(e.rawText);
@@ -743,22 +738,22 @@ class RichTextEditingController extends TextEditingController {
       style: style,
       children: items.map((e) {
         switch (e.type) {
-          case RichTextType.text:
+          case .text:
             return TextSpan(text: e.text);
-          case RichTextType.composing:
+          case .composing:
             composingStyle ??=
                 style?.merge(
                   const TextStyle(decoration: TextDecoration.underline),
                 ) ??
                 const TextStyle(decoration: TextDecoration.underline);
             if (composingRegionOutOfRange) {
-              e.type = RichTextType.text;
+              e.type = .text;
             }
             return TextSpan(
               text: e.text,
               style: composingRegionOutOfRange ? null : composingStyle,
             );
-          case RichTextType.at || RichTextType.common:
+          case .at || .common:
             richStyle ??= (style ?? const TextStyle()).copyWith(
               color: Theme.of(context).colorScheme.primary,
             );
@@ -766,7 +761,7 @@ class RichTextEditingController extends TextEditingController {
               text: e.text,
               style: richStyle,
             );
-          case RichTextType.emoji:
+          case .emoji:
             final emote = e.emote;
             if (emote != null) {
               return WidgetSpan(
@@ -777,14 +772,14 @@ class RichTextEditingController extends TextEditingController {
                     src: emote.url,
                     width: 22, // emote.width,
                     height: 22, // emote.height,
-                    type: ImageType.emote,
+                    type: .emote,
                     fit: BoxFit.contain,
                   ),
                 ),
               );
             }
             return TextSpan(text: e.text);
-          case RichTextType.vote:
+          case .vote:
             richStyle ??= (style ?? const TextStyle()).copyWith(
               color: Theme.of(context).colorScheme.primary,
             );

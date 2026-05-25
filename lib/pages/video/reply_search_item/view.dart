@@ -1,7 +1,6 @@
 import 'package:PiliPlus/common/widgets/scaffold.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart';
 import 'package:PiliPlus/common/widgets/view_safe_area.dart';
-import 'package:PiliPlus/models/common/reply/reply_search_type.dart';
 import 'package:PiliPlus/pages/video/reply_search_item/child/view.dart';
 import 'package:PiliPlus/pages/video/reply_search_item/controller.dart';
 import 'package:PiliPlus/utils/utils.dart';
@@ -90,11 +89,11 @@ class _ReplySearchPageState extends State<ReplySearchPage> {
                 children: [
                   ReplySearchChildPage(
                     controller: _controller.videoCtr,
-                    searchType: ReplySearchType.video,
+                    searchType: .video,
                   ),
                   ReplySearchChildPage(
                     controller: _controller.articleCtr,
-                    searchType: ReplySearchType.article,
+                    searchType: .article,
                   ),
                 ],
               ),

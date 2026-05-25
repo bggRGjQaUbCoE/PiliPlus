@@ -46,8 +46,7 @@ class PostPanel extends CommonSlidePage {
     } else {
       item.segment.second = value;
     }
-    if (item.category == SegmentType.poi_highlight ||
-        item.actionType == ActionType.full) {
+    if (item.category == .poi_highlight || item.actionType == .full) {
       item.segment.second = value;
     }
   }
@@ -166,7 +165,7 @@ class PostPanel extends CommonSlidePage {
       },
     );
 
-    if (item.category != SegmentType.poi_highlight) {
+    if (item.category != .poi_highlight) {
       return Wrap(
         runSpacing: 8,
         spacing: 16,
@@ -212,8 +211,8 @@ class _PostPanelState extends State<PostPanel>
                       first: 0,
                       second: currentPos(),
                     ),
-                    category: SegmentType.sponsor,
-                    actionType: ActionType.skip,
+                    category: .sponsor,
+                    actionType: .skip,
                   ),
                 );
               });
@@ -345,7 +344,7 @@ class _PostPanelState extends State<PostPanel>
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                if (item.actionType != ActionType.full)
+                if (item.actionType != .full)
                   PostPanel.segmentWidget(
                     theme,
                     item: item,
@@ -361,8 +360,8 @@ class _PostPanelState extends State<PostPanel>
                       value: () => item.category,
                       onSelected: (e) {
                         bool flag = false;
-                        if (item.category == SegmentType.exclusive_access ||
-                            item.category == SegmentType.poi_highlight) {
+                        if (item.category == .exclusive_access ||
+                            item.category == .poi_highlight) {
                           flag = true;
                         }
                         item.category = e;
@@ -372,14 +371,14 @@ class _PostPanelState extends State<PostPanel>
                           flag = true;
                         }
                         switch (e) {
-                          case SegmentType.poi_highlight:
+                          case .poi_highlight:
                             PostPanel.updateSegment(
                               isFirst: false,
                               item: item,
                               value: item.segment.first,
                             );
                             break;
-                          case SegmentType.exclusive_access:
+                          case .exclusive_access:
                             PostPanel.updateSegment(
                               isFirst: true,
                               item: item,
@@ -406,11 +405,11 @@ class _PostPanelState extends State<PostPanel>
                       value: () => item.actionType,
                       onSelected: (e) {
                         bool flag = false;
-                        if (item.actionType == ActionType.full) {
+                        if (item.actionType == .full) {
                           flag = true;
                         }
                         item.actionType = e;
-                        if (e == ActionType.full) {
+                        if (e == .full) {
                           flag = true;
                           PostPanel.updateSegment(
                             isFirst: true,

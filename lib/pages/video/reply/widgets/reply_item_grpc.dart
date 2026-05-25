@@ -17,7 +17,6 @@ import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
 import 'package:PiliPlus/http/reply.dart';
 import 'package:PiliPlus/http/video.dart';
 import 'package:PiliPlus/models/common/badge_type.dart';
-import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/pages/dynamics/widgets/vote.dart';
 import 'package:PiliPlus/pages/member/widget/medal_widget.dart';
 import 'package:PiliPlus/pages/save_panel/view.dart';
@@ -307,7 +306,7 @@ class ReplyItemGrpc extends StatelessWidget {
                       text: 'TOP',
                       size: PBadgeSize.small,
                       isStack: false,
-                      type: PBadgeType.line_primary,
+                      type: .line_primary,
                       fontSize: 9,
                       textScaleFactor: 1,
                     ),
@@ -703,7 +702,7 @@ class ReplyItemGrpc extends StatelessWidget {
             WidgetSpan(
               child: NetworkImgLayer(
                 src: emote.url,
-                type: ImageType.emote,
+                type: .emote,
                 width: size,
                 height: size,
               ),

@@ -104,7 +104,7 @@ class _DynamicsPageState extends State<DynamicsPage>
     );
 
     switch (upPanelPosition) {
-      case UpPanelPosition.top:
+      case .top:
         child = Column(
           children: [
             upPanelPart(theme, isTop: true),
@@ -112,7 +112,7 @@ class _DynamicsPageState extends State<DynamicsPage>
           ],
         );
         actions = [_createDynamicBtn(theme)];
-      case UpPanelPosition.leftFixed:
+      case .leftFixed:
         child = Row(
           children: [
             upPanelPart(theme),
@@ -120,7 +120,7 @@ class _DynamicsPageState extends State<DynamicsPage>
           ],
         );
         actions = [_createDynamicBtn(theme)];
-      case UpPanelPosition.rightFixed:
+      case .rightFixed:
         child = Row(
           children: [
             Expanded(child: child),

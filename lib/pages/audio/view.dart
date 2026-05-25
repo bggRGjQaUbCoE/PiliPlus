@@ -12,7 +12,6 @@ import 'package:PiliPlus/common/widgets/progress_bar/segment_progress_bar.dart';
 import 'package:PiliPlus/common/widgets/scaffold.dart';
 import 'package:PiliPlus/grpc/bilibili/app/listener/v1.pb.dart';
 import 'package:PiliPlus/models/common/image_preview_type.dart';
-import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/pages/audio/controller.dart';
 import 'package:PiliPlus/pages/audio/volume_button.dart';
 import 'package:PiliPlus/pages/video/introduction/ugc/widgets/action_item.dart';
@@ -937,7 +936,7 @@ class _AudioPageState extends State<AudioPage> {
                                 src: audioItem.owner.avatar,
                                 width: 22,
                                 height: 22,
-                                type: ImageType.avatar,
+                                type: .avatar,
                               ),
                             Text(
                               audioItem.owner.name,

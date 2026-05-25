@@ -27,7 +27,7 @@ class PBadge extends StatelessWidget {
     this.right,
     this.bottom,
     this.left,
-    this.type = PBadgeType.primary,
+    this.type = .primary,
     this.size = PBadgeSize.medium,
     this.isStack = true,
     this.fontSize = 11,
@@ -49,16 +49,16 @@ class PBadge extends StatelessWidget {
     Color borderColor = Colors.transparent;
 
     switch (type) {
-      case PBadgeType.primary:
+      case .primary:
         bgColor = theme.primary;
         color = theme.onPrimary;
-      case PBadgeType.secondary:
+      case .secondary:
         bgColor = theme.secondaryContainer.withValues(alpha: 0.5);
         color = theme.onSecondaryContainer;
-      case PBadgeType.gray:
+      case .gray:
         bgColor = Colors.black45;
         color = Colors.white;
-      case PBadgeType.error:
+      case .error:
         if (theme.isDark) {
           bgColor = theme.errorContainer;
           color = theme.onErrorContainer;
@@ -66,18 +66,18 @@ class PBadge extends StatelessWidget {
           bgColor = theme.error;
           color = theme.onError;
         }
-      case PBadgeType.line_primary:
+      case .line_primary:
         color = theme.primary;
         bgColor = Colors.transparent;
         borderColor = theme.primary;
-      case PBadgeType.line_secondary:
+      case .line_secondary:
         color = theme.secondary;
         bgColor = Colors.transparent;
         borderColor = theme.secondary;
-      case PBadgeType.free:
+      case .free:
         bgColor = theme.freeColor;
         color = Colors.white;
-      case PBadgeType.shop:
+      case .shop:
         bgColor = theme.secondaryContainer.withValues(alpha: 0.5);
         color = theme.onSurfaceVariant;
     }

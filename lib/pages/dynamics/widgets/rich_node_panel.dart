@@ -8,7 +8,6 @@ import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/search.dart';
 import 'package:PiliPlus/models/common/image_preview_type.dart'
     show SourceModel;
-import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/models/dynamics/result.dart';
 import 'package:PiliPlus/pages/dynamics/widgets/vote.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
@@ -170,7 +169,7 @@ TextSpan? richNode(
               WidgetSpan(
                 child: NetworkImgLayer(
                   src: i.emoji!.url,
-                  type: ImageType.emote,
+                  type: .emote,
                   width: size,
                   height: size,
                 ),

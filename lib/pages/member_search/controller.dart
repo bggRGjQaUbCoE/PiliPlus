@@ -1,4 +1,3 @@
-import 'package:PiliPlus/models/common/member/search_type.dart';
 import 'package:PiliPlus/pages/member_search/child/controller.dart';
 import 'package:PiliPlus/utils/extension/scroll_controller_ext.dart';
 import 'package:PiliPlus/utils/utils.dart';
@@ -27,11 +26,11 @@ class MemberSearchController extends GetxController
     editingController = TextEditingController();
     tabController = TabController(vsync: this, length: 2);
     arcCtr = Get.put(
-      MemberSearchChildController(this, MemberSearchType.archive),
+      MemberSearchChildController(this, .archive),
       tag: Utils.generateRandomString(8),
     );
     dynCtr = Get.put(
-      MemberSearchChildController(this, MemberSearchType.dynamic),
+      MemberSearchChildController(this, .dynamic),
       tag: Utils.generateRandomString(8),
     );
   }

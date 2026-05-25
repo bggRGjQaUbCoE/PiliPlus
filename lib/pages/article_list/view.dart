@@ -3,7 +3,6 @@ import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/http/constants.dart';
 import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/models_new/article/article_list/article.dart';
 import 'package:PiliPlus/models_new/article/article_list/list.dart';
 import 'package:PiliPlus/pages/article_list/controller.dart';
@@ -154,7 +153,7 @@ class _ArticleListPageState extends State<ArticleListPage> with GridMixin {
                             width: 30,
                             height: 30,
                             src: _controller.author!.face,
-                            type: ImageType.avatar,
+                            type: .avatar,
                           ),
                           Flexible(child: Text(_controller.author!.name!)),
                         ],

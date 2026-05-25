@@ -32,13 +32,13 @@ import 'package:dio/dio.dart';
 abstract final class DynamicsHttp {
   @pragma('vm:notify-debugger-on-exception')
   static Future<LoadingState<DynamicsDataModel>> followDynamic({
-    DynamicsTabType type = DynamicsTabType.all,
+    DynamicsTabType type = .all,
     String? offset,
     int? mid,
     Set<int>? tempBannedList,
   }) async {
     Map<String, dynamic> data = {
-      if (type == DynamicsTabType.up)
+      if (type == .up)
         'host_mid': mid
       else ...{
         'type': type.name,

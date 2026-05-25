@@ -270,7 +270,7 @@ class WhisperSessionItem extends StatelessWidget {
                 if (item.sessionInfo.userLabel.style.borderedLabel.hasText())
                   PBadge(
                     isStack: false,
-                    type: PBadgeType.line_secondary,
+                    type: .line_secondary,
                     size: PBadgeSize.small,
                     fontSize: 10,
                     isBold: false,

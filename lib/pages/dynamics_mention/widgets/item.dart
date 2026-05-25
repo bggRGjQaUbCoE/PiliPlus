@@ -1,5 +1,4 @@
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
-import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/models_new/dynamic/dyn_mention/item.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:flutter/material.dart';
@@ -28,7 +27,7 @@ class DynMentionItem extends StatelessWidget {
           src: item.face,
           width: 42,
           height: 42,
-          type: ImageType.avatar,
+          type: .avatar,
         ),
         title: Text(
           item.name!,

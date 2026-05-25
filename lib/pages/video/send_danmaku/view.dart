@@ -2,7 +2,6 @@ import 'package:PiliPlus/common/widgets/button/icon_button.dart';
 import 'package:PiliPlus/common/widgets/view_safe_area.dart';
 import 'package:PiliPlus/http/danmaku.dart';
 import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/models/common/publish_panel_type.dart';
 import 'package:PiliPlus/pages/common/publish/common_text_pub_page.dart';
 import 'package:PiliPlus/pages/setting/slide_color_picker.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
@@ -341,12 +340,12 @@ class _SendDanmakuPanelState extends CommonTextPubPageState<SendDanmakuPanel> {
         children: [
           Obx(
             () {
-              final isEmoji = panelType.value == PanelType.emoji;
+              final isEmoji = panelType.value == .emoji;
               return iconButton(
                 tooltip: '弹幕样式',
                 onPressed: () {
                   updatePanelType(
-                    isEmoji ? PanelType.keyboard : PanelType.emoji,
+                    isEmoji ? .keyboard : .emoji,
                   );
                 },
                 iconSize: 24,
@@ -362,7 +361,7 @@ class _SendDanmakuPanelState extends CommonTextPubPageState<SendDanmakuPanel> {
             child: Listener(
               onPointerUp: (event) {
                 if (readOnly.value) {
-                  updatePanelType(PanelType.keyboard);
+                  updatePanelType(.keyboard);
                 }
               },
               child: Obx(

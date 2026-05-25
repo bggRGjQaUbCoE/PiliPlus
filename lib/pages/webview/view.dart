@@ -122,22 +122,22 @@ class _WebViewPageState extends State<WebViewPage> {
                 PopupMenuButton(
                   onSelected: (item) async {
                     switch (item) {
-                      case WebviewMenuItem.refresh:
+                      case .refresh:
                         _webViewController?.reload();
                         break;
-                      case WebviewMenuItem.copy:
+                      case .copy:
                         WebUri? uri = await _webViewController?.getUrl();
                         if (uri != null) {
                           Utils.copyText(uri.toString());
                         }
                         break;
-                      case WebviewMenuItem.openInBrowser:
+                      case .openInBrowser:
                         WebUri? uri = await _webViewController?.getUrl();
                         if (uri != null) {
                           PageUtils.launchURL(uri.toString());
                         }
                         break;
-                      case WebviewMenuItem.clearCache:
+                      case .clearCache:
                         try {
                           await InAppWebViewController.clearAllCache();
                           await _webViewController?.clearHistory();
@@ -146,14 +146,14 @@ class _WebViewPageState extends State<WebViewPage> {
                           SmartDialog.showToast(e.toString());
                         }
                         break;
-                      case WebviewMenuItem.goBack:
+                      case .goBack:
                         if (await _webViewController?.canGoBack() == true) {
                           _webViewController?.goBack();
                         } else {
                           Get.back();
                         }
                         break;
-                      case WebviewMenuItem.resetCookie:
+                      case .resetCookie:
                         await LoginUtils.setWebCookie();
                         SmartDialog.showToast('设置成功，刷新或重新打开网页');
                         break;
@@ -170,7 +170,7 @@ class _WebViewPageState extends State<WebViewPage> {
                         ),
                     const PopupMenuDivider(),
                     PopupMenuItem(
-                      value: WebviewMenuItem.goBack,
+                      value: .goBack,
                       child: Text(
                         WebviewMenuItem.goBack.title,
                         style: TextStyle(

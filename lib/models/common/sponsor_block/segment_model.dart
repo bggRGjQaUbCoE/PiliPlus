@@ -26,9 +26,9 @@ class SegmentModel implements Comparable<SegmentModel> {
     SkipType skipType;
     if (config != null) {
       skipType = config.blockSettings[segmentType.index].second;
-      if (skipType != SkipType.showOnly) {
+      if (skipType != .showOnly) {
         if (segment.isEq || segment.length < 0) {
-          skipType = SkipType.showOnly;
+          skipType = .showOnly;
         }
       }
     } else {

@@ -6,7 +6,6 @@ import 'package:PiliPlus/common/widgets/marquee.dart';
 import 'package:PiliPlus/common/widgets/stat/stat.dart';
 import 'package:PiliPlus/http/search.dart';
 import 'package:PiliPlus/models/common/badge_type.dart';
-import 'package:PiliPlus/models/common/stat_type.dart';
 import 'package:PiliPlus/models_new/music/bgm_recommend_list.dart';
 import 'package:PiliPlus/models_new/video/video_detail/dimension.dart';
 import 'package:PiliPlus/utils/duration_utils.dart';
@@ -82,7 +81,7 @@ class MusicVideoCardH extends StatelessWidget {
                           ),
                           right: 6.0,
                           bottom: 6.0,
-                          type: PBadgeType.gray,
+                          type: .gray,
                         ),
                       ],
                     );
@@ -118,11 +117,11 @@ class MusicVideoCardH extends StatelessWidget {
             spacing: 8,
             children: [
               StatWidget(
-                type: StatType.play,
+                type: .play,
                 value: videoItem.play,
               ),
               StatWidget(
-                type: StatType.danmaku,
+                type: .danmaku,
                 value: videoItem.danmu,
               ),
             ],
@@ -140,7 +139,7 @@ class MusicVideoCardH extends StatelessWidget {
                       text: label.name,
                       isStack: false,
                       size: PBadgeSize.small,
-                      type: PBadgeType.secondary,
+                      type: .secondary,
                     ),
                 Text(
                   videoItem.upNickName!,

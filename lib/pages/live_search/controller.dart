@@ -1,4 +1,3 @@
-import 'package:PiliPlus/models/common/live/live_search_type.dart';
 import 'package:PiliPlus/pages/live_search/child/controller.dart';
 import 'package:PiliPlus/utils/extension/scroll_controller_ext.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
@@ -20,11 +19,11 @@ class LiveSearchController extends GetxController
   final RxList<int> counts = <int>[-1, -1].obs;
 
   late final roomCtr = Get.put(
-    LiveSearchChildController(this, LiveSearchType.room),
+    LiveSearchChildController(this, .room),
     tag: Utils.generateRandomString(8),
   );
   late final userCtr = Get.put(
-    LiveSearchChildController(this, LiveSearchType.user),
+    LiveSearchChildController(this, .user),
     tag: Utils.generateRandomString(8),
   );
 

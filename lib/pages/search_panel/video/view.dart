@@ -55,7 +55,7 @@ class _SearchVideoPanelState
           children: [
             Expanded(
               child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
+                scrollDirection: .horizontal,
                 child: Wrap(
                   children: [
                     for (final e in ArchiveFilterType.values)

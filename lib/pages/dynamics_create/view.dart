@@ -11,7 +11,6 @@ import 'package:PiliPlus/common/widgets/pair.dart';
 import 'package:PiliPlus/common/widgets/time_picker.dart';
 import 'package:PiliPlus/http/dynamics.dart';
 import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/models/common/publish_panel_type.dart';
 import 'package:PiliPlus/models/common/reply/reply_option_type.dart';
 import 'package:PiliPlus/models/dynamics/result.dart' show PicModel;
 import 'package:PiliPlus/models/dynamics/vote_model.dart';
@@ -131,7 +130,7 @@ class _CreateDynPanelState extends CommonRichTextPubPageState<CreateDynPanel> {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: .start,
       children: [
         _buildAppBar(theme),
         Expanded(
@@ -172,7 +171,7 @@ class _CreateDynPanelState extends CommonRichTextPubPageState<CreateDynPanel> {
                                 ? const EdgeInsets.symmetric(vertical: 12)
                                 : const EdgeInsets.all(12),
                             visualDensity: VisualDensity.compact,
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            tapTargetSize: .shrinkWrap,
                           ),
                           onPressed: _onSelectTopic,
                           child: Text.rich(
@@ -257,7 +256,7 @@ class _CreateDynPanelState extends CommonRichTextPubPageState<CreateDynPanel> {
                     Obx(() => _buildPubTimeWidget),
                     Column(
                       mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      crossAxisAlignment: .start,
                       children: [
                         Obx(() => _buildReplyOptionWidget(theme)),
                         const SizedBox(height: 5),
@@ -363,11 +362,8 @@ class _CreateDynPanelState extends CommonRichTextPubPageState<CreateDynPanel> {
             () => FilledButton.tonal(
               onPressed: enablePublish.value ? onPublishThrottle : null,
               style: FilledButton.styleFrom(
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 10,
-                ),
+                tapTargetSize: .shrinkWrap,
+                padding: const .symmetric(horizontal: 20, vertical: 10),
                 visualDensity: VisualDensity.compact,
               ),
               child: Text(_publishTime.value == null ? '发布' : '定时发布'),
@@ -655,7 +651,7 @@ class _CreateDynPanelState extends CommonRichTextPubPageState<CreateDynPanel> {
     onPressed: () async {
       controller.keepChatPanel();
       final voteItem = editController.items.firstWhereOrNull(
-        (e) => e.type == RichTextType.vote,
+        (e) => e.type == .vote,
       );
       final voteInfo = await Navigator.of(context).push<VoteInfo>(
         GetPageRoute(
@@ -677,7 +673,7 @@ class _CreateDynPanelState extends CommonRichTextPubPageState<CreateDynPanel> {
             replacedRange: range,
             selection: selection,
             composing: TextRange.empty,
-            type: RichTextType.vote,
+            type: .vote,
             id: voteInfo.voteId.toString(),
             rawText: voteInfo.title,
           );
@@ -688,11 +684,11 @@ class _CreateDynPanelState extends CommonRichTextPubPageState<CreateDynPanel> {
         } else {
           onInsertText(
             '我发起了一个投票',
-            RichTextType.text,
+            .text,
           );
           onInsertText(
             ' ${voteInfo.title} ',
-            RichTextType.vote,
+            .vote,
             rawText: voteInfo.title,
             id: voteInfo.voteId.toString(),
           );
@@ -708,7 +704,7 @@ class _CreateDynPanelState extends CommonRichTextPubPageState<CreateDynPanel> {
   Widget _buildEditWidget(ThemeData theme) => Listener(
     onPointerUp: (event) {
       if (readOnly.value) {
-        updatePanelType(PanelType.keyboard);
+        updatePanelType(.keyboard);
       }
     },
     child: Obx(
@@ -853,7 +849,7 @@ class _CreateDynPanelState extends CommonRichTextPubPageState<CreateDynPanel> {
                 padding: const EdgeInsets.fromLTRB(12, 12, 30, 12),
                 child: Column(
                   spacing: 3,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  crossAxisAlignment: .stretch,
                   children: [
                     Text('直播预约: ${reserveCard.title}'),
                     Text(

@@ -1,4 +1,3 @@
-import 'package:PiliPlus/models/common/reply/reply_search_type.dart';
 import 'package:PiliPlus/pages/video/reply_search_item/child/controller.dart';
 import 'package:PiliPlus/utils/extension/scroll_controller_ext.dart';
 import 'package:PiliPlus/utils/utils.dart';
@@ -16,11 +15,11 @@ class ReplySearchController extends GetxController
   late final TextEditingController editingController;
 
   late final videoCtr = Get.put(
-    ReplySearchChildController(this, ReplySearchType.video),
+    ReplySearchChildController(this, .video),
     tag: Utils.generateRandomString(8),
   );
   late final articleCtr = Get.put(
-    ReplySearchChildController(this, ReplySearchType.article),
+    ReplySearchChildController(this, .article),
     tag: Utils.generateRandomString(8),
   );
 

@@ -1,6 +1,5 @@
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/search.dart';
-import 'package:PiliPlus/models/common/search/search_type.dart';
 import 'package:PiliPlus/models/search/result.dart';
 import 'package:PiliPlus/pages/search_panel/controller.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
@@ -31,7 +30,7 @@ class SearchAllController
   bool customHandleResponse(bool isRefresh, Success response) {
     searchResultController?.count[searchType.index] =
         response.response.numResults ?? 0;
-    if (searchType == SearchType.video && !hasJump2Video && isRefresh) {
+    if (searchType == .video && !hasJump2Video && isRefresh) {
       hasJump2Video = true;
       onPushDetail(response.response.list);
     }

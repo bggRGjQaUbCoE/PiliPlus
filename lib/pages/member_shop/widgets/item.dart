@@ -55,7 +55,7 @@ class MemberShopItem extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(vertical: 2),
                       child: PBadge(
                         text: belowLabels,
-                        type: PBadgeType.shop,
+                        type: .shop,
                         size: PBadgeSize.small,
                         isStack: false,
                         fontSize: 10,

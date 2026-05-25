@@ -10,9 +10,7 @@ import 'package:PiliPlus/common/widgets/marquee.dart';
 import 'package:PiliPlus/common/widgets/scaffold.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/music.dart';
-import 'package:PiliPlus/models/common/badge_type.dart';
 import 'package:PiliPlus/models/common/image_preview_type.dart';
-import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/models_new/music/bgm_detail.dart';
 import 'package:PiliPlus/pages/common/dyn/common_dyn_page.dart';
 import 'package:PiliPlus/pages/music/controller.dart';
@@ -85,7 +83,7 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
                       src: response.mvCover,
                       width: 36,
                       height: 36,
-                      type: ImageType.avatar,
+                      type: .avatar,
                     ),
                     Text(response.musicTitle!),
                   ],
@@ -339,7 +337,7 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
             src: artist.face,
             width: 15,
             height: 15,
-            type: ImageType.avatar,
+            type: .avatar,
           ),
           child,
         ],
@@ -463,7 +461,7 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
                             if (!item.musicRank.isNullOrEmpty)
                               PBadge(
                                 text: item.musicRank,
-                                type: PBadgeType.secondary,
+                                type: .secondary,
                                 isStack: false,
                                 fontSize: 11,
                               ),

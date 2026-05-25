@@ -11,7 +11,6 @@ import 'package:PiliPlus/common/widgets/route_aware_mixin.dart';
 import 'package:PiliPlus/common/widgets/scaffold.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart';
 import 'package:PiliPlus/common/widgets/sliver/sliver_pinned_dynamic_header.dart';
-import 'package:PiliPlus/models/common/episode_panel_type.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_info_model/result.dart';
 import 'package:PiliPlus/models_new/video/video_detail/episode.dart' as ugc;
 import 'package:PiliPlus/models_new/video/video_detail/page.dart';
@@ -1373,7 +1372,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
         //                 SegmentType.values.length,
         //               )],
         //           segment: Pair(first: 0, second: 0),
-        //           skipType: SkipType.alwaysSkip,
+        //           skipType: .alwaysSkip,
         //         ),
         //       );
         //     },
@@ -1637,7 +1636,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                     ugcIntroController: videoDetailController.isUgc
                         ? ugcIntroController
                         : null,
-                    type: EpisodeType.part,
+                    type: .part,
                     list: [videoDetail.pages!],
                     cover: videoDetailController.cover.value,
                     bvid: videoDetailController.bvid,
@@ -1681,7 +1680,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                   ugcIntroController: videoDetailController.isUgc
                       ? ugcIntroController
                       : null,
-                  type: EpisodeType.season,
+                  type: .season,
                   initialTabIndex: videoDetailController.seasonIndex.value,
                   cover: videoDetailController.cover.value,
                   seasonId: videoDetail.ugcSeason!.id,
@@ -1750,10 +1749,10 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
           ? ugcIntroController
           : null,
       type: season != null
-          ? EpisodeType.season
+          ? .season
           : episodes is List<Part>
-          ? EpisodeType.part
-          : EpisodeType.pgc,
+          ? .part
+          : .pgc,
       cover: videoDetailController.cover.value,
       enableSlide: enableSlide,
       initialTabIndex: index ?? 0,

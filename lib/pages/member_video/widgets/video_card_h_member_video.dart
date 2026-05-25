@@ -5,8 +5,6 @@ import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/progress_bar/video_progress_indicator.dart';
 import 'package:PiliPlus/common/widgets/stat/stat.dart';
 import 'package:PiliPlus/common/widgets/video_popup_menu.dart';
-import 'package:PiliPlus/models/common/badge_type.dart';
-import 'package:PiliPlus/models/common/stat_type.dart';
 import 'package:PiliPlus/models_new/space/space_archive/item.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/duration_utils.dart';
@@ -122,8 +120,8 @@ class VideoCardHMemberVideo extends StatelessWidget {
                                 right: 6.0,
                                 top: 6.0,
                                 type: videoItem.badges!.first.text == '充电专属'
-                                    ? PBadgeType.error
-                                    : PBadgeType.primary,
+                                    ? .error
+                                    : .primary,
                               ),
                             if (videoItem.history != null) ...[
                               Builder(
@@ -159,7 +157,7 @@ class VideoCardHMemberVideo extends StatelessWidget {
                                           : '${DurationUtils.formatDuration(videoItem.history!.progress)}/${DurationUtils.formatDuration(videoItem.history!.duration)}',
                                       right: 6.0,
                                       bottom: 6.0,
-                                      type: PBadgeType.gray,
+                                      type: .gray,
                                     );
                                   } catch (_) {
                                     return PBadge(
@@ -168,7 +166,7 @@ class VideoCardHMemberVideo extends StatelessWidget {
                                       ),
                                       right: 6.0,
                                       bottom: 6.0,
-                                      type: PBadgeType.gray,
+                                      type: .gray,
                                     );
                                   }
                                 },
@@ -180,7 +178,7 @@ class VideoCardHMemberVideo extends StatelessWidget {
                                 ),
                                 right: 6.0,
                                 bottom: 6.0,
-                                type: PBadgeType.gray,
+                                type: .gray,
                               ),
                           ],
                         );
@@ -248,11 +246,11 @@ class VideoCardHMemberVideo extends StatelessWidget {
             spacing: 8,
             children: [
               StatWidget(
-                type: StatType.play,
+                type: .play,
                 value: videoItem.stat.view,
               ),
               StatWidget(
-                type: StatType.danmaku,
+                type: .danmaku,
                 value: videoItem.stat.danmu,
               ),
             ],

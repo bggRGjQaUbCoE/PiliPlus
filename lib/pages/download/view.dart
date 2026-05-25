@@ -7,7 +7,6 @@ import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/scaffold.dart';
 import 'package:PiliPlus/common/widgets/select_mask.dart';
-import 'package:PiliPlus/models/common/badge_type.dart';
 import 'package:PiliPlus/models_new/download/download_info.dart';
 import 'package:PiliPlus/pages/download/controller.dart';
 import 'package:PiliPlus/pages/download/detail/view.dart';
@@ -325,7 +324,7 @@ class _DownloadPageState extends State<DownloadPage> with GridMixin {
                     right: 6.0,
                     bottom: 6.0,
                     isBold: false,
-                    type: PBadgeType.gray,
+                    type: .gray,
                   ),
                   if (pageInfo.seasonType case final pgcType?)
                     PBadge(

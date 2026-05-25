@@ -108,7 +108,7 @@ class VideoCardVMemberHome extends StatelessWidget {
                           bottom: 6,
                           right: 7,
                           size: PBadgeSize.small,
-                          type: PBadgeType.gray,
+                          type: .gray,
                           text: DurationUtils.formatDuration(
                             videoItem.duration,
                           ),
@@ -121,8 +121,8 @@ class VideoCardVMemberHome extends StatelessWidget {
                           top: 6,
                           right: 6,
                           type: videoItem.badges!.first.text == '充电专属'
-                              ? PBadgeType.error
-                              : PBadgeType.primary,
+                              ? .error
+                              : .primary,
                         )
                       else if (videoItem.isCooperation == true)
                         const PBadge(

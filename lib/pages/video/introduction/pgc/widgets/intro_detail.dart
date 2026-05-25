@@ -3,7 +3,6 @@ import 'package:PiliPlus/common/widgets/keep_alive_wrapper.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart';
 import 'package:PiliPlus/common/widgets/selectable_text.dart';
 import 'package:PiliPlus/common/widgets/stat/stat.dart';
-import 'package:PiliPlus/models/common/stat_type.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_info_model/result.dart';
 import 'package:PiliPlus/models_new/video/video_tag/data.dart';
 import 'package:PiliPlus/pages/common/slide/common_slide_page.dart';
@@ -136,11 +135,11 @@ class _IntroDetailState extends State<PgcIntroPanel>
           spacing: 6,
           children: [
             StatWidget(
-              type: StatType.play,
+              type: .play,
               value: widget.item.stat!.view,
             ),
             StatWidget(
-              type: StatType.danmaku,
+              type: .danmaku,
               value: widget.item.stat!.danmaku,
             ),
           ],

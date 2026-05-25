@@ -25,7 +25,7 @@ class ReplySearchChildController
   Future<LoadingState<SearchItemReply>> customGetData() {
     return ReplyGrpc.searchItem(
       page: page,
-      itemType: searchType == ReplySearchType.video
+      itemType: searchType == .video
           ? SearchItemType.VIDEO
           : SearchItemType.ARTICLE,
       oid: controller.oid,

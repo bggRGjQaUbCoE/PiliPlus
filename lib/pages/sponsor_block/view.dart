@@ -376,10 +376,10 @@ class _SponsorBlockPageState extends State<SponsorBlockPage> {
     return Builder(
       builder: (context) {
         Color color = _blockColor[index];
-        final isDisable = item.second == SkipType.disable;
+        final isDisable = item.second == .disable;
         return ListTile(
           dense: true,
-          enabled: item.second != SkipType.disable,
+          enabled: item.second != .disable,
           onTap: () => onSelectColor(context, index, color, item),
           title: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -411,7 +411,7 @@ class _SponsorBlockPageState extends State<SponsorBlockPage> {
                   return PopupMenuButton<SkipType>(
                     initialValue: item.second,
                     onSelected: (e) {
-                      final updateItem = isDisable || e == SkipType.disable;
+                      final updateItem = isDisable || e == .disable;
                       item.second = e;
                       setting.put(
                         SettingBoxKey.blockSettings,

@@ -6,7 +6,6 @@ import 'package:PiliPlus/common/widgets/flutter/text_field/controller.dart';
 import 'package:PiliPlus/common/widgets/flutter/text_field/text_field.dart';
 import 'package:PiliPlus/http/msg.dart';
 import 'package:PiliPlus/models/common/image_preview_type.dart';
-import 'package:PiliPlus/models/common/publish_panel_type.dart';
 import 'package:PiliPlus/models/dynamics/result.dart'
     show PicModel, FilePicModel, OpusPicModel;
 import 'package:PiliPlus/models_new/dynamic/dyn_mention/item.dart';
@@ -255,7 +254,7 @@ abstract class CommonRichTextPubPageState<T extends CommonRichTextPubPage>
       final isTextEmote = width == null;
       onInsertText(
         isTextEmote ? emote.text! : '\uFFFC',
-        RichTextType.emoji,
+        .emoji,
         rawText: emote.text!,
         emote: isTextEmote
             ? null
@@ -268,7 +267,7 @@ abstract class CommonRichTextPubPageState<T extends CommonRichTextPubPage>
     } else if (emote is Emoticon) {
       onInsertText(
         '\uFFFC',
-        RichTextType.emoji,
+        .emoji,
         rawText: emote.emoji!,
         emote: Emote(
           url: emote.url!,
@@ -284,13 +283,13 @@ abstract class CommonRichTextPubPageState<T extends CommonRichTextPubPage>
     final list = <Map<String, dynamic>>[];
     for (final e in editController.items) {
       switch (e.type) {
-        case RichTextType.text || RichTextType.composing || RichTextType.common:
+        case .text || .composing || .common:
           list.add({
             "raw_text": e.text,
             "type": 1,
             "biz_id": "",
           });
-        case RichTextType.at:
+        case .at:
           list
             ..add({
               "raw_text": '@${e.rawText}',
@@ -302,13 +301,13 @@ abstract class CommonRichTextPubPageState<T extends CommonRichTextPubPage>
               "type": 1,
               "biz_id": "",
             });
-        case RichTextType.emoji:
+        case .emoji:
           list.add({
             "raw_text": e.rawText,
             "type": 9,
             "biz_id": "",
           });
-        case RichTextType.vote:
+        case .vote:
           list
             ..add({
               "raw_text": e.rawText,
@@ -350,7 +349,7 @@ abstract class CommonRichTextPubPageState<T extends CommonRichTextPubPage>
   void _onInsertUser(MentionItem e, bool fromClick) {
     onInsertText(
       '@${e.name} ',
-      RichTextType.at,
+      .at,
       rawText: e.name,
       id: e.uid,
       fromClick: fromClick,
@@ -378,7 +377,7 @@ abstract class CommonRichTextPubPageState<T extends CommonRichTextPubPage>
       TextEditingDelta delta;
 
       if (selection.isCollapsed) {
-        if (type == RichTextType.at && fromClick == false) {
+        if (type == .at && fromClick == false) {
           delta = RichTextEditingDeltaReplacement(
             oldText: oldValue.text,
             replacementText: text,
@@ -465,14 +464,14 @@ abstract class CommonRichTextPubPageState<T extends CommonRichTextPubPage>
 
   Widget get emojiBtn => Obx(
     () {
-      final isEmoji = panelType.value == PanelType.emoji;
+      final isEmoji = panelType.value == .emoji;
       return ToolbarIconButton(
         tooltip: isEmoji ? '输入' : '表情',
         onPressed: () {
           if (isEmoji) {
-            updatePanelType(PanelType.keyboard);
+            updatePanelType(.keyboard);
           } else {
-            updatePanelType(PanelType.emoji);
+            updatePanelType(.emoji);
           }
         },
         icon: isEmoji
@@ -492,14 +491,14 @@ abstract class CommonRichTextPubPageState<T extends CommonRichTextPubPage>
 
   Widget get moreBtn => Obx(
     () {
-      final isMore = panelType.value == PanelType.more;
+      final isMore = panelType.value == .more;
       return ToolbarIconButton(
         tooltip: isMore ? '输入' : '更多',
         onPressed: () {
           if (isMore) {
-            updatePanelType(PanelType.keyboard);
+            updatePanelType(.keyboard);
           } else {
-            updatePanelType(PanelType.more);
+            updatePanelType(.more);
           }
         },
         icon: isMore

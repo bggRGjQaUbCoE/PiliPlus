@@ -1,7 +1,5 @@
 import 'package:PiliPlus/common/assets.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
-import 'package:PiliPlus/models/common/dynamic/up_panel_position.dart';
-import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/models/dynamics/up.dart';
 import 'package:PiliPlus/pages/dynamics/controller.dart';
 import 'package:PiliPlus/pages/live_follow/view.dart';
@@ -25,7 +23,7 @@ class UpPanel extends StatefulWidget {
 
 class _UpPanelState extends State<UpPanel> {
   late final controller = widget.dynamicsController;
-  late final isTop = controller.upPanelPosition == UpPanelPosition.top;
+  late final isTop = controller.upPanelPosition == .top;
 
   void toFollowPage() => Get.to(const LiveFollowPage());
 
@@ -171,7 +169,7 @@ class _UpPanelState extends State<UpPanel> {
           width: 38,
           height: 38,
           src: data.face,
-          type: ImageType.avatar,
+          type: .avatar,
         ),
       );
       if (isLive) {

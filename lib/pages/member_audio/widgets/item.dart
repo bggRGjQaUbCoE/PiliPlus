@@ -4,7 +4,6 @@ import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/stat/stat.dart';
 import 'package:PiliPlus/grpc/bilibili/app/listener/v1.pbenum.dart'
     show PlaylistSource;
-import 'package:PiliPlus/models/common/stat_type.dart';
 import 'package:PiliPlus/models_new/space/space_audio/item.dart';
 import 'package:PiliPlus/pages/audio/view.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
@@ -82,11 +81,11 @@ class MemberAudioItem extends StatelessWidget {
                         spacing: 16,
                         children: [
                           StatWidget(
-                            type: StatType.listen,
+                            type: .listen,
                             value: item.statistic!.play,
                           ),
                           StatWidget(
-                            type: StatType.reply,
+                            type: .reply,
                             value: item.statistic!.comment,
                           ),
                         ],

@@ -6,7 +6,6 @@ import 'package:PiliPlus/common/widgets/dialog/report.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/http/dynamics.dart';
 import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/models/common/badge_type.dart';
 import 'package:PiliPlus/models/common/image_preview_type.dart';
 import 'package:PiliPlus/models/dynamics/vote_model.dart';
 import 'package:PiliPlus/models_new/followee_votes/vote.dart';
@@ -393,7 +392,7 @@ class _VotePanelState extends State<VotePanel> {
                       PBadge(
                         right: 6,
                         bottom: 8,
-                        type: PBadgeType.primary,
+                        type: .primary,
                         padding: const EdgeInsets.symmetric(
                           horizontal: 3,
                           vertical: 1,

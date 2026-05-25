@@ -5,7 +5,6 @@ import 'package:PiliPlus/common/widgets/view_safe_area.dart';
 import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
     show ReplyInfo;
 import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/models_new/match/match_info/contest.dart';
 import 'package:PiliPlus/models_new/match/match_info/team.dart';
 import 'package:PiliPlus/pages/common/dyn/common_dyn_page.dart';
@@ -90,7 +89,7 @@ class _MatchInfoPageState extends CommonDynPageState<MatchInfoPage> {
                 width: 50,
                 height: 50,
                 src: 'https://i1.hdslb.com${team.logo}',
-                type: ImageType.emote,
+                type: .emote,
               ),
               Text(team.title!),
             ],
@@ -140,7 +139,7 @@ class _MatchInfoPageState extends CommonDynPageState<MatchInfoPage> {
                             width: 50,
                             height: 50,
                             src: 'https://i1.hdslb.com${response.season!.logo}',
-                            type: ImageType.emote,
+                            type: .emote,
                           ),
                         if (response.contestStatus == 2)
                           FilledButton.tonal(

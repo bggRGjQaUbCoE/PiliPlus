@@ -7,7 +7,6 @@ import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
 import 'package:PiliPlus/common/widgets/sliver/sliver_pinned_header.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/image_preview_type.dart';
-import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/models/common/member/user_info_type.dart';
 import 'package:PiliPlus/models/member/info.dart';
 import 'package:PiliPlus/models_new/space/space_archive/item.dart';
@@ -407,7 +406,7 @@ class _HorizontalMemberPageState extends State<HorizontalMemberPage> {
     ),
     child: NetworkImgLayer(
       src: face,
-      type: ImageType.avatar,
+      type: .avatar,
       width: 70,
       height: 70,
     ),

@@ -2,7 +2,6 @@ import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/image/image_save.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
-import 'package:PiliPlus/models/common/badge_type.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_index_result/list.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
@@ -60,7 +59,7 @@ class PgcCardVPgcIndex extends StatelessWidget {
                         right: null,
                         bottom: 6,
                         left: 6,
-                        type: PBadgeType.gray,
+                        type: .gray,
                       ),
                     ],
                   );

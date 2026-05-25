@@ -5,7 +5,6 @@ import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/image/image_save.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/stat/stat.dart';
-import 'package:PiliPlus/models/common/stat_type.dart';
 import 'package:PiliPlus/models_new/media_list/media_list.dart';
 import 'package:PiliPlus/models_new/video/video_detail/episode.dart';
 import 'package:PiliPlus/pages/common/slide/common_slide_page.dart';
@@ -260,11 +259,11 @@ class _MediaListPanelState extends State<MediaListPanel>
                                 spacing: 8,
                                 children: [
                                   StatWidget(
-                                    type: StatType.play,
+                                    type: .play,
                                     value: item.cntInfo!.play,
                                   ),
                                   StatWidget(
-                                    type: StatType.danmaku,
+                                    type: .danmaku,
                                     value: item.cntInfo!.danmaku,
                                   ),
                                 ],

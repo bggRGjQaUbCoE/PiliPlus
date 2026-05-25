@@ -8,8 +8,6 @@ import 'package:PiliPlus/common/widgets/scroll_physics.dart';
 import 'package:PiliPlus/common/widgets/selectable_text.dart';
 import 'package:PiliPlus/common/widgets/stat/stat.dart';
 import 'package:PiliPlus/http/sponsor_block.dart';
-import 'package:PiliPlus/models/common/image_type.dart';
-import 'package:PiliPlus/models/common/stat_type.dart';
 import 'package:PiliPlus/models_new/video/video_detail/data.dart';
 import 'package:PiliPlus/models_new/video/video_detail/staff.dart';
 import 'package:PiliPlus/models_new/video/video_tag/data.dart';
@@ -784,7 +782,7 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
             clipBehavior: Clip.none,
             children: [
               NetworkImgLayer(
-                type: ImageType.avatar,
+                type: .avatar,
                 src: item.face,
                 width: 35,
                 height: 35,
@@ -940,12 +938,12 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
     spacing: 10,
     children: [
       StatWidget(
-        type: StatType.play,
+        type: .play,
         value: videoDetail.stat?.view,
         color: theme.colorScheme.outline,
       ),
       StatWidget(
-        type: StatType.danmaku,
+        type: .danmaku,
         value: videoDetail.stat?.danmaku,
         color: theme.colorScheme.outline,
       ),

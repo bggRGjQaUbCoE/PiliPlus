@@ -100,19 +100,19 @@ abstract final class SearchHttp {
         dynamic data;
         try {
           switch (searchType) {
-            case SearchType.video:
+            case .video:
               data = SearchVideoData.fromJson(dataData);
               break;
-            case SearchType.live_room:
+            case .live_room:
               data = SearchLiveData.fromJson(dataData);
               break;
-            case SearchType.bili_user:
+            case .bili_user:
               data = SearchUserData.fromJson(dataData);
               break;
-            case SearchType.media_bangumi || SearchType.media_ft:
+            case .media_bangumi || .media_ft:
               data = SearchPgcData.fromJson(dataData);
               break;
-            case SearchType.article:
+            case .article:
               data = SearchArticleData.fromJson(dataData);
               break;
             // default:

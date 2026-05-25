@@ -3,15 +3,12 @@ import 'dart:math' as math;
 
 import 'package:PiliPlus/common/widgets/button/toolbar_icon_button.dart';
 import 'package:PiliPlus/common/widgets/custom_icon.dart';
-import 'package:PiliPlus/common/widgets/flutter/text_field/controller.dart'
-    show RichTextType;
 import 'package:PiliPlus/common/widgets/flutter/text_field/text_field.dart';
 import 'package:PiliPlus/common/widgets/view_safe_area.dart';
 import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
     show ReplyInfo;
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/video.dart';
-import 'package:PiliPlus/models/common/publish_panel_type.dart';
 import 'package:PiliPlus/models/dynamics/result.dart' show FilePicModel;
 import 'package:PiliPlus/pages/common/publish/common_rich_text_pub_page.dart';
 import 'package:PiliPlus/pages/dynamics_mention/controller.dart';
@@ -138,7 +135,7 @@ class _ReplyPageState extends CommonRichTextPubPageState<ReplyPage> {
         child: Listener(
           onPointerUp: (event) {
             if (readOnly.value) {
-              updatePanelType(PanelType.keyboard);
+              updatePanelType(.keyboard);
             }
           },
           child: Obx(
@@ -291,7 +288,7 @@ class _ReplyPageState extends CommonRichTextPubPageState<ReplyPage> {
               if (res != null) {
                 onInsertText(
                   '${res.title} ',
-                  RichTextType.common,
+                  .common,
                   rawText: '${res.url} ',
                 );
               }
@@ -323,7 +320,7 @@ class _ReplyPageState extends CommonRichTextPubPageState<ReplyPage> {
                   );
                   onInsertText(
                     ' ${DurationUtils.formatDuration((plPlayerController.playedTime ?? Duration.zero).inSeconds)} ',
-                    RichTextType.common,
+                    .common,
                   );
                 } catch (e) {
                   debugPrint(e.toString());
@@ -376,7 +373,7 @@ class _ReplyPageState extends CommonRichTextPubPageState<ReplyPage> {
   Future<void> onCustomPublish({List? pictures}) async {
     Map<String, int> atNameToMid = {};
     for (final e in editController.items) {
-      if (e.type == RichTextType.at) {
+      if (e.type == .at) {
         atNameToMid[e.rawText] ??= int.parse(e.id!);
       }
     }

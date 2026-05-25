@@ -33,11 +33,11 @@ class MemberSearchChildController extends CommonListController {
   @override
   List? getDataList(response) {
     switch (searchType) {
-      case MemberSearchType.archive:
+      case .archive:
         SearchArchiveReply data = response;
         controller.counts[searchType.index] = data.total.toInt();
         return data.archives;
-      case MemberSearchType.dynamic:
+      case .dynamic:
         DynamicsDataModel data = response;
         offset = data.offset;
         if (data.hasMore == false) {
@@ -57,13 +57,13 @@ class MemberSearchChildController extends CommonListController {
   @override
   Future<LoadingState> customGetData() {
     return switch (searchType) {
-      MemberSearchType.archive => SpaceGrpc.searchArchive(
+      .archive => SpaceGrpc.searchArchive(
         mid: _midInt64,
         pn: page,
         ps: _ps,
         keyword: controller.editingController.text,
       ),
-      MemberSearchType.dynamic => MemberHttp.dynSearch(
+      .dynamic => MemberHttp.dynSearch(
         mid: controller.mid,
         pn: page,
         offset: offset ?? '',

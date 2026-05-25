@@ -2,7 +2,6 @@ import 'package:PiliPlus/common/assets.dart';
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
-import 'package:PiliPlus/models/common/badge_type.dart';
 import 'package:PiliPlus/models/dynamics/result.dart';
 import 'package:flutter/material.dart';
 
@@ -51,7 +50,7 @@ Widget livePanelSub(
               top: 6,
               right: 65,
               fontSize: 10.5,
-              type: PBadgeType.gray,
+              type: .gray,
             ),
             if (live.liveStatus == 1)
               Positioned(

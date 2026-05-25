@@ -12,10 +12,8 @@ import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/user.dart';
 import 'package:PiliPlus/http/video.dart';
 import 'package:PiliPlus/models/common/account_type.dart';
-import 'package:PiliPlus/models/common/sponsor_block/action_type.dart';
 import 'package:PiliPlus/models/common/sponsor_block/post_segment_model.dart';
 import 'package:PiliPlus/models/common/sponsor_block/segment_model.dart';
-import 'package:PiliPlus/models/common/sponsor_block/segment_type.dart';
 import 'package:PiliPlus/models/common/video/audio_quality.dart';
 import 'package:PiliPlus/models/common/video/source_type.dart';
 import 'package:PiliPlus/models/common/video/video_decode_type.dart';
@@ -349,9 +347,9 @@ class VideoDetailController extends GetxController
     cover = RxString(args['cover'] ?? '');
     isVertical = args['isVertical'] ?? false;
 
-    sourceType = args['sourceType'] ?? SourceType.normal;
-    isFileSource = sourceType == SourceType.file;
-    isPlayAll = sourceType != SourceType.normal && !isFileSource;
+    sourceType = args['sourceType'] ?? .normal;
+    isFileSource = sourceType == .file;
+    isPlayAll = sourceType != .normal && !isFileSource;
     if (isFileSource) {
       initFileSource(args['entry']);
     } else if (isPlayAll) {
@@ -446,10 +444,10 @@ class VideoDetailController extends GetxController
             ? () => getMediaList(isLoadPrevious: true)
             : null,
         onDelete:
-            sourceType == SourceType.watchLater ||
-                (sourceType == SourceType.fav && args['isOwner'] == true)
+            sourceType == .watchLater ||
+                (sourceType == .fav && args['isOwner'] == true)
             ? (item, index) async {
-                if (sourceType == SourceType.watchLater) {
+                if (sourceType == .watchLater) {
                   final res = await UserHttp.toViewDel(
                     aids: item.aid.toString(),
                   );
@@ -954,8 +952,8 @@ class VideoDetailController extends GetxController
             first: 0,
             second: plPlayerController.position.inMilliseconds / 1000,
           ),
-          category: SegmentType.sponsor,
-          actionType: ActionType.skip,
+          category: .sponsor,
+          actionType: .skip,
         ),
       );
     }

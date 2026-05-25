@@ -8,7 +8,6 @@ import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/image_viewer/hero.dart';
 import 'package:PiliPlus/common/widgets/stat/stat.dart';
 import 'package:PiliPlus/models/common/image_preview_type.dart';
-import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_info_model/result.dart';
 import 'package:PiliPlus/pages/video/controller.dart';
 import 'package:PiliPlus/pages/video/introduction/pgc/controller.dart';
@@ -323,7 +322,7 @@ class _PgcIntroPageState extends State<PgcIntroPage> {
                 src: avatar,
                 width: 35,
                 height: 35,
-                type: ImageType.avatar,
+                type: .avatar,
               ),
               Column(
                 mainAxisSize: MainAxisSize.min,

@@ -396,7 +396,7 @@ Future<void> _showDynBadgeDialog(
   if (res != null) {
     final mainController = Get.find<MainController>()
       ..dynamicBadgeMode = DynamicBadgeMode.values[res.index];
-    if (mainController.dynamicBadgeMode != DynamicBadgeMode.hidden) {
+    if (mainController.dynamicBadgeMode != .hidden) {
       mainController.getUnreadDynamic();
     }
     await GStorage.setting.put(
@@ -423,7 +423,7 @@ Future<void> _showMsgBadgeDialog(
   if (res != null) {
     final mainController = Get.find<MainController>()
       ..msgBadgeMode = DynamicBadgeMode.values[res.index];
-    if (mainController.msgBadgeMode != DynamicBadgeMode.hidden) {
+    if (mainController.msgBadgeMode != .hidden) {
       mainController.queryUnreadMsg(true);
     } else {
       mainController.msgUnReadCount.value = '';
@@ -448,7 +448,7 @@ Future<void> _showMsgUnReadDialog(
   );
   if (res != null) {
     final mainController = Get.find<MainController>()..msgUnReadTypes = res;
-    if (mainController.msgBadgeMode != DynamicBadgeMode.hidden) {
+    if (mainController.msgBadgeMode != .hidden) {
       mainController.queryUnreadMsg();
     }
     await GStorage.setting.put(

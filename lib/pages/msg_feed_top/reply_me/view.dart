@@ -8,7 +8,6 @@ import 'package:PiliPlus/common/widgets/scaffold.dart';
 import 'package:PiliPlus/grpc/bilibili/app/im/v1.pbenum.dart'
     show IMSettingType;
 import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/models_new/msg/msg_reply/item.dart';
 import 'package:PiliPlus/pages/msg_feed_top/reply_me/controller.dart';
 import 'package:PiliPlus/pages/whisper_settings/view.dart';
@@ -124,7 +123,7 @@ class _ReplyMePageState extends State<ReplyMePage> {
                       child: NetworkImgLayer(
                         width: 45,
                         height: 45,
-                        type: ImageType.avatar,
+                        type: .avatar,
                         src: item.user?.avatar,
                       ),
                     ),

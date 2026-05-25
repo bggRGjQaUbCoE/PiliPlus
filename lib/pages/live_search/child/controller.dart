@@ -15,13 +15,13 @@ class LiveSearchChildController
   @override
   void checkIsEnd(int length) {
     switch (searchType) {
-      case LiveSearchType.room:
+      case .room:
         if (controller.counts.first != -1 &&
             length >= controller.counts.first) {
           isEnd = true;
         }
         break;
-      case LiveSearchType.user:
+      case .user:
         if (controller.counts[1] != -1 && length >= controller.counts[1]) {
           isEnd = true;
         }
@@ -32,10 +32,10 @@ class LiveSearchChildController
   @override
   List? getDataList(response) {
     switch (searchType) {
-      case LiveSearchType.room:
+      case .room:
         controller.counts[searchType.index] = response.room?.totalRoom ?? 0;
         return response.room?.list;
-      case LiveSearchType.user:
+      case .user:
         controller.counts[searchType.index] = response.user?.totalUser ?? 0;
         return response.user?.list;
     }

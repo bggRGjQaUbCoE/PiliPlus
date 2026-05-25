@@ -11,14 +11,14 @@ enum ThemeType {
   const ThemeType(this.desc);
 
   ThemeMode get toThemeMode => switch (this) {
-    ThemeType.light => ThemeMode.light,
-    ThemeType.dark => ThemeMode.dark,
-    ThemeType.system => ThemeMode.system,
+    .light => ThemeMode.light,
+    .dark => ThemeMode.dark,
+    .system => ThemeMode.system,
   };
 
   Icon get icon => switch (this) {
-    ThemeType.light => const Icon(MdiIcons.weatherSunny),
-    ThemeType.dark => const Icon(MdiIcons.weatherNight),
-    ThemeType.system => const Icon(MdiIcons.themeLightDark),
+    .light => const Icon(MdiIcons.weatherSunny),
+    .dark => const Icon(MdiIcons.weatherNight),
+    .system => const Icon(MdiIcons.themeLightDark),
   };
 }

@@ -217,10 +217,10 @@ class _VideoShotImageState extends State<VideoShotImage> {
     }
   }
 
-  late final _imgPaint = Paint()..filterQuality = FilterQuality.medium;
+  late final _imgPaint = Paint()..filterQuality = .medium;
   late final _borderPaint = Paint()
     ..color = Colors.white
-    ..style = PaintingStyle.stroke
+    ..style = .stroke
     ..strokeWidth = 1.5;
 
   @override

@@ -53,7 +53,7 @@ class PlayOrPauseButtonState extends State<PlayOrPauseButton>
       width: 42,
       height: 34,
       child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
+        behavior: .opaque,
         onTap: widget.plPlayerController.onDoubleTapCenter,
         child: Center(
           child: AnimatedIcon(

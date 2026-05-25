@@ -23,11 +23,11 @@ class AppBarAni extends StatelessWidget {
   static const _topDecoration = LinearGradient(
     begin: Alignment.bottomCenter,
     end: Alignment.topCenter,
-    colors: <Color>[
+    colors: [
       Colors.transparent,
       Color(0xBF000000),
     ],
-    tileMode: TileMode.mirror,
+    tileMode: .mirror,
   );
 
   static final _bottomPos = Tween<Offset>(
@@ -38,11 +38,11 @@ class AppBarAni extends StatelessWidget {
   static const _bottomDecoration = LinearGradient(
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
-    colors: <Color>[
+    colors: [
       Colors.transparent,
       Color(0xBF000000),
     ],
-    tileMode: TileMode.mirror,
+    tileMode: .mirror,
   );
 
   @override

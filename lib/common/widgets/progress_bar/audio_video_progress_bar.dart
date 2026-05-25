@@ -43,6 +43,7 @@ class ProgressBar extends LeafRenderObjectWidget {
     required this.thumbGlowColor,
     this.thumbGlowRadius = 30.0,
     this.thumbCanPaintOutsideBar = true,
+    this.strokeCap = .round,
   });
 
   /// The elapsed playing time of the media.
@@ -170,6 +171,8 @@ class ProgressBar extends LeafRenderObjectWidget {
   /// is happening during this time, though.
   final bool thumbCanPaintOutsideBar;
 
+  final StrokeCap strokeCap;
+
   @override
   RenderObject createRenderObject(BuildContext context) {
     return RenderProgressBar(
@@ -189,6 +192,7 @@ class ProgressBar extends LeafRenderObjectWidget {
       thumbGlowColor: thumbGlowColor,
       thumbGlowRadius: thumbGlowRadius,
       thumbCanPaintOutsideBar: thumbCanPaintOutsideBar,
+      strokeCap: strokeCap,
     );
   }
 
@@ -336,6 +340,7 @@ class RenderProgressBar extends RenderBox implements MouseTrackerAnnotation {
     required this._thumbGlowColor,
     double thumbGlowRadius = 30.0,
     this._thumbCanPaintOutsideBar = true,
+    required this._strokeCap,
   }) : _onDragStartUserCallback = onDragStart,
        _onDragUpdateUserCallback = onDragUpdate,
        _onDragEndUserCallback = onDragEnd,
@@ -362,6 +367,8 @@ class RenderProgressBar extends RenderBox implements MouseTrackerAnnotation {
     _drag = null;
     super.dispose();
   }
+
+  final StrokeCap _strokeCap;
 
   // This is the gesture recognizer used to move the thumb.
   _EagerHorizontalDragGestureRecognizer? _drag;
@@ -690,7 +697,9 @@ class RenderProgressBar extends RenderBox implements MouseTrackerAnnotation {
     _drawBaseBar(canvas, localSize);
     _drawBufferedBar(canvas, localSize);
     _drawCurrentProgressBar(canvas, localSize);
-    _drawThumb(canvas, localSize);
+    if (thumbRadius > 0.0) {
+      _drawThumb(canvas, localSize);
+    }
     canvas.restore();
   }
 
@@ -729,7 +738,7 @@ class RenderProgressBar extends RenderBox implements MouseTrackerAnnotation {
   }) {
     final baseBarPaint = Paint()
       ..color = color
-      ..strokeCap = .square
+      ..strokeCap = _strokeCap
       ..strokeWidth = _barHeight;
     final capRadius = _barHeight / 2;
     final adjustedWidth = availableSize.width - barHeight;

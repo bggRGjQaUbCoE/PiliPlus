@@ -52,18 +52,18 @@ class BottomControl extends StatelessWidget {
     final bufferedBarColor = primary.withValues(alpha: 0.4);
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(10, 0, 10, 12),
+      padding: const .fromLTRB(10, 0, 10, 12),
       child: Column(
-        mainAxisSize: MainAxisSize.min,
+        mainAxisSize: .min,
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(10, 0, 10, 7),
+            padding: const .fromLTRB(10, 0, 10, 7),
             child: Obx(
               () => Offstage(
                 offstage: !controller.showControls.value,
                 child: Stack(
-                  clipBehavior: Clip.none,
-                  alignment: Alignment.bottomCenter,
+                  clipBehavior: .none,
+                  alignment: .bottomCenter,
                   children: [
                     Obx(() {
                       final int value = controller.sliderPositionSeconds.value;

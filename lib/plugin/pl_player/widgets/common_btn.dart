@@ -29,7 +29,7 @@ class ComBtn extends StatelessWidget {
         onTap: onTap,
         onLongPress: onLongPress,
         onSecondaryTap: onSecondaryTap,
-        behavior: HitTestBehavior.opaque,
+        behavior: .opaque,
         child: icon,
       ),
     );

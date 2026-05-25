@@ -49,7 +49,7 @@ class BackwardSeekIndicatorState extends State<BackwardSeekIndicator> {
   @override
   Widget build(BuildContext context) {
     return Material(
-      type: MaterialType.transparency,
+      type: .transparency,
       child: InkWell(
         splashColor: const Color(0x44767676),
         onTap: increment,
@@ -60,15 +60,15 @@ class BackwardSeekIndicatorState extends State<BackwardSeekIndicator> {
                 Color(0x88767676),
                 Color(0x00767676),
               ],
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
+              begin: .centerLeft,
+              end: .centerRight,
             ),
           ),
-          alignment: Alignment.center,
+          alignment: .center,
           child: Column(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisSize: .min,
+            mainAxisAlignment: .center,
+            crossAxisAlignment: .center,
             children: [
               const Icon(
                 Icons.fast_rewind,
@@ -78,10 +78,7 @@ class BackwardSeekIndicatorState extends State<BackwardSeekIndicator> {
               const SizedBox(height: 8.0),
               Text(
                 '快退${duration.inSeconds}秒',
-                style: const TextStyle(
-                  fontSize: 12.0,
-                  color: Colors.white,
-                ),
+                style: const TextStyle(fontSize: 12.0, color: Colors.white),
               ),
             ],
           ),

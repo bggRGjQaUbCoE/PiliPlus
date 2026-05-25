@@ -8,7 +8,6 @@ import 'package:PiliPlus/http/browser_ua.dart';
 import 'package:PiliPlus/http/constants.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/video.dart';
-import 'package:PiliPlus/models/common/account_type.dart';
 import 'package:PiliPlus/models/common/video/video_type.dart';
 import 'package:PiliPlus/models/user/danmaku_rule.dart';
 import 'package:PiliPlus/models/video/play/url.dart';
@@ -64,10 +63,10 @@ class PlPlayerController with BlockConfigMixin {
   // StreamSubscription? _playerEventSubs;
 
   /// [playerStatus] has a [status] observable
-  final playerStatus = PlPlayerStatus(PlayerStatus.playing);
+  final playerStatus = PlPlayerStatus(.playing);
 
   ///
-  final Rx<DataStatus> dataStatus = Rx(DataStatus.none);
+  final Rx<DataStatus> dataStatus = Rx(.none);
 
   // bool controlsEnabled = false;
 
@@ -124,7 +123,7 @@ class PlPlayerController with BlockConfigMixin {
   bool _isVertical = false;
 
   /// 视频比例
-  final Rx<VideoFitType> videoFit = Rx(VideoFitType.contain);
+  final Rx<VideoFitType> videoFit = Rx(.contain);
 
   /// 后台播放
   late final RxBool continuePlayInBackground =
@@ -142,12 +141,12 @@ class PlPlayerController with BlockConfigMixin {
   int? _epid;
   int? _seasonId;
   int? _pgcType;
-  VideoType _videoType = VideoType.ugc;
+  VideoType _videoType = .ugc;
   int _heartDuration = 0;
   int? width;
   int? height;
 
-  late final tryLook = !Accounts.get(AccountType.video).isLogin;
+  late final tryLook = !Accounts.get(.video).isLogin;
 
   late DataSource dataSource;
 
@@ -208,7 +207,7 @@ class PlPlayerController with BlockConfigMixin {
   Future<void> exitDesktopPip() {
     isDesktopPip = false;
     return Future.wait([
-      windowManager.setTitleBarStyle(TitleBarStyle.normal),
+      windowManager.setTitleBarStyle(.normal),
       windowManager.setMinimumSize(const Size(400, 700)),
       windowManager.setBounds(_lastWindowBounds),
       setAlwaysOnTop(false),
@@ -223,7 +222,7 @@ class PlPlayerController with BlockConfigMixin {
 
     _lastWindowBounds = await windowManager.getBounds();
 
-    windowManager.setTitleBarStyle(TitleBarStyle.hidden);
+    windowManager.setTitleBarStyle(.hidden);
 
     final Size size;
     final state = videoPlayerController!.state;
@@ -338,11 +337,11 @@ class PlPlayerController with BlockConfigMixin {
               backgroundColor: null,
               foreground: Paint()
                 ..color = Colors.black
-                ..style = PaintingStyle.stroke
+                ..style = .stroke
                 ..strokeWidth = subtitleStrokeWidth,
             )
           : null,
-      padding: EdgeInsets.only(
+      padding: .only(
         left: subtitlePaddingH.toDouble(),
         right: subtitlePaddingH.toDouble(),
         bottom: subtitlePaddingB.toDouble(),
@@ -536,7 +535,7 @@ class PlPlayerController with BlockConfigMixin {
   }) async {
     try {
       this.isLive = isLive;
-      _videoType = videoType ?? VideoType.ugc;
+      _videoType = videoType ?? .ugc;
       this.width = width;
       this.height = height;
       this.dataSource = dataSource;
@@ -544,7 +543,7 @@ class PlPlayerController with BlockConfigMixin {
       // 初始化视频倍速
       // _playbackSpeed.value = speed;
       // 初始化数据加载状态
-      dataStatus.value = DataStatus.loading;
+      dataStatus.value = .loading;
       // 初始化全屏方向
       _isVertical = isVertical ?? false;
       _aid = aid;
@@ -582,12 +581,12 @@ class PlPlayerController with BlockConfigMixin {
       updateSliderPositionSecond();
       updateBufferedSecond();
       // 数据加载完成
-      dataStatus.value = DataStatus.loaded;
+      dataStatus.value = .loaded;
 
       await _initializePlayer();
       onInit?.call();
     } catch (err, stackTrace) {
-      dataStatus.value = DataStatus.error;
+      dataStatus.value = .error;
       if (kDebugMode) {
         debugPrint(stackTrace.toString());
         debugPrint('plPlayer err:  $err');
@@ -739,9 +738,9 @@ class PlPlayerController with BlockConfigMixin {
       stream.playing.listen((event) {
         WakelockPlus.toggle(enable: event);
         if (event) {
-          playerStatus.value = PlayerStatus.playing;
+          playerStatus.value = .playing;
         } else {
-          playerStatus.value = PlayerStatus.paused;
+          playerStatus.value = .paused;
         }
         videoPlayerServiceHandler?.onStatusChange(
           playerStatus.value,
@@ -751,24 +750,24 @@ class PlPlayerController with BlockConfigMixin {
 
         /// 触发回调事件
         for (final element in _statusListeners) {
-          element(event ? PlayerStatus.playing : PlayerStatus.paused);
+          element(event ? .playing : .paused);
         }
         if (videoPlayerController!.state.position.inSeconds != 0) {
-          makeHeartBeat(positionSeconds.value, type: HeartBeatType.status);
+          makeHeartBeat(positionSeconds.value, type: .status);
         }
       }),
       stream.completed.listen((event) {
         if (event) {
-          playerStatus.value = PlayerStatus.completed;
+          playerStatus.value = .completed;
 
           /// 触发回调事件
           for (final element in _statusListeners) {
-            element(PlayerStatus.completed);
+            element(.completed);
           }
         } else {
-          // playerStatus.value = PlayerStatus.playing;
+          // playerStatus.value = .playing;
         }
-        makeHeartBeat(positionSeconds.value, type: HeartBeatType.completed);
+        makeHeartBeat(positionSeconds.value, type: .completed);
       }),
       stream.position.listen((event) {
         position = event;
@@ -916,14 +915,14 @@ class PlPlayerController with BlockConfigMixin {
 
     audioSessionHandler?.setActive(true);
 
-    playerStatus.value = PlayerStatus.playing;
+    playerStatus.value = .playing;
     // screenManager.setOverlays(false);
   }
 
   /// 暂停播放
   Future<void> pause({bool notify = true, bool isInterrupt = false}) async {
     await _videoPlayerController?.pause();
-    playerStatus.value = PlayerStatus.paused;
+    playerStatus.value = .paused;
 
     // 主动暂停时让出音频焦点
     if (!isInterrupt) {
@@ -1102,14 +1101,14 @@ class PlPlayerController with BlockConfigMixin {
 
   void doubleTapFuc(DoubleTapType type) {
     switch (type) {
-      case DoubleTapType.left:
+      case .left:
         // 双击左边区域 👈
         onDoubleTapSeekBackward();
         break;
-      case DoubleTapType.center:
+      case .center:
         onDoubleTapCenter();
         break;
-      case DoubleTapType.right:
+      case .right:
         // 双击右边区域 👈
         onDoubleTapSeekForward();
         break;
@@ -1414,22 +1413,22 @@ class PlPlayerController with BlockConfigMixin {
               );
             },
             child: Align(
-              alignment: Alignment.centerRight,
+              alignment: .centerRight,
               child: Padding(
-                padding: const EdgeInsets.only(right: 12),
+                padding: const .only(right: 12),
                 child: ConstrainedBox(
                   constraints: BoxConstraints(
                     maxWidth: min(DeviceUtils.size.width / 3, 350),
                   ),
                   child: DecoratedBox(
                     decoration: BoxDecoration(
-                      border: Border.all(
+                      border: .all(
                         width: 5,
                         color: ThemeUtils.theme.colorScheme.surface,
                       ),
                     ),
                     child: Padding(
-                      padding: const EdgeInsets.all(5),
+                      padding: const .all(5),
                       child: Image.memory(value),
                     ),
                   ),

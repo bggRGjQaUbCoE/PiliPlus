@@ -80,7 +80,7 @@ class PLVideoPlayer extends StatefulWidget {
     this.showEpisodes,
     this.showViewPoints,
     this.fill = Colors.black,
-    this.alignment = Alignment.center,
+    this.alignment = .center,
     super.key,
   });
 
@@ -351,12 +351,12 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       BottomControlType bottomControl,
     ) => switch (bottomControl) {
       /// 播放暂停
-      BottomControlType.playOrPause => PlayOrPauseButton(
+      .playOrPause => PlayOrPauseButton(
         plPlayerController: plPlayerController,
       ),
 
       /// 上一集
-      BottomControlType.pre => ComBtn(
+      .pre => ComBtn(
         width: widgetWidth,
         height: 30,
         tooltip: '上一集',
@@ -373,7 +373,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       ),
 
       /// 下一集
-      BottomControlType.next => ComBtn(
+      .next => ComBtn(
         width: widgetWidth,
         height: 30,
         tooltip: '下一集',
@@ -390,7 +390,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       ),
 
       /// 时间进度
-      BottomControlType.time => Obx(
+      .time => Obx(
         () => _VideoTime(
           position: DurationUtils.formatDuration(
             plPlayerController.positionSeconds.value,
@@ -402,7 +402,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       ),
 
       /// 分段信息
-      BottomControlType.viewPoints => Obx(
+      .viewPoints => Obx(
         () {
           if (videoDetailController.viewPointList.isNotEmpty) {
             final show = videoDetailController.showVP.value;
@@ -435,7 +435,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       ),
 
       /// 选集
-      BottomControlType.episode => ComBtn(
+      .episode => ComBtn(
         width: widgetWidth,
         height: 30,
         tooltip: '选集',
@@ -490,7 +490,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       ),
 
       /// 画面比例
-      BottomControlType.fit => Obx(
+      .fit => Obx(
         () {
           final fit = plPlayerController.videoFit.value;
           return PopupMenuButton<VideoFitType>(
@@ -503,7 +503,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                   .map(
                     (boxFit) => PopupMenuItem<VideoFitType>(
                       height: 35,
-                      padding: const EdgeInsets.only(left: 30),
+                      padding: const .only(left: 30),
                       value: boxFit,
                       onTap: () => plPlayerController.toggleVideoFit(boxFit),
                       child: Text(
@@ -518,7 +518,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                   .toList();
             },
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
+              padding: const .symmetric(horizontal: 8),
               child: Text(
                 fit.desc,
                 style: const TextStyle(color: Colors.white, fontSize: 13),
@@ -528,7 +528,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
         },
       ),
 
-      BottomControlType.aiTranslate => Obx(
+      .aiTranslate => Obx(
         () {
           final list = videoDetailController.languages.value;
           if (list != null && list.isNotEmpty) {
@@ -545,10 +545,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                     onTap: () => videoDetailController.setLanguage(''),
                     child: const Text(
                       "关闭翻译",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 13,
-                      ),
+                      style: TextStyle(color: Colors.white, fontSize: 13),
                     ),
                   ),
                   ...list.map((e) {
@@ -583,7 +580,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       ),
 
       /// 字幕
-      BottomControlType.subtitle => Obx(
+      .subtitle => Obx(
         () {
           if (videoDetailController.subtitles.isNotEmpty) {
             final val = videoDetailController.vttSubtitlesIndex.value;
@@ -614,7 +611,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                       child: Text(
                         "${e.$2.lanDoc}",
                         maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                        overflow: .ellipsis,
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 13,
@@ -646,7 +643,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       ),
 
       /// 播放速度
-      BottomControlType.speed => Obx(
+      .speed => Obx(
         () => PopupMenuButton<double>(
           tooltip: '倍速',
           requestFocus: false,
@@ -657,7 +654,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                 .map(
                   (double speed) => PopupMenuItem<double>(
                     height: 35,
-                    padding: const EdgeInsets.only(left: 30),
+                    padding: const .only(left: 30),
                     value: speed,
                     onTap: () => plPlayerController.setPlaybackSpeed(speed),
                     child: Text(
@@ -670,7 +667,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                 .toList();
           },
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
+            padding: const .symmetric(horizontal: 8),
             child: Text(
               "${plPlayerController.playbackSpeed}X",
               style: const TextStyle(color: Colors.white, fontSize: 13),
@@ -680,7 +677,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
         ),
       ),
 
-      BottomControlType.qa => Obx(
+      .qa => Obx(
         () {
           final VideoQuality? currentVideoQa =
               videoDetailController.currentVideoQa.value;
@@ -717,7 +714,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                   return PopupMenuItem<int>(
                     enabled: enabled,
                     height: 35,
-                    padding: const EdgeInsets.only(left: 15, right: 10),
+                    padding: const .only(left: 15, right: 10),
                     value: item.quality,
                     onTap: () async {
                       if (currentVideoQa.code == item.quality) {
@@ -754,7 +751,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
               );
             },
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
+              padding: const .symmetric(horizontal: 8),
               child: Text(
                 currentVideoQa.shortDesc,
                 style: const TextStyle(color: Colors.white, fontSize: 13),
@@ -765,7 +762,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       ),
 
       /// 全屏
-      BottomControlType.fullscreen => ComBtn(
+      .fullscreen => ComBtn(
         width: widgetWidth,
         height: 30,
         tooltip: isFullScreen ? '退出全屏' : '全屏',
@@ -792,25 +789,22 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     final isNotFileSource = !plPlayerController.isFileSource;
 
     List<BottomControlType> userSpecifyItemLeft = [
-      BottomControlType.playOrPause,
-      BottomControlType.time,
-      if (!isNotFileSource || anySeason) ...[
-        BottomControlType.pre,
-        BottomControlType.next,
-      ],
+      .playOrPause,
+      .time,
+      if (!isNotFileSource || anySeason) ...[.pre, .next],
     ];
 
     final flag =
         isFullScreen || plPlayerController.isDesktopPip || maxWidth >= 500;
     List<BottomControlType> userSpecifyItemRight = [
-      if (isNotFileSource) BottomControlType.viewPoints,
-      if (isNotFileSource && anySeason) BottomControlType.episode,
-      if (flag) BottomControlType.fit,
-      if (isNotFileSource) BottomControlType.aiTranslate,
-      BottomControlType.subtitle,
-      BottomControlType.speed,
-      if (isNotFileSource && flag) BottomControlType.qa,
-      if (!plPlayerController.isDesktopPip) BottomControlType.fullscreen,
+      if (isNotFileSource) .viewPoints,
+      if (isNotFileSource && anySeason) .episode,
+      if (flag) .fit,
+      if (isNotFileSource) .aiTranslate,
+      .subtitle,
+      .speed,
+      if (isNotFileSource && flag) .qa,
+      if (!plPlayerController.isDesktopPip) .fullscreen,
     ];
     return PlayerBar(
       children: [
@@ -906,27 +900,20 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
           plPlayerController.hasToast = true;
           SmartDialog.showAttach(
             targetContext: context,
-            alignment: Alignment.center,
+            alignment: .center,
             animationTime: const Duration(milliseconds: 200),
-            animationType: SmartAnimationType.fade,
+            animationType: .fade,
             displayTime: const Duration(milliseconds: 1500),
             maskColor: Colors.transparent,
             builder: (context) => Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 8,
-                vertical: 4,
-              ),
+              padding: const .symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                borderRadius: const BorderRadius.all(
-                  Radius.circular(6),
-                ),
+                borderRadius: const .all(.circular(6)),
                 color: colorScheme.secondaryContainer,
               ),
               child: Text(
                 '松开手指，取消进退',
-                style: TextStyle(
-                  color: colorScheme.onSecondaryContainer,
-                ),
+                style: TextStyle(color: colorScheme.onSecondaryContainer),
               ),
             ),
           );
@@ -1008,18 +995,18 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     final double sectionWidth = maxWidth / 4;
     DoubleTapType type;
     if (tapPosition < sectionWidth) {
-      type = DoubleTapType.left;
+      type = .left;
     } else if (tapPosition < sectionWidth * 3) {
-      type = DoubleTapType.center;
+      type = .center;
     } else {
-      type = DoubleTapType.right;
+      type = .right;
     }
     plPlayerController.doubleTapFuc(type);
   }
 
   void _onTapUp(TapUpDetails details) {
     switch (details.kind) {
-      case ui.PointerDeviceKind.mouse when PlatformUtils.isDesktop:
+      case .mouse when PlatformUtils.isDesktop:
         plPlayerController.onDoubleTapCenter();
       default:
         plPlayerController.controls = !plPlayerController.showControls.value;
@@ -1028,7 +1015,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
 
   void _onDoubleTapDown(TapDownDetails details) {
     switch (details.kind) {
-      case ui.PointerDeviceKind.mouse when PlatformUtils.isDesktop:
+      case .mouse when PlatformUtils.isDesktop:
         plPlayerController.triggerFullScreen(status: !isFullScreen);
       default:
         onDoubleTapDownMobile(details);
@@ -1201,7 +1188,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     final child = Stack(
       key: _playerKey,
       fit: .passthrough,
-      children: <Widget>[
+      children: [
         _videoWidget,
 
         if (widget.danmuWidget case final danmaku?)
@@ -1225,7 +1212,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
           IgnorePointer(
             ignoring: true,
             child: Align(
-              alignment: Alignment.topCenter,
+              alignment: .topCenter,
               child: FractionalTranslation(
                 translation: isFullScreen
                     ? const Offset(0.0, 1.2)
@@ -1238,10 +1225,10 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                         : 0.0,
                     duration: const Duration(milliseconds: 150),
                     child: Container(
-                      padding: const EdgeInsets.all(6),
+                      padding: const .all(6),
                       decoration: const BoxDecoration(
                         color: Color(0x88000000),
-                        borderRadius: BorderRadius.all(Radius.circular(16)),
+                        borderRadius: .all(.circular(16)),
                       ),
                       child: Obx(
                         () => Text(
@@ -1264,7 +1251,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
           IgnorePointer(
             ignoring: true,
             child: Align(
-              alignment: Alignment.topCenter,
+              alignment: .topCenter,
               child: FractionalTranslation(
                 translation: isFullScreen
                     ? const Offset(0.0, 1.2)
@@ -1279,16 +1266,13 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                     child: Container(
                       decoration: const BoxDecoration(
                         color: Color(0x88000000),
-                        borderRadius: BorderRadius.all(Radius.circular(64)),
+                        borderRadius: .all(.circular(64)),
                       ),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 8,
-                      ),
+                      padding: const .symmetric(horizontal: 10, vertical: 8),
                       child: Row(
                         spacing: 2,
-                        mainAxisSize: MainAxisSize.min,
-                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: .min,
+                        mainAxisAlignment: .center,
                         children: [
                           Obx(() {
                             return Text(
@@ -1325,7 +1309,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
         IgnorePointer(
           ignoring: true,
           child: Align(
-            alignment: Alignment.center,
+            alignment: .center,
             child: Obx(
               () {
                 final volume = plPlayerController.volume.value;
@@ -1334,18 +1318,15 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                   opacity: plPlayerController.volumeIndicator.value ? 1.0 : 0.0,
                   duration: const Duration(milliseconds: 150),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 5,
-                    ),
+                    padding: const .symmetric(horizontal: 8, vertical: 5),
                     decoration: const BoxDecoration(
                       color: Color(0x88000000),
-                      borderRadius: BorderRadius.all(Radius.circular(64)),
+                      borderRadius: .all(.circular(64)),
                     ),
                     child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
+                      mainAxisSize: .min,
+                      mainAxisAlignment: .center,
+                      children: [
                         Icon(
                           volume == 0.0
                               ? Icons.volume_off
@@ -1376,25 +1357,22 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
         IgnorePointer(
           ignoring: true,
           child: Align(
-            alignment: Alignment.center,
+            alignment: .center,
             child: Obx(
               () => AnimatedOpacity(
                 curve: Curves.easeInOut,
                 opacity: _brightnessIndicator.value ? 1.0 : 0.0,
                 duration: const Duration(milliseconds: 150),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 5,
-                  ),
+                  padding: const .symmetric(horizontal: 8, vertical: 5),
                   decoration: const BoxDecoration(
                     color: Color(0x88000000),
-                    borderRadius: BorderRadius.all(Radius.circular(64)),
+                    borderRadius: .all(.circular(64)),
                   ),
                   child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
+                    mainAxisSize: .min,
+                    mainAxisAlignment: .center,
+                    children: [
                       Icon(
                         _brightnessValue.value < 1.0 / 3.0
                             ? Icons.brightness_low
@@ -1427,7 +1405,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
           child: ClipRect(
             child: RepaintBoundary(
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisAlignment: .spaceBetween,
                 children: [
                   AppBarAni(
                     isTop: true,
@@ -1483,19 +1461,19 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
           () =>
               showRestoreScaleBtn.value && plPlayerController.showControls.value
               ? Align(
-                  alignment: Alignment.bottomCenter,
+                  alignment: .bottomCenter,
                   child: Padding(
-                    padding: const EdgeInsets.only(bottom: 95),
+                    padding: const .only(bottom: 95),
                     child: FilledButton.tonal(
                       style: FilledButton.styleFrom(
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        tapTargetSize: .shrinkWrap,
                         backgroundColor: colorScheme.secondaryContainer
                             .withValues(alpha: 0.8),
                         visualDensity: VisualDensity.compact,
-                        padding: const EdgeInsets.all(15),
+                        padding: const .all(15),
                         shape: const RoundedRectangleBorder(
-                          borderRadius: BorderRadius.all(
-                            Radius.circular(6),
+                          borderRadius: .all(
+                            .circular(6),
                           ),
                         ),
                       ),
@@ -1531,7 +1509,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
         /// 进度条 live模式下禁用
         if (!isLive)
           Positioned(
-            bottom: -2.2,
+            bottom: 0,
             left: 0,
             right: 0,
             child: Obx(
@@ -1539,8 +1517,8 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                 return Offstage(
                   offstage: plPlayerController.showControls.value,
                   child: Stack(
-                    clipBehavior: Clip.none,
-                    alignment: Alignment.bottomCenter,
+                    clipBehavior: .none,
+                    alignment: .bottomCenter,
                     children: [
                       Obx(() {
                         final int value =
@@ -1558,8 +1536,9 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                           bufferedBarColor: bufferedBarColor,
                           thumbColor: primary,
                           thumbGlowColor: thumbGlowColor,
-                          barHeight: 3.5,
-                          thumbRadius: 2.5,
+                          barHeight: 1.4,
+                          thumbRadius: 0,
+                          strokeCap: .square,
                         );
                       }),
                       if (plPlayerController.enableBlock &&
@@ -1606,7 +1585,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
           ViewSafeArea(
             right: false,
             child: Align(
-              alignment: Alignment.centerLeft,
+              alignment: .centerLeft,
               child: FractionalTranslation(
                 translation: const Offset(1, -0.4),
                 child: Obx(
@@ -1615,7 +1594,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                     child: DecoratedBox(
                       decoration: const BoxDecoration(
                         color: Color(0x45000000),
-                        borderRadius: BorderRadius.all(Radius.circular(8)),
+                        borderRadius: .all(.circular(8)),
                       ),
                       child: Obx(() {
                         final controlsLock =
@@ -1649,7 +1628,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
             left: false,
             child: Obx(
               () => Align(
-                alignment: Alignment.centerRight,
+                alignment: .centerRight,
                 child: FractionalTranslation(
                   translation: const Offset(-1, -0.4),
                   child: Offstage(
@@ -1657,7 +1636,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                     child: DecoratedBox(
                       decoration: const BoxDecoration(
                         color: Color(0x45000000),
-                        borderRadius: BorderRadius.all(Radius.circular(8)),
+                        borderRadius: .all(.circular(8)),
                       ),
                       child: ComBtn(
                         tooltip: '截图',
@@ -1684,15 +1663,15 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
               child: GestureDetector(
                 onTap: plPlayerController.refreshPlayer,
                 child: Container(
-                  padding: const EdgeInsets.all(20),
+                  padding: const .all(20),
                   decoration: const BoxDecoration(
-                    shape: BoxShape.circle,
+                    shape: .circle,
                     gradient: RadialGradient(
                       colors: [Colors.black26, Colors.transparent],
                     ),
                   ),
                   child: Column(
-                    mainAxisSize: MainAxisSize.min,
+                    mainAxisSize: .min,
                     children: [
                       Image.asset(
                         Assets.buffering,
@@ -1749,10 +1728,8 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                             child: TweenAnimationBuilder<double>(
                               tween: Tween<double>(begin: 0.0, end: 1.0),
                               duration: const Duration(milliseconds: 500),
-                              builder: (context, value, child) => Opacity(
-                                opacity: value,
-                                child: child,
-                              ),
+                              builder: (context, value, child) =>
+                                  Opacity(opacity: value, child: child),
                               child: BackwardSeekIndicator(
                                 duration:
                                     plPlayerController.fastForBackwardDuration,
@@ -1768,10 +1745,8 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                             child: TweenAnimationBuilder<double>(
                               tween: Tween<double>(begin: 0.0, end: 1.0),
                               duration: const Duration(milliseconds: 500),
-                              builder: (context, value, child) => Opacity(
-                                opacity: value,
-                                child: child,
-                              ),
+                              builder: (context, value, child) =>
+                                  Opacity(opacity: value, child: child),
                               child: ForwardSeekIndicator(
                                 duration:
                                     plPlayerController.fastForBackwardDuration,

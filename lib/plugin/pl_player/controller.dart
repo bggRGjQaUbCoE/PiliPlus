@@ -1,4 +1,4 @@
-import 'dart:async' show StreamSubscription, Timer;
+import 'dart:async' show StreamSubscription, Timer, unawaited;
 import 'dart:convert' show ascii;
 import 'dart:io' show Platform;
 import 'dart:math' show max, min;
@@ -28,6 +28,8 @@ import 'package:PiliPlus/plugin/pl_player/models/play_repeat.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
 import 'package:PiliPlus/plugin/pl_player/models/video_fit_type.dart';
 import 'package:PiliPlus/plugin/pl_player/utils/fullscreen.dart';
+import 'package:PiliPlus/services/cast/cast_remote_state.dart';
+import 'package:PiliPlus/services/cast/google_cast_service.dart';
 import 'package:PiliPlus/services/service_locator.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/asset_utils.dart';
@@ -166,6 +168,8 @@ class PlPlayerController with BlockConfigMixin {
 
   Timer? _timer;
   StreamSubscription<Duration>? _subForSeek;
+  StreamSubscription<CastRemoteState>? _castSub;
+  bool _usingCastState = false;
 
   Box setting = GStorage.setting;
 
@@ -184,6 +188,10 @@ class PlPlayerController with BlockConfigMixin {
 
   /// [videoController] instance of Player
   VideoController? get videoController => _videoController;
+
+  bool get isCasting =>
+      GoogleCastService.instance.state.connection ==
+      CastConnectionState.connected;
 
   bool isMuted = false;
 
@@ -490,6 +498,17 @@ class PlPlayerController with BlockConfigMixin {
     }
   }
 
+  static Future<void> pauseLocalIfExists({
+    bool notify = true,
+    bool isInterrupt = false,
+  }) async {
+    await _instance?._pauseLocal(
+      notify: notify,
+      isInterrupt: isInterrupt,
+      updateStatus: _instance?.isCasting != true,
+    );
+  }
+
   static Future<void> seekToIfExists(
     Duration position, {
     bool isSeek = true,
@@ -591,6 +610,8 @@ class PlPlayerController with BlockConfigMixin {
         _shouldSetPip = true;
       }
     }
+
+    _castSub = GoogleCastService.instance.stateStream.listen(_onCastState);
   }
 
   // 获取实例 传参
@@ -1097,6 +1118,58 @@ class PlPlayerController with BlockConfigMixin {
     _subscriptions = null;
   }
 
+  void _onCastState(CastRemoteState state) {
+    if (state.connection != CastConnectionState.connected) {
+      if (_usingCastState) {
+        _usingCastState = false;
+        isBuffering.value = false;
+        if (_videoPlayerController != null) {
+          position = _videoPlayerController!.state.position;
+          sliderPosition = position;
+          duration.value = _videoPlayerController!.state.duration;
+          updatePositionSecond();
+          updateSliderPositionSecond();
+          playerStatus.value = _videoPlayerController!.state.playing
+              ? PlayerStatus.playing
+              : PlayerStatus.paused;
+        }
+      }
+      return;
+    }
+
+    _usingCastState = true;
+    position = state.position;
+    updatePositionSecond();
+    if (!isSliderMoving.value) {
+      sliderPosition = state.position;
+      updateSliderPositionSecond();
+    }
+
+    if (state.duration > Duration.zero && state.duration != duration.value) {
+      duration.value = state.duration;
+    }
+
+    volume.value = state.volume;
+    isMuted = state.isMuted;
+
+    switch (state.playback) {
+      case CastPlaybackState.playing:
+        playerStatus.value = PlayerStatus.playing;
+        isBuffering.value = false;
+      case CastPlaybackState.paused:
+        playerStatus.value = PlayerStatus.paused;
+        isBuffering.value = false;
+      case CastPlaybackState.idle:
+        if (state.duration > Duration.zero || state.position > Duration.zero) {
+          playerStatus.value = PlayerStatus.completed;
+        }
+        isBuffering.value = false;
+      case CastPlaybackState.buffering:
+      case CastPlaybackState.loading:
+        isBuffering.value = true;
+    }
+  }
+
   void _cancelSubForSeek() {
     if (_subForSeek != null) {
       _subForSeek!.cancel();
@@ -1118,6 +1191,15 @@ class PlPlayerController with BlockConfigMixin {
     this.position = position;
     updatePositionSecond();
     _heartDuration = position.inSeconds;
+
+    if (isCasting) {
+      if (!isSliderMoving.value) {
+        sliderPosition = position;
+        updateSliderPositionSecond();
+      }
+      await GoogleCastService.instance.seek(position);
+      return;
+    }
 
     Future<void> seek() async {
       if (isSeek) {
@@ -1183,8 +1265,13 @@ class PlPlayerController with BlockConfigMixin {
     controls = !hideControls;
     // repeat为true，将从头播放
     if (repeat) {
-      // await seekTo(Duration.zero);
       await seekTo(Duration.zero, isSeek: false);
+    }
+
+    if (isCasting) {
+      await GoogleCastService.instance.play();
+      playerStatus.value = PlayerStatus.playing;
+      return;
     }
 
     await _videoPlayerController?.play();
@@ -1197,8 +1284,24 @@ class PlPlayerController with BlockConfigMixin {
 
   /// 暂停播放
   Future<void> pause({bool notify = true, bool isInterrupt = false}) async {
+    if (isCasting) {
+      await GoogleCastService.instance.pause();
+      playerStatus.value = PlayerStatus.paused;
+      return;
+    }
+
+    await _pauseLocal(notify: notify, isInterrupt: isInterrupt);
+  }
+
+  Future<void> _pauseLocal({
+    bool notify = true,
+    bool isInterrupt = false,
+    bool updateStatus = true,
+  }) async {
     await _videoPlayerController?.pause();
-    playerStatus.value = PlayerStatus.paused;
+    if (updateStatus) {
+      playerStatus.value = PlayerStatus.paused;
+    }
 
     // 主动暂停时让出音频焦点
     if (!isInterrupt) {
@@ -1257,33 +1360,49 @@ class PlPlayerController with BlockConfigMixin {
 
   static final double maxVolume = PlatformUtils.isDesktop ? 2.0 : 1.0;
   Future<void> setVolume(double volume, {bool showIndicator = true}) async {
-    if (this.volume.value != volume) {
+    volumeInterceptEventStream = true;
+    if (isCasting) {
       this.volume.value = volume;
-      try {
-        if (PlatformUtils.isDesktop) {
-          _videoPlayerController!.setVolume(volume * 100);
-        } else {
-          FlutterVolumeController.updateShowSystemUI(false);
-          await FlutterVolumeController.setVolume(volume);
+      isMuted = volume == 0;
+      await GoogleCastService.instance.setVolume(volume);
+    } else {
+      if (this.volume.value != volume) {
+        this.volume.value = volume;
+        try {
+          if (PlatformUtils.isDesktop) {
+            _videoPlayerController!.setVolume(volume * 100);
+          } else {
+            FlutterVolumeController.updateShowSystemUI(false);
+            await FlutterVolumeController.setVolume(volume);
+          }
+        } catch (err) {
+          if (kDebugMode) debugPrint(err.toString());
         }
-      } catch (err) {
-        if (kDebugMode) debugPrint(err.toString());
       }
     }
     if (showIndicator) {
       volumeIndicator.value = true;
     }
-    volumeInterceptEventStream = true;
     volumeTimer?.cancel();
     volumeTimer = Timer(const Duration(milliseconds: 200), () {
       volumeIndicator.value = false;
       volumeInterceptEventStream = false;
-      if (PlatformUtils.isDesktop) {
+      if (!isCasting && PlatformUtils.isDesktop) {
         setting.put(SettingBoxKey.desktopVolume, volume.toPrecision(3));
       }
     });
   }
 
+  Future<void> setMuted(bool muted) async {
+    isMuted = muted;
+    if (isCasting) {
+      await GoogleCastService.instance.setMuted(muted);
+    } else {
+      _videoPlayerController?.setVolume(
+        muted ? 0 : volume.value * 100,
+      );
+    }
+  }
   /// Toggle Change the videofit accordingly
   void toggleVideoFit(VideoFitType value) {
     _prefFit = videoFit.value = value;
@@ -1348,12 +1467,24 @@ class PlPlayerController with BlockConfigMixin {
     }
   }
 
-  bool get _isCompleted =>
-      videoPlayerController!.state.completed ||
-      (duration.value - position).inMilliseconds <= 50;
+  bool get _isCompleted {
+    if (_videoPlayerController == null) {
+      return playerStatus.isCompleted;
+    }
+    return _videoPlayerController!.state.completed ||
+        (duration.value - position).inMilliseconds <= 50;
+  }
 
   // 双击播放、暂停
   Future<void> onDoubleTapCenter() async {
+    if (isCasting) {
+      if (playerStatus.isPlaying) {
+        await pause();
+      } else {
+        await play();
+      }
+      return;
+    }
     if (!isLive && _isCompleted) {
       await videoPlayerController!.seek(Duration.zero);
       videoPlayerController!.play();
@@ -1382,10 +1513,33 @@ class PlPlayerController with BlockConfigMixin {
   }
 
   void onForwardBackward(Duration duration) {
+    if (isCasting) {
+      final d = _clampCastSeekPosition(duration);
+      position = d;
+      updatePositionSecond();
+      if (!isSliderMoving.value) {
+        sliderPosition = d;
+        updateSliderPositionSecond();
+      }
+      unawaited(() async {
+        await GoogleCastService.instance.seek(d, resumePlayback: true);
+        playerStatus.value = PlayerStatus.playing;
+      }());
+      return;
+    }
     seekTo(
       duration.clamp(Duration.zero, videoPlayerController!.state.duration),
       isSeek: false,
     ).whenComplete(play);
+  }
+
+  Duration _clampCastSeekPosition(Duration value) {
+    if (value < Duration.zero) return Duration.zero;
+    final maxDuration = duration.value;
+    if (maxDuration > Duration.zero && value > maxDuration) {
+      return maxDuration;
+    }
+    return value;
   }
 
   void doubleTapFuc(DoubleTapType type) {
@@ -1620,6 +1774,8 @@ class PlPlayerController with BlockConfigMixin {
     }
 
     _playerCount = 0;
+    _castSub?.cancel();
+    _castSub = null;
     if (removeSafeArea) {
       showSystemBar();
     }

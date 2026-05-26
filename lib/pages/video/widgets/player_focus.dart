@@ -72,7 +72,7 @@ class PlayerFocus extends StatelessWidget {
 
   void _updateVolume(KeyEvent event, {required bool isIncrease}) {
     if (event is KeyDownEvent) {
-      if (hasPlayer) {
+      if (hasPlayer || plPlayerController.isCasting) {
         _setVolume(isIncrease: isIncrease);
         plPlayerController
           ..longPressTimer?.cancel()
@@ -202,12 +202,9 @@ class PlayerFocus extends StatelessWidget {
           return true;
 
         case LogicalKeyboardKey.keyM:
-          if (hasPlayer) {
+          if (hasPlayer || plPlayerController.isCasting) {
             final isMuted = !plPlayerController.isMuted;
-            plPlayerController.videoPlayerController!.setVolume(
-              isMuted ? 0 : plPlayerController.volume.value * 100,
-            );
-            plPlayerController.isMuted = isMuted;
+            unawaited(plPlayerController.setMuted(isMuted));
             SmartDialog.showToast('${isMuted ? '' : '取消'}静音');
           }
           return true;

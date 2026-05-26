@@ -132,12 +132,14 @@
 		<key>UIStatusBarHidden</key>
 		<false/>
 		<key>NSLocalNetworkUsageDescription</key>
-		<string>需要访问本地网络以发现和连接 DLNA 投屏设备</string>
+		<string>需要访问本地网络以发现和连接 DLNA 和 Google Cast 投屏设备</string>
 		<key>NSBonjourServices</key>
 		<array>
 			<string>_ssdp._udp</string>
 			<string>_upnp._tcp</string>
 			<string>_http._tcp</string>
+			<string>_CC1AD845._googlecast._tcp</string>
+			<string>_googlecast._tcp</string>
 		</array>
 	</dict>
 </plist>

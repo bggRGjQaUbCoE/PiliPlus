@@ -50,6 +50,8 @@ import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/models/data_source.dart';
 import 'package:PiliPlus/plugin/pl_player/models/heart_beat_type.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
+import 'package:PiliPlus/services/cast/cast_media_payload.dart';
+import 'package:PiliPlus/services/cast/google_cast_service.dart';
 import 'package:PiliPlus/services/download/download_service.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/connectivity_utils.dart';
@@ -134,6 +136,7 @@ class VideoDetailController extends GetxController
   String? audioUrl;
   Duration? defaultST;
   Duration? playedTime;
+  int _castReloadGeneration = 0;
   String get playedTimePos {
     final pos = playedTime?.inMilliseconds;
     return pos == null || pos == 0 ? '' : '?t=${pos / 1000}';
@@ -723,6 +726,18 @@ class VideoDetailController extends GetxController
         orElse: () => data.dash!.audio!.first,
       );
       audioUrl = VideoUtils.getCdnUrl(firstAudio.playUrls, isAudio: true);
+    }
+
+    if (plPlayerController.isCasting) {
+      final generation = ++_castReloadGeneration;
+      unawaited(
+        _reloadGoogleCast(
+          qn: currentVideoQa.code,
+          position: playedTime,
+          generation: generation,
+        ),
+      );
+      return;
     }
 
     playerInit();
@@ -1594,48 +1609,134 @@ class VideoDetailController extends GetxController
     );
   }
 
-  @pragma('vm:notify-debugger-on-exception')
-  Future<void> onCast() async {
-    SmartDialog.showLoading();
+  String? _castCover() {
+    final value = cover.value;
+    return value.isEmpty ? null : value;
+  }
+
+  Uri? _castCoverUri() {
+    final value = _castCover();
+    if (value == null) return null;
+    final uri = Uri.tryParse(value);
+    return uri == null || !uri.hasScheme ? null : uri;
+  }
+
+  String _castTitle() {
+    try {
+      if (isUgc) {
+        return Get.find<UgcIntroController>(
+              tag: heroTag,
+            ).videoDetail.value.title ??
+            '';
+      }
+      return Get.find<PgcIntroController>(
+            tag: heroTag,
+          ).videoDetail.value.title ??
+          '';
+    } catch (_) {
+      return '';
+    }
+  }
+
+  Duration? _castDuration() {
+    final timeLength = data.timeLength;
+    return timeLength == null ? null : Duration(milliseconds: timeLength);
+  }
+
+  CastMediaPayload? _buildGoogleCastPayload(
+    String url, {
+    Duration? position,
+  }) {
+    final uri = Uri.tryParse(url);
+    if (uri == null || !uri.hasScheme) {
+      SmartDialog.showToast('投屏地址无效');
+      return null;
+    }
+    return CastMediaPayload(
+      url: uri,
+      title: _castTitle(),
+      cover: _castCoverUri(),
+      position: position ?? plPlayerController.position,
+      duration: _castDuration(),
+      qualityCode: currentVideoQa.value?.code,
+    );
+  }
+
+  Future<String?> _queryGoogleCastUrl({int? qn}) async {
     final res = await VideoHttp.tvPlayUrl(
       cid: cid.value,
       objectId: epId ?? aid,
       playurlType: epId != null ? 2 : 1,
-      qn: currentVideoQa.value?.code,
+      qn: qn,
     );
-    SmartDialog.dismiss();
     if (res case Success(:final response)) {
       final first = response.durl?.firstOrNull;
       if (first == null || first.playUrls.isEmpty) {
         SmartDialog.showToast('不支持投屏');
-        return;
+        return null;
       }
-      final url = VideoUtils.getCdnUrl(first.playUrls);
-
-      String? title;
-      try {
-        if (isUgc) {
-          title = Get.find<UgcIntroController>(
-            tag: heroTag,
-          ).videoDetail.value.title;
-        } else {
-          title = Get.find<PgcIntroController>(
-            tag: heroTag,
-          ).videoDetail.value.title;
-        }
-      } catch (_) {}
-      if (kDebugMode) {
-        debugPrint(title);
-      }
-      Get.toNamed(
-        '/dlna',
-        parameters: {
-          'url': url,
-          'title': ?title,
-        },
-      );
-    } else {
-      res.toast();
+      return VideoUtils.getCdnUrl(first.playUrls);
     }
+    res.toast();
+    return null;
+  }
+
+  Future<void> _reloadGoogleCast({
+    int? qn,
+    Duration? position,
+    required int generation,
+  }) async {
+    final url = await _queryGoogleCastUrl(qn: qn);
+    if (url == null) return;
+    if (isClosed ||
+        !plPlayerController.isCasting ||
+        generation != _castReloadGeneration ||
+        currentVideoQa.value?.code != qn) {
+      return;
+    }
+    final payload = _buildGoogleCastPayload(url, position: position);
+    if (payload == null) return;
+    if (isClosed ||
+        !plPlayerController.isCasting ||
+        generation != _castReloadGeneration ||
+        currentVideoQa.value?.code != qn) {
+      return;
+    }
+    try {
+      await GoogleCastService.instance.load(payload);
+    } catch (_) {
+      SmartDialog.showToast('投屏失败');
+    }
+  }
+
+  @pragma('vm:notify-debugger-on-exception')
+  Future<void> onCast() async {
+    SmartDialog.showLoading();
+    final String? url;
+    try {
+      url = await _queryGoogleCastUrl(qn: currentVideoQa.value?.code);
+    } finally {
+      SmartDialog.dismiss();
+    }
+    if (url == null) return;
+
+    final title = _castTitle();
+    if (kDebugMode) {
+      debugPrint(title);
+    }
+    final position = plPlayerController.position.inMilliseconds.toString();
+    final duration = data.timeLength?.toString();
+    final quality = currentVideoQa.value?.code.toString();
+    Get.toNamed(
+      '/dlna',
+      parameters: {
+        'url': url,
+        'title': title,
+        'position': position,
+        'duration': ?duration,
+        'quality': ?quality,
+        'cover': ?_castCover(),
+      },
+    );
   }
 }

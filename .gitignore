@@ -147,3 +147,7 @@ pili_release.json
 dist
 
 test*
+!test/
+!test/services/
+!test/services/cast/
+!test/services/cast/*.dart

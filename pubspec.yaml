@@ -88,6 +88,7 @@ dependencies:
       url: https://github.com/bggRGjQaUbCoE/floating.git
       ref: version-3
   flutter_cache_manager: ^3.4.1
+  flutter_chrome_cast: ^1.4.6
   flutter_displaymode: ^0.7.0
   flutter_html: ^3.0.0-beta.2
   flutter_inappwebview: ^6.1.5
@@ -170,6 +171,10 @@ dependencies:
       ref: main
 
 dependency_overrides:
+  get:
+    git:
+      url: https://github.com/bggRGjQaUbCoE/getx.git
+      ref: version_4.7.2
   flutter_inappwebview_android:
     git:
       url: https://github.com/bggRGjQaUbCoE/flutter_inappwebview.git

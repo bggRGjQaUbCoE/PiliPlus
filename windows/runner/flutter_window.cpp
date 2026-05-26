@@ -4,9 +4,6 @@
 
 #include "flutter/generated_plugin_registrant.h"
 
-#include <flutter/method_channel.h>
-#include <flutter/standard_method_codec.h>
-
 FlutterWindow::FlutterWindow(const flutter::DartProject& project)
     : project_(project) {}
 
@@ -28,24 +25,6 @@ bool FlutterWindow::OnCreate() {
     return false;
   }
   RegisterPlugins(flutter_controller_->engine());
-
-  // flutter_inappwebview
-  // 6.2.0-beta.2+ https://github.com/pichillilorenzo/flutter_inappwebview/issues/2482
-  // 6.1.5 https://github.com/pichillilorenzo/flutter_inappwebview/issues/2512#issuecomment-3031039587
-  flutter::MethodChannel<> channel(
-      flutter_controller_->engine()->messenger(), "window_control",
-      &flutter::StandardMethodCodec::GetInstance());
-  channel.SetMethodCallHandler(
-      [](const flutter::MethodCall<>& call,
-         std::unique_ptr<flutter::MethodResult<>> result) {
-          if (call.method_name().compare("closeWindow") == 0) {
-            HANDLE hProcess = GetCurrentProcess();
-            TerminateProcess(hProcess, 0);
-            result->Success();
-          } else {
-            result->NotImplemented();
-          }
-      });
 
   SetChildContent(flutter_controller_->view()->GetNativeWindow());
 

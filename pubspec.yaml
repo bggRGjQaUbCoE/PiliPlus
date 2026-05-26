@@ -164,6 +164,7 @@ dependencies:
     git:
       url: https://github.com/wgh136/webdav_client.git
       ref: main
+  win32: ^6.3.0
   window_manager:
     git:
       url: https://github.com/bggRGjQaUbCoE/window_manager.git

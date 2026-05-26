@@ -1,11 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:PiliPlus/services/logger.dart' show LoggerUtils;
-import 'package:catcher_2/model/platform_type.dart';
-import 'package:catcher_2/model/report.dart';
-import 'package:catcher_2/model/report_handler.dart';
-import 'package:flutter/material.dart';
+import 'package:PiliPlus/services/logger.dart';
+import 'package:catcher_2/catcher_2.dart';
 
 class JsonFileHandler extends ReportHandler {
   final bool enableDeviceParameters;
@@ -48,7 +45,7 @@ class JsonFileHandler extends ReportHandler {
         handleWhenRejected: handleWhenRejected,
       );
     } catch (e, s) {
-      debugPrintStack(stackTrace: s, label: e.toString());
+      logger.e('Init log file', error: e, stackTrace: s);
       return null;
     }
   }
@@ -62,18 +59,24 @@ class JsonFileHandler extends ReportHandler {
   }
 
   @override
-  Future<bool> handle(Report report, BuildContext? context) async {
+  Future<bool> handle(Report report) async {
     try {
       await _processReport(report);
       return true;
     } catch (exc, stackTrace) {
-      _printLog('Exception occurred: $exc stack: $stackTrace');
+      logger.e(
+        'Write Json Exception occurred',
+        error: exc,
+        stackTrace: stackTrace,
+      );
       return false;
     }
   }
 
   Future<void> _processReport(Report report) {
-    _printLog('Writing report to file');
+    if (printLogs) {
+      logger.d('Writing report to file');
+    }
     final json = report.toJson(
       enableDeviceParameters: enableDeviceParameters,
       enableApplicationParameters: enableApplicationParameters,
@@ -82,22 +85,4 @@ class JsonFileHandler extends ReportHandler {
     );
     return add((raf) => raf.writeString('${jsonEncode(json)}\n'));
   }
-
-  void _printLog(String log) {
-    if (printLogs) {
-      logger.info(log);
-    }
-  }
-
-  @override
-  List<PlatformType> getSupportedPlatforms() => const [
-    PlatformType.android,
-    PlatformType.iOS,
-    PlatformType.linux,
-    PlatformType.macOS,
-    PlatformType.windows,
-  ];
-
-  @override
-  bool shouldHandleWhenRejected() => handleWhenRejected;
 }

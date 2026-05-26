@@ -48,7 +48,7 @@ dependencies:
       ref: main
   catcher_2:
     git:
-      url: https://github.com/bggRGjQaUbCoE/catcher_2.git
+      url: https://github.com/My-Responsitories/catcher_2.git
       ref: dev
   characters: ^1.4.1
   chat_bottom_container:

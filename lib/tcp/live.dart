@@ -49,7 +49,7 @@ class PackageHeaderRes extends PackageHeader {
 
   static PackageHeaderRes? fromBytesData(Uint8List data) {
     if (data.length < 10) {
-      logger.i('数据不足以解析PackageHeader');
+      logger.w('数据不足以解析PackageHeader');
       return null;
     }
     final byteData = ByteData.sublistView(data);

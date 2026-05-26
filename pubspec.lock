@@ -29,10 +29,10 @@ packages:
     dependency: "direct main"
     description:
       name: app_links
-      sha256: "3462d9defc61565fde4944858b59bec5be2b9d5b05f20aed190adb3ad08a7abc"
+      sha256: a408901c5d33e2b5f33064e5db849ce20176e46c5cddb2bf518a5c4c9e7a4e4f
       url: "https://pub.dev"
     source: hosted
-    version: "7.0.0"
+    version: "7.1.0"
   app_links_linux:
     dependency: transitive
     description:
@@ -240,8 +240,8 @@ packages:
     description:
       path: "."
       ref: dev
-      resolved-ref: a20878e9fe5375252c9ea22697d4dc4823544b1a
-      url: "https://github.com/bggRGjQaUbCoE/catcher_2.git"
+      resolved-ref: "9138d8d2aeefc564efd2f35fde3f54ad1b7e89a7"
+      url: "https://github.com/My-Responsitories/catcher_2.git"
     source: git
     version: "2.1.9"
   characters:
@@ -401,10 +401,10 @@ packages:
     dependency: "direct main"
     description:
       name: dio_http2_adapter
-      sha256: "79f3d69b155b92a786c8734bd11860390b986210d4e07cbb6a5c8c806a7187b2"
+      sha256: c56522c50bb3bab7e3ca77c153b0f03ae672a87d8c32e46be8f2868693ec9f0a
       url: "https://pub.dev"
     source: hosted
-    version: "2.7.0"
+    version: "2.7.1"
   dio_web_adapter:
     dependency: transitive
     description:
@@ -667,14 +667,6 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
-  flutter_mailer:
-    dependency: transitive
-    description:
-      name: flutter_mailer
-      sha256: e1c0b4425e3cc789f8dd914fd08b5da660c3ac46c8ebf3e7db183d39775a8fa6
-      url: "https://pub.dev"
-    source: hosted
-    version: "3.0.2"
   flutter_native_splash:
     dependency: "direct dev"
     description:
@@ -1049,14 +1041,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.3.0"
-  mailer:
-    dependency: transitive
-    description:
-      name: mailer
-      sha256: "7b8691b080809ea1b2fa2f1b0d49c7c089fb328bd23e68aa5818b9cf5f4b420d"
-      url: "https://pub.dev"
-    source: hosted
-    version: "7.1.0"
   matcher:
     dependency: transitive
     description:
@@ -1419,14 +1403,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.5.0"
-  punycoder:
-    dependency: transitive
-    description:
-      name: punycoder
-      sha256: aed79c05986a18782caa9bad649a4a786e840e1baaf6a2e1aa3a25d143d28e6e
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.2.2"
   qr:
     dependency: transitive
     description:
@@ -1452,7 +1428,7 @@ packages:
     source: hosted
     version: "0.6.0"
   rxdart:
-    dependency: "direct overridden"
+    dependency: transitive
     description:
       name: rxdart
       sha256: "5c3004a4a8dbb94bd4bf5412a4def4acdaa12e12f269737a5751369e12d1a962"
@@ -1463,10 +1439,10 @@ packages:
     dependency: "direct main"
     description:
       name: saver_gallery
-      sha256: "3f983d4be63aff52523c3e097a9b00ce9ab8444f9a982c878cde9d0359f4681d"
+      sha256: "5afc7073672f6fd073ddd15118f53f59a2bceee433e586420a3548888cd40820"
       url: "https://pub.dev"
     source: hosted
-    version: "4.1.1"
+    version: "5.0.2"
   screen_brightness_android:
     dependency: "direct overridden"
     description:
@@ -1533,14 +1509,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.2.0"
-  sentry:
-    dependency: transitive
-    description:
-      name: sentry
-      sha256: f04095a25ff02b202a914174c73ec309570aa93d61098cb4a0a9e715b4aaa465
-      url: "https://pub.dev"
-    source: hosted
-    version: "9.20.0"
   share_plus:
     dependency: "direct main"
     description:
@@ -1779,14 +1747,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.3.1"
-  unorm_dart:
-    dependency: transitive
-    description:
-      name: unorm_dart
-      sha256: "0c69186b03ca6addab0774bcc0f4f17b88d4ce78d9d4d8f0619e30a99ead58e7"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.3.2"
   upower:
     dependency: transitive
     description:

@@ -13,6 +13,7 @@ import 'package:PiliPlus/plugin/pl_player/utils/fullscreen.dart';
 import 'package:PiliPlus/router/app_pages.dart';
 import 'package:PiliPlus/services/account_service.dart';
 import 'package:PiliPlus/services/download/download_service.dart';
+import 'package:PiliPlus/services/logger.dart';
 import 'package:PiliPlus/services/service_locator.dart';
 import 'package:PiliPlus/utils/cache_manager.dart';
 import 'package:PiliPlus/utils/calc_window_position.dart';
@@ -181,32 +182,12 @@ void main() async {
           '${NativePlayer.apiVersion >> 16}.${NativePlayer.apiVersion & 0xFFFF}',
     };
     final fileHandler = await JsonFileHandler.init();
-    final Catcher2Options debugConfig = Catcher2Options(
-      SilentReportMode(),
-      [
-        ?fileHandler,
-        ConsoleHandler(
-          enableDeviceParameters: false,
-          enableApplicationParameters: false,
-          enableCustomParameters: true,
-        ),
-      ],
-      customParameters: customParameters,
-    );
-
-    final Catcher2Options releaseConfig = Catcher2Options(
-      SilentReportMode(),
-      [
-        ?fileHandler,
-        ConsoleHandler(enableCustomParameters: true),
-      ],
-      customParameters: customParameters,
-    );
 
     Catcher2(
-      debugConfig: debugConfig,
-      releaseConfig: releaseConfig,
-      rootWidget: const MyApp(),
+      [?fileHandler, const ConsoleHandler()],
+      const MyApp(),
+      logger: logger,
+      customParameters: customParameters,
     );
   } else {
     runApp(const MyApp());

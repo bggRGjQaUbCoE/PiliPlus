@@ -52,7 +52,7 @@ dependencies:
       ref: dom
   catcher_2:
     git:
-      url: https://github.com/bggRGjQaUbCoE/catcher_2.git
+      url: https://github.com/My-Responsitories/catcher_2.git
       ref: dev
   characters: ^1.4.1
   chat_bottom_container:
@@ -66,7 +66,7 @@ dependencies:
   crypto: ^3.0.6
   device_info_plus: ^13.1.0
   dio: ^5.9.1
-  dio_http2_adapter: ^2.5.3
+  dio_http2_adapter: ^2.7.1
   dynamic_color: ^1.8.1
   easy_debounce: ^2.0.3
   encrypt: ^5.0.3
@@ -123,11 +123,7 @@ dependencies:
   material_new_shapes: ^1.0.0
   media_kit: 1.1.11
   media_kit_libs_video: 1.0.5
-  media_kit_video:
-    git:
-      url: https://github.com/bggRGjQaUbCoE/media-kit.git
-      path: media_kit_video
-      ref: version_1.2.5
+  media_kit_video: 1.2.5
   mime: ^2.0.0
   native_device_orientation:
     git:
@@ -142,7 +138,7 @@ dependencies:
   pretty_qr_code: ^3.3.0
   protobuf: ^6.0.0
   re_highlight: ^0.0.3
-  saver_gallery: ^4.1.0
+  saver_gallery: ^5.0.2
   screen_brightness_platform_interface: ^2.1.0
   screen_retriever: ^0.2.0
   share_plus: ^13.1.0
@@ -207,9 +203,6 @@ dependency_overrides:
       url: https://github.com/My-Responsitories/media-kit.git
       path: media_kit_video
       ref: version_1.2.5
-  mime: ^2.0.0
-  path: ^1.9.1
-  rxdart: ^0.28.0
   screen_brightness_android:
     git:
       url: https://github.com/bggRGjQaUbCoE/screen_brightness.git

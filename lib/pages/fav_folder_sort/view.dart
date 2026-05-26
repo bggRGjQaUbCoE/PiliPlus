@@ -56,25 +56,20 @@ class _FavFolderSortPageState extends State<FavFolderSortPage>
     );
   }
 
-  void onReorder(int oldIndex, int newIndex) {
+  void onReorderItem(int oldIndex, int newIndex) {
     if (oldIndex == 0 || newIndex == 0) {
       SmartDialog.showToast('默认收藏夹不支持排序');
       return;
     }
 
-    if (newIndex > oldIndex) {
-      newIndex -= 1;
-    }
-
-    final tabsItem = sortList.removeAt(oldIndex);
-    sortList.insert(newIndex, tabsItem);
+    sortList.insert(newIndex, sortList.removeAt(oldIndex));
 
     setState(() {});
   }
 
   Widget get _buildBody {
     return ReorderableListView.builder(
-      onReorder: onReorder,
+      onReorderItem: onReorderItem,
       proxyDecorator: proxyDecorator,
       physics: const AlwaysScrollableScrollPhysics(),
       itemCount: sortList.length,

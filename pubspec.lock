@@ -409,10 +409,10 @@ packages:
     dependency: "direct main"
     description:
       name: dio_http2_adapter
-      sha256: "79f3d69b155b92a786c8734bd11860390b986210d4e07cbb6a5c8c806a7187b2"
+      sha256: c56522c50bb3bab7e3ca77c153b0f03ae672a87d8c32e46be8f2868693ec9f0a
       url: "https://pub.dev"
     source: hosted
-    version: "2.7.0"
+    version: "2.7.1"
   dio_web_adapter:
     dependency: transitive
     description:
@@ -1475,7 +1475,7 @@ packages:
     source: hosted
     version: "0.6.0"
   rxdart:
-    dependency: "direct overridden"
+    dependency: transitive
     description:
       name: rxdart
       sha256: "5c3004a4a8dbb94bd4bf5412a4def4acdaa12e12f269737a5751369e12d1a962"
@@ -1486,12 +1486,12 @@ packages:
     dependency: "direct main"
     description:
       name: saver_gallery
-      sha256: "3f983d4be63aff52523c3e097a9b00ce9ab8444f9a982c878cde9d0359f4681d"
+      sha256: c24cfec2d94a0db9a2ae02d6a21847ba49a369c9b6c3a83f3da17d14720c0888
       url: "https://pub.dev"
     source: hosted
-    version: "4.1.1"
+    version: "4.1.2"
   screen_brightness_android:
-    dependency: "direct overridden"
+    dependency: transitive
     description:
       name: screen_brightness_android
       sha256: "2df5e0488a22a73271a43d92dbcd80643df6910cf69690faacaf9929ae9ade3b"
@@ -1499,7 +1499,7 @@ packages:
     source: hosted
     version: "2.1.4"
   screen_brightness_ios:
-    dependency: "direct overridden"
+    dependency: transitive
     description:
       name: screen_brightness_ios
       sha256: "0792d8f98852558f831b4b75241c46047b884598b3f4d982b37dc2dd43e2b2e1"

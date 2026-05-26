@@ -317,8 +317,8 @@ class _DanmakuTip extends SingleChildRenderObjectWidget {
 
 class _RenderDanmakuTip extends RenderProxyBox {
   _RenderDanmakuTip({
-    required double offset,
-  }) : _offset = offset;
+    required this._offset,
+  });
 
   double _offset;
   double get offset => _offset;

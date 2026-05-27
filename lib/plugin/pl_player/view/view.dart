@@ -1071,10 +1071,10 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
         final isPosAllowed = _isPositionAllowed(event.localPosition);
         if (!plPlayerController.isLive) {
           _doubleTapGestureRecognizer.addPointer(event);
-          longPressRecognizer
-            ..isPosAllowed = isPosAllowed
-            ..addPointer(event);
         }
+        longPressRecognizer
+          ..isPosAllowed = isPosAllowed
+          ..addPointer(event);
         _scaleGestureRecognizer
           ..isPosAllowed = isPosAllowed
           ..addPointer(event);

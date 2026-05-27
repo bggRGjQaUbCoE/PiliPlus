@@ -1178,7 +1178,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
         ? colorScheme.inversePrimary
         : colorScheme.primary;
     late final thumbGlowColor = primary.withAlpha(80);
-    late final bufferedBarColor = primary.withValues(alpha: 0.4);
+    late final bufferedBarColor = primary.withValues(alpha: 0.3);
     const TextStyle textStyle = TextStyle(
       color: Colors.white,
       fontSize: 12,
@@ -1536,7 +1536,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                           bufferedBarColor: bufferedBarColor,
                           thumbColor: primary,
                           thumbGlowColor: thumbGlowColor,
-                          barHeight: 1.4,
+                          barHeight: 1.5,
                           thumbRadius: 0,
                           strokeCap: .square,
                         );

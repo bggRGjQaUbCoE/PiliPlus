@@ -49,7 +49,7 @@ class BottomControl extends StatelessWidget {
         ? colorScheme.inversePrimary
         : colorScheme.primary;
     final thumbGlowColor = primary.withAlpha(80);
-    final bufferedBarColor = primary.withValues(alpha: 0.4);
+    final bufferedBarColor = primary.withValues(alpha: 0.3);
 
     return Padding(
       padding: const .fromLTRB(10, 0, 10, 12),

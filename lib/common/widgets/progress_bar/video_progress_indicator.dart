@@ -60,16 +60,12 @@ class VideoProgressIndicator extends LeafRenderObjectWidget {
 
 class RenderProgressBar extends RenderBox {
   RenderProgressBar({
-    required Color color,
-    required Color backgroundColor,
-    required double radius,
-    required double height,
-    required double progress,
-  }) : _color = color,
-       _backgroundColor = backgroundColor,
-       _radius = radius,
-       _height = height,
-       _progress = progress;
+    required this._color,
+    required this._backgroundColor,
+    required this._radius,
+    required this._height,
+    required this._progress,
+  });
 
   Color _color;
   Color get color => _color;

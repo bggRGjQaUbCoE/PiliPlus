@@ -11,6 +11,9 @@ class RcmdController extends CommonListController {
   late bool savedRcmdTip = Pref.savedRcmdTip;
 
   @override
+  bool get isEnd => false;
+
+  @override
   void onInit() {
     super.onInit();
     page = 0;
@@ -22,6 +25,11 @@ class RcmdController extends CommonListController {
     return appRcmd
         ? VideoHttp.rcmdVideoListApp(freshIdx: page)
         : VideoHttp.rcmdVideoList(freshIdx: page, ps: 20);
+  }
+
+  @override
+  bool handleError(String? errMsg) {
+    return enableSaveLastData;
   }
 
   @override

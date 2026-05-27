@@ -81,11 +81,7 @@ class _FavSortPageState extends State<FavSortPage> with ReorderMixin {
     );
   }
 
-  void onReorder(int oldIndex, int newIndex) {
-    if (newIndex > oldIndex) {
-      newIndex -= 1;
-    }
-
+  void onReorderItem(int oldIndex, int newIndex) {
     final oldItem = sortList[oldIndex];
     final newItem = sortList.getOrNull(
       oldIndex > newIndex ? newIndex - 1 : newIndex, // might be Negative
@@ -94,15 +90,14 @@ class _FavSortPageState extends State<FavSortPage> with ReorderMixin {
       '${newItem == null ? '0:0' : '${newItem.id}:${newItem.type}'}:${oldItem.id}:${oldItem.type}',
     );
 
-    final tabsItem = sortList.removeAt(oldIndex);
-    sortList.insert(newIndex, tabsItem);
+    sortList.insert(newIndex, sortList.removeAt(oldIndex));
 
     setState(() {});
   }
 
   Widget get _buildBody {
     final child = ReorderableListView.builder(
-      onReorder: onReorder,
+      onReorderItem: onReorderItem,
       proxyDecorator: proxyDecorator,
       physics: const AlwaysScrollableScrollPhysics(),
       padding:

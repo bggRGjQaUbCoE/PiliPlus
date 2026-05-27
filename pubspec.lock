@@ -5,18 +5,18 @@ packages:
     dependency: transitive
     description:
       name: _fe_analyzer_shared
-      sha256: "8d7ff3948166b8ec5da0fbb5962000926b8e02f2ed9b3e51d1738905fbd4c98d"
+      sha256: cd6add6f846f35fb79f3c315296703c1a24f3cfd7f4739d91a74961c1c7e9f1b
       url: "https://pub.dev"
     source: hosted
-    version: "93.0.0"
+    version: "100.0.0"
   analyzer:
     dependency: transitive
     description:
       name: analyzer
-      sha256: de7148ed2fcec579b19f122c1800933dfa028f6d9fd38a152b04b1516cec120b
+      sha256: "6ba98576948803398b69e3a444df24eacdbe12ed699c7014e120ea38552debbf"
       url: "https://pub.dev"
     source: hosted
-    version: "10.0.1"
+    version: "13.0.0"
   ansicolor:
     dependency: transitive
     description:
@@ -237,10 +237,11 @@ packages:
   catcher_2:
     dependency: "direct main"
     description:
-      name: catcher_2
-      sha256: ac9dd03230fa4058d14d46450335ca3c40564f734d793e52f81053f3cbf95009
-      url: "https://pub.dev"
-    source: hosted
+      path: "."
+      ref: dev
+      resolved-ref: "9138d8d2aeefc564efd2f35fde3f54ad1b7e89a7"
+      url: "https://github.com/My-Responsitories/catcher_2.git"
+    source: git
     version: "2.1.9"
   characters:
     dependency: "direct main"
@@ -287,10 +288,10 @@ packages:
     dependency: transitive
     description:
       name: code_assets
-      sha256: "83ccdaa064c980b5596c35dd64a8d3ecc68620174ab9b90b6343b753aa721687"
+      sha256: dad6bf6b9f4f378b0a69edbf42584d336efd1a9ce15deb1ba591cbb1b5ff440f
       url: "https://pub.dev"
     source: hosted
-    version: "1.0.0"
+    version: "1.1.0"
   collection:
     dependency: "direct main"
     description:
@@ -359,10 +360,10 @@ packages:
     dependency: transitive
     description:
       name: dart_style
-      sha256: "29f7ecc274a86d32920b1d9cfc7502fa87220da41ec60b55f329559d5732e2b2"
+      sha256: "59d53ef8eaed9d288ed9767618e2b31c4fa0383a127db59d5eb2e737a7638a60"
       url: "https://pub.dev"
     source: hosted
-    version: "3.1.7"
+    version: "3.1.9"
   dbus:
     dependency: transitive
     description:
@@ -408,10 +409,10 @@ packages:
     dependency: "direct main"
     description:
       name: dio_http2_adapter
-      sha256: "79f3d69b155b92a786c8734bd11860390b986210d4e07cbb6a5c8c806a7187b2"
+      sha256: c56522c50bb3bab7e3ca77c153b0f03ae672a87d8c32e46be8f2868693ec9f0a
       url: "https://pub.dev"
     source: hosted
-    version: "2.7.0"
+    version: "2.7.1"
   dio_web_adapter:
     dependency: transitive
     description:
@@ -522,10 +523,10 @@ packages:
     description:
       path: "."
       ref: dev
-      resolved-ref: "8cf6cfa7078aa69c2c7b08d9ad636a1040456852"
+      resolved-ref: f6c2ab82ce7539dc26e6c16e1455b435fd2ded09
       url: "https://github.com/bggRGjQaUbCoE/flutter_file_picker.git"
     source: git
-    version: "12.0.0-beta.3"
+    version: "12.0.0-beta.5"
   file_selector_linux:
     dependency: transitive
     description:
@@ -629,12 +630,13 @@ packages:
     source: hosted
     version: "6.1.5"
   flutter_inappwebview_android:
-    dependency: transitive
+    dependency: "direct overridden"
     description:
-      name: flutter_inappwebview_android
-      sha256: "62557c15a5c2db5d195cb3892aab74fcaec266d7b86d59a6f0027abd672cddba"
-      url: "https://pub.dev"
-    source: hosted
+      path: flutter_inappwebview_android
+      ref: "v6.1.5"
+      resolved-ref: e0e82ff8492bbc77aecc37e3b4d02c0f3e3de40f
+      url: "https://github.com/bggRGjQaUbCoE/flutter_inappwebview.git"
+    source: git
     version: "1.1.3"
   flutter_inappwebview_internal_annotations:
     dependency: transitive
@@ -705,14 +707,6 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
-  flutter_mailer:
-    dependency: transitive
-    description:
-      name: flutter_mailer
-      sha256: "149e51d4e3ba12f8b61e1923ff4304f308acb856b92e9d09326bec6a1ad943d6"
-      url: "https://pub.dev"
-    source: hosted
-    version: "3.0.1"
   flutter_native_splash:
     dependency: "direct dev"
     description:
@@ -764,23 +758,15 @@ packages:
     dependency: "direct main"
     description:
       name: flutter_volume_controller
-      sha256: "22edb0993ad03ecbc8d1164daeb5b39d798d409625db692675a86889403b1532"
+      sha256: "27b95004d8abd7c6b24a63e555d721ef5f958fbe54551246567b72321494c6c8"
       url: "https://pub.dev"
     source: hosted
-    version: "1.3.4"
+    version: "2.0.0"
   flutter_web_plugins:
     dependency: transitive
     description: flutter
     source: sdk
     version: "0.0.0"
-  fluttertoast:
-    dependency: transitive
-    description:
-      name: fluttertoast
-      sha256: "144ddd74d49c865eba47abe31cbc746c7b311c82d6c32e571fd73c4264b740e2"
-      url: "https://pub.dev"
-    source: hosted
-    version: "9.0.0"
   font_awesome_flutter:
     dependency: "direct main"
     description:
@@ -843,10 +829,10 @@ packages:
     dependency: transitive
     description:
       name: hooks
-      sha256: "025f060e86d2d4c3c47b56e33caf7f93bf9283340f26d23424ebcfccf34f621e"
+      sha256: a41af4e8fc687cd6d33de9751eb936c8c0204ebe2bcb6c15ecf707504bf47f31
       url: "https://pub.dev"
     source: hosted
-    version: "1.0.3"
+    version: "2.0.0"
   html:
     dependency: "direct main"
     description:
@@ -1103,14 +1089,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.3.0"
-  mailer:
-    dependency: transitive
-    description:
-      name: mailer
-      sha256: "7b8691b080809ea1b2fa2f1b0d49c7c089fb328bd23e68aa5818b9cf5f4b420d"
-      url: "https://pub.dev"
-    source: hosted
-    version: "7.1.0"
   matcher:
     dependency: transitive
     description:
@@ -1149,7 +1127,7 @@ packages:
     description:
       path: media_kit
       ref: "version_1.2.5"
-      resolved-ref: "14c3ee41df4f51292b89eaf8f8c97420220fe136"
+      resolved-ref: "4f0f72e5bf21349bc251bf52761628faeae3f233"
       url: "https://github.com/My-Responsitories/media-kit.git"
     source: git
     version: "1.1.11"
@@ -1158,7 +1136,7 @@ packages:
     description:
       path: "libs/android/media_kit_libs_android_video"
       ref: "version_1.2.5"
-      resolved-ref: "14c3ee41df4f51292b89eaf8f8c97420220fe136"
+      resolved-ref: "4f0f72e5bf21349bc251bf52761628faeae3f233"
       url: "https://github.com/My-Responsitories/media-kit.git"
     source: git
     version: "1.3.7"
@@ -1192,7 +1170,7 @@ packages:
     description:
       path: "libs/universal/media_kit_libs_video"
       ref: "version_1.2.5"
-      resolved-ref: "14c3ee41df4f51292b89eaf8f8c97420220fe136"
+      resolved-ref: "4f0f72e5bf21349bc251bf52761628faeae3f233"
       url: "https://github.com/My-Responsitories/media-kit.git"
     source: git
     version: "1.0.5"
@@ -1201,7 +1179,7 @@ packages:
     description:
       path: "libs/windows/media_kit_libs_windows_video"
       ref: "version_1.2.5"
-      resolved-ref: "14c3ee41df4f51292b89eaf8f8c97420220fe136"
+      resolved-ref: "4f0f72e5bf21349bc251bf52761628faeae3f233"
       url: "https://github.com/My-Responsitories/media-kit.git"
     source: git
     version: "1.0.10"
@@ -1210,7 +1188,7 @@ packages:
     description:
       path: media_kit_native_event_loop
       ref: "version_1.2.5"
-      resolved-ref: "14c3ee41df4f51292b89eaf8f8c97420220fe136"
+      resolved-ref: "4f0f72e5bf21349bc251bf52761628faeae3f233"
       url: "https://github.com/My-Responsitories/media-kit.git"
     source: git
     version: "1.0.9"
@@ -1219,7 +1197,7 @@ packages:
     description:
       path: media_kit_video
       ref: "version_1.2.5"
-      resolved-ref: "14c3ee41df4f51292b89eaf8f8c97420220fe136"
+      resolved-ref: "4f0f72e5bf21349bc251bf52761628faeae3f233"
       url: "https://github.com/My-Responsitories/media-kit.git"
     source: git
     version: "1.2.5"
@@ -1235,10 +1213,10 @@ packages:
     dependency: transitive
     description:
       name: meta
-      sha256: "23f08335362185a5ea2ad3a4e597f1375e78bce8a040df5c600c8d3552ef2394"
+      sha256: "1741988757a65eb6b36abe716829688cf01910bbf91c34354ff7ec1c3de2b349"
       url: "https://pub.dev"
     source: hosted
-    version: "1.17.0"
+    version: "1.18.0"
   mime:
     dependency: "direct main"
     description:
@@ -1252,18 +1230,10 @@ packages:
     description:
       path: "."
       ref: master
-      resolved-ref: "9cbe7c07a697a199b36ab050248091a3aab8dd3f"
+      resolved-ref: "2c74f4d534dfd9b8f66382f82b3540f32be9abd9"
       url: "https://github.com/bggRGjQaUbCoE/flutter_native_device_orientation.git"
     source: git
     version: "2.0.5"
-  native_toolchain_c:
-    dependency: transitive
-    description:
-      name: native_toolchain_c
-      sha256: "6ba77bb18063eebe9de401f5e6437e95e1438af0a87a3a39084fbd37c90df572"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.17.6"
   nm:
     dependency: transitive
     description:
@@ -1276,10 +1246,10 @@ packages:
     dependency: transitive
     description:
       name: objective_c
-      sha256: "100a1c87616ab6ed41ec263b083c0ef3261ee6cd1dc3b0f35f8ddfa4f996fe52"
+      sha256: "6cb691c686fa2838c6deb34980d426145c2a5d537491cb83d463c33cdbc726ed"
       url: "https://pub.dev"
     source: hosted
-    version: "9.3.0"
+    version: "9.4.1"
   octo_image:
     dependency: transitive
     description:
@@ -1480,14 +1450,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.5.0"
-  punycoder:
-    dependency: transitive
-    description:
-      name: punycoder
-      sha256: aed79c05986a18782caa9bad649a4a786e840e1baaf6a2e1aa3a25d143d28e6e
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.2.2"
   qr:
     dependency: transitive
     description:
@@ -1513,7 +1475,7 @@ packages:
     source: hosted
     version: "0.6.0"
   rxdart:
-    dependency: "direct overridden"
+    dependency: transitive
     description:
       name: rxdart
       sha256: "5c3004a4a8dbb94bd4bf5412a4def4acdaa12e12f269737a5751369e12d1a962"
@@ -1524,12 +1486,12 @@ packages:
     dependency: "direct main"
     description:
       name: saver_gallery
-      sha256: "3f983d4be63aff52523c3e097a9b00ce9ab8444f9a982c878cde9d0359f4681d"
+      sha256: c24cfec2d94a0db9a2ae02d6a21847ba49a369c9b6c3a83f3da17d14720c0888
       url: "https://pub.dev"
     source: hosted
-    version: "4.1.1"
+    version: "4.1.2"
   screen_brightness_android:
-    dependency: "direct overridden"
+    dependency: transitive
     description:
       name: screen_brightness_android
       sha256: "2df5e0488a22a73271a43d92dbcd80643df6910cf69690faacaf9929ae9ade3b"
@@ -1537,7 +1499,7 @@ packages:
     source: hosted
     version: "2.1.4"
   screen_brightness_ios:
-    dependency: "direct overridden"
+    dependency: transitive
     description:
       name: screen_brightness_ios
       sha256: "0792d8f98852558f831b4b75241c46047b884598b3f4d982b37dc2dd43e2b2e1"
@@ -1592,14 +1554,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.2.0"
-  sentry:
-    dependency: transitive
-    description:
-      name: sentry
-      sha256: f04095a25ff02b202a914174c73ec309570aa93d61098cb4a0a9e715b4aaa465
-      url: "https://pub.dev"
-    source: hosted
-    version: "9.20.0"
   share_plus:
     dependency: "direct main"
     description:
@@ -1729,10 +1683,10 @@ packages:
     dependency: transitive
     description:
       name: sqflite_common
-      sha256: f8a08a13fb8f0f8c590df89d745000bed44a673ed94bac846739e1a016875c21
+      sha256: "1581ffbf7a0e333b380d6a30737d78516b826cb35beb7fb0bf8a3ea0c678b465"
       url: "https://pub.dev"
     source: hosted
-    version: "2.5.7"
+    version: "2.5.8"
   sqflite_darwin:
     dependency: transitive
     description:
@@ -1810,10 +1764,10 @@ packages:
     dependency: transitive
     description:
       name: test_api
-      sha256: "8161c84903fd860b26bfdefb7963b3f0b68fee7adea0f59ef805ecca346f0c7a"
+      sha256: "949a932224383300f01be9221c39180316445ecb8e7547f70a41a35bf421fb9e"
       url: "https://pub.dev"
     source: hosted
-    version: "0.7.10"
+    version: "0.7.11"
   tray_manager:
     dependency: "direct main"
     description:
@@ -1838,14 +1792,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.3.1"
-  unorm_dart:
-    dependency: transitive
-    description:
-      name: unorm_dart
-      sha256: "0c69186b03ca6addab0774bcc0f4f17b88d4ce78d9d4d8f0619e30a99ead58e7"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.3.2"
   upower:
     dependency: transitive
     description:
@@ -1866,10 +1812,10 @@ packages:
     dependency: transitive
     description:
       name: url_launcher_android
-      sha256: "3bb000251e55d4a209aa0e2e563309dc9bb2befea2295fd0cec1f51760aac572"
+      sha256: "17bc677f0b301615530dd1d67e0a9828cafa2d0b6b6eae4cd3679b7eac4a273c"
       url: "https://pub.dev"
     source: hosted
-    version: "6.3.29"
+    version: "6.3.30"
   url_launcher_ios:
     dependency: transitive
     description:
@@ -1930,10 +1876,10 @@ packages:
     dependency: transitive
     description:
       name: vector_graphics
-      sha256: "4d35a36400983c3457c289d4d553b5308f506ea84f7e51c7a564651b5525209a"
+      sha256: "2306c03da2ba81724afeb589c351ebbc0aa7d86005925be8f8735856dbe5e42d"
       url: "https://pub.dev"
     source: hosted
-    version: "1.2.1"
+    version: "1.2.2"
   vector_graphics_codec:
     dependency: transitive
     description:
@@ -1946,10 +1892,10 @@ packages:
     dependency: transitive
     description:
       name: vector_graphics_compiler
-      sha256: "98e7e94de127b46a86ef46197fff84ff99f3d3b80a708390d717ad731efef598"
+      sha256: b9b3f391857781aa96acacef96066f2f49b4cd03cf9fce3ca4d8da2ef5ea129e
       url: "https://pub.dev"
     source: hosted
-    version: "1.2.2"
+    version: "1.2.3"
   vector_math:
     dependency: "direct main"
     description:
@@ -2043,10 +1989,10 @@ packages:
     dependency: transitive
     description:
       name: win32
-      sha256: a1fc9eb9248baa05dfc12ed5b66e377b3e23f095eec078e0371622b9033810d9
+      sha256: ba6f4bba816c8d7e3c1580e170f3786d216951cc6b94babc3b814c08d2cb2738
       url: "https://pub.dev"
     source: hosted
-    version: "6.2.0"
+    version: "6.3.0"
   win32_registry:
     dependency: transitive
     description:
@@ -2089,5 +2035,5 @@ packages:
     source: hosted
     version: "3.1.3"
 sdks:
-  dart: ">=3.11.0 <4.0.0"
-  flutter: "3.41.9"
+  dart: ">=3.12.0 <4.0.0"
+  flutter: "3.44.0"

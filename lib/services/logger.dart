@@ -2,30 +2,19 @@ import 'dart:io';
 
 import 'package:PiliPlus/utils/json_file_handler.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
-import 'package:catcher_2/catcher_2.dart';
+import 'package:catcher_2/utils/log_printer.dart';
+import 'package:flutter/foundation.dart';
 import 'package:logger/logger.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
-final logger = PiliLogger();
-
-class PiliLogger extends Logger {
-  PiliLogger() : super();
-
-  @override
-  void log(
-    Level level,
-    dynamic message, {
-    Object? error,
-    StackTrace? stackTrace,
-    DateTime? time,
-  }) {
-    if (level == Level.error || level == Level.fatal) {
-      Catcher2.reportCheckedError(error, stackTrace);
-    }
-    super.log(level, message, error: error, stackTrace: stackTrace, time: time);
-  }
-}
+final logger = Logger(
+  filter: ProductionFilter(),
+  printer: PrettyLogPrinter(
+    dateTimeFormat: PrettyLogPrinter.toEncodableFallback,
+  ),
+  level: kDebugMode ? .trace : .warning,
+);
 
 abstract final class LoggerUtils {
   static File? _logFile;

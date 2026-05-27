@@ -43,6 +43,7 @@ abstract class CommonIntroController extends GetxController
     }
   }
 
+  @override
   late final isLogin = Accounts.main.isLogin;
 
   StatDetail? getStat();
@@ -59,7 +60,6 @@ abstract class CommonIntroController extends GetxController
   bool prevPlay();
   bool nextPlay();
 
-  void actionCoinVideo();
   void actionShareVideo(BuildContext context);
 
   // 同时观看
@@ -119,7 +119,8 @@ abstract class CommonIntroController extends GetxController
     super.onClose();
   }
 
-  Future<void> coinVideo(int coin, [bool selectLike = false]) async {
+  @override
+  Future<void> onPayCoin(int coin, bool coinWithLike) async {
     final stat = getStat();
     if (stat == null) {
       return;
@@ -127,14 +128,14 @@ abstract class CommonIntroController extends GetxController
     final res = await VideoHttp.coinVideo(
       bvid: bvid,
       multiply: coin,
-      selectLike: selectLike ? 1 : 0,
+      selectLike: coinWithLike ? 1 : 0,
     );
     if (res.isSuccess) {
       SmartDialog.showToast('投币成功');
       coinNum.value += coin;
       GlobalData().afterCoin(coin);
       stat.coin += coin;
-      if (selectLike && !hasLike.value) {
+      if (coinWithLike && !hasLike.value) {
         stat.like++;
         hasLike.value = true;
       }

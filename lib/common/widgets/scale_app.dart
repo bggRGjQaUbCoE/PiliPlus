@@ -11,8 +11,7 @@ import 'package:flutter/widgets.dart';
 /// Adapted from [WidgetsFlutterBinding]
 ///
 class ScaledWidgetsFlutterBinding extends WidgetsFlutterBinding {
-  ScaledWidgetsFlutterBinding._({double scaleFactor = 1.0})
-    : _scaleFactor = scaleFactor;
+  ScaledWidgetsFlutterBinding._({this._scaleFactor = 1.0});
 
   /// Calculate scale factor from device size.
   double _scaleFactor;

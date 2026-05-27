@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// ignore_for_file: prefer_initializing_formals
+
 import 'dart:async';
 import 'dart:math' as math;
 
@@ -948,9 +950,6 @@ class ScrollableState<T extends HorizontalDragGestureRecognizer>
   void _receivedPointerSignal(PointerSignalEvent event) {
     if (event is PointerScrollEvent && _position != null) {
       if (_physics != null && !_physics!.shouldAcceptUserOffset(position)) {
-        // The handler won't use the `event`, so allow the platform to trigger
-        // any default native actions.
-        event.respond(allowPlatformDefault: true);
         return;
       }
       final double delta = _pointerSignalEventDelta(event);
@@ -965,9 +964,6 @@ class ScrollableState<T extends HorizontalDragGestureRecognizer>
         );
         return;
       }
-      // The `event` won't result in a scroll, so allow the platform to trigger
-      // any default native actions.
-      event.respond(allowPlatformDefault: true);
     } else if (event is PointerScrollInertiaCancelEvent) {
       position.pointerScroll(0);
       // Don't use the pointer signal resolver, all hit-tested scrollables should stop.
@@ -976,12 +972,16 @@ class ScrollableState<T extends HorizontalDragGestureRecognizer>
 
   void _handlePointerScroll(PointerEvent event) {
     assert(event is PointerScrollEvent);
-    final double delta = _pointerSignalEventDelta(event as PointerScrollEvent);
+    final scrollEvent = event as PointerScrollEvent;
+    final double delta = _pointerSignalEventDelta(scrollEvent);
     final double targetScrollOffset = _targetScrollOffsetForPointerScroll(
       delta,
     );
     if (delta != 0.0 && targetScrollOffset != position.pixels) {
       position.pointerScroll(delta);
+      // Tell engine this scrollable handled the event.
+      // This prevents parent page from scrolling when nested scrollables exist.
+      scrollEvent.respond(allowPlatformDefault: false);
     }
   }
 

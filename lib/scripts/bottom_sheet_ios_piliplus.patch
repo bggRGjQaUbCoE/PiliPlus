@@ -3,13 +3,13 @@ index 58ba68b7c..a6bb398ac 100644
 --- a/lib/pages/common/slide/common_slide_page.dart
 +++ b/lib/pages/common/slide/common_slide_page.dart
 @@ -3,7 +3,8 @@ import 'dart:math' show max;
- import 'package:PiliPlus/common/widgets/flutter/layout_builder.dart';
+ 
  import 'package:PiliPlus/common/widgets/gesture/horizontal_drag_gesture_recognizer.dart';
  import 'package:PiliPlus/utils/storage_pref.dart';
 -import 'package:flutter/gestures.dart' show HorizontalDragGestureRecognizer;
 +import 'package:flutter/gestures.dart'
 +    show HorizontalDragGestureRecognizer, DeviceGestureSettings;
- import 'package:flutter/material.dart' hide LayoutBuilder;
+ import 'package:flutter/material.dart' ;
  import 'package:get/get.dart';
  
 @@ -142,6 +143,10 @@ class SlideDragGestureRecognizer extends HorizontalDragGestureRecognizer {

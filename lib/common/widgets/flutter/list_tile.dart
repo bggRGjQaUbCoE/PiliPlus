@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// ignore_for_file: uri_does_not_exist_in_doc_import
+// ignore_for_file: prefer_initializing_formals, uri_does_not_exist_in_doc_import
 
 /// @docImport 'card.dart';
 /// @docImport 'checkbox.dart';
@@ -742,19 +742,6 @@ class ListTile extends StatelessWidget {
     return dense ?? tileTheme.dense ?? theme.listTileTheme.dense ?? false;
   }
 
-  Color _tileBackgroundColor(
-    ThemeData theme,
-    ListTileThemeData tileTheme,
-    ListTileThemeData defaults,
-  ) {
-    final Color? color = selected
-        ? selectedTileColor ??
-              tileTheme.selectedTileColor ??
-              theme.listTileTheme.selectedTileColor
-        : tileColor ?? tileTheme.tileColor ?? theme.listTileTheme.tileColor;
-    return color ?? defaults.tileColor!;
-  }
-
   @override
   Widget build(BuildContext context) {
     assert(debugCheckHasMaterial(context));
@@ -769,6 +756,25 @@ class ListTile extends StatelessWidget {
     final ListTileThemeData defaults = theme.useMaterial3
         ? _LisTileDefaultsM3(context)
         : _LisTileDefaultsM2(context, listTileStyle);
+
+    final Color backgroundColor =
+        tileColor ??
+        tileTheme.tileColor ??
+        theme.listTileTheme.tileColor ??
+        defaults.tileColor!;
+    final Color selectedBackgroundColor =
+        selectedTileColor ??
+        tileTheme.selectedTileColor ??
+        theme.listTileTheme.selectedTileColor ??
+        defaults.tileColor!;
+    final effectiveTileColor = selected
+        ? selectedBackgroundColor
+        : backgroundColor;
+    final bool hasOpaqueBackground =
+        backgroundColor.alpha > 0 || selectedBackgroundColor.alpha > 0;
+    if (onTap != null || onLongPress != null || hasOpaqueBackground) {
+      assert(_debugCheckBackgroundIsHidden(context));
+    }
     final Set<WidgetState> states = <WidgetState>{
       if (!enabled) WidgetState.disabled,
       if (selected) WidgetState.selected,
@@ -1015,7 +1021,7 @@ class ListTile extends StatelessWidget {
         child: Ink(
           decoration: ShapeDecoration(
             shape: shape ?? tileTheme.shape ?? const Border(),
-            color: _tileBackgroundColor(theme, tileTheme, defaults),
+            color: effectiveTileColor,
           ),
           child: child,
         ),
@@ -1188,6 +1194,68 @@ class ListTile extends StatelessWidget {
           defaultValue: null,
         ),
       );
+  }
+
+  bool _debugCheckBackgroundIsHidden(BuildContext context) {
+    assert(() {
+      final Widget? intermediateWidget = _findIntermediateWidget(context);
+      if (intermediateWidget != null) {
+        FlutterError.reportError(
+          FlutterErrorDetails(
+            exception: FlutterError.fromParts(<DiagnosticsNode>[
+              ErrorSummary(
+                'ListTile background color or ink splashes may be invisible.',
+              ),
+              ErrorDescription(
+                'The ListTile is wrapped in a ${intermediateWidget.runtimeType} that has a background color. '
+                'Because ListTile paints its background and ink splashes on the nearest Material ancestor, '
+                'this ${intermediateWidget.runtimeType} will hide those effects.',
+              ),
+              ErrorHint(
+                'To fix this, wrap the ListTile in its own Material widget, '
+                'or remove the background color from the intermediate ${intermediateWidget.runtimeType}.',
+              ),
+            ]),
+            informationCollector: () => <DiagnosticsNode>[
+              DiagnosticsProperty<ListTile>(
+                'ListTile',
+                this,
+                expandableValue: true,
+              ),
+              DiagnosticsProperty<Widget>(
+                '${intermediateWidget.runtimeType}',
+                intermediateWidget,
+                expandableValue: true,
+              ),
+            ],
+          ),
+        );
+      }
+      return true;
+    }());
+    return true;
+  }
+
+  Widget? _findIntermediateWidget(BuildContext context) {
+    Widget? intermediateWidget;
+    (context as Element).visitAncestorElements((Element ancestor) {
+      if (ancestor.widget is Material) {
+        return false;
+      }
+      final Widget widget = ancestor.widget;
+      final Color? color = switch (widget) {
+        ColoredBox(:final Color color) => color,
+        DecoratedBox(decoration: BoxDecoration(:final Color? color)) => color,
+        DecoratedBox(decoration: ShapeDecoration(:final Color? color)) => color,
+        _ => null,
+      };
+      if (color != null && color.a > 0) {
+        intermediateWidget = widget;
+        return false;
+      }
+      return true;
+    });
+    return intermediateWidget;
   }
 }
 

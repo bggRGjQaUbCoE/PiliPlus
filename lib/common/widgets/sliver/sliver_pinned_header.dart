@@ -47,8 +47,8 @@ class SliverPinnedHeader extends SingleChildRenderObjectWidget {
 
 class RenderSliverPinnedHeader extends RenderSliverSingleBoxAdapter {
   RenderSliverPinnedHeader({
-    required Color? backgroundColor,
-  }) : _backgroundColor = backgroundColor;
+    required this._backgroundColor,
+  });
 
   Color? _backgroundColor;
   set backgroundColor(Color? value) {

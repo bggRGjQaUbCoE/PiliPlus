@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:PiliPlus/pages/video/pay_coins/view.dart';
+import 'package:PiliPlus/utils/global_data.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -17,6 +19,46 @@ mixin TripleMixin on GetxController, TickerProvider {
   final RxBool hasFav = false.obs;
 
   bool get hasTriple => hasLike.value && hasCoin && hasFav.value;
+
+  bool get isLogin;
+
+  bool isHasCopyright(int copyright) {
+    return copyright != 2;
+  }
+
+  bool reachCoinLimit(bool hasCopyRight, num coinNum) {
+    return (!hasCopyRight && coinNum >= 1) || coinNum >= 2;
+  }
+
+  int get copyright;
+
+  void onPayCoin(int coin, bool coinWithLike);
+
+  void actionCoinVideo() {
+    if (!isLogin) {
+      SmartDialog.showToast('账号未登录');
+      return;
+    }
+
+    final coinNum = this.coinNum.value;
+    final copyright = this.copyright;
+    final hasCopyright = isHasCopyright(copyright);
+    if (reachCoinLimit(hasCopyright, coinNum)) {
+      SmartDialog.showToast('达到投币上限啦~');
+      return;
+    }
+
+    if (GlobalData().coins != null && GlobalData().coins! < 1) {
+      SmartDialog.showToast('硬币不足');
+      // return;
+    }
+
+    PayCoinsPage.toPayCoinsPage(
+      onPayCoin: onPayCoin,
+      hasCoin: coinNum == 1,
+      hasCopyright: hasCopyright,
+    );
+  }
 
   void actionTriple();
   void actionLikeVideo();

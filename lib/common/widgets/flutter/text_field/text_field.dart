@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// ignore_for_file: uri_does_not_exist_in_doc_import
+// ignore_for_file: prefer_initializing_formals, uri_does_not_exist_in_doc_import
 
 /// @docImport 'input_border.dart';
 /// @docImport 'material.dart';
@@ -38,6 +38,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart'
     hide
+        TextField,
         EditableText,
         EditableTextState,
         EditableTextContextMenuBuilder,
@@ -321,6 +322,7 @@ class RichTextField extends StatefulWidget {
     this.stylusHandwritingEnabled =
         EditableText.defaultStylusHandwritingEnabled,
     this.enableIMEPersonalizedLearning = true,
+    this.enableInlinePrediction,
     this.contextMenuBuilder = _defaultContextMenuBuilder,
     this.canRequestFocus = true,
     this.spellCheckConfiguration,
@@ -868,6 +870,9 @@ class RichTextField extends StatefulWidget {
   /// {@macro flutter.services.TextInputConfiguration.enableIMEPersonalizedLearning}
   final bool enableIMEPersonalizedLearning;
 
+  /// {@macro flutter.services.TextInputConfiguration.enableInlinePrediction}
+  final bool? enableInlinePrediction;
+
   /// {@macro flutter.widgets.editableText.contentInsertionConfiguration}
   final ContentInsertionConfiguration? contentInsertionConfiguration;
 
@@ -1211,6 +1216,13 @@ class RichTextField extends StatefulWidget {
           'enableIMEPersonalizedLearning',
           enableIMEPersonalizedLearning,
           defaultValue: true,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<bool?>(
+          'enableInlinePrediction',
+          enableInlinePrediction,
+          defaultValue: null,
         ),
       )
       ..add(
@@ -1885,6 +1897,7 @@ class RichTextFieldState extends State<RichTextField>
           scribbleEnabled: widget.scribbleEnabled,
           stylusHandwritingEnabled: widget.stylusHandwritingEnabled,
           enableIMEPersonalizedLearning: widget.enableIMEPersonalizedLearning,
+          enableInlinePrediction: widget.enableInlinePrediction,
           contentInsertionConfiguration: widget.contentInsertionConfiguration,
           contextMenuBuilder: widget.contextMenuBuilder,
           spellCheckConfiguration: spellCheckConfiguration,

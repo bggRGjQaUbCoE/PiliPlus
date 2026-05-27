@@ -113,8 +113,8 @@ class _SliverFloatingHeaderWidget extends SingleChildRenderObjectWidget {
 
 class RenderSliverFloatingHeader extends RenderSliverSingleBoxAdapter {
   RenderSliverFloatingHeader({
-    required Color backgroundColor,
-  }) : _backgroundColor = backgroundColor;
+    required this._backgroundColor,
+  });
 
   Color _backgroundColor;
   set backgroundColor(Color value) {

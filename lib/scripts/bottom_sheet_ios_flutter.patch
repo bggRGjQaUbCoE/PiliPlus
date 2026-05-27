@@ -1,5 +1,5 @@
 diff --git a/packages/flutter/lib/src/cupertino/route.dart b/packages/flutter/lib/src/cupertino/route.dart
-index 5ce4479480e..2551c6613ae 100644
+index b6786d2611f..c36901a40bf 100644
 --- a/packages/flutter/lib/src/cupertino/route.dart
 +++ b/packages/flutter/lib/src/cupertino/route.dart
 @@ -201,7 +201,7 @@ mixin CupertinoRouteTransitionMixin<T> on PageRoute<T> {
@@ -69,11 +69,10 @@ index 5ce4479480e..2551c6613ae 100644
        }
  
        // The popping may have finished inline if already at the target destination.
-@@ -1548,3 +1558,18 @@ class CupertinoDialogRoute<T> extends RawDialogRoute<T> {
-   // transitions.
+@@ -1549,6 +1559,20 @@ class CupertinoDialogRoute<T> extends RawDialogRoute<T> {
    static final Tween<double> _dialogScaleTween = Tween<double>(begin: 1.3, end: 1.0);
  }
-+
+ 
 +class _HorizontalDragGestureRecognizer extends HorizontalDragGestureRecognizer {
 +  _HorizontalDragGestureRecognizer({
 +    super.debugOwner,
@@ -81,19 +80,21 @@ index 5ce4479480e..2551c6613ae 100644
 +    super.allowedButtonsFilter,
 +  });
 +
-+
 +  @override
 +  void didStopTrackingLastPointer(int pointer) {
 +    gestureSettings = null;
 +    super.didStopTrackingLastPointer(pointer);
 +  }
 +}
-\ No newline at end of file
++
+ /// A [PageTransitionsBuilder] that provides an iOS-style page transition
+ /// animation.
+ ///
 diff --git a/packages/flutter/lib/src/material/scaffold.dart b/packages/flutter/lib/src/material/scaffold.dart
-index d121d10f1d6..92fa155c168 100644
+index 0233bd1da39..a1ce131c786 100644
 --- a/packages/flutter/lib/src/material/scaffold.dart
 +++ b/packages/flutter/lib/src/material/scaffold.dart
-@@ -2521,6 +2521,7 @@ class ScaffoldState extends State<Scaffold>
+@@ -2519,6 +2519,7 @@ class ScaffoldState extends State<Scaffold>
      final LocalHistoryEntry? entry = isPersistent
          ? null
          : LocalHistoryEntry(
@@ -102,7 +103,7 @@ index d121d10f1d6..92fa155c168 100644
                if (!removedEntry && _currentBottomSheet?._widget == bottomSheet && !doingDispose) {
                  removeCurrentBottomSheet();
 diff --git a/packages/flutter/lib/src/widgets/routes.dart b/packages/flutter/lib/src/widgets/routes.dart
-index 5c4a8982617..6621148781a 100644
+index 6d42beb65c0..44c3da72895 100644
 --- a/packages/flutter/lib/src/widgets/routes.dart
 +++ b/packages/flutter/lib/src/widgets/routes.dart
 @@ -709,7 +709,11 @@ class LocalHistoryEntry {
@@ -156,13 +157,16 @@ index 5c4a8982617..6621148781a 100644
  }
  
  class _DismissModalAction extends DismissAction {
-@@ -2839,3 +2860,9 @@ abstract class PopEntry<T> {
-     return 'PopEntry canPop: ${canPopNotifier.value}, onPopInvoked: $onPopInvokedWithResult';
+@@ -989,6 +1010,12 @@ class _DismissModalAction extends DismissAction {
    }
  }
-+
+ 
 +class _GesturePop {
 +  const _GesturePop();
 +}
 +
 +const Object gesturePop = _GesturePop();
++
+ enum _ModalRouteAspect {
+   /// Specifies the aspect corresponding to [ModalRoute.isCurrent].
+   isCurrent,

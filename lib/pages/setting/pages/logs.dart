@@ -11,8 +11,8 @@ import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
-import 'package:catcher_2/model/platform_type.dart';
-import 'package:catcher_2/model/report.dart' as catcher;
+import 'package:catcher_2/catcher_2.dart';
+import 'package:catcher_2/utils/log_printer.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -27,25 +27,25 @@ class LogsPage extends StatefulWidget {
 }
 
 class _LogsPageState extends State<LogsPage> {
-  List<Report> logsContent = [];
-  Report? latestLog;
+  List<_ExpandedItem<Report>> logsContent = [];
+  _ExpandedItem<_DeviceInfo>? _deviceInfo;
   late bool enableLog = Pref.enableLog;
 
   @override
   void initState() {
+    _initDeviceInfo();
     getLog();
     super.initState();
   }
 
-  @override
-  void dispose() {
-    if (latestLog != null) {
-      final time = latestLog!.dateTime;
-      if (DateTime.now().difference(time) >= const Duration(days: 14)) {
-        LoggerUtils.clearLogs();
-      }
+  void _initDeviceInfo() {
+    if (Catcher2.instance case final c?) {
+      _deviceInfo = _ExpandedItem((
+        c.deviceParameters,
+        c.applicationParameters,
+        c.customParameters,
+      ));
     }
-    super.dispose();
   }
 
   Future<void> getLog() async {
@@ -53,19 +53,18 @@ class _LogsPageState extends State<LogsPage> {
     logsContent = (await logsPath.readAsLines()).reversed.map((i) {
       try {
         final log = Report.fromJson(jsonDecode(i));
-        latestLog ??= log;
-        return log;
+        return _ExpandedItem(log);
       } catch (e, s) {
-        return Report(
-          'Parse log failed: $e\n\n\n$i',
-          s,
-          DateTime.now(),
-          const {},
-          const {},
-          const {},
-          null,
-          PlatformType.unknown,
-          null,
+        return _ExpandedItem(
+          Report(
+            'Parse log failed: $e\n\n\n$i',
+            s,
+            DateTime.now(),
+            const {},
+            const {},
+            const {},
+            null,
+          ),
         );
       }
     }).toList();
@@ -119,7 +118,7 @@ class _LogsPageState extends State<LogsPage> {
                   onTap: () => Timer.periodic(
                     const Duration(milliseconds: 3500),
                     (timer) {
-                      Utils.reportError('Manual');
+                      Utils.reportError('Manual', StackTrace.current);
                       if (timer.tick > 3) {
                         timer.cancel();
                         if (mounted) getLog();
@@ -146,10 +145,7 @@ class _LogsPageState extends State<LogsPage> {
                 child: const Text('错误反馈'),
               ),
               PopupMenuItem(
-                onTap: () {
-                  latestLog = null;
-                  clearLogs();
-                },
+                onTap: clearLogs,
                 child: const Text('清空日志'),
               ),
             ],
@@ -157,7 +153,7 @@ class _LogsPageState extends State<LogsPage> {
           const SizedBox(width: 6),
         ],
       ),
-      body: logsContent.isNotEmpty
+      body: logsContent.isNotEmpty || _deviceInfo != null
           ? Padding(
               padding: EdgeInsets.only(
                 left: padding.left + 12,
@@ -165,11 +161,11 @@ class _LogsPageState extends State<LogsPage> {
               ),
               child: CustomScrollView(
                 slivers: [
-                  if (latestLog != null)
+                  if (_deviceInfo != null)
                     SliverToBoxAdapter(
                       child: Padding(
                         padding: const .only(bottom: 12),
-                        child: InfoCard(report: latestLog!),
+                        child: _InfoCard(info: _deviceInfo!),
                       ),
                     ),
                   SliverPadding(
@@ -177,7 +173,7 @@ class _LogsPageState extends State<LogsPage> {
                     sliver: SliverList.separated(
                       itemCount: logsContent.length,
                       itemBuilder: (context, index) =>
-                          ReportCard(report: logsContent[index]),
+                          _ReportCard(report: logsContent[index]),
                       separatorBuilder: (_, _) => const SizedBox(height: 12),
                     ),
                   ),
@@ -189,10 +185,16 @@ class _LogsPageState extends State<LogsPage> {
   }
 }
 
-class InfoCard extends StatelessWidget {
-  final Report report;
+typedef _DeviceInfo = (
+  Map<String, dynamic>,
+  Map<String, dynamic>,
+  Map<String, dynamic>,
+);
 
-  const InfoCard({super.key, required this.report});
+class _InfoCard extends StatelessWidget {
+  final _ExpandedItem<_DeviceInfo> info;
+
+  const _InfoCard({required this.info});
 
   Widget _buildMapSection(
     Color color,
@@ -210,11 +212,7 @@ class InfoCard extends StatelessWidget {
         const SizedBox(height: 8),
         Text(
           title,
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: color,
-            fontSize: 15,
-          ),
+          style: TextStyle(fontWeight: .bold, color: color, fontSize: 15),
         ),
         ...map.entries.map(
           (entry) => Text.rich(
@@ -250,58 +248,47 @@ class InfoCard extends StatelessWidget {
           const Expanded(
             child: Text(
               '相关信息',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 15,
-              ),
+              style: TextStyle(fontWeight: .bold, fontSize: 15),
               maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+              overflow: .ellipsis,
             ),
           ),
           iconButton(
             size: 34,
             iconSize: 22,
+            tooltip: info.isExpanded ? '收起' : '展开',
             icon: Icon(
-              report.isExpanded ? Icons.expand_less : Icons.expand_more,
+              info.isExpanded ? Icons.expand_less : Icons.expand_more,
             ),
             onPressed: () {
-              report.isExpanded = !report.isExpanded;
+              info.isExpanded = !info.isExpanded;
               (context as Element).markNeedsBuild();
             },
           ),
         ],
       ),
-      if (report.isExpanded) ...[
-        _buildMapSection(
-          colorScheme.primary,
-          '设备信息',
-          report.deviceParameters,
-        ),
-        _buildMapSection(
-          colorScheme.primary,
-          '应用信息',
-          report.applicationParameters,
-        ),
-        _buildMapSection(
-          colorScheme.primary,
-          '编译信息',
-          report.customParameters,
-        ),
+      if (info.isExpanded) ...[
+        _buildMapSection(colorScheme.primary, '设备信息', info.item.$1),
+        _buildMapSection(colorScheme.primary, '应用信息', info.item.$2),
+        _buildMapSection(colorScheme.primary, '编译信息', info.item.$3),
       ],
     ]);
   }
 }
 
-class ReportCard extends StatelessWidget {
-  final Report report;
+class _ReportCard extends StatelessWidget {
+  final _ExpandedItem<Report> report;
 
-  const ReportCard({super.key, required this.report});
+  const _ReportCard({required this.report});
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = ColorScheme.of(context);
-    late final stackTrace = report.stackTrace.toString().trim();
-    final dateTime = DateFormatUtils.longFormatDs.format(report.dateTime);
+    late final stackTrace = PrettyLogPrinter.formatStackString(
+      report.item.stackTrace?.toString(),
+      -1,
+    );
+    final dateTime = DateFormatUtils.longFormatDs.format(report.item.dateTime);
     return _card([
       Row(
         crossAxisAlignment: .start,
@@ -312,13 +299,10 @@ class ReportCard extends StatelessWidget {
               crossAxisAlignment: .start,
               children: [
                 Text(
-                  report.error.toString(),
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 15,
-                  ),
+                  report.item.error.toString(),
+                  style: const TextStyle(fontWeight: .bold, fontSize: 15),
                   maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
+                  overflow: .ellipsis,
                 ),
                 Text(
                   dateTime,
@@ -334,6 +318,7 @@ class ReportCard extends StatelessWidget {
           iconButton(
             size: 34,
             iconSize: 22,
+            tooltip: '复制',
             onPressed: () {
               Utils.copyText('```\n$report```', needToast: false);
               ScaffoldMessenger.of(context).showSnackBar(
@@ -343,14 +328,12 @@ class ReportCard extends StatelessWidget {
                 ),
               );
             },
-            icon: const Icon(
-              Icons.copy_outlined,
-              size: 16,
-            ),
+            icon: const Icon(Icons.copy_outlined, size: 16),
           ),
           iconButton(
             size: 34,
             iconSize: 22,
+            tooltip: report.isExpanded ? '收起' : '展开',
             icon: Icon(
               report.isExpanded ? Icons.expand_less : Icons.expand_more,
             ),
@@ -373,16 +356,14 @@ class ReportCard extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         Container(
-          padding: const EdgeInsets.all(12),
+          padding: const .all(12),
           decoration: BoxDecoration(
             color: colorScheme.surface,
-            borderRadius: const BorderRadius.all(Radius.circular(8)),
-            border: Border.all(
-              color: colorScheme.outline.withValues(alpha: 0.5),
-            ),
+            borderRadius: const .all(.circular(8)),
+            border: .all(color: colorScheme.outline.withValues(alpha: 0.5)),
           ),
           child: SelectableText(
-            report.error.toString(),
+            report.item.error.toString(),
             style: TextStyle(
               fontFamily: 'Monospace',
               color: colorScheme.onSurfaceVariant,
@@ -390,7 +371,7 @@ class ReportCard extends StatelessWidget {
           ),
         ),
         // stackTrace may be null or String("null") or blank
-        if (stackTrace.isNotEmpty && stackTrace != 'null') ...[
+        if (stackTrace != null && stackTrace.isNotEmpty) ...[
           const SizedBox(height: 16),
           Text(
             '堆栈跟踪',
@@ -402,21 +383,29 @@ class ReportCard extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: const .all(12),
             decoration: BoxDecoration(
               color: colorScheme.surface,
-              borderRadius: const BorderRadius.all(Radius.circular(8)),
-              border: Border.all(
-                color: colorScheme.outline.withValues(alpha: 0.5),
-              ),
+              borderRadius: const .all(.circular(8)),
+              border: .all(color: colorScheme.outline.withValues(alpha: 0.5)),
             ),
-            child: SelectableText(
-              stackTrace,
-              style: TextStyle(
-                fontFamily: 'Monospace',
-                fontSize: 13,
-                color: colorScheme.onSurfaceVariant,
+            child: SelectableText.rich(
+              TextSpan(
+                children: stackTrace
+                    .map(
+                      (i) => TextSpan(
+                        text: '$i\n',
+                        style: i.contains('(package:${Constants.appName}')
+                            ? TextStyle(
+                                color: colorScheme.onSurface,
+                                fontWeight: .w600,
+                              )
+                            : TextStyle(color: colorScheme.onSurfaceVariant),
+                      ),
+                    )
+                    .toList(),
               ),
+              style: const TextStyle(fontFamily: 'Monospace', fontSize: 13),
             ),
           ),
         ],
@@ -437,45 +426,12 @@ Widget _card(List<Widget> contents) {
   );
 }
 
-class Report extends catcher.Report {
-  Report(
-    super.error,
-    super.stackTrace,
-    super.dateTime,
-    super.deviceParameters,
-    super.applicationParameters,
-    super.customParameters,
-    super.errorDetails,
-    super.platformType,
-    super.screenshot,
-  );
-
+class _ExpandedItem<T> {
   bool isExpanded = false;
+  final T item;
 
-  factory Report.fromJson(Map<String, dynamic> json) => Report(
-    json['error'],
-    json['stackTrace'],
-    DateTime.tryParse(json['dateTime'] ?? '') ?? DateTime(1970),
-    json['deviceParameters'] ?? const {},
-    json['applicationParameters'] ?? const {},
-    json['customParameters'] ?? const {},
-    null,
-    PlatformType.values.byName(json['platformType']),
-    null,
-  );
-
-  static String _params2String(Map<String, dynamic> params) {
-    return params.entries
-        .map((entry) => '${entry.key}: ${entry.value}\n')
-        .join();
-  }
+  _ExpandedItem(this.item);
 
   @override
-  String toString() {
-    return '------- DEVICE INFO -------\n${_params2String(deviceParameters)}'
-        '------- APP INFO -------\n${_params2String(applicationParameters)}'
-        '------- ERROR -------\n$error\n'
-        '------- STACK TRACE -------\n${stackTrace.toString().trim()}\n'
-        '------- CUSTOM INFO -------\n${_params2String(customParameters)}';
-  }
+  String toString() => item.toString();
 }

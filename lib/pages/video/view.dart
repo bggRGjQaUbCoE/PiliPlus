@@ -189,6 +189,11 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     final isResume = state == .resumed;
     final ctr = videoDetailController.plPlayerController..visible = isResume;
     if (isResume) {
+      // TODO: remove
+      // part of https://github.com/flutter/flutter/issues/186723
+      if (Platform.isAndroid && !showSystemBar_) {
+        setEnabledSystemUIMode(.immersiveSticky);
+      }
       if (!ctr.showDanmaku) {
         introController.startTimer();
         ctr.showDanmaku = true;

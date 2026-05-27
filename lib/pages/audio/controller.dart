@@ -22,7 +22,6 @@ import 'package:PiliPlus/pages/main_reply/view.dart';
 import 'package:PiliPlus/pages/sponsor_block/block_mixin.dart';
 import 'package:PiliPlus/pages/video/controller.dart';
 import 'package:PiliPlus/pages/video/introduction/ugc/widgets/triple_mixin.dart';
-import 'package:PiliPlus/pages/video/pay_coins/view.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_repeat.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
@@ -86,6 +85,7 @@ class AudioController extends GetxController
 
   late final Rx<PlayRepeat> playMode = Pref.audioPlayMode.obs;
 
+  @override
   late final isLogin = Accounts.main.isLogin;
 
   Duration? _start;
@@ -462,36 +462,11 @@ class AudioController extends GetxController
     }
   }
 
-  void actionCoinVideo() {
-    final audioItem = this.audioItem.value;
-    if (audioItem == null) {
-      return;
-    }
+  @override
+  int get copyright => audioItem.value?.arc.copyright ?? 1;
 
-    if (!isLogin) {
-      SmartDialog.showToast('账号未登录');
-      return;
-    }
-
-    final int copyright = audioItem.arc.copyright;
-    if ((copyright != 1 && coinNum.value >= 1) || coinNum.value >= 2) {
-      SmartDialog.showToast('达到投币上限啦~');
-      return;
-    }
-
-    if (GlobalData().coins != null && GlobalData().coins! < 1) {
-      SmartDialog.showToast('硬币不足');
-      // return;
-    }
-
-    PayCoinsPage.toPayCoinsPage(
-      onPayCoin: _onPayCoin,
-      hasCoin: coinNum.value == 1,
-      copyright: copyright,
-    );
-  }
-
-  Future<void> _onPayCoin(int coin, bool coinWithLike) async {
+  @override
+  Future<void> onPayCoin(int coin, bool coinWithLike) async {
     final res = await AudioGrpc.audioCoinAdd(
       oid: oid,
       subId: subId,

@@ -117,27 +117,25 @@ Future<void> importFromClipBoard<T>(
 Future<void> importFromLocalFile<T>({
   required FutureOr<void> Function(T json) onImport,
 }) async {
-  final result = await FilePicker.pickFiles(
+  final result = await FilePicker.pickFile(
     type: .custom,
     allowedExtensions: const ['json', 'txt'],
   );
   if (result != null) {
-    final path = result.files.first.path;
-    if (path != null) {
-      final data = await File(path).readAsString();
-      final T json;
-      try {
-        json = jsonDecode(data);
-      } catch (e) {
-        SmartDialog.showToast('解析json失败：$e');
-        return;
-      }
-      try {
-        await onImport(json);
-        SmartDialog.showToast('导入成功');
-      } catch (e) {
-        SmartDialog.showToast('导入失败：$e');
-      }
+    final path = result.xFile.path;
+    final data = await File(path).readAsString();
+    final T json;
+    try {
+      json = jsonDecode(data);
+    } catch (e) {
+      SmartDialog.showToast('解析json失败：$e');
+      return;
+    }
+    try {
+      await onImport(json);
+      SmartDialog.showToast('导入成功');
+    } catch (e) {
+      SmartDialog.showToast('导入失败：$e');
     }
   }
 }

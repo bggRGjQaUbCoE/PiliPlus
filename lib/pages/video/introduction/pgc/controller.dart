@@ -16,7 +16,6 @@ import 'package:PiliPlus/models_new/video/video_detail/episode.dart'
 import 'package:PiliPlus/models_new/video/video_detail/stat_detail.dart';
 import 'package:PiliPlus/pages/common/common_intro_controller.dart';
 import 'package:PiliPlus/pages/dynamics_repost/view.dart';
-import 'package:PiliPlus/pages/video/pay_coins/view.dart';
 import 'package:PiliPlus/pages/video/reply/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_repeat.dart';
 import 'package:PiliPlus/services/service_locator.dart';
@@ -114,29 +113,8 @@ class PgcIntroController extends CommonIntroController {
     }
   }
 
-  // 投币
   @override
-  void actionCoinVideo() {
-    if (!isLogin) {
-      SmartDialog.showToast('账号未登录');
-      return;
-    }
-
-    if (coinNum.value >= 2) {
-      SmartDialog.showToast('达到投币上限啦~');
-      return;
-    }
-
-    if (GlobalData().coins != null && GlobalData().coins! < 1) {
-      SmartDialog.showToast('硬币不足');
-      // return;
-    }
-
-    PayCoinsPage.toPayCoinsPage(
-      onPayCoin: coinVideo,
-      hasCoin: coinNum.value == 1,
-    );
-  }
+  int get copyright => 1;
 
   // 分享视频
   @override

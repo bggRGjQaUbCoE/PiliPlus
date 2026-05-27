@@ -1,0 +1,79 @@
+diff --git a/packages/flutter/lib/src/widgets/layout_builder.dart b/packages/flutter/lib/src/widgets/layout_builder.dart
+index 9dbefb7132d..68af3a95739 100644
+--- a/packages/flutter/lib/src/widgets/layout_builder.dart
++++ b/packages/flutter/lib/src/widgets/layout_builder.dart
+@@ -115,43 +115,43 @@ class _LayoutBuilderElement<LayoutInfoType> extends RenderObjectElement {
+ 
+   Element? _child;
+ 
+-  @override
+-  BuildScope get buildScope => _buildScope;
++  // @override
++  // BuildScope get buildScope => _buildScope;
+ 
+-  late final BuildScope _buildScope = BuildScope(scheduleRebuild: _scheduleRebuild);
++  // late final BuildScope _buildScope = BuildScope(scheduleRebuild: _scheduleRebuild);
+ 
+   // To schedule a rebuild, markNeedsLayout needs to be called on this Element's
+   // render object (as the rebuilding is done in its performLayout call). However,
+   // the render tree should typically be kept clean during the postFrameCallbacks
+   // and the idle phase, so the layout data can be safely read.
+-  bool _deferredCallbackScheduled = false;
+-  void _scheduleRebuild() {
+-    if (_deferredCallbackScheduled) {
+-      return;
+-    }
+-
+-    final bool deferMarkNeedsLayout = switch (SchedulerBinding.instance.schedulerPhase) {
+-      SchedulerPhase.idle || SchedulerPhase.postFrameCallbacks => true,
+-      SchedulerPhase.transientCallbacks ||
+-      SchedulerPhase.midFrameMicrotasks ||
+-      SchedulerPhase.persistentCallbacks => false,
+-    };
+-    if (!deferMarkNeedsLayout) {
+-      renderObject.scheduleLayoutCallback();
+-      return;
+-    }
+-    _deferredCallbackScheduled = true;
+-    SchedulerBinding.instance.scheduleFrameCallback(_frameCallback);
+-  }
+-
+-  void _frameCallback(Duration timestamp) {
+-    _deferredCallbackScheduled = false;
+-    // This method is only called when the render tree is stable, if the Element
+-    // is deactivated it will never be reincorporated back to the tree.
+-    if (mounted) {
+-      renderObject.scheduleLayoutCallback();
+-    }
+-  }
++  // bool _deferredCallbackScheduled = false;
++  // void _scheduleRebuild() {
++  //   if (_deferredCallbackScheduled) {
++  //     return;
++  //   }
++
++  //   final bool deferMarkNeedsLayout = switch (SchedulerBinding.instance.schedulerPhase) {
++  //     SchedulerPhase.idle || SchedulerPhase.postFrameCallbacks => true,
++  //     SchedulerPhase.transientCallbacks ||
++  //     SchedulerPhase.midFrameMicrotasks ||
++  //     SchedulerPhase.persistentCallbacks => false,
++  //   };
++  //   if (!deferMarkNeedsLayout) {
++  //     renderObject.scheduleLayoutCallback();
++  //     return;
++  //   }
++  //   _deferredCallbackScheduled = true;
++  //   SchedulerBinding.instance.scheduleFrameCallback(_frameCallback);
++  // }
++
++  // void _frameCallback(Duration timestamp) {
++  //   _deferredCallbackScheduled = false;
++  //   // This method is only called when the render tree is stable, if the Element
++  //   // is deactivated it will never be reincorporated back to the tree.
++  //   if (mounted) {
++  //     renderObject.scheduleLayoutCallback();
++  //   }
++  // }
+ 
+   @override
+   void visitChildren(ElementVisitor visitor) {

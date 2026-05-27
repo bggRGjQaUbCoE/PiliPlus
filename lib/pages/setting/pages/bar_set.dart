@@ -52,8 +52,7 @@ class _BarSetPageState extends State<BarSetPage> with ReorderMixin {
     SmartDialog.showToast('重置成功，下次启动时生效');
   }
 
-  void onReorder(int oldIndex, int newIndex) {
-    if (newIndex > oldIndex) newIndex -= 1;
+  void onReorderItem(int oldIndex, int newIndex) {
     list.insert(newIndex, list.removeAt(oldIndex));
     setState(() {});
   }
@@ -71,7 +70,7 @@ class _BarSetPageState extends State<BarSetPage> with ReorderMixin {
         ],
       ),
       body: ReorderableListView(
-        onReorder: onReorder,
+        onReorderItem: onReorderItem,
         proxyDecorator: proxyDecorator,
         footer: Padding(
           padding:

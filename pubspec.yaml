@@ -35,7 +35,7 @@ dependencies:
   flutter_localizations:
     sdk: flutter
 
-  app_links: ^7.0.0
+  app_links: ^7.1.1
   archive: ^4.0.0
   audio_service: ^0.18.15
   audio_session: ^0.2.2

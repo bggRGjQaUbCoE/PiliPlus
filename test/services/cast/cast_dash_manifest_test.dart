@@ -44,6 +44,19 @@ void main() {
   });
 
   group('CastDashManifest XML structure', () {
+    test('starts with XML declaration', () {
+      final xml = CastDashManifest.build(
+        video: _videoSegment(),
+        audio: _audioSegment(),
+        baseUrl: 'https://proxy.local/',
+      );
+
+      expect(
+        xml.startsWith('<?xml version="1.0" encoding="UTF-8"?>'),
+        isTrue,
+      );
+    });
+
     test('produces root MPD element with DASH namespace', () {
       final xml = CastDashManifest.build(
         video: _videoSegment(),
@@ -67,6 +80,16 @@ void main() {
       expect(xml, contains('codecs="avc1.640028"'));
       expect(xml, contains('width="1920"'));
       expect(xml, contains('height="1080"'));
+    });
+
+    test('video AdaptationSet includes contentType="video"', () {
+      final xml = CastDashManifest.build(
+        video: _videoSegment(),
+        audio: _audioSegment(),
+        baseUrl: 'https://proxy.local/',
+      );
+
+      expect(xml, contains('contentType="video"'));
     });
 
     test('includes frameRate in video Representation when present', () {
@@ -114,6 +137,16 @@ void main() {
 
       expect(xml, contains('mimeType="audio/mp4"'));
       expect(xml, contains('codecs="mp4a.40.2"'));
+    });
+
+    test('audio AdaptationSet includes contentType="audio"', () {
+      final xml = CastDashManifest.build(
+        video: _videoSegment(),
+        audio: _audioSegment(),
+        baseUrl: 'https://proxy.local/',
+      );
+
+      expect(xml, contains('contentType="audio"'));
     });
 
     test('wraps AdaptationSets in a Period element', () {

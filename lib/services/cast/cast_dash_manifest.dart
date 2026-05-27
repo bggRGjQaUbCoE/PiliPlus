@@ -11,6 +11,7 @@ class CastDashManifest {
     Duration? minBufferTime,
   }) {
     final buf = StringBuffer()
+      ..write('<?xml version="1.0" encoding="UTF-8"?>\n')
       ..write('<MPD xmlns="urn:mpeg:dash:schema:mpd:2011"')
       ..write(' type="static"')
       ..write(' profiles="urn:mpeg:dash:profile:isoff-on-demand:2011"');
@@ -38,8 +39,12 @@ class CastDashManifest {
     final mimeType = (item.mimeType?.isNotEmpty == true)
         ? item.mimeType!
         : (isVideo ? 'video/mp4' : 'audio/mp4');
+    final contentType = isVideo ? 'video' : 'audio';
     final buf = StringBuffer()
-      ..write('    <AdaptationSet mimeType="${_escapeXml(mimeType)}">\n')
+      ..write(
+        '    <AdaptationSet mimeType="${_escapeXml(mimeType)}"'
+        ' contentType="$contentType">\n',
+      )
       ..write(_buildRepresentation(item, baseUrl, isVideo: isVideo))
       ..write('    </AdaptationSet>\n');
     return buf.toString();

@@ -1681,6 +1681,85 @@ class VideoDetailController extends GetxController
       qn: qn,
     );
     if (res case Success(:final response)) {
+      // Try DASH first.
+      final dash = response.dash;
+      if (dash != null) {
+        final targetQn =
+            qn ?? currentVideoQa.value?.code ?? response.quality ?? 80;
+        final plan = CastDashTrackSelector.plan(dash, targetVideoQn: targetQn);
+        if (plan.isAvailable) {
+          try {
+            final server = CastLocalProxyServer.instance;
+            await server.ensureStarted();
+
+            final proxiedVideo = VideoItem(
+              id: plan.video!.id,
+              baseUrl: server
+                  .buildProxyUri(
+                    VideoUtils.getCdnUrl(plan.video!.playUrls),
+                  )
+                  .toString(),
+              bandWidth: plan.video!.bandWidth,
+              mimeType: plan.video!.mimeType,
+              codecs: plan.video!.codecs,
+              width: plan.video!.width,
+              height: plan.video!.height,
+              frameRate: plan.video!.frameRate,
+              sar: plan.video!.sar,
+              startWithSap: plan.video!.startWithSap,
+              segmentBase: plan.video!.segmentBase,
+              codecid: plan.video!.codecid,
+              quality: plan.video!.quality,
+            );
+
+            final proxiedAudio = AudioItem()
+              ..id = plan.audio!.id
+              ..baseUrl = server
+                  .buildProxyUri(
+                    VideoUtils.getCdnUrl(plan.audio!.playUrls, isAudio: true),
+                  )
+                  .toString()
+              ..bandWidth = plan.audio!.bandWidth
+              ..mimeType = plan.audio!.mimeType
+              ..codecs = plan.audio!.codecs
+              ..width = plan.audio!.width
+              ..height = plan.audio!.height
+              ..frameRate = plan.audio!.frameRate
+              ..sar = plan.audio!.sar
+              ..startWithSap = plan.audio!.startWithSap
+              ..segmentBase = plan.audio!.segmentBase
+              ..codecid = plan.audio!.codecid
+              ..quality = plan.audio!.quality;
+
+            final duration = response.timeLength != null
+                ? Duration(milliseconds: response.timeLength!)
+                : dash.duration != null
+                ? Duration(seconds: dash.duration!)
+                : null;
+            final minBufferTime = dash.minBufferTime != null
+                ? Duration(milliseconds: (dash.minBufferTime! * 1000).round())
+                : null;
+
+            final manifest = CastDashManifest.build(
+              video: proxiedVideo,
+              audio: proxiedAudio,
+              baseUrl: '',
+              duration: duration,
+              minBufferTime: minBufferTime,
+            );
+            final manifestUri = server.registerManifest(manifest);
+
+            return _GoogleCastMediaSource(
+              url: manifestUri.toString(),
+              contentType: castDashContentType,
+            );
+          } catch (_) {
+            // DASH construction failed, fall through to durl.
+          }
+        }
+      }
+
+      // Fallback to durl (FLV/MP4).
       final first = response.durl?.firstWhereOrNull(
         (d) => d.playUrls.isNotEmpty,
       );
@@ -1688,79 +1767,6 @@ class VideoDetailController extends GetxController
         return _GoogleCastMediaSource(
           url: VideoUtils.getCdnUrl(first.playUrls),
         );
-      }
-
-      final dash = response.dash;
-      if (dash != null) {
-        final targetQn =
-            qn ?? currentVideoQa.value?.code ?? response.quality ?? 80;
-        final plan = CastDashTrackSelector.plan(dash, targetVideoQn: targetQn);
-        if (plan.isAvailable) {
-          final server = CastLocalProxyServer.instance;
-          await server.ensureStarted();
-
-          final proxiedVideo = VideoItem(
-            id: plan.video!.id,
-            baseUrl: server
-                .buildProxyUri(
-                  VideoUtils.getCdnUrl(plan.video!.playUrls),
-                )
-                .toString(),
-            bandWidth: plan.video!.bandWidth,
-            mimeType: plan.video!.mimeType,
-            codecs: plan.video!.codecs,
-            width: plan.video!.width,
-            height: plan.video!.height,
-            frameRate: plan.video!.frameRate,
-            sar: plan.video!.sar,
-            startWithSap: plan.video!.startWithSap,
-            segmentBase: plan.video!.segmentBase,
-            codecid: plan.video!.codecid,
-            quality: plan.video!.quality,
-          );
-
-          final proxiedAudio = AudioItem()
-            ..id = plan.audio!.id
-            ..baseUrl = server
-                .buildProxyUri(
-                  VideoUtils.getCdnUrl(plan.audio!.playUrls, isAudio: true),
-                )
-                .toString()
-            ..bandWidth = plan.audio!.bandWidth
-            ..mimeType = plan.audio!.mimeType
-            ..codecs = plan.audio!.codecs
-            ..width = plan.audio!.width
-            ..height = plan.audio!.height
-            ..frameRate = plan.audio!.frameRate
-            ..sar = plan.audio!.sar
-            ..startWithSap = plan.audio!.startWithSap
-            ..segmentBase = plan.audio!.segmentBase
-            ..codecid = plan.audio!.codecid
-            ..quality = plan.audio!.quality;
-
-          final duration = response.timeLength != null
-              ? Duration(milliseconds: response.timeLength!)
-              : dash.duration != null
-              ? Duration(seconds: dash.duration!)
-              : null;
-          final minBufferTime = dash.minBufferTime != null
-              ? Duration(milliseconds: (dash.minBufferTime! * 1000).round())
-              : null;
-
-          final manifest = CastDashManifest.build(
-            video: proxiedVideo,
-            audio: proxiedAudio,
-            baseUrl: '',
-            duration: duration,
-            minBufferTime: minBufferTime,
-          );
-          final manifestUri = server.registerManifest(manifest);
-
-          return _GoogleCastMediaSource(
-            url: manifestUri.toString(),
-            contentType: castDashContentType,
-          );
-        }
       }
 
       SmartDialog.showToast('不支持投屏');

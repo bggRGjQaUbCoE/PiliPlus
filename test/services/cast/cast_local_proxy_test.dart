@@ -181,6 +181,16 @@ void main() {
       expect(exposed, isNotNull);
       expect(exposed, contains('Content-Type'));
     });
+
+    test('allows Content-Type, Origin, and Accept in addition to Range', () {
+      final allowHeaders =
+          CastLocalProxyPolicy.corsHeaders['Access-Control-Allow-Headers'];
+      expect(allowHeaders, isNotNull);
+      expect(allowHeaders, contains('Range'));
+      expect(allowHeaders, contains('Content-Type'));
+      expect(allowHeaders, contains('Origin'));
+      expect(allowHeaders, contains('Accept'));
+    });
   });
 
   group('CastLocalProxyPolicy dashProxyPathPrefix', () {

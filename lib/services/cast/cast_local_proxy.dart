@@ -10,7 +10,7 @@ class CastLocalProxyPolicy {
   static const Map<String, String> corsHeaders = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
-    'Access-Control-Allow-Headers': 'Range',
+    'Access-Control-Allow-Headers': 'Range, Content-Type, Origin, Accept',
     'Access-Control-Expose-Headers':
         'Content-Type, Content-Length, Content-Range, Accept-Ranges',
   };

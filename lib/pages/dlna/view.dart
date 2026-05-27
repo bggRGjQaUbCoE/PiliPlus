@@ -430,6 +430,7 @@ class _DLNAPageState extends State<DLNAPage> {
       position: _parseDuration(Get.parameters['position']) ?? Duration.zero,
       duration: _parseDuration(Get.parameters['duration']),
       qualityCode: int.tryParse(Get.parameters['quality'] ?? ''),
+      contentType: Get.parameters['contentType'],
     );
   }
 

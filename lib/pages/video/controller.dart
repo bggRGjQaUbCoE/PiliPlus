@@ -50,6 +50,9 @@ import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/models/data_source.dart';
 import 'package:PiliPlus/plugin/pl_player/models/heart_beat_type.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
+import 'package:PiliPlus/services/cast/cast_dash_manifest.dart';
+import 'package:PiliPlus/services/cast/cast_dash_policy.dart';
+import 'package:PiliPlus/services/cast/cast_local_proxy.dart';
 import 'package:PiliPlus/services/cast/cast_media_payload.dart';
 import 'package:PiliPlus/services/cast/google_cast_service.dart';
 import 'package:PiliPlus/services/download/download_service.dart';
@@ -78,6 +81,12 @@ import 'package:get/get.dart';
 import 'package:hive_ce/hive.dart';
 import 'package:media_kit/media_kit.dart' hide Subtitle;
 import 'package:path/path.dart' as path;
+
+class _GoogleCastMediaSource {
+  final String url;
+  final String? contentType;
+  const _GoogleCastMediaSource({required this.url, this.contentType});
+}
 
 class VideoDetailController extends GetxController
     with GetTickerProviderStateMixin, BlockMixin {
@@ -1646,6 +1655,7 @@ class VideoDetailController extends GetxController
   CastMediaPayload? _buildGoogleCastPayload(
     String url, {
     Duration? position,
+    String? contentType,
   }) {
     final uri = Uri.tryParse(url);
     if (uri == null || !uri.hasScheme) {
@@ -1659,10 +1669,11 @@ class VideoDetailController extends GetxController
       position: position ?? plPlayerController.position,
       duration: _castDuration(),
       qualityCode: currentVideoQa.value?.code,
+      contentType: contentType,
     );
   }
 
-  Future<String?> _queryGoogleCastUrl({int? qn}) async {
+  Future<_GoogleCastMediaSource?> _queryGoogleCastMediaSource({int? qn}) async {
     final res = await VideoHttp.tvPlayUrl(
       cid: cid.value,
       objectId: epId ?? aid,
@@ -1670,12 +1681,90 @@ class VideoDetailController extends GetxController
       qn: qn,
     );
     if (res case Success(:final response)) {
-      final first = response.durl?.firstOrNull;
-      if (first == null || first.playUrls.isEmpty) {
-        SmartDialog.showToast('不支持投屏');
-        return null;
+      final first = response.durl?.firstWhereOrNull(
+        (d) => d.playUrls.isNotEmpty,
+      );
+      if (first != null) {
+        return _GoogleCastMediaSource(
+          url: VideoUtils.getCdnUrl(first.playUrls),
+        );
       }
-      return VideoUtils.getCdnUrl(first.playUrls);
+
+      final dash = response.dash;
+      if (dash != null) {
+        final targetQn =
+            qn ?? currentVideoQa.value?.code ?? response.quality ?? 80;
+        final plan = CastDashTrackSelector.plan(dash, targetVideoQn: targetQn);
+        if (plan.isAvailable) {
+          final server = CastLocalProxyServer.instance;
+          await server.ensureStarted();
+
+          final proxiedVideo = VideoItem(
+            id: plan.video!.id,
+            baseUrl: server
+                .buildProxyUri(
+                  VideoUtils.getCdnUrl(plan.video!.playUrls),
+                )
+                .toString(),
+            bandWidth: plan.video!.bandWidth,
+            mimeType: plan.video!.mimeType,
+            codecs: plan.video!.codecs,
+            width: plan.video!.width,
+            height: plan.video!.height,
+            frameRate: plan.video!.frameRate,
+            sar: plan.video!.sar,
+            startWithSap: plan.video!.startWithSap,
+            segmentBase: plan.video!.segmentBase,
+            codecid: plan.video!.codecid,
+            quality: plan.video!.quality,
+          );
+
+          final proxiedAudio = AudioItem()
+            ..id = plan.audio!.id
+            ..baseUrl = server
+                .buildProxyUri(
+                  VideoUtils.getCdnUrl(plan.audio!.playUrls, isAudio: true),
+                )
+                .toString()
+            ..bandWidth = plan.audio!.bandWidth
+            ..mimeType = plan.audio!.mimeType
+            ..codecs = plan.audio!.codecs
+            ..width = plan.audio!.width
+            ..height = plan.audio!.height
+            ..frameRate = plan.audio!.frameRate
+            ..sar = plan.audio!.sar
+            ..startWithSap = plan.audio!.startWithSap
+            ..segmentBase = plan.audio!.segmentBase
+            ..codecid = plan.audio!.codecid
+            ..quality = plan.audio!.quality;
+
+          final duration = response.timeLength != null
+              ? Duration(milliseconds: response.timeLength!)
+              : dash.duration != null
+              ? Duration(seconds: dash.duration!)
+              : null;
+          final minBufferTime = dash.minBufferTime != null
+              ? Duration(milliseconds: (dash.minBufferTime! * 1000).round())
+              : null;
+
+          final manifest = CastDashManifest.build(
+            video: proxiedVideo,
+            audio: proxiedAudio,
+            baseUrl: '',
+            duration: duration,
+            minBufferTime: minBufferTime,
+          );
+          final manifestUri = server.registerManifest(manifest);
+
+          return _GoogleCastMediaSource(
+            url: manifestUri.toString(),
+            contentType: castDashContentType,
+          );
+        }
+      }
+
+      SmartDialog.showToast('不支持投屏');
+      return null;
     }
     res.toast();
     return null;
@@ -1686,15 +1775,19 @@ class VideoDetailController extends GetxController
     Duration? position,
     required int generation,
   }) async {
-    final url = await _queryGoogleCastUrl(qn: qn);
-    if (url == null) return;
+    final source = await _queryGoogleCastMediaSource(qn: qn);
+    if (source == null) return;
     if (isClosed ||
         !plPlayerController.isCasting ||
         generation != _castReloadGeneration ||
         currentVideoQa.value?.code != qn) {
       return;
     }
-    final payload = _buildGoogleCastPayload(url, position: position);
+    final payload = _buildGoogleCastPayload(
+      source.url,
+      position: position,
+      contentType: source.contentType,
+    );
     if (payload == null) return;
     if (isClosed ||
         !plPlayerController.isCasting ||
@@ -1712,13 +1805,15 @@ class VideoDetailController extends GetxController
   @pragma('vm:notify-debugger-on-exception')
   Future<void> onCast() async {
     SmartDialog.showLoading();
-    final String? url;
+    final _GoogleCastMediaSource? source;
     try {
-      url = await _queryGoogleCastUrl(qn: currentVideoQa.value?.code);
+      source = await _queryGoogleCastMediaSource(
+        qn: currentVideoQa.value?.code,
+      );
     } finally {
       SmartDialog.dismiss();
     }
-    if (url == null) return;
+    if (source == null) return;
 
     final title = _castTitle();
     if (kDebugMode) {
@@ -1730,12 +1825,13 @@ class VideoDetailController extends GetxController
     Get.toNamed(
       '/dlna',
       parameters: {
-        'url': url,
+        'url': source.url,
         'title': title,
         'position': position,
         'duration': ?duration,
         'quality': ?quality,
         'cover': ?_castCover(),
+        'contentType': ?source.contentType,
       },
     );
   }

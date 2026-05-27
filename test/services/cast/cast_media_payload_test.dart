@@ -46,6 +46,92 @@ void main() {
       );
     });
 
+    test('infers application/dash+xml for .mpd DASH manifest URLs', () {
+      expect(
+        CastMediaPayload(
+          url: Uri.parse('https://example.com/dash/manifest.mpd'),
+          title: 'DASH',
+        ).contentType,
+        'application/dash+xml',
+      );
+      expect(
+        CastMediaPayload(
+          url: Uri.parse('https://proxy.local/stream.mpd?sid=1'),
+          title: 'Proxied DASH',
+        ).contentType,
+        'application/dash+xml',
+      );
+    });
+
+    test('accepts explicit contentType and uses it instead of inference', () {
+      final payload = CastMediaPayload(
+        url: Uri.parse('https://example.com/video.mp4'),
+        title: 'Explicit DASH',
+        contentType: 'application/dash+xml',
+      );
+
+      expect(payload.contentType, 'application/dash+xml');
+    });
+
+    test('explicit contentType survives copyWith unchanged', () {
+      final payload = CastMediaPayload(
+        url: Uri.parse('https://example.com/stream.mpd'),
+        title: 'DASH',
+        contentType: 'application/dash+xml',
+        qualityCode: 80,
+      );
+
+      final reloaded = payload.copyWith(
+        url: Uri.parse('https://example.com/stream-1080.mpd'),
+        qualityCode: 112,
+      );
+
+      expect(reloaded.contentType, 'application/dash+xml');
+      expect(reloaded.qualityCode, 112);
+      expect(reloaded.contentId, 'https://example.com/stream-1080.mpd');
+    });
+
+    test(
+      'copyWith overrides explicit contentType when a new value is given',
+      () {
+        final payload = CastMediaPayload(
+          url: Uri.parse('https://example.com/video.mp4'),
+          title: 'Video',
+          contentType: 'video/mp4',
+        );
+
+        final switched = payload.copyWith(contentType: 'application/dash+xml');
+
+        expect(switched.contentType, 'application/dash+xml');
+      },
+    );
+
+    test('copyWith falls back to inference when contentType is cleared', () {
+      final payload = CastMediaPayload(
+        url: Uri.parse('https://example.com/video.mp4'),
+        title: 'Video',
+        contentType: 'application/dash+xml',
+      );
+
+      final cleared = payload.copyWith(clearContentType: true);
+
+      expect(cleared.contentType, 'video/mp4');
+    });
+
+    test(
+      'clearContentType on a payload without explicit contentType is a no-op',
+      () {
+        final payload = CastMediaPayload(
+          url: Uri.parse('https://example.com/video.mp4'),
+          title: 'Video',
+        );
+
+        final result = payload.copyWith(clearContentType: true);
+
+        expect(result.contentType, 'video/mp4');
+      },
+    );
+
     test('keeps playback position when replacing URL for quality reload', () {
       final current = CastMediaPayload(
         url: Uri.parse('https://example.com/video-720.mp4'),

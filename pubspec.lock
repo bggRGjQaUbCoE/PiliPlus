@@ -255,10 +255,11 @@ packages:
   chat_bottom_container:
     dependency: "direct main"
     description:
-      name: chat_bottom_container
-      sha256: e9c3b9879251658e403d2a93057c5db469c99237fef62ca562ec6d223970ef41
-      url: "https://pub.dev"
-    source: hosted
+      path: "packages/chat_bottom_container"
+      ref: dev
+      resolved-ref: "227fe87aeedcd53573b17d6a6e5c08834fbc4e45"
+      url: "https://github.com/bggRGjQaUbCoE/flutter_chat_packages.git"
+    source: git
     version: "0.5.0"
   checked_yaml:
     dependency: transitive
@@ -498,7 +499,7 @@ packages:
     description:
       path: "."
       ref: dev
-      resolved-ref: f6c2ab82ce7539dc26e6c16e1455b435fd2ded09
+      resolved-ref: "1b1197493d734c45e178c15fe665c3dcab284cb8"
       url: "https://github.com/bggRGjQaUbCoE/flutter_file_picker.git"
     source: git
     version: "12.0.0-beta.5"
@@ -593,7 +594,7 @@ packages:
     description:
       path: flutter_inappwebview_android
       ref: "v6.1.5"
-      resolved-ref: e0e82ff8492bbc77aecc37e3b4d02c0f3e3de40f
+      resolved-ref: "553d323316cc1ef5d1b73077fe42be864e3e096d"
       url: "https://github.com/bggRGjQaUbCoE/flutter_inappwebview.git"
     source: git
     version: "1.1.3"
@@ -606,20 +607,22 @@ packages:
     source: hosted
     version: "1.3.0"
   flutter_inappwebview_ios:
-    dependency: transitive
+    dependency: "direct overridden"
     description:
-      name: flutter_inappwebview_ios
-      sha256: "5818cf9b26cf0cbb0f62ff50772217d41ea8d3d9cc00279c45f8aabaa1b4025d"
-      url: "https://pub.dev"
-    source: hosted
+      path: flutter_inappwebview_ios
+      ref: dev
+      resolved-ref: "94adc42dbcf7c587a53aeb77f470641f877bab84"
+      url: "https://github.com/bggRGjQaUbCoE/flutter_inappwebview.git"
+    source: git
     version: "1.1.2"
   flutter_inappwebview_macos:
-    dependency: transitive
+    dependency: "direct overridden"
     description:
-      name: flutter_inappwebview_macos
-      sha256: c1fbb86af1a3738e3541364d7d1866315ffb0468a1a77e34198c9be571287da1
-      url: "https://pub.dev"
-    source: hosted
+      path: flutter_inappwebview_macos
+      ref: dev
+      resolved-ref: "94adc42dbcf7c587a53aeb77f470641f877bab84"
+      url: "https://github.com/bggRGjQaUbCoE/flutter_inappwebview.git"
+    source: git
     version: "1.1.2"
   flutter_inappwebview_platform_interface:
     dependency: transitive
@@ -670,10 +673,10 @@ packages:
     dependency: "direct dev"
     description:
       name: flutter_native_splash
-      sha256: "4fb9f4113350d3a80841ce05ebf1976a36de622af7d19aca0ca9a9911c7ff002"
+      sha256: "9db4b80b044e9af17cc4b1272137fc7ace0054d879ef8210a76adc34aaf4cdff"
       url: "https://pub.dev"
     source: hosted
-    version: "2.4.7"
+    version: "2.4.8"
   flutter_plugin_android_lifecycle:
     dependency: transitive
     description:
@@ -1019,10 +1022,11 @@ packages:
   live_photo_maker:
     dependency: "direct main"
     description:
-      name: live_photo_maker
-      sha256: "9af3965bd9d2ab55b0d4d0a1e4041fdcc9ef6c6c44543c8412667541a054f58b"
-      url: "https://pub.dev"
-    source: hosted
+      path: "."
+      ref: master
+      resolved-ref: "162fb3227726da19ebffe37182a39c889278e0c5"
+      url: "https://github.com/bggRGjQaUbCoE/live_photo_maker.git"
+    source: git
     version: "0.0.6"
   logger:
     dependency: "direct main"
@@ -1181,7 +1185,7 @@ packages:
     description:
       path: "."
       ref: master
-      resolved-ref: "2c74f4d534dfd9b8f66382f82b3540f32be9abd9"
+      resolved-ref: "7be186c79adca7d3ff5abc34bc75d171c68c2694"
       url: "https://github.com/bggRGjQaUbCoE/flutter_native_device_orientation.git"
     source: git
     version: "2.0.5"
@@ -1310,10 +1314,10 @@ packages:
     dependency: "direct main"
     description:
       name: permission_handler_apple
-      sha256: f000131e755c54cf4d84a5d8bd6e4149e262cc31c5a8b1d698de1ac85fa41023
+      sha256: "447c18bc3c5fdea5c3039f042b2b365fd51e3634f5f6e269ed22c1f00071addc"
       url: "https://pub.dev"
     source: hosted
-    version: "9.4.7"
+    version: "9.4.8"
   permission_handler_platform_interface:
     dependency: "direct main"
     description:
@@ -1438,10 +1442,10 @@ packages:
     dependency: "direct main"
     description:
       name: saver_gallery
-      sha256: "5afc7073672f6fd073ddd15118f53f59a2bceee433e586420a3548888cd40820"
+      sha256: dcecd87113ffcb0eb467bb0ef5ed8f6dd894e26ff3dfd5822624281e7d2cb894
       url: "https://pub.dev"
     source: hosted
-    version: "5.0.2"
+    version: "5.1.0"
   screen_brightness_android:
     dependency: "direct overridden"
     description:
@@ -1485,12 +1489,13 @@ packages:
     source: hosted
     version: "0.2.0"
   screen_retriever_macos:
-    dependency: transitive
+    dependency: "direct overridden"
     description:
-      name: screen_retriever_macos
-      sha256: "71f956e65c97315dd661d71f828708bd97b6d358e776f1a30d5aa7d22d78a149"
-      url: "https://pub.dev"
-    source: hosted
+      path: "packages/screen_retriever_macos"
+      ref: dev
+      resolved-ref: "9c64c6c0d81ac5beadfc6ccab6adbcfd1cd9dc5a"
+      url: "https://github.com/bggRGjQaUbCoE/screen_retriever.git"
+    source: git
     version: "0.2.0"
   screen_retriever_platform_interface:
     dependency: transitive
@@ -1725,10 +1730,11 @@ packages:
   tray_manager:
     dependency: "direct main"
     description:
-      name: tray_manager
-      sha256: c5fd83b0ae4d80be6eaedfad87aaefab8787b333b8ebd064b0e442a81006035b
-      url: "https://pub.dev"
-    source: hosted
+      path: "packages/tray_manager"
+      ref: dev
+      resolved-ref: "76e924d9dc8e5dee67f5f2d04ce0cbc72a53c081"
+      url: "https://github.com/bggRGjQaUbCoE/tray_manager.git"
+    source: git
     version: "0.5.2"
   typed_data:
     dependency: transitive
@@ -1846,10 +1852,10 @@ packages:
     dependency: transitive
     description:
       name: vector_graphics_compiler
-      sha256: b9b3f391857781aa96acacef96066f2f49b4cd03cf9fce3ca4d8da2ef5ea129e
+      sha256: "7ee12e6dffe0fc8e755179d6d91b3b34f5924223fc104d85572ef9180d73d172"
       url: "https://pub.dev"
     source: hosted
-    version: "1.2.3"
+    version: "1.2.5"
   vector_math:
     dependency: "direct main"
     description:

@@ -55,7 +55,11 @@ dependencies:
       url: https://github.com/My-Responsitories/catcher_2.git
       ref: dev
   characters: ^1.4.1
-  chat_bottom_container: ^0.5.0
+  chat_bottom_container:
+    git:
+      url: https://github.com/bggRGjQaUbCoE/flutter_chat_packages.git
+      path: packages/chat_bottom_container
+      ref: dev
   collection: ^1.19.1
   connectivity_plus: ^7.1.1
   cookie_jar: ^4.0.8
@@ -109,7 +113,10 @@ dependencies:
   image_picker: ^1.1.2
   intl: ^0.20.2
   json_annotation: ^4.11.0
-  live_photo_maker: ^0.0.6
+  live_photo_maker:
+    git:
+      url: https://github.com/bggRGjQaUbCoE/live_photo_maker.git
+      ref: master
   logger: ^2.5.0
   material_color_utilities: ^0.13.0
   material_design_icons_flutter:
@@ -144,7 +151,11 @@ dependencies:
       url: https://github.com/bggRGjQaUbCoE/super_sliver_list.git
       ref: mod
   synchronized: ^3.3.0
-  tray_manager: ^0.5.1
+  tray_manager:
+    git:
+      url: https://github.com/bggRGjQaUbCoE/tray_manager.git
+      path: packages/tray_manager
+      ref: dev
   url_launcher: ^6.3.1
   uuid: ^4.5.1
   vector_math: ^2.2.0
@@ -163,6 +174,16 @@ dependency_overrides:
       url: https://github.com/bggRGjQaUbCoE/flutter_inappwebview.git
       path: flutter_inappwebview_android
       ref: v6.1.5
+  flutter_inappwebview_ios:
+    git:
+      url: https://github.com/bggRGjQaUbCoE/flutter_inappwebview.git
+      path: flutter_inappwebview_ios
+      ref: dev
+  flutter_inappwebview_macos:
+    git:
+      url: https://github.com/bggRGjQaUbCoE/flutter_inappwebview.git
+      path: flutter_inappwebview_macos
+      ref: dev
   flutter_volume_controller: ^2.0.0
   media_kit:
     git:
@@ -209,6 +230,11 @@ dependency_overrides:
     git:
       url: https://github.com/bggRGjQaUbCoE/screen_brightness.git
       path: screen_brightness_platform_interface
+      ref: dev
+  screen_retriever_macos:
+    git:
+      url: https://github.com/bggRGjQaUbCoE/screen_retriever.git
+      path: packages/screen_retriever_macos
       ref: dev
 
 dev_dependencies:

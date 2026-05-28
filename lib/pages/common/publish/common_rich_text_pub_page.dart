@@ -108,28 +108,24 @@ abstract class CommonRichTextPubPageState<T extends CommonRichTextPubPage>
       clipBehavior: Clip.none,
       children: [
         GestureDetector(
-          onTap: () async {
-            controller.keepChatPanel();
-            await PageUtils.imageView(
-              imgList: imageList
-                  .map(
-                    (img) => switch (img) {
-                      FilePicModel e => SourceModel(
-                        url: e.path,
-                        sourceType: .fileImage,
-                      ),
-                      OpusPicModel e => SourceModel(
-                        url: e.url!,
-                        sourceType: .networkImage,
-                        size: e.size,
-                      ),
-                    },
-                  )
-                  .toList(),
-              initialPage: index,
-            );
-            controller.restoreChatPanel();
-          },
+          onTap: () => PageUtils.imageView(
+            imgList: imageList
+                .map(
+                  (img) => switch (img) {
+                    FilePicModel e => SourceModel(
+                      url: e.path,
+                      sourceType: .fileImage,
+                    ),
+                    OpusPicModel e => SourceModel(
+                      url: e.url!,
+                      sourceType: .networkImage,
+                      size: e.size,
+                    ),
+                  },
+                )
+                .toList(),
+            initialPage: index,
+          ),
           onLongPress: () {
             Feedback.forLongPress(context);
             onClear();
@@ -326,7 +322,6 @@ abstract class CommonRichTextPubPageState<T extends CommonRichTextPubPage>
 
   late double _mentionOffset = 0;
   Future<void>? onMention([bool fromClick = false]) async {
-    controller.keepChatPanel();
     final res = await DynMentionPanel.onDynMention(
       context,
       offset: _mentionOffset,
@@ -343,7 +338,6 @@ abstract class CommonRichTextPubPageState<T extends CommonRichTextPubPage>
         res.clear();
       }
     }
-    controller.restoreChatPanel();
   }
 
   void _onInsertUser(MentionItem e, bool fromClick) {

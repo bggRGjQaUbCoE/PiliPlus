@@ -25,7 +25,8 @@ abstract class CommonPublishPage<T> extends StatefulWidget {
 abstract class CommonPublishPageState<T extends CommonPublishPage>
     extends State<T>
     with WidgetsBindingObserver {
-  late final FocusNode focusNode;
+  late bool _paused = false;
+  final FocusNode focusNode = FocusNode();
   late final controller = ChatBottomPanelContainerController<PanelType>();
   TextEditingController get editController;
 
@@ -38,23 +39,19 @@ abstract class CommonPublishPageState<T extends CommonPublishPage>
   bool hasPub = false;
   void initPubState();
 
+  bool get handleKeyboard => Platform.isAndroid && widget.autofocus;
+
   @override
   void initState() {
     super.initState();
-    if (Platform.isAndroid) {
+    if (handleKeyboard) {
       WidgetsBinding.instance.addObserver(this);
     }
-
-    focusNode = FocusNode();
 
     initPubState();
 
     if (widget.autofocus) {
-      Future.delayed(const Duration(milliseconds: 300), () {
-        if (mounted) {
-          focusNode.requestFocus();
-        }
-      });
+      _requestFocus(duration: const Duration(milliseconds: 300));
     }
   }
 
@@ -65,34 +62,41 @@ abstract class CommonPublishPageState<T extends CommonPublishPage>
     }
     focusNode.dispose();
     editController.dispose();
-    if (Platform.isAndroid) {
+    if (handleKeyboard) {
       WidgetsBinding.instance.removeObserver(this);
     }
     super.dispose();
   }
 
-  void _requestFocus() {
-    Future.delayed(const Duration(microseconds: 200), focusNode.requestFocus);
+  void _safeRequestFocus() {
+    if (mounted) {
+      focusNode.requestFocus();
+    }
+  }
+
+  void _requestFocus({Duration duration = const Duration(microseconds: 200)}) {
+    Future.delayed(duration, _safeRequestFocus);
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
-      if (mounted &&
-          widget.autofocus &&
-          (panelType.value == .keyboard || panelType.value == .none)) {
-        controller.restoreChatPanel();
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (focusNode.hasFocus) {
-            focusNode.unfocus();
-            _requestFocus();
-          } else {
-            _requestFocus();
-          }
-        });
+    if (state == .resumed) {
+      if (_paused) {
+        _paused = false;
+        final panelType = this.panelType.value;
+        if (panelType == .keyboard || panelType == .none) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (focusNode.hasFocus) {
+              focusNode.unfocus();
+              _requestFocus();
+            } else {
+              _requestFocus();
+            }
+          });
+        }
       }
-    } else if (state == AppLifecycleState.paused) {
-      controller.keepChatPanel();
+    } else if (state == .paused) {
+      _paused = true;
       if (focusNode.hasFocus) {
         focusNode.unfocus();
       }

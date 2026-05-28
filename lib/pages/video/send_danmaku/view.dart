@@ -419,9 +419,8 @@ class _SendDanmakuPanelState extends CommonTextPubPageState<SendDanmakuPanel> {
     );
   }
 
-  Future<void> _showColorPicker() async {
-    controller.keepChatPanel();
-    await showDialog(
+  void _showColorPicker() {
+    showDialog(
       context: context,
       builder: (context) => AlertDialog(
         clipBehavior: Clip.hardEdge,
@@ -437,7 +436,6 @@ class _SendDanmakuPanelState extends CommonTextPubPageState<SendDanmakuPanel> {
         ),
       ),
     );
-    controller.restoreChatPanel();
   }
 
   @override

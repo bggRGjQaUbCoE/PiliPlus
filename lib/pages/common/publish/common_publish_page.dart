@@ -28,7 +28,7 @@ abstract class CommonPublishPageState<T extends CommonPublishPage>
     extends State<T>
     with WidgetsBindingObserver {
   late final FocusNode focusNode;
-  late final controller = ChatBottomPanelContainerController<PanelType>();
+  late final controller = PublishChatBottomPanelController<PanelType>();
   TextEditingController get editController;
 
   final Rx<PanelType> panelType = PanelType.none.obs;
@@ -244,4 +244,40 @@ abstract class CommonPublishPageState<T extends CommonPublishPage>
   }
 
   void onSave();
+}
+
+class PublishChatBottomPanelController<T>
+    extends ChatBottomPanelContainerController<T> {
+  ChatBottomPanelType _keptPanelType = ChatBottomPanelType.none;
+  T? _keptData;
+
+  void keepChatPanel() {
+    _keptPanelType = currentPanelType;
+    _keptData = data;
+  }
+
+  void restoreChatPanel() {
+    final keptPanelType = _keptPanelType;
+    final keptData = _keptData;
+    _keptPanelType = ChatBottomPanelType.none;
+    _keptData = null;
+    switch (keptPanelType) {
+      case ChatBottomPanelType.none:
+        updatePanelType(ChatBottomPanelType.none);
+        break;
+      case ChatBottomPanelType.keyboard:
+        updatePanelType(
+          ChatBottomPanelType.keyboard,
+          forceHandleFocus: ChatBottomHandleFocus.requestFocus,
+        );
+        break;
+      case ChatBottomPanelType.other:
+        updatePanelType(
+          ChatBottomPanelType.other,
+          data: keptData,
+          forceHandleFocus: ChatBottomHandleFocus.unfocus,
+        );
+        break;
+    }
+  }
 }

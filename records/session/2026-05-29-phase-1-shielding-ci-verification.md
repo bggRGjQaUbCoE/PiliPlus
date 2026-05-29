@@ -251,6 +251,20 @@ Subagent review:
   is outside the workflow push `paths`, so manual `workflow_dispatch` is needed
   after push.
 
+Repository scope guard:
+
+- Persistent guard file:
+  `records/session/2026-05-29-gh-repository-scope-guard.md`.
+- All GitHub CLI commands that operate on GitHub repository state must pass
+  `-R CometDash77/PiliAvalon-Worksite`.
+- Do not rely on `gh` default repository inference in this checkout.
+- Upstream/reference repo `bggRGjQaUbCoE/PiliPlus` is read-only reference only;
+  do not trigger workflows, push, create pull requests, open issues, or perform
+  any write/action operation there.
+- Incident note: the initial unscoped workflow dispatch resolved to upstream
+  and returned `HTTP 404`; no upstream workflow was found or triggered, and no
+  upstream code was changed.
+
 Local tool availability:
 
 ```text
@@ -313,10 +327,70 @@ git status --short --branch
 CI dispatch plan:
 
 ```text
-gh workflow run phase1_shielding_verify.yml --ref phase-1-shielding-core
+gh workflow run phase1_shielding_verify.yml --ref phase-1-shielding-core -R CometDash77/PiliAvalon-Worksite
 ```
 
-CI evidence: pending push and manual workflow dispatch.
+CI evidence:
+
+- first unscoped dispatch attempt:
+  `gh workflow run phase1_shielding_verify.yml --ref phase-1-shielding-core`
+- result: `HTTP 404`; `gh` resolved the request to
+  `bggRGjQaUbCoE/PiliPlus`, no upstream workflow was found or triggered, and no
+  upstream code was changed.
+- corrected scoped dispatch:
+  `gh workflow run phase1_shielding_verify.yml --ref phase-1-shielding-core -R CometDash77/PiliAvalon-Worksite`
+
+Manual workflow run:
+
+- workflow: `Phase 1 Shielding Verify`
+- run id: `26624652005`
+- run URL: `https://github.com/CometDash77/PiliAvalon-Worksite/actions/runs/26624652005`
+- job URL: `https://github.com/CometDash77/PiliAvalon-Worksite/actions/runs/26624652005/job/78458384534`
+- branch: `phase-1-shielding-core`
+- event: `workflow_dispatch`
+- commit SHA: `45946d3ad3cd533ecc495a04483f86aaf5a41bfd`
+- conclusion: `failure`
+- created: `2026-05-29T07:37:01Z`
+- completed: `2026-05-29T07:39:57Z`
+
+Step results:
+
+| Step | Conclusion |
+|---|---|
+| Checkout | success |
+| Setup Flutter | success |
+| Flutter version | success |
+| Install dependencies | success |
+| Run shielding tests | failure |
+| Run settings model test | skipped |
+| Analyze | skipped |
+
+Key log excerpts:
+
+```text
+flutter test test/features/shielding
+lib/pages/dynamics_create/view.dart:505:30: Error: The method 'keepChatPanel' isn't defined for the type 'ChatBottomPanelContainerController<PanelType>'.
+lib/pages/dynamics_create/view.dart:551:30: Error: The method 'restoreChatPanel' isn't defined for the type 'ChatBottomPanelContainerController<PanelType>'.
+lib/pages/common/publish/common_rich_text_pub_page.dart:115:24: Error: The method 'keepChatPanel' isn't defined for the type 'ChatBottomPanelContainerController<PanelType>'.
+lib/pages/common/publish/common_publish_page.dart:87:20: Error: The method 'restoreChatPanel' isn't defined for the type 'ChatBottomPanelContainerController<PanelType>'.
+lib/pages/video/send_danmaku/view.dart:432:16: Error: The method 'keepChatPanel' isn't defined for the type 'ChatBottomPanelContainerController<PanelType>'.
+lib/pages/video/reply_new/view.dart:293:26: Error: The method 'keepChatPanel' isn't defined for the type 'ChatBottomPanelContainerController<PanelType>'.
+0 tests passed, 3 failed.
+```
+
+Interpretation: the `uiScale` constructor mismatch was removed from the failure
+surface. CI now reaches the next compile blocker from the same dependency API
+change: product code expects `keepChatPanel` / `restoreChatPanel`, but the
+resolved `chat_bottom_container` controller does not provide those methods.
+
+Follow-up source fix in progress:
+
+- `lib/pages/common/publish/common_publish_page.dart` now uses a local
+  `PublishChatBottomPanelController<T>` subclass of
+  `ChatBottomPanelContainerController<T>`.
+- The wrapper restores the old worksite-level `keepChatPanel` and
+  `restoreChatPanel` calls by storing `currentPanelType` plus `data`, then
+  restoring through the dependency's supported `updatePanelType` API.
 
 Yellow items not marked green by this fix:
 

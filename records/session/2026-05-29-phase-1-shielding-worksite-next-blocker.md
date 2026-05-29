@@ -27,6 +27,35 @@ Status for this repo at record time: no root `CLAUDE.md` or `AGENTS.md` was foun
 
 ## Next Blocker
 
+Superseded by follow-up evidence from run `26624652005`.
+
+The `uiScale` constructor mismatch was fixed in commit
+`45946d3ad3cd533ecc495a04483f86aaf5a41bfd`. The next CI blocker is the same
+dependency API surface moving further: `ChatBottomPanelContainerController` also
+does not provide `keepChatPanel` / `restoreChatPanel`.
+
+Follow-up CI run:
+
+- run id: `26624652005`
+- run URL: `https://github.com/CometDash77/PiliAvalon-Worksite/actions/runs/26624652005`
+- event: `workflow_dispatch`
+- conclusion: `failure`
+- failing step: `flutter test test/features/shielding`
+
+New blocker excerpt:
+
+```text
+lib/pages/dynamics_create/view.dart:505:30: Error: The method 'keepChatPanel' isn't defined for the type 'ChatBottomPanelContainerController<PanelType>'.
+lib/pages/common/publish/common_publish_page.dart:87:20: Error: The method 'restoreChatPanel' isn't defined for the type 'ChatBottomPanelContainerController<PanelType>'.
+```
+
+Worksite fix in progress: restore those compatibility methods through a local
+`PublishChatBottomPanelController<T>` wrapper in
+`lib/pages/common/publish/common_publish_page.dart`, using the dependency's
+supported `updatePanelType` API.
+
+## Previous Blocker
+
 Fix the worksite compile mismatch:
 
 ```text

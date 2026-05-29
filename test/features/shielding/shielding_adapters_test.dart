@@ -2,6 +2,7 @@ import 'package:PiliPlus/features/shielding/shielding.dart';
 import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart';
 import 'package:PiliPlus/models/home/rcmd/result.dart';
 import 'package:PiliPlus/models/model_rec_video_item.dart';
+import 'package:PiliPlus/pages/video/reply_reply/controller.dart';
 import 'package:fixnum/fixnum.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -169,5 +170,47 @@ void main() {
 
       expect(visible, [visibleReply]);
     });
+
+    test('direct reply target lookup runs before comment shielding', () {
+      final controller = _TargetLookupController(targetId: 42);
+      final replies = [
+        ReplyInfo(
+          id: Int64(1),
+          mid: Int64(1),
+          content: Content(message: '正常评论'),
+          member: Member(mid: Int64(1), name: '用户A'),
+        ),
+        ReplyInfo(
+          id: Int64(42),
+          mid: Int64(2),
+          content: Content(message: '这是一条剧透评论'),
+          member: Member(mid: Int64(2), name: '用户B'),
+        ),
+      ];
+
+      controller.handleListResponse(replies);
+
+      expect(controller.index.value, 1);
+      expect(replies.map((reply) => reply.id.toInt()), [1]);
+    });
   });
+}
+
+class _TargetLookupController extends VideoReplyReplyController {
+  _TargetLookupController({required int targetId})
+    : super(
+        hasRoot: false,
+        id: targetId,
+        oid: 1,
+        rpid: 1,
+        dialog: null,
+        replyType: 1,
+      );
+
+  @override
+  List<ReplyInfo> applyShielding(List<ReplyInfo> replies) =>
+      replies.where((reply) => !reply.content.message.contains('剧透')).toList();
+
+  @override
+  void jumpToItem(int index) {}
 }

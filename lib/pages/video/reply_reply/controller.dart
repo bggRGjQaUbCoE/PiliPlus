@@ -84,11 +84,11 @@ class VideoReplyReplyController extends ReplyController
 
   @override
   void handleListResponse(List<ReplyInfo> dataList) {
-    super.handleListResponse(dataList);
     if (id != null) {
       setIndexById(Int64(id!), dataList);
       id = null;
     }
+    super.handleListResponse(dataList);
   }
 
   bool setIndexById(Int64 id64, [List<ReplyInfo>? replies]) {

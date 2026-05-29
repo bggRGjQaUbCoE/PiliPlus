@@ -114,7 +114,7 @@ Interpretation: CI environment and Flutter installation worked, but dependency r
 
 ## Dependency Fix Attempt
 
-Status: in progress / lockfile-refresh.
+Status: dependency gate fixed / next compile blocker found.
 
 The follow-up dependency inspection used authenticated `gh` against `bggRGjQaUbCoE/flutter_file_picker` instead of guessing package layout.
 
@@ -155,6 +155,62 @@ exit 1
 
 Local `flutter pub get` could not be run because Flutter is not installed in this worksite shell. CI remains the verification authority for `flutter pub get`, focused tests, and analyzer.
 
+## Follow-Up Run Evidence
+
+Status: red / shielding-test-compile-failure.
+
+The lockfile refresh was committed and pushed:
+
+- commit SHA: `52f31ea97ecb42034083c9cb990f9051e1f8c18f`
+- commit subject: `Fix file picker CI lock ref`
+
+GitHub Actions run:
+
+- workflow: `Phase 1 Shielding Verify`
+- run id: `26623639477`
+- run URL: `https://github.com/CometDash77/PiliAvalon-Worksite/actions/runs/26623639477`
+- job URL: `https://github.com/CometDash77/PiliAvalon-Worksite/actions/runs/26623639477/job/78455087760`
+- branch: `phase-1-shielding-core`
+- event: `push`
+- conclusion: `failure`
+- created: `2026-05-29T07:12:43Z`
+- completed: `2026-05-29T07:15:41Z`
+
+Step results:
+
+| Step | Conclusion |
+|---|---|
+| Checkout | success |
+| Setup Flutter | success |
+| Flutter version | success |
+| Install dependencies | success |
+| Run shielding tests | failure |
+| Run settings model test | skipped |
+| Analyze | skipped |
+
+Key log excerpts:
+
+```text
+flutter pub get
+...
+Install dependencies: success
+
+flutter test test/features/shielding
+lib/pages/common/publish/common_publish_page.dart:32:5: Error: No named parameter with the name 'uiScale'.
+    uiScale: Pref.uiScale,
+    ^^^^^^^
+../../../.pub-cache/git/flutter_chat_packages-59ae27131e36f14a9cd1a18057a416360969ac42/packages/chat_bottom_container/lib/panel_container.dart:13:7: Context: The class 'ChatBottomPanelContainerController' has a constructor that takes no arguments.
+class ChatBottomPanelContainerController<T> {
+      ^
+Failed to load ".../test/features/shielding/shielding_store_test.dart"
+Failed to load ".../test/features/shielding/shielding_adapters_test.dart"
+Failed to load ".../test/features/shielding/shielding_core_test.dart"
+0 tests passed, 3 failed.
+Process completed with exit code 1.
+```
+
+Interpretation: the original `flutter_file_picker` dependency-resolution blocker is fixed in CI. The next blocker is a compile-time API mismatch between `lib/pages/common/publish/common_publish_page.dart` and the resolved `chat_bottom_container` package from `flutter_chat_packages-59ae27131e36f14a9cd1a18057a416360969ac42`. Settings model test and analyzer remained skipped because the focused shielding test step failed first.
+
 ## Evidence Table
 
 | Item | Status | Evidence |
@@ -163,10 +219,10 @@ Local `flutter pub get` could not be run because Flutter is not installed in thi
 | `gh` authenticated | green | Escalated `gh auth status` succeeded for CometDash77; token value not recorded. |
 | workflow file | green | Pushed in commit `34e4fa6afa3572ed73000e5d11c6e797f0e963d9`; GitHub ran workflow id/name `Phase 1 Shielding Verify`. |
 | Flutter setup | green | `flutter --version` reported Flutter 3.44.0 and Dart 3.12.0. |
-| `flutter pub get` | red | Failed because forked `flutter_file_picker` ref lacks `pubspec.yaml` at expected root. |
-| `flutter test test/features/shielding` | yellow | Skipped because `flutter pub get` failed first. |
-| `flutter test test/pages/setting/models/shielding_settings_test.dart` | yellow | Skipped because `flutter pub get` failed first. |
-| `flutter analyze` | yellow | Skipped because `flutter pub get` failed first. |
+| `flutter pub get` | green | Follow-up run `26623639477` completed `Install dependencies` successfully after refreshing `file_picker` resolved ref to `a8f06d11b0b8f6d903c5680b57a8d7a385992149`. |
+| `flutter test test/features/shielding` | red | Follow-up run `26623639477` failed at compile/load: `common_publish_page.dart:32:5` passes named parameter `uiScale`, but resolved `ChatBottomPanelContainerController` constructor takes no arguments. |
+| `flutter test test/pages/setting/models/shielding_settings_test.dart` | yellow | Skipped because `flutter test test/features/shielding` failed first. |
+| `flutter analyze` | yellow | Skipped because `flutter test test/features/shielding` failed first. |
 | Android build artifact | yellow | Not covered by this focused workflow. |
 | Android install/launch | yellow | Not covered by this focused workflow. |
 | recommendation feed manual acceptance | yellow | Not covered by this focused workflow. |
@@ -176,4 +232,4 @@ Local `flutter pub get` could not be run because Flutter is not installed in thi
 
 ## Next Action
 
-Decide whether the worksite should patch CI dependency resolution for `flutter_file_picker`, align the dependency path/ref with the existing release workflow expectations, or treat dependency resolution as an upstream/environment blocker. Do not mark Phase 1 Flutter tests or analyzer green until a later CI run reaches and passes those commands.
+Investigate the `uiScale` API mismatch in `common_publish_page.dart` versus the resolved `chat_bottom_container` dependency. Do not mark Phase 1 shielding tests, settings model test, or analyzer green until a later CI run reaches and passes those commands.

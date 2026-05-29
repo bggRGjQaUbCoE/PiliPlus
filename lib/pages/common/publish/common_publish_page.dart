@@ -28,9 +28,7 @@ abstract class CommonPublishPageState<T extends CommonPublishPage>
     extends State<T>
     with WidgetsBindingObserver {
   late final FocusNode focusNode;
-  late final controller = ChatBottomPanelContainerController<PanelType>(
-    uiScale: Pref.uiScale,
-  );
+  late final controller = ChatBottomPanelContainerController<PanelType>();
   TextEditingController get editController;
 
   final Rx<PanelType> panelType = PanelType.none.obs;
@@ -161,9 +159,23 @@ abstract class CommonPublishPageState<T extends CommonPublishPage>
     return false;
   }
 
+  double _scaleNativeKeyboardHeight(double height) {
+    if (height <= 0) return height;
+    return height / Pref.uiScale;
+  }
+
+  double _changeKeyboardPanelHeight(double height) {
+    if (height <= 0) return height;
+    final viewInsetBottom = MediaQuery.viewInsetsOf(context).bottom;
+    if (viewInsetBottom > 0 && height == viewInsetBottom) {
+      return height;
+    }
+    return _scaleNativeKeyboardHeight(height);
+  }
+
   Widget buildEmojiPickerPanel() {
     double height = context.isTablet ? 300 : 170;
-    final keyboardHeight = controller.keyboardHeight;
+    final keyboardHeight = _scaleNativeKeyboardHeight(controller.keyboardHeight);
     if (keyboardHeight != 0) {
       height = max(height, keyboardHeight);
     }
@@ -205,6 +217,7 @@ abstract class CommonPublishPageState<T extends CommonPublishPage>
         }
       },
       panelBgColor: panelBgColor ?? Theme.of(context).colorScheme.surface,
+      changeKeyboardPanelHeight: _changeKeyboardPanelHeight,
     );
   }
 

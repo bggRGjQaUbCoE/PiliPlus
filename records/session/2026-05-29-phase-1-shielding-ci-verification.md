@@ -218,6 +218,114 @@ Interpretation: the original `flutter_file_picker` dependency-resolution blocker
 | `gh` installed | green | `gh --version` returned 2.45.0. |
 | `gh` authenticated | green | Escalated `gh auth status` succeeded for CometDash77; token value not recorded. |
 | workflow file | green | Pushed in commit `34e4fa6afa3572ed73000e5d11c6e797f0e963d9`; GitHub ran workflow id/name `Phase 1 Shielding Verify`. |
+
+## Chat Bottom uiScale API Fix Verification
+
+Status: local Flutter unavailable / CI pending.
+
+Timestamp: `2026-05-29 15:35:19 CST`.
+
+Root cause: `chat_bottom_container` resolved from
+`flutter_chat_packages-59ae27131e36f14a9cd1a18057a416360969ac42` exposes a
+no-argument `ChatBottomPanelContainerController` constructor. Product code still
+passed `uiScale: Pref.uiScale`, causing the focused shielding test compile
+failure in run `26623639477`.
+
+Source fix:
+
+- `lib/pages/common/publish/common_publish_page.dart` now constructs
+  `ChatBottomPanelContainerController<PanelType>()` without `uiScale`.
+- Cached native keyboard heights exposed through `controller.keyboardHeight` are
+  converted with `height / Pref.uiScale` before sizing the emoji panel.
+- `ChatBottomPanelContainer.changeKeyboardPanelHeight` preserves live
+  `MediaQuery.viewInsetsOf(context).bottom` unchanged because app-level
+  `ScaledWidgetsFlutterBinding` already scales that value, while cached native
+  heights are divided by `Pref.uiScale`.
+
+Subagent review:
+
+- compatibility reviewer: APPROVE; verified the dependency receives either
+  scaled live `MediaQuery.viewInsets` or cached native keyboard height and the
+  patch handles those two paths separately.
+- verification auditor: confirmed `lib/pages/common/publish/common_publish_page.dart`
+  is outside the workflow push `paths`, so manual `workflow_dispatch` is needed
+  after push.
+
+Local tool availability:
+
+```text
+command -v flutter
+exit 1
+
+command -v dart
+exit 1
+
+command -v fvm
+exit 1
+
+command -v gh
+/usr/bin/gh
+
+gh --version
+gh version 2.45.0 (2025-07-18 Ubuntu 2.45.0-1ubuntu0.3)
+https://github.com/cli/cli/releases/tag/v2.45.0
+
+gh auth status
+github.com
+  logged in to github.com account CometDash77 (keyring)
+  active account: true
+  git operations protocol: ssh
+  token scopes: gist, read:org, repo
+
+cat .fvmrc
+{
+  "flutter": "3.44.0"
+}
+```
+
+Local verification commands:
+
+```text
+flutter pub get
+/bin/bash: line 1: flutter: command not found
+exit 127
+
+flutter test test/features/shielding
+/bin/bash: line 1: flutter: command not found
+exit 127
+
+flutter test test/pages/setting/models/shielding_settings_test.dart
+/bin/bash: line 1: flutter: command not found
+exit 127
+
+flutter analyze
+/bin/bash: line 1: flutter: command not found
+exit 127
+
+git diff --check
+exit 0
+
+git status --short --branch
+## phase-1-shielding-core...origin/phase-1-shielding-core
+ M lib/pages/common/publish/common_publish_page.dart
+```
+
+CI dispatch plan:
+
+```text
+gh workflow run phase1_shielding_verify.yml --ref phase-1-shielding-core
+```
+
+CI evidence: pending push and manual workflow dispatch.
+
+Yellow items not marked green by this fix:
+
+- Android build artifact.
+- Android install/launch.
+- recommendation feed manual acceptance.
+- comment-area manual acceptance.
+- comment-adapter variance.
+- recommendation pagination/loading proof.
 | Flutter setup | green | `flutter --version` reported Flutter 3.44.0 and Dart 3.12.0. |
 | `flutter pub get` | green | Follow-up run `26623639477` completed `Install dependencies` successfully after refreshing `file_picker` resolved ref to `a8f06d11b0b8f6d903c5680b57a8d7a385992149`. |
 | `flutter test test/features/shielding` | red | Follow-up run `26623639477` failed at compile/load: `common_publish_page.dart:32:5` passes named parameter `uiScale`, but resolved `ChatBottomPanelContainerController` constructor takes no arguments. |

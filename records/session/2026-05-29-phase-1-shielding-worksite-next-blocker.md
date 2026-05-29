@@ -72,6 +72,15 @@ workflow should use `flutter analyze --no-fatal-infos` so analyzer errors and
 warnings remain fatal while legacy infos are still logged but do not block Phase
 1 shielding verification.
 
+Final update: commit `c49b6742e9a6da6d914a29e9aa08461e83a5b867` changed the
+focused workflow analyze command. Run `26625915472` passed all focused Phase 1
+verification steps:
+
+- `flutter pub get`
+- `flutter test test/features/shielding`
+- `flutter test test/pages/setting/models/shielding_settings_test.dart`
+- `flutter analyze --no-fatal-infos`
+
 ## Previous Blocker
 
 Fix the worksite compile mismatch:

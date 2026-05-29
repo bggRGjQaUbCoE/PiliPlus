@@ -505,6 +505,49 @@ Policy adjustment:
   `analysis_options.yaml` is a separate repository policy/design task, not part
   of this shielding fix.
 
+## Final Focused CI Pass
+
+Status: green for focused Phase 1 verification.
+
+Workflow policy adjustment was committed and pushed:
+
+- commit SHA: `c49b6742e9a6da6d914a29e9aa08461e83a5b867`
+- commit subject: `Relax Phase 1 analyze info gating`
+
+GitHub Actions run:
+
+- workflow: `Phase 1 Shielding Verify`
+- run id: `26625915472`
+- run URL: `https://github.com/CometDash77/PiliAvalon-Worksite/actions/runs/26625915472`
+- job URL: `https://github.com/CometDash77/PiliAvalon-Worksite/actions/runs/26625915472/job/78462493693`
+- branch: `phase-1-shielding-core`
+- event: `push`
+- commit SHA: `c49b6742e9a6da6d914a29e9aa08461e83a5b867`
+- conclusion: `success`
+- created: `2026-05-29T08:06:54Z`
+- completed: `2026-05-29T08:10:09Z`
+
+Step results:
+
+| Step | Conclusion |
+|---|---|
+| Checkout | success |
+| Setup Flutter | success |
+| Flutter version | success |
+| Install dependencies | success |
+| Run shielding tests | success |
+| Run settings model test | success |
+| Analyze | success |
+
+Validated commands in CI:
+
+```text
+flutter pub get
+flutter test test/features/shielding
+flutter test test/pages/setting/models/shielding_settings_test.dart
+flutter analyze --no-fatal-infos
+```
+
 Yellow items not marked green by this fix:
 
 - Android build artifact.

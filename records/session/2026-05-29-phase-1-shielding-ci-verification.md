@@ -112,6 +112,49 @@ Process completed with exit code 1.
 
 Interpretation: CI environment and Flutter installation worked, but dependency resolution failed before focused tests or analyzer could run. This is dependency/download/source-layout failure evidence, not a shielding behavior failure.
 
+## Dependency Fix Attempt
+
+Status: in progress / lockfile-refresh.
+
+The follow-up dependency inspection used authenticated `gh` against `bggRGjQaUbCoE/flutter_file_picker` instead of guessing package layout.
+
+Commands and findings:
+
+```text
+gh api repos/bggRGjQaUbCoE/flutter_file_picker/git/trees/dev?recursive=1 --jq '.tree[].path'
+```
+
+Result: ref `dev` contains `pubspec.yaml` at repository root (`.`). No shorter nested package path is needed.
+
+```text
+gh api repos/bggRGjQaUbCoE/flutter_file_picker/contents/pubspec.yaml?ref=dev --jq '.content | @base64d'
+```
+
+Result excerpt:
+
+```text
+name: file_picker
+version: 12.0.0-beta.5
+```
+
+```text
+gh api repos/bggRGjQaUbCoE/flutter_file_picker/git/ref/heads/dev
+git ls-remote https://github.com/bggRGjQaUbCoE/flutter_file_picker.git refs/heads/dev
+```
+
+Result: branch `dev` resolves to `a8f06d11b0b8f6d903c5680b57a8d7a385992149`.
+
+Root-cause interpretation: the committed `pubspec.lock` pinned `file_picker` to stale resolved ref `f6c2ab82ce7539dc26e6c16e1455b435fd2ded09`, which was the SHA shown in the failing CI log. The dependency declaration in `pubspec.yaml` already uses `path: "."` implicitly and the current `dev` tree exposes a valid root `pubspec.yaml`, so no `path:` entry was added to `pubspec.yaml`. The narrow fix is to refresh `pubspec.lock` for `file_picker` to `a8f06d11b0b8f6d903c5680b57a8d7a385992149`.
+
+Local Flutter tool status:
+
+```text
+command -v flutter
+exit 1
+```
+
+Local `flutter pub get` could not be run because Flutter is not installed in this worksite shell. CI remains the verification authority for `flutter pub get`, focused tests, and analyzer.
+
 ## Evidence Table
 
 | Item | Status | Evidence |

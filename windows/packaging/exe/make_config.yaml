@@ -3,8 +3,8 @@ script_template: inno_setup.iss
 # 不要在其他应用的安装程序中使用相同的 AppId 值。
 app_id: 5ef970f9-2b9e-4155-b7d6-a9d4dbd6b226
 publisher: dom
-publisher_url: https://github.com/bggRGjQaUbCoE/PiliPlus
-display_name: PiliPlus
+publisher_url: https://github.com/CometDash77/PiliAvalon-Worksite
+display_name: PiliAvalon
 # create_desktop_icon: true
 # See: https://jrsoftware.org/ishelp/index.php?topic=setup_defaultdirname
 # install_dir_name: "D:\\HELLO-WORLD"

@@ -54,7 +54,7 @@ android {
                 resValue(
                     type = "string",
                     name = "app_name",
-                    value = "PiliPlus dev",
+                    value = "PiliAvalon dev",
                 )
             }
 //            proguardFiles(

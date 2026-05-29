@@ -51,14 +51,14 @@ jobs:
 
       - name: Prepare Upload
         run: |
-          mkdir -p Release/PiliPlus-Win
-          mkdir -p PiliPlus-Win-Setup
-          mv build/windows/x64/runner/Release/* Release/PiliPlus-Win/
-          mv dist/**/*.exe PiliPlus-Win-Setup/PiliPlus_windows_${{env.version}}_x64_setup.exe
+          mkdir -p Release/PiliAvalon-Win
+          mkdir -p PiliAvalon-Win-Setup
+          mv build/windows/x64/runner/Release/* Release/PiliAvalon-Win/
+          mv dist/**/*.exe PiliAvalon-Win-Setup/PiliAvalon_windows_${{env.version}}_x64_setup.exe
 
       - name: Compress
         run: |
-          Compress-Archive -Path "Release/PiliPlus-Win" -DestinationPath "PiliPlus_windows_${{env.version}}_x64_portable.zip"
+          Compress-Archive -Path "Release/PiliAvalon-Win" -DestinationPath "PiliAvalon_windows_${{env.version}}_x64_portable.zip"
         shell: pwsh
 
       - name: Release
@@ -68,19 +68,19 @@ jobs:
           tag_name: ${{ github.event.inputs.tag }}
           name: ${{ github.event.inputs.tag }}
           files: |
-            PiliPlus_windows_*.zip
-            PiliPlus-Win-Setup/PiliPlus_windows_*.exe
+            PiliAvalon_windows_*.zip
+            PiliAvalon-Win-Setup/PiliAvalon_windows_*.exe
 
       - name: Upload windows file release
         uses: actions/upload-artifact@v7
         with:
           archive: false
           name: Windows-file-x64-release
-          path: PiliPlus_windows_*.zip
+          path: PiliAvalon_windows_*.zip
 
       - name: Upload windows setup release
         uses: actions/upload-artifact@v7
         with:
           archive: false
           name: Windows-setup-x64-release
-          path: PiliPlus-Win-Setup/PiliPlus_windows_*.exe
+          path: PiliAvalon-Win-Setup/PiliAvalon_windows_*.exe

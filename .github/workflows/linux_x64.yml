@@ -61,19 +61,19 @@ jobs:
         run: flutter build linux --release -v --pub --dart-define-from-file=pili_release.json
 
       - name: Package .tar.gz
-        run: tar -zcvf PiliPlus_linux_${{ env.version }}_amd64.tar.gz -C build/linux/x64/release/bundle .
+        run: tar -zcvf PiliAvalon_linux_${{ env.version }}_amd64.tar.gz -C build/linux/x64/release/bundle .
 
       - name: Packege deb
         run: |
           printf "建立构建目录...\n"
-          mkdir "PiliPlus_linux_${{ env.version }}_amd64"
-          pushd "PiliPlus_linux_${{ env.version }}_amd64"
-          mkdir -p opt/PiliPlus
+          mkdir "PiliAvalon_linux_${{ env.version }}_amd64"
+          pushd "PiliAvalon_linux_${{ env.version }}_amd64"
+          mkdir -p opt/PiliAvalon
           mkdir -p usr/share/applications
           mkdir -p usr/share/icons/hicolor/512x512/apps
 
           printf "复制文件...\n"
-          cp -r ../build/linux/x64/release/bundle/* opt/PiliPlus
+          cp -r ../build/linux/x64/release/bundle/* opt/PiliAvalon
           cp -r ../assets/linux/DEBIAN .
           cp ../assets/linux/com.example.piliplus.desktop usr/share/applications
           cp ../assets/images/logo/logo.png usr/share/icons/hicolor/512x512/apps/piliplus.png
@@ -89,9 +89,9 @@ jobs:
           sed -i "9s/size_need_change/${SIZE_KB}/g" DEBIAN/control
 
           printf "生成并写入 md5sums ...\n"
-          md5sum opt/PiliPlus/piliplus >> DEBIAN/md5sums
-          md5sum opt/PiliPlus/lib/* >> DEBIAN/md5sums
-          md5sum opt/PiliPlus/data/icudtl.dat >> DEBIAN/md5sums
+          md5sum opt/PiliAvalon/piliplus >> DEBIAN/md5sums
+          md5sum opt/PiliAvalon/lib/* >> DEBIAN/md5sums
+          md5sum opt/PiliAvalon/data/icudtl.dat >> DEBIAN/md5sums
 
           printf "设置权限...\n"
           chmod 0644 DEBIAN/control
@@ -102,8 +102,8 @@ jobs:
 
           printf "打包 deb 文件...\n"
           popd
-          dpkg-deb --build --verbose --root-owner-group "PiliPlus_linux_${{ env.version }}_amd64"
-          printf "完成: PiliPlus_linux_%s_amd64.deb\n" "${{ env.version }}"
+          dpkg-deb --build --verbose --root-owner-group "PiliAvalon_linux_${{ env.version }}_amd64"
+          printf "完成: PiliAvalon_linux_%s_amd64.deb\n" "${{ env.version }}"
         shell: bash
 
       - name: Packege rpm
@@ -126,7 +126,7 @@ jobs:
           Name:           piliplus
           Version:        ${{ env.version }}
           Release:        1%{?dist}
-          Summary:        PiliPlus Linux Version
+          Summary:        PiliAvalon Linux Version
           License:        GPL-3.0
           Source0:        piliplus-${{ env.version }}.tar.gz
           Requires:       desktop-file-utils, hicolor-icon-theme
@@ -140,13 +140,13 @@ jobs:
           %build
 
           %install
-          mkdir -p %{buildroot}/opt/PiliPlus
-          cp -r bundle/* %{buildroot}/opt/PiliPlus/
+          mkdir -p %{buildroot}/opt/PiliAvalon
+          cp -r bundle/* %{buildroot}/opt/PiliAvalon/
 
           # 二进制权限与命令行入口
-          chmod 755 %{buildroot}/opt/PiliPlus/piliplus
+          chmod 755 %{buildroot}/opt/PiliAvalon/piliplus
           mkdir -p %{buildroot}/usr/bin
-          ln -sf /opt/PiliPlus/piliplus %{buildroot}/usr/bin/piliplus
+          ln -sf /opt/PiliAvalon/piliplus %{buildroot}/usr/bin/piliplus
 
           # 桌面集成
           mkdir -p %{buildroot}/usr/share/applications
@@ -164,7 +164,7 @@ jobs:
           gtk-update-icon-cache -q -t -f %{_datadir}/icons/hicolor || true
 
           %files
-          /opt/PiliPlus
+          /opt/PiliAvalon
           /usr/bin/piliplus
           /usr/share/applications/com.example.piliplus.desktop
           /usr/share/icons/hicolor/512x512/apps/piliplus.png
@@ -180,9 +180,9 @@ jobs:
           rpmbuild --define "_topdir $RPM_BUILD_ROOT" -bb "$RPM_BUILD_ROOT/SPECS/piliplus.spec"
 
           printf "移动生成的 RPM...\n"
-          find "$RPM_BUILD_ROOT/RPMS" -name "*.rpm" -exec mv {} "PiliPlus_linux_${{ env.version }}_amd64.rpm" \;
+          find "$RPM_BUILD_ROOT/RPMS" -name "*.rpm" -exec mv {} "PiliAvalon_linux_${{ env.version }}_amd64.rpm" \;
 
-          printf "完成: PiliPlus_linux_%s_amd64.rpm\n" "${{ env.version }}"
+          printf "完成: PiliAvalon_linux_%s_amd64.rpm\n" "${{ env.version }}"
         shell: bash
 
       - name: Package AppImage
@@ -192,7 +192,7 @@ jobs:
           chmod +x appimagetool-x86_64.AppImage
 
           printf "建立 AppDir 目录结构...\n"
-          APPDIR="PiliPlus.AppDir"
+          APPDIR="PiliAvalon.AppDir"
           mkdir -p "$APPDIR/usr/bin"
           mkdir -p "$APPDIR/usr/lib"
           mkdir -p "$APPDIR/usr/share/applications"
@@ -223,9 +223,9 @@ jobs:
           sed -i 's|Icon=piliplus|Icon=piliplus|g' "$APPDIR/com.example.piliplus.desktop"
 
           printf "打包 AppImage...\n"
-          ARCH=x86_64 ./appimagetool-x86_64.AppImage "$APPDIR" "PiliPlus_linux_${{ env.version }}_amd64.AppImage"
+          ARCH=x86_64 ./appimagetool-x86_64.AppImage "$APPDIR" "PiliAvalon_linux_${{ env.version }}_amd64.AppImage"
 
-          printf "完成: PiliPlus_linux_%s_amd64.AppImage\n" "${{ env.version }}"
+          printf "完成: PiliAvalon_linux_%s_amd64.AppImage\n" "${{ env.version }}"
         shell: bash
 
       - name: Release
@@ -235,35 +235,35 @@ jobs:
           tag_name: ${{ github.event.inputs.tag }}
           name: ${{ github.event.inputs.tag }}
           files: |
-            PiliPlus_linux_*.tar.gz
-            PiliPlus_linux_*.deb
-            PiliPlus_linux_*.rpm
-            PiliPlus_linux_*.AppImage
+            PiliAvalon_linux_*.tar.gz
+            PiliAvalon_linux_*.deb
+            PiliAvalon_linux_*.rpm
+            PiliAvalon_linux_*.AppImage
 
       - name: Upload linux targz package
         uses: actions/upload-artifact@v7
         with:
           archive: false
           name: Linux_targz_amd64_packege
-          path: PiliPlus_linux_*.tar.gz
+          path: PiliAvalon_linux_*.tar.gz
 
       - name: Upload linux deb package
         uses: actions/upload-artifact@v7
         with:
           archive: false
           name: Linux_deb_amd64_package
-          path: PiliPlus_linux_*.deb
+          path: PiliAvalon_linux_*.deb
 
       - name: Upload linux rpm package
         uses: actions/upload-artifact@v7
         with:
           archive: false
           name: Linux_rpm_amd64_package
-          path: PiliPlus_linux_*.rpm
+          path: PiliAvalon_linux_*.rpm
 
       - name: Upload linux AppImage package
         uses: actions/upload-artifact@v7
         with:
           archive: false
           name: Linux_AppImage_amd64_package
-          path: PiliPlus_linux_*.AppImage
+          path: PiliAvalon_linux_*.AppImage

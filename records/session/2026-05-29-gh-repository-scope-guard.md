@@ -74,3 +74,26 @@ gh workflow run phase1_shielding_verify.yml --ref phase-1-shielding-core -R Come
 - If it does not, add the explicit `-R` before running it.
 - Treat unscoped `gh` commands in this repo as unsafe unless the command is
   purely local help/version output such as `gh --version`.
+
+## Retarget Verification Evidence
+
+Repository identity retarget package `2026-05-29-repository-identity-retarget`
+used only explicit worksite-targeted GitHub CLI commands.
+
+```text
+gh workflow list -R CometDash77/PiliAvalon-Worksite
+Build                         active  283233051
+Build for iOS                 active  283233052
+Build for Linux x64           active  283233053
+Build for Mac                 active  283233054
+Phase 1 Shielding Verify      active  285364337
+Build for Windows x64         active  283233055
+```
+
+```text
+gh run list -R CometDash77/PiliAvalon-Worksite
+completed success Relax Phase 1 analyze info gating Phase 1 Shielding Verify phase-1-shielding-core push 26625915472 3m15s 2026-05-29T08:06:54Z
+```
+
+No repo-level `gh` command in this retarget package targeted upstream or relied
+on default repository inference.

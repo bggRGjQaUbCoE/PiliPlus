@@ -49,7 +49,7 @@ on:
 
 jobs:
     android:
-        if: ${{ (github.event_name == 'pull_request' && github.repository == 'bggRGjQaUbCoE/PiliPlus') || github.event.inputs.build_android == 'true' }}
+        if: ${{ (github.event_name == 'pull_request' && github.repository == 'CometDash77/PiliAvalon-Worksite') || github.event.inputs.build_android == 'true' }}
         name: Release Android
         runs-on: ubuntu-latest
         permissions: write-all
@@ -112,7 +112,7 @@ jobs:
               run: |
                   for file in build/app/outputs/flutter-apk/app-*-release.apk; do
                     abi=$(echo "$file" | sed -E 's|.*app-(.*)-release\.apk|\1|')
-                    mv "$file" "PiliPlus_android_${{ env.version }}_${abi}.apk"
+                    mv "$file" "PiliAvalon_android_${{ env.version }}_${abi}.apk"
                   done
               shell: bash
 
@@ -122,31 +122,31 @@ jobs:
               with:
                   tag_name: ${{ github.event.inputs.tag }}
                   name: ${{ github.event.inputs.tag }}
-                  files: PiliPlus_android_*.apk
+                  files: PiliAvalon_android_*.apk
 
             - name: 上传
               uses: actions/upload-artifact@v7
               with:
                   archive: false
                   name: Android_arm64-v8a
-                  path: PiliPlus_android_*_arm64-v8a.apk
+                  path: PiliAvalon_android_*_arm64-v8a.apk
 
             - name: 上传
               uses: actions/upload-artifact@v7
               with:
                   archive: false
                   name: Android_armeabi-v7a
-                  path: PiliPlus_android_*_armeabi-v7a.apk
+                  path: PiliAvalon_android_*_armeabi-v7a.apk
 
             - name: 上传
               uses: actions/upload-artifact@v7
               with:
                   archive: false
                   name: Android_x86_64
-                  path: PiliPlus_android_*_x86_64.apk
+                  path: PiliAvalon_android_*_x86_64.apk
 
     ios:
-        if: ${{ (github.event_name == 'pull_request' && github.repository == 'bggRGjQaUbCoE/PiliPlus') || github.event.inputs.build_ios == 'true' }}
+        if: ${{ (github.event_name == 'pull_request' && github.repository == 'CometDash77/PiliAvalon-Worksite') || github.event.inputs.build_ios == 'true' }}
         uses: ./.github/workflows/ios.yml
         permissions: write-all
         with:
@@ -160,7 +160,7 @@ jobs:
             tag: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag || '' }}
 
     win_x64:
-        if: ${{ (github.event_name == 'pull_request' && github.repository == 'bggRGjQaUbCoE/PiliPlus') || github.event.inputs.build_win_x64 == 'true' }}
+        if: ${{ (github.event_name == 'pull_request' && github.repository == 'CometDash77/PiliAvalon-Worksite') || github.event.inputs.build_win_x64 == 'true' }}
         uses: ./.github/workflows/win_x64.yml
         permissions: write-all
         with:

@@ -249,6 +249,7 @@ class _MainAppState extends PopScopeState<MainApp>
     await trayManager.setContextMenu(trayMenu);
   }
 
+  @pragma('vm:prefer-inline')
   static void _onBack() {
     if (Platform.isAndroid) {
       PiliAndroidHelper.back();

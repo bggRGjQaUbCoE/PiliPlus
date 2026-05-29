@@ -38,596 +38,6 @@ import 'package:jni/jni.dart' as jni$_;
 
 const _$jniVersionCheck = jni$_.JniVersionCheck(1, 0);
 
-/// from: `com.example.piliplus.AndroidHelper$Companion`
-extension type AndroidHelper$Companion._(jni$_.JObject _$this)
-    implements jni$_.JObject {
-  static final _class = jni$_.JClass.forName(
-    r'com/example/piliplus/AndroidHelper$Companion',
-  );
-
-  /// The type which includes information such as the signature of this class.
-  static const jni$_.JType<AndroidHelper$Companion> type =
-      $AndroidHelper$Companion$Type$();
-  static final _id_new$ = _class.constructorId(
-    r'(Lkotlin/jvm/internal/DefaultConstructorMarker;)V',
-  );
-
-  static final _new$ =
-      jni$_.ProtectedJniExtensions.lookup<
-            jni$_.NativeFunction<
-              jni$_.JniResult Function(
-                jni$_.Pointer<jni$_.Void>,
-                jni$_.JMethodIDPtr,
-                jni$_.VarArgs<(jni$_.Pointer<jni$_.Void>,)>,
-              )
-            >
-          >('globalEnv_NewObject')
-          .asFunction<
-            jni$_.JniResult Function(
-              jni$_.Pointer<jni$_.Void>,
-              jni$_.JMethodIDPtr,
-              jni$_.Pointer<jni$_.Void>,
-            )
-          >();
-
-  /// from: `synthetic public void <init>(kotlin.jvm.internal.DefaultConstructorMarker defaultConstructorMarker)`
-  /// The returned object must be released after use, by calling the [release] method.
-  factory AndroidHelper$Companion(
-    DefaultConstructorMarker? defaultConstructorMarker,
-  ) {
-    final _$$classRef = _class.reference;
-    final _$defaultConstructorMarker =
-        defaultConstructorMarker?.reference ?? jni$_.jNullReference;
-    return _new$(
-      _$$classRef.pointer,
-      _id_new$.pointer,
-      _$defaultConstructorMarker.pointer,
-    ).object<AndroidHelper$Companion>();
-  }
-}
-
-extension AndroidHelper$Companion$$Methods on AndroidHelper$Companion {
-  static final _id_get$isFoldable = AndroidHelper$Companion._class
-      .instanceMethodId(
-        r'isFoldable',
-        r'()Z',
-      );
-
-  static final _get$isFoldable =
-      jni$_.ProtectedJniExtensions.lookup<
-            jni$_.NativeFunction<
-              jni$_.JniResult Function(
-                jni$_.Pointer<jni$_.Void>,
-                jni$_.JMethodIDPtr,
-              )
-            >
-          >('globalEnv_CallBooleanMethod')
-          .asFunction<
-            jni$_.JniResult Function(
-              jni$_.Pointer<jni$_.Void>,
-              jni$_.JMethodIDPtr,
-            )
-          >();
-
-  /// from: `public final boolean isFoldable()`
-  core$_.bool get isFoldable {
-    final _$$selfRef = reference;
-    return _get$isFoldable(
-      _$$selfRef.pointer,
-      _id_get$isFoldable.pointer,
-    ).boolean;
-  }
-
-  static final _id_set$foldable = AndroidHelper$Companion._class
-      .instanceMethodId(
-        r'setFoldable',
-        r'(Z)V',
-      );
-
-  static final _set$foldable =
-      jni$_.ProtectedJniExtensions.lookup<
-            jni$_.NativeFunction<
-              jni$_.JThrowablePtr Function(
-                jni$_.Pointer<jni$_.Void>,
-                jni$_.JMethodIDPtr,
-                jni$_.VarArgs<(jni$_.Int32,)>,
-              )
-            >
-          >('globalEnv_CallVoidMethod')
-          .asFunction<
-            jni$_.JThrowablePtr Function(
-              jni$_.Pointer<jni$_.Void>,
-              jni$_.JMethodIDPtr,
-              core$_.int,
-            )
-          >();
-
-  /// from: `public final void setFoldable(boolean z)`
-  set foldable(core$_.bool z) {
-    final _$$selfRef = reference;
-    _set$foldable(
-      _$$selfRef.pointer,
-      _id_set$foldable.pointer,
-      z ? 1 : 0,
-    ).check();
-  }
-
-  static final _id_back = AndroidHelper$Companion._class.instanceMethodId(
-    r'back',
-    r'()V',
-  );
-
-  static final _back =
-      jni$_.ProtectedJniExtensions.lookup<
-            jni$_.NativeFunction<
-              jni$_.JThrowablePtr Function(
-                jni$_.Pointer<jni$_.Void>,
-                jni$_.JMethodIDPtr,
-              )
-            >
-          >('globalEnv_CallVoidMethod')
-          .asFunction<
-            jni$_.JThrowablePtr Function(
-              jni$_.Pointer<jni$_.Void>,
-              jni$_.JMethodIDPtr,
-            )
-          >();
-
-  /// from: `public fun back(): kotlin.Unit`
-  void back() {
-    final _$$selfRef = reference;
-    _back(_$$selfRef.pointer, _id_back.pointer).check();
-  }
-
-  static final _id_biliSendCommAntifraud = AndroidHelper$Companion._class
-      .instanceMethodId(
-        r'biliSendCommAntifraud',
-        r'(IJIJJJJLjava/lang/String;Ljava/lang/String;Ljava/lang/String;JLjava/lang/String;)V',
-      );
-
-  static final _biliSendCommAntifraud =
-      jni$_.ProtectedJniExtensions.lookup<
-            jni$_.NativeFunction<
-              jni$_.JThrowablePtr Function(
-                jni$_.Pointer<jni$_.Void>,
-                jni$_.JMethodIDPtr,
-                jni$_.VarArgs<
-                  (
-                    jni$_.Int32,
-                    jni$_.Int64,
-                    jni$_.Int32,
-                    jni$_.Int64,
-                    jni$_.Int64,
-                    jni$_.Int64,
-                    jni$_.Int64,
-                    jni$_.Pointer<jni$_.Void>,
-                    jni$_.Pointer<jni$_.Void>,
-                    jni$_.Pointer<jni$_.Void>,
-                    jni$_.Int64,
-                    jni$_.Pointer<jni$_.Void>,
-                  )
-                >,
-              )
-            >
-          >('globalEnv_CallVoidMethod')
-          .asFunction<
-            jni$_.JThrowablePtr Function(
-              jni$_.Pointer<jni$_.Void>,
-              jni$_.JMethodIDPtr,
-              core$_.int,
-              core$_.int,
-              core$_.int,
-              core$_.int,
-              core$_.int,
-              core$_.int,
-              core$_.int,
-              jni$_.Pointer<jni$_.Void>,
-              jni$_.Pointer<jni$_.Void>,
-              jni$_.Pointer<jni$_.Void>,
-              core$_.int,
-              jni$_.Pointer<jni$_.Void>,
-            )
-          >();
-
-  /// from: `public fun biliSendCommAntifraud(action: kotlin.Int, oid: kotlin.Long, type: kotlin.Int, rpId: kotlin.Long, root: kotlin.Long, parent: kotlin.Long, ctime: kotlin.Long, commentText: kotlin.String, pictures: kotlin.String?, sourceId: kotlin.String, uid: kotlin.Long, cookie: kotlin.String): kotlin.Unit`
-  void biliSendCommAntifraud(
-    core$_.int i,
-    core$_.int j,
-    core$_.int i1,
-    core$_.int j1,
-    core$_.int j2,
-    core$_.int j3,
-    core$_.int j4,
-    jni$_.JString string,
-    jni$_.JString? string1,
-    jni$_.JString string2,
-    core$_.int j5,
-    jni$_.JString string3,
-  ) {
-    final _$$selfRef = reference;
-    final _$string = string.reference;
-    final _$string1 = string1?.reference ?? jni$_.jNullReference;
-    final _$string2 = string2.reference;
-    final _$string3 = string3.reference;
-    _biliSendCommAntifraud(
-      _$$selfRef.pointer,
-      _id_biliSendCommAntifraud.pointer,
-      i,
-      j,
-      i1,
-      j1,
-      j2,
-      j3,
-      j4,
-      _$string.pointer,
-      _$string1.pointer,
-      _$string2.pointer,
-      j5,
-      _$string3.pointer,
-    ).check();
-  }
-
-  static final _id_openLinkVerifySettings = AndroidHelper$Companion._class
-      .instanceMethodId(
-        r'openLinkVerifySettings',
-        r'()V',
-      );
-
-  static final _openLinkVerifySettings =
-      jni$_.ProtectedJniExtensions.lookup<
-            jni$_.NativeFunction<
-              jni$_.JThrowablePtr Function(
-                jni$_.Pointer<jni$_.Void>,
-                jni$_.JMethodIDPtr,
-              )
-            >
-          >('globalEnv_CallVoidMethod')
-          .asFunction<
-            jni$_.JThrowablePtr Function(
-              jni$_.Pointer<jni$_.Void>,
-              jni$_.JMethodIDPtr,
-            )
-          >();
-
-  /// from: `public fun openLinkVerifySettings(): kotlin.Unit`
-  void openLinkVerifySettings() {
-    final _$$selfRef = reference;
-    _openLinkVerifySettings(
-      _$$selfRef.pointer,
-      _id_openLinkVerifySettings.pointer,
-    ).check();
-  }
-
-  static final _id_openMusic = AndroidHelper$Companion._class.instanceMethodId(
-    r'openMusic',
-    r'(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Z',
-  );
-
-  static final _openMusic =
-      jni$_.ProtectedJniExtensions.lookup<
-            jni$_.NativeFunction<
-              jni$_.JniResult Function(
-                jni$_.Pointer<jni$_.Void>,
-                jni$_.JMethodIDPtr,
-                jni$_.VarArgs<
-                  (
-                    jni$_.Pointer<jni$_.Void>,
-                    jni$_.Pointer<jni$_.Void>,
-                    jni$_.Pointer<jni$_.Void>,
-                  )
-                >,
-              )
-            >
-          >('globalEnv_CallBooleanMethod')
-          .asFunction<
-            jni$_.JniResult Function(
-              jni$_.Pointer<jni$_.Void>,
-              jni$_.JMethodIDPtr,
-              jni$_.Pointer<jni$_.Void>,
-              jni$_.Pointer<jni$_.Void>,
-              jni$_.Pointer<jni$_.Void>,
-            )
-          >();
-
-  /// from: `public fun openMusic(title: kotlin.String, artist: kotlin.String?, album: kotlin.String?): kotlin.Boolean`
-  core$_.bool openMusic(
-    jni$_.JString string,
-    jni$_.JString? string1,
-    jni$_.JString? string2,
-  ) {
-    final _$$selfRef = reference;
-    final _$string = string.reference;
-    final _$string1 = string1?.reference ?? jni$_.jNullReference;
-    final _$string2 = string2?.reference ?? jni$_.jNullReference;
-    return _openMusic(
-      _$$selfRef.pointer,
-      _id_openMusic.pointer,
-      _$string.pointer,
-      _$string1.pointer,
-      _$string2.pointer,
-    ).boolean;
-  }
-
-  static final _id_setPipAutoEnterEnabled = AndroidHelper$Companion._class
-      .instanceMethodId(
-        r'setPipAutoEnterEnabled',
-        r'(ZJ)V',
-      );
-
-  static final _setPipAutoEnterEnabled =
-      jni$_.ProtectedJniExtensions.lookup<
-            jni$_.NativeFunction<
-              jni$_.JThrowablePtr Function(
-                jni$_.Pointer<jni$_.Void>,
-                jni$_.JMethodIDPtr,
-                jni$_.VarArgs<(jni$_.Int32, jni$_.Int64)>,
-              )
-            >
-          >('globalEnv_CallVoidMethod')
-          .asFunction<
-            jni$_.JThrowablePtr Function(
-              jni$_.Pointer<jni$_.Void>,
-              jni$_.JMethodIDPtr,
-              core$_.int,
-              core$_.int,
-            )
-          >();
-
-  /// from: `public fun setPipAutoEnterEnabled(autoEnable: kotlin.Boolean, engineId: kotlin.Long): kotlin.Unit`
-  void setPipAutoEnterEnabled(
-    core$_.bool z,
-    core$_.int j,
-  ) {
-    final _$$selfRef = reference;
-    _setPipAutoEnterEnabled(
-      _$$selfRef.pointer,
-      _id_setPipAutoEnterEnabled.pointer,
-      z ? 1 : 0,
-      j,
-    ).check();
-  }
-
-  static final _id_maxScreenSize = AndroidHelper$Companion._class
-      .instanceMethodId(
-        r'maxScreenSize',
-        r'()[I',
-      );
-
-  static final _maxScreenSize =
-      jni$_.ProtectedJniExtensions.lookup<
-            jni$_.NativeFunction<
-              jni$_.JniResult Function(
-                jni$_.Pointer<jni$_.Void>,
-                jni$_.JMethodIDPtr,
-              )
-            >
-          >('globalEnv_CallObjectMethod')
-          .asFunction<
-            jni$_.JniResult Function(
-              jni$_.Pointer<jni$_.Void>,
-              jni$_.JMethodIDPtr,
-            )
-          >();
-
-  /// from: `public fun maxScreenSize(): kotlin.IntArray?`
-  /// The returned object must be released after use, by calling the [release] method.
-  jni$_.JIntArray? maxScreenSize() {
-    final _$$selfRef = reference;
-    return _maxScreenSize(
-      _$$selfRef.pointer,
-      _id_maxScreenSize.pointer,
-    ).object<jni$_.JIntArray?>();
-  }
-}
-
-final class $AndroidHelper$Companion$Type$
-    extends jni$_.JType<AndroidHelper$Companion> {
-  @jni$_.internal
-  const $AndroidHelper$Companion$Type$();
-
-  @jni$_.internal
-  @core$_.override
-  String get signature => r'Lcom/example/piliplus/AndroidHelper$Companion;';
-}
-
-/// from: `com.example.piliplus.AndroidHelper$ToDart$Companion`
-extension type AndroidHelper$ToDart$Companion._(jni$_.JObject _$this)
-    implements jni$_.JObject {
-  static final _class = jni$_.JClass.forName(
-    r'com/example/piliplus/AndroidHelper$ToDart$Companion',
-  );
-
-  /// The type which includes information such as the signature of this class.
-  static const jni$_.JType<AndroidHelper$ToDart$Companion> type =
-      $AndroidHelper$ToDart$Companion$Type$();
-  static final _id_new$ = _class.constructorId(
-    r'(Lkotlin/jvm/internal/DefaultConstructorMarker;)V',
-  );
-
-  static final _new$ =
-      jni$_.ProtectedJniExtensions.lookup<
-            jni$_.NativeFunction<
-              jni$_.JniResult Function(
-                jni$_.Pointer<jni$_.Void>,
-                jni$_.JMethodIDPtr,
-                jni$_.VarArgs<(jni$_.Pointer<jni$_.Void>,)>,
-              )
-            >
-          >('globalEnv_NewObject')
-          .asFunction<
-            jni$_.JniResult Function(
-              jni$_.Pointer<jni$_.Void>,
-              jni$_.JMethodIDPtr,
-              jni$_.Pointer<jni$_.Void>,
-            )
-          >();
-
-  /// from: `synthetic public void <init>(kotlin.jvm.internal.DefaultConstructorMarker defaultConstructorMarker)`
-  /// The returned object must be released after use, by calling the [release] method.
-  factory AndroidHelper$ToDart$Companion(
-    DefaultConstructorMarker? defaultConstructorMarker,
-  ) {
-    final _$$classRef = _class.reference;
-    final _$defaultConstructorMarker =
-        defaultConstructorMarker?.reference ?? jni$_.jNullReference;
-    return _new$(
-      _$$classRef.pointer,
-      _id_new$.pointer,
-      _$defaultConstructorMarker.pointer,
-    ).object<AndroidHelper$ToDart$Companion>();
-  }
-}
-
-extension AndroidHelper$ToDart$Companion$$Methods
-    on AndroidHelper$ToDart$Companion {
-  static final _id_get$onUserLeaveHint = AndroidHelper$ToDart$Companion._class
-      .instanceMethodId(
-        r'getOnUserLeaveHint',
-        r'()Ljava/lang/Runnable;',
-      );
-
-  static final _get$onUserLeaveHint =
-      jni$_.ProtectedJniExtensions.lookup<
-            jni$_.NativeFunction<
-              jni$_.JniResult Function(
-                jni$_.Pointer<jni$_.Void>,
-                jni$_.JMethodIDPtr,
-              )
-            >
-          >('globalEnv_CallObjectMethod')
-          .asFunction<
-            jni$_.JniResult Function(
-              jni$_.Pointer<jni$_.Void>,
-              jni$_.JMethodIDPtr,
-            )
-          >();
-
-  /// from: `public final java.lang.Runnable getOnUserLeaveHint()`
-  /// The returned object must be released after use, by calling the [release] method.
-  Runnable? get onUserLeaveHint {
-    final _$$selfRef = reference;
-    return _get$onUserLeaveHint(
-      _$$selfRef.pointer,
-      _id_get$onUserLeaveHint.pointer,
-    ).object<Runnable?>();
-  }
-
-  static final _id_set$onUserLeaveHint = AndroidHelper$ToDart$Companion._class
-      .instanceMethodId(
-        r'setOnUserLeaveHint',
-        r'(Ljava/lang/Runnable;)V',
-      );
-
-  static final _set$onUserLeaveHint =
-      jni$_.ProtectedJniExtensions.lookup<
-            jni$_.NativeFunction<
-              jni$_.JThrowablePtr Function(
-                jni$_.Pointer<jni$_.Void>,
-                jni$_.JMethodIDPtr,
-                jni$_.VarArgs<(jni$_.Pointer<jni$_.Void>,)>,
-              )
-            >
-          >('globalEnv_CallVoidMethod')
-          .asFunction<
-            jni$_.JThrowablePtr Function(
-              jni$_.Pointer<jni$_.Void>,
-              jni$_.JMethodIDPtr,
-              jni$_.Pointer<jni$_.Void>,
-            )
-          >();
-
-  /// from: `public final void setOnUserLeaveHint(java.lang.Runnable runnable)`
-  set onUserLeaveHint(Runnable? runnable) {
-    final _$$selfRef = reference;
-    final _$runnable = runnable?.reference ?? jni$_.jNullReference;
-    _set$onUserLeaveHint(
-      _$$selfRef.pointer,
-      _id_set$onUserLeaveHint.pointer,
-      _$runnable.pointer,
-    ).check();
-  }
-
-  static final _id_get$onConfigurationChanged = AndroidHelper$ToDart$Companion
-      ._class
-      .instanceMethodId(
-        r'getOnConfigurationChanged',
-        r'()Ljava/lang/Runnable;',
-      );
-
-  static final _get$onConfigurationChanged =
-      jni$_.ProtectedJniExtensions.lookup<
-            jni$_.NativeFunction<
-              jni$_.JniResult Function(
-                jni$_.Pointer<jni$_.Void>,
-                jni$_.JMethodIDPtr,
-              )
-            >
-          >('globalEnv_CallObjectMethod')
-          .asFunction<
-            jni$_.JniResult Function(
-              jni$_.Pointer<jni$_.Void>,
-              jni$_.JMethodIDPtr,
-            )
-          >();
-
-  /// from: `public final java.lang.Runnable getOnConfigurationChanged()`
-  /// The returned object must be released after use, by calling the [release] method.
-  Runnable? get onConfigurationChanged {
-    final _$$selfRef = reference;
-    return _get$onConfigurationChanged(
-      _$$selfRef.pointer,
-      _id_get$onConfigurationChanged.pointer,
-    ).object<Runnable?>();
-  }
-
-  static final _id_set$onConfigurationChanged = AndroidHelper$ToDart$Companion
-      ._class
-      .instanceMethodId(
-        r'setOnConfigurationChanged',
-        r'(Ljava/lang/Runnable;)V',
-      );
-
-  static final _set$onConfigurationChanged =
-      jni$_.ProtectedJniExtensions.lookup<
-            jni$_.NativeFunction<
-              jni$_.JThrowablePtr Function(
-                jni$_.Pointer<jni$_.Void>,
-                jni$_.JMethodIDPtr,
-                jni$_.VarArgs<(jni$_.Pointer<jni$_.Void>,)>,
-              )
-            >
-          >('globalEnv_CallVoidMethod')
-          .asFunction<
-            jni$_.JThrowablePtr Function(
-              jni$_.Pointer<jni$_.Void>,
-              jni$_.JMethodIDPtr,
-              jni$_.Pointer<jni$_.Void>,
-            )
-          >();
-
-  /// from: `public final void setOnConfigurationChanged(java.lang.Runnable runnable)`
-  set onConfigurationChanged(Runnable? runnable) {
-    final _$$selfRef = reference;
-    final _$runnable = runnable?.reference ?? jni$_.jNullReference;
-    _set$onConfigurationChanged(
-      _$$selfRef.pointer,
-      _id_set$onConfigurationChanged.pointer,
-      _$runnable.pointer,
-    ).check();
-  }
-}
-
-final class $AndroidHelper$ToDart$Companion$Type$
-    extends jni$_.JType<AndroidHelper$ToDart$Companion> {
-  @jni$_.internal
-  const $AndroidHelper$ToDart$Companion$Type$();
-
-  @jni$_.internal
-  @core$_.override
-  String get signature =>
-      r'Lcom/example/piliplus/AndroidHelper$ToDart$Companion;';
-}
-
 /// from: `com.example.piliplus.AndroidHelper$ToDart`
 extension type AndroidHelper$ToDart._(jni$_.JObject _$this)
     implements jni$_.JObject {
@@ -638,146 +48,36 @@ extension type AndroidHelper$ToDart._(jni$_.JObject _$this)
   /// The type which includes information such as the signature of this class.
   static const jni$_.JType<AndroidHelper$ToDart> type =
       $AndroidHelper$ToDart$Type$();
-  static final _id_Companion = _class.staticFieldId(
-    r'Companion',
-    r'Lcom/example/piliplus/AndroidHelper$ToDart$Companion;',
+  static final _id_onUserLeaveHint = _class.staticFieldId(
+    r'onUserLeaveHint',
+    r'Ljava/lang/Runnable;',
   );
 
-  /// from: `static public final com.example.piliplus.AndroidHelper$ToDart$Companion Companion`
+  /// from: `static public bridge java.lang.Runnable onUserLeaveHint`
   /// The returned object must be released after use, by calling the [release] method.
-  static AndroidHelper$ToDart$Companion get Companion =>
-      _id_Companion.get(_class, AndroidHelper$ToDart$Companion.type)
-          as AndroidHelper$ToDart$Companion;
+  static Runnable? get onUserLeaveHint =>
+      _id_onUserLeaveHint.getNullable(_class, Runnable.type) as Runnable?;
 
-  static final _id_get$onUserLeaveHint = _class.staticMethodId(
-    r'getOnUserLeaveHint',
-    r'()Ljava/lang/Runnable;',
-  );
-
-  static final _get$onUserLeaveHint =
-      jni$_.ProtectedJniExtensions.lookup<
-            jni$_.NativeFunction<
-              jni$_.JniResult Function(
-                jni$_.Pointer<jni$_.Void>,
-                jni$_.JMethodIDPtr,
-              )
-            >
-          >('globalEnv_CallStaticObjectMethod')
-          .asFunction<
-            jni$_.JniResult Function(
-              jni$_.Pointer<jni$_.Void>,
-              jni$_.JMethodIDPtr,
-            )
-          >();
-
-  /// from: `static public final java.lang.Runnable getOnUserLeaveHint()`
+  /// from: `static public bridge java.lang.Runnable onUserLeaveHint`
   /// The returned object must be released after use, by calling the [release] method.
-  static Runnable? get onUserLeaveHint {
-    final _$$classRef = _class.reference;
-    return _get$onUserLeaveHint(
-      _$$classRef.pointer,
-      _id_get$onUserLeaveHint.pointer,
-    ).object<Runnable?>();
-  }
+  static set onUserLeaveHint(Runnable? value) =>
+      _id_onUserLeaveHint.set(_class, Runnable.type, value);
 
-  static final _id_set$onUserLeaveHint = _class.staticMethodId(
-    r'setOnUserLeaveHint',
-    r'(Ljava/lang/Runnable;)V',
+  static final _id_onConfigurationChanged = _class.staticFieldId(
+    r'onConfigurationChanged',
+    r'Ljava/lang/Runnable;',
   );
 
-  static final _set$onUserLeaveHint =
-      jni$_.ProtectedJniExtensions.lookup<
-            jni$_.NativeFunction<
-              jni$_.JThrowablePtr Function(
-                jni$_.Pointer<jni$_.Void>,
-                jni$_.JMethodIDPtr,
-                jni$_.VarArgs<(jni$_.Pointer<jni$_.Void>,)>,
-              )
-            >
-          >('globalEnv_CallStaticVoidMethod')
-          .asFunction<
-            jni$_.JThrowablePtr Function(
-              jni$_.Pointer<jni$_.Void>,
-              jni$_.JMethodIDPtr,
-              jni$_.Pointer<jni$_.Void>,
-            )
-          >();
-
-  /// from: `static public final void setOnUserLeaveHint(java.lang.Runnable runnable)`
-  static set onUserLeaveHint(Runnable? runnable) {
-    final _$$classRef = _class.reference;
-    final _$runnable = runnable?.reference ?? jni$_.jNullReference;
-    _set$onUserLeaveHint(
-      _$$classRef.pointer,
-      _id_set$onUserLeaveHint.pointer,
-      _$runnable.pointer,
-    ).check();
-  }
-
-  static final _id_get$onConfigurationChanged = _class.staticMethodId(
-    r'getOnConfigurationChanged',
-    r'()Ljava/lang/Runnable;',
-  );
-
-  static final _get$onConfigurationChanged =
-      jni$_.ProtectedJniExtensions.lookup<
-            jni$_.NativeFunction<
-              jni$_.JniResult Function(
-                jni$_.Pointer<jni$_.Void>,
-                jni$_.JMethodIDPtr,
-              )
-            >
-          >('globalEnv_CallStaticObjectMethod')
-          .asFunction<
-            jni$_.JniResult Function(
-              jni$_.Pointer<jni$_.Void>,
-              jni$_.JMethodIDPtr,
-            )
-          >();
-
-  /// from: `static public final java.lang.Runnable getOnConfigurationChanged()`
+  /// from: `static public bridge java.lang.Runnable onConfigurationChanged`
   /// The returned object must be released after use, by calling the [release] method.
-  static Runnable? get onConfigurationChanged {
-    final _$$classRef = _class.reference;
-    return _get$onConfigurationChanged(
-      _$$classRef.pointer,
-      _id_get$onConfigurationChanged.pointer,
-    ).object<Runnable?>();
-  }
+  static Runnable? get onConfigurationChanged =>
+      _id_onConfigurationChanged.getNullable(_class, Runnable.type)
+          as Runnable?;
 
-  static final _id_set$onConfigurationChanged = _class.staticMethodId(
-    r'setOnConfigurationChanged',
-    r'(Ljava/lang/Runnable;)V',
-  );
-
-  static final _set$onConfigurationChanged =
-      jni$_.ProtectedJniExtensions.lookup<
-            jni$_.NativeFunction<
-              jni$_.JThrowablePtr Function(
-                jni$_.Pointer<jni$_.Void>,
-                jni$_.JMethodIDPtr,
-                jni$_.VarArgs<(jni$_.Pointer<jni$_.Void>,)>,
-              )
-            >
-          >('globalEnv_CallStaticVoidMethod')
-          .asFunction<
-            jni$_.JThrowablePtr Function(
-              jni$_.Pointer<jni$_.Void>,
-              jni$_.JMethodIDPtr,
-              jni$_.Pointer<jni$_.Void>,
-            )
-          >();
-
-  /// from: `static public final void setOnConfigurationChanged(java.lang.Runnable runnable)`
-  static set onConfigurationChanged(Runnable? runnable) {
-    final _$$classRef = _class.reference;
-    final _$runnable = runnable?.reference ?? jni$_.jNullReference;
-    _set$onConfigurationChanged(
-      _$$classRef.pointer,
-      _id_set$onConfigurationChanged.pointer,
-      _$runnable.pointer,
-    ).check();
-  }
+  /// from: `static public bridge java.lang.Runnable onConfigurationChanged`
+  /// The returned object must be released after use, by calling the [release] method.
+  static set onConfigurationChanged(Runnable? value) =>
+      _id_onConfigurationChanged.set(_class, Runnable.type, value);
 }
 
 final class $AndroidHelper$ToDart$Type$
@@ -798,79 +98,18 @@ extension type AndroidHelper._(jni$_.JObject _$this) implements jni$_.JObject {
 
   /// The type which includes information such as the signature of this class.
   static const jni$_.JType<AndroidHelper> type = $AndroidHelper$Type$();
-  static final _id_Companion = _class.staticFieldId(
-    r'Companion',
-    r'Lcom/example/piliplus/AndroidHelper$Companion;',
-  );
-
-  /// from: `static public final com.example.piliplus.AndroidHelper$Companion Companion`
-  /// The returned object must be released after use, by calling the [release] method.
-  static AndroidHelper$Companion get Companion =>
-      _id_Companion.get(_class, AndroidHelper$Companion.type)
-          as AndroidHelper$Companion;
-
-  static final _id_get$isFoldable = _class.staticMethodId(
+  static final _id_isFoldable = _class.staticFieldId(
     r'isFoldable',
-    r'()Z',
+    r'Z',
   );
 
-  static final _get$isFoldable =
-      jni$_.ProtectedJniExtensions.lookup<
-            jni$_.NativeFunction<
-              jni$_.JniResult Function(
-                jni$_.Pointer<jni$_.Void>,
-                jni$_.JMethodIDPtr,
-              )
-            >
-          >('globalEnv_CallStaticBooleanMethod')
-          .asFunction<
-            jni$_.JniResult Function(
-              jni$_.Pointer<jni$_.Void>,
-              jni$_.JMethodIDPtr,
-            )
-          >();
+  /// from: `static public bridge boolean isFoldable`
+  static core$_.bool get isFoldable =>
+      _id_isFoldable.getNullable(_class, jni$_.jboolean.type) as core$_.bool;
 
-  /// from: `static public final boolean isFoldable()`
-  static core$_.bool get isFoldable {
-    final _$$classRef = _class.reference;
-    return _get$isFoldable(
-      _$$classRef.pointer,
-      _id_get$isFoldable.pointer,
-    ).boolean;
-  }
-
-  static final _id_set$foldable = _class.staticMethodId(
-    r'setFoldable',
-    r'(Z)V',
-  );
-
-  static final _set$foldable =
-      jni$_.ProtectedJniExtensions.lookup<
-            jni$_.NativeFunction<
-              jni$_.JThrowablePtr Function(
-                jni$_.Pointer<jni$_.Void>,
-                jni$_.JMethodIDPtr,
-                jni$_.VarArgs<(jni$_.Int32,)>,
-              )
-            >
-          >('globalEnv_CallStaticVoidMethod')
-          .asFunction<
-            jni$_.JThrowablePtr Function(
-              jni$_.Pointer<jni$_.Void>,
-              jni$_.JMethodIDPtr,
-              core$_.int,
-            )
-          >();
-
-  /// from: `static public final void setFoldable(boolean z)`
-  static set foldable(core$_.bool z) {
-    final _$$classRef = _class.reference;
-    _set$foldable(
-      _$$classRef.pointer,
-      _id_set$foldable.pointer,
-      z ? 1 : 0,
-    ).check();
-  }
+  /// from: `static public bridge boolean isFoldable`
+  static set isFoldable(core$_.bool value) =>
+      _id_isFoldable.set(_class, jni$_.jboolean.type, value);
 
   static final _id_back = _class.staticMethodId(
     r'back',
@@ -893,7 +132,7 @@ extension type AndroidHelper._(jni$_.JObject _$this) implements jni$_.JObject {
             )
           >();
 
-  /// from: `static public final void back()`
+  /// from: `static public void back()`
   static void back() {
     final _$$classRef = _class.reference;
     _back(_$$classRef.pointer, _id_back.pointer).check();
@@ -948,7 +187,7 @@ extension type AndroidHelper._(jni$_.JObject _$this) implements jni$_.JObject {
             )
           >();
 
-  /// from: `static public final void biliSendCommAntifraud(int i, long j, int i1, long j1, long j2, long j3, long j4, java.lang.String string, java.lang.String string1, java.lang.String string2, long j5, java.lang.String string3)`
+  /// from: `static public void biliSendCommAntifraud(int i, long j, int i1, long j1, long j2, long j3, long j4, java.lang.String string, java.lang.String string1, java.lang.String string2, long j5, java.lang.String string3)`
   static void biliSendCommAntifraud(
     core$_.int i,
     core$_.int j,
@@ -1007,7 +246,7 @@ extension type AndroidHelper._(jni$_.JObject _$this) implements jni$_.JObject {
             )
           >();
 
-  /// from: `static public final void openLinkVerifySettings()`
+  /// from: `static public void openLinkVerifySettings()`
   static void openLinkVerifySettings() {
     final _$$classRef = _class.reference;
     _openLinkVerifySettings(
@@ -1047,7 +286,7 @@ extension type AndroidHelper._(jni$_.JObject _$this) implements jni$_.JObject {
             )
           >();
 
-  /// from: `static public final boolean openMusic(java.lang.String string, java.lang.String string1, java.lang.String string2)`
+  /// from: `static public boolean openMusic(java.lang.String string, java.lang.String string1, java.lang.String string2)`
   static core$_.bool openMusic(
     jni$_.JString string,
     jni$_.JString? string1,
@@ -1090,7 +329,7 @@ extension type AndroidHelper._(jni$_.JObject _$this) implements jni$_.JObject {
             )
           >();
 
-  /// from: `static public final void setPipAutoEnterEnabled(boolean z, long j)`
+  /// from: `static public void setPipAutoEnterEnabled(boolean z, long j)`
   static void setPipAutoEnterEnabled(
     core$_.bool z,
     core$_.int j,
@@ -1125,7 +364,7 @@ extension type AndroidHelper._(jni$_.JObject _$this) implements jni$_.JObject {
             )
           >();
 
-  /// from: `static public final int[] maxScreenSize()`
+  /// from: `static public int[] maxScreenSize()`
   /// The returned object must be released after use, by calling the [release] method.
   static jni$_.JIntArray? maxScreenSize() {
     final _$$classRef = _class.reference;
@@ -1133,6 +372,61 @@ extension type AndroidHelper._(jni$_.JObject _$this) implements jni$_.JObject {
       _$$classRef.pointer,
       _id_maxScreenSize.pointer,
     ).object<jni$_.JIntArray?>();
+  }
+
+  static final _id_createShortcut = _class.staticMethodId(
+    r'createShortcut',
+    r'(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V',
+  );
+
+  static final _createShortcut =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JThrowablePtr Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+                jni$_.VarArgs<
+                  (
+                    jni$_.Pointer<jni$_.Void>,
+                    jni$_.Pointer<jni$_.Void>,
+                    jni$_.Pointer<jni$_.Void>,
+                    jni$_.Pointer<jni$_.Void>,
+                  )
+                >,
+              )
+            >
+          >('globalEnv_CallStaticVoidMethod')
+          .asFunction<
+            jni$_.JThrowablePtr Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.Pointer<jni$_.Void>,
+            )
+          >();
+
+  /// from: `static public void createShortcut(java.lang.String string, java.lang.String string1, java.lang.String string2, java.lang.String string3)`
+  static void createShortcut(
+    jni$_.JString string,
+    jni$_.JString string1,
+    jni$_.JString string2,
+    jni$_.JString string3,
+  ) {
+    final _$$classRef = _class.reference;
+    final _$string = string.reference;
+    final _$string1 = string1.reference;
+    final _$string2 = string2.reference;
+    final _$string3 = string3.reference;
+    _createShortcut(
+      _$$classRef.pointer,
+      _id_createShortcut.pointer,
+      _$string.pointer,
+      _$string1.pointer,
+      _$string2.pointer,
+      _$string3.pointer,
+    ).check();
   }
 }
 
@@ -1143,327 +437,6 @@ final class $AndroidHelper$Type$ extends jni$_.JType<AndroidHelper> {
   @jni$_.internal
   @core$_.override
   String get signature => r'Lcom/example/piliplus/AndroidHelper;';
-}
-
-/// from: `kotlin.Pair`
-extension type Pair<$A extends jni$_.JObject?, $B extends jni$_.JObject?>._(
-  jni$_.JObject _$this
-) implements jni$_.JObject, Serializable {
-  static final _class = jni$_.JClass.forName(r'kotlin/Pair');
-
-  /// The type which includes information such as the signature of this class.
-  static const jni$_.JType<Pair> type = $Pair$Type$();
-  static final _id_new$ = _class.constructorId(
-    r'(Ljava/lang/Object;Ljava/lang/Object;)V',
-  );
-
-  static final _new$ =
-      jni$_.ProtectedJniExtensions.lookup<
-            jni$_.NativeFunction<
-              jni$_.JniResult Function(
-                jni$_.Pointer<jni$_.Void>,
-                jni$_.JMethodIDPtr,
-                jni$_.VarArgs<
-                  (jni$_.Pointer<jni$_.Void>, jni$_.Pointer<jni$_.Void>)
-                >,
-              )
-            >
-          >('globalEnv_NewObject')
-          .asFunction<
-            jni$_.JniResult Function(
-              jni$_.Pointer<jni$_.Void>,
-              jni$_.JMethodIDPtr,
-              jni$_.Pointer<jni$_.Void>,
-              jni$_.Pointer<jni$_.Void>,
-            )
-          >();
-
-  /// from: `public void <init>(A object, B object1)`
-  /// The returned object must be released after use, by calling the [release] method.
-  factory Pair(
-    $A? object,
-    $B? object1,
-  ) {
-    final _$$classRef = _class.reference;
-    final _$object = object?.reference ?? jni$_.jNullReference;
-    final _$object1 = object1?.reference ?? jni$_.jNullReference;
-    return _new$(
-      _$$classRef.pointer,
-      _id_new$.pointer,
-      _$object.pointer,
-      _$object1.pointer,
-    ).object<Pair<$A, $B>>();
-  }
-}
-
-extension Pair$$Methods<$A extends jni$_.JObject?, $B extends jni$_.JObject?>
-    on Pair<$A, $B> {
-  static final _id_get$first = Pair._class.instanceMethodId(
-    r'getFirst',
-    r'()Ljava/lang/Object;',
-  );
-
-  static final _get$first =
-      jni$_.ProtectedJniExtensions.lookup<
-            jni$_.NativeFunction<
-              jni$_.JniResult Function(
-                jni$_.Pointer<jni$_.Void>,
-                jni$_.JMethodIDPtr,
-              )
-            >
-          >('globalEnv_CallObjectMethod')
-          .asFunction<
-            jni$_.JniResult Function(
-              jni$_.Pointer<jni$_.Void>,
-              jni$_.JMethodIDPtr,
-            )
-          >();
-
-  /// from: `public final A getFirst()`
-  /// The returned object must be released after use, by calling the [release] method.
-  $A? get first {
-    final _$$selfRef = reference;
-    return _get$first(_$$selfRef.pointer, _id_get$first.pointer).object<$A?>();
-  }
-
-  static final _id_get$second = Pair._class.instanceMethodId(
-    r'getSecond',
-    r'()Ljava/lang/Object;',
-  );
-
-  static final _get$second =
-      jni$_.ProtectedJniExtensions.lookup<
-            jni$_.NativeFunction<
-              jni$_.JniResult Function(
-                jni$_.Pointer<jni$_.Void>,
-                jni$_.JMethodIDPtr,
-              )
-            >
-          >('globalEnv_CallObjectMethod')
-          .asFunction<
-            jni$_.JniResult Function(
-              jni$_.Pointer<jni$_.Void>,
-              jni$_.JMethodIDPtr,
-            )
-          >();
-
-  /// from: `public final B getSecond()`
-  /// The returned object must be released after use, by calling the [release] method.
-  $B? get second {
-    final _$$selfRef = reference;
-    return _get$second(
-      _$$selfRef.pointer,
-      _id_get$second.pointer,
-    ).object<$B?>();
-  }
-
-  static final _id_toString$1 = Pair._class.instanceMethodId(
-    r'toString',
-    r'()Ljava/lang/String;',
-  );
-
-  static final _toString$1 =
-      jni$_.ProtectedJniExtensions.lookup<
-            jni$_.NativeFunction<
-              jni$_.JniResult Function(
-                jni$_.Pointer<jni$_.Void>,
-                jni$_.JMethodIDPtr,
-              )
-            >
-          >('globalEnv_CallObjectMethod')
-          .asFunction<
-            jni$_.JniResult Function(
-              jni$_.Pointer<jni$_.Void>,
-              jni$_.JMethodIDPtr,
-            )
-          >();
-
-  /// from: `public fun toString(): kotlin.String`
-  /// The returned object must be released after use, by calling the [release] method.
-  jni$_.JString toString$1() {
-    final _$$selfRef = reference;
-    return _toString$1(
-      _$$selfRef.pointer,
-      _id_toString$1.pointer,
-    ).object<jni$_.JString>();
-  }
-
-  static final _id_component1 = Pair._class.instanceMethodId(
-    r'component1',
-    r'()Ljava/lang/Object;',
-  );
-
-  static final _component1 =
-      jni$_.ProtectedJniExtensions.lookup<
-            jni$_.NativeFunction<
-              jni$_.JniResult Function(
-                jni$_.Pointer<jni$_.Void>,
-                jni$_.JMethodIDPtr,
-              )
-            >
-          >('globalEnv_CallObjectMethod')
-          .asFunction<
-            jni$_.JniResult Function(
-              jni$_.Pointer<jni$_.Void>,
-              jni$_.JMethodIDPtr,
-            )
-          >();
-
-  /// from: `public operator fun component1(): A`
-  /// The returned object must be released after use, by calling the [release] method.
-  $A? component1() {
-    final _$$selfRef = reference;
-    return _component1(
-      _$$selfRef.pointer,
-      _id_component1.pointer,
-    ).object<$A?>();
-  }
-
-  static final _id_component2 = Pair._class.instanceMethodId(
-    r'component2',
-    r'()Ljava/lang/Object;',
-  );
-
-  static final _component2 =
-      jni$_.ProtectedJniExtensions.lookup<
-            jni$_.NativeFunction<
-              jni$_.JniResult Function(
-                jni$_.Pointer<jni$_.Void>,
-                jni$_.JMethodIDPtr,
-              )
-            >
-          >('globalEnv_CallObjectMethod')
-          .asFunction<
-            jni$_.JniResult Function(
-              jni$_.Pointer<jni$_.Void>,
-              jni$_.JMethodIDPtr,
-            )
-          >();
-
-  /// from: `public operator fun component2(): B`
-  /// The returned object must be released after use, by calling the [release] method.
-  $B? component2() {
-    final _$$selfRef = reference;
-    return _component2(
-      _$$selfRef.pointer,
-      _id_component2.pointer,
-    ).object<$B?>();
-  }
-
-  static final _id_copy = Pair._class.instanceMethodId(
-    r'copy',
-    r'(Ljava/lang/Object;Ljava/lang/Object;)Lkotlin/Pair;',
-  );
-
-  static final _copy =
-      jni$_.ProtectedJniExtensions.lookup<
-            jni$_.NativeFunction<
-              jni$_.JniResult Function(
-                jni$_.Pointer<jni$_.Void>,
-                jni$_.JMethodIDPtr,
-                jni$_.VarArgs<
-                  (jni$_.Pointer<jni$_.Void>, jni$_.Pointer<jni$_.Void>)
-                >,
-              )
-            >
-          >('globalEnv_CallObjectMethod')
-          .asFunction<
-            jni$_.JniResult Function(
-              jni$_.Pointer<jni$_.Void>,
-              jni$_.JMethodIDPtr,
-              jni$_.Pointer<jni$_.Void>,
-              jni$_.Pointer<jni$_.Void>,
-            )
-          >();
-
-  /// from: `public fun copy(first: A, second: B): kotlin.Pair<A, B>`
-  /// The returned object must be released after use, by calling the [release] method.
-  Pair<$A?, $B?> copy(
-    $A? object,
-    $B? object1,
-  ) {
-    final _$$selfRef = reference;
-    final _$object = object?.reference ?? jni$_.jNullReference;
-    final _$object1 = object1?.reference ?? jni$_.jNullReference;
-    return _copy(
-      _$$selfRef.pointer,
-      _id_copy.pointer,
-      _$object.pointer,
-      _$object1.pointer,
-    ).object<Pair<$A?, $B?>>();
-  }
-
-  static final _id_hashCode$1 = Pair._class.instanceMethodId(
-    r'hashCode',
-    r'()I',
-  );
-
-  static final _hashCode$1 =
-      jni$_.ProtectedJniExtensions.lookup<
-            jni$_.NativeFunction<
-              jni$_.JniResult Function(
-                jni$_.Pointer<jni$_.Void>,
-                jni$_.JMethodIDPtr,
-              )
-            >
-          >('globalEnv_CallIntMethod')
-          .asFunction<
-            jni$_.JniResult Function(
-              jni$_.Pointer<jni$_.Void>,
-              jni$_.JMethodIDPtr,
-            )
-          >();
-
-  /// from: `public fun hashCode(): kotlin.Int`
-  core$_.int hashCode$1() {
-    final _$$selfRef = reference;
-    return _hashCode$1(_$$selfRef.pointer, _id_hashCode$1.pointer).integer;
-  }
-
-  static final _id_equals = Pair._class.instanceMethodId(
-    r'equals',
-    r'(Ljava/lang/Object;)Z',
-  );
-
-  static final _equals =
-      jni$_.ProtectedJniExtensions.lookup<
-            jni$_.NativeFunction<
-              jni$_.JniResult Function(
-                jni$_.Pointer<jni$_.Void>,
-                jni$_.JMethodIDPtr,
-                jni$_.VarArgs<(jni$_.Pointer<jni$_.Void>,)>,
-              )
-            >
-          >('globalEnv_CallBooleanMethod')
-          .asFunction<
-            jni$_.JniResult Function(
-              jni$_.Pointer<jni$_.Void>,
-              jni$_.JMethodIDPtr,
-              jni$_.Pointer<jni$_.Void>,
-            )
-          >();
-
-  /// from: `public operator fun equals(other: kotlin.Any?): kotlin.Boolean`
-  core$_.bool equals(
-    jni$_.JObject? object,
-  ) {
-    final _$$selfRef = reference;
-    final _$object = object?.reference ?? jni$_.jNullReference;
-    return _equals(
-      _$$selfRef.pointer,
-      _id_equals.pointer,
-      _$object.pointer,
-    ).boolean;
-  }
-}
-
-final class $Pair$Type$ extends jni$_.JType<Pair> {
-  @jni$_.internal
-  const $Pair$Type$();
-
-  @jni$_.internal
-  @core$_.override
-  String get signature => r'Lkotlin/Pair;';
 }
 
 /// from: `java.lang.Runnable`
@@ -1610,43 +583,4 @@ final class $Runnable$Type$ extends jni$_.JType<Runnable> {
   @jni$_.internal
   @core$_.override
   String get signature => r'Ljava/lang/Runnable;';
-}
-
-/// from: `kotlin.jvm.internal.DefaultConstructorMarker`
-///
-/// WARNING: DefaultConstructorMarker is a stub. To generate bindings for this class, include
-/// kotlin.jvm.internal.DefaultConstructorMarker in your config's classes list.
-///
-extension type DefaultConstructorMarker._(jni$_.JObject _$this)
-    implements jni$_.JObject {
-  static const jni$_.JType<DefaultConstructorMarker> type =
-      $DefaultConstructorMarker$Type$();
-}
-
-final class $DefaultConstructorMarker$Type$
-    extends jni$_.JType<DefaultConstructorMarker> {
-  @jni$_.internal
-  const $DefaultConstructorMarker$Type$();
-
-  @jni$_.internal
-  @core$_.override
-  String get signature => r'Lkotlin/jvm/internal/DefaultConstructorMarker;';
-}
-
-/// from: `java.io.Serializable`
-///
-/// WARNING: Serializable is a stub. To generate bindings for this class, include
-/// java.io.Serializable in your config's classes list.
-///
-extension type Serializable._(jni$_.JObject _$this) implements jni$_.JObject {
-  static const jni$_.JType<Serializable> type = $Serializable$Type$();
-}
-
-final class $Serializable$Type$ extends jni$_.JType<Serializable> {
-  @jni$_.internal
-  const $Serializable$Type$();
-
-  @jni$_.internal
-  @core$_.override
-  String get signature => r'Ljava/io/Serializable;';
 }

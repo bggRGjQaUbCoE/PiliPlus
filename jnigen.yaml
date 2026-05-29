@@ -4,9 +4,8 @@ output:
     structure: single_file
 
 class_path:
-  - android
+  - android/app/src/main/java
 
 classes:
   - 'com.example.piliplus.AndroidHelper'
-  - 'kotlin.Pair'
   - 'java.lang.Runnable'

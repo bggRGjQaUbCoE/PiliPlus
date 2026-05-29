@@ -34,7 +34,7 @@ void main() {
         ShieldMatcher.match(
           const ShieldCandidate(
             scope: ShieldScope.comment,
-            body: '这是一条剧透评论',
+            body: '剧透',
           ),
           rules,
         ).visible,

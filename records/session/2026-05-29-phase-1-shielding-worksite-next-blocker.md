@@ -54,6 +54,16 @@ Worksite fix in progress: restore those compatibility methods through a local
 `lib/pages/common/publish/common_publish_page.dart`, using the dependency's
 supported `updatePanelType` API.
 
+Follow-up update: commit `885c33c30b9ba50ef290c940e486925d411720d5` cleared
+the compile blocker. Run `26625227701` executed shielding tests and reported
+`14 tests passed, 2 failed`. The next blocker is matcher/test behavior in
+`test/features/shielding/shielding_core_test.dart`:
+
+- token mode should evaluate `ShieldCandidate.tokens` even when keyword fields
+  are empty.
+- exact-match test data should use an exact body value; substring comment
+  matching belongs to regex mode.
+
 ## Previous Blocker
 
 Fix the worksite compile mismatch:

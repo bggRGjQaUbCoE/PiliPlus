@@ -392,6 +392,66 @@ Follow-up source fix in progress:
   `restoreChatPanel` calls by storing `currentPanelType` plus `data`, then
   restoring through the dependency's supported `updatePanelType` API.
 
+## Chat Panel Compatibility Follow-Up Run
+
+Status: red / matcher-behavior-test-failure.
+
+The compatibility wrapper was committed and pushed:
+
+- commit SHA: `885c33c30b9ba50ef290c940e486925d411720d5`
+- commit subject: `Restore chat panel controller compatibility`
+
+Manual workflow run:
+
+- workflow: `Phase 1 Shielding Verify`
+- run id: `26625227701`
+- run URL: `https://github.com/CometDash77/PiliAvalon-Worksite/actions/runs/26625227701`
+- job URL: `https://github.com/CometDash77/PiliAvalon-Worksite/actions/runs/26625227701/job/78460251305`
+- branch: `phase-1-shielding-core`
+- event: `workflow_dispatch`
+- commit SHA: `885c33c30b9ba50ef290c940e486925d411720d5`
+- conclusion: `failure`
+- created: `2026-05-29T07:50:38Z`
+- completed: `2026-05-29T07:53:06Z`
+
+Step results:
+
+| Step | Conclusion |
+|---|---|
+| Checkout | success |
+| Setup Flutter | success |
+| Flutter version | success |
+| Install dependencies | success |
+| Run shielding tests | failure |
+| Run settings model test | skipped |
+| Analyze | skipped |
+
+Key log excerpts:
+
+```text
+flutter test test/features/shielding
+14 tests passed, 2 failed.
+
+test/features/shielding/shielding_core_test.dart:33
+Expected: false
+  Actual: <true>
+
+test/features/shielding/shielding_core_test.dart:100
+Expected: false
+  Actual: <true>
+```
+
+Interpretation: dependency API compile blockers are cleared. Shielding tests now
+execute. The remaining red state is matcher/test behavior:
+
+- `ShieldMatchMode.token` was unreachable for a keyword rule when the candidate
+  only had `tokens`; product fix is to evaluate token mode directly from
+  `candidate.tokens`.
+- The comment-body exact-match assertion used body text containing the pattern
+  as a substring. Existing settings label calls this mode `精确匹配`, and nearby
+  adapter tests use regex for substring comment matching, so the focused test was
+  adjusted to use exact body text for exact mode.
+
 Yellow items not marked green by this fix:
 
 - Android build artifact.

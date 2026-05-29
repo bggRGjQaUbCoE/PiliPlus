@@ -17,6 +17,14 @@ Evidence record:
 - `records/session/2026-05-29-phase-1-shielding-ci-verification.md`
 - run URL: `https://github.com/CometDash77/PiliAvalon-Worksite/actions/runs/26623639477`
 
+## Agent Prompt And Report Requirements
+
+Future prompts and reports for this worksite must repeatedly and explicitly emphasize effective subagent use. Independent investigation, repair, verification, review, and evidence-audit tasks should be delegated to subagents first when the active agent platform permits subagent dispatch and the tasks can run without shared-state conflicts.
+
+Any handoff prompt or receiving agent must first read and follow the role classification, responsibility boundaries, and workflow rules in the repository's root `CLAUDE.md` or `AGENTS.md` before changing files or reporting status. If neither file exists in the current repo, the agent must record that they were not found and continue under the existing persistent records, phase boundaries, role boundaries, and active worksite instructions.
+
+Status for this repo at record time: no root `CLAUDE.md` or `AGENTS.md` was found in `/home/mo/Documents/piliavalon`; continue using this session record and other persistent governance/worksite records as the active instructions.
+
 ## Next Blocker
 
 Fix the worksite compile mismatch:

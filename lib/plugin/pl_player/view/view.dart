@@ -1546,24 +1546,23 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                         Positioned(
                           left: 0,
                           right: 0,
-                          bottom: 0.75,
+                          bottom: 0,
                           child: SegmentProgressBar(
+                            height: 1.5,
                             segments: videoDetailController.segmentProgressList,
                           ),
                         ),
                       if (videoDetailController.viewPointList.isNotEmpty &&
                           videoDetailController.showVP.value)
-                        Padding(
-                          padding: const .only(bottom: 4.25),
-                          child: ViewPointSegmentProgressBar(
-                            segments: videoDetailController.viewPointList,
-                            onSeek: PlatformUtils.isMobile
-                                ? (position) => plPlayerController.seekTo(
-                                    position,
-                                    isSeek: false,
-                                  )
-                                : null,
-                          ),
+                        ViewPointSegmentProgressBar(
+                          height: 1.5,
+                          segments: videoDetailController.viewPointList,
+                          onSeek: PlatformUtils.isMobile
+                              ? (position) => plPlayerController.seekTo(
+                                  position,
+                                  isSeek: false,
+                                )
+                              : null,
                         ),
                     ],
                   ),

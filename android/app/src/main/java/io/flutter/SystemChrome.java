@@ -9,6 +9,7 @@ import android.view.WindowManager;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
+import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
 
 import org.json.JSONArray;
@@ -64,6 +65,9 @@ public class SystemChrome {
     private static void setSystemChromeEnabledSystemUIOverlays(Activity activity, List<SystemUiOverlay> overlaysToShow) {
         // Start by assuming we want to hide all system overlays (like an immersive
         // game).
+
+        disableEdgeToEdge(activity);
+
         int enabledOverlays =
                 DEFAULT_SYSTEM_UI
                         | View.SYSTEM_UI_FLAG_FULLSCREEN
@@ -136,6 +140,7 @@ public class SystemChrome {
 
 
     private static int mEnabledOverlays;
+    private static boolean isEdgeToEdge = false;
     private static SystemChromeStyle currentTheme;
 
 
@@ -175,6 +180,12 @@ public class SystemChrome {
 
     private static void setSystemChromeEnabledSystemUIMode(Activity activity, SystemUiMode systemUiMode) {
         int enabledOverlays;
+
+        // If we were previously in edge-to-edge mode and are switching to a different mode,
+        // restore the default window inset behavior.
+        if (systemUiMode != SystemUiMode.EDGE_TO_EDGE) {
+            disableEdgeToEdge(activity);
+        }
 
         if (systemUiMode == SystemUiMode.LEAN_BACK) {
             // LEAN BACK
@@ -258,10 +269,12 @@ public class SystemChrome {
             // SDK 29 and up will apply a translucent body scrim behind 2/3 button navigation bars
             // to ensure contrast with buttons on the nav and status bars, unless the contrast is not
             // enforced in the overlay styling.
-            enabledOverlays =
-                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                            | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
+            isEdgeToEdge = true;
+            enableEdgeToEdge(activity);
+            if (currentTheme != null) {
+                setSystemChromeSystemUIOverlayStyle(activity, currentTheme);
+            }
+            return;
         } else {
             // When none of the conditions are matched, return without updating the system UI overlays.
             return;
@@ -273,12 +286,29 @@ public class SystemChrome {
 
 
     public static void updateSystemUiOverlays(Activity activity) {
-        activity.getWindow().getDecorView().setSystemUiVisibility(mEnabledOverlays);
+        if (isEdgeToEdge) {
+            // In edge-to-edge mode, re-apply the modern API instead of using deprecated
+            // setSystemUiVisibility(), which could interfere with WindowCompat on API < 30.
+            enableEdgeToEdge(activity);
+        } else {
+            activity.getWindow().getDecorView().setSystemUiVisibility(mEnabledOverlays);
+        }
         if (currentTheme != null) {
             setSystemChromeSystemUIOverlayStyle(activity, currentTheme);
         }
     }
 
+    private static void enableEdgeToEdge(Activity activity) {
+        activity.getWindow().getDecorView().setSystemUiVisibility(0);
+        WindowCompat.setDecorFitsSystemWindows(activity.getWindow(), false);
+    }
+
+    private static void disableEdgeToEdge(Activity activity) {
+        if (isEdgeToEdge) {
+            isEdgeToEdge = false;
+            WindowCompat.setDecorFitsSystemWindows(activity.getWindow(), true);
+        }
+    }
 
     private static void setSystemChromeSystemUIOverlayStyle(Activity activity, SystemChromeStyle systemChromeStyle) {
         Window window = activity.getWindow();

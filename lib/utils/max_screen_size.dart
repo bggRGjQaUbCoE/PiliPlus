@@ -1,36 +1,26 @@
 import 'dart:io' show Platform;
 
-import 'package:PiliPlus/utils/utils.dart';
-import 'package:flutter/services.dart' show MethodChannel;
+import 'package:PiliPlus/utils/android/android_helper.dart';
+import 'package:PiliPlus/utils/android/bindings.g.dart';
 
 abstract final class MaxScreenSize {
   static int? _maxWidth;
   static int? _maxHeight;
 
-  static Future<void> init() {
-    return Future.wait([_initFoldable(), _initScreenSize()]);
-  }
-
-  static Future<void> _initFoldable() async {
-    final isFoldable = await Utils.channel.invokeMethod('isFoldable');
-    if (isFoldable == true) {
-      const MethodChannel('ScreenChannel').setMethodCallHandler((call) {
-        if (call.method == 'onConfigChanged') {
-          _handleRes(call.arguments);
-        }
-        return Future.syncValue(null);
-      });
+  static void init() {
+    _initScreenSize();
+    if (AndroidHelper.isFoldable) {
+      AndroidHelper$ToDart.onUserLeaveHint = Runnable.implement(
+        $Runnable(run: _initScreenSize),
+      );
     }
   }
 
-  static Future<void> _initScreenSize() {
-    return Utils.channel.invokeMethod('maxScreenSize').then(_handleRes);
-  }
-
-  static void _handleRes(dynamic res) {
-    if (res is Map) {
-      _maxWidth = res['maxWidth'];
-      _maxHeight = res['maxHeight'];
+  static void _initScreenSize() {
+    final size = PiliAndroidHelper.maxScreenSize();
+    if (size != null) {
+      _maxWidth = size.$1;
+      _maxHeight = size.$2;
     }
   }
 

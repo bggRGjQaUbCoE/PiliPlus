@@ -1,0 +1,12 @@
+output:
+  dart:
+    path: lib/utils/android/bindings.g.dart
+    structure: single_file
+
+class_path:
+  - android
+
+classes:
+  - 'com.example.piliplus.AndroidHelper'
+  - 'kotlin.Pair'
+  - 'java.lang.Runnable'

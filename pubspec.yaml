@@ -116,6 +116,7 @@ dependencies:
   image_cropper: ^12.0.0
   image_picker: ^1.1.2
   intl: ^0.20.2
+  jni: ^1.0.0
   json_annotation: ^4.11.0
   live_photo_maker: ^0.0.6
   logger: ^2.5.0
@@ -219,6 +220,10 @@ dev_dependencies:
   flutter_launcher_icons: ^0.14.4
   flutter_lints: ^6.0.0
   flutter_native_splash: ^2.4.6
+  jnigen:
+    git:
+      url: https://github.com/dart-lang/native.git
+      path: pkgs/jnigen
 
 flutter_launcher_icons:
   android: true

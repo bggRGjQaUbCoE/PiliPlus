@@ -115,8 +115,9 @@ void main() async {
   CacheManager.autoClearCache();
 
   if (PlatformUtils.isMobile) {
+    if (Platform.isAndroid) MaxScreenSize.init();
     await Future.wait([
-      if (Platform.isAndroid) ...[_initSdkInt(), MaxScreenSize.init()],
+      if (Platform.isAndroid) _initSdkInt(),
       if (Pref.horizontalScreen) ?fullMode() else ?portraitUpMode(),
       setupServiceLocator(),
     ]);

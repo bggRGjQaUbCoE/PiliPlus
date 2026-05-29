@@ -706,6 +706,7 @@ class _MemberPageState extends State<MemberPage> {
         '${_userController.userAvatar!}@200w_200h.webp'.http2https,
       ));
       SmartDialog.dismiss();
+      // TODO: remove
       await Utils.channel.invokeMethod(
         'createShortcut',
         <String, String>{

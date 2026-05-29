@@ -10,6 +10,7 @@ import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 abstract final class Utils {
   static final random = Random();
 
+  // TODO: remove
   static const channel = MethodChannel(Constants.appName);
 
   static const jsonEncoder = JsonEncoder.withIndent('    ');

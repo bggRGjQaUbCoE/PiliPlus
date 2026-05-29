@@ -30,6 +30,8 @@ import 'package:PiliPlus/plugin/pl_player/models/video_fit_type.dart';
 import 'package:PiliPlus/plugin/pl_player/utils/fullscreen.dart';
 import 'package:PiliPlus/services/service_locator.dart';
 import 'package:PiliPlus/utils/accounts.dart';
+import 'package:PiliPlus/utils/android/android_helper.dart';
+import 'package:PiliPlus/utils/android/bindings.g.dart';
 import 'package:PiliPlus/utils/asset_utils.dart';
 import 'package:PiliPlus/utils/device_utils.dart';
 import 'package:PiliPlus/utils/extension/box_ext.dart';
@@ -302,9 +304,7 @@ class PlPlayerController with BlockConfigMixin {
 
   void _disableAutoEnterPip() {
     if (_shouldSetPip) {
-      Utils.channel.invokeMethod('setPipAutoEnterEnabled', {
-        'autoEnable': false,
-      });
+      PiliAndroidHelper.setPipAutoEnterEnabled(false);
     }
   }
 
@@ -580,16 +580,18 @@ class PlPlayerController with BlockConfigMixin {
 
     if (Platform.isAndroid && autoPiP) {
       if (DeviceUtils.sdkInt < 36) {
-        Utils.channel.setMethodCallHandler((call) async {
-          if (call.method == 'onUserLeaveHint') {
-            if (playerStatus.isPlaying && _isCurrVideoPage) {
-              enterPip();
-            }
-          }
-        });
+        AndroidHelper$ToDart.onUserLeaveHint = Runnable.implement(
+          $Runnable(run: _onUserLeaveHint),
+        );
       } else {
         _shouldSetPip = true;
       }
+    }
+  }
+
+  void _onUserLeaveHint() {
+    if (playerStatus.isPlaying && _isCurrVideoPage) {
+      enterPip();
     }
   }
 
@@ -1631,7 +1633,8 @@ class PlPlayerController with BlockConfigMixin {
     if (showSeekPreview) {
       _clearPreview();
     }
-    Utils.channel.setMethodCallHandler(null);
+    AndroidHelper$ToDart.onUserLeaveHint?.release();
+    AndroidHelper$ToDart.onUserLeaveHint = null;
     _timer?.cancel();
     // _position.close();
     // _playerEventSubs?.cancel();

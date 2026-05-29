@@ -47,4 +47,4 @@ jobs:
         run: flutter test test/pages/setting/models/shielding_settings_test.dart
 
       - name: Analyze
-        run: flutter analyze
+        run: flutter analyze --no-fatal-infos

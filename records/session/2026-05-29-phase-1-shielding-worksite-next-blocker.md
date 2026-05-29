@@ -64,6 +64,14 @@ the compile blocker. Run `26625227701` executed shielding tests and reported
 - exact-match test data should use an exact body value; substring comment
   matching belongs to regex mode.
 
+Follow-up update: commit `49b10217e1591e78e95a87815258c4a8c3c8d030` cleared
+both focused test commands in run `26625561132`. The remaining blocker is
+workflow policy: `flutter analyze` exits 1 on repo-wide info-level findings,
+including copied Flutter widget files outside the Phase 1 surface. The focused
+workflow should use `flutter analyze --no-fatal-infos` so analyzer errors and
+warnings remain fatal while legacy infos are still logged but do not block Phase
+1 shielding verification.
+
 ## Previous Blocker
 
 Fix the worksite compile mismatch:

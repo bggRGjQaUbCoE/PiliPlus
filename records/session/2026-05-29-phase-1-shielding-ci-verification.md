@@ -666,3 +666,31 @@ Step results:
 - Android install/launch.
 - recommendation feed manual acceptance.
 - comment-area manual acceptance.
+
+## Latest Focused CI Pass On Evidence Commit
+
+Status: green for latest pushed worksite branch head.
+
+- commit SHA: `484710a610587c15a5f1de05dc4e83ea40a00ef2`
+- commit subject: `records: document shielding CI retarget evidence`
+- workflow: `Phase 1 Shielding Verify`
+- run id: `26628278834`
+- run URL: `https://github.com/CometDash77/PiliAvalon-Worksite/actions/runs/26628278834`
+- job URL: `https://github.com/CometDash77/PiliAvalon-Worksite/actions/runs/26628278834/job/78470327566`
+- branch: `phase-1-shielding-core`
+- event: `workflow_dispatch`
+- conclusion: `success`
+- created: `2026-05-29T09:00:40Z`
+- completed: `2026-05-29T09:02:32Z`
+
+Step results:
+
+| Step | Conclusion |
+|---|---|
+| Checkout | success |
+| Setup Flutter | success |
+| Flutter version | success |
+| Install dependencies | success |
+| Run shielding tests | success |
+| Run settings model test | success |
+| Analyze | success |

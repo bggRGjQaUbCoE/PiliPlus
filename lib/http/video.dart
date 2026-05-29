@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:PiliPlus/common/constants.dart';
+import 'package:PiliPlus/features/shielding/shielding.dart';
 import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
     show ReplyInfo;
 import 'package:PiliPlus/http/api.dart';
@@ -67,13 +68,21 @@ abstract final class VideoHttp {
     );
     if (res.data['code'] == 0) {
       List<RcmdVideoItemModel> list = <RcmdVideoItemModel>[];
+      final shieldRuleSet = ShieldSettingsStore().snapshot();
       for (final i in res.data['data']['item']) {
         //过滤掉live与ad，以及拉黑用户
         if (i['goto'] == 'av' &&
             (i['owner'] != null &&
                 !GlobalData().blackMids.contains(i['owner']['mid']))) {
           RcmdVideoItemModel videoItem = RcmdVideoItemModel.fromJson(i);
-          if (!RecommendFilter.filter(videoItem)) {
+          final visible = ShieldingAdapters.isVisible(
+            ShieldingAdapters.fromRecommendationJson(
+              videoItem,
+              (i as Map).cast<String, dynamic>(),
+            ),
+            shieldRuleSet,
+          );
+          if (!RecommendFilter.filter(videoItem) && visible) {
             list.add(videoItem);
           }
         }
@@ -140,6 +149,7 @@ abstract final class VideoHttp {
     );
     if (res.data['code'] == 0) {
       List<RcmdVideoItemAppModel> list = <RcmdVideoItemAppModel>[];
+      final shieldRuleSet = ShieldSettingsStore().snapshot();
       for (final i in res.data['data']['items']) {
         // 屏蔽推广和拉黑用户
         if (i['card_goto'] != 'ad_av' &&
@@ -153,7 +163,14 @@ abstract final class VideoHttp {
             continue;
           }
           RcmdVideoItemAppModel videoItem = RcmdVideoItemAppModel.fromJson(i);
-          if (!RecommendFilter.filter(videoItem)) {
+          final visible = ShieldingAdapters.isVisible(
+            ShieldingAdapters.fromRecommendationJson(
+              videoItem,
+              (i as Map).cast<String, dynamic>(),
+            ),
+            shieldRuleSet,
+          );
+          if (!RecommendFilter.filter(videoItem) && visible) {
             list.add(videoItem);
           }
         }

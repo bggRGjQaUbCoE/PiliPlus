@@ -11,6 +11,7 @@ import 'package:PiliPlus/pages/setting/recommend_setting.dart';
 import 'package:PiliPlus/pages/setting/style_setting.dart';
 import 'package:PiliPlus/pages/setting/video_setting.dart';
 import 'package:PiliPlus/pages/setting/widgets/multi_select_dialog.dart';
+import 'package:PiliPlus/pages/shielding_settings/view.dart';
 import 'package:PiliPlus/pages/webdav/view.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/accounts/account.dart';
@@ -49,6 +50,11 @@ class _SettingPageState extends State<SettingPage> {
       type: SettingType.privacySetting,
       subtitle: '黑名单、无痕模式',
       icon: Icon(Icons.privacy_tip_outlined),
+    ),
+    _SettingsModel(
+      type: SettingType.shieldingSetting,
+      subtitle: '全局开关、推荐/评论场景、规则列表',
+      icon: Icon(Icons.shield_outlined),
     ),
     _SettingsModel(
       type: SettingType.recommendSetting,
@@ -114,6 +120,8 @@ class _SettingPageState extends State<SettingPage> {
                       SettingType.privacySetting => const PrivacySetting(
                         showAppBar: false,
                       ),
+                      SettingType.shieldingSetting =>
+                        const ShieldingSettingsPage(showAppBar: false),
                       SettingType.recommendSetting => const RecommendSetting(
                         showAppBar: false,
                       ),

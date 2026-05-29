@@ -1,4 +1,5 @@
 import 'package:PiliPlus/common/widgets/flutter/text_field/controller.dart';
+import 'package:PiliPlus/features/shielding/shielding.dart';
 import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
     show MainListReply, ReplyInfo, SubjectControl, Mode;
 import 'package:PiliPlus/grpc/bilibili/pagination.pb.dart';
@@ -57,6 +58,16 @@ abstract class ReplyController<R> extends CommonListController<R, ReplyInfo> {
   }
 
   @override
+  void handleListResponse(List<ReplyInfo> dataList) {
+    final visibleReplies = applyShielding(dataList);
+    if (!identical(visibleReplies, dataList)) {
+      dataList
+        ..clear()
+        ..addAll(visibleReplies);
+    }
+  }
+
+  @override
   bool customHandleResponse(bool isRefresh, Success response) {
     MainListReply data = response.response;
     cursorNext = data.cursor.next;
@@ -75,6 +86,16 @@ abstract class ReplyController<R> extends CommonListController<R, ReplyInfo> {
     }
     isEnd = data.cursor.isEnd;
     return false;
+  }
+
+  List<ReplyInfo> applyShielding(List<ReplyInfo> replies) {
+    final ruleSet = ShieldSettingsStore().snapshot();
+    return ShieldingAdapters.filterList(
+      replies,
+      enabled: ruleSet.globalEnabled && ruleSet.commentEnabled,
+      ruleSet: ruleSet,
+      toCandidate: ShieldingAdapters.fromReplyInfo,
+    );
   }
 
   @override

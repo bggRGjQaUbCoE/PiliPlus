@@ -77,13 +77,18 @@ class VideoReplyReplyController extends ReplyController
       if (isRefresh && !hasRoot) {
         firstFloor.value ??= data.root;
       }
-      if (id != null) {
-        setIndexById(Int64(id!), data.root.replies);
-        id = null;
-      }
     }
 
     return false;
+  }
+
+  @override
+  void handleListResponse(List<ReplyInfo> dataList) {
+    super.handleListResponse(dataList);
+    if (id != null) {
+      setIndexById(Int64(id!), dataList);
+      id = null;
+    }
   }
 
   bool setIndexById(Int64 id64, [List<ReplyInfo>? replies]) {

@@ -568,6 +568,101 @@ Yellow items not marked green by this fix:
 | comment-adapter variance | yellow | Not closed by CI workflow creation. |
 | recommendation pagination/loading proof | yellow | Not closed unless a focused test is later added and run. |
 
-## Next Action
+## Repository Identity Retarget CI Pass
 
-Investigate the `uiScale` API mismatch in `common_publish_page.dart` versus the resolved `chat_bottom_container` dependency. Do not mark Phase 1 shielding tests, settings model test, or analyzer green until a later CI run reaches and passes those commands.
+Status: green for focused Phase 1 verification after repository identity retarget.
+
+Repository identity retarget was committed and pushed:
+
+- commit SHA: `ad00104072e8281c55e513787460225860ff8022`
+- commit subject: `governance: retarget worksite repository identity`
+
+Manual workflow run:
+
+- workflow: `Phase 1 Shielding Verify`
+- run id: `26627773110`
+- run URL: `https://github.com/CometDash77/PiliAvalon-Worksite/actions/runs/26627773110`
+- job URL: `https://github.com/CometDash77/PiliAvalon-Worksite/actions/runs/26627773110/job/78468657492`
+- branch: `phase-1-shielding-core`
+- event: `workflow_dispatch`
+- commit SHA: `ad00104072e8281c55e513787460225860ff8022`
+- conclusion: `success`
+- created: `2026-05-29T08:49:29Z`
+- completed: `2026-05-29T08:51:05Z`
+
+Step results:
+
+| Step | Conclusion |
+|---|---|
+| Checkout | success |
+| Setup Flutter | success |
+| Flutter version | success |
+| Install dependencies | success |
+| Run shielding tests | success |
+| Run settings model test | success |
+| Analyze | success |
+
+## Comment Direct-Target Regression
+
+Status: red-green evidence collected.
+
+RED test-only commit:
+
+- commit SHA: `3e8fa1413d2599804abb794e17a0f7eb5d08b252`
+- commit subject: `test: capture comment target shielding behavior`
+- run id: `26627995974`
+- run URL: `https://github.com/CometDash77/PiliAvalon-Worksite/actions/runs/26627995974`
+- job URL: `https://github.com/CometDash77/PiliAvalon-Worksite/actions/runs/26627995974/job/78469382469`
+- conclusion: `failure`
+
+Expected failure excerpt:
+
+```text
+test/features/shielding/shielding_adapters_test.dart: ShieldingAdapters direct reply target lookup runs before comment shielding (failed)
+Expected: <1>
+  Actual: <null>
+16 tests passed, 1 failed.
+```
+
+Root cause: `VideoReplyReplyController.handleListResponse` called
+`super.handleListResponse(dataList)` before `setIndexById`, so comment shielding
+could remove the direct target reply before target lookup.
+
+GREEN fix commit:
+
+- commit SHA: `6362430fcb5d157504cf1ca013b65c248021af01`
+- commit subject: `fix: preserve direct reply target lookup`
+- fix: locate the direct target on the unfiltered response list, then apply the
+  inherited comment shielding handler so blocked replies remain hidden in the
+  displayed list.
+
+Verification run:
+
+- run id: `26628121163`
+- run URL: `https://github.com/CometDash77/PiliAvalon-Worksite/actions/runs/26628121163`
+- job URL: `https://github.com/CometDash77/PiliAvalon-Worksite/actions/runs/26628121163/job/78469801440`
+- branch: `phase-1-shielding-core`
+- event: `workflow_dispatch`
+- commit SHA: `6362430fcb5d157504cf1ca013b65c248021af01`
+- conclusion: `success`
+- created: `2026-05-29T08:57:13Z`
+- completed: `2026-05-29T08:58:53Z`
+
+Step results:
+
+| Step | Conclusion |
+|---|---|
+| Checkout | success |
+| Setup Flutter | success |
+| Flutter version | success |
+| Install dependencies | success |
+| Run shielding tests | success |
+| Run settings model test | success |
+| Analyze | success |
+
+## Remaining Yellow Items
+
+- Android build artifact.
+- Android install/launch.
+- recommendation feed manual acceptance.
+- comment-area manual acceptance.

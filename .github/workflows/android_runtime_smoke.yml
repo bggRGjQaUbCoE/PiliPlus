@@ -1,0 +1,100 @@
+name: Android Runtime Smoke
+
+on:
+  push:
+    branches:
+      - phase-1-shielding-core
+    paths:
+      - ".github/workflows/android_runtime_smoke.yml"
+  workflow_dispatch:
+    inputs:
+      artifact_run_id:
+        description: "Build workflow run id containing Android_x86_64 artifact"
+        required: true
+        default: "26628409138"
+        type: string
+      package_name:
+        description: "Android package name to launch"
+        required: true
+        default: "com.example.piliplus"
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  runtime-smoke:
+    name: Install and launch APK on emulator
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      ARTIFACT_RUN_ID: ${{ github.event_name == 'workflow_dispatch' && inputs.artifact_run_id || '26628409138' }}
+      PACKAGE_NAME: ${{ github.event_name == 'workflow_dispatch' && inputs.package_name || 'com.example.piliplus' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Download x86_64 APK artifact
+        uses: actions/download-artifact@v6
+        with:
+          github-token: ${{ github.token }}
+          run-id: ${{ env.ARTIFACT_RUN_ID }}
+          name: Android_x86_64
+          path: runtime-smoke/apk
+
+      - name: List downloaded APK
+        run: |
+          find runtime-smoke/apk -maxdepth 2 -type f -name "*.apk" -print | tee runtime-smoke/apk-files.txt
+          test -s runtime-smoke/apk-files.txt
+
+      - name: Enable KVM for emulator
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Android emulator install and launch smoke
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          script: |
+            set -euxo pipefail
+            mkdir -p runtime-smoke/evidence
+
+            APK="$(find runtime-smoke/apk -type f -name "*.apk" | head -n 1)"
+            test -n "$APK"
+
+            {
+              echo "artifact_run_id=$ARTIFACT_RUN_ID"
+              echo "apk=$APK"
+              echo "package_name=$PACKAGE_NAME"
+              echo "github_sha=${{ github.sha }}"
+              echo "github_ref=${{ github.ref }}"
+              adb shell getprop ro.build.version.release
+              adb shell getprop ro.product.model
+            } | tee runtime-smoke/evidence/runtime-smoke-metadata.txt
+
+            adb logcat -c
+            adb install -r "$APK" | tee runtime-smoke/evidence/adb-install.txt
+            adb shell monkey -p "$PACKAGE_NAME" -c android.intent.category.LAUNCHER 1 | tee runtime-smoke/evidence/adb-launch.txt
+            sleep 25
+
+            adb logcat -d > runtime-smoke/evidence/logcat.txt
+            adb shell dumpsys window > runtime-smoke/evidence/window.txt
+            adb exec-out screencap -p > runtime-smoke/evidence/screenshot.png
+            adb shell pidof "$PACKAGE_NAME" | tee runtime-smoke/evidence/pidof.txt
+
+      - name: Upload runtime smoke evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          archive: false
+          name: android-runtime-smoke-evidence
+          path: runtime-smoke/evidence
+          if-no-files-found: warn

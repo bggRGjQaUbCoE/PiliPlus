@@ -7,8 +7,10 @@ on:
       - phase-1-shielding-core
     paths:
       - ".github/workflows/phase1_shielding_verify.yml"
+      - "lib/main.dart"
       - "lib/features/shielding/**"
       - "lib/pages/setting/models/shielding_settings.dart"
+      - "test/bootstrap/**"
       - "test/features/shielding/**"
       - "test/pages/setting/models/shielding_settings_test.dart"
       - "pubspec.yaml"
@@ -45,6 +47,9 @@ jobs:
 
       - name: Run settings model test
         run: flutter test test/pages/setting/models/shielding_settings_test.dart
+
+      - name: Run bootstrap startup test
+        run: flutter test test/bootstrap/bootstrap_app_test.dart
 
       - name: Analyze
         run: flutter analyze --no-fatal-infos

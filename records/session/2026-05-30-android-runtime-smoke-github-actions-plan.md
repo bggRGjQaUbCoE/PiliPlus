@@ -42,7 +42,7 @@ Manual inputs:
 
 The workflow is designed to:
 
-- download the `Android_x86_64` artifact from the selected Build run;
+- download the selected run's `*_x86_64.apk` artifact;
 - enable KVM on the GitHub-hosted Ubuntu runner;
 - start an x86_64 Android emulator with `reactivecircus/android-emulator-runner@v2`;
 - install the APK with `adb install -r`;
@@ -84,3 +84,17 @@ Phase 1 remains yellow until:
 4. recommendation-feed and comment-area manual acceptance later pass on a runtime-smoke-cleared prebuild.
 
 If the workflow cannot start an emulator, cannot install the APK, cannot launch the app, records white screen, or lacks evidence artifacts, record the gate as failed or blocked and keep Phase 1 yellow.
+
+## First Dispatch Finding
+
+Initial push-triggered run:
+
+- run id: `26672323068`
+- conclusion: failure
+- failed step: `Download x86_64 APK artifact`
+- root cause: the Build run artifacts are named as APK filenames, for example `PiliAvalon_android_2.0.7-cf9ed10f0+5006_x86_64.apk`, not `Android_x86_64`.
+
+Workflow correction:
+
+- replace exact artifact name lookup with pattern `*_x86_64.apk`;
+- set `merge-multiple: true` so the APK lands directly under `runtime-smoke/apk`.

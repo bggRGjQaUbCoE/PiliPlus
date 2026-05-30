@@ -41,7 +41,8 @@ jobs:
         with:
           github-token: ${{ github.token }}
           run-id: ${{ env.ARTIFACT_RUN_ID }}
-          name: Android_x86_64
+          pattern: "*_x86_64.apk"
+          merge-multiple: true
           path: runtime-smoke/apk
 
       - name: List downloaded APK

@@ -10,6 +10,7 @@ screenshot="runtime-smoke/evidence/screenshot.png"
 ui_dump_device="/sdcard/window_dump.xml"
 ui_dump="runtime-smoke/evidence/uiautomator.xml"
 filtered_logcat="runtime-smoke/evidence/logcat-crash-error.txt"
+app_crash_logcat="runtime-smoke/evidence/app-crash-error.txt"
 blankness_report="runtime-smoke/evidence/screenshot-blankness.txt"
 
 record_status() {
@@ -62,6 +63,41 @@ sleep 25
 
 adb logcat -d > runtime-smoke/evidence/logcat.txt || true
 grep -Ei "FATAL EXCEPTION|AndroidRuntime|CRASH|ANR|Watchdog|(^|[[:space:]])[EF]/|(^|[[:space:]])[EF][[:space:]]+[[:alnum:]_.-]+[[:space:]]*:" runtime-smoke/evidence/logcat.txt > "$filtered_logcat" || true
+python3 - runtime-smoke/evidence/logcat.txt "$app_crash_logcat" "$PACKAGE_NAME" <<'PY' || true
+import re
+import sys
+
+logcat_path, app_crash_path, package_name = sys.argv[1:4]
+lines = []
+
+try:
+    with open(logcat_path, "r", encoding="utf-8", errors="replace") as handle:
+        lines = handle.readlines()
+except OSError as exc:
+    with open(app_crash_path, "w", encoding="utf-8") as handle:
+        handle.write(f"logcat_read_error={exc}\n")
+    sys.exit(0)
+
+crash_blocks = []
+line_count = len(lines)
+
+for index, line in enumerate(lines):
+    if f"ANR in {package_name}" in line:
+        crash_blocks.append(lines[index:index + 40])
+    elif f"Process {package_name} has died" in line:
+        crash_blocks.append(lines[index:index + 20])
+    elif "Force finishing activity" in line and package_name in line:
+        crash_blocks.append(lines[index:index + 20])
+    elif "FATAL EXCEPTION" in line:
+        block = lines[index:min(line_count, index + 80)]
+        if any(re.search(rf"\bProcess:\s*{re.escape(package_name)}\b", entry) for entry in block):
+            crash_blocks.append(block)
+
+with open(app_crash_path, "w", encoding="utf-8") as handle:
+    for block_index, block in enumerate(crash_blocks, 1):
+        handle.write(f"--- app-crash-block-{block_index} ---\n")
+        handle.writelines(block)
+PY
 adb shell dumpsys window > runtime-smoke/evidence/window.txt || true
 if adb shell uiautomator dump "$ui_dump_device" > runtime-smoke/evidence/uiautomator-dump.txt 2>&1; then
   adb pull "$ui_dump_device" "$ui_dump" > runtime-smoke/evidence/uiautomator-pull.txt 2>&1 || true
@@ -71,7 +107,7 @@ fi
 adb exec-out screencap -p > "$screenshot" || true
 
 if [ "$status" -eq 0 ]; then
-  if grep -Eiq "FATAL EXCEPTION|AndroidRuntime|ANR in ${PACKAGE_NAME}|Process ${PACKAGE_NAME} has died|Force finishing activity.*${PACKAGE_NAME}|Process: ${PACKAGE_NAME}" "$filtered_logcat"; then
+  if [ -s "$app_crash_logcat" ]; then
     status=60
   fi
 fi

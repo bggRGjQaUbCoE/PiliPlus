@@ -90,12 +90,30 @@ abstract class ReplyController<R> extends CommonListController<R, ReplyInfo> {
 
   List<ReplyInfo> applyShielding(List<ReplyInfo> replies) {
     final ruleSet = ShieldSettingsStore().snapshot();
-    return ShieldingAdapters.filterList(
+    final enabled = ruleSet.globalEnabled && ruleSet.commentEnabled;
+    final visibleReplies = ShieldingAdapters.filterList(
       replies,
-      enabled: ruleSet.globalEnabled && ruleSet.commentEnabled,
+      enabled: enabled,
       ruleSet: ruleSet,
       toCandidate: ShieldingAdapters.fromReplyInfo,
     );
+    if (enabled) {
+      for (final reply in visibleReplies) {
+        if (reply.replies.isEmpty) continue;
+        final visibleChildReplies = ShieldingAdapters.filterList(
+          reply.replies,
+          enabled: true,
+          ruleSet: ruleSet,
+          toCandidate: ShieldingAdapters.fromReplyInfo,
+        );
+        if (!identical(visibleChildReplies, reply.replies)) {
+          reply.replies
+            ..clear()
+            ..addAll(visibleChildReplies);
+        }
+      }
+    }
+    return visibleReplies;
   }
 
   @override

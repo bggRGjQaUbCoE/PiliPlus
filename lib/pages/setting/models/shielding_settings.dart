@@ -10,7 +10,8 @@ String shieldRuleTitle(ShieldRule rule) =>
     '${shieldActionLabel(rule.action)} ${shieldRuleTypeLabel(rule.type)}: ${rule.pattern}';
 
 String shieldRuleSubtitle(ShieldRule rule) =>
-    '${shieldScopeLabel(rule.scope)} / ${shieldMatchModeLabel(rule.matchMode)} / '
+    '${shieldScopeLabel(rule.scope)} / '
+    '${shieldMatchModeLabel(rule.matchMode, type: rule.type)} / '
     '${rule.enabled ? '已启用' : '已停用'}';
 
 String shieldRuleTypeLabel(ShieldRuleType type) => switch (type) {
@@ -20,8 +21,12 @@ String shieldRuleTypeLabel(ShieldRuleType type) => switch (type) {
   ShieldRuleType.tag => '标签',
 };
 
-String shieldMatchModeLabel(ShieldMatchMode mode) => switch (mode) {
-  ShieldMatchMode.exact => '精确匹配',
+String shieldMatchModeLabel(
+  ShieldMatchMode mode, {
+  ShieldRuleType? type,
+}) => switch (mode) {
+  ShieldMatchMode.exact =>
+    type == ShieldRuleType.keyword ? '包含文字' : '完全相同',
   ShieldMatchMode.regex => '正则匹配',
   ShieldMatchMode.token => '词元匹配',
 };

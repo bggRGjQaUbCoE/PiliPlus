@@ -7,6 +7,8 @@ import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/pendant_avatar.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart';
 import 'package:PiliPlus/common/widgets/selectable_text.dart';
+import 'package:PiliPlus/common/widgets/video_card/shield_quick_action.dart';
+import 'package:PiliPlus/features/shielding/shielding.dart';
 import 'package:PiliPlus/common/widgets/stat/stat.dart';
 import 'package:PiliPlus/http/sponsor_block.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
@@ -184,7 +186,7 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
                     _buildVideoTitle(theme, videoDetail)
                   else if (isHorizontal && PlatformUtils.isDesktop)
                     SelectionArea(
-                      child: _buildVideoTitle(
+                      child: _buildTitle(
                         theme,
                         videoDetail,
                         isExpand: true,
@@ -322,7 +324,12 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
   }) => GestureDetector(
     onLongPress: () {
       Feedback.forLongPress(context);
-      Utils.copyText(videoDetail.title ?? '');
+      VideoCardShieldQuickAction.showTextDialog(
+        context: context,
+        title: '标题屏蔽',
+        text: videoDetail.title ?? '',
+        type: ShieldRuleType.keyword,
+      );
     },
     child: _buildVideoTitle(
       theme,
@@ -781,6 +788,14 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
     );
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
+      onLongPress: () => VideoCardShieldQuickAction.showTextDialog(
+        context: context,
+        title: 'UP屏蔽',
+        text: item.name ?? '',
+        type: item.mid == null ? ShieldRuleType.keyword : ShieldRuleType.uid,
+        pattern: item.mid?.toString(),
+        note: item.mid == null ? '未取得 UID，将按关键词屏蔽 UP 名称。' : null,
+      ),
       onTap: () {
         if (item.mid == ownerMid &&
             !isPortrait &&
@@ -900,6 +915,17 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
     VoidCallback onPushMember,
   ) => GestureDetector(
     onTap: onPushMember,
+    onLongPress: () {
+      final card = introController.userStat.value.card;
+      VideoCardShieldQuickAction.showTextDialog(
+        context: context,
+        title: 'UP屏蔽',
+        text: card?.name ?? '',
+        type: card?.mid == null ? ShieldRuleType.keyword : ShieldRuleType.uid,
+        pattern: card?.mid?.toString(),
+        note: card?.mid == null ? '未取得 UID，将按关键词屏蔽 UP 名称。' : null,
+      );
+    },
     behavior: HitTestBehavior.opaque,
     onSecondaryTap:
         PlatformUtils.isDesktop && introController.horizontalMemberPage
@@ -1056,7 +1082,13 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
                       parameters: {'keyword': tagName},
                     ),
                   },
-                  onLongPress: Utils.copyText,
+                  onLongPress: (_) =>
+                      VideoCardShieldQuickAction.showTextDialog(
+                        context: context,
+                        title: '标签屏蔽',
+                        text: item.tagName ?? '',
+                        type: ShieldRuleType.tag,
+                      ),
                 ),
               )
               .toList(),

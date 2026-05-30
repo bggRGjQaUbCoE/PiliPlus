@@ -71,6 +71,9 @@ abstract final class ShieldMatcher {
       rule,
       candidate,
     ).map((value) => value.toLowerCase());
+    if (rule.type == ShieldRuleType.keyword) {
+      return values.any((value) => value.contains(pattern));
+    }
     return values.any((value) => value == pattern);
   }
 

@@ -28,7 +28,20 @@ void main() {
       );
 
       expect(shieldRuleTitle(rule), '允许 用户 UID: 42');
-      expect(shieldRuleSubtitle(rule), '评论 / 精确匹配 / 已启用');
+      expect(shieldRuleSubtitle(rule), '评论 / 完全相同 / 已启用');
+    });
+
+    test('labels keyword exact semantics as contains instead of exact equality', () {
+      final rule = _rule(
+        id: 'keyword',
+        type: ShieldRuleType.keyword,
+        matchMode: ShieldMatchMode.exact,
+        pattern: '猫',
+      );
+
+      expect(shieldMatchModeLabel(rule.matchMode, type: rule.type), '包含文字');
+      expect(shieldRuleSubtitle(rule), '推荐和评论 / 包含文字 / 已启用');
+      expect(shieldMatchModeLabel(ShieldMatchMode.exact), '完全相同');
     });
   });
 }

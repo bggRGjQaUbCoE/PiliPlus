@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('ShieldMatcher', () {
-    test('exact block matches recommendation title', () {
+    test('keyword exact block matches literal text contained in title', () {
       final result = ShieldMatcher.match(
         const ShieldCandidate(
           scope: ShieldScope.recommendation,
@@ -12,14 +12,77 @@ void main() {
         ShieldRuleSet(rules: [
           _rule(
             type: ShieldRuleType.keyword,
-            pattern: '猫咪睡觉合集',
+            pattern: '睡觉',
             scope: ShieldScope.recommendation,
           ),
         ]),
       );
 
       expect(result.visible, isFalse);
-      expect(result.blockedBy?.pattern, '猫咪睡觉合集');
+      expect(result.blockedBy?.pattern, '睡觉');
+    });
+
+    test('keyword exact is case-insensitive literal contains, not regex', () {
+      final rules = ShieldRuleSet(rules: [
+        _rule(type: ShieldRuleType.keyword, pattern: 'cat.*dog'),
+      ]);
+
+      expect(
+        ShieldMatcher.match(
+          const ShieldCandidate(
+            scope: ShieldScope.recommendation,
+            title: 'prefix CAT.*DOG suffix',
+          ),
+          rules,
+        ).visible,
+        isFalse,
+      );
+      expect(
+        ShieldMatcher.match(
+          const ShieldCandidate(
+            scope: ShieldScope.recommendation,
+            title: 'cat and dog',
+          ),
+          rules,
+        ).visible,
+        isTrue,
+      );
+    });
+
+    test('uid category and tag exact rules use equality instead of contains', () {
+      final rules = ShieldRuleSet(rules: [
+        _rule(type: ShieldRuleType.uid, pattern: '42'),
+        _rule(type: ShieldRuleType.category, pattern: '游戏'),
+        _rule(type: ShieldRuleType.tag, pattern: '攻略'),
+      ]);
+
+      expect(
+        ShieldMatcher.match(
+          const ShieldCandidate(scope: ShieldScope.comment, uid: '142'),
+          rules,
+        ).visible,
+        isTrue,
+      );
+      expect(
+        ShieldMatcher.match(
+          const ShieldCandidate(
+            scope: ShieldScope.recommendation,
+            category: '单机游戏',
+          ),
+          rules,
+        ).visible,
+        isTrue,
+      );
+      expect(
+        ShieldMatcher.match(
+          const ShieldCandidate(
+            scope: ShieldScope.recommendation,
+            tags: ['攻略合集'],
+          ),
+          rules,
+        ).visible,
+        isTrue,
+      );
     });
 
     test('matches comment body, uid, category, and tag fields', () {

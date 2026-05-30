@@ -1,6 +1,7 @@
 import 'package:PiliPlus/features/shielding/shielding.dart';
 import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart';
 import 'package:PiliPlus/models/home/rcmd/result.dart';
+import 'package:PiliPlus/models/model_hot_video_item.dart';
 import 'package:PiliPlus/models/model_rec_video_item.dart';
 import 'package:PiliPlus/pages/video/reply_reply/controller.dart';
 import 'package:fixnum/fixnum.dart';
@@ -82,6 +83,35 @@ void main() {
       expect(candidate.body, '这是一条评论');
       expect(candidate.uid, '42');
       expect(candidate.authorName, '评论者');
+    });
+
+    test('maps related video title owner category and tag fields', () {
+      final video = HotVideoItemModel.fromJson({
+        'aid': 1,
+        'cid': 2,
+        'bvid': 'BV1',
+        'videos': 1,
+        'tid': 17,
+        'tname': '单机游戏',
+        'copyright': 1,
+        'pic': '',
+        'title': '硬核攻略',
+        'pubdate': 1,
+        'ctime': 1,
+        'desc': '',
+        'duration': 60,
+        'owner': {'mid': 42, 'name': '玩家UP'},
+        'stat': {'view': 1, 'like': 1, 'danmaku': 1},
+      });
+
+      final candidate = ShieldingAdapters.fromRelatedVideo(video);
+
+      expect(candidate.scope, ShieldScope.recommendation);
+      expect(candidate.title, '硬核攻略');
+      expect(candidate.uid, '42');
+      expect(candidate.authorName, '玩家UP');
+      expect(candidate.category, '单机游戏');
+      expect(candidate.tags, contains('单机游戏'));
     });
 
     test('filterList handles all-blocked list without requesting more data', () {

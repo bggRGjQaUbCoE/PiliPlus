@@ -347,7 +347,16 @@ abstract final class VideoHttp {
       final list = RecommendFilter.applyFilterToRelatedVideos
           ? items?.where((i) => !RecommendFilter.filterAll(i)).toList()
           : items?.toList();
-      return Success(list);
+      final shieldRuleSet = ShieldSettingsStore().snapshot();
+      final visibleList = list == null
+          ? null
+          : ShieldingAdapters.filterList(
+              list,
+              enabled: shieldRuleSet.recommendationEnabled,
+              ruleSet: shieldRuleSet,
+              toCandidate: ShieldingAdapters.fromRelatedVideo,
+            );
+      return Success(visibleList);
     } else {
       return Error(res.data['message']);
     }

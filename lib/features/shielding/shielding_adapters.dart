@@ -1,5 +1,6 @@
 import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
     show ReplyInfo;
+import 'package:PiliPlus/models/model_hot_video_item.dart';
 import 'package:PiliPlus/models/model_rec_video_item.dart';
 
 import 'shielding_matcher.dart';
@@ -46,6 +47,21 @@ abstract final class ShieldingAdapters {
       ]),
     );
   }
+
+  static ShieldCandidate fromRelatedVideo(HotVideoItemModel item) =>
+      ShieldCandidate(
+        scope: ShieldScope.recommendation,
+        title: item.title,
+        uid: item.owner.mid?.toString(),
+        authorName: item.owner.name,
+        category: item.tname,
+        tags: [if (item.tname?.trim().isNotEmpty == true) item.tname!.trim()],
+        tokens: _tokens([
+          item.title,
+          item.owner.name,
+          item.tname,
+        ]),
+      );
 
   static List<T> filterList<T>(
     List<T> items, {

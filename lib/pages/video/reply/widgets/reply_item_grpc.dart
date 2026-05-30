@@ -13,6 +13,7 @@ import 'package:PiliPlus/common/widgets/gesture/tap_gesture_recognizer.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/image_grid/image_grid_view.dart';
 import 'package:PiliPlus/common/widgets/pendant_avatar.dart';
+import 'package:PiliPlus/features/shielding/shielding.dart';
 import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
     show ReplyInfo, ReplyControl, Content, Url;
 import 'package:PiliPlus/grpc/reply.dart';
@@ -1136,6 +1137,30 @@ class ReplyItemGrpc extends StatelessWidget {
               leading: Icon(Icons.error_outline, color: errorColor, size: 19),
               title: Text('举报', style: style.copyWith(color: errorColor)),
             ),
+          ListTile(
+            onTap: () {
+              Get.back();
+              _addCommentQuickActionRule(
+                type: ShieldRuleType.uid,
+                pattern: _replyUid(item),
+              );
+            },
+            minLeadingWidth: 0,
+            leading: const Icon(Icons.person_off_outlined, size: 19),
+            title: Text('屏蔽该用户评论', style: style),
+          ),
+          ListTile(
+            onTap: () {
+              Get.back();
+              _addCommentQuickActionRule(
+                type: ShieldRuleType.keyword,
+                pattern: message,
+              );
+            },
+            minLeadingWidth: 0,
+            leading: const Icon(CustomIcons.shield_reply, size: 19),
+            title: Text('屏蔽该评论', style: style),
+          ),
           if (replyLevel == 1 && !isSubReply && ownerMid == upMid)
             ListTile(
               onTap: () {
@@ -1215,9 +1240,8 @@ class ReplyItemGrpc extends StatelessWidget {
           onPressed: () {
             Navigator.of(context).pop();
             final select = editableTextState.textEditingValue;
-            String text = RegExp.escape(
-              select.selection.textInside(select.text),
-            );
+            final selectedText = select.selection.textInside(select.text);
+            String text = RegExp.escape(selectedText);
             if (ReplyGrpc.enableFilter) text = '|$text';
 
             showConfirmDialog(
@@ -1237,7 +1261,12 @@ class ReplyItemGrpc extends StatelessWidget {
                   ],
                 ),
               ),
-              onConfirm: () {
+              onConfirm: () async {
+                await _addCommentQuickActionRule(
+                  type: ShieldRuleType.keyword,
+                  pattern: selectedText,
+                  showDuplicateToast: false,
+                );
                 final filter = ReplyGrpc.replyRegExp.pattern + text;
                 ReplyGrpc.replyRegExp = RegExp(filter, caseSensitive: true);
                 ReplyGrpc.enableFilter = true;
@@ -1254,5 +1283,32 @@ class ReplyItemGrpc extends StatelessWidget {
       buttonItems: items,
       anchors: editableTextState.contextMenuAnchors,
     );
+  }
+
+  static Future<void> _addCommentQuickActionRule({
+    required ShieldRuleType type,
+    required String pattern,
+    bool showDuplicateToast = true,
+  }) async {
+    try {
+      final rule = await ShieldSettingsStore().addQuickActionRule(
+        type: type,
+        scope: ShieldScope.comment,
+        pattern: pattern,
+      );
+      if (rule == null) {
+        if (showDuplicateToast) SmartDialog.showToast('规则已存在');
+        return;
+      }
+      SmartDialog.showToast('已加入评论屏蔽');
+    } catch (e) {
+      SmartDialog.showToast('保存失败: $e');
+    }
+  }
+
+  static String _replyUid(ReplyInfo item) {
+    if (item.hasMid()) return item.mid.toString();
+    if (item.hasMember()) return item.member.mid.toString();
+    return item.mid.toString();
   }
 }

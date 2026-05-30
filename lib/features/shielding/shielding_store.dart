@@ -83,7 +83,13 @@ class ShieldSettingsStore {
     if (cached != null) return cached;
     final raw = _box.get(rulesKey);
     if (raw == null) {
-      return ShieldRuleSet();
+      return ShieldRuleSet(
+        globalEnabled: _box.get(globalEnabledKey) as bool? ?? true,
+        recommendationEnabled:
+            _box.get(recommendationEnabledKey) as bool? ?? true,
+        commentEnabled: _box.get(commentEnabledKey) as bool? ?? true,
+        version: _box.get(versionKey) as int? ?? 1,
+      );
     }
     if (raw is! String || raw.isEmpty) {
       return ShieldRuleSet(globalEnabled: false, rules: const []);
@@ -127,6 +133,41 @@ class ShieldSettingsStore {
     } catch (e) {
       throw ShieldStoreException('Failed to save shielding settings: $e');
     }
+  }
+
+  Future<ShieldRule?> addQuickActionRule({
+    required ShieldRuleType type,
+    required ShieldScope scope,
+    required String pattern,
+  }) async {
+    final trimmed = pattern.trim();
+    if (trimmed.isEmpty) {
+      throw const ShieldStoreException('Rule pattern is empty');
+    }
+
+    final current = await load();
+    final normalized = trimmed.toLowerCase();
+    final exists = current.rules.any(
+      (rule) =>
+          rule.type == type &&
+          rule.scope == scope &&
+          rule.pattern.trim().toLowerCase() == normalized,
+    );
+    if (exists) return null;
+
+    final rule = ShieldRule(
+      id: 'quickAction-${DateTime.now().microsecondsSinceEpoch}',
+      type: type,
+      matchMode: ShieldMatchMode.exact,
+      scope: scope,
+      action: ShieldAction.block,
+      pattern: trimmed,
+      enabled: true,
+      updatedAt: DateTime.now(),
+      source: ShieldRuleSource.quickAction,
+    );
+    await save(current.copyWith(rules: [...current.rules, rule]));
+    return rule;
   }
 
   Future<void> setGlobalEnabled(bool enabled) async {

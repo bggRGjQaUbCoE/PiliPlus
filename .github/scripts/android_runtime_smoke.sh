@@ -26,6 +26,8 @@ record_status() {
     70) echo "result=fail reason=uiautomator_xml_missing" ;;
     80) echo "result=fail reason=screenshot_blank_or_invalid" ;;
     90) echo "result=fail reason=startup_failure_ui_visible" ;;
+    100) echo "result=fail reason=app_not_foreground" ;;
+    110) echo "result=fail reason=uiautomator_xml_missing_app_package" ;;
     *) echo "result=fail reason=unknown_status" ;;
   esac | tee -a runtime-smoke/evidence/status.txt
 }
@@ -117,6 +119,14 @@ if [ "$status" -eq 0 ]; then
     status=70
   elif grep -Fq "Startup failed" "$ui_dump"; then
     status=90
+  elif ! grep -Fq "package=\"${PACKAGE_NAME}\"" "$ui_dump"; then
+    status=110
+  fi
+fi
+
+if [ "$status" -eq 0 ]; then
+  if ! grep -Eq "mCurrentFocus=.*${PACKAGE_NAME}|currentFocus=.*${PACKAGE_NAME}" runtime-smoke/evidence/window.txt; then
+    status=100
   fi
 fi
 

@@ -129,7 +129,10 @@ jobs:
               uses: softprops/action-gh-release@v2
               with:
                   tag_name: ${{ env.release_tag }}
+                  target_commitish: ${{ github.sha }}
                   name: ${{ env.release_tag }}
+                  prerelease: true
+                  make_latest: false
                   files: PiliAvalon_android_*.apk
 
             - name: 上传

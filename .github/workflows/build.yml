@@ -116,12 +116,20 @@ jobs:
                   done
               shell: bash
 
+            - name: Resolve release tag
+              if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag != '' }}
+              run: |
+                  release_tag="${{ github.event.inputs.tag }}"
+                  release_tag="${release_tag//\{run_id\}/${GITHUB_RUN_ID}}"
+                  echo "release_tag=${release_tag}" >> "$GITHUB_ENV"
+              shell: bash
+
             - name: Release
               if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag != '' }}
               uses: softprops/action-gh-release@v2
               with:
-                  tag_name: ${{ github.event.inputs.tag }}
-                  name: ${{ github.event.inputs.tag }}
+                  tag_name: ${{ env.release_tag }}
+                  name: ${{ env.release_tag }}
                   files: PiliAvalon_android_*.apk
 
             - name: 上传

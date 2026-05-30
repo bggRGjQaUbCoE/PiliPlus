@@ -55,6 +55,7 @@ jobs:
         run: |
           find runtime-smoke/apk -maxdepth 2 -type f -name "*.apk" -print | tee runtime-smoke/apk-files.txt
           test -s runtime-smoke/apk-files.txt
+          chmod +x .github/scripts/android_runtime_smoke.sh
 
       - name: Enable KVM for emulator
         run: |
@@ -70,32 +71,7 @@ jobs:
           arch: x86_64
           profile: pixel_6
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
-          script: |
-            set -eu
-            mkdir -p runtime-smoke/evidence
-
-            APK="$(find runtime-smoke/apk -type f -name "*.apk" | head -n 1)"
-            test -n "$APK"
-
-            {
-              echo "artifact_run_id=$ARTIFACT_RUN_ID"
-              echo "apk=$APK"
-              echo "package_name=$PACKAGE_NAME"
-              echo "github_sha=${{ github.sha }}"
-              echo "github_ref=${{ github.ref }}"
-              adb shell getprop ro.build.version.release
-              adb shell getprop ro.product.model
-            } | tee runtime-smoke/evidence/runtime-smoke-metadata.txt
-
-            adb logcat -c
-            adb install -r "$APK" | tee runtime-smoke/evidence/adb-install.txt
-            adb shell monkey -p "$PACKAGE_NAME" -c android.intent.category.LAUNCHER 1 | tee runtime-smoke/evidence/adb-launch.txt
-            sleep 25
-
-            adb logcat -d > runtime-smoke/evidence/logcat.txt
-            adb shell dumpsys window > runtime-smoke/evidence/window.txt
-            adb exec-out screencap -p > runtime-smoke/evidence/screenshot.png
-            adb shell pidof "$PACKAGE_NAME" | tee runtime-smoke/evidence/pidof.txt
+          script: .github/scripts/android_runtime_smoke.sh
 
       - name: Upload runtime smoke evidence
         if: always()

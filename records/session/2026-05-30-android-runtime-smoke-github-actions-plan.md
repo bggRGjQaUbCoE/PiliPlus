@@ -129,3 +129,19 @@ Third push-triggered run:
 Workflow correction:
 
 - replace `set -euxo pipefail` with POSIX-compatible `set -eu` inside the emulator script.
+
+## Fourth Dispatch Finding
+
+Fourth push-triggered run:
+
+- run id: `26672522697`
+- conclusion: failure
+- progress: artifact download passed, APK file listing passed, KVM setup passed, emulator booted;
+- failed command: `test -n "$APK"`;
+- root cause: `reactivecircus/android-emulator-runner@v2` executes each `script` line as a separate `/usr/bin/sh -c` command, so the `APK=...` assignment did not persist to the next line.
+
+Workflow correction:
+
+- move runtime-smoke commands into `.github/scripts/android_runtime_smoke.sh`;
+- call that script as one command from the emulator action;
+- make the script collect evidence files before returning a nonzero status for install, launch, or process failures.

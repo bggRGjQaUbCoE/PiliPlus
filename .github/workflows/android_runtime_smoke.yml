@@ -37,13 +37,19 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Download x86_64 APK artifact
-        uses: actions/download-artifact@v6
-        with:
-          github-token: ${{ github.token }}
-          run-id: ${{ env.ARTIFACT_RUN_ID }}
-          pattern: "*_x86_64.apk"
-          merge-multiple: true
-          path: runtime-smoke/apk
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euxo pipefail
+          mkdir -p runtime-smoke/apk
+          gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${ARTIFACT_RUN_ID}/artifacts" \
+            --jq '.artifacts[] | select(.name | endswith("_x86_64.apk")) | [.id, .name] | @tsv' \
+            | head -n 1 > runtime-smoke/apk/artifact.tsv
+          test -s runtime-smoke/apk/artifact.tsv
+          ARTIFACT_ID="$(cut -f1 runtime-smoke/apk/artifact.tsv)"
+          ARTIFACT_NAME="$(cut -f2 runtime-smoke/apk/artifact.tsv)"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${ARTIFACT_ID}/zip" > "runtime-smoke/apk/${ARTIFACT_NAME}"
+          test -s "runtime-smoke/apk/${ARTIFACT_NAME}"
 
       - name: List downloaded APK
         run: |

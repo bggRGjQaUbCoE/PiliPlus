@@ -98,3 +98,20 @@ Workflow correction:
 
 - replace exact artifact name lookup with pattern `*_x86_64.apk`;
 - set `merge-multiple: true` so the APK lands directly under `runtime-smoke/apk`.
+
+## Second Dispatch Finding
+
+Second push-triggered run:
+
+- run id: `26672365508`
+- conclusion: failure
+- failed step: `Download x86_64 APK artifact`
+- improved evidence: the workflow found artifact id `7287253915` named `PiliAvalon_android_2.0.7-cf9ed10f0+5006_x86_64.apk`;
+- root cause: the prior Build workflow uploaded APK artifacts with `archive: false`, so the artifact API returns a raw `application/octet-stream` APK blob with `Content-Disposition: attachment; filename="PiliAvalon_android_2.0.7-cf9ed10f0+5006_x86_64.apk"`. `actions/download-artifact@v6` attempted to download and extract it as an artifact archive, then failed after five retries.
+
+Workflow correction:
+
+- replace `actions/download-artifact` with a `gh api` download step;
+- list run artifacts through the REST API;
+- select the artifact whose name ends with `_x86_64.apk`;
+- download the raw artifact blob directly into `runtime-smoke/apk/`.

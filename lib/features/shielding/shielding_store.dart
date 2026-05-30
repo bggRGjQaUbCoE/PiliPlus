@@ -139,6 +139,7 @@ class ShieldSettingsStore {
     required ShieldRuleType type,
     required ShieldScope scope,
     required String pattern,
+    ShieldMatchMode matchMode = ShieldMatchMode.exact,
   }) async {
     final trimmed = pattern.trim();
     if (trimmed.isEmpty) {
@@ -151,6 +152,7 @@ class ShieldSettingsStore {
       (rule) =>
           rule.type == type &&
           rule.scope == scope &&
+          rule.matchMode == matchMode &&
           rule.pattern.trim().toLowerCase() == normalized,
     );
     if (exists) return null;
@@ -158,7 +160,7 @@ class ShieldSettingsStore {
     final rule = ShieldRule(
       id: 'quickAction-${DateTime.now().microsecondsSinceEpoch}',
       type: type,
-      matchMode: ShieldMatchMode.exact,
+      matchMode: matchMode,
       scope: scope,
       action: ShieldAction.block,
       pattern: trimmed,

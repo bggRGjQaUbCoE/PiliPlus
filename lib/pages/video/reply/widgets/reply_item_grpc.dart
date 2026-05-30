@@ -1143,23 +1143,27 @@ class ReplyItemGrpc extends StatelessWidget {
               _addCommentQuickActionRule(
                 type: ShieldRuleType.uid,
                 pattern: _replyUid(item),
+                targetLabel: '屏蔽评论用户 UID ${_replyUid(item)}',
               );
             },
             minLeadingWidth: 0,
             leading: const Icon(Icons.person_off_outlined, size: 19),
-            title: Text('屏蔽该用户评论', style: style),
+            title: Text('屏蔽评论用户 UID: ${_replyUid(item)}', style: style),
           ),
           ListTile(
             onTap: () {
               Get.back();
+              final escapedMessage = RegExp.escape(message);
               _addCommentQuickActionRule(
                 type: ShieldRuleType.keyword,
-                pattern: message,
+                matchMode: ShieldMatchMode.regex,
+                pattern: '^$escapedMessage\$',
+                targetLabel: '屏蔽整条评论文本「$message」',
               );
             },
             minLeadingWidth: 0,
             leading: const Icon(CustomIcons.shield_reply, size: 19),
-            title: Text('屏蔽该评论', style: style),
+            title: Text('屏蔽整条评论文本', style: style),
           ),
           if (replyLevel == 1 && !isSubReply && ownerMid == upMid)
             ListTile(
@@ -1262,16 +1266,17 @@ class ReplyItemGrpc extends StatelessWidget {
                 ),
               ),
               onConfirm: () async {
-                await _addCommentQuickActionRule(
+                final saved = await _addCommentQuickActionRule(
                   type: ShieldRuleType.keyword,
                   pattern: selectedText,
+                  targetLabel: '屏蔽评论关键词「$selectedText」',
                   showDuplicateToast: false,
                 );
+                if (!saved) return;
                 final filter = ReplyGrpc.replyRegExp.pattern + text;
                 ReplyGrpc.replyRegExp = RegExp(filter, caseSensitive: true);
                 ReplyGrpc.enableFilter = true;
                 GStorage.setting.put(SettingBoxKey.banWordForReply, filter);
-                SmartDialog.showToast('已保存');
               },
             );
           },
@@ -1285,9 +1290,11 @@ class ReplyItemGrpc extends StatelessWidget {
     );
   }
 
-  static Future<void> _addCommentQuickActionRule({
+  static Future<bool> _addCommentQuickActionRule({
     required ShieldRuleType type,
     required String pattern,
+    required String targetLabel,
+    ShieldMatchMode matchMode = ShieldMatchMode.exact,
     bool showDuplicateToast = true,
   }) async {
     try {
@@ -1295,14 +1302,17 @@ class ReplyItemGrpc extends StatelessWidget {
         type: type,
         scope: ShieldScope.comment,
         pattern: pattern,
+        matchMode: matchMode,
       );
       if (rule == null) {
-        if (showDuplicateToast) SmartDialog.showToast('规则已存在');
-        return;
+        if (showDuplicateToast) SmartDialog.showToast('规则已存在：$targetLabel');
+        return true;
       }
-      SmartDialog.showToast('已加入评论屏蔽');
+      SmartDialog.showToast('已添加：$targetLabel');
+      return true;
     } catch (e) {
       SmartDialog.showToast('保存失败: $e');
+      return false;
     }
   }
 

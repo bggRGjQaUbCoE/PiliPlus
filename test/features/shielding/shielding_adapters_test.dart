@@ -201,6 +201,104 @@ void main() {
       expect(visible, [visibleReply]);
     });
 
+    test('filterRecommendationVideos applies tag rules to video lists', () {
+      final visibleVideo = HotVideoItemModel.fromJson({
+        'aid': 1,
+        'cid': 2,
+        'bvid': 'BV1',
+        'videos': 1,
+        'tid': 17,
+        'tname': '音乐',
+        'copyright': 1,
+        'pic': '',
+        'title': '现场合集',
+        'pubdate': 1,
+        'ctime': 1,
+        'desc': '',
+        'duration': 60,
+        'owner': {'mid': 42, 'name': '音乐UP'},
+        'stat': {'view': 1, 'like': 1, 'danmaku': 1},
+      });
+      final blockedVideo = HotVideoItemModel.fromJson({
+        'aid': 2,
+        'cid': 3,
+        'bvid': 'BV2',
+        'videos': 1,
+        'tid': 18,
+        'tname': '游戏',
+        'copyright': 1,
+        'pic': '',
+        'title': '攻略合集',
+        'pubdate': 1,
+        'ctime': 1,
+        'desc': '',
+        'duration': 60,
+        'owner': {'mid': 88, 'name': '游戏UP'},
+        'stat': {'view': 1, 'like': 1, 'danmaku': 1},
+      });
+
+      final visible = ShieldingAdapters.filterRecommendationVideos(
+        [visibleVideo, blockedVideo],
+        ShieldRuleSet(
+          rules: [
+            ShieldRule(
+              id: 'tag-game',
+              type: ShieldRuleType.tag,
+              matchMode: ShieldMatchMode.exact,
+              scope: ShieldScope.recommendation,
+              action: ShieldAction.block,
+              pattern: '游戏',
+              updatedAt: DateTime.fromMillisecondsSinceEpoch(1),
+            ),
+          ],
+        ),
+      );
+
+      expect(visible, [visibleVideo]);
+    });
+
+    test('filterRecommendationVideos bypasses rules when recommendation is off', () {
+      final items = [
+        HotVideoItemModel.fromJson({
+          'aid': 1,
+          'cid': 2,
+          'bvid': 'BV1',
+          'videos': 1,
+          'tid': 17,
+          'tname': '游戏',
+          'copyright': 1,
+          'pic': '',
+          'title': '攻略合集',
+          'pubdate': 1,
+          'ctime': 1,
+          'desc': '',
+          'duration': 60,
+          'owner': {'mid': 42, 'name': '游戏UP'},
+          'stat': {'view': 1, 'like': 1, 'danmaku': 1},
+        }),
+      ];
+
+      final visible = ShieldingAdapters.filterRecommendationVideos(
+        items,
+        ShieldRuleSet(
+          recommendationEnabled: false,
+          rules: [
+            ShieldRule(
+              id: 'tag-game',
+              type: ShieldRuleType.tag,
+              matchMode: ShieldMatchMode.exact,
+              scope: ShieldScope.recommendation,
+              action: ShieldAction.block,
+              pattern: '游戏',
+              updatedAt: DateTime.fromMillisecondsSinceEpoch(1),
+            ),
+          ],
+        ),
+      );
+
+      expect(identical(visible, items), isTrue);
+    });
+
     test('direct reply target lookup runs before comment shielding', () {
       final controller = _TargetLookupController(targetId: 42);
       final replies = [

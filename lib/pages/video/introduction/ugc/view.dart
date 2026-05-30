@@ -788,13 +788,10 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
     );
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onLongPress: () => VideoCardShieldQuickAction.showTextDialog(
+      onLongPress: () => VideoCardShieldQuickAction.showUpDialog(
         context: context,
-        title: 'UP屏蔽',
-        text: item.name ?? '',
-        type: item.mid == null ? ShieldRuleType.keyword : ShieldRuleType.uid,
-        pattern: item.mid?.toString(),
-        note: item.mid == null ? '未取得 UID，将按关键词屏蔽 UP 名称。' : null,
+        upName: item.name ?? '',
+        upUid: item.mid,
       ),
       onTap: () {
         if (item.mid == ownerMid &&
@@ -917,13 +914,10 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
     onTap: onPushMember,
     onLongPress: () {
       final card = introController.userStat.value.card;
-      VideoCardShieldQuickAction.showTextDialog(
+      VideoCardShieldQuickAction.showUpDialog(
         context: context,
-        title: 'UP屏蔽',
-        text: card?.name ?? '',
-        type: card?.mid == null ? ShieldRuleType.keyword : ShieldRuleType.uid,
-        pattern: card?.mid?.toString(),
-        note: card?.mid == null ? '未取得 UID，将按关键词屏蔽 UP 名称。' : null,
+        upName: card?.name ?? '',
+        upUid: card?.mid,
       );
     },
     behavior: HitTestBehavior.opaque,

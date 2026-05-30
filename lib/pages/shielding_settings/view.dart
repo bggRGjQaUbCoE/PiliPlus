@@ -6,16 +6,21 @@ import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 
 class ShieldingSettingsPage extends StatefulWidget {
-  const ShieldingSettingsPage({super.key, this.showAppBar = true});
+  const ShieldingSettingsPage({
+    super.key,
+    this.showAppBar = true,
+    ShieldSettingsStore? store,
+  }) : _store = store;
 
   final bool showAppBar;
+  final ShieldSettingsStore? _store;
 
   @override
   State<ShieldingSettingsPage> createState() => _ShieldingSettingsPageState();
 }
 
 class _ShieldingSettingsPageState extends State<ShieldingSettingsPage> {
-  final _store = ShieldSettingsStore();
+  late final _store = widget._store ?? ShieldSettingsStore();
   late ShieldRuleSet _ruleSet = _store.snapshot();
 
   @override
@@ -200,7 +205,6 @@ class _ShieldingSettingsPageState extends State<ShieldingSettingsPage> {
   }
 
   Future<void> _openEditor({ShieldRule? rule}) async {
-    final isNewRule = rule == null;
     ShieldRuleType type = rule?.type ?? ShieldRuleType.keyword;
     ShieldMatchMode mode = rule?.matchMode ?? ShieldMatchMode.exact;
     ShieldScope scope = rule?.scope ?? ShieldScope.both;
@@ -224,22 +228,20 @@ class _ShieldingSettingsPageState extends State<ShieldingSettingsPage> {
                   onChanged: (value) => pattern = value,
                 ),
                 const SizedBox(height: 12),
-                if (!isNewRule) ...[
-                  _dropdown(
-                    label: '类型',
-                    value: type,
-                    values: ShieldRuleType.values,
-                    text: shieldRuleTypeLabel,
-                    onChanged: (value) => setDialogState(() => type = value),
-                  ),
-                  _dropdown(
-                    label: '匹配方式',
-                    value: mode,
-                    values: ShieldMatchMode.values,
-                    text: (value) => shieldMatchModeLabel(value, type: type),
-                    onChanged: (value) => setDialogState(() => mode = value),
-                  ),
-                ],
+                _dropdown(
+                  label: '类型',
+                  value: type,
+                  values: ShieldRuleType.values,
+                  text: shieldRuleTypeLabel,
+                  onChanged: (value) => setDialogState(() => type = value),
+                ),
+                _dropdown(
+                  label: '匹配方式',
+                  value: mode,
+                  values: ShieldMatchMode.values,
+                  text: (value) => shieldMatchModeLabel(value, type: type),
+                  onChanged: (value) => setDialogState(() => mode = value),
+                ),
                 _dropdown(
                   label: '作用范围',
                   value: scope,
@@ -247,21 +249,19 @@ class _ShieldingSettingsPageState extends State<ShieldingSettingsPage> {
                   text: shieldScopeLabel,
                   onChanged: (value) => setDialogState(() => scope = value),
                 ),
-                if (!isNewRule)
-                  _dropdown(
-                    label: '动作',
-                    value: action,
-                    values: ShieldAction.values,
-                    text: shieldActionLabel,
-                    onChanged: (value) => setDialogState(() => action = value),
-                  ),
-                if (!isNewRule)
-                  SwitchListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: const Text('启用'),
-                    value: enabled,
-                    onChanged: (value) => setDialogState(() => enabled = value),
-                  ),
+                _dropdown(
+                  label: '动作',
+                  value: action,
+                  values: ShieldAction.values,
+                  text: shieldActionLabel,
+                  onChanged: (value) => setDialogState(() => action = value),
+                ),
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text('启用'),
+                  value: enabled,
+                  onChanged: (value) => setDialogState(() => enabled = value),
+                ),
               ],
             ),
           ),

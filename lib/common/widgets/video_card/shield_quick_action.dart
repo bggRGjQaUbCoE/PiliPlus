@@ -11,6 +11,7 @@ abstract final class VideoCardShieldQuickAction {
     required ShieldRuleType type,
     required String pattern,
     bool showToast = true,
+    String? successLabel,
   }) async {
     final trimmed = pattern.trim();
     if (trimmed.isEmpty) {
@@ -24,13 +25,39 @@ abstract final class VideoCardShieldQuickAction {
     );
     if (rule == null) {
       if (showToast) {
-        SmartDialog.showToast('已存在屏蔽规则');
+        SmartDialog.showToast(
+          '规则已存在：${successLabel ?? _ruleLabel(type, trimmed)}',
+        );
       }
       return;
     }
     if (showToast) {
-      SmartDialog.showToast('已添加屏蔽规则');
+      SmartDialog.showToast(
+        '已添加：${successLabel ?? _ruleLabel(type, trimmed)}',
+      );
     }
+  }
+
+  static List<UpShieldRuleOption> upRuleOptions({
+    required String upName,
+    Object? upUid,
+  }) {
+    final trimmedName = upName.trim();
+    final uid = upUid?.toString().trim();
+    return [
+      if (uid?.isNotEmpty == true)
+        UpShieldRuleOption(
+          label: '屏蔽用户 UID: $uid',
+          type: ShieldRuleType.uid,
+          pattern: uid!,
+        ),
+      if (trimmedName.isNotEmpty)
+        UpShieldRuleOption(
+          label: '屏蔽用户名关键词: $trimmedName',
+          type: ShieldRuleType.keyword,
+          pattern: trimmedName,
+        ),
+    ];
   }
 
   static Future<void> showRecommendationDialog({
@@ -60,13 +87,9 @@ abstract final class VideoCardShieldQuickAction {
                   onRuleAdded: onRuleAdded,
                 ),
                 if (upName?.trim().isNotEmpty == true)
-                  _TextActionRow(
-                    label: 'UP',
-                    text: upName!.trim(),
-                    type: upUid == null
-                        ? ShieldRuleType.keyword
-                        : ShieldRuleType.uid,
-                    pattern: upUid?.toString(),
+                  _UpActionRow(
+                    upName: upName!.trim(),
+                    upUid: upUid,
                     onRuleAdded: onRuleAdded,
                   ),
                 if (reason?.trim().isNotEmpty == true)
@@ -90,6 +113,35 @@ abstract final class VideoCardShieldQuickAction {
               ),
               child: const Text('保存封面'),
             ),
+          TextButton(
+            onPressed: Get.back,
+            child: const Text('关闭'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  static Future<void> showUpDialog({
+    required BuildContext context,
+    required String upName,
+    Object? upUid,
+    VoidCallback? onRuleAdded,
+  }) async {
+    await showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('UP屏蔽'),
+        content: SingleChildScrollView(
+          child: SelectionArea(
+            child: _UpActionRow(
+              upName: upName.trim(),
+              upUid: upUid,
+              onRuleAdded: onRuleAdded,
+            ),
+          ),
+        ),
+        actions: [
           TextButton(
             onPressed: Get.back,
             child: const Text('关闭'),
@@ -144,6 +196,11 @@ abstract final class VideoCardShieldQuickAction {
               await addRule(
                 type: type,
                 pattern: resolvedPattern,
+                successLabel: _contextualRuleLabel(
+                  title,
+                  type,
+                  resolvedPattern,
+                ),
               );
               onRuleAdded?.call();
               if (context.mounted) {
@@ -165,6 +222,106 @@ abstract final class VideoCardShieldQuickAction {
     await addRule(type: type, pattern: pattern);
     onRuleAdded?.call();
   }
+
+  static String _ruleLabel(ShieldRuleType type, String pattern) =>
+      switch (type) {
+        ShieldRuleType.uid => '屏蔽推荐用户 UID $pattern',
+        ShieldRuleType.keyword => '屏蔽推荐关键词「$pattern」',
+        ShieldRuleType.category => '屏蔽推荐分区「$pattern」',
+        ShieldRuleType.tag => '屏蔽推荐标签「$pattern」',
+      };
+
+  static String _contextualRuleLabel(
+    String label,
+    ShieldRuleType type,
+    String pattern,
+  ) {
+    if (type == ShieldRuleType.tag) {
+      return '屏蔽推荐标签「$pattern」';
+    }
+    if (label.contains('标题')) {
+      return '屏蔽推荐标题关键词「$pattern」';
+    }
+    if (label.contains('推荐理由')) {
+      return '屏蔽推荐理由关键词「$pattern」';
+    }
+    return _ruleLabel(type, pattern);
+  }
+}
+
+class UpShieldRuleOption {
+  const UpShieldRuleOption({
+    required this.label,
+    required this.type,
+    required this.pattern,
+  });
+
+  final String label;
+  final ShieldRuleType type;
+  final String pattern;
+}
+
+class _UpActionRow extends StatelessWidget {
+  const _UpActionRow({
+    required this.upName,
+    required this.upUid,
+    this.onRuleAdded,
+  });
+
+  final String upName;
+  final Object? upUid;
+  final VoidCallback? onRuleAdded;
+
+  @override
+  Widget build(BuildContext context) {
+    final options = VideoCardShieldQuickAction.upRuleOptions(
+      upName: upName,
+      upUid: upUid,
+    );
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'UP',
+            style: TextStyle(
+              fontSize: 12,
+              color: Theme.of(context).colorScheme.outline,
+            ),
+          ),
+          const SizedBox(height: 3),
+          Text(upName),
+          const SizedBox(height: 3),
+          Wrap(
+            spacing: 8,
+            runSpacing: 4,
+            children: [
+              TextButton(
+                onPressed: () => Utils.copyText(upName),
+                child: const Text('复制'),
+              ),
+              for (final option in options)
+                TextButton(
+                  onPressed: () async {
+                    await VideoCardShieldQuickAction.addRule(
+                      type: option.type,
+                      pattern: option.pattern,
+                      successLabel: option.label,
+                    );
+                    onRuleAdded?.call();
+                    if (context.mounted) {
+                      Navigator.of(context).pop();
+                    }
+                  },
+                  child: Text(option.label),
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _TextActionRow extends StatefulWidget {
@@ -172,14 +329,12 @@ class _TextActionRow extends StatefulWidget {
     required this.label,
     required this.text,
     required this.type,
-    this.pattern,
     this.onRuleAdded,
   });
 
   final String label;
   final String text;
   final ShieldRuleType type;
-  final String? pattern;
   final VoidCallback? onRuleAdded;
 
   @override
@@ -235,9 +390,16 @@ class _TextActionRowState extends State<_TextActionRow> {
               ),
               TextButton(
                 onPressed: () async {
+                  final selectedText = _selectedOrFullText();
                   await VideoCardShieldQuickAction.addRule(
                     type: widget.type,
-                    pattern: widget.pattern ?? _selectedOrFullText(),
+                    pattern: selectedText,
+                    successLabel: VideoCardShieldQuickAction
+                        ._contextualRuleLabel(
+                          widget.label,
+                          widget.type,
+                          selectedText,
+                        ),
                   );
                   widget.onRuleAdded?.call();
                   if (context.mounted) {
@@ -254,7 +416,6 @@ class _TextActionRowState extends State<_TextActionRow> {
   }
 
   String _selectedOrFullText() {
-    if (widget.pattern != null) return widget.pattern!;
     final selection = controller.selection;
     if (!selection.isCollapsed && selection.isValid) {
       return selection.textInside(controller.text);

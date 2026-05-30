@@ -13,19 +13,21 @@ abstract final class ShieldingAdapters {
   ) {
     final owner = json['owner'] as Map?;
     final args = json['args'] as Map?;
+    final category = _string(json['tname'] ?? args?['tname']);
+    final tags = _tags(json, fallbackCategory: category);
     return ShieldCandidate(
       scope: ShieldScope.recommendation,
       title: item.title,
       uid: _string(owner?['mid'] ?? args?['up_id'] ?? item.owner.mid),
       authorName:
           _string(owner?['name'] ?? args?['up_name'] ?? item.owner.name),
-      category: _string(json['tname'] ?? args?['tname']),
-      tags: _tags(json),
+      category: category,
+      tags: tags,
       tokens: _tokens([
         item.title,
         item.owner.name,
-        _string(json['tname'] ?? args?['tname']),
-        ..._tags(json),
+        category,
+        ...tags,
       ]),
     );
   }
@@ -80,18 +82,37 @@ abstract final class ShieldingAdapters {
   static bool isVisible(ShieldCandidate candidate, ShieldRuleSet ruleSet) =>
       ShieldMatcher.match(candidate, ruleSet).visible;
 
-  static List<String> _tags(Map<String, dynamic> json) {
+  static List<HotVideoItemModel> filterRecommendationVideos(
+    List<HotVideoItemModel> items,
+    ShieldRuleSet ruleSet,
+  ) =>
+      filterList(
+        items,
+        enabled: ruleSet.recommendationEnabled,
+        ruleSet: ruleSet,
+        toCandidate: fromRelatedVideo,
+      );
+
+  static List<String> _tags(Map<String, dynamic> json, {String? fallbackCategory}) {
     final raw = json['tag'] ?? json['tags'];
     if (raw is Iterable) {
-      return raw.whereType<Object?>().map((e) => e.toString()).toList();
+      return [
+        ...raw.whereType<Object?>().map((e) => e.toString()),
+        if (fallbackCategory?.trim().isNotEmpty == true) fallbackCategory!.trim(),
+      ];
     }
     if (raw is String && raw.trim().isNotEmpty) {
-      return raw
+      return [
+        ...raw
           .split(RegExp(r'[,，\s]+'))
           .where((tag) => tag.trim().isNotEmpty)
-          .toList();
+          .map((tag) => tag.trim()),
+        if (fallbackCategory?.trim().isNotEmpty == true) fallbackCategory!.trim(),
+      ];
     }
-    return const [];
+    return [
+      if (fallbackCategory?.trim().isNotEmpty == true) fallbackCategory!.trim(),
+    ];
   }
 
   static List<String> _tokens(Iterable<String?> values) => values

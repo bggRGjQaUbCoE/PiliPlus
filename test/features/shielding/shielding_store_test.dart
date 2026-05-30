@@ -194,6 +194,31 @@ void main() {
       expect(store.snapshot().rules, hasLength(2));
     });
 
+    test('dedupes quickAction rules by match mode too', () async {
+      final box = _MemoryBox();
+      final store = ShieldSettingsStore(box: box);
+
+      final exact = await store.addQuickActionRule(
+        type: ShieldRuleType.keyword,
+        scope: ShieldScope.comment,
+        pattern: 'same text',
+      );
+      final regex = await store.addQuickActionRule(
+        type: ShieldRuleType.keyword,
+        scope: ShieldScope.comment,
+        matchMode: ShieldMatchMode.regex,
+        pattern: 'same text',
+      );
+
+      expect(exact, isNotNull);
+      expect(regex, isNotNull);
+      expect(store.snapshot().rules, hasLength(2));
+      expect(
+        store.snapshot().rules.map((rule) => rule.matchMode),
+        containsAll([ShieldMatchMode.exact, ShieldMatchMode.regex]),
+      );
+    });
+
     test('quickAction loads persisted rules before appending without cached snapshot', () async {
       final existing = ShieldRule(
         id: 'persisted',

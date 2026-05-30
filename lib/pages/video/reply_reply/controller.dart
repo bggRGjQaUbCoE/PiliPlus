@@ -75,7 +75,7 @@ class VideoReplyReplyController extends ReplyController
     if (data is DetailListReply) {
       count.value = data.root.count.toInt();
       if (isRefresh && !hasRoot) {
-        firstFloor.value ??= data.root;
+        firstFloor.value ??= applyFirstFloorShielding(data.root);
       }
     }
 
@@ -89,6 +89,11 @@ class VideoReplyReplyController extends ReplyController
       id = null;
     }
     super.handleListResponse(dataList);
+  }
+
+  ReplyInfo? applyFirstFloorShielding(ReplyInfo reply) {
+    final visible = applyShielding([reply]);
+    return visible.isEmpty ? null : visible.single;
   }
 
   bool setIndexById(Int64 id64, [List<ReplyInfo>? replies]) {

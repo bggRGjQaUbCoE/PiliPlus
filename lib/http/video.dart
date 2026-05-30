@@ -207,7 +207,10 @@ abstract final class VideoHttp {
           list.add(HotVideoItemModel.fromJson(i));
         }
       }
-      return Success(list);
+      final shieldRuleSet = ShieldSettingsStore().snapshot();
+      return Success(
+        ShieldingAdapters.filterRecommendationVideos(list, shieldRuleSet),
+      );
     } else {
       return Error(res.data['message']);
     }
@@ -350,12 +353,9 @@ abstract final class VideoHttp {
       final shieldRuleSet = ShieldSettingsStore().snapshot();
       final visibleList = list == null
           ? null
-          : ShieldingAdapters.filterList(
-              list,
-              enabled: shieldRuleSet.recommendationEnabled,
-              ruleSet: shieldRuleSet,
-              toCandidate: ShieldingAdapters.fromRelatedVideo,
-            );
+          : RecommendFilter.applyFilterToRelatedVideos
+          ? ShieldingAdapters.filterRecommendationVideos(list, shieldRuleSet)
+          : list;
       return Success(visibleList);
     } else {
       return Error(res.data['message']);

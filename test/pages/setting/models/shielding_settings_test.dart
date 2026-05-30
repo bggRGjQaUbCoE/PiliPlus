@@ -1,6 +1,8 @@
 import 'package:PiliPlus/features/shielding/shielding.dart';
 import 'package:PiliPlus/pages/setting/models/shielding_settings.dart';
+import 'package:PiliPlus/pages/shielding_settings/view.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:get/get.dart';
 
 void main() {
   group('shielding setting labels', () {
@@ -44,6 +46,29 @@ void main() {
       expect(shieldMatchModeLabel(ShieldMatchMode.exact), '完全相同');
     });
   });
+
+  group('ShieldingSettingsPage', () {
+    testWidgets('new manual rule editor shows type match and action controls', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        GetMaterialApp(
+          home: ShieldingSettingsPage(
+            store: ShieldSettingsStore(box: _MemoryBox()),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      await tester.tap(find.byTooltip('新增').first);
+      await tester.pumpAndSettle();
+
+      expect(find.text('类型'), findsOneWidget);
+      expect(find.text('匹配方式'), findsOneWidget);
+      expect(find.text('动作'), findsOneWidget);
+      expect(find.text('启用'), findsOneWidget);
+    });
+  });
 }
 
 ShieldRule _rule({
@@ -65,3 +90,21 @@ ShieldRule _rule({
       enabled: enabled,
       updatedAt: DateTime.fromMillisecondsSinceEpoch(1),
     );
+
+class _MemoryBox implements ShieldSettingsBox {
+  final values = <String, Object?>{};
+
+  @override
+  Object? get(String key, {Object? defaultValue}) =>
+      values.containsKey(key) ? values[key] : defaultValue;
+
+  @override
+  Future<void> put(String key, Object? value) async {
+    values[key] = value;
+  }
+
+  @override
+  Future<void> delete(String key) async {
+    values.remove(key);
+  }
+}

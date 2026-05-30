@@ -149,6 +149,9 @@ dist
 test*
 !test/
 test/*
+!test/bootstrap/
+test/bootstrap/*
+!test/bootstrap/bootstrap_app_test.dart
 !test/features/
 test/features/*
 !test/features/shielding/

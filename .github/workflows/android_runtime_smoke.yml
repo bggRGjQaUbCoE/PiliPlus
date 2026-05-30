@@ -6,6 +6,7 @@ on:
       - phase-1-shielding-core
     paths:
       - ".github/workflows/android_runtime_smoke.yml"
+      - ".github/scripts/android_runtime_smoke.sh"
   workflow_dispatch:
     inputs:
       artifact_run_id:

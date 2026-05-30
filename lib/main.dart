@@ -29,7 +29,6 @@ import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/theme_utils.dart';
-import 'package:PiliPlus/utils/utils.dart';
 import 'package:catcher_2/catcher_2.dart';
 import 'package:collection/collection.dart';
 import 'package:device_info_plus/device_info_plus.dart';
@@ -94,17 +93,21 @@ Future<void> _initSdkInt() async {
   DeviceUtils.sdkInt = (await DeviceInfoPlugin().androidInfo).version.sdkInt;
 }
 
-void main() async {
+void main() {
   ScaledWidgetsFlutterBinding.ensureInitialized();
   MediaKit.ensureInitialized();
+  runApp(
+    BootstrapApp(
+      initialize: _initializeStartup,
+      onInitialized: _runInitializedApp,
+      child: const MyApp(),
+    ),
+  );
+}
+
+Future<void> _initializeStartup() async {
   await _initAppPath();
-  try {
-    await GStorage.init();
-  } catch (e) {
-    await Utils.copyText(e.toString());
-    if (kDebugMode) debugPrint('GStorage init error: $e');
-    exit(0);
-  }
+  await GStorage.init();
   ScaledWidgetsFlutterBinding.instance.scaleFactor = Pref.uiScale;
   await Future.wait([_initDownPath(), _initTmpPath()]);
   Get
@@ -189,7 +192,9 @@ void main() async {
   if (Pref.dynamicColor) {
     await MyApp.initPlatformState();
   }
+}
 
+Future<bool> _runInitializedApp() async {
   if (Pref.enableLog) {
     // 异常捕获 logo记录
     final customParameters = {
@@ -209,8 +214,139 @@ void main() async {
       logger: logger,
       customParameters: customParameters,
     );
-  } else {
-    runApp(const MyApp());
+    return false;
+  }
+  return true;
+}
+
+class BootstrapApp extends StatefulWidget {
+  const BootstrapApp({
+    required this.initialize,
+    required this.onInitialized,
+    required this.child,
+    super.key,
+  });
+
+  final Future<void> Function() initialize;
+  final Future<bool> Function() onInitialized;
+  final Widget child;
+
+  @override
+  State<BootstrapApp> createState() => _BootstrapAppState();
+}
+
+class _BootstrapAppState extends State<BootstrapApp> {
+  Object? _error;
+  StackTrace? _stackTrace;
+  bool _ready = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _start();
+  }
+
+  Future<void> _start() async {
+    try {
+      await widget.initialize();
+      final showChild = await widget.onInitialized();
+      if (mounted) {
+        setState(() {
+          _ready = showChild;
+        });
+      }
+    } catch (error, stackTrace) {
+      if (kDebugMode) {
+        debugPrint('Startup failed: $error');
+        debugPrintStack(stackTrace: stackTrace);
+      }
+      if (mounted) {
+        setState(() {
+          _error = error;
+          _stackTrace = stackTrace;
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_ready) return widget.child;
+
+    return MaterialApp(
+      title: Constants.appName,
+      home: _error == null
+          ? const _BootstrapLoadingScreen()
+          : _BootstrapFailureScreen(
+              error: _error!,
+              stackTrace: _stackTrace,
+            ),
+    );
+  }
+}
+
+class _BootstrapLoadingScreen extends StatelessWidget {
+  const _BootstrapLoadingScreen();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(
+      body: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: 16),
+            Text('Starting PiliPlus...'),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _BootstrapFailureScreen extends StatelessWidget {
+  const _BootstrapFailureScreen({
+    required this.error,
+    required this.stackTrace,
+  });
+
+  final Object error;
+  final StackTrace? stackTrace;
+
+  @override
+  Widget build(BuildContext context) {
+    final detail = [
+      error.toString(),
+      if (stackTrace != null) stackTrace.toString(),
+    ].join('\n\n');
+
+    return Scaffold(
+      appBar: AppBar(title: const Text(Constants.appName)),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Startup failed',
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 12),
+              const Text(
+                'PiliPlus could not finish startup initialization.',
+              ),
+              const SizedBox(height: 16),
+              SelectableText(
+                detail,
+                style: const TextStyle(fontFamily: 'monospace'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
 

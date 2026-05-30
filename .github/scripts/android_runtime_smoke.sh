@@ -56,7 +56,9 @@ if ! adb install -r "$apk" | tee runtime-smoke/evidence/adb-install.txt; then
 fi
 
 if [ "$status" -eq 0 ]; then
-  if ! adb shell monkey -p "$PACKAGE_NAME" -c android.intent.category.LAUNCHER 1 | tee runtime-smoke/evidence/adb-launch.txt; then
+  adb shell cmd activity close-system-dialogs >> runtime-smoke/evidence/adb-launch.txt 2>&1 || true
+  adb shell am force-stop "$PACKAGE_NAME" >> runtime-smoke/evidence/adb-launch.txt 2>&1 || true
+  if ! adb shell am start -W -n "${PACKAGE_NAME}/.MainActivity" -a android.intent.action.MAIN -c android.intent.category.LAUNCHER | tee -a runtime-smoke/evidence/adb-launch.txt; then
     status=30
   fi
 fi

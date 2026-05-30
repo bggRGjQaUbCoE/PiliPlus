@@ -85,7 +85,7 @@ void main() {
       expect(candidate.authorName, '评论者');
     });
 
-    test('maps related video title owner category and tag fields', () {
+    test('maps related video title owner and category fields', () {
       final video = HotVideoItemModel.fromJson({
         'aid': 1,
         'cid': 2,
@@ -111,7 +111,7 @@ void main() {
       expect(candidate.uid, '42');
       expect(candidate.authorName, '玩家UP');
       expect(candidate.category, '单机游戏');
-      expect(candidate.tags, contains('单机游戏'));
+      expect(candidate.tags, isEmpty);
     });
 
     test('filterList handles all-blocked list without requesting more data', () {
@@ -201,7 +201,51 @@ void main() {
       expect(visible, [visibleReply]);
     });
 
-    test('filterRecommendationVideos applies tag rules to video lists', () {
+    test('raw recommendation tags stay distinct from category', () {
+      final item = RcmdVideoItemModel.fromJson({
+        'id': 1,
+        'bvid': 'BV1',
+        'cid': 2,
+        'goto': 'av',
+        'uri': '',
+        'pic': '',
+        'title': '猫咪睡觉合集',
+        'duration': 60,
+        'pubdate': 1,
+        'owner': {'mid': 42, 'name': 'UP主'},
+        'stat': {'view': 1, 'like': 1, 'danmaku': 1},
+        'tname': '动物',
+      });
+
+      final candidate = ShieldingAdapters.fromRecommendationJson(
+        item,
+        {
+          'owner': {'mid': 42, 'name': 'UP主'},
+          'tname': '动物',
+          'tag': ['萌宠'],
+        },
+      );
+
+      final rules = ShieldRuleSet(
+        rules: [
+          ShieldRule(
+            id: 'tag-pet',
+            type: ShieldRuleType.tag,
+            matchMode: ShieldMatchMode.exact,
+            scope: ShieldScope.recommendation,
+            action: ShieldAction.block,
+            pattern: '萌宠',
+            updatedAt: DateTime.fromMillisecondsSinceEpoch(1),
+          ),
+        ],
+      );
+
+      expect(candidate.category, '动物');
+      expect(candidate.tags, ['萌宠']);
+      expect(ShieldingAdapters.isVisible(candidate, rules), isFalse);
+    });
+
+    test('filterRecommendationVideos applies category rules to video lists', () {
       final visibleVideo = HotVideoItemModel.fromJson({
         'aid': 1,
         'cid': 2,
@@ -243,7 +287,7 @@ void main() {
           rules: [
             ShieldRule(
               id: 'tag-game',
-              type: ShieldRuleType.tag,
+              type: ShieldRuleType.category,
               matchMode: ShieldMatchMode.exact,
               scope: ShieldScope.recommendation,
               action: ShieldAction.block,
@@ -285,7 +329,7 @@ void main() {
           rules: [
             ShieldRule(
               id: 'tag-game',
-              type: ShieldRuleType.tag,
+              type: ShieldRuleType.category,
               matchMode: ShieldMatchMode.exact,
               scope: ShieldScope.recommendation,
               action: ShieldAction.block,

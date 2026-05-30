@@ -353,9 +353,7 @@ abstract final class VideoHttp {
       final shieldRuleSet = ShieldSettingsStore().snapshot();
       final visibleList = list == null
           ? null
-          : RecommendFilter.applyFilterToRelatedVideos
-          ? ShieldingAdapters.filterRecommendationVideos(list, shieldRuleSet)
-          : list;
+          : ShieldingAdapters.filterRecommendationVideos(list, shieldRuleSet);
       return Success(visibleList);
     } else {
       return Error(res.data['message']);

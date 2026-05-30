@@ -14,7 +14,7 @@ abstract final class ShieldingAdapters {
     final owner = json['owner'] as Map?;
     final args = json['args'] as Map?;
     final category = _string(json['tname'] ?? args?['tname']);
-    final tags = _tags(json, fallbackCategory: category);
+    final tags = _tags(json);
     return ShieldCandidate(
       scope: ShieldScope.recommendation,
       title: item.title,
@@ -26,7 +26,6 @@ abstract final class ShieldingAdapters {
       tokens: _tokens([
         item.title,
         item.owner.name,
-        category,
         ...tags,
       ]),
     );
@@ -57,7 +56,6 @@ abstract final class ShieldingAdapters {
         uid: item.owner.mid?.toString(),
         authorName: item.owner.name,
         category: item.tname,
-        tags: [if (item.tname?.trim().isNotEmpty == true) item.tname!.trim()],
         tokens: _tokens([
           item.title,
           item.owner.name,
@@ -93,26 +91,18 @@ abstract final class ShieldingAdapters {
         toCandidate: fromRelatedVideo,
       );
 
-  static List<String> _tags(Map<String, dynamic> json, {String? fallbackCategory}) {
+  static List<String> _tags(Map<String, dynamic> json) {
     final raw = json['tag'] ?? json['tags'];
     if (raw is Iterable) {
-      return [
-        ...raw.whereType<Object?>().map((e) => e.toString()),
-        if (fallbackCategory?.trim().isNotEmpty == true) fallbackCategory!.trim(),
-      ];
+      return raw.whereType<Object?>().map((e) => e.toString()).toList();
     }
     if (raw is String && raw.trim().isNotEmpty) {
-      return [
-        ...raw
+      return raw
           .split(RegExp(r'[,，\s]+'))
           .where((tag) => tag.trim().isNotEmpty)
-          .map((tag) => tag.trim()),
-        if (fallbackCategory?.trim().isNotEmpty == true) fallbackCategory!.trim(),
-      ];
+          .toList();
     }
-    return [
-      if (fallbackCategory?.trim().isNotEmpty == true) fallbackCategory!.trim(),
-    ];
+    return const [];
   }
 
   static List<String> _tokens(Iterable<String?> values) => values

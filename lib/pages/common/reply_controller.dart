@@ -89,7 +89,7 @@ abstract class ReplyController<R> extends CommonListController<R, ReplyInfo> {
   }
 
   List<ReplyInfo> applyShielding(List<ReplyInfo> replies) {
-    final ruleSet = ShieldSettingsStore().snapshot();
+    final ruleSet = shieldingRuleSet;
     final enabled = ruleSet.globalEnabled && ruleSet.commentEnabled;
     final visibleReplies = ShieldingAdapters.filterList(
       replies,
@@ -115,6 +115,8 @@ abstract class ReplyController<R> extends CommonListController<R, ReplyInfo> {
     }
     return visibleReplies;
   }
+
+  ShieldRuleSet get shieldingRuleSet => ShieldSettingsStore().snapshot();
 
   @override
   Future<void> onRefresh() {

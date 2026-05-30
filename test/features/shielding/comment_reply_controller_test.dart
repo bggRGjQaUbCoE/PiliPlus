@@ -7,32 +7,19 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('ReplyController comment shielding', () {
-    late ShieldSettingsStore store;
-
-    setUp(() async {
-      store = ShieldSettingsStore(box: _MemoryBox());
-      await store.clear();
-    });
-
-    tearDown(() async {
-      await store.clear();
-    });
-
-    test('filters nested preview replies with comment scoped rules', () async {
-      await store.save(
-        ShieldRuleSet(
-          rules: [
-            ShieldRule(
-              id: 'spoiler',
-              type: ShieldRuleType.keyword,
-              matchMode: ShieldMatchMode.exact,
-              scope: ShieldScope.comment,
-              action: ShieldAction.block,
-              pattern: '剧透',
-              updatedAt: DateTime.fromMillisecondsSinceEpoch(1),
-            ),
-          ],
-        ),
+    test('filters nested preview replies with comment scoped rules', () {
+      final ruleSet = ShieldRuleSet(
+        rules: [
+          ShieldRule(
+            id: 'spoiler',
+            type: ShieldRuleType.keyword,
+            matchMode: ShieldMatchMode.exact,
+            scope: ShieldScope.comment,
+            action: ShieldAction.block,
+            pattern: '剧透',
+            updatedAt: DateTime.fromMillisecondsSinceEpoch(1),
+          ),
+        ],
       );
       final parent = ReplyInfo(
         id: Int64(1),
@@ -55,7 +42,7 @@ void main() {
         ],
       );
 
-      final visible = _ReplyController().applyShielding([parent]);
+      final visible = _ReplyController(ruleSet).applyShielding([parent]);
 
       expect(visible, [parent]);
       expect(parent.replies.map((reply) => reply.id.toInt()), [2]);
@@ -64,29 +51,18 @@ void main() {
 }
 
 class _ReplyController extends ReplyController<MainListReply> {
+  _ReplyController(this.ruleSet);
+
+  final ShieldRuleSet ruleSet;
+
+  @override
+  ShieldRuleSet get shieldingRuleSet => ruleSet;
+
   @override
   Object get sourceId => 1;
 
   @override
   Future<LoadingState<MainListReply>> customGetData() {
     throw UnimplementedError();
-  }
-}
-
-class _MemoryBox implements ShieldSettingsBox {
-  final values = <String, Object?>{};
-
-  @override
-  Object? get(String key, {Object? defaultValue}) =>
-      values.containsKey(key) ? values[key] : defaultValue;
-
-  @override
-  Future<void> put(String key, Object? value) async {
-    values[key] = value;
-  }
-
-  @override
-  Future<void> delete(String key) async {
-    values.remove(key);
   }
 }

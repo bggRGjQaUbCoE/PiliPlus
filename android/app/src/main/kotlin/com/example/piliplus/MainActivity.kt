@@ -35,7 +35,7 @@ class MainActivity : AudioServiceActivity() {
         methodChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "PiliPlus")
         appNameMethodChannel =
             MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "PiliAvalon")
-        val methodCallHandler = MethodChannel.MethodCallHandler { call, result ->
+        val methodCallHandler = MethodChannel.MethodCallHandler handler@{ call, result ->
             when (call.method) {
                 "back" -> back()
 
@@ -116,7 +116,7 @@ class MainActivity : AudioServiceActivity() {
                         ) {
                             startActivity(intent)
                             result.success(true)
-                            return@setMethodCallHandler
+                            return@handler
                         }
                     } catch (_: Throwable) {
                     }
@@ -129,7 +129,7 @@ class MainActivity : AudioServiceActivity() {
                         ) {
                             startActivity(intent)
                             result.success(true)
-                            return@setMethodCallHandler
+                            return@handler
                         }
                     } catch (_: Throwable) {
                     }

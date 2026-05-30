@@ -24,6 +24,7 @@ record_status() {
     60) echo "result=fail reason=crash_or_anr_in_logcat" ;;
     70) echo "result=fail reason=uiautomator_xml_missing" ;;
     80) echo "result=fail reason=screenshot_blank_or_invalid" ;;
+    90) echo "result=fail reason=startup_failure_ui_visible" ;;
     *) echo "result=fail reason=unknown_status" ;;
   esac | tee -a runtime-smoke/evidence/status.txt
 }
@@ -70,7 +71,7 @@ fi
 adb exec-out screencap -p > "$screenshot" || true
 
 if [ "$status" -eq 0 ]; then
-  if grep -Eiq "FATAL EXCEPTION|AndroidRuntime|CRASH|ANR|Process .* has died|Force finishing activity" "$filtered_logcat"; then
+  if grep -Eiq "FATAL EXCEPTION|AndroidRuntime|ANR in ${PACKAGE_NAME}|Process ${PACKAGE_NAME} has died|Force finishing activity.*${PACKAGE_NAME}|Process: ${PACKAGE_NAME}" "$filtered_logcat"; then
     status=60
   fi
 fi
@@ -78,6 +79,8 @@ fi
 if [ "$status" -eq 0 ]; then
   if [ ! -s "$ui_dump" ]; then
     status=70
+  elif grep -Fq "Startup failed" "$ui_dump"; then
+    status=90
   fi
 fi
 

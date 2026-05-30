@@ -26,13 +26,16 @@ import kotlin.math.roundToInt
 
 class MainActivity : AudioServiceActivity() {
     private lateinit var methodChannel: MethodChannel
+    private lateinit var appNameMethodChannel: MethodChannel
     private var isFoldable = false
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
 
         methodChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "PiliPlus")
-        methodChannel.setMethodCallHandler { call, result ->
+        appNameMethodChannel =
+            MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "PiliAvalon")
+        val methodCallHandler = MethodChannel.MethodCallHandler { call, result ->
             when (call.method) {
                 "back" -> back()
 
@@ -203,6 +206,8 @@ class MainActivity : AudioServiceActivity() {
                 else -> result.notImplemented()
             }
         }
+        methodChannel.setMethodCallHandler(methodCallHandler)
+        appNameMethodChannel.setMethodCallHandler(methodCallHandler)
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
@@ -271,6 +276,7 @@ class MainActivity : AudioServiceActivity() {
     override fun onUserLeaveHint() {
         super.onUserLeaveHint()
         methodChannel.invokeMethod("onUserLeaveHint", null)
+        appNameMethodChannel.invokeMethod("onUserLeaveHint", null)
     }
 
     override fun onPictureInPictureModeChanged(

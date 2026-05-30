@@ -115,3 +115,17 @@ Workflow correction:
 - list run artifacts through the REST API;
 - select the artifact whose name ends with `_x86_64.apk`;
 - download the raw artifact blob directly into `runtime-smoke/apk/`.
+
+## Third Dispatch Finding
+
+Third push-triggered run:
+
+- run id: `26672439801`
+- conclusion: failure
+- progress: artifact download passed, APK file listing passed, KVM setup passed, emulator booted in 38 seconds;
+- failed step: `Android emulator install and launch smoke`;
+- root cause: `reactivecircus/android-emulator-runner@v2` executed the script with `/usr/bin/sh`, where `set -o pipefail` is illegal.
+
+Workflow correction:
+
+- replace `set -euxo pipefail` with POSIX-compatible `set -eu` inside the emulator script.

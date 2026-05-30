@@ -71,7 +71,7 @@ jobs:
           profile: pixel_6
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
           script: |
-            set -euxo pipefail
+            set -eu
             mkdir -p runtime-smoke/evidence
 
             APK="$(find runtime-smoke/apk -type f -name "*.apk" | head -n 1)"

@@ -160,3 +160,31 @@ Fifth push-triggered run:
 Workflow correction:
 
 - remove `archive: false` from the runtime smoke evidence upload so the directory is uploaded as a normal artifact archive.
+
+## Sixth Dispatch Finding
+
+Sixth push-triggered run:
+
+- run id: `26672965859`
+- commit: `18f30dff8027c502308d2f8ae14d01ce02d45123`
+- conclusion: success
+- run URL: `https://github.com/CometDash77/PiliAvalon-Worksite/actions/runs/26672965859`
+- artifact: `android-runtime-smoke-evidence`, artifact id `7304909486`
+- remote artifact URL: `https://github.com/CometDash77/PiliAvalon-Worksite/actions/runs/26672965859/artifacts/7304909486`
+
+Remote log finding:
+
+- selected APK artifact: `PiliAvalon_android_2.0.7-cf9ed10f0+5006_x86_64.apk`
+- package: `com.example.piliplus`
+- emulator: Android `15`, `sdk_gphone64_x86_64`
+- install result: `Success`
+- launch mechanism: `adb shell monkey -p com.example.piliplus -c android.intent.category.LAUNCHER 1`
+- process id after wait: `2595`
+- script status: `status=0`
+- evidence upload: 8 files, artifact size 592623 bytes
+
+Acceptance status:
+
+- automated `runtime-smoke` install/launch/process gate is green for the GitHub x86_64 emulator;
+- user-facing `manual-acceptance` remains pending for user-device first screen, recommendation feed shielding, and comment-area shielding;
+- Phase 1 remains not green until that user-side manual acceptance passes.

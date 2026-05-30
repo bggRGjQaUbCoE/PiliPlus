@@ -269,6 +269,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.4"
+  cli_config:
+    dependency: transitive
+    description:
+      name: cli_config
+      sha256: ac20a183a07002b700f0c25e61b7ee46b23c309d76ab7b7640a028f18e4d99ec
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.2.0"
   cli_util:
     dependency: transitive
     description:
@@ -948,7 +956,7 @@ packages:
     source: hosted
     version: "0.6.1"
   jni:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: jni
       sha256: c2230682d5bc2362c1c9e8d3c7f406d9cbba23ab3f2e203a025dd47e0fb2e68f
@@ -963,6 +971,15 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.1"
+  jnigen:
+    dependency: "direct dev"
+    description:
+      path: "pkgs/jnigen"
+      ref: HEAD
+      resolved-ref: "14f4ce655c0cebb203777b8200303a9bc1f0b04e"
+      url: "https://github.com/dart-lang/native.git"
+    source: git
+    version: "0.17.0-wip"
   js:
     dependency: transitive
     description:

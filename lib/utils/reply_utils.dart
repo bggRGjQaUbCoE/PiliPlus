@@ -46,11 +46,11 @@ abstract final class ReplyUtils {
     required int type,
     required int id,
     required String message,
-    dynamic root,
-    dynamic parent,
-    dynamic ctime,
-    List? pictures,
-    dynamic mid,
+    required int root,
+    required int parent,
+    required int ctime,
+    required List pictures,
+    required int mid,
     bool isManual = false,
   }) async {
     // CommAntifraud

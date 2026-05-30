@@ -1,0 +1,1 @@
+run `dart run tool/jnigen.dart`

@@ -1,8 +1,9 @@
+import 'package:PiliPlus/utils/android/bindings.g.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:flutter/widgets.dart' show WidgetsBinding, Size;
 
 abstract final class DeviceUtils {
-  static late int sdkInt;
+  static final int sdkInt = AndroidHelper.sdkInt();
 
   static bool get isTablet {
     return size.shortestSide >= 600;

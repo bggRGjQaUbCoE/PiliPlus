@@ -7,6 +7,7 @@ on:
     paths:
       - ".github/workflows/android_runtime_smoke.yml"
       - ".github/scripts/android_runtime_smoke.sh"
+      - ".github/scripts/android_runtime_smoke_launch.py"
   workflow_dispatch:
     inputs:
       artifact_run_id:

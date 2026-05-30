@@ -12,6 +12,8 @@ ui_dump="runtime-smoke/evidence/uiautomator.xml"
 filtered_logcat="runtime-smoke/evidence/logcat-crash-error.txt"
 app_crash_logcat="runtime-smoke/evidence/app-crash-error.txt"
 blankness_report="runtime-smoke/evidence/screenshot-blankness.txt"
+launcher_component_file="runtime-smoke/evidence/launcher-component.txt"
+launcher_resolution_file="runtime-smoke/evidence/launcher-resolution.txt"
 
 record_status() {
   echo "status=${status}" | tee -a runtime-smoke/evidence/status.txt
@@ -28,6 +30,7 @@ record_status() {
     90) echo "result=fail reason=startup_failure_ui_visible" ;;
     100) echo "result=fail reason=app_not_foreground" ;;
     110) echo "result=fail reason=uiautomator_xml_missing_app_package" ;;
+    120) echo "result=fail reason=launcher_activity_not_found" ;;
     *) echo "result=fail reason=unknown_status" ;;
   esac | tee -a runtime-smoke/evidence/status.txt
 }
@@ -58,7 +61,18 @@ fi
 if [ "$status" -eq 0 ]; then
   adb shell cmd activity close-system-dialogs >> runtime-smoke/evidence/adb-launch.txt 2>&1 || true
   adb shell am force-stop "$PACKAGE_NAME" >> runtime-smoke/evidence/adb-launch.txt 2>&1 || true
-  if ! adb shell am start -W -n "${PACKAGE_NAME}/.MainActivity" -a android.intent.action.MAIN -c android.intent.category.LAUNCHER | tee -a runtime-smoke/evidence/adb-launch.txt; then
+  if ! launcher_component="$(python3 .github/scripts/android_runtime_smoke_launch.py --package-name "$PACKAGE_NAME" --resolved-output-file "$launcher_resolution_file" 2>> runtime-smoke/evidence/adb-launch.txt)"; then
+    status=120
+  elif [ -z "$launcher_component" ]; then
+    echo "launcher resolution failed: empty component" >> runtime-smoke/evidence/adb-launch.txt
+    status=120
+  else
+    echo "$launcher_component" | tee "$launcher_component_file"
+  fi
+fi
+
+if [ "$status" -eq 0 ]; then
+  if ! adb shell am start -W -n "$launcher_component" -a android.intent.action.MAIN -c android.intent.category.LAUNCHER | tee -a runtime-smoke/evidence/adb-launch.txt; then
     status=30
   fi
 fi

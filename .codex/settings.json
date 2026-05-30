@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "functions.shell_command",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python .codex/hooks/guard_ci_monitor.py"
+          }
+        ]
+      }
+    ]
+  }
+}

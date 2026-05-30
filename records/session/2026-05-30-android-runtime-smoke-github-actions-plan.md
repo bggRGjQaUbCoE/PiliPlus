@@ -145,3 +145,18 @@ Workflow correction:
 - move runtime-smoke commands into `.github/scripts/android_runtime_smoke.sh`;
 - call that script as one command from the emulator action;
 - make the script collect evidence files before returning a nonzero status for install, launch, or process failures.
+
+## Fifth Dispatch Finding
+
+Fifth push-triggered run:
+
+- run id: `26672873210`
+- commit: `e0223f265be6bb28862e67875c9856de2e345b3a`
+- conclusion: failure
+- progress: artifact download passed, APK file listing passed, KVM setup passed, emulator install/launch script passed;
+- failed step: `Upload runtime smoke evidence`;
+- root cause: `actions/upload-artifact@v7` accepts `archive: false` only when uploading a single file, but runtime smoke evidence is a directory containing multiple files.
+
+Workflow correction:
+
+- remove `archive: false` from the runtime smoke evidence upload so the directory is uploaded as a normal artifact archive.

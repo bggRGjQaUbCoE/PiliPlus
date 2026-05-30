@@ -77,7 +77,6 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          archive: false
           name: android-runtime-smoke-evidence
           path: runtime-smoke/evidence
           if-no-files-found: warn

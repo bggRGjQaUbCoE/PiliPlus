@@ -377,10 +377,10 @@ packages:
     dependency: transitive
     description:
       name: dbus
-      sha256: d0c98dcd4f5169878b6cf8f6e0a52403a9dff371a3e2f019697accbf6f44a270
+      sha256: "792974a4007974fbc5c1b5433eb2330a9db3e368c3f906253af4c007d0f49a91"
       url: "https://pub.dev"
     source: hosted
-    version: "0.7.12"
+    version: "0.7.13"
   device_info_plus:
     dependency: "direct main"
     description:
@@ -728,10 +728,10 @@ packages:
     dependency: "direct main"
     description:
       name: flutter_volume_controller
-      sha256: "27b95004d8abd7c6b24a63e555d721ef5f958fbe54551246567b72321494c6c8"
+      sha256: "78297fd48ce6330d39a11a4c1ae219a3256249f99dec34cfbe9323d2cbb5ebb9"
       url: "https://pub.dev"
     source: hosted
-    version: "2.0.0"
+    version: "2.0.1"
   flutter_web_plugins:
     dependency: transitive
     description: flutter
@@ -839,10 +839,10 @@ packages:
     dependency: transitive
     description:
       name: image
-      sha256: f9881ff4998044947ec38d098bc7c8316ae1186fa786eddffdb867b9bc94dfce
+      sha256: "6300175e00616bbc832e2fc91bfa4d776af5402c81c7151bee6905bb08473c52"
       url: "https://pub.dev"
     source: hosted
-    version: "4.8.0"
+    version: "4.9.1"
   image_cropper:
     dependency: "direct main"
     description:
@@ -1468,10 +1468,10 @@ packages:
     description:
       path: screen_brightness_android
       ref: dev
-      resolved-ref: df2cdb777ca11f44b101835b7348f2fdaf561374
+      resolved-ref: eefbba22c9be36a4217183d913413df349759f6f
       url: "https://github.com/bggRGjQaUbCoE/screen_brightness.git"
     source: git
-    version: "2.1.4"
+    version: "2.1.5"
   screen_brightness_ios:
     dependency: "direct overridden"
     description:
@@ -1485,7 +1485,7 @@ packages:
     description:
       path: screen_brightness_platform_interface
       ref: dev
-      resolved-ref: df2cdb777ca11f44b101835b7348f2fdaf561374
+      resolved-ref: eefbba22c9be36a4217183d913413df349759f6f
       url: "https://github.com/bggRGjQaUbCoE/screen_brightness.git"
     source: git
     version: "2.1.1"
@@ -1990,10 +1990,10 @@ packages:
     dependency: transitive
     description:
       name: xml
-      sha256: "971043b3a0d3da28727e40ed3e0b5d18b742fa5a68665cca88e74b7876d5e025"
+      sha256: "67f0aff7be013d107995e9b75bf4e7f2c3ef2dfdb2c8e68024bba0a7fd5756a4"
       url: "https://pub.dev"
     source: hosted
-    version: "6.6.1"
+    version: "7.0.1"
   yaml:
     dependency: transitive
     description:

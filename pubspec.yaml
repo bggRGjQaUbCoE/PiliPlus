@@ -163,6 +163,7 @@ dependencies:
   wakelock_plus: ^1.2.8
   waterfall_flow: ^3.1.0
   web_socket_channel: ^3.0.3
+  win32: ^6.3.0
   window_manager:
     git:
       url: https://github.com/bggRGjQaUbCoE/window_manager.git

@@ -10,9 +10,9 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 class CachedNetworkSVGImage extends StatefulWidget {
   CachedNetworkSVGImage(
-    String url, {
+    this._url, {
     Key? key,
-    String? cacheKey,
+    this._cacheKey,
     this._placeholder,
     this._errorBuilder,
     this._width,
@@ -28,10 +28,8 @@ class CachedNetworkSVGImage extends StatefulWidget {
     this._colorFilter,
     this._placeholderBuilder,
     BaseCacheManager? cacheManager,
-  }) : _url = url,
-       _cacheKey = cacheKey,
-       _cacheManager = cacheManager ?? DefaultCacheManager(),
-       super(key: key ?? ValueKey(cacheKey ?? url));
+  }) : _cacheManager = cacheManager ?? DefaultCacheManager(),
+       super(key: key ?? ValueKey(_cacheKey ?? _url));
 
   final String _url;
   final String? _cacheKey;

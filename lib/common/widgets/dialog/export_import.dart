@@ -1,6 +1,5 @@
 import 'dart:async' show FutureOr;
 import 'dart:convert' show utf8, jsonDecode;
-import 'dart:io' show File;
 
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
@@ -122,8 +121,7 @@ Future<void> importFromLocalFile<T>({
     allowedExtensions: const ['json', 'txt'],
   );
   if (result != null) {
-    final path = result.xFile.path;
-    final data = await File(path).readAsString();
+    final data = await result.xFile.readAsString();
     final T json;
     try {
       json = jsonDecode(data);
@@ -179,7 +177,7 @@ void importFromInput<T>(
           child: Text(
             '取消',
             style: TextStyle(
-              color: Theme.of(context).colorScheme.outline,
+              color: ColorScheme.of(context).outline,
             ),
           ),
         ),

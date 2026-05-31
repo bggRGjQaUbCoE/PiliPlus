@@ -559,15 +559,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.0.1"
-  floating:
-    dependency: "direct main"
-    description:
-      path: "."
-      ref: dev
-      resolved-ref: fdd44a501d9717ebab04e8004fca2818a6bed236
-      url: "https://github.com/bggRGjQaUbCoE/floating.git"
-    source: git
-    version: "3.0.0"
   flutter:
     dependency: "direct main"
     description: flutter

@@ -255,12 +255,11 @@ class PlPlayerController with BlockConfigMixin {
     }
   }
 
-  void enterPip({bool isAuto = false}) {
+  void enterPip() {
     if (videoPlayerController != null) {
       controls = false;
       final state = videoPlayerController!.state;
       PageUtils.enterPip(
-        isAuto: isAuto,
         width: state.width == 0 ? width : state.width,
         height: state.height == 0 ? height : state.height,
       );

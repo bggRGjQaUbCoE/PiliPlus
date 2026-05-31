@@ -1,6 +1,8 @@
 package com.example.piliplus;
 
+import android.app.Activity;
 import android.app.PendingIntent;
+import android.app.PictureInPictureParams;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ShortcutInfo;
@@ -11,6 +13,7 @@ import android.graphics.drawable.Icon;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.Settings;
+import android.util.Rational;
 
 import androidx.annotation.Keep;
 
@@ -83,6 +86,16 @@ public final class AndroidHelper {
                 );
                 shortcutManager.requestPinShortcut(shortcut, pendingIntent.getIntentSender());
             }
+        }
+    }
+
+    public static void enterPip(long engineId, int width, int height) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            Activity activity = JniFlutterPlugin.getActivity(engineId);
+            PictureInPictureParams.Builder builder = new PictureInPictureParams.Builder()
+                    .setAspectRatio(new Rational(width, height));
+            assert activity != null;
+            activity.enterPictureInPictureMode(builder.build());
         }
     }
 }

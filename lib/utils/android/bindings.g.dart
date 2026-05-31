@@ -210,14 +210,10 @@ extension type AndroidHelper._(jni$_.JObject _$this) implements jni$_.JObject {
     r'Z',
   );
 
-  /// from: `static public volatile boolean isPipAvailable`
+  /// from: `static public final boolean isPipAvailable`
   static core$_.bool get isPipAvailable =>
       _id_isPipAvailable.getNullable(_class, jni$_.jboolean.type)
           as core$_.bool;
-
-  /// from: `static public volatile boolean isPipAvailable`
-  static set isPipAvailable(core$_.bool value) =>
-      _id_isPipAvailable.set(_class, jni$_.jboolean.type, value);
 
   static final _id_back = _class.staticMethodId(
     r'back',

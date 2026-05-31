@@ -5,6 +5,7 @@ import android.app.PendingIntent;
 import android.app.PictureInPictureParams;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.pm.ShortcutInfo;
 import android.content.pm.ShortcutManager;
 import android.graphics.Bitmap;
@@ -16,16 +17,20 @@ import android.provider.Settings;
 import android.util.Rational;
 
 import androidx.annotation.Keep;
+import androidx.annotation.NonNull;
 
 import com.github.dart_lang.jni_flutter.JniFlutterPlugin;
-
-import org.jetbrains.annotations.NotNull;
 
 @Keep
 public final class AndroidHelper {
     public static volatile boolean isPipMode = false;
 
-    public static volatile boolean isPipAvailable = false;
+    public static final boolean isPipAvailable;
+
+    static {
+        PackageManager pm = getContext().getPackageManager();
+        isPipAvailable = pm.hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE);
+    }
 
     private AndroidHelper() {
     }
@@ -68,7 +73,7 @@ public final class AndroidHelper {
         }
     }
 
-    public static void createShortcut(@NotNull String id, @NotNull String uri, @NotNull String label, @NotNull String icon) {
+    public static void createShortcut(@NonNull String id, @NonNull String uri, @NonNull String label, @NonNull String icon) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             Context context = getContext();
             ShortcutManager shortcutManager = context.getSystemService(ShortcutManager.class);
@@ -92,9 +97,9 @@ public final class AndroidHelper {
     public static void enterPip(long engineId, int width, int height) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             Activity activity = JniFlutterPlugin.getActivity(engineId);
+            assert activity != null;
             PictureInPictureParams.Builder builder = new PictureInPictureParams.Builder()
                     .setAspectRatio(new Rational(width, height));
-            assert activity != null;
             activity.enterPictureInPictureMode(builder.build());
         }
     }

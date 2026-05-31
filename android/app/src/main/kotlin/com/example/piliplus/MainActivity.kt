@@ -1,7 +1,6 @@
 package com.example.piliplus
 
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
@@ -41,9 +40,6 @@ class MainActivity : AudioServiceActivity() {
             window.attributes.layoutInDisplayCutoutMode =
                 LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
         }
-
-        AndroidHelper.isPipAvailable =
-            packageManager.hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE)
     }
 
     override fun onDestroy() {

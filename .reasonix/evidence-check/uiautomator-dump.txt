@@ -1,0 +1,1 @@
+UI hierchary dumped to: /sdcard/window_dump.xml

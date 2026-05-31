@@ -210,7 +210,7 @@ abstract final class ImageUtils {
               SaveFileData(
                 filePath: i.filePath,
                 fileName: i.name,
-                androidRelativePath: _androidRelativePath,
+                albumPath: _androidRelativePath,
               ),
             );
           } else {
@@ -295,14 +295,14 @@ abstract final class ImageUtils {
     required String fileName,
     String ext = 'png',
   }) async {
-    SaveResult? res;
+    SaveResult res;
     fileName += '.$ext';
     if (PlatformUtils.isMobile) {
       SmartDialog.showLoading(msg: '正在保存');
       res = await SaverGallery.saveImage(
         bytes,
         fileName: fileName,
-        androidRelativePath: _androidRelativePath,
+        albumPath: _androidRelativePath,
         skipIfExists: false,
       );
       SmartDialog.dismiss();
@@ -341,12 +341,12 @@ abstract final class ImageUtils {
       SmartDialog.showToast("文件不存在");
       return;
     }
-    SaveResult? res;
+    SaveResult res;
     if (PlatformUtils.isMobile) {
       res = await SaverGallery.saveFile(
         filePath: filePath,
         fileName: fileName,
-        androidRelativePath: _androidRelativePath,
+        albumPath: _androidRelativePath,
         skipIfExists: false,
       );
       if (del) file.tryDel();

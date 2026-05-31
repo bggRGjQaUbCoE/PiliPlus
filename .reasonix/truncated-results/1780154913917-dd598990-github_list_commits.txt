@@ -1,0 +1,676 @@
+[
+  {
+    "sha": "7670673b0c80c667136c03019381281049f640f9",
+    "node_id": "C_kwDOSn1pPNoAKDc2NzA2NzNiMGM4MGM2NjcxMzZjMDMwMTkzODEyODEwNDlmNjQwZjk",
+    "commit": {
+      "author": {
+        "name": "CometDash Worksite",
+        "email": "worksite@cometdash.dev",
+        "date": "2026-05-30T14:51:50Z"
+      },
+      "committer": {
+        "name": "CometDash Worksite",
+        "email": "worksite@cometdash.dev",
+        "date": "2026-05-30T14:51:50Z"
+      },
+      "message": "records: persist runtime smoke launcher review",
+      "tree": {
+        "sha": "ab78ac3e33c83f61dbe7fd3be41256869d5f9134",
+        "url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/git/trees/ab78ac3e33c83f61dbe7fd3be41256869d5f9134"
+      },
+      "url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/git/commits/7670673b0c80c667136c03019381281049f640f9",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/commits/7670673b0c80c667136c03019381281049f640f9",
+    "html_url": "https://github.com/CometDash77/PiliAvalon-Worksite/commit/7670673b0c80c667136c03019381281049f640f9",
+    "comments_url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/commits/7670673b0c80c667136c03019381281049f640f9/comments",
+    "author": null,
+    "committer": null,
+    "parents": [
+      {
+        "sha": "300112080922ac90aef8baee6716919fe3706dc1",
+        "url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/commits/300112080922ac90aef8baee6716919fe3706dc1",
+        "html_url": "https://github.com/CometDash77/PiliAvalon-Worksite/commit/300112080922ac90aef8baee6716919fe3706dc1"
+      }
+    ]
+  },
+  {
+    "sha": "300112080922ac90aef8baee6716919fe3706dc1",
+    "node_id": "C_kwDOSn1pPNoAKDMwMDExMjA4MDkyMmFjOTBhZWY4YmFlZTY3MTY5MTlmZTM3MDZkYzE",
+    "commit": {
+      "author": {
+        "name": "CometDash Worksite",
+        "email": "worksite@cometdash.dev",
+        "date": "2026-05-30T14:36:30Z"
+      },
+      "committer": {
+        "name": "CometDash Worksite",
+        "email": "worksite@cometdash.dev",
+        "date": "2026-05-30T14:36:30Z"
+      },
+      "message": "ci: resolve runtime smoke launcher activity",
+      "tree": {
+        "sha": "81c7fcbdfde16c55c84c6d93bede3c6c83fca879",
+        "url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/git/trees/81c7fcbdfde16c55c84c6d93bede3c6c83fca879"
+      },
+      "url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/git/commits/300112080922ac90aef8baee6716919fe3706dc1",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/commits/300112080922ac90aef8baee6716919fe3706dc1",
+    "html_url": "https://github.com/CometDash77/PiliAvalon-Worksite/commit/300112080922ac90aef8baee6716919fe3706dc1",
+    "comments_url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/commits/300112080922ac90aef8baee6716919fe3706dc1/comments",
+    "author": null,
+    "committer": null,
+    "parents": [
+      {
+        "sha": "b6bb438f49fc3f6876c9f000e8454c4e73a554e0",
+        "url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/commits/b6bb438f49fc3f6876c9f000e8454c4e73a554e0",
+        "html_url": "https://github.com/CometDash77/PiliAvalon-Worksite/commit/b6bb438f49fc3f6876c9f000e8454c4e73a554e0"
+      }
+    ]
+  },
+  {
+    "sha": "b6bb438f49fc3f6876c9f000e8454c4e73a554e0",
+    "node_id": "C_kwDOSn1pPNoAKGI2YmI0MzhmNDlmYzNmNjg3NmM5ZjAwMGU4NDU0YzRlNzNhNTU0ZTA",
+    "commit": {
+      "author": {
+        "name": "CometDash Worksite",
+        "email": "worksite@cometdash.dev",
+        "date": "2026-05-30T14:00:57Z"
+      },
+      "committer": {
+        "name": "CometDash Worksite",
+        "email": "worksite@cometdash.dev",
+        "date": "2026-05-30T14:00:57Z"
+      },
+      "message": "Fix dev release Android resource packaging",
+      "tree": {
+        "sha": "5bbdcb11dcf58325ce24b53475be9f6f8bd07103",
+        "url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/git/trees/5bbdcb11dcf58325ce24b53475be9f6f8bd07103"
+      },
+      "url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/git/commits/b6bb438f49fc3f6876c9f000e8454c4e73a554e0",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/commits/b6bb438f49fc3f6876c9f000e8454c4e73a554e0",
+    "html_url": "https://github.com/CometDash77/PiliAvalon-Worksite/commit/b6bb438f49fc3f6876c9f000e8454c4e73a554e0",
+    "comments_url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/commits/b6bb438f49fc3f6876c9f000e8454c4e73a554e0/comments",
+    "author": null,
+    "committer": null,
+    "parents": [
+      {
+        "sha": "62071ea9e1ab81ce572773f9cb4f6edf6bfdb4bf",
+        "url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/commits/62071ea9e1ab81ce572773f9cb4f6edf6bfdb4bf",
+        "html_url": "https://github.com/CometDash77/PiliAvalon-Worksite/commit/62071ea9e1ab81ce572773f9cb4f6edf6bfdb4bf"
+      }
+    ]
+  },
+  {
+    "sha": "62071ea9e1ab81ce572773f9cb4f6edf6bfdb4bf",
+    "node_id": "C_kwDOSn1pPNoAKDYyMDcxZWE5ZTFhYjgxY2U1NzI3NzNmOWNiNGY2ZWRmNmJmZGI0YmY",
+    "commit": {
+      "author": {
+        "name": "CometDash Worksite",
+        "email": "worksite@cometdash.dev",
+        "date": "2026-05-30T13:22:32Z"
+      },
+      "committer": {
+        "name": "CometDash Worksite",
+        "email": "worksite@cometdash.dev",
+        "date": "2026-05-30T13:22:32Z"
+      },
+      "message": "docs: record phase 1 ci failure evidence",
+      "tree": {
+        "sha": "d8ffc604410299da31f70d371a8a5d7cb015f05e",
+        "url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/git/trees/d8ffc604410299da31f70d371a8a5d7cb015f05e"
+      },
+      "url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/git/commits/62071ea9e1ab81ce572773f9cb4f6edf6bfdb4bf",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/commits/62071ea9e1ab81ce572773f9cb4f6edf6bfdb4bf",
+    "html_url": "https://github.com/CometDash77/PiliAvalon-Worksite/commit/62071ea9e1ab81ce572773f9cb4f6edf6bfdb4bf",
+    "comments_url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/commits/62071ea9e1ab81ce572773f9cb4f6edf6bfdb4bf/comments",
+    "author": null,
+    "committer": null,
+    "parents": [
+      {
+        "sha": "a6e97e6e089079c100e03be812affe3302c838f8",
+        "url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/commits/a6e97e6e089079c100e03be812affe3302c838f8",
+        "html_url": "https://github.com/CometDash77/PiliAvalon-Worksite/commit/a6e97e6e089079c100e03be812affe3302c838f8"
+      }
+    ]
+  },
+  {
+    "sha": "a6e97e6e089079c100e03be812affe3302c838f8",
+    "node_id": "C_kwDOSn1pPNoAKGE2ZTk3ZTZlMDg5MDc5YzEwMGUwM2JlODEyYWZmZTMzMDJjODM4Zjg",
+    "commit": {
+      "author": {
+        "name": "CometDash Worksite",
+        "email": "worksite@cometdash.dev",
+        "date": "2026-05-30T13:08:24Z"
+      },
+      "committer": {
+        "name": "CometDash Worksite",
+        "email": "worksite@cometdash.dev",
+        "date": "2026-05-30T13:08:24Z"
+      },
+      "message": "ci: add phase 1 authoritative workflow",
+      "tree": {
+        "sha": "650631d0678cb3b811add24b8d11b5dbe822c6e2",
+        "url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/git/trees/650631d0678cb3b811add24b8d11b5dbe822c6e2"
+      },
+      "url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/git/commits/a6e97e6e089079c100e03be812affe3302c838f8",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/commits/a6e97e6e089079c100e03be812affe3302c838f8",
+    "html_url": "https://github.com/CometDash77/PiliAvalon-Worksite/commit/a6e97e6e089079c100e03be812affe3302c838f8",
+    "comments_url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/commits/a6e97e6e089079c100e03be812affe3302c838f8/comments",
+    "author": null,
+    "committer": null,
+    "parents": [
+      {
+        "sha": "41b5a8217793cd47a7e71183e11b894201db93a2",
+        "url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/commits/41b5a8217793cd47a7e71183e11b894201db93a2",
+        "html_url": "https://github.com/CometDash77/PiliAvalon-Worksite/commit/41b5a8217793cd47a7e71183e11b894201db93a2"
+      }
+    ]
+  },
+  {
+    "sha": "41b5a8217793cd47a7e71183e11b894201db93a2",
+    "node_id": "C_kwDOSn1pPNoAKDQxYjVhODIxNzc5M2NkNDdhN2U3MTE4M2UxMWI4OTQyMDFkYjkzYTI",
+    "commit": {
+      "author": {
+        "name": "CometDash77",
+        "email": "anastasiiaprinling@gmail.com",
+        "date": "2026-05-30T09:36:06Z"
+      },
+      "committer": {
+        "name": "CometDash77",
+        "email": "anastasiiaprinling@gmail.com",
+        "date": "2026-05-30T09:36:06Z"
+      },
+      "message": "records: publish phase 1 shielding repair prebuild",
+      "tree": {
+        "sha": "222b5754b6437a05d27c1bedcfcc1cc392153d14",
+        "url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/git/trees/222b5754b6437a05d27c1bedcfcc1cc392153d14"
+      },
+      "url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/git/commits/41b5a8217793cd47a7e71183e11b894201db93a2",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/commits/41b5a8217793cd47a7e71183e11b894201db93a2",
+    "html_url": "https://github.com/CometDash77/PiliAvalon-Worksite/commit/41b5a8217793cd47a7e71183e11b894201db93a2",
+    "comments_url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/commits/41b5a8217793cd47a7e71183e11b894201db93a2/comments",
+    "author": {
+      "login": "CometDash77",
+      "id": 173698065,
+      "node_id": "U_kgDOClpsEQ",
+      "avatar_url": "https://avatars.githubusercontent.com/u/173698065?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/CometDash77",
+      "html_url": "https://github.com/CometDash77",
+      "followers_url": "https://api.github.com/users/CometDash77/followers",
+      "following_url": "https://api.github.com/users/CometDash77/following{/other_user}",
+      "gists_url": "https://api.github.com/users/CometDash77/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/CometDash77/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/CometDash77/subscriptions",
+      "organizations_url": "https://api.github.com/users/CometDash77/orgs",
+      "repos_url": "https://api.github.com/users/CometDash77/repos",
+      "events_url": "https://api.github.com/users/CometDash77/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/CometDash77/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "committer": {
+      "login": "CometDash77",
+      "id": 173698065,
+      "node_id": "U_kgDOClpsEQ",
+      "avatar_url": "https://avatars.githubusercontent.com/u/173698065?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/CometDash77",
+      "html_url": "https://github.com/CometDash77",
+      "followers_url": "https://api.github.com/users/CometDash77/followers",
+      "following_url": "https://api.github.com/users/CometDash77/following{/other_user}",
+      "gists_url": "https://api.github.com/users/CometDash77/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/CometDash77/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/CometDash77/subscriptions",
+      "organizations_url": "https://api.github.com/users/CometDash77/orgs",
+      "repos_url": "https://api.github.com/users/CometDash77/repos",
+      "events_url": "https://api.github.com/users/CometDash77/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/CometDash77/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "parents": [
+      {
+        "sha": "80f5e6d6a7c63b4439c313281be76235f94ab0e6",
+        "url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/commits/80f5e6d6a7c63b4439c313281be76235f94ab0e6",
+        "html_url": "https://github.com/CometDash77/PiliAvalon-Worksite/commit/80f5e6d6a7c63b4439c313281be76235f94ab0e6"
+      }
+    ]
+  },
+  {
+    "sha": "80f5e6d6a7c63b4439c313281be76235f94ab0e6",
+    "node_id": "C_kwDOSn1pPNoAKDgwZjVlNmQ2YTdjNjNiNDQzOWMzMTMyODFiZTc2MjM1Zjk0YWIwZTY",
+    "commit": {
+      "author": {
+        "name": "CometDash77",
+        "email": "anastasiiaprinling@gmail.com",
+        "date": "2026-05-30T09:18:34Z"
+      },
+      "committer": {
+        "name": "CometDash77",
+        "email": "anastasiiaprinling@gmail.com",
+        "date": "2026-05-30T09:18:34Z"
+      },
+      "message": "ci: bind prebuild releases to workflow commit",
+      "tree": {
+        "sha": "c3276be08da60ae20bb6de049f15cfd2326e2418",
+        "url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/git/trees/c3276be08da60ae20bb6de049f15cfd2326e2418"
+      },
+      "url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/git/commits/80f5e6d6a7c63b4439c313281be76235f94ab0e6",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/commits/80f5e6d6a7c63b4439c313281be76235f94ab0e6",
+    "html_url": "https://github.com/CometDash77/PiliAvalon-Worksite/commit/80f5e6d6a7c63b4439c313281be76235f94ab0e6",
+    "comments_url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/commits/80f5e6d6a7c63b4439c313281be76235f94ab0e6/comments",
+    "author": {
+      "login": "CometDash77",
+      "id": 173698065,
+      "node_id": "U_kgDOClpsEQ",
+      "avatar_url": "https://avatars.githubusercontent.com/u/173698065?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/CometDash77",
+      "html_url": "https://github.com/CometDash77",
+      "followers_url": "https://api.github.com/users/CometDash77/followers",
+      "following_url": "https://api.github.com/users/CometDash77/following{/other_user}",
+      "gists_url": "https://api.github.com/users/CometDash77/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/CometDash77/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/CometDash77/subscriptions",
+      "organizations_url": "https://api.github.com/users/CometDash77/orgs",
+      "repos_url": "https://api.github.com/users/CometDash77/repos",
+      "events_url": "https://api.github.com/users/CometDash77/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/CometDash77/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "committer": {
+      "login": "CometDash77",
+      "id": 173698065,
+      "node_id": "U_kgDOClpsEQ",
+      "avatar_url": "https://avatars.githubusercontent.com/u/173698065?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/CometDash77",
+      "html_url": "https://github.com/CometDash77",
+      "followers_url": "https://api.github.com/users/CometDash77/followers",
+      "following_url": "https://api.github.com/users/CometDash77/following{/other_user}",
+      "gists_url": "https://api.github.com/users/CometDash77/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/CometDash77/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/CometDash77/subscriptions",
+      "organizations_url": "https://api.github.com/users/CometDash77/orgs",
+      "repos_url": "https://api.github.com/users/CometDash77/repos",
+      "events_url": "https://api.github.com/users/CometDash77/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/CometDash77/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "parents": [
+      {
+        "sha": "5d0dfe67320ac9d23a3a1f3db4c1d0b1e24c6ad9",
+        "url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/commits/5d0dfe67320ac9d23a3a1f3db4c1d0b1e24c6ad9",
+        "html_url": "https://github.com/CometDash77/PiliAvalon-Worksite/commit/5d0dfe67320ac9d23a3a1f3db4c1d0b1e24c6ad9"
+      }
+    ]
+  },
+  {
+    "sha": "5d0dfe67320ac9d23a3a1f3db4c1d0b1e24c6ad9",
+    "node_id": "C_kwDOSn1pPNoAKDVkMGRmZTY3MzIwYWM5ZDIzYTNhMWYzZGI0YzFkMGIxZTI0YzZhZDk",
+    "commit": {
+      "author": {
+        "name": "CometDash77",
+        "email": "anastasiiaprinling@gmail.com",
+        "date": "2026-05-30T08:50:51Z"
+      },
+      "committer": {
+        "name": "CometDash77",
+        "email": "anastasiiaprinling@gmail.com",
+        "date": "2026-05-30T08:50:51Z"
+      },
+      "message": "fix: separate shielding tag and category semantics",
+      "tree": {
+        "sha": "ca23d75509e5b131d0f86adc341437a7294601a4",
+        "url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/git/trees/ca23d75509e5b131d0f86adc341437a7294601a4"
+      },
+      "url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/git/commits/5d0dfe67320ac9d23a3a1f3db4c1d0b1e24c6ad9",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/commits/5d0dfe67320ac9d23a3a1f3db4c1d0b1e24c6ad9",
+    "html_url": "https://github.com/CometDash77/PiliAvalon-Worksite/commit/5d0dfe67320ac9d23a3a1f3db4c1d0b1e24c6ad9",
+    "comments_url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/commits/5d0dfe67320ac9d23a3a1f3db4c1d0b1e24c6ad9/comments",
+    "author": {
+      "login": "CometDash77",
+      "id": 173698065,
+      "node_id": "U_kgDOClpsEQ",
+      "avatar_url": "https://avatars.githubusercontent.com/u/173698065?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/CometDash77",
+      "html_url": "https://github.com/CometDash77",
+      "followers_url": "https://api.github.com/users/CometDash77/followers",
+      "following_url": "https://api.github.com/users/CometDash77/following{/other_user}",
+      "gists_url": "https://api.github.com/users/CometDash77/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/CometDash77/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/CometDash77/subscriptions",
+      "organizations_url": "https://api.github.com/users/CometDash77/orgs",
+      "repos_url": "https://api.github.com/users/CometDash77/repos",
+      "events_url": "https://api.github.com/users/CometDash77/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/CometDash77/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "committer": {
+      "login": "CometDash77",
+      "id": 173698065,
+      "node_id": "U_kgDOClpsEQ",
+      "avatar_url": "https://avatars.githubusercontent.com/u/173698065?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/CometDash77",
+      "html_url": "https://github.com/CometDash77",
+      "followers_url": "https://api.github.com/users/CometDash77/followers",
+      "following_url": "https://api.github.com/users/CometDash77/following{/other_user}",
+      "gists_url": "https://api.github.com/users/CometDash77/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/CometDash77/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/CometDash77/subscriptions",
+      "organizations_url": "https://api.github.com/users/CometDash77/orgs",
+      "repos_url": "https://api.github.com/users/CometDash77/repos",
+      "events_url": "https://api.github.com/users/CometDash77/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/CometDash77/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "parents": [
+      {
+        "sha": "76d979136d1f2301644b457c6e847ec21993a057",
+        "url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/commits/76d979136d1f2301644b457c6e847ec21993a057",
+        "html_url": "https://github.com/CometDash77/PiliAvalon-Worksite/commit/76d979136d1f2301644b457c6e847ec21993a057"
+      }
+    ]
+  },
+  {
+    "sha": "76d979136d1f2301644b457c6e847ec21993a057",
+    "node_id": "C_kwDOSn1pPNoAKDc2ZDk3OTEzNmQxZjIzMDE2NDRiNDU3YzZlODQ3ZWMyMTk5M2EwNTc",
+    "commit": {
+      "author": {
+        "name": "CometDash77",
+        "email": "anastasiiaprinling@gmail.com",
+        "date": "2026-05-30T08:38:40Z"
+      },
+      "committer": {
+        "name": "CometDash77",
+        "email": "anastasiiaprinling@gmail.com",
+        "date": "2026-05-30T08:41:56Z"
+      },
+      "message": "fix: complete phase 1 shielding feedback repair",
+      "tree": {
+        "sha": "0dfb78cc6aa06ad7064d400794bf9be7c1d0e31c",
+        "url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/git/trees/0dfb78cc6aa06ad7064d400794bf9be7c1d0e31c"
+      },
+      "url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/git/commits/76d979136d1f2301644b457c6e847ec21993a057",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/commits/76d979136d1f2301644b457c6e847ec21993a057",
+    "html_url": "https://github.com/CometDash77/PiliAvalon-Worksite/commit/76d979136d1f2301644b457c6e847ec21993a057",
+    "comments_url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/commits/76d979136d1f2301644b457c6e847ec21993a057/comments",
+    "author": {
+      "login": "CometDash77",
+      "id": 173698065,
+      "node_id": "U_kgDOClpsEQ",
+      "avatar_url": "https://avatars.githubusercontent.com/u/173698065?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/CometDash77",
+      "html_url": "https://github.com/CometDash77",
+      "followers_url": "https://api.github.com/users/CometDash77/followers",
+      "following_url": "https://api.github.com/users/CometDash77/following{/other_user}",
+      "gists_url": "https://api.github.com/users/CometDash77/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/CometDash77/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/CometDash77/subscriptions",
+      "organizations_url": "https://api.github.com/users/CometDash77/orgs",
+      "repos_url": "https://api.github.com/users/CometDash77/repos",
+      "events_url": "https://api.github.com/users/CometDash77/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/CometDash77/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "committer": {
+      "login": "CometDash77",
+      "id": 173698065,
+      "node_id": "U_kgDOClpsEQ",
+      "avatar_url": "https://avatars.githubusercontent.com/u/173698065?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/CometDash77",
+      "html_url": "https://github.com/CometDash77",
+      "followers_url": "https://api.github.com/users/CometDash77/followers",
+      "following_url": "https://api.github.com/users/CometDash77/following{/other_user}",
+      "gists_url": "https://api.github.com/users/CometDash77/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/CometDash77/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/CometDash77/subscriptions",
+      "organizations_url": "https://api.github.com/users/CometDash77/orgs",
+      "repos_url": "https://api.github.com/users/CometDash77/repos",
+      "events_url": "https://api.github.com/users/CometDash77/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/CometDash77/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "parents": [
+      {
+        "sha": "a0172dc8664a429ac438a77e7a1d9833bc453947",
+        "url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/commits/a0172dc8664a429ac438a77e7a1d9833bc453947",
+        "html_url": "https://github.com/CometDash77/PiliAvalon-Worksite/commit/a0172dc8664a429ac438a77e7a1d9833bc453947"
+      }
+    ]
+  },
+  {
+    "sha": "a0172dc8664a429ac438a77e7a1d9833bc453947",
+    "node_id": "C_kwDOSn1pPNoAKGEwMTcyZGM4NjY0YTQyOWFjNDM4YTc3ZTdhMWQ5ODMzYmM0NTM5NDc",
+    "commit": {
+      "author": {
+        "name": "CometDash77",
+        "email": "anastasiiaprinling@gmail.com",
+        "date": "2026-05-30T07:49:53Z"
+      },
+      "committer": {
+        "name": "CometDash77",
+        "email": "anastasiiaprinling@gmail.com",
+        "date": "2026-05-30T07:49:53Z"
+      },
+      "message": "records: publish phase 1 shielding repair prebuild evidence",
+      "tree": {
+        "sha": "e8ab57ae474b5bac9950ce17beceef76f752fe95",
+        "url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/git/trees/e8ab57ae474b5bac9950ce17beceef76f752fe95"
+      },
+      "url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/git/commits/a0172dc8664a429ac438a77e7a1d9833bc453947",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/commits/a0172dc8664a429ac438a77e7a1d9833bc453947",
+    "html_url": "https://github.com/CometDash77/PiliAvalon-Worksite/commit/a0172dc8664a429ac438a77e7a1d9833bc453947",
+    "comments_url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/commits/a0172dc8664a429ac438a77e7a1d9833bc453947/comments",
+    "author": {
+      "login": "CometDash77",
+      "id": 173698065,
+      "node_id": "U_kgDOClpsEQ",
+      "avatar_url": "https://avatars.githubusercontent.com/u/173698065?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/CometDash77",
+      "html_url": "https://github.com/CometDash77",
+      "followers_url": "https://api.github.com/users/CometDash77/followers",
+      "following_url": "https://api.github.com/users/CometDash77/following{/other_user}",
+      "gists_url": "https://api.github.com/users/CometDash77/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/CometDash77/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/CometDash77/subscriptions",
+      "organizations_url": "https://api.github.com/users/CometDash77/orgs",
+      "repos_url": "https://api.github.com/users/CometDash77/repos",
+      "events_url": "https://api.github.com/users/CometDash77/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/CometDash77/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "committer": {
+      "login": "CometDash77",
+      "id": 173698065,
+      "node_id": "U_kgDOClpsEQ",
+      "avatar_url": "https://avatars.githubusercontent.com/u/173698065?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/CometDash77",
+      "html_url": "https://github.com/CometDash77",
+      "followers_url": "https://api.github.com/users/CometDash77/followers",
+      "following_url": "https://api.github.com/users/CometDash77/following{/other_user}",
+      "gists_url": "https://api.github.com/users/CometDash77/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/CometDash77/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/CometDash77/subscriptions",
+      "organizations_url": "https://api.github.com/users/CometDash77/orgs",
+      "repos_url": "https://api.github.com/users/CometDash77/repos",
+      "events_url": "https://api.github.com/users/CometDash77/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/CometDash77/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "parents": [
+      {
+        "sha": "75eb67d337eb986201a99ba0044ea3729fe2fce6",
+        "url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/commits/75eb67d337eb986201a99ba0044ea3729fe2fce6",
+        "html_url": "https://github.com/CometDash77/PiliAvalon-Worksite/commit/75eb67d337eb986201a99ba0044ea3729fe2fce6"
+      }
+    ]
+  },
+  {
+    "sha": "75eb67d337eb986201a99ba0044ea3729fe2fce6",
+    "node_id": "C_kwDOSn1pPNoAKDc1ZWI2N2QzMzdlYjk4NjIwMWE5OWJhMDA0NGVhMzcyOWZlMmZjZTY",
+    "commit": {
+      "author": {
+        "name": "CometDash77",
+        "email": "anastasiiaprinling@gmail.com",
+        "date": "2026-05-30T06:43:07Z"
+      },
+      "committer": {
+        "name": "CometDash77",
+        "email": "anastasiiaprinling@gmail.com",
+        "date": "2026-05-30T06:43:07Z"
+      },
+      "message": "test: inject shielding rules into reply controller test",
+      "tree": {
+        "sha": "c5951b6632e628788ee56c709e097069432a5c95",
+        "url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/git/trees/c5951b6632e628788ee56c709e097069432a5c95"
+      },
+      "url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/git/commits/75eb67d337eb986201a99ba0044ea3729fe2fce6",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/commits/75eb67d337eb986201a99ba0044ea3729fe2fce6",
+    "html_url": "https://github.com/CometDash77/PiliAvalon-Worksite/commit/75eb67d337eb986201a99ba0044ea3729fe2
+
+[…truncated 79208 chars — raise BridgeOptions.maxResultChars, or call the tool with a narrower scope (filter, head, pagination)…]
+
+{/other_user}",
+      "gists_url": "https://api.github.com/users/CometDash77/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/CometDash77/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/CometDash77/subscriptions",
+      "organizations_url": "https://api.github.com/users/CometDash77/orgs",
+      "repos_url": "https://api.github.com/users/CometDash77/repos",
+      "events_url": "https://api.github.com/users/CometDash77/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/CometDash77/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "parents": [
+      {
+        "sha": "6a476b925d610238a19632bce86900eadfb1cd7a",
+        "url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/commits/6a476b925d610238a19632bce86900eadfb1cd7a",
+        "html_url": "https://github.com/CometDash77/PiliAvalon-Worksite/commit/6a476b925d610238a19632bce86900eadfb1cd7a"
+      }
+    ]
+  }
+]

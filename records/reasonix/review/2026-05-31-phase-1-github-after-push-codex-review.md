@@ -41,12 +41,15 @@ It does not close:
 
 - release APK build
 - signing fingerprint evidence
-- Android runtime smoke evidence
 - real-device cover-install verification
 - user manual retest
 - Phase 1 green/accepted/complete status
 
 Reason: the successful push-triggered workflow only proves focused verification. The CI workflow failed before producing a dev x86_64 APK or smoke evidence, and the release `Build` workflow_dispatch was not run for this commit.
+
+Current user decision: the x86_64 dev APK / emulator-smoke failure is accepted as non-blocking for release progression.
+
+Follow-up release-build evidence from run `26712487951` proved the same `screen_brightness_android` Gradle issue blocks release APK builds after signing secrets are configured. Codex therefore treats the Gradle workaround as required for release progression.
 
 ## CI Failure Assessment
 
@@ -61,6 +64,8 @@ It still has these factual effects:
 
 The user decided this x86_64 dev APK failure is acceptable and should not block proceeding to release-build evidence collection. Codex accepts that decision for release progression, while keeping release APK/signing/cover-install gates open.
 
+The Reasonix `screen_brightness_android` Gradle fix is no longer treated as unadopted candidate history. It still does not close a release gate by itself; it must be committed, pushed, and verified by a new release `Build` workflow_dispatch before APK/signing evidence can be cited.
+
 ## Required Next Evidence
 
 Before any release decision can change, the project needs persisted, Codex-reviewed evidence for the current commit or a newer reviewed commit:
@@ -68,7 +73,6 @@ Before any release decision can change, the project needs persisted, Codex-revie
 - release `Build` workflow_dispatch result
 - APK artifact names/IDs
 - `Android_signing_evidence` artifact with `apksigner verify --print-certs` output
-- runtime smoke evidence, or a clear record that smoke is blocked and why
 - user-device cover-install proof remains pending user action
 
 Per user instruction, if remote GitHub build/release monitoring is needed, Codex must provide a Reasonix prompt and the user must trigger Reasonix.

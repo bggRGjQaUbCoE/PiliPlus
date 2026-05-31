@@ -39,28 +39,30 @@ The `screen_brightness_android` Gradle failure is therefore recorded as:
 - a risk for the release `Build` workflow
 - not proof that the release Android Build workflow has failed, because release `Build` workflow_dispatch has not been run for `2ed9c8b`
 
+Follow-up update after run `26712487951`: the earlier decision not to adopt the Reasonix Gradle workaround is superseded. Release `Build` workflow_dispatch reached `Flutter Build Release Apk` with signing secrets configured, then failed in the same `screen_brightness_android` Gradle `kotlin()` path. Codex now treats this as a release-build blocker and is adopting the minimal Gradle workaround in `android/build.gradle.kts`.
+
 ## Release Gate Decision
 
 The release gates remain open.
 
 The monitor reports do not close:
 
-- release APK build
-- APK artifact evidence
+- release `Build` workflow_dispatch result
+- release APK artifact evidence
 - `Android_signing_evidence`
 - `apksigner verify --print-certs`
-- runtime smoke for the target commit
 - real-device cover-install
 - user manual retest
 - Phase 1 green/accepted/complete status
 
-The immediate hard blocker shown by the persisted evidence is that release `Build` workflow_dispatch has not been executed and reviewed for the target commit. The Gradle issue may also need correction, but that is a risk/likely follow-up rather than a reviewed release-build failure.
+The x86_64 dev APK / emulator-smoke failure is not a release blocker under the user's current decision. The release blocker shown by newer persisted evidence is the `screen_brightness_android` Gradle failure in release `Build` workflow_dispatch run `26712487951`.
 
 ## Next Evidence Needed
 
-To advance release evidence, the project needs one of these user-directed paths:
+To advance release evidence, the project needs the user-triggered Reasonix path:
 
-1. Trigger and monitor release `Build` workflow_dispatch for the current branch tip, accepting that it may expose the same Gradle issue.
-2. Have Reasonix implement and verify a Gradle/toolchain fix first, then commit/push, then trigger and monitor release `Build` workflow_dispatch.
+1. Commit/push the Gradle workaround for `screen_brightness_android`, then trigger and monitor release `Build` workflow_dispatch for the new branch tip.
+2. Persist the resulting release APK artifact list/IDs, `Android_signing_evidence`, and `apksigner verify --print-certs` output.
+3. Complete user cover-install and manual retest evidence.
 
-In either path, the resulting Reasonix monitor output must be persisted under `records/reasonix/...` and reviewed by Codex before being cited as release evidence.
+The resulting Reasonix monitor output must be persisted under `records/reasonix/...` and reviewed by Codex before being cited as release evidence.

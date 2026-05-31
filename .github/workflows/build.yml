@@ -138,9 +138,24 @@ jobs:
                     for cert_file in signing-evidence/*.certs.txt; do
                       apk_name="${cert_file#signing-evidence/}"
                       apk_name="${apk_name%.certs.txt}"
-                      sha256="$(grep -m 1 "Signer #1 certificate SHA-256 digest:" "$cert_file" | sed 's/.*: //')"
-                      if [ -z "$sha256" ]; then
+                      sha256="$(
+                        LC_ALL=C tr -d '\r' < "$cert_file" |
+                          tr '[:lower:]' '[:upper:]' |
+                          sed -nE '/SHA[ -]?256/{
+                            h
+                            s/.*DIGEST[^0-9A-F]*//
+                            t normalize
+                            g
+                            s/.*SHA[ -]?256[^0-9A-F]*//
+                            :normalize
+                            s/[^0-9A-F]//g
+                            p
+                            q
+                          }'
+                      )"
+                      if ! printf '%s' "$sha256" | grep -Eq '^[0-9A-F]{64}$'; then
                         echo "Missing SHA-256 fingerprint in ${cert_file}" >&2
+                        cat "$cert_file" >&2
                         exit 1
                       fi
                       echo "| ${apk_name} | ${sha256} |"

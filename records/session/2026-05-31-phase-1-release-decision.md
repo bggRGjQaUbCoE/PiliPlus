@@ -48,7 +48,7 @@ Codex reviewed:
 - `records/reasonix/monitor/2026-05-31-phase-1-github-after-push-monitor.md`
 - `records/reasonix/review/2026-05-31-phase-1-github-after-push-codex-review.md`
 
-Decision: accept the report as factual after-push monitor evidence, but reject it as release gate evidence.
+Decision: accept the report as factual after-push monitor evidence. The user accepts the x86_64 dev APK / emulator-smoke failure as non-blocking for proceeding to release build evidence collection, but the report is still not release gate evidence.
 
 Current remote status for commit `6f64672f8571016e12c81844d55021e02b9ed287`:
 
@@ -62,6 +62,18 @@ Current remote status for commit `6f64672f8571016e12c81844d55021e02b9ed287`:
 - Runtime smoke evidence artifact: absent.
 
 The pushed `build.yml` now contains the strict signing guard and `apksigner verify --print-certs` evidence upload steps, but the release `Build` workflow_dispatch has not been run and reviewed for this commit.
+
+## User CI x86_64 Decision
+
+Codex recorded the user's decision in:
+
+- `records/session/2026-05-31-phase-1-ci-x86-decision.md`
+
+Interpretation:
+
+- The CI failure was in the x86_64 dev APK / emulator-smoke path, not in the Android release build path.
+- The user accepts this as non-blocking for proceeding to release build evidence.
+- The release APK, signing evidence, and cover-install gates remain hard requirements.
 
 ## Remote Monitoring Policy
 

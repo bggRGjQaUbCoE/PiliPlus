@@ -6,7 +6,7 @@ Reviewed artifact:
 
 - `records/reasonix/monitor/2026-05-31-phase-1-github-after-push-monitor.md`
 
-Status: accepted as factual monitor evidence; rejected as release gate evidence
+Status: accepted as factual monitor evidence; CI x86_64 failure accepted by user as non-blocking for release build progression; release gate evidence still incomplete
 
 ## Review Scope
 
@@ -50,13 +50,16 @@ Reason: the successful push-triggered workflow only proves focused verification.
 
 ## CI Failure Assessment
 
-The reported `screen_brightness_android` Gradle failure is outside the Phase 1 shielding behavior itself, but it is still a real CI pipeline blocker:
+The reported `screen_brightness_android` Gradle failure is outside the Phase 1 shielding behavior itself and occurred in the x86_64 dev APK / emulator-smoke path, not in a release Android build.
+
+It still has these factual effects:
 
 - It prevents automated CI x86_64 APK creation.
 - It prevents automated emulator smoke evidence in `Phase 1 CI`.
-- It may also affect the release `Build` workflow until a release build is actually dispatched and monitored.
+- It does not prove that the release `Build` workflow is broken.
+- It does not produce substitute release APK or signing evidence.
 
-Codex does not accept the statement "not Phase 1 code" as a reason to ignore the gate. It can be classified as dependency/toolchain risk, but the resulting artifact and smoke gates remain open.
+The user decided this x86_64 dev APK failure is acceptable and should not block proceeding to release-build evidence collection. Codex accepts that decision for release progression, while keeping release APK/signing/cover-install gates open.
 
 ## Required Next Evidence
 

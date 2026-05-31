@@ -1,3 +1,4 @@
+import 'package:PiliPlus/common/assets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -26,10 +27,7 @@ class HttpError extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         const SizedBox(height: 40),
-        SvgPicture.asset(
-          "assets/images/error.svg",
-          height: 200,
-        ),
+        SvgPicture.asset(Assets.error, height: 200),
         const SizedBox(height: 30),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),

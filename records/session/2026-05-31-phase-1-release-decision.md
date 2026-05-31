@@ -41,6 +41,28 @@ Codex reviewed:
 
 Decision: reject current remote APK/run evidence as release gate evidence. The run succeeded, but signing fingerprint evidence is absent and the workflow lacks the local #10 signing-evidence changes.
 
+## After-Push Monitor Review
+
+Codex reviewed:
+
+- `records/reasonix/monitor/2026-05-31-phase-1-github-after-push-monitor.md`
+- `records/reasonix/review/2026-05-31-phase-1-github-after-push-codex-review.md`
+
+Decision: accept the report as factual after-push monitor evidence, but reject it as release gate evidence.
+
+Current remote status for commit `6f64672f8571016e12c81844d55021e02b9ed287`:
+
+- `Phase 1 Shielding Verify` run `26710006404`: success.
+- `Phase 1 CI` run `26710006414`: failure.
+- CI focused verification job: success.
+- CI Android x86_64 build job: failure in the third-party `screen_brightness_android` Gradle path.
+- CI runtime smoke job: skipped.
+- APK artifacts: absent.
+- Signing evidence artifact: absent.
+- Runtime smoke evidence artifact: absent.
+
+The pushed `build.yml` now contains the strict signing guard and `apksigner verify --print-certs` evidence upload steps, but the release `Build` workflow_dispatch has not been run and reviewed for this commit.
+
 ## Remote Monitoring Policy
 
 If the next step reaches remote GitHub compile/build/release monitoring, Codex must not monitor the run directly. Codex will provide a prompt for the user to trigger Reasonix, and Reasonix must write persisted monitor/release artifacts under `records/reasonix/...`. Codex may then review those artifacts.

@@ -37,3 +37,23 @@ Required before release:
 - persisted artifact list including APK names and IDs
 - persisted signing fingerprint evidence from `apksigner verify --print-certs`
 - Codex review of those persisted Reasonix outputs
+
+## After-Push Monitor Review
+
+Codex also reviewed:
+
+- `records/reasonix/monitor/2026-05-31-phase-1-github-after-push-monitor.md`
+- `records/reasonix/review/2026-05-31-phase-1-github-after-push-codex-review.md`
+
+Decision: accept the after-push monitor as factual remote status evidence, but reject it as release gate evidence.
+
+Accepted facts:
+
+- `Phase 1 Shielding Verify` run `26710006404` succeeded for commit `6f64672f8571016e12c81844d55021e02b9ed287`.
+- `Phase 1 CI` run `26710006414` failed for the same commit.
+- The CI verification job passed.
+- The CI Android x86_64 build failed in the third-party `screen_brightness_android` Gradle path.
+- The CI runtime smoke job was skipped.
+- No APK, signing evidence, or smoke evidence artifacts were produced for this commit by the monitored push-triggered runs.
+
+The current `build.yml` contains the intended signing guard and signing evidence upload steps, but they have not been exercised by a reviewed release `Build` workflow_dispatch for this commit. Release remains blocked.

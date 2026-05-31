@@ -165,7 +165,7 @@ class ShutdownTimerService {
                     const Center(child: Text('定时关闭', style: titleStyle)),
                     const SizedBox(height: 10),
                     ...{...scheduleTimeMinutes, _durationInMinutes}
-                        .sorted((a, b) => a.compareTo(b))
+                        .sorted(Comparable.compare)
                         .map(
                           (minutes) => ListTile(
                             dense: true,

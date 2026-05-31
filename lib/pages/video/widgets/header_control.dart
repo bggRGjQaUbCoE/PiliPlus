@@ -1974,9 +1974,7 @@ class HeaderControlState extends State<HeaderControl>
                         FontAwesomeIcons.thumbsUp,
                         color: Colors.white,
                       ),
-                      selectIcon: const Icon(
-                        FontAwesomeIcons.solidThumbsUp,
-                      ),
+                      selectIcon: const Icon(FontAwesomeIcons.solidThumbsUp),
                       selectStatus: introController.hasLike.value,
                       semanticsLabel: '点赞',
                       animation: introController.tripleAnimation,

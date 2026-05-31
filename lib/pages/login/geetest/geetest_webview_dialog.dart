@@ -37,7 +37,7 @@ class _GeetestWebviewDialogState extends State<GeetestWebviewDialog> {
   Webview? _linuxWebview;
   late bool _linuxWebviewLoading = true;
 
-  String _showJs(String response) =>
+  static String _showJs(String response) =>
       't=Geetest($response).onSuccess(()=>R("success",t.getValidate())).onError(o=>R("error",o)).onClose(o=>R("close",o));t.onReady(()=>t.verify())';
 
   @override

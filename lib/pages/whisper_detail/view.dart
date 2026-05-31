@@ -344,9 +344,10 @@ class _WhisperDetailPageState
                     );
                   } else {
                     try {
-                      final XFile? pickedFile = await imagePicker.pickImage(
+                      final pickedFile = await imagePicker.pickImage(
                         source: ImageSource.gallery,
                         imageQuality: 100,
+                        requestFullMetadata: false,
                       );
                       if (pickedFile != null) {
                         final path = pickedFile.path;

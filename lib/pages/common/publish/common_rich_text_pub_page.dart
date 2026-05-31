@@ -225,9 +225,10 @@ abstract class CommonRichTextPubPageState<T extends CommonRichTextPubPage>
       const Duration(milliseconds: 500),
       () async {
         try {
-          List<XFile> pickedFiles = await imagePicker.pickMultiImage(
+          final pickedFiles = await imagePicker.pickMultiImage(
             limit: limit,
             imageQuality: 100,
+            requestFullMetadata: false,
           );
           if (pickedFiles.isNotEmpty) {
             for (int i = 0; i < pickedFiles.length; i++) {

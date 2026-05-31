@@ -181,22 +181,14 @@ Commit Hash: ${BuildConfig.commitHash}''',
               onTap: PiliAndroidHelper.openLinkVerifySettings,
               leading: const Icon(MdiIcons.linkBoxOutline),
               title: const Text('打开受支持的链接'),
-              trailing: Icon(
-                Icons.arrow_forward,
-                size: 16,
-                color: outline,
-              ),
+              trailing: Icon(Icons.arrow_forward, size: 16, color: outline),
             ),
           ListTile(
             onTap: () =>
                 PageUtils.launchURL('${Constants.sourceCodeUrl}/issues'),
             leading: const Icon(Icons.feedback_outlined),
             title: const Text('问题反馈'),
-            trailing: Icon(
-              Icons.arrow_forward,
-              size: 16,
-              color: outline,
-            ),
+            trailing: Icon(Icons.arrow_forward, size: 16, color: outline),
           ),
           ListTile(
             onTap: () => Get.toNamed('/logs'),

@@ -116,9 +116,10 @@ class _CreateFavPageState extends State<CreateFavPage> {
 
   Future<void> _pickImg(BuildContext context, ThemeData theme) async {
     try {
-      XFile? pickedFile = await _imagePicker.pickImage(
+      final pickedFile = await _imagePicker.pickImage(
         source: ImageSource.gallery,
         imageQuality: 100,
+        requestFullMetadata: false,
       );
       if (pickedFile != null && mounted) {
         String imgPath = pickedFile.path;

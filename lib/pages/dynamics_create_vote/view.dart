@@ -428,9 +428,10 @@ class _CreateVotePageState extends State<CreateVotePage> {
       const Duration(milliseconds: 500),
       () async {
         try {
-          XFile? pickedFile = await imagePicker.pickImage(
+          final pickedFile = await imagePicker.pickImage(
             imageQuality: 100,
             source: ImageSource.gallery,
+            requestFullMetadata: false,
           );
           if (pickedFile != null) {
             final path = pickedFile.path;

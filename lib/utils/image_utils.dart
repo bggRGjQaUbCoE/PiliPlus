@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io' show File, Platform;
 import 'dart:math' as math;
 import 'dart:typed_data' show Uint8List;
@@ -36,19 +37,14 @@ abstract final class ImageUtils {
   static Future<void> onShareImg(String url) async {
     try {
       SmartDialog.showLoading();
-      final path = '$tmpDirPath/${Utils.getFileName(url)}';
-      final res = await Request().downloadFile(url.http2https, path);
+      final res = await DefaultCacheManager().getSingleFile(url.http2https);
       SmartDialog.dismiss();
-      if (res.statusCode == 200) {
-        await SharePlus.instance
-            .share(
-              ShareParams(
-                files: [XFile(path)],
-                sharePositionOrigin: await ShareUtils.sharePositionOrigin,
-              ),
-            )
-            .whenComplete(File(path).tryDel);
-      }
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [XFile(res.path)],
+          sharePositionOrigin: await ShareUtils.sharePositionOrigin,
+        ),
+      );
     } catch (e) {
       SmartDialog.showToast(e.toString());
     }
@@ -82,12 +78,12 @@ abstract final class ImageUtils {
     }
   }
 
-  static Future<bool> checkPermissionDependOnSdkInt() {
+  static FutureOr<bool> checkPermissionDependOnSdkInt() {
     if (Platform.isAndroid) {
       if (DeviceUtils.sdkInt < 29) {
         return requestPer();
       } else {
-        return Future.syncValue(true);
+        return true;
       }
     }
     return requestPer();
@@ -105,8 +101,6 @@ abstract final class ImageUtils {
       }
       if (!silentDownImg) SmartDialog.showLoading(msg: '正在下载');
 
-      late String imageName = "cover_${Utils.getFileName(url)}";
-      late String imagePath = '$tmpDirPath/$imageName';
       String videoName = "video_${Utils.getFileName(liveUrl)}";
       String videoPath = '$tmpDirPath/$videoName';
 
@@ -114,22 +108,17 @@ abstract final class ImageUtils {
       if (res.statusCode != 200) throw '${res.statusCode}';
 
       if (Platform.isIOS) {
-        final res1 = await Request().downloadFile(url.http2https, imagePath);
-        if (res1.statusCode != 200) throw '${res1.statusCode}';
+        final imageFile = await DefaultCacheManager().getSingleFile(
+          url.http2https,
+        );
         if (!silentDownImg) SmartDialog.showLoading(msg: '正在保存');
-        bool success =
-            await LivePhotoMaker.create(
-              coverImage: imagePath,
-              imagePath: null,
-              voicePath: videoPath,
-              width: width,
-              height: height,
-            ).whenComplete(
-              () {
-                File(videoPath).tryDel();
-                File(imagePath).tryDel();
-              },
-            );
+        bool success = await LivePhotoMaker.create(
+          coverImage: imageFile.path,
+          imagePath: null,
+          voicePath: videoPath,
+          width: width,
+          height: height,
+        ).whenComplete(File(videoPath).tryDel);
         if (success) {
           SmartDialog.showToast(' 已保存 ');
         } else {
@@ -154,10 +143,7 @@ abstract final class ImageUtils {
     }
   }
 
-  static Future<bool> downloadImg(
-    List<String> imgList, [
-    CacheManager? manager,
-  ]) async {
+  static Future<bool> downloadImg(List<String> imgList) async {
     if (PlatformUtils.isMobile && !await checkPermissionDependOnSdkInt()) {
       return false;
     }
@@ -174,31 +160,8 @@ abstract final class ImageUtils {
       final futures = imgList.map((url) async {
         final name = Utils.getFileName(url);
 
-        final file = (await (manager ?? DefaultCacheManager()).getFileFromCache(
-          url.http2https,
-        ))?.file;
-
-        if (file == null) {
-          final String filePath = '$tmpDirPath/$name';
-          final response = await Request().downloadFile(
-            url.http2https,
-            filePath,
-            cancelToken: cancelToken,
-          );
-          return (
-            filePath: filePath,
-            name: name,
-            statusCode: response.statusCode,
-            del: true,
-          );
-        } else {
-          return (
-            filePath: file.path,
-            name: name,
-            statusCode: 200,
-            del: false,
-          );
-        }
+        final file = await DefaultCacheManager().getSingleFile(url.http2https);
+        return (filePath: file.path, name: name, statusCode: 200);
       });
       final result = await Future.wait(futures, eagerError: true);
       bool success = true;
@@ -206,7 +169,6 @@ abstract final class ImageUtils {
         final delList = <String>[];
         final saveList = <SaveFileData>[];
         for (final i in result) {
-          if (i.del) delList.add(i.filePath);
           if (i.statusCode == 200) {
             saveList.add(
               SaveFileData(
@@ -226,11 +188,7 @@ abstract final class ImageUtils {
       } else {
         for (final res in result) {
           if (res.statusCode == 200) {
-            await saveFileImg(
-              filePath: res.filePath,
-              fileName: res.name,
-              del: res.del,
-            );
+            await saveFileImg(filePath: res.filePath, fileName: res.name);
           } else {
             success = false;
           }
@@ -336,7 +294,6 @@ abstract final class ImageUtils {
     required String fileName,
     FileType type = FileType.image,
     bool needToast = false,
-    bool del = true,
   }) async {
     final file = File(filePath);
     if (!file.existsSync()) {
@@ -351,7 +308,6 @@ abstract final class ImageUtils {
         albumPath: _albumPath,
         skipIfExists: false,
       );
-      if (del) file.tryDel();
     } else {
       final savePath = await FilePicker.saveFile(
         type: type,
@@ -363,7 +319,6 @@ abstract final class ImageUtils {
         return;
       }
       await file.copy(savePath);
-      if (del) file.tryDel();
       res = SaveResult(true, null);
     }
     if (needToast) {

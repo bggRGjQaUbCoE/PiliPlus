@@ -75,6 +75,32 @@ Interpretation:
 - The user accepts this as non-blocking for proceeding to release build evidence.
 - The release APK, signing evidence, and cover-install gates remain hard requirements.
 
+## Release Final Gates Monitor Review
+
+Codex reviewed:
+
+- `records/reasonix/monitor/2026-05-31-phase-1-release-build-monitor.md`
+- `records/reasonix/monitor/2026-05-31-phase-1-release-final-gates-monitor.md`
+- `records/reasonix/review/2026-05-31-phase-1-release-final-gates-codex-review.md`
+
+Decision: accept the reports as factual monitor evidence, but reject them as release gate evidence.
+
+Accepted facts for target commit `2ed9c8bebff0657b39c5b674eb34a88f0e05d1fa`:
+
+- release `Build` workflow_dispatch has not been triggered.
+- `Phase 1 CI` focused Flutter verification passed.
+- `Phase 1 CI` x86_64 dev APK build failed in the `screen_brightness_android` Gradle path.
+- CI-attached runtime smoke was skipped.
+- no APK artifacts were produced.
+- no `Android_signing_evidence` artifact was produced.
+- no `apksigner verify --print-certs` evidence is available.
+
+Interpretation:
+
+- The x86_64 dev APK failure remains accepted by the user as non-blocking for proceeding toward release-build evidence collection.
+- The Gradle issue is a risk for release `Build`, but it is not reviewed evidence that release `Build` failed because release `Build` has not been run for this commit.
+- Release remains blocked by missing release APK, signing evidence, and cover-install/user retest evidence.
+
 ## Remote Monitoring Policy
 
 If the next step reaches remote GitHub compile/build/release monitoring, Codex must not monitor the run directly. Codex will provide a prompt for the user to trigger Reasonix, and Reasonix must write persisted monitor/release artifacts under `records/reasonix/...`. Codex may then review those artifacts.

@@ -41,6 +41,9 @@ class MainActivity : AudioServiceActivity() {
             window.attributes.layoutInDisplayCutoutMode =
                 LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
         }
+
+        AndroidHelper.isPipAvailable =
+            packageManager.hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE)
     }
 
     override fun onDestroy() {
@@ -52,8 +55,6 @@ class MainActivity : AudioServiceActivity() {
         isInPictureInPictureMode: Boolean, newConfig: Configuration?
     ) {
         super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
-        MethodChannel(flutterEngine!!.dartExecutor.binaryMessenger, "floating").invokeMethod(
-            "onPipChanged", isInPictureInPictureMode
-        )
+        AndroidHelper.isPipMode = isInPictureInPictureMode
     }
 }

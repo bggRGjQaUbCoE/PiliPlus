@@ -563,8 +563,8 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: version-3
-      resolved-ref: a66ec0b9dabde6b5880a3f4f3425e57842a38e51
+      ref: dev
+      resolved-ref: fdd44a501d9717ebab04e8004fca2818a6bed236
       url: "https://github.com/bggRGjQaUbCoE/floating.git"
     source: git
     version: "3.0.0"

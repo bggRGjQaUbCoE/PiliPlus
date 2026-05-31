@@ -20,6 +20,10 @@ import org.jetbrains.annotations.NotNull;
 
 @Keep
 public final class AndroidHelper {
+    public static volatile boolean isPipMode = false;
+
+    public static volatile boolean isPipAvailable = false;
+
     private AndroidHelper() {
     }
 

@@ -191,13 +191,13 @@ abstract final class PageUtils {
           : height > width
           ? const Rational.vertical()
           : const Rational.landscape();
-      Floating().enable(
+      Floating.enable(
         isAuto
             ? AutoEnable(aspectRatio: aspectRatio)
             : EnableManual(aspectRatio: aspectRatio),
       );
     } else {
-      Floating().enable(isAuto ? const AutoEnable() : const EnableManual());
+      Floating.enable(isAuto ? const AutoEnable() : const EnableManual());
     }
   }
 

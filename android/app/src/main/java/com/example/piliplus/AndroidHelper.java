@@ -23,20 +23,25 @@ import android.util.Rational;
 import android.view.WindowManager;
 
 import androidx.annotation.Keep;
+import androidx.annotation.NonNull;
 
 import com.github.dart_lang.jni_flutter.JniFlutterPlugin;
-
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 
 @Keep
 public final class AndroidHelper {
-    public static volatile boolean isFoldable = false;
+    public static final boolean isFoldable;
+
+    public static final boolean isPipAvailable;
 
     public static volatile boolean isPipMode = false;
 
-    public static volatile boolean isPipAvailable = false;
+    static {
+        PackageManager pm = getContext().getPackageManager();
+        isFoldable = Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && pm.hasSystemFeature(PackageManager.FEATURE_SENSOR_HINGE_ANGLE);
+        isPipAvailable = pm.hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE);
+    }
 
     private AndroidHelper() {
     }
@@ -57,8 +62,8 @@ public final class AndroidHelper {
     }
 
     public static void biliSendCommAntifraud(
-            int action, long oid, int type, long rpId, long root, long parent, long ctime, @NotNull String commentText,
-            String pictures, @NotNull String sourceId, long uid, @NotNull String cookie
+            int action, long oid, int type, long rpId, long root, long parent, long ctime, @NonNull String commentText,
+            String pictures, @NonNull String sourceId, long uid, @NonNull String cookie
     ) {
         Intent intent = new Intent();
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -108,7 +113,7 @@ public final class AndroidHelper {
         }
     }
 
-    public static boolean openMusic(@NotNull String title, String artist, String album) {
+    public static boolean openMusic(@NonNull String title, String artist, String album) {
         Intent intent = new Intent(MediaStore.INTENT_ACTION_MEDIA_SEARCH);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.putExtra(SearchManager.QUERY, title);
@@ -146,10 +151,10 @@ public final class AndroidHelper {
 
     public static void enterPip(int width, int height, boolean autoEnter, long engineId) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            PictureInPictureParams.Builder builder = new PictureInPictureParams.Builder()
-                    .setAspectRatio(new Rational(width, height));
             Activity activity = JniFlutterPlugin.getActivity(engineId);
             assert activity != null;
+            PictureInPictureParams.Builder builder = new PictureInPictureParams.Builder()
+                    .setAspectRatio(new Rational(width, height));
             if (autoEnter) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                     builder.setAutoEnterEnabled(true);
@@ -163,11 +168,12 @@ public final class AndroidHelper {
 
     public static void disableAutoEnterPip(long engineId) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            PictureInPictureParams.Builder builder = new PictureInPictureParams.Builder()
-                    .setAutoEnterEnabled(false);
             Activity activity = JniFlutterPlugin.getActivity(engineId);
             if (activity != null) {
-                activity.setPictureInPictureParams(builder.build());
+                activity.setPictureInPictureParams(new PictureInPictureParams.Builder()
+                        .setAutoEnterEnabled(false)
+                        .build()
+                );
             }
         }
     }
@@ -190,7 +196,7 @@ public final class AndroidHelper {
         }
     }
 
-    public static void createShortcut(@NotNull String id, @NotNull String uri, @NotNull String label, @NotNull String icon) {
+    public static void createShortcut(@NonNull String id, @NonNull String uri, @NonNull String label, @NonNull String icon) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             Context context = getContext();
             ShortcutManager shortcutManager = context.getSystemService(ShortcutManager.class);
@@ -214,7 +220,7 @@ public final class AndroidHelper {
     @Keep
     public static final class ToDart {
         public static volatile Runnable onUserLeaveHint;
-        public static volatile Runnable onConfigurationChanged;
+        public static Runnable onConfigurationChanged;
 
         private ToDart() {
         }

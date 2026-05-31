@@ -197,13 +197,19 @@ extension type AndroidHelper._(jni$_.JObject _$this) implements jni$_.JObject {
     r'Z',
   );
 
-  /// from: `static public volatile boolean isFoldable`
+  /// from: `static public final boolean isFoldable`
   static core$_.bool get isFoldable =>
       _id_isFoldable.getNullable(_class, jni$_.jboolean.type) as core$_.bool;
 
-  /// from: `static public volatile boolean isFoldable`
-  static set isFoldable(core$_.bool value) =>
-      _id_isFoldable.set(_class, jni$_.jboolean.type, value);
+  static final _id_isPipAvailable = _class.staticFieldId(
+    r'isPipAvailable',
+    r'Z',
+  );
+
+  /// from: `static public final boolean isPipAvailable`
+  static core$_.bool get isPipAvailable =>
+      _id_isPipAvailable.getNullable(_class, jni$_.jboolean.type)
+          as core$_.bool;
 
   static final _id_isPipMode = _class.staticFieldId(
     r'isPipMode',
@@ -217,20 +223,6 @@ extension type AndroidHelper._(jni$_.JObject _$this) implements jni$_.JObject {
   /// from: `static public volatile boolean isPipMode`
   static set isPipMode(core$_.bool value) =>
       _id_isPipMode.set(_class, jni$_.jboolean.type, value);
-
-  static final _id_isPipAvailable = _class.staticFieldId(
-    r'isPipAvailable',
-    r'Z',
-  );
-
-  /// from: `static public volatile boolean isPipAvailable`
-  static core$_.bool get isPipAvailable =>
-      _id_isPipAvailable.getNullable(_class, jni$_.jboolean.type)
-          as core$_.bool;
-
-  /// from: `static public volatile boolean isPipAvailable`
-  static set isPipAvailable(core$_.bool value) =>
-      _id_isPipAvailable.set(_class, jni$_.jboolean.type, value);
 
   static final _id_sdkInt = _class.staticMethodId(
     r'sdkInt',
@@ -660,13 +652,13 @@ extension type AndroidHelper$ToDart._(jni$_.JObject _$this)
     r'Ljava/lang/Runnable;',
   );
 
-  /// from: `static public volatile java.lang.Runnable onConfigurationChanged`
+  /// from: `static public java.lang.Runnable onConfigurationChanged`
   /// The returned object must be released after use, by calling the [release] method.
   static Runnable? get onConfigurationChanged =>
       _id_onConfigurationChanged.getNullable(_class, Runnable.type)
           as Runnable?;
 
-  /// from: `static public volatile java.lang.Runnable onConfigurationChanged`
+  /// from: `static public java.lang.Runnable onConfigurationChanged`
   /// The returned object must be released after use, by calling the [release] method.
   static set onConfigurationChanged(Runnable? value) =>
       _id_onConfigurationChanged.set(_class, Runnable.type, value);

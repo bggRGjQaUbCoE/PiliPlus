@@ -1,7 +1,6 @@
 package com.example.piliplus
 
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
@@ -51,17 +50,6 @@ class MainActivity : AudioServiceActivity() {
             window.attributes.layoutInDisplayCutoutMode =
                 LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
         }
-
-        AndroidHelper.isPipAvailable =
-            packageManager.hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE)
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            try {
-                AndroidHelper.isFoldable =
-                    packageManager.hasSystemFeature(PackageManager.FEATURE_SENSOR_HINGE_ANGLE)
-            } catch (_: Exception) {
-            }
-        }
     }
 
     override fun onDestroy() {
@@ -74,9 +62,7 @@ class MainActivity : AudioServiceActivity() {
         AndroidHelper.ToDart.onUserLeaveHint?.run()
     }
 
-    override fun onPictureInPictureModeChanged(
-        isInPictureInPictureMode: Boolean, newConfig: Configuration?
-    ) {
+    override fun onPictureInPictureModeChanged(isInPictureInPictureMode: Boolean, newConfig: Configuration?) {
         super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
         AndroidHelper.isPipMode = isInPictureInPictureMode
     }

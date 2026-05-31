@@ -57,6 +57,14 @@ List<SettingsModel> get playSettings => [
     setKey: SettingBoxKey.autoPlayEnable,
     defaultVal: false,
   ),
+  if (Platform.isAndroid)
+    const SwitchModel(
+      title: '强制 HDR',
+      subtitle: '无论设备是否支持，对于 HDR 画质，强制调用 HDR 后端播放',
+      leading: Icon(Icons.hdr_on_outlined),
+      setKey: SettingBoxKey.androidHdrPlayback,
+      defaultVal: false,
+    ),
   const SwitchModel(
     title: '全屏显示锁定按钮',
     leading: Icon(Icons.lock_outline),

@@ -125,6 +125,33 @@ jobs:
                   for file in PiliAvalon_android_*.apk; do
                     "${ANDROID_HOME}/build-tools/$(ls "${ANDROID_HOME}/build-tools" | sort -V | tail -n 1)/apksigner" verify --print-certs "$file" > "signing-evidence/${file}.certs.txt"
                   done
+                  summary_file="signing-evidence/remote-fingerprint-summary.md"
+                  {
+                    echo "## Android release signing evidence"
+                    echo
+                    echo "- Run ID: ${GITHUB_RUN_ID}"
+                    echo "- Commit: ${GITHUB_SHA}"
+                    echo "- Version: ${{ env.version }}"
+                    echo
+                    echo "| APK | SHA-256 fingerprint |"
+                    echo "|---|---|"
+                    for cert_file in signing-evidence/*.certs.txt; do
+                      apk_name="${cert_file#signing-evidence/}"
+                      apk_name="${apk_name%.certs.txt}"
+                      sha256="$(grep -m 1 "Signer #1 certificate SHA-256 digest:" "$cert_file" | sed 's/.*: //')"
+                      if [ -z "$sha256" ]; then
+                        echo "Missing SHA-256 fingerprint in ${cert_file}" >&2
+                        exit 1
+                      fi
+                      echo "| ${apk_name} | ${sha256} |"
+                    done
+                    echo
+                    echo "Cover-install verification requires:"
+                    echo "- same applicationId: com.example.piliplus"
+                    echo "- same signing certificate fingerprint as the installed release"
+                    echo "- install over existing app without uninstall"
+                  } > "$summary_file"
+                  cat "$summary_file" >> "$GITHUB_STEP_SUMMARY"
                   {
                     echo "Cover-install verification requires:"
                     echo "- same applicationId: com.example.piliplus"
@@ -150,6 +177,7 @@ jobs:
                   name: ${{ env.release_tag }}
                   prerelease: true
                   make_latest: false
+                  body_path: signing-evidence/remote-fingerprint-summary.md
                   files: PiliAvalon_android_*.apk
 
             - name: 上传

@@ -1,12 +1,27 @@
+import 'dart:io';
+
 import 'package:PiliPlus/features/shielding/shielding.dart';
+import 'package:PiliPlus/grpc/reply.dart';
 import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/pages/common/reply_controller.dart';
 import 'package:PiliPlus/pages/video/reply_reply/controller.dart';
+import 'package:PiliPlus/utils/storage.dart';
 import 'package:fixnum/fixnum.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hive_ce/hive.dart';
 
 void main() {
+  setUpAll(() async {
+    try {
+      final dir = Directory.systemTemp.createTempSync('hive_test_');
+      Hive.init(dir.path);
+      GStorage.setting = await Hive.openBox('setting');
+    } catch (_) {
+      // Already initialized by another test file in the same isolate.
+    }
+  });
+
   group('ReplyController comment shielding', () {
     test('filters nested preview replies with comment scoped rules', () {
       final ruleSet = ShieldRuleSet(
@@ -81,6 +96,61 @@ void main() {
       expect(controller.applyFirstFloorShielding(visibleRoot), visibleRoot);
       expect(controller.applyFirstFloorShielding(blockedRoot), isNull);
     });
+
+    test('legacy reply keyword path obeys comment scene switch', () {
+      addTearDown(() {
+        ReplyGrpc.replyRegExp = RegExp('', caseSensitive: false);
+        ReplyGrpc.enableFilter = false;
+        ReplyGrpc.useLegacyTextFilter = false;
+        ReplyGrpc.antiGoodsReply = false;
+        ReplyGrpc.shieldRuleSetProvider = null;
+      });
+
+      ReplyGrpc.replyRegExp = RegExp('剧透', caseSensitive: false);
+      ReplyGrpc.enableFilter = true;
+      ReplyGrpc.useLegacyTextFilter = true;
+      ReplyGrpc.antiGoodsReply = false;
+      ReplyGrpc.shieldRuleSetProvider = () => ShieldRuleSet(
+        commentEnabled: false,
+        rules: [
+          ShieldRule(
+            id: 'old-comment',
+            type: ShieldRuleType.keyword,
+            matchMode: ShieldMatchMode.exact,
+            scope: ShieldScope.comment,
+            action: ShieldAction.block,
+            pattern: '剧透',
+            updatedAt: DateTime.fromMillisecondsSinceEpoch(1),
+          ),
+        ],
+      );
+
+      final reply = ReplyInfo(content: Content(message: '剧透评论'));
+
+      expect(ReplyGrpc.needRemoveGrpc(reply), isFalse);
+    });
+
+    test(
+      'legacy reply keyword path is disabled after merge into shielding',
+      () {
+        addTearDown(() {
+          ReplyGrpc.replyRegExp = RegExp('', caseSensitive: false);
+          ReplyGrpc.enableFilter = false;
+          ReplyGrpc.useLegacyTextFilter = false;
+          ReplyGrpc.antiGoodsReply = false;
+          ReplyGrpc.shieldRuleSetProvider = null;
+        });
+
+        ReplyGrpc.replyRegExp = RegExp('剧透', caseSensitive: false);
+        ReplyGrpc.enableFilter = true;
+        ReplyGrpc.antiGoodsReply = false;
+        ReplyGrpc.shieldRuleSetProvider = () => ShieldRuleSet();
+
+        final reply = ReplyInfo(content: Content(message: '剧透评论'));
+
+        expect(ReplyGrpc.needRemoveGrpc(reply), isFalse);
+      },
+    );
   });
 }
 

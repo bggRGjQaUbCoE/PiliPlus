@@ -43,7 +43,6 @@ import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
-import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/url_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
@@ -1245,38 +1244,17 @@ class ReplyItemGrpc extends StatelessWidget {
             Navigator.of(context).pop();
             final select = editableTextState.textEditingValue;
             final selectedText = select.selection.textInside(select.text);
-            String text = RegExp.escape(selectedText);
-            if (ReplyGrpc.enableFilter) text = '|$text';
 
             showConfirmDialog(
               context: context,
-              title: const Text('是否确认评论过滤的变更：'),
-              content: Text.rich(
-                TextSpan(
-                  text: ReplyGrpc.replyRegExp.pattern,
-                  children: [
-                    TextSpan(
-                      text: text,
-                      style: const TextStyle(
-                        color: Colors.green,
-                        fontWeight: .bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              title: const Text('是否加入评论屏蔽规则：'),
+              content: Text('屏蔽评论关键词「$selectedText」'),
               onConfirm: () async {
-                final saved = await _addCommentQuickActionRule(
+                await _addCommentQuickActionRule(
                   type: ShieldRuleType.keyword,
                   pattern: selectedText,
                   targetLabel: '屏蔽评论关键词「$selectedText」',
-                  showDuplicateToast: false,
                 );
-                if (!saved) return;
-                final filter = ReplyGrpc.replyRegExp.pattern + text;
-                ReplyGrpc.replyRegExp = RegExp(filter, caseSensitive: true);
-                ReplyGrpc.enableFilter = true;
-                GStorage.setting.put(SettingBoxKey.banWordForReply, filter);
               },
             );
           },

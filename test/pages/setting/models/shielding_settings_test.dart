@@ -33,17 +33,40 @@ void main() {
       expect(shieldRuleSubtitle(rule), '评论 / 完全相同 / 已启用');
     });
 
-    test('labels keyword exact semantics as contains instead of exact equality', () {
-      final rule = _rule(
-        id: 'keyword',
-        type: ShieldRuleType.keyword,
-        matchMode: ShieldMatchMode.exact,
-        pattern: '猫',
-      );
+    test(
+      'labels keyword exact semantics as contains instead of exact equality',
+      () {
+        final rule = _rule(
+          id: 'keyword',
+          type: ShieldRuleType.keyword,
+          matchMode: ShieldMatchMode.exact,
+          pattern: '猫',
+        );
 
-      expect(shieldMatchModeLabel(rule.matchMode, type: rule.type), '包含文字');
-      expect(shieldRuleSubtitle(rule), '推荐和评论 / 包含文字 / 已启用');
-      expect(shieldMatchModeLabel(ShieldMatchMode.exact), '完全相同');
+        expect(shieldMatchModeLabel(rule.matchMode, type: rule.type), '包含文字');
+        expect(shieldRuleSubtitle(rule), '推荐和评论 / 包含文字 / 已启用');
+        expect(shieldMatchModeLabel(ShieldMatchMode.exact), '完全相同');
+      },
+    );
+
+    test('labels user keyword separately from generic keyword', () {
+      expect(shieldRuleTypeLabel(ShieldRuleType.keyword), '标题/正文关键词');
+      expect(shieldRuleTypeLabel(ShieldRuleType.userKeyword), '用户/UP关键词');
+    });
+
+    test('provides horizontal category navigation labels', () {
+      expect(
+        shieldingRuleCategoryLabels,
+        containsAll([
+          '用户/UP',
+          '标题关键词',
+          '标签',
+          '分区',
+          '评论关键词',
+          '精确文本',
+          '旧规则兼容',
+        ]),
+      );
     });
   });
 
@@ -68,6 +91,21 @@ void main() {
       expect(find.text('动作'), findsOneWidget);
       expect(find.text('启用'), findsOneWidget);
     });
+
+    testWidgets('shows same-row shielding category navigation', (tester) async {
+      await tester.pumpWidget(
+        GetMaterialApp(
+          home: ShieldingSettingsPage(
+            store: ShieldSettingsStore(box: _MemoryBox()),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      expect(find.text('用户/UP'), findsOneWidget);
+      expect(find.text('标题关键词'), findsOneWidget);
+      expect(find.text('旧规则兼容'), findsOneWidget);
+    });
   });
 }
 
@@ -79,17 +117,16 @@ ShieldRule _rule({
   ShieldAction action = ShieldAction.block,
   required String pattern,
   bool enabled = true,
-}) =>
-    ShieldRule(
-      id: id,
-      type: type,
-      matchMode: matchMode,
-      scope: scope,
-      action: action,
-      pattern: pattern,
-      enabled: enabled,
-      updatedAt: DateTime.fromMillisecondsSinceEpoch(1),
-    );
+}) => ShieldRule(
+  id: id,
+  type: type,
+  matchMode: matchMode,
+  scope: scope,
+  action: action,
+  pattern: pattern,
+  enabled: enabled,
+  updatedAt: DateTime.fromMillisecondsSinceEpoch(1),
+);
 
 class _MemoryBox implements ShieldSettingsBox {
   final values = <String, Object?>{};

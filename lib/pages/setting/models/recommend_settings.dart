@@ -1,4 +1,3 @@
-import 'package:PiliPlus/http/video.dart';
 import 'package:PiliPlus/pages/rcmd/controller.dart';
 import 'package:PiliPlus/pages/setting/models/model.dart';
 import 'package:PiliPlus/utils/recommend_filter.dart';
@@ -54,22 +53,6 @@ List<SettingsModel> get recommendSettings => [
     key: SettingBoxKey.minLikeRatioForRecommend,
     values: [0, 1, 2, 3, 4],
     onChanged: (value) => RecommendFilter.minLikeRatioForRecommend = value,
-  ),
-  getBanWordModel(
-    title: '标题关键词过滤',
-    key: SettingBoxKey.banWordForRecommend,
-    onChanged: (value) {
-      RecommendFilter.rcmdRegExp = value;
-      RecommendFilter.enableFilter = value.pattern.isNotEmpty;
-    },
-  ),
-  getBanWordModel(
-    title: 'App推荐/热门/排行榜: 视频分区关键词过滤',
-    key: SettingBoxKey.banWordForZone,
-    onChanged: (value) {
-      VideoHttp.zoneRegExp = value;
-      VideoHttp.enableFilter = value.pattern.isNotEmpty;
-    },
   ),
   getVideoFilterSelectModel(
     title: '视频时长',

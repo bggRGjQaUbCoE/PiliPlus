@@ -10,18 +10,19 @@ class ShieldingSettingsPage extends StatefulWidget {
     super.key,
     this.showAppBar = true,
     ShieldSettingsStore? store,
-  }) : _store = store;
+  }) : store = store;
 
   final bool showAppBar;
-  final ShieldSettingsStore? _store;
+  final ShieldSettingsStore? store;
 
   @override
   State<ShieldingSettingsPage> createState() => _ShieldingSettingsPageState();
 }
 
 class _ShieldingSettingsPageState extends State<ShieldingSettingsPage> {
-  late final _store = widget._store ?? ShieldSettingsStore();
+  late final _store = widget.store ?? ShieldSettingsStore();
   late ShieldRuleSet _ruleSet = _store.snapshot();
+  String _selectedCategory = shieldingRuleCategoryLabels.first;
 
   @override
   void initState() {
@@ -76,7 +77,8 @@ class _ShieldingSettingsPageState extends State<ShieldingSettingsPage> {
             title: '启用全局屏蔽',
             subtitle: '关闭后，推荐和评论场景都不会应用 Phase 1 屏蔽规则',
             value: _ruleSet.globalEnabled,
-            onChanged: (value) => _save(_ruleSet.copyWith(globalEnabled: value)),
+            onChanged: (value) =>
+                _save(_ruleSet.copyWith(globalEnabled: value)),
           ),
           _buildSwitchTile(
             icon: Icons.explore_outlined,
@@ -91,13 +93,33 @@ class _ShieldingSettingsPageState extends State<ShieldingSettingsPage> {
             title: '评论屏蔽',
             subtitle: '在评论场景应用规则',
             value: _ruleSet.commentEnabled,
-            onChanged: (value) => _save(_ruleSet.copyWith(commentEnabled: value)),
+            onChanged: (value) =>
+                _save(_ruleSet.copyWith(commentEnabled: value)),
           ),
           const Divider(height: 1),
+          SizedBox(
+            height: 48,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              itemBuilder: (context, index) {
+                final label = shieldingRuleCategoryLabels[index];
+                return ChoiceChip(
+                  label: Text(label),
+                  selected: _selectedCategory == label,
+                  onSelected: (_) => setState(
+                    () => _selectedCategory = label,
+                  ),
+                );
+              },
+              separatorBuilder: (_, _) => const SizedBox(width: 8),
+              itemCount: shieldingRuleCategoryLabels.length,
+            ),
+          ),
           custom.ListTile(
             leading: const Icon(Icons.rule_outlined),
-            title: const Text('屏蔽规则'),
-            subtitle: Text(shieldRuleSummary(_ruleSet.rules)),
+            title: Text('$_selectedCategory规则'),
+            subtitle: Text(shieldRuleSummary(_visibleRules)),
             trailing: const Icon(Icons.add),
             onTap: () => _openEditor(),
           ),
@@ -122,7 +144,7 @@ class _ShieldingSettingsPageState extends State<ShieldingSettingsPage> {
               onTap: () => _openEditor(),
             )
           else
-            ..._sortedRules.map(_buildRuleItem),
+            ..._visibleRules.map(_buildRuleItem),
         ],
       ),
       floatingActionButton: showAppBar
@@ -135,8 +157,12 @@ class _ShieldingSettingsPageState extends State<ShieldingSettingsPage> {
     );
   }
 
-  List<ShieldRule> get _sortedRules => [..._ruleSet.rules]
-    ..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+  List<ShieldRule> get _sortedRules =>
+      [..._ruleSet.rules]..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+
+  List<ShieldRule> get _visibleRules => _sortedRules
+      .where((rule) => shieldingRuleCategoryFor(rule) == _selectedCategory)
+      .toList();
 
   Widget _buildSwitchTile({
     required IconData icon,
@@ -284,7 +310,8 @@ class _ShieldingSettingsPageState extends State<ShieldingSettingsPage> {
                 }
                 Get.back(
                   result: ShieldRule(
-                    id: rule?.id ??
+                    id:
+                        rule?.id ??
                         'manual-${DateTime.now().microsecondsSinceEpoch}',
                     type: type,
                     matchMode: mode,

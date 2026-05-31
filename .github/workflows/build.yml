@@ -86,13 +86,15 @@ jobs:
             - name: Write key
               if: github.event_name == 'workflow_dispatch'
               run: |
-                  if [ ! -z "${{ secrets.SIGN_KEYSTORE_BASE64 }}" ]; then
-                    echo "${{ secrets.SIGN_KEYSTORE_BASE64 }}" | base64 --decode > android/app/key.jks
-                    echo storeFile='key.jks' >> android/key.properties
-                    echo storePassword='${{ secrets.KEYSTORE_PASSWORD }}' >> android/key.properties
-                    echo keyAlias='${{ secrets.KEY_ALIAS }}' >> android/key.properties
-                    echo keyPassword='${{ secrets.KEY_PASSWORD }}' >> android/key.properties
+                  if [ -z "${{ secrets.SIGN_KEYSTORE_BASE64 }}" ] || [ -z "${{ secrets.KEYSTORE_PASSWORD }}" ] || [ -z "${{ secrets.KEY_ALIAS }}" ] || [ -z "${{ secrets.KEY_PASSWORD }}" ]; then
+                    echo "Release signing secrets are required for cover-install compatible APKs." >&2
+                    exit 1
                   fi
+                  echo "${{ secrets.SIGN_KEYSTORE_BASE64 }}" | base64 --decode > android/app/key.jks
+                  echo storeFile='key.jks' >> android/key.properties
+                  echo storePassword='${{ secrets.KEYSTORE_PASSWORD }}' >> android/key.properties
+                  echo keyAlias='${{ secrets.KEY_ALIAS }}' >> android/key.properties
+                  echo keyPassword='${{ secrets.KEY_PASSWORD }}' >> android/key.properties
 
             - name: Set and Extract version
               if: ${{ github.event_name == 'workflow_dispatch' }}
@@ -114,6 +116,21 @@ jobs:
                     abi=$(echo "$file" | sed -E 's|.*app-(.*)-release\.apk|\1|')
                     mv "$file" "PiliAvalon_android_${{ env.version }}_${abi}.apk"
                   done
+              shell: bash
+
+            - name: Capture Android signing fingerprints
+              if: github.event_name == 'workflow_dispatch'
+              run: |
+                  mkdir -p signing-evidence
+                  for file in PiliAvalon_android_*.apk; do
+                    "${ANDROID_HOME}/build-tools/$(ls "${ANDROID_HOME}/build-tools" | sort -V | tail -n 1)/apksigner" verify --print-certs "$file" > "signing-evidence/${file}.certs.txt"
+                  done
+                  {
+                    echo "Cover-install verification requires:"
+                    echo "- same applicationId: com.example.piliplus"
+                    echo "- same signing certificate fingerprint as the installed release"
+                    echo "- install over existing app without uninstall"
+                  } > signing-evidence/cover-install-requirements.txt
               shell: bash
 
             - name: Resolve release tag
@@ -155,6 +172,14 @@ jobs:
                   archive: false
                   name: Android_x86_64
                   path: PiliAvalon_android_*_x86_64.apk
+
+            - name: 上传签名证据
+              if: github.event_name == 'workflow_dispatch'
+              uses: actions/upload-artifact@v7
+              with:
+                  archive: false
+                  name: Android_signing_evidence
+                  path: signing-evidence/*
 
     ios:
         if: ${{ (github.event_name == 'pull_request' && github.repository == 'CometDash77/PiliAvalon-Worksite') || github.event.inputs.build_ios == 'true' }}

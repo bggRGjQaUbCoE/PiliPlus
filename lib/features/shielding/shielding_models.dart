@@ -1,5 +1,6 @@
 enum ShieldRuleType {
   keyword,
+  userKeyword,
   uid,
   category,
   tag,
@@ -61,18 +62,17 @@ class ShieldRule {
     bool? enabled,
     DateTime? updatedAt,
     ShieldRuleSource? source,
-  }) =>
-      ShieldRule(
-        id: id ?? this.id,
-        type: type ?? this.type,
-        matchMode: matchMode ?? this.matchMode,
-        scope: scope ?? this.scope,
-        action: action ?? this.action,
-        pattern: pattern ?? this.pattern,
-        enabled: enabled ?? this.enabled,
-        updatedAt: updatedAt ?? this.updatedAt,
-        source: source ?? this.source,
-      );
+  }) => ShieldRule(
+    id: id ?? this.id,
+    type: type ?? this.type,
+    matchMode: matchMode ?? this.matchMode,
+    scope: scope ?? this.scope,
+    action: action ?? this.action,
+    pattern: pattern ?? this.pattern,
+    enabled: enabled ?? this.enabled,
+    updatedAt: updatedAt ?? this.updatedAt,
+    source: source ?? this.source,
+  );
 
   Map<String, Object?> toJson() => {
     'id': id,
@@ -130,7 +130,7 @@ class ShieldRuleSet {
                   ),
                 )
                 .toList()
-      : const [],
+          : const [],
       globalEnabled: json['global_enabled'] as bool? ?? true,
       recommendationEnabled: json['recommendation_enabled'] as bool? ?? true,
       commentEnabled: json['comment_enabled'] as bool? ?? true,
@@ -180,16 +180,15 @@ class ShieldRuleSet {
     int? version,
     DateTime? lastLoadedAt,
     List<String>? loadErrors,
-  }) =>
-      ShieldRuleSet(
-        rules: rules ?? this.rules,
-        globalEnabled: globalEnabled ?? this.globalEnabled,
-        recommendationEnabled: recommendationEnabled ?? this.recommendationEnabled,
-        commentEnabled: commentEnabled ?? this.commentEnabled,
-        version: version ?? this.version,
-        lastLoadedAt: lastLoadedAt ?? this.lastLoadedAt,
-        loadErrors: loadErrors ?? this.loadErrors,
-      );
+  }) => ShieldRuleSet(
+    rules: rules ?? this.rules,
+    globalEnabled: globalEnabled ?? this.globalEnabled,
+    recommendationEnabled: recommendationEnabled ?? this.recommendationEnabled,
+    commentEnabled: commentEnabled ?? this.commentEnabled,
+    version: version ?? this.version,
+    lastLoadedAt: lastLoadedAt ?? this.lastLoadedAt,
+    loadErrors: loadErrors ?? this.loadErrors,
+  );
 
   Map<String, Object?> toJson() => {
     'version': version,
@@ -208,6 +207,7 @@ class ShieldCandidate {
     this.body,
     this.uid,
     this.authorName,
+    this.authorTokens = const [],
     this.category,
     this.tags = const [],
     this.tokens = const [],
@@ -218,6 +218,7 @@ class ShieldCandidate {
   final String? body;
   final String? uid;
   final String? authorName;
+  final List<String> authorTokens;
   final String? category;
   final List<String> tags;
   final List<String> tokens;

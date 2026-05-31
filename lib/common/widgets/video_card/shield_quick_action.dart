@@ -10,6 +10,7 @@ abstract final class VideoCardShieldQuickAction {
     ShieldSettingsStore? store,
     required ShieldRuleType type,
     required String pattern,
+    ShieldMatchMode matchMode = ShieldMatchMode.exact,
     bool showToast = true,
     String? successLabel,
   }) async {
@@ -22,6 +23,7 @@ abstract final class VideoCardShieldQuickAction {
       type: type,
       scope: ShieldScope.recommendation,
       pattern: trimmed,
+      matchMode: matchMode,
     );
     if (rule == null) {
       if (showToast) {
@@ -54,7 +56,8 @@ abstract final class VideoCardShieldQuickAction {
       if (trimmedName.isNotEmpty)
         UpShieldRuleOption(
           label: '屏蔽用户名关键词: $trimmedName',
-          type: ShieldRuleType.keyword,
+          type: ShieldRuleType.userKeyword,
+          matchMode: ShieldMatchMode.token,
           pattern: trimmedName,
         ),
     ];
@@ -226,7 +229,8 @@ abstract final class VideoCardShieldQuickAction {
   static String _ruleLabel(ShieldRuleType type, String pattern) =>
       switch (type) {
         ShieldRuleType.uid => '屏蔽推荐用户 UID $pattern',
-        ShieldRuleType.keyword => '屏蔽推荐关键词「$pattern」',
+        ShieldRuleType.keyword => '屏蔽推荐标题/正文关键词「$pattern」',
+        ShieldRuleType.userKeyword => '屏蔽推荐用户/UP关键词「$pattern」',
         ShieldRuleType.category => '屏蔽推荐分区「$pattern」',
         ShieldRuleType.tag => '屏蔽推荐标签「$pattern」',
       };
@@ -254,11 +258,13 @@ class UpShieldRuleOption {
     required this.label,
     required this.type,
     required this.pattern,
+    this.matchMode = ShieldMatchMode.exact,
   });
 
   final String label;
   final ShieldRuleType type;
   final String pattern;
+  final ShieldMatchMode matchMode;
 }
 
 class _UpActionRow extends StatelessWidget {
@@ -307,6 +313,7 @@ class _UpActionRow extends StatelessWidget {
                     await VideoCardShieldQuickAction.addRule(
                       type: option.type,
                       pattern: option.pattern,
+                      matchMode: option.matchMode,
                       successLabel: option.label,
                     );
                     onRuleAdded?.call();
@@ -394,8 +401,8 @@ class _TextActionRowState extends State<_TextActionRow> {
                   await VideoCardShieldQuickAction.addRule(
                     type: widget.type,
                     pattern: selectedText,
-                    successLabel: VideoCardShieldQuickAction
-                        ._contextualRuleLabel(
+                    successLabel:
+                        VideoCardShieldQuickAction._contextualRuleLabel(
                           widget.label,
                           widget.type,
                           selectedText,

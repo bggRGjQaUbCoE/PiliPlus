@@ -4,6 +4,7 @@ import 'package:PiliPlus/models/home/rcmd/result.dart';
 import 'package:PiliPlus/models/model_hot_video_item.dart';
 import 'package:PiliPlus/models/model_rec_video_item.dart';
 import 'package:PiliPlus/pages/video/reply_reply/controller.dart';
+import 'package:PiliPlus/utils/recommend_filter.dart';
 import 'package:fixnum/fixnum.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -114,58 +115,66 @@ void main() {
       expect(candidate.tags, isEmpty);
     });
 
-    test('filterList handles all-blocked list without requesting more data', () {
-      final visible = ShieldingAdapters.filterList(
-        [1, 2, 3],
-        enabled: true,
-        toCandidate: (item) => ShieldCandidate(
-          scope: ShieldScope.recommendation,
-          title: 'blocked-$item',
-        ),
-        ruleSet: ShieldRuleSet(rules: [
-          ShieldRule(
-            id: 'all',
-            type: ShieldRuleType.keyword,
-            matchMode: ShieldMatchMode.regex,
+    test(
+      'filterList handles all-blocked list without requesting more data',
+      () {
+        final visible = ShieldingAdapters.filterList(
+          [1, 2, 3],
+          enabled: true,
+          toCandidate: (item) => ShieldCandidate(
             scope: ShieldScope.recommendation,
-            action: ShieldAction.block,
-            pattern: r'blocked-\d',
-            updatedAt: DateTime.fromMillisecondsSinceEpoch(1),
+            title: 'blocked-$item',
           ),
-        ]),
-      );
+          ruleSet: ShieldRuleSet(
+            rules: [
+              ShieldRule(
+                id: 'all',
+                type: ShieldRuleType.keyword,
+                matchMode: ShieldMatchMode.regex,
+                scope: ShieldScope.recommendation,
+                action: ShieldAction.block,
+                pattern: r'blocked-\d',
+                updatedAt: DateTime.fromMillisecondsSinceEpoch(1),
+              ),
+            ],
+          ),
+        );
 
-      expect(visible, isEmpty);
-    });
+        expect(visible, isEmpty);
+      },
+    );
 
-    test('filterList preserves original list when total switch is disabled', () {
-      final items = [1, 2, 3];
-      final visible = ShieldingAdapters.filterList(
-        items,
-        enabled: true,
-        toCandidate: (item) => ShieldCandidate(
-          scope: ShieldScope.recommendation,
-          title: 'blocked-$item',
-        ),
-        ruleSet: ShieldRuleSet(
-          globalEnabled: false,
-          rules: [
-            ShieldRule(
-              id: 'all',
-              type: ShieldRuleType.keyword,
-              matchMode: ShieldMatchMode.regex,
-              scope: ShieldScope.recommendation,
-              action: ShieldAction.block,
-              pattern: r'blocked-\d',
-              updatedAt: DateTime.fromMillisecondsSinceEpoch(1),
-            ),
-          ],
-        ),
-      );
+    test(
+      'filterList preserves original list when total switch is disabled',
+      () {
+        final items = [1, 2, 3];
+        final visible = ShieldingAdapters.filterList(
+          items,
+          enabled: true,
+          toCandidate: (item) => ShieldCandidate(
+            scope: ShieldScope.recommendation,
+            title: 'blocked-$item',
+          ),
+          ruleSet: ShieldRuleSet(
+            globalEnabled: false,
+            rules: [
+              ShieldRule(
+                id: 'all',
+                type: ShieldRuleType.keyword,
+                matchMode: ShieldMatchMode.regex,
+                scope: ShieldScope.recommendation,
+                action: ShieldAction.block,
+                pattern: r'blocked-\d',
+                updatedAt: DateTime.fromMillisecondsSinceEpoch(1),
+              ),
+            ],
+          ),
+        );
 
-      expect(identical(visible, items), isTrue);
-      expect(visible, items);
-    });
+        expect(identical(visible, items), isTrue);
+        expect(visible, items);
+      },
+    );
 
     test('filterList applies comment-scoped rules to reply info lists', () {
       final visibleReply = ReplyInfo(
@@ -245,70 +254,32 @@ void main() {
       expect(ShieldingAdapters.isVisible(candidate, rules), isFalse);
     });
 
-    test('filterRecommendationVideos applies category rules to video lists', () {
-      final visibleVideo = HotVideoItemModel.fromJson({
-        'aid': 1,
-        'cid': 2,
-        'bvid': 'BV1',
-        'videos': 1,
-        'tid': 17,
-        'tname': '音乐',
-        'copyright': 1,
-        'pic': '',
-        'title': '现场合集',
-        'pubdate': 1,
-        'ctime': 1,
-        'desc': '',
-        'duration': 60,
-        'owner': {'mid': 42, 'name': '音乐UP'},
-        'stat': {'view': 1, 'like': 1, 'danmaku': 1},
-      });
-      final blockedVideo = HotVideoItemModel.fromJson({
-        'aid': 2,
-        'cid': 3,
-        'bvid': 'BV2',
-        'videos': 1,
-        'tid': 18,
-        'tname': '游戏',
-        'copyright': 1,
-        'pic': '',
-        'title': '攻略合集',
-        'pubdate': 1,
-        'ctime': 1,
-        'desc': '',
-        'duration': 60,
-        'owner': {'mid': 88, 'name': '游戏UP'},
-        'stat': {'view': 1, 'like': 1, 'danmaku': 1},
-      });
-
-      final visible = ShieldingAdapters.filterRecommendationVideos(
-        [visibleVideo, blockedVideo],
-        ShieldRuleSet(
-          rules: [
-            ShieldRule(
-              id: 'tag-game',
-              type: ShieldRuleType.category,
-              matchMode: ShieldMatchMode.exact,
-              scope: ShieldScope.recommendation,
-              action: ShieldAction.block,
-              pattern: '游戏',
-              updatedAt: DateTime.fromMillisecondsSinceEpoch(1),
-            ),
-          ],
-        ),
-      );
-
-      expect(visible, [visibleVideo]);
-    });
-
-    test('filterRecommendationVideos bypasses rules when recommendation is off', () {
-      final items = [
-        HotVideoItemModel.fromJson({
+    test(
+      'filterRecommendationVideos applies category rules to video lists',
+      () {
+        final visibleVideo = HotVideoItemModel.fromJson({
           'aid': 1,
           'cid': 2,
           'bvid': 'BV1',
           'videos': 1,
           'tid': 17,
+          'tname': '音乐',
+          'copyright': 1,
+          'pic': '',
+          'title': '现场合集',
+          'pubdate': 1,
+          'ctime': 1,
+          'desc': '',
+          'duration': 60,
+          'owner': {'mid': 42, 'name': '音乐UP'},
+          'stat': {'view': 1, 'like': 1, 'danmaku': 1},
+        });
+        final blockedVideo = HotVideoItemModel.fromJson({
+          'aid': 2,
+          'cid': 3,
+          'bvid': 'BV2',
+          'videos': 1,
+          'tid': 18,
           'tname': '游戏',
           'copyright': 1,
           'pic': '',
@@ -317,30 +288,185 @@ void main() {
           'ctime': 1,
           'desc': '',
           'duration': 60,
-          'owner': {'mid': 42, 'name': '游戏UP'},
+          'owner': {'mid': 88, 'name': '游戏UP'},
           'stat': {'view': 1, 'like': 1, 'danmaku': 1},
-        }),
-      ];
+        });
 
-      final visible = ShieldingAdapters.filterRecommendationVideos(
-        items,
-        ShieldRuleSet(
-          recommendationEnabled: false,
-          rules: [
-            ShieldRule(
-              id: 'tag-game',
-              type: ShieldRuleType.category,
-              matchMode: ShieldMatchMode.exact,
-              scope: ShieldScope.recommendation,
-              action: ShieldAction.block,
-              pattern: '游戏',
-              updatedAt: DateTime.fromMillisecondsSinceEpoch(1),
-            ),
-          ],
-        ),
+        final visible = ShieldingAdapters.filterRecommendationVideos(
+          [visibleVideo, blockedVideo],
+          ShieldRuleSet(
+            rules: [
+              ShieldRule(
+                id: 'tag-game',
+                type: ShieldRuleType.category,
+                matchMode: ShieldMatchMode.exact,
+                scope: ShieldScope.recommendation,
+                action: ShieldAction.block,
+                pattern: '游戏',
+                updatedAt: DateTime.fromMillisecondsSinceEpoch(1),
+              ),
+            ],
+          ),
+        );
+
+        expect(visible, [visibleVideo]);
+      },
+    );
+
+    test(
+      'filterRecommendationVideos bypasses rules when recommendation is off',
+      () {
+        final items = [
+          HotVideoItemModel.fromJson({
+            'aid': 1,
+            'cid': 2,
+            'bvid': 'BV1',
+            'videos': 1,
+            'tid': 17,
+            'tname': '游戏',
+            'copyright': 1,
+            'pic': '',
+            'title': '攻略合集',
+            'pubdate': 1,
+            'ctime': 1,
+            'desc': '',
+            'duration': 60,
+            'owner': {'mid': 42, 'name': '游戏UP'},
+            'stat': {'view': 1, 'like': 1, 'danmaku': 1},
+          }),
+        ];
+
+        final visible = ShieldingAdapters.filterRecommendationVideos(
+          items,
+          ShieldRuleSet(
+            recommendationEnabled: false,
+            rules: [
+              ShieldRule(
+                id: 'tag-game',
+                type: ShieldRuleType.category,
+                matchMode: ShieldMatchMode.exact,
+                scope: ShieldScope.recommendation,
+                action: ShieldAction.block,
+                pattern: '游戏',
+                updatedAt: DateTime.fromMillisecondsSinceEpoch(1),
+              ),
+            ],
+          ),
+        );
+
+        expect(identical(visible, items), isTrue);
+      },
+    );
+
+    test('legacy recommendation filters obey recommendation scene switch', () {
+      addTearDown(() {
+        RecommendFilter.minDurationForRcmd = 0;
+        RecommendFilter.minPlayForRcmd = 0;
+        RecommendFilter.minLikeRatioForRecommend = 0;
+        RecommendFilter.exemptFilterForFollowed = false;
+        RecommendFilter.applyFilterToRelatedVideos = false;
+        RecommendFilter.rcmdRegExp = RegExp('', caseSensitive: false);
+        RecommendFilter.enableFilter = false;
+        RecommendFilter.useLegacyTextFilter = false;
+        RecommendFilter.shieldRuleSetProvider = null;
+      });
+
+      RecommendFilter.minDurationForRcmd = 120;
+      RecommendFilter.minPlayForRcmd = 1000;
+      RecommendFilter.minLikeRatioForRecommend = 10;
+      RecommendFilter.rcmdRegExp = RegExp('剧透', caseSensitive: false);
+      RecommendFilter.enableFilter = true;
+      RecommendFilter.useLegacyTextFilter = true;
+      RecommendFilter.shieldRuleSetProvider = () => ShieldRuleSet(
+        recommendationEnabled: false,
+        rules: [
+          ShieldRule(
+            id: 'legacy-title',
+            type: ShieldRuleType.keyword,
+            matchMode: ShieldMatchMode.exact,
+            scope: ShieldScope.recommendation,
+            action: ShieldAction.block,
+            pattern: '剧透',
+            updatedAt: DateTime.fromMillisecondsSinceEpoch(1),
+          ),
+        ],
       );
 
-      expect(identical(visible, items), isTrue);
+      final item = HotVideoItemModel.fromJson({
+        'aid': 1,
+        'cid': 2,
+        'bvid': 'BV1',
+        'videos': 1,
+        'tid': 17,
+        'tname': '游戏',
+        'copyright': 1,
+        'pic': '',
+        'title': '剧透短视频',
+        'pubdate': 1,
+        'ctime': 1,
+        'desc': '',
+        'duration': 60,
+        'owner': {'mid': 42, 'name': '游戏UP'},
+        'stat': {'view': 10, 'like': 0, 'danmaku': 1},
+      });
+
+      expect(RecommendFilter.filter(item), isFalse);
+      expect(RecommendFilter.filterTitle(item.title), isFalse);
+      expect(RecommendFilter.filterLikeRatio(0, 10), isFalse);
+    });
+
+    test(
+      'legacy title keyword path is disabled after merge into shielding',
+      () {
+        addTearDown(() {
+          RecommendFilter.rcmdRegExp = RegExp('', caseSensitive: false);
+          RecommendFilter.enableFilter = false;
+          RecommendFilter.useLegacyTextFilter = false;
+          RecommendFilter.shieldRuleSetProvider = null;
+        });
+
+        RecommendFilter.rcmdRegExp = RegExp('剧透', caseSensitive: false);
+        RecommendFilter.enableFilter = true;
+        RecommendFilter.shieldRuleSetProvider = () => ShieldRuleSet();
+
+        expect(RecommendFilter.filterTitle('剧透短视频'), isFalse);
+      },
+    );
+
+    test('legacy numeric recommendation filters stay active', () {
+      addTearDown(() {
+        RecommendFilter.minDurationForRcmd = 0;
+        RecommendFilter.minPlayForRcmd = 0;
+        RecommendFilter.minLikeRatioForRecommend = 0;
+        RecommendFilter.exemptFilterForFollowed = false;
+        RecommendFilter.applyFilterToRelatedVideos = false;
+        RecommendFilter.shieldRuleSetProvider = null;
+      });
+
+      RecommendFilter.minDurationForRcmd = 120;
+      RecommendFilter.minPlayForRcmd = 1000;
+      RecommendFilter.minLikeRatioForRecommend = 10;
+      RecommendFilter.shieldRuleSetProvider = () => ShieldRuleSet();
+
+      final item = HotVideoItemModel.fromJson({
+        'aid': 1,
+        'cid': 2,
+        'bvid': 'BV1',
+        'videos': 1,
+        'tid': 17,
+        'tname': '游戏',
+        'copyright': 1,
+        'pic': '',
+        'title': '正常短视频',
+        'pubdate': 1,
+        'ctime': 1,
+        'desc': '',
+        'duration': 60,
+        'owner': {'mid': 42, 'name': '游戏UP'},
+        'stat': {'view': 10, 'like': 0, 'danmaku': 1},
+      });
+
+      expect(RecommendFilter.filter(item), isTrue);
     });
 
     test('direct reply target lookup runs before comment shielding', () {

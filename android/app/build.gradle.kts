@@ -37,6 +37,13 @@ android {
             it.load(properties.inputStream())
     }
 
+    val hasReleaseSigning = listOf(
+        "storeFile",
+        "storePassword",
+        "keyAlias",
+        "keyPassword",
+    ).all { keyProperties.getProperty(it)?.isNotBlank() == true }
+
     val config = keyProperties.getProperty("storeFile")?.let {
         signingConfigs.create("release") {
             storeFile = file(it)
@@ -49,11 +56,16 @@ android {
     }
 
     buildTypes {
-        all {
-            signingConfig = config ?: signingConfigs["debug"]
-        }
         release {
-            if (project.hasProperty("dev")) {
+            val isDevBuild = project.hasProperty("dev")
+            if (!isDevBuild && !hasReleaseSigning) {
+                throw GradleException(
+                    "Release signing is required for cover-install compatible APKs. " +
+                        "Create android/key.properties with storeFile, storePassword, keyAlias, and keyPassword.",
+                )
+            }
+            signingConfig = if (isDevBuild) signingConfigs["debug"] else config
+            if (isDevBuild) {
                 applicationIdSuffix = ".dev"
                 resValue(
                     type = "string",
@@ -67,6 +79,7 @@ android {
 //            )
         }
         debug {
+            signingConfig = signingConfigs["debug"]
             applicationIdSuffix = ".debug"
         }
     }

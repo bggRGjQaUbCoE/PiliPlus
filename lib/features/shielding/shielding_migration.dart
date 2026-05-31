@@ -1,6 +1,5 @@
 import 'package:PiliPlus/utils/recommend_filter.dart';
-
-import 'shielding_models.dart';
+import 'package:PiliPlus/features/shielding/shielding_models.dart';
 
 // =============================================================================
 // ShieldMigrationCandidate — 旧过滤 → 新规则 的候选分析
@@ -75,14 +74,17 @@ class ShieldMigrationReport {
   final List<ShieldMigrationCandidate> candidates;
   final DateTime? analyzedAt;
 
-  int get directCount =>
-      candidates.where((c) => c.feasibility == MigrationFeasibility.direct).length;
+  int get directCount => candidates
+      .where((c) => c.feasibility == MigrationFeasibility.direct)
+      .length;
 
-  int get partialCount =>
-      candidates.where((c) => c.feasibility == MigrationFeasibility.partial).length;
+  int get partialCount => candidates
+      .where((c) => c.feasibility == MigrationFeasibility.partial)
+      .length;
 
-  int get unsupportedCount =>
-      candidates.where((c) => c.feasibility == MigrationFeasibility.unsupported).length;
+  int get unsupportedCount => candidates
+      .where((c) => c.feasibility == MigrationFeasibility.unsupported)
+      .length;
 }
 
 // =============================================================================
@@ -127,8 +129,9 @@ abstract final class RecommendFilterAnalyzer {
     }
 
     // 检查旧正则是否为简单的竖线分隔关键词（bilibili 常见格式 "word1|word2|word3"）
-    final isSimplePipeSep = RegExp(r'^[a-zA-Z0-9\u4e00-\u9fff]+(\|[a-zA-Z0-9\u4e00-\u9fff]+)*$')
-        .hasMatch(pattern);
+    final isSimplePipeSep = RegExp(
+      r'^[a-zA-Z0-9\u4e00-\u9fff]+(\|[a-zA-Z0-9\u4e00-\u9fff]+)*$',
+    ).hasMatch(pattern);
 
     if (isSimplePipeSep) {
       // 可拆分为多条 keyword+exact 规则 ← 更精确、可独立管理
@@ -150,7 +153,8 @@ abstract final class RecommendFilterAnalyzer {
             updatedAt: now,
             source: ShieldRuleSource.imported,
           ),
-          notes: '从旧 banWordForRecommend 正则拆分。'
+          notes:
+              '从旧 banWordForRecommend 正则拆分。'
               '如旧正则含特殊字符（非纯 | 分隔），建议保留为单条 regex 规则。',
           confidence: 0.9,
         );
@@ -175,7 +179,8 @@ abstract final class RecommendFilterAnalyzer {
           updatedAt: now,
           source: ShieldRuleSource.imported,
         ),
-        notes: '旧配置为正则表达式。ShieldRule 的 regex 模式直接兼容。'
+        notes:
+            '旧配置为正则表达式。ShieldRule 的 regex 模式直接兼容。'
             '建议验证正则是否仍有效。',
         confidence: 0.85,
       ),
@@ -204,7 +209,8 @@ abstract final class RecommendFilterAnalyzer {
         oldSettingValue: minDuration.toString(),
         feasibility: MigrationFeasibility.unsupported,
         description: '视频时长 ≥ ${minDuration}s',
-        notes: 'ShieldRule 体系不支持数值阈值过滤（≤ N 秒屏蔽）。'
+        notes:
+            'ShieldRule 体系不支持数值阈值过滤（≤ N 秒屏蔽）。'
             '此功能保留在 RecommendFilter 中，暂不迁移。',
         confidence: 1.0,
       ),
@@ -267,7 +273,7 @@ abstract final class RecommendFilterAnalyzer {
         description: '已关注UP豁免推荐过滤 = $exempt',
         notes: exempt
             ? '旧过滤跳过已关注UP。ShieldRule 体系暂不支持「已关注豁免」语义。'
-                '如需要，可在 recommendation 过滤流程中额外检查 isFollowed。'
+                  '如需要，可在 recommendation 过滤流程中额外检查 isFollowed。'
             : '未启用。',
         confidence: exempt ? 0.6 : 0.0,
       ),
@@ -286,7 +292,7 @@ abstract final class RecommendFilterAnalyzer {
       description: '过滤器也应用于相关视频 = $apply',
       notes: apply
           ? '此开关仅控制旧 RecommendFilter 是否在相关视频上运行。'
-              'Phase 1 新屏蔽总是对相关视频生效（不受此开关影响），无需迁移。'
+                'Phase 1 新屏蔽总是对相关视频生效（不受此开关影响），无需迁移。'
           : '未启用。',
       confidence: 0.9,
     );
@@ -305,7 +311,8 @@ abstract final class RecommendFilterAnalyzer {
         feasibility: MigrationFeasibility.direct,
         description: '标签屏蔽能力',
         suggestedRule: null, // 没有旧数据可映射
-        notes: 'ShieldRuleType.tag 已就绪。'
+        notes:
+            'ShieldRuleType.tag 已就绪。'
             '旧 RecommendFilter 无 tag 设置，无需迁移。'
             '用户可通过 quickAction 或 manual 添加 tag 规则。',
         confidence: 1.0,

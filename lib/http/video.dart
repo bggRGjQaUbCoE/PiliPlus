@@ -48,6 +48,7 @@ import 'package:protobuf/protobuf.dart';
 abstract final class VideoHttp {
   static RegExp zoneRegExp = RegExp(Pref.banWordForZone, caseSensitive: false);
   static bool enableFilter = zoneRegExp.pattern.isNotEmpty;
+  static bool useLegacyZoneTextFilter = false;
 
   // 首页推荐视频
   static Future<LoadingState<List<RcmdVideoItemModel>>> rcmdVideoList({
@@ -157,7 +158,8 @@ abstract final class VideoHttp {
             i['ad_info'] == null &&
             (i['args'] != null &&
                 !GlobalData().blackMids.contains(i['args']['up_id']))) {
-          if (enableFilter &&
+          if (useLegacyZoneTextFilter &&
+              enableFilter &&
               i['args']?['tname'] != null &&
               zoneRegExp.hasMatch(i['args']['tname'])) {
             continue;
@@ -199,7 +201,8 @@ abstract final class VideoHttp {
               i['stat']['like'],
               i['stat']['view'],
             )) {
-          if (enableFilter &&
+          if (useLegacyZoneTextFilter &&
+              enableFilter &&
               i['tname'] != null &&
               zoneRegExp.hasMatch(i['tname'])) {
             continue;
@@ -348,7 +351,17 @@ abstract final class VideoHttp {
         (i) => HotVideoItemModel.fromJson(i),
       );
       final list = RecommendFilter.applyFilterToRelatedVideos
-          ? items?.where((i) => !RecommendFilter.filterAll(i)).toList()
+          ? items
+                ?.where(
+                  (i) =>
+                      !RecommendFilter.filterLikeRatio(
+                        i.stat.like,
+                        i.stat.view,
+                      ) &&
+                      !(i.duration > 0 &&
+                          i.duration < RecommendFilter.minDurationForRcmd),
+                )
+                .toList()
           : items?.toList();
       final shieldRuleSet = ShieldSettingsStore().snapshot();
       final visibleList = list == null
@@ -897,7 +910,8 @@ abstract final class VideoHttp {
           i['stat']['like'],
           i['stat']['view'],
         )) {
-      if (enableFilter &&
+      if (useLegacyZoneTextFilter &&
+          enableFilter &&
           i['tname'] != null &&
           zoneRegExp.hasMatch(i['tname'])) {
         return false;
@@ -930,7 +944,10 @@ abstract final class VideoHttp {
           // }
         }
       }
-      return Success(list);
+      final shieldRuleSet = ShieldSettingsStore().snapshot();
+      return Success(
+        ShieldingAdapters.filterRecommendationVideos(list, shieldRuleSet),
+      );
     } else {
       return Error(res.data['message']);
     }

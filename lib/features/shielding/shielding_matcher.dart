@@ -1,4 +1,4 @@
-import 'shielding_models.dart';
+import 'package:PiliPlus/features/shielding/shielding_models.dart';
 
 abstract final class ShieldMatcher {
   static ShieldMatchResult match(
@@ -50,8 +50,10 @@ abstract final class ShieldMatcher {
     );
   }
 
-  static bool _scopeMatches(ShieldScope ruleScope, ShieldScope candidateScope) =>
-      ruleScope == ShieldScope.both || ruleScope == candidateScope;
+  static bool _scopeMatches(
+    ShieldScope ruleScope,
+    ShieldScope candidateScope,
+  ) => ruleScope == ShieldScope.both || ruleScope == candidateScope;
 
   static bool _matches(ShieldRule rule, ShieldCandidate candidate) {
     return switch (rule.matchMode) {
@@ -59,7 +61,7 @@ abstract final class ShieldMatcher {
       ShieldMatchMode.regex => _matchValues(rule, candidate).any(
         RegExp(rule.pattern, caseSensitive: false).hasMatch,
       ),
-      ShieldMatchMode.token => candidate.tokens.any(
+      ShieldMatchMode.token => _tokenValues(rule, candidate).any(
         (token) => token.toLowerCase() == rule.pattern.toLowerCase(),
       ),
     };
@@ -80,11 +82,10 @@ abstract final class ShieldMatcher {
   static Iterable<String> _matchValues(
     ShieldRule rule,
     ShieldCandidate candidate,
-  ) =>
-      _valuesForRule(
-        rule.type,
-        candidate,
-      ).where((value) => value.trim().isNotEmpty);
+  ) => _valuesForRule(
+    rule.type,
+    candidate,
+  ).where((value) => value.trim().isNotEmpty);
 
   static Iterable<String> _valuesForRule(
     ShieldRuleType type,
@@ -94,6 +95,7 @@ abstract final class ShieldMatcher {
       case ShieldRuleType.keyword:
         yield ifNullEmpty(candidate.title);
         yield ifNullEmpty(candidate.body);
+      case ShieldRuleType.userKeyword:
         yield ifNullEmpty(candidate.authorName);
       case ShieldRuleType.uid:
         yield ifNullEmpty(candidate.uid);
@@ -103,6 +105,29 @@ abstract final class ShieldMatcher {
         yield* candidate.tags;
     }
   }
+
+  static Iterable<String> _tokenValues(
+    ShieldRule rule,
+    ShieldCandidate candidate,
+  ) sync* {
+    if (rule.type == ShieldRuleType.userKeyword) {
+      yield* candidate.authorTokens;
+      yield* _splitTokens([candidate.authorName]);
+      return;
+    }
+    if (candidate.tokens.isNotEmpty) {
+      yield* candidate.tokens;
+      return;
+    }
+    yield* _splitTokens(_valuesForRule(rule.type, candidate));
+  }
+
+  static Iterable<String> _splitTokens(Iterable<String?> values) =>
+      values.whereType<String>().expand(
+        (value) => value
+            .split(RegExp(r'[\s,，。！？!?:：;；_\-]+'))
+            .where((token) => token.trim().isNotEmpty),
+      );
 }
 
 String ifNullEmpty(String? value) => value ?? '';

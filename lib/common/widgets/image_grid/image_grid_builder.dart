@@ -496,7 +496,7 @@ class ImageGridRenderObjectElement extends RenderObjectElement {
         final height = img.height;
         final ratioWH = width / height;
         final ratioHW = height / width;
-        imageWidth = ratioWH > 1.5
+        imageWidth = ratioWH > 1.45
             ? maxWidth
             : (ratioWH >= 1 || (height > width && ratioHW < 1.5))
             ? 2 * imageWidth

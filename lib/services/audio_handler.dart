@@ -74,34 +74,30 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
   ) {
     final AudioProcessingState processingState;
     if (status.isCompleted) {
-      processingState = AudioProcessingState.completed;
+      processingState = .completed;
     } else if (isBuffering) {
-      processingState = AudioProcessingState.buffering;
+      processingState = .buffering;
     } else {
-      processingState = AudioProcessingState.ready;
+      processingState = .ready;
     }
 
     final playing = status.isPlaying;
     playbackState.add(
       playbackState.value.copyWith(
-        processingState: isBuffering
-            ? AudioProcessingState.buffering
-            : processingState,
+        processingState: isBuffering ? .buffering : processingState,
         controls: [
           if (!isLive)
-            MediaControl.rewind.copyWith(
+            MediaControl.skipToPrevious.copyWith(
               androidIcon: 'drawable/ic_baseline_replay_10_24',
             ),
           if (playing) MediaControl.pause else MediaControl.play,
           if (!isLive)
-            MediaControl.fastForward.copyWith(
+            MediaControl.skipToNext.copyWith(
               androidIcon: 'drawable/ic_baseline_forward_10_24',
             ),
         ],
         playing: playing,
-        systemActions: const {
-          MediaAction.seek,
-        },
+        systemActions: const {MediaAction.seek},
       ),
     );
     if (Platform.isAndroid && AndroidHelper.isPipMode) {
@@ -112,6 +108,12 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
       );
     }
   }
+
+  @override
+  Future<void> skipToPrevious() => rewind();
+
+  @override
+  Future<void> skipToNext() => fastForward();
 
   void onStatusChange(PlayerStatus status, bool isBuffering, isLive) {
     if (_item.isEmpty) return;

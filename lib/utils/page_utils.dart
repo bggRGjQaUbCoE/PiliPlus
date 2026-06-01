@@ -189,7 +189,12 @@ abstract final class PageUtils {
     return (min <= aspectRatio) && (aspectRatio <= max);
   }
 
-  static void enterPip({int? width, int? height}) {
+  static void enterPip({
+    int? width,
+    int? height,
+    required bool isLive,
+    required bool isPlaying,
+  }) {
     if (width != null &&
         height != null &&
         !_fitsInAndroidRequirements(width, height)) {
@@ -205,6 +210,8 @@ abstract final class PageUtils {
       PlatformDispatcher.instance.engineId!,
       width ?? 16,
       height ?? 9,
+      isLive,
+      isPlaying,
     );
   }
 

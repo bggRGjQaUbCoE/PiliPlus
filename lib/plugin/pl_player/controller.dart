@@ -262,6 +262,8 @@ class PlPlayerController with BlockConfigMixin {
       PageUtils.enterPip(
         width: state.width == 0 ? width : state.width,
         height: state.height == 0 ? height : state.height,
+        isLive: isLive,
+        isPlaying: playerStatus.isPlaying,
       );
     }
   }
@@ -798,18 +800,10 @@ class PlPlayerController with BlockConfigMixin {
         );
       }),
       // 媒体通知监听
-      if (videoPlayerServiceHandler != null) ...[
-        playerStatus.listen((PlayerStatus event) {
-          videoPlayerServiceHandler!.onStatusChange(
-            event,
-            isBuffering.value,
-            isLive,
-          );
-        }),
+      if (videoPlayerServiceHandler != null)
         positionSeconds.listen((int event) {
           videoPlayerServiceHandler!.onPositionChange(Duration(seconds: event));
         }),
-      ],
     ];
   }
 

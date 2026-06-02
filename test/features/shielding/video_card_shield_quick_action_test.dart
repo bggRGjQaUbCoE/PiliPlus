@@ -74,7 +74,8 @@ void main() {
         );
 
         await tester.tap(find.text('打开'));
-        await tester.pumpAndSettle();
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
 
         final preview = find.byKey(const Key('recommendation-cover-preview'));
         final save = find.text('保存封面');

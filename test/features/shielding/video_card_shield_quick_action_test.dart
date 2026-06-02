@@ -81,6 +81,7 @@ void main() {
         final cancel = find.text('取消');
 
         expect(preview, findsOneWidget);
+        expect(find.byType(Image), findsOneWidget);
         expect(save, findsOneWidget);
         expect(cancel, findsOneWidget);
         expect(find.text('关闭'), findsNothing);

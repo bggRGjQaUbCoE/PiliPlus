@@ -1,6 +1,5 @@
 import 'package:PiliPlus/features/shielding/shielding.dart';
 import 'package:PiliPlus/common/widgets/image/image_save.dart';
-import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -303,8 +302,8 @@ class _RecommendationCoverPreview extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            NetworkImgLayer(
-              src: cover,
+            _CoverImage(
+              src: cover.http2https,
               width: width,
               height: width * 9 / 16,
             ),
@@ -329,6 +328,38 @@ class _RecommendationCoverPreview extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _CoverImage extends StatelessWidget {
+  const _CoverImage({
+    required this.src,
+    required this.width,
+    required this.height,
+  });
+
+  final String src;
+  final double width;
+  final double height;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final placeholder = Container(
+      width: width,
+      height: height,
+      color: colorScheme.onInverseSurface.withValues(alpha: 0.4),
+    );
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(8),
+      child: Image.network(
+        src,
+        width: width,
+        height: height,
+        fit: BoxFit.cover,
+        errorBuilder: (_, _, _) => placeholder,
       ),
     );
   }

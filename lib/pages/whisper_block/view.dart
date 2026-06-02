@@ -1,3 +1,4 @@
+import 'package:PiliPlus/common/assets.dart';
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
 import 'package:PiliPlus/common/widgets/scaffold.dart';
@@ -114,7 +115,7 @@ class _WhisperBlockPageState extends State<WhisperBlockPage> {
                   spacing: 6,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    SvgPicture.asset("assets/images/error.svg", height: 156),
+                    SvgPicture.asset(Assets.error, height: 156),
                     const Text(
                       '还未添加屏蔽词',
                       style: TextStyle(

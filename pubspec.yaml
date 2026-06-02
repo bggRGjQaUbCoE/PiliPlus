@@ -282,7 +282,6 @@ flutter:
     - path: assets/images/logo/desktop/
       platforms: [linux, macos]
     - path: assets/images/live/
-    - path: assets/images/video/
     - path: assets/images/paycoins/
 
   fonts:

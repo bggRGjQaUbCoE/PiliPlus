@@ -10,7 +10,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('ShieldingAdapters', () {
-    test('maps web recommendation title, owner, category, and tags', () {
+    test('maps web recommendation title, owner, category, tags, and reason', () {
       final item = RcmdVideoItemModel.fromJson({
         'id': 1,
         'bvid': 'BV1',
@@ -25,6 +25,7 @@ void main() {
         'stat': {'view': 1, 'like': 1, 'danmaku': 1},
         'tname': '动物',
         'tag': ['萌宠'],
+        'rcmd_reason': {'content': '因为你看过萌宠'},
       });
 
       final candidate = ShieldingAdapters.fromRecommendationJson(
@@ -33,12 +34,14 @@ void main() {
           'owner': {'mid': 42, 'name': 'UP主'},
           'tname': '动物',
           'tag': ['萌宠'],
+          'rcmd_reason': {'content': '因为你看过萌宠'},
         },
       );
 
       expect(candidate.title, '猫咪睡觉合集');
       expect(candidate.uid, '42');
       expect(candidate.authorName, 'UP主');
+      expect(candidate.reason, '因为你看过萌宠');
       expect(candidate.category, '动物');
       expect(candidate.tags, contains('萌宠'));
     });
@@ -69,6 +72,47 @@ void main() {
       expect(candidate.uid, '88');
       expect(candidate.authorName, '玩家');
       expect(candidate.category, '游戏');
+      expect(candidate.reason, isNull);
+    });
+
+    test('reason keyword filters recommendation json reason only', () {
+      final item = RcmdVideoItemAppModel.fromJson({
+        'player_args': {'aid': 1, 'cid': 2, 'duration': 60},
+        'bvid': 'BV1',
+        'cover': '',
+        'cover_left_text_1': '1',
+        'cover_left_text_2': '1',
+        'title': '正常标题',
+        'args': {'up_id': 88, 'up_name': '玩家', 'tname': '游戏'},
+        'rcmd_reason': '因为你看过相似内容',
+        'goto': 'av',
+        'param': '1',
+        'uri': '',
+      });
+
+      final candidate = ShieldingAdapters.fromRecommendationJson(
+        item,
+        {
+          'args': {'up_id': 88, 'up_name': '玩家', 'tname': '游戏'},
+        },
+      );
+
+      final rules = ShieldRuleSet(
+        rules: [
+          ShieldRule(
+            id: 'reason',
+            type: ShieldRuleType.reasonKeyword,
+            matchMode: ShieldMatchMode.exact,
+            scope: ShieldScope.recommendation,
+            action: ShieldAction.block,
+            pattern: '相似内容',
+            updatedAt: DateTime.fromMillisecondsSinceEpoch(1),
+          ),
+        ],
+      );
+
+      expect(candidate.reason, '因为你看过相似内容');
+      expect(ShieldingAdapters.isVisible(candidate, rules), isFalse);
     });
 
     test('maps comment content and member fields', () {

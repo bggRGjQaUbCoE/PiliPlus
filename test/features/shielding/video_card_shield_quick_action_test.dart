@@ -6,32 +6,24 @@ import 'package:get/get.dart';
 
 void main() {
   group('VideoCardShieldQuickAction', () {
-    test('offers user keyword and uid as separate UP actions', () {
+    test('offers uid as separate UP action', () {
       final options = VideoCardShieldQuickAction.upRuleOptions(
         upName: '测试UP',
         upUid: 12345,
       );
 
-      expect(options, hasLength(2));
-      expect(options[0].type, ShieldRuleType.uid);
-      expect(options[0].pattern, '12345');
-      expect(options[0].label, '屏蔽用户 UID: 12345');
-      expect(options[1].type, ShieldRuleType.userKeyword);
-      expect(options[1].matchMode, ShieldMatchMode.token);
-      expect(options[1].pattern, '测试UP');
-      expect(options[1].label, '屏蔽用户名关键词: 测试UP');
+      expect(options, hasLength(1));
+      expect(options.single.type, ShieldRuleType.uid);
+      expect(options.single.pattern, '12345');
+      expect(options.single.label, '屏蔽用户 UID: 12345');
     });
 
-    test('falls back to username keyword action when uid is missing', () {
+    test('uses inline UP block action when uid is missing', () {
       final options = VideoCardShieldQuickAction.upRuleOptions(
         upName: '测试UP',
       );
 
-      expect(options, hasLength(1));
-      expect(options.single.type, ShieldRuleType.userKeyword);
-      expect(options.single.matchMode, ShieldMatchMode.token);
-      expect(options.single.pattern, '测试UP');
-      expect(options.single.label, '屏蔽用户名关键词: 测试UP');
+      expect(options, isEmpty);
     });
 
     testWidgets('recommendation dialog shows editable title and UP inputs', (
@@ -55,8 +47,9 @@ void main() {
       expect(find.byType(TextField), findsNWidgets(2));
       expect(find.widgetWithText(TextField, '原始标题'), findsOneWidget);
       expect(find.widgetWithText(TextField, '测试UP'), findsOneWidget);
+      expect(find.text('屏蔽'), findsNWidgets(2));
       expect(find.text('屏蔽用户 UID: 12345'), findsOneWidget);
-      expect(find.text('屏蔽用户名关键词: 测试UP'), findsOneWidget);
+      expect(find.text('屏蔽用户名关键词: 测试UP'), findsNothing);
     });
 
     testWidgets(
@@ -118,7 +111,7 @@ void main() {
       await tester.pumpAndSettle();
 
       await tester.enterText(find.widgetWithText(TextField, '测试UP'), '编辑后UP');
-      await tester.tap(find.text('屏蔽用户名关键词: 测试UP'));
+      await tester.tap(find.byKey(const Key('up-keyword-block-button')));
       await tester.pumpAndSettle();
 
       final rules = (await store.load()).rules;
@@ -127,6 +120,35 @@ void main() {
       expect(rules.single.scope, ShieldScope.recommendation);
       expect(rules.single.matchMode, ShieldMatchMode.token);
       expect(rules.single.pattern, '编辑后UP');
+    });
+
+    testWidgets('recommendation reason action creates reason keyword rule', (
+      tester,
+    ) async {
+      final store = ShieldSettingsStore(box: _MemoryBox());
+
+      await _pumpLauncher(
+        tester,
+        onTap: (context) => VideoCardShieldQuickAction.showRecommendationDialog(
+          context: context,
+          title: '原始标题',
+          reason: '因为你看过游戏攻略',
+          store: store,
+        ),
+      );
+
+      await tester.tap(find.text('打开'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('屏蔽').last);
+      await tester.pumpAndSettle();
+
+      final rules = (await store.load()).rules;
+      expect(rules, hasLength(1));
+      expect(rules.single.type, ShieldRuleType.reasonKeyword);
+      expect(rules.single.scope, ShieldScope.recommendation);
+      expect(rules.single.matchMode, ShieldMatchMode.exact);
+      expect(rules.single.pattern, '因为你看过游戏攻略');
     });
 
     testWidgets('UID action keeps original uid after UP text edit', (

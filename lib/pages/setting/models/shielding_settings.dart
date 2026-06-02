@@ -17,6 +17,7 @@ String shieldRuleSubtitle(ShieldRule rule) =>
 String shieldRuleTypeLabel(ShieldRuleType type) => switch (type) {
   ShieldRuleType.keyword => '标题/正文关键词',
   ShieldRuleType.userKeyword => '用户/UP关键词',
+  ShieldRuleType.reasonKeyword => '推荐理由',
   ShieldRuleType.uid => '用户 UID',
   ShieldRuleType.category => '分区',
   ShieldRuleType.tag => '标签',
@@ -25,19 +26,18 @@ String shieldRuleTypeLabel(ShieldRuleType type) => switch (type) {
 const shieldingRuleCategoryLabels = [
   '用户/UP',
   '标题关键词',
+  '推荐理由',
   '标签',
   '分区',
   '评论关键词',
-  '精确文本',
-  '旧规则兼容',
 ];
 
 String shieldingRuleCategoryFor(ShieldRule rule) {
-  if (rule.source == ShieldRuleSource.imported) return '旧规则兼容';
   if (rule.type == ShieldRuleType.uid ||
       rule.type == ShieldRuleType.userKeyword) {
     return '用户/UP';
   }
+  if (rule.type == ShieldRuleType.reasonKeyword) return '推荐理由';
   if (rule.type == ShieldRuleType.keyword &&
       rule.scope == ShieldScope.comment) {
     return '评论关键词';
@@ -50,6 +50,7 @@ String shieldingRuleCategoryFor(ShieldRule rule) {
   return switch (rule.type) {
     ShieldRuleType.keyword => '标题关键词',
     ShieldRuleType.userKeyword || ShieldRuleType.uid => '用户/UP',
+    ShieldRuleType.reasonKeyword => '推荐理由',
     ShieldRuleType.category => '分区',
     ShieldRuleType.tag => '标签',
   };

@@ -73,7 +73,8 @@ abstract final class ShieldMatcher {
       rule,
       candidate,
     ).map((value) => value.toLowerCase());
-    if (rule.type == ShieldRuleType.keyword) {
+    if (rule.type == ShieldRuleType.keyword ||
+        rule.type == ShieldRuleType.reasonKeyword) {
       return values.any((value) => value.contains(pattern));
     }
     return values.any((value) => value == pattern);
@@ -97,6 +98,8 @@ abstract final class ShieldMatcher {
         yield ifNullEmpty(candidate.body);
       case ShieldRuleType.userKeyword:
         yield ifNullEmpty(candidate.authorName);
+      case ShieldRuleType.reasonKeyword:
+        yield ifNullEmpty(candidate.reason);
       case ShieldRuleType.uid:
         yield ifNullEmpty(candidate.uid);
       case ShieldRuleType.category:
@@ -113,6 +116,10 @@ abstract final class ShieldMatcher {
     if (rule.type == ShieldRuleType.userKeyword) {
       yield* candidate.authorTokens;
       yield* _splitTokens([candidate.authorName]);
+      return;
+    }
+    if (rule.type == ShieldRuleType.reasonKeyword) {
+      yield* _splitTokens([candidate.reason]);
       return;
     }
     if (candidate.tokens.isNotEmpty) {

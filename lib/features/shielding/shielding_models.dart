@@ -1,6 +1,7 @@
 enum ShieldRuleType {
   keyword,
   userKeyword,
+  reasonKeyword,
   uid,
   category,
   tag,
@@ -205,6 +206,7 @@ class ShieldCandidate {
     required this.scope,
     this.title,
     this.body,
+    this.reason,
     this.uid,
     this.authorName,
     this.authorTokens = const [],
@@ -216,6 +218,7 @@ class ShieldCandidate {
   final ShieldScope scope;
   final String? title;
   final String? body;
+  final String? reason;
   final String? uid;
   final String? authorName;
   final List<String> authorTokens;

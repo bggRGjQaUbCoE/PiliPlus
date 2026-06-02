@@ -230,6 +230,86 @@ void main() {
       );
     });
 
+    test('reason keyword rules match only recommendation reason', () {
+      final rules = ShieldRuleSet(
+        rules: [
+          _rule(
+            type: ShieldRuleType.reasonKeyword,
+            pattern: '相似内容',
+            scope: ShieldScope.recommendation,
+          ),
+        ],
+      );
+
+      expect(
+        ShieldMatcher.match(
+          const ShieldCandidate(
+            scope: ShieldScope.recommendation,
+            reason: '因为你看过相似内容',
+          ),
+          rules,
+        ).visible,
+        isFalse,
+      );
+      expect(
+        ShieldMatcher.match(
+          const ShieldCandidate(
+            scope: ShieldScope.recommendation,
+            title: '标题里有相似内容',
+            authorName: '相似内容UP',
+          ),
+          rules,
+        ).visible,
+        isTrue,
+      );
+      expect(
+        ShieldMatcher.match(
+          const ShieldCandidate(
+            scope: ShieldScope.comment,
+            body: '评论里有相似内容',
+          ),
+          rules,
+        ).visible,
+        isTrue,
+      );
+    });
+
+    test('reason keyword token rules use reason tokens only', () {
+      final rules = ShieldRuleSet(
+        rules: [
+          _rule(
+            type: ShieldRuleType.reasonKeyword,
+            mode: ShieldMatchMode.token,
+            pattern: '相似内容',
+            scope: ShieldScope.recommendation,
+          ),
+        ],
+      );
+
+      expect(
+        ShieldMatcher.match(
+          const ShieldCandidate(
+            scope: ShieldScope.recommendation,
+            title: '标题里有相似内容',
+            tokens: ['标题里有相似内容'],
+          ),
+          rules,
+        ).visible,
+        isTrue,
+      );
+      expect(
+        ShieldMatcher.match(
+          const ShieldCandidate(
+            scope: ShieldScope.recommendation,
+            reason: '因为 相似内容',
+            tokens: ['标题'],
+          ),
+          rules,
+        ).visible,
+        isFalse,
+      );
+    });
+
     test('allow rule wins over same type block rule', () {
       final result = ShieldMatcher.match(
         const ShieldCandidate(

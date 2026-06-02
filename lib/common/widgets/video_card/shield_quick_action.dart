@@ -44,7 +44,6 @@ abstract final class VideoCardShieldQuickAction {
     required String upName,
     Object? upUid,
   }) {
-    final trimmedName = upName.trim();
     final uid = upUid?.toString().trim();
     return [
       if (uid?.isNotEmpty == true)
@@ -52,13 +51,6 @@ abstract final class VideoCardShieldQuickAction {
           label: '屏蔽用户 UID: $uid',
           type: ShieldRuleType.uid,
           pattern: uid!,
-        ),
-      if (trimmedName.isNotEmpty)
-        UpShieldRuleOption(
-          label: '屏蔽用户名关键词: $trimmedName',
-          type: ShieldRuleType.userKeyword,
-          matchMode: ShieldMatchMode.token,
-          pattern: trimmedName,
         ),
     ];
   }
@@ -110,7 +102,7 @@ abstract final class VideoCardShieldQuickAction {
                     _TextActionRow(
                       label: '推荐理由',
                       text: reason!.trim(),
-                      type: ShieldRuleType.keyword,
+                      type: ShieldRuleType.reasonKeyword,
                       onRuleAdded: onRuleAdded,
                       store: store,
                     ),
@@ -242,6 +234,7 @@ abstract final class VideoCardShieldQuickAction {
         ShieldRuleType.uid => '屏蔽推荐用户 UID $pattern',
         ShieldRuleType.keyword => '屏蔽推荐标题/正文关键词「$pattern」',
         ShieldRuleType.userKeyword => '屏蔽推荐用户/UP关键词「$pattern」',
+        ShieldRuleType.reasonKeyword => '屏蔽推荐理由「$pattern」',
         ShieldRuleType.category => '屏蔽推荐分区「$pattern」',
         ShieldRuleType.tag => '屏蔽推荐标签「$pattern」',
       };
@@ -258,7 +251,7 @@ abstract final class VideoCardShieldQuickAction {
       return '屏蔽推荐标题关键词「$pattern」';
     }
     if (label.contains('推荐理由')) {
-      return '屏蔽推荐理由关键词「$pattern」';
+      return '屏蔽推荐理由「$pattern」';
     }
     return _ruleLabel(type, pattern);
   }
@@ -406,6 +399,7 @@ class _UpActionRowState extends State<_UpActionRow> {
       upName: widget.upName,
       upUid: widget.upUid,
     );
+    final uidOption = options.isEmpty ? null : options.first;
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Column(
@@ -437,30 +431,15 @@ class _UpActionRowState extends State<_UpActionRow> {
                 onPressed: () => Utils.copyText(_selectedOrFullText()),
                 child: const Text('复制'),
               ),
-              for (final option in options)
+              TextButton(
+                key: const Key('up-keyword-block-button'),
+                onPressed: () => _addUserKeywordRule(context),
+                child: const Text('屏蔽'),
+              ),
+              if (uidOption != null)
                 TextButton(
-                  onPressed: () async {
-                    final selectedText = _selectedOrFullText();
-                    final pattern = option.type == ShieldRuleType.userKeyword
-                        ? selectedText
-                        : option.pattern;
-                    final successLabel =
-                        option.type == ShieldRuleType.userKeyword
-                        ? '屏蔽用户名关键词: $pattern'
-                        : option.label;
-                    await VideoCardShieldQuickAction.addRule(
-                      store: widget.store,
-                      type: option.type,
-                      pattern: pattern,
-                      matchMode: option.matchMode,
-                      successLabel: successLabel,
-                    );
-                    widget.onRuleAdded?.call();
-                    if (context.mounted) {
-                      Navigator.of(context).pop();
-                    }
-                  },
-                  child: Text(option.label),
+                  onPressed: () => _addUidRule(context, uidOption),
+                  child: Text(uidOption.label),
                 ),
             ],
           ),
@@ -475,6 +454,38 @@ class _UpActionRowState extends State<_UpActionRow> {
       return selection.textInside(controller.text);
     }
     return controller.text;
+  }
+
+  Future<void> _addUserKeywordRule(BuildContext context) async {
+    final pattern = _selectedOrFullText();
+    await VideoCardShieldQuickAction.addRule(
+      store: widget.store,
+      type: ShieldRuleType.userKeyword,
+      pattern: pattern,
+      matchMode: ShieldMatchMode.token,
+      successLabel: '屏蔽推荐用户/UP关键词「${pattern.trim()}」',
+    );
+    widget.onRuleAdded?.call();
+    if (context.mounted) {
+      Navigator.of(context).pop();
+    }
+  }
+
+  Future<void> _addUidRule(
+    BuildContext context,
+    UpShieldRuleOption option,
+  ) async {
+    await VideoCardShieldQuickAction.addRule(
+      store: widget.store,
+      type: option.type,
+      pattern: option.pattern,
+      matchMode: option.matchMode,
+      successLabel: option.label,
+    );
+    widget.onRuleAdded?.call();
+    if (context.mounted) {
+      Navigator.of(context).pop();
+    }
   }
 }
 

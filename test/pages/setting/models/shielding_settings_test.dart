@@ -52,6 +52,7 @@ void main() {
     test('labels user keyword separately from generic keyword', () {
       expect(shieldRuleTypeLabel(ShieldRuleType.keyword), '标题/正文关键词');
       expect(shieldRuleTypeLabel(ShieldRuleType.userKeyword), '用户/UP关键词');
+      expect(shieldRuleTypeLabel(ShieldRuleType.reasonKeyword), '推荐理由');
     });
 
     test('provides horizontal category navigation labels', () {
@@ -60,13 +61,14 @@ void main() {
         containsAll([
           '用户/UP',
           '标题关键词',
+          '推荐理由',
           '标签',
           '分区',
           '评论关键词',
-          '精确文本',
-          '旧规则兼容',
         ]),
       );
+      expect(shieldingRuleCategoryLabels, isNot(contains('精确文本')));
+      expect(shieldingRuleCategoryLabels, isNot(contains('旧规则兼容')));
     });
 
     test('categorizes quick recommendation keyword exact as title keyword', () {
@@ -119,6 +121,41 @@ void main() {
 
       expect(shieldingRuleCategoryFor(rule), '用户/UP');
     });
+
+    test('categorizes reason keyword as recommendation reason', () {
+      final rule = _rule(
+        id: 'reason',
+        type: ShieldRuleType.reasonKeyword,
+        matchMode: ShieldMatchMode.exact,
+        scope: ShieldScope.recommendation,
+        source: ShieldRuleSource.quickAction,
+        pattern: '因为你看过游戏',
+      );
+
+      expect(shieldingRuleCategoryFor(rule), '推荐理由');
+    });
+
+    test('categorizes imported rules by actual type', () {
+      final importedTitle = _rule(
+        id: 'imported-title',
+        type: ShieldRuleType.keyword,
+        matchMode: ShieldMatchMode.exact,
+        scope: ShieldScope.recommendation,
+        source: ShieldRuleSource.imported,
+        pattern: '猫',
+      );
+      final importedCategory = _rule(
+        id: 'imported-category',
+        type: ShieldRuleType.category,
+        matchMode: ShieldMatchMode.exact,
+        scope: ShieldScope.recommendation,
+        source: ShieldRuleSource.imported,
+        pattern: '游戏',
+      );
+
+      expect(shieldingRuleCategoryFor(importedTitle), '标题关键词');
+      expect(shieldingRuleCategoryFor(importedCategory), '分区');
+    });
   });
 
   group('ShieldingSettingsPage', () {
@@ -155,7 +192,9 @@ void main() {
 
       expect(find.text('用户/UP'), findsOneWidget);
       expect(find.text('标题关键词'), findsOneWidget);
-      expect(find.text('旧规则兼容'), findsOneWidget);
+      expect(find.text('推荐理由'), findsOneWidget);
+      expect(find.text('精确文本'), findsNothing);
+      expect(find.text('旧规则兼容'), findsNothing);
     });
   });
 }

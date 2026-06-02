@@ -14,9 +14,14 @@ abstract final class ShieldingAdapters {
     final args = json['args'] as Map?;
     final category = _string(json['tname'] ?? args?['tname']);
     final tags = _tags(json);
+    final reason = _recommendationReason(
+      itemReason: item.rcmdReason,
+      jsonReason: json['rcmd_reason'],
+    );
     return ShieldCandidate(
       scope: ShieldScope.recommendation,
       title: item.title,
+      reason: reason,
       uid: _string(owner?['mid'] ?? args?['up_id'] ?? item.owner.mid),
       authorName: _string(
         owner?['name'] ?? args?['up_name'] ?? item.owner.name,
@@ -28,6 +33,7 @@ abstract final class ShieldingAdapters {
       tags: tags,
       tokens: _tokens([
         item.title,
+        reason,
         ...tags,
       ]),
     );
@@ -57,12 +63,14 @@ abstract final class ShieldingAdapters {
       ShieldCandidate(
         scope: ShieldScope.recommendation,
         title: item.title,
+        reason: item.rcmdReason,
         uid: item.owner.mid?.toString(),
         authorName: item.owner.name,
         authorTokens: _tokens([item.owner.name]),
         category: item.tname,
         tokens: _tokens([
           item.title,
+          item.rcmdReason,
           item.tname,
         ]),
       );
@@ -118,3 +126,18 @@ abstract final class ShieldingAdapters {
 }
 
 String? _string(Object? value) => value?.toString();
+
+String? _recommendationReason({
+  required String? itemReason,
+  required Object? jsonReason,
+}) {
+  final fromItem = itemReason?.trim();
+  if (fromItem?.isNotEmpty == true) return fromItem;
+  if (jsonReason is Map) {
+    return _nonEmpty(_string(jsonReason['content'])?.trim());
+  }
+  return _nonEmpty(_string(jsonReason)?.trim());
+}
+
+String? _nonEmpty(String? value) =>
+    value?.isNotEmpty == true ? value : null;

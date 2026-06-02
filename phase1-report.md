@@ -1,5 +1,7 @@
 # Phase 1 执行完成报告
 
+Audience classification: user-facing.
+
 ## 仓库身份
 - Repository: CometDash77/PiliAvalon-Worksite
 - Branch: phase-1-shielding-core

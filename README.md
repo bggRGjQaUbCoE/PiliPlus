@@ -1,4 +1,5 @@
 <div align="center">
+    <!-- Audience classification: user-facing. -->
     <img width="200" height="200" src="assets/images/logo/logo.png">
 </div>
 

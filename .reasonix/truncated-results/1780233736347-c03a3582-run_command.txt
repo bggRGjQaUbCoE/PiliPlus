@@ -1,0 +1,1430 @@
+$ gh run watch 26713648685 -R CometDash77/PiliAvalon-Worksite
+[killed after timeout]
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* phase-1-shielding-core Build CometDash77/PiliAvalon-Worksite#1 · 26713648685
+Triggered via workflow_dispatch about 1 minute ago
+
+JOBS
+* Release Android (ID 78728276691)
+  ✓ Set up job
+  ✓ 代码迁出
+  ✓ 构建Java环境
+  ✓ 安装Flutter
+  ✓ Apply Patch
+  ✓ Write key
+  ✓ Set and Extract version
+  * Flutter Build Release Apk
+  * Flutter Build Dev Apk
+  * Rename
+  * Capture Android signing fingerprints
+  * Resolve release tag
+  * Release
+  * 上传
+  * 上传
+  * 上传
+  * 上传签名证据
+  * Post 安装Flutter
+  * Post 构建Java环境
+  * Post 代码迁出
+- win_x64 in 0s (ID 78728276764)
+- linux_x64 in 0s (ID 78728276804)
+- mac in 0s (ID 78728276860)
+- ios in 0s (ID 78728276933)
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* phase-1-shielding-core Build CometDash77/PiliAvalon-Worksite#1 · 26713648685
+Triggered via workflow_dispatch about 1 minute ago
+
+JOBS
+* Release Android (ID 78728276691)
+  ✓ Set up job
+  ✓ 代码迁出
+  ✓ 构建Java环境
+  ✓ 安装Flutter
+  ✓ Apply Patch
+  ✓ Write key
+  ✓ Set and Extract version
+  * Flutter Build Release Apk
+  * Flutter Build Dev Apk
+  * Rename
+  * Capture Android signing fingerprints
+  * Resolve release tag
+  * Release
+  * 上传
+  * 上传
+  * 上传
+  * 上传签名证据
+  * Post 安装Flutter
+  * Post 构建Java环境
+  * Post 代码迁出
+- win_x64 in 0s (ID 78728276764)
+- linux_x64 in 0s (ID 78728276804)
+- mac in 0s (ID 78728276860)
+- ios in 0s (ID 78728276933)
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* phase-1-shielding-core Build CometDash77/PiliAvalon-Worksite#1 · 26713648685
+Triggered via workflow_dispatch about 1 minute ago
+
+JOBS
+* Release Android (ID 78728276691)
+  ✓ Set up job
+  ✓ 代码迁出
+  ✓ 构建Java环境
+  ✓ 安装Flutter
+  ✓ Apply Patch
+  ✓ Write key
+  ✓ Set and Extract version
+  * Flutter Build Release Apk
+  * Flutter Build Dev Apk
+  * Rename
+  * Capture Android signing fingerprints
+  * Resolve release tag
+  * Release
+  * 上传
+  * 上传
+  * 上传
+  * 上传签名证据
+  * Post 安装Flutter
+  * Post 构建Java环境
+  * Post 代码迁出
+- win_x64 in 0s (ID 78728276764)
+- linux_x64 in 0s (ID 78728276804)
+- mac in 0s (ID 78728276860)
+- ios in 0s (ID 78728276933)
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* phase-1-shielding-core Build CometDash77/PiliAvalon-Worksite#1 · 26713648685
+Triggered via workflow_dispatch about 1 minute ago
+
+JOBS
+* Release Android (ID 78728276691)
+  ✓ Set up job
+  ✓ 代码迁出
+  ✓ 构建Java环境
+  ✓ 安装Flutter
+  ✓ Apply Patch
+  ✓ Write key
+  ✓ Set and Extract version
+  * Flutter Build Release Apk
+  * Flutter Build Dev Apk
+  * Rename
+  * Capture Android signing fingerprints
+  * Resolve release tag
+  * Release
+  * 上传
+  * 上传
+  * 上传
+  * 上传签名证据
+  * Post 安装Flutter
+  * Post 构建Java环境
+  * Post 代码迁出
+- win_x64 in 0s (ID 78728276764)
+- linux_x64 in 0s (ID 78728276804)
+- mac in 0s (ID 78728276860)
+- ios in 0s (ID 78728276933)
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* phase-1-shielding-core Build CometDash77/PiliAvalon-Worksite#1 · 26713648685
+Triggered via workflow_dispatch about 1 minute ago
+
+JOBS
+* Release Android (ID 78728276691)
+  ✓ Set up job
+  ✓ 代码迁出
+  ✓ 构建Java环境
+  ✓ 安装Flutter
+  ✓ Apply Patch
+  ✓ Write key
+  ✓ Set and Extract version
+  * Flutter Build Release Apk
+  * Flutter Build Dev Apk
+  * Rename
+  * Capture Android signing fingerprints
+  * Resolve release tag
+  * Release
+  * 上传
+  * 上传
+  * 上传
+  * 上传签名证据
+  * Post 安装Flutter
+  * Post 构建Java环境
+  * Post 代码迁出
+- win_x64 in 0s (ID 78728276764)
+- linux_x64 in 0s (ID 78728276804)
+- mac in 0s (ID 78728276860)
+- ios in 0s (ID 78728276933)
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* phase-1-shielding-core Build CometDash77/PiliAvalon-Worksite#1 · 26713648685
+Triggered via workflow_dispatch about 2 minutes ago
+
+JOBS
+* Release Android (ID 78728276691)
+  ✓ Set up job
+  ✓ 代码迁出
+  ✓ 构建Java环境
+  ✓ 安装Flutter
+  ✓ Apply Patch
+  ✓ Write key
+  ✓ Set and Extract version
+  * Flutter Build Release Apk
+  * Flutter Build Dev Apk
+  * Rename
+  * Capture Android signing fingerprints
+  * Resolve release tag
+  * Release
+  * 上传
+  * 上传
+  * 上传
+  * 上传签名证据
+  * Post 安装Flutter
+  * Post 构建Java环境
+  * Post 代码迁出
+- win_x64 in 0s (ID 78728276764)
+- linux_x64 in 0s (ID 78728276804)
+- mac in 0s (ID 78728276860)
+- ios in 0s (ID 78728276933)
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* phase-1-shielding-core Build CometDash77/PiliAvalon-Worksite#1 · 26713648685
+Triggered via workflow_dispatch about 2 minutes ago
+
+JOBS
+* Release Android (ID 78728276691)
+  ✓ Set up job
+  ✓ 代码迁出
+  ✓ 构建Java环境
+  ✓ 安装Flutter
+  ✓ Apply Patch
+  ✓ Write key
+  ✓ Set and Extract version
+  * Flutter Build Release Apk
+  * Flutter Build Dev Apk
+  * Rename
+  * Capture Android signing fingerprints
+  * Resolve release tag
+  * Release
+  * 上传
+  * 上传
+  * 上传
+  * 上传签名证据
+  * Post 安装Flutter
+  * Post 构建Java环境
+  * Post 代码迁出
+- win_x64 in 0s (ID 78728276764)
+- linux_x64 in 0s (ID 78728276804)
+- mac in 0s (ID 78728276860)
+- ios in 0s (ID 78728276933)
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* phase-1-shielding-core Build CometDash77/PiliAvalon-Worksite#1 · 26713648685
+Triggered via workflow_dispatch about 2 minutes ago
+
+JOBS
+* Release Android (ID 78728276691)
+  ✓ Set up job
+  ✓ 代码迁出
+  ✓ 构建Java环境
+  ✓ 安装Flutter
+  ✓ Apply Patch
+  ✓ Write key
+  ✓ Set and Extract version
+  * Flutter Build Release Apk
+  * Flutter Build Dev Apk
+  * Rename
+  * Capture Android signing fingerprints
+  * Resolve release tag
+  * Release
+  * 上传
+  * 上传
+  * 上传
+  * 上传签名证据
+  * Post 安装Flutter
+  * Post 构建Java环境
+  * Post 代码迁出
+- win_x64 in 0s (ID 78728276764)
+- linux_x64 in 0s (ID 78728276804)
+- mac in 0s (ID 78728276860)
+- ios in 0s (ID 78728276933)
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* phase-1-shielding-core Build CometDash77/PiliAvalon-Worksite#1 · 26713648685
+Triggered via workflow_dispatch about 2 minutes ago
+
+JOBS
+* Release Android (ID 78728276691)
+  ✓ Set up job
+  ✓ 代码迁出
+  ✓ 构建Java环境
+  ✓ 安装Flutter
+  ✓ Apply Patch
+  ✓ Write key
+  ✓ Set and Extract version
+  * Flutter Build Release Apk
+  * Flutter Build Dev Apk
+  * Rename
+  * Capture Android signing fingerprints
+  * Resolve release tag
+  * Release
+  * 上传
+  * 上传
+  * 上传
+  * 上传签名证据
+  * Post 安装Flutter
+  * Post 构建Java环境
+  * Post 代码迁出
+- win_x64 in 0s (ID 78728276764)
+- linux_x64 in 0s (ID 78728276804)
+- mac in 0s (ID 78728276860)
+- ios in 0s (ID 78728276933)
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* phase-1-shielding-core Build CometDash77/PiliAvalon-Worksite#1 · 26713648685
+Triggered via workflow_dispatch about 2 minutes ago
+
+JOBS
+* Release Android (ID 78728276691)
+  ✓ Set up job
+  ✓ 代码迁出
+  ✓ 构建Java环境
+  ✓ 安装Flutter
+  ✓ Apply Patch
+  ✓ Write key
+  ✓ Set and Extract version
+  * Flutter Build Release Apk
+  * Flutter Build Dev Apk
+  * Rename
+  * Capture Android signing fingerprints
+  * Resolve release tag
+  * Release
+  * 上传
+  * 上传
+  * 上传
+  * 上传签名证据
+  * Post 安装Flutter
+  * Post 构建Java环境
+  * Post 代码迁出
+- win_x64 in 0s (ID 78728276764)
+- linux_x64 in 0s (ID 78728276804)
+- mac in 0s (ID 78728276860)
+- ios in 0s (ID 78728276933)
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* phase-1-shielding-core Build CometDash77/PiliAvalon-Worksite#1 · 26713648685
+Triggered via workflow_dispatch about 2 minutes ago
+
+JOBS
+* Release Android (ID 78728276691)
+  ✓ Set up job
+  ✓ 代码迁出
+  ✓ 构建Java环境
+  ✓ 安装Flutter
+  ✓ Apply Patch
+  ✓ Write key
+  ✓ Set and Extract version
+  * Flutter Build Release Apk
+  * Flutter Build Dev Apk
+  * Rename
+  * Capture Android signing fingerprints
+  * Resolve release tag
+  * Release
+  * 上传
+  * 上传
+  * 上传
+  * 上传签名证据
+  * Post 安装Flutter
+  * Post 构建Java环境
+  * Post 代码迁出
+- win_x64 in 0s (ID 78728276764)
+- linux_x64 in 0s (ID 78728276804)
+- mac in 0s (ID 78728276860)
+- ios in 0s (ID 78728276933)
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* phase-1-shielding-core Build CometDash77/PiliAvalon-Worksite#1 · 26713648685
+Triggered via workflow_dispatch about 2 minutes ago
+
+JOBS
+* Release Android (ID 78728276691)
+  ✓ Set up job
+  ✓ 代码迁出
+  ✓ 构建Java环境
+  ✓ 安装Flutter
+  ✓ Apply Patch
+  ✓ Write key
+  ✓ Set and Extract version
+  * Flutter Build Release Apk
+  * Flutter Build Dev Apk
+  * Rename
+  * Capture Android signing fingerprints
+  * Resolve release tag
+  * Release
+  * 上传
+  * 上传
+  * 上传
+  * 上传签名证据
+  * Post 安装Flutter
+  * Post 构建Java环境
+  * Post 代码迁出
+- win_x64 in 0s (ID 78728276764)
+- linux_x64 in 0s (ID 78728276804)
+- mac in 0s (ID 78728276860)
+- ios in 0s (ID 78728276933)
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* phase-1-shielding-core Build CometDash77/PiliAvalon-Worksite#1 · 26713648685
+Triggered via workflow_dispatch about 2 minutes ago
+
+JOBS
+* Release Android (ID 78728276691)
+  ✓ Set up job
+  ✓ 代码迁出
+  ✓ 构建Java环境
+  ✓ 安装Flutter
+  ✓ Apply Patch
+  ✓ Write key
+  ✓ Set and Extract version
+  * Flutter Build Release Apk
+  * Flutter Build Dev Apk
+  * Rename
+  * Capture Android signing fingerprints
+  * Resolve release tag
+  * Release
+  * 上传
+  * 上传
+  * 上传
+  * 上传签名证据
+  * Post 安装Flutter
+  * Post 构建Java环境
+  * Post 代码迁出
+- win_x64 in 0s (ID 78728276764)
+- linux_x64 in 0s (ID 78728276804)
+- mac in 0s (ID 78728276860)
+- ios in 0s (ID 78728276933)
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* phase-1-shielding-core Build CometDash77/PiliAvalon-Worksite#1 · 26713648685
+Triggered via workflow_dispatch about 2 minutes ago
+
+JOBS
+* Release Android (ID 78728276691)
+  ✓ Set up job
+  ✓ 代码迁出
+  ✓ 构建Java环境
+  ✓ 安装Flutter
+  ✓ Apply Patch
+  ✓ Write key
+  ✓ Set and Extract version
+  * Flutter Build Release Apk
+  * Flutter Build Dev Apk
+  * Rename
+  * Capture Android signing fingerprints
+  * Resolve release tag
+  * Release
+  * 上传
+  * 上传
+  * 上传
+  * 上传签名证据
+  * Post 安装Flutter
+  * Post 构建Java环境
+  * Post 代码迁出
+- win_x64 in 0s (ID 78728276764)
+- linux_x64 in 0s (ID 78728276804)
+- mac in 0s (ID 78728276860)
+- ios in 0s (ID 78728276933)
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* phase-1-shielding-core Build CometDash77/PiliAvalon-Worksite#1 · 26713648685
+Triggered via workflow_dispatch about 2 minutes ago
+
+JOBS
+* Release Android (ID 78728276691)
+  ✓ Set up job
+  ✓ 代码迁出
+  ✓ 构建Java环境
+  ✓ 安装Flutter
+  ✓ Apply Patch
+  ✓ Write key
+  ✓ Set and Extract version
+  * Flutter Build Release Apk
+  * Flutter Build Dev Apk
+  * Rename
+  * Capture Android signing fingerprints
+  * Resolve release tag
+  * Release
+  * 上传
+  * 上传
+  * 上传
+  * 上传签名证据
+  * Post 安装Flutter
+  * Post 构建Java环境
+  * Post 代码迁出
+- win_x64 in 0s (ID 78728276764)
+- linux_x64 in 0s (ID 78728276804)
+- mac in 0s (ID 78728276860)
+- ios in 0s (ID 78728276933)
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* phase-1-shielding-core Build CometDash77/PiliAvalon-Worksite#1 · 26713648685
+Triggered via workflow_dispatch about 2 minutes ago
+
+JOBS
+* Release Android (ID 78728276691)
+  ✓ Set up job
+  ✓ 代码迁出
+  ✓ 构建Java环境
+  ✓ 安装Flutter
+  ✓ Apply Patch
+  ✓ Write key
+  ✓ Set and Extract version
+  * Flutter Build Release Apk
+  * Flutter Build Dev Apk
+  * Rename
+  * Capture Android signing fingerprints
+  * Resolve release tag
+  * Release
+  * 上传
+  * 上传
+  * 上传
+  * 上传签名证据
+  * Post 安装Flutter
+  * Post 构建Java环境
+  * Post 代码迁出
+- win_x64 in 0s (ID 78728276764)
+- linux_x64 in 0s (ID 78728276804)
+- mac in 0s (ID 78728276860)
+- ios in 0s (ID 78728276933)
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* phase-1-shielding-core Build CometDash77/PiliAvalon-Worksite#1 · 26713648685
+Triggered via workflow_dispatch about 3 minutes ago
+
+JOBS
+* Release Android (ID 78728276691)
+  ✓ Set up job
+  ✓ 代码迁出
+  ✓ 构建Java环境
+  ✓ 安装Flutter
+  ✓ Apply Patch
+  ✓ Write key
+  ✓ Set and Extract version
+  * Flutter Build Release Apk
+  * Flutter Build Dev Apk
+  * Rename
+  * Capture Android signing fingerprints
+  * Resolve release tag
+  * Release
+  * 上传
+  * 上传
+  * 上传
+  * 上传签名证据
+  * Post 安装Flutter
+  * Post 构建Java环境
+  * Post 代码迁出
+- win_x64 in 0s (ID 78728276764)
+- linux_x64 in 0s (ID 78728276804)
+- mac in 0s (ID 78728276860)
+- ios in 0s (ID 78728276933)
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* phase-1-shielding-core Build CometDash77/PiliAvalon-Worksite#1 · 26713648685
+Triggered via workflow_dispatch about 3 minutes ago
+
+JOBS
+* Release Android (ID 78728276691)
+  ✓ Set up job
+  ✓ 代码迁出
+  ✓ 构建Java环境
+  ✓ 安装Flutter
+  ✓ Apply Patch
+  ✓ Write key
+  ✓ Set and Extract version
+  * Flutter Build Release Apk
+  * Flutter Build Dev Apk
+  * Rename
+  * Capture Android signing fingerprints
+  * Resolve release tag
+  * Release
+  * 上传
+  * 上传
+  * 上传
+  * 上传签名证据
+  * Post 安装Flutter
+  * Post 构建Java环境
+  * Post 代码迁出
+- win_x64 in 0s (ID 78728276764)
+- linux_x64 in 0s (ID 78728276804)
+- mac in 0s (ID 78728276860)
+- ios in 0s (ID 78728276933)
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* phase-1-shielding-core Build CometDash77/PiliAvalon-Worksite#1 · 26713648685
+Triggered via workflow_dispatch about 3 minutes ago
+
+JOBS
+* Release Android (ID 78728276691)
+  ✓ Set up job
+  ✓ 代码迁出
+  ✓ 构建Java环境
+  ✓ 安装Flutter
+  ✓ Apply Patch
+  ✓ Write key
+  ✓ Set and Extract version
+  * Flutter Build Release Apk
+  * Flutter Build Dev Apk
+  * Rename
+  * Capture Android signing fingerprints
+  * Resolve release tag
+  * Release
+  * 上传
+  * 上传
+  * 上传
+  * 上传签名证据
+  * Post 安装Flutter
+  * Post 构建Java环境
+  * Post 代码迁出
+- win_x64 in 0s (ID 78728276764)
+- linux_x64 in 0s (ID 78728276804)
+- mac in 0s (ID 78728276860)
+- ios in 0s (ID 78728276933)
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* phase-1-shielding-core Build CometDash77/PiliAvalon-Worksite#1 · 26713648685
+Triggered via workflow_dispatch about 3 minutes ago
+
+JOBS
+* Release Android (ID 78728276691)
+  ✓ Set up job
+  ✓ 代码迁出
+  ✓ 构建Java环境
+  ✓ 安装Flutter
+  ✓ Apply Patch
+  ✓ Write key
+  ✓ Set and Extract version
+  * Flutter Build Release Apk
+  * Flutter Build Dev Apk
+  * Rename
+  * Capture Android signing fingerprints
+  * Resolve release tag
+  * Release
+  * 上传
+  * 上传
+  * 上传
+  * 上传签名证据
+  * Post 安装Flutter
+  * Post 构建Java环境
+  * Post 代码迁出
+- win_x64 in 0s (ID 78728276764)
+- linux_x64 in 0s (ID 78728276804)
+- mac in 0s (ID 78728276860)
+- ios in 0s (ID 78728276933)
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* phase-1-shielding-core Build CometDash77/PiliAvalon-Worksite#1 · 26713648685
+Triggered via workflow_dispatch about 3 minutes ago
+
+JOBS
+* Release Android (ID 78728276691)
+  ✓ Set up job
+  ✓ 代码迁出
+  ✓ 构建Java环境
+  ✓ 安装Flutter
+  ✓ Apply Patch
+  ✓ Write key
+  ✓ Set and Extract version
+  * Flutter Build Release Apk
+  * Flutter Build Dev Apk
+  * Rename
+  * Capture Android signing fingerprints
+  * Resolve release tag
+  * Release
+  * 上传
+  * 上传
+  * 上传
+  * 上传签名证据
+  * Post 安装Flutter
+  * Post 构建Java环境
+  * Post 代码迁出
+- win_x64 in 0s (ID 78728276764)
+- linux_x64 in 0s (ID 78728276804)
+- mac in 0s (ID 78728276860)
+- ios in 0s (ID 78728276933)
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* phase-1-shielding-core Build CometDash77/PiliAvalon-Worksite#1 · 26713648685
+Triggered via workflow_dispatch about 3 minutes ago
+
+JOBS
+* Release Android (ID 78728276691)
+  ✓ Set up job
+  ✓ 代码迁出
+  ✓ 构建Java环境
+  ✓ 安装Flutter
+  ✓ Apply Patch
+  ✓ Write key
+  ✓ Set and Extract version
+  * Flutter Build Release Apk
+  * Flutter Build Dev Apk
+  * Rename
+  * Capture Android signing fingerprints
+  * Resolve release tag
+  * Release
+  * 上传
+  * 上传
+  * 上传
+  * 上传签名证据
+  * Post 安装Flutter
+  * Post 构建Java环境
+  * Post 代码迁出
+- win_x64 in 0s (ID 78728276764)
+- linux_x64 in 0s (ID 78728276804)
+- mac in 0s (ID 78728276860)
+- ios in 0s (ID 78728276933)
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* phase-1-shielding-core Build CometDash77/PiliAvalon-Worksite#1 · 26713648685
+Triggered via workflow_dispatch about 3 minutes ago
+
+JOBS
+* Release Android (ID 78728276691)
+  ✓ Set up job
+  ✓ 代码迁出
+  ✓ 构建Java环境
+  ✓ 安装Flutter
+  ✓ Apply Patch
+  ✓ Write key
+  ✓ Set and Extract version
+  * Flutter Build Release Apk
+  * Flutter Build Dev Apk
+  * Rename
+  * Capture Android signing fingerprints
+  * Resolve release tag
+  * Release
+  * 上传
+  * 上传
+  * 上传
+  * 上传签名证据
+  * Post 安装Flutter
+  * Post 构建Java环境
+  * Post 代码迁出
+- win_x64 in 0s (ID 78728276764)
+- linux_x64 in 0s (ID 78728276804)
+- mac in 0s (ID 78728276860)
+- ios in 0s (ID 78728276933)
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* phase-1-shielding-core Build CometDash77/PiliAvalon-Worksite#1 · 26713648685
+Triggered via workflow_dispatch about 3 minutes ago
+
+JOBS
+* Release Android (ID 78728276691)
+  ✓ Set up job
+  ✓ 代码迁出
+  ✓ 构建Java环境
+  ✓ 安装Flutter
+  ✓ Apply Patch
+  ✓ Write key
+  ✓ Set and Extract version
+  * Flutter Build Release Apk
+  * Flutter Build Dev Apk
+  * Rename
+  * Capture Android signing fingerprints
+  * Resolve release tag
+  * Release
+  * 上传
+  * 上传
+  * 上传
+  * 上传签名证据
+  * Post 安装Flutter
+  * Post 构建Java环境
+  * Post 代码迁出
+- win_x64 in 0s (ID 78728276764)
+- linux_x64 in 0s (ID 78728276804)
+- mac in 0s (ID 78728276860)
+- ios in 0s (ID 78728276933)
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* phase-1-shielding-core Build CometDash77/PiliAvalon-Worksite#1 · 26713648685
+Triggered via workflow_dispatch about 3 minutes ago
+
+JOBS
+* Release Android (ID 78728276691)
+  ✓ Set up job
+  ✓ 代码迁出
+  ✓ 构建Java环境
+  ✓ 安装Flutter
+  ✓ Apply Patch
+  ✓ Write key
+  ✓ Set and Extract version
+  * Flutter Build Release Apk
+  * Flutter Build Dev Apk
+  * Rename
+  * Capture Android signing fingerprints
+  * Resolve release tag
+  * Release
+  * 上传
+  * 上传
+  * 上传
+  * 上传签名证据
+  * Post 安装Flutter
+  * Post 构建Java环境
+  * Post 代码迁出
+- win_x64 in 0s (ID 78728276764)
+- linux_x64 in 0s (ID 78728276804)
+- mac in 0s (ID 78728276860)
+- ios in 0s (ID 78728276933)
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* phase-1-shielding-core Build CometDash77/PiliAvalon-Worksite#1 · 26713648685
+Triggered via workflow_dispatch about 3 minutes ago
+
+JOBS
+* Release Android (ID 78728276691)
+  ✓ Set up job
+  ✓ 代码迁出
+  ✓ 构建Java环境
+  ✓ 安装Flutter
+  ✓ Apply Patch
+  ✓ Write key
+  ✓ Set and Extract version
+  * Flutter Build Release Apk
+  * Flutter Build Dev Apk
+  * Rename
+  * Capture Android signing fingerprints
+  * Resolve release tag
+  * Release
+  * 上传
+  * 上传
+  * 上传
+  * 上传签名证据
+  * Post 安装Flutter
+  * Post 构建Java环境
+  * Post 代码迁出
+- win_x64 in 0s (ID 78728276764)
+- linux_x64 in 0s (ID 78728276804)
+- mac in 0s (ID 78728276860)
+- ios in 0s (ID 78728276933)
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* phase-1-shielding-core Build CometDash77/PiliAvalon-Worksite#1 · 26713648685
+Triggered via workflow_dispatch about 3 minutes ago
+
+JOBS
+* Release Android (ID 78728276691)
+  ✓ Set up job
+  ✓ 代码迁出
+  ✓ 构建Java环境
+  ✓ 安装Flutter
+  ✓ Apply Patch
+  ✓ Write key
+  ✓ Set and Extract version
+  * Flutter Build Release Apk
+  * Flutter Build Dev Apk
+  * Rename
+  * Capture Android signing fingerprints
+  * Resolve release tag
+  * Release
+  * 上传
+  * 上传
+  * 上传
+  * 上传签名证据
+  * Post 安装Flutter
+  * Post 构建Java环境
+  * Post 代码迁出
+- win_x64 in 0s (ID 78728276764)
+- linux_x64 in 0s (ID 78728276804)
+- mac in 0s (ID 78728276860)
+- ios in 0s (ID 78728276933)
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* phase-1-shielding-core Build CometDash77/PiliAvalon-Worksite#1 · 26713648685
+Triggered via workflow_dispatch about 4 minutes ago
+
+JOBS
+* Release Android (ID 78728276691)
+  ✓ Set up job
+  ✓ 代码迁出
+  ✓ 构建Java环境
+  ✓ 安装Flutter
+  ✓ Apply Patch
+  ✓ Write key
+  ✓ Set and Extract version
+  * Flutter Build Release Apk
+  * Flutter Build Dev Apk
+  * Rename
+  * Capture Android signing fingerprints
+  * Resolve release tag
+  * Release
+  * 上传
+  * 上传
+  * 上传
+  * 上传签名证据
+  * Post 安装Flutter
+  * Post 构建Java环境
+  * Post 代码迁出
+- win_x64 in 0s (ID 78728276764)
+- linux_x64 in 0s (ID 78728276804)
+- mac in 0s (ID 78728276860)
+- ios in 0s (ID 78728276933)
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* phase-1-shielding-core Build CometDash77/PiliAvalon-Worksite#1 · 26713648685
+Triggered via workflow_dispatch about 4 minutes ago
+
+JOBS
+* Release Android (ID 78728276691)
+  ✓ Set up job
+  ✓ 代码迁出
+  ✓ 构建Java环境
+  ✓ 安装Flutter
+  ✓ Apply Patch
+  ✓ Write key
+  ✓ Set and Extract version
+  * Flutter Build Release Apk
+  * Flutter Build Dev Apk
+  * Rename
+  * Capture Android signing fingerprints
+  * Resolve release tag
+  * Release
+  * 上传
+  * 上传
+  * 上传
+  * 上传签名证据
+  * Post 安装Flutter
+  * Post 构建Java环境
+  * Post 代码迁出
+- win_x64 in 0s (ID 78728276764)
+- linux_x64 in 0s (ID 78728276804)
+- mac in 0s (ID 78728276860)
+- ios in 0s (ID 78728276933)
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* phase-1-shielding-core Build CometDash77/PiliAvalon-Worksite#1 · 26713648685
+Triggered via workflow_dispatch about 4 minutes ago
+
+JOBS
+* Release Android (ID 78728276691)
+  ✓ Set up job
+  ✓ 代码迁出
+  ✓ 构建Java环境
+  ✓ 安装Flutter
+  ✓ Apply Patch
+  ✓ Write key
+  ✓ Set and Extract version
+  * Flutter Build Release Apk
+  * Flutter Build Dev Apk
+  * Rename
+  * Capture Android signing fingerprints
+  * Resolve release tag
+  * Release
+  * 上传
+  * 上传
+  * 上传
+  * 上传签名证据
+  * Post 安装Flutter
+  * Post 构建Java环境
+  * Post 代码迁出
+- win_x64 in 0s (ID 78728276764)
+- linux_x64 in 0s (ID 78728276804)
+- mac in 0s (ID 78728276860)
+- ios in 0s (ID 78728276933)
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* phase-1-shielding-core Build CometDash77/PiliAvalon-Worksite#1 · 26713648685
+Triggered via workflow_dispatch about 4 minutes ago
+
+JOBS
+* Release Android (ID 78728276691)
+  ✓ Set up job
+  ✓ 代码迁出
+  ✓ 构建Java环境
+  ✓ 安装Flutter
+  ✓ Apply Patch
+  ✓ Write key
+  ✓ Set and Extract version
+  * Flutter Build Release Apk
+  * Flutter Build Dev Apk
+  * Rename
+  * Capture Android signing fingerprints
+  * Resolve release tag
+  * Release
+  * 上传
+  * 上传
+  * 上传
+  * 上传签名证据
+  * Post 安装Flutter
+  * Post 构建Java环境
+  * Post 代码迁出
+- win_x64 in 0s (ID 78728276764)
+- linux_x64 in 0s (ID 78728276804)
+- mac in 0s (ID 78728276860)
+- ios in 0s (ID 78728276933)
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* phase-1-shielding-core Build CometDash77/PiliAvalon-Worksite#1 · 26713648685
+Triggered via workflow_dispatch about 4 minutes ago
+
+JOBS
+* Release Android (ID 78728276691)
+  ✓ Set up job
+  ✓ 代码迁出
+  ✓ 构建Java环境
+  ✓ 安装Flutter
+  ✓ Apply Patch
+  ✓ Write key
+  ✓ Set and Extract version
+  * Flutter Build Release Apk
+  * Flutter Build Dev Apk
+  * Rename
+  * Capture Android signing fingerprints
+  * Resolve release tag
+  * Release
+  * 上传
+  * 上传
+  * 上传
+  * 上传签名证据
+  * Post 安装Flutter
+  * Post 构建Java环境
+  * Post 代码迁出
+- win_x64 in 0s (ID 78728276764)
+- linux_x64 in 0s (ID 78728276804)
+- mac in 0s (ID 78728276860)
+- ios in 0s (ID 78728276933)
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* phase-1-shielding-core Build CometDash77/PiliAvalon-Worksite#1 · 26713648685
+Triggered via workflow_dispatch about 4 minutes ago
+
+JOBS
+* Release Android (ID 78728276691)
+  ✓ Set up job
+  ✓ 代码迁出
+  ✓ 构建Java环境
+  ✓ 安装Flutter
+  ✓ Apply Patch
+  ✓ Write key
+  ✓ Set and Extract version
+  * Flutter Build Release Apk
+  * Flutter Build Dev Apk
+  * Rename
+  * Capture Android signing fingerprints
+  * Resolve release tag
+  * Release
+  * 上传
+  * 上传
+  * 上传
+  * 上传签名证据
+  * Post 安装Flutter
+  * Post 构建Java环境
+  * Post 代码迁出
+- win_x64 in 0s (ID 78728276764)
+- linux_x64 in 0s (ID 78728276804)
+- mac in 0s (ID 78728276860)
+- ios in 0s (ID 78728276933)
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* phase-1-shielding-core Build CometDash77/PiliAvalon-Worksite#1 · 26713648685
+Triggered via workflow_dispatch about 4 minutes ago
+
+JOBS
+* Release Android (ID 78728276691)
+  ✓ Set up job
+  ✓ 代码迁出
+  ✓ 构建Java环境
+  ✓ 安装Flutter
+  ✓ Apply Patch
+  ✓ Write key
+  ✓ Set and Extract version
+  * Flutter Build Release Apk
+  * Flutter Build Dev Apk
+  * Rename
+  * Capture Android signing fingerprints
+  * Resolve release tag
+  * Release
+  * 上传
+  * 上传
+  * 上传
+  * 上传签名证据
+  * Post 安装Flutter
+  * Post 构建Java环境
+  * Post 代码迁出
+- win_x64 in 0s (ID 78728276764)
+- linux_x64 in 0s (ID 78728276804)
+- mac in 0s (ID 78728276860)
+- ios in 0s (ID 78728276933)
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* phase-1-shielding-core Build CometDash77/PiliAvalon-Worksite#1 · 26713648685
+Triggered via workflow_dispatch about 4 minutes ago
+
+JOBS
+* Release Android (ID 78728276691)
+  ✓ Set up job
+  ✓ 代码迁出
+  ✓ 构建Java环境
+  ✓ 安装Flutter
+  ✓ Apply Patch
+  ✓ Write key
+  ✓ Set and Extract version
+  * Flutter Build Release Apk
+  * Flutter Build Dev Apk
+  * Rename
+  * Capture Android signing fingerprints
+  * Resolve release tag
+  * Release
+  * 上传
+  * 上传
+  * 上传
+  * 上传签名证据
+  * Post 安装Flutter
+  * Post 构建Java环境
+  * Post 代码迁出
+- win_x64 in 0s (ID 78728276764)
+- linux_x64 in 0s (ID 78728276804)
+- mac in 0s (ID 78728276860)
+- ios in 0s (ID 78728276933)
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* phase-1-shielding-core Build CometDash77/PiliAvalon-Worksite#1 · 26713648685
+Triggered via workflow_dispatch about 4 minutes ago
+
+JOBS
+* Release Android (ID 78728276691)
+  ✓ Set up job
+  ✓ 代码迁出
+  ✓ 构建Java环境
+  ✓ 安装Flutter
+  ✓ Apply Patch
+  ✓ Write key
+  ✓ Set and Extract version
+  * Flutter Build Release Apk
+  * Flutter Build Dev Apk
+  * Rename
+  * Capture Android signing fingerprints
+  * Resolve release tag
+  * Release
+  * 上传
+  * 上传
+  * 上传
+  * 上传签名证据
+  * Post 安装Flutter
+  * Post 构建Java环境
+  * Post 代码迁出
+- win_x64 in 0s (ID 78728276764)
+- linux_x64 in 0s (ID 78728276804)
+- mac in 0s (ID 78728276860)
+- ios in 0s (ID 78728276933)
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* phase-1-shielding-core Build CometDash77/PiliAvalon-Worksite#1 · 26713648685
+Triggered via workflow_dispatch about 4 minutes ago
+
+JOBS
+* Release Android (ID 78728276691)
+  ✓ Set up job
+  ✓ 代码迁出
+  ✓ 构建Java环境
+  ✓ 安装Flutter
+  ✓ Apply Patch
+  ✓ Write key
+  ✓ Set and Extract version
+  * Flutter Build Release Apk
+  * Flutter Build Dev Apk
+  * Rename
+  * Capture Android signing fingerprints
+  * Resolve release tag
+  * Release
+  * 上传
+  * 上传
+  * 上传
+  * 上传签名证据
+  * Post 安装Flutter
+  * Post 构建Java环境
+  * Post 代码迁出
+- win_x64 in 0s (ID 78728276764)
+- linux_x64 in 0s (ID 78728276804)
+- mac in 0s (ID 78728276860)
+- ios in 0s (ID 78728276933)
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* phase-1-shielding-core Build CometDash77/PiliAvalon-Worksite#1 · 26713648685
+Triggered via workflow_dispatch about 4 minutes ago
+
+JOBS
+* Release Android (ID 78728276691)
+  ✓ Set up job
+  ✓ 代码迁出
+  ✓ 构建Java环境
+  ✓ 安装Flutter
+  ✓ Apply Patch
+  ✓ Write key
+  ✓ Set and Extract version
+  * Flutter Build Release Apk
+  * Flutter Build Dev Apk
+  * Rename
+  * Capture Android signing fingerprints
+  * Resolve release tag
+  * Release
+  * 上传
+  * 上传
+  * 上传
+  * 上传签名证据
+  * Post 安装Flutter
+  * Post 构建Java环境
+  * Post 代码迁出
+- win_x64 in 0s (ID 78728276764)
+- linux_x64 in 0s (ID 78728276804)
+- mac in 0s (ID 78728276860)
+- ios in 0s (ID 78728276933)
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* phase-1-shielding-core Build CometDash77/PiliAvalon-Worksite#1 · 26713648685
+Triggered via workflow_dispatch about 4 minutes ago
+
+JOBS
+* Release Android (ID 78728276691)
+  ✓ Set up job
+  ✓ 代码迁出
+  ✓ 构建Java环境
+  ✓ 安装Flutter
+  ✓ Apply Patch
+  ✓ Write key
+  ✓ Set and Extract version
+  * Flutter Build Release Apk
+  * Flutter Build Dev Apk
+  * Rename
+  * Capture Android signing fingerprints
+  * Resolve release tag
+  * Release
+  * 上传
+  * 上传
+  * 上传
+  * 上传签名证据
+  * Post 安装Flutter
+  * Post 构建Java环境
+  * Post 代码迁出
+- win_x64 in 0s (ID 78728276764)
+- linux_x64 in 0s (ID 78728276804)
+- mac in 0s (ID 78728276860)
+- ios in 0s (ID 78728276933)
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* phase-1-shielding-core Build CometDash77/PiliAvalon-Worksite#1 · 26713648685
+Triggered via workflow_dispatch about 5 minutes ago
+
+JOBS
+* Release Android (ID 78728276691)
+  ✓ Set up job
+  ✓ 代码迁出
+  ✓ 构建Java环境
+  ✓ 安装Flutter
+  ✓ Apply Patch
+  ✓ Write key
+  ✓ Set and Extract version
+  * Flutter Build Release Apk
+  * Flutter Build Dev Apk
+  * Rename
+  * Capture Android signing fingerprints
+  * Resolve release tag
+  * Release
+  * 上传
+  * 上传
+  * 上传
+  * 上传签名证据
+  * Post 安装Flutter
+  * Post 构建Java环境
+  * Post 代码迁出
+- win_x64 in 0s (ID 78728276764)
+- linux_x64 in 0s (ID 78728276804)
+- mac in 0s (ID 78728276860)
+- ios in 0s (ID 78728276933)
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* phase-1-shielding-core Build CometDash77/PiliAvalon-Worksite#1 · 26713648685
+Triggered via workflow_dispatch about 5 minutes ago
+
+JOBS
+* Release Android (ID 78728276691)
+  ✓ Set up job
+  ✓ 代码迁出
+  ✓ 构建Java环境
+  ✓ 安装Flutter
+  ✓ Apply Patch
+  ✓ Write key
+  ✓ Set and Extract version
+  * Flutter Build Release Apk
+  * Flutter Build Dev Apk
+  * Rename
+  * Capture Android signing fingerprints
+  * Resolve release tag
+  * Release
+  * 上传
+  * 上传
+  * 上传
+  * 上传签名证据
+  * Post 安装Flutter
+  * Post 构建Java环境
+  * Post 代码迁出
+- win_x64 in 0s (ID 78728276764)
+- linux_x64 in 0s (ID 78728276804)
+- mac in 0s (ID 78728276860)
+- ios in 0s (ID 78728276933)
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* phase-1-shielding-core Build CometDash77/PiliAvalon-Worksite#1 · 26713648685
+Triggered via workflow_dispatch about 5 minutes ago
+
+JOBS
+* Release Android (ID 78728276691)
+  ✓ Set up job
+  ✓ 代码迁出
+  ✓ 构建Java环境
+  ✓ 安装Flutter
+  ✓ Apply Patch
+  ✓ Write key
+  ✓ Set and Extract version
+  * Flutter Build Release Apk
+  * Flutter Build Dev Apk
+  * Rename
+  * Capture Android signing fingerprints
+  * Resolve release tag
+  * Release
+  * 上传
+  * 上传
+  * 上传
+  * 上传签名证据
+  * Post 安装Flutter
+  * Post 构建Java环境
+  * Post 代码迁出
+- win_x64 in 0s (ID 78728276764)
+- linux_x64 in 0s (ID 78728276804)
+- mac in 0s (ID 78728276860)
+- ios in 0s (ID 78728276933)
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* phase-1-shielding-core Build CometDash77/PiliAvalon-Worksite#1 · 26713648685
+Triggered via workflow_dispatch about 5 minutes ago
+
+JOBS
+* Release Android (ID 78728276691)
+  ✓ Set up job
+  ✓ 代码迁出
+  ✓ 构建Java环境
+  ✓ 安装Flutter
+  ✓ Apply Patch
+  ✓ Write key
+  ✓ Set and Extract version
+  * Flutter Build Release Apk
+  * Flutter Build Dev Apk
+  * Rename
+  * Capture Android signing fingerprints
+  * Resolve release tag
+  * Release
+  * 上传
+  * 上传
+  * 上传
+  * 上传签名证据
+  * Post 安装Flutter
+  * Post 构建Java环境
+  * Post 代码迁出
+- win_x64 in 0s (ID 78728276764)
+- linux_x64 in 0s (ID 78728276804)
+- mac in 0s (ID 78728276860)
+- ios in 0s (ID 78728276933)
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* phase-1-shielding-core Build CometDash77/PiliAvalon-Worksite#1 · 26713648685
+Triggered via workflow_dispatch about 5 minutes ago
+
+JOBS
+* Release Android (ID 78728276691)
+  ✓ Set up job
+  ✓ 代码迁出
+  ✓ 构建Java环境
+  ✓ 安装Flutter
+  ✓ Apply Patch
+  ✓ Write key
+  ✓ Set and Extract version
+  * Flutter Build Release Apk
+  * Flutter Build Dev Apk
+  * Rename
+  * Capture Android signing fingerprints
+  * Resolve release tag
+  * Release
+  * 上传
+  * 上传
+  * 上传
+  * 上传签名证据
+  * Post 安装Flutter
+  * Post 构建Java环境
+  * Post 代码迁出
+- win_x64 in 0s (ID 78728276764)
+- linux_x64 in 0s (ID 78728276804)
+- mac in 0s (ID 78728276860)
+- ios in 0s (ID 78728276933)
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* phase-1-shielding-core Build CometDash77/PiliAvalon-Worksite#1 · 26713648685
+Triggered via workflow_dispatch about 5 minutes ago
+
+JOBS
+* Release Android (ID 78728276691)
+  ✓ Set up job
+  ✓ 代码迁出
+  ✓ 构建Java环境
+  ✓ 安装Flutter
+  ✓ Apply Patch
+  ✓ Write key
+  ✓ Set and Extract version
+  * Flutter Build Release Apk
+  * Flutter Build Dev Apk
+  * Rename
+  * Capture Android signing fingerprints
+  * Resolve release tag
+  * Release
+  * 上传
+  * 上传
+  * 上传
+  * 上传签名证据
+  * Post 安装Flutter
+  * Post 构建Java环境
+  * Post 代码迁出
+- win_x64 in 0s (ID 78728276764)
+- linux_x64 in 0s (ID 78728276804)
+- mac in 0s (ID 78728276860)
+- ios in 0s (ID 78728276933)
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* phase-1-shielding-core Build CometDash77/PiliAvalon-Worksite#1 · 26713648685
+Triggered via workflow_dispatch about 5 minutes ago
+
+JOBS
+* Release Android (ID 78728276691)
+  ✓ Set up job
+  ✓ 代码迁出
+  ✓ 构建Java环境
+  ✓ 安装Flutter
+  ✓ Apply Patch
+  ✓ Write key
+  ✓ Set and Extract version
+  * Flutter Build Release Apk
+  * Flutter Build Dev Apk
+  * Rename
+  * Capture Android signing fingerprints
+  * Resolve release tag
+  * Release
+  * 上传
+  * 上传
+  * 上传
+  * 上传签名证据
+  * Post 安装Flutter
+  * Post 构建Java环境
+  * Post 代码迁出
+- win_x64 in 0s (ID 78728276764)
+- linux_x64 in 0s (ID 78728276804)
+- mac in 0s (ID 78728276860)
+- ios in 0s (ID 78
+
+[… truncated 6971 chars …]

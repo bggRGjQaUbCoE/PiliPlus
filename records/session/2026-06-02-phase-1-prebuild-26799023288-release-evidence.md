@@ -8,7 +8,7 @@ Published Android-only Phase 1 token-match deprecation prebuild `phase-1-prebuil
 
 Release type: `prebuild`.
 
-Phase 1 remains yellow. Manual acceptance is pending.
+Phase 1 is closed by user acceptance on 2026-06-02. Manual acceptance passed for `phase-1-prebuild.26799023288`.
 
 ## Branch And Commit
 
@@ -125,14 +125,27 @@ gh release edit phase-1-prebuild.26799023288 -R CometDash77/PiliAvalon-Worksite 
 
 ## Manual Acceptance
 
-Pending. This release is only a user retest package.
+Passed by user report on 2026-06-02.
+
+Raw user acceptance feedback:
+
+```text
+好了，目前这个问题已经完全消失，我觉得phase1可以宣告结束，虽然还是有不少问题我想提，但我觉得作为phase1已经彻底结束了，更新一切该更新的，持久化一切该持久化的，接下来还需要通知设计院准备phase2
+```
+
+Codex interpretation:
+
+- The user reports the current problem has fully disappeared.
+- The user explicitly declares Phase 1 complete.
+- Remaining/new issues are deferred to Phase 2 and are not blockers for Phase 1 closure.
+- The accepted package is `phase-1-prebuild.26799023288`.
 
 ## Known Risks
 
 - No local Flutter tests were run due missing local Flutter tooling.
-- The prebuild has not been real-device accepted by the user.
-- Technical-lead/client acceptance remains separate from CI, runtime smoke, and build success.
+- This package remains a prebuild and was not promoted to stable/latest.
+- Remaining/new product issues are expected for Phase 2 planning.
 
 ## Rollback
 
-If this prebuild fails, keep it as prebuild evidence and supersede it with a newer verified prebuild after another fix. Do not mark `phase-1-prebuild.26799023288` stable/latest or use it as accepted Phase 1 evidence without user retest.
+If a regression is later found, keep this tag as Phase 1 acceptance evidence and open a Phase 2 or hotfix track with fresh scope and verification. Do not mark `phase-1-prebuild.26799023288` stable/latest without a separate stable-release approval.

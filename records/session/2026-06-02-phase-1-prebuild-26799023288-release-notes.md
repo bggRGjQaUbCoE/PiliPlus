@@ -4,7 +4,7 @@ Audience classification: agent-facing
 
 ## Purpose
 
-This is a formal prebuild package for user/manual validation of the Phase 1 token-match deprecation fix. It is not a stable release, does not mark Phase 1 green, and must not be treated as latest/stable acceptance evidence until the user completes real-device retesting.
+This is the accepted prebuild package for Phase 1 token-match deprecation validation. It is not a stable/latest release, but it is the user-accepted Phase 1 closure package as of 2026-06-02.
 
 ## Release Type
 
@@ -64,9 +64,15 @@ Cover-install verification requires:
 
 ## Manual Acceptance
 
-Pending.
+Passed by user report on 2026-06-02.
 
-This prebuild exists for user real-device retesting. CI/build/runtime-smoke success does not close manual acceptance, technical-lead review, or client/user acceptance gates.
+Raw user acceptance feedback:
+
+```text
+好了，目前这个问题已经完全消失，我觉得phase1可以宣告结束，虽然还是有不少问题我想提，但我觉得作为phase1已经彻底结束了，更新一切该更新的，持久化一切该持久化的，接下来还需要通知设计院准备phase2
+```
+
+Interpretation: the token-match deprecation issue and Phase 1 acceptance blockers are accepted as resolved for `phase-1-prebuild.26799023288`. The user explicitly closed Phase 1 and deferred remaining/new issues to Phase 2 planning.
 
 ## Changes
 
@@ -82,9 +88,9 @@ This prebuild exists for user real-device retesting. CI/build/runtime-smoke succ
 
 ## Known Risks
 
-- This is a prebuild validation package. It has not been accepted by the user on a real device.
+- This is still a prebuild package, not a stable/latest release.
 - Token mode remains in code for compatibility, so internal tests and migration code still reference it intentionally.
-- User manual acceptance and technical-lead/client acceptance remain separate gates.
+- Remaining/new product issues mentioned by the user are deferred to Phase 2; they are not Phase 1 blockers.
 
 ## Sources / License / Attribution
 
@@ -92,20 +98,14 @@ No new external source code, media, or third-party assets were copied for this p
 
 ## Rollback Plan
 
-If this prebuild is unsuitable, keep or return to the prior acceptable APK and supersede this tag with a newer prebuild after another verified fix. Do not mark `phase-1-prebuild.26799023288` stable/latest. Preserve this release as prebuild evidence and do not reuse it as acceptance evidence unless the user explicitly passes real-device retesting.
+If a regression is later found, keep this tag as Phase 1 acceptance evidence and open a Phase 2 or hotfix track with fresh scope and verification. Do not mark `phase-1-prebuild.26799023288` stable/latest without a separate stable-release approval.
 
 ## Not Covered / Still Yellow
 
-- User real-device retest is pending.
-- Manual acceptance is pending.
-- Technical-lead/client acceptance is not closed by CI, runtime smoke, or build success.
-- Phase 1 remains yellow until all required gates are explicitly closed with fresh evidence.
+- Stable/latest release approval is not covered by this prebuild.
+- Phase 2 scope is not defined in this release note.
+- Remaining/new product issues are not Phase 1 blockers after the user's closure decision.
 
 ## User Action Required
 
-Install the matching Android APK for the test device ABI from this prerelease and retest the Phase 1 shielding feedback items:
-
-- `词元匹配` is no longer selectable in normal settings UI.
-- Existing token rules still load and behave through converted regex matching.
-- UP row ordinary `屏蔽` creates a user/UP keyword regex rule from the edited UP text.
-- UID shielding still uses the original UID and exact matching.
+No further Phase 1 retest action is required after the user's acceptance. Prepare Phase 2 planning for the remaining/new issues the user wants to raise.

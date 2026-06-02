@@ -43,8 +43,9 @@ String shieldingRuleCategoryFor(ShieldRule rule) {
     return '评论关键词';
   }
   if (rule.type == ShieldRuleType.keyword &&
-      rule.matchMode == ShieldMatchMode.exact) {
-    return '精确文本';
+      (rule.scope == ShieldScope.recommendation ||
+          rule.scope == ShieldScope.both)) {
+    return '标题关键词';
   }
   return switch (rule.type) {
     ShieldRuleType.keyword => '标题关键词',

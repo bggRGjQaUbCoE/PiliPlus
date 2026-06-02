@@ -68,6 +68,57 @@ void main() {
         ]),
       );
     });
+
+    test('categorizes quick recommendation keyword exact as title keyword', () {
+      final rule = _rule(
+        id: 'quick-title',
+        type: ShieldRuleType.keyword,
+        matchMode: ShieldMatchMode.exact,
+        scope: ShieldScope.recommendation,
+        source: ShieldRuleSource.quickAction,
+        pattern: '猫',
+      );
+
+      expect(shieldingRuleCategoryFor(rule), '标题关键词');
+    });
+
+    test('categorizes quick comment keyword exact as comment keyword', () {
+      final rule = _rule(
+        id: 'quick-comment',
+        type: ShieldRuleType.keyword,
+        matchMode: ShieldMatchMode.exact,
+        scope: ShieldScope.comment,
+        source: ShieldRuleSource.quickAction,
+        pattern: '剧透',
+      );
+
+      expect(shieldingRuleCategoryFor(rule), '评论关键词');
+    });
+
+    test('categorizes both-scope keyword exact as title keyword', () {
+      final rule = _rule(
+        id: 'both-keyword',
+        type: ShieldRuleType.keyword,
+        matchMode: ShieldMatchMode.exact,
+        scope: ShieldScope.both,
+        pattern: '猫',
+      );
+
+      expect(shieldingRuleCategoryFor(rule), '标题关键词');
+    });
+
+    test('categorizes user keyword as user UP', () {
+      final rule = _rule(
+        id: 'user-keyword',
+        type: ShieldRuleType.userKeyword,
+        matchMode: ShieldMatchMode.token,
+        scope: ShieldScope.recommendation,
+        source: ShieldRuleSource.quickAction,
+        pattern: '测试UP',
+      );
+
+      expect(shieldingRuleCategoryFor(rule), '用户/UP');
+    });
   });
 
   group('ShieldingSettingsPage', () {
@@ -115,6 +166,7 @@ ShieldRule _rule({
   ShieldMatchMode matchMode = ShieldMatchMode.token,
   ShieldScope scope = ShieldScope.both,
   ShieldAction action = ShieldAction.block,
+  ShieldRuleSource source = ShieldRuleSource.manual,
   required String pattern,
   bool enabled = true,
 }) => ShieldRule(
@@ -126,6 +178,7 @@ ShieldRule _rule({
   pattern: pattern,
   enabled: enabled,
   updatedAt: DateTime.fromMillisecondsSinceEpoch(1),
+  source: source,
 );
 
 class _MemoryBox implements ShieldSettingsBox {

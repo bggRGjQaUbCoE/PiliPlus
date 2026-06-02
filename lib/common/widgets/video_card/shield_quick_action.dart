@@ -1,5 +1,6 @@
 import 'package:PiliPlus/features/shielding/shielding.dart';
 import 'package:PiliPlus/common/widgets/image/image_save.dart';
+import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -72,56 +73,62 @@ abstract final class VideoCardShieldQuickAction {
     String? bvid,
     int? upUid,
     VoidCallback? onRuleAdded,
+    ShieldSettingsStore? store,
   }) async {
     await showDialog<void>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('推荐屏蔽'),
-        content: SingleChildScrollView(
-          child: SelectionArea(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _TextActionRow(
-                  label: '标题',
-                  text: title,
-                  type: ShieldRuleType.keyword,
-                  onRuleAdded: onRuleAdded,
-                ),
-                if (upName?.trim().isNotEmpty == true)
-                  _UpActionRow(
-                    upName: upName!.trim(),
-                    upUid: upUid,
-                    onRuleAdded: onRuleAdded,
-                  ),
-                if (reason?.trim().isNotEmpty == true)
+      builder: (context) {
+        final hasCover = cover?.trim().isNotEmpty == true;
+        return AlertDialog(
+          title: const Text('推荐屏蔽'),
+          content: SingleChildScrollView(
+            child: SelectionArea(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (hasCover)
+                    _RecommendationCoverPreview(
+                      title: title,
+                      cover: cover!.trim(),
+                      bvid: bvid,
+                    ),
                   _TextActionRow(
-                    label: '推荐理由',
-                    text: reason!.trim(),
+                    label: '标题',
+                    text: title,
                     type: ShieldRuleType.keyword,
                     onRuleAdded: onRuleAdded,
+                    store: store,
                   ),
-              ],
-            ),
-          ),
-        ),
-        actions: [
-          if (cover?.isNotEmpty == true)
-            TextButton(
-              onPressed: () => imageSaveDialog(
-                title: title,
-                cover: cover,
-                bvid: bvid,
+                  if (upName?.trim().isNotEmpty == true)
+                    _UpActionRow(
+                      upName: upName!.trim(),
+                      upUid: upUid,
+                      onRuleAdded: onRuleAdded,
+                      store: store,
+                    ),
+                  if (reason?.trim().isNotEmpty == true)
+                    _TextActionRow(
+                      label: '推荐理由',
+                      text: reason!.trim(),
+                      type: ShieldRuleType.keyword,
+                      onRuleAdded: onRuleAdded,
+                      store: store,
+                    ),
+                ],
               ),
-              child: const Text('保存封面'),
             ),
-          TextButton(
-            onPressed: Get.back,
-            child: const Text('关闭'),
           ),
-        ],
-      ),
+          actions: hasCover
+              ? null
+              : [
+                  TextButton(
+                    onPressed: Get.back,
+                    child: const Text('关闭'),
+                  ),
+                ],
+        );
+      },
     );
   }
 
@@ -130,6 +137,7 @@ abstract final class VideoCardShieldQuickAction {
     required String upName,
     Object? upUid,
     VoidCallback? onRuleAdded,
+    ShieldSettingsStore? store,
   }) async {
     await showDialog<void>(
       context: context,
@@ -141,6 +149,7 @@ abstract final class VideoCardShieldQuickAction {
               upName: upName.trim(),
               upUid: upUid,
               onRuleAdded: onRuleAdded,
+              store: store,
             ),
           ),
         ),
@@ -162,6 +171,7 @@ abstract final class VideoCardShieldQuickAction {
     String? pattern,
     VoidCallback? onRuleAdded,
     String? note,
+    ShieldSettingsStore? store,
   }) async {
     final resolvedPattern = pattern ?? text;
     await showDialog<void>(
@@ -197,6 +207,7 @@ abstract final class VideoCardShieldQuickAction {
           TextButton(
             onPressed: () async {
               await addRule(
+                store: store,
                 type: type,
                 pattern: resolvedPattern,
                 successLabel: _contextualRuleLabel(
@@ -221,8 +232,9 @@ abstract final class VideoCardShieldQuickAction {
     required ShieldRuleType type,
     required String pattern,
     VoidCallback? onRuleAdded,
+    ShieldSettingsStore? store,
   }) async {
-    await addRule(type: type, pattern: pattern);
+    await addRule(store: store, type: type, pattern: pattern);
     onRuleAdded?.call();
   }
 
@@ -267,22 +279,102 @@ class UpShieldRuleOption {
   final ShieldMatchMode matchMode;
 }
 
-class _UpActionRow extends StatelessWidget {
+class _RecommendationCoverPreview extends StatelessWidget {
+  const _RecommendationCoverPreview({
+    required this.title,
+    required this.cover,
+    required this.bvid,
+  });
+
+  final String title;
+  final String cover;
+  final String? bvid;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: ConstrainedBox(
+        key: const Key('recommendation-cover-preview'),
+        constraints: const BoxConstraints(maxWidth: 360),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final width = constraints.maxWidth.isFinite
+                ? constraints.maxWidth
+                : 320.0;
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                NetworkImgLayer(
+                  src: cover,
+                  width: width,
+                  height: width * 9 / 16,
+                ),
+                const SizedBox(height: 3),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 4,
+                  children: [
+                    TextButton(
+                      onPressed: () => imageSaveDialog(
+                        title: title,
+                        cover: cover,
+                        bvid: bvid,
+                      ),
+                      child: const Text('保存封面'),
+                    ),
+                    TextButton(
+                      onPressed: Get.back,
+                      child: const Text('取消'),
+                    ),
+                  ],
+                ),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class _UpActionRow extends StatefulWidget {
   const _UpActionRow({
     required this.upName,
     required this.upUid,
     this.onRuleAdded,
+    this.store,
   });
 
   final String upName;
   final Object? upUid;
   final VoidCallback? onRuleAdded;
+  final ShieldSettingsStore? store;
+
+  @override
+  State<_UpActionRow> createState() => _UpActionRowState();
+}
+
+class _UpActionRowState extends State<_UpActionRow> {
+  late final TextEditingController controller;
+
+  @override
+  void initState() {
+    super.initState();
+    controller = TextEditingController(text: widget.upName);
+  }
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final options = VideoCardShieldQuickAction.upRuleOptions(
-      upName: upName,
-      upUid: upUid,
+      upName: widget.upName,
+      upUid: widget.upUid,
     );
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
@@ -297,26 +389,43 @@ class _UpActionRow extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 3),
-          Text(upName),
+          TextField(
+            controller: controller,
+            minLines: 1,
+            maxLines: 3,
+            decoration: const InputDecoration(
+              isDense: true,
+              border: OutlineInputBorder(),
+            ),
+          ),
           const SizedBox(height: 3),
           Wrap(
             spacing: 8,
             runSpacing: 4,
             children: [
               TextButton(
-                onPressed: () => Utils.copyText(upName),
+                onPressed: () => Utils.copyText(_selectedOrFullText()),
                 child: const Text('复制'),
               ),
               for (final option in options)
                 TextButton(
                   onPressed: () async {
+                    final selectedText = _selectedOrFullText();
+                    final pattern = option.type == ShieldRuleType.userKeyword
+                        ? selectedText
+                        : option.pattern;
+                    final successLabel =
+                        option.type == ShieldRuleType.userKeyword
+                        ? '屏蔽用户名关键词: $pattern'
+                        : option.label;
                     await VideoCardShieldQuickAction.addRule(
+                      store: widget.store,
                       type: option.type,
-                      pattern: option.pattern,
+                      pattern: pattern,
                       matchMode: option.matchMode,
-                      successLabel: option.label,
+                      successLabel: successLabel,
                     );
-                    onRuleAdded?.call();
+                    widget.onRuleAdded?.call();
                     if (context.mounted) {
                       Navigator.of(context).pop();
                     }
@@ -329,6 +438,14 @@ class _UpActionRow extends StatelessWidget {
       ),
     );
   }
+
+  String _selectedOrFullText() {
+    final selection = controller.selection;
+    if (!selection.isCollapsed && selection.isValid) {
+      return selection.textInside(controller.text);
+    }
+    return controller.text;
+  }
 }
 
 class _TextActionRow extends StatefulWidget {
@@ -337,12 +454,14 @@ class _TextActionRow extends StatefulWidget {
     required this.text,
     required this.type,
     this.onRuleAdded,
+    this.store,
   });
 
   final String label;
   final String text;
   final ShieldRuleType type;
   final VoidCallback? onRuleAdded;
+  final ShieldSettingsStore? store;
 
   @override
   State<_TextActionRow> createState() => _TextActionRowState();
@@ -399,6 +518,7 @@ class _TextActionRowState extends State<_TextActionRow> {
                 onPressed: () async {
                   final selectedText = _selectedOrFullText();
                   await VideoCardShieldQuickAction.addRule(
+                    store: widget.store,
                     type: widget.type,
                     pattern: selectedText,
                     successLabel:

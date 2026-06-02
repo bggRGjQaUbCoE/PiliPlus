@@ -292,46 +292,42 @@ class _RecommendationCoverPreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final shortestSide = MediaQuery.sizeOf(context).shortestSide;
+    final previewWidth = shortestSide < 456 ? shortestSide - 96 : 360.0;
+    final width = previewWidth < 240 ? 240.0 : previewWidth;
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: ConstrainedBox(
         key: const Key('recommendation-cover-preview'),
         constraints: const BoxConstraints(maxWidth: 360),
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final width = constraints.maxWidth.isFinite
-                ? constraints.maxWidth
-                : 320.0;
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            NetworkImgLayer(
+              src: cover,
+              width: width,
+              height: width * 9 / 16,
+            ),
+            const SizedBox(height: 3),
+            Wrap(
+              spacing: 8,
+              runSpacing: 4,
               children: [
-                NetworkImgLayer(
-                  src: cover,
-                  width: width,
-                  height: width * 9 / 16,
+                TextButton(
+                  onPressed: () => imageSaveDialog(
+                    title: title,
+                    cover: cover,
+                    bvid: bvid,
+                  ),
+                  child: const Text('保存封面'),
                 ),
-                const SizedBox(height: 3),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 4,
-                  children: [
-                    TextButton(
-                      onPressed: () => imageSaveDialog(
-                        title: title,
-                        cover: cover,
-                        bvid: bvid,
-                      ),
-                      child: const Text('保存封面'),
-                    ),
-                    TextButton(
-                      onPressed: Get.back,
-                      child: const Text('取消'),
-                    ),
-                  ],
+                TextButton(
+                  onPressed: Get.back,
+                  child: const Text('取消'),
                 ),
               ],
-            );
-          },
+            ),
+          ],
         ),
       ),
     );

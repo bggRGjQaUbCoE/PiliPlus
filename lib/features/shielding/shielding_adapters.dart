@@ -63,14 +63,12 @@ abstract final class ShieldingAdapters {
       ShieldCandidate(
         scope: ShieldScope.recommendation,
         title: item.title,
-        reason: item.rcmdReason,
         uid: item.owner.mid?.toString(),
         authorName: item.owner.name,
         authorTokens: _tokens([item.owner.name]),
         category: item.tname,
         tokens: _tokens([
           item.title,
-          item.rcmdReason,
           item.tname,
         ]),
       );

@@ -1,8 +1,24 @@
 #include "flutter_window.h"
 
 #include <optional>
+#include <windowsx.h>
 
 #include "flutter/generated_plugin_registrant.h"
+
+namespace {
+
+constexpr int kMediaPlayPauseHotKeyId = 0xB3;
+
+void InvokeMediaControl(
+    const std::unique_ptr<flutter::MethodChannel<flutter::EncodableValue>>&
+        channel,
+    const std::string& method) {
+  if (channel) {
+    channel->InvokeMethod(method, nullptr);
+  }
+}
+
+}  // namespace
 
 FlutterWindow::FlutterWindow(const flutter::DartProject& project)
     : project_(project) {}
@@ -25,6 +41,13 @@ bool FlutterWindow::OnCreate() {
     return false;
   }
   RegisterPlugins(flutter_controller_->engine());
+  media_control_channel_ =
+      std::make_unique<flutter::MethodChannel<flutter::EncodableValue>>(
+          flutter_controller_->engine()->messenger(), "PiliPlus",
+          &flutter::StandardMethodCodec::GetInstance());
+  media_play_pause_hot_key_registered_ =
+      RegisterHotKey(GetHandle(), kMediaPlayPauseHotKeyId, MOD_NOREPEAT,
+                     VK_MEDIA_PLAY_PAUSE) != 0;
 
   SetChildContent(flutter_controller_->view()->GetNativeWindow());
 
@@ -41,6 +64,12 @@ bool FlutterWindow::OnCreate() {
 }
 
 void FlutterWindow::OnDestroy() {
+  if (media_play_pause_hot_key_registered_) {
+    UnregisterHotKey(GetHandle(), kMediaPlayPauseHotKeyId);
+    media_play_pause_hot_key_registered_ = false;
+  }
+  media_control_channel_ = nullptr;
+
   if (flutter_controller_) {
     flutter_controller_ = nullptr;
   }
@@ -52,6 +81,33 @@ LRESULT
 FlutterWindow::MessageHandler(HWND hwnd, UINT const message,
                               WPARAM const wparam,
                               LPARAM const lparam) noexcept {
+  switch (message) {
+    case WM_HOTKEY:
+      if (wparam == kMediaPlayPauseHotKeyId) {
+        InvokeMediaControl(media_control_channel_,
+                           "SystemMediaControl.playPause");
+        return 0;
+      }
+      break;
+
+    case WM_APPCOMMAND: {
+      const int command = GET_APPCOMMAND_LPARAM(lparam);
+      switch (command) {
+        case APPCOMMAND_MEDIA_PLAY_PAUSE:
+          InvokeMediaControl(media_control_channel_,
+                             "SystemMediaControl.playPause");
+          return 1;
+        case APPCOMMAND_MEDIA_PLAY:
+          InvokeMediaControl(media_control_channel_, "SystemMediaControl.play");
+          return 1;
+        case APPCOMMAND_MEDIA_PAUSE:
+          InvokeMediaControl(media_control_channel_, "SystemMediaControl.pause");
+          return 1;
+      }
+      break;
+    }
+  }
+
   // Give Flutter, including plugins, an opportunity to handle window messages.
   if (flutter_controller_) {
     std::optional<LRESULT> result =

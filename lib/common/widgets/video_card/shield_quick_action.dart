@@ -303,7 +303,7 @@ class _RecommendationCoverPreview extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _CoverImage(
-              src: cover.http2https,
+              src: _httpsCoverUrl(cover),
               width: width,
               height: width * 9 / 16,
             ),
@@ -332,6 +332,9 @@ class _RecommendationCoverPreview extends StatelessWidget {
     );
   }
 }
+
+String _httpsCoverUrl(String src) =>
+    src.startsWith('http://') ? src.replaceFirst('http://', 'https://') : src;
 
 class _CoverImage extends StatelessWidget {
   const _CoverImage({

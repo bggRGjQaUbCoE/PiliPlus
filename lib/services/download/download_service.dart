@@ -19,9 +19,9 @@ import 'package:PiliPlus/utils/extension/file_ext.dart';
 import 'package:PiliPlus/utils/extension/string_ext.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:PiliPlus/utils/path_utils.dart';
+import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'package:flutter/foundation.dart'
-    show kDebugMode, debugPrint, VoidCallback;
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+    show kDebugMode, debugPrint, VoidCallbackebugPrint, VoidCallback;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:path/path.dart' as path;
@@ -350,7 +350,7 @@ class DownloadService extends GetxService {
       if (File(filePath).existsSync()) {
         return true;
       }
-      final file = (await DefaultCacheManager().getFileFromCache(
+      final file = (await DefaultCacheManager.instance!.getFileFromCache(
         entry.cover,
       ))?.file;
       if (file != null) {

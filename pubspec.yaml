@@ -37,13 +37,17 @@ dependencies:
 
   app_links: ^7.1.1
   archive: ^4.0.0
-  audio_service: ^0.18.15
+  audio_service:
+    git:
+      url: https://github.com/bggRGjQaUbCoE/audio_service.git
+      path: audio_service
+      ref: dev
   audio_session: ^0.2.2
   battery_plus: ^7.0.0
   brotli: ^0.6.0
-  cached_network_image:
+  cached_network_image_ce:
     git:
-      url: https://github.com/bggRGjQaUbCoE/flutter_cached_network_image.git
+      url: https://github.com/bggRGjQaUbCoE/flutter_cached_network_image_ce.git
       path: cached_network_image
       ref: dev
   canvas_danmaku:
@@ -81,7 +85,6 @@ dependencies:
       ref: dev
   fixnum: ^1.1.1
   flex_seed_scheme: ^4.0.1
-  flutter_cache_manager: ^3.4.1
   flutter_html: ^3.0.0-beta.2
   flutter_inappwebview: ^6.1.5
   flutter_smart_dialog:

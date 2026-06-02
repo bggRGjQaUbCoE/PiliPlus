@@ -102,7 +102,7 @@ class VideoShotImage extends StatefulWidget {
 }
 
 Future<ui.Image?> _getImg(String url) async {
-  final cacheManager = DefaultCacheManager();
+  final cacheManager = DefaultCacheManager.instance!;
   final cacheKey = Utils.getFileName(url, fileExt: false);
   try {
     final fileInfo = await cacheManager.getSingleFile(

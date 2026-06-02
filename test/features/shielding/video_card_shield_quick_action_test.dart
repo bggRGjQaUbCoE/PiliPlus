@@ -91,7 +91,7 @@ void main() {
       },
     );
 
-    testWidgets('edited UP text is used for username keyword rule', (
+    testWidgets('edited UP text is used for regex username keyword rule', (
       tester,
     ) async {
       final store = ShieldSettingsStore(box: _MemoryBox());
@@ -118,8 +118,40 @@ void main() {
       expect(rules, hasLength(1));
       expect(rules.single.type, ShieldRuleType.userKeyword);
       expect(rules.single.scope, ShieldScope.recommendation);
-      expect(rules.single.matchMode, ShieldMatchMode.token);
-      expect(rules.single.pattern, '编辑后UP');
+      expect(rules.single.matchMode, ShieldMatchMode.regex);
+      expect(rules.single.pattern, shieldTokenPatternRegex('编辑后UP'));
+    });
+
+    testWidgets('UP keyword regex escapes edited metacharacters', (
+      tester,
+    ) async {
+      final store = ShieldSettingsStore(box: _MemoryBox());
+
+      await _pumpLauncher(
+        tester,
+        onTap: (context) => VideoCardShieldQuickAction.showRecommendationDialog(
+          context: context,
+          title: '原始标题',
+          upName: '测试UP',
+          store: store,
+        ),
+      );
+
+      await tester.tap(find.text('打开'));
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.widgetWithText(TextField, '测试UP'), r'UP(.*)');
+      await tester.tap(find.byKey(const Key('up-keyword-block-button')));
+      await tester.pumpAndSettle();
+
+      final rules = (await store.load()).rules;
+      expect(rules, hasLength(1));
+      expect(rules.single.type, ShieldRuleType.userKeyword);
+      expect(rules.single.matchMode, ShieldMatchMode.regex);
+      expect(
+        rules.single.pattern,
+        shieldTokenPatternRegex(r'UP(.*)'),
+      );
     });
 
     testWidgets('recommendation reason action creates reason keyword rule', (

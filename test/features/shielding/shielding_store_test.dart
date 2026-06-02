@@ -235,6 +235,81 @@ void main() {
       );
     });
 
+    test('loads persisted token rules as escaped regex rules', () async {
+      final seed = ShieldRuleSet(
+        rules: [
+          ShieldRule(
+            id: 'legacy-token',
+            type: ShieldRuleType.userKeyword,
+            matchMode: ShieldMatchMode.token,
+            scope: ShieldScope.recommendation,
+            action: ShieldAction.block,
+            pattern: r'UP(测试).*',
+            enabled: false,
+            updatedAt: DateTime.fromMillisecondsSinceEpoch(7),
+            source: ShieldRuleSource.quickAction,
+          ),
+        ],
+      );
+      final box = _MemoryBox({
+        ShieldSettingsStore.rulesKey: jsonEncode(seed.toJson()),
+      });
+      final store = ShieldSettingsStore(box: box);
+
+      final loaded = await store.load();
+
+      expect(loaded.rules, hasLength(1));
+      expect(loaded.rules.single.id, 'legacy-token');
+      expect(loaded.rules.single.type, ShieldRuleType.userKeyword);
+      expect(loaded.rules.single.matchMode, ShieldMatchMode.regex);
+      expect(loaded.rules.single.scope, ShieldScope.recommendation);
+      expect(loaded.rules.single.action, ShieldAction.block);
+      expect(loaded.rules.single.enabled, isFalse);
+      expect(loaded.rules.single.updatedAt.millisecondsSinceEpoch, 7);
+      expect(loaded.rules.single.source, ShieldRuleSource.quickAction);
+      expect(
+        loaded.rules.single.pattern,
+        shieldTokenPatternRegex(r'UP(测试).*'),
+      );
+    });
+
+    test('dedupes persisted token rules against equivalent regex rules', () {
+      final converted = shieldTokenPatternRegex('测试UP');
+      final seed = ShieldRuleSet(
+        rules: [
+          ShieldRule(
+            id: 'legacy-token',
+            type: ShieldRuleType.userKeyword,
+            matchMode: ShieldMatchMode.token,
+            scope: ShieldScope.recommendation,
+            action: ShieldAction.block,
+            pattern: '测试UP',
+            updatedAt: DateTime.fromMillisecondsSinceEpoch(1),
+          ),
+          ShieldRule(
+            id: 'current-regex',
+            type: ShieldRuleType.userKeyword,
+            matchMode: ShieldMatchMode.regex,
+            scope: ShieldScope.recommendation,
+            action: ShieldAction.block,
+            pattern: converted,
+            updatedAt: DateTime.fromMillisecondsSinceEpoch(2),
+          ),
+        ],
+      );
+      final box = _MemoryBox({
+        ShieldSettingsStore.rulesKey: jsonEncode(seed.toJson()),
+      });
+      final store = ShieldSettingsStore(box: box);
+
+      final loaded = store.snapshot();
+
+      expect(loaded.rules, hasLength(1));
+      expect(loaded.rules.single.id, 'legacy-token');
+      expect(loaded.rules.single.matchMode, ShieldMatchMode.regex);
+      expect(loaded.rules.single.pattern, converted);
+    });
+
     test(
       'quickAction loads persisted rules before appending without cached snapshot',
       () async {

@@ -20,6 +20,11 @@ class ShieldingSettingsPage extends StatefulWidget {
 }
 
 class _ShieldingSettingsPageState extends State<ShieldingSettingsPage> {
+  static const _visibleMatchModes = [
+    ShieldMatchMode.exact,
+    ShieldMatchMode.regex,
+  ];
+
   late final _store = widget.store ?? ShieldSettingsStore();
   late ShieldRuleSet _ruleSet = _store.snapshot();
   String _selectedCategory = shieldingRuleCategoryLabels.first;
@@ -232,7 +237,10 @@ class _ShieldingSettingsPageState extends State<ShieldingSettingsPage> {
 
   Future<void> _openEditor({ShieldRule? rule}) async {
     ShieldRuleType type = rule?.type ?? ShieldRuleType.keyword;
-    ShieldMatchMode mode = rule?.matchMode ?? ShieldMatchMode.exact;
+    final rawMode = rule?.matchMode;
+    ShieldMatchMode mode = rawMode == ShieldMatchMode.token
+        ? ShieldMatchMode.regex
+        : rawMode ?? ShieldMatchMode.exact;
     ShieldScope scope = rule?.scope ?? ShieldScope.both;
     ShieldAction action = rule?.action ?? ShieldAction.block;
     bool enabled = rule?.enabled ?? true;
@@ -264,7 +272,7 @@ class _ShieldingSettingsPageState extends State<ShieldingSettingsPage> {
                 _dropdown(
                   label: '匹配方式',
                   value: mode,
-                  values: ShieldMatchMode.values,
+                  values: _visibleMatchModes,
                   text: (value) => shieldMatchModeLabel(value, type: type),
                   onChanged: (value) => setDialogState(() => mode = value),
                 ),

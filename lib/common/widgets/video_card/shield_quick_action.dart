@@ -458,12 +458,16 @@ class _UpActionRowState extends State<_UpActionRow> {
 
   Future<void> _addUserKeywordRule(BuildContext context) async {
     final pattern = _selectedOrFullText();
+    final trimmed = pattern.trim();
+    if (trimmed.isEmpty) {
+      return;
+    }
     await VideoCardShieldQuickAction.addRule(
       store: widget.store,
       type: ShieldRuleType.userKeyword,
-      pattern: pattern,
-      matchMode: ShieldMatchMode.token,
-      successLabel: '屏蔽推荐用户/UP关键词「${pattern.trim()}」',
+      pattern: shieldTokenPatternRegex(trimmed),
+      matchMode: ShieldMatchMode.regex,
+      successLabel: '屏蔽推荐用户/UP关键词「$trimmed」',
     );
     widget.onRuleAdded?.call();
     if (context.mounted) {

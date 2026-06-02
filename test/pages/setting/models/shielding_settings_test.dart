@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:PiliPlus/features/shielding/shielding.dart';
 import 'package:PiliPlus/pages/setting/models/shielding_settings.dart';
 import 'package:PiliPlus/pages/shielding_settings/view.dart';
@@ -180,6 +182,57 @@ void main() {
       expect(find.text('启用'), findsOneWidget);
     });
 
+    testWidgets('manual rule editor hides deprecated token match mode', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        GetMaterialApp(
+          home: ShieldingSettingsPage(
+            store: ShieldSettingsStore(box: _MemoryBox()),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      await tester.tap(find.byTooltip('新增').first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('包含文字'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('包含文字'), findsWidgets);
+      expect(find.text('正则匹配'), findsOneWidget);
+      expect(find.text('词元匹配'), findsNothing);
+    });
+
+    testWidgets('loaded legacy token rule is shown as regex in UI', (
+      tester,
+    ) async {
+      final seed = ShieldRuleSet(
+        rules: [
+          _rule(
+            id: 'legacy-token',
+            type: ShieldRuleType.userKeyword,
+            matchMode: ShieldMatchMode.token,
+            scope: ShieldScope.recommendation,
+            pattern: '测试UP',
+          ),
+        ],
+      );
+      final store = ShieldSettingsStore(
+        box: _MemoryBox({
+          ShieldSettingsStore.rulesKey: jsonEncode(seed.toJson()),
+        }),
+      );
+
+      await tester.pumpWidget(
+        GetMaterialApp(home: ShieldingSettingsPage(store: store)),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('正则匹配'), findsOneWidget);
+      expect(find.textContaining('词元匹配'), findsNothing);
+    });
+
     testWidgets('shows same-row shielding category navigation', (tester) async {
       await tester.pumpWidget(
         GetMaterialApp(
@@ -221,7 +274,9 @@ ShieldRule _rule({
 );
 
 class _MemoryBox implements ShieldSettingsBox {
-  final values = <String, Object?>{};
+  _MemoryBox([Map<String, Object?>? values]) : values = values ?? {};
+
+  final Map<String, Object?> values;
 
   @override
   Object? get(String key, {Object? defaultValue}) =>

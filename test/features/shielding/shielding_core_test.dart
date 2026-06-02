@@ -230,6 +230,49 @@ void main() {
       );
     });
 
+    test('converted user keyword regex rules match UP name token boundaries', () {
+      final rules = ShieldRuleSet(
+        rules: [
+          _rule(
+            type: ShieldRuleType.userKeyword,
+            mode: ShieldMatchMode.regex,
+            pattern: shieldTokenPatternRegex('测试'),
+          ),
+        ],
+      );
+
+      expect(
+        ShieldMatcher.match(
+          const ShieldCandidate(
+            scope: ShieldScope.recommendation,
+            authorName: '普通UP',
+          ),
+          rules,
+        ).visible,
+        isTrue,
+      );
+      expect(
+        ShieldMatcher.match(
+          const ShieldCandidate(
+            scope: ShieldScope.recommendation,
+            authorName: '测试 UP',
+          ),
+          rules,
+        ).visible,
+        isFalse,
+      );
+      expect(
+        ShieldMatcher.match(
+          const ShieldCandidate(
+            scope: ShieldScope.recommendation,
+            authorName: '测试员',
+          ),
+          rules,
+        ).visible,
+        isTrue,
+      );
+    });
+
     test('reason keyword rules match only recommendation reason', () {
       final rules = ShieldRuleSet(
         rules: [

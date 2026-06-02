@@ -10,6 +10,8 @@ enum ShieldRuleType {
 enum ShieldMatchMode {
   exact,
   regex,
+  // Deprecated visible mode: kept only for persisted-rule compatibility.
+  // New user-facing rules should use regex or exact matching.
   token,
 }
 
@@ -22,6 +24,13 @@ enum ShieldScope {
 enum ShieldAction {
   block,
   allow,
+}
+
+String shieldTokenPatternRegex(String pattern) {
+  final escaped = RegExp.escape(pattern.trim());
+  return r'(^|[\s,，。！？!?:：;；_\-])' +
+      escaped +
+      r'($|[\s,，。！？!?:：;；_\-])';
 }
 
 enum ShieldRuleSource {

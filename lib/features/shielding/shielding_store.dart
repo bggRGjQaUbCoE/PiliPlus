@@ -66,21 +66,20 @@ class ShieldSettingsStore {
       final loadedAt = DateTime.now();
       await _box.put(lastLoadedAtKey, loadedAt.millisecondsSinceEpoch);
       final loadedEpoch = _box.get(lastLoadedAtKey) as int?;
-      final resolved = _withLegacyRules(
-        ruleSet.copyWith(
-          globalEnabled:
-              _box.get(globalEnabledKey) as bool? ?? ruleSet.globalEnabled,
-          recommendationEnabled:
-              _box.get(recommendationEnabledKey) as bool? ??
-              ruleSet.recommendationEnabled,
-          commentEnabled:
-              _box.get(commentEnabledKey) as bool? ?? ruleSet.commentEnabled,
-          version: _box.get(versionKey) as int? ?? ruleSet.version,
-          lastLoadedAt: loadedEpoch == null
-              ? loadedAt
-              : DateTime.fromMillisecondsSinceEpoch(loadedEpoch),
-        ),
+      final withFlags = ruleSet.copyWith(
+        globalEnabled:
+            _box.get(globalEnabledKey) as bool? ?? ruleSet.globalEnabled,
+        recommendationEnabled:
+            _box.get(recommendationEnabledKey) as bool? ??
+            ruleSet.recommendationEnabled,
+        commentEnabled:
+            _box.get(commentEnabledKey) as bool? ?? ruleSet.commentEnabled,
+        version: _box.get(versionKey) as int? ?? ruleSet.version,
+        lastLoadedAt: loadedEpoch == null
+            ? loadedAt
+            : DateTime.fromMillisecondsSinceEpoch(loadedEpoch),
       );
+      final resolved = _normalizeRuleSet(_withLegacyRules(withFlags));
       _cachedSnapshot = resolved;
       return resolved;
     } catch (e) {
@@ -93,13 +92,15 @@ class ShieldSettingsStore {
     if (cached != null) return cached;
     final raw = _box.get(rulesKey);
     if (raw == null) {
-      return _withLegacyRules(
-        ShieldRuleSet(
-          globalEnabled: _box.get(globalEnabledKey) as bool? ?? true,
-          recommendationEnabled:
-              _box.get(recommendationEnabledKey) as bool? ?? true,
-          commentEnabled: _box.get(commentEnabledKey) as bool? ?? true,
-          version: _box.get(versionKey) as int? ?? 1,
+      return _normalizeRuleSet(
+        _withLegacyRules(
+          ShieldRuleSet(
+            globalEnabled: _box.get(globalEnabledKey) as bool? ?? true,
+            recommendationEnabled:
+                _box.get(recommendationEnabledKey) as bool? ?? true,
+            commentEnabled: _box.get(commentEnabledKey) as bool? ?? true,
+            version: _box.get(versionKey) as int? ?? 1,
+          ),
         ),
       );
     }
@@ -110,21 +111,20 @@ class ShieldSettingsStore {
       final json = jsonDecode(raw) as Map<String, dynamic>;
       final ruleSet = ShieldRuleSet.tryFromJson(json.cast<String, Object?>());
       final loadedEpoch = _box.get(lastLoadedAtKey) as int?;
-      final resolved = _withLegacyRules(
-        ruleSet.copyWith(
-          globalEnabled:
-              _box.get(globalEnabledKey) as bool? ?? ruleSet.globalEnabled,
-          recommendationEnabled:
-              _box.get(recommendationEnabledKey) as bool? ??
-              ruleSet.recommendationEnabled,
-          commentEnabled:
-              _box.get(commentEnabledKey) as bool? ?? ruleSet.commentEnabled,
-          version: _box.get(versionKey) as int? ?? ruleSet.version,
-          lastLoadedAt: loadedEpoch == null
-              ? ruleSet.lastLoadedAt
-              : DateTime.fromMillisecondsSinceEpoch(loadedEpoch),
-        ),
+      final withFlags = ruleSet.copyWith(
+        globalEnabled:
+            _box.get(globalEnabledKey) as bool? ?? ruleSet.globalEnabled,
+        recommendationEnabled:
+            _box.get(recommendationEnabledKey) as bool? ??
+            ruleSet.recommendationEnabled,
+        commentEnabled:
+            _box.get(commentEnabledKey) as bool? ?? ruleSet.commentEnabled,
+        version: _box.get(versionKey) as int? ?? ruleSet.version,
+        lastLoadedAt: loadedEpoch == null
+            ? ruleSet.lastLoadedAt
+            : DateTime.fromMillisecondsSinceEpoch(loadedEpoch),
       );
+      final resolved = _normalizeRuleSet(_withLegacyRules(withFlags));
       _cachedSnapshot = resolved;
       return resolved;
     } catch (_) {
@@ -133,7 +133,7 @@ class ShieldSettingsStore {
   }
 
   Future<void> save(ShieldRuleSet ruleSet) async {
-    final resolved = _withLegacyRules(ruleSet);
+    final resolved = _normalizeRuleSet(_withLegacyRules(ruleSet));
     final errors = _validate(resolved);
     if (errors.isNotEmpty) {
       throw ShieldStoreException(errors.join('\n'));
@@ -233,6 +233,33 @@ class ShieldSettingsStore {
       }
     }
     return errors;
+  }
+
+  ShieldRuleSet _normalizeRuleSet(ShieldRuleSet ruleSet) {
+    final normalized = <ShieldRule>[];
+    for (final rule in ruleSet.rules.map(_deprecateTokenRule)) {
+      final exists = normalized.any(
+        (item) =>
+            item.type == rule.type &&
+            item.scope == rule.scope &&
+            item.matchMode == rule.matchMode &&
+            item.action == rule.action &&
+            item.pattern.trim().toLowerCase() ==
+                rule.pattern.trim().toLowerCase(),
+      );
+      if (!exists) {
+        normalized.add(rule);
+      }
+    }
+    return ruleSet.copyWith(rules: normalized);
+  }
+
+  ShieldRule _deprecateTokenRule(ShieldRule rule) {
+    if (rule.matchMode != ShieldMatchMode.token) return rule;
+    return rule.copyWith(
+      matchMode: ShieldMatchMode.regex,
+      pattern: shieldTokenPatternRegex(rule.pattern),
+    );
   }
 
   ShieldRuleSet _withLegacyRules(ShieldRuleSet ruleSet) {

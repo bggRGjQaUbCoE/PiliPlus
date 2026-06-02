@@ -1,13 +1,15 @@
 #include "flutter_window.h"
 
 #include <optional>
+#include <string>
 #include <windowsx.h>
 
 #include "flutter/generated_plugin_registrant.h"
 
 namespace {
 
-constexpr int kMediaPlayPauseHotKeyId = 0xB3;
+constexpr int kMediaPlayPauseHotKeyId = 1;
+constexpr UINT kMediaPlayPauseKey = VK_MEDIA_PLAY_PAUSE;
 
 void InvokeMediaControl(
     const std::unique_ptr<flutter::MethodChannel<flutter::EncodableValue>>&
@@ -47,7 +49,7 @@ bool FlutterWindow::OnCreate() {
           &flutter::StandardMethodCodec::GetInstance());
   media_play_pause_hot_key_registered_ =
       RegisterHotKey(GetHandle(), kMediaPlayPauseHotKeyId, MOD_NOREPEAT,
-                     VK_MEDIA_PLAY_PAUSE) != 0;
+                     kMediaPlayPauseKey) != 0;
 
   SetChildContent(flutter_controller_->view()->GetNativeWindow());
 

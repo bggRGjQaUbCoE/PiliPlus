@@ -24,6 +24,10 @@ class WindowsMediaControlService {
       case 'SystemMediaControl.pause':
         await PlPlayerController.pauseIfExists();
         return;
+      default:
+        throw MissingPluginException(
+          'No implementation found for method ${call.method} on channel PiliPlus',
+        );
     }
   }
 }

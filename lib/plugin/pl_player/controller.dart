@@ -477,15 +477,19 @@ class PlPlayerController with BlockConfigMixin {
     return _playCallBack?.call();
   }
 
-  static Future<void>? playCurrentIfExists() {
-    return _instance?.play();
+  static Future<void> playCurrentIfExists() {
+    return _instance?.play() ?? Future.value();
   }
 
   static Future<void> playOrPauseIfExists() async {
-    if (_instance?.playerStatus.isPlaying ?? false) {
-      await pauseIfExists();
+    final instance = _instance;
+    if (instance == null) {
+      return;
+    }
+    if (instance.playerStatus.value.isPlaying) {
+      await instance.pause();
     } else {
-      await playCurrentIfExists();
+      await instance.play();
     }
   }
 

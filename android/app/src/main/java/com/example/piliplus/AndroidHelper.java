@@ -74,7 +74,7 @@ public final class AndroidHelper {
             }
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             context.startActivity(intent);
-        } catch (Throwable ignored) {
+        } catch (Exception ignored) {
             Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, uri);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             context.startActivity(intent);
@@ -126,23 +126,23 @@ public final class AndroidHelper {
     private static void setPipActions(Activity activity, PictureInPictureParams.Builder builder, boolean isLive, boolean isPlaying) {
         ComponentName mbrComponent = MediaHelper.getMediaButtonReceiverComponent(activity);
         if (mbrComponent == null) return;
-        ArrayList<RemoteAction> actionList = new ArrayList<>();
+        ArrayList<RemoteAction> actionList = new ArrayList<>(3);
         if (!isLive) {
-            actionList.add(getRemoteAction(mbrComponent, activity, R.drawable.ic_player_rewind_10s, "ACTION_REWIND", PlaybackState.ACTION_REWIND));
+            actionList.add(getRemoteAction(mbrComponent, activity, R.drawable.ic_player_rewind_10s, "ACTION_REWIND", (int) PlaybackState.ACTION_REWIND));
         }
         if (isPlaying) {
-            actionList.add(getRemoteAction(mbrComponent, activity, R.drawable.ic_player_pause, "ACTION_PAUSE", PlaybackState.ACTION_PAUSE));
+            actionList.add(getRemoteAction(mbrComponent, activity, R.drawable.ic_player_pause, "ACTION_PAUSE", (int) PlaybackState.ACTION_PAUSE));
         } else {
-            actionList.add(getRemoteAction(mbrComponent, activity, R.drawable.ic_player_play, "ACTION_PLAY", PlaybackState.ACTION_PLAY));
+            actionList.add(getRemoteAction(mbrComponent, activity, R.drawable.ic_player_play, "ACTION_PLAY", (int) PlaybackState.ACTION_PLAY));
         }
         if (!isLive) {
-            actionList.add(getRemoteAction(mbrComponent, activity, R.drawable.ic_player_fast_forward_10s, "ACTION_FAST_FORWARD", PlaybackState.ACTION_FAST_FORWARD));
+            actionList.add(getRemoteAction(mbrComponent, activity, R.drawable.ic_player_fast_forward_10s, "ACTION_FAST_FORWARD", (int) PlaybackState.ACTION_FAST_FORWARD));
         }
         builder.setActions(actionList);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
-    private static RemoteAction getRemoteAction(@NonNull ComponentName mbrComponent, Activity activity, @DrawableRes int resId, String title, long action) {
+    private static RemoteAction getRemoteAction(@NonNull ComponentName mbrComponent, Activity activity, @DrawableRes int resId, String title, int action) {
         return new RemoteAction(
                 Icon.createWithResource(activity, resId),
                 title,

@@ -29,10 +29,10 @@ import android.view.KeyEvent;
 
 import java.util.List;
 
-public class MediaHelper {
+class MediaHelper {
     private static final String TAG = "MediaButtonReceiver";
 
-    public static PendingIntent buildMediaButtonPendingIntent(Context context, ComponentName mbrComponent, long action) {
+    static PendingIntent buildMediaButtonPendingIntent(Context context, ComponentName mbrComponent, int action) {
         if (mbrComponent == null) {
             Log.w(TAG, "The component name of media button receiver should be provided.");
             return null;
@@ -48,31 +48,24 @@ public class MediaHelper {
         intent.putExtra(Intent.EXTRA_KEY_EVENT, new KeyEvent(KeyEvent.ACTION_DOWN, keyCode));
         intent.addFlags(Intent.FLAG_RECEIVER_FOREGROUND);
         return PendingIntent.getBroadcast(context, keyCode, intent,
-                Build.VERSION.SDK_INT >= 31 ? PendingIntent.FLAG_MUTABLE : 0);
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.S ? PendingIntent.FLAG_MUTABLE : 0);
     }
 
-    public static int PlaybackStateCompat_toKeyCode(long action) {
-        if (action == PlaybackState.ACTION_PLAY) {
-            return KeyEvent.KEYCODE_MEDIA_PLAY;
-        } else if (action == PlaybackState.ACTION_PAUSE) {
-            return KeyEvent.KEYCODE_MEDIA_PAUSE;
-        } else if (action == PlaybackState.ACTION_SKIP_TO_NEXT) {
-            return KeyEvent.KEYCODE_MEDIA_NEXT;
-        } else if (action == PlaybackState.ACTION_SKIP_TO_PREVIOUS) {
-            return KeyEvent.KEYCODE_MEDIA_PREVIOUS;
-        } else if (action == PlaybackState.ACTION_STOP) {
-            return KeyEvent.KEYCODE_MEDIA_STOP;
-        } else if (action == PlaybackState.ACTION_FAST_FORWARD) {
-            return KeyEvent.KEYCODE_MEDIA_FAST_FORWARD;
-        } else if (action == PlaybackState.ACTION_REWIND) {
-            return KeyEvent.KEYCODE_MEDIA_REWIND;
-        } else if (action == PlaybackState.ACTION_PLAY_PAUSE) {
-            return KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE;
-        }
-        return KeyEvent.KEYCODE_UNKNOWN;
+    private static int PlaybackStateCompat_toKeyCode(int action) {
+        return switch (action) {
+            case (int) PlaybackState.ACTION_STOP -> KeyEvent.KEYCODE_MEDIA_STOP;
+            case (int) PlaybackState.ACTION_PAUSE -> KeyEvent.KEYCODE_MEDIA_PAUSE;
+            case (int) PlaybackState.ACTION_PLAY -> KeyEvent.KEYCODE_MEDIA_PLAY;
+            case (int) PlaybackState.ACTION_REWIND -> KeyEvent.KEYCODE_MEDIA_REWIND;
+            case (int) PlaybackState.ACTION_SKIP_TO_PREVIOUS -> KeyEvent.KEYCODE_MEDIA_PREVIOUS;
+            case (int) PlaybackState.ACTION_SKIP_TO_NEXT -> KeyEvent.KEYCODE_MEDIA_NEXT;
+            case (int) PlaybackState.ACTION_FAST_FORWARD -> KeyEvent.KEYCODE_MEDIA_FAST_FORWARD;
+            case (int) PlaybackState.ACTION_PLAY_PAUSE -> KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE;
+            default -> KeyEvent.KEYCODE_UNKNOWN;
+        };
     }
 
-    public static ComponentName getMediaButtonReceiverComponent(Context context) {
+    static ComponentName getMediaButtonReceiverComponent(Context context) {
         Intent queryIntent = new Intent(Intent.ACTION_MEDIA_BUTTON);
         queryIntent.setPackage(context.getPackageName());
         PackageManager pm = context.getPackageManager();

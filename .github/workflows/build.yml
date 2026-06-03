@@ -95,7 +95,7 @@ jobs:
 
             - name: Set and Extract version
               if: ${{ github.event_name == 'workflow_dispatch' }}
-              run: lib/scripts/pre-build.sh gen-build-info --ci --platform android
+              run: lib/scripts/pre-build.sh gen-build-info --ci --platform android --tag "${{ github.event.inputs.tag }}"
 
             - name: Flutter Build Release Apk
               if: ${{ github.event_name == 'workflow_dispatch' }}
@@ -108,9 +108,10 @@ jobs:
 
             - name: Rename
               run: |
+                  VERSION="${{ env.version_name }}+${{ env.version_code }}"
                   for file in build/app/outputs/flutter-apk/app-*-release.apk; do
                     abi=$(echo "$file" | sed -E 's|.*app-(.*)-release\.apk|\1|')
-                    mv "$file" "PiliPlus_android_${{ env.version }}_${abi}.apk"
+                    mv "$file" "PiliPlus_android_${VERSION}_${abi}.apk"
                   done
               shell: bash
 

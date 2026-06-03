@@ -152,7 +152,7 @@ class _AboutPageState extends State<AboutPage> {
           ListTile(
             title: Text(
               '''
-Build Time: ${DateFormatUtils.format(BuildConfig.buildTime, format: DateFormatUtils.longFormatDs)}
+${BuildConfig.timestampLabel}: ${DateFormatUtils.format(BuildConfig.buildTime, format: DateFormatUtils.longFormatDs)}
 Commit Hash: ${BuildConfig.commitHash}''',
               style: const TextStyle(fontSize: 14),
             ),

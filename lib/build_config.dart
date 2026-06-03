@@ -13,4 +13,7 @@ abstract final class BuildConfig {
     'pili.hash',
     defaultValue: 'N/A',
   );
+  static const bool isCI = bool.fromEnvironment('pili.is_ci');
+
+  static String get timestampLabel => isCI ? 'Commit Date' : 'Build Time';
 }

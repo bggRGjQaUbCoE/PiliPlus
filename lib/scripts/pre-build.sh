@@ -210,7 +210,14 @@ gen_build_info() {
     fi
 
     if $ci && [[ "$platform" =~ ^(android|ios|macos)$ ]]; then
-        awk -v verName="$version_name" -v verCode="$version_code" '
+        local pubspec_ver
+        IFS=. read -ra parts <<< "$base_version"
+        pubspec_ver="${parts[0]}.${parts[1]}.${parts[2]}"
+        [[ -n "${parts[3]:-}" ]] && pubspec_ver="${pubspec_ver}-${parts[3]}"
+        if [[ -z "$tag" ]]; then
+            pubspec_ver="${pubspec_ver}-r${patch_number}.g${commit_hash:0:7}"
+        fi
+        awk -v verName="$pubspec_ver" -v verCode="$version_code" '
             /^[[:space:]]*version:[[:space:]]*[0-9.]+/ {
                 print "version: " verName "+" verCode
                 next

@@ -728,6 +728,7 @@ class LoginPageController extends GetxController
       SmartDialog.showToast('请先登录');
       return Get.toNamed('/loginPage');
     }
+    final colorScheme = ColorScheme.of(context);
     final selectAccount = List.of(Accounts.accountMode);
     final options = {
       AnonymousAccount(): '0',
@@ -749,11 +750,8 @@ class LoginPageController extends GetxController
                 children: [
                   const TextSpan(text: '账号切换'),
                   TextSpan(
-                    text: '\nmid 为0时使用匿名',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: ColorScheme.of(context).outline,
-                    ),
+                    text: '\nmid为0时使用匿名',
+                    style: TextStyle(fontSize: 14, color: colorScheme.outline),
                   ),
                 ],
               ),
@@ -767,7 +765,7 @@ class LoginPageController extends GetxController
                 quickSelect = !quickSelect;
                 (context as Element).markNeedsBuild();
               },
-              child: const Text('切换'),
+              child: Text(quickSelect ? '详细' : '快速'),
             ),
           ],
         ),
@@ -829,10 +827,7 @@ class LoginPageController extends GetxController
         actions: [
           TextButton(
             onPressed: Get.back,
-            child: Text(
-              '取消',
-              style: TextStyle(color: ColorScheme.of(context).outline),
-            ),
+            child: Text('取消', style: TextStyle(color: colorScheme.outline)),
           ),
           TextButton(
             onPressed: () {

@@ -191,7 +191,7 @@ class _MediaPageState extends CommonPageState<MinePage>
           iconSize: iconSize,
           padding: padding,
           style: style,
-          tooltip: '设置账号模式',
+          tooltip: '切换账号',
           onPressed: () => LoginPageController.switchAccountDialog(context),
           icon: const Icon(Icons.switch_account_outlined),
         ),

@@ -190,9 +190,10 @@ class MineController extends CommonDataController<FavFolderData, FavFolderData>
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    '搜索、观看视频/直播不携带身份信息（包含大会员）\n'
+                    '搜索不携带身份信息\n'
                     '不产生查询或播放记录\n'
                     '点赞等其它操作不受影响\n'
+                    '播放进度信息跟随视频取流\n'
                     '(前往隐私设置了解详情)',
                     style: theme.textTheme.bodySmall,
                   ),

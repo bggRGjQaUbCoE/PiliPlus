@@ -43,7 +43,7 @@ jobs:
 
       - name: Set and Extract version
         shell: bash
-        run: lib/scripts/pre-build.sh gen-build-info --ci
+        run: lib/scripts/pre-build.sh gen-build-info --ci --platform windows --tag "${{ inputs.tag }}"
 
       - name: Build Windows
         run: |
@@ -51,14 +51,16 @@ jobs:
 
       - name: Prepare Upload
         run: |
+          $VERSION="${{ env.version_name }}+${{ env.version_code }}"
           mkdir -p Release/PiliPlus-Win
           mkdir -p PiliPlus-Win-Setup
           mv build/windows/x64/runner/Release/* Release/PiliPlus-Win/
-          mv dist/**/*.exe PiliPlus-Win-Setup/PiliPlus_windows_${{env.version}}_x64_setup.exe
+          mv dist/**/*.exe PiliPlus-Win-Setup/PiliPlus_windows_${VERSION}_x64_setup.exe
 
       - name: Compress
         run: |
-          Compress-Archive -Path "Release/PiliPlus-Win" -DestinationPath "PiliPlus_windows_${{env.version}}_x64_portable.zip"
+          $VERSION="${{ env.version_name }}+${{ env.version_code }}"
+          Compress-Archive -Path "Release/PiliPlus-Win" -DestinationPath "PiliPlus_windows_${VERSION}_x64_portable.zip"
         shell: pwsh
 
       - name: Release

@@ -149,56 +149,98 @@ apply_patches() {
         > "$state_file"
 }
 
+resolve_last_tag() {
+    local tag
+
+    tag=$(git describe --tags --abbrev=0 --match '[0-9]*' 2>/dev/null || true)
+    [[ -n "$tag" ]] && { echo "$tag"; return 0; }
+
+    echo "Warning: No local tags found, fetching from remote..."
+    git fetch --tags 2>/dev/null || true
+    tag=$(git describe --tags --abbrev=0 --match '[0-9]*' 2>/dev/null || true)
+    [[ -n "$tag" ]] && { echo "$tag"; return 0; }
+
+    echo "Warning: Still no tags found, attempting unshallow fetch..."
+    git fetch --unshallow 2>/dev/null || true
+    tag=$(git describe --tags --abbrev=0 --match '[0-9]*' 2>/dev/null || true)
+    [[ -n "$tag" ]] && { echo "$tag"; return 0; }
+
+    return 1
+}
+
 gen_build_info() {
     local platform=""
     local ci=false
+    local tag=""
     while [[ $# -gt 0 ]]; do
         case "$1" in
             --ci) ci=true; shift ;;
             --platform) platform="$2"; shift 2 ;;
+            --tag) tag="$2"; shift 2 ;;
             *) echo "Unknown option: $1" >&2; exit 1 ;;
         esac
     done
 
+    local base_version=""
+    local patch_number=0
     local version_name=""
     local version_code=""
     local commit_hash=""
     local build_time=""
+    local source_timestamp=""
 
     version_code=$(git rev-list --count HEAD | tr -d '[:space:]')
     commit_hash=$(git rev-parse HEAD | tr -d '[:space:]')
 
-    if grep -qE '^[[:space:]]*version:[[:space:]]*([0-9.]+)' pubspec.yaml; then
-        version_name=$(grep -E '^[[:space:]]*version:[[:space:]]*([0-9.]+)' pubspec.yaml | head -n1 | sed -E 's/^[[:space:]]*version:[[:space:]]*([0-9.]+).*/\1/')
-        if [[ "$platform" == "android" ]]; then
-            version_name="${version_name}-${commit_hash:0:9}"
-        fi
-
-        if $ci; then
-            awk -v verName="$version_name" -v verCode="$version_code" '
-                /^[[:space:]]*version:[[:space:]]*[0-9.]+/ {
-                    print "version: " verName "+" verCode
-                    next
-                }
-                { print }
-            ' pubspec.yaml > pubspec.yaml.tmp && mv pubspec.yaml.tmp pubspec.yaml
-        fi
+    if [[ -n "$tag" ]]; then
+        base_version="$tag"
+        version_name="$tag"
     else
-        echo "Prebuild Error: version not found" >&2
-        exit 1
+        if last_tag=$(resolve_last_tag); then
+            base_version="$last_tag"
+            patch_number=$(git rev-list --count "${last_tag}..HEAD" 2>/dev/null || echo 0)
+            version_name="${base_version}.r${patch_number}.g${commit_hash:0:7}"
+        elif grep -qE '^[[:space:]]*version:[[:space:]]*([0-9.]+)' pubspec.yaml; then
+            echo "Warning: No valid tags found for versioning, fallback to pubspec version."
+            base_version=$(grep -E '^[[:space:]]*version:[[:space:]]*([0-9.]+)' pubspec.yaml | head -n1 | sed -E 's/^[[:space:]]*version:[[:space:]]*([0-9.]+).*/\1/')
+            version_name="${base_version}-${commit_hash:0:9}"
+        else
+            echo "Prebuild Error: version not found" >&2
+            exit 1
+        fi
     fi
 
-    build_time=$(date +%s)
+    if $ci && [[ "$platform" =~ ^(android|ios|macos)$ ]]; then
+        awk -v verName="$version_name" -v verCode="$version_code" '
+            /^[[:space:]]*version:[[:space:]]*[0-9.]+/ {
+                print "version: " verName "+" verCode
+                next
+            }
+            { print }
+        ' pubspec.yaml > pubspec.yaml.tmp && mv pubspec.yaml.tmp pubspec.yaml
+    fi
+
+    if $ci; then
+        source_timestamp=${SOURCE_DATE_EPOCH:-$(git log -1 --format=%ct)}
+    else
+        build_time=$(date +%s)
+    fi
     jq -n \
         --arg name "$version_name" \
         --arg code "$version_code" \
         --arg hash "$commit_hash" \
-        --arg time "$build_time" \
-        '{ "pili.name": $name, "pili.code": $code, "pili.hash": $hash, "pili.time": ($time|tonumber) }' \
+        --arg time "${source_timestamp:-$build_time}" \
+        --argjson is_ci "$ci" \
+        '{ "pili.name": $name, "pili.code": $code, "pili.hash": $hash, "pili.time": ($time|tonumber), "pili.is_ci": $is_ci }' \
         > pili_release.json
 
     if [[ -n "${GITHUB_ENV:-}" ]]; then
-        echo "version=${version_name}+${version_code}" >> "$GITHUB_ENV"
+        {
+            echo "version_name=${version_name}"
+            echo "version_code=${version_code}"
+            echo "base_version=${base_version}"
+            echo "patch_number=${patch_number}"
+        } >> "$GITHUB_ENV"
     fi
 }
 

@@ -14,6 +14,7 @@ import 'package:PiliPlus/models_new/emote/emote.dart' as e;
 import 'package:PiliPlus/models_new/live/live_emote/emoticon.dart';
 import 'package:PiliPlus/pages/common/publish/common_publish_page.dart';
 import 'package:PiliPlus/pages/dynamics_mention/view.dart';
+import 'package:PiliPlus/utils/cache_manager.dart';
 import 'package:PiliPlus/utils/extension/file_ext.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/string_ext.dart';
@@ -22,7 +23,8 @@ import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
-import 'package:cached_network_image_ce/cached_network_image.dart';
+import 'package:cached_network_image_ce/cached_network_image.dart'
+    hide CacheManager;
 import 'package:dio/dio.dart' show CancelToken;
 import 'package:easy_debounce/easy_throttle.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
@@ -190,7 +192,7 @@ abstract class CommonRichTextPubPageState<T extends CommonRichTextPubPage>
         path = e.path;
       case OpusPicModel e:
         SmartDialog.showLoading();
-        path = (await DefaultCacheManager.instance!.getSingleFile(
+        path = (await CacheManager.manager.getSingleFile(
           e.url.http2https,
         )).path;
         await SmartDialog.dismiss();

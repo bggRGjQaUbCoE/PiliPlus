@@ -5,6 +5,7 @@ import 'dart:typed_data' show Uint8List;
 
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/http/init.dart';
+import 'package:PiliPlus/utils/cache_manager.dart';
 import 'package:PiliPlus/utils/device_utils.dart';
 import 'package:PiliPlus/utils/extension/file_ext.dart';
 import 'package:PiliPlus/utils/extension/string_ext.dart';
@@ -15,7 +16,6 @@ import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/share_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
-import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'package:dio/dio.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -37,7 +37,7 @@ abstract final class ImageUtils {
   static Future<void> onShareImg(String url) async {
     try {
       SmartDialog.showLoading();
-      final res = await DefaultCacheManager.instance!.getSingleFile(
+      final res = await CacheManager.manager.getSingleFile(
         url.http2https,
       );
       SmartDialog.dismiss();
@@ -110,7 +110,7 @@ abstract final class ImageUtils {
       if (res.statusCode != 200) throw '${res.statusCode}';
 
       if (Platform.isIOS) {
-        final imageFile = await DefaultCacheManager.instance!.getSingleFile(
+        final imageFile = await CacheManager.manager.getSingleFile(
           url.http2https,
         );
         if (!silentDownImg) SmartDialog.showLoading(msg: '正在保存');
@@ -162,7 +162,7 @@ abstract final class ImageUtils {
       final futures = imgList.map((url) async {
         final name = Utils.getFileName(url);
 
-        final file = await DefaultCacheManager.instance!.getSingleFile(
+        final file = await CacheManager.manager.getSingleFile(
           url.http2https,
         );
         return (filePath: file.path, name: name, statusCode: 200);

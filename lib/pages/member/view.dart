@@ -33,6 +33,7 @@ import 'package:PiliPlus/pages/member_shop/view.dart';
 import 'package:PiliPlus/pages/member_video_web/archive/view.dart';
 import 'package:PiliPlus/pages/member_video_web/season_series/view.dart';
 import 'package:PiliPlus/utils/android/android_helper.dart';
+import 'package:PiliPlus/utils/cache_manager.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/extension/context_ext.dart';
 import 'package:PiliPlus/utils/extension/string_ext.dart';
@@ -40,7 +41,6 @@ import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
-import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -703,7 +703,7 @@ class _MemberPageState extends State<MemberPage> {
   Future<void> _createShortcutAndroid() async {
     try {
       SmartDialog.showLoading();
-      final file = (await DefaultCacheManager.instance!.getSingleFile(
+      final file = (await CacheManager.manager.getSingleFile(
         '${_userController.userAvatar!}@200w_200h.webp'.http2https,
       ));
       SmartDialog.dismiss();

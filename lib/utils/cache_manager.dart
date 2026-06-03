@@ -72,8 +72,10 @@ abstract final class CacheManager {
 
       final tempDirectory = await getTemporaryDirectory();
       if (tempDirectory.existsSync()) {
-        final children = tempDirectory.list(recursive: false);
-        await for (final file in children) {
+        await for (final file in tempDirectory.list(recursive: false)) {
+          if (file is Directory && path.equals(file.path, manager.cacheDir)) {
+            continue;
+          }
           await file.delete(recursive: true);
         }
       }

@@ -7,10 +7,10 @@ class CustomFractionallySizedBox extends FractionallySizedBox {
   const CustomFractionallySizedBox({
     super.key,
     super.alignment,
-    super.widthFactor,
-    super.heightFactor,
-    super.child,
+    required double super.widthFactor,
+    required double super.heightFactor,
     required this.maxWidth,
+    super.child,
   });
 
   final double maxWidth;
@@ -44,7 +44,10 @@ class CustomRenderFractionallySizedOverflowBox
     double minWidth = constraints.minWidth;
     double maxWidth = constraints.maxWidth;
     if (widthFactor != null) {
-      final double width = math.min(_maxWidth, maxWidth * widthFactor!);
+      double width = maxWidth * widthFactor!;
+      if (maxWidth > constraints.maxHeight) {
+        width = math.min(_maxWidth, width);
+      }
       minWidth = width;
       maxWidth = width;
     }

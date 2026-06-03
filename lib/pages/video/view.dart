@@ -1776,7 +1776,6 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     if (isFullScreen || videoDetailController.showVideoSheet) {
       PageUtils.showVideoBottomSheet(
         context,
-        isFullScreen: () => isFullScreen,
         child: listSheetContent(enableSlide: false),
       );
     } else {
@@ -1839,7 +1838,6 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     if (isFullScreen || videoDetailController.showVideoSheet) {
       PageUtils.showVideoBottomSheet(
         context,
-        isFullScreen: () => isFullScreen,
         child: ViewPointsPage(
           enableSlide: false,
           videoDetailController: videoDetailController,

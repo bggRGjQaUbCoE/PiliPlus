@@ -18,6 +18,7 @@ mixin HeaderMixin<T extends StatefulWidget> on State<T> {
   }) {
     return PageUtils.showVideoBottomSheet(
       context,
+      maxWidth: 512,
       isFullScreen: () => isFullScreen,
       padding: padding,
       child: StatefulBuilder(

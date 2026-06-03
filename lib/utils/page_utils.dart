@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:PiliPlus/common/widgets/fractionally_sized_box.dart';
 import 'package:PiliPlus/common/widgets/image_viewer/gallery_viewer.dart';
 import 'package:PiliPlus/common/widgets/image_viewer/hero_dialog_route.dart';
 import 'package:PiliPlus/grpc/im.dart';
@@ -438,6 +439,7 @@ abstract final class PageUtils {
     required Widget child,
     required ValueGetter<bool> isFullScreen,
     double? padding,
+    double maxWidth = 500,
   }) {
     if (!context.mounted) {
       return null;
@@ -461,7 +463,8 @@ abstract final class PageUtils {
             );
           }
           return SafeArea(
-            child: FractionallySizedBox(
+            child: CustomFractionallySizedBox(
+              maxWidth: maxWidth,
               widthFactor: 0.5,
               heightFactor: 1.0,
               alignment: Alignment.centerRight,

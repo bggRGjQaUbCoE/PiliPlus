@@ -314,18 +314,35 @@ apply_patches() {
         > "$state_file"
 }
 
+resolve_last_tag() {
+    local tag
+
+    if [[ -f "$PWD/.git/shallow" ]]; then
+        echo "Warning: shallow clone detected, skipping tag-based versioning" >&2
+        return 1
+    fi
+
+    tag=$(git describe --tags --abbrev=0 --match '[0-9]*' 2>/dev/null || true)
+    [[ -n "$tag" ]] && { echo "$tag"; return 0; }
+
+    return 1
+}
+
 gen_build_info() {
     local platform=""
     local ci=false
+    local tag=""
     while [[ $# -gt 0 ]]; do
         case "$1" in
             --ci) ci=true; shift ;;
             --platform) platform="$2"; shift 2 ;;
+            --tag) tag="$2"; shift 2 ;;
             *) echo "Unknown option: $1" >&2; exit 1 ;;
         esac
     done
 
     local version_name=""
+    local base_version=""
     local version_code=""
     local commit_hash=""
     local build_time=""
@@ -333,24 +350,35 @@ gen_build_info() {
     version_code=$(git rev-list --count HEAD | tr -d '[:space:]')
     commit_hash=$(git rev-parse HEAD | tr -d '[:space:]')
 
-    if grep -qE '^[[:space:]]*version:[[:space:]]*([0-9.]+)' pubspec.yaml; then
+    if [[ -n "$tag" ]]; then
+        version_name="$tag"
+        base_version="$tag"
+    elif last_tag=$(resolve_last_tag); then
+        base_version="$last_tag"
+        version_name="$last_tag"
+    elif grep -qE '^[[:space:]]*version:[[:space:]]*([0-9.]+)' pubspec.yaml; then
         version_name=$(grep -E '^[[:space:]]*version:[[:space:]]*([0-9.]+)' pubspec.yaml | head -n1 | sed -E 's/^[[:space:]]*version:[[:space:]]*([0-9.]+).*/\1/')
+        base_version="$version_name"
         if [[ "$platform" == "android" ]]; then
             version_name="${version_name}-${commit_hash:0:9}"
-        fi
-
-        if $ci; then
-            awk -v verName="$version_name" -v verCode="$version_code" '
-                /^[[:space:]]*version:[[:space:]]*[0-9.]+/ {
-                    print "version: " verName "+" verCode
-                    next
-                }
-                { print }
-            ' pubspec.yaml > pubspec.yaml.tmp && mv pubspec.yaml.tmp pubspec.yaml
         fi
     else
         echo "Prebuild Error: version not found" >&2
         exit 1
+    fi
+
+    if $ci && [[ "$platform" =~ ^(android|ios|macos)$ ]]; then
+        local pubspec_ver
+        IFS=. read -ra parts <<< "$base_version"
+        pubspec_ver="${parts[0]}.${parts[1]}.${parts[2]}"
+        [[ -n "${parts[3]:-}" ]] && pubspec_ver="${pubspec_ver}-${parts[3]}"
+        awk -v verName="$pubspec_ver" -v verCode="$version_code" '
+            /^[[:space:]]*version:[[:space:]]*[0-9.]+/ {
+                print "version: " verName "+" verCode
+                next
+            }
+            { print }
+        ' pubspec.yaml > pubspec.yaml.tmp && mv pubspec.yaml.tmp pubspec.yaml
     fi
 
     build_time=$(date +%s)
@@ -363,7 +391,12 @@ gen_build_info() {
         > pili_release.json
 
     if [[ -n "${GITHUB_ENV:-}" ]]; then
-        echo "version=${version_name}+${version_code}" >> "$GITHUB_ENV"
+        {
+            echo "version=${version_name}+${version_code}"
+            echo "version_name=${version_name}"
+            echo "version_code=${version_code}"
+            echo "base_version=${base_version}"
+        } >> "$GITHUB_ENV"
     fi
 }
 

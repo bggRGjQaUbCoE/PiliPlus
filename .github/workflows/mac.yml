@@ -27,7 +27,7 @@ jobs:
           flutter-version-file: pubspec.yaml
 
       - name: Set and Extract version
-        run: lib/scripts/pre-build.sh gen-build-info --ci
+        run: lib/scripts/pre-build.sh gen-build-info --ci --platform macos --tag "${{ inputs.tag }}"
 
       - name: Apply Patches
         run: lib/scripts/pre-build.sh apply-patches --platform macos

@@ -25,6 +25,9 @@ class FlutterWindow : public Win32Window {
                          LPARAM const lparam) noexcept override;
 
  private:
+  void EnableMediaPlayPauseHotKey();
+  void DisableMediaPlayPauseHotKey();
+
   // The project to run.
   flutter::DartProject project_;
 

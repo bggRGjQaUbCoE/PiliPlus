@@ -7,7 +7,9 @@ Task: `task-009`
 Repository: `CometDash77/PiliAvalon-Worksite`
 Worksite path: `/home/mo/Documents/piliavalon`
 Branch: `merge/upstream-then-phase1`
-Pull request: https://github.com/CometDash77/PiliAvalon-Worksite/pull/2
+Pull requests:
+- Initial PR with state mismatch: https://github.com/CometDash77/PiliAvalon-Worksite/pull/2
+- Final verified PR: https://github.com/CometDash77/PiliAvalon-Worksite/pull/3
 
 ## Goal
 
@@ -22,10 +24,12 @@ Prepare the accepted Phase 1 shielding work for merge into product `main`, while
 
 ## Current Status
 
-`task-009` is ready for PR review.
+`task-009` is merged to product `main` and verified by Git ancestry.
 
 - Current branch: `merge/upstream-then-phase1`
-- Current pushed head before this record commit: `4471a225c29be4188ae74be7b5b899435668775b`
+- Current pushed head before the PR state-mismatch repair: `3b7e53e9e302212831d4e491b7ab698fca33110e`
+- Repaired branch head merged by PR `#3`: `8a958e0d2e85e59b0a577cc4bb52976516e5f6cb`
+- Final `origin/main` merge commit: `3dc5ade21255fa61925a0c39bcffaaa3e7e31c98`
 - Base product commit included in branch history: `508384c01`
 - Phase 1 merge commit: `3d6979a0b`
 - Dependency lock repair commit: `c1ecf8196`
@@ -34,7 +38,10 @@ Prepare the accepted Phase 1 shielding work for merge into product `main`, while
   - `64695bbf0` (`Harden runtime smoke against launcher ANR`)
   - `4471a225c` (`Close launcher ANR dialog during smoke retry`)
 - Pull request created: https://github.com/CometDash77/PiliAvalon-Worksite/pull/2
-- Main merge completed: no. The branch is open for PR review and has not been merged to `main`.
+- Pull request created after PR state mismatch: https://github.com/CometDash77/PiliAvalon-Worksite/pull/3
+- Main merge completed: yes. `origin/main` contains repaired Phase 1 head `8a958e0d2e85e59b0a577cc4bb52976516e5f6cb`.
+- Verification command passed: `git merge-base --is-ancestor 8a958e0d2e85e59b0a577cc4bb52976516e5f6cb origin/main`.
+- Earlier Phase 1 evidence head also passed ancestry verification: `git merge-base --is-ancestor 3b7e53e9e302212831d4e491b7ab698fca33110e origin/main`.
 
 ## Repository Identity
 
@@ -54,6 +61,8 @@ All GitHub CLI commands used for run/PR evidence were scoped with `-R CometDash7
 | `git status --short --branch` | 0 | Branch is `merge/upstream-then-phase1`; untracked `.codex/skills/` existed before this record work; this report was untracked until committed. |
 | `command -v flutter` | 1 | Local Flutter is unavailable in this environment. |
 | `bash -n .github/scripts/android_runtime_smoke.sh` | 0 | Runtime smoke script syntax passed. |
+| `git diff --check` | 0 | No whitespace errors in the repaired merge. |
+| `rg -n "<<<<<<<\|=======\|>>>>>>>" android/app/src/main/kotlin/com/example/piliplus/MainActivity.kt` | 1 | No conflict markers remained in the resolved file. |
 
 Local Flutter test/analyze could not be run because `flutter` is not installed on this machine.
 
@@ -120,6 +129,81 @@ sdk_gphone64_x86_64
 
 `app-crash-error.txt` was zero bytes in the final passed smoke evidence.
 
+## PR State Mismatch And Repair
+
+PR `#2` was manually confirmed and GitHub reported it as merged:
+
+- URL: https://github.com/CometDash77/PiliAvalon-Worksite/pull/2
+- `mergedAt`: `2026-06-04T07:56:26Z`
+- Reported merge commit: `b43446b3807e33092178d9fc2a8a5c9d6015359b`
+
+After that PR state, Codex fetched and inspected the remote Git topology. The observed remote refs did not prove Phase 1 was in product `main`:
+
+- `origin/main`: `cd367a8649ed1f2bed7000d5e4bcb7096a811bc5`
+- `origin/merge/upstream-then-phase1`: `3b7e53e9e302212831d4e491b7ab698fca33110e`
+- Observed merge base remained `508384c016a0235d27515851ab432ed00523b718`.
+
+Conclusion: the user's PR confirmation was preserved as a real PR event, but Codex could not claim `task-009` merged until remote `main` contained the Phase 1 head by Git ancestry.
+
+The current `origin/main` drift that had to be merged back into `merge/upstream-then-phase1` was:
+
+- `af1cd30ed` `opt video bottomsheet`
+- `7b01c3365` `more fab anim`
+- `f63777152` `android patch`
+- `cd367a864` `Release 2.0.8`
+
+Merge conflict:
+
+- File: `android/app/src/main/kotlin/com/example/piliplus/MainActivity.kt`
+- Resolution: use the current `origin/main` `AndroidHelper` architecture as the baseline, keep `AndroidHelper.ToDart.onConfigurationChanged?.run()`, `AndroidHelper.ToDart.onUserLeaveHint?.run()`, `AndroidHelper.isPipMode = isInPictureInPictureMode`, `onCreate` cutout mode, and `onDestroy` audio-service stop.
+- Removed behavior: did not restore the old `io.flutter.SystemChrome` import or old `MethodChannel` `SystemChrome` bridge, because current `origin/main` removed `android/app/src/main/java/io/flutter/SystemChrome.java`.
+
+Repair merge commit:
+
+- Commit: `8a958e0d2e85e59b0a577cc4bb52976516e5f6cb`
+- Message: `Merge current main after PR state mismatch`
+
+## Repaired CI And PR Evidence
+
+Repaired Phase 1 CI:
+
+- Run: `26939753449`
+- URL: https://github.com/CometDash77/PiliAvalon-Worksite/actions/runs/26939753449
+- Result: success
+- Jobs:
+  - `Focused Flutter verification` (`79478052023`): success
+  - `Build Android x86_64 artifact` (`79478340844`): success
+  - `Android emulator runtime smoke` (`79479274871`): success
+
+Final PR:
+
+- PR: https://github.com/CometDash77/PiliAvalon-Worksite/pull/3
+- Base: `main`
+- Head: `merge/upstream-then-phase1`
+- Head commit: `8a958e0d2e85e59b0a577cc4bb52976516e5f6cb`
+- State: merged
+- `mergedAt`: `2026-06-04T08:52:08Z`
+- Merge commit: `3dc5ade21255fa61925a0c39bcffaaa3e7e31c98`
+
+PR Build:
+
+- Run: `26940323567`
+- URL: https://github.com/CometDash77/PiliAvalon-Worksite/actions/runs/26940323567
+- Result: success
+- Jobs:
+  - `Release Android` (`79479944570`): success
+  - `ios / Release IOS` (`79479944653`): success
+  - `win_x64 / Release Windows x64` (`79479944587`): success
+  - `mac` (`79479944968`): skipped
+  - `linux_x64` (`79479945068`): skipped
+
+Post-merge verification:
+
+- `git fetch origin main merge/upstream-then-phase1` updated `origin/main` from `cd367a8649ed1f2bed7000d5e4bcb7096a811bc5` to `3dc5ade21255fa61925a0c39bcffaaa3e7e31c98`.
+- `git merge-base --is-ancestor 8a958e0d2e85e59b0a577cc4bb52976516e5f6cb origin/main` passed.
+- `git merge-base --is-ancestor 3b7e53e9e302212831d4e491b7ab698fca33110e origin/main` passed.
+- Final conclusion: Phase 1 is now truly in product `main`.
+
 ## User Feedback
 
 Raw user feedback preserved:
@@ -132,22 +216,30 @@ Codex interpretation: the user would accept x86_64 compilation as a yellow gate 
 
 ## PR Status
 
-PR `#2` was created for review:
+PR `#2` was created and manually confirmed, but its reported merged state did not match the remote `main` Git topology when inspected after the event:
 
 - URL: https://github.com/CometDash77/PiliAvalon-Worksite/pull/2
 - Base: `main`
 - Head: `merge/upstream-then-phase1`
 - Title: `Merge Phase 1 shielding into main`
-- Release state: no release was created.
-- Stable/latest state: no tag was promoted.
+PR `#3` is the final verified merge PR:
+
+- URL: https://github.com/CometDash77/PiliAvalon-Worksite/pull/3
+- Base: `main`
+- Head: `merge/upstream-then-phase1`
+- Title: `Merge Phase 1 shielding into main after PR state mismatch`
+- Merge commit: `3dc5ade21255fa61925a0c39bcffaaa3e7e31c98`
+
+Release state: no release was created.
+Stable/latest state: no tag was promoted.
 
 ## Known Risks And Yellow Items
 
-- The PR is not merged to `main`; final `main` integration remains pending review and merge.
+- No open `task-009` main-merge gate remains; Phase 1 is verified in `origin/main`.
 - Local Flutter validation remains unavailable because `flutter` is not installed locally.
 - GitHub Actions emitted a Node.js 20 deprecation warning for `actions/download-artifact@v6`; this did not fail the run, but should be tracked before GitHub's Node.js 20 removal window.
 - Untracked `.codex/skills/` existed before this record work and was left untouched.
 
 ## Next Step
 
-Review PR `#2` and decide whether to merge `merge/upstream-then-phase1` into `main`. Do not start Phase 2 or release work from this session report alone.
+`task-009` main merge is complete. Do not start Phase 2, `task-015`, `task-010`, release publication, or stable/latest tag promotion from this session report alone.

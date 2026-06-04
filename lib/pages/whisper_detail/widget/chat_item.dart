@@ -246,6 +246,7 @@ class ChatItem extends StatelessWidget {
 
   Widget msgTypeArticleCard_12(dynamic content, Color textColor) {
     return GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTap: () => Get.toNamed(
         '/articlePage',
         parameters: {

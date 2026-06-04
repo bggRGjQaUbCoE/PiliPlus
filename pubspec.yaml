@@ -47,7 +47,7 @@ dependencies:
   brotli: ^0.6.0
   cached_network_image_ce:
     git:
-      url: https://github.com/bggRGjQaUbCoE/flutter_cached_network_image_ce.git
+      url: https://github.com/My-Responsitories/flutter_cached_network_image_ce.git
       path: cached_network_image
       ref: develop
   canvas_danmaku:
@@ -224,6 +224,11 @@ dependency_overrides:
       url: https://github.com/bggRGjQaUbCoE/screen_brightness.git
       path: screen_brightness_android
       ref: main
+  cached_network_image_ce:
+    git:
+      url: https://github.com/My-Responsitories/flutter_cached_network_image_ce.git
+      path: cached_network_image
+      ref: develop
 
 dev_dependencies:
   flutter_test:

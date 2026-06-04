@@ -207,17 +207,17 @@ packages:
     description:
       path: cached_network_image
       ref: develop
-      resolved-ref: "5b79ff9f53a9a55b57d4d6fc52eb529fdfdb30d7"
-      url: "https://github.com/bggRGjQaUbCoE/flutter_cached_network_image_ce.git"
+      resolved-ref: "6ad91e9bf71254803e222b7d254751576f2f6d7b"
+      url: "https://github.com/My-Responsitories/flutter_cached_network_image_ce.git"
     source: git
     version: "4.6.4"
   cached_network_image_platform_interface_ce:
     dependency: transitive
     description:
       path: cached_network_image_platform_interface
-      ref: "5b79ff9f53a9a55b57d4d6fc52eb529fdfdb30d7"
-      resolved-ref: "5b79ff9f53a9a55b57d4d6fc52eb529fdfdb30d7"
-      url: "https://github.com/bggRGjQaUbCoE/flutter_cached_network_image_ce.git"
+      ref: "6ad91e9bf71254803e222b7d254751576f2f6d7b"
+      resolved-ref: "6ad91e9bf71254803e222b7d254751576f2f6d7b"
+      url: "https://github.com/My-Responsitories/flutter_cached_network_image_ce.git"
     source: git
     version: "5.2.0"
   canvas_danmaku:

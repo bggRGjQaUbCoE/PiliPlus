@@ -1,6 +1,5 @@
 import 'dart:io' show Directory, File;
 
-import 'package:PiliPlus/utils/extension/file_ext.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:cached_network_image_ce/cached_network_image.dart';
@@ -10,18 +9,19 @@ import 'package:path_provider/path_provider.dart';
 abstract final class CacheManager {
   static late final DefaultCacheManager manager;
 
-  static Future<void> ensureInitialized() =>
-      DefaultCacheManager.init().then((i) => manager = i);
+  static Future<void> ensureInitialized() => DefaultCacheManager.init(
+    maxNrOfCacheLength: Pref.maxCacheSize.toInt(),
+  ).then((i) => manager = i);
 
   // 获取缓存目录
   @pragma('vm:notify-debugger-on-exception')
   static Future<int> loadApplicationCache() async {
     try {
-      final Directory tempDirectory = await getTemporaryDirectory();
       if (PlatformUtils.isDesktop) {
         return manager.getTotalLength();
       }
 
+      final Directory tempDirectory = await getTemporaryDirectory();
       if (tempDirectory.existsSync()) {
         return await getTotalSizeOfFilesInDir(tempDirectory);
       }
@@ -80,23 +80,5 @@ abstract final class CacheManager {
         }
       }
     } catch (_) {}
-  }
-
-  static Future<void> autoClearCache() async {
-    // TODO: remove
-    Directory(
-      '${(await getTemporaryDirectory()).path}/libCachedImageData',
-    ).tryDel(recursive: true);
-    if (Pref.autoClearCache) {
-      await clearLibraryCache();
-    } else {
-      final maxCacheSize = Pref.maxCacheSize;
-      if (maxCacheSize != 0) {
-        final currCache = await loadApplicationCache();
-        if (currCache >= maxCacheSize) {
-          await clearLibraryCache();
-        }
-      }
-    }
   }
 }

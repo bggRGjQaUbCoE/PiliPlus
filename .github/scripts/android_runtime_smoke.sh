@@ -114,13 +114,19 @@ has_retryable_system_anr_dialog() {
 }
 
 dismiss_system_anr_dialog() {
+  local retry="$1"
+  local preferred_button="android:id/aerr_wait"
+  if [ "$retry" -gt 1 ]; then
+    preferred_button="android:id/aerr_close"
+  fi
+
   if [ -s "$ui_dump" ]; then
-    tap_coords="$(python3 - "$ui_dump" <<'PY' || true
+    tap_coords="$(python3 - "$ui_dump" "$preferred_button" <<'PY' || true
 import re
 import sys
 import xml.etree.ElementTree as ET
 
-path = sys.argv[1]
+path, preferred_button = sys.argv[1:3]
 try:
     root = ET.parse(path).getroot()
 except ET.ParseError:
@@ -128,7 +134,7 @@ except ET.ParseError:
 
 for node in root.iter("node"):
     resource_id = node.attrib.get("resource-id", "")
-    if resource_id != "android:id/aerr_wait":
+    if resource_id != preferred_button:
         continue
     match = re.fullmatch(r"\[(\d+),(\d+)\]\[(\d+),(\d+)\]", node.attrib.get("bounds", ""))
     if not match:
@@ -139,11 +145,15 @@ for node in root.iter("node"):
 PY
 )"
     if [ -n "${tap_coords:-}" ]; then
+      echo "dismiss_system_anr_dialog_button=${preferred_button}" >> runtime-smoke/evidence/adb-launch.txt
       adb shell input tap $tap_coords >> runtime-smoke/evidence/adb-launch.txt 2>&1 || true
+      sleep 2
       return
     fi
   fi
+  echo "dismiss_system_anr_dialog_button=KEYCODE_BACK" >> runtime-smoke/evidence/adb-launch.txt
   adb shell input keyevent KEYCODE_BACK >> runtime-smoke/evidence/adb-launch.txt 2>&1 || true
+  sleep 2
 }
 
 retry_after_system_dialog_if_needed() {
@@ -159,7 +169,7 @@ retry_after_system_dialog_if_needed() {
 
     retries=$((retries + 1))
     echo "retryable_system_anr_dialog_attempt=${retries}" >> runtime-smoke/evidence/adb-launch.txt
-    dismiss_system_anr_dialog
+    dismiss_system_anr_dialog "$retries"
     if ! start_launcher_component "retry-${retries}"; then
       status=30
       return 0

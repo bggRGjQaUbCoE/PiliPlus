@@ -4,6 +4,7 @@ import 'dart:typed_data' show Uint8List;
 
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/http/init.dart';
+import 'package:PiliPlus/utils/cache_manager.dart';
 import 'package:PiliPlus/utils/device_utils.dart';
 import 'package:PiliPlus/utils/extension/file_ext.dart';
 import 'package:PiliPlus/utils/extension/string_ext.dart';
@@ -17,7 +18,6 @@ import 'package:PiliPlus/utils/utils.dart';
 import 'package:dio/dio.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:intl/intl.dart' show DateFormat;
 import 'package:live_photo_maker/live_photo_maker.dart';
@@ -152,10 +152,7 @@ abstract final class ImageUtils {
     }
   }
 
-  static Future<bool> downloadImg(
-    List<String> imgList, [
-    CacheManager? manager,
-  ]) async {
+  static Future<bool> downloadImg(List<String> imgList) async {
     if (PlatformUtils.isMobile && !await checkPermissionDependOnSdkInt()) {
       return false;
     }
@@ -172,11 +169,11 @@ abstract final class ImageUtils {
       final futures = imgList.map((url) async {
         final name = Utils.getFileName(url);
 
-        final file = (await (manager ?? DefaultCacheManager()).getFileFromCache(
+        final file = await CacheManager.manager.getFileFromCache(
           url.http2https,
-        ))?.file;
+        );
 
-        if (file == null) {
+        if (file?.file == null) {
           final String filePath = '$tmpDirPath/$name';
           final response = await Request().downloadFile(
             url.http2https,
@@ -191,7 +188,7 @@ abstract final class ImageUtils {
           );
         } else {
           return (
-            filePath: file.path,
+            filePath: file!.file.path,
             name: name,
             statusCode: 200,
             del: false,

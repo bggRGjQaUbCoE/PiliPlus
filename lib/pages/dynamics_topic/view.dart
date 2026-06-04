@@ -9,6 +9,7 @@ import 'package:PiliPlus/common/widgets/sliver/sliver_pinned_header.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models_new/dynamic/dyn_topic_feed/item.dart';
 import 'package:PiliPlus/models_new/dynamic/dyn_topic_top/top_details.dart';
+import 'package:PiliPlus/pages/common/fab_mixin.dart';
 import 'package:PiliPlus/pages/dynamics/widgets/dynamic_panel.dart';
 import 'package:PiliPlus/pages/dynamics_create/view.dart';
 import 'package:PiliPlus/pages/dynamics_topic/controller.dart';
@@ -35,7 +36,8 @@ class DynTopicPage extends StatefulWidget {
   State<DynTopicPage> createState() => _DynTopicPageState();
 }
 
-class _DynTopicPageState extends State<DynTopicPage> with DynMixin {
+class _DynTopicPageState extends State<DynTopicPage>
+    with DynMixin, SingleTickerProviderStateMixin, BaseFabMixin, FabMixin {
   final DynTopicController _controller = Get.put(
     DynTopicController(),
     tag: Utils.generateRandomString(8),
@@ -51,102 +53,121 @@ class _DynTopicPageState extends State<DynTopicPage> with DynMixin {
         children: [
           refreshIndicator(
             onRefresh: _controller.onRefresh,
-            child: CustomScrollView(
-              controller: _controller.scrollController,
-              physics: const AlwaysScrollableScrollPhysics(),
-              slivers: [
-                Obx(
-                  () => _buildAppBar(
-                    colorScheme,
-                    padding,
-                    _controller.topState.value,
+            child: NotificationListener<UserScrollNotification>(
+              onNotification: (notification) {
+                final direction = notification.direction;
+                if (direction == .forward) {
+                  showFab();
+                } else if (direction == .reverse) {
+                  hideFab();
+                }
+                return false;
+              },
+              child: CustomScrollView(
+                controller: _controller.scrollController,
+                physics: const AlwaysScrollableScrollPhysics(),
+                slivers: [
+                  Obx(
+                    () => _buildAppBar(
+                      colorScheme,
+                      padding,
+                      _controller.topState.value,
+                    ),
                   ),
-                ),
-                Obx(() {
-                  final allSortBy =
-                      _controller.topicSortByConf.value?.allSortBy;
-                  if (allSortBy != null && allSortBy.isNotEmpty) {
-                    return SliverPinnedHeader(
-                      backgroundColor: colorScheme.surface,
-                      child: Padding(
-                        padding: EdgeInsets.only(
-                          left: 12 + padding.left,
-                          top: 6,
-                          bottom: 6,
+                  Obx(() {
+                    final allSortBy =
+                        _controller.topicSortByConf.value?.allSortBy;
+                    if (allSortBy != null && allSortBy.isNotEmpty) {
+                      return SliverPinnedHeader(
+                        backgroundColor: colorScheme.surface,
+                        child: Padding(
+                          padding: EdgeInsets.only(
+                            left: 12 + padding.left,
+                            top: 6,
+                            bottom: 6,
+                          ),
+                          child: Builder(
+                            builder: (context) {
+                              return ToggleButtons(
+                                fillColor: colorScheme.secondaryContainer,
+                                selectedColor: colorScheme.onSecondaryContainer,
+                                constraints: const BoxConstraints(
+                                  minWidth: 54,
+                                  minHeight: 24,
+                                ),
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                borderRadius: const .all(.circular(25)),
+                                onPressed: (index) {
+                                  _controller.onSort(allSortBy[index].sortBy!);
+                                  (context as Element).markNeedsBuild();
+                                },
+                                isSelected: allSortBy
+                                    .map((e) => e.sortBy == _controller.sortBy)
+                                    .toList(),
+                                children: allSortBy.map((e) {
+                                  return Text(
+                                    e.sortName!,
+                                    style: const TextStyle(
+                                      fontSize: 13,
+                                      height: 1,
+                                    ),
+                                    strutStyle: const StrutStyle(
+                                      height: 1,
+                                      leading: 0,
+                                      fontSize: 13,
+                                    ),
+                                    textScaler: TextScaler.noScaling,
+                                  );
+                                }).toList(),
+                              );
+                            },
+                          ),
                         ),
-                        child: Builder(
-                          builder: (context) {
-                            return ToggleButtons(
-                              fillColor: colorScheme.secondaryContainer,
-                              selectedColor: colorScheme.onSecondaryContainer,
-                              constraints: const BoxConstraints(
-                                minWidth: 54,
-                                minHeight: 24,
-                              ),
-                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                              borderRadius: const .all(.circular(25)),
-                              onPressed: (index) {
-                                _controller.onSort(allSortBy[index].sortBy!);
-                                (context as Element).markNeedsBuild();
-                              },
-                              isSelected: allSortBy
-                                  .map((e) => e.sortBy == _controller.sortBy)
-                                  .toList(),
-                              children: allSortBy.map((e) {
-                                return Text(
-                                  e.sortName!,
-                                  style: const TextStyle(
-                                    fontSize: 13,
-                                    height: 1,
-                                  ),
-                                  strutStyle: const StrutStyle(
-                                    height: 1,
-                                    leading: 0,
-                                    fontSize: 13,
-                                  ),
-                                  textScaler: TextScaler.noScaling,
-                                );
-                              }).toList(),
-                            );
-                          },
-                        ),
-                      ),
-                    );
-                  }
-                  return const SliverToBoxAdapter();
-                }),
-                SliverPadding(
-                  padding: EdgeInsets.only(
-                    left: padding.left,
-                    right: padding.right,
-                    bottom: padding.bottom + 100,
+                      );
+                    }
+                    return const SliverToBoxAdapter();
+                  }),
+                  SliverPadding(
+                    padding: EdgeInsets.only(
+                      left: padding.left,
+                      right: padding.right,
+                      bottom: padding.bottom + 100,
+                    ),
+                    sliver: buildPage(
+                      Obx(() => _buildBody(_controller.loadingState.value)),
+                    ),
                   ),
-                  sliver: buildPage(
-                    Obx(() => _buildBody(_controller.loadingState.value)),
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
           Positioned(
             right: padding.right + kFloatingActionButtonMargin,
-            bottom: padding.bottom + kFloatingActionButtonMargin,
-            child: FloatingActionButton.extended(
-              onPressed: () {
-                if (_controller.isLogin) {
-                  CreateDynPanel.onCreateDyn(
-                    context,
-                    topic: Pair(
-                      first: int.parse(_controller.topicId),
-                      second: _controller.topicName,
-                    ),
-                  );
-                } else {
-                  SmartDialog.showToast('账号未登录');
-                }
-              },
-              icon: const Icon(CustomIcons.topic_tag, size: 20),
-              label: const Text('参与话题'),
+            bottom: 0,
+            child: SlideTransition(
+              position: fabAnimation,
+              child: Padding(
+                padding: .only(
+                  bottom: padding.bottom + kFloatingActionButtonMargin,
+                ),
+                child: FloatingActionButton.extended(
+                  onPressed: () {
+                    if (_controller.isLogin) {
+                      CreateDynPanel.onCreateDyn(
+                        context,
+                        topic: Pair(
+                          first: int.parse(_controller.topicId),
+                          second: _controller.topicName,
+                        ),
+                      );
+                    } else {
+                      SmartDialog.showToast('账号未登录');
+                    }
+                  },
+                  icon: const Icon(CustomIcons.topic_tag, size: 20),
+                  label: const Text('参与话题'),
+                ),
+              ),
             ),
           ),
         ],

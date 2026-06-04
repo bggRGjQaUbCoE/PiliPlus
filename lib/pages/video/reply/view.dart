@@ -35,6 +35,7 @@ class _VideoReplyPanelState extends State<VideoReplyPanel>
     with
         AutomaticKeepAliveClientMixin,
         SingleTickerProviderStateMixin,
+        BaseFabMixin,
         FabMixin {
   late VideoReplyController _videoReplyController;
 

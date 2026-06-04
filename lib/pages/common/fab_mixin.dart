@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
 
-mixin FabMixin<T extends StatefulWidget> on State<T>, TickerProvider {
-  bool _isFabVisible = true;
-  late final AnimationController _fabAnimationCtr;
-  late final Animation<Offset> fabAnimation;
+mixin BaseFabMixin<T extends StatefulWidget> on State<T>, TickerProvider {
+  late bool _isFabVisible = true;
+  AnimationController get fabAnimationCtr;
+  Animation<Offset> get fabAnimation;
 
-  @override
-  void initState() {
-    super.initState();
-    _fabAnimationCtr = AnimationController(
+  AnimationController _initController() {
+    return AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 100),
     );
-    fabAnimation = _fabAnimationCtr.drive(
+  }
+
+  Animation<Offset> _initAnimation() {
+    return fabAnimationCtr.drive(
       Tween<Offset>(
         begin: Offset.zero,
         end: const Offset(0.0, 1.0),
@@ -23,20 +24,51 @@ mixin FabMixin<T extends StatefulWidget> on State<T>, TickerProvider {
   void showFab() {
     if (!_isFabVisible) {
       _isFabVisible = true;
-      _fabAnimationCtr.reverse();
+      fabAnimationCtr.reverse();
     }
   }
 
   void hideFab() {
     if (_isFabVisible) {
       _isFabVisible = false;
-      _fabAnimationCtr.forward();
+      fabAnimationCtr.forward();
     }
+  }
+}
+
+mixin FabMixin<T extends StatefulWidget> on BaseFabMixin<T> {
+  @override
+  late final AnimationController fabAnimationCtr;
+  @override
+  late final Animation<Offset> fabAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    fabAnimationCtr = _initController();
+    fabAnimation = _initAnimation();
   }
 
   @override
   void dispose() {
-    _fabAnimationCtr.dispose();
+    fabAnimationCtr.dispose();
+    super.dispose();
+  }
+}
+
+mixin LazyFabMixin<T extends StatefulWidget> on BaseFabMixin<T> {
+  AnimationController? _fabAnimationCtr;
+  Animation<Offset>? _fabAnimation;
+
+  @override
+  AnimationController get fabAnimationCtr =>
+      _fabAnimationCtr ??= _initController();
+  @override
+  Animation<Offset> get fabAnimation => _fabAnimation ??= _initAnimation();
+
+  @override
+  void dispose() {
+    _fabAnimationCtr?.dispose();
     super.dispose();
   }
 }

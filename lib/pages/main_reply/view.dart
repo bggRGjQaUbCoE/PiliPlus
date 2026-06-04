@@ -40,7 +40,7 @@ class MainReplyPage extends StatefulWidget {
 }
 
 class _MainReplyPageState extends State<MainReplyPage>
-    with SingleTickerProviderStateMixin, FabMixin {
+    with SingleTickerProviderStateMixin, BaseFabMixin, FabMixin {
   final _controller = Get.put(
     MainReplyController(),
     tag: Utils.generateRandomString(8),

@@ -1,0 +1,418 @@
+$ gh api repos/CometDash77/PiliAvalon-Worksite/actions/jobs/78723273773/logs
+[exit 0]
+2026-05-31T11:50:44.9658378Z Current runner version: '2.334.0'
+2026-05-31T11:50:44.9686030Z ##[group]Runner Image Provisioner
+2026-05-31T11:50:44.9686922Z Hosted Compute Agent
+2026-05-31T11:50:44.9687663Z Version: 20260520.533
+2026-05-31T11:50:44.9688297Z Commit: 189110e25284a9812c124fd27b339e2fb4f2f9db
+2026-05-31T11:50:44.9689020Z Build Date: 2026-05-20T17:44:04Z
+2026-05-31T11:50:44.9689778Z Worker ID: {0cf11ace-425d-4f5e-a71b-55015c5edb56}
+2026-05-31T11:50:44.9690496Z Azure Region: westus
+2026-05-31T11:50:44.9691144Z ##[endgroup]
+2026-05-31T11:50:44.9692951Z ##[group]Operating System
+2026-05-31T11:50:44.9693593Z Ubuntu
+2026-05-31T11:50:44.9694198Z 24.04.4
+2026-05-31T11:50:44.9694707Z LTS
+2026-05-31T11:50:44.9695198Z ##[endgroup]
+2026-05-31T11:50:44.9695847Z ##[group]Runner Image
+2026-05-31T11:50:44.9696448Z Image: ubuntu-24.04
+2026-05-31T11:50:44.9697038Z Version: 20260525.161.1
+2026-05-31T11:50:44.9698327Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260525.161/images/ubuntu/Ubuntu2404-Readme.md
+2026-05-31T11:50:44.9699959Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260525.161
+2026-05-31T11:50:44.9700934Z ##[endgroup]
+2026-05-31T11:50:44.9704105Z ##[group]GITHUB_TOKEN Permissions
+2026-05-31T11:50:44.9706297Z Actions: write
+2026-05-31T11:50:44.9707039Z ArtifactMetadata: write
+2026-05-31T11:50:44.9707655Z Attestations: write
+2026-05-31T11:50:44.9708213Z Checks: write
+2026-05-31T11:50:44.9708827Z CodeQuality: write
+2026-05-31T11:50:44.9709456Z Contents: write
+2026-05-31T11:50:44.9710085Z Deployments: write
+2026-05-31T11:50:44.9710660Z Discussions: write
+2026-05-31T11:50:44.9711211Z Issues: write
+2026-05-31T11:50:44.9712034Z Metadata: read
+2026-05-31T11:50:44.9712580Z Models: read
+2026-05-31T11:50:44.9713242Z Packages: write
+2026-05-31T11:50:44.9713915Z Pages: write
+2026-05-31T11:50:44.9714457Z PullRequests: write
+2026-05-31T11:50:44.9715099Z RepositoryProjects: write
+2026-05-31T11:50:44.9715719Z SecurityEvents: write
+2026-05-31T11:50:44.9716337Z Statuses: write
+2026-05-31T11:50:44.9716976Z VulnerabilityAlerts: read
+2026-05-31T11:50:44.9717572Z ##[endgroup]
+2026-05-31T11:50:44.9719809Z Secret source: Actions
+2026-05-31T11:50:44.9720597Z Prepare workflow directory
+2026-05-31T11:50:45.0066972Z Prepare all required actions
+2026-05-31T11:50:45.0105683Z Getting action download info
+2026-05-31T11:50:45.6147098Z Download action repository 'actions/checkout@v6' (SHA:de0fac2e4500dabe0009e67214ff5f5447ce83dd)
+2026-05-31T11:50:45.7601431Z Download action repository 'actions/setup-java@v5' (SHA:be666c2fcd27ec809703dec50e508c2fdc7f6654)
+2026-05-31T11:50:46.3032577Z Download action repository 'subosito/flutter-action@v2' (SHA:1a449444c387b1966244ae4d4f8c696479add0b2)
+2026-05-31T11:50:46.6116116Z Download action repository 'softprops/action-gh-release@v2' (SHA:3bb12739c298aeb8a4eeaf626c5b8d85266b0e65)
+2026-05-31T11:50:46.9413760Z Download action repository 'actions/upload-artifact@v7' (SHA:043fb46d1a93c77aae656e7c1c64a875d1fc6a0a)
+2026-05-31T11:50:47.1627984Z Getting action download info
+2026-05-31T11:50:47.3456151Z Download action repository 'actions/cache@v5' (SHA:27d5ce7f107fe9357f9df03efb73ab90386fccae)
+2026-05-31T11:50:47.5693236Z Complete job name: Release Android
+2026-05-31T11:50:47.6748651Z ##[group]Run actions/checkout@v6
+2026-05-31T11:50:47.6750007Z with:
+2026-05-31T11:50:47.6750795Z   fetch-depth: 0
+2026-05-31T11:50:47.6751978Z   repository: CometDash77/PiliAvalon-Worksite
+2026-05-31T11:50:47.6762900Z   token: ***
+2026-05-31T11:50:47.6763721Z   ssh-strict: true
+2026-05-31T11:50:47.6764558Z   ssh-user: git
+2026-05-31T11:50:47.6765421Z   persist-credentials: true
+2026-05-31T11:50:47.6766340Z   clean: true
+2026-05-31T11:50:47.6767214Z   sparse-checkout-cone-mode: true
+2026-05-31T11:50:47.6768207Z   fetch-tags: false
+2026-05-31T11:50:47.6769046Z   show-progress: true
+2026-05-31T11:50:47.6769897Z   lfs: false
+2026-05-31T11:50:47.6770678Z   submodules: false
+2026-05-31T11:50:47.6771939Z   set-safe-directory: true
+2026-05-31T11:50:47.6774099Z ##[endgroup]
+2026-05-31T11:50:47.7864266Z Syncing repository: CometDash77/PiliAvalon-Worksite
+2026-05-31T11:50:47.7867506Z ##[group]Getting Git version info
+2026-05-31T11:50:47.7869139Z Working directory is '/home/runner/work/PiliAvalon-Worksite/PiliAvalon-Worksite'
+2026-05-31T11:50:47.7871292Z [command]/usr/bin/git version
+2026-05-31T11:50:47.7951357Z git version 2.54.0
+2026-05-31T11:50:47.7976403Z ##[endgroup]
+2026-05-31T11:50:47.7991805Z Temporarily overriding HOME='/home/runner/work/_temp/d34b468b-ce60-44da-8048-0f584e31506a' before making global git config changes
+2026-05-31T11:50:47.7994506Z Adding repository directory to the temporary git global config as a safe directory
+2026-05-31T11:50:47.7998288Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/PiliAvalon-Worksite/PiliAvalon-Worksite
+2026-05-31T11:50:47.8054106Z Deleting the contents of '/home/runner/work/PiliAvalon-Worksite/PiliAvalon-Worksite'
+2026-05-31T11:50:47.8058209Z ##[group]Initializing the repository
+2026-05-31T11:50:47.8064757Z [command]/usr/bin/git init /home/runner/work/PiliAvalon-Worksite/PiliAvalon-Worksite
+2026-05-31T11:50:47.8204019Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-05-31T11:50:47.8206065Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-05-31T11:50:47.8208004Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-05-31T11:50:47.8209762Z hint: call:
+2026-05-31T11:50:47.8210902Z hint:
+2026-05-31T11:50:47.8212724Z hint: 	git config --global init.defaultBranch <name>
+2026-05-31T11:50:47.8214562Z hint:
+2026-05-31T11:50:47.8216195Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-05-31T11:50:47.8218022Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-05-31T11:50:47.8219486Z hint:
+2026-05-31T11:50:47.8220525Z hint: 	git branch -m <name>
+2026-05-31T11:50:47.8222131Z hint:
+2026-05-31T11:50:47.8223368Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-05-31T11:50:47.8225575Z Initialized empty Git repository in /home/runner/work/PiliAvalon-Worksite/PiliAvalon-Worksite/.git/
+2026-05-31T11:50:47.8229396Z [command]/usr/bin/git remote add origin https://github.com/CometDash77/PiliAvalon-Worksite
+2026-05-31T11:50:47.8270234Z ##[endgroup]
+2026-05-31T11:50:47.8271881Z ##[group]Disabling automatic garbage collection
+2026-05-31T11:50:47.8274134Z [command]/usr/bin/git config --local gc.auto 0
+2026-05-31T11:50:47.8307332Z ##[endgroup]
+2026-05-31T11:50:47.8309147Z ##[group]Setting up auth
+2026-05-31T11:50:47.8310226Z Removing SSH command configuration
+2026-05-31T11:50:47.8314539Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-05-31T11:50:47.8351727Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-05-31T11:50:47.8715077Z Removing HTTP extra header
+2026-05-31T11:50:47.8722078Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-05-31T11:50:47.8755887Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-05-31T11:50:47.8974834Z Removing includeIf entries pointing to credentials config files
+2026-05-31T11:50:47.8982062Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-05-31T11:50:47.9013145Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-05-31T11:50:47.9234936Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-201ee6c4-8947-4cba-ad80-76efc6ad530f.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-05-31T11:50:47.9273836Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/PiliAvalon-Worksite/PiliAvalon-Worksite/.git.path /home/runner/work/_temp/git-credentials-201ee6c4-8947-4cba-ad80-76efc6ad530f.config
+2026-05-31T11:50:47.9304694Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/PiliAvalon-Worksite/PiliAvalon-Worksite/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-201ee6c4-8947-4cba-ad80-76efc6ad530f.config
+2026-05-31T11:50:47.9338761Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-201ee6c4-8947-4cba-ad80-76efc6ad530f.config
+2026-05-31T11:50:47.9370570Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-201ee6c4-8947-4cba-ad80-76efc6ad530f.config
+2026-05-31T11:50:47.9410574Z ##[endgroup]
+2026-05-31T11:50:47.9412437Z ##[group]Fetching the repository
+2026-05-31T11:50:47.9423282Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules origin +refs/heads/*:refs/remotes/origin/* +refs/tags/*:refs/tags/*
+2026-05-31T11:50:51.4445245Z From https://github.com/CometDash77/PiliAvalon-Worksite
+2026-05-31T11:50:51.4445875Z  * [new branch]          governance             -> origin/governance
+2026-05-31T11:50:51.4446315Z  * [new branch]          main                   -> origin/main
+2026-05-31T11:50:51.4446905Z  * [new branch]          phase-1-shielding-acceptance-fixes -> origin/phase-1-shielding-acceptance-fixes
+2026-05-31T11:50:51.4447558Z  * [new branch]          phase-1-shielding-core -> origin/phase-1-shielding-core
+2026-05-31T11:50:51.4448247Z  * [new tag]             phase-1-prebuild.26628409138 -> phase-1-prebuild.26628409138
+2026-05-31T11:50:51.4448914Z  * [new tag]             phase-1-prebuild.26674691497 -> phase-1-prebuild.26674691497
+2026-05-31T11:50:51.4449573Z  * [new tag]             phase-1-prebuild.26675065521 -> phase-1-prebuild.26675065521
+2026-05-31T11:50:51.4450395Z  * [new tag]             phase-1-prebuild.26677982092 -> phase-1-prebuild.26677982092
+2026-05-31T11:50:51.4451204Z  * [new tag]             phase-1-prebuild.26678247652 -> phase-1-prebuild.26678247652
+2026-05-31T11:50:51.4452384Z  * [new tag]             phase-1-prebuild.26679987266 -> phase-1-prebuild.26679987266
+2026-05-31T11:50:51.4453299Z  * [new tag]             phase-1-prebuild.26680259984 -> phase-1-prebuild.26680259984
+2026-05-31T11:50:51.4454229Z  * [new tag]             phase-1-prebuild.26707279023 -> phase-1-prebuild.26707279023
+2026-05-31T11:50:51.4485229Z [command]/usr/bin/git branch --list --remote origin/phase-1-shielding-core
+2026-05-31T11:50:51.4535537Z   origin/phase-1-shielding-core
+2026-05-31T11:50:51.4547114Z [command]/usr/bin/git rev-parse refs/remotes/origin/phase-1-shielding-core
+2026-05-31T11:50:51.4571974Z a5d0d075cd80a35173355a52133057c7cec1679b
+2026-05-31T11:50:51.4583688Z ##[endgroup]
+2026-05-31T11:50:51.4584666Z ##[group]Determining the checkout info
+2026-05-31T11:50:51.4585750Z ##[endgroup]
+2026-05-31T11:50:51.4586492Z [command]/usr/bin/git sparse-checkout disable
+2026-05-31T11:50:51.4642310Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-05-31T11:50:51.4680074Z ##[group]Checking out the ref
+2026-05-31T11:50:51.4685004Z [command]/usr/bin/git checkout --progress --force -B phase-1-shielding-core refs/remotes/origin/phase-1-shielding-core
+2026-05-31T11:50:51.6823909Z Switched to a new branch 'phase-1-shielding-core'
+2026-05-31T11:50:51.6825533Z branch 'phase-1-shielding-core' set up to track 'origin/phase-1-shielding-core'.
+2026-05-31T11:50:51.6849049Z ##[endgroup]
+2026-05-31T11:50:51.6899381Z [command]/usr/bin/git log -1 --format=%H
+2026-05-31T11:50:51.6926966Z a5d0d075cd80a35173355a52133057c7cec1679b
+2026-05-31T11:50:51.7214881Z ##[group]Run actions/setup-java@v5
+2026-05-31T11:50:51.7215234Z with:
+2026-05-31T11:50:51.7215443Z   distribution: zulu
+2026-05-31T11:50:51.7215658Z   java-version: 17
+2026-05-31T11:50:51.7215860Z   cache: gradle
+2026-05-31T11:50:51.7216273Z   cache-dependency-path: android/*.gradle*
+android/**/gradle-wrapper.properties
+
+2026-05-31T11:50:51.7216886Z   java-package: jdk
+2026-05-31T11:50:51.7217103Z   check-latest: false
+2026-05-31T11:50:51.7217314Z   server-id: github
+2026-05-31T11:50:51.7217529Z   server-username: GITHUB_ACTOR
+2026-05-31T11:50:51.7217785Z   server-password: GITHUB_TOKEN
+2026-05-31T11:50:51.7218029Z   overwrite-settings: true
+2026-05-31T11:50:51.7218253Z   job-status: success
+2026-05-31T11:50:51.7221403Z   token: ***
+2026-05-31T11:50:51.7221933Z ##[endgroup]
+2026-05-31T11:50:51.8779487Z ##[group]Installed distributions
+2026-05-31T11:50:51.8805962Z Trying to resolve the latest version from remote
+2026-05-31T11:50:51.9316169Z Resolved latest version as 17.0.19+10
+2026-05-31T11:50:51.9316965Z Trying to download...
+2026-05-31T11:50:51.9317971Z Downloading Java 17.0.19+10 (Zulu) from https://cdn.azul.com/zulu/bin/zulu17.66.19-ca-crac-jdk17.0.19-linux_x64.tar.gz ...
+2026-05-31T11:50:54.2351223Z Extracting Java archive...
+2026-05-31T11:50:54.2477680Z [command]/usr/bin/tar xz --warning=no-unknown-keyword --overwrite -C /home/runner/work/_temp/858d6168-4ce5-4536-899a-9043f480d445 -f /home/runner/work/_temp/6a460eb7-12c5-4a22-b5ae-7e32f839b5cc
+2026-05-31T11:50:56.8789803Z Java 17.0.19+10 was downloaded
+2026-05-31T11:50:56.8812394Z Setting Java 17.0.19+10 as the default
+2026-05-31T11:50:56.8812936Z Creating toolchains.xml for JDK version 17 from zulu
+2026-05-31T11:50:56.8882541Z Writing to /home/runner/.m2/toolchains.xml
+2026-05-31T11:50:56.8882938Z 
+2026-05-31T11:50:56.8884201Z Java configuration:
+2026-05-31T11:50:56.8884442Z   Distribution: zulu
+2026-05-31T11:50:56.8884674Z   Version: 17.0.19+10
+2026-05-31T11:50:56.8885007Z   Path: /opt/hostedtoolcache/Java_Zulu_jdk/17.0.19-10/x64
+2026-05-31T11:50:56.8885263Z 
+2026-05-31T11:50:56.8885770Z ##[endgroup]
+2026-05-31T11:50:56.8901080Z Creating settings.xml with server-id: github
+2026-05-31T11:50:56.8901750Z Writing to /home/runner/.m2/settings.xml
+2026-05-31T11:50:57.3814653Z Cache hit for: setup-java-Linux-x64-gradle-2a7028e5668be7d861a04aba81c7d828aeaa9dba20d053d306e4cb7a113b3c86
+2026-05-31T11:50:58.6706938Z Received 0 of 3334273512 (0.0%), 0.0 MBs/sec
+2026-05-31T11:50:59.6711940Z Received 96468992 of 3334273512 (2.9%), 46.0 MBs/sec
+2026-05-31T11:51:00.6721970Z Received 222298112 of 3334273512 (6.7%), 70.6 MBs/sec
+2026-05-31T11:51:01.6718675Z Received 268435456 of 3334273512 (8.1%), 64.0 MBs/sec
+2026-05-31T11:51:02.6717817Z Received 352321536 of 3334273512 (10.6%), 67.2 MBs/sec
+2026-05-31T11:51:03.6718010Z Received 402653184 of 3334273512 (12.1%), 64.0 MBs/sec
+2026-05-31T11:51:04.6750747Z Received 536870912 of 3334273512 (16.1%), 73.1 MBs/sec
+2026-05-31T11:51:05.6750070Z Received 671088640 of 3334273512 (20.1%), 80.0 MBs/sec
+2026-05-31T11:51:06.6748162Z Received 805306368 of 3334273512 (24.2%), 85.3 MBs/sec
+2026-05-31T11:51:07.6748690Z Received 939524096 of 3334273512 (28.2%), 89.6 MBs/sec
+2026-05-31T11:51:08.6749514Z Received 1073741824 of 3334273512 (32.2%), 93.1 MBs/sec
+2026-05-31T11:51:09.6751811Z Received 1207959552 of 3334273512 (36.2%), 96.0 MBs/sec
+2026-05-31T11:51:10.6754981Z Received 1342177280 of 3334273512 (40.3%), 98.4 MBs/sec
+2026-05-31T11:51:11.6777770Z Received 1476395008 of 3334273512 (44.3%), 100.5 MBs/sec
+2026-05-31T11:51:12.6780987Z Received 1610612736 of 3334273512 (48.3%), 102.4 MBs/sec
+2026-05-31T11:51:13.6784439Z Received 1744830464 of 3334273512 (52.3%), 103.9 MBs/sec
+2026-05-31T11:51:14.6802728Z Received 1879048192 of 3334273512 (56.4%), 105.3 MBs/sec
+2026-05-31T11:51:15.6800264Z Received 2013265920 of 3334273512 (60.4%), 106.6 MBs/sec
+2026-05-31T11:51:16.6802976Z Received 2147483648 of 3334273512 (64.4%), 107.7 MBs/sec
+2026-05-31T11:51:17.6810183Z Received 2281701376 of 3334273512 (68.4%), 108.7 MBs/sec
+2026-05-31T11:51:18.6969470Z Received 2415919104 of 3334273512 (72.5%), 109.6 MBs/sec
+2026-05-31T11:51:19.7032668Z Received 2545942528 of 3334273512 (76.4%), 110.2 MBs/sec
+2026-05-31T11:51:20.6986695Z Received 2663383040 of 3334273512 (79.9%), 110.3 MBs/sec
+2026-05-31T11:51:21.7024215Z Received 2785017856 of 3334273512 (83.5%), 110.5 MBs/sec
+2026-05-31T11:51:22.7102695Z Received 2902458368 of 3334273512 (87.0%), 110.6 MBs/sec
+2026-05-31T11:51:23.7109753Z Received 3040870400 of 3334273512 (91.2%), 111.4 MBs/sec
+2026-05-31T11:51:24.7122719Z Received 3158310912 of 3334273512 (94.7%), 111.4 MBs/sec
+2026-05-31T11:51:25.7106153Z Received 3267362816 of 3334273512 (98.0%), 111.1 MBs/sec
+2026-05-31T11:51:26.1776664Z Received 3334273512 of 3334273512 (100.0%), 111.6 MBs/sec
+2026-05-31T11:51:26.1799957Z Cache Size: ~3180 MB (3334273512 B)
+2026-05-31T11:51:26.1862141Z [command]/usr/bin/tar -xf /home/runner/work/_temp/8795b936-37ce-4155-950d-e75c50ed6792/cache.tzst -P -C /home/runner/work/PiliAvalon-Worksite/PiliAvalon-Worksite --use-compress-program unzstd
+2026-05-31T11:51:45.5230866Z Cache restored successfully
+2026-05-31T11:51:45.6674184Z Cache restored from key: setup-java-Linux-x64-gradle-2a7028e5668be7d861a04aba81c7d828aeaa9dba20d053d306e4cb7a113b3c86
+2026-05-31T11:51:45.7095018Z ##[group]Run subosito/flutter-action@v2
+2026-05-31T11:51:45.7095553Z with:
+2026-05-31T11:51:45.7095897Z   channel: stable
+2026-05-31T11:51:45.7096286Z   flutter-version-file: pubspec.yaml
+2026-05-31T11:51:45.7096743Z   cache: true
+2026-05-31T11:51:45.7097083Z   architecture: X64
+2026-05-31T11:51:45.7097472Z   pub-cache-path: default
+2026-05-31T11:51:45.7097865Z   dry-run: false
+2026-05-31T11:51:45.7098317Z   git-source: https://github.com/flutter/flutter.git
+2026-05-31T11:51:45.7098849Z env:
+2026-05-31T11:51:45.7099290Z   JAVA_HOME: /opt/hostedtoolcache/Java_Zulu_jdk/17.0.19-10/x64
+2026-05-31T11:51:45.7100004Z   JAVA_HOME_17_X64: /opt/hostedtoolcache/Java_Zulu_jdk/17.0.19-10/x64
+2026-05-31T11:51:45.7100588Z ##[endgroup]
+2026-05-31T11:51:45.7583165Z ##[group]Run chmod +x "$GITHUB_ACTION_PATH/setup.sh"
+2026-05-31T11:51:45.7583758Z [36;1mchmod +x "$GITHUB_ACTION_PATH/setup.sh"[0m
+2026-05-31T11:51:45.7624308Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-05-31T11:51:45.7624959Z env:
+2026-05-31T11:51:45.7625409Z   JAVA_HOME: /opt/hostedtoolcache/Java_Zulu_jdk/17.0.19-10/x64
+2026-05-31T11:51:45.7626153Z   JAVA_HOME_17_X64: /opt/hostedtoolcache/Java_Zulu_jdk/17.0.19-10/x64
+2026-05-31T11:51:45.7626749Z ##[endgroup]
+2026-05-31T11:51:45.9127792Z ##[group]Run $GITHUB_ACTION_PATH/setup.sh -p \
+2026-05-31T11:51:45.9128201Z [36;1m$GITHUB_ACTION_PATH/setup.sh -p \[0m
+2026-05-31T11:51:45.9128496Z [36;1m  -n '' \[0m
+2026-05-31T11:51:45.9128727Z [36;1m  -f 'pubspec.yaml' \[0m
+2026-05-31T11:51:45.9128974Z [36;1m  -a 'X64' \[0m
+2026-05-31T11:51:45.9129183Z [36;1m  -k '' \[0m
+2026-05-31T11:51:45.9129383Z [36;1m  -c '' \[0m
+2026-05-31T11:51:45.9129581Z [36;1m  -l '' \[0m
+2026-05-31T11:51:45.9129780Z [36;1m  -d 'default' \[0m
+2026-05-31T11:51:45.9130088Z [36;1m  -g 'https://github.com/flutter/flutter.git' \[0m
+2026-05-31T11:51:45.9130431Z [36;1m  stable[0m
+2026-05-31T11:51:45.9156027Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-05-31T11:51:45.9156396Z env:
+2026-05-31T11:51:45.9156668Z   JAVA_HOME: /opt/hostedtoolcache/Java_Zulu_jdk/17.0.19-10/x64
+2026-05-31T11:51:45.9157096Z   JAVA_HOME_17_X64: /opt/hostedtoolcache/Java_Zulu_jdk/17.0.19-10/x64
+2026-05-31T11:51:45.9157447Z ##[endgroup]
+2026-05-31T11:51:48.7504379Z ##[group]Run actions/cache@v5
+2026-05-31T11:51:48.7504637Z with:
+2026-05-31T11:51:48.7504899Z   path: /opt/hostedtoolcache/flutter/stable-3.44.0-x64
+2026-05-31T11:51:48.7505387Z   key: flutter-linux-stable-3.44.0-x64-559ffa3f75e7402d65a8def9c28389a9b2e6fe42
+2026-05-31T11:51:48.7505834Z   enableCrossOsArchive: false
+2026-05-31T11:51:48.7506087Z   fail-on-cache-miss: false
+2026-05-31T11:51:48.7506321Z   lookup-only: false
+2026-05-31T11:51:48.7506543Z   save-always: false
+2026-05-31T11:51:48.7506746Z env:
+2026-05-31T11:51:48.7507009Z   JAVA_HOME: /opt/hostedtoolcache/Java_Zulu_jdk/17.0.19-10/x64
+2026-05-31T11:51:48.7507435Z   JAVA_HOME_17_X64: /opt/hostedtoolcache/Java_Zulu_jdk/17.0.19-10/x64
+2026-05-31T11:51:48.7507789Z ##[endgroup]
+2026-05-31T11:51:49.1358710Z Cache hit for: flutter-linux-stable-3.44.0-x64-559ffa3f75e7402d65a8def9c28389a9b2e6fe42
+2026-05-31T11:51:50.4720533Z Received 0 of 1687619192 (0.0%), 0.0 MBs/sec
+2026-05-31T11:51:51.4725018Z Received 100663296 of 1687619192 (6.0%), 48.0 MBs/sec
+2026-05-31T11:51:52.4735171Z Received 222298112 of 1687619192 (13.2%), 70.6 MBs/sec
+2026-05-31T11:51:53.4742925Z Received 364904448 of 1687619192 (21.6%), 87.0 MBs/sec
+2026-05-31T11:51:54.4735414Z Received 457179136 of 1687619192 (27.1%), 87.2 MBs/sec
+2026-05-31T11:51:55.4744477Z Received 616562688 of 1687619192 (36.5%), 98.0 MBs/sec
+2026-05-31T11:51:56.4762965Z Received 775946240 of 1687619192 (46.0%), 105.7 MBs/sec
+2026-05-31T11:51:57.4778618Z Received 935329792 of 1687619192 (55.4%), 111.4 MBs/sec
+2026-05-31T11:51:58.4783673Z Received 1073741824 of 1687619192 (63.6%), 113.7 MBs/sec
+2026-05-31T11:51:59.4840232Z Received 1237319680 of 1687619192 (73.3%), 117.9 MBs/sec
+2026-05-31T11:52:00.4834510Z Received 1388314624 of 1687619192 (82.3%), 120.3 MBs/sec
+2026-05-31T11:52:01.4865737Z Received 1543503872 of 1687619192 (91.5%), 122.6 MBs/sec
+2026-05-31T11:52:02.4873196Z Received 1675036280 of 1687619192 (99.3%), 122.8 MBs/sec
+2026-05-31T11:52:02.5555870Z Received 1687619192 of 1687619192 (100.0%), 123.0 MBs/sec
+2026-05-31T11:52:02.5558220Z Cache Size: ~1609 MB (1687619192 B)
+2026-05-31T11:52:02.5604151Z [command]/usr/bin/tar -xf /home/runner/work/_temp/695cc7cb-6c0c-4749-a30a-00b4baeeda65/cache.tzst -P -C /home/runner/work/PiliAvalon-Worksite/PiliAvalon-Worksite --use-compress-program unzstd
+2026-05-31T11:52:07.4008355Z Cache restored successfully
+2026-05-31T11:52:07.5125601Z Cache restored from key: flutter-linux-stable-3.44.0-x64-559ffa3f75e7402d65a8def9c28389a9b2e6fe42
+2026-05-31T11:52:08.2385493Z ##[group]Run actions/cache@v5
+2026-05-31T11:52:08.2385796Z with:
+2026-05-31T11:52:08.2386050Z   path: /home/runner/.pub-cache
+2026-05-31T11:52:08.2386977Z   key: flutter-pub-linux-stable-3.44.0-x64-559ffa3f75e7402d65a8def9c28389a9b2e6fe42-a897e84c32f6353b5a66fdc6bf7375453bc1eff8e1c98c502d5b9f0f7865ed86
+2026-05-31T11:52:08.2402650Z   enableCrossOsArchive: false
+2026-05-31T11:52:08.2402984Z   fail-on-cache-miss: false
+2026-05-31T11:52:08.2403244Z   lookup-only: false
+2026-05-31T11:52:08.2403469Z   save-always: false
+2026-05-31T11:52:08.2403681Z env:
+2026-05-31T11:52:08.2403955Z   JAVA_HOME: /opt/hostedtoolcache/Java_Zulu_jdk/17.0.19-10/x64
+2026-05-31T11:52:08.2404397Z   JAVA_HOME_17_X64: /opt/hostedtoolcache/Java_Zulu_jdk/17.0.19-10/x64
+2026-05-31T11:52:08.2404748Z ##[endgroup]
+2026-05-31T11:52:09.1045979Z Cache hit for: flutter-pub-linux-stable-3.44.0-x64-559ffa3f75e7402d65a8def9c28389a9b2e6fe42-a897e84c32f6353b5a66fdc6bf7375453bc1eff8e1c98c502d5b9f0f7865ed86
+2026-05-31T11:52:10.3956927Z Received 0 of 616883816 (0.0%), 0.0 MBs/sec
+2026-05-31T11:52:11.3959895Z Received 100663296 of 616883816 (16.3%), 48.0 MBs/sec
+2026-05-31T11:52:12.4002547Z Received 260046848 of 616883816 (42.2%), 82.6 MBs/sec
+2026-05-31T11:52:13.3972132Z Received 402653184 of 616883816 (65.3%), 96.0 MBs/sec
+2026-05-31T11:52:14.4038344Z Received 603979776 of 616883816 (97.9%), 115.1 MBs/sec
+2026-05-31T11:52:14.4515611Z Received 616883816 of 616883816 (100.0%), 116.3 MBs/sec
+2026-05-31T11:52:14.4518239Z Cache Size: ~588 MB (616883816 B)
+2026-05-31T11:52:14.4636391Z [command]/usr/bin/tar -xf /home/runner/work/_temp/0c41457d-06aa-46fd-a0f4-a4adb307146b/cache.tzst -P -C /home/runner/work/PiliAvalon-Worksite/PiliAvalon-Worksite --use-compress-program unzstd
+2026-05-31T11:52:17.6218915Z Cache restored successfully
+2026-05-31T11:52:17.6563862Z Cache restored from key: flutter-pub-linux-stable-3.44.0-x64-559ffa3f75e7402d65a8def9c28389a9b2e6fe42-a897e84c32f6353b5a66fdc6bf7375453bc1eff8e1c98c502d5b9f0f7865ed86
+2026-05-31T11:52:17.6722779Z ##[group]Run $GITHUB_ACTION_PATH/setup.sh \
+2026-05-31T11:52:17.6723150Z [36;1m$GITHUB_ACTION_PATH/setup.sh \[0m
+2026-05-31T11:52:17.6723440Z [36;1m  -n '3.44.0' \[0m
+2026-05-31T11:52:17.6723682Z [36;1m  -a 'x64' \[0m
+2026-05-31T11:52:17.6724013Z [36;1m  -c '/opt/hostedtoolcache/flutter/stable-3.44.0-x64' \[0m
+2026-05-31T11:52:17.6724437Z [36;1m  -d '/home/runner/.pub-cache' \[0m
+2026-05-31T11:52:17.6724898Z [36;1m  stable[0m
+2026-05-31T11:52:17.6816058Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-05-31T11:52:17.6816417Z env:
+2026-05-31T11:52:17.6816705Z   JAVA_HOME: /opt/hostedtoolcache/Java_Zulu_jdk/17.0.19-10/x64
+2026-05-31T11:52:17.6817145Z   JAVA_HOME_17_X64: /opt/hostedtoolcache/Java_Zulu_jdk/17.0.19-10/x64
+2026-05-31T11:52:17.6817501Z ##[endgroup]
+2026-05-31T11:52:17.8250990Z ##[group]Run lib/scripts/patch.ps1 android
+2026-05-31T11:52:17.8251377Z [36;1mlib/scripts/patch.ps1 android[0m
+2026-05-31T11:52:17.8275873Z shell: /usr/bin/pwsh -command ". '{0}'"
+2026-05-31T11:52:17.8276173Z env:
+2026-05-31T11:52:17.8276462Z   JAVA_HOME: /opt/hostedtoolcache/Java_Zulu_jdk/17.0.19-10/x64
+2026-05-31T11:52:17.8276914Z   JAVA_HOME_17_X64: /opt/hostedtoolcache/Java_Zulu_jdk/17.0.19-10/x64
+2026-05-31T11:52:17.8277363Z   FLUTTER_ROOT: /opt/hostedtoolcache/flutter/stable-3.44.0-x64/flutter
+2026-05-31T11:52:17.8277748Z   PUB_CACHE: /home/runner/.pub-cache
+2026-05-31T11:52:17.8278029Z ##[endgroup]
+2026-05-31T11:52:25.0919212Z Updating files:  63% (9939/15659)
+2026-05-31T11:52:25.1039867Z Updating files:  64% (10022/15659)
+2026-05-31T11:52:25.1171046Z Updating files:  65% (10179/15659)
+2026-05-31T11:52:25.1294066Z Updating files:  66% (10335/15659)
+2026-05-31T11:52:25.1406567Z Updating files:  67% (10492/15659)
+2026-05-31T11:52:25.1517222Z Updating files:  68% (10649/15659)
+2026-05-31T11:52:25.1630484Z Updating files:  69% (10805/15659)
+2026-05-31T11:52:25.1739057Z Updating files:  70% (10962/15659)
+2026-05-31T11:52:25.1854896Z Updating files:  71% (11118/15659)
+2026-05-31T11:52:25.1969283Z Updating files:  72% (11275/15659)
+2026-05-31T11:52:25.2079634Z Updating files:  73% (11432/15659)
+2026-05-31T11:52:25.2195975Z Updating files:  74% (11588/15659)
+2026-05-31T11:52:25.2477151Z Updating files:  75% (11745/15659)
+2026-05-31T11:52:25.2808822Z Updating files:  76% (11901/15659)
+2026-05-31T11:52:25.3113272Z Updating files:  77% (12058/15659)
+2026-05-31T11:52:25.3411376Z Updating files:  78% (12215/15659)
+2026-05-31T11:52:25.3683271Z Updating files:  79% (12371/15659)
+2026-05-31T11:52:25.3949378Z Updating files:  80% (12528/15659)
+2026-05-31T11:52:25.4213124Z Updating files:  81% (12684/15659)
+2026-05-31T11:52:25.4379193Z Updating files:  82% (12841/15659)
+2026-05-31T11:52:25.4594525Z Updating files:  83% (12997/15659)
+2026-05-31T11:52:25.4818372Z Updating files:  84% (13154/15659)
+2026-05-31T11:52:25.4989866Z Updating files:  85% (13311/15659)
+2026-05-31T11:52:25.5127929Z Updating files:  86% (13467/15659)
+2026-05-31T11:52:25.5312703Z Updating files:  87% (13624/15659)
+2026-05-31T11:52:25.5424343Z Updating files:  88% (13780/15659)
+2026-05-31T11:52:25.5593947Z Updating files:  89% (13937/15659)
+2026-05-31T11:52:25.5737638Z Updating files:  90% (14094/15659)
+2026-05-31T11:52:25.5950108Z Updating files:  91% (14250/15659)
+2026-05-31T11:52:25.6164014Z Updating files:  92% (14407/15659)
+2026-05-31T11:52:25.6283799Z Updating files:  93% (14563/15659)
+2026-05-31T11:52:25.6393343Z Updating files:  94% (14720/15659)
+2026-05-31T11:52:25.6562726Z Updating files:  95% (14877/15659)
+2026-05-31T11:52:25.6772751Z Updating files:  96% (15033/15659)
+2026-05-31T11:52:25.6974315Z Updating files:  97% (15190/15659)
+2026-05-31T11:52:25.7124658Z Updating files:  98% (15346/15659)
+2026-05-31T11:52:25.7246002Z Updating files:  99% (15503/15659)
+2026-05-31T11:52:25.7246622Z Updating files: 100% (15659/15659)
+2026-05-31T11:52:25.7435563Z Updating files: 100% (15659/15659), done.
+2026-05-31T11:52:25.7436829Z HEAD is now at 559ffa3f75e [flutter-3.44-candidate.0] Sync engine.version to 4c525dac5ebe5971c5708ef73558ed8edcf4a362 (#186587)
+2026-05-31T11:52:26.2364985Z No local changes to save
+2026-05-31T11:52:26.2845632Z Auto-merging packages/flutter/lib/src/widgets/overscroll_indicator.dart
+2026-05-31T11:52:26.3034250Z [stable 371bb4e945b] Revert "Reimplemented StretchingOverscrollIndicator with Simulation ported from Android 12. (#173849)"
+2026-05-31T11:52:26.3035298Z  Date: Sun May 31 11:52:26 2026 +0000
+2026-05-31T11:52:26.3036212Z  3 files changed, 141 insertions(+), 292 deletions(-)
+2026-05-31T11:52:26.5208778Z 362b1de29974ffc1ed6faa826e1df870d7bec75f reverted
+2026-05-31T11:52:26.5311149Z No stash entries found.
+2026-05-31T11:52:26.5439231Z lib/scripts/modal_barrier.patch applied
+2026-05-31T11:52:26.5568738Z lib/scripts/text_selection.patch applied
+2026-05-31T11:52:26.5679347Z lib/scripts/mouse_cursor.patch applied
+2026-05-31T11:52:26.5788866Z lib/scripts/image_anim.patch applied
+2026-05-31T11:52:26.5896567Z lib/scripts/layout_builder.patch applied
+2026-05-31T11:52:26.6006025Z lib/scripts/bottom_sheet_android.patch applied
+2026-05-31T11:52:26.6118157Z lib/scripts/scroll_view.patch applied
+2026-05-31T11:52:26.6240684Z lib/scripts/navigator.patch applied
+2026-05-31T11:52:26.7948737Z ##[group]Run if [ -z "" ] || [ -z "" ] || [ -z "" ] || [ -z "" ]; then
+2026-05-31T11:52:26.7949287Z [36;1mif [ -z "" ] || [ -z "" ] || [ -z "" ] || [ -z "" ]; then[0m
+2026-05-31T11:52:26.7949807Z [36;1m  echo "Release signing secrets are required for cover-install compatible APKs." >&2[0m
+2026-05-31T11:52:26.7950288Z [36;1m  exit 1[0m
+2026-05-31T11:52:26.7950499Z [36;1mfi[0m
+2026-05-31T11:52:26.7950768Z [36;1mecho "" | base64 --decode > android/app/key.jks[0m
+2026-05-31T11:52:26.7951183Z [36;1mecho storeFile='key.jks' >> android/key.properties[0m
+2026-05-31T11:52:26.7951880Z [36;1mecho storePassword='' >> android/key.properties[0m
+2026-05-31T11:52:26.7952273Z [36;1mecho keyAlias='' >> android/key.properties[0m
+2026-05-31T11:52:26.7952630Z [36;1mecho keyPassword='' >> android/key.properties[0m
+2026-05-31T11:52:26.7978654Z shell: /usr/bin/bash -e {0}
+2026-05-31T11:52:26.7978925Z env:
+2026-05-31T11:52:26.7979265Z   JAVA_HOME: /opt/hostedtoolcache/Java_Zulu_jdk/17.0.19-10/x64
+2026-05-31T11:52:26.7979741Z   JAVA_HOME_17_X64: /opt/hostedtoolcache/Java_Zulu_jdk/17.0.19-10/x64
+2026-05-31T11:52:26.7980225Z   FLUTTER_ROOT: /opt/hostedtoolcache/flutter/stable-3.44.0-x64/flutter
+2026-05-31T11:52:26.7980607Z   PUB_CACHE: /home/runner/.pub-cache
+2026-05-31T11:52:26.7980889Z ##[endgroup]
+2026-05-31T11:52:26.8030441Z Release signing secrets are required for cover-install compatible APKs.
+2026-05-31T11:52:26.8042499Z ##[error]Process completed with exit code 1.
+2026-05-31T11:52:26.8245617Z Post job cleanup.
+2026-05-31T11:52:26.8366215Z Post job cleanup.
+2026-05-31T11:52:26.9853509Z Post job cleanup.
+2026-05-31T11:52:27.0870010Z [command]/usr/bin/git version
+2026-05-31T11:52:27.0911352Z git version 2.54.0
+2026-05-31T11:52:27.0948574Z Copying '/home/runner/.gitconfig' to '/home/runner/work/_temp/ed388ac5-1896-4497-a152-72e798b212ef/.gitconfig'
+2026-05-31T11:52:27.0958620Z Temporarily overriding HOME='/home/runner/work/_temp/ed388ac5-1896-4497-a152-72e798b212ef' before making global git config changes
+2026-05-31T11:52:27.0960096Z Adding repository directory to the temporary git global config as a safe directory
+2026-05-31T11:52:27.0965598Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/PiliAvalon-Worksite/PiliAvalon-Worksite
+2026-05-31T11:52:27.0998207Z Removing SSH command configuration
+2026-05-31T11:52:27.1005556Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-05-31T11:52:27.1040972Z [command]/usr/bin/git submodule fo
+
+[… truncated 3496 chars …]

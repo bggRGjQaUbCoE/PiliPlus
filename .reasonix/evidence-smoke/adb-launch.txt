@@ -1,0 +1,8 @@
+Unknown command: close-system-dialogs
+Starting: Intent { act=android.intent.action.MAIN cat=[android.intent.category.LAUNCHER] cmp=com.example.piliplus.dev/com.example.piliplus.MainActivity }
+Status: ok
+LaunchState: COLD
+Activity: com.example.piliplus.dev/com.example.piliplus.MainActivity
+TotalTime: 4355
+WaitTime: 4401
+Complete

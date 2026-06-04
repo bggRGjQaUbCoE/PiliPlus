@@ -75,15 +75,25 @@ class VideoReplyReplyController extends ReplyController
     if (data is DetailListReply) {
       count.value = data.root.count.toInt();
       if (isRefresh && !hasRoot) {
-        firstFloor.value ??= data.root;
-      }
-      if (id != null) {
-        setIndexById(Int64(id!), data.root.replies);
-        id = null;
+        firstFloor.value ??= applyFirstFloorShielding(data.root);
       }
     }
 
     return false;
+  }
+
+  @override
+  void handleListResponse(List<ReplyInfo> dataList) {
+    if (id != null) {
+      setIndexById(Int64(id!), dataList);
+      id = null;
+    }
+    super.handleListResponse(dataList);
+  }
+
+  ReplyInfo? applyFirstFloorShielding(ReplyInfo reply) {
+    final visible = applyShielding([reply]);
+    return visible.isEmpty ? null : visible.single;
   }
 
   bool setIndexById(Int64 id64, [List<ReplyInfo>? replies]) {

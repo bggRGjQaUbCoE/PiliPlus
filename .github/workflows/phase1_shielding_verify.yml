@@ -1,0 +1,58 @@
+name: Phase 1 Shielding Verify
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - phase-1-shielding-core
+    paths:
+      - ".github/workflows/phase1_shielding_verify.yml"
+      - "lib/main.dart"
+      - "lib/features/shielding/**"
+      - "lib/pages/setting/models/shielding_settings.dart"
+      - "test/bootstrap/**"
+      - "test/features/shielding/**"
+      - "test/pages/setting/models/shielding_settings_test.dart"
+      - "pubspec.yaml"
+      - "pubspec.lock"
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Focused Flutter verification
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version-file: pubspec.yaml
+          cache: true
+
+      - name: Flutter version
+        run: flutter --version
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Verify dependency lock is clean
+        run: git diff --exit-code pubspec.yaml pubspec.lock
+
+      - name: Run shielding tests
+        run: flutter test test/features/shielding
+
+      - name: Run settings model test
+        run: flutter test test/pages/setting/models/shielding_settings_test.dart
+
+      - name: Run bootstrap startup test
+        run: flutter test test/bootstrap/bootstrap_app_test.dart
+
+      - name: Analyze
+        run: flutter analyze --no-fatal-infos

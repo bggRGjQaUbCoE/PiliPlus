@@ -42,6 +42,7 @@ import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/utils.dart';
+import 'package:PiliPlus/features/shielding/shielding.dart';
 import 'package:crypto/crypto.dart';
 import 'package:flex_seed_scheme/flex_seed_scheme.dart' show FlexSchemeVariant;
 import 'package:flutter/foundation.dart';
@@ -284,6 +285,19 @@ abstract final class Pref {
 
   static String get banWordForZone =>
       _setting.get(SettingBoxKey.banWordForZone, defaultValue: '');
+
+  static ShieldRuleSet get shieldingRuleSet => ShieldSettingsStore().snapshot();
+
+  static bool get shieldingEnabled => shieldingRuleSet.globalEnabled;
+
+  static bool get shieldingRecommendationEnabled =>
+      shieldingRuleSet.recommendationEnabled;
+
+  static bool get shieldingCommentEnabled => shieldingRuleSet.commentEnabled;
+
+  static int get shieldingVersion => shieldingRuleSet.version;
+
+  static DateTime? get shieldingLastLoadedAt => shieldingRuleSet.lastLoadedAt;
 
   static bool get appRcmd =>
       _setting.get(SettingBoxKey.appRcmd, defaultValue: true);

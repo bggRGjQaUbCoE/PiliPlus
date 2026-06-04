@@ -380,10 +380,10 @@ packages:
     dependency: transitive
     description:
       name: dbus
-      sha256: d0c98dcd4f5169878b6cf8f6e0a52403a9dff371a3e2f019697accbf6f44a270
+      sha256: "0ce9b0a839e6dee59a37a623d2fc26a35bbbe6404213e419b0d6411023d62645"
       url: "https://pub.dev"
     source: hosted
-    version: "0.7.12"
+    version: "0.7.14"
   desktop_webview_window:
     dependency: "direct main"
     description:
@@ -535,7 +535,7 @@ packages:
     description:
       path: "."
       ref: dev
-      resolved-ref: "1b1197493d734c45e178c15fe665c3dcab284cb8"
+      resolved-ref: a8f06d11b0b8f6d903c5680b57a8d7a385992149
       url: "https://github.com/bggRGjQaUbCoE/flutter_file_picker.git"
     source: git
     version: "12.0.0-beta.5"
@@ -629,7 +629,7 @@ packages:
     description:
       path: flutter_inappwebview_android
       ref: "v6.1.5"
-      resolved-ref: "553d323316cc1ef5d1b73077fe42be864e3e096d"
+      resolved-ref: e0e82ff8492bbc77aecc37e3b4d02c0f3e3de40f
       url: "https://github.com/bggRGjQaUbCoE/flutter_inappwebview.git"
     source: git
     version: "1.1.3"
@@ -1234,7 +1234,7 @@ packages:
     description:
       path: "."
       ref: master
-      resolved-ref: "7be186c79adca7d3ff5abc34bc75d171c68c2694"
+      resolved-ref: "2c74f4d534dfd9b8f66382f82b3540f32be9abd9"
       url: "https://github.com/bggRGjQaUbCoE/flutter_native_device_orientation.git"
     source: git
     version: "2.0.5"

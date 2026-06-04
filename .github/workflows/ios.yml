@@ -41,7 +41,7 @@ jobs:
           ln -sf ./build/ios/iphoneos Payload
           # make AltSign happy...
           find Payload/Runner.app/Frameworks -type d -name "*.framework" -exec codesign --force --sign - --preserve-metadata=identifier,entitlements {} \;
-          zip -r9 PiliPlus_ios_${{env.version}}.ipa Payload/Runner.app
+          zip -r9 PiliAvalon_ios_${{env.version}}.ipa Payload/Runner.app
 
       - name: Release
         if: ${{ github.event.inputs.tag != '' }}
@@ -50,11 +50,11 @@ jobs:
           tag_name: ${{ github.event.inputs.tag }}
           name: ${{ github.event.inputs.tag }}
           files: |
-            PiliPlus_ios_*.ipa
+            PiliAvalon_ios_*.ipa
 
       - name: Upload ios release
         uses: actions/upload-artifact@v7
         with:
           archive: false
           name: iOS-release
-          path: PiliPlus_ios_*.ipa
+          path: PiliAvalon_ios_*.ipa

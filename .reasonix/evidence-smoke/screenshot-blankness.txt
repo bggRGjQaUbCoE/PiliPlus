@@ -1,0 +1,9 @@
+blankness_status=pass
+width=1080
+height=2400
+samples=32040
+mean_luma=160.72
+stddev_luma=78.16
+bright_ratio=0.3654
+near_white_ratio=0.3654
+dark_ratio=0.0836

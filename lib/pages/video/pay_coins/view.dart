@@ -386,8 +386,13 @@ class _PayCoinsPageState extends State<PayCoinsPage>
                   ],
                 )
               else
-                SizedBox(height: 100, child: _buildCoinWidget(0, 1)),
-              SizedBox(height: isV ? 25 : 10),
+                Center(
+                  child: SizedBox(height: 100, child: _buildCoinWidget(0, 1)),
+                ),
+              if (isV)
+                const SizedBox(height: 25)
+              else
+                const SizedBox(height: 10),
               if (_hasCopyright)
                 GestureDetector(
                   behavior: HitTestBehavior.opaque,

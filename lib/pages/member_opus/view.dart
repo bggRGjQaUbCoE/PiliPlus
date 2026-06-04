@@ -4,6 +4,7 @@ import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models_new/space/space_opus/item.dart';
+import 'package:PiliPlus/pages/common/fab_mixin.dart';
 import 'package:PiliPlus/pages/member_opus/controller.dart';
 import 'package:PiliPlus/pages/member_opus/widgets/space_opus_item.dart';
 import 'package:PiliPlus/utils/grid.dart';
@@ -30,7 +31,11 @@ class MemberOpus extends StatefulWidget {
 }
 
 class _MemberOpusState extends State<MemberOpus>
-    with AutomaticKeepAliveClientMixin {
+    with
+        AutomaticKeepAliveClientMixin,
+        SingleTickerProviderStateMixin,
+        BaseFabMixin,
+        LazyFabMixin {
   late final MemberOpusController _controller;
 
   @override
@@ -50,70 +55,90 @@ class _MemberOpusState extends State<MemberOpus>
     super.build(context);
     final bottom = MediaQuery.viewPaddingOf(context).bottom;
     return Stack(
+      clipBehavior: .none,
       children: [
         refreshIndicator(
           onRefresh: _controller.onRefresh,
-          child: CustomScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            slivers: [
-              SliverPadding(
-                padding: EdgeInsets.only(
-                  top: widget.isSingle ? 12 : 0,
-                  left: Style.safeSpace,
-                  right: Style.safeSpace,
-                  bottom: bottom + 100,
+          child: NotificationListener<UserScrollNotification>(
+            onNotification: (notification) {
+              final direction = notification.direction;
+              if (direction == .forward) {
+                showFab();
+              } else if (direction == .reverse) {
+                hideFab();
+              }
+              return false;
+            },
+            child: CustomScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              slivers: [
+                SliverPadding(
+                  padding: EdgeInsets.only(
+                    top: widget.isSingle ? 12 : 0,
+                    left: Style.safeSpace,
+                    right: Style.safeSpace,
+                    bottom: bottom + 100,
+                  ),
+                  sliver: Obx(() => _buildBody(_controller.loadingState.value)),
                 ),
-                sliver: Obx(() => _buildBody(_controller.loadingState.value)),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
         if (_controller.filter?.isNotEmpty == true)
           Positioned(
             right: kFloatingActionButtonMargin,
-            bottom: bottom + kFloatingActionButtonMargin,
-            child: FloatingActionButton.extended(
-              onPressed: () => showDialog(
-                context: context,
-                builder: (context) => AlertDialog(
-                  clipBehavior: Clip.hardEdge,
-                  contentPadding: const EdgeInsets.symmetric(vertical: 12),
-                  content: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: _controller.filter!
-                        .map(
-                          (e) => ListTile(
-                            onTap: () {
-                              if (e == _controller.type.value) {
-                                return;
-                              }
-                              Get.back();
-                              _controller
-                                ..type.value = e
-                                ..onReload();
-                            },
-                            tileColor: e == _controller.type.value
-                                ? Theme.of(
-                                    context,
-                                  ).colorScheme.onInverseSurface
-                                : null,
-                            dense: true,
-                            title: Text(
-                              e.text ?? e.tabName!,
-                              style: const TextStyle(fontSize: 14),
-                            ),
-                          ),
-                        )
-                        .toList(),
+            bottom: 0,
+            child: SlideTransition(
+              position: fabAnimation,
+              child: Padding(
+                padding: .only(
+                  bottom: bottom + kFloatingActionButtonMargin,
+                ),
+                child: FloatingActionButton.extended(
+                  onPressed: () => showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      clipBehavior: Clip.hardEdge,
+                      contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                      content: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: _controller.filter!
+                            .map(
+                              (e) => ListTile(
+                                onTap: () {
+                                  if (e == _controller.type.value) {
+                                    return;
+                                  }
+                                  Get.back();
+                                  _controller
+                                    ..type.value = e
+                                    ..onReload();
+                                },
+                                tileColor: e == _controller.type.value
+                                    ? Theme.of(
+                                        context,
+                                      ).colorScheme.onInverseSurface
+                                    : null,
+                                dense: true,
+                                title: Text(
+                                  e.text ?? e.tabName!,
+                                  style: const TextStyle(fontSize: 14),
+                                ),
+                              ),
+                            )
+                            .toList(),
+                      ),
+                    ),
+                  ),
+                  icon: const Icon(size: 20, Icons.sort),
+                  label: Obx(
+                    () {
+                      final type = _controller.type.value;
+                      return Text(type.text ?? type.tabName!);
+                    },
                   ),
                 ),
-              ),
-              icon: const Icon(size: 20, Icons.sort),
-              label: Obx(
-                () {
-                  final type = _controller.type.value;
-                  return Text(type.text ?? type.tabName!);
-                },
               ),
             ),
           ),

@@ -6,6 +6,7 @@ import 'package:PiliPlus/common/widgets/sliver/sliver_floating_header.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/member/contribute_type.dart';
 import 'package:PiliPlus/models_new/space/space_archive/item.dart';
+import 'package:PiliPlus/pages/common/fab_mixin.dart';
 import 'package:PiliPlus/pages/member/controller.dart';
 import 'package:PiliPlus/pages/member_video/controller.dart';
 import 'package:PiliPlus/pages/member_video/widgets/video_card_h_member_video.dart';
@@ -41,7 +42,12 @@ class MemberVideo extends StatefulWidget {
 }
 
 class _MemberVideoState extends State<MemberVideo>
-    with AutomaticKeepAliveClientMixin, GridMixin {
+    with
+        AutomaticKeepAliveClientMixin,
+        GridMixin,
+        SingleTickerProviderStateMixin,
+        BaseFabMixin,
+        LazyFabMixin {
   @override
   bool get wantKeepAlive => true;
 
@@ -121,32 +127,53 @@ class _MemberVideoState extends State<MemberVideo>
       return Stack(
         clipBehavior: Clip.none,
         children: [
-          child,
+          NotificationListener<UserScrollNotification>(
+            onNotification: (notification) {
+              final direction = notification.direction;
+              if (direction == .forward) {
+                showFab();
+              } else if (direction == .reverse) {
+                hideFab();
+              }
+              return false;
+            },
+            child: child,
+          ),
           Obx(
             () => !_controller.isLocating.value
                 ? Positioned(
                     right: kFloatingActionButtonMargin,
-                    bottom: kFloatingActionButtonMargin + padding.bottom,
-                    child: FloatingActionButton.extended(
-                      onPressed: () {
-                        final fromViewAid = _controller.fromViewAid;
-                        _controller.isLocating.value = true;
-                        final locatedIndex =
-                            _controller.loadingState.value.dataOrNull
-                                ?.indexWhere((i) => i.param == fromViewAid) ??
-                            -1;
-                        if (locatedIndex == -1) {
-                          _controller
-                            ..lastAid = fromViewAid
-                            ..reload = true
-                            ..page = 0
-                            ..loadingState.value = LoadingState.loading()
-                            ..queryData();
-                        } else {
-                          _jumpToIndex(locatedIndex);
-                        }
-                      },
-                      label: const Text('定位至上次观看'),
+                    bottom: 0,
+                    child: SlideTransition(
+                      position: fabAnimation,
+                      child: Padding(
+                        padding: .only(
+                          bottom: padding.bottom + kFloatingActionButtonMargin,
+                        ),
+                        child: FloatingActionButton.extended(
+                          onPressed: () {
+                            final fromViewAid = _controller.fromViewAid;
+                            _controller.isLocating.value = true;
+                            final locatedIndex =
+                                _controller.loadingState.value.dataOrNull
+                                    ?.indexWhere(
+                                      (i) => i.param == fromViewAid,
+                                    ) ??
+                                -1;
+                            if (locatedIndex == -1) {
+                              _controller
+                                ..lastAid = fromViewAid
+                                ..reload = true
+                                ..page = 0
+                                ..loadingState.value = LoadingState.loading()
+                                ..queryData();
+                            } else {
+                              _jumpToIndex(locatedIndex);
+                            }
+                          },
+                          label: const Text('定位至上次观看'),
+                        ),
+                      ),
                     ),
                   )
                 : const SizedBox.shrink(),

@@ -14,12 +14,11 @@ mixin HeaderMixin<T extends StatefulWidget> on State<T> {
 
   Future<void>? showBottomSheet(
     StatefulWidgetBuilder builder, {
-    double? padding,
+    ValueGetter<EdgeInsets>? padding,
   }) {
     return PageUtils.showVideoBottomSheet(
       context,
       maxWidth: 512,
-      isFullScreen: () => isFullScreen,
       padding: padding,
       child: StatefulBuilder(
         builder: (context, setState) => plPlayerController.darkVideoPage

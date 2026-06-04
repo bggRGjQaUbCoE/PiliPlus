@@ -22,7 +22,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 abstract class CommonDynPageState<T extends StatefulWidget> extends State<T>
-    with SingleTickerProviderStateMixin, FabMixin {
+    with SingleTickerProviderStateMixin, BaseFabMixin, FabMixin {
   CommonDynController get controller;
 
   late final ScrollController scrollController;

@@ -14,6 +14,7 @@ app_crash_logcat="runtime-smoke/evidence/app-crash-error.txt"
 blankness_report="runtime-smoke/evidence/screenshot-blankness.txt"
 launcher_component_file="runtime-smoke/evidence/launcher-component.txt"
 launcher_resolution_file="runtime-smoke/evidence/launcher-resolution.txt"
+max_system_dialog_retries=2
 
 record_status() {
   echo "status=${status}" | tee -a runtime-smoke/evidence/status.txt
@@ -33,6 +34,142 @@ record_status() {
     120) echo "result=fail reason=launcher_activity_not_found" ;;
     *) echo "result=fail reason=unknown_status" ;;
   esac | tee -a runtime-smoke/evidence/status.txt
+}
+
+start_launcher_component() {
+  local attempt="$1"
+  echo "launch_attempt=${attempt}" >> runtime-smoke/evidence/adb-launch.txt
+  adb shell am start -W -n "$launcher_component" -a android.intent.action.MAIN -c android.intent.category.LAUNCHER | tee -a runtime-smoke/evidence/adb-launch.txt
+}
+
+capture_runtime_evidence() {
+  adb logcat -d > runtime-smoke/evidence/logcat.txt || true
+  grep -Ei "FATAL EXCEPTION|AndroidRuntime|CRASH|ANR|Watchdog|(^|[[:space:]])[EF]/|(^|[[:space:]])[EF][[:space:]]+[[:alnum:]_.-]+[[:space:]]*:" runtime-smoke/evidence/logcat.txt > "$filtered_logcat" || true
+  python3 - runtime-smoke/evidence/logcat.txt "$app_crash_logcat" "$PACKAGE_NAME" <<'PY' || true
+import re
+import sys
+
+logcat_path, app_crash_path, package_name = sys.argv[1:4]
+lines = []
+
+try:
+    with open(logcat_path, "r", encoding="utf-8", errors="replace") as handle:
+        lines = handle.readlines()
+except OSError as exc:
+    with open(app_crash_path, "w", encoding="utf-8") as handle:
+        handle.write(f"logcat_read_error={exc}\n")
+    sys.exit(0)
+
+crash_blocks = []
+line_count = len(lines)
+
+for index, line in enumerate(lines):
+    if f"ANR in {package_name}" in line:
+        crash_blocks.append(lines[index:index + 40])
+    elif f"Process {package_name} has died" in line:
+        crash_blocks.append(lines[index:index + 20])
+    elif "Force finishing activity" in line and package_name in line:
+        crash_blocks.append(lines[index:index + 20])
+    elif "FATAL EXCEPTION" in line:
+        block = lines[index:min(line_count, index + 80)]
+        if any(re.search(rf"\bProcess:\s*{re.escape(package_name)}\b", entry) for entry in block):
+            crash_blocks.append(block)
+
+with open(app_crash_path, "w", encoding="utf-8") as handle:
+    for block_index, block in enumerate(crash_blocks, 1):
+        handle.write(f"--- app-crash-block-{block_index} ---\n")
+        handle.writelines(block)
+PY
+  adb shell dumpsys window > runtime-smoke/evidence/window.txt || true
+  if adb shell uiautomator dump "$ui_dump_device" > runtime-smoke/evidence/uiautomator-dump.txt 2>&1; then
+    adb pull "$ui_dump_device" "$ui_dump" > runtime-smoke/evidence/uiautomator-pull.txt 2>&1 || true
+  else
+    return 50
+  fi
+  adb exec-out screencap -p > "$screenshot" || true
+}
+
+app_package_is_visible() {
+  [ -s "$ui_dump" ] && grep -Fq "package=\"${PACKAGE_NAME}\"" "$ui_dump"
+}
+
+app_has_current_focus() {
+  grep -Eq "mCurrentFocus=.*${PACKAGE_NAME}|currentFocus=.*${PACKAGE_NAME}" runtime-smoke/evidence/window.txt
+}
+
+has_retryable_system_anr_dialog() {
+  if [ -s "$app_crash_logcat" ]; then
+    return 1
+  fi
+  if [ ! -s "$ui_dump" ]; then
+    return 1
+  fi
+  if grep -Fq "$PACKAGE_NAME" "$ui_dump" && grep -Eq "ANR in ${PACKAGE_NAME}|Application Error: ${PACKAGE_NAME}" runtime-smoke/evidence/window.txt; then
+    return 1
+  fi
+  if ! grep -Eiq "isn'?t responding|is not responding|Application Not Responding|ANR" "$ui_dump" runtime-smoke/evidence/window.txt; then
+    return 1
+  fi
+  grep -Eiq "com\.google\.android\.apps\.nexuslauncher|com\.android\.launcher|com\.android\.systemui|Pixel Launcher|Launcher|System UI" "$ui_dump" runtime-smoke/evidence/window.txt
+}
+
+dismiss_system_anr_dialog() {
+  if [ -s "$ui_dump" ]; then
+    tap_coords="$(python3 - "$ui_dump" <<'PY' || true
+import re
+import sys
+import xml.etree.ElementTree as ET
+
+path = sys.argv[1]
+try:
+    root = ET.parse(path).getroot()
+except ET.ParseError:
+    sys.exit(0)
+
+for node in root.iter("node"):
+    resource_id = node.attrib.get("resource-id", "")
+    if resource_id != "android:id/aerr_wait":
+        continue
+    match = re.fullmatch(r"\[(\d+),(\d+)\]\[(\d+),(\d+)\]", node.attrib.get("bounds", ""))
+    if not match:
+        continue
+    left, top, right, bottom = map(int, match.groups())
+    print(f"{(left + right) // 2} {(top + bottom) // 2}")
+    break
+PY
+)"
+    if [ -n "${tap_coords:-}" ]; then
+      adb shell input tap $tap_coords >> runtime-smoke/evidence/adb-launch.txt 2>&1 || true
+      return
+    fi
+  fi
+  adb shell input keyevent KEYCODE_BACK >> runtime-smoke/evidence/adb-launch.txt 2>&1 || true
+}
+
+retry_after_system_dialog_if_needed() {
+  local retries=0
+
+  while [ "$retries" -lt "$max_system_dialog_retries" ]; do
+    if app_package_is_visible && app_has_current_focus; then
+      return 0
+    fi
+    if ! has_retryable_system_anr_dialog; then
+      return 0
+    fi
+
+    retries=$((retries + 1))
+    echo "retryable_system_anr_dialog_attempt=${retries}" >> runtime-smoke/evidence/adb-launch.txt
+    dismiss_system_anr_dialog
+    if ! start_launcher_component "retry-${retries}"; then
+      status=30
+      return 0
+    fi
+    sleep 25
+    if ! capture_runtime_evidence; then
+      status=50
+      return 0
+    fi
+  done
 }
 
 {
@@ -72,57 +209,22 @@ if [ "$status" -eq 0 ]; then
 fi
 
 if [ "$status" -eq 0 ]; then
-  if ! adb shell am start -W -n "$launcher_component" -a android.intent.action.MAIN -c android.intent.category.LAUNCHER | tee -a runtime-smoke/evidence/adb-launch.txt; then
+  if ! start_launcher_component "initial"; then
     status=30
   fi
 fi
 
 sleep 25
 
-adb logcat -d > runtime-smoke/evidence/logcat.txt || true
-grep -Ei "FATAL EXCEPTION|AndroidRuntime|CRASH|ANR|Watchdog|(^|[[:space:]])[EF]/|(^|[[:space:]])[EF][[:space:]]+[[:alnum:]_.-]+[[:space:]]*:" runtime-smoke/evidence/logcat.txt > "$filtered_logcat" || true
-python3 - runtime-smoke/evidence/logcat.txt "$app_crash_logcat" "$PACKAGE_NAME" <<'PY' || true
-import re
-import sys
-
-logcat_path, app_crash_path, package_name = sys.argv[1:4]
-lines = []
-
-try:
-    with open(logcat_path, "r", encoding="utf-8", errors="replace") as handle:
-        lines = handle.readlines()
-except OSError as exc:
-    with open(app_crash_path, "w", encoding="utf-8") as handle:
-        handle.write(f"logcat_read_error={exc}\n")
-    sys.exit(0)
-
-crash_blocks = []
-line_count = len(lines)
-
-for index, line in enumerate(lines):
-    if f"ANR in {package_name}" in line:
-        crash_blocks.append(lines[index:index + 40])
-    elif f"Process {package_name} has died" in line:
-        crash_blocks.append(lines[index:index + 20])
-    elif "Force finishing activity" in line and package_name in line:
-        crash_blocks.append(lines[index:index + 20])
-    elif "FATAL EXCEPTION" in line:
-        block = lines[index:min(line_count, index + 80)]
-        if any(re.search(rf"\bProcess:\s*{re.escape(package_name)}\b", entry) for entry in block):
-            crash_blocks.append(block)
-
-with open(app_crash_path, "w", encoding="utf-8") as handle:
-    for block_index, block in enumerate(crash_blocks, 1):
-        handle.write(f"--- app-crash-block-{block_index} ---\n")
-        handle.writelines(block)
-PY
-adb shell dumpsys window > runtime-smoke/evidence/window.txt || true
-if adb shell uiautomator dump "$ui_dump_device" > runtime-smoke/evidence/uiautomator-dump.txt 2>&1; then
-  adb pull "$ui_dump_device" "$ui_dump" > runtime-smoke/evidence/uiautomator-pull.txt 2>&1 || true
-else
-  status=50
+if [ "$status" -eq 0 ]; then
+  if ! capture_runtime_evidence; then
+    status=50
+  fi
 fi
-adb exec-out screencap -p > "$screenshot" || true
+
+if [ "$status" -eq 0 ]; then
+  retry_after_system_dialog_if_needed
+fi
 
 if [ "$status" -eq 0 ]; then
   if [ -s "$app_crash_logcat" ]; then
@@ -135,13 +237,13 @@ if [ "$status" -eq 0 ]; then
     status=70
   elif grep -Fq "Startup failed" "$ui_dump"; then
     status=90
-  elif ! grep -Fq "package=\"${PACKAGE_NAME}\"" "$ui_dump"; then
+  elif ! app_package_is_visible; then
     status=110
   fi
 fi
 
 if [ "$status" -eq 0 ]; then
-  if ! grep -Eq "mCurrentFocus=.*${PACKAGE_NAME}|currentFocus=.*${PACKAGE_NAME}" runtime-smoke/evidence/window.txt; then
+  if ! app_has_current_focus; then
     status=100
   fi
 fi

@@ -471,7 +471,7 @@ abstract final class MemberHttp {
       try {
         DynamicsDataModel data = DynamicsDataModel.fromJson(res.data['data']);
         if (data.loadNext == true) {
-          return memberDynamic(offset: data.offset, mid: mid);
+          return await memberDynamic(offset: data.offset, mid: mid);
         }
         return Success(data);
       } catch (e, s) {

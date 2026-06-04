@@ -57,7 +57,7 @@ abstract final class DynamicsHttp {
           tempBannedList: tempBannedList,
         );
         if (data.loadNext == true) {
-          return followDynamic(
+          return await followDynamic(
             type: type,
             offset: data.offset,
             mid: mid,

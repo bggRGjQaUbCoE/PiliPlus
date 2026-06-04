@@ -246,13 +246,8 @@ class ChatItem extends StatelessWidget {
 
   Widget msgTypeArticleCard_12(dynamic content, Color textColor) {
     return GestureDetector(
-      onTap: () => Get.toNamed(
-        '/articlePage',
-        parameters: {
-          'id': '${content['rid']}',
-          'type': "read",
-        },
-      ),
+      behavior: HitTestBehavior.opaque,
+      onTap: () => _goToArticlePage(content['rid']),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -268,6 +263,7 @@ class ChatItem extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           SelectableText(
+            onTap: () => _goToArticlePage(content['rid']),
             content['title'] ?? "",
             style: TextStyle(
               letterSpacing: 0.6,
@@ -279,6 +275,7 @@ class ChatItem extends StatelessWidget {
           if (content['summary'] != null && content['summary'] != '') ...[
             const SizedBox(height: 1),
             SelectableText(
+              onTap: () => _goToArticlePage(content['rid']),
               scrollPhysics: const NeverScrollableScrollPhysics(),
               content['summary'],
               style: TextStyle(
@@ -295,6 +292,14 @@ class ChatItem extends StatelessWidget {
       ),
     );
   }
+
+  void _goToArticlePage(int id) => Get.toNamed(
+    '/articlePage',
+    parameters: {
+      'id': '${id}',
+      'type': "read",
+    },
+  );
 
   Widget msgType_16(ThemeData theme, content, Color textColor) {
     return Center(

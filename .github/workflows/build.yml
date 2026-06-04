@@ -49,7 +49,7 @@ on:
 
 jobs:
     android:
-        if: ${{ (github.event_name == 'pull_request' && github.repository == 'bggRGjQaUbCoE/PiliPlus') || github.event.inputs.build_android == 'true' }}
+        if: ${{ (github.event_name == 'pull_request' && github.repository == 'CometDash77/PiliAvalon-Worksite') || github.event.inputs.build_android == 'true' }}
         name: Release Android
         runs-on: ubuntu-latest
         permissions: write-all
@@ -86,13 +86,15 @@ jobs:
             - name: Write key
               if: github.event_name == 'workflow_dispatch'
               run: |
-                  if [ ! -z "${{ secrets.SIGN_KEYSTORE_BASE64 }}" ]; then
-                    echo "${{ secrets.SIGN_KEYSTORE_BASE64 }}" | base64 --decode > android/app/key.jks
-                    echo storeFile='key.jks' >> android/key.properties
-                    echo storePassword='${{ secrets.KEYSTORE_PASSWORD }}' >> android/key.properties
-                    echo keyAlias='${{ secrets.KEY_ALIAS }}' >> android/key.properties
-                    echo keyPassword='${{ secrets.KEY_PASSWORD }}' >> android/key.properties
+                  if [ -z "${{ secrets.SIGN_KEYSTORE_BASE64 }}" ] || [ -z "${{ secrets.KEYSTORE_PASSWORD }}" ] || [ -z "${{ secrets.KEY_ALIAS }}" ] || [ -z "${{ secrets.KEY_PASSWORD }}" ]; then
+                    echo "Release signing secrets are required for cover-install compatible APKs." >&2
+                    exit 1
                   fi
+                  echo "${{ secrets.SIGN_KEYSTORE_BASE64 }}" | base64 --decode > android/app/key.jks
+                  echo storeFile='key.jks' >> android/key.properties
+                  echo storePassword='${{ secrets.KEYSTORE_PASSWORD }}' >> android/key.properties
+                  echo keyAlias='${{ secrets.KEY_ALIAS }}' >> android/key.properties
+                  echo keyPassword='${{ secrets.KEY_PASSWORD }}' >> android/key.properties
 
             - name: Set and Extract version
               if: ${{ github.event_name == 'workflow_dispatch' }}
@@ -112,41 +114,118 @@ jobs:
               run: |
                   for file in build/app/outputs/flutter-apk/app-*-release.apk; do
                     abi=$(echo "$file" | sed -E 's|.*app-(.*)-release\.apk|\1|')
-                    mv "$file" "PiliPlus_android_${{ env.version }}_${abi}.apk"
+                    mv "$file" "PiliAvalon_android_${{ env.version }}_${abi}.apk"
                   done
+              shell: bash
+
+            - name: Capture Android signing fingerprints
+              if: github.event_name == 'workflow_dispatch'
+              run: |
+                  mkdir -p signing-evidence
+                  for file in PiliAvalon_android_*.apk; do
+                    "${ANDROID_HOME}/build-tools/$(ls "${ANDROID_HOME}/build-tools" | sort -V | tail -n 1)/apksigner" verify --print-certs "$file" > "signing-evidence/${file}.certs.txt"
+                  done
+                  summary_file="signing-evidence/remote-fingerprint-summary.md"
+                  {
+                    echo "## Android release signing evidence"
+                    echo
+                    echo "- Run ID: ${GITHUB_RUN_ID}"
+                    echo "- Commit: ${GITHUB_SHA}"
+                    echo "- Version: ${{ env.version }}"
+                    echo
+                    echo "| APK | SHA-256 fingerprint |"
+                    echo "|---|---|"
+                    for cert_file in signing-evidence/*.certs.txt; do
+                      apk_name="${cert_file#signing-evidence/}"
+                      apk_name="${apk_name%.certs.txt}"
+                      sha256="$(
+                        LC_ALL=C tr -d '\r' < "$cert_file" |
+                          tr '[:lower:]' '[:upper:]' |
+                          sed -nE '/SHA[ -]?256/{
+                            h
+                            s/.*DIGEST[^0-9A-F]*//
+                            t normalize
+                            g
+                            s/.*SHA[ -]?256[^0-9A-F]*//
+                            :normalize
+                            s/[^0-9A-F]//g
+                            p
+                            q
+                          }'
+                      )"
+                      if ! printf '%s' "$sha256" | grep -Eq '^[0-9A-F]{64}$'; then
+                        echo "Missing SHA-256 fingerprint in ${cert_file}" >&2
+                        cat "$cert_file" >&2
+                        exit 1
+                      fi
+                      echo "| ${apk_name} | ${sha256} |"
+                    done
+                    echo
+                    echo "Cover-install verification requires:"
+                    echo "- same applicationId: com.example.piliplus"
+                    echo "- same signing certificate fingerprint as the installed release"
+                    echo "- install over existing app without uninstall"
+                  } > "$summary_file"
+                  cat "$summary_file" >> "$GITHUB_STEP_SUMMARY"
+                  {
+                    echo "Cover-install verification requires:"
+                    echo "- same applicationId: com.example.piliplus"
+                    echo "- same signing certificate fingerprint as the installed release"
+                    echo "- install over existing app without uninstall"
+                  } > signing-evidence/cover-install-requirements.txt
+              shell: bash
+
+            - name: Resolve release tag
+              if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag != '' }}
+              run: |
+                  release_tag="${{ github.event.inputs.tag }}"
+                  release_tag="${release_tag//\{run_id\}/${GITHUB_RUN_ID}}"
+                  echo "release_tag=${release_tag}" >> "$GITHUB_ENV"
               shell: bash
 
             - name: Release
               if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag != '' }}
               uses: softprops/action-gh-release@v2
               with:
-                  tag_name: ${{ github.event.inputs.tag }}
-                  name: ${{ github.event.inputs.tag }}
-                  files: PiliPlus_android_*.apk
+                  tag_name: ${{ env.release_tag }}
+                  target_commitish: ${{ github.sha }}
+                  name: ${{ env.release_tag }}
+                  prerelease: true
+                  make_latest: false
+                  body_path: signing-evidence/remote-fingerprint-summary.md
+                  files: PiliAvalon_android_*.apk
 
             - name: 上传
               uses: actions/upload-artifact@v7
               with:
                   archive: false
                   name: Android_arm64-v8a
-                  path: PiliPlus_android_*_arm64-v8a.apk
+                  path: PiliAvalon_android_*_arm64-v8a.apk
 
             - name: 上传
               uses: actions/upload-artifact@v7
               with:
                   archive: false
                   name: Android_armeabi-v7a
-                  path: PiliPlus_android_*_armeabi-v7a.apk
+                  path: PiliAvalon_android_*_armeabi-v7a.apk
 
             - name: 上传
               uses: actions/upload-artifact@v7
               with:
                   archive: false
                   name: Android_x86_64
-                  path: PiliPlus_android_*_x86_64.apk
+                  path: PiliAvalon_android_*_x86_64.apk
+
+            - name: 上传签名证据
+              if: github.event_name == 'workflow_dispatch'
+              uses: actions/upload-artifact@v7
+              with:
+                  archive: true
+                  name: Android_signing_evidence
+                  path: signing-evidence/*
 
     ios:
-        if: ${{ (github.event_name == 'pull_request' && github.repository == 'bggRGjQaUbCoE/PiliPlus') || github.event.inputs.build_ios == 'true' }}
+        if: ${{ (github.event_name == 'pull_request' && github.repository == 'CometDash77/PiliAvalon-Worksite') || github.event.inputs.build_ios == 'true' }}
         uses: ./.github/workflows/ios.yml
         permissions: write-all
         with:
@@ -160,7 +239,7 @@ jobs:
             tag: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag || '' }}
 
     win_x64:
-        if: ${{ (github.event_name == 'pull_request' && github.repository == 'bggRGjQaUbCoE/PiliPlus') || github.event.inputs.build_win_x64 == 'true' }}
+        if: ${{ (github.event_name == 'pull_request' && github.repository == 'CometDash77/PiliAvalon-Worksite') || github.event.inputs.build_win_x64 == 'true' }}
         uses: ./.github/workflows/win_x64.yml
         permissions: write-all
         with:

@@ -27,11 +27,8 @@ abstract class CommonPublishPage<T> extends StatefulWidget {
 abstract class CommonPublishPageState<T extends CommonPublishPage>
     extends State<T>
     with WidgetsBindingObserver {
-  late bool _paused = false;
-  final FocusNode focusNode = FocusNode();
-  late final controller = ChatBottomPanelContainerController<PanelType>(
-    uiScale: Pref.uiScale,
-  );
+  late final FocusNode focusNode;
+  late final controller = PublishChatBottomPanelController<PanelType>();
   TextEditingController get editController;
 
   final Rx<PanelType> panelType = PanelType.none.obs;
@@ -43,19 +40,23 @@ abstract class CommonPublishPageState<T extends CommonPublishPage>
   bool hasPub = false;
   void initPubState();
 
-  bool get handleKeyboard => Platform.isAndroid && widget.autofocus;
-
   @override
   void initState() {
     super.initState();
-    if (handleKeyboard) {
+    if (Platform.isAndroid) {
       WidgetsBinding.instance.addObserver(this);
     }
+
+    focusNode = FocusNode();
 
     initPubState();
 
     if (widget.autofocus) {
-      _requestFocus(duration: const Duration(milliseconds: 300));
+      Future.delayed(const Duration(milliseconds: 300), () {
+        if (mounted) {
+          focusNode.requestFocus();
+        }
+      });
     }
   }
 
@@ -66,41 +67,35 @@ abstract class CommonPublishPageState<T extends CommonPublishPage>
     }
     focusNode.dispose();
     editController.dispose();
-    if (handleKeyboard) {
+    if (Platform.isAndroid) {
       WidgetsBinding.instance.removeObserver(this);
     }
     super.dispose();
   }
 
-  void _safeRequestFocus() {
-    if (mounted) {
-      focusNode.requestFocus();
-    }
-  }
-
-  void _requestFocus({Duration duration = const Duration(microseconds: 200)}) {
-    Future.delayed(duration, _safeRequestFocus);
+  void _requestFocus() {
+    Future.delayed(const Duration(microseconds: 200), focusNode.requestFocus);
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == .resumed) {
-      if (_paused) {
-        _paused = false;
-        final panelType = this.panelType.value;
-        if (panelType == .keyboard || panelType == .none) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (focusNode.hasFocus) {
-              focusNode.unfocus();
-              _requestFocus();
-            } else {
-              _requestFocus();
-            }
-          });
-        }
+    if (state == AppLifecycleState.resumed) {
+      if (mounted &&
+          widget.autofocus &&
+          (panelType.value == PanelType.keyboard ||
+              panelType.value == PanelType.none)) {
+        controller.restoreChatPanel();
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (focusNode.hasFocus) {
+            focusNode.unfocus();
+            _requestFocus();
+          } else {
+            _requestFocus();
+          }
+        });
       }
-    } else if (state == .paused) {
-      _paused = true;
+    } else if (state == AppLifecycleState.paused) {
+      controller.keepChatPanel();
       if (focusNode.hasFocus) {
         focusNode.unfocus();
       }
@@ -164,9 +159,23 @@ abstract class CommonPublishPageState<T extends CommonPublishPage>
     return false;
   }
 
+  double _scaleNativeKeyboardHeight(double height) {
+    if (height <= 0) return height;
+    return height / Pref.uiScale;
+  }
+
+  double _changeKeyboardPanelHeight(double height) {
+    if (height <= 0) return height;
+    final viewInsetBottom = MediaQuery.viewInsetsOf(context).bottom;
+    if (viewInsetBottom > 0 && height == viewInsetBottom) {
+      return height;
+    }
+    return _scaleNativeKeyboardHeight(height);
+  }
+
   Widget buildEmojiPickerPanel() {
     double height = context.isTablet ? 300 : 170;
-    final keyboardHeight = controller.keyboardHeight;
+    final keyboardHeight = _scaleNativeKeyboardHeight(controller.keyboardHeight);
     if (keyboardHeight != 0) {
       height = max(height, keyboardHeight);
     }
@@ -208,6 +217,7 @@ abstract class CommonPublishPageState<T extends CommonPublishPage>
         }
       },
       panelBgColor: panelBgColor ?? Theme.of(context).colorScheme.surface,
+      changeKeyboardPanelHeight: _changeKeyboardPanelHeight,
     );
   }
 
@@ -234,4 +244,40 @@ abstract class CommonPublishPageState<T extends CommonPublishPage>
   }
 
   void onSave();
+}
+
+class PublishChatBottomPanelController<T>
+    extends ChatBottomPanelContainerController<T> {
+  ChatBottomPanelType _keptPanelType = ChatBottomPanelType.none;
+  T? _keptData;
+
+  void keepChatPanel() {
+    _keptPanelType = currentPanelType;
+    _keptData = data;
+  }
+
+  void restoreChatPanel() {
+    final keptPanelType = _keptPanelType;
+    final keptData = _keptData;
+    _keptPanelType = ChatBottomPanelType.none;
+    _keptData = null;
+    switch (keptPanelType) {
+      case ChatBottomPanelType.none:
+        updatePanelType(ChatBottomPanelType.none);
+        break;
+      case ChatBottomPanelType.keyboard:
+        updatePanelType(
+          ChatBottomPanelType.keyboard,
+          forceHandleFocus: ChatBottomHandleFocus.requestFocus,
+        );
+        break;
+      case ChatBottomPanelType.other:
+        updatePanelType(
+          ChatBottomPanelType.other,
+          data: keptData,
+          forceHandleFocus: ChatBottomHandleFocus.unfocus,
+        );
+        break;
+    }
+  }
 }

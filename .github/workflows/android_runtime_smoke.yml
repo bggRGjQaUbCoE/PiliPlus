@@ -1,0 +1,84 @@
+name: Android Runtime Smoke
+
+on:
+  push:
+    branches:
+      - phase-1-shielding-core
+    paths:
+      - ".github/workflows/android_runtime_smoke.yml"
+      - ".github/scripts/android_runtime_smoke.sh"
+      - ".github/scripts/android_runtime_smoke_launch.py"
+  workflow_dispatch:
+    inputs:
+      artifact_run_id:
+        description: "Build workflow run id containing Android_x86_64 artifact"
+        required: true
+        default: "26628409138"
+        type: string
+      package_name:
+        description: "Android package name to launch"
+        required: true
+        default: "com.example.piliplus"
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  runtime-smoke:
+    name: Install and launch APK on emulator
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      ARTIFACT_RUN_ID: ${{ github.event_name == 'workflow_dispatch' && inputs.artifact_run_id || '26628409138' }}
+      PACKAGE_NAME: ${{ github.event_name == 'workflow_dispatch' && inputs.package_name || 'com.example.piliplus' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Download x86_64 APK artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euxo pipefail
+          mkdir -p runtime-smoke/apk
+          gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${ARTIFACT_RUN_ID}/artifacts" \
+            --jq '.artifacts[] | select(.name | endswith("_x86_64.apk")) | [.id, .name] | @tsv' \
+            | head -n 1 > runtime-smoke/apk/artifact.tsv
+          test -s runtime-smoke/apk/artifact.tsv
+          ARTIFACT_ID="$(cut -f1 runtime-smoke/apk/artifact.tsv)"
+          ARTIFACT_NAME="$(cut -f2 runtime-smoke/apk/artifact.tsv)"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${ARTIFACT_ID}/zip" > "runtime-smoke/apk/${ARTIFACT_NAME}"
+          test -s "runtime-smoke/apk/${ARTIFACT_NAME}"
+
+      - name: List downloaded APK
+        run: |
+          find runtime-smoke/apk -maxdepth 2 -type f -name "*.apk" -print | tee runtime-smoke/apk-files.txt
+          test -s runtime-smoke/apk-files.txt
+          chmod +x .github/scripts/android_runtime_smoke.sh
+
+      - name: Enable KVM for emulator
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Android emulator install and launch smoke
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          script: .github/scripts/android_runtime_smoke.sh
+
+      - name: Upload runtime smoke evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: android-runtime-smoke-evidence
+          path: runtime-smoke/evidence
+          if-no-files-found: warn

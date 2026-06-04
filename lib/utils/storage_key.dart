@@ -252,3 +252,12 @@ abstract final class VideoBoxKey {
       speedsList = 'speedsList',
       cacheVideoFit = 'cacheVideoFit';
 }
+
+abstract final class ShieldBoxKey {
+  static const String rules = 'piliavalon.shielding.v1.rules',
+      globalEnabled = 'piliavalon.shielding.v1.global_enabled',
+      recommendationEnabled = 'piliavalon.shielding.v1.recommendation_enabled',
+      commentEnabled = 'piliavalon.shielding.v1.comment_enabled',
+      version = 'piliavalon.shielding.v1.version',
+      lastLoadedAt = 'piliavalon.shielding.v1.last_loaded_at';
+}

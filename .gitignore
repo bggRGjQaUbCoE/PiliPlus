@@ -150,3 +150,19 @@ pili_release.json
 dist
 
 test*
+!test/
+test/*
+!test/bootstrap/
+test/bootstrap/*
+!test/bootstrap/bootstrap_app_test.dart
+!test/features/
+test/features/*
+!test/features/shielding/
+!test/features/shielding/**
+!test/pages/
+test/pages/*
+!test/pages/setting/
+test/pages/setting/*
+!test/pages/setting/models/
+test/pages/setting/models/*
+!test/pages/setting/models/shielding_settings_test.dart

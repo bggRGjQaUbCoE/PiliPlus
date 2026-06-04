@@ -13,6 +13,7 @@ import 'package:PiliPlus/common/widgets/gesture/tap_gesture_recognizer.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/image_grid/image_grid_view.dart';
 import 'package:PiliPlus/common/widgets/pendant_avatar.dart';
+import 'package:PiliPlus/features/shielding/shielding.dart';
 import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
     show ReplyInfo, ReplyControl, Content, Url;
 import 'package:PiliPlus/grpc/reply.dart';
@@ -42,7 +43,6 @@ import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
-import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/url_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
@@ -1136,6 +1136,34 @@ class ReplyItemGrpc extends StatelessWidget {
               leading: Icon(Icons.error_outline, color: errorColor, size: 19),
               title: Text('举报', style: style.copyWith(color: errorColor)),
             ),
+          ListTile(
+            onTap: () {
+              Get.back();
+              _addCommentQuickActionRule(
+                type: ShieldRuleType.uid,
+                pattern: _replyUid(item),
+                targetLabel: '屏蔽评论用户 UID ${_replyUid(item)}',
+              );
+            },
+            minLeadingWidth: 0,
+            leading: const Icon(Icons.person_off_outlined, size: 19),
+            title: Text('屏蔽评论用户 UID: ${_replyUid(item)}', style: style),
+          ),
+          ListTile(
+            onTap: () {
+              Get.back();
+              final escapedMessage = RegExp.escape(message);
+              _addCommentQuickActionRule(
+                type: ShieldRuleType.keyword,
+                matchMode: ShieldMatchMode.regex,
+                pattern: '^$escapedMessage\$',
+                targetLabel: '屏蔽整条评论文本「$message」',
+              );
+            },
+            minLeadingWidth: 0,
+            leading: const Icon(CustomIcons.shield_reply, size: 19),
+            title: Text('屏蔽整条评论文本', style: style),
+          ),
           if (replyLevel == 1 && !isSubReply && ownerMid == upMid)
             ListTile(
               onTap: () {
@@ -1215,34 +1243,18 @@ class ReplyItemGrpc extends StatelessWidget {
           onPressed: () {
             Navigator.of(context).pop();
             final select = editableTextState.textEditingValue;
-            String text = RegExp.escape(
-              select.selection.textInside(select.text),
-            );
-            if (ReplyGrpc.enableFilter) text = '|$text';
+            final selectedText = select.selection.textInside(select.text);
 
             showConfirmDialog(
               context: context,
-              title: const Text('是否确认评论过滤的变更：'),
-              content: Text.rich(
-                TextSpan(
-                  text: ReplyGrpc.replyRegExp.pattern,
-                  children: [
-                    TextSpan(
-                      text: text,
-                      style: const TextStyle(
-                        color: Colors.green,
-                        fontWeight: .bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              onConfirm: () {
-                final filter = ReplyGrpc.replyRegExp.pattern + text;
-                ReplyGrpc.replyRegExp = RegExp(filter, caseSensitive: true);
-                ReplyGrpc.enableFilter = true;
-                GStorage.setting.put(SettingBoxKey.banWordForReply, filter);
-                SmartDialog.showToast('已保存');
+              title: const Text('是否加入评论屏蔽规则：'),
+              content: Text('屏蔽评论关键词「$selectedText」'),
+              onConfirm: () async {
+                await _addCommentQuickActionRule(
+                  type: ShieldRuleType.keyword,
+                  pattern: selectedText,
+                  targetLabel: '屏蔽评论关键词「$selectedText」',
+                );
               },
             );
           },
@@ -1254,5 +1266,37 @@ class ReplyItemGrpc extends StatelessWidget {
       buttonItems: items,
       anchors: editableTextState.contextMenuAnchors,
     );
+  }
+
+  static Future<bool> _addCommentQuickActionRule({
+    required ShieldRuleType type,
+    required String pattern,
+    required String targetLabel,
+    ShieldMatchMode matchMode = ShieldMatchMode.exact,
+    bool showDuplicateToast = true,
+  }) async {
+    try {
+      final rule = await ShieldSettingsStore().addQuickActionRule(
+        type: type,
+        scope: ShieldScope.comment,
+        pattern: pattern,
+        matchMode: matchMode,
+      );
+      if (rule == null) {
+        if (showDuplicateToast) SmartDialog.showToast('规则已存在：$targetLabel');
+        return true;
+      }
+      SmartDialog.showToast('已添加：$targetLabel');
+      return true;
+    } catch (e) {
+      SmartDialog.showToast('保存失败: $e');
+      return false;
+    }
+  }
+
+  static String _replyUid(ReplyInfo item) {
+    if (item.hasMid()) return item.mid.toString();
+    if (item.hasMember()) return item.member.mid.toString();
+    return item.mid.toString();
   }
 }

@@ -1,0 +1,272 @@
+$ gh run view 26710277634 --repo CometDash77/PiliAvalon-Worksite --log --job 78719219441 2>&1
+[exit 0]
+Build Android x86_64 artifact	Set up job	﻿2026-05-31T10:38:29.6441941Z Current runner version: '2.334.0'
+Build Android x86_64 artifact	Set up job	2026-05-31T10:38:29.6466929Z ##[group]Runner Image Provisioner
+Build Android x86_64 artifact	Set up job	2026-05-31T10:38:29.6467990Z Hosted Compute Agent
+Build Android x86_64 artifact	Set up job	2026-05-31T10:38:29.6468587Z Version: 20260520.533
+Build Android x86_64 artifact	Set up job	2026-05-31T10:38:29.6469297Z Commit: 189110e25284a9812c124fd27b339e2fb4f2f9db
+Build Android x86_64 artifact	Set up job	2026-05-31T10:38:29.6470022Z Build Date: 2026-05-20T17:44:04Z
+Build Android x86_64 artifact	Set up job	2026-05-31T10:38:29.6470680Z Worker ID: {9fe21f96-837f-4a1c-bf6c-1edc058f1830}
+Build Android x86_64 artifact	Set up job	2026-05-31T10:38:29.6471457Z Azure Region: westcentralus
+Build Android x86_64 artifact	Set up job	2026-05-31T10:38:29.6472057Z ##[endgroup]
+Build Android x86_64 artifact	Set up job	2026-05-31T10:38:29.6473944Z ##[group]Operating System
+Build Android x86_64 artifact	Set up job	2026-05-31T10:38:29.6474660Z Ubuntu
+Build Android x86_64 artifact	Set up job	2026-05-31T10:38:29.6475183Z 24.04.4
+Build Android x86_64 artifact	Set up job	2026-05-31T10:38:29.6475738Z LTS
+Build Android x86_64 artifact	Set up job	2026-05-31T10:38:29.6476241Z ##[endgroup]
+Build Android x86_64 artifact	Set up job	2026-05-31T10:38:29.6476773Z ##[group]Runner Image
+Build Android x86_64 artifact	Set up job	2026-05-31T10:38:29.6477492Z Image: ubuntu-24.04
+Build Android x86_64 artifact	Set up job	2026-05-31T10:38:29.6478047Z Version: 20260525.161.1
+Build Android x86_64 artifact	Set up job	2026-05-31T10:38:29.6479142Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260525.161/images/ubuntu/Ubuntu2404-Readme.md
+Build Android x86_64 artifact	Set up job	2026-05-31T10:38:29.6480787Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260525.161
+Build Android x86_64 artifact	Set up job	2026-05-31T10:38:29.6481895Z ##[endgroup]
+Build Android x86_64 artifact	Set up job	2026-05-31T10:38:29.6483550Z ##[group]GITHUB_TOKEN Permissions
+Build Android x86_64 artifact	Set up job	2026-05-31T10:38:29.6485765Z Actions: read
+Build Android x86_64 artifact	Set up job	2026-05-31T10:38:29.6486396Z Contents: read
+Build Android x86_64 artifact	Set up job	2026-05-31T10:38:29.6487072Z Metadata: read
+Build Android x86_64 artifact	Set up job	2026-05-31T10:38:29.6487655Z ##[endgroup]
+Build Android x86_64 artifact	Set up job	2026-05-31T10:38:29.6489783Z Secret source: Actions
+Build Android x86_64 artifact	Set up job	2026-05-31T10:38:29.6490658Z Prepare workflow directory
+Build Android x86_64 artifact	Set up job	2026-05-31T10:38:29.6865193Z Prepare all required actions
+Build Android x86_64 artifact	Set up job	2026-05-31T10:38:29.6919961Z Getting action download info
+Build Android x86_64 artifact	Set up job	2026-05-31T10:38:30.1997998Z Download action repository 'actions/checkout@v6' (SHA:de0fac2e4500dabe0009e67214ff5f5447ce83dd)
+Build Android x86_64 artifact	Set up job	2026-05-31T10:38:30.3033823Z Download action repository 'actions/setup-java@v5' (SHA:be666c2fcd27ec809703dec50e508c2fdc7f6654)
+Build Android x86_64 artifact	Set up job	2026-05-31T10:38:31.1886747Z Download action repository 'subosito/flutter-action@v2' (SHA:1a449444c387b1966244ae4d4f8c696479add0b2)
+Build Android x86_64 artifact	Set up job	2026-05-31T10:38:31.6029531Z Download action repository 'actions/upload-artifact@v7' (SHA:043fb46d1a93c77aae656e7c1c64a875d1fc6a0a)
+Build Android x86_64 artifact	Set up job	2026-05-31T10:38:31.8195628Z Getting action download info
+Build Android x86_64 artifact	Set up job	2026-05-31T10:38:31.9766789Z Download action repository 'actions/cache@v5' (SHA:27d5ce7f107fe9357f9df03efb73ab90386fccae)
+Build Android x86_64 artifact	Set up job	2026-05-31T10:38:32.1252274Z Complete job name: Build Android x86_64 artifact
+Build Android x86_64 artifact	Checkout	﻿2026-05-31T10:38:32.1911085Z ##[group]Run actions/checkout@v6
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:32.1911784Z with:
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:32.1912044Z   repository: CometDash77/PiliAvalon-Worksite
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:32.1915237Z   token: ***
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:32.1915465Z   ssh-strict: true
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:32.1915685Z   ssh-user: git
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:32.1915904Z   persist-credentials: true
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:32.1916157Z   clean: true
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:32.1916393Z   sparse-checkout-cone-mode: true
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:32.1916661Z   fetch-depth: 1
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:32.1916885Z   fetch-tags: false
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:32.1917100Z   show-progress: true
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:32.1917310Z   lfs: false
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:32.1917522Z   submodules: false
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:32.1917743Z   set-safe-directory: true
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:32.1918239Z ##[endgroup]
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:32.2957565Z Syncing repository: CometDash77/PiliAvalon-Worksite
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:32.2959076Z ##[group]Getting Git version info
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:32.2959592Z Working directory is '/home/runner/work/PiliAvalon-Worksite/PiliAvalon-Worksite'
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:32.2960300Z [command]/usr/bin/git version
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:32.3011561Z git version 2.54.0
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:32.3035703Z ##[endgroup]
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:32.3050261Z Temporarily overriding HOME='/home/runner/work/_temp/0ab1ca2c-8688-46cc-a0f0-afc6daac07bd' before making global git config changes
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:32.3051118Z Adding repository directory to the temporary git global config as a safe directory
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:32.3056755Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/PiliAvalon-Worksite/PiliAvalon-Worksite
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:32.3109587Z Deleting the contents of '/home/runner/work/PiliAvalon-Worksite/PiliAvalon-Worksite'
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:32.3111151Z ##[group]Initializing the repository
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:32.3112039Z [command]/usr/bin/git init /home/runner/work/PiliAvalon-Worksite/PiliAvalon-Worksite
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:32.3213494Z hint: Using 'master' as the name for the initial branch. This default branch name
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:32.3214504Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:32.3215499Z hint: to use in all of your new repositories, which will suppress this warning,
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:32.3216241Z hint: call:
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:32.3216732Z hint:
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:32.3217341Z hint: 	git config --global init.defaultBranch <name>
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:32.3218079Z hint:
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:32.3218818Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:32.3219628Z hint: 'development'. The just-created branch can be renamed via this command:
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:32.3220358Z hint:
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:32.3220795Z hint: 	git branch -m <name>
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:32.3221266Z hint:
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:32.3221924Z hint: Disable this message with "git config set advice.defaultBranchName false"
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:32.3223761Z Initialized empty Git repository in /home/runner/work/PiliAvalon-Worksite/PiliAvalon-Worksite/.git/
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:32.3231782Z [command]/usr/bin/git remote add origin https://github.com/CometDash77/PiliAvalon-Worksite
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:32.3272437Z ##[endgroup]
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:32.3272881Z ##[group]Disabling automatic garbage collection
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:32.3277907Z [command]/usr/bin/git config --local gc.auto 0
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:32.3307396Z ##[endgroup]
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:32.3308123Z ##[group]Setting up auth
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:32.3308950Z Removing SSH command configuration
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:32.3315565Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:32.3348756Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:32.3668094Z Removing HTTP extra header
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:32.3672955Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:32.3703465Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:32.3920440Z Removing includeIf entries pointing to credentials config files
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:32.3927705Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:32.3958888Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:32.4173928Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-fdedb227-fb46-4ec8-9a64-3d2cc949acc1.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:32.4209784Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/PiliAvalon-Worksite/PiliAvalon-Worksite/.git.path /home/runner/work/_temp/git-credentials-fdedb227-fb46-4ec8-9a64-3d2cc949acc1.config
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:32.4237602Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/PiliAvalon-Worksite/PiliAvalon-Worksite/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-fdedb227-fb46-4ec8-9a64-3d2cc949acc1.config
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:32.4269136Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-fdedb227-fb46-4ec8-9a64-3d2cc949acc1.config
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:32.4299744Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-fdedb227-fb46-4ec8-9a64-3d2cc949acc1.config
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:32.4324799Z ##[endgroup]
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:32.4325545Z ##[group]Fetching the repository
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:32.4335213Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +2ed9c8bebff0657b39c5b674eb34a88f0e05d1fa:refs/remotes/origin/phase-1-shielding-core
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:34.0534264Z From https://github.com/CometDash77/PiliAvalon-Worksite
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:34.0535359Z  * [new ref]         2ed9c8bebff0657b39c5b674eb34a88f0e05d1fa -> origin/phase-1-shielding-core
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:34.0580213Z [command]/usr/bin/git branch --list --remote origin/phase-1-shielding-core
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:34.0606188Z   origin/phase-1-shielding-core
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:34.0614541Z [command]/usr/bin/git rev-parse refs/remotes/origin/phase-1-shielding-core
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:34.0635898Z 2ed9c8bebff0657b39c5b674eb34a88f0e05d1fa
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:34.0640686Z ##[endgroup]
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:34.0641445Z ##[group]Determining the checkout info
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:34.0642332Z ##[endgroup]
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:34.0664066Z [command]/usr/bin/git sparse-checkout disable
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:34.0693707Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:34.0720088Z ##[group]Checking out the ref
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:34.0729172Z [command]/usr/bin/git checkout --progress --force -B phase-1-shielding-core refs/remotes/origin/phase-1-shielding-core
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:34.2575233Z Switched to a new branch 'phase-1-shielding-core'
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:34.2576327Z branch 'phase-1-shielding-core' set up to track 'origin/phase-1-shielding-core'.
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:34.2592146Z ##[endgroup]
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:34.2635958Z [command]/usr/bin/git log -1 --format=%H
+Build Android x86_64 artifact	Checkout	2026-05-31T10:38:34.2658333Z 2ed9c8bebff0657b39c5b674eb34a88f0e05d1fa
+Build Android x86_64 artifact	Setup Java	﻿2026-05-31T10:38:34.2933886Z ##[group]Run actions/setup-java@v5
+Build Android x86_64 artifact	Setup Java	2026-05-31T10:38:34.2934234Z with:
+Build Android x86_64 artifact	Setup Java	2026-05-31T10:38:34.2934449Z   distribution: zulu
+Build Android x86_64 artifact	Setup Java	2026-05-31T10:38:34.2934674Z   java-version: 17
+Build Android x86_64 artifact	Setup Java	2026-05-31T10:38:34.2934885Z   cache: gradle
+Build Android x86_64 artifact	Setup Java	2026-05-31T10:38:34.2935248Z   cache-dependency-path: android/*.gradle*
+Build Android x86_64 artifact	Setup Java	android/**/gradle-wrapper.properties
+Build Android x86_64 artifact	Setup Java	
+Build Android x86_64 artifact	Setup Java	2026-05-31T10:38:34.2935706Z   java-package: jdk
+Build Android x86_64 artifact	Setup Java	2026-05-31T10:38:34.2935945Z   check-latest: false
+Build Android x86_64 artifact	Setup Java	2026-05-31T10:38:34.2936167Z   server-id: github
+Build Android x86_64 artifact	Setup Java	2026-05-31T10:38:34.2936382Z   server-username: GITHUB_ACTOR
+Build Android x86_64 artifact	Setup Java	2026-05-31T10:38:34.2936645Z   server-password: GITHUB_TOKEN
+Build Android x86_64 artifact	Setup Java	2026-05-31T10:38:34.2936922Z   overwrite-settings: true
+Build Android x86_64 artifact	Setup Java	2026-05-31T10:38:34.2937183Z   job-status: success
+Build Android x86_64 artifact	Setup Java	2026-05-31T10:38:34.2939934Z   token: ***
+Build Android x86_64 artifact	Setup Java	2026-05-31T10:38:34.2940150Z ##[endgroup]
+Build Android x86_64 artifact	Setup Java	2026-05-31T10:38:34.4478068Z ##[group]Installed distributions
+Build Android x86_64 artifact	Setup Java	2026-05-31T10:38:34.4503922Z Trying to resolve the latest version from remote
+Build Android x86_64 artifact	Setup Java	2026-05-31T10:38:34.5832419Z Resolved latest version as 17.0.19+10
+Build Android x86_64 artifact	Setup Java	2026-05-31T10:38:34.5833484Z Trying to download...
+Build Android x86_64 artifact	Setup Java	2026-05-31T10:38:34.5834729Z Downloading Java 17.0.19+10 (Zulu) from https://cdn.azul.com/zulu/bin/zulu17.66.19-ca-crac-jdk17.0.19-linux_x64.tar.gz ...
+Build Android x86_64 artifact	Setup Java	2026-05-31T10:38:36.8313506Z Extracting Java archive...
+Build Android x86_64 artifact	Setup Java	2026-05-31T10:38:36.8455523Z [command]/usr/bin/tar xz --warning=no-unknown-keyword --overwrite -C /home/runner/work/_temp/b1d71f38-b339-4adc-8917-88e6a554222f -f /home/runner/work/_temp/6a98d691-7235-43a2-8106-f6e7be4a2f95
+Build Android x86_64 artifact	Setup Java	2026-05-31T10:38:39.5576441Z Java 17.0.19+10 was downloaded
+Build Android x86_64 artifact	Setup Java	2026-05-31T10:38:39.5587450Z Setting Java 17.0.19+10 as the default
+Build Android x86_64 artifact	Setup Java	2026-05-31T10:38:39.5587870Z Creating toolchains.xml for JDK version 17 from zulu
+Build Android x86_64 artifact	Setup Java	2026-05-31T10:38:39.5662054Z Writing to /home/runner/.m2/toolchains.xml
+Build Android x86_64 artifact	Setup Java	2026-05-31T10:38:39.5662488Z 
+Build Android x86_64 artifact	Setup Java	2026-05-31T10:38:39.5662664Z Java configuration:
+Build Android x86_64 artifact	Setup Java	2026-05-31T10:38:39.5663339Z   Distribution: zulu
+Build Android x86_64 artifact	Setup Java	2026-05-31T10:38:39.5663780Z   Version: 17.0.19+10
+Build Android x86_64 artifact	Setup Java	2026-05-31T10:38:39.5664488Z   Path: /opt/hostedtoolcache/Java_Zulu_jdk/17.0.19-10/x64
+Build Android x86_64 artifact	Setup Java	2026-05-31T10:38:39.5664986Z 
+Build Android x86_64 artifact	Setup Java	2026-05-31T10:38:39.5665468Z ##[endgroup]
+Build Android x86_64 artifact	Setup Java	2026-05-31T10:38:39.5681910Z Creating settings.xml with server-id: github
+Build Android x86_64 artifact	Setup Java	2026-05-31T10:38:39.5691874Z Writing to /home/runner/.m2/settings.xml
+Build Android x86_64 artifact	Setup Java	2026-05-31T10:38:39.9572823Z Cache hit for: setup-java-Linux-x64-gradle-2a7028e5668be7d861a04aba81c7d828aeaa9dba20d053d306e4cb7a113b3c86
+Build Android x86_64 artifact	Setup Java	2026-05-31T10:38:41.2159751Z Received 8388608 of 3334273512 (0.3%), 8.0 MBs/sec
+Build Android x86_64 artifact	Setup Java	2026-05-31T10:38:42.2167248Z Received 134217728 of 3334273512 (4.0%), 64.0 MBs/sec
+Build Android x86_64 artifact	Setup Java	2026-05-31T10:38:43.2174128Z Received 301989888 of 3334273512 (9.1%), 95.9 MBs/sec
+Build Android x86_64 artifact	Setup Java	2026-05-31T10:38:44.2176483Z Received 482344960 of 3334273512 (14.5%), 114.9 MBs/sec
+Build Android x86_64 artifact	Setup Java	2026-05-31T10:38:45.2176992Z Received 536870912 of 3334273512 (16.1%), 102.4 MBs/sec
+Build Android x86_64 artifact	Setup Java	2026-05-31T10:38:46.2263276Z Received 675282944 of 3334273512 (20.3%), 107.1 MBs/sec
+Build Android x86_64 artifact	Setup Java	2026-05-31T10:38:47.2274238Z Received 822083584 of 3334273512 (24.7%), 111.8 MBs/sec
+Build Android x86_64 artifact	Setup Java	2026-05-31T10:38:48.2265774Z Received 968884224 of 3334273512 (29.1%), 115.3 MBs/sec
+Build Android x86_64 artifact	Setup Java	2026-05-31T10:38:49.2324314Z Received 1119879168 of 3334273512 (33.6%), 118.5 MBs/sec
+Build Android x86_64 artifact	Setup Java	2026-05-31T10:38:50.2289590Z Received 1270874112 of 3334273512 (38.1%), 121.0 MBs/sec
+Build Android x86_64 artifact	Setup Java	2026-05-31T10:38:51.2314100Z Received 1421869056 of 3334273512 (42.6%), 123.1 MBs/sec
+Build Android x86_64 artifact	Setup Java	2026-05-31T10:38:52.2318586Z Received 1572864000 of 3334273512 (47.2%), 124.8 MBs/sec
+Build Android x86_64 artifact	Setup Java	2026-05-31T10:38:53.2330917Z Received 1719664640 of 3334273512 (51.6%), 126.0 MBs/sec
+Build Android x86_64 artifact	Setup Java	2026-05-31T10:38:54.2338133Z Received 1866465280 of 3334273512 (56.0%), 127.0 MBs/sec
+Build Android x86_64 artifact	Setup Java	2026-05-31T10:38:55.2341650Z Received 1879048192 of 3334273512 (56.4%), 119.3 MBs/sec
+Build Android x86_64 artifact	Setup Java	2026-05-31T10:38:56.2342205Z Received 2021654528 of 3334273512 (60.6%), 120.4 MBs/sec
+Build Android x86_64 artifact	Setup Java	2026-05-31T10:38:57.2346628Z Received 2143289344 of 3334273512 (64.3%), 120.1 MBs/sec
+Build Android x86_64 artifact	Setup Java	2026-05-31T10:38:58.2353021Z Received 2277507072 of 3334273512 (68.3%), 120.5 MBs/sec
+Build Android x86_64 artifact	Setup Java	2026-05-31T10:38:59.2393779Z Received 2407530496 of 3334273512 (72.2%), 120.7 MBs/sec
+Build Android x86_64 artifact	Setup Java	2026-05-31T10:39:00.2414572Z Received 2529165312 of 3334273512 (75.9%), 120.5 MBs/sec
+Build Android x86_64 artifact	Setup Java	2026-05-31T10:39:01.2369393Z Received 2671771648 of 3334273512 (80.1%), 121.2 MBs/sec
+Build Android x86_64 artifact	Setup Java	2026-05-31T10:39:02.2371854Z Received 2810183680 of 3334273512 (84.3%), 121.7 MBs/sec
+Build Android x86_64 artifact	Setup Java	2026-05-31T10:39:03.2394811Z Received 2940207104 of 3334273512 (88.2%), 121.8 MBs/sec
+Build Android x86_64 artifact	Setup Java	2026-05-31T10:39:04.2390398Z Received 3057647616 of 3334273512 (91.7%), 121.4 MBs/sec
+Build Android x86_64 artifact	Setup Java	2026-05-31T10:39:05.2424658Z Received 3196059648 of 3334273512 (95.9%), 121.8 MBs/sec
+Build Android x86_64 artifact	Setup Java	2026-05-31T10:39:06.2402090Z Received 3321888768 of 3334273512 (99.6%), 121.7 MBs/sec
+Build Android x86_64 artifact	Setup Java	2026-05-31T10:39:06.4143751Z Received 3334273512 of 3334273512 (100.0%), 121.4 MBs/sec
+Build Android x86_64 artifact	Setup Java	2026-05-31T10:39:06.4144575Z Cache Size: ~3180 MB (3334273512 B)
+Build Android x86_64 artifact	Setup Java	2026-05-31T10:39:06.4189585Z [command]/usr/bin/tar -xf /home/runner/work/_temp/6bb1d3f3-51ed-48de-be1e-b6e28b452501/cache.tzst -P -C /home/runner/work/PiliAvalon-Worksite/PiliAvalon-Worksite --use-compress-program unzstd
+Build Android x86_64 artifact	Setup Java	2026-05-31T10:39:25.4208342Z Cache restored successfully
+Build Android x86_64 artifact	Setup Java	2026-05-31T10:39:25.5579827Z Cache restored from key: setup-java-Linux-x64-gradle-2a7028e5668be7d861a04aba81c7d828aeaa9dba20d053d306e4cb7a113b3c86
+Build Android x86_64 artifact	Setup Flutter	﻿2026-05-31T10:39:25.5942762Z ##[group]Run subosito/flutter-action@v2
+Build Android x86_64 artifact	Setup Flutter	2026-05-31T10:39:25.5943341Z with:
+Build Android x86_64 artifact	Setup Flutter	2026-05-31T10:39:25.5943557Z   channel: stable
+Build Android x86_64 artifact	Setup Flutter	2026-05-31T10:39:25.5943796Z   flutter-version-file: pubspec.yaml
+Build Android x86_64 artifact	Setup Flutter	2026-05-31T10:39:25.5944068Z   cache: true
+Build Android x86_64 artifact	Setup Flutter	2026-05-31T10:39:25.5944286Z   architecture: X64
+Build Android x86_64 artifact	Setup Flutter	2026-05-31T10:39:25.5944505Z   pub-cache-path: default
+Build Android x86_64 artifact	Setup Flutter	2026-05-31T10:39:25.5944742Z   dry-run: false
+Build Android x86_64 artifact	Setup Flutter	2026-05-31T10:39:25.5945010Z   git-source: https://github.com/flutter/flutter.git
+Build Android x86_64 artifact	Setup Flutter	2026-05-31T10:39:25.5945320Z env:
+Build Android x86_64 artifact	Setup Flutter	2026-05-31T10:39:25.5945580Z   JAVA_HOME: /opt/hostedtoolcache/Java_Zulu_jdk/17.0.19-10/x64
+Build Android x86_64 artifact	Setup Flutter	2026-05-31T10:39:25.5945997Z   JAVA_HOME_17_X64: /opt/hostedtoolcache/Java_Zulu_jdk/17.0.19-10/x64
+Build Android x86_64 artifact	Setup Flutter	2026-05-31T10:39:25.5946342Z ##[endgroup]
+Build Android x86_64 artifact	Setup Flutter	2026-05-31T10:39:25.6051396Z ##[group]Run chmod +x "$GITHUB_ACTION_PATH/setup.sh"
+Build Android x86_64 artifact	Setup Flutter	2026-05-31T10:39:25.6051871Z ^[[36;1mchmod +x "$GITHUB_ACTION_PATH/setup.sh"^[[0m
+Build Android x86_64 artifact	Setup Flutter	2026-05-31T10:39:25.6084070Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+Build Android x86_64 artifact	Setup Flutter	2026-05-31T10:39:25.6084429Z env:
+Build Android x86_64 artifact	Setup Flutter	2026-05-31T10:39:25.6084766Z   JAVA_HOME: /opt/hostedtoolcache/Java_Zulu_jdk/17.0.19-10/x64
+Build Android x86_64 artifact	Setup Flutter	2026-05-31T10:39:25.6085200Z   JAVA_HOME_17_X64: /opt/hostedtoolcache/Java_Zulu_jdk/17.0.19-10/x64
+Build Android x86_64 artifact	Setup Flutter	2026-05-31T10:39:25.6085549Z ##[endgroup]
+Build Android x86_64 artifact	Setup Flutter	2026-05-31T10:39:25.6411245Z ##[group]Run $GITHUB_ACTION_PATH/setup.sh -p \
+Build Android x86_64 artifact	Setup Flutter	2026-05-31T10:39:25.6411660Z ^[[36;1m$GITHUB_ACTION_PATH/setup.sh -p \^[[0m
+Build Android x86_64 artifact	Setup Flutter	2026-05-31T10:39:25.6411955Z ^[[36;1m  -n '' \^[[0m
+Build Android x86_64 artifact	Setup Flutter	2026-05-31T10:39:25.6412192Z ^[[36;1m  -f 'pubspec.yaml' \^[[0m
+Build Android x86_64 artifact	Setup Flutter	2026-05-31T10:39:25.6412451Z ^[[36;1m  -a 'X64' \^[[0m
+Build Android x86_64 artifact	Setup Flutter	2026-05-31T10:39:25.6412666Z ^[[36;1m  -k '' \^[[0m
+Build Android x86_64 artifact	Setup Flutter	2026-05-31T10:39:25.6412871Z ^[[36;1m  -c '' \^[[0m
+Build Android x86_64 artifact	Setup Flutter	2026-05-31T10:39:25.6413343Z ^[[36;1m  -l '' \^[[0m
+Build Android x86_64 artifact	Setup Flutter	2026-05-31T10:39:25.6413586Z ^[[36;1m  -d 'default' \^[[0m
+Build Android x86_64 artifact	Setup Flutter	2026-05-31T10:39:25.6413924Z ^[[36;1m  -g 'https://github.com/flutter/flutter.git' \^[[0m
+Build Android x86_64 artifact	Setup Flutter	2026-05-31T10:39:25.6414252Z ^[[36;1m  stable^[[0m
+Build Android x86_64 artifact	Setup Flutter	2026-05-31T10:39:25.6439636Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+Build Android x86_64 artifact	Setup Flutter	2026-05-31T10:39:25.6439981Z env:
+Build Android x86_64 artifact	Setup Flutter	2026-05-31T10:39:25.6440273Z   JAVA_HOME: /opt/hostedtoolcache/Java_Zulu_jdk/17.0.19-10/x64
+Build Android x86_64 artifact	Setup Flutter	2026-05-31T10:39:25.6440703Z   JAVA_HOME_17_X64: /opt/hostedtoolcache/Java_Zulu_jdk/17.0.19-10/x64
+Build Android x86_64 artifact	Setup Flutter	2026-05-31T10:39:25.6441046Z ##[endgroup]
+Build Android x86_64 artifact	Setup Flutter	2026-05-31T10:39:29.0608755Z ##[group]Run actions/cache@v5
+Build Android x86_64 artifact	Setup Flutter	2026-05-31T10:39:29.0609015Z with:
+Build Android x86_64 artifact	Setup Flutter	2026-05-31T10:39:29.0609265Z   path: /opt/hostedtoolcache/flutter/stable-3.44.0-x64
+Build Android x86_64 artifact	Setup Flutter	2026-05-31T10:39:29.0609737Z   key: flutter-linux-stable-3.44.0-x64-559ffa3f75e7402d65a8def9c28389a9b2e6fe42
+Build Android x86_64 artifact	Setup Flutter	2026-05-31T10:39:29.0610170Z   enableCrossOsArchive: false
+Build Android x86_64 artifact	Setup Flutter	2026-05-31T10:39:29.0610432Z   fail-on-cache-miss: false
+Build Android x86_64 artifact	Setup Flutter	2026-05-31T10:39:29.0610671Z   lookup-only: false
+Build Android x86_64 artifact	Setup Flutter	2026-05-31T10:39:29.0610886Z   save-always: false
+Build Android x86_64 artifact	Setup Flutter	2026-05-31T10:39:29.0611091Z env:
+Build Android x86_64 artifact	Setup Flutter	2026-05-31T10:39:29.0611350Z   JAVA_HOME: /opt/hostedtoolcache/Java_Zulu_jdk/17.0.19-10/x64
+Build Android x86_64 artifact	Setup Flutter	2026-05-31T10:39:29.0611800Z   JAVA_HOME_17_X64: /opt/hostedtoolcache/Java_Zulu_jdk/17.0.19-10/x64
+Build Android x86_64 artifact	Setup Flutter	2026-05-31T10:39:29.0612144Z ##[endgroup]
+Build Android x86_64 artifact	Setup Flutter	2026-05-31T10:39:29.3980692Z Cache hit for: flutter-linux-stable-3.44.0-x64-559ffa3f75e7402d65a8def9c28389a9b2e6fe42
+Build Android x86_64 artifact	Setup Flutter	2026-05-31T10:39:30.6420897Z Received 25165824 of 1687619192 (1.5%), 23.9 MBs/sec
+Build Android x86_64 artifact	Setup Flutter	2026-05-31T10:39:31.6419916Z Received 167772160 of 1687619192 (9.9%), 79.9 MBs/sec
+Build Android x86_64 artifact	Setup Flutter	2026-05-31T10:39:32.6422908Z Received 322961408 of 1687619192 (19.1%), 102.5 MBs/sec
+Build Android x86_64 artifact	Setup Flutter	2026-05-31T10:39:33.6425003Z Received 507510784 of 1687619192 (30.1%), 120.9 MBs/sec
+Build Android x86_64 artifact	Setup Flutter	2026-05-31T10:39:34.6515630Z Received 675282944 of 1687619192 (40.0%), 128.5 MBs/sec
+Build Android x86_64 artifact	Setup Flutter	2026-05-31T10:39:35.6531439Z Received 847249408 of 1687619192 (50.2%), 134.4 MBs/sec
+Build Android x86_64 artifact	Setup Flutter	2026-05-31T10:39:36.6546865Z Received 1044381696 of 1687619192 (61.9%), 142.0 MBs/sec
+Build Android x86_64 artifact	Setup Flutter	2026-05-31T10:39:37.6604160Z Received 1199570944 of 1687619192 (71.1%), 142.7 MBs/sec
+Build Android x86_64 artifact	Setup Flutter	2026-05-31T10:39:38.6580011Z Received 1342177280 of 1687619192 (79.5%), 141.9 MBs/sec
+Build Android x86_64 artifact	Setup Flutter	2026-05-31T10:39:39.6564972Z Received 1514143744 of 1687619192 (89.7%), 144.1 MBs/sec
+Build Android x86_64 artifact	Setup Flutter	2026-05-31T10:39:40.6275693Z Received 1687619192 of 1687619192 (100.0%), 146.5 MBs/sec
+Build Android x86_64 artifact	Setup Flutter	2026-05-31T10:39:40.6283895Z Cache Size: ~1609 MB (1687619192 B)
+Build Android x86_64 artifact	Setup Flutter	2026-05-31T10:39:40.6379960Z [command]/usr/bin/tar -xf /home/runner/work/_temp/eec7c9cb-0e21-4cdd-8e8d-9b26bdf395a5/cache.tzst -P -C /home/runner/work/PiliAvalon-Worksite/PiliAvalon-Worksite --use-compress-program unzstd
+Build Android x86_64 artifact	Setup Flutter	2026-05-31T10:39:45.1461746Z Cache restored successfully
+Build Android x86_64 artifact	Setup Flutter	2026-05-31T10:39:45.2260243Z Cache restored from key: flutter-linux-stable-3.44.0-x64-559ffa3f75e7402d65a8def9c28389a9b2e6fe42
+Build Android x86_64 artifact	Setup Flutter	2026-05-31T10:39:46.1936012Z ##[group]Run actions/cache@v5
+Build Android x86_64 artifact	Setup Flutter	2026-05-31T10:39:46.1936290Z with:
+Build Android x86_64 artifact	Setup Flutter	2026-05-31T10:39:46.1936516Z   path: /home/runner/.pub-cache
+Build Android x86_64 artifact	Setup Flutter	2026-05-31T10:39:46.1937244Z   key: flutter-pub-linux-stable-3.44.0-x64-559ffa3f75e7402d65a8def9c28389a9b2e6fe42-a897e84c32f6353b5a66fdc6bf7375453bc1eff8e1c98c502d5b9f0f7865ed86
+Build Android x86_64 artifact	Setup Flutter	2026-05-31T10:39:46.1938009Z   enableCrossOsArchive: false
+Build Android x86_64 artifact	Setup Flutter	2026-05-31T10:39:46.1938279Z   fail-on-cache-miss: false
+Build Android x86_64 artifact	Setup Flutter	2026-05-31T10:39:46.1938533Z   lookup-only: false
+Build Android x86_64 artifact	Setup Flutter	2026-05-31T10:39:46.1938771Z   save-always: false
+Build Android x86_64 artifact	Setup Flutter	2026-05-31T10:39:46.1938998Z env:
+Build Android x86_64 artifact	Setup Flutter	2026-05-31T10:39:46.1939264Z   JAVA_HOME: /opt/hostedtoolcache/Java_Zulu_jdk/17.0.19-10/x64
+Build Android x86_64 artifact	Setup Flutter	2026-05-31T10:39:46.1939696Z   JAVA_HOME_17_X64: /opt/hostedtoolcache/Java_Zulu_jdk/17.0.19-10/x64
+Build Android x86_64 artifact	Setup Flutter	2026-05-31T10:39:46.1940326Z ##[endgroup]
+Build Android x86_64 artifact	Setup Flutter	2026-05-31T10:39:47.0705676Z Cache hit for: flutter-pub-linux-stable-3.44.0-x64-559ffa3f75e7402d65a8def9c28389a9b2e6fe42-a897e84c32f6353b5a66fdc6bf7375453bc1eff8e1c98c502d5b9f0f7865ed86
+Build Android x86_64 artifact	Setup Flutter	2026-05-31T10:39:48.2914786Z Received 33554432 of 616883816 (5.4%), 32.0 MBs/sec
+Build Android x86_64 artifact	Setup Flutter	2026-05-31T10:39:49.2880928Z Received 201326592 of 616883816 (32.6%), 96.0 MBs/sec
+Build Android x86_64 artifact	Setup Flutter	2026-05-31T10:39:50.2896689Z
+
+[… truncated 49848 chars …]

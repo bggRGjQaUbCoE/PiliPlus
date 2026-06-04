@@ -1,0 +1,159 @@
+name: Phase 1 CI
+
+on:
+  workflow_dispatch:
+    inputs:
+      package_name:
+        description: "Android package name to launch in runtime smoke"
+        required: true
+        default: "com.example.piliplus.dev"
+        type: string
+  push:
+    branches:
+      - phase-1-shielding-core
+  pull_request:
+    branches:
+      - phase-1-shielding-core
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  verify:
+    name: Focused Flutter verification
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version-file: pubspec.yaml
+          cache: true
+
+      - name: Flutter version
+        run: flutter --version
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Verify dependency lock is clean
+        run: git diff --exit-code pubspec.yaml pubspec.lock
+
+      - name: Run shielding tests
+        run: flutter test test/features/shielding
+
+      - name: Run settings model test
+        run: flutter test test/pages/setting/models/shielding_settings_test.dart
+
+      - name: Run bootstrap startup test
+        run: flutter test test/bootstrap/bootstrap_app_test.dart
+
+      - name: Analyze
+        run: flutter analyze --no-fatal-infos
+
+  android-x86-64:
+    name: Build Android x86_64 artifact
+    runs-on: ubuntu-latest
+    needs: verify
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: "zulu"
+          java-version: "17"
+          cache: "gradle"
+          cache-dependency-path: |
+            android/*.gradle*
+            android/**/gradle-wrapper.properties
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version-file: pubspec.yaml
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Verify dependency lock is clean
+        run: git diff --exit-code pubspec.yaml pubspec.lock
+
+      - name: Build x86_64 APK
+        run: flutter build apk --release --split-per-abi --target-platform android-x64 --android-project-arg dev=1 --pub
+
+      - name: Stage x86_64 APK
+        shell: bash
+        run: |
+          set -euxo pipefail
+          apk="$(find build/app/outputs/flutter-apk -maxdepth 1 -type f -name "app-x86_64-release.apk" | head -n 1)"
+          test -n "$apk"
+          cp "$apk" PiliAvalon_android_ci_${GITHUB_SHA:0:12}_x86_64.apk
+          test -s PiliAvalon_android_ci_${GITHUB_SHA:0:12}_x86_64.apk
+
+      - name: Upload x86_64 APK
+        uses: actions/upload-artifact@v7
+        with:
+          name: Android_x86_64
+          path: PiliAvalon_android_ci_*_x86_64.apk
+          if-no-files-found: error
+
+  runtime-smoke:
+    name: Android emulator runtime smoke
+    runs-on: ubuntu-latest
+    needs: android-x86-64
+    timeout-minutes: 45
+    env:
+      ARTIFACT_RUN_ID: ${{ github.run_id }}
+      PACKAGE_NAME: ${{ github.event_name == 'workflow_dispatch' && inputs.package_name || 'com.example.piliplus.dev' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Download x86_64 APK artifact
+        uses: actions/download-artifact@v6
+        with:
+          name: Android_x86_64
+          path: runtime-smoke/apk
+
+      - name: List downloaded APK
+        run: |
+          find runtime-smoke/apk -maxdepth 2 -type f -name "*.apk" -print | tee runtime-smoke/apk-files.txt
+          test -s runtime-smoke/apk-files.txt
+          chmod +x .github/scripts/android_runtime_smoke.sh
+
+      - name: Enable KVM for emulator
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Android emulator install and launch smoke
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          script: .github/scripts/android_runtime_smoke.sh
+
+      - name: Upload runtime smoke evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: android-runtime-smoke-evidence
+          path: runtime-smoke/evidence
+          if-no-files-found: warn

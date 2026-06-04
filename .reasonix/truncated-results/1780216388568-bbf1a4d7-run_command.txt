@@ -1,0 +1,240 @@
+$ gh run view 26707550380 -R CometDash77/PiliAvalon-Worksite --log --job 78711615152 2>&1
+[exit 0]
+Install and launch APK on emulator	Set up job	﻿2026-05-31T08:20:24.1899352Z Current runner version: '2.334.0'
+Install and launch APK on emulator	Set up job	2026-05-31T08:20:24.1927467Z ##[group]Runner Image Provisioner
+Install and launch APK on emulator	Set up job	2026-05-31T08:20:24.1928665Z Hosted Compute Agent
+Install and launch APK on emulator	Set up job	2026-05-31T08:20:24.1929282Z Version: 20260520.533
+Install and launch APK on emulator	Set up job	2026-05-31T08:20:24.1930230Z Commit: 189110e25284a9812c124fd27b339e2fb4f2f9db
+Install and launch APK on emulator	Set up job	2026-05-31T08:20:24.1930979Z Build Date: 2026-05-20T17:44:04Z
+Install and launch APK on emulator	Set up job	2026-05-31T08:20:24.1931666Z Worker ID: {1dc068aa-bc39-40cc-8e40-1ef7bb98da75}
+Install and launch APK on emulator	Set up job	2026-05-31T08:20:24.1932468Z Azure Region: eastus
+Install and launch APK on emulator	Set up job	2026-05-31T08:20:24.1933255Z ##[endgroup]
+Install and launch APK on emulator	Set up job	2026-05-31T08:20:24.1935191Z ##[group]Operating System
+Install and launch APK on emulator	Set up job	2026-05-31T08:20:24.1935913Z Ubuntu
+Install and launch APK on emulator	Set up job	2026-05-31T08:20:24.1936460Z 24.04.4
+Install and launch APK on emulator	Set up job	2026-05-31T08:20:24.1937040Z LTS
+Install and launch APK on emulator	Set up job	2026-05-31T08:20:24.1937614Z ##[endgroup]
+Install and launch APK on emulator	Set up job	2026-05-31T08:20:24.1938171Z ##[group]Runner Image
+Install and launch APK on emulator	Set up job	2026-05-31T08:20:24.1938862Z Image: ubuntu-24.04
+Install and launch APK on emulator	Set up job	2026-05-31T08:20:24.1939456Z Version: 20260525.161.1
+Install and launch APK on emulator	Set up job	2026-05-31T08:20:24.1940916Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260525.161/images/ubuntu/Ubuntu2404-Readme.md
+Install and launch APK on emulator	Set up job	2026-05-31T08:20:24.1942716Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260525.161
+Install and launch APK on emulator	Set up job	2026-05-31T08:20:24.1943798Z ##[endgroup]
+Install and launch APK on emulator	Set up job	2026-05-31T08:20:24.1945021Z ##[group]GITHUB_TOKEN Permissions
+Install and launch APK on emulator	Set up job	2026-05-31T08:20:24.1947308Z Actions: read
+Install and launch APK on emulator	Set up job	2026-05-31T08:20:24.1947984Z Contents: read
+Install and launch APK on emulator	Set up job	2026-05-31T08:20:24.1948630Z Metadata: read
+Install and launch APK on emulator	Set up job	2026-05-31T08:20:24.1949228Z ##[endgroup]
+Install and launch APK on emulator	Set up job	2026-05-31T08:20:24.1952328Z Secret source: Actions
+Install and launch APK on emulator	Set up job	2026-05-31T08:20:24.1953677Z Prepare workflow directory
+Install and launch APK on emulator	Set up job	2026-05-31T08:20:24.2498385Z Prepare all required actions
+Install and launch APK on emulator	Set up job	2026-05-31T08:20:24.2535316Z Getting action download info
+Install and launch APK on emulator	Set up job	2026-05-31T08:20:24.6136206Z Download action repository 'actions/checkout@v6' (SHA:de0fac2e4500dabe0009e67214ff5f5447ce83dd)
+Install and launch APK on emulator	Set up job	2026-05-31T08:20:24.7239320Z Download action repository 'reactivecircus/android-emulator-runner@v2' (SHA:e89f39f1abbbd05b1113a29cf4db69e7540cae5a)
+Install and launch APK on emulator	Set up job	2026-05-31T08:20:24.8640561Z Download action repository 'actions/upload-artifact@v7' (SHA:043fb46d1a93c77aae656e7c1c64a875d1fc6a0a)
+Install and launch APK on emulator	Set up job	2026-05-31T08:20:25.0418254Z Complete job name: Install and launch APK on emulator
+Install and launch APK on emulator	Checkout	﻿2026-05-31T08:20:25.1093905Z ##[group]Run actions/checkout@v6
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:25.1094886Z with:
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:25.1095418Z   repository: CometDash77/PiliAvalon-Worksite
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:25.1100540Z   token: ***
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:25.1101050Z   ssh-strict: true
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:25.1101547Z   ssh-user: git
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:25.1102035Z   persist-credentials: true
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:25.1102572Z   clean: true
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:25.1103065Z   sparse-checkout-cone-mode: true
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:25.1103646Z   fetch-depth: 1
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:25.1104112Z   fetch-tags: false
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:25.1104614Z   show-progress: true
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:25.1105096Z   lfs: false
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:25.1105541Z   submodules: false
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:25.1106030Z   set-safe-directory: true
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:25.1106762Z env:
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:25.1107209Z   ARTIFACT_RUN_ID: 26707279023
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:25.1107774Z   PACKAGE_NAME: com.example.piliplus
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:25.1108372Z ##[endgroup]
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:25.2143269Z Syncing repository: CometDash77/PiliAvalon-Worksite
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:25.2145932Z ##[group]Getting Git version info
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:25.2146894Z Working directory is '/home/runner/work/PiliAvalon-Worksite/PiliAvalon-Worksite'
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:25.2148135Z [command]/usr/bin/git version
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:25.2198204Z git version 2.54.0
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:25.2251225Z ##[endgroup]
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:25.2265842Z Temporarily overriding HOME='/home/runner/work/_temp/e76b5b97-bf5e-4cce-a3ff-0761ded016a3' before making global git config changes
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:25.2268865Z Adding repository directory to the temporary git global config as a safe directory
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:25.2271811Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/PiliAvalon-Worksite/PiliAvalon-Worksite
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:25.2328547Z Deleting the contents of '/home/runner/work/PiliAvalon-Worksite/PiliAvalon-Worksite'
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:25.2331450Z ##[group]Initializing the repository
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:25.2333542Z [command]/usr/bin/git init /home/runner/work/PiliAvalon-Worksite/PiliAvalon-Worksite
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:25.2432226Z hint: Using 'master' as the name for the initial branch. This default branch name
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:25.2433472Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:25.2434503Z hint: to use in all of your new repositories, which will suppress this warning,
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:25.2435302Z hint: call:
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:25.2436060Z hint:
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:25.2436717Z hint: 	git config --global init.defaultBranch <name>
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:25.2437418Z hint:
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:25.2438051Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:25.2439046Z hint: 'development'. The just-created branch can be renamed via this command:
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:25.2440015Z hint:
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:25.2440567Z hint: 	git branch -m <name>
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:25.2441093Z hint:
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:25.2441769Z hint: Disable this message with "git config set advice.defaultBranchName false"
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:25.2449200Z Initialized empty Git repository in /home/runner/work/PiliAvalon-Worksite/PiliAvalon-Worksite/.git/
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:25.2462599Z [command]/usr/bin/git remote add origin https://github.com/CometDash77/PiliAvalon-Worksite
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:25.2503908Z ##[endgroup]
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:25.2505607Z ##[group]Disabling automatic garbage collection
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:25.2507034Z [command]/usr/bin/git config --local gc.auto 0
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:25.2542270Z ##[endgroup]
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:25.2543647Z ##[group]Setting up auth
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:25.2544658Z Removing SSH command configuration
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:25.2550172Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:25.2584318Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:25.2927285Z Removing HTTP extra header
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:25.2934927Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:25.2967627Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:25.3190891Z Removing includeIf entries pointing to credentials config files
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:25.3196333Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:25.3227985Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:25.3464076Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-1856fc69-cc58-4142-b786-0578de7e51a6.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:25.3500320Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/PiliAvalon-Worksite/PiliAvalon-Worksite/.git.path /home/runner/work/_temp/git-credentials-1856fc69-cc58-4142-b786-0578de7e51a6.config
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:25.3530419Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/PiliAvalon-Worksite/PiliAvalon-Worksite/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-1856fc69-cc58-4142-b786-0578de7e51a6.config
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:25.3562808Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-1856fc69-cc58-4142-b786-0578de7e51a6.config
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:25.3593156Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-1856fc69-cc58-4142-b786-0578de7e51a6.config
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:25.3621642Z ##[endgroup]
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:25.3622553Z ##[group]Fetching the repository
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:25.3630273Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +eda5bee71c2a1f0a0d15187d7104b7bda7a5a915:refs/remotes/origin/phase-1-shielding-acceptance-fixes
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:26.2787839Z From https://github.com/CometDash77/PiliAvalon-Worksite
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:26.2792144Z  * [new ref]         eda5bee71c2a1f0a0d15187d7104b7bda7a5a915 -> origin/phase-1-shielding-acceptance-fixes
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:26.2830436Z [command]/usr/bin/git branch --list --remote origin/phase-1-shielding-acceptance-fixes
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:26.2859668Z   origin/phase-1-shielding-acceptance-fixes
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:26.2868077Z [command]/usr/bin/git rev-parse refs/remotes/origin/phase-1-shielding-acceptance-fixes
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:26.2892081Z eda5bee71c2a1f0a0d15187d7104b7bda7a5a915
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:26.2896998Z ##[endgroup]
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:26.2898298Z ##[group]Determining the checkout info
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:26.2900252Z ##[endgroup]
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:26.2901903Z [command]/usr/bin/git sparse-checkout disable
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:26.2947756Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:26.2978168Z ##[group]Checking out the ref
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:26.2982436Z [command]/usr/bin/git checkout --progress --force -B phase-1-shielding-acceptance-fixes refs/remotes/origin/phase-1-shielding-acceptance-fixes
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:26.4592015Z Switched to a new branch 'phase-1-shielding-acceptance-fixes'
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:26.4594746Z branch 'phase-1-shielding-acceptance-fixes' set up to track 'origin/phase-1-shielding-acceptance-fixes'.
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:26.4610463Z ##[endgroup]
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:26.4655505Z [command]/usr/bin/git log -1 --format=%H
+Install and launch APK on emulator	Checkout	2026-05-31T08:20:26.4680510Z eda5bee71c2a1f0a0d15187d7104b7bda7a5a915
+Install and launch APK on emulator	Download x86_64 APK artifact	﻿2026-05-31T08:20:26.4922122Z ##[group]Run set -euxo pipefail
+Install and launch APK on emulator	Download x86_64 APK artifact	2026-05-31T08:20:26.4923483Z ^[[36;1mset -euxo pipefail^[[0m
+Install and launch APK on emulator	Download x86_64 APK artifact	2026-05-31T08:20:26.4924717Z ^[[36;1mmkdir -p runtime-smoke/apk^[[0m
+Install and launch APK on emulator	Download x86_64 APK artifact	2026-05-31T08:20:26.4926682Z ^[[36;1mgh api "repos/${GITHUB_REPOSITORY}/actions/runs/${ARTIFACT_RUN_ID}/artifacts" \^[[0m
+Install and launch APK on emulator	Download x86_64 APK artifact	2026-05-31T08:20:26.4929315Z ^[[36;1m  --jq '.artifacts[] | select(.name | endswith("_x86_64.apk")) | [.id, .name] | @tsv' \^[[0m
+Install and launch APK on emulator	Download x86_64 APK artifact	2026-05-31T08:20:26.4931782Z ^[[36;1m  | head -n 1 > runtime-smoke/apk/artifact.tsv^[[0m
+Install and launch APK on emulator	Download x86_64 APK artifact	2026-05-31T08:20:26.4933368Z ^[[36;1mtest -s runtime-smoke/apk/artifact.tsv^[[0m
+Install and launch APK on emulator	Download x86_64 APK artifact	2026-05-31T08:20:26.4935094Z ^[[36;1mARTIFACT_ID="$(cut -f1 runtime-smoke/apk/artifact.tsv)"^[[0m
+Install and launch APK on emulator	Download x86_64 APK artifact	2026-05-31T08:20:26.4937044Z ^[[36;1mARTIFACT_NAME="$(cut -f2 runtime-smoke/apk/artifact.tsv)"^[[0m
+Install and launch APK on emulator	Download x86_64 APK artifact	2026-05-31T08:20:26.4939759Z ^[[36;1mgh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${ARTIFACT_ID}/zip" > "runtime-smoke/apk/${ARTIFACT_NAME}"^[[0m
+Install and launch APK on emulator	Download x86_64 APK artifact	2026-05-31T08:20:26.4942529Z ^[[36;1mtest -s "runtime-smoke/apk/${ARTIFACT_NAME}"^[[0m
+Install and launch APK on emulator	Download x86_64 APK artifact	2026-05-31T08:20:26.4976699Z shell: /usr/bin/bash -e {0}
+Install and launch APK on emulator	Download x86_64 APK artifact	2026-05-31T08:20:26.4977884Z env:
+Install and launch APK on emulator	Download x86_64 APK artifact	2026-05-31T08:20:26.4978819Z   ARTIFACT_RUN_ID: 26707279023
+Install and launch APK on emulator	Download x86_64 APK artifact	2026-05-31T08:20:26.4980306Z   PACKAGE_NAME: com.example.piliplus
+Install and launch APK on emulator	Download x86_64 APK artifact	2026-05-31T08:20:26.4992195Z   GH_TOKEN: ***
+Install and launch APK on emulator	Download x86_64 APK artifact	2026-05-31T08:20:26.4993183Z ##[endgroup]
+Install and launch APK on emulator	Download x86_64 APK artifact	2026-05-31T08:20:26.5076340Z + mkdir -p runtime-smoke/apk
+Install and launch APK on emulator	Download x86_64 APK artifact	2026-05-31T08:20:26.5165874Z + gh api repos/CometDash77/PiliAvalon-Worksite/actions/runs/26707279023/artifacts --jq '.artifacts[] | select(.name | endswith("_x86_64.apk")) | [.id, .name] | @tsv'
+Install and launch APK on emulator	Download x86_64 APK artifact	2026-05-31T08:20:26.5169375Z + head -n 1
+Install and launch APK on emulator	Download x86_64 APK artifact	2026-05-31T08:20:26.7633116Z + test -s runtime-smoke/apk/artifact.tsv
+Install and launch APK on emulator	Download x86_64 APK artifact	2026-05-31T08:20:26.7635978Z ++ cut -f1 runtime-smoke/apk/artifact.tsv
+Install and launch APK on emulator	Download x86_64 APK artifact	2026-05-31T08:20:26.7648657Z + ARTIFACT_ID=7315162860
+Install and launch APK on emulator	Download x86_64 APK artifact	2026-05-31T08:20:26.7651498Z ++ cut -f2 runtime-smoke/apk/artifact.tsv
+Install and launch APK on emulator	Download x86_64 APK artifact	2026-05-31T08:20:26.7662240Z + ARTIFACT_NAME=PiliAvalon_android_2.0.7-eda5bee71+5041_x86_64.apk
+Install and launch APK on emulator	Download x86_64 APK artifact	2026-05-31T08:20:26.7664414Z + gh api repos/CometDash77/PiliAvalon-Worksite/actions/artifacts/7315162860/zip
+Install and launch APK on emulator	Download x86_64 APK artifact	2026-05-31T08:20:27.2264075Z + test -s runtime-smoke/apk/PiliAvalon_android_2.0.7-eda5bee71+5041_x86_64.apk
+Install and launch APK on emulator	List downloaded APK	﻿2026-05-31T08:20:27.2300407Z ##[group]Run find runtime-smoke/apk -maxdepth 2 -type f -name "*.apk" -print | tee runtime-smoke/apk-files.txt
+Install and launch APK on emulator	List downloaded APK	2026-05-31T08:20:27.2301237Z ^[[36;1mfind runtime-smoke/apk -maxdepth 2 -type f -name "*.apk" -print | tee runtime-smoke/apk-files.txt^[[0m
+Install and launch APK on emulator	List downloaded APK	2026-05-31T08:20:27.2301991Z ^[[36;1mtest -s runtime-smoke/apk-files.txt^[[0m
+Install and launch APK on emulator	List downloaded APK	2026-05-31T08:20:27.2302359Z ^[[36;1mchmod +x .github/scripts/android_runtime_smoke.sh^[[0m
+Install and launch APK on emulator	List downloaded APK	2026-05-31T08:20:27.2328898Z shell: /usr/bin/bash -e {0}
+Install and launch APK on emulator	List downloaded APK	2026-05-31T08:20:27.2329172Z env:
+Install and launch APK on emulator	List downloaded APK	2026-05-31T08:20:27.2329391Z   ARTIFACT_RUN_ID: 26707279023
+Install and launch APK on emulator	List downloaded APK	2026-05-31T08:20:27.2329678Z   PACKAGE_NAME: com.example.piliplus
+Install and launch APK on emulator	List downloaded APK	2026-05-31T08:20:27.2330168Z ##[endgroup]
+Install and launch APK on emulator	List downloaded APK	2026-05-31T08:20:27.2390777Z runtime-smoke/apk/PiliAvalon_android_2.0.7-eda5bee71+5041_x86_64.apk
+Install and launch APK on emulator	Enable KVM for emulator	﻿2026-05-31T08:20:27.2428593Z ##[group]Run echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+Install and launch APK on emulator	Enable KVM for emulator	2026-05-31T08:20:27.2429435Z ^[[36;1mecho 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules^[[0m
+Install and launch APK on emulator	Enable KVM for emulator	2026-05-31T08:20:27.2430293Z ^[[36;1msudo udevadm control --reload-rules^[[0m
+Install and launch APK on emulator	Enable KVM for emulator	2026-05-31T08:20:27.2430679Z ^[[36;1msudo udevadm trigger --name-match=kvm^[[0m
+Install and launch APK on emulator	Enable KVM for emulator	2026-05-31T08:20:27.2454932Z shell: /usr/bin/bash -e {0}
+Install and launch APK on emulator	Enable KVM for emulator	2026-05-31T08:20:27.2455210Z env:
+Install and launch APK on emulator	Enable KVM for emulator	2026-05-31T08:20:27.2455433Z   ARTIFACT_RUN_ID: 26707279023
+Install and launch APK on emulator	Enable KVM for emulator	2026-05-31T08:20:27.2455726Z   PACKAGE_NAME: com.example.piliplus
+Install and launch APK on emulator	Enable KVM for emulator	2026-05-31T08:20:27.2456015Z ##[endgroup]
+Install and launch APK on emulator	Enable KVM for emulator	2026-05-31T08:20:27.2569127Z KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"
+Install and launch APK on emulator	Android emulator install and launch smoke	﻿2026-05-31T08:20:27.2994361Z ##[group]Run reactivecircus/android-emulator-runner@v2
+Install and launch APK on emulator	Android emulator install and launch smoke	2026-05-31T08:20:27.2994738Z with:
+Install and launch APK on emulator	Android emulator install and launch smoke	2026-05-31T08:20:27.2994956Z   api-level: 35
+Install and launch APK on emulator	Android emulator install and launch smoke	2026-05-31T08:20:27.2995194Z   target: google_apis
+Install and launch APK on emulator	Android emulator install and launch smoke	2026-05-31T08:20:27.2995433Z   arch: x86_64
+Install and launch APK on emulator	Android emulator install and launch smoke	2026-05-31T08:20:27.2995654Z   profile: pixel_6
+Install and launch APK on emulator	Android emulator install and launch smoke	2026-05-31T08:20:27.2996094Z   emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+Install and launch APK on emulator	Android emulator install and launch smoke	2026-05-31T08:20:27.2996611Z   script: .github/scripts/android_runtime_smoke.sh
+Install and launch APK on emulator	Android emulator install and launch smoke	2026-05-31T08:20:27.2996966Z   cores: 2
+Install and launch APK on emulator	Android emulator install and launch smoke	2026-05-31T08:20:27.2997229Z   avd-name: test
+Install and launch APK on emulator	Android emulator install and launch smoke	2026-05-31T08:20:27.2997496Z   force-avd-creation: true
+Install and launch APK on emulator	Android emulator install and launch smoke	2026-05-31T08:20:27.2997767Z   emulator-boot-timeout: 600
+Install and launch APK on emulator	Android emulator install and launch smoke	2026-05-31T08:20:27.2998045Z   emulator-port: 5554
+Install and launch APK on emulator	Android emulator install and launch smoke	2026-05-31T08:20:27.2998303Z   disable-animations: true
+Install and launch APK on emulator	Android emulator install and launch smoke	2026-05-31T08:20:27.2998577Z   disable-spellchecker: false
+Install and launch APK on emulator	Android emulator install and launch smoke	2026-05-31T08:20:27.2998859Z   disable-linux-hw-accel: auto
+Install and launch APK on emulator	Android emulator install and launch smoke	2026-05-31T08:20:27.2999134Z   enable-hw-keyboard: false
+Install and launch APK on emulator	Android emulator install and launch smoke	2026-05-31T08:20:27.2999388Z   channel: stable
+Install and launch APK on emulator	Android emulator install and launch smoke	2026-05-31T08:20:27.2999642Z env:
+Install and launch APK on emulator	Android emulator install and launch smoke	2026-05-31T08:20:27.3000044Z   ARTIFACT_RUN_ID: 26707279023
+Install and launch APK on emulator	Android emulator install and launch smoke	2026-05-31T08:20:27.3000399Z   PACKAGE_NAME: com.example.piliplus
+Install and launch APK on emulator	Android emulator install and launch smoke	2026-05-31T08:20:27.3000698Z ##[endgroup]
+Install and launch APK on emulator	Android emulator install and launch smoke	2026-05-31T08:20:27.3587673Z ##[group]Configure emulator
+Install and launch APK on emulator	Android emulator install and launch smoke	2026-05-31T08:20:27.3590467Z API level: 35
+Install and launch APK on emulator	Android emulator install and launch smoke	2026-05-31T08:20:27.3590923Z System image API level: 35
+Install and launch APK on emulator	Android emulator install and launch smoke	2026-05-31T08:20:27.3595378Z target: google_apis
+Install and launch APK on emulator	Android emulator install and launch smoke	2026-05-31T08:20:27.3595861Z CPU architecture: x86_64
+Install and launch APK on emulator	Android emulator install and launch smoke	2026-05-31T08:20:27.3596427Z Hardware profile: pixel_6
+Install and launch APK on emulator	Android emulator install and launch smoke	2026-05-31T08:20:27.3596835Z Cores: 2
+Install and launch APK on emulator	Android emulator install and launch smoke	2026-05-31T08:20:27.3597162Z RAM size: 
+Install and launch APK on emulator	Android emulator install and launch smoke	2026-05-31T08:20:27.3597521Z Heap size: 
+Install and launch APK on emulator	Android emulator install and launch smoke	2026-05-31T08:20:27.3597865Z SD card path or size: 
+Install and launch APK on emulator	Android emulator install and launch smoke	2026-05-31T08:20:27.3598254Z Disk size: 
+Install and launch APK on emulator	Android emulator install and launch smoke	2026-05-31T08:20:27.3598585Z AVD name: test
+Install and launch APK on emulator	Android emulator install and launch smoke	2026-05-31T08:20:27.3598971Z force avd creation: true
+Install and launch APK on emulator	Android emulator install and launch smoke	2026-05-31T08:20:27.3599336Z Emulator boot timeout: 600
+Install and launch APK on emulator	Android emulator install and launch smoke	2026-05-31T08:20:27.3599729Z emulator port: 5554
+Install and launch APK on emulator	Android emulator install and launch smoke	2026-05-31T08:20:27.3600668Z emulator options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+Install and launch APK on emulator	Android emulator install and launch smoke	2026-05-31T08:20:27.3601490Z disable animations: true
+Install and launch APK on emulator	Android emulator install and launch smoke	2026-05-31T08:20:27.3601934Z disable spellchecker: false
+Install and launch APK on emulator	Android emulator install and launch smoke	2026-05-31T08:20:27.3602381Z disable Linux hardware acceleration: false
+Install and launch APK on emulator	Android emulator install and launch smoke	2026-05-31T08:20:27.3602896Z enable hardware keyboard: false
+Install and launch APK on emulator	Android emulator install and launch smoke	2026-05-31T08:20:27.3603315Z Channel: 0 (stable)
+Install and launch APK on emulator	Android emulator install and launch smoke	2026-05-31T08:20:27.3603691Z Script:
+Install and launch APK on emulator	Android emulator install and launch smoke	2026-05-31T08:20:27.3604075Z .github/scripts/android_runtime_smoke.sh
+Install and launch APK on emulator	Android emulator install and launch smoke	2026-05-31T08:20:27.3604606Z Pre emulator launch script:
+Install and launch APK on emulator	Android emulator install and launch smoke	2026-05-31T08:20:27.3605295Z ##[endgroup]
+Install and launch APK on emulator	Android emulator install and launch smoke	2026-05-31T08:20:27.3605812Z ##[group]Install Android SDK
+Install and launch APK on emulator	Android emulator install and launch smoke	2026-05-31T08:20:27.3663244Z [command]/usr/bin/sh -c \yes | sdkmanager --licenses > /dev/null
+Install and launch APK on emulator	Android emulator install and launch smoke	2026-05-31T08:20:35.0554707Z Installing latest build tools, platform tools, and platform.
+Install and launch APK on emulator	Android emulator install and launch smoke	2026-05-31T08:20:35.0566847Z [command]/usr/bin/sh -c \sdkmanager --install 'build-tools;36.0.0' platform-tools 'platforms;android-35'> /dev/null
+Install and launch APK on emulator	Android emulator install and launch smoke	2026-05-31T08:20:36.5014463Z Installing latest emulator.
+Install and launch APK on emulator	Android emulator install and launch smoke	2026-05-31T08:20:36.5040985Z [command]/usr/bin/sh -c \sdkmanager --install emulator --channel=0 > /dev/null
+Install and launch APK on emulator	Android emulator install and launch smoke	2026-05-31T08:20:44.3774362Z Installing system images.
+Install and launch APK on emulator	Android emulator install and launch smoke	2026-05-31T08:20:44.3788112Z [command]/usr/bin/sh -c \sdkmanager --install 'system-images;android-35;google_apis;x86_64' --channel=0 > /dev/null
+Install and launch APK on emulator	Android emulator install and launch smoke	2026-05-31T08:21:10.5515413Z ##[endgroup]
+Install and launch APK on emulator	Android emulator install and launch smoke	2026-05-31T08:21:10.5516911Z ##[group]Create AVD
+Install and launch APK on emulator	Android emulator install and launch smoke	2026-05-31T08:21:10.5519199Z Creating AVD.
+Install and launch APK on emulator	Android emulator install and launch smoke	2026-05-31T08:21:10.5533851Z [command]/usr/bin/sh -c \echo no | avdmanager create avd --force -n test --package 'system-images;android-35;google_apis;x86_64' --device 'pixel_6'
+Install and launch APK on emulator	Android emulator install and launch smoke	2026-05-31T08:21:11.2835128Z Loading local repository...                                                     
+Install and launch APK on emulator	Android emulator install and launch smoke	2026-05-31T08:21:11.2835961Z [=========                              ] 25% Loading local repository...       
+Install and launch APK on emulator	Android emulator install and launch smoke	2026-05-31T08:21:11.2839324Z [=========                              ] 25% Fetch remote repository...        
+Install and launch APK on emulator	Android emulator install and launch smoke	2026-05-31T08:21:11.2840501Z [=======================================] 100% Fetch remote repository...       
+Install and launch APK on emulator	Android emulator install and launch smoke	2026-05-31T08:21:11.3380469Z Auto-selecting single ABI x86_64
+Install and launch APK on emulator	Android emulator install and launch smoke	2026-05-31T08:21:11.7835385Z [command]/usr/bin/sh -c \printf 'hw.cpu.ncore=2\n' >> /home/runner/.android/avd/test.avd/config.ini
+Install and launch APK on emulator	Android emulator install and launch smoke	2026-05-31T08:21:11.7857174Z ##[endgroup]
+Install and launch APK on emulator	Android emulator install and launch smoke	2026-05-31T08:21:11.7859103Z ##[group]Launch Emulator
+Install and launch APK on emulator	Android emulator install and launch smoke	2026-05-31T08:21:11.7870741Z Starting emulator.
+Install and launch APK on emulator	Android emulator install and launch smoke	2026-05-31T08:21:11.7892102Z [command]/usr/bin/sh -c \/usr/local/lib/android/sdk/emulator/emulator -port 5554 -avd test -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim &
+Install and launch APK on emulator	Android emulator install and launch smoke	2026-05-31T08:21
+
+[… truncated 42274 chars …]

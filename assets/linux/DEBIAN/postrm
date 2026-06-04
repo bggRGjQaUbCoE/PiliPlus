@@ -19,8 +19,8 @@ fi
 
 if [ $1 = "purge" ]; then
     echo "Removing user data..."
-    rm -rf /home/*/.local/share/com.example.PiliPlus || true
-    rm -rf /root/.local/share/com.example.PiliPlus || true
+    rm -rf /home/*/.local/share/com.example.PiliAvalon || true
+    rm -rf /root/.local/share/com.example.PiliAvalon || true
 fi
 
 exit 0

@@ -1,5 +1,17 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
+// Ensure kotlin-android is available for Android subprojects, including
+// third-party plugins that conditionally skip it for AGP 9+ but still call
+// kotlin {} during Gradle evaluation.
+subprojects {
+    plugins.withId("com.android.application") {
+        plugins.apply("org.jetbrains.kotlin.android")
+    }
+    plugins.withId("com.android.library") {
+        plugins.apply("org.jetbrains.kotlin.android")
+    }
+}
+
 allprojects {
     repositories {
         google()

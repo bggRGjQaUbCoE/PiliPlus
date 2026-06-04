@@ -67,6 +67,7 @@ import 'package:PiliPlus/pages/setting/style_setting.dart';
 import 'package:PiliPlus/pages/setting/video_setting.dart';
 import 'package:PiliPlus/pages/setting/view.dart';
 import 'package:PiliPlus/pages/settings_search/view.dart';
+import 'package:PiliPlus/pages/shielding_settings/view.dart';
 import 'package:PiliPlus/pages/space_setting/view.dart';
 import 'package:PiliPlus/pages/sponsor_block/view.dart';
 import 'package:PiliPlus/pages/subscription/view.dart';
@@ -118,6 +119,10 @@ class Routes {
     GetPage(name: '/memberSearch', page: () => const MemberSearchPage()),
     // 推荐流设置
     GetPage(name: '/recommendSetting', page: () => const RecommendSetting()),
+    GetPage(
+      name: '/shieldingSetting',
+      page: () => const ShieldingSettingsPage(),
+    ),
     // 音视频设置
     GetPage(name: '/videoSetting', page: () => const VideoSetting()),
     // 播放器设置

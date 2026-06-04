@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 if [ "$1" = "remove" ] || [ "$1" = "deconfigure" ]; then
-    echo "Stopping PiliPlus if running..."
+    echo "Stopping PiliAvalon if running..."
     pkill -x piliplus || true
 fi
 

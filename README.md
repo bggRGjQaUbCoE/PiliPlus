@@ -1,16 +1,17 @@
 <div align="center">
+    <!-- Audience classification: user-facing. -->
     <img width="200" height="200" src="assets/images/logo/logo.png">
 </div>
 
 
 
 <div align="center">
-    <h1>PiliPlus</h1>
+    <h1>PiliAvalon</h1>
 <div align="center">
     
-![GitHub repo size](https://img.shields.io/github/repo-size/bggRGjQaUbCoE/PiliPlus) 
-![GitHub Repo stars](https://img.shields.io/github/stars/bggRGjQaUbCoE/PiliPlus) 
-![GitHub all releases](https://img.shields.io/github/downloads/bggRGjQaUbCoE/PiliPlus/total) 
+![GitHub repo size](https://img.shields.io/github/repo-size/CometDash77/PiliAvalon-Worksite)
+![GitHub Repo stars](https://img.shields.io/github/stars/CometDash77/PiliAvalon-Worksite)
+![GitHub all releases](https://img.shields.io/github/downloads/CometDash77/PiliAvalon-Worksite/total)
 </div>
     <p>使用Flutter开发的BiliBili第三方客户端</p>
     
@@ -219,7 +220,7 @@
 
 ## 声明
 
-此项目（PiliPlus）是个人为了兴趣而开发，仅用于学习和测试，请于下载后24小时内删除。
+此项目（PiliAvalon）是个人为了兴趣而开发，仅用于学习和测试，请于下载后24小时内删除。
 所用API皆从官方网站收集，不提供任何破解内容。
 在此致敬原作者：[guozhigq/pilipala](https://github.com/guozhigq/pilipala)
 在此致敬上游作者：[orz12/PiliPalaX](https://github.com/orz12/PiliPalaX)
@@ -244,10 +245,10 @@
 
 ## Star History
 
-<a href="https://www.star-history.com/#bggRGjQaUbCoE/PiliPlus&Date">
+<a href="https://www.star-history.com/#CometDash77/PiliAvalon-Worksite&Date">
  <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=bggRGjQaUbCoE/PiliPlus&type=Date&theme=dark" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=bggRGjQaUbCoE/PiliPlus&type=Date" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=bggRGjQaUbCoE/PiliPlus&type=Date" />
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=CometDash77/PiliAvalon-Worksite&type=Date&theme=dark" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=CometDash77/PiliAvalon-Worksite&type=Date" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=CometDash77/PiliAvalon-Worksite&type=Date" />
  </picture>
 </a>

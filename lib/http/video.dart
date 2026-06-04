@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:PiliPlus/common/constants.dart';
+import 'package:PiliPlus/features/shielding/shielding.dart';
 import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
     show ReplyInfo;
 import 'package:PiliPlus/http/api.dart';
@@ -47,6 +48,7 @@ import 'package:protobuf/protobuf.dart';
 abstract final class VideoHttp {
   static RegExp zoneRegExp = RegExp(Pref.banWordForZone, caseSensitive: false);
   static bool enableFilter = zoneRegExp.pattern.isNotEmpty;
+  static bool useLegacyZoneTextFilter = false;
 
   // 首页推荐视频
   static Future<LoadingState<List<RcmdVideoItemModel>>> rcmdVideoList({
@@ -67,13 +69,21 @@ abstract final class VideoHttp {
     );
     if (res.data['code'] == 0) {
       List<RcmdVideoItemModel> list = <RcmdVideoItemModel>[];
+      final shieldRuleSet = ShieldSettingsStore().snapshot();
       for (final i in res.data['data']['item']) {
         //过滤掉live与ad，以及拉黑用户
         if (i['goto'] == 'av' &&
             (i['owner'] != null &&
                 !GlobalData().blackMids.contains(i['owner']['mid']))) {
           RcmdVideoItemModel videoItem = RcmdVideoItemModel.fromJson(i);
-          if (!RecommendFilter.filter(videoItem)) {
+          final visible = ShieldingAdapters.isVisible(
+            ShieldingAdapters.fromRecommendationJson(
+              videoItem,
+              (i as Map).cast<String, dynamic>(),
+            ),
+            shieldRuleSet,
+          );
+          if (!RecommendFilter.filter(videoItem) && visible) {
             list.add(videoItem);
           }
         }
@@ -140,6 +150,7 @@ abstract final class VideoHttp {
     );
     if (res.data['code'] == 0) {
       List<RcmdVideoItemAppModel> list = <RcmdVideoItemAppModel>[];
+      final shieldRuleSet = ShieldSettingsStore().snapshot();
       for (final i in res.data['data']['items']) {
         // 屏蔽推广和拉黑用户
         if (i['card_goto'] != 'ad_av' &&
@@ -147,13 +158,21 @@ abstract final class VideoHttp {
             i['ad_info'] == null &&
             (i['args'] != null &&
                 !GlobalData().blackMids.contains(i['args']['up_id']))) {
-          if (enableFilter &&
+          if (useLegacyZoneTextFilter &&
+              enableFilter &&
               i['args']?['tname'] != null &&
               zoneRegExp.hasMatch(i['args']['tname'])) {
             continue;
           }
           RcmdVideoItemAppModel videoItem = RcmdVideoItemAppModel.fromJson(i);
-          if (!RecommendFilter.filter(videoItem)) {
+          final visible = ShieldingAdapters.isVisible(
+            ShieldingAdapters.fromRecommendationJson(
+              videoItem,
+              (i as Map).cast<String, dynamic>(),
+            ),
+            shieldRuleSet,
+          );
+          if (!RecommendFilter.filter(videoItem) && visible) {
             list.add(videoItem);
           }
         }
@@ -182,7 +201,8 @@ abstract final class VideoHttp {
               i['stat']['like'],
               i['stat']['view'],
             )) {
-          if (enableFilter &&
+          if (useLegacyZoneTextFilter &&
+              enableFilter &&
               i['tname'] != null &&
               zoneRegExp.hasMatch(i['tname'])) {
             continue;
@@ -190,7 +210,10 @@ abstract final class VideoHttp {
           list.add(HotVideoItemModel.fromJson(i));
         }
       }
-      return Success(list);
+      final shieldRuleSet = ShieldSettingsStore().snapshot();
+      return Success(
+        ShieldingAdapters.filterRecommendationVideos(list, shieldRuleSet),
+      );
     } else {
       return Error(res.data['message']);
     }
@@ -328,9 +351,23 @@ abstract final class VideoHttp {
         (i) => HotVideoItemModel.fromJson(i),
       );
       final list = RecommendFilter.applyFilterToRelatedVideos
-          ? items?.where((i) => !RecommendFilter.filterAll(i)).toList()
+          ? items
+                ?.where(
+                  (i) =>
+                      !RecommendFilter.filterLikeRatio(
+                        i.stat.like,
+                        i.stat.view,
+                      ) &&
+                      !(i.duration > 0 &&
+                          i.duration < RecommendFilter.minDurationForRcmd),
+                )
+                .toList()
           : items?.toList();
-      return Success(list);
+      final shieldRuleSet = ShieldSettingsStore().snapshot();
+      final visibleList = list == null
+          ? null
+          : ShieldingAdapters.filterRecommendationVideos(list, shieldRuleSet);
+      return Success(visibleList);
     } else {
       return Error(res.data['message']);
     }
@@ -873,7 +910,8 @@ abstract final class VideoHttp {
           i['stat']['like'],
           i['stat']['view'],
         )) {
-      if (enableFilter &&
+      if (useLegacyZoneTextFilter &&
+          enableFilter &&
           i['tname'] != null &&
           zoneRegExp.hasMatch(i['tname'])) {
         return false;
@@ -906,7 +944,10 @@ abstract final class VideoHttp {
           // }
         }
       }
-      return Success(list);
+      final shieldRuleSet = ShieldSettingsStore().snapshot();
+      return Success(
+        ShieldingAdapters.filterRecommendationVideos(list, shieldRuleSet),
+      );
     } else {
       return Error(res.data['message']);
     }

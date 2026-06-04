@@ -1,8 +1,8 @@
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/badge.dart';
-import 'package:PiliPlus/common/widgets/image/image_save.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/stat/stat.dart';
+import 'package:PiliPlus/common/widgets/video_card/shield_quick_action.dart';
 import 'package:PiliPlus/common/widgets/video_popup_menu.dart';
 import 'package:PiliPlus/http/search.dart';
 import 'package:PiliPlus/models/common/stat_type.dart';
@@ -82,10 +82,15 @@ class VideoCardV extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    void onLongPress() => imageSaveDialog(
+    void onLongPress() => VideoCardShieldQuickAction.showRecommendationDialog(
+      context: context,
       title: videoItem.title,
+      upName: videoItem.owner.name,
+      upUid: videoItem.owner.mid,
+      reason: videoItem.rcmdReason,
       cover: videoItem.cover,
       bvid: videoItem.bvid,
+      onRuleAdded: onRemove,
     );
     return Stack(
       clipBehavior: Clip.none,

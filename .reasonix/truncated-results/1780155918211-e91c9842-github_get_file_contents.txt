@@ -1,0 +1,391 @@
+[
+  {
+    "type": "file",
+    "size": 2110,
+    "name": "2026-05-29-android-build-artifact-verification.md",
+    "path": "records/session/2026-05-29-android-build-artifact-verification.md",
+    "sha": "4ebc6bb4e099cf534449729ddc9a8e8cb1387a10",
+    "url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/contents/records/session/2026-05-29-android-build-artifact-verification.md?ref=phase-1-shielding-core",
+    "git_url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/git/blobs/4ebc6bb4e099cf534449729ddc9a8e8cb1387a10",
+    "html_url": "https://github.com/CometDash77/PiliAvalon-Worksite/blob/phase-1-shielding-core/records/session/2026-05-29-android-build-artifact-verification.md",
+    "download_url": "https://raw.githubusercontent.com/CometDash77/PiliAvalon-Worksite/phase-1-shielding-core/records/session/2026-05-29-android-build-artifact-verification.md"
+  },
+  {
+    "type": "file",
+    "size": 4310,
+    "name": "2026-05-29-design-alert-repository-identity-scope.md",
+    "path": "records/session/2026-05-29-design-alert-repository-identity-scope.md",
+    "sha": "40c7033997cb0f81f16fef4402d86bcafd9e697a",
+    "url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/contents/records/session/2026-05-29-design-alert-repository-identity-scope.md?ref=phase-1-shielding-core",
+    "git_url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/git/blobs/40c7033997cb0f81f16fef4402d86bcafd9e697a",
+    "html_url": "https://github.com/CometDash77/PiliAvalon-Worksite/blob/phase-1-shielding-core/records/session/2026-05-29-design-alert-repository-identity-scope.md",
+    "download_url": "https://raw.githubusercontent.com/CometDash77/PiliAvalon-Worksite/phase-1-shielding-core/records/session/2026-05-29-design-alert-repository-identity-scope.md"
+  },
+  {
+    "type": "file",
+    "size": 3144,
+    "name": "2026-05-29-gh-repository-scope-guard.md",
+    "path": "records/session/2026-05-29-gh-repository-scope-guard.md",
+    "sha": "02708b45e829be9ee6dd0bb4ac379ba30d1f6f02",
+    "url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/contents/records/session/2026-05-29-gh-repository-scope-guard.md?ref=phase-1-shielding-core",
+    "git_url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/git/blobs/02708b45e829be9ee6dd0bb4ac379ba30d1f6f02",
+    "html_url": "https://github.com/CometDash77/PiliAvalon-Worksite/blob/phase-1-shielding-core/records/session/2026-05-29-gh-repository-scope-guard.md",
+    "download_url": "https://raw.githubusercontent.com/CometDash77/PiliAvalon-Worksite/phase-1-shielding-core/records/session/2026-05-29-gh-repository-scope-guard.md"
+  },
+  {
+    "type": "file",
+    "size": 3061,
+    "name": "2026-05-29-phase-1-environment-switch-handoff.md",
+    "path": "records/session/2026-05-29-phase-1-environment-switch-handoff.md",
+    "sha": "bfa80ea5ec2220739c412626a842134a8998eebb",
+    "url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/contents/records/session/2026-05-29-phase-1-environment-switch-handoff.md?ref=phase-1-shielding-core",
+    "git_url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/git/blobs/bfa80ea5ec2220739c412626a842134a8998eebb",
+    "html_url": "https://github.com/CometDash77/PiliAvalon-Worksite/blob/phase-1-shielding-core/records/session/2026-05-29-phase-1-environment-switch-handoff.md",
+    "download_url": "https://raw.githubusercontent.com/CometDash77/PiliAvalon-Worksite/phase-1-shielding-core/records/session/2026-05-29-phase-1-environment-switch-handoff.md"
+  },
+  {
+    "type": "file",
+    "size": 24645,
+    "name": "2026-05-29-phase-1-shielding-ci-verification.md",
+    "path": "records/session/2026-05-29-phase-1-shielding-ci-verification.md",
+    "sha": "08921f297e5e261fa2783c238c48d4106f91243a",
+    "url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/contents/records/session/2026-05-29-phase-1-shielding-ci-verification.md?ref=phase-1-shielding-core",
+    "git_url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/git/blobs/08921f297e5e261fa2783c238c48d4106f91243a",
+    "html_url": "https://github.com/CometDash77/PiliAvalon-Worksite/blob/phase-1-shielding-core/records/session/2026-05-29-phase-1-shielding-ci-verification.md",
+    "download_url": "https://raw.githubusercontent.com/CometDash77/PiliAvalon-Worksite/phase-1-shielding-core/records/session/2026-05-29-phase-1-shielding-ci-verification.md"
+  },
+  {
+    "type": "file",
+    "size": 3184,
+    "name": "2026-05-29-phase-1-shielding-option-b-design-feedback.md",
+    "path": "records/session/2026-05-29-phase-1-shielding-option-b-design-feedback.md",
+    "sha": "03ce64cf4fa36f01d9f8d93c041d64e07ff05b21",
+    "url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/contents/records/session/2026-05-29-phase-1-shielding-option-b-design-feedback.md?ref=phase-1-shielding-core",
+    "git_url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/git/blobs/03ce64cf4fa36f01d9f8d93c041d64e07ff05b21",
+    "html_url": "https://github.com/CometDash77/PiliAvalon-Worksite/blob/phase-1-shielding-core/records/session/2026-05-29-phase-1-shielding-option-b-design-feedback.md",
+    "download_url": "https://raw.githubusercontent.com/CometDash77/PiliAvalon-Worksite/phase-1-shielding-core/records/session/2026-05-29-phase-1-shielding-option-b-design-feedback.md"
+  },
+  {
+    "type": "file",
+    "size": 1607,
+    "name": "2026-05-29-phase-1-shielding-option-b-worksite-declaration.md",
+    "path": "records/session/2026-05-29-phase-1-shielding-option-b-worksite-declaration.md",
+    "sha": "9f84c628546ecb8b096caf2c24415f31b6778949",
+    "url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/contents/records/session/2026-05-29-phase-1-shielding-option-b-worksite-declaration.md?ref=phase-1-shielding-core",
+    "git_url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/git/blobs/9f84c628546ecb8b096caf2c24415f31b6778949",
+    "html_url": "https://github.com/CometDash77/PiliAvalon-Worksite/blob/phase-1-shielding-core/records/session/2026-05-29-phase-1-shielding-option-b-worksite-declaration.md",
+    "download_url": "https://raw.githubusercontent.com/CometDash77/PiliAvalon-Worksite/phase-1-shielding-core/records/session/2026-05-29-phase-1-shielding-option-b-worksite-declaration.md"
+  },
+  {
+    "type": "file",
+    "size": 5450,
+    "name": "2026-05-29-phase-1-shielding-worksite-next-blocker.md",
+    "path": "records/session/2026-05-29-phase-1-shielding-worksite-next-blocker.md",
+    "sha": "c04a5ca4ddeb353dc6c8fe7214da731f374ffdde",
+    "url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/contents/records/session/2026-05-29-phase-1-shielding-worksite-next-blocker.md?ref=phase-1-shielding-core",
+    "git_url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/git/blobs/c04a5ca4ddeb353dc6c8fe7214da731f374ffdde",
+    "html_url": "https://github.com/CometDash77/PiliAvalon-Worksite/blob/phase-1-shielding-core/records/session/2026-05-29-phase-1-shielding-worksite-next-blocker.md",
+    "download_url": "https://raw.githubusercontent.com/CometDash77/PiliAvalon-Worksite/phase-1-shielding-core/records/session/2026-05-29-phase-1-shielding-worksite-next-blocker.md"
+  },
+  {
+    "type": "file",
+    "size": 2924,
+    "name": "2026-05-29-repository-identity-retarget.md",
+    "path": "records/session/2026-05-29-repository-identity-retarget.md",
+    "sha": "004b4397aa6aff467ed560965360f369c83ab417",
+    "url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/contents/records/session/2026-05-29-repository-identity-retarget.md?ref=phase-1-shielding-core",
+    "git_url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/git/blobs/004b4397aa6aff467ed560965360f369c83ab417",
+    "html_url": "https://github.com/CometDash77/PiliAvalon-Worksite/blob/phase-1-shielding-core/records/session/2026-05-29-repository-identity-retarget.md",
+    "download_url": "https://raw.githubusercontent.com/CometDash77/PiliAvalon-Worksite/phase-1-shielding-core/records/session/2026-05-29-repository-identity-retarget.md"
+  },
+  {
+    "type": "file",
+    "size": 8094,
+    "name": "2026-05-30-android-runtime-smoke-github-actions-plan.md",
+    "path": "records/session/2026-05-30-android-runtime-smoke-github-actions-plan.md",
+    "sha": "4c497f175858f70c9a170ae45eff71cc48f2b454",
+    "url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/contents/records/session/2026-05-30-android-runtime-smoke-github-actions-plan.md?ref=phase-1-shielding-core",
+    "git_url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/git/blobs/4c497f175858f70c9a170ae45eff71cc48f2b454",
+    "html_url": "https://github.com/CometDash77/PiliAvalon-Worksite/blob/phase-1-shielding-core/records/session/2026-05-30-android-runtime-smoke-github-actions-plan.md",
+    "download_url": "https://raw.githubusercontent.com/CometDash77/PiliAvalon-Worksite/phase-1-shielding-core/records/session/2026-05-30-android-runtime-smoke-github-actions-plan.md"
+  },
+  {
+    "type": "file",
+    "size": 4390,
+    "name": "2026-05-30-ci-evidence.md",
+    "path": "records/session/2026-05-30-ci-evidence.md",
+    "sha": "6a98e6c35bbde57a361ea9319839c458259e02e5",
+    "url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/contents/records/session/2026-05-30-ci-evidence.md?ref=phase-1-shielding-core",
+    "git_url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/git/blobs/6a98e6c35bbde57a361ea9319839c458259e02e5",
+    "html_url": "https://github.com/CometDash77/PiliAvalon-Worksite/blob/phase-1-shielding-core/records/session/2026-05-30-ci-evidence.md",
+    "download_url": "https://raw.githubusercontent.com/CometDash77/PiliAvalon-Worksite/phase-1-shielding-core/records/session/2026-05-30-ci-evidence.md"
+  },
+  {
+    "type": "file",
+    "size": 4055,
+    "name": "2026-05-30-design-institute-notification-review.md",
+    "path": "records/session/2026-05-30-design-institute-notification-review.md",
+    "sha": "a5389366e3d54a9f103ea46f7abbc9a7cd53215e",
+    "url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/contents/records/session/2026-05-30-design-institute-notification-review.md?ref=phase-1-shielding-core",
+    "git_url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/git/blobs/a5389366e3d54a9f103ea46f7abbc9a7cd53215e",
+    "html_url": "https://github.com/CometDash77/PiliAvalon-Worksite/blob/phase-1-shielding-core/records/session/2026-05-30-design-institute-notification-review.md",
+    "download_url": "https://raw.githubusercontent.com/CometDash77/PiliAvalon-Worksite/phase-1-shielding-core/records/session/2026-05-30-design-institute-notification-review.md"
+  },
+  {
+    "type": "file",
+    "size": 2586,
+    "name": "2026-05-30-design-institute-runtime-smoke-launcher-review.md",
+    "path": "records/session/2026-05-30-design-institute-runtime-smoke-launcher-review.md",
+    "sha": "6357ddb47cd79f6adb853dd306a23276faf977a5",
+    "url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/contents/records/session/2026-05-30-design-institute-runtime-smoke-launcher-review.md?ref=phase-1-shielding-core",
+    "git_url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/git/blobs/6357ddb47cd79f6adb853dd306a23276faf977a5",
+    "html_url": "https://github.com/CometDash77/PiliAvalon-Worksite/blob/phase-1-shielding-core/records/session/2026-05-30-design-institute-runtime-smoke-launcher-review.md",
+    "download_url": "https://raw.githubusercontent.com/CometDash77/PiliAvalon-Worksite/phase-1-shielding-core/records/session/2026-05-30-design-institute-runtime-smoke-launcher-review.md"
+  },
+  {
+    "type": "file",
+    "size": 4526,
+    "name": "2026-05-30-phase-1-manual-acceptance-filter-integration-failed.md",
+    "path": "records/session/2026-05-30-phase-1-manual-acceptance-filter-integration-failed.md",
+    "sha": "65ebf6f96859b9f603f2389bd746b691d472d62a",
+    "url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/contents/records/session/2026-05-30-phase-1-manual-acceptance-filter-integration-failed.md?ref=phase-1-shielding-core",
+    "git_url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/git/blobs/65ebf6f96859b9f603f2389bd746b691d472d62a",
+    "html_url": "https://github.com/CometDash77/PiliAvalon-Worksite/blob/phase-1-shielding-core/records/session/2026-05-30-phase-1-manual-acceptance-filter-integration-failed.md",
+    "download_url": "https://raw.githubusercontent.com/CometDash77/PiliAvalon-Worksite/phase-1-shielding-core/records/session/2026-05-30-phase-1-manual-acceptance-filter-integration-failed.md"
+  },
+  {
+    "type": "file",
+    "size": 1197,
+    "name": "2026-05-30-phase-1-prebuild-26677982092-superseded-notes.md",
+    "path": "records/session/2026-05-30-phase-1-prebuild-26677982092-superseded-notes.md",
+    "sha": "f5f75b265a6aad88cefe30b6f9efebba809d3f98",
+    "url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/contents/records/session/2026-05-30-phase-1-prebuild-26677982092-superseded-notes.md?ref=phase-1-shielding-core",
+    "git_url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/git/blobs/f5f75b265a6aad88cefe30b6f9efebba809d3f98",
+    "html_url": "https://github.com/CometDash77/PiliAvalon-Worksite/blob/phase-1-shielding-core/records/session/2026-05-30-phase-1-prebuild-26677982092-superseded-notes.md",
+    "download_url": "https://raw.githubusercontent.com/CometDash77/PiliAvalon-Worksite/phase-1-shielding-core/records/session/2026-05-30-phase-1-prebuild-26677982092-superseded-notes.md"
+  },
+  {
+    "type": "file",
+    "size": 4801,
+    "name": "2026-05-30-phase-1-prebuild-26678247652-release-notes.md",
+    "path": "records/session/2026-05-30-phase-1-prebuild-26678247652-release-notes.md",
+    "sha": "0536d2e781d23ade0c3de2a4335f9e286cc7f0da",
+    "url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/contents/records/session/2026-05-30-phase-1-prebuild-26678247652-release-notes.md?ref=phase-1-shielding-core",
+    "git_url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/git/blobs/0536d2e781d23ade0c3de2a4335f9e286cc7f0da",
+    "html_url": "https://github.com/CometDash77/PiliAvalon-Worksite/blob/phase-1-shielding-core/records/session/2026-05-30-phase-1-prebuild-26678247652-release-notes.md",
+    "download_url": "https://raw.githubusercontent.com/CometDash77/PiliAvalon-Worksite/phase-1-shielding-core/records/session/2026-05-30-phase-1-prebuild-26678247652-release-notes.md"
+  },
+  {
+    "type": "file",
+    "size": 1873,
+    "name": "2026-05-30-phase-1-prebuild-26679987266-superseded-notes.md",
+    "path": "records/session/2026-05-30-phase-1-prebuild-26679987266-superseded-notes.md",
+    "sha": "41636a466794d68ca3d95b40c8eca6a17adc473d",
+    "url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/contents/records/session/2026-05-30-phase-1-prebuild-26679987266-superseded-notes.md?ref=phase-1-shielding-core",
+    "git_url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/git/blobs/41636a466794d68ca3d95b40c8eca6a17adc473d",
+    "html_url": "https://github.com/CometDash77/PiliAvalon-Worksite/blob/phase-1-shielding-core/records/session/2026-05-30-phase-1-prebuild-26679987266-superseded-notes.md",
+    "download_url": "https://raw.githubusercontent.com/CometDash77/PiliAvalon-Worksite/phase-1-shielding-core/records/session/2026-05-30-phase-1-prebuild-26679987266-superseded-notes.md"
+  },
+  {
+    "type": "file",
+    "size": 3067,
+    "name": "2026-05-30-phase-1-prebuild-26680259984-publication.md",
+    "path": "records/session/2026-05-30-phase-1-prebuild-26680259984-publication.md",
+    "sha": "8c72014c29500f7afc043c160646ff3c61947f13",
+    "url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/contents/records/session/2026-05-30-phase-1-prebuild-26680259984-publication.md?ref=phase-1-shielding-core",
+    "git_url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/git/blobs/8c72014c29500f7afc043c160646ff3c61947f13",
+    "html_url": "https://github.com/CometDash77/PiliAvalon-Worksite/blob/phase-1-shielding-core/records/session/2026-05-30-phase-1-prebuild-26680259984-publication.md",
+    "download_url": "https://raw.githubusercontent.com/CometDash77/PiliAvalon-Worksite/phase-1-shielding-core/records/session/2026-05-30-phase-1-prebuild-26680259984-publication.md"
+  },
+  {
+    "type": "file",
+    "size": 8653,
+    "name": "2026-05-30-phase-1-prebuild-26680259984-release-notes.md",
+    "path": "records/session/2026-05-30-phase-1-prebuild-26680259984-release-notes.md",
+    "sha": "5fb7bd76833346d2fc3edd20eef795728b5b519d",
+    "url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/contents/records/session/2026-05-30-phase-1-prebuild-26680259984-release-notes.md?ref=phase-1-shielding-core",
+    "git_url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/git/blobs/5fb7bd76833346d2fc3edd20eef795728b5b519d",
+    "html_url": "https://github.com/CometDash77/PiliAvalon-Worksite/blob/phase-1-shielding-core/records/session/2026-05-30-phase-1-prebuild-26680259984-release-notes.md",
+    "download_url": "https://raw.githubusercontent.com/CometDash77/PiliAvalon-Worksite/phase-1-shielding-core/records/session/2026-05-30-phase-1-prebuild-26680259984-release-notes.md"
+  },
+  {
+    "type": "file",
+    "size": 5817,
+    "name": "2026-05-30-phase-1-prebuild-release.md",
+    "path": "records/session/2026-05-30-phase-1-prebuild-release.md",
+    "sha": "7cc4bb2bf2b9779b4544b8ef6d29994cf7657542",
+    "url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/contents/records/session/2026-05-30-phase-1-prebuild-release.md?ref=phase-1-shielding-core",
+    "git_url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/git/blobs/7cc4bb2bf2b9779b4544b8ef6d29994cf7657542",
+    "html_url": "https://github.com/CometDash77/PiliAvalon-Worksite/blob/phase-1-shielding-core/records/session/2026-05-30-phase-1-prebuild-release.md",
+    "download_url": "https://raw.githubusercontent.com/CometDash77/PiliAvalon-Worksite/phase-1-shielding-core/records/session/2026-05-30-phase-1-prebuild-release.md"
+  },
+  {
+    "type": "file",
+    "size": 1801,
+    "name": "2026-05-30-phase-1-project-progress-for-design-institute.md",
+    "path": "records/session/2026-05-30-phase-1-project-progress-for-design-institute.md",
+    "sha": "755168876cc784eaf79ecf9cbec1a9d5b2f01bfc",
+    "url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/contents/records/session/2026-05-30-phase-1-project-progress-for-design-institute.md?ref=phase-1-shielding-core",
+    "git_url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/git/blobs/755168876cc784eaf79ecf9cbec1a9d5b2f01bfc",
+    "html_url": "https://github.com/CometDash77/PiliAvalon-Worksite/blob/phase-1-shielding-core/records/session/2026-05-30-phase-1-project-progress-for-design-institute.md",
+    "download_url": "https://raw.githubusercontent.com/CometDash77/PiliAvalon-Worksite/phase-1-shielding-core/records/session/2026-05-30-phase-1-project-progress-for-design-institute.md"
+  },
+  {
+    "type": "file",
+    "size": 2846,
+    "name": "2026-05-30-phase-1-runtime-smoke-launch-failure-report.md",
+    "path": "records/session/2026-05-30-phase-1-runtime-smoke-launch-failure-report.md",
+    "sha": "6e876076701e75d6d3d5f90832b3a7b948a43d98",
+    "url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/contents/records/session/2026-05-30-phase-1-runtime-smoke-launch-failure-report.md?ref=phase-1-shielding-core",
+    "git_url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/git/blobs/6e876076701e75d6d3d5f90832b3a7b948a43d98",
+    "html_url": "https://github.com/CometDash77/PiliAvalon-Worksite/blob/phase-1-shielding-core/records/session/2026-05-30-phase-1-runtime-smoke-launch-failure-report.md",
+    "download_url": "https://raw.githubusercontent.com/CometDash77/PiliAvalon-Worksite/phase-1-shielding-core/records/session/2026-05-30-phase-1-runtime-smoke-launch-failure-report.md"
+  },
+  {
+    "type": "file",
+    "size": 9336,
+    "name": "2026-05-30-phase-1-runtime-white-screen-governance-sync.md",
+    "path": "records/session/2026-05-30-phase-1-runtime-white-screen-governance-sync.md",
+    "sha": "6b4c6e2aceef14652af09019c979494bfd962a2e",
+    "url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/contents/records/session/2026-05-30-phase-1-runtime-white-screen-governance-sync.md?ref=phase-1-shielding-core",
+    "git_url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/git/blobs/6b4c6e2aceef14652af09019c979494bfd962a2e",
+    "html_url": "https://github.com/CometDash77/PiliAvalon-Worksite/blob/phase-1-shielding-core/records/session/2026-05-30-phase-1-runtime-white-screen-governance-sync.md",
+    "download_url": "https://raw.githubusercontent.com/CometDash77/PiliAvalon-Worksite/phase-1-shielding-core/records/session/2026-05-30-phase-1-runtime-white-screen-governance-sync.md"
+  },
+  {
+    "type": "file",
+    "size": 3732,
+    "name": "2026-05-30-phase-1-shielding-repair-agent-a-handoff.md",
+    "path": "records/session/2026-05-30-phase-1-shielding-repair-agent-a-handoff.md",
+    "sha": "6b224c5c6d134d3a7b728a556572f3e2a37444c8",
+    "url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/contents/records/session/2026-05-30-phase-1-shielding-repair-agent-a-handoff.md?ref=phase-1-shielding-core",
+    "git_url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/git/blobs/6b224c5c6d134d3a7b728a556572f3e2a37444c8",
+    "html_url": "https://github.com/CometDash77/PiliAvalon-Worksite/blob/phase-1-shielding-core/records/session/2026-05-30-phase-1-shielding-repair-agent-a-handoff.md",
+    "download_url": "https://raw.githubusercontent.com/CometDash77/PiliAvalon-Worksite/phase-1-shielding-core/records/session/2026-05-30-phase-1-shielding-repair-agent-a-handoff.md"
+  },
+  {
+    "type": "file",
+    "size": 5200,
+    "name": "2026-05-30-phase-1-shielding-repair-agent-b-handoff.md",
+    "path": "records/session/2026-05-30-phase-1-shielding-repair-agent-b-handoff.md",
+    "sha": "919bd7274e8b90fc80cbd05dfaa73b4f169927a6",
+    "url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/contents/records/session/2026-05-30-phase-1-shielding-repair-agent-b-handoff.md?ref=phase-1-shielding-core",
+    "git_url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/git/blobs/919bd7274e8b90fc80cbd05dfaa73b4f169927a6",
+    "html_url": "https://github.com/CometDash77/PiliAvalon-Worksite/blob/phase-1-shielding-core/records/session/2026-05-30-phase-1-shielding-repair-agent-b-handoff.md",
+    "download_url": "https://raw.githubusercontent.com/CometDash77/PiliAvalon-Worksite/phase-1-shielding-core/records/session/2026-05-30-phase-1-shielding-repair-agent-b-handoff.md"
+  },
+  {
+    "type": "file",
+    "size": 3111,
+    "name": "2026-05-30-phase-1-shielding-repair-agent-c-handoff.md",
+    "path": "records/session/2026-05-30-phase-1-shielding-repair-agent-c-handoff.md",
+    "sha": "b5178535a6452db9dd679cc2523fb8e2ebc6644e",
+    "url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/contents/records/session/2026-05-30-phase-1-shielding-repair-agent-c-handoff.md?ref=phase-1-shielding-core",
+    "git_url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/git/blobs/b5178535a6452db9dd679cc2523fb8e2ebc6644e",
+    "html_url": "https://github.com/CometDash77/PiliAvalon-Worksite/blob/phase-1-shielding-core/records/session/2026-05-30-phase-1-shielding-repair-agent-c-handoff.md",
+    "download_url": "https://raw.githubusercontent.com/CometDash77/PiliAvalon-Worksite/phase-1-shielding-core/records/session/2026-05-30-phase-1-shielding-repair-agent-c-handoff.md"
+  },
+  {
+    "type": "file",
+    "size": 9461,
+    "name": "2026-05-30-phase-1-shielding-repair-agent-d-handoff.md",
+    "path": "records/session/2026-05-30-phase-1-shielding-repair-agent-d-handoff.md",
+    "sha": "0b70ac5d8314adcd61c5c49a7f80b48618f560d7",
+    "url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/contents/records/session/2026-05-30-phase-1-shielding-repair-agent-d-handoff.md?ref=phase-1-shielding-core",
+    "git_url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/git/blobs/0b70ac5d8314adcd61c5c49a7f80b48618f560d7",
+    "html_url": "https://github.com/CometDash77/PiliAvalon-Worksite/blob/phase-1-shielding-core/records/session/2026-05-30-phase-1-shielding-repair-agent-d-handoff.md",
+    "download_url": "https://raw.githubusercontent.com/CometDash77/PiliAvalon-Worksite/phase-1-shielding-core/records/session/2026-05-30-phase-1-shielding-repair-agent-d-handoff.md"
+  },
+  {
+    "type": "file",
+    "size": 3556,
+    "name": "2026-05-30-phase-1-shielding-repair-final-summary.md",
+    "path": "records/session/2026-05-30-phase-1-shielding-repair-final-summary.md",
+    "sha": "14657202d72bb10000da04c80b66fbb5f81ed4f0",
+    "url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/contents/records/session/2026-05-30-phase-1-shielding-repair-final-summary.md?ref=phase-1-shielding-core",
+    "git_url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/git/blobs/14657202d72bb10000da04c80b66fbb5f81ed4f0",
+    "html_url": "https://github.com/CometDash77/PiliAvalon-Worksite/blob/phase-1-shielding-core/records/session/2026-05-30-phase-1-shielding-repair-final-summary.md",
+    "download_url": "https://raw.githubusercontent.com/CometDash77/PiliAvalon-Worksite/phase-1-shielding-core/records/session/2026-05-30-phase-1-shielding-repair-final-summary.md"
+  },
+  {
+    "type": "file",
+    "size": 4765,
+    "name": "2026-05-30-phase-1-shielding-repair-main-handoff.md",
+    "path": "records/session/2026-05-30-phase-1-shielding-repair-main-handoff.md",
+    "sha": "83a31123b801aee331f1af682ef5ebc7ba6639df",
+    "url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/contents/records/session/2026-05-30-phase-1-shielding-repair-main-handoff.md?ref=phase-1-shielding-core",
+    "git_url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/git/blobs/83a31123b801aee331f1af682ef5ebc7ba6639df",
+    "html_url": "https://github.com/CometDash77/PiliAvalon-Worksite/blob/phase-1-shielding-core/records/session/2026-05-30-phase-1-shielding-repair-main-handoff.md",
+    "download_url": "https://raw.githubusercontent.com/CometDash77/PiliAvalon-Worksite/phase-1-shielding-core/records/session/2026-05-30-phase-1-shielding-repair-main-handoff.md"
+  },
+  {
+    "type": "file",
+    "size": 6575,
+    "name": "2026-05-30-phase-1-shielding-repair-release-notes-draft.md",
+    "path": "records/session/2026-05-30-phase-1-shielding-repair-release-notes-draft.md",
+    "sha": "6b3aa89d053873eaddb04168ba807e74f2787ab1",
+    "url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/contents/records/session/2026-05-30-phase-1-shielding-repair-release-notes-draft.md?ref=phase-1-shielding-core",
+    "git_url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/git/blobs/6b3aa89d053873eaddb04168ba807e74f2787ab1",
+    "html_url": "https://github.com/CometDash77/PiliAvalon-Worksite/blob/phase-1-shielding-core/records/session/2026-05-30-phase-1-shielding-repair-release-notes-draft.md",
+    "download_url": "https://raw.githubusercontent.com/CometDash77/PiliAvalon-Worksite/phase-1-shielding-core/records/session/2026-05-30-phase-1-shielding-repair-release-notes-draft.md"
+  },
+  {
+    "type": "file",
+    "size": 6082,
+    "name": "2026-05-30-phase-1-shielding-repair-worksite-declaration.md",
+    "path": "records/session/2026-05-30-phase-1-shielding-repair-worksite-declaration.md",
+    "sha": "b6f14e7565b0c60c1735b36feb187bf78be8e005",
+    "url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/contents/records/session/2026-05-30-phase-1-shielding-repair-worksite-declaration.md?ref=phase-1-shielding-core",
+    "git_url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/git/blobs/b6f14e7565b0c60c1735b36feb187bf78be8e005",
+    "html_url": "https://github.com/CometDash77/PiliAvalon-Worksite/blob/phase-1-shielding-core/records/session/2026-05-30-phase-1-shielding-repair-worksite-declaration.md",
+    "download_url": "https://raw.githubusercontent.com/CometDash77/PiliAvalon-Worksite/phase-1-shielding-core/records/session/2026-05-30-phase-1-shielding-repair-worksite-declaration.md"
+  },
+  {
+    "type": "file",
+    "size": 1616,
+    "name": "2026-05-30-phase-1-white-screen-fix-plan.md",
+    "path": "records/session/2026-05-30-phase-1-white-screen-fix-plan.md",
+    "sha": "d8171af2ea2d9a2a38772f4eef34acc29d247680",
+    "url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/contents/records/session/2026-05-30-phase-1-white-screen-fix-plan.md?ref=phase-1-shielding-core",
+    "git_url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/git/blobs/d8171af2ea2d9a2a38772f4eef34acc29d247680",
+    "html_url": "https://github.com/CometDash77/PiliAvalon-Worksite/blob/phase-1-shielding-core/records/session/2026-05-30-phase-1-white-screen-fix-plan.md",
+    "download_url": "https://raw.githubusercontent.com/CometDash77/PiliAvalon-Worksite/phase-1-shielding-core/records/session/2026-05-30-phase-1-white-screen-fix-plan.md"
+  },
+  {
+    "type": "file",
+    "size": 3703,
+    "name": "2026-05-30-phase-1-white-screen-fixed-prebuild-26675065521.md",
+    "path": "records/session/2026-05-30-phase-1-white-screen-fixed-prebuild-26675065521.md",
+    "sha": "5597b417b43578466048d7160a3497a00215da7a",
+    "url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/contents/records/session/2026-05-30-phase-1-white-screen-fixed-prebuild-26675065521.md?ref=phase-1-shielding-core",
+    "git_url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/git/blobs/5597b417b43578466048d7160a3497a00215da7a",
+    "html_url": "https://github.com/CometDash77/PiliAvalon-Worksite/blob/phase-1-shielding-core/records/session/2026-05-30-phase-1-white-screen-fixed-prebuild-26675065521.md",
+    "download_url": "https://raw.githubusercontent.com/CometDash77/PiliAvalon-Worksite/phase-1-shielding-core/records/session/2026-05-30-phase-1-white-screen-fixed-prebuild-26675065521.md"
+  },
+  {
+    "type": "file",
+    "size": 7755,
+    "name": "2026-05-30-runtime-smoke-handoff-to-worksite.md",
+    "path": "records/session/2026-05-30-runtime-smoke-handoff-to-worksite.md",
+    "sha": "5bebd4d6081513ff068aad9af5d43d8960a22184",
+    "url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/contents/records/session/2026-05-30-runtime-smoke-handoff-to-worksite.md?ref=phase-1-shielding-core",
+    "git_url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/git/blobs/5bebd4d6081513ff068aad9af5d43d8960a22184",
+    "html_url": "https://github.com/CometDash77/PiliAvalon-Worksite/blob/phase-1-shielding-core/records/session/2026-05-30-runtime-smoke-handoff-to-worksite.md",
+    "download_url": "https://raw.githubusercontent.com/CometDash77/PiliAvalon-Worksite/phase-1
+
+[…truncated 1725 chars — raise BridgeOptions.maxResultChars, or call the tool with a narrower scope (filter, head, pagination)…]
+
+ding-core/records/session/2026-05-30-worksite-ci-monitor-policy.md"
+  },
+  {
+    "type": "file",
+    "size": 2477,
+    "name": "2026-05-30-worksite-runtime-smoke-launcher-review-handoff.md",
+    "path": "records/session/2026-05-30-worksite-runtime-smoke-launcher-review-handoff.md",
+    "sha": "6a6959630e95793df7459ac7771575f811399213",
+    "url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/contents/records/session/2026-05-30-worksite-runtime-smoke-launcher-review-handoff.md?ref=phase-1-shielding-core",
+    "git_url": "https://api.github.com/repos/CometDash77/PiliAvalon-Worksite/git/blobs/6a6959630e95793df7459ac7771575f811399213",
+    "html_url": "https://github.com/CometDash77/PiliAvalon-Worksite/blob/phase-1-shielding-core/records/session/2026-05-30-worksite-runtime-smoke-launcher-review-handoff.md",
+    "download_url": "https://raw.githubusercontent.com/CometDash77/PiliAvalon-Worksite/phase-1-shielding-core/records/session/2026-05-30-worksite-runtime-smoke-launcher-review-handoff.md"
+  }
+]

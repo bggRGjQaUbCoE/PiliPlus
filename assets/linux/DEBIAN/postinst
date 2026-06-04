@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-ln -sf /opt/PiliPlus/piliplus /usr/bin/piliplus
+ln -sf /opt/PiliAvalon/piliplus /usr/bin/piliplus
 chmod +x /usr/bin/piliplus
 
 if [ $1 == "configure" ] && [ -x /usr/bin/update-mime-database ]; then

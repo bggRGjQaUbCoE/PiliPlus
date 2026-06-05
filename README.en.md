@@ -90,6 +90,10 @@ Additional thanks:
 - [dio](https://pub.dev/packages/dio)
 - The Flutter and Dart open-source ecosystem
 
+## Upstream
+
+- PiliPlus: <https://github.com/bggRGjQaUbCoE/PiliPlus>
+
 ## Notice
 
 PiliAvalon is a third-party client project for learning, research, and personal use. It does not provide cracked content and does not promise to bypass any third-party platform terms. Confirm that your usage complies with local laws and the relevant platform rules.

@@ -1,0 +1,58 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "pre-build: generate build info",
+      "type": "shell",
+      "command": "${workspaceFolder}/lib/scripts/pre-build.sh",
+      "args": [
+        "gen-build-info"
+      ],
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "pre-build: apply patches",
+      "type": "shell",
+      "command": "${workspaceFolder}/lib/scripts/pre-build.sh",
+      "args": [
+        "apply-patches",
+        "--platform",
+        "$(flutter",
+        "devices",
+        "--machine",
+        "2>/dev/null",
+        "|",
+        "jq",
+        "-r",
+        "'.[]",
+        "|",
+        "select(.id",
+        "==",
+        "\"${command:flutter.getSelectedDeviceId}\").targetPlatform'",
+        "|",
+        "sed",
+        "'s/-.*//;s/darwin/macos/')"
+      ],
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "restore patches",
+      "type": "shell",
+      "command": "${workspaceFolder}/lib/scripts/restore-patches.sh",
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "pre-build: apply patches and gen build info",
+      "dependsOn": [
+        "pre-build: apply patches",
+        "pre-build: generate build info"
+      ],
+      "dependsOrder": "sequence",
+      "group": "build",
+      "problemMatcher": []
+    }
+  ]
+}

@@ -1,25 +1,66 @@
 {
-    // 使用 IntelliSense 了解相关属性。
-    // 悬停以查看现有属性的描述。
-    // 欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387
-    "version": "0.2.0",
-    "configurations": [
-        {
-            "name": "PiliPlus",
-            "request": "launch",
-            "type": "dart"
-        },
-        {
-            "name": "PiliPlus (profile mode)",
-            "request": "launch",
-            "type": "dart",
-            "flutterMode": "profile"
-        },
-        {
-            "name": "PiliPlus (release mode)",
-            "request": "launch",
-            "type": "dart",
-            "flutterMode": "release"
-        }
-    ]
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "PiliPlus",
+      "request": "launch",
+      "type": "dart",
+      "preLaunchTask": "pre-build: generate build info",
+      "args": [
+        "--dart-define-from-file=pili_release.json"
+      ]
+    },
+    {
+      "name": "PiliPlus (profile mode)",
+      "request": "launch",
+      "type": "dart",
+      "flutterMode": "profile",
+      "preLaunchTask": "pre-build: generate build info",
+      "args": [
+        "--dart-define-from-file=pili_release.json"
+      ]
+    },
+    {
+      "name": "PiliPlus (release mode)",
+      "request": "launch",
+      "type": "dart",
+      "flutterMode": "release",
+      "preLaunchTask": "pre-build: generate build info",
+      "args": [
+        "--dart-define-from-file=pili_release.json"
+      ]
+    },
+    {
+      "name": "PiliPlus (auto-patch)",
+      "request": "launch",
+      "type": "dart",
+      "preLaunchTask": "pre-build: apply patches and gen build info",
+      "postDebugTask": "restore patches",
+      "args": [
+        "--dart-define-from-file=pili_release.json"
+      ]
+    },
+    {
+      "name": "PiliPlus (profile mode, auto-patch)",
+      "request": "launch",
+      "type": "dart",
+      "flutterMode": "profile",
+      "preLaunchTask": "pre-build: apply patches and gen build info",
+      "postDebugTask": "restore patches",
+      "args": [
+        "--dart-define-from-file=pili_release.json"
+      ]
+    },
+    {
+      "name": "PiliPlus (release mode, auto-patch)",
+      "request": "launch",
+      "type": "dart",
+      "flutterMode": "release",
+      "preLaunchTask": "pre-build: apply patches and gen build info",
+      "postDebugTask": "restore patches",
+      "args": [
+        "--dart-define-from-file=pili_release.json"
+      ]
+    }
+  ]
 }

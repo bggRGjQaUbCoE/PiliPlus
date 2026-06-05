@@ -1,9 +1,10 @@
 <!-- Audience classification: user-facing. -->
 
 <div align="center">
-  <img width="160" height="160" src="assets/images/logo/logo.png" alt="PiliAvalon logo">
+  <img width="160" height="160" src="assets/images/logo/piliavalon-logo.png" alt="PiliAvalon logo">
   <h1>PiliAvalon</h1>
   <p>A PiliPlus-based third-party Bilibili client focused on more controllable personal content shielding.</p>
+  <p>README uses the new brand logo; the APK icon will follow in a future app update.</p>
 
   ![GitHub repo size](https://img.shields.io/github/repo-size/CometDash77/PiliAvalon-Worksite)
   ![GitHub Repo stars](https://img.shields.io/github/stars/CometDash77/PiliAvalon-Worksite)

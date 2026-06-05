@@ -1,9 +1,10 @@
 <!-- Audience classification: user-facing. -->
 
 <div align="center">
-  <img width="160" height="160" src="assets/images/logo/logo.png" alt="PiliAvalon logo">
+  <img width="160" height="160" src="assets/images/logo/piliavalon-logo.png" alt="PiliAvalon logo">
   <h1>PiliAvalon</h1>
   <p>基于 PiliPlus 的 Bilibili 第三方客户端，面向更可控的个人内容屏蔽体验。</p>
+  <p>README 已使用新的品牌 Logo；APK 图标会在后续应用更新中跟进。</p>
 
   ![GitHub repo size](https://img.shields.io/github/repo-size/CometDash77/PiliAvalon-Worksite)
   ![GitHub Repo stars](https://img.shields.io/github/stars/CometDash77/PiliAvalon-Worksite)

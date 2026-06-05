@@ -136,9 +136,6 @@ app.*.symbols
 !**/ios/**/default.perspectivev3
 !/packages/flutter_tools/test/data/dart_dependencies_test/**/.packages
 !/dev/ci/**/Gemfile.lock
-!.vscode/settings.json
-!.vscode/launch.json
-!.vscode/tasks.json
 
 devtools_options.yaml
 
@@ -166,3 +163,17 @@ test/pages/setting/*
 !test/pages/setting/models/
 test/pages/setting/models/*
 !test/pages/setting/models/shielding_settings_test.dart
+
+# Local agent/worksite artifacts. These are retained locally when needed but
+# should not be part of the public application source tree.
+AGENTS.md
+.agents/
+.codex/
+.codex-artifacts/
+.reasonix/
+records/
+phase1-report.md
+build_80f5e6d6a.yml
+.vscode/
+tool/worksite_ci_monitor_hook_test.py
+.github/workflows/phase1_shielding_verify.yml

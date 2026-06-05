@@ -3,7 +3,7 @@ name: Android Runtime Smoke
 on:
   push:
     branches:
-      - phase-1-shielding-core
+      - main
     paths:
       - ".github/workflows/android_runtime_smoke.yml"
       - ".github/scripts/android_runtime_smoke.sh"
@@ -13,7 +13,6 @@ on:
       artifact_run_id:
         description: "Build workflow run id containing Android_x86_64 artifact"
         required: true
-        default: "26628409138"
         type: string
       package_name:
         description: "Android package name to launch"
@@ -31,7 +30,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     env:
-      ARTIFACT_RUN_ID: ${{ github.event_name == 'workflow_dispatch' && inputs.artifact_run_id || '26628409138' }}
+      ARTIFACT_RUN_ID: ${{ github.event_name == 'workflow_dispatch' && inputs.artifact_run_id || github.run_id }}
       PACKAGE_NAME: ${{ github.event_name == 'workflow_dispatch' && inputs.package_name || 'com.example.piliplus' }}
 
     steps:

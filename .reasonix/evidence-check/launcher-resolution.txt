@@ -1,2 +1,0 @@
-priority=0 preferredOrder=0 match=0x108000 specificIndex=-1 isDefault=false
-com.example.piliplus.dev/com.example.piliplus.MainActivity

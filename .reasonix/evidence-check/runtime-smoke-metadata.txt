@@ -1,7 +1,0 @@
-artifact_run_id=26686823386
-apk=runtime-smoke/apk/PiliAvalon_android_ci_7670673b0c80_x86_64.apk
-package_name=com.example.piliplus.dev
-github_sha=7670673b0c80c667136c03019381281049f640f9
-github_ref=refs/heads/phase-1-shielding-core
-15
-sdk_gphone64_x86_64

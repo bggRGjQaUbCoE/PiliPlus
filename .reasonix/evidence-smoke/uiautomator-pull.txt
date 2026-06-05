@@ -1,1 +1,0 @@
-/sdcard/window_dump.xml: 1 file pulled, 0 skipped. 0.7 MB/s (31176 bytes in 0.045s)

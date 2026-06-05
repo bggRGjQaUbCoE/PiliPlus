@@ -1,4 +1,4 @@
-name: Phase 1 CI
+name: PiliAvalon CI
 
 on:
   workflow_dispatch:
@@ -10,10 +10,10 @@ on:
         type: string
   push:
     branches:
-      - phase-1-shielding-core
+      - main
   pull_request:
     branches:
-      - phase-1-shielding-core
+      - main
 
 permissions:
   actions: read

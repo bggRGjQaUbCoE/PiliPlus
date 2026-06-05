@@ -30,4 +30,3 @@ The existing attribution section remains in place.
 Required before commit:
 
 - `git diff --check`
-

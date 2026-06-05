@@ -19,14 +19,14 @@ class CustomScrollBehavior extends MaterialScrollBehavior {
     Widget child,
     ScrollableDetails details,
   ) {
-    if (Platform.isAndroid) {
-      return StretchingOverscrollIndicator(
-        axisDirection: details.direction,
-        clipBehavior: details.decorationClipBehavior ?? .hardEdge,
-        child: child,
-      );
+    if (Platform.isIOS) {
+      return child;
     }
-    return child;
+    return StretchingOverscrollIndicator(
+      axisDirection: details.direction,
+      clipBehavior: details.decorationClipBehavior ?? .hardEdge,
+      child: child,
+    );
   }
 
   @override

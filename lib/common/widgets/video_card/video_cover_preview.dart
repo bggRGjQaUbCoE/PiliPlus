@@ -50,13 +50,17 @@ class VideoCoverPreview extends StatefulWidget {
 }
 
 class _VideoCoverPreviewState extends State<VideoCoverPreview> {
+  static const _fadeDuration = Duration(milliseconds: 200);
+
   final Object _owner = Object();
   final _controller = VideoCoverPreviewController.instance;
 
   Timer? _hoverTimer;
+  Timer? _fadeOutTimer;
   int _requestId = 0;
   bool _hovering = false;
   bool _loading = false;
+  bool _previewVisible = false;
   double? _previewAspectRatio;
 
   bool get _canPreview =>
@@ -79,6 +83,7 @@ class _VideoCoverPreviewState extends State<VideoCoverPreview> {
   void dispose() {
     _requestId++;
     _hoverTimer?.cancel();
+    _fadeOutTimer?.cancel();
     _controller.detach(_owner);
     super.dispose();
   }
@@ -88,16 +93,32 @@ class _VideoCoverPreviewState extends State<VideoCoverPreview> {
     _hovering = true;
     final requestId = ++_requestId;
     _hoverTimer?.cancel();
+    _fadeOutTimer?.cancel();
+    _fadeOutTimer = null;
+    if (_controller.owner == _owner && _controller.videoController != null) {
+      setState(() => _previewVisible = true);
+      return;
+    }
     _hoverTimer = Timer(_hoverDelay, () => _startPreview(requestId));
   }
 
   void _onExit(PointerExitEvent _) {
     _hovering = false;
-    _requestId++;
+    final requestId = ++_requestId;
     _hoverTimer?.cancel();
     _hoverTimer = null;
+    _fadeOutTimer?.cancel();
+    _fadeOutTimer = null;
     _loading = false;
-    _controller.stop(_owner);
+    _previewVisible = false;
+    if (_controller.owner == _owner && _controller.videoController != null) {
+      _fadeOutTimer = Timer(
+        _fadeDuration,
+        () => _stopAfterFadeOut(requestId),
+      );
+    } else {
+      _controller.stop(_owner);
+    }
     if (mounted) setState(() {});
   }
 
@@ -115,8 +136,28 @@ class _VideoCoverPreviewState extends State<VideoCoverPreview> {
 
     _previewAspectRatio = preview.aspectRatio ?? _previewAspectRatio;
     await _controller.play(_owner, preview.url);
-    if (!_isCurrentRequest(requestId)) return;
-    setState(() => _loading = false);
+    if (!_isCurrentRequest(requestId)) {
+      _controller.stop(_owner);
+      if (mounted) setState(() => _loading = false);
+      return;
+    }
+    _fadeOutTimer?.cancel();
+    _fadeOutTimer = null;
+    setState(() {
+      _loading = false;
+      _previewVisible = false;
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_isCurrentRequest(requestId) && _controller.owner == _owner) {
+        setState(() => _previewVisible = true);
+      }
+    });
+  }
+
+  void _stopAfterFadeOut(int requestId) {
+    _fadeOutTimer = null;
+    if (!mounted || _hovering || requestId != _requestId) return;
+    _controller.stop(_owner);
   }
 
   bool _isCurrentRequest(int requestId) {
@@ -229,8 +270,9 @@ class _VideoCoverPreviewState extends State<VideoCoverPreview> {
         animation: _controller,
         builder: (context, _) {
           final videoController = _controller.videoController;
-          final playing =
+          final ownsPreview =
               _controller.owner == _owner && videoController != null;
+          final showVideoLayer = ownsPreview || _previewVisible;
           final aspectRatio = _currentAspectRatio;
           return Stack(
             fit: StackFit.expand,
@@ -241,17 +283,22 @@ class _VideoCoverPreviewState extends State<VideoCoverPreview> {
                 height: widget.height,
                 type: widget.type,
               ),
-              if (playing)
+              if (showVideoLayer && videoController != null)
                 IgnorePointer(
-                  child: ColoredBox(
-                    color: Colors.black,
-                    child: Center(
-                      child: AspectRatio(
-                        aspectRatio: aspectRatio,
-                        child: SimpleVideo(
-                          controller: videoController,
-                          fill: Colors.black,
+                  child: AnimatedOpacity(
+                    opacity: ownsPreview && _previewVisible ? 1 : 0,
+                    duration: _fadeDuration,
+                    curve: Curves.easeInOut,
+                    child: ColoredBox(
+                      color: Colors.black,
+                      child: Center(
+                        child: AspectRatio(
                           aspectRatio: aspectRatio,
+                          child: SimpleVideo(
+                            controller: videoController,
+                            fill: Colors.black,
+                            aspectRatio: aspectRatio,
+                          ),
                         ),
                       ),
                     ),

@@ -12,6 +12,7 @@ import 'package:PiliPlus/models/video/play/url.dart';
 import 'package:PiliPlus/models_new/video/video_detail/dimension.dart';
 import 'package:PiliPlus/utils/accounts/account.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
+import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/video_utils.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
@@ -49,8 +50,6 @@ class VideoCoverPreview extends StatefulWidget {
 }
 
 class _VideoCoverPreviewState extends State<VideoCoverPreview> {
-  static const _hoverDelay = Duration(seconds: 3);
-
   final Object _owner = Object();
   final _controller = VideoCoverPreviewController.instance;
 
@@ -62,8 +61,13 @@ class _VideoCoverPreviewState extends State<VideoCoverPreview> {
 
   bool get _canPreview =>
       widget.enabled &&
+      Pref.enableVideoCoverPreview &&
       PlatformUtils.isDesktop &&
       (widget.aid != null || widget.bvid?.isNotEmpty == true);
+
+  Duration get _hoverDelay => Duration(
+    milliseconds: (Pref.videoCoverPreviewDelay * 1000).round(),
+  );
 
   double get _currentAspectRatio {
     return _dimensionAspectRatio(widget.dimension) ??

@@ -1,6 +1,7 @@
 import 'dart:io' show Platform;
 
 import 'package:PiliPlus/common/widgets/custom_icon.dart';
+import 'package:PiliPlus/common/widgets/video_card/video_cover_preview_controller.dart';
 import 'package:PiliPlus/models/common/super_chat_type.dart';
 import 'package:PiliPlus/models/common/video/subtitle_pref_type.dart';
 import 'package:PiliPlus/pages/main/controller.dart';
@@ -18,6 +19,7 @@ import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
@@ -44,6 +46,24 @@ List<SettingsModel> get playSettings => [
     title: '倍速设置',
     subtitle: '设置视频播放速度',
   ),
+  if (PlatformUtils.isDesktop)
+    SplitModel(
+      normalModel: const NormalModel.split(
+        title: '封面悬停预览',
+        subtitle: '点击设置触发时长(s)',
+        leading: Icon(Icons.play_circle_outline),
+      ),
+      switchModel: SwitchModel.split(
+        defaultVal: true,
+        setKey: SettingBoxKey.enableVideoCoverPreview,
+        onChanged: (value) {
+          if (!value) {
+            VideoCoverPreviewController.instance.disposeGlobal();
+          }
+        },
+        onTap: _showVideoCoverPreviewDelayDialog,
+      ),
+    ),
   if (Platform.isAndroid)
     NormalModel(
       onTap: _showAngleDegreesDialog,
@@ -311,6 +331,92 @@ Future<void> _showSubtitleDialog(
     );
     setState();
   }
+}
+
+Future<void> _showVideoCoverPreviewDelayDialog(BuildContext context) async {
+  const minDelay = 0.1;
+  const maxDelay = 3.0;
+  double delay = Pref.videoCoverPreviewDelay.clamp(minDelay, maxDelay);
+  final textController = TextEditingController(text: delay.toStringAsFixed(1));
+
+  await showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Text('封面悬停预览触发时长'),
+      contentPadding: const EdgeInsets.fromLTRB(24, 20, 24, 12),
+      content: StatefulBuilder(
+        builder: (context, setDialogState) => Column(
+          spacing: 20,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Slider(
+              padding: .zero,
+              value: delay,
+              min: minDelay,
+              max: maxDelay,
+              secondaryTrackValue: maxDelay,
+              divisions: 29,
+              label: '${delay.toStringAsFixed(1)}s',
+              onChanged: (value) => setDialogState(() {
+                delay = value.toPrecision(1);
+                textController.text = delay.toStringAsFixed(1);
+              }),
+            ),
+            TextFormField(
+              controller: textController,
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              inputFormatters: [
+                LengthLimitingTextInputFormatter(3),
+                FilteringTextInputFormatter.allow(RegExp(r'[\d.]+')),
+              ],
+              decoration: const InputDecoration(
+                labelText: '触发时长',
+                hintText: '0.1 - 3.0',
+                suffixText: 's',
+                border: OutlineInputBorder(),
+              ),
+              onChanged: (value) {
+                final parsed = double.tryParse(value);
+                if (parsed != null &&
+                    parsed >= minDelay &&
+                    parsed <= maxDelay) {
+                  setDialogState(() {
+                    delay = parsed.toPrecision(1);
+                  });
+                }
+              },
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () {
+            Navigator.pop(context);
+            GStorage.setting.delete(SettingBoxKey.videoCoverPreviewDelay);
+          },
+          child: const Text('重置'),
+        ),
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(
+            '取消',
+            style: TextStyle(color: ColorScheme.of(context).outline),
+          ),
+        ),
+        TextButton(
+          onPressed: () {
+            Navigator.pop(context);
+            GStorage.setting.put(SettingBoxKey.videoCoverPreviewDelay, delay);
+          },
+          child: const Text('确定'),
+        ),
+      ],
+    ),
+  );
+  textController.dispose();
 }
 
 Future<void> _showSuperChatDialog(

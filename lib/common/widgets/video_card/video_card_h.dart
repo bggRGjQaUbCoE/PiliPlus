@@ -1,9 +1,9 @@
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/image/image_save.dart';
-import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/progress_bar/video_progress_indicator.dart';
 import 'package:PiliPlus/common/widgets/stat/stat.dart';
+import 'package:PiliPlus/common/widgets/video_card/video_cover_preview.dart';
 import 'package:PiliPlus/common/widgets/video_popup_menu.dart';
 import 'package:PiliPlus/http/search.dart';
 import 'package:PiliPlus/models/horizontal_video_model.dart';
@@ -106,10 +106,19 @@ class VideoCardH extends StatelessWidget {
                         return Stack(
                           clipBehavior: .none,
                           children: [
-                            NetworkImgLayer(
-                              src: videoItem.cover,
+                            VideoCoverPreview(
+                              cover: videoItem.cover,
                               width: maxWidth,
                               height: maxHeight,
+                              aid: videoItem.aid,
+                              bvid: videoItem.bvid,
+                              cid: videoItem.cid,
+                              enabled:
+                                  videoItem.isLive != true &&
+                                  videoItem.isPugv != true &&
+                                  videoItem.redirectUrl?.isNotEmpty != true &&
+                                  (videoItem.aid != null ||
+                                      videoItem.bvid?.isNotEmpty == true),
                             ),
                             if (videoItem.badge case final badge?)
                               PBadge(

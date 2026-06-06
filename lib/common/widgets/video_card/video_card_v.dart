@@ -115,6 +115,9 @@ class VideoCardV extends StatelessWidget {
                             aid: videoItem.aid,
                             bvid: videoItem.bvid,
                             cid: videoItem.cid,
+                            isVertical:
+                                videoItem is RcmdVideoItemAppModel &&
+                                videoItem.uri?.isVerticalFromUri == true,
                             enabled:
                                 videoItem.goto == 'av' &&
                                 (videoItem.aid != null ||

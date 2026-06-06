@@ -113,6 +113,7 @@ class VideoCardH extends StatelessWidget {
                               aid: videoItem.aid,
                               bvid: videoItem.bvid,
                               cid: videoItem.cid,
+                              dimension: videoItem.dimension,
                               enabled:
                                   videoItem.isLive != true &&
                                   videoItem.isPugv != true &&

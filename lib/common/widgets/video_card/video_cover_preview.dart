@@ -9,6 +9,7 @@ import 'package:PiliPlus/models/common/video/video_quality.dart';
 import 'package:PiliPlus/models/common/video/video_type.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/models/video/play/url.dart';
+import 'package:PiliPlus/models_new/video/video_detail/dimension.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/video_utils.dart';
 import 'package:flutter/foundation.dart';
@@ -25,6 +26,8 @@ class VideoCoverPreview extends StatefulWidget {
     this.aid,
     this.bvid,
     this.cid,
+    this.dimension,
+    this.isVertical,
     this.enabled = true,
     this.type = ImageType.def,
   });
@@ -35,6 +38,8 @@ class VideoCoverPreview extends StatefulWidget {
   final dynamic aid;
   final String? bvid;
   final int? cid;
+  final Dimension? dimension;
+  final bool? isVertical;
   final bool enabled;
   final ImageType type;
 
@@ -52,11 +57,18 @@ class _VideoCoverPreviewState extends State<VideoCoverPreview> {
   int _requestId = 0;
   bool _hovering = false;
   bool _loading = false;
+  double? _previewAspectRatio;
 
   bool get _canPreview =>
       widget.enabled &&
       PlatformUtils.isDesktop &&
       (widget.aid != null || widget.bvid?.isNotEmpty == true);
+
+  double get _currentAspectRatio {
+    return _dimensionAspectRatio(widget.dimension) ??
+        _previewAspectRatio ??
+        (widget.isVertical == true ? 9 / 16 : 16 / 9);
+  }
 
   @override
   void dispose() {
@@ -88,15 +100,16 @@ class _VideoCoverPreviewState extends State<VideoCoverPreview> {
     if (!_isCurrentRequest(requestId) || _loading) return;
     setState(() => _loading = true);
 
-    final url = await _resolvePreviewUrl();
+    final preview = await _resolvePreview();
     if (!_isCurrentRequest(requestId)) return;
 
-    if (url == null) {
+    if (preview == null) {
       setState(() => _loading = false);
       return;
     }
 
-    await _controller.play(_owner, url);
+    _previewAspectRatio = preview.aspectRatio ?? _previewAspectRatio;
+    await _controller.play(_owner, preview.url);
     if (!_isCurrentRequest(requestId)) return;
     setState(() => _loading = false);
   }
@@ -105,13 +118,18 @@ class _VideoCoverPreviewState extends State<VideoCoverPreview> {
     return mounted && _hovering && requestId == _requestId && _canPreview;
   }
 
-  Future<String?> _resolvePreviewUrl() async {
+  Future<({String url, double? aspectRatio})?> _resolvePreview() async {
     try {
       int? cid = widget.cid;
-      cid ??= (await SearchHttp.ab2cWithDimension(
-        aid: widget.aid,
-        bvid: widget.bvid,
-      ))?.cid;
+      Dimension? dimension;
+      if (cid == null) {
+        final res = await SearchHttp.ab2cWithDimension(
+          aid: widget.aid,
+          bvid: widget.bvid,
+        );
+        cid = res?.cid;
+        dimension = res?.dimension;
+      }
       if (cid == null) return null;
 
       final res = await VideoHttp.videoUrl(
@@ -123,7 +141,13 @@ class _VideoCoverPreviewState extends State<VideoCoverPreview> {
         videoType: VideoType.ugc,
       );
       return switch (res) {
-        Success(:final response) => _selectPreviewUrl(response),
+        Success(:final response) => _selectPreview(
+          response,
+          aspectRatio:
+              _dimensionAspectRatio(widget.dimension) ??
+              _dimensionAspectRatio(dimension) ??
+              _boolAspectRatio(widget.isVertical),
+        ),
         _ => null,
       };
     } catch (err, stackTrace) {
@@ -134,7 +158,10 @@ class _VideoCoverPreviewState extends State<VideoCoverPreview> {
     }
   }
 
-  String? _selectPreviewUrl(PlayUrlModel playUrl) {
+  ({String url, double? aspectRatio})? _selectPreview(
+    PlayUrlModel playUrl, {
+    required double? aspectRatio,
+  }) {
     final videos = playUrl.dash?.video
         ?.where((item) => item.playUrls.isNotEmpty)
         .toList();
@@ -147,15 +174,42 @@ class _VideoCoverPreviewState extends State<VideoCoverPreview> {
         if (aAvc != bAvc) return aAvc ? -1 : 1;
         return (a.bandWidth ?? 0).compareTo(b.bandWidth ?? 0);
       });
-      return VideoUtils.getCdnUrl(videos.first.playUrls);
+      final video = videos.first;
+      return (
+        url: VideoUtils.getCdnUrl(video.playUrls),
+        aspectRatio: aspectRatio ?? _videoAspectRatio(video),
+      );
     }
 
     final durls = playUrl.durl?.where((item) => item.playUrls.isNotEmpty);
     if (durls?.isNotEmpty == true) {
-      return VideoUtils.getCdnUrl(durls!.first.playUrls);
+      return (
+        url: VideoUtils.getCdnUrl(durls!.first.playUrls),
+        aspectRatio: aspectRatio,
+      );
     }
 
     return null;
+  }
+
+  double? _dimensionAspectRatio(Dimension? dimension) {
+    return dimension?.width != null && dimension?.height != null
+        ? dimension!.width! / dimension.height!
+        : null;
+  }
+
+  double? _videoAspectRatio(VideoItem video) {
+    return video.width != null && video.height != null
+        ? video.width! / video.height!
+        : null;
+  }
+
+  double? _boolAspectRatio(bool? isVertical) {
+    return switch (isVertical) {
+      true => 9 / 16,
+      false => 16 / 9,
+      null => null,
+    };
   }
 
   @override
@@ -169,6 +223,7 @@ class _VideoCoverPreviewState extends State<VideoCoverPreview> {
           final videoController = _controller.videoController;
           final playing =
               _controller.owner == _owner && videoController != null;
+          final aspectRatio = _currentAspectRatio;
           return Stack(
             fit: StackFit.expand,
             children: [
@@ -182,9 +237,15 @@ class _VideoCoverPreviewState extends State<VideoCoverPreview> {
                 IgnorePointer(
                   child: ColoredBox(
                     color: Colors.black,
-                    child: SimpleVideo(
-                      controller: videoController,
-                      fill: Colors.black,
+                    child: Center(
+                      child: AspectRatio(
+                        aspectRatio: aspectRatio,
+                        child: SimpleVideo(
+                          controller: videoController,
+                          fill: Colors.black,
+                          aspectRatio: aspectRatio,
+                        ),
+                      ),
                     ),
                   ),
                 ),

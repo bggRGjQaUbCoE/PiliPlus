@@ -10,6 +10,7 @@ import 'package:PiliPlus/models/common/video/video_type.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/models/video/play/url.dart';
 import 'package:PiliPlus/models_new/video/video_detail/dimension.dart';
+import 'package:PiliPlus/utils/accounts/account.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/video_utils.dart';
 import 'package:flutter/foundation.dart';
@@ -120,12 +121,14 @@ class _VideoCoverPreviewState extends State<VideoCoverPreview> {
 
   Future<({String url, double? aspectRatio})?> _resolvePreview() async {
     try {
+      final account = AnonymousAccount();
       int? cid = widget.cid;
       Dimension? dimension;
       if (cid == null) {
         final res = await SearchHttp.ab2cWithDimension(
           aid: widget.aid,
           bvid: widget.bvid,
+          account: account,
         );
         cid = res?.cid;
         dimension = res?.dimension;
@@ -139,6 +142,7 @@ class _VideoCoverPreviewState extends State<VideoCoverPreview> {
         qn: VideoQuality.speed240.code,
         tryLook: false,
         videoType: VideoType.ugc,
+        account: account,
       );
       return switch (res) {
         Success(:final response) => _selectPreview(

@@ -11,6 +11,7 @@ import 'package:PiliPlus/models_new/pgc/pgc_info_model/result.dart';
 import 'package:PiliPlus/models_new/search/search_rcmd/data.dart';
 import 'package:PiliPlus/models_new/search/search_trending/data.dart';
 import 'package:PiliPlus/models_new/video/video_detail/dimension.dart';
+import 'package:PiliPlus/utils/accounts/account.dart';
 import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:PiliPlus/utils/request_utils.dart';
 import 'package:PiliPlus/utils/wbi_sign.dart';
@@ -181,6 +182,7 @@ abstract final class SearchHttp {
     dynamic aid,
     dynamic bvid,
     int? part,
+    Account? account,
   }) async {
     final res = await Request().get(
       Api.ab2c,
@@ -188,6 +190,7 @@ abstract final class SearchHttp {
         'aid': ?aid,
         'bvid': ?bvid,
       },
+      options: account == null ? null : Options(extra: {'account': account}),
     );
     if (res.data['code'] == 0) {
       if (res.data['data'] case List list) {

@@ -207,7 +207,7 @@ packages:
     description:
       path: cached_network_image
       ref: dev
-      resolved-ref: "4096db7898936295dbf8108f9eacdb6928c41dec"
+      resolved-ref: a7d0041a368b05144bd14b04a1306fd2aa5ab87f
       url: "https://github.com/bggRGjQaUbCoE/flutter_cached_network_image_ce.git"
     source: git
     version: "4.6.4"
@@ -215,20 +215,11 @@ packages:
     dependency: transitive
     description:
       path: cached_network_image_platform_interface
-      ref: HEAD
-      resolved-ref: "26bc080bc4464483ddde4e850f8c53dc98b07ac0"
-      url: "https://github.com/My-Responsitories/flutter_cached_network_image_ce"
+      ref: a7d0041a368b05144bd14b04a1306fd2aa5ab87f
+      resolved-ref: a7d0041a368b05144bd14b04a1306fd2aa5ab87f
+      url: "https://github.com/bggRGjQaUbCoE/flutter_cached_network_image_ce.git"
     source: git
     version: "5.2.0"
-  cached_network_image_web_ce:
-    dependency: transitive
-    description:
-      path: cached_network_image_web
-      ref: HEAD
-      resolved-ref: "26bc080bc4464483ddde4e850f8c53dc98b07ac0"
-      url: "https://github.com/My-Responsitories/flutter_cached_network_image_ce"
-    source: git
-    version: "2.1.1"
   canvas_danmaku:
     dependency: "direct main"
     description:
@@ -822,7 +813,7 @@ packages:
     source: hosted
     version: "4.1.2"
   image:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: image
       sha256: "6300175e00616bbc832e2fc91bfa4d776af5402c81c7151bee6905bb08473c52"
@@ -1933,7 +1924,7 @@ packages:
     source: hosted
     version: "1.1.0"
   xml:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: xml
       sha256: "67f0aff7be013d107995e9b75bf4e7f2c3ef2dfdb2c8e68024bba0a7fd5756a4"

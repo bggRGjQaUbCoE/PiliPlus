@@ -108,6 +108,7 @@ dependencies:
   hive_ce: ^2.19.3
   html: ^0.15.4
   http2: ^2.3.1
+  image: ^4.9.1
   image_cropper: ^12.0.0
   image_picker: ^1.1.2
   intl: ^0.20.2
@@ -168,6 +169,7 @@ dependencies:
       url: https://github.com/bggRGjQaUbCoE/window_manager.git
       path: packages/window_manager
       ref: main
+  xml: ^7.0.1
 
 dependency_overrides:
   flutter_inappwebview_android:

@@ -112,7 +112,6 @@ dependencies:
     git:
       url: https://github.com/bggRGjQaUbCoE/getx.git
       ref: version_4.7.2
-  gt3_flutter_plugin: ^0.1.0
   hive_ce: ^2.19.3
   html: ^0.15.4
   http2: ^2.3.1

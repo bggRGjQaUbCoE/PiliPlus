@@ -796,14 +796,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.3.2"
-  gt3_flutter_plugin:
-    dependency: "direct main"
-    description:
-      name: gt3_flutter_plugin
-      sha256: "9cf4070f3f1811b7aa7a1daebdec5886dbda8e64f932a713dab21d8128d7dad2"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.1.1"
   gtk:
     dependency: transitive
     description:

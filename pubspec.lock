@@ -578,8 +578,8 @@ packages:
     dependency: "direct overridden"
     description:
       path: flutter_inappwebview_android
-      ref: "v6.1.5"
-      resolved-ref: "553d323316cc1ef5d1b73077fe42be864e3e096d"
+      ref: dev
+      resolved-ref: "3db1c4605defcf85c3d5a1139f90f1d9ab93ce93"
       url: "https://github.com/bggRGjQaUbCoE/flutter_inappwebview.git"
     source: git
     version: "1.1.3"
@@ -596,7 +596,7 @@ packages:
     description:
       path: flutter_inappwebview_ios
       ref: dev
-      resolved-ref: "94adc42dbcf7c587a53aeb77f470641f877bab84"
+      resolved-ref: "3db1c4605defcf85c3d5a1139f90f1d9ab93ce93"
       url: "https://github.com/bggRGjQaUbCoE/flutter_inappwebview.git"
     source: git
     version: "1.1.2"
@@ -605,7 +605,7 @@ packages:
     description:
       path: flutter_inappwebview_macos
       ref: dev
-      resolved-ref: "94adc42dbcf7c587a53aeb77f470641f877bab84"
+      resolved-ref: "3db1c4605defcf85c3d5a1139f90f1d9ab93ce93"
       url: "https://github.com/bggRGjQaUbCoE/flutter_inappwebview.git"
     source: git
     version: "1.1.2"
@@ -626,12 +626,13 @@ packages:
     source: hosted
     version: "1.1.2"
   flutter_inappwebview_windows:
-    dependency: transitive
+    dependency: "direct overridden"
     description:
-      name: flutter_inappwebview_windows
-      sha256: "8b4d3a46078a2cdc636c4a3d10d10f2a16882f6be607962dbfff8874d1642055"
-      url: "https://pub.dev"
-    source: hosted
+      path: flutter_inappwebview_windows
+      ref: dev
+      resolved-ref: "3db1c4605defcf85c3d5a1139f90f1d9ab93ce93"
+      url: "https://github.com/bggRGjQaUbCoE/flutter_inappwebview.git"
+    source: git
     version: "0.6.0"
   flutter_launcher_icons:
     dependency: "direct dev"
@@ -1076,8 +1077,8 @@ packages:
     description:
       path: media_kit
       ref: "version_1.2.5"
-      resolved-ref: "4f0f72e5bf21349bc251bf52761628faeae3f233"
-      url: "https://github.com/My-Responsitories/media-kit.git"
+      resolved-ref: "4660bd0743d5643d49093af70f8bcd404f787f9c"
+      url: "https://github.com/bggRGjQaUbCoE/media-kit.git"
     source: git
     version: "1.1.11"
   media_kit_libs_android_video:
@@ -1085,16 +1086,16 @@ packages:
     description:
       path: "libs/android/media_kit_libs_android_video"
       ref: "version_1.2.5"
-      resolved-ref: "4f0f72e5bf21349bc251bf52761628faeae3f233"
-      url: "https://github.com/My-Responsitories/media-kit.git"
+      resolved-ref: "4660bd0743d5643d49093af70f8bcd404f787f9c"
+      url: "https://github.com/bggRGjQaUbCoE/media-kit.git"
     source: git
     version: "1.3.7"
   media_kit_libs_ios_video:
     dependency: "direct overridden"
     description:
       path: "libs/ios/media_kit_libs_ios_video"
-      ref: dev
-      resolved-ref: "547999bfb8b5cae9f9aca6125f46fd7cb500e994"
+      ref: "version_1.2.5"
+      resolved-ref: "4660bd0743d5643d49093af70f8bcd404f787f9c"
       url: "https://github.com/bggRGjQaUbCoE/media-kit.git"
     source: git
     version: "1.1.4"
@@ -1119,8 +1120,8 @@ packages:
     description:
       path: "libs/universal/media_kit_libs_video"
       ref: "version_1.2.5"
-      resolved-ref: "4f0f72e5bf21349bc251bf52761628faeae3f233"
-      url: "https://github.com/My-Responsitories/media-kit.git"
+      resolved-ref: "4660bd0743d5643d49093af70f8bcd404f787f9c"
+      url: "https://github.com/bggRGjQaUbCoE/media-kit.git"
     source: git
     version: "1.0.5"
   media_kit_libs_windows_video:
@@ -1128,8 +1129,8 @@ packages:
     description:
       path: "libs/windows/media_kit_libs_windows_video"
       ref: "version_1.2.5"
-      resolved-ref: "4f0f72e5bf21349bc251bf52761628faeae3f233"
-      url: "https://github.com/My-Responsitories/media-kit.git"
+      resolved-ref: "4660bd0743d5643d49093af70f8bcd404f787f9c"
+      url: "https://github.com/bggRGjQaUbCoE/media-kit.git"
     source: git
     version: "1.0.10"
   media_kit_native_event_loop:
@@ -1137,8 +1138,8 @@ packages:
     description:
       path: media_kit_native_event_loop
       ref: "version_1.2.5"
-      resolved-ref: "4f0f72e5bf21349bc251bf52761628faeae3f233"
-      url: "https://github.com/My-Responsitories/media-kit.git"
+      resolved-ref: "4660bd0743d5643d49093af70f8bcd404f787f9c"
+      url: "https://github.com/bggRGjQaUbCoE/media-kit.git"
     source: git
     version: "1.0.9"
   media_kit_video:
@@ -1146,8 +1147,8 @@ packages:
     description:
       path: media_kit_video
       ref: "version_1.2.5"
-      resolved-ref: "4f0f72e5bf21349bc251bf52761628faeae3f233"
-      url: "https://github.com/My-Responsitories/media-kit.git"
+      resolved-ref: "4660bd0743d5643d49093af70f8bcd404f787f9c"
+      url: "https://github.com/bggRGjQaUbCoE/media-kit.git"
     source: git
     version: "1.2.5"
   menu_base:

@@ -493,7 +493,7 @@ class LoginPageController extends GetxController
     bool quickSelect = selectAccount.every((e) => e == selectAccount.first);
     return showDialog(
       context: context,
-      barrierDismissible: false,
+      barrierDismissible: accounts == null,
       builder: (context) => AlertDialog(
         title: Row(
           crossAxisAlignment: .start,

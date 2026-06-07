@@ -10,13 +10,24 @@ import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:get/get.dart';
 
-const _geetestJsUri = 'https://static.geetest.com/static/js/fullpage.0.0.0.js';
-
 class GeetestWebviewDialog extends StatelessWidget {
   const GeetestWebviewDialog(this.gt, this.challenge, {super.key});
 
   final String gt;
   final String challenge;
+
+  static Future geetest(String gt, String challenge) {
+    return showDialog(
+      context: Get.context!,
+      builder: (context) => GeetestWebviewDialog(gt, challenge),
+    );
+  }
+
+  static const _geetestJsUri =
+      'https://static.geetest.com/static/js/fullpage.0.0.0.js';
+
+  static String _showJs(String response) =>
+      't=Geetest($response).onSuccess(()=>R("success",t.getValidate())).onError(o=>R("error",o)).onClose(o=>R("close",o));t.onReady(()=>t.verify())';
 
   static Future<LoadingState<String>> _getConfig(
     String gt,
@@ -67,7 +78,7 @@ class GeetestWebviewDialog extends StatelessWidget {
     return AlertDialog(
       title: const Text('验证码'),
       content: SizedBox(
-        width: 300,
+        width: 320,
         height: 400,
         child: InAppWebView(
           webViewEnvironment: webViewEnvironment,
@@ -79,11 +90,31 @@ class GeetestWebviewDialog extends StatelessWidget {
             algorithmicDarkeningAllowed: true,
             useShouldOverrideUrlLoading: true,
             userAgent: BrowserUa.mob,
-            mixedContentMode: MixedContentMode.MIXED_CONTENT_ALWAYS_ALLOW,
+            mixedContentMode: .MIXED_CONTENT_ALWAYS_ALLOW,
+
+            incognito: true,
+            allowFileAccess: false,
+            allowsLinkPreview: false,
+            allowContentAccess: false,
+            useOnDownloadStart: false,
+            geolocationEnabled: false,
+            thirdPartyCookiesEnabled: false,
+            enterpriseAuthenticationAppLinkPolicyEnabled: false,
+            saveFormData: false,
+            safeBrowsingEnabled: false,
+            isFraudulentWebsiteWarningEnabled: false,
+            domStorageEnabled: false,
+            databaseEnabled: false,
+            cacheEnabled: false,
+            cacheMode: .LOAD_NO_CACHE,
+
+            horizontalScrollBarEnabled: false,
+            verticalScrollBarEnabled: false,
+            overScrollMode: .NEVER,
           ),
           initialData: InAppWebViewInitialData(
             data:
-                '<!DOCTYPE html><html><head></head><body><script src="$_geetestJsUri"></script><script>function R(n,o){flutter_inappwebview.callHandler(n,o)}</script></body></html>',
+                '<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width"></head><body><script src="$_geetestJsUri"></script><script>R=flutter_inappwebview.callHandler</script></body></html>',
           ),
           onWebViewCreated: (ctr) {
             ctr
@@ -104,16 +135,17 @@ class GeetestWebviewDialog extends StatelessWidget {
                 callback: (args) {
                   debugPrint('geetest error: $args');
                 },
+              )
+              ..addJavaScriptHandler(
+                handlerName: 'close',
+                callback: (args) => Get.back(),
               );
           },
           onLoadStop: (ctr, _) async {
             final config = await future;
             if (!context.mounted) return;
             if (config case Success(:final response)) {
-              ctr.evaluateJavascript(
-                source:
-                    'let t=Geetest($response).onSuccess(()=>R("success",t.getValidate())).onError((o)=>R("error",o));t.onReady(()=>t.verify());',
-              );
+              ctr.evaluateJavascript(source: _showJs(response));
             } else {
               config.toast();
               Get.back();

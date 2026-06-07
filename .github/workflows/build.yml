@@ -81,7 +81,6 @@ jobs:
             - name: Apply Patch
               shell: pwsh
               run: lib/scripts/patch.ps1 android
-              continue-on-error: true
 
             - name: Write key
               if: github.event_name == 'workflow_dispatch'

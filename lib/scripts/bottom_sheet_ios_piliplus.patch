@@ -9,7 +9,7 @@ index 58ba68b7c..a6bb398ac 100644
 -import 'package:flutter/gestures.dart' show HorizontalDragGestureRecognizer;
 +import 'package:flutter/gestures.dart'
 +    show HorizontalDragGestureRecognizer, DeviceGestureSettings;
- import 'package:flutter/material.dart' ;
+ import 'package:flutter/material.dart';
  import 'package:get/get.dart';
  
 @@ -142,6 +143,10 @@ class SlideDragGestureRecognizer extends HorizontalDragGestureRecognizer {

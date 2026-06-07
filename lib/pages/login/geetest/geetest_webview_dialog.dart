@@ -20,6 +20,13 @@ class GeetestWebviewDialog extends StatefulWidget {
 
   @override
   State<GeetestWebviewDialog> createState() => _GeetestWebviewDialogState();
+
+  static Future geetest(String gt, String challenge) {
+    return showDialog(
+      context: Get.context!,
+      builder: (context) => GeetestWebviewDialog(gt, challenge),
+    );
+  }
 }
 
 class _GeetestWebviewDialogState extends State<GeetestWebviewDialog> {

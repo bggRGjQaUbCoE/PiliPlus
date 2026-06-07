@@ -37,10 +37,16 @@ $ModalBarrierPatch = "lib/scripts/modal_barrier.patch"
 # https://github.com/flutter/flutter/issues/182466
 $MouseCursorPatch = "lib/scripts/mouse_cursor.patch"
 
+$GeetestIOSPatch = "lib/scripts/geetest_ios.patch"
+
 if ($platform.ToLower() -eq "ios") {
     git apply $BottomSheetIOSPiliPlusPatch
     if ($LASTEXITCODE -eq 0) {
         Write-Host "$BottomSheetIOSPiliPlusPatch applied"
+    }
+    git apply $GeetestIOSPatch
+    if ($LASTEXITCODE -eq 0) {
+        Write-Host "$GeetestIOSPatch applied"
     }
 }
 

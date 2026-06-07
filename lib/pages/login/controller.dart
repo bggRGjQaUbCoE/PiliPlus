@@ -122,24 +122,17 @@ class LoginPageController extends GetxController
     String geeChallenge,
     VoidCallback onSuccess,
   ) {
-    void updateCaptchaData(Map json) {
-      captchaData
-        ..validate = json['geetest_validate']
-        ..seccode = json['geetest_seccode']
-        ..geetest = GeetestData(
-          challenge: json['geetest_challenge'],
-          gt: geeGt,
-        );
-      SmartDialog.showToast('验证成功');
-      onSuccess();
-    }
-
-    showDialog<Map<String, dynamic>>(
-      context: Get.context!,
-      builder: (context) => GeetestWebviewDialog(geeGt, geeChallenge),
-    ).then((res) {
-      if (res != null) {
-        updateCaptchaData(res);
+    GeetestWebviewDialog.geetest(geeGt, geeChallenge).then((res) {
+      if (res is Map) {
+        captchaData
+          ..validate = res['geetest_validate']
+          ..seccode = res['geetest_seccode']
+          ..geetest = GeetestData(
+            challenge: res['geetest_challenge'],
+            gt: geeGt,
+          );
+        SmartDialog.showToast('验证成功');
+        onSuccess();
       }
     });
   }

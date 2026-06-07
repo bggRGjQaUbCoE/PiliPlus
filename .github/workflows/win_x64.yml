@@ -29,7 +29,6 @@ jobs:
       - name: Apply Patch
         shell: pwsh
         run: lib/scripts/patch.ps1 windows
-        continue-on-error: true
 
       - name: Add fastforge and Inno Setup
         run: |

@@ -50,6 +50,7 @@ class ShieldRule {
     required this.updatedAt,
     this.enabled = true,
     this.source = ShieldRuleSource.manual,
+    this.displayPattern,
   });
 
   final String id;
@@ -61,6 +62,7 @@ class ShieldRule {
   final bool enabled;
   final DateTime updatedAt;
   final ShieldRuleSource source;
+  final String? displayPattern;
 
   ShieldRule copyWith({
     String? id,
@@ -72,6 +74,7 @@ class ShieldRule {
     bool? enabled,
     DateTime? updatedAt,
     ShieldRuleSource? source,
+    String? displayPattern,
   }) => ShieldRule(
     id: id ?? this.id,
     type: type ?? this.type,
@@ -82,6 +85,7 @@ class ShieldRule {
     enabled: enabled ?? this.enabled,
     updatedAt: updatedAt ?? this.updatedAt,
     source: source ?? this.source,
+    displayPattern: displayPattern ?? this.displayPattern,
   );
 
   Map<String, Object?> toJson() => {
@@ -94,6 +98,7 @@ class ShieldRule {
     'enabled': enabled,
     'updated_at': updatedAt.millisecondsSinceEpoch,
     'source': source.name,
+    if (displayPattern != null) 'display_pattern': displayPattern,
   };
 
   factory ShieldRule.fromJson(Map<String, Object?> json) => ShieldRule(
@@ -114,6 +119,7 @@ class ShieldRule {
       ShieldRuleSource.values,
       json['source']?.toString() ?? ShieldRuleSource.manual.name,
     ),
+    displayPattern: json['display_pattern'] as String?,
   );
 }
 

@@ -120,6 +120,7 @@ void main() {
       expect(rules.single.scope, ShieldScope.recommendation);
       expect(rules.single.matchMode, ShieldMatchMode.regex);
       expect(rules.single.pattern, shieldTokenPatternRegex('编辑后UP'));
+      expect(rules.single.displayPattern, '编辑后UP');
     });
 
     testWidgets('UP keyword regex escapes edited metacharacters', (
@@ -152,6 +153,7 @@ void main() {
         rules.single.pattern,
         shieldTokenPatternRegex(r'UP(.*)'),
       );
+      expect(rules.single.displayPattern, r'UP(.*)');
     });
 
     testWidgets('recommendation reason action creates reason keyword rule', (

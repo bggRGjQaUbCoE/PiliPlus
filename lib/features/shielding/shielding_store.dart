@@ -160,6 +160,7 @@ class ShieldSettingsStore {
     required ShieldScope scope,
     required String pattern,
     ShieldMatchMode matchMode = ShieldMatchMode.exact,
+    String? displayPattern,
   }) async {
     final trimmed = pattern.trim();
     if (trimmed.isEmpty) {
@@ -184,6 +185,7 @@ class ShieldSettingsStore {
       scope: scope,
       action: ShieldAction.block,
       pattern: trimmed,
+      displayPattern: displayPattern,
       enabled: true,
       updatedAt: DateTime.now(),
       source: ShieldRuleSource.quickAction,

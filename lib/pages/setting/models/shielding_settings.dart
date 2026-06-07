@@ -6,8 +6,66 @@ String shieldRuleSummary(List<ShieldRule> rules) {
   return '$enabled/${rules.length} 条规则启用';
 }
 
-String shieldRuleTitle(ShieldRule rule) =>
-    '${shieldActionLabel(rule.action)} ${shieldRuleTypeLabel(rule.type)}: ${rule.pattern}';
+String shieldRuleTitle(ShieldRule rule) {
+  final display = _displayPattern(rule);
+  return '${shieldActionLabel(rule.action)} ${shieldRuleTypeLabel(rule.type)}: $display';
+}
+
+/// Returns the user-facing display text for a rule's pattern.
+///
+/// Prefers [ShieldRule.displayPattern] when set.
+/// For old user/UP keyword rules whose pattern is a generated regex
+/// from [shieldTokenPatternRegex], extracts and unescapes the original keyword.
+/// Falls back to the raw [pattern] for manual regex, UID, and other rules.
+String _displayPattern(ShieldRule rule) {
+  // 1. Use explicit displayPattern when available.
+  if (rule.displayPattern != null && rule.displayPattern!.isNotEmpty) {
+    return rule.displayPattern!;
+  }
+
+  // 2. For user/UP keyword regex rules, try to recover keyword from
+  //    the generated token pattern shape.
+  if (rule.type == ShieldRuleType.userKeyword &&
+      rule.matchMode == ShieldMatchMode.regex) {
+    final extracted = _extractKeywordFromTokenPattern(rule.pattern);
+    if (extracted != null) return extracted;
+  }
+
+  // 3. Fallback: show the raw pattern (UID, manual regex, etc.).
+  return rule.pattern;
+}
+
+/// Detects a pattern produced by [shieldTokenPatternRegex] and extracts
+/// the original keyword (with regex escaping reversed).
+String? _extractKeywordFromTokenPattern(String pattern) {
+  const prefix = r'(^|[\s,，。！？!?:：;；_\-])';
+  const suffix = r'($|[\s,，。！？!?:：;；_\-])';
+  if (pattern.startsWith(prefix) && pattern.endsWith(suffix)) {
+    final escaped = pattern.substring(
+      prefix.length,
+      pattern.length - suffix.length,
+    );
+    if (escaped.isNotEmpty) {
+      return _unescapeRegex(escaped);
+    }
+  }
+  return null;
+}
+
+/// Reverses [RegExp.escape] — strips single backslashes before special
+/// regex characters and collapses double backslashes to single ones.
+String _unescapeRegex(String s) {
+  final buffer = StringBuffer();
+  for (int i = 0; i < s.length; i++) {
+    if (s[i] == '\\' && i + 1 < s.length) {
+      buffer.write(s[i + 1]);
+      i++;
+    } else {
+      buffer.write(s[i]);
+    }
+  }
+  return buffer.toString();
+}
 
 String shieldRuleSubtitle(ShieldRule rule) =>
     '${shieldScopeLabel(rule.scope)} / '

@@ -13,6 +13,7 @@ abstract final class VideoCardShieldQuickAction {
     ShieldMatchMode matchMode = ShieldMatchMode.exact,
     bool showToast = true,
     String? successLabel,
+    String? displayPattern,
   }) async {
     final trimmed = pattern.trim();
     if (trimmed.isEmpty) {
@@ -24,6 +25,7 @@ abstract final class VideoCardShieldQuickAction {
       scope: ShieldScope.recommendation,
       pattern: trimmed,
       matchMode: matchMode,
+      displayPattern: displayPattern,
     );
     if (rule == null) {
       if (showToast) {
@@ -467,6 +469,7 @@ class _UpActionRowState extends State<_UpActionRow> {
       type: ShieldRuleType.userKeyword,
       pattern: shieldTokenPatternRegex(trimmed),
       matchMode: ShieldMatchMode.regex,
+      displayPattern: trimmed,
       successLabel: '屏蔽推荐用户/UP关键词「$trimmed」',
     );
     widget.onRuleAdded?.call();

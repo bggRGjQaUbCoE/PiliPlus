@@ -35,6 +35,87 @@ void main() {
       expect(shieldRuleSubtitle(rule), '评论 / 完全相同 / 已启用');
     });
 
+    test('uses displayPattern when present for user keyword rules', () {
+      final rule = ShieldRule(
+        id: 'user-keyword-display',
+        type: ShieldRuleType.userKeyword,
+        matchMode: ShieldMatchMode.regex,
+        scope: ShieldScope.recommendation,
+        action: ShieldAction.block,
+        pattern: r'(^|[\s,，。！？!?:：;；_\-])编辑后UP($|[\s,，。！？!?:：;；_\-])',
+        displayPattern: '编辑后UP',
+        enabled: true,
+        updatedAt: DateTime.fromMillisecondsSinceEpoch(1),
+        source: ShieldRuleSource.quickAction,
+      );
+
+      expect(shieldRuleTitle(rule), '屏蔽 用户/UP关键词: 编辑后UP');
+    });
+
+    test('recovers keyword from old generated regex without displayPattern', () {
+      final rule = ShieldRule(
+        id: 'old-user-keyword',
+        type: ShieldRuleType.userKeyword,
+        matchMode: ShieldMatchMode.regex,
+        scope: ShieldScope.recommendation,
+        action: ShieldAction.block,
+        pattern: r'(^|[\s,，。！？!?:：;；_\-])测试UP($|[\s,，。！？!?:：;；_\-])',
+        enabled: true,
+        updatedAt: DateTime.fromMillisecondsSinceEpoch(1),
+        source: ShieldRuleSource.quickAction,
+      );
+
+      expect(shieldRuleTitle(rule), '屏蔽 用户/UP关键词: 测试UP');
+    });
+
+    test('recovers keyword with escaped special chars from old generated regex', () {
+      final rule = ShieldRule(
+        id: 'old-user-keyword-special',
+        type: ShieldRuleType.userKeyword,
+        matchMode: ShieldMatchMode.regex,
+        scope: ShieldScope.recommendation,
+        action: ShieldAction.block,
+        pattern: r'(^|[\s,，。！？!?:：;；_\-])UP\(\.\*\)($|[\s,，。！？!?:：;；_\-])',
+        enabled: true,
+        updatedAt: DateTime.fromMillisecondsSinceEpoch(1),
+        source: ShieldRuleSource.quickAction,
+      );
+
+      expect(shieldRuleTitle(rule), '屏蔽 用户/UP关键词: UP(.*)');
+    });
+
+    test('shows raw regex for non-user-keyword regex rules', () {
+      final rule = ShieldRule(
+        id: 'manual-regex',
+        type: ShieldRuleType.keyword,
+        matchMode: ShieldMatchMode.regex,
+        scope: ShieldScope.both,
+        action: ShieldAction.block,
+        pattern: r'cat.*dog',
+        enabled: true,
+        updatedAt: DateTime.fromMillisecondsSinceEpoch(1),
+        source: ShieldRuleSource.manual,
+      );
+
+      expect(shieldRuleTitle(rule), '屏蔽 标题/正文关键词: cat.*dog');
+    });
+
+    test('shows UID for UID rules', () {
+      final rule = ShieldRule(
+        id: 'uid-rule',
+        type: ShieldRuleType.uid,
+        matchMode: ShieldMatchMode.exact,
+        scope: ShieldScope.recommendation,
+        action: ShieldAction.block,
+        pattern: '12345',
+        enabled: true,
+        updatedAt: DateTime.fromMillisecondsSinceEpoch(1),
+        source: ShieldRuleSource.quickAction,
+      );
+
+      expect(shieldRuleTitle(rule), '屏蔽 用户 UID: 12345');
+    });
+
     test(
       'labels keyword exact semantics as contains instead of exact equality',
       () {

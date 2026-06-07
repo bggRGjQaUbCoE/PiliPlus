@@ -39,6 +39,48 @@ void main() {
       expect(decoded.rules.single.updatedAt.millisecondsSinceEpoch, 99);
     });
 
+    test('round trips JSON and preserves displayPattern', () {
+      final rule = ShieldRule(
+        id: 'display-test',
+        type: ShieldRuleType.userKeyword,
+        matchMode: ShieldMatchMode.regex,
+        scope: ShieldScope.recommendation,
+        action: ShieldAction.block,
+        pattern: r'(^|[\s,，。！？!?:：;；_\-])编辑后UP($|[\s,，。！？!?:：;；_\-])',
+        displayPattern: '编辑后UP',
+        enabled: true,
+        updatedAt: DateTime.fromMillisecondsSinceEpoch(200),
+        source: ShieldRuleSource.quickAction,
+      );
+
+      final json = rule.toJson();
+      expect(json['display_pattern'], '编辑后UP');
+      expect(json['pattern'], rule.pattern);
+
+      final decoded = ShieldRule.fromJson(json);
+      expect(decoded.displayPattern, '编辑后UP');
+      expect(decoded.pattern, rule.pattern);
+    });
+
+    test('loads old JSON without display_pattern without error', () {
+      final json = <String, Object?>{
+        'id': 'old-rule',
+        'type': 'userKeyword',
+        'match_mode': 'regex',
+        'scope': 'recommendation',
+        'action': 'block',
+        'pattern': r'(^|[\s,，。！？!?:：;；_\-])测试UP($|[\s,，。！？!?:：;；_\-])',
+        'enabled': true,
+        'updated_at': 100,
+        'source': 'quickAction',
+      };
+
+      final decoded = ShieldRule.fromJson(json);
+      expect(decoded.id, 'old-rule');
+      expect(decoded.pattern, json['pattern']);
+      expect(decoded.displayPattern, isNull);
+    });
+
     test('damaged JSON bypasses shielding instead of throwing', () {
       final decoded = ShieldRuleSet.tryFromJson({
         'version': 'broken',

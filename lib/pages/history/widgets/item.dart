@@ -3,9 +3,12 @@ import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/progress_bar/video_progress_indicator.dart';
 import 'package:PiliPlus/common/widgets/select_mask.dart';
+import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/search.dart';
 import 'package:PiliPlus/http/user.dart';
+import 'package:PiliPlus/http/video.dart';
 import 'package:PiliPlus/models_new/history/list.dart';
+import 'package:PiliPlus/models_new/video/video_detail/data.dart';
 import 'package:PiliPlus/models_new/video/video_detail/dimension.dart';
 import 'package:PiliPlus/pages/common/multi_select/base.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
@@ -13,6 +16,7 @@ import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -92,7 +96,18 @@ class HistoryItem extends StatelessWidget {
                     }
                   }
                   if (cid != null) {
-                    // TODO: dimension
+                    VideoDetailData? videoIntro;
+                    if (dimension == null) {
+                      final res = await VideoHttp.videoIntro(bvid: bvid);
+                      if (res case Success(:final response)) {
+                        videoIntro = response;
+                        dimension = response.pages
+                            ?.firstWhereOrNull(
+                              (e) => e.cid == cid,
+                            )
+                            ?.dimension;
+                      }
+                    }
                     PageUtils.toVideoPage(
                       aid: aid,
                       bvid: bvid,
@@ -100,6 +115,7 @@ class HistoryItem extends StatelessWidget {
                       cover: item.cover,
                       title: item.title,
                       dimension: dimension,
+                      extraArguments: {'videoIntro': videoIntro},
                     );
                   }
                 }

@@ -214,6 +214,7 @@ find_nodes_by_text() {
   local out_file="$2"
   shift 2
   python3 - "$dump_file" "$out_file" "$@" <<'PY'
+import re
 import sys
 import xml.etree.ElementTree as ET
 
@@ -227,34 +228,50 @@ except ET.ParseError:
         f.write("# parse_error\n")
     sys.exit(0)
 
+def sanitize(s):
+    """Replace CR/LF so records stay on one line; use pilcrow (U+00B6) as placeholder."""
+    return s.replace("\r", "\u00b6").replace("\n", "\u00b6")
+
+BOUNDS_RE = re.compile(r"^\[(\d+),(\d+)\]\[(\d+),(\d+)\]$")
+
 results = []
 for node in root.iter("node"):
     text = node.attrib.get("text", "")
     content_desc = node.attrib.get("content-desc", "")
+    clickable = node.attrib.get("clickable", "false")
     combined = f"{text} {content_desc}"
     for pat in patterns:
         if pat in combined:
             bounds_str = node.attrib.get("bounds", "")
-            if bounds_str:
-                parts = bounds_str.replace("[", ",").replace("]", ",").split(",")
-                parts = [p for p in parts if p]
-                if len(parts) == 4:
-                    left, top, right, bottom = map(int, parts)
-                    cx = (left + right) // 2
-                    cy = (top + bottom) // 2
-                    results.append(
-                        f"text={text} content_desc={content_desc} "
-                        f"matched={pat} bounds={bounds_str} cx={cx} cy={cy}"
-                    )
+            m = BOUNDS_RE.match(bounds_str) if bounds_str else None
+            if m:
+                left, top, right, bottom = map(int, m.groups())
+                cx = (left + right) // 2
+                cy = (top + bottom) // 2
+                w = right - left
+                h = bottom - top
+                area = w * h
+                # sort key: (clickable_priority, area)
+                click_prio = 0 if clickable == "true" else 1
+                results.append((
+                    click_prio, area,
+                    f"text={sanitize(text)} content_desc={sanitize(content_desc)} "
+                    f"matched={sanitize(pat)} bounds={bounds_str} "
+                    f"w={w} h={h} area={area} clickable={clickable} cx={cx} cy={cy}"
+                ))
             else:
-                results.append(
-                    f"text={text} content_desc={content_desc} "
-                    f"matched={pat} bounds=none cx=0 cy=0"
-                )
+                results.append((
+                    sys.maxsize, 1,
+                    f"text={sanitize(text)} content_desc={sanitize(content_desc)} "
+                    f"matched={sanitize(pat)} bounds=none clickable={clickable} cx=0 cy=0"
+                ))
+
+# Sort: clickable nodes first, then smallest area.
+results.sort(key=lambda x: (x[0], x[1]))
 
 with open(out_path, "w") as f:
-    for r in results:
-        f.write(r + "\n")
+    for _, _, line in results:
+        f.write(line + "\n")
     if not results:
         f.write("# no_match\n")
 PY
@@ -265,18 +282,18 @@ tap_first_match() {
   if [ ! -s "$matches_file" ]; then
     return 1
   fi
-  local line
-  line="$(grep -v '^#' "$matches_file" | head -n 1)"
-  if [ -z "$line" ]; then
-    return 1
-  fi
   local cx cy
-  cx="$(echo "$line" | sed -n 's/.*cx=\([0-9]\+\).*/\1/p')"
-  cy="$(echo "$line" | sed -n 's/.*cy=\([0-9]\+\).*/\1/p')"
-  if [ -n "${cx:-}" ] && [ -n "${cy:-}" ] && [ "$cx" != "0" ]; then
-    adb shell input tap "$cx" "$cy"
-    return 0
-  fi
+  while IFS= read -r line; do
+    # skip comment lines
+    [[ "$line" =~ ^# ]] && continue
+    cx="$(echo "$line" | sed -n 's/.*cx=\([0-9]\+\).*/\1/p')"
+    cy="$(echo "$line" | sed -n 's/.*cy=\([0-9]\+\).*/\1/p')"
+    # skip malformed lines: require both cx and cy present, and cx != 0
+    if [ -n "${cx:-}" ] && [ -n "${cy:-}" ] && [ "$cx" != "0" ]; then
+      adb shell input tap "$cx" "$cy"
+      return 0
+    fi
+  done < "$matches_file"
   return 1
 }
 

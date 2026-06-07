@@ -220,6 +220,7 @@ import xml.etree.ElementTree as ET
 
 dump_path, out_path = sys.argv[1], sys.argv[2]
 patterns = sys.argv[3:]
+pattern_priority = {pat: idx for idx, pat in enumerate(patterns)}
 
 try:
     root = ET.parse(dump_path).getroot()
@@ -242,6 +243,7 @@ for node in root.iter("node"):
     combined = f"{text} {content_desc}"
     for pat in patterns:
         if pat in combined:
+            priority = pattern_priority.get(pat, len(patterns))
             bounds_str = node.attrib.get("bounds", "")
             m = BOUNDS_RE.match(bounds_str) if bounds_str else None
             if m:
@@ -251,26 +253,26 @@ for node in root.iter("node"):
                 w = right - left
                 h = bottom - top
                 area = w * h
-                # sort key: (clickable_priority, area)
+                # sort key: (pattern_priority, clickable_priority, area)
                 click_prio = 0 if clickable == "true" else 1
                 results.append((
-                    click_prio, area,
+                    priority, click_prio, area,
                     f"text={sanitize(text)} content_desc={sanitize(content_desc)} "
-                    f"matched={sanitize(pat)} bounds={bounds_str} "
+                    f"matched={sanitize(pat)} priority={priority} bounds={bounds_str} "
                     f"w={w} h={h} area={area} clickable={clickable} cx={cx} cy={cy}"
                 ))
             else:
                 results.append((
-                    sys.maxsize, 1,
+                    priority, 1, sys.maxsize,
                     f"text={sanitize(text)} content_desc={sanitize(content_desc)} "
-                    f"matched={sanitize(pat)} bounds=none clickable={clickable} cx=0 cy=0"
+                    f"matched={sanitize(pat)} priority={priority} bounds=none clickable={clickable} cx=0 cy=0"
                 ))
 
-# Sort: clickable nodes first, then smallest area.
-results.sort(key=lambda x: (x[0], x[1]))
+# Sort: higher-priority navigation text first, then clickable nodes, then smallest area.
+results.sort(key=lambda x: (x[0], x[1], x[2]))
 
 with open(out_path, "w") as f:
-    for _, _, line in results:
+    for _, _, _, line in results:
         f.write(line + "\n")
     if not results:
         f.write("# no_match\n")
@@ -279,6 +281,7 @@ PY
 
 tap_first_match() {
   local matches_file="$1"
+  local nav_log="${2:-}"
   if [ ! -s "$matches_file" ]; then
     return 1
   fi
@@ -290,6 +293,10 @@ tap_first_match() {
     cy="$(echo "$line" | sed -n 's/.*cy=\([0-9]\+\).*/\1/p')"
     # skip malformed lines: require both cx and cy present, and cx != 0
     if [ -n "${cx:-}" ] && [ -n "${cy:-}" ] && [ "$cx" != "0" ]; then
+      if [ -n "$nav_log" ]; then
+        echo "tap_match=$line" >> "$nav_log"
+        echo "tap_coords=${cx},${cy}" >> "$nav_log"
+      fi
       adb shell input tap "$cx" "$cy"
       return 0
     fi
@@ -593,7 +600,7 @@ if [ -n "$scenario" ] && [ "$status" -eq 0 ]; then
 
       # Step 2: If not already visible, attempt navigation via taps and swipes
       if [ "$scenario_success" -eq 0 ]; then
-        nav_targets="推荐流设置 设置 我的 推荐流 推荐"
+        nav_targets="推荐流设置 设置 我的 推荐流"
 
         while [ "$scenario_nav_attempt" -lt "$max_scenario_swipes" ]; do
           scenario_nav_attempt=$((scenario_nav_attempt + 1))
@@ -616,7 +623,7 @@ if [ -n "$scenario" ] && [ "$status" -eq 0 ]; then
           find_nodes_by_text "$current_ui" "$scenario_evidence_dir/matches-${scenario_nav_attempt}.txt" $nav_targets
 
           if grep -qv '^#' "$scenario_evidence_dir/matches-${scenario_nav_attempt}.txt" 2>/dev/null; then
-            if tap_first_match "$scenario_evidence_dir/matches-${scenario_nav_attempt}.txt"; then
+            if tap_first_match "$scenario_evidence_dir/matches-${scenario_nav_attempt}.txt" "$scenario_evidence_dir/navigation-log.txt"; then
               echo "tapped_navigation_target=true" >> "$scenario_evidence_dir/navigation-log.txt"
               sleep 3
               continue
@@ -643,6 +650,17 @@ if [ -n "$scenario" ] && [ "$status" -eq 0 ]; then
         echo "reason=debug_labels_not_reachable_via_ui_navigation" >> "$scenario_evidence_dir/scenario-outcome.txt"
         status=130
       fi
+
+      echo "--- recommend-detail-tag-shielding scenario outcome ---"
+      cat "$scenario_evidence_dir/scenario-outcome.txt" 2>/dev/null || true
+      echo "--- scenario navigation log ---"
+      cat "$scenario_evidence_dir/navigation-log.txt" 2>/dev/null || true
+      echo "--- scenario match summary ---"
+      for match_file in "$scenario_evidence_dir"/matches-*.txt; do
+        [ -e "$match_file" ] || continue
+        echo "### $(basename "$match_file")"
+        head -n 5 "$match_file" || true
+      done
       ;;
     *)
       echo "Unknown scenario: $scenario" | tee "$scenario_evidence_dir/scenario-error.txt"

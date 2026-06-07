@@ -13,6 +13,13 @@ abstract final class ShieldingAdapters {
     final owner = json['owner'] as Map?;
     final args = json['args'] as Map?;
     final category = _string(json['tname'] ?? args?['tname']);
+    final authorName = _firstString([
+      owner?['name'],
+      args?['up_name'],
+      args?['uname'],
+      json['owner_name'],
+      item.owner.name,
+    ]);
     final tags = _tags(json);
     final reason = _recommendationReason(
       itemReason: item.rcmdReason,
@@ -23,12 +30,8 @@ abstract final class ShieldingAdapters {
       title: item.title,
       reason: reason,
       uid: _string(owner?['mid'] ?? args?['up_id'] ?? item.owner.mid),
-      authorName: _string(
-        owner?['name'] ?? args?['up_name'] ?? item.owner.name,
-      ),
-      authorTokens: _tokens([
-        _string(owner?['name'] ?? args?['up_name'] ?? item.owner.name),
-      ]),
+      authorName: authorName,
+      authorTokens: _tokens([authorName]),
       category: category,
       tags: tags,
       tokens: _tokens([
@@ -125,6 +128,14 @@ abstract final class ShieldingAdapters {
 
 String? _string(Object? value) => value?.toString();
 
+String? _firstString(Iterable<Object?> values) {
+  for (final value in values) {
+    final string = value?.toString().trim();
+    if (string != null && string.isNotEmpty) return string;
+  }
+  return null;
+}
+
 String? _recommendationReason({
   required String? itemReason,
   required Object? jsonReason,
@@ -137,5 +148,4 @@ String? _recommendationReason({
   return _nonEmpty(_string(jsonReason)?.trim());
 }
 
-String? _nonEmpty(String? value) =>
-    value?.isNotEmpty == true ? value : null;
+String? _nonEmpty(String? value) => value?.isNotEmpty == true ? value : null;

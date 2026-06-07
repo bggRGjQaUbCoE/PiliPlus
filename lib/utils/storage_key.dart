@@ -135,6 +135,7 @@ abstract final class SettingBoxKey {
       banWordForDyn = 'banWordForDyn',
       tagEnrichConcurrency = 'tagEnrichConcurrency',
       tagEnrichTimeout = 'tagEnrichTimeout',
+      tagEnrichCacheMaxMb = 'tagEnrichCacheMaxMb',
       enableLog = 'enableLog',
       memberTab = 'memberTab',
       dynamicDetailRatio = 'dynamicDetailRatio',

@@ -313,9 +313,10 @@ import xml.etree.ElementTree as ET
 
 dump_path, out_path = sys.argv[1], sys.argv[2]
 targets = [
-    "标签获取并发数（调试）",
-    "标签获取超时（调试）",
-    "标签缓存（调试）",
+    "标签获取并发数",
+    "标签获取超时",
+    "标签缓存上限",
+    "标签缓存状态",
 ]
 
 try:

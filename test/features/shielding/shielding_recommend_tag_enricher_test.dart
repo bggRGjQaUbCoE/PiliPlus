@@ -88,6 +88,7 @@ void main() {
       // Reset settings to defaults between tests.
       GStorage.setting.delete(SettingBoxKey.tagEnrichConcurrency);
       GStorage.setting.delete(SettingBoxKey.tagEnrichTimeout);
+      GStorage.setting.delete(SettingBoxKey.tagEnrichCacheMaxMb);
     });
 
     // -- Survivor-only enrichment ----------------------------------------
@@ -444,48 +445,49 @@ void main() {
       },
     );
 
-    test('cache overflow is corrected within a single call', () async {
-      // Pre-populate cache with exactly 200 entries so the cache is at
-      // capacity.  Then make one more call with new bvids — after the
-      // fix, the cache must stay ≤ 200 without waiting for a second call.
+    test('cache clear resets estimated bytes', () async {
+      final fetcher = _FakeTagFetcher()..setResponse('BV1', _tags(['缓存标签']));
+
+      final enricher = RecommendationTagEnricher(fetchTags: fetcher.call);
+      await enricher.enrichAndFilter<String>(
+        ['item'],
+        ShieldRuleSet(),
+        getBvid: (_) => 'BV1',
+        getCid: (_) => null,
+      );
+
+      expect(RecommendationTagEnricher.cacheEntryCount, 1);
+      expect(RecommendationTagEnricher.cacheEstimatedBytes, greaterThan(0));
+
+      RecommendationTagEnricher.resetCache();
+
+      expect(RecommendationTagEnricher.cacheEntryCount, 0);
+      expect(RecommendationTagEnricher.cacheEstimatedBytes, 0);
+    });
+
+    test('cache overflow is corrected by estimated byte limit', () async {
+      GStorage.setting.put(SettingBoxKey.tagEnrichCacheMaxMb, 1);
       final fetcher = _FakeTagFetcher();
 
-      // Populate 200 entries first.
-      for (int i = 0; i < 200; i++) {
-        fetcher.setResponse('fill-$i', _tags(['tag-$i']));
+      for (int i = 0; i < 450; i++) {
+        fetcher.setResponse(
+          'BV-large-$i',
+          _tags([List.filled(1000, '标签$i').join()]),
+        );
       }
 
       final enricher = RecommendationTagEnricher(fetchTags: fetcher.call);
       await enricher.enrichAndFilter<int>(
-        List.generate(200, (i) => i),
+        List.generate(450, (i) => i),
         ShieldRuleSet(),
-        getBvid: (i) => 'fill-$i',
+        getBvid: (i) => 'BV-large-$i',
         getCid: (_) => null,
       );
 
       expect(
-        RecommendationTagEnricher.cacheEntryCount,
-        200,
-        reason: 'should have exactly 200 entries after population',
-      );
-
-      // Now add 15 *new* bvids in a single call.  Without the post-fetch
-      // eviction, this would push the cache to 215 until the next call.
-      for (int i = 0; i < 15; i++) {
-        fetcher.setResponse('extra-$i', _tags(['extra-tag-$i']));
-      }
-
-      await enricher.enrichAndFilter<int>(
-        List.generate(15, (i) => i + 1000),
-        ShieldRuleSet(),
-        getBvid: (i) => 'extra-${i - 1000}',
-        getCid: (_) => null,
-      );
-
-      expect(
-        RecommendationTagEnricher.cacheEntryCount,
-        lessThanOrEqualTo(200),
-        reason: 'cache must not exceed _tagCacheMaxEntries after any call',
+        RecommendationTagEnricher.cacheEstimatedBytes,
+        lessThanOrEqualTo(tagEnrichCacheMaxBytes),
+        reason: 'cache must not exceed configured estimated byte budget',
       );
     });
 
@@ -570,6 +572,11 @@ void main() {
       expect(tagEnrichTimeout, const Duration(seconds: 3));
     });
 
+    test('default cache max size is 10 MB', () {
+      expect(tagEnrichCacheMaxMb, 10);
+      expect(tagEnrichCacheMaxBytes, 10 * 1024 * 1024);
+    });
+
     test('custom concurrency is read from settings and enforced', () async {
       GStorage.setting.put(SettingBoxKey.tagEnrichConcurrency, 2);
 
@@ -612,6 +619,17 @@ void main() {
 
       GStorage.setting.put(SettingBoxKey.tagEnrichTimeout, 'xyz');
       expect(tagEnrichTimeout, const Duration(seconds: 3)); // non-int → default
+    });
+
+    test('invalid cache max size is clamped to defaults', () {
+      GStorage.setting.put(SettingBoxKey.tagEnrichCacheMaxMb, 999);
+      expect(tagEnrichCacheMaxMb, 50);
+
+      GStorage.setting.put(SettingBoxKey.tagEnrichCacheMaxMb, 0);
+      expect(tagEnrichCacheMaxMb, 1);
+
+      GStorage.setting.put(SettingBoxKey.tagEnrichCacheMaxMb, 'xyz');
+      expect(tagEnrichCacheMaxMb, 10);
     });
   });
 }

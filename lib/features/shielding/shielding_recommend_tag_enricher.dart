@@ -13,7 +13,10 @@ const bool _tagEnrichmentEnabled = true;
 const int _defaultConcurrency = 5;
 const int _defaultTimeoutSeconds = 3;
 const Duration _tagCacheTTL = Duration(minutes: 30);
-const int _tagCacheMaxEntries = 200;
+const int _defaultTagCacheMaxMb = 10;
+const int _maxTagCacheMaxMb = 50;
+const int _bytesPerMb = 1024 * 1024;
+const int _estimatedEntryOverheadBytes = 96;
 
 /// Reads the configured concurrency cap from settings, clamping to [1, 10].
 int get tagEnrichConcurrency {
@@ -36,12 +39,30 @@ Duration get tagEnrichTimeout {
   return Duration(seconds: raw.clamp(1, 10));
 }
 
+/// Reads the configured estimated tag-cache budget in MB, clamped to [1, 50].
+int get tagEnrichCacheMaxMb {
+  final raw = GStorage.setting.get(
+    SettingBoxKey.tagEnrichCacheMaxMb,
+    defaultValue: _defaultTagCacheMaxMb,
+  );
+  if (raw is! int) return _defaultTagCacheMaxMb;
+  return raw.clamp(1, _maxTagCacheMaxMb);
+}
+
+int get tagEnrichCacheMaxBytes => tagEnrichCacheMaxMb * _bytesPerMb;
+
 // -- cache entry -----------------------------------------------------
 
 class _TagCacheEntry {
-  const _TagCacheEntry({required this.tagNames, required this.fetchedAt});
+  const _TagCacheEntry({
+    required this.tagNames,
+    required this.fetchedAt,
+    required this.estimatedBytes,
+  });
+
   final List<String> tagNames;
   final DateTime fetchedAt;
+  final int estimatedBytes;
 }
 
 /// Drives detail-tag enrichment + tag-only second-pass shielding for
@@ -68,13 +89,21 @@ class RecommendationTagEnricher {
   _fetchTags;
 
   static final Map<String, _TagCacheEntry> _cache = {};
+  static int _cacheBytes = 0;
 
   /// Clears the shared static cache. Intended for tests; production
   /// code should not need to call this.
-  static void resetCache() => _cache.clear();
+  static void resetCache() {
+    _cache.clear();
+    _cacheBytes = 0;
+  }
 
   /// Returns the current number of cached entries. Intended for tests.
   static int get cacheEntryCount => _cache.length;
+
+  /// Returns estimated cache bytes. This is a deterministic capacity
+  /// budget, not exact Dart heap accounting.
+  static int get cacheEstimatedBytes => _cacheBytes;
 
   // ---- public API --------------------------------------------------
 
@@ -184,10 +213,7 @@ class RecommendationTagEnricher {
 
         if (tagNames != null && tagNames.isNotEmpty) {
           // Success: cache and then run second pass.
-          _cache[bvid] = _TagCacheEntry(
-            tagNames: tagNames,
-            fetchedAt: DateTime.now(),
-          );
+          _putCacheEntry(bvid, tagNames);
           if (_tagOnlySecondPass(tagNames, shieldRuleSet)) {
             results[index] = item;
           }
@@ -208,19 +234,56 @@ class RecommendationTagEnricher {
     );
   }
 
+  static void _putCacheEntry(String bvid, List<String> tagNames) {
+    final estimatedBytes = _estimateEntryBytes(bvid, tagNames);
+    final previous = _cache[bvid];
+    if (previous != null) {
+      _cacheBytes -= previous.estimatedBytes;
+    }
+    _cache[bvid] = _TagCacheEntry(
+      tagNames: tagNames,
+      fetchedAt: DateTime.now(),
+      estimatedBytes: estimatedBytes,
+    );
+    _cacheBytes += estimatedBytes;
+  }
+
+  static int _estimateEntryBytes(String bvid, List<String> tagNames) {
+    var bytes = _estimatedEntryOverheadBytes + bvid.length * 3;
+    for (final tag in tagNames) {
+      bytes += _estimatedEntryOverheadBytes ~/ 4;
+      bytes += tag.length * 3;
+    }
+    return bytes;
+  }
+
   static void _evictExpiredCache() {
     final cutoff = DateTime.now().subtract(_tagCacheTTL);
-    _cache.removeWhere((_, entry) => entry.fetchedAt.isBefore(cutoff));
+    final expiredKeys = <String>[];
+    for (final entry in _cache.entries) {
+      if (entry.value.fetchedAt.isBefore(cutoff)) {
+        expiredKeys.add(entry.key);
+      }
+    }
+    for (final key in expiredKeys) {
+      final removed = _cache.remove(key);
+      if (removed != null) {
+        _cacheBytes -= removed.estimatedBytes;
+      }
+    }
+    if (_cacheBytes < 0) _cacheBytes = 0;
   }
 
   static void _evictOverflow() {
-    if (_cache.length <= _tagCacheMaxEntries) return;
-    // Evict oldest entries first (FIFO).
+    final maxBytes = tagEnrichCacheMaxBytes;
+    if (_cacheBytes <= maxBytes) return;
     final sorted = _cache.entries.toList()
       ..sort((a, b) => a.value.fetchedAt.compareTo(b.value.fetchedAt));
-    final toDrop = sorted.take(_cache.length - _tagCacheMaxEntries);
-    for (final entry in toDrop) {
+    for (final entry in sorted) {
+      if (_cacheBytes <= maxBytes) break;
       _cache.remove(entry.key);
+      _cacheBytes -= entry.value.estimatedBytes;
     }
+    if (_cacheBytes < 0) _cacheBytes = 0;
   }
 }

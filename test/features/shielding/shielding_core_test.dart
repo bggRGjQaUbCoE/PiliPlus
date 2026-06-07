@@ -195,6 +195,31 @@ void main() {
       expect(result.visible, isTrue);
     });
 
+    test(
+      'user keyword regex blocks Chinese substring in recommendation author',
+      () {
+        final result = ShieldMatcher.match(
+          const ShieldCandidate(
+            scope: ShieldScope.recommendation,
+            authorName: 'xx说电影',
+          ),
+          ShieldRuleSet(
+            rules: [
+              _rule(
+                type: ShieldRuleType.userKeyword,
+                mode: ShieldMatchMode.regex,
+                scope: ShieldScope.recommendation,
+                pattern: '电影',
+              ),
+            ],
+          ),
+        );
+
+        expect(result.visible, isFalse);
+        expect(result.blockedBy?.pattern, '电影');
+      },
+    );
+
     test('user keyword token rules match split UP name tokens only', () {
       final rules = ShieldRuleSet(
         rules: [
@@ -230,48 +255,51 @@ void main() {
       );
     });
 
-    test('converted user keyword regex rules match UP name token boundaries', () {
-      final rules = ShieldRuleSet(
-        rules: [
-          _rule(
-            type: ShieldRuleType.userKeyword,
-            mode: ShieldMatchMode.regex,
-            pattern: shieldTokenPatternRegex('测试'),
-          ),
-        ],
-      );
+    test(
+      'converted user keyword regex rules match UP name token boundaries',
+      () {
+        final rules = ShieldRuleSet(
+          rules: [
+            _rule(
+              type: ShieldRuleType.userKeyword,
+              mode: ShieldMatchMode.regex,
+              pattern: shieldTokenPatternRegex('测试'),
+            ),
+          ],
+        );
 
-      expect(
-        ShieldMatcher.match(
-          const ShieldCandidate(
-            scope: ShieldScope.recommendation,
-            authorName: '普通UP',
-          ),
-          rules,
-        ).visible,
-        isTrue,
-      );
-      expect(
-        ShieldMatcher.match(
-          const ShieldCandidate(
-            scope: ShieldScope.recommendation,
-            authorName: '测试 UP',
-          ),
-          rules,
-        ).visible,
-        isFalse,
-      );
-      expect(
-        ShieldMatcher.match(
-          const ShieldCandidate(
-            scope: ShieldScope.recommendation,
-            authorName: '测试员',
-          ),
-          rules,
-        ).visible,
-        isTrue,
-      );
-    });
+        expect(
+          ShieldMatcher.match(
+            const ShieldCandidate(
+              scope: ShieldScope.recommendation,
+              authorName: '普通UP',
+            ),
+            rules,
+          ).visible,
+          isTrue,
+        );
+        expect(
+          ShieldMatcher.match(
+            const ShieldCandidate(
+              scope: ShieldScope.recommendation,
+              authorName: '测试 UP',
+            ),
+            rules,
+          ).visible,
+          isFalse,
+        );
+        expect(
+          ShieldMatcher.match(
+            const ShieldCandidate(
+              scope: ShieldScope.recommendation,
+              authorName: '测试员',
+            ),
+            rules,
+          ).visible,
+          isTrue,
+        );
+      },
+    );
 
     test('reason keyword rules match only recommendation reason', () {
       final rules = ShieldRuleSet(

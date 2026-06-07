@@ -88,7 +88,7 @@ List<SettingsModel> get recommendSettings => [
     onChanged: (value) => RecommendFilter.applyFilterToRelatedVideos = value,
   ),
   _buildNumberInputModel(
-    title: '标签获取并发数（调试）',
+    title: '标签获取并发数',
     icon: Icons.memory_outlined,
     key: SettingBoxKey.tagEnrichConcurrency,
     defaultVal: 5,
@@ -96,7 +96,7 @@ List<SettingsModel> get recommendSettings => [
     max: 10,
   ),
   _buildNumberInputModel(
-    title: '标签获取超时（调试）',
+    title: '标签获取超时',
     icon: Icons.timer_outlined,
     key: SettingBoxKey.tagEnrichTimeout,
     defaultVal: 3,
@@ -104,12 +104,24 @@ List<SettingsModel> get recommendSettings => [
     max: 10,
     suffix: 's',
   ),
+  _buildNumberInputModel(
+    title: '标签缓存上限',
+    icon: Icons.storage_outlined,
+    key: SettingBoxKey.tagEnrichCacheMaxMb,
+    defaultVal: 10,
+    min: 1,
+    max: 50,
+    suffix: 'MB',
+  ),
   NormalModel(
-    title: '标签缓存（调试）',
+    title: '标签缓存状态',
     leading: const Icon(Icons.cached_outlined),
     getSubtitle: () {
       final count = RecommendationTagEnricher.cacheEntryCount;
-      return '$count / 200 条（点击可清空缓存）';
+      final bytes = RecommendationTagEnricher.cacheEstimatedBytes;
+      final usedMb = bytes / (1024 * 1024);
+      final maxMb = tagEnrichCacheMaxMb;
+      return '${usedMb.toStringAsFixed(2)} / $maxMb MB，$count 条（点击可清空缓存）';
     },
     onTap: (context, setState) {
       showDialog(

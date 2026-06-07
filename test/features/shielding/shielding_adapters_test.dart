@@ -10,41 +10,44 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('ShieldingAdapters', () {
-    test('maps web recommendation title, owner, category, tags, and reason', () {
-      final item = RcmdVideoItemModel.fromJson({
-        'id': 1,
-        'bvid': 'BV1',
-        'cid': 2,
-        'goto': 'av',
-        'uri': '',
-        'pic': '',
-        'title': '猫咪睡觉合集',
-        'duration': 60,
-        'pubdate': 1,
-        'owner': {'mid': 42, 'name': 'UP主'},
-        'stat': {'view': 1, 'like': 1, 'danmaku': 1},
-        'tname': '动物',
-        'tag': ['萌宠'],
-        'rcmd_reason': {'content': '因为你看过萌宠'},
-      });
-
-      final candidate = ShieldingAdapters.fromRecommendationJson(
-        item,
-        {
+    test(
+      'maps web recommendation title, owner, category, tags, and reason',
+      () {
+        final item = RcmdVideoItemModel.fromJson({
+          'id': 1,
+          'bvid': 'BV1',
+          'cid': 2,
+          'goto': 'av',
+          'uri': '',
+          'pic': '',
+          'title': '猫咪睡觉合集',
+          'duration': 60,
+          'pubdate': 1,
           'owner': {'mid': 42, 'name': 'UP主'},
+          'stat': {'view': 1, 'like': 1, 'danmaku': 1},
           'tname': '动物',
           'tag': ['萌宠'],
           'rcmd_reason': {'content': '因为你看过萌宠'},
-        },
-      );
+        });
 
-      expect(candidate.title, '猫咪睡觉合集');
-      expect(candidate.uid, '42');
-      expect(candidate.authorName, 'UP主');
-      expect(candidate.reason, '因为你看过萌宠');
-      expect(candidate.category, '动物');
-      expect(candidate.tags, contains('萌宠'));
-    });
+        final candidate = ShieldingAdapters.fromRecommendationJson(
+          item,
+          {
+            'owner': {'mid': 42, 'name': 'UP主'},
+            'tname': '动物',
+            'tag': ['萌宠'],
+            'rcmd_reason': {'content': '因为你看过萌宠'},
+          },
+        );
+
+        expect(candidate.title, '猫咪睡觉合集');
+        expect(candidate.uid, '42');
+        expect(candidate.authorName, 'UP主');
+        expect(candidate.reason, '因为你看过萌宠');
+        expect(candidate.category, '动物');
+        expect(candidate.tags, contains('萌宠'));
+      },
+    );
 
     test('maps app recommendation args fields', () {
       final item = RcmdVideoItemAppModel.fromJson({
@@ -73,6 +76,111 @@ void main() {
       expect(candidate.authorName, '玩家');
       expect(candidate.category, '游戏');
       expect(candidate.reason, isNull);
+    });
+
+    test('web recommendation UP regex blocks owner name substring', () {
+      final item = RcmdVideoItemModel.fromJson({
+        'id': 1,
+        'bvid': 'BV1',
+        'cid': 2,
+        'goto': 'av',
+        'uri': '',
+        'pic': '',
+        'title': '影视推荐',
+        'duration': 60,
+        'pubdate': 1,
+        'owner': {'mid': 1, 'name': 'xx说电影'},
+        'stat': {'view': 1, 'like': 1, 'danmaku': 1},
+        'tname': '影视',
+      });
+      final ruleSet = _userRegexRuleSet('电影');
+
+      final candidate = ShieldingAdapters.fromRecommendationJson(
+        item,
+        {
+          'owner': {'mid': 1, 'name': 'xx说电影'},
+          'tname': '影视',
+        },
+      );
+
+      expect(candidate.authorName, 'xx说电影');
+      expect(ShieldMatcher.match(candidate, ruleSet).visible, isFalse);
+    });
+
+    test('app recommendation UP regex blocks args up_name substring', () {
+      final item = RcmdVideoItemAppModel.fromJson({
+        'player_args': {'aid': 1, 'cid': 2, 'duration': 60},
+        'bvid': 'BV1',
+        'cover': '',
+        'cover_left_text_1': '1',
+        'cover_left_text_2': '1',
+        'title': '影视推荐',
+        'args': {'up_id': 1, 'up_name': 'xx说电影', 'tname': '影视'},
+        'rcmd_reason': '',
+        'goto': 'av',
+        'param': '1',
+        'uri': '',
+      });
+      final ruleSet = _userRegexRuleSet('电影');
+
+      final candidate = ShieldingAdapters.fromRecommendationJson(
+        item,
+        {
+          'args': {'up_id': 1, 'up_name': 'xx说电影', 'tname': '影视'},
+        },
+      );
+
+      expect(candidate.authorName, 'xx说电影');
+      expect(ShieldMatcher.match(candidate, ruleSet).visible, isFalse);
+    });
+
+    test('app recommendation UP name falls back to args uname', () {
+      final item = RcmdVideoItemAppModel.fromJson({
+        'player_args': {'aid': 1, 'cid': 2, 'duration': 60},
+        'bvid': 'BV1',
+        'cover': '',
+        'cover_left_text_1': '1',
+        'cover_left_text_2': '1',
+        'title': '影视推荐',
+        'args': {'up_id': 1, 'tname': '影视'},
+        'rcmd_reason': '',
+        'goto': 'av',
+        'param': '1',
+        'uri': '',
+      });
+
+      final candidate = ShieldingAdapters.fromRecommendationJson(
+        item,
+        {
+          'args': {'up_id': 1, 'uname': 'xx说电影', 'tname': '影视'},
+        },
+      );
+
+      expect(candidate.authorName, 'xx说电影');
+    });
+
+    test('web recommendation UP name falls back to owner_name', () {
+      final item = RcmdVideoItemModel.fromJson({
+        'id': 1,
+        'bvid': 'BV1',
+        'cid': 2,
+        'goto': 'av',
+        'uri': '',
+        'pic': '',
+        'title': '影视推荐',
+        'duration': 60,
+        'pubdate': 1,
+        'owner': {'mid': 1, 'name': ''},
+        'stat': {'view': 1, 'like': 1, 'danmaku': 1},
+        'tname': '影视',
+      });
+
+      final candidate = ShieldingAdapters.fromRecommendationJson(
+        item,
+        {'owner_name': 'xx说电影', 'tname': '影视'},
+      );
+
+      expect(candidate.authorName, 'xx说电影');
     });
 
     test('reason keyword filters recommendation json reason only', () {
@@ -537,6 +645,20 @@ void main() {
     });
   });
 }
+
+ShieldRuleSet _userRegexRuleSet(String pattern) => ShieldRuleSet(
+  rules: [
+    ShieldRule(
+      id: 'up-regex-$pattern',
+      type: ShieldRuleType.userKeyword,
+      matchMode: ShieldMatchMode.regex,
+      scope: ShieldScope.recommendation,
+      action: ShieldAction.block,
+      pattern: pattern,
+      updatedAt: DateTime.fromMillisecondsSinceEpoch(1),
+    ),
+  ],
+);
 
 class _TargetLookupController extends VideoReplyReplyController {
   _TargetLookupController({required int targetId})

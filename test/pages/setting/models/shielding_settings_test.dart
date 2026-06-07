@@ -52,37 +52,43 @@ void main() {
       expect(shieldRuleTitle(rule), '屏蔽 用户/UP关键词: 编辑后UP');
     });
 
-    test('recovers keyword from old generated regex without displayPattern', () {
-      final rule = ShieldRule(
-        id: 'old-user-keyword',
-        type: ShieldRuleType.userKeyword,
-        matchMode: ShieldMatchMode.regex,
-        scope: ShieldScope.recommendation,
-        action: ShieldAction.block,
-        pattern: r'(^|[\s,，。！？!?:：;；_\-])测试UP($|[\s,，。！？!?:：;；_\-])',
-        enabled: true,
-        updatedAt: DateTime.fromMillisecondsSinceEpoch(1),
-        source: ShieldRuleSource.quickAction,
-      );
+    test(
+      'recovers keyword from old generated regex without displayPattern',
+      () {
+        final rule = ShieldRule(
+          id: 'old-user-keyword',
+          type: ShieldRuleType.userKeyword,
+          matchMode: ShieldMatchMode.regex,
+          scope: ShieldScope.recommendation,
+          action: ShieldAction.block,
+          pattern: r'(^|[\s,，。！？!?:：;；_\-])测试UP($|[\s,，。！？!?:：;；_\-])',
+          enabled: true,
+          updatedAt: DateTime.fromMillisecondsSinceEpoch(1),
+          source: ShieldRuleSource.quickAction,
+        );
 
-      expect(shieldRuleTitle(rule), '屏蔽 用户/UP关键词: 测试UP');
-    });
+        expect(shieldRuleTitle(rule), '屏蔽 用户/UP关键词: 测试UP');
+      },
+    );
 
-    test('recovers keyword with escaped special chars from old generated regex', () {
-      final rule = ShieldRule(
-        id: 'old-user-keyword-special',
-        type: ShieldRuleType.userKeyword,
-        matchMode: ShieldMatchMode.regex,
-        scope: ShieldScope.recommendation,
-        action: ShieldAction.block,
-        pattern: r'(^|[\s,，。！？!?:：;；_\-])UP\(\.\*\)($|[\s,，。！？!?:：;；_\-])',
-        enabled: true,
-        updatedAt: DateTime.fromMillisecondsSinceEpoch(1),
-        source: ShieldRuleSource.quickAction,
-      );
+    test(
+      'recovers keyword with escaped special chars from old generated regex',
+      () {
+        final rule = ShieldRule(
+          id: 'old-user-keyword-special',
+          type: ShieldRuleType.userKeyword,
+          matchMode: ShieldMatchMode.regex,
+          scope: ShieldScope.recommendation,
+          action: ShieldAction.block,
+          pattern: r'(^|[\s,，。！？!?:：;；_\-])UP\(\.\*\)($|[\s,，。！？!?:：;；_\-])',
+          enabled: true,
+          updatedAt: DateTime.fromMillisecondsSinceEpoch(1),
+          source: ShieldRuleSource.quickAction,
+        );
 
-      expect(shieldRuleTitle(rule), '屏蔽 用户/UP关键词: UP(.*)');
-    });
+        expect(shieldRuleTitle(rule), '屏蔽 用户/UP关键词: UP(.*)');
+      },
+    );
 
     test('shows raw regex for non-user-keyword regex rules', () {
       final rule = ShieldRule(
@@ -136,6 +142,33 @@ void main() {
       expect(shieldRuleTypeLabel(ShieldRuleType.keyword), '标题/正文关键词');
       expect(shieldRuleTypeLabel(ShieldRuleType.userKeyword), '用户/UP关键词');
       expect(shieldRuleTypeLabel(ShieldRuleType.reasonKeyword), '推荐理由');
+    });
+
+    test('preserves manual recommendation UP regex rule round trip', () {
+      final seed = ShieldRuleSet(
+        rules: [
+          ShieldRule(
+            id: 'manual-up-regex',
+            type: ShieldRuleType.userKeyword,
+            matchMode: ShieldMatchMode.regex,
+            scope: ShieldScope.recommendation,
+            action: ShieldAction.block,
+            pattern: '电影',
+            enabled: true,
+            updatedAt: DateTime.fromMillisecondsSinceEpoch(1),
+          ),
+        ],
+      );
+
+      final decoded = ShieldRuleSet.fromJson(seed.toJson());
+      final rule = decoded.rules.single;
+
+      expect(rule.type, ShieldRuleType.userKeyword);
+      expect(rule.matchMode, ShieldMatchMode.regex);
+      expect(rule.scope, ShieldScope.recommendation);
+      expect(rule.action, ShieldAction.block);
+      expect(rule.pattern, '电影');
+      expect(rule.enabled, isTrue);
     });
 
     test('provides horizontal category navigation labels', () {

@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/features/shielding/shielding.dart';
+import 'package:PiliPlus/features/shielding/shielding_recommend_tag_enricher.dart';
 import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
     show ReplyInfo;
 import 'package:PiliPlus/http/api.dart';
@@ -68,8 +69,8 @@ abstract final class VideoHttp {
       }),
     );
     if (res.data['code'] == 0) {
-      List<RcmdVideoItemModel> list = <RcmdVideoItemModel>[];
       final shieldRuleSet = ShieldSettingsStore().snapshot();
+      final List<RcmdVideoItemModel> survivors = <RcmdVideoItemModel>[];
       for (final i in res.data['data']['item']) {
         //过滤掉live与ad，以及拉黑用户
         if (i['goto'] == 'av' &&
@@ -84,10 +85,17 @@ abstract final class VideoHttp {
             shieldRuleSet,
           );
           if (!RecommendFilter.filter(videoItem) && visible) {
-            list.add(videoItem);
+            survivors.add(videoItem);
           }
         }
       }
+      final enricher = RecommendationTagEnricher();
+      final list = await enricher.enrichAndFilter(
+        survivors,
+        shieldRuleSet,
+        getBvid: (item) => item.bvid,
+        getCid: (item) => item.cid,
+      );
       return Success(list);
     } else {
       return Error(res.data['message']);
@@ -149,8 +157,8 @@ abstract final class VideoHttp {
       ),
     );
     if (res.data['code'] == 0) {
-      List<RcmdVideoItemAppModel> list = <RcmdVideoItemAppModel>[];
       final shieldRuleSet = ShieldSettingsStore().snapshot();
+      final List<RcmdVideoItemAppModel> survivors = <RcmdVideoItemAppModel>[];
       for (final i in res.data['data']['items']) {
         // 屏蔽推广和拉黑用户
         if (i['card_goto'] != 'ad_av' &&
@@ -173,10 +181,17 @@ abstract final class VideoHttp {
             shieldRuleSet,
           );
           if (!RecommendFilter.filter(videoItem) && visible) {
-            list.add(videoItem);
+            survivors.add(videoItem);
           }
         }
       }
+      final enricher = RecommendationTagEnricher();
+      final list = await enricher.enrichAndFilter(
+        survivors,
+        shieldRuleSet,
+        getBvid: (item) => item.bvid,
+        getCid: (item) => item.cid,
+      );
       return Success(list);
     } else {
       return Error(res.data['message']);

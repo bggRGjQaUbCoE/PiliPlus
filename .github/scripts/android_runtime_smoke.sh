@@ -15,6 +15,7 @@ blankness_report="runtime-smoke/evidence/screenshot-blankness.txt"
 launcher_component_file="runtime-smoke/evidence/launcher-component.txt"
 launcher_resolution_file="runtime-smoke/evidence/launcher-resolution.txt"
 max_system_dialog_retries=2
+max_scenario_swipes=6
 
 record_status() {
   echo "status=${status}" | tee -a runtime-smoke/evidence/status.txt
@@ -32,6 +33,7 @@ record_status() {
     100) echo "result=fail reason=app_not_foreground" ;;
     110) echo "result=fail reason=uiautomator_xml_missing_app_package" ;;
     120) echo "result=fail reason=launcher_activity_not_found" ;;
+    130) echo "result=fail reason=runtime_scenario_failed" ;;
     *) echo "result=fail reason=unknown_status" ;;
   esac | tee -a runtime-smoke/evidence/status.txt
 }
@@ -180,6 +182,141 @@ retry_after_system_dialog_if_needed() {
       return 0
     fi
   done
+}
+
+# --- scenario UI helpers ---------------------------------------------------
+dump_ui_to() {
+  local dest="$1"
+  local device_path="/sdcard/scenario_dump.xml"
+  if adb shell uiautomator dump "$device_path" > /dev/null 2>&1; then
+    adb pull "$device_path" "$dest" > /dev/null 2>&1 || return 1
+    return 0
+  fi
+  return 1
+}
+
+swipe_vertical() {
+  local direction="${1:-up}"
+  local count="${2:-1}"
+  local i
+  for i in $(seq 1 "$count"); do
+    if [ "$direction" = "up" ]; then
+      adb shell input swipe 540 1600 540 600 300 || true
+    else
+      adb shell input swipe 540 600 540 1600 300 || true
+    fi
+    sleep 2
+  done
+}
+
+find_nodes_by_text() {
+  local dump_file="$1"
+  local out_file="$2"
+  shift 2
+  python3 - "$dump_file" "$out_file" "$@" <<'PY'
+import sys
+import xml.etree.ElementTree as ET
+
+dump_path, out_path = sys.argv[1], sys.argv[2]
+patterns = sys.argv[3:]
+
+try:
+    root = ET.parse(dump_path).getroot()
+except ET.ParseError:
+    with open(out_path, "w") as f:
+        f.write("# parse_error\n")
+    sys.exit(0)
+
+results = []
+for node in root.iter("node"):
+    text = node.attrib.get("text", "")
+    content_desc = node.attrib.get("content-desc", "")
+    combined = f"{text} {content_desc}"
+    for pat in patterns:
+        if pat in combined:
+            bounds_str = node.attrib.get("bounds", "")
+            if bounds_str:
+                parts = bounds_str.replace("[", ",").replace("]", ",").split(",")
+                parts = [p for p in parts if p]
+                if len(parts) == 4:
+                    left, top, right, bottom = map(int, parts)
+                    cx = (left + right) // 2
+                    cy = (top + bottom) // 2
+                    results.append(
+                        f"text={text} content_desc={content_desc} "
+                        f"matched={pat} bounds={bounds_str} cx={cx} cy={cy}"
+                    )
+            else:
+                results.append(
+                    f"text={text} content_desc={content_desc} "
+                    f"matched={pat} bounds=none cx=0 cy=0"
+                )
+
+with open(out_path, "w") as f:
+    for r in results:
+        f.write(r + "\n")
+    if not results:
+        f.write("# no_match\n")
+PY
+}
+
+tap_first_match() {
+  local matches_file="$1"
+  if [ ! -s "$matches_file" ]; then
+    return 1
+  fi
+  local line
+  line="$(grep -v '^#' "$matches_file" | head -n 1)"
+  if [ -z "$line" ]; then
+    return 1
+  fi
+  local cx cy
+  cx="$(echo "$line" | sed -n 's/.*cx=\([0-9]\+\).*/\1/p')"
+  cy="$(echo "$line" | sed -n 's/.*cy=\([0-9]\+\).*/\1/p')"
+  if [ -n "${cx:-}" ] && [ -n "${cy:-}" ] && [ "$cx" != "0" ]; then
+    adb shell input tap "$cx" "$cy"
+    return 0
+  fi
+  return 1
+}
+
+check_ui_for_labels() {
+  local dump_file="$1"
+  local out_file="$2"
+  python3 - "$dump_file" "$out_file" <<'PY'
+import sys
+import xml.etree.ElementTree as ET
+
+dump_path, out_path = sys.argv[1], sys.argv[2]
+targets = [
+    "标签获取并发数（调试）",
+    "标签获取超时（调试）",
+    "标签缓存（调试）",
+]
+
+try:
+    root = ET.parse(dump_path).getroot()
+except ET.ParseError:
+    with open(out_path, "w") as f:
+        f.write("label_check=error\nreason=xml_parse_error\n")
+    sys.exit(1)
+
+found = []
+for node in root.iter("node"):
+    text = node.attrib.get("text", "")
+    content_desc = node.attrib.get("content-desc", "")
+    combined = f"{text} {content_desc}"
+    for t in targets:
+        if t in combined:
+            found.append(t)
+
+with open(out_path, "w") as f:
+    if found:
+        f.write(f"label_check=pass\nfound_labels={','.join(found)}\n")
+    else:
+        f.write("label_check=fail\nreason=no_target_labels_found\n")
+PY
+  grep -q "label_check=pass" "$out_file"
 }
 
 {
@@ -408,6 +545,92 @@ if [ "$status" -eq 0 ]; then
   if ! adb shell pidof "$PACKAGE_NAME" | tee runtime-smoke/evidence/pidof.txt; then
     status=40
   fi
+fi
+
+# --- scenario-specific evidence collection -------------------------------
+scenario="${RUNTIME_SMOKE_SCENARIO:-}"
+scenario_evidence_dir="runtime-smoke/evidence/scenario"
+mkdir -p "$scenario_evidence_dir"
+
+if [ -n "$scenario" ] && [ "$status" -eq 0 ]; then
+  echo "scenario=${scenario}" | tee "$scenario_evidence_dir/scenario-metadata.txt"
+  echo "package_name=${PACKAGE_NAME:-}" | tee -a "$scenario_evidence_dir/scenario-metadata.txt"
+  echo "github_sha=${GITHUB_SHA:-}" | tee -a "$scenario_evidence_dir/scenario-metadata.txt"
+
+  case "$scenario" in
+    recommend-detail-tag-shielding)
+      echo "Running recommend-detail-tag-shielding scenario — attempting in-app navigation..."
+
+      # Save post-launch evidence for inspection
+      cp "$ui_dump" "$scenario_evidence_dir/post-launch-ui.xml" 2>/dev/null || true
+      cp "$screenshot" "$scenario_evidence_dir/post-launch-screenshot.png" 2>/dev/null || true
+
+      scenario_success=0
+      scenario_nav_attempt=0
+
+      # Step 1: Check if debug labels are already visible post-launch
+      if check_ui_for_labels "$ui_dump" "$scenario_evidence_dir/label-check-0.txt"; then
+        scenario_success=1
+        echo "labels_found=on_launch" >> "$scenario_evidence_dir/navigation-log.txt"
+      fi
+
+      # Step 2: If not already visible, attempt navigation via taps and swipes
+      if [ "$scenario_success" -eq 0 ]; then
+        nav_targets="推荐流设置 设置 我的 推荐流 推荐"
+
+        while [ "$scenario_nav_attempt" -lt "$max_scenario_swipes" ]; do
+          scenario_nav_attempt=$((scenario_nav_attempt + 1))
+          echo "--- scenario navigation attempt ${scenario_nav_attempt} ---" >> "$scenario_evidence_dir/navigation-log.txt"
+
+          current_ui="$scenario_evidence_dir/ui-attempt-${scenario_nav_attempt}.xml"
+          if ! dump_ui_to "$current_ui"; then
+            echo "ui_dump_failed=true" >> "$scenario_evidence_dir/navigation-log.txt"
+            continue
+          fi
+
+          # Check if this UI dump reveals the debug labels
+          if check_ui_for_labels "$current_ui" "$scenario_evidence_dir/label-check-${scenario_nav_attempt}.txt"; then
+            scenario_success=1
+            echo "labels_found_at_attempt=${scenario_nav_attempt}" >> "$scenario_evidence_dir/navigation-log.txt"
+            break
+          fi
+
+          # Search for clickable navigation targets in current UI
+          find_nodes_by_text "$current_ui" "$scenario_evidence_dir/matches-${scenario_nav_attempt}.txt" $nav_targets
+
+          if grep -qv '^#' "$scenario_evidence_dir/matches-${scenario_nav_attempt}.txt" 2>/dev/null; then
+            if tap_first_match "$scenario_evidence_dir/matches-${scenario_nav_attempt}.txt"; then
+              echo "tapped_navigation_target=true" >> "$scenario_evidence_dir/navigation-log.txt"
+              sleep 3
+              continue
+            fi
+            echo "tap_failed=true" >> "$scenario_evidence_dir/navigation-log.txt"
+          else
+            echo "no_clickable_target=true" >> "$scenario_evidence_dir/navigation-log.txt"
+          fi
+
+          # No navigable target found or tap failed — swipe to reveal more UI
+          echo "action=swipe_up" >> "$scenario_evidence_dir/navigation-log.txt"
+          swipe_vertical "up" 1
+          sleep 2
+        done
+      fi
+
+      # Write final outcome
+      if [ "$scenario_success" -eq 1 ]; then
+        echo "scenario_outcome=pass" > "$scenario_evidence_dir/scenario-outcome.txt"
+        echo "navigation_attempts=${scenario_nav_attempt}" >> "$scenario_evidence_dir/scenario-outcome.txt"
+      else
+        echo "scenario_outcome=fail" > "$scenario_evidence_dir/scenario-outcome.txt"
+        echo "navigation_attempts=${scenario_nav_attempt}" >> "$scenario_evidence_dir/scenario-outcome.txt"
+        echo "reason=debug_labels_not_reachable_via_ui_navigation" >> "$scenario_evidence_dir/scenario-outcome.txt"
+        status=130
+      fi
+      ;;
+    *)
+      echo "Unknown scenario: $scenario" | tee "$scenario_evidence_dir/scenario-error.txt"
+      ;;
+  esac
 fi
 
 record_status

@@ -133,6 +133,8 @@ abstract final class SettingBoxKey {
       pageTransition = 'pageTransition',
       optTabletNav = 'optTabletNav',
       banWordForDyn = 'banWordForDyn',
+      tagEnrichConcurrency = 'tagEnrichConcurrency',
+      tagEnrichTimeout = 'tagEnrichTimeout',
       enableLog = 'enableLog',
       memberTab = 'memberTab',
       dynamicDetailRatio = 'dynamicDetailRatio',

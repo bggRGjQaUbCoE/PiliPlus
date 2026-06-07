@@ -19,6 +19,11 @@ on:
         required: true
         default: "com.example.piliplus"
         type: string
+      runtime_smoke_scenario:
+        description: "Optional scenario tag (e.g. recommend-detail-tag-shielding)"
+        required: false
+        default: ""
+        type: string
 
 permissions:
   contents: read
@@ -32,6 +37,7 @@ jobs:
     env:
       ARTIFACT_RUN_ID: ${{ github.event_name == 'workflow_dispatch' && inputs.artifact_run_id || github.run_id }}
       PACKAGE_NAME: ${{ github.event_name == 'workflow_dispatch' && inputs.package_name || 'com.example.piliplus' }}
+      RUNTIME_SMOKE_SCENARIO: ${{ github.event_name == 'workflow_dispatch' && inputs.runtime_smoke_scenario || '' }}
 
     steps:
       - name: Checkout

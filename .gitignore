@@ -163,6 +163,7 @@ test/pages/setting/*
 !test/pages/setting/models/
 test/pages/setting/models/*
 !test/pages/setting/models/shielding_settings_test.dart
+!test/pages/setting/models/recommend_settings_test.dart
 
 # Local agent/worksite artifacts. These are retained locally when needed but
 # should not be part of the public application source tree.

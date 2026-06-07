@@ -8,6 +8,11 @@ on:
         required: true
         default: "com.example.piliplus.dev"
         type: string
+      runtime_smoke_scenario:
+        description: "Optional scenario tag (e.g. recommend-detail-tag-shielding)"
+        required: false
+        default: ""
+        type: string
   push:
     branches:
       - main
@@ -50,6 +55,9 @@ jobs:
 
       - name: Run settings model test
         run: flutter test test/pages/setting/models/shielding_settings_test.dart
+
+      - name: Run recommend settings test
+        run: flutter test test/pages/setting/models/recommend_settings_test.dart
 
       - name: Run bootstrap startup test
         run: flutter test test/bootstrap/bootstrap_app_test.dart
@@ -117,6 +125,7 @@ jobs:
     env:
       ARTIFACT_RUN_ID: ${{ github.run_id }}
       PACKAGE_NAME: ${{ github.event_name == 'workflow_dispatch' && inputs.package_name || 'com.example.piliplus.dev' }}
+      RUNTIME_SMOKE_SCENARIO: ${{ github.event_name == 'workflow_dispatch' && inputs.runtime_smoke_scenario || '' }}
 
     steps:
       - name: Checkout

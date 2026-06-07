@@ -1,9 +1,13 @@
+import 'package:PiliPlus/features/shielding/shielding_recommend_tag_enricher.dart';
 import 'package:PiliPlus/pages/rcmd/controller.dart';
 import 'package:PiliPlus/pages/setting/models/model.dart';
 import 'package:PiliPlus/utils/recommend_filter.dart';
+import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show FilteringTextInputFormatter;
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 
 List<SettingsModel> get recommendSettings => [
@@ -83,4 +87,121 @@ List<SettingsModel> get recommendSettings => [
     defaultVal: true,
     onChanged: (value) => RecommendFilter.applyFilterToRelatedVideos = value,
   ),
+  _buildNumberInputModel(
+    title: '标签获取并发数（调试）',
+    icon: Icons.memory_outlined,
+    key: SettingBoxKey.tagEnrichConcurrency,
+    defaultVal: 5,
+    min: 1,
+    max: 10,
+  ),
+  _buildNumberInputModel(
+    title: '标签获取超时（调试）',
+    icon: Icons.timer_outlined,
+    key: SettingBoxKey.tagEnrichTimeout,
+    defaultVal: 3,
+    min: 1,
+    max: 10,
+    suffix: 's',
+  ),
+  NormalModel(
+    title: '标签缓存（调试）',
+    leading: const Icon(Icons.cached_outlined),
+    getSubtitle: () {
+      final count = RecommendationTagEnricher.cacheEntryCount;
+      return '$count / 200 条（点击可清空缓存）';
+    },
+    onTap: (context, setState) {
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('清空标签缓存'),
+          content: const Text('缓存清空后，下一轮推荐会重新获取视频标签。'),
+          actions: [
+            TextButton(
+              onPressed: Get.back,
+              child: Text(
+                '取消',
+                style: TextStyle(color: ColorScheme.of(ctx).outline),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                RecommendationTagEnricher.resetCache();
+                Get.back();
+                setState();
+                SmartDialog.showToast('标签缓存已清空');
+              },
+              child: const Text('清空'),
+            ),
+          ],
+        ),
+      );
+    },
+  ),
 ];
+
+SettingsModel _buildNumberInputModel({
+  required String title,
+  required IconData icon,
+  required String key,
+  required int defaultVal,
+  required int min,
+  required int max,
+  String? suffix,
+}) {
+  int value = GStorage.setting.get(key, defaultValue: defaultVal);
+  return NormalModel(
+    title: title,
+    leading: Icon(icon),
+    getSubtitle: () {
+      final suffixStr = suffix ?? '';
+      return '当前: $value$suffixStr（默认$defaultVal$suffixStr，范围$min–$max）';
+    },
+    onTap: (context, setState) async {
+      String valueStr = '';
+      await showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text(title),
+          content: TextField(
+            autofocus: true,
+            keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            decoration: InputDecoration(
+              hintText: '$defaultVal',
+              suffixText: suffix,
+            ),
+            onChanged: (v) => valueStr = v,
+          ),
+          actions: [
+            TextButton(
+              onPressed: Get.back,
+              child: Text(
+                '取消',
+                style: TextStyle(color: ColorScheme.of(ctx).outline),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                final parsed = int.tryParse(
+                  valueStr.isEmpty ? '$defaultVal' : valueStr,
+                );
+                if (parsed == null) {
+                  SmartDialog.showToast('请输入有效数字');
+                  return;
+                }
+                value = parsed.clamp(min, max).toInt();
+                GStorage.setting.put(key, value);
+                Get.back();
+                setState();
+                SmartDialog.showToast('已保存: $value');
+              },
+              child: const Text('确定'),
+            ),
+          ],
+        ),
+      );
+    },
+  );
+}

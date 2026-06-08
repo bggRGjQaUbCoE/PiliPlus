@@ -10,7 +10,6 @@ abstract final class Assets {
   static const avatarPlaceHolder = 'assets/images/noface.jpeg';
   static const loading = 'assets/images/loading.png';
   static const buffering = 'assets/images/loading.webp';
-  static const play = 'assets/images/play.png';
   static const topicHeader = 'assets/images/topic-header-bg.png';
   static const trendingBanner = 'assets/images/trending_banner.png';
   static const ai = 'assets/images/ai.png';

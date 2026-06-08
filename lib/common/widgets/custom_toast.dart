@@ -9,13 +9,13 @@ class CustomToast extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = ColorScheme.of(context);
     return Container(
-      margin: EdgeInsets.only(
+      margin: .only(
         bottom: MediaQuery.viewPaddingOf(context).bottom + 30,
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 17, vertical: 10),
+      padding: const .symmetric(horizontal: 17, vertical: 10),
       decoration: BoxDecoration(
         color: colorScheme.primaryContainer,
-        borderRadius: const BorderRadius.all(Radius.circular(20)),
+        borderRadius: const .all(.circular(20)),
       ),
       child: Text(
         msg,
@@ -39,14 +39,14 @@ class LoadingWidget extends StatelessWidget {
     final theme = Theme.of(context);
     final onSurfaceVariant = theme.colorScheme.onSurfaceVariant;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
+      padding: const .symmetric(horizontal: 30, vertical: 20),
       decoration: BoxDecoration(
         color: theme.dialogTheme.backgroundColor,
-        borderRadius: const BorderRadius.all(Radius.circular(15)),
+        borderRadius: const .all(.circular(15)),
       ),
       child: Column(
         spacing: 20,
-        mainAxisSize: MainAxisSize.min,
+        mainAxisSize: .min,
         children: [
           //loading animation
           CircularProgressIndicator(
@@ -54,6 +54,37 @@ class LoadingWidget extends StatelessWidget {
             valueColor: AlwaysStoppedAnimation(onSurfaceVariant),
           ),
           //msg
+          Text(msg, style: TextStyle(color: onSurfaceVariant)),
+        ],
+      ),
+    );
+  }
+}
+
+class NotifyWarning extends StatelessWidget {
+  const NotifyWarning(this.msg, {super.key});
+
+  final String msg;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final onSurfaceVariant = theme.colorScheme.onSurfaceVariant;
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: const .all(.circular(8)),
+        color: theme.dialogTheme.backgroundColor,
+      ),
+      padding: const .symmetric(horizontal: 20, vertical: 10),
+      child: Column(
+        spacing: 5,
+        mainAxisSize: .min,
+        children: [
+          Icon(
+            Icons.warning_amber_rounded,
+            size: 22,
+            color: onSurfaceVariant,
+          ),
           Text(msg, style: TextStyle(color: onSurfaceVariant)),
         ],
       ),

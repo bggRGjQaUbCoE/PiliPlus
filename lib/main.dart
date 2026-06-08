@@ -260,6 +260,9 @@ class MyApp extends StatelessWidget {
       builder: FlutterSmartDialog.init(
         toastBuilder: CustomToast.new,
         loadingBuilder: LoadingWidget.new,
+        notifyStyle: const FlutterSmartNotifyStyle(
+          warningBuilder: NotifyWarning.new,
+        ),
         builder: _builder,
       ),
       navigatorObservers: [routeObserver],

@@ -67,11 +67,16 @@ abstract final class LoginUtils {
       }
     } else {
       // 获取用户信息失败
-      await Accounts.deleteAll({account});
-      SmartDialog.showNotify(
-        msg: '登录失败，请检查cookie是否正确，${res.toString()}',
-        notifyType: NotifyType.warning,
-      );
+      final errMsg = res.toString();
+      if (errMsg == '账号未登录') {
+        await Accounts.deleteAll({account});
+        SmartDialog.showNotify(
+          msg: '登录失败，请检查cookie是否正确，$errMsg',
+          notifyType: .warning,
+        );
+      } else {
+        SmartDialog.showToast(errMsg);
+      }
     }
   }
 

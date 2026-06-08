@@ -24,6 +24,8 @@ import 'package:PiliPlus/models_new/video/video_detail/stat_detail.dart';
 import 'package:PiliPlus/models_new/video/video_detail/ugc_season.dart';
 import 'package:PiliPlus/pages/common/common_intro_controller.dart';
 import 'package:PiliPlus/pages/dynamics_repost/view.dart';
+import 'package:PiliPlus/pages/video/channel_quiet/channel_quiet_rule.dart';
+import 'package:PiliPlus/pages/video/channel_quiet/channel_quiet_store.dart';
 import 'package:PiliPlus/pages/video/related/controller.dart';
 import 'package:PiliPlus/pages/video/reply/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_repeat.dart';
@@ -117,6 +119,7 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
           ..isPageReversed = videoDetail.value.isPageReversed;
       }
       videoDetail.value = response;
+      _matchChannelQuietRule(response.owner?.mid);
       try {
         if (videoDetailCtr.cover.value.isEmpty ||
             (videoDetailCtr.videoUrl.isNullOrEmpty &&
@@ -143,6 +146,23 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
     if (isLogin) {
       queryAllStatus();
       queryFollowStatus();
+    }
+  }
+
+  /// Match a persistent channel quiet rule for the current video's channel
+  /// and apply it to the video-detail controller so comment request gates and
+  /// tab visibility react to the matched rule.
+  void _matchChannelQuietRule(int? mid) {
+    if (mid == null) {
+      videoDetailCtr.setChannelQuietRule(null);
+      return;
+    }
+    try {
+      final store = ChannelQuietStore();
+      final rule = store.lookup(ChannelQuietRule.ugcKey(mid));
+      videoDetailCtr.setChannelQuietRule(rule);
+    } catch (_) {
+      videoDetailCtr.setChannelQuietRule(null);
     }
   }
 

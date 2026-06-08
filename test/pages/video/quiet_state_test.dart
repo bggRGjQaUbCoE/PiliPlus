@@ -2,6 +2,200 @@ import 'package:PiliPlus/pages/video/quiet_state.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  group('effectiveShowContent', () {
+    test('visible when global on, persistent off, temporary off', () {
+      expect(
+        effectiveShowContent(
+          globalShow: true,
+          persistentRuleHide: false,
+          temporaryHide: false,
+        ),
+        isTrue,
+      );
+    });
+
+    test('hidden when global on, persistent on, temporary off', () {
+      expect(
+        effectiveShowContent(
+          globalShow: true,
+          persistentRuleHide: true,
+          temporaryHide: false,
+        ),
+        isFalse,
+      );
+    });
+
+    test('hidden when global on, persistent off, temporary on', () {
+      expect(
+        effectiveShowContent(
+          globalShow: true,
+          persistentRuleHide: false,
+          temporaryHide: true,
+        ),
+        isFalse,
+      );
+    });
+
+    test('hidden when global on, persistent on, temporary on', () {
+      expect(
+        effectiveShowContent(
+          globalShow: true,
+          persistentRuleHide: true,
+          temporaryHide: true,
+        ),
+        isFalse,
+      );
+    });
+
+    test('hidden when global off regardless of persistent/temporary', () {
+      expect(
+        effectiveShowContent(
+          globalShow: false,
+          persistentRuleHide: false,
+          temporaryHide: false,
+        ),
+        isFalse,
+      );
+      expect(
+        effectiveShowContent(
+          globalShow: false,
+          persistentRuleHide: true,
+          temporaryHide: false,
+        ),
+        isFalse,
+      );
+      expect(
+        effectiveShowContent(
+          globalShow: false,
+          persistentRuleHide: false,
+          temporaryHide: true,
+        ),
+        isFalse,
+      );
+      expect(
+        effectiveShowContent(
+          globalShow: false,
+          persistentRuleHide: true,
+          temporaryHide: true,
+        ),
+        isFalse,
+      );
+    });
+  });
+
+  group('comment gate: persistent hideComments hides reply', () {
+    test('hidden when channel rule hideComments is true', () {
+      expect(
+        effectiveShowContent(
+          globalShow: true,
+          persistentRuleHide: true,
+          temporaryHide: false,
+        ),
+        isFalse,
+      );
+    });
+
+    test('visible when channel rule only has hideDanmaku (not hideComments)',
+        () {
+      expect(
+        effectiveShowContent(
+          globalShow: true,
+          persistentRuleHide: false,
+          temporaryHide: false,
+        ),
+        isTrue,
+      );
+    });
+
+    test('visible when no channel rule matches (persistentRuleHide false)', () {
+      expect(
+        effectiveShowContent(
+          globalShow: true,
+          persistentRuleHide: false,
+          temporaryHide: false,
+        ),
+        isTrue,
+      );
+    });
+
+    test('hard gate: global off overrides everything even with channel rule',
+        () {
+      expect(
+        effectiveShowContent(
+          globalShow: false,
+          persistentRuleHide: true,
+          temporaryHide: false,
+        ),
+        isFalse,
+      );
+      expect(
+        effectiveShowContent(
+          globalShow: false,
+          persistentRuleHide: false,
+          temporaryHide: false,
+        ),
+        isFalse,
+      );
+    });
+  });
+
+  group('danmaku gate: persistent hideDanmaku hides danmaku', () {
+    test('hidden when channel rule hideDanmaku is true', () {
+      expect(
+        effectiveShowContent(
+          globalShow: true,
+          persistentRuleHide: true,
+          temporaryHide: false,
+        ),
+        isFalse,
+      );
+    });
+
+    test('visible when channel rule only has hideComments (not hideDanmaku)',
+        () {
+      expect(
+        effectiveShowContent(
+          globalShow: true,
+          persistentRuleHide: false,
+          temporaryHide: false,
+        ),
+        isTrue,
+      );
+    });
+
+    test('visible when no channel rule matches (persistentRuleHide false)', () {
+      expect(
+        effectiveShowContent(
+          globalShow: true,
+          persistentRuleHide: false,
+          temporaryHide: false,
+        ),
+        isTrue,
+      );
+    });
+
+    test(
+        'hard gate: global off overrides everything even with '
+            'channel hideDanmaku rule', () {
+      expect(
+        effectiveShowContent(
+          globalShow: false,
+          persistentRuleHide: true,
+          temporaryHide: false,
+        ),
+        isFalse,
+      );
+      expect(
+        effectiveShowContent(
+          globalShow: false,
+          persistentRuleHide: false,
+          temporaryHide: false,
+        ),
+        isFalse,
+      );
+    });
+  });
+
   group('effectiveShowTemporaryContent', () {
     test('keeps the global gate authoritative', () {
       expect(

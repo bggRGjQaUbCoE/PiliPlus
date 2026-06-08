@@ -34,6 +34,7 @@ import 'package:PiliPlus/pages/video/introduction/ugc/widgets/page.dart';
 import 'package:PiliPlus/pages/video/introduction/ugc/widgets/season.dart';
 import 'package:PiliPlus/pages/video/member/controller.dart';
 import 'package:PiliPlus/pages/video/member/view.dart';
+import 'package:PiliPlus/pages/video/channel_quiet/channel_quiet.dart';
 import 'package:PiliPlus/pages/video/quiet_state.dart';
 import 'package:PiliPlus/pages/video/related/view.dart';
 import 'package:PiliPlus/pages/video/reply/controller.dart';
@@ -1213,8 +1214,8 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     return const SizedBox.shrink();
   });
 
-  List<PopupMenuItem<void>> quietControlPopupItems() {
-    return [
+  List<PopupMenuItem<void>> quietControlPopupItems(BuildContext context) {
+    final items = <PopupMenuItem<void>>[
       if (videoDetailController.showReply)
         PopupMenuItem(
           onTap: videoDetailController.toggleTempHideReply,
@@ -1230,6 +1231,90 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
           ),
         ),
     ];
+
+    // Persistent channel quiet rule entry -- only when identity is known
+    final target = videoDetailController.currentChannelTarget;
+    if (target != null) {
+      final existing = ChannelQuietStore().lookup(target.key);
+      items.add(
+        PopupMenuItem(
+          onTap: () => WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!mounted) return;
+            _showChannelQuietEditor(this.context, target, existing);
+          }),
+          child: Text(channelQuietActionLabel(existing)),
+        ),
+      );
+    }
+
+    return items;
+  }
+
+  Future<void> _showChannelQuietEditor(
+    BuildContext context,
+    ChannelQuietTarget target,
+    ChannelQuietRule? existing,
+  ) async {
+    final isAdd = existing == null;
+    bool hideComments = existing?.hideComments ?? false;
+    bool hideDanmaku = existing?.hideDanmaku ?? false;
+
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (builderContext, setDialogState) => AlertDialog(
+          title: Text(channelQuietEditorTitle(existing)),
+          content: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                target.channelName,
+                style: Theme.of(builderContext).textTheme.titleMedium,
+              ),
+              const SizedBox(height: 12),
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('默认隐藏评论'),
+                value: hideComments,
+                onChanged: (v) => setDialogState(() => hideComments = v),
+              ),
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('默认隐藏弹幕'),
+                value: hideDanmaku,
+                onChanged: (v) => setDialogState(() => hideDanmaku = v),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(builderContext).pop(),
+              child: const Text('取消'),
+            ),
+            if (!isAdd)
+              TextButton(
+                onPressed: () async {
+                  Navigator.of(builderContext).pop();
+                  await videoDetailController.removeChannelRule(target);
+                },
+                child: const Text('移除'),
+              ),
+            TextButton(
+              onPressed: () async {
+                Navigator.of(builderContext).pop();
+                await videoDetailController.saveChannelRule(
+                  target,
+                  hideComments: hideComments,
+                  hideDanmaku: hideDanmaku,
+                );
+              },
+              child: const Text('保存'),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _moreBtn(Color color, {List<Shadow>? shadows}) => Obx(
@@ -1241,7 +1326,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
         shadows: shadows,
       ),
       itemBuilder: (BuildContext context) => <PopupMenuEntry>[
-        ...quietControlPopupItems(),
+        ...quietControlPopupItems(context),
         PopupMenuItem(
           onTap: introController.viewLater,
           child: const Text('稍后再看'),

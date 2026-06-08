@@ -44,6 +44,7 @@ import 'package:PiliPlus/pages/video/introduction/ugc/controller.dart';
 import 'package:PiliPlus/pages/video/medialist/view.dart';
 import 'package:PiliPlus/pages/video/note/view.dart';
 import 'package:PiliPlus/pages/video/quiet_state.dart';
+import 'package:PiliPlus/pages/video/channel_quiet/channel_quiet.dart';
 import 'package:PiliPlus/pages/video/post_panel/view.dart';
 import 'package:PiliPlus/pages/video/send_danmaku/view.dart';
 import 'package:PiliPlus/pages/video/widgets/header_control.dart';
@@ -160,13 +161,26 @@ class VideoDetailController extends GetxController
   final RxBool tempHideReply = false.obs;
   final RxBool tempHideDanmaku = false.obs;
 
-  bool get effectiveShowReply => effectiveShowTemporaryContent(
+  /// The quiet rule currently matched for this video's channel.
+  /// Set by later slices once channel identity is known.
+  /// `null` means no persistent rule is active for the current channel.
+  final Rx<ChannelQuietRule?> currentChannelQuietRule =
+      Rx<ChannelQuietRule?>(null);
+
+  bool get persistentRuleHideReply =>
+      currentChannelQuietRule.value?.hideComments ?? false;
+  bool get persistentRuleHideDanmaku =>
+      currentChannelQuietRule.value?.hideDanmaku ?? false;
+
+  bool get effectiveShowReply => effectiveShowContent(
     globalShow: showReply,
+    persistentRuleHide: persistentRuleHideReply,
     temporaryHide: tempHideReply.value,
   );
 
-  bool get effectiveShowDanmaku => effectiveShowTemporaryContent(
+  bool get effectiveShowDanmaku => effectiveShowContent(
     globalShow: plPlayerController.enableShowDanmaku.value,
+    persistentRuleHide: persistentRuleHideDanmaku,
     temporaryHide: tempHideDanmaku.value,
   );
 
@@ -186,6 +200,125 @@ class VideoDetailController extends GetxController
   void resetTempQuietControls() {
     tempHideReply.value = false;
     tempHideDanmaku.value = false;
+  }
+
+  /// Set the current channel's persistent quiet rule.
+  ///
+  /// Called by later slices once the channel identity is known and a matching
+  /// rule is found in [ChannelQuietStore].  Pass `null` to clear the active
+  /// match without touching the persisted database.
+  ///
+  /// When a rule with `hideDanmaku == true` takes effect, visible danmaku
+  /// is cleared immediately so the screen does not show stale danmaku.
+  void setChannelQuietRule(ChannelQuietRule? rule) {
+    final previous = currentChannelQuietRule.value;
+    currentChannelQuietRule.value = rule;
+    if (rule?.hideDanmaku == true && (previous?.hideDanmaku != true)) {
+      plPlayerController.danmakuController?.clear();
+    }
+  }
+
+  /// Compute the current channel identity for persistent quiet rules.
+  ///
+  /// Returns null when channel identity is not yet available (e.g. before
+  /// the detail response arrives or for unsupported video types such as
+  /// local files).
+  ChannelQuietTarget? get currentChannelTarget {
+    if (isFileSource) return null;
+    if (isUgc) {
+      try {
+        final ugcCtr = Get.find<UgcIntroController>(tag: heroTag);
+        final detail = ugcCtr.videoDetail.value;
+        final mid = detail.owner?.mid;
+        if (mid == null) return null;
+        return ChannelQuietTarget(
+          key: ChannelQuietRule.ugcKey(mid),
+          channelUid: mid.toString(),
+          channelName: detail.owner?.name ?? '',
+        );
+      } catch (_) {
+        return null;
+      }
+    } else {
+      if (seasonId == null) return null;
+      try {
+        final pgcCtr = Get.find<PgcIntroController>(tag: heroTag);
+        final title = pgcCtr.pgcItem.title;
+        return ChannelQuietTarget(
+          key: ChannelQuietRule.pgcKey(seasonId!),
+          channelUid: seasonId.toString(),
+          channelName: title ?? '',
+        );
+      } catch (_) {
+        return null;
+      }
+    }
+  }
+
+  /// Persist a quiet rule for the given [target].
+  ///
+  /// Uses [ChannelQuietStore.update] when a rule already exists for the
+  /// channel (preserving `createdAt`), and [ChannelQuietStore.add] for new
+  /// channels.  Immediately applies the result via [setChannelQuietRule].
+  Future<void> saveChannelRule(
+    ChannelQuietTarget target, {
+    required bool hideComments,
+    required bool hideDanmaku,
+  }) async {
+    final store = ChannelQuietStore();
+    final existing = store.lookup(target.key);
+    ChannelQuietRule? saved;
+    if (existing != null) {
+      saved = await store.update(
+        key: target.key,
+        channelName: target.channelName,
+        hideComments: hideComments,
+        hideDanmaku: hideDanmaku,
+      );
+    } else {
+      saved = await store.add(
+        key: target.key,
+        channelUid: target.channelUid,
+        channelName: target.channelName,
+        hideComments: hideComments,
+        hideDanmaku: hideDanmaku,
+      );
+    }
+    setChannelQuietRule(saved);
+  }
+
+  /// Remove the persistent quiet rule for the given [target] and clear
+  /// [currentChannelQuietRule].
+  Future<void> removeChannelRule(ChannelQuietTarget target) async {
+    final store = ChannelQuietStore();
+    await store.delete(target.key);
+    setChannelQuietRule(null);
+  }
+
+  /// Persist a quiet rule for the current channel.
+  ///
+  /// Uses [ChannelQuietStore.update] when a rule already exists for the
+  /// channel (preserving `createdAt`), and [ChannelQuietStore.add] for new
+  /// channels.  Immediately applies the result via [setChannelQuietRule].
+  Future<void> saveCurrentChannelRule({
+    required bool hideComments,
+    required bool hideDanmaku,
+  }) async {
+    final target = currentChannelTarget;
+    if (target == null) return;
+    await saveChannelRule(
+      target,
+      hideComments: hideComments,
+      hideDanmaku: hideDanmaku,
+    );
+  }
+
+  /// Remove the persistent quiet rule for the current channel and clear
+  /// [currentChannelQuietRule].
+  Future<void> removeCurrentChannelRule() async {
+    final target = currentChannelTarget;
+    if (target == null) return;
+    await removeChannelRule(target);
   }
 
   bool get showRelatedVideo =>
@@ -1333,6 +1466,10 @@ class VideoDetailController extends GetxController
     // danmaku
     savedDanmaku = null;
     resetTempQuietControls();
+    // Clear the current persistent-rule match without touching the stored
+    // database -- later slices re-evaluate the match when channel identity
+    // becomes available again.
+    currentChannelQuietRule.value = null;
 
     // subtitle
     subtitles.clear();

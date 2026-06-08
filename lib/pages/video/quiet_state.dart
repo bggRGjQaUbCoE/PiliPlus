@@ -32,3 +32,15 @@ bool effectiveShowTemporaryContent({
   required bool temporaryHide,
 }) =>
     globalShow && !temporaryHide;
+
+/// Three-level effective visibility: global gate, persistent channel rule,
+/// and temporary (per-page) override.
+///
+/// Global off is a hard gate that cannot be overridden by persistent or
+/// temporary controls.
+bool effectiveShowContent({
+  required bool globalShow,
+  required bool persistentRuleHide,
+  required bool temporaryHide,
+}) =>
+    globalShow && !persistentRuleHide && !temporaryHide;

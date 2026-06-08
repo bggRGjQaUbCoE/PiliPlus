@@ -156,6 +156,8 @@ test/bootstrap/*
 test/features/*
 !test/features/shielding/
 !test/features/shielding/**
+!test/features/channel_quiet/
+!test/features/channel_quiet/**
 !test/pages/
 test/pages/*
 !test/pages/setting/

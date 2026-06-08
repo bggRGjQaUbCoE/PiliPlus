@@ -16,6 +16,8 @@ import 'package:PiliPlus/models_new/video/video_detail/episode.dart'
 import 'package:PiliPlus/models_new/video/video_detail/stat_detail.dart';
 import 'package:PiliPlus/pages/common/common_intro_controller.dart';
 import 'package:PiliPlus/pages/dynamics_repost/view.dart';
+import 'package:PiliPlus/pages/video/channel_quiet/channel_quiet_rule.dart';
+import 'package:PiliPlus/pages/video/channel_quiet/channel_quiet_store.dart';
 import 'package:PiliPlus/pages/video/reply/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_repeat.dart';
 import 'package:PiliPlus/services/service_locator.dart';
@@ -63,6 +65,9 @@ class PgcIntroController extends CommonIntroController {
 
     super.onInit();
 
+    // Match persistent channel quiet rule for PGC (bangumi) videos.
+    _matchChannelQuietRule();
+
     if (isPgc) {
       if (isLogin) {
         queryIsFollowed();
@@ -71,6 +76,22 @@ class PgcIntroController extends CommonIntroController {
         }
       }
       queryVideoTags();
+    }
+  }
+
+  /// Match a persistent channel quiet rule for this PGC (bangumi) video's
+  /// season and apply it to the video-detail controller.
+  void _matchChannelQuietRule() {
+    if (seasonId == null) {
+      videoDetailCtr.setChannelQuietRule(null);
+      return;
+    }
+    try {
+      final store = ChannelQuietStore();
+      final rule = store.lookup(ChannelQuietRule.pgcKey(seasonId!));
+      videoDetailCtr.setChannelQuietRule(rule);
+    } catch (_) {
+      videoDetailCtr.setChannelQuietRule(null);
     }
   }
 

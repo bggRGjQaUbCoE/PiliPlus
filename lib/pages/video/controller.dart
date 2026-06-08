@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 import 'dart:math' show min;
 import 'dart:ui';
 
@@ -54,12 +53,10 @@ import 'package:PiliPlus/services/download/download_service.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/connectivity_utils.dart';
 import 'package:PiliPlus/utils/extension/context_ext.dart';
-import 'package:PiliPlus/utils/extension/file_ext.dart';
 import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/size_ext.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
-import 'package:PiliPlus/utils/path_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
@@ -75,7 +72,6 @@ import 'package:flutter_volume_controller/flutter_volume_controller.dart';
 import 'package:get/get.dart';
 import 'package:hive_ce/hive.dart';
 import 'package:media_kit/media_kit.dart' hide Subtitle;
-import 'package:path/path.dart' as path;
 
 class VideoDetailController extends GetxController
     with GetTickerProviderStateMixin, BlockMixin {
@@ -1081,19 +1077,8 @@ class VideoDetailController extends GetxController
       final sub = subtitles[index - 1];
 
       String subUri = subtitle.id;
-      File? file;
       if (subtitle.isData) {
-        subUri = path.join(tmpDirPath, '${cid.value}-${sub.lan}.vtt');
-        file = File(subUri);
-        if (!file.existsSync()) {
-          await file.writeAsString(subtitle.id);
-          if (plPlayerController.videoPlayerController?.disposed == false) {
-            plPlayerController.videoPlayerController!.release.add(file.tryDel);
-          } else {
-            file.tryDel();
-            return;
-          }
-        }
+        subUri = 'memory://$subUri';
       }
       await plPlayerController.videoPlayerController?.setSubtitleTrack(
         SubtitleTrack(subUri, sub.lanDoc, sub.lan, uri: true),

@@ -184,13 +184,10 @@ class ReplyItemGrpc extends StatelessWidget {
                           ),
                         ),
                       ),
-                      Image.asset(
-                        BiliUtils.levelName(
-                          member.level,
-                          isSeniorMember: member.isSeniorMember == 1,
-                        ),
+                      BiliUtils.levelPicture(
+                        member.level.toInt(),
+                        isSeniorMember: member.isSeniorMember == 1,
                         height: 11,
-                        cacheHeight: 11.cacheSize(context),
                       ),
                       if (replyItem.mid == upMid)
                         const PBadge(

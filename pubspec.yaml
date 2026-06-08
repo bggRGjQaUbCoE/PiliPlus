@@ -270,7 +270,6 @@ flutter:
 
   assets:
     - path: assets/images/
-    - path: assets/images/lv/
     - path: assets/images/logo/
     - path: assets/images/logo/ico/
       platforms: [windows]

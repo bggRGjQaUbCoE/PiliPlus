@@ -315,13 +315,10 @@ class _MediaPageState extends CommonPageState<MinePage>
                               overflow: .ellipsis,
                             ),
                           ),
-                          Image.asset(
-                            BiliUtils.levelName(
-                              levelInfo?.currentLevel ?? 0,
-                              isSeniorMember: userInfo.isSeniorMember == 1,
-                            ),
+                          BiliUtils.levelPicture(
+                            levelInfo?.currentLevel ?? 0,
+                            isSeniorMember: userInfo.isSeniorMember == 1,
                             height: 10,
-                            cacheHeight: 10.cacheSize(context),
                           ),
                         ],
                       ),

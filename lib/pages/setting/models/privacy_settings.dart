@@ -1,5 +1,4 @@
 import 'package:PiliPlus/models/common/account_type.dart';
-import 'package:PiliPlus/pages/login/controller.dart';
 import 'package:PiliPlus/pages/setting/models/model.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/accounts/api_type.dart';
@@ -19,14 +18,6 @@ List<SettingsModel> get privacySettings => [
     title: '黑名单管理',
     subtitle: '已拉黑用户',
     leading: const Icon(Icons.block),
-  ),
-  NormalModel(
-    onTap: (context, setState) {
-      LoginPageController.switchAccountDialog(context);
-    },
-    leading: const Icon(Icons.switch_account_outlined),
-    title: '切换账号',
-    subtitle: '播放进度信息跟随视频取流',
   ),
   NormalModel(
     onTap: (context, setState) {

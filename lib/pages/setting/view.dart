@@ -45,7 +45,7 @@ class _SettingPageState extends State<SettingPage> {
   static const List<_SettingsModel> _items = [
     _SettingsModel(
       type: SettingType.privacySetting,
-      subtitle: '黑名单、无痕模式',
+      subtitle: '黑名单',
       icon: Icon(Icons.privacy_tip_outlined),
     ),
     _SettingsModel(
@@ -170,7 +170,7 @@ class _SettingPageState extends State<SettingPage> {
         ListTile(
           onTap: () => LoginPageController.switchAccountDialog(context),
           leading: const Icon(Icons.switch_account_outlined),
-          title: Text('设置账号模式', style: titleStyle),
+          title: Text('切换账号', style: titleStyle),
         ),
         Obx(
           () => _noAccount.value

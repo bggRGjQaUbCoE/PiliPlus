@@ -2,14 +2,6 @@ import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:flutter/material.dart';
 
 class SliderDialog extends StatefulWidget {
-  final double value;
-  final String title;
-  final double min;
-  final double max;
-  final int? divisions;
-  final String suffix;
-  final int precise;
-
   const SliderDialog({
     super.key,
     required this.value,
@@ -20,6 +12,14 @@ class SliderDialog extends StatefulWidget {
     this.suffix = '',
     this.precise = 1,
   });
+
+  final double value;
+  final Widget title;
+  final double min;
+  final double max;
+  final int? divisions;
+  final String suffix;
+  final int precise;
 
   @override
   State<SliderDialog> createState() => _SliderDialogState();
@@ -37,13 +37,8 @@ class _SliderDialogState extends State<SliderDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(widget.title),
-      contentPadding: const EdgeInsets.only(
-        top: 20,
-        left: 8,
-        right: 8,
-        bottom: 8,
-      ),
+      title: widget.title,
+      contentPadding: const .only(top: 20, left: 8, right: 8, bottom: 8),
       content: SizedBox(
         height: 40,
         child: Slider(

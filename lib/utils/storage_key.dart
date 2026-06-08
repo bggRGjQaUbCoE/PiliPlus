@@ -15,7 +15,9 @@ abstract final class SettingBoxKey {
       keyboardControl = 'keyboardControl',
       pgcSkipType = 'pgcSkipType',
       audioPlayMode = 'audioPlayMode',
-      showBatteryLevel = 'showBatteryLevel';
+      showBatteryLevel = 'showBatteryLevel',
+      playerVolume = 'playerVolume',
+      maxVolume = 'maxVolume';
 
   static const String horizontalScreen = 'horizontalScreen',
       CDNService = 'CDNService',

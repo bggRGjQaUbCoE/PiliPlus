@@ -3,6 +3,7 @@ import 'dart:math' as math;
 
 import 'package:PiliPlus/common/widgets/flutter/vertical_slider.dart';
 import 'package:PiliPlus/pages/audio/controller.dart';
+import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart' show RenderProxyBox, BoxHitTestResult;
 import 'package:get/get.dart';
@@ -140,7 +141,7 @@ class _VolumeButtonState extends State<VolumeButton> {
                       child: VerticalSlider(
                         year2023: true,
                         min: 0.0,
-                        max: 2.0,
+                        max: Pref.maxVolume,
                         value: volume,
                         showValueIndicator: .never,
                         onChanged: widget.controller.setVolume,

@@ -12,10 +12,7 @@ abstract final class Style {
   static const bottomSheetRadius = BorderRadius.vertical(
     top: Radius.circular(18),
   );
-  static const dialogFixedConstraints = BoxConstraints(
-    minWidth: 420,
-    maxWidth: 420,
-  );
+  static const dialogFixedConstraints = BoxConstraints.tightFor(width: 420);
   static const topBarHeight = 52.0;
   static const buttonStyle = ButtonStyle(
     visualDensity: VisualDensity(horizontal: -2, vertical: -1.25),

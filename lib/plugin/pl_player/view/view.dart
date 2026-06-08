@@ -953,7 +953,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
           final double volume = clampDouble(
             plPlayerController.volume.value - delta.dy / level,
             0.0,
-            PlPlayerController.maxVolume,
+            plPlayerController.maxVolume,
           );
           plPlayerController.setVolume(volume);
         },
@@ -1132,7 +1132,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
           final double volume = clampDouble(
             plPlayerController.volume.value - event.localPanDelta.dy / level,
             0.0,
-            PlPlayerController.maxVolume,
+            plPlayerController.maxVolume,
           );
           plPlayerController.setVolume(volume);
         },
@@ -1156,7 +1156,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       final volume = clampDouble(
         plPlayerController.volume.value + offset,
         0.0,
-        PlPlayerController.maxVolume,
+        plPlayerController.maxVolume,
       );
       plPlayerController.setVolume(volume);
     }

@@ -2,12 +2,15 @@ import 'dart:io' show Platform;
 
 import 'package:PiliPlus/common/widgets/marquee.dart';
 import 'package:PiliPlus/pages/live_room/controller.dart';
+import 'package:PiliPlus/pages/setting/models/play_settings.dart'
+    show showPlayerVolumeDialog;
 import 'package:PiliPlus/pages/video/widgets/header_control.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/widgets/common_btn.dart';
 import 'package:PiliPlus/services/shutdown_timer_service.dart'
     show shutdownTimerService;
 import 'package:PiliPlus/utils/android/bindings.g.dart';
+import 'package:PiliPlus/utils/extension/string_ext.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -233,19 +236,62 @@ class _LiveHeaderControlState extends State<LiveHeaderControl>
               color: Colors.white,
             ),
           ),
-          ComBtn(
-            height: 30,
-            tooltip: '播放信息',
-            onTap: () => HeaderControlState.showPlayerInfo(
-              context,
-              plPlayerController: plPlayerController,
-            ),
-            icon: const Icon(
-              size: 18,
-              Icons.info_outline,
-              color: Colors.white,
-            ),
-          ),
+          if (plPlayerController.videoPlayerController case final player?)
+            if (PlatformUtils.isMobile)
+              SizedBox.square(
+                dimension: 30,
+                child: PopupMenuButton(
+                  iconSize: 18,
+                  padding: .zero,
+                  iconColor: Colors.white,
+                  itemBuilder: (context) => [
+                    PopupMenuItem(
+                      height: 35,
+                      child: const Row(
+                        spacing: 8,
+                        children: [
+                          Icon(Icons.info_outline, size: 16),
+                          Text('播放信息', style: TextStyle(fontSize: 14)),
+                        ],
+                      ),
+                      onTap: () => HeaderControlState.showPlayerInfo(
+                        context,
+                        player: player,
+                      ),
+                    ),
+                    PopupMenuItem(
+                      height: 35,
+                      child: Row(
+                        spacing: 8,
+                        children: [
+                          const Icon(Icons.volume_up, size: 16),
+                          Text(
+                            '播放器音量: ${player.getProperty('volume').subLength(3)}%',
+                            style: const TextStyle(fontSize: 14),
+                          ),
+                        ],
+                      ),
+                      onTap: () => showPlayerVolumeDialog(
+                        context,
+                        () {},
+                        onChanged: player.setVolume,
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            else
+              ComBtn(
+                height: 30,
+                tooltip: '播放信息',
+                onTap: () =>
+                    HeaderControlState.showPlayerInfo(context, player: player),
+                icon: const Icon(
+                  size: 18,
+                  Icons.info_outline,
+                  color: Colors.white,
+                ),
+              ),
         ],
       ),
     );

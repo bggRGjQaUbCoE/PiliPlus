@@ -12,6 +12,8 @@ import 'package:PiliPlus/models/common/video/video_type.dart';
 import 'package:PiliPlus/models/user/danmaku_rule.dart';
 import 'package:PiliPlus/models/video/play/url.dart';
 import 'package:PiliPlus/models_new/video/video_shot/data.dart';
+import 'package:PiliPlus/pages/setting/models/play_settings.dart'
+    show kMaxVolume;
 import 'package:PiliPlus/pages/sponsor_block/block_mixin.dart';
 import 'package:PiliPlus/plugin/pl_player/models/data_source.dart';
 import 'package:PiliPlus/plugin/pl_player/models/data_status.dart';
@@ -601,11 +603,14 @@ class PlPlayerController with BlockConfigMixin {
       'video-sync': Pref.videoSync,
     };
     if (Platform.isAndroid) {
-      opt['volume-max'] = '100';
       opt['ao'] = Pref.audioOutput;
-    } else if (PlatformUtils.isDesktop) {
+    }
+    if (PlatformUtils.isMobile) {
+      opt['volume'] = Pref.playerVolume.toString();
+    } else {
       opt['volume'] = (volume.value * 100).toString();
     }
+    opt['volume-max'] = kMaxVolume.toString();
 
     final player = await Player.create(
       configuration: PlayerConfiguration(
@@ -969,13 +974,13 @@ class PlPlayerController with BlockConfigMixin {
   Timer? volumeTimer;
   bool volumeInterceptEventStream = false;
 
-  static final double maxVolume = PlatformUtils.isDesktop ? 2.0 : 1.0;
+  final double maxVolume = PlatformUtils.isDesktop ? Pref.maxVolume : 1.0;
   Future<void> setVolume(double volume, {bool showIndicator = true}) async {
     if (this.volume.value != volume) {
       this.volume.value = volume;
       try {
         if (PlatformUtils.isDesktop) {
-          _videoPlayerController!.setVolume(volume * 100);
+          await _videoPlayerController!.setVolume(volume * 100);
         } else {
           FlutterVolumeController.updateShowSystemUI(false);
           await FlutterVolumeController.setVolume(volume);

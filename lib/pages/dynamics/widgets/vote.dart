@@ -553,10 +553,7 @@ Future<void> showVoteDialog(
       showDialog(
         context: context,
         builder: (context) => Dialog(
-          constraints: const BoxConstraints(
-            minWidth: 280,
-            maxWidth: 625,
-          ),
+          constraints: const BoxConstraints(minWidth: 280, maxWidth: 625),
           child: Padding(
             padding: const EdgeInsets.all(24),
             child: VotePanel(

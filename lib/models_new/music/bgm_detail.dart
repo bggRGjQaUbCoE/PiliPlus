@@ -15,7 +15,7 @@ class MusicDetail {
     required this.album,
     required this.artistsList,
     required this.listenPv,
-    required this.musicRank,
+    required this.achievement,
     required this.hotSongHeat,
     required this.musicComment,
     required this.musicRelation,
@@ -26,7 +26,7 @@ class MusicDetail {
   final String? originArtist;
   final String? originArtistList;
   final int? mvAid;
-  final int? mvCid;
+  final int mvCid;
   final String? mvBvid;
   final String? mvCover;
   bool? wishListen;
@@ -35,7 +35,7 @@ class MusicDetail {
   final String? album;
   final List<Artist>? artistsList;
   final int? listenPv;
-  final String? musicRank;
+  final List<String> achievement;
   final HotSongHeat? hotSongHeat;
   final MusicComment? musicComment;
   final int? musicRelation;
@@ -47,7 +47,7 @@ class MusicDetail {
       originArtist: json["origin_artist"],
       originArtistList: json["origin_artist_list"],
       mvAid: json["mv_aid"],
-      mvCid: json["mv_cid"],
+      mvCid: json["mv_cid"] ?? 0,
       mvBvid: json["mv_bvid"],
       mvCover: json["mv_cover"],
       wishListen: json["wish_listen"],
@@ -58,7 +58,11 @@ class MusicDetail {
           ?.map((x) => Artist.fromJson(x))
           .toList(),
       listenPv: json["listen_pv"],
-      musicRank: json["music_rank"],
+      achievement: [
+        ...?json["achievement"],
+        ?json["music_rank"],
+        ?json["recreation_rank"],
+      ],
       hotSongHeat: json["hot_song_heat"] == null
           ? null
           : HotSongHeat.fromJson(json["hot_song_heat"]),

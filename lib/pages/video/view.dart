@@ -34,6 +34,7 @@ import 'package:PiliPlus/pages/video/introduction/ugc/widgets/page.dart';
 import 'package:PiliPlus/pages/video/introduction/ugc/widgets/season.dart';
 import 'package:PiliPlus/pages/video/member/controller.dart';
 import 'package:PiliPlus/pages/video/member/view.dart';
+import 'package:PiliPlus/pages/video/quiet_state.dart';
 import 'package:PiliPlus/pages/video/related/view.dart';
 import 'package:PiliPlus/pages/video/reply/controller.dart';
 import 'package:PiliPlus/pages/video/reply/view.dart';
@@ -133,6 +134,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
   final videoReplyPanelKey = GlobalKey();
   final videoRelatedKey = GlobalKey();
   final videoIntroKey = GlobalKey();
+  bool _lastTabBarHadReply = false;
 
   @override
   void initState() {
@@ -771,7 +773,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                           needCtr: false,
                           isNested: true,
                         ),
-                        if (videoDetailController.showReply)
+                        if (videoDetailController.effectiveShowReply)
                           videoReplyPanel(isNested: true),
                         if (_shouldShowSeasonPanel) seasonPanel,
                       ],
@@ -841,7 +843,8 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                           width: introWidth,
                           height: maxHeight,
                         ),
-                        if (videoDetailController.showReply) videoReplyPanel(),
+                        if (videoDetailController.effectiveShowReply)
+                          videoReplyPanel(),
                         if (_shouldShowSeasonPanel) seasonPanel,
                       ],
                     ),
@@ -902,7 +905,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                           child: tabBarView(
                             controller: videoDetailController.tabCtr,
                             children: [
-                              if (videoDetailController.showReply)
+                              if (videoDetailController.effectiveShowReply)
                                 videoReplyPanel(),
                               if (_shouldShowSeasonPanel) seasonPanel,
                             ],
@@ -1008,7 +1011,8 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                               ],
                             ),
                           ),
-                        if (videoDetailController.showReply) videoReplyPanel(),
+                        if (videoDetailController.effectiveShowReply)
+                          videoReplyPanel(),
                         if (_shouldShowSeasonPanel) seasonPanel,
                       ],
                     ),
@@ -1093,14 +1097,16 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                           child: videoIntro(
                             width: () {
                               double flex = 1;
-                              if (videoDetailController.showReply) flex++;
+                              if (videoDetailController.effectiveShowReply) {
+                                flex++;
+                              }
                               if (shouldShowSeasonPanel) flex++;
                               return maxWidth / flex;
                             }(),
                             height: bottomHeight,
                           ),
                         ),
-                        if (videoDetailController.showReply)
+                        if (videoDetailController.effectiveShowReply)
                           Expanded(child: videoReplyPanel()),
                         if (shouldShowSeasonPanel) Expanded(child: seasonPanel),
                       ],
@@ -1207,50 +1213,72 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     return const SizedBox.shrink();
   });
 
-  Widget _moreBtn(Color color, {List<Shadow>? shadows}) => PopupMenuButton(
-    icon: Icon(
-      size: 22,
-      Icons.more_vert,
-      color: color,
-      shadows: shadows,
+  List<PopupMenuItem<void>> quietControlPopupItems() {
+    return [
+      if (videoDetailController.showReply)
+        PopupMenuItem(
+          onTap: videoDetailController.toggleTempHideReply,
+          child: Text(
+            videoDetailController.tempHideReply.value ? '显示评论' : '隐藏评论',
+          ),
+        ),
+      if (videoDetailController.plPlayerController.enableShowDanmaku.value)
+        PopupMenuItem(
+          onTap: videoDetailController.toggleTempHideDanmaku,
+          child: Text(
+            videoDetailController.tempHideDanmaku.value ? '显示弹幕' : '隐藏弹幕',
+          ),
+        ),
+    ];
+  }
+
+  Widget _moreBtn(Color color, {List<Shadow>? shadows}) => Obx(
+    () => PopupMenuButton(
+      icon: Icon(
+        size: 22,
+        Icons.more_vert,
+        color: color,
+        shadows: shadows,
+      ),
+      itemBuilder: (BuildContext context) => <PopupMenuEntry>[
+        ...quietControlPopupItems(),
+        PopupMenuItem(
+          onTap: introController.viewLater,
+          child: const Text('稍后再看'),
+        ),
+        if (videoDetailController.epId == null)
+          PopupMenuItem(
+            onTap: () => videoDetailController.showNoteList(context),
+            child: const Text('查看笔记'),
+          ),
+        if (!videoDetailController.isFileSource)
+          PopupMenuItem(
+            onTap: () => videoDetailController.onDownload(this.context),
+            child: const Text('缓存视频'),
+          ),
+        if (videoDetailController.cover.value.isNotEmpty)
+          PopupMenuItem(
+            onTap: () =>
+                ImageUtils.downloadImg([videoDetailController.cover.value]),
+            child: const Text('保存封面'),
+          ),
+        if (!videoDetailController.isFileSource && videoDetailController.isUgc)
+          PopupMenuItem(
+            onTap: videoDetailController.toAudioPage,
+            child: const Text('听音频'),
+          ),
+        PopupMenuItem(
+          onTap: () {
+            if (!Accounts.main.isLogin) {
+              SmartDialog.showToast('账号未登录');
+            } else {
+              PageUtils.reportVideo(videoDetailController.aid);
+            }
+          },
+          child: const Text('举报'),
+        ),
+      ],
     ),
-    itemBuilder: (BuildContext context) => <PopupMenuEntry>[
-      PopupMenuItem(
-        onTap: introController.viewLater,
-        child: const Text('稍后再看'),
-      ),
-      if (videoDetailController.epId == null)
-        PopupMenuItem(
-          onTap: () => videoDetailController.showNoteList(context),
-          child: const Text('查看笔记'),
-        ),
-      if (!videoDetailController.isFileSource)
-        PopupMenuItem(
-          onTap: () => videoDetailController.onDownload(this.context),
-          child: const Text('缓存视频'),
-        ),
-      if (videoDetailController.cover.value.isNotEmpty)
-        PopupMenuItem(
-          onTap: () =>
-              ImageUtils.downloadImg([videoDetailController.cover.value]),
-          child: const Text('保存封面'),
-        ),
-      if (!videoDetailController.isFileSource && videoDetailController.isUgc)
-        PopupMenuItem(
-          onTap: videoDetailController.toAudioPage,
-          child: const Text('听音频'),
-        ),
-      PopupMenuItem(
-        onTap: () {
-          if (!Accounts.main.isLogin) {
-            SmartDialog.showToast('账号未登录');
-          } else {
-            PageUtils.reportVideo(videoDetailController.aid);
-          }
-        },
-        child: const Text('举报'),
-      ),
-    ],
   );
 
   Widget plPlayer({
@@ -1291,6 +1319,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                         key: ValueKey(videoDetailController.cid.value),
                         isPipMode: isPipMode,
                         cid: videoDetailController.cid.value,
+                        videoDetailController: videoDetailController,
                         playerController: plPlayerController!,
                         isFullScreen: plPlayerController!.isFullScreen.value,
                         isFileSource: videoDetailController.isFileSource,
@@ -1354,19 +1383,29 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     List<String> tabs = [
       if (showIntro)
         videoDetailController.isFileSource ? '离线视频' : introText ?? '简介',
-      if (videoDetailController.showReply) '评论',
+      if (videoDetailController.effectiveShowReply) '评论',
       if (_shouldShowSeasonPanel) '播放列表',
     ];
     if (videoDetailController.tabCtr.length != tabs.length) {
+      final previousLength = videoDetailController.tabCtr.length;
+      final previousIndex = videoDetailController.tabCtr.index;
+      final previousHadReply = _lastTabBarHadReply;
+      final nextHasReply = videoDetailController.effectiveShowReply;
       videoDetailController.tabCtr.dispose();
       videoDetailController.tabCtr = TabController(
         vsync: this,
         length: tabs.length,
-        initialIndex: tabs.isEmpty
-            ? 0
-            : videoDetailController.tabCtr.index.clamp(0, tabs.length - 1),
+        initialIndex: quietControlsEffectiveTabIndex(
+          currentIndex: previousIndex,
+          previousLength: previousLength,
+          nextLength: tabs.length,
+          previousHadReply: previousHadReply,
+          nextHasReply: nextHasReply,
+          showIntro: showIntro,
+        ),
       );
     }
+    _lastTabBarHadReply = videoDetailController.effectiveShowReply;
 
     final flag = !needIndicator || tabs.length == 1;
     Widget tabBar() => TabBar(

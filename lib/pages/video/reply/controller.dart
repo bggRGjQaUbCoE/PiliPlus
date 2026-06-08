@@ -1,11 +1,12 @@
 import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
-    show MainListReply, ReplyInfo;
+    show MainListReply, ReplyInfo, CursorReply, SubjectControl;
 import 'package:PiliPlus/grpc/reply.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/video/video_type.dart';
 import 'package:PiliPlus/pages/common/reply_controller.dart';
 import 'package:PiliPlus/pages/video/controller.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
+import 'package:fixnum/fixnum.dart';
 import 'package:get/get.dart';
 
 class VideoReplyController extends ReplyController<MainListReply> {
@@ -30,11 +31,19 @@ class VideoReplyController extends ReplyController<MainListReply> {
   }
 
   @override
-  Future<LoadingState<MainListReply>> customGetData() => ReplyGrpc.mainList(
-    oid: isPugv ? videoCtr.epId! : aid,
-    type: videoType.replyType,
-    mode: mode,
-    cursorNext: cursorNext,
-    offset: paginationReply?.nextOffset,
-  );
+  Future<LoadingState<MainListReply>> customGetData() async {
+    if (!videoCtr.effectiveShowReply) {
+      return Success(MainListReply(
+        cursor: CursorReply(isEnd: true),
+        subjectControl: SubjectControl(count: Int64(0)),
+      ));
+    }
+    return ReplyGrpc.mainList(
+      oid: isPugv ? videoCtr.epId! : aid,
+      type: videoType.replyType,
+      mode: mode,
+      cursorNext: cursorNext,
+      offset: paginationReply?.nextOffset,
+    );
+  }
 }

@@ -172,6 +172,8 @@ AGENTS.md
 .codex/
 .codex-artifacts/
 .reasonix/
+.codegraph/
+skills-lock.json
 records/
 phase1-report.md
 build_80f5e6d6a.yml

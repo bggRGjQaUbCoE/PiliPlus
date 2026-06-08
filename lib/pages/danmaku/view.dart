@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:PiliPlus/grpc/bilibili/community/service/dm/v1.pb.dart';
 import 'package:PiliPlus/pages/danmaku/controller.dart';
 import 'package:PiliPlus/pages/danmaku/danmaku_model.dart';
+import 'package:PiliPlus/pages/video/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
 import 'package:PiliPlus/plugin/pl_player/utils/danmaku_options.dart';
@@ -15,6 +16,7 @@ import 'package:get/get.dart';
 class PlDanmaku extends StatefulWidget {
   final int cid;
   final PlPlayerController playerController;
+  final VideoDetailController? videoDetailController;
   final bool isPipMode;
   final bool isFullScreen;
   final bool isFileSource;
@@ -24,6 +26,7 @@ class PlDanmaku extends StatefulWidget {
     super.key,
     required this.cid,
     required this.playerController,
+    this.videoDetailController,
     this.isPipMode = false,
     required this.isFullScreen,
     required this.isFileSource,
@@ -38,6 +41,9 @@ class PlDanmaku extends StatefulWidget {
 
 class _PlDanmakuState extends State<PlDanmaku> {
   PlPlayerController get playerController => widget.playerController;
+  bool get effectiveShowDanmaku =>
+      widget.videoDetailController?.effectiveShowDanmaku ??
+      playerController.enableShowDanmaku.value;
 
   late final PlDanmakuController _plDanmakuController;
   DanmakuController<DanmakuExtra>? _controller;
@@ -51,7 +57,7 @@ class _PlDanmakuState extends State<PlDanmaku> {
       playerController,
       widget.isFileSource,
     );
-    if (playerController.enableShowDanmaku.value) {
+    if (effectiveShowDanmaku) {
       if (widget.isFileSource) {
         _plDanmakuController.initFileDmIfNeeded();
       } else {
@@ -91,7 +97,7 @@ class _PlDanmakuState extends State<PlDanmaku> {
 
   @pragma('vm:notify-debugger-on-exception')
   void videoPositionListen(Duration position) {
-    if (_controller == null || !playerController.enableShowDanmaku.value) {
+    if (_controller == null || !effectiveShowDanmaku) {
       return;
     }
 
@@ -173,7 +179,7 @@ class _PlDanmakuState extends State<PlDanmaku> {
     );
     return Obx(
       () => AnimatedOpacity(
-        opacity: playerController.enableShowDanmaku.value
+        opacity: effectiveShowDanmaku
             ? playerController.danmakuOpacity.value
             : 0,
         duration: const Duration(milliseconds: 100),

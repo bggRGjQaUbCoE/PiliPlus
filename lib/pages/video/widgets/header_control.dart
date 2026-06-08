@@ -577,6 +577,46 @@ class HeaderControlState extends State<HeaderControl>
                     ],
                   ),
                 ),
+                Obx(() {
+                  if (!videoDetailCtr.showReply) return const SizedBox.shrink();
+                  final tempHide = videoDetailCtr.tempHideReply.value;
+                  return ListTile(
+                    dense: true,
+                    onTap: () {
+                      Get.back();
+                      videoDetailCtr.toggleTempHideReply();
+                    },
+                    leading: Icon(
+                      size: 20,
+                      tempHide ? Icons.comment : Icons.comment_outlined,
+                    ),
+                    title: Text(
+                      tempHide ? '显示评论' : '隐藏评论',
+                      style: titleStyle,
+                    ),
+                  );
+                }),
+                Obx(() {
+                  if (!plPlayerController.enableShowDanmaku.value) {
+                    return const SizedBox.shrink();
+                  }
+                  final tempHide = videoDetailCtr.tempHideDanmaku.value;
+                  return ListTile(
+                    dense: true,
+                    onTap: () {
+                      Get.back();
+                      videoDetailCtr.toggleTempHideDanmaku();
+                    },
+                    leading: Icon(
+                      size: 20,
+                      tempHide ? CustomIcons.dm_on : CustomIcons.dm_off,
+                    ),
+                    title: Text(
+                      tempHide ? '显示弹幕' : '隐藏弹幕',
+                      style: titleStyle,
+                    ),
+                  );
+                }),
                 if (!isFileSource) ...[
                   ListTile(
                     dense: true,
@@ -1920,6 +1960,48 @@ class HeaderControlState extends State<HeaderControl>
                   ),
                 ),
               ],
+              Obx(() {
+                if (!videoDetailCtr.showReply) return const SizedBox.shrink();
+                final tempHide = videoDetailCtr.tempHideReply.value;
+                return SizedBox(
+                  width: btnWidth,
+                  height: btnHeight,
+                  child: IconButton(
+                    tooltip: tempHide ? '显示评论' : '隐藏评论',
+                    style: btnStyle,
+                    onPressed: videoDetailCtr.toggleTempHideReply,
+                    icon: Icon(
+                      Icons.comment_outlined,
+                      size: 19,
+                      color: tempHide
+                          ? Colors.white54
+                          : Colors.white,
+                    ),
+                  ),
+                );
+              }),
+              Obx(() {
+                if (!plPlayerController.enableShowDanmaku.value) {
+                  return const SizedBox.shrink();
+                }
+                final tempHide = videoDetailCtr.tempHideDanmaku.value;
+                return SizedBox(
+                  width: btnWidth,
+                  height: btnHeight,
+                  child: IconButton(
+                    tooltip: tempHide ? '显示弹幕' : '隐藏弹幕',
+                    style: btnStyle,
+                    onPressed: videoDetailCtr.toggleTempHideDanmaku,
+                    icon: Icon(
+                      size: 20,
+                      tempHide ? CustomIcons.dm_off : CustomIcons.dm_on,
+                      color: tempHide
+                          ? Colors.white54
+                          : Colors.white,
+                    ),
+                  ),
+                );
+              }),
               SizedBox(
                 width: btnWidth,
                 height: btnHeight,

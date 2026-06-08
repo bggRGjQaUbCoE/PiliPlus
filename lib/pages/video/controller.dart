@@ -43,6 +43,7 @@ import 'package:PiliPlus/pages/video/introduction/pgc/controller.dart';
 import 'package:PiliPlus/pages/video/introduction/ugc/controller.dart';
 import 'package:PiliPlus/pages/video/medialist/view.dart';
 import 'package:PiliPlus/pages/video/note/view.dart';
+import 'package:PiliPlus/pages/video/quiet_state.dart';
 import 'package:PiliPlus/pages/video/post_panel/view.dart';
 import 'package:PiliPlus/pages/video/send_danmaku/view.dart';
 import 'package:PiliPlus/pages/video/widgets/header_control.dart';
@@ -155,6 +156,37 @@ class VideoDetailController extends GetxController
       : isUgc
       ? plPlayerController.showVideoReply
       : plPlayerController.showBangumiReply;
+
+  final RxBool tempHideReply = false.obs;
+  final RxBool tempHideDanmaku = false.obs;
+
+  bool get effectiveShowReply => effectiveShowTemporaryContent(
+    globalShow: showReply,
+    temporaryHide: tempHideReply.value,
+  );
+
+  bool get effectiveShowDanmaku => effectiveShowTemporaryContent(
+    globalShow: plPlayerController.enableShowDanmaku.value,
+    temporaryHide: tempHideDanmaku.value,
+  );
+
+  void toggleTempHideReply() {
+    if (!showReply) return;
+    tempHideReply.toggle();
+  }
+
+  void toggleTempHideDanmaku() {
+    if (!plPlayerController.enableShowDanmaku.value) return;
+    tempHideDanmaku.toggle();
+    if (tempHideDanmaku.value) {
+      plPlayerController.danmakuController?.clear();
+    }
+  }
+
+  void resetTempQuietControls() {
+    tempHideReply.value = false;
+    tempHideDanmaku.value = false;
+  }
 
   bool get showRelatedVideo =>
       isFileSource ? false : plPlayerController.showRelatedVideo;
@@ -1300,6 +1332,7 @@ class VideoDetailController extends GetxController
 
     // danmaku
     savedDanmaku = null;
+    resetTempQuietControls();
 
     // subtitle
     subtitles.clear();

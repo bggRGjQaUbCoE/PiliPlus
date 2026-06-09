@@ -202,13 +202,9 @@ class _GeetestWebviewDialogState extends State<GeetestWebviewDialog> {
       );
     }
 
-    return AlertDialog(
-      title: const Text('验证码'),
-      contentPadding: const .symmetric(vertical: 16),
-      content: SizedBox(
-        width: 320,
-        height: 400,
-        child: InAppWebView(
+    return Stack(
+      children: [
+        InAppWebView(
           webViewEnvironment: webViewEnvironment,
           initialSettings: InAppWebViewSettings(
             clearCache: true,
@@ -239,6 +235,8 @@ class _GeetestWebviewDialogState extends State<GeetestWebviewDialog> {
             horizontalScrollBarEnabled: false,
             verticalScrollBarEnabled: false,
             overScrollMode: .NEVER,
+
+            pageZoom: Platform.isIOS ? 3 : 1,
           ),
           initialData: InAppWebViewInitialData(
             data:
@@ -280,13 +278,13 @@ class _GeetestWebviewDialogState extends State<GeetestWebviewDialog> {
             }
           },
         ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: Get.back,
-          child: Text(
-            '取消',
-            style: TextStyle(color: ColorScheme.of(context).outline),
+        Positioned(
+          left: 8,
+          top: 8,
+          child: IconButton(
+            icon: const Icon(Icons.close),
+            onPressed: Get.back,
+            tooltip: '关闭',
           ),
         ),
       ],

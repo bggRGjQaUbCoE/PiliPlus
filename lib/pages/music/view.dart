@@ -489,14 +489,14 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
                           spacing: 16,
                           children: [
                             if (item.achievement.isNotEmpty)
-                              ...item.achievement.map(
-                                (i) => PBadge(
-                                  text: i,
-                                  type: .secondary,
-                                  isStack: false,
-                                  fontSize: 11,
-                                ),
-                              ),
+                              for (var i in item.achievement)
+                                if (i.isNotEmpty)
+                                  PBadge(
+                                    text: i,
+                                    type: .secondary,
+                                    isStack: false,
+                                    fontSize: 11,
+                                  ),
                             if (item.mvCid != 0)
                               GestureDetector(
                                 onTap: () => PageUtils.toVideoPage(

@@ -71,15 +71,7 @@ class SimpleVideoTextureState extends State<SimpleVideoTexture> {
                 ? rect.width / _devicePixelRatio
                 : rect.height / _devicePixelRatio * widget.aspectRatio!,
             height: rect.height / _devicePixelRatio,
-            child: Stack(
-              children: [
-                if (rect.width <= 1.0 &&
-                    rect.height <= 1.0 &&
-                    widget.fill != Colors.transparent)
-                  Positioned.fill(child: ColoredBox(color: widget.fill)),
-                Texture(textureId: id, filterQuality: widget.filterQuality),
-              ],
-            ),
+            child: Texture(textureId: id, filterQuality: widget.filterQuality),
           );
         }
         return const SizedBox();

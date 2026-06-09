@@ -250,7 +250,7 @@ class _LiveHeaderControlState extends State<LiveHeaderControl>
                       child: const Row(
                         spacing: 8,
                         children: [
-                          Icon(Icons.info_outline, size: 16),
+                          Icon(Icons.info_outline, size: 17),
                           Text('播放信息', style: TextStyle(fontSize: 14)),
                         ],
                       ),
@@ -264,7 +264,7 @@ class _LiveHeaderControlState extends State<LiveHeaderControl>
                       child: Row(
                         spacing: 8,
                         children: [
-                          const Icon(Icons.volume_up, size: 16),
+                          const Icon(Icons.volume_up, size: 17),
                           Text(
                             '播放器音量: ${player.getProperty('volume').subLength(3)}%',
                             style: const TextStyle(fontSize: 14),

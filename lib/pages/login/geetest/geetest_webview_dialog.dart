@@ -77,6 +77,7 @@ class GeetestWebviewDialog extends StatelessWidget {
     final future = _getConfig(gt, challenge);
     return AlertDialog(
       title: const Text('验证码'),
+      contentPadding: const .symmetric(vertical: 16),
       content: SizedBox(
         width: 320,
         height: 400,

@@ -27,7 +27,6 @@ import 'package:PiliPlus/plugin/pl_player/utils/fullscreen.dart';
 import 'package:PiliPlus/services/service_locator.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/android/bindings.g.dart';
-import 'package:PiliPlus/utils/device_utils.dart';
 import 'package:PiliPlus/utils/extension/box_ext.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
@@ -1395,50 +1394,52 @@ class PlPlayerController with BlockConfigMixin {
     videoShot = await VideoHttp.videoshot(bvid: bvid, cid: cid!);
   }
 
-  void takeScreenshot() {
+  Future<void> takeScreenshot() async {
     SmartDialog.showToast('截图中');
-    videoPlayerController?.screenshot(format: .png).then((value) {
-      if (value != null) {
-        SmartDialog.showToast('点击弹窗保存截图');
-        showDialog(
-          context: Get.context!,
-          builder: (context) => GestureDetector(
-            onTap: () {
-              Get.back();
+    final image = await videoPlayerController?.screenshot();
+    if (image != null) {
+      SmartDialog.showToast('点击弹窗保存截图');
+      showDialog(
+        context: Get.context!,
+        builder: (context) => GestureDetector(
+          onTap: () async {
+            Get.back();
+            final bytes = await image.toByteData(format: .png);
+            if (bytes != null) {
               ImageUtils.saveByteImg(
-                bytes: value,
+                bytes: bytes.buffer.asUint8List(),
                 fileName: 'screenshot_${ImageUtils.time}',
               );
-            },
-            child: Align(
-              alignment: .centerRight,
-              child: Padding(
-                padding: const .only(right: 12),
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    maxWidth: min(DeviceUtils.size.width / 3, 350),
+            }
+          },
+          child: Align(
+            alignment: .centerRight,
+            child: Padding(
+              padding: const .only(right: 12),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth: min(MediaQuery.widthOf(context) / 3, 350),
+                ),
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    border: .all(
+                      width: 5,
+                      color: ThemeUtils.theme.colorScheme.surface,
+                    ),
                   ),
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      border: .all(
-                        width: 5,
-                        color: ThemeUtils.theme.colorScheme.surface,
-                      ),
-                    ),
-                    child: Padding(
-                      padding: const .all(5),
-                      child: Image.memory(value),
-                    ),
+                  child: Padding(
+                    padding: const .all(5),
+                    child: RawImage(image: image),
                   ),
                 ),
               ),
             ),
           ),
-        );
-      } else {
-        SmartDialog.showToast('截图失败');
-      }
-    });
+        ),
+      ).whenComplete(image.dispose);
+    } else {
+      SmartDialog.showToast('截图失败');
+    }
   }
 
   void onPopInvokedWithResult(bool didPop, Object? result) {

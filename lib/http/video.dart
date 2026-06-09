@@ -802,7 +802,7 @@ abstract final class VideoHttp {
       ..writeAll(
         list.map(
           (item) =>
-              '${item?['sid'] ?? 0}\n${_subtitleTimecode(item['from'])} --> ${_subtitleTimecode(item['to'])}\n${item['content'].trim()}',
+              '${_subtitleTimecode(item['from'])} --> ${_subtitleTimecode(item['to'])}\n${item['content'].trim()}',
         ),
         '\n\n',
       );

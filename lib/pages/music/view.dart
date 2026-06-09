@@ -452,35 +452,35 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
                         Wrap(
                           spacing: 16,
                           children: [
-                            if (!item.musicRank.isNullOrEmpty)
-                              PBadge(
-                                text: item.musicRank,
-                                type: .secondary,
-                                isStack: false,
-                                fontSize: 11,
-                              ),
-                            if (item.mvCid != null && item.mvCid != 0)
+                            if (item.achievement.isNotEmpty)
+                              for (var i in item.achievement)
+                                if (i.isNotEmpty)
+                                  PBadge(
+                                    text: i,
+                                    type: .secondary,
+                                    isStack: false,
+                                    fontSize: 11,
+                                  ),
+                            if (item.mvCid != 0)
                               GestureDetector(
                                 onTap: () => PageUtils.toVideoPage(
                                   bvid: item.mvBvid,
-                                  cid: item.mvCid!,
+                                  cid: item.mvCid,
                                   aid: item.mvAid,
                                 ),
                                 child: DecoratedBox(
                                   decoration: BoxDecoration(
-                                    borderRadius: const BorderRadius.all(
-                                      Radius.circular(4),
-                                    ),
+                                    borderRadius: const .all(.circular(4)),
                                     color: theme.colorScheme.secondaryContainer
                                         .withValues(alpha: 0.5),
                                   ),
                                   child: Padding(
-                                    padding: const EdgeInsets.symmetric(
+                                    padding: const .symmetric(
                                       vertical: 3,
                                       horizontal: 4,
                                     ),
                                     child: Row(
-                                      mainAxisSize: MainAxisSize.min,
+                                      mainAxisSize: .min,
                                       children: [
                                         Icon(
                                           Icons.play_circle_outline,

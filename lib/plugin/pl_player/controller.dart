@@ -399,11 +399,6 @@ class PlPlayerController with BlockConfigMixin {
     return _playCallBack?.call();
   }
 
-  // try to get PlayerStatus
-  static PlayerStatus? getPlayerStatusIfExists() {
-    return _instance?.playerStatus.value;
-  }
-
   static Future<void> pauseIfExists({
     bool notify = true,
     bool isInterrupt = false,
@@ -418,17 +413,6 @@ class PlPlayerController with BlockConfigMixin {
     bool isSeek = true,
   }) async {
     await _instance?.seekTo(position, isSeek: isSeek);
-  }
-
-  static double? getVolumeIfExists() {
-    return _instance?.volume.value;
-  }
-
-  static Future<void>? setVolumeIfExists(
-    double volumeNew, {
-    bool showIndicator = true,
-  }) {
-    return _instance?.setVolume(volumeNew, showIndicator: showIndicator);
   }
 
   Box video = GStorage.video;

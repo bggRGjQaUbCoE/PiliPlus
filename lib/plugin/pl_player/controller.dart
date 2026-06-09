@@ -789,9 +789,6 @@ class PlPlayerController with BlockConfigMixin {
 
     final player = await Player.create(
       configuration: PlayerConfiguration(
-        bufferSize: Pref.expandBuffer
-            ? (isLive ? 64 * 1024 * 1024 : 32 * 1024 * 1024)
-            : (isLive ? 16 * 1024 * 1024 : 4 * 1024 * 1024),
         logLevel: kDebugMode ? .warn : .error,
         options: opt,
       ),
@@ -808,11 +805,7 @@ class PlPlayerController with BlockConfigMixin {
       ),
     );
 
-    player.setMediaHeader(
-      userAgent: BrowserUa.pc,
-      referer: HttpString.baseUrl,
-    );
-    // await player.setAudioTrack(.auto());
+    player.setMediaHeader(userAgent: BrowserUa.pc, referer: HttpString.baseUrl);
 
     _startListeners(player);
 
@@ -850,6 +843,24 @@ class PlPlayerController with BlockConfigMixin {
     }
 
     final Map<String, String> extras = {};
+
+    if (dataSource is FileSource) {
+      extras['cache'] = 'no';
+    } else {
+      extras['cache'] = 'yes';
+      if (isLive) {
+        extras['demuxer-max-bytes'] = (Pref.bufferSize * 0x200000)
+            .toStringAsFixed(0);
+        extras['demuxer-max-back-bytes'] = '0';
+      } else {
+        final bufSec = Pref.bufferSec * _playbackSpeed.value;
+        final bufSiz = (Pref.bufferSize * 0x100000).toStringAsFixed(0);
+        extras['cache-secs'] = bufSec.toStringAsFixed(3);
+        extras['demuxer-hysteresis-secs'] = (bufSec / 1.5).toStringAsFixed(3);
+        extras['demuxer-max-bytes'] = bufSiz;
+        extras['demuxer-max-back-bytes'] = bufSiz;
+      }
+    }
 
     String video = dataSource.videoSource;
     if (dataSource.audioSource case final audio? when (audio.isNotEmpty)) {
@@ -900,11 +911,8 @@ class PlPlayerController with BlockConfigMixin {
     if (dataSource is FileSource) {
       return null;
     }
-    if (_videoPlayerController?.current.isNotEmpty ?? false) {
-      return _videoPlayerController!.open(
-        _videoPlayerController!.current.last.copyWith(start: position),
-        play: true,
-      );
+    if (_videoPlayerController case final ctr? when (ctr.current.isNotEmpty)) {
+      return ctr.open(ctr.current.last.copyWith(start: position), play: true);
     }
     return null;
   }

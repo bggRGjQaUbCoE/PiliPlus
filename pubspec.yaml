@@ -184,7 +184,6 @@ dependency_overrides:
       url: https://github.com/bggRGjQaUbCoE/flutter_inappwebview.git
       path: flutter_inappwebview_windows
       ref: v6.1.5
-  flutter_volume_controller: ^2.0.0
   media_kit:
     git:
       url: https://github.com/My-Responsitories/media-kit.git

@@ -7,6 +7,7 @@ import 'package:PiliPlus/models/common/sponsor_block/segment_type.dart';
 import 'package:PiliPlus/models/common/sponsor_block/skip_type.dart';
 import 'package:PiliPlus/models_new/sponsor_block/user_info.dart';
 import 'package:PiliPlus/pages/setting/slide_color_picker.dart';
+import 'package:PiliPlus/utils/filtering_text.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
@@ -82,15 +83,11 @@ class _SponsorBlockPageState extends State<SponsorBlockPage> {
             builder: (_) => AlertDialog(
               title: Text('最短片段时长', style: titleStyle),
               content: TextFormField(
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
+                keyboardType: const .numberWithOptions(decimal: true),
                 controller: _textController,
                 autofocus: true,
                 decoration: const InputDecoration(suffixText: 's'),
-                inputFormatters: [
-                  FilteringTextInputFormatter.allow(RegExp(r'[\d\.]+')),
-                ],
+                inputFormatters: FilteringText.decimal,
               ),
               actions: [
                 TextButton(

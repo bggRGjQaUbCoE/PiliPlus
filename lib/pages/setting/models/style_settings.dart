@@ -442,9 +442,7 @@ void _showUiScaleDialog(
             ),
             TextFormField(
               controller: textController,
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
-              ),
+              keyboardType: const .numberWithOptions(decimal: true),
               inputFormatters: [
                 LengthLimitingTextInputFormatter(4),
                 FilteringTextInputFormatter.allow(RegExp(r'[\d.]+')),

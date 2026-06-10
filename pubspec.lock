@@ -501,10 +501,10 @@ packages:
     description:
       path: "."
       ref: dev
-      resolved-ref: "1b1197493d734c45e178c15fe665c3dcab284cb8"
+      resolved-ref: "8a987e491225341839bafb3d3171c4b2d797ef73"
       url: "https://github.com/bggRGjQaUbCoE/flutter_file_picker.git"
     source: git
-    version: "12.0.0-beta.5"
+    version: "12.0.0-beta.6"
   file_selector_linux:
     dependency: transitive
     description:
@@ -954,7 +954,7 @@ packages:
     description:
       path: "pkgs/jnigen"
       ref: HEAD
-      resolved-ref: "5e2b3d1171cabe90bae969cd098c85182c1751b3"
+      resolved-ref: "496f2f0bbe583307a7d5ce4c33e81f0797cb65fe"
       url: "https://github.com/dart-lang/native.git"
     source: git
     version: "0.17.0-wip"
@@ -1471,43 +1471,42 @@ packages:
     dependency: "direct main"
     description:
       name: screen_retriever
-      sha256: "570dbc8e4f70bac451e0efc9c9bb19fa2d6799a11e6ef04f946d7886d2e23d0c"
+      sha256: "42cc3b402a0f67d2455a0d067553d0f13453f6a008d98eababf8b63958d506bd"
       url: "https://pub.dev"
     source: hosted
-    version: "0.2.0"
+    version: "0.2.1"
   screen_retriever_linux:
     dependency: transitive
     description:
       name: screen_retriever_linux
-      sha256: f7f8120c92ef0784e58491ab664d01efda79a922b025ff286e29aa123ea3dd18
+      sha256: "2a476f1a5538065bc5badf376cfdc83d6ecf07d77eb2391b9c2bff5a76970048"
       url: "https://pub.dev"
     source: hosted
-    version: "0.2.0"
+    version: "0.2.1"
   screen_retriever_macos:
-    dependency: "direct overridden"
+    dependency: transitive
     description:
-      path: "packages/screen_retriever_macos"
-      ref: dev
-      resolved-ref: "9c64c6c0d81ac5beadfc6ccab6adbcfd1cd9dc5a"
-      url: "https://github.com/bggRGjQaUbCoE/screen_retriever.git"
-    source: git
-    version: "0.2.0"
+      name: screen_retriever_macos
+      sha256: b5abb900fcb86614ff10b738b34e37b9e1d03b0447280668e2bc8a98bdc7bd59
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.2.1"
   screen_retriever_platform_interface:
     dependency: transitive
     description:
       name: screen_retriever_platform_interface
-      sha256: ee197f4581ff0d5608587819af40490748e1e39e648d7680ecf95c05197240c0
+      sha256: "3af22d926bedf20c2caa308eea376776451a3af125919ce072e56525fded8901"
       url: "https://pub.dev"
     source: hosted
-    version: "0.2.0"
+    version: "0.2.1"
   screen_retriever_windows:
     dependency: transitive
     description:
       name: screen_retriever_windows
-      sha256: "449ee257f03ca98a57288ee526a301a430a344a161f9202b4fcc38576716fe13"
+      sha256: c44b38a4c4bab34af259180a70a4eee1e29384e7b82e627c9faa68afcdab2e73
       url: "https://pub.dev"
     source: hosted
-    version: "0.2.0"
+    version: "0.2.1"
   share_plus:
     dependency: "direct main"
     description:
@@ -1536,10 +1535,10 @@ packages:
     dependency: transitive
     description:
       name: shared_preferences_android
-      sha256: a2c49fc1fed7140cadd892d765bd47edbe4ac0b9c7e7e3c493dcb58126f99cf0
+      sha256: "93ae5884a9df5d3bb696825bceb3a17590754548b5d740eba51500afc8d088f5"
       url: "https://pub.dev"
     source: hosted
-    version: "2.4.25"
+    version: "2.4.26"
   shared_preferences_foundation:
     dependency: transitive
     description:
@@ -1685,12 +1684,11 @@ packages:
   tray_manager:
     dependency: "direct main"
     description:
-      path: "packages/tray_manager"
-      ref: dev
-      resolved-ref: "76e924d9dc8e5dee67f5f2d04ce0cbc72a53c081"
-      url: "https://github.com/bggRGjQaUbCoE/tray_manager.git"
-    source: git
-    version: "0.5.2"
+      name: tray_manager
+      sha256: "1a659b08baa6e9b91ef8ce16eda37740de398be1c4cf322b8a1ddfef25c68c5a"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.5.3"
   typed_data:
     dependency: transitive
     description:

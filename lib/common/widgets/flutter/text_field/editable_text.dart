@@ -2627,7 +2627,7 @@ class EditableTextState extends State<EditableText>
               composing: TextRange.empty,
             ),
     );
-    final newValue = _value.copyWith(
+    final newValue = TextEditingValue(
       text: widget.controller.plainText,
       selection: widget.controller.newSelection,
       composing: TextRange.empty,
@@ -3569,7 +3569,7 @@ class EditableTextState extends State<EditableText>
       remoteValue = delta.apply(remoteValue);
     }
 
-    final newValue = _value.copyWith(
+    final newValue = TextEditingValue(
       text: widget.controller.plainText,
       selection: widget.controller.newSelection,
       composing: textEditingDeltas.last.composing,
@@ -5552,7 +5552,7 @@ class EditableTextState extends State<EditableText>
             ),
     );
 
-    final newValue = oldValue.copyWith(
+    final newValue = TextEditingValue(
       text: widget.controller.plainText,
       selection: widget.controller.newSelection,
       composing: TextRange.empty,

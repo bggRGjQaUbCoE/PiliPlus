@@ -171,7 +171,6 @@ class RichTextItem {
 
     if (insertionOffset == 0 && range.start == 0) {
       final insertedLength = delta.textInserted.length;
-      controller.newSelection = TextSelection.collapsed(offset: insertedLength);
       if (!isRich && delta.isText) {
         text = delta.textInserted + text;
         range = TextRange(start: range.start, end: range.start + text.length);
@@ -203,7 +202,6 @@ class RichTextItem {
 
     if (range.end == insertionOffset) {
       final end = insertionOffset + delta.textInserted.length;
-      controller.newSelection = TextSelection.collapsed(offset: end);
       if ((isText && delta.isText) || (isComposing && delta.isComposing)) {
         text += delta.textInserted;
         range = TextRange(start: range.start, end: end);
@@ -227,7 +225,6 @@ class RichTextItem {
       final leadingText = text.substring(0, insertionOffset - range.start);
       final trailingString = text.substring(leadingText.length);
       final insertEnd = insertionOffset + delta.textInserted.length;
-      controller.newSelection = TextSelection.collapsed(offset: insertEnd);
       if (delta.isText) {
         text = leadingText + delta.textInserted + trailingString;
         range = TextRange(
@@ -375,9 +372,6 @@ class RichTextItem {
           );
           final end = range.start + text.length;
           range = TextRange(start: range.start, end: end);
-          controller.newSelection = TextSelection.collapsed(
-            offset: replacedRange.start + delta.replacementText.length,
-          );
           return null;
         } else {
           final leadingText = text.substring(
@@ -386,7 +380,6 @@ class RichTextItem {
           );
           final trailString = text.substring(replacedRange.end - range.start);
           final insertEnd = replacedRange.start + delta.replacementText.length;
-          controller.newSelection = TextSelection.collapsed(offset: insertEnd);
           final config = delta.config;
           final insertedItem = RichTextItem(
             type: config.type,
@@ -424,7 +417,6 @@ class RichTextItem {
       id = config.id;
       final end = range.start + text.length;
       range = TextRange(start: range.start, end: end);
-      controller.newSelection = TextSelection.collapsed(offset: end);
       return null;
     }
 
@@ -438,7 +430,6 @@ class RichTextItem {
         id = config.id;
         final end = range.start + text.length;
         range = TextRange(start: range.start, end: end);
-        controller.newSelection = TextSelection.collapsed(offset: end);
         return (remove: false, toAdd: null);
       }
       return (remove: true, toAdd: null);
@@ -454,7 +445,6 @@ class RichTextItem {
           );
           final end = range.start + text.length;
           range = TextRange(start: range.start, end: end);
-          controller.newSelection = TextSelection.collapsed(offset: end);
           return null;
         } else {
           text = text.replaceRange(
@@ -473,7 +463,6 @@ class RichTextItem {
             id: config.id,
             range: TextRange(start: replacedRange.start, end: end),
           );
-          controller.newSelection = TextSelection.collapsed(offset: end);
           return (remove: false, toAdd: [insertedItem]);
         }
       }
@@ -484,7 +473,6 @@ class RichTextItem {
       id = config.id;
       final end = range.start + text.length;
       range = TextRange(start: range.start, end: end);
-      controller.newSelection = TextSelection.collapsed(offset: end);
       return null;
     }
 
@@ -507,7 +495,6 @@ class RichTextItem {
           );
           final end = range.start + text.length;
           range = TextRange(start: range.start, end: end);
-          controller.newSelection = TextSelection.collapsed(offset: end);
           return null;
         } else {
           final end = range.start + delta.replacementText.length;
@@ -520,7 +507,6 @@ class RichTextItem {
             id: config.id,
             range: TextRange(start: range.start, end: end),
           );
-          controller.newSelection = TextSelection.collapsed(offset: end);
           text = text.substring(replacedRange.end - range.start);
           range = TextRange(start: end, end: end + text.length);
           return (remove: true, toAdd: [insertedItem]);
@@ -533,7 +519,6 @@ class RichTextItem {
       id = config.id;
       final end = range.start + text.length;
       range = TextRange(start: range.start, end: end);
-      controller.newSelection = TextSelection.collapsed(offset: end);
       return null;
     }
 
@@ -608,6 +593,7 @@ class RichTextEditingController extends TextEditingController {
           onMention?.call();
         }
 
+        newSelection = delta.selection;
         if (items.isEmpty) {
           final config = delta.config;
           items.add(
@@ -618,9 +604,6 @@ class RichTextEditingController extends TextEditingController {
               emote: config.emote,
               id: config.id,
             ),
-          );
-          newSelection = TextSelection.collapsed(
-            offset: delta.textInserted.length,
           );
           return;
         }
@@ -647,6 +630,7 @@ class RichTextEditingController extends TextEditingController {
         }
 
       case TextEditingDeltaReplacement e:
+        newSelection = delta.selection;
         for (int index = 0; index < items.length; index++) {
           final item = items[index];
           ({bool remove, List<RichTextItem>? toAdd})? res = item.onReplace(

@@ -812,6 +812,31 @@ class PlPlayerController with BlockConfigMixin {
     return player;
   }
 
+  Map<String, String>? _buffer;
+  Map<String, String> get buffer => _buffer ??= _initBuffer();
+  Map<String, String>? _liveBuffer;
+  Map<String, String> get liveBuffer => _liveBuffer ??= _initLiveBuffer();
+
+  Map<String, String> _initBuffer() {
+    final bufSec = Pref.bufferSec * _playbackSpeed.value;
+    final bufSiz = (Pref.bufferSize * 0x100000).toStringAsFixed(0);
+    return {
+      'cache': 'yes',
+      'cache-secs': bufSec.toStringAsFixed(3),
+      'demuxer-hysteresis-secs': (bufSec / 1.5).toStringAsFixed(3),
+      'demuxer-max-bytes': bufSiz,
+      'demuxer-max-back-bytes': bufSiz,
+    };
+  }
+
+  Map<String, String> _initLiveBuffer() {
+    return {
+      'cache': 'yes',
+      'demuxer-max-bytes': (Pref.bufferSize * 0x200000).toStringAsFixed(0),
+      'demuxer-max-back-bytes': '0',
+    };
+  }
+
   // 配置播放器
   Future<void> _createVideoController(
     DataSource dataSource,
@@ -847,18 +872,10 @@ class PlPlayerController with BlockConfigMixin {
     if (dataSource is FileSource) {
       extras['cache'] = 'no';
     } else {
-      extras['cache'] = 'yes';
       if (isLive) {
-        extras['demuxer-max-bytes'] = (Pref.bufferSize * 0x200000)
-            .toStringAsFixed(0);
-        extras['demuxer-max-back-bytes'] = '0';
+        extras.addAll(liveBuffer);
       } else {
-        final bufSec = Pref.bufferSec * _playbackSpeed.value;
-        final bufSiz = (Pref.bufferSize * 0x100000).toStringAsFixed(0);
-        extras['cache-secs'] = bufSec.toStringAsFixed(3);
-        extras['demuxer-hysteresis-secs'] = (bufSec / 1.5).toStringAsFixed(3);
-        extras['demuxer-max-bytes'] = bufSiz;
-        extras['demuxer-max-back-bytes'] = bufSiz;
+        extras.addAll(buffer);
       }
     }
 

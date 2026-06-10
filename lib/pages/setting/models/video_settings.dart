@@ -10,12 +10,14 @@ import 'package:PiliPlus/pages/setting/widgets/ordered_multi_select_dialog.dart'
 import 'package:PiliPlus/pages/setting/widgets/select_dialog.dart';
 import 'package:PiliPlus/plugin/pl_player/models/audio_output_type.dart';
 import 'package:PiliPlus/plugin/pl_player/models/hwdec_type.dart';
+import 'package:PiliPlus/utils/filtering_text.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/video_utils.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
@@ -102,6 +104,20 @@ List<SettingsModel> get videoSettings => [
       getSubtitle: () => '当前：${Pref.audioOutput}',
       onTap: _showAudioOutputDialog,
     ),
+  NormalModel(
+    title: '缓冲大小',
+    leading: const Icon(Icons.storage_outlined),
+    getSubtitle: () =>
+        '当前：${Pref.bufferSize}MB。同时为前向和后向缓冲区大小。对于直播流，无后向缓冲大小，全部转给前向（此选项即mpv的--demuxer-max-bytes，--demuxer-max-back-bytes）',
+    onTap: _showBufferSizeDialog,
+  ),
+  NormalModel(
+    title: '缓冲时长',
+    leading: const Icon(Icons.av_timer),
+    getSubtitle: () =>
+        '当前：${Pref.bufferSec}s。实际缓冲为二者最小值。对于直播流，该选项无效（此选项即mpv的--cache-secs）',
+    onTap: _showBufferSecDialog,
+  ),
   NormalModel(
     title: '视频同步',
     leading: const Icon(Icons.view_timeline_outlined),
@@ -399,3 +415,70 @@ Future<void> _showHwDecDialog(
     setState();
   }
 }
+
+void _showDecimalDialog(
+  BuildContext context,
+  VoidCallback setState, {
+  required String key,
+  required double defVal,
+  required Widget title,
+  required InputDecoration? decoration,
+}) {
+  String value = (GStorage.setting.get(key) ?? defVal).toString();
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: title,
+      content: TextFormField(
+        autofocus: true,
+        initialValue: value,
+        keyboardType: const .numberWithOptions(decimal: true),
+        onChanged: (val) => value = val,
+        inputFormatters: FilteringText.decimal,
+        decoration: decoration,
+      ),
+      actions: [
+        TextButton(
+          onPressed: Get.back,
+          child: Text(
+            '取消',
+            style: TextStyle(color: ColorScheme.of(context).outline),
+          ),
+        ),
+        TextButton(
+          onPressed: () async {
+            try {
+              final val = double.parse(value);
+              Get.back();
+              await GStorage.setting.put(key, val);
+              setState();
+            } catch (e) {
+              SmartDialog.showToast(e.toString());
+            }
+          },
+          child: const Text('确定'),
+        ),
+      ],
+    ),
+  );
+}
+
+void _showBufferSizeDialog(BuildContext context, VoidCallback setState) =>
+    _showDecimalDialog(
+      context,
+      setState,
+      key: SettingBoxKey.bufferSize,
+      defVal: Pref.bufferSize,
+      title: const Text('缓冲大小'),
+      decoration: const InputDecoration(suffixText: 'MB'),
+    );
+
+void _showBufferSecDialog(BuildContext context, VoidCallback setState) =>
+    _showDecimalDialog(
+      context,
+      setState,
+      key: SettingBoxKey.bufferSec,
+      defVal: Pref.bufferSec,
+      title: const Text('缓冲时长'),
+      decoration: const InputDecoration(suffixText: 's'),
+    );

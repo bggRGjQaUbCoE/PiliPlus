@@ -9,6 +9,8 @@ abstract final class SettingBoxKey {
       secondDecode = 'secondDecode',
       defaultPicQa = 'defaultPicQa',
       audioOutput = 'audioOutput',
+      bufferSize = 'bufferSize',
+      bufferSec = 'bufferSec',
       hardwareDecoding = 'hardwareDecoding',
       videoSync = 'videoSync',
       enableOnlineTotal = 'enableOnlineTotal',

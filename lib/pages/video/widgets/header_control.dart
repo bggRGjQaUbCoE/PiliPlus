@@ -811,12 +811,6 @@ class HeaderControlState extends State<HeaderControl>
                     ),
                     ListTile(
                       dense: true,
-                      title: const Text("pitch"),
-                      subtitle: Text(state.pitch.toString()),
-                      onTap: () => Utils.copyText('pitch\n${state.pitch}'),
-                    ),
-                    ListTile(
-                      dense: true,
                       title: const Text("rate"),
                       subtitle: Text(state.rate.toString()),
                       onTap: () => Utils.copyText('rate\n${state.rate}'),

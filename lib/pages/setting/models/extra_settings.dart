@@ -16,6 +16,7 @@ import 'package:PiliPlus/pages/setting/widgets/slider_dialog.dart';
 import 'package:PiliPlus/services/download/download_service.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
+import 'package:PiliPlus/utils/filtering_text.dart';
 import 'package:PiliPlus/utils/path_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
@@ -24,7 +25,6 @@ import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart' hide RefreshIndicator;
-import 'package:flutter/services.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
@@ -229,9 +229,7 @@ void _showTouchSlopDialog(BuildContext context, VoidCallback setState) {
         initialValue: initialValue,
         keyboardType: const .numberWithOptions(decimal: true),
         onChanged: (value) => initialValue = value,
-        inputFormatters: [
-          FilteringTextInputFormatter.allow(RegExp(r'[\d\.]+')),
-        ],
+        inputFormatters: FilteringText.decimal,
       ),
       actions: [
         TextButton(
@@ -417,9 +415,7 @@ void _showCacheDialog(BuildContext context, VoidCallback setState) {
         autofocus: true,
         onChanged: (value) => valueStr = value,
         keyboardType: TextInputType.number,
-        inputFormatters: [
-          FilteringTextInputFormatter.allow(RegExp(r'[\d\.]+')),
-        ],
+        inputFormatters: FilteringText.decimal,
         decoration: const InputDecoration(suffixText: 'MB'),
       ),
       actions: [

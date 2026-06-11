@@ -1,6 +1,10 @@
 import 'dart:io' show Platform;
+import 'dart:math' as math;
 
+import 'package:PiliPlus/common/style.dart';
+import 'package:PiliPlus/common/widgets/flutter/draggable_scrollable_sheet.dart';
 import 'package:PiliPlus/common/widgets/marquee.dart';
+import 'package:PiliPlus/models/common/video/live_quality.dart';
 import 'package:PiliPlus/pages/live_room/controller.dart';
 import 'package:PiliPlus/pages/setting/models/play_settings.dart'
     show showPlayerVolumeDialog;
@@ -10,6 +14,8 @@ import 'package:PiliPlus/plugin/pl_player/widgets/common_btn.dart';
 import 'package:PiliPlus/services/shutdown_timer_service.dart'
     show shutdownTimerService;
 import 'package:PiliPlus/utils/android/bindings.g.dart';
+import 'package:PiliPlus/utils/extension/context_ext.dart';
+import 'package:PiliPlus/utils/extension/size_ext.dart';
 import 'package:PiliPlus/utils/extension/string_ext.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:flutter/material.dart';
@@ -237,28 +243,39 @@ class _LiveHeaderControlState extends State<LiveHeaderControl>
             ),
           ),
           if (plPlayerController.videoPlayerController case final player?)
-            if (PlatformUtils.isMobile)
-              SizedBox.square(
-                dimension: 30,
-                child: PopupMenuButton(
-                  iconSize: 18,
-                  padding: .zero,
-                  iconColor: Colors.white,
-                  itemBuilder: (context) => [
-                    PopupMenuItem(
-                      height: 35,
-                      child: const Row(
-                        spacing: 8,
-                        children: [
-                          Icon(Icons.info_outline, size: 17),
-                          Text('播放信息', style: TextStyle(fontSize: 14)),
-                        ],
-                      ),
-                      onTap: () => HeaderControlState.showPlayerInfo(
-                        context,
-                        player: player,
-                      ),
+            SizedBox.square(
+              dimension: 30,
+              child: PopupMenuButton(
+                iconSize: 18,
+                padding: .zero,
+                iconColor: Colors.white,
+                itemBuilder: (context) => [
+                  PopupMenuItem(
+                    height: 35,
+                    onTap: _showLiveStreamDialog,
+                    child: const Row(
+                      spacing: 8,
+                      children: [
+                        Icon(Icons.alt_route, size: 17),
+                        Text('切换路线', style: TextStyle(fontSize: 14)),
+                      ],
                     ),
+                  ),
+                  PopupMenuItem(
+                    height: 35,
+                    child: const Row(
+                      spacing: 8,
+                      children: [
+                        Icon(Icons.info_outline, size: 17),
+                        Text('播放信息', style: TextStyle(fontSize: 14)),
+                      ],
+                    ),
+                    onTap: () => HeaderControlState.showPlayerInfo(
+                      context,
+                      player: player,
+                    ),
+                  ),
+                  if (PlatformUtils.isMobile)
                     PopupMenuItem(
                       height: 35,
                       child: Row(
@@ -277,23 +294,177 @@ class _LiveHeaderControlState extends State<LiveHeaderControl>
                         onChanged: player.setVolume,
                       ),
                     ),
-                  ],
-                ),
-              )
-            else
-              ComBtn(
-                height: 30,
-                tooltip: '播放信息',
-                onTap: () =>
-                    HeaderControlState.showPlayerInfo(context, player: player),
-                icon: const Icon(
-                  size: 18,
-                  Icons.info_outline,
-                  color: Colors.white,
-                ),
+                ],
               ),
+            ),
         ],
       ),
     );
   }
+
+  void _showLiveStreamDialog() {
+    final controller = widget.liveController;
+    showModalBottomSheet(
+      context: context,
+      useSafeArea: true,
+      isScrollControlled: true,
+      constraints: BoxConstraints(
+        maxWidth: math.min(640, context.mediaQueryShortestSide),
+      ),
+      builder: (context) {
+        final maxChildSize =
+            PlatformUtils.isMobile && !context.mediaQuerySize.isPortrait
+            ? 1.0
+            : 0.7;
+        return DynDraggableScrollableSheet(
+          minChildSize: 0,
+          maxChildSize: maxChildSize,
+          snap: true,
+          expand: false,
+          snapSizes: [maxChildSize],
+          initialChildSize: maxChildSize,
+          builder: (context, scrollController) {
+            final theme = Theme.of(context);
+            final secondary = theme.colorScheme.secondary;
+            final onSurfaceVariant = theme.colorScheme.onSurfaceVariant;
+            final currStyle = TextStyle(fontSize: 14, color: secondary);
+            return Theme(
+              data: theme.copyWith(dividerColor: Colors.transparent),
+              child: Column(
+                children: [
+                  InkWell(
+                    onTap: Get.back,
+                    borderRadius: Style.bottomSheetRadius,
+                    child: SizedBox(
+                      height: 35,
+                      child: Center(
+                        child: Container(
+                          width: 32,
+                          height: 3,
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.outline,
+                            borderRadius: const .all(.circular(1.5)),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: ListView(
+                      controller: scrollController,
+                      padding: .only(
+                        bottom: MediaQuery.viewPaddingOf(context).bottom + 100,
+                      ),
+                      children: controller.stream.indexed.map((stream) {
+                        final isCurrStream =
+                            stream.$1 == controller.streamIndex;
+                        final streamColor = isCurrStream
+                            ? secondary
+                            : onSurfaceVariant;
+                        return _ExpansionTile(
+                          initiallyExpanded: isCurrStream,
+                          iconColor: streamColor,
+                          collapsedIconColor: streamColor,
+                          title: Text(
+                            stream.$2.protocolName ?? stream.$1.toString(),
+                            style: isCurrStream
+                                ? currStyle
+                                : const TextStyle(fontSize: 14),
+                          ),
+                          children: stream.$2.format.indexed.map((format) {
+                            final isCurrFormat =
+                                isCurrStream &&
+                                format.$1 == controller.formatIndex;
+                            final formatColor = isCurrFormat
+                                ? secondary
+                                : onSurfaceVariant;
+                            return _ExpansionTile(
+                              initiallyExpanded: isCurrFormat,
+                              iconColor: formatColor,
+                              collapsedIconColor: formatColor,
+                              title: Text(
+                                format.$2.formatName ?? format.$1.toString(),
+                                style: isCurrFormat
+                                    ? currStyle
+                                    : const TextStyle(fontSize: 14),
+                              ),
+                              children: format.$2.codec.indexed.map((codec) {
+                                final e = codec.$2;
+                                final isCurrCodec =
+                                    isCurrFormat &&
+                                    codec.$1 == controller.codecIndex;
+                                final codecColor = isCurrCodec
+                                    ? secondary
+                                    : onSurfaceVariant;
+                                return _ExpansionTile(
+                                  initiallyExpanded: isCurrCodec,
+                                  iconColor: codecColor,
+                                  collapsedIconColor: codecColor,
+                                  title: Text(
+                                    '${e.codecName ?? codec.$1.toString()} (${LiveQuality.fromCode(e.currentQn)?.desc ?? e.currentQn})',
+                                    style: isCurrCodec
+                                        ? currStyle
+                                        : const TextStyle(fontSize: 14),
+                                  ),
+                                  children: e.urlInfo.indexed.map((url) {
+                                    final isCurrUrl =
+                                        (isCurrCodec &&
+                                        url.$1 == controller.liveUrlIndex);
+                                    return ListTile(
+                                      dense: true,
+                                      title: Text(
+                                        '${url.$2.host}${e.baseUrl}...',
+                                        style: isCurrUrl
+                                            ? const TextStyle(fontSize: 14)
+                                            : TextStyle(
+                                                fontSize: 14,
+                                                color: onSurfaceVariant,
+                                              ),
+                                      ),
+                                      selected: isCurrUrl,
+                                      onTap: isCurrUrl
+                                          ? null
+                                          : () {
+                                              Get.back();
+                                              controller.initLiveUrl(
+                                                streamIndex: stream.$1,
+                                                formatIndex: format.$1,
+                                                codecIndex: codec.$1,
+                                                liveUrlIndex: url.$1,
+                                              );
+                                            },
+                                    );
+                                  }).toList(),
+                                );
+                              }).toList(),
+                            );
+                          }).toList(),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+}
+
+class _ExpansionTile extends ExpansionTile {
+  const _ExpansionTile({
+    required super.title,
+    // ignore: unused_element_parameter
+    super.dense = true,
+    // ignore: unused_element_parameter
+    super.controlAffinity = .leading,
+    // ignore: unused_element_parameter
+    super.childrenPadding = const .only(left: 20),
+    super.initiallyExpanded,
+    super.iconColor,
+    super.collapsedIconColor,
+    super.children,
+  });
 }

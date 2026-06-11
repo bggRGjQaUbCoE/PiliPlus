@@ -1243,7 +1243,6 @@ class _CupertinoRichTextFieldState extends State<CupertinoRichTextField>
   @override
   void didUpdateWidget(CupertinoRichTextField oldWidget) {
     super.didUpdateWidget(oldWidget);
-
     if (widget.focusNode != oldWidget.focusNode) {
       (oldWidget.focusNode ?? _focusNode)?.removeListener(_handleFocusChanged);
       (widget.focusNode ?? _focusNode)?.addListener(_handleFocusChanged);

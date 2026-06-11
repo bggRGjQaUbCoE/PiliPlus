@@ -49,7 +49,6 @@ import 'package:flutter/material.dart'
         TextSelectionGestureDetectorBuilder,
         TextSelectionOverlay,
         TextSelectionGestureDetectorBuilderDelegate;
-import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 
 class _TextFieldSelectionGestureDetectorBuilder
@@ -1004,9 +1003,7 @@ class RichTextField extends StatefulWidget {
           defaultValue: null,
         ),
       )
-      ..add(
-        DiagnosticsProperty<bool>('enabled', enabled, defaultValue: null),
-      )
+      ..add(DiagnosticsProperty<bool>('enabled', enabled, defaultValue: null))
       ..add(
         DiagnosticsProperty<InputDecoration>(
           'decoration',
@@ -1021,9 +1018,7 @@ class RichTextField extends StatefulWidget {
           defaultValue: TextInputType.text,
         ),
       )
-      ..add(
-        DiagnosticsProperty<TextStyle>('style', style, defaultValue: null),
-      )
+      ..add(DiagnosticsProperty<TextStyle>('style', style, defaultValue: null))
       ..add(
         DiagnosticsProperty<bool>('autofocus', autofocus, defaultValue: false),
       )
@@ -1075,9 +1070,7 @@ class RichTextField extends StatefulWidget {
       )
       ..add(IntProperty('maxLines', maxLines, defaultValue: 1))
       ..add(IntProperty('minLines', minLines, defaultValue: null))
-      ..add(
-        DiagnosticsProperty<bool>('expands', expands, defaultValue: false),
-      )
+      ..add(DiagnosticsProperty<bool>('expands', expands, defaultValue: false))
       ..add(IntProperty('maxLength', maxLength, defaultValue: null))
       ..add(
         EnumProperty<MaxLengthEnforcement>(
@@ -1121,12 +1114,8 @@ class RichTextField extends StatefulWidget {
           defaultValue: null,
         ),
       )
-      ..add(
-        DoubleProperty('cursorWidth', cursorWidth, defaultValue: 2.0),
-      )
-      ..add(
-        DoubleProperty('cursorHeight', cursorHeight, defaultValue: null),
-      )
+      ..add(DoubleProperty('cursorWidth', cursorWidth, defaultValue: 2.0))
+      ..add(DoubleProperty('cursorHeight', cursorHeight, defaultValue: null))
       ..add(
         DiagnosticsProperty<Radius>(
           'cursorRadius',
@@ -1141,9 +1130,7 @@ class RichTextField extends StatefulWidget {
           defaultValue: null,
         ),
       )
-      ..add(
-        ColorProperty('cursorColor', cursorColor, defaultValue: null),
-      )
+      ..add(ColorProperty('cursorColor', cursorColor, defaultValue: null))
       ..add(
         ColorProperty('cursorErrorColor', cursorErrorColor, defaultValue: null),
       )
@@ -1428,7 +1415,6 @@ class RichTextFieldState extends State<RichTextField>
   @override
   void didUpdateWidget(RichTextField oldWidget) {
     super.didUpdateWidget(oldWidget);
-
     if (widget.focusNode != oldWidget.focusNode) {
       (oldWidget.focusNode ?? _focusNode)?.removeListener(_handleFocusChanged);
       (widget.focusNode ?? _focusNode)?.addListener(_handleFocusChanged);
@@ -2041,7 +2027,7 @@ TextStyle _m2CounterErrorStyle(BuildContext context) => Theme.of(
 // dart format off
 TextStyle? _m3StateInputStyle(BuildContext context) => WidgetStateTextStyle.resolveWith((Set<WidgetState> states) {
   if (states.contains(WidgetState.disabled)) {
-    return TextStyle(color: Theme.of(context).textTheme.bodyLarge!.color?.withValues(alpha:0.38));
+    return TextStyle(color: Theme.of(context).textTheme.bodyLarge!.color?.withValues(alpha: 0.38));
   }
   return TextStyle(color: Theme.of(context).textTheme.bodyLarge!.color);
 });

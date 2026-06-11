@@ -1,0 +1,101 @@
+{
+  "commits": {
+    "new_overscroll_indicator": {
+      "hash": "362b1de29974ffc1ed6faa826e1df870d7bec75f",
+      "issue_link": "https://github.com/flutter/flutter/issues/182281",
+      "todo": "remove"
+    }
+  },
+  "patches": {
+    "bottom_sheet_android": {
+      "file": "bottom_sheet_android.patch"
+    },
+    "bottom_sheet_ios_flutter": {
+      "file": "bottom_sheet_ios_flutter.patch",
+      "issue_link": "https://github.com/bggRGjQaUbCoE/PiliPlus/issues/1906"
+    },
+    "bottom_sheet_ios_piliplus": {
+      "file": "bottom_sheet_ios_piliplus.patch",
+      "issue_link": "https://github.com/bggRGjQaUbCoE/PiliPlus/issues/1906",
+      "project": true
+    },
+    "scroll_view": {
+      "file": "scroll_view.patch",
+      "issue_link": "https://github.com/bggRGjQaUbCoE/PiliPlus/issues/1662"
+    },
+    "text_selection": {
+      "file": "text_selection.patch",
+      "issue_link": "https://github.com/bggRGjQaUbCoE/PiliPlus/issues/2106"
+    },
+    "navigator": {
+      "file": "navigator.patch",
+      "issue_link": "https://github.com/bggRGjQaUbCoE/PiliPlus/issues/1947"
+    },
+    "image_anim": {
+      "file": "image_anim.patch",
+      "issue_link": "https://github.com/bggRGjQaUbCoE/PiliPlus/issues/2107"
+    },
+    "layout_builder": {
+      "file": "layout_builder.patch"
+    },
+    "navigation_drawer": {
+      "file": "navigation_drawer.patch",
+      "issue_link": "https://github.com/bggRGjQaUbCoE/PiliPlus/issues/2308"
+    },
+    "modal_barrier": {
+      "file": "modal_barrier.patch",
+      "issue_link": "https://github.com/flutter/flutter/issues/90223",
+      "todo": "remove"
+    },
+    "mouse_cursor": {
+      "file": "mouse_cursor.patch",
+      "issue_link": "https://github.com/flutter/flutter/issues/182466",
+      "todo": "remove"
+    },
+    "geetest_ios": {
+      "file": "geetest_ios.patch",
+      "project": true
+    }
+  },
+  "engine_overrides": {
+    "android": {
+      "version": "df67bb3b55323961184ae7117cc91c054f36a42c",
+      "todo": "remove"
+    }
+  },
+  "common_patches": [
+    "modal_barrier",
+    "text_selection",
+    "mouse_cursor",
+    "image_anim",
+    "layout_builder",
+    "navigation_drawer"
+  ],
+  "platforms": {
+    "android": {
+      "engine_override": "android",
+      "reverts": [
+        "new_overscroll_indicator"
+      ],
+      "patches": [
+        "bottom_sheet_android",
+        "scroll_view",
+        "navigator"
+      ]
+    },
+    "ios": {
+      "patches": [
+        "scroll_view",
+        "bottom_sheet_ios_flutter",
+        "navigator"
+      ],
+      "project_patches": [
+        "bottom_sheet_ios_piliplus",
+        "geetest_ios"
+      ]
+    },
+    "linux": {},
+    "macos": {},
+    "windows": {}
+  }
+}

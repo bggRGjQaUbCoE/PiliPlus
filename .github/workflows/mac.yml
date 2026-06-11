@@ -26,13 +26,12 @@ jobs:
           channel: stable
           flutter-version-file: pubspec.yaml
 
-      - name: Set and Extract version
-        shell: pwsh
-        run: lib/scripts/build.ps1
+      - name: Apply Patches
+        run: lib/scripts/pre-build.sh apply-patches --platform macos
+        continue-on-error: true
 
-      - name: Apply Patch
-        shell: pwsh
-        run: lib/scripts/patch.ps1 macOS
+      - name: Set and Extract version
+        run: lib/scripts/pre-build.sh gen-build-info --ci --platform macos --tag "${{ inputs.tag }}"
 
       - name: Build Mac
         run: flutter build macos --release --dart-define-from-file=pili_release.json
@@ -44,14 +43,16 @@ jobs:
         continue-on-error: true
 
       - name: Rename DMG
-        run: mv PiliPlus*.dmg PiliPlus_macos_${{ env.version }}.dmg
+        run: |
+          VERSION="${{ env.version_name }}+${{ env.version_code }}"
+          mv PiliPlus*.dmg "PiliPlus_macos_${VERSION}.dmg"
 
       - name: Release
-        if: ${{ github.event.inputs.tag != '' }}
+        if: ${{ inputs.tag != '' }}
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.event.inputs.tag }}
-          name: ${{ github.event.inputs.tag }}
+          tag_name: ${{ inputs.tag }}
+          name: ${{ inputs.tag }}
           files: |
             PiliPlus_macos_*.dmg
 

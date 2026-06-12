@@ -2,6 +2,7 @@ import 'package:PiliPlus/common/skeleton/video_reply.dart';
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/custom_icon.dart';
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
+import 'package:PiliPlus/common/widgets/selectable_text.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
@@ -306,6 +307,7 @@ class _PgcReviewChildPageState extends State<PgcReviewChildPage>
                 SelectableText(
                   item.content!,
                   style: const TextStyle(height: 1.75),
+                  contextMenuBuilder: siteSearchMenuBuilder(),
                 ),
               Builder(
                 builder: (context) {

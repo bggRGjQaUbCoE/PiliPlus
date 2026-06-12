@@ -4,6 +4,7 @@ import 'package:PiliPlus/common/assets.dart';
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/button/icon_button.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
+import 'package:PiliPlus/common/widgets/selectable_text.dart';
 import 'package:PiliPlus/common/widgets/gesture/tap_gesture_recognizer.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/image_viewer/hero.dart';
@@ -941,6 +942,7 @@ class _AudioPageState extends State<AudioPage> {
                       audioItem.arc.title,
                       style: const TextStyle(height: 1.7, fontSize: 16),
                       scrollPhysics: const NeverScrollableScrollPhysics(),
+                      contextMenuBuilder: siteSearchMenuBuilder(),
                     ),
                     const SizedBox(height: 12),
                     if (audioItem.owner.hasName()) ...[
@@ -1006,6 +1008,7 @@ class _AudioPageState extends State<AudioPage> {
                       SelectableText(
                         audioItem.arc.desc,
                         scrollPhysics: const NeverScrollableScrollPhysics(),
+                        contextMenuBuilder: siteSearchMenuBuilder(),
                       ),
                     ],
                   ],

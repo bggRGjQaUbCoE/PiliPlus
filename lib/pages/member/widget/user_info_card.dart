@@ -2,6 +2,7 @@ import 'package:PiliPlus/common/assets.dart';
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/avatars.dart';
 import 'package:PiliPlus/common/widgets/image_viewer/hero.dart';
+import 'package:PiliPlus/common/widgets/selectable_text.dart';
 import 'package:PiliPlus/common/widgets/pendant_avatar.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart';
 import 'package:PiliPlus/common/widgets/view_safe_area.dart';
@@ -313,6 +314,7 @@ class UserInfoCard extends StatelessWidget {
       child: SelectableText(
         card.sign!.trim().replaceAll(RegExp(r'\n{2,}'), '\n'),
         style: const TextStyle(fontSize: 14),
+        contextMenuBuilder: siteSearchMenuBuilder(),
       ),
     );
   }

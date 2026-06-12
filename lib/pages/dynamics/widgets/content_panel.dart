@@ -2,6 +2,7 @@
 import 'package:PiliPlus/common/widgets/custom_icon.dart';
 import 'package:PiliPlus/common/widgets/flutter/text/text.dart' as custom_text;
 import 'package:PiliPlus/common/widgets/image_grid/image_grid_view.dart';
+import 'package:PiliPlus/common/widgets/selectable_text.dart';
 import 'package:PiliPlus/models/dynamics/result.dart';
 import 'package:PiliPlus/pages/dynamics/widgets/rich_node_panel.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
@@ -108,11 +109,13 @@ Widget content(
 }
 
 Widget _contextMenuBuilder(EditableTextState state, String text) {
+  final items = state.contextMenuButtonItems
+    ..add(
+      ContextMenuButtonItem(label: '文本', onPressed: () => _onCopyText(text)),
+    );
+  addSiteSearchMenuItem(state, items);
   return AdaptiveTextSelectionToolbar.buttonItems(
-    buttonItems: state.contextMenuButtonItems
-      ..add(
-        ContextMenuButtonItem(label: '文本', onPressed: () => _onCopyText(text)),
-      ),
+    buttonItems: items,
     anchors: state.contextMenuAnchors,
   );
 }
@@ -126,6 +129,7 @@ void _onCopyText(String text) {
         child: SelectableText(
           text,
           style: const TextStyle(fontSize: 15, height: 1.7),
+          contextMenuBuilder: siteSearchMenuBuilder(),
         ),
       ),
     ),

@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:PiliPlus/common/assets.dart';
 import 'package:PiliPlus/common/widgets/gesture/tap_gesture_recognizer.dart';
 import 'package:PiliPlus/common/widgets/image/cached_network_svg_image.dart';
+import 'package:PiliPlus/common/widgets/selectable_text.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/image_grid/image_grid_view.dart';
 import 'package:PiliPlus/common/widgets/image_viewer/hero.dart';
@@ -190,6 +191,7 @@ class OpusContent extends StatelessWidget {
                       )
                       .toList(),
                 ),
+                contextMenuBuilder: siteSearchMenuBuilder(),
               );
               if (isQuote) {
                 widget = Container(
@@ -313,6 +315,7 @@ class OpusContent extends StatelessWidget {
                     );
                   }).toList(),
                 ),
+                contextMenuBuilder: siteSearchMenuBuilder(),
               );
             case 6:
               final type = element.linkCard!.card!.type;
@@ -659,7 +662,10 @@ class OpusContent extends StatelessWidget {
                   color: colorScheme.onInverseSurface,
                 ),
                 width: .infinity,
-                child: SelectableText.rich(renderer.span!),
+                child: SelectableText.rich(
+                  renderer.span!,
+                  contextMenuBuilder: siteSearchMenuBuilder(),
+                ),
               );
             case 8 when (element.heading?.nodes?.isNotEmpty == true):
               return SelectableText.rich(
@@ -674,6 +680,7 @@ class OpusContent extends StatelessWidget {
                       )
                       .toList(),
                 ),
+                contextMenuBuilder: siteSearchMenuBuilder(),
               );
             default:
               if (kDebugMode) debugPrint('unknown type ${element.paraType}');
@@ -690,6 +697,7 @@ class OpusContent extends StatelessWidget {
                         )
                         .toList(),
                   ),
+                  contextMenuBuilder: siteSearchMenuBuilder(),
                 );
               }
 

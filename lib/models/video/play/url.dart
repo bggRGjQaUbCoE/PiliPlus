@@ -69,7 +69,9 @@ class PlayUrlModel {
         ?.map<FormatItem>((e) => FormatItem.fromJson(e))
         .toList();
     volume = json['volume'] == null ? null : Volume.fromJson(json['volume']);
-    lastPlayTime = json['last_play_time'];
+    if (json['last_play_time'] case final int progress when progress > 0) {
+      lastPlayTime = progress;
+    }
     lastPlayCid = json['last_play_cid'];
     curLanguage = json['cur_language'];
     language = json['language'] == null

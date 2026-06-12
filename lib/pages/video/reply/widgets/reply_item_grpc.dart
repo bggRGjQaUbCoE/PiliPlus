@@ -13,6 +13,7 @@ import 'package:PiliPlus/common/widgets/gesture/tap_gesture_recognizer.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/image_grid/image_grid_view.dart';
 import 'package:PiliPlus/common/widgets/pendant_avatar.dart';
+import 'package:PiliPlus/common/widgets/selectable_text.dart';
 import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
     show ReplyInfo, ReplyControl, Content, Url;
 import 'package:PiliPlus/grpc/reply.dart';
@@ -1167,7 +1168,7 @@ class ReplyItemGrpc extends StatelessWidget {
                       message,
                       style: const TextStyle(fontSize: 15, height: 1.7),
                       contextMenuBuilder: (_, editableTextState) =>
-                          _filterMenuBuilder(context, editableTextState),
+                          _contextMenuBuilder(context, editableTextState),
                     ),
                   ),
                 ),
@@ -1201,20 +1202,19 @@ class ReplyItemGrpc extends StatelessWidget {
     );
   }
 
-  static Widget _filterMenuBuilder(
+  static Widget _contextMenuBuilder(
     BuildContext context,
     EditableTextState editableTextState,
   ) {
     final items = editableTextState.contextMenuButtonItems;
     if (!editableTextState.textEditingValue.selection.isCollapsed) {
+      final selectedText = editableTextState.textEditingValue.selection
+          .textInside(editableTextState.textEditingValue.text);
       items.add(
         ContextMenuButtonItem(
           onPressed: () {
             Navigator.of(context).pop();
-            final select = editableTextState.textEditingValue;
-            String text = RegExp.escape(
-              select.selection.textInside(select.text),
-            );
+            String text = RegExp.escape(selectedText);
             if (ReplyGrpc.enableFilter) text = '|$text';
 
             showConfirmDialog(
@@ -1246,6 +1246,7 @@ class ReplyItemGrpc extends StatelessWidget {
           label: '加入过滤',
         ),
       );
+      addSiteSearchMenuItem(editableTextState, items);
     }
     return AdaptiveTextSelectionToolbar.buttonItems(
       buttonItems: items,

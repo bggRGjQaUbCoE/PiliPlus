@@ -130,6 +130,7 @@ class _IntroDetailState extends State<PgcIntroPanel>
         selectableText(
           widget.item.title!,
           style: const TextStyle(fontSize: 16),
+          contextMenuBuilder: siteSearchMenuBuilder(),
         ),
         const SizedBox(height: 4),
         Row(
@@ -174,6 +175,7 @@ class _IntroDetailState extends State<PgcIntroPanel>
           selectableText(
             widget.item.evaluate!,
             style: textStyle,
+            contextMenuBuilder: siteSearchMenuBuilder(),
           ),
         ],
         if (widget.item.actors?.isNotEmpty == true) ...[

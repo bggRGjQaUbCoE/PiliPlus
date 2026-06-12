@@ -220,6 +220,7 @@ class ImageGridView extends StatelessWidget {
             ),
           );
           return List.generate(picArr.length, (index) {
+            void onTap() => _onTap(context, index);
             final item = picArr[index];
             final borderRadius = _borderRadius(
               info.column,
@@ -248,6 +249,12 @@ class ImageGridView extends StatelessWidget {
             if (!item.isLongPic) {
               child = Hero(tag: '${item.url}$hashCode', child: child);
             }
+            child = Semantics(
+              label: '图片，第 ${index + 1} 张，共 ${picArr.length} 张',
+              button: true,
+              onTap: onTap,
+              child: child,
+            );
             return LayoutId(id: index, child: child);
           });
         },

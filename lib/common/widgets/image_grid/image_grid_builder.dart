@@ -37,7 +37,9 @@ import 'package:flutter/rendering.dart'
         BoxHitTestEntry,
         ContainerParentDataMixin,
         InformationCollector,
-        DiagnosticsDebugCreator;
+        DiagnosticsDebugCreator,
+        RenderObjectVisitor,
+        SemanticsConfiguration;
 
 /// ref [LayoutBuilder]
 
@@ -248,6 +250,23 @@ class RenderImageGrid extends RenderBox
     _onSecondaryTapUp = null;
     _onLongPressStart = null;
     super.dispose();
+  }
+
+  @override
+  void visitChildrenForSemantics(RenderObjectVisitor visitor) {
+    RenderBox? child = firstChild;
+    while (child != null) {
+      visitor(child);
+      child = (child.parentData as MultiChildLayoutParentData).nextSibling;
+    }
+  }
+
+  @override
+  void describeSemanticsConfiguration(SemanticsConfiguration config) {
+    super.describeSemanticsConfiguration(config);
+    config
+      ..explicitChildNodes = true
+      ..isSemanticBoundary = true;
   }
 
   @override

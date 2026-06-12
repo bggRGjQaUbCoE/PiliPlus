@@ -5,6 +5,7 @@ import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/gesture/tap_gesture_recognizer.dart';
+import 'package:PiliPlus/common/widgets/selectable_text.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/image_viewer/hero.dart';
 import 'package:PiliPlus/grpc/bilibili/im/interfaces/v1.pb.dart'
@@ -717,7 +718,10 @@ class ChatItem extends StatelessWidget {
         return '';
       },
     );
-    return SelectableText.rich(TextSpan(children: children));
+    return SelectableText.rich(
+      TextSpan(children: children),
+      contextMenuBuilder: siteSearchMenuBuilder(),
+    );
   }
 
   Widget msgTypeNotifyMsg_10(ThemeData theme, content) {
@@ -759,7 +763,10 @@ class ChatItem extends StatelessWidget {
             ),
             Divider(color: theme.colorScheme.primary.withValues(alpha: 0.05)),
             if ((content['text'] as String?)?.isNotEmpty == true)
-              SelectableText(content['text']),
+              SelectableText(
+                content['text'],
+                contextMenuBuilder: siteSearchMenuBuilder(),
+              ),
             if (modules != null && modules.isNotEmpty) ...[
               const SizedBox(height: 4),
               ...modules.map(

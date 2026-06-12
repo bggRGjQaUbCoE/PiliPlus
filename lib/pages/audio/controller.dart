@@ -336,6 +336,7 @@ class AudioController extends GetxController
               ? (desktopVolume.value * 100).toString()
               : Pref.playerVolume.toString(),
           'volume-max': kMaxVolume.toString(),
+          ...Pref.initBuffer(),
         },
       ),
     );

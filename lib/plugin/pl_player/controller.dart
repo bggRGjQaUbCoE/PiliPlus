@@ -621,29 +621,10 @@ class PlPlayerController with BlockConfigMixin {
   }
 
   Map<String, String>? _buffer;
-  Map<String, String> get buffer => _buffer ??= _initBuffer();
+  Map<String, String> get buffer =>
+      _buffer ??= Pref.initBuffer(_playbackSpeed.value);
   Map<String, String>? _liveBuffer;
-  Map<String, String> get liveBuffer => _liveBuffer ??= _initLiveBuffer();
-
-  Map<String, String> _initBuffer() {
-    final bufSec = Pref.bufferSec * _playbackSpeed.value;
-    final bufSiz = (Pref.bufferSize * 0x100000).toStringAsFixed(0);
-    return {
-      'cache': 'yes',
-      'cache-secs': bufSec.toStringAsFixed(3),
-      'demuxer-hysteresis-secs': (bufSec / 1.5).toStringAsFixed(3),
-      'demuxer-max-bytes': bufSiz,
-      'demuxer-max-back-bytes': bufSiz,
-    };
-  }
-
-  Map<String, String> _initLiveBuffer() {
-    return {
-      'cache': 'yes',
-      'demuxer-max-bytes': (Pref.bufferSize * 0x200000).toStringAsFixed(0),
-      'demuxer-max-back-bytes': '0',
-    };
-  }
+  Map<String, String> get liveBuffer => _liveBuffer ??= Pref.initLiveBuffer();
 
   // 配置播放器
   Future<void> _createVideoController(

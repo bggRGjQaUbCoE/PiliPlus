@@ -768,7 +768,6 @@ class _AudioPageState extends State<AudioPage> {
   Widget _buildProgressBar(ColorScheme colorScheme) {
     final primary = colorScheme.primary;
     final thumbGlowColor = primary.withAlpha(80);
-    final bufferedBarColor = primary.withValues(alpha: 0.4);
     final baseBarColor = colorScheme.isDark
         ? const Color(0x33FFFFFF)
         : const Color(0x33999999);
@@ -778,7 +777,7 @@ class _AudioPageState extends State<AudioPage> {
         total: _controller.duration.value,
         baseBarColor: baseBarColor,
         progressBarColor: primary,
-        bufferedBarColor: bufferedBarColor,
+        bufferedBarColor: Colors.transparent,
         thumbColor: primary,
         thumbGlowColor: thumbGlowColor,
         thumbGlowRadius: 0,

@@ -332,8 +332,8 @@ abstract class CommonRichTextPubPageState<T extends CommonRichTextPubPage>
         _onInsertUser(res, fromClick);
       } else if (res is Set<MentionItem>) {
         for (final e in res) {
-          e.checked = false;
-          _onInsertUser(e, fromClick);
+          _onInsertUser(e..checked = false, fromClick);
+          fromClick = true;
         }
         res.clear();
       }

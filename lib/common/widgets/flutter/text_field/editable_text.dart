@@ -5529,28 +5529,38 @@ class EditableTextState extends State<EditableText>
 
   void _replaceText(ReplaceTextIntent intent) {
     final TextEditingValue oldValue = _value;
-    final TextEditingValue newValue = intent.currentTextEditingValue.replaced(
-      intent.replacementRange,
-      intent.replacementText,
-    );
+    final TextEditingValue newValue;
 
     // bggRGjQaUbCoE _replaceText
-    widget.controller.syncRichText(
-      intent.replacementText.isEmpty
-          ? TextEditingDeltaDeletion(
-              oldText: oldValue.text,
-              deletedRange: intent.replacementRange,
-              selection: newValue.selection,
-              composing: newValue.composing,
-            )
-          : TextEditingDeltaReplacement(
-              oldText: oldValue.text,
-              replacementText: intent.replacementText,
-              replacedRange: intent.replacementRange,
-              selection: newValue.selection,
-              composing: newValue.composing,
-            ),
-    );
+    if (intent.replacementText.isEmpty) {
+      widget.controller.syncRichText(
+        TextEditingDeltaDeletion(
+          oldText: oldValue.text,
+          deletedRange: intent.replacementRange,
+          selection: .collapsed(offset: intent.replacementRange.start),
+          composing: .empty,
+        ),
+      );
+      newValue = TextEditingValue(
+        text: widget.controller.plainText,
+        selection: widget.controller.newSelection,
+        composing: .empty,
+      );
+    } else {
+      newValue = intent.currentTextEditingValue.replaced(
+        intent.replacementRange,
+        intent.replacementText,
+      );
+      widget.controller.syncRichText(
+        TextEditingDeltaReplacement(
+          oldText: oldValue.text,
+          replacementText: intent.replacementText,
+          replacedRange: intent.replacementRange,
+          selection: newValue.selection,
+          composing: newValue.composing,
+        ),
+      );
+    }
 
     userUpdateTextEditingValue(newValue, intent.cause);
 

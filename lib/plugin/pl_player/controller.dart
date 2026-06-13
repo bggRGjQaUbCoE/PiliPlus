@@ -31,6 +31,7 @@ import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
 import 'package:PiliPlus/plugin/pl_player/models/video_fit_type.dart';
 import 'package:PiliPlus/plugin/pl_player/utils/fullscreen.dart';
 import 'package:PiliPlus/services/service_locator.dart';
+import 'package:PiliPlus/services/windows_media_control_service.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/android/android_helper.dart';
 import 'package:PiliPlus/utils/android/bindings.g.dart';
@@ -479,6 +480,38 @@ class PlPlayerController with BlockConfigMixin {
     return _playCallBack?.call();
   }
 
+  static Future<void> playCurrentIfExists() {
+    return _instance?.play() ?? Future.value();
+  }
+
+  static Future<void> playOrPauseIfExists() async {
+    final instance = _instance;
+    if (instance == null) {
+      return;
+    }
+    if (instance.playerStatus.value.isPlaying) {
+      await instance.pause();
+    } else {
+      await instance.play();
+    }
+  }
+
+  static void _enableWindowsMediaControls() {
+    if (!Platform.isWindows) return;
+    WindowsMediaControlService.setHandlers(
+      onPlay: playCurrentIfExists,
+      onPause: pauseIfExists,
+      onPlayPause: playOrPauseIfExists,
+    );
+    WindowsMediaControlService.enablePlayPauseHotKey();
+  }
+
+  static void _disableWindowsMediaControls() {
+    if (!Platform.isWindows) return;
+    WindowsMediaControlService.clearHandlers();
+    WindowsMediaControlService.disablePlayPauseHotKey();
+  }
+
   // try to get PlayerStatus
   static PlayerStatus? getPlayerStatusIfExists() {
     return _instance?.playerStatus.value;
@@ -839,6 +872,7 @@ class PlPlayerController with BlockConfigMixin {
         return;
       }
       _videoPlayerController = player;
+      _enableWindowsMediaControls();
       if (isAnim && superResolutionType.value != .disable) {
         await setShader();
       }
@@ -1668,6 +1702,7 @@ class PlPlayerController with BlockConfigMixin {
     _videoPlayerController = null;
     _videoController = null;
     _instance = null;
+    _disableWindowsMediaControls();
     videoPlayerServiceHandler?.clear();
   }
 

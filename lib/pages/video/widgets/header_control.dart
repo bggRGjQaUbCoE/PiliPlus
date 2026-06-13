@@ -1147,61 +1147,99 @@ class HeaderControlState extends State<HeaderControl>
     );
   }
 
+  Future<_SubtitleFormat?> _showFormatDialog() {
+    return showDialog<_SubtitleFormat>(
+      context: context,
+      builder: (context) => SimpleDialog(
+        title: const Text('选择格式'),
+        children: [
+          SimpleDialogOption(
+            onPressed: () => Get.back(result: _SubtitleFormat.json),
+            child: const Text('JSON'),
+          ),
+          SimpleDialogOption(
+            onPressed: () => Get.back(result: _SubtitleFormat.vtt),
+            child: const Text('WEBVTT'),
+          ),
+        ],
+      ),
+    );
+  }
+
   void onExportSubtitle() {
     showDialog(
       context: context,
-      builder: (context) => SimpleDialog(
-        clipBehavior: Clip.hardEdge,
-        contentPadding: const EdgeInsets.fromLTRB(0, 12, 0, 12),
-        title: const Text('保存字幕'),
-        children: videoDetailCtr.subtitles
-            .map(
-              (item) => SimpleDialogOption(
-                onPressed: () async {
-                  Get.back();
-                  final url = item.subtitleUrl;
-                  if (url == null || url.isEmpty) return;
-                  try {
-                    final res = await Request.dio.get<Uint8List>(
-                      url.http2https,
-                      options: Options(
-                        responseType: ResponseType.bytes,
-                        headers: Constants.baseHeaders,
-                        extra: {'account': const NoAccount()},
-                      ),
-                    );
-                    if (res.statusCode == 200) {
-                      final bytes = Uint8List.fromList(
+      builder: (context) {
+        final subtitles = videoDetailCtr.subtitles;
+        return SimpleDialog(
+          clipBehavior: Clip.hardEdge,
+          contentPadding: const EdgeInsets.fromLTRB(0, 12, 0, 12),
+          title: const Text('保存字幕'),
+          children: List.generate(subtitles.length, (i) {
+            final item = subtitles[i];
+            return SimpleDialogOption(
+              onPressed: () async {
+                Get.back();
+                final url = item.subtitleUrl;
+                if (url == null || url.isEmpty) return;
+                final format = await _showFormatDialog();
+                if (format == null) return;
+                try {
+                  final Uint8List bytes;
+                  switch (format) {
+                    case .vtt:
+                      var subtitle = videoDetailCtr.vttSubtitles[i];
+                      if (subtitle == null) {
+                        final res = await VideoHttp.vttSubtitles(
+                          item.subtitleUrl!,
+                        );
+                        if (res == null) return;
+                        subtitle = (isData: true, id: res);
+                        videoDetailCtr.vttSubtitles[i] = subtitle;
+                      }
+                      bytes = utf8.encode(subtitle.id);
+                    case .json:
+                      final res = await Request.dio.get<Uint8List>(
+                        url.http2https,
+                        options: Options(
+                          responseType: ResponseType.bytes,
+                          headers: Constants.baseHeaders,
+                          extra: {'account': const NoAccount()},
+                        ),
+                      );
+                      if (res.statusCode != 200) return;
+                      bytes = Uint8List.fromList(
                         Request.responseBytesDecoder(
                           res.data!,
                           res.headers.map,
                         ),
                       );
-                      String name =
-                          '${introController.videoDetail.value.title}-${videoDetailCtr.bvid}-${videoDetailCtr.cid.value}-${item.lanDoc}.json';
-                      if (Platform.isWindows) {
-                        // Reserved characters may not be used in file names. See: https://docs.microsoft.com/en-us/windows/win32/fileio/naming-a-file#naming-conventions
-                        name = name.replaceAll(
-                          RegExp(r'[<>:/\\|?*"]'),
-                          '',
-                        );
-                      }
-                      StorageUtils.saveBytes2File(
-                        name: name,
-                        bytes: bytes,
-                        allowedExtensions: const ['json'],
-                      );
-                    }
-                  } catch (e, s) {
-                    Utils.reportError(e, s);
-                    SmartDialog.showToast(e.toString());
                   }
-                },
-                child: Text(item.lanDoc!, style: const TextStyle(fontSize: 14)),
+                  String name =
+                      '${introController.videoDetail.value.title}-${videoDetailCtr.bvid}-${videoDetailCtr.cid.value}-${item.lanDoc}.${format.name}';
+                  // Reserved characters may not be used in file names. See: https://docs.microsoft.com/en-us/windows/win32/fileio/naming-a-file#naming-conventions
+                  name = name.replaceAll(
+                    Platform.isWindows ? RegExp(r'[<>:/\\|?*"]') : '/',
+                    '_',
+                  );
+                  StorageUtils.saveBytes2File(
+                    name: name,
+                    bytes: bytes,
+                    allowedExtensions: [format.name],
+                  );
+                } catch (e, s) {
+                  Utils.reportError(e, s);
+                  SmartDialog.showToast(e.toString());
+                }
+              },
+              child: Text(
+                item.lanDoc!,
+                style: const TextStyle(fontSize: 14),
               ),
-            )
-            .toList(),
-      ),
+            );
+          }),
+        );
+      },
     );
   }
 
@@ -2055,3 +2093,5 @@ class HeaderControlState extends State<HeaderControl>
     );
   }
 }
+
+enum _SubtitleFormat { json, vtt }

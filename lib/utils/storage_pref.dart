@@ -224,6 +224,16 @@ abstract final class Pref {
   static int get sliderDuration =>
       _setting.get(SettingBoxKey.sliderDuration, defaultValue: 90);
 
+  static bool get enableVideoCoverPreview => _setting.get(
+    SettingBoxKey.enableVideoCoverPreview,
+    defaultValue: true,
+  );
+
+  static double get videoCoverPreviewDelay => _setting.get(
+    SettingBoxKey.videoCoverPreviewDelay,
+    defaultValue: 0.5,
+  );
+
   static int get defaultVideoQa => _setting.get(
     SettingBoxKey.defaultVideoQa,
     defaultValue: VideoQuality.super8k.code,

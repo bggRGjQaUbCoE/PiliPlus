@@ -981,9 +981,22 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     _initialFocalPoint = details.localFocalPoint;
   }
 
+  // Current video-layer transform, tracked so the "restore" button shows
+  // whenever the video is zoomed and/or rotated away from its default.
+  double _curScale = 1.0;
+  double _curRotation = 0.0;
+
   void _onScaleUpdate(double scale) {
-    showRestoreScaleBtn.value = scale != 1.0;
+    _curScale = scale;
+    showRestoreScaleBtn.value = _isVideoTransformed;
   }
+
+  void _onRotateUpdate(double rotation) {
+    _curRotation = rotation;
+    showRestoreScaleBtn.value = _isVideoTransformed;
+  }
+
+  bool get _isVideoTransformed => _curScale != 1.0 || _curRotation != 0.0;
 
   void _onPanUpdate(ScaleUpdateDetails details) {
     if (_gestureType == null) {
@@ -1717,6 +1730,8 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                       ),
                       onPressed: () async {
                         showRestoreScaleBtn.value = false;
+                        _curScale = 1.0;
+                        _curRotation = 0.0;
                         final animController = AnimationController(
                           vsync: this,
                           duration: const Duration(milliseconds: 255),
@@ -2074,6 +2089,11 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       child: Obx(
         () => MouseInteractiveViewer(
           scaleEnabled: !plPlayerController.controlsLock.value,
+          // Free rotation is offered only in fullscreen and while controls are
+          // unlocked, so it never interferes with the embedded player, the
+          // portrait/landscape switch, or the auto-rotate logic.
+          rotateEnabled:
+              isFullScreen && !plPlayerController.controlsLock.value,
           pointerSignalFallback: _onPointerSignal,
           onPointerPanZoomUpdate: _onPointerPanZoomUpdate,
           onPointerPanZoomEnd: _onPointerPanZoomEnd,
@@ -2082,6 +2102,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
           onPanUpdate: _onPanUpdate,
           onPanEnd: _onPanEnd,
           onScaleUpdate: _onScaleUpdate,
+          onRotateUpdate: _onRotateUpdate,
           scaleGestureRecognizer: _scaleGestureRecognizer,
           panEnabled: false,
           minScale: plPlayerController.enableShrinkVideoSize ? 0.75 : 1,

@@ -22,7 +22,7 @@ class PlayUrlModel {
     this.seekType,
     this.dash,
     this.supportFormats,
-    this.lastPlayTime,
+    this._lastPlayTime = 0,
     this.lastPlayCid,
   });
 
@@ -42,7 +42,17 @@ class PlayUrlModel {
   List<Durl>? durl;
   List<FormatItem>? supportFormats;
   Volume? volume;
-  int? lastPlayTime;
+
+  late int _lastPlayTime;
+  int get lastPlayTime => _lastPlayTime;
+  set lastPlayTime(int? value) {
+    if (value != null && value > 0) {
+      _lastPlayTime = value;
+    } else {
+      _lastPlayTime = 0;
+    }
+  }
+
   int? lastPlayCid;
   String? curLanguage;
   Language? language;
@@ -69,9 +79,7 @@ class PlayUrlModel {
         ?.map<FormatItem>((e) => FormatItem.fromJson(e))
         .toList();
     volume = json['volume'] == null ? null : Volume.fromJson(json['volume']);
-    if (json['last_play_time'] case final int progress when progress > 0) {
-      lastPlayTime = progress;
-    }
+    lastPlayTime = json['last_play_time'];
     lastPlayCid = json['last_play_cid'];
     curLanguage = json['cur_language'];
     language = json['language'] == null

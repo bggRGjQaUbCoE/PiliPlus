@@ -208,19 +208,15 @@ abstract final class VideoHttp {
 
           case .pgc:
             final result = res.data['result'];
-            data = PlayUrlModel.fromJson(result['video_info']);
-            if (result['play_view_business_info']?['user_status']?['watch_progress']?['current_watch_progress']
-                case final int progress when progress > 0) {
-              data.lastPlayTime = progress;
-            }
+            data = PlayUrlModel.fromJson(result['video_info'])
+              ..lastPlayTime =
+                  result['play_view_business_info']?['user_status']?['watch_progress']?['current_watch_progress'];
 
           case .pugv:
             final result = res.data['data'];
-            data = PlayUrlModel.fromJson(result);
-            if (result['play_view_business_info']?['user_status']?['watch_progress']?['current_watch_progress']
-                case final int progress when progress > 0) {
-              data.lastPlayTime = progress;
-            }
+            data = PlayUrlModel.fromJson(result)
+              ..lastPlayTime =
+                  result['play_view_business_info']?['user_status']?['watch_progress']?['current_watch_progress'];
         }
         return Success(data);
       } else if (epid != null && videoType == .ugc) {

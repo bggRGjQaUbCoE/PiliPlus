@@ -667,15 +667,8 @@ class VideoDetailController extends GetxController
     return null;
   }
 
-  Future<void> playerInit({
-    String? video,
-    String? audio,
-    Duration? seekToTime,
-    Duration? duration,
-    bool? autoplay,
-    Volume? volume,
-  }) async {
-    Duration? seek = seekToTime ?? defaultST ?? playedTime;
+  Future<void> playerInit({bool? autoplay}) async {
+    Duration? seek = defaultST ?? playedTime;
     if (seek == null || seek == Duration.zero) {
       seek = getFirstSegment();
     }
@@ -688,15 +681,13 @@ class VideoDetailController extends GetxController
               hasDashAudio: entry.hasDashAudio,
             )
           : NetworkSource(
-              videoSource: video ?? videoUrl!,
-              audioSource: audio ?? audioUrl,
+              videoSource: videoUrl!,
+              audioSource: audioUrl,
             ),
       seekTo: seek,
-      duration:
-          duration ??
-          (data.timeLength == null
-              ? null
-              : Duration(milliseconds: data.timeLength!)),
+      duration: data.timeLength == null
+          ? null
+          : Duration(milliseconds: data.timeLength!),
       isVertical: isVertical,
       aid: aid,
       bvid: bvid,
@@ -712,7 +703,7 @@ class VideoDetailController extends GetxController
       },
       width: firstVideo.width,
       height: firstVideo.height,
-      volume: volume ?? this.volume,
+      volume: volume,
     );
 
     if (isClosed) return;
@@ -741,16 +732,13 @@ class VideoDetailController extends GetxController
       return;
     }
     currLang.value = language;
-    queryVideoUrl(defaultST: playedTime);
+    queryVideoUrl(fromReset: true);
   }
 
   Volume? volume;
 
   // 视频链接
-  Future<void> queryVideoUrl({
-    Duration? defaultST,
-    bool fromReset = false,
-  }) async {
+  Future<void> queryVideoUrl({bool fromReset = false}) async {
     if (isFileSource) {
       return _initPlayerIfNeeded();
     }
@@ -790,11 +778,13 @@ class VideoDetailController extends GetxController
 
       volume = data.volume;
 
-      final progress = args.remove('progress');
-      if (progress != null) {
-        this.defaultST = Duration(milliseconds: progress);
-      } else if (defaultST == null && data.lastPlayTime != null) {
-        this.defaultST = Duration(milliseconds: data.lastPlayTime!);
+      if (!fromReset) {
+        final progress = args.remove('progress');
+        if (progress != null) {
+          defaultST = Duration(milliseconds: progress);
+        } else {
+          defaultST = Duration(milliseconds: data.lastPlayTime);
+        }
       }
 
       if (!isUgc && !fromReset && plPlayerController.enablePgcSkip) {

@@ -404,7 +404,9 @@ class ModuleAuthorModel extends Avatar {
     }
     pubAction = json['pub_action'];
     pubTime = json['pub_time'];
-    pubTs = json['pub_ts'] == 0 ? null : safeToInt(json['pub_ts']);
+    if (safeToInt(json['pub_ts']) case final pubTs? when pubTs > 0) {
+      this.pubTs = pubTs;
+    }
     type = json['type'];
     decorate = json['decorate'] == null
         ? null
@@ -1316,7 +1318,9 @@ class DynamicStat {
   bool? status;
 
   DynamicStat.fromJson(Map<String, dynamic> json) {
-    count = json['count'] == 0 ? null : safeToInt(json['count']);
+    if (safeToInt(json['count']) case final count? when count > 0) {
+      this.count = count;
+    }
     status = json['status'];
   }
 }

@@ -208,7 +208,8 @@ abstract final class SettingBoxKey {
       danmakuStatic2Scroll = 'danmakuStatic2Scroll',
       danmakuLineHeight = 'danmakuLineHeight',
       danmakuStrokeWidth = 'strokeWidth',
-      danmakuFontWeight = 'fontWeight';
+      danmakuFontWeight = 'fontWeight',
+      danmakuFontFamily = 'danmakuFontFamily';
 
   static const String systemProxyHost = 'systemProxyHost',
       systemProxyPort = 'systemProxyPort';

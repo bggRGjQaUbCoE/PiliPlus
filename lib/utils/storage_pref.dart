@@ -794,6 +794,9 @@ abstract final class Pref {
     defaultValue: PlatformUtils.isMobile ? 5 : 6,
   );
 
+  static String get danmakuFontFamily =>
+      _setting.get(SettingBoxKey.danmakuFontFamily, defaultValue: '');
+
   static bool get enableLongShowControl =>
       _setting.get(SettingBoxKey.enableLongShowControl, defaultValue: false);
 

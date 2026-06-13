@@ -12,6 +12,7 @@ abstract final class DanmakuOptions {
   static double danmakuFontScaleFS = Pref.danmakuFontScaleFS;
   static double danmakuFontScale = Pref.danmakuFontScale;
   static int danmakuFontWeight = Pref.danmakuFontWeight;
+  static String danmakuFontFamily = Pref.danmakuFontFamily;
   static double danmakuShowArea = Pref.danmakuShowArea;
   static double danmakuDuration = Pref.danmakuDuration;
   static double danmakuStaticDuration = Pref.danmakuStaticDuration;
@@ -30,6 +31,7 @@ abstract final class DanmakuOptions {
     return DanmakuOption(
       fontSize: 15 * (notFullscreen ? danmakuFontScale : danmakuFontScaleFS),
       fontWeight: danmakuFontWeight,
+      fontFamily: danmakuFontFamily,
       area: danmakuShowArea,
       duration: danmakuDuration / speed,
       staticDuration: danmakuStaticDuration / speed,
@@ -56,6 +58,7 @@ abstract final class DanmakuOptions {
       SettingBoxKey.danmakuStaticDuration: danmakuStaticDuration,
       SettingBoxKey.danmakuStrokeWidth: danmakuStrokeWidth,
       SettingBoxKey.danmakuFontWeight: danmakuFontWeight,
+      SettingBoxKey.danmakuFontFamily: danmakuFontFamily,
       SettingBoxKey.danmakuLineHeight: danmakuLineHeight,
       SettingBoxKey.danmakuMassiveMode: danmakuMassiveMode,
       SettingBoxKey.danmakuStatic2Scroll: danmakuStatic2Scroll,

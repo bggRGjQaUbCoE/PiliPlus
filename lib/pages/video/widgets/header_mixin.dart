@@ -69,6 +69,11 @@ mixin HeaderMixin<T extends StatefulWidget> on State<T> {
 
     final isFullScreen = this.isFullScreen;
 
+    final fontController = TextEditingController(
+      text: DanmakuOptions.danmakuFontFamily,
+    );
+    FocusNode? fontFocus;
+
     showBottomSheet(
       (context, setState) {
         final theme = Theme.of(context);
@@ -133,6 +138,24 @@ mixin HeaderMixin<T extends StatefulWidget> on State<T> {
           DanmakuOptions.danmakuFontWeight = val.toInt();
           setState(() {});
           setOptions();
+        }
+
+        void updateFontFamily(String val) {
+          DanmakuOptions.danmakuFontFamily = val;
+          if (fontController.text != val) {
+            fontController.text = val;
+          }
+          setState(() {});
+          setOptions();
+        }
+
+        if (fontFocus == null) {
+          fontFocus = FocusNode();
+          fontFocus!.addListener(() {
+            if (!fontFocus!.hasFocus) {
+              updateFontFamily(fontController.text);
+            }
+          });
         }
 
         void updateOpacity(double val) {
@@ -366,6 +389,50 @@ mixin HeaderMixin<T extends StatefulWidget> on State<T> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
+                      Text('字体选择'),
+                      resetBtn(theme, '', () => updateFontFamily('')),
+                    ],
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(
+                      top: 0,
+                      bottom: 6,
+                      left: 10,
+                      right: 10,
+                    ),
+
+                    child: TextField(
+                      controller: fontController,
+                      focusNode: fontFocus,
+                      decoration: InputDecoration(
+                        hintText: '请输入字体名称，留空为默认',
+                        filled: true,
+                        fillColor: theme.colorScheme.surface.withAlpha(
+                          (0.75 * 255).round(),
+                        ),
+                        contentPadding: const EdgeInsets.all(10),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(
+                            color: theme.colorScheme.outline.withAlpha(
+                              (0.18 * 255).round(),
+                            ),
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(
+                            color: theme.colorScheme.primary.withAlpha(
+                              (0.3 * 255).round(),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
                       Text('描边粗细 ${DanmakuOptions.danmakuStrokeWidth}'),
                       resetBtn(theme, 1.5, () => updateStrokeWidth(1.5)),
                     ],
@@ -530,9 +597,11 @@ mixin HeaderMixin<T extends StatefulWidget> on State<T> {
           ),
         );
       },
-    )?.whenComplete(
-      () => DanmakuOptions.save(plPlayerController.danmakuOpacity.value),
-    );
+    )?.whenComplete(() {
+      fontFocus?.dispose();
+      fontController.dispose();
+      DanmakuOptions.save(plPlayerController.danmakuOpacity.value);
+    });
   }
 }
 

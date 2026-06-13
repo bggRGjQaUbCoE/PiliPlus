@@ -517,7 +517,6 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
               icon: const Icon(FontAwesomeIcons.thumbsUp),
               selectIcon: const Icon(FontAwesomeIcons.solidThumbsUp),
               selectStatus: introController.hasLike.value,
-              semanticsLabel: '点赞',
               text: !isLoading
                   ? NumUtils.numFormat(videoDetail.stat!.like)
                   : null,
@@ -533,7 +532,6 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
                 introController.actionDislikeVideo,
               ),
               selectStatus: introController.hasDislike.value,
-              semanticsLabel: '点踩',
               text: "点踩",
             ),
           ),
@@ -544,7 +542,6 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
               selectIcon: const Icon(FontAwesomeIcons.b),
               onTap: introController.actionCoinVideo,
               selectStatus: introController.hasCoin,
-              semanticsLabel: '投币',
               text: !isLoading
                   ? NumUtils.numFormat(videoDetail.stat!.coin)
                   : null,
@@ -561,7 +558,6 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
                 isLongPress: true,
               ),
               selectStatus: introController.hasFav.value,
-              semanticsLabel: '收藏',
               text: !isLoading
                   ? NumUtils.numFormat(videoDetail.stat!.favorite)
                   : null,
@@ -574,7 +570,6 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
               onTap: () =>
                   introController.handleAction(introController.viewLater),
               selectStatus: introController.hasLater.value,
-              semanticsLabel: '再看',
               text: '再看',
             ),
           ),
@@ -582,7 +577,6 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
             icon: const Icon(FontAwesomeIcons.shareFromSquare),
             onTap: () => introController.actionShareVideo(context),
             selectStatus: false,
-            semanticsLabel: '分享',
             text: !isLoading
                 ? NumUtils.numFormat(videoDetail.stat!.share!)
                 : null,

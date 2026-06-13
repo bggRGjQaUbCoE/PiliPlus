@@ -27,6 +27,7 @@ import 'package:PiliPlus/plugin/pl_player/utils/fullscreen.dart';
 import 'package:PiliPlus/services/service_locator.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/android/bindings.g.dart';
+import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:PiliPlus/utils/extension/box_ext.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
@@ -35,7 +36,6 @@ import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
-import 'package:PiliPlus/utils/theme_utils.dart';
 import 'package:archive/archive.dart' show getCrc32;
 import 'package:canvas_danmaku/canvas_danmaku.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
@@ -584,16 +584,12 @@ class PlPlayerController with BlockConfigMixin {
     assert(_videoPlayerController == null);
     final opt = {
       'video-sync': Pref.videoSync,
+      if (Platform.isAndroid) 'ao': Pref.audioOutput,
+      'volume':
+          (PlatformUtils.isMobile ? Pref.playerVolume : volume.value * 100)
+              .toString(),
+      'volume-max': kMaxVolume.toString(),
     };
-    if (Platform.isAndroid) {
-      opt['ao'] = Pref.audioOutput;
-    }
-    if (PlatformUtils.isMobile) {
-      opt['volume'] = Pref.playerVolume.toString();
-    } else {
-      opt['volume'] = (volume.value * 100).toString();
-    }
-    opt['volume-max'] = kMaxVolume.toString();
 
     final player = await Player.create(
       configuration: PlayerConfiguration(
@@ -1388,6 +1384,9 @@ class PlPlayerController with BlockConfigMixin {
 
   Future<void> takeScreenshot() async {
     SmartDialog.showToast('截图中');
+    final time = DurationUtils.formatDuration(
+      position.inMilliseconds / 1000,
+    ).replaceAll(':', '-');
     final image = await videoPlayerController?.screenshot();
     if (image != null) {
       SmartDialog.showToast('点击弹窗保存截图');
@@ -1400,7 +1399,7 @@ class PlPlayerController with BlockConfigMixin {
             if (bytes != null) {
               ImageUtils.saveByteImg(
                 bytes: bytes.buffer.asUint8List(),
-                fileName: 'screenshot_${ImageUtils.time}',
+                fileName: 'screenshot_${cid}_$time',
               );
             }
           },
@@ -1416,7 +1415,7 @@ class PlPlayerController with BlockConfigMixin {
                   decoration: BoxDecoration(
                     border: .all(
                       width: 5,
-                      color: ThemeUtils.theme.colorScheme.surface,
+                      color: ColorScheme.of(context).surface,
                     ),
                   ),
                   child: Padding(

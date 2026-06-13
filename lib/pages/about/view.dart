@@ -183,11 +183,7 @@ Commit Hash: ${BuildConfig.commitHash}''',
               onTap: AndroidHelper.openLinkVerifySettings,
               leading: const Icon(MdiIcons.linkBoxOutline),
               title: const Text('打开受支持的链接'),
-              trailing: Icon(
-                Icons.arrow_forward,
-                size: 16,
-                color: outline,
-              ),
+              trailing: Icon(Icons.arrow_forward, size: 16, color: outline),
             ),
           ListTile(
             onTap: () => Get.toNamed('/logs'),

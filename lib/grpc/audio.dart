@@ -25,8 +25,8 @@ abstract final class AudioGrpc {
         playerArgs: PlayerArgs(
           qn: Int64(qn),
           fnval: Int64(fnval),
-          forceHost: Int64(2),
-          voiceBalance: Int64(1),
+          forceHost: Int64.TWO,
+          voiceBalance: Int64.ONE,
         ),
       ),
       PlayURLResp.fromBuffer,
@@ -58,8 +58,8 @@ abstract final class AudioGrpc {
         playerArgs: PlayerArgs(
           qn: Int64(qn),
           fnval: Int64(fnval),
-          forceHost: Int64(2),
-          voiceBalance: Int64(1),
+          forceHost: Int64.TWO,
+          voiceBalance: Int64.ONE,
         ),
         extraId: extraId,
         sortOpt: SortOption(order: order),

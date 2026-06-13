@@ -19,14 +19,11 @@ import 'package:dio/dio.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
-import 'package:intl/intl.dart' show DateFormat;
 import 'package:live_photo_maker/live_photo_maker.dart';
 import 'package:saver_gallery/saver_gallery.dart';
 import 'package:share_plus/share_plus.dart';
 
 abstract final class ImageUtils {
-  static String get time =>
-      DateFormat('yyyy-MM-dd_HH-mm-ss').format(DateTime.now());
   static final _albumPath = Platform.isAndroid
       ? 'Pictures/${Constants.appName}'
       : Constants.appName;

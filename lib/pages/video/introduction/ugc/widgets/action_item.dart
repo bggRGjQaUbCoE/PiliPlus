@@ -12,7 +12,6 @@ class ActionItem extends StatelessWidget {
     this.onLongPress,
     this.text,
     this.selectStatus = false,
-    required this.semanticsLabel,
     this.expand = true,
     this.animation,
     this.onStartTriple,
@@ -26,7 +25,6 @@ class ActionItem extends StatelessWidget {
   final VoidCallback? onLongPress;
   final String? text;
   final bool selectStatus;
-  final String semanticsLabel;
   final bool expand;
   final Animation<double>? animation;
   final VoidCallback? onStartTriple;
@@ -53,11 +51,8 @@ class ActionItem extends StatelessWidget {
         children: [
           AnimatedBuilder(
             animation: animation!,
-            builder: (context, child) => Arc(
-              size: 28,
-              color: primary,
-              progress: -animation!.value,
-            ),
+            builder: (context, child) =>
+                Arc(size: 28, color: primary, progress: -animation!.value),
           ),
           child,
         ],
@@ -69,7 +64,7 @@ class ActionItem extends StatelessWidget {
     child = Material(
       type: .transparency,
       child: InkWell(
-        borderRadius: const BorderRadius.all(Radius.circular(6)),
+        borderRadius: const .all(.circular(6)),
         onTap: _isThumbsUp ? null : onTap,
         onLongPress: _isThumbsUp ? null : onLongPress,
         onSecondaryTap: PlatformUtils.isMobile || _isThumbsUp

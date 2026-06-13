@@ -223,9 +223,9 @@ class ImageGridView extends StatelessWidget {
             width: width,
             height: height,
             decoration: BoxDecoration(
-              color: Theme.of(
+              color: ColorScheme.of(
                 context,
-              ).colorScheme.onInverseSurface.withValues(alpha: 0.4),
+              ).onInverseSurface.withValues(alpha: 0.4),
             ),
             child: Image.asset(
               Assets.loading,
@@ -255,37 +255,17 @@ class ImageGridView extends StatelessWidget {
                   getPlaceHolder: () => placeHolder,
                 ),
                 if (item.isLivePhoto)
-                  const PBadge(
-                    text: 'Live',
-                    right: 8,
-                    bottom: 8,
-                    type: .gray,
-                  )
+                  const PBadge(text: 'Live', right: 8, bottom: 8, type: .gray)
                 else if (item.isLongPic)
-                  const PBadge(
-                    text: '长图',
-                    right: 8,
-                    bottom: 8,
-                  )
+                  const PBadge(text: '长图', right: 8, bottom: 8)
                 else if (item.isGif)
-                  const PBadge(
-                    text: 'GIF',
-                    right: 8,
-                    bottom: 8,
-                    type: .gray,
-                  ),
+                  const PBadge(text: 'GIF', right: 8, bottom: 8, type: .gray),
               ],
             );
             if (!item.isLongPic) {
-              child = Hero(
-                tag: '${item.url}$hashCode',
-                child: child,
-              );
+              child = Hero(tag: '${item.url}$hashCode', child: child);
             }
-            return LayoutId(
-              id: index,
-              child: child,
-            );
+            return LayoutId(id: index, child: child);
           });
         },
       ),

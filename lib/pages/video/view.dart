@@ -1404,9 +1404,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                             return FilledButton.tonal(
                               style: FilledButton.styleFrom(
                                 shape: const RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.all(
-                                    Radius.circular(6),
-                                  ),
+                                  borderRadius: .all(.circular(6)),
                                 ),
                                 backgroundColor: themeData
                                     .colorScheme
@@ -1424,9 +1422,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                                   item,
                                   isStein: true,
                                 );
-                                videoDetailController.getSteinEdgeInfo(
-                                  item.id,
-                                );
+                                videoDetailController.getSteinEdgeInfo(item.id);
                               },
                               child: Text(item.option!),
                             );

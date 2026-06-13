@@ -672,7 +672,6 @@ class _AudioPageState extends State<AudioPage> {
                 FontAwesomeIcons.solidThumbsUp,
               ),
               selectStatus: _controller.hasLike.value,
-              semanticsLabel: '点赞',
               text: NumUtils.numFormat(audioItem.stat.like),
               onStartTriple: _controller.onStartTriple,
               onCancelTriple: _controller.onCancelTriple,
@@ -685,10 +684,7 @@ class _AudioPageState extends State<AudioPage> {
               selectIcon: const Icon(FontAwesomeIcons.b),
               onTap: _controller.actionCoinVideo,
               selectStatus: _controller.hasCoin,
-              semanticsLabel: '投币',
-              text: NumUtils.numFormat(
-                audioItem.stat.coin,
-              ),
+              text: NumUtils.numFormat(audioItem.stat.coin),
             ),
           ),
           Obx(
@@ -704,19 +700,13 @@ class _AudioPageState extends State<AudioPage> {
                 isLongPress: true,
               ),
               selectStatus: _controller.hasFav.value,
-              semanticsLabel: '收藏',
-              text: NumUtils.numFormat(
-                audioItem.stat.favourite,
-              ),
+              text: NumUtils.numFormat(audioItem.stat.favourite),
             ),
           ),
           ActionItem(
             icon: const Icon(FontAwesomeIcons.comment),
             onTap: _controller.showReply,
-            semanticsLabel: '评论',
-            text: NumUtils.numFormat(
-              audioItem.stat.reply,
-            ),
+            text: NumUtils.numFormat(audioItem.stat.reply),
           ),
           ActionItem(
             icon: const Icon(
@@ -724,10 +714,7 @@ class _AudioPageState extends State<AudioPage> {
             ),
             onTap: () => _controller.actionShareVideo(context),
             selectStatus: false,
-            semanticsLabel: '分享',
-            text: NumUtils.numFormat(
-              audioItem.stat.share,
-            ),
+            text: NumUtils.numFormat(audioItem.stat.share),
           ),
           if (audioItem.associatedItem.hasOid() &&
               audioItem.associatedItem.subId.isNotEmpty)
@@ -741,7 +728,6 @@ class _AudioPageState extends State<AudioPage> {
                 );
               },
               selectStatus: false,
-              semanticsLabel: '看MV',
               text: '看MV',
             ),
         ],

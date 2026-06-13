@@ -250,8 +250,8 @@ class RenderImageGrid extends RenderBox
     super.dispose();
   }
 
-  @override
-  bool get isRepaintBoundary => true; // gif repaint
+  // @override
+  // bool get isRepaintBoundary => true; // gif repaint
 }
 
 class ImageGridRenderObjectElement extends RenderObjectElement {

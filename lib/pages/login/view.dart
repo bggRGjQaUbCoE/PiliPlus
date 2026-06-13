@@ -74,15 +74,16 @@ class _LoginPageState extends State<LoginPage> {
             TextButton.icon(
               onPressed: () async {
                 SmartDialog.showLoading(msg: '正在生成截图');
-                RenderRepaintBoundary boundary =
-                    globalKey.currentContext!.findRenderObject()!
+                final boundary =
+                    globalKey.currentContext!.findRenderObject()
                         as RenderRepaintBoundary;
                 final image = await boundary.toImage(pixelRatio: 3);
-                ByteData? byteData = await image.toByteData(format: .png);
-                Uint8List pngBytes = byteData!.buffer.asUint8List();
+                final byteData = await image.toByteData(format: .png);
+                final pngBytes = byteData!.buffer.asUint8List();
+                image.dispose();
                 SmartDialog.dismiss();
-                String picName =
-                    "${Constants.appName}_loginQRCode_${ImageUtils.time}";
+                final picName =
+                    "${Constants.appName}_loginQRCode_${_loginPageCtr.codeInfo.value.data.authCode.hashCode.toUnsigned(32).toRadixString(16)}";
                 ImageUtils.saveByteImg(bytes: pngBytes, fileName: picName);
               },
               icon: const Icon(Icons.save),

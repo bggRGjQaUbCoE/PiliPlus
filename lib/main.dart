@@ -170,14 +170,14 @@ void main() async {
 
   if (Pref.enableLog) {
     // 异常捕获 logo记录
+    final apiVersion = NativePlayer.apiVersion;
     final customParameters = {
       'Build Time': DateFormatUtils.format(
         BuildConfig.buildTime,
         format: DateFormatUtils.longFormatDs,
       ),
       'Commit Hash': BuildConfig.commitHash,
-      'MPV Api Version':
-          '${NativePlayer.apiVersion >> 16}.${NativePlayer.apiVersion & 0xFFFF}',
+      'MPV Api Version': '${apiVersion >> 16}.${apiVersion & 0xFFFF}',
     };
     final fileHandler = await JsonFileHandler.init();
 

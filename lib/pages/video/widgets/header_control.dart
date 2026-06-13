@@ -1776,11 +1776,8 @@ class HeaderControlState extends State<HeaderControl>
                         FontAwesomeIcons.thumbsUp,
                         color: Colors.white,
                       ),
-                      selectIcon: const Icon(
-                        FontAwesomeIcons.solidThumbsUp,
-                      ),
+                      selectIcon: const Icon(FontAwesomeIcons.solidThumbsUp),
                       selectStatus: introController.hasLike.value,
-                      semanticsLabel: '点赞',
                       animation: introController.tripleAnimation,
                       onStartTriple: () {
                         plPlayerController.tripling = true;
@@ -1795,26 +1792,6 @@ class HeaderControlState extends State<HeaderControl>
                     ),
                   ),
                 ),
-                if (introController case final UgcIntroController ugc)
-                  SizedBox(
-                    width: btnWidth,
-                    height: btnHeight,
-                    child: Obx(
-                      () => ActionItem(
-                        expand: false,
-                        icon: const Icon(
-                          FontAwesomeIcons.thumbsDown,
-                          color: Colors.white,
-                        ),
-                        selectIcon: const Icon(
-                          FontAwesomeIcons.solidThumbsDown,
-                        ),
-                        onTap: () => ugc.handleAction(ugc.actionDislikeVideo),
-                        selectStatus: ugc.hasDislike.value,
-                        semanticsLabel: '点踩',
-                      ),
-                    ),
-                  ),
                 SizedBox(
                   width: btnWidth,
                   height: btnHeight,
@@ -1829,7 +1806,6 @@ class HeaderControlState extends State<HeaderControl>
                       selectIcon: const Icon(FontAwesomeIcons.b),
                       onTap: introController.actionCoinVideo,
                       selectStatus: introController.hasCoin,
-                      semanticsLabel: '投币',
                     ),
                   ),
                 ),
@@ -1851,7 +1827,6 @@ class HeaderControlState extends State<HeaderControl>
                         isLongPress: true,
                       ),
                       selectStatus: introController.hasFav.value,
-                      semanticsLabel: '收藏',
                     ),
                   ),
                 ),
@@ -1865,7 +1840,6 @@ class HeaderControlState extends State<HeaderControl>
                       color: Colors.white,
                     ),
                     onTap: () => introController.actionShareVideo(context),
-                    semanticsLabel: '分享',
                   ),
                 ),
               ],

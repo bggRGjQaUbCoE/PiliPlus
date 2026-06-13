@@ -88,7 +88,7 @@ class _OrderedMultiSelectDialogState<T>
         ),
         TextButton(
           onPressed: () {
-            assert(_tempValues.values.isSorted((a, b) => a.compareTo(b)));
+            assert(_tempValues.values.isSorted(Comparable.compare));
             Get.back(result: _tempValues.keys.toList());
           },
           child: const Text('确定'),

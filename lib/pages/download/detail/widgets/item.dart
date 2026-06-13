@@ -61,48 +61,37 @@ class DetailItem extends StatelessWidget {
     void onLongPress() => canDel && !enableMultiSelect
         ? showDialog(
             context: context,
-            builder: (context) => AlertDialog(
+            builder: (context) => SimpleDialog(
               clipBehavior: Clip.hardEdge,
               contentPadding: const EdgeInsets.symmetric(vertical: 12),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  ListTile(
-                    onTap: () {
-                      Get.back();
-                      showConfirmDialog(
-                        context: context,
-                        title: const Text('确定删除该视频？'),
-                        onConfirm: onDelete,
-                      );
-                    },
-                    dense: true,
-                    title: const Text(
-                      '删除',
-                      style: TextStyle(fontSize: 14),
-                    ),
-                  ),
-                  ListTile(
-                    onTap: () async {
-                      Get.back();
-                      final res = await downloadService.downloadDanmaku(
-                        entry: entry,
-                        isUpdate: true,
-                      );
-                      if (res) {
-                        SmartDialog.showToast('更新成功');
-                      } else {
-                        SmartDialog.showToast('更新失败');
-                      }
-                    },
-                    dense: true,
-                    title: const Text(
-                      '更新弹幕',
-                      style: TextStyle(fontSize: 14),
-                    ),
-                  ),
-                ],
-              ),
+              children: [
+                SimpleDialogOption(
+                  onPressed: () {
+                    Get.back();
+                    showConfirmDialog(
+                      context: context,
+                      title: const Text('确定删除该视频？'),
+                      onConfirm: onDelete,
+                    );
+                  },
+                  child: const Text('删除', style: TextStyle(fontSize: 14)),
+                ),
+                SimpleDialogOption(
+                  onPressed: () async {
+                    Get.back();
+                    final res = await downloadService.downloadDanmaku(
+                      entry: entry,
+                      isUpdate: true,
+                    );
+                    if (res) {
+                      SmartDialog.showToast('更新成功');
+                    } else {
+                      SmartDialog.showToast('更新失败');
+                    }
+                  },
+                  child: const Text('更新弹幕', style: TextStyle(fontSize: 14)),
+                ),
+              ],
             ),
           )
         : null;

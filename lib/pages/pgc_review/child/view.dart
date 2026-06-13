@@ -120,71 +120,56 @@ class _PgcReviewChildPageState extends State<PgcReviewChildPage>
   Widget _itemWidget(ThemeData theme, int index, PgcReviewItemModel item) {
     void showMore() => showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (context) => SimpleDialog(
         clipBehavior: Clip.hardEdge,
         contentPadding: const EdgeInsets.symmetric(vertical: 12),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (item.author!.mid == Accounts.main.mid) ...[
-              ListTile(
-                dense: true,
-                title: const Text(
-                  '编辑',
-                  style: TextStyle(fontSize: 14),
-                ),
-                onTap: () {
-                  Get.back();
-                  showModalBottomSheet(
-                    context: context,
-                    useSafeArea: true,
-                    isScrollControlled: true,
-                    builder: (context) {
-                      return PgcReviewPostPanel(
-                        name: widget.name,
-                        mediaId: widget.mediaId,
-                        reviewId: item.reviewId,
-                        content: item.content,
-                        score: item.score,
-                      );
-                    },
-                  );
-                },
-              ),
-              ListTile(
-                dense: true,
-                title: const Text(
-                  '删除',
-                  style: TextStyle(fontSize: 14),
-                ),
-                onTap: () {
-                  Get.back();
-                  showConfirmDialog(
-                    context: context,
-                    title: const Text('删除短评，同时删除评分？'),
-                    onConfirm: () => _controller.onDel(index, item.reviewId!),
-                  );
-                },
-              ),
-            ],
-            ListTile(
-              dense: true,
-              title: const Text(
-                '举报',
-                style: TextStyle(fontSize: 14),
-              ),
-              onTap: () => Get
-                ..back()
-                ..toNamed(
-                  '/webview',
-                  parameters: {
-                    'url':
-                        'https://www.bilibili.com/appeal/?reviewId=${item.reviewId}&type=shortComment&mediaId=${widget.mediaId}',
+        children: [
+          if (item.author!.mid == Accounts.main.mid) ...[
+            SimpleDialogOption(
+              child: const Text('编辑', style: TextStyle(fontSize: 14)),
+              onPressed: () {
+                Get.back();
+                showModalBottomSheet(
+                  context: context,
+                  useSafeArea: true,
+                  isScrollControlled: true,
+                  builder: (context) {
+                    return PgcReviewPostPanel(
+                      name: widget.name,
+                      mediaId: widget.mediaId,
+                      reviewId: item.reviewId,
+                      content: item.content,
+                      score: item.score,
+                    );
                   },
-                ),
+                );
+              },
+            ),
+            SimpleDialogOption(
+              child: const Text('删除', style: TextStyle(fontSize: 14)),
+              onPressed: () {
+                Get.back();
+                showConfirmDialog(
+                  context: context,
+                  title: const Text('删除短评，同时删除评分？'),
+                  onConfirm: () => _controller.onDel(index, item.reviewId!),
+                );
+              },
             ),
           ],
-        ),
+          SimpleDialogOption(
+            child: const Text('举报', style: TextStyle(fontSize: 14)),
+            onPressed: () => Get
+              ..back()
+              ..toNamed(
+                '/webview',
+                parameters: {
+                  'url':
+                      'https://www.bilibili.com/appeal/?reviewId=${item.reviewId}&type=shortComment&mediaId=${widget.mediaId}',
+                },
+              ),
+          ),
+        ],
       ),
     );
 

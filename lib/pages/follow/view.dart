@@ -194,62 +194,48 @@ class _FollowPageState extends State<FollowPage> {
   void _onHandleTag(int index, MemberTagItemModel item) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (context) => SimpleDialog(
         clipBehavior: Clip.hardEdge,
         contentPadding: const EdgeInsets.symmetric(vertical: 12),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              onTap: () {
-                Get.back();
-                String tagName = item.name!;
-                showConfirmDialog(
-                  context: context,
-                  title: const Text('编辑分组名称'),
-                  content: TextFormField(
-                    autofocus: true,
-                    initialValue: tagName,
-                    onChanged: (value) => tagName = value,
-                    inputFormatters: [
-                      LengthLimitingTextInputFormatter(16),
-                    ],
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                    ),
+        children: [
+          SimpleDialogOption(
+            onPressed: () {
+              Get.back();
+              String tagName = item.name!;
+              showConfirmDialog(
+                context: context,
+                title: const Text('编辑分组名称'),
+                content: TextFormField(
+                  autofocus: true,
+                  initialValue: tagName,
+                  onChanged: (value) => tagName = value,
+                  inputFormatters: [LengthLimitingTextInputFormatter(16)],
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
                   ),
-                  onConfirm: () {
-                    if (tagName.isNotEmpty) {
-                      _followController.onUpdateTag(item, tagName);
-                    }
-                  },
-                );
-              },
-              dense: true,
-              title: const Text(
-                '修改名称',
-                style: TextStyle(fontSize: 14),
-              ),
-            ),
-            ListTile(
-              onTap: () {
-                Get.back();
-                showConfirmDialog(
-                  context: context,
-                  title: const Text('删除分组'),
-                  content: const Text('删除后，该分组下的用户依旧保留？'),
-                  onConfirm: () =>
-                      _followController.onDelTag(index, item.tagid!),
-                );
-              },
-              dense: true,
-              title: const Text(
-                '删除分组',
-                style: TextStyle(fontSize: 14),
-              ),
-            ),
-          ],
-        ),
+                ),
+                onConfirm: () {
+                  if (tagName.isNotEmpty) {
+                    _followController.onUpdateTag(item, tagName);
+                  }
+                },
+              );
+            },
+            child: const Text('修改名称', style: TextStyle(fontSize: 14)),
+          ),
+          SimpleDialogOption(
+            onPressed: () {
+              Get.back();
+              showConfirmDialog(
+                context: context,
+                title: const Text('删除分组'),
+                content: const Text('删除后，该分组下的用户依旧保留？'),
+                onConfirm: () => _followController.onDelTag(index, item.tagid!),
+              );
+            },
+            child: const Text('删除分组', style: TextStyle(fontSize: 14)),
+          ),
+        ],
       ),
     );
   }

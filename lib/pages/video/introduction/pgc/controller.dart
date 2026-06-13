@@ -123,137 +123,117 @@ class PgcIntroController extends CommonIntroController {
         '${HttpString.baseUrl}/bangumi/play/ep$epId${videoDetailCtr.playedTimePos}';
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
+      builder: (_) => SimpleDialog(
         clipBehavior: Clip.hardEdge,
         contentPadding: const EdgeInsets.symmetric(vertical: 12),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              dense: true,
-              title: const Text(
-                '复制链接',
-                style: TextStyle(fontSize: 14),
-              ),
-              onTap: () {
-                Get.back();
-                Utils.copyText(videoUrl);
-              },
-            ),
-            ListTile(
-              dense: true,
-              title: const Text(
-                '其它app打开',
-                style: TextStyle(fontSize: 14),
-              ),
-              onTap: () {
-                Get.back();
-                PageUtils.launchURL(videoUrl);
-              },
-            ),
-            if (PlatformUtils.isMobile)
-              ListTile(
-                dense: true,
-                title: const Text(
-                  '分享视频',
-                  style: TextStyle(fontSize: 14),
-                ),
-                onTap: () {
-                  final item = pgcItem.episodes?.firstWhereOrNull(
-                    (item) => item.epId == epId,
-                  );
-                  Get.back();
-                  ShareUtils.shareText(
-                    '${pgcItem.title}${item != null ? ' ${item.showTitle}' : ''}'
-                    ' - $videoUrl',
-                  );
-                },
-              ),
-            ListTile(
-              dense: true,
-              title: const Text(
-                '分享至动态',
-                style: TextStyle(fontSize: 14),
-              ),
-              onTap: () {
-                Get.back();
+        children: [
+          SimpleDialogOption(
+            child: const Text('复制链接', style: TextStyle(fontSize: 14)),
+            onPressed: () {
+              Get.back();
+              Utils.copyText(videoUrl);
+            },
+          ),
+          SimpleDialogOption(
+            child: const Text('其它app打开', style: TextStyle(fontSize: 14)),
+            onPressed: () {
+              Get.back();
+              PageUtils.launchURL(videoUrl);
+            },
+          ),
+          if (PlatformUtils.isMobile)
+            SimpleDialogOption(
+              child: const Text('分享视频', style: TextStyle(fontSize: 14)),
+              onPressed: () {
                 final item = pgcItem.episodes?.firstWhereOrNull(
                   (item) => item.epId == epId,
                 );
-                showModalBottomSheet(
-                  context: context,
-                  isScrollControlled: true,
-                  useSafeArea: true,
-                  builder: (context) => RepostPanel(
-                    rid: epId,
-                    /**
-                         *  1：番剧 // 4097
-                            2：电影 // 4098
-                            3：纪录片 // 4101
-                            4：国创 // 4100
-                            5：电视剧 // 4099
-                            6：漫画
-                            7：综艺 // 4099
-                         */
-                    dynType: switch (pgcItem.type) {
-                      1 => 4097,
-                      2 => 4098,
-                      3 => 4101,
-                      4 => 4100,
-                      5 || 7 => 4099,
-                      _ => -1,
-                    },
-                    pic: pgcItem.cover,
-                    title:
-                        '${pgcItem.title}${item != null ? '\n${item.showTitle}' : ''}',
-                    uname: '',
-                  ),
+                Get.back();
+                ShareUtils.shareText(
+                  '${pgcItem.title}${item != null ? ' ${item.showTitle}' : ''}'
+                  ' - $videoUrl',
                 );
               },
             ),
-            ListTile(
-              dense: true,
-              title: const Text(
-                '分享至消息',
-                style: TextStyle(fontSize: 14),
-              ),
-              onTap: () {
-                Get.back();
-                try {
-                  EpisodeItem item = pgcItem.episodes!.firstWhere(
-                    (item) => item.epId == epId,
-                  );
-                  final title =
-                      item.shareCopy ??
-                      '${pgcItem.title} ${item.showTitle ?? item.longTitle}';
-                  PageUtils.pmShare(
-                    context,
-                    content: {
-                      "id": epId!.toString(),
-                      "title": title,
-                      "url": item.shareUrl,
-                      "headline": title,
-                      "source": 16,
-                      "thumb": item.cover,
-                      "source_desc": switch (pgcItem.type) {
-                        1 => '番剧',
-                        2 => '电影',
-                        3 => '纪录片',
-                        4 => '国创',
-                        5 => '电视剧',
-                        6 => '漫画',
-                        7 => '综艺',
-                        _ => null,
-                      },
-                    },
-                  );
-                } catch (e) {
-                  SmartDialog.showToast(e.toString());
-                }
-              },
+          SimpleDialogOption(
+            child: const Text('分享至动态', style: TextStyle(fontSize: 14)),
+            onPressed: () {
+              Get.back();
+              final item = pgcItem.episodes?.firstWhereOrNull(
+                (item) => item.epId == epId,
+              );
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                useSafeArea: true,
+                builder: (context) => RepostPanel(
+                  rid: epId,
+                  /*
+                    1：番剧 // 4097
+                    2：电影 // 4098
+                    3：纪录片 // 4101
+                    4：国创 // 4100
+                    5：电视剧 // 4099
+                    6：漫画
+                    7：综艺 // 4099
+                  */
+                  dynType: switch (pgcItem.type) {
+                    1 => 4097,
+                    2 => 4098,
+                    3 => 4101,
+                    4 => 4100,
+                    5 || 7 => 4099,
+                    _ => -1,
+                  },
+                  pic: pgcItem.cover,
+                  title:
+                      '${pgcItem.title}${item != null ? '\n${item.showTitle}' : ''}',
+                  uname: '',
+                ),
+              );
+            },
+          ),
+          SimpleDialogOption(
+            child: const Text(
+              '分享至消息',
+              style: TextStyle(fontSize: 14),
             ),
-          ],
-        ),
+            onPressed: () {
+              Get.back();
+              try {
+                final item = pgcItem.episodes!.firstWhere(
+                  (item) => item.epId == epId,
+                );
+                final title =
+                    item.shareCopy ??
+                    '${pgcItem.title} ${item.showTitle ?? item.longTitle}';
+                PageUtils.pmShare(
+                  context,
+                  content: {
+                    "id": epId!.toString(),
+                    "title": title,
+                    "url": item.shareUrl,
+                    "headline": title,
+                    "source": 16,
+                    "thumb": item.cover,
+                    "source_desc": switch (pgcItem.type) {
+                      1 => '番剧',
+                      2 => '电影',
+                      3 => '纪录片',
+                      4 => '国创',
+                      5 => '电视剧',
+                      6 => '漫画',
+                      7 => '综艺',
+                      _ => null,
+                    },
+                  },
+                );
+              } catch (e) {
+                SmartDialog.showToast(e.toString());
+              }
+            },
+          ),
+        ],
       ),
     );
   }

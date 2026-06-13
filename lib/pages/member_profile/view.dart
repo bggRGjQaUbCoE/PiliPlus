@@ -247,17 +247,14 @@ class _EditProfilePageState extends State<EditProfilePage> {
   }
 
   Widget _sexDialog(int current) {
-    return AlertDialog(
+    return SimpleDialog(
       clipBehavior: Clip.hardEdge,
       contentPadding: const EdgeInsets.symmetric(vertical: 12),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _sexDialogItem(1, current, '男'),
-          _sexDialogItem(0, current, '保密'),
-          _sexDialogItem(2, current, '女'),
-        ],
-      ),
+      children: [
+        _sexDialogItem(1, current, '男'),
+        _sexDialogItem(0, current, '保密'),
+        _sexDialogItem(2, current, '女'),
+      ],
     );
   }
 

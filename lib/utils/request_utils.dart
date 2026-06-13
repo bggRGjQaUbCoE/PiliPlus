@@ -169,99 +169,84 @@ abstract final class RequestUtils {
         String text = isSpecialFollowed ? '移除特别关注' : '加入特别关注';
         showDialog(
           context: context,
-          builder: (context) => AlertDialog(
+          builder: (context) => SimpleDialog(
             clipBehavior: Clip.hardEdge,
             contentPadding: const EdgeInsets.symmetric(vertical: 12),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ListTile(
-                  dense: true,
-                  onTap: () async {
-                    Get.back();
-                    final res = await MemberHttp.specialAction(
-                      fid: mid,
-                      isAdd: !isSpecialFollowed,
-                    );
-                    if (res.isSuccess) {
-                      SmartDialog.showToast('$text成功');
-                      afterMod?.call(isSpecialFollowed ? 2 : -10);
-                    } else {
-                      res.toast();
-                    }
-                  },
-                  title: Text(
-                    text,
-                    style: const TextStyle(fontSize: 14),
-                  ),
-                ),
-                ListTile(
-                  dense: true,
-                  onTap: () async {
-                    Get.back();
-                    final result = await showModalBottomSheet<Set<int>>(
-                      context: context,
-                      useSafeArea: true,
-                      isScrollControlled: true,
-                      constraints: BoxConstraints(
-                        maxWidth: min(640, context.mediaQueryShortestSide),
-                      ),
-                      builder: (BuildContext context) {
-                        final maxChildSize =
-                            PlatformUtils.isMobile &&
-                                !context.mediaQuerySize.isPortrait
-                            ? 1.0
-                            : 0.7;
-                        return DraggableScrollableSheet(
-                          minChildSize: 0,
-                          maxChildSize: 1,
-                          snap: true,
-                          expand: false,
-                          snapSizes: [maxChildSize],
-                          initialChildSize: maxChildSize,
-                          builder: (context, scrollController) {
-                            return GroupPanel(
-                              mid: mid,
-                              tags: followStatus!.tag,
-                              scrollController: scrollController,
-                            );
-                          },
-                        );
-                      },
-                    );
-                    if (result != null) {
-                      followStatus!.tag = result.toList();
-                      afterMod?.call(result.contains(-10) ? -10 : 2);
-                    }
-                  },
-                  title: const Text(
-                    '设置分组',
-                    style: TextStyle(fontSize: 14),
-                  ),
-                ),
-                ListTile(
-                  dense: true,
-                  onTap: () async {
-                    Get.back();
-                    final res = await VideoHttp.relationMod(
-                      mid: mid,
-                      act: 2,
-                      reSrc: 11,
-                    );
-                    if (res.isSuccess) {
-                      SmartDialog.showToast('取消关注成功');
-                      afterMod?.call(0);
-                    } else {
-                      res.toast();
-                    }
-                  },
-                  title: const Text(
-                    '取消关注',
-                    style: TextStyle(fontSize: 14),
-                  ),
-                ),
-              ],
-            ),
+            children: [
+              SimpleDialogOption(
+                onPressed: () async {
+                  Get.back();
+                  final res = await MemberHttp.specialAction(
+                    fid: mid,
+                    isAdd: !isSpecialFollowed,
+                  );
+                  if (res.isSuccess) {
+                    SmartDialog.showToast('$text成功');
+                    afterMod?.call(isSpecialFollowed ? 2 : -10);
+                  } else {
+                    res.toast();
+                  }
+                },
+                child: Text(text, style: const TextStyle(fontSize: 14)),
+              ),
+              SimpleDialogOption(
+                onPressed: () async {
+                  Get.back();
+                  final result = await showModalBottomSheet<Set<int>>(
+                    context: context,
+                    useSafeArea: true,
+                    isScrollControlled: true,
+                    constraints: BoxConstraints(
+                      maxWidth: min(640, context.mediaQueryShortestSide),
+                    ),
+                    builder: (BuildContext context) {
+                      final maxChildSize =
+                          PlatformUtils.isMobile &&
+                              !context.mediaQuerySize.isPortrait
+                          ? 1.0
+                          : 0.7;
+                      return DraggableScrollableSheet(
+                        minChildSize: 0,
+                        maxChildSize: 1,
+                        snap: true,
+                        expand: false,
+                        snapSizes: [maxChildSize],
+                        initialChildSize: maxChildSize,
+                        builder: (context, scrollController) {
+                          return GroupPanel(
+                            mid: mid,
+                            tags: followStatus!.tag,
+                            scrollController: scrollController,
+                          );
+                        },
+                      );
+                    },
+                  );
+                  if (result != null) {
+                    followStatus!.tag = result.toList();
+                    afterMod?.call(result.contains(-10) ? -10 : 2);
+                  }
+                },
+                child: const Text('设置分组', style: TextStyle(fontSize: 14)),
+              ),
+              SimpleDialogOption(
+                onPressed: () async {
+                  Get.back();
+                  final res = await VideoHttp.relationMod(
+                    mid: mid,
+                    act: 2,
+                    reSrc: 11,
+                  );
+                  if (res.isSuccess) {
+                    SmartDialog.showToast('取消关注成功');
+                    afterMod?.call(0);
+                  } else {
+                    res.toast();
+                  }
+                },
+                child: const Text('取消关注', style: TextStyle(fontSize: 14)),
+              ),
+            ],
           ),
         );
       }

@@ -91,34 +91,31 @@ class _BubblePageState extends State<BubblePage>
                     tooltip: '排序',
                     onPressed: () => showDialog(
                       context: context,
-                      builder: (context) => AlertDialog(
+                      builder: (context) => SimpleDialog(
                         clipBehavior: .hardEdge,
                         contentPadding: const .symmetric(vertical: 12),
-                        content: Column(
-                          mainAxisSize: .min,
-                          children: sortInfo.sortItems!.map(
-                            (e) {
-                              final isSelected = item.sortType == e.sortType;
-                              return ListTile(
-                                dense: true,
-                                enabled: !isSelected,
-                                onTap: () {
-                                  Get.back();
-                                  if (!isSelected) {
-                                    _controller.onSort(e.sortType);
-                                  }
-                                },
-                                title: Text(
-                                  e.text!,
-                                  style: const TextStyle(fontSize: 14),
-                                ),
-                                trailing: isSelected
-                                    ? const Icon(size: 22, Icons.check)
-                                    : null,
-                              );
-                            },
-                          ).toList(),
-                        ),
+                        children: sortInfo.sortItems!.map(
+                          (e) {
+                            final isSelected = item.sortType == e.sortType;
+                            return ListTile(
+                              dense: true,
+                              enabled: !isSelected,
+                              onTap: () {
+                                Get.back();
+                                if (!isSelected) {
+                                  _controller.onSort(e.sortType);
+                                }
+                              },
+                              title: Text(
+                                e.text!,
+                                style: const TextStyle(fontSize: 14),
+                              ),
+                              trailing: isSelected
+                                  ? const Icon(size: 22, Icons.check)
+                                  : null,
+                            );
+                          },
+                        ).toList(),
                       ),
                     ),
                     icon: const Icon(Icons.sort, size: 20),

@@ -712,48 +712,42 @@ Future<void> audioNormalization(
 void _showDownPathDialog(BuildContext context, VoidCallback setState) {
   showDialog(
     context: context,
-    builder: (context) => AlertDialog(
+    builder: (context) => SimpleDialog(
       clipBehavior: Clip.hardEdge,
       contentPadding: const EdgeInsets.symmetric(vertical: 12),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ListTile(
-            onTap: () {
-              Get.back();
-              Utils.copyText(downloadPath);
-            },
-            dense: true,
-            title: const Text('复制', style: TextStyle(fontSize: 14)),
-          ),
-          ListTile(
-            onTap: () {
-              Get.back();
-              final defPath = defDownloadPath;
-              if (downloadPath == defPath) return;
-              downloadPath = defPath;
-              setState();
-              Get.find<DownloadService>().initDownloadList();
-              GStorage.setting.delete(SettingBoxKey.downloadPath);
-            },
-            dense: true,
-            title: const Text('重置', style: TextStyle(fontSize: 14)),
-          ),
-          ListTile(
-            onTap: () async {
-              Get.back();
-              final path = await FilePicker.getDirectoryPath();
-              if (path == null || path == downloadPath) return;
-              downloadPath = path;
-              setState();
-              Get.find<DownloadService>().initDownloadList();
-              GStorage.setting.put(SettingBoxKey.downloadPath, path);
-            },
-            dense: true,
-            title: const Text('设置新路径', style: TextStyle(fontSize: 14)),
-          ),
-        ],
-      ),
+      children: [
+        SimpleDialogOption(
+          onPressed: () {
+            Get.back();
+            Utils.copyText(downloadPath);
+          },
+          child: const Text('复制', style: TextStyle(fontSize: 14)),
+        ),
+        SimpleDialogOption(
+          onPressed: () {
+            Get.back();
+            final defPath = defDownloadPath;
+            if (downloadPath == defPath) return;
+            downloadPath = defPath;
+            setState();
+            Get.find<DownloadService>().initDownloadList();
+            GStorage.setting.delete(SettingBoxKey.downloadPath);
+          },
+          child: const Text('重置', style: TextStyle(fontSize: 14)),
+        ),
+        SimpleDialogOption(
+          onPressed: () async {
+            Get.back();
+            final path = await FilePicker.getDirectoryPath();
+            if (path == null || path == downloadPath) return;
+            downloadPath = path;
+            setState();
+            Get.find<DownloadService>().initDownloadList();
+            GStorage.setting.put(SettingBoxKey.downloadPath, path);
+          },
+          child: const Text('设置新路径', style: TextStyle(fontSize: 14)),
+        ),
+      ],
     ),
   );
 }

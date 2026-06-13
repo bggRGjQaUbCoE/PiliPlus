@@ -431,41 +431,37 @@ class AuthorPanel extends StatelessWidget {
                               final reply = response.upReply;
                               final enableReply = reply.status == 1;
 
-                              return AlertDialog(
+                              return SimpleDialog(
                                 clipBehavior: .hardEdge,
                                 contentPadding: const .symmetric(vertical: 12),
-                                content: Column(
-                                  mainAxisSize: .min,
-                                  crossAxisAlignment: .start,
-                                  children: [
-                                    ListTile(
-                                      dense: true,
-                                      enabled: selection.canModify,
-                                      title: Text(
-                                        '${enableSelection ? '停止' : '开启'}评论精选',
-                                        style: const TextStyle(fontSize: 14),
-                                      ),
-                                      onTap: () {
-                                        Get.back();
-                                        onSetReplySubject!(
-                                          enableSelection ? 2 : 1,
-                                        );
-                                      },
+                                children: [
+                                  ListTile(
+                                    dense: true,
+                                    enabled: selection.canModify,
+                                    title: Text(
+                                      '${enableSelection ? '停止' : '开启'}评论精选',
+                                      style: const TextStyle(fontSize: 14),
                                     ),
-                                    ListTile(
-                                      dense: true,
-                                      enabled: reply.canModify,
-                                      title: Text(
-                                        '${enableReply ? '关闭' : '恢复'}评论',
-                                        style: const TextStyle(fontSize: 14),
-                                      ),
-                                      onTap: () {
-                                        Get.back();
-                                        onSetReplySubject!(enableReply ? 3 : 4);
-                                      },
+                                    onTap: () {
+                                      Get.back();
+                                      onSetReplySubject!(
+                                        enableSelection ? 2 : 1,
+                                      );
+                                    },
+                                  ),
+                                  ListTile(
+                                    dense: true,
+                                    enabled: reply.canModify,
+                                    title: Text(
+                                      '${enableReply ? '关闭' : '恢复'}评论',
+                                      style: const TextStyle(fontSize: 14),
                                     ),
-                                  ],
-                                ),
+                                    onTap: () {
+                                      Get.back();
+                                      onSetReplySubject!(enableReply ? 3 : 4);
+                                    },
+                                  ),
+                                ],
                               );
                             },
                           );
@@ -504,32 +500,29 @@ class AuthorPanel extends StatelessWidget {
 
                       showDialog(
                         context: context,
-                        builder: (context) => AlertDialog(
+                        builder: (context) => SimpleDialog(
                           clipBehavior: Clip.hardEdge,
                           contentPadding: const .symmetric(vertical: 12),
-                          content: Column(
-                            mainAxisSize: .min,
-                            children: [
-                              ListTile(
-                                dense: true,
-                                enabled: isPrivate,
-                                title: const Text(
-                                  '所有用户可见',
-                                  style: TextStyle(fontSize: 14),
-                                ),
-                                onTap: onTap,
+                          children: [
+                            ListTile(
+                              dense: true,
+                              enabled: isPrivate,
+                              title: const Text(
+                                '所有用户可见',
+                                style: TextStyle(fontSize: 14),
                               ),
-                              ListTile(
-                                dense: true,
-                                enabled: !isPrivate,
-                                title: const Text(
-                                  '仅自己可见',
-                                  style: TextStyle(fontSize: 14),
-                                ),
-                                onTap: onTap,
+                              onTap: onTap,
+                            ),
+                            ListTile(
+                              dense: true,
+                              enabled: !isPrivate,
+                              title: const Text(
+                                '仅自己可见',
+                                style: TextStyle(fontSize: 14),
                               ),
-                            ],
-                          ),
+                              onTap: onTap,
+                            ),
+                          ],
                         ),
                       );
                     },

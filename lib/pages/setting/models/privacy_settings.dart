@@ -25,9 +25,7 @@ List<SettingsModel> get privacySettings => [
         context: context,
         builder: (context) => AlertDialog(
           title: const Text('账号模式详情'),
-          content: SingleChildScrollView(
-            child: _getAccountDetail(context),
-          ),
+          content: SingleChildScrollView(child: _getAccountDetail(context)),
           actions: [
             TextButton(
               onPressed: Get.back,

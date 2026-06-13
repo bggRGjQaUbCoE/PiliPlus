@@ -292,110 +292,107 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
     String videoUrl = '${HttpString.baseUrl}/video/$bvid';
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
+      builder: (_) => SimpleDialog(
         clipBehavior: Clip.hardEdge,
         contentPadding: const EdgeInsets.symmetric(vertical: 12),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              dense: true,
-              title: const Text(
-                '复制链接',
-                style: TextStyle(fontSize: 14),
-              ),
-              onTap: () {
-                Get.back();
-                Utils.copyText(videoUrl);
-              },
-              trailing: playedTimePos.isNotEmpty
-                  ? iconButton(
-                      tooltip: '精确分享',
-                      icon: const Icon(Icons.timer_outlined),
-                      onPressed: () {
-                        Get.back();
-                        Utils.copyText('$videoUrl$playedTimePos');
-                      },
-                    )
-                  : null,
+        children: [
+          ListTile(
+            dense: true,
+            title: const Text(
+              '复制链接',
+              style: TextStyle(fontSize: 14),
             ),
-            ListTile(
-              dense: true,
-              title: const Text(
-                '其它app打开',
-                style: TextStyle(fontSize: 14),
-              ),
-              onTap: () {
-                Get.back();
-                PageUtils.launchURL(videoUrl);
-              },
+            onTap: () {
+              Get.back();
+              Utils.copyText(videoUrl);
+            },
+            trailing: playedTimePos.isNotEmpty
+                ? iconButton(
+                    tooltip: '精确分享',
+                    icon: const Icon(Icons.timer_outlined),
+                    onPressed: () {
+                      Get.back();
+                      Utils.copyText('$videoUrl$playedTimePos');
+                    },
+                  )
+                : null,
+          ),
+          ListTile(
+            dense: true,
+            title: const Text(
+              '其它app打开',
+              style: TextStyle(fontSize: 14),
             ),
-            if (PlatformUtils.isMobile)
-              ListTile(
-                dense: true,
-                title: const Text(
-                  '分享视频',
-                  style: TextStyle(fontSize: 14),
-                ),
-                onTap: () {
-                  Get.back();
-                  ShareUtils.shareText(
-                    '${videoDetail.title} '
-                    'UP主: ${videoDetail.owner!.name!}'
-                    ' - $videoUrl',
-                  );
-                },
-              ),
+            onTap: () {
+              Get.back();
+              PageUtils.launchURL(videoUrl);
+            },
+          ),
+          if (PlatformUtils.isMobile)
             ListTile(
               dense: true,
               title: const Text(
-                '分享至动态',
+                '分享视频',
                 style: TextStyle(fontSize: 14),
               ),
               onTap: () {
                 Get.back();
-                showModalBottomSheet(
-                  context: context,
-                  isScrollControlled: true,
-                  useSafeArea: true,
-                  builder: (context) => RepostPanel(
-                    rid: videoDetail.aid,
-                    dynType: 8,
-                    pic: videoDetail.pic,
-                    title: videoDetail.title,
-                    uname: videoDetail.owner?.name,
-                  ),
+                ShareUtils.shareText(
+                  '${videoDetail.title} '
+                  'UP主: ${videoDetail.owner!.name!}'
+                  ' - $videoUrl',
                 );
               },
             ),
-            ListTile(
-              dense: true,
-              title: const Text(
-                '分享至消息',
-                style: TextStyle(fontSize: 14),
-              ),
-              onTap: () {
-                Get.back();
-                try {
-                  PageUtils.pmShare(
-                    context,
-                    content: {
-                      "id": videoDetail.aid!.toString(),
-                      "title": videoDetail.title!,
-                      "headline": videoDetail.title!,
-                      "source": 5,
-                      "thumb": videoDetail.pic!,
-                      "author": videoDetail.owner!.name!,
-                      "author_id": videoDetail.owner!.mid!.toString(),
-                    },
-                  );
-                } catch (e) {
-                  SmartDialog.showToast(e.toString());
-                }
-              },
+          ListTile(
+            dense: true,
+            title: const Text(
+              '分享至动态',
+              style: TextStyle(fontSize: 14),
             ),
-          ],
-        ),
+            onTap: () {
+              Get.back();
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                useSafeArea: true,
+                builder: (context) => RepostPanel(
+                  rid: videoDetail.aid,
+                  dynType: 8,
+                  pic: videoDetail.pic,
+                  title: videoDetail.title,
+                  uname: videoDetail.owner?.name,
+                ),
+              );
+            },
+          ),
+          ListTile(
+            dense: true,
+            title: const Text(
+              '分享至消息',
+              style: TextStyle(fontSize: 14),
+            ),
+            onTap: () {
+              Get.back();
+              try {
+                PageUtils.pmShare(
+                  context,
+                  content: {
+                    "id": videoDetail.aid!.toString(),
+                    "title": videoDetail.title!,
+                    "headline": videoDetail.title!,
+                    "source": 5,
+                    "thumb": videoDetail.pic!,
+                    "author": videoDetail.owner!.name!,
+                    "author_id": videoDetail.owner!.mid!.toString(),
+                  },
+                );
+              } catch (e) {
+                SmartDialog.showToast(e.toString());
+              }
+            },
+          ),
+        ],
       ),
     );
   }

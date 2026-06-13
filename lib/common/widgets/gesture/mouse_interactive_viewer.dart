@@ -31,6 +31,8 @@ class MouseInteractiveViewer extends StatefulWidget {
     required this.onPanStart,
     required this.onPanUpdate,
     required this.onScaleUpdate,
+    this.onRotateUpdate,
+    this.rotateEnabled = false,
     this.panEnabled = true,
     this.scaleEnabled = true,
     this.scaleFactor = kDefaultMouseScrollToScaleFactor,
@@ -66,6 +68,16 @@ class MouseInteractiveViewer extends StatefulWidget {
   final GestureScaleStartCallback onPanStart;
   final GestureScaleUpdateCallback onPanUpdate;
   final ValueChanged<double> onScaleUpdate;
+
+  /// Called whenever the current rotation (in radians) changes. Used by the
+  /// host to decide e.g. whether to show a "restore" button. Never reports a
+  /// value while [rotateEnabled] is false.
+  final ValueChanged<double>? onRotateUpdate;
+
+  /// Enables two-finger free rotation. When false the widget behaves exactly
+  /// like the original scale/pan-only viewer (no behavior change).
+  final bool rotateEnabled;
+
   final TransformationController transformationController;
   final GlobalKey childKey;
   final ScaleGestureRecognizer scaleGestureRecognizer;
@@ -98,8 +110,6 @@ class _MouseInteractiveViewerState extends State<MouseInteractiveViewer>
   );
 
   late final ScaleGestureRecognizer _scaleGestureRecognizer;
-
-  final bool _rotateEnabled = false;
 
   Rect get _boundaryRect {
     assert(widget.childKey.currentContext != null);
@@ -256,7 +266,7 @@ class _MouseInteractiveViewerState extends State<MouseInteractiveViewer>
 
   bool _gestureIsSupported(_GestureType? gestureType) {
     return switch (gestureType) {
-      _GestureType.rotate => _rotateEnabled,
+      _GestureType.rotate => widget.rotateEnabled,
       _GestureType.scale => widget.scaleEnabled,
       _GestureType.pan || null => widget.panEnabled,
     };
@@ -264,7 +274,7 @@ class _MouseInteractiveViewerState extends State<MouseInteractiveViewer>
 
   _GestureType _getGestureType(ScaleUpdateDetails details) {
     final double scale = !widget.scaleEnabled ? 1.0 : details.scale;
-    final double rotation = !_rotateEnabled ? 0.0 : details.rotation;
+    final double rotation = !widget.rotateEnabled ? 0.0 : details.rotation;
     if ((scale - 1).abs() > rotation.abs()) {
       return _GestureType.scale;
     } else if (rotation != 0.0) {
@@ -303,6 +313,10 @@ class _MouseInteractiveViewerState extends State<MouseInteractiveViewer>
     _currentAxis = null;
     _scaleStart = _transformer.value.getMaxScaleOnAxis();
     _referenceFocalPoint = _transformer.toScene(details.localFocalPoint);
+    // Derive the rotation from the live matrix instead of trusting the cached
+    // value. This keeps rotation correct after the matrix is reset externally
+    // (e.g. the "restore" button animating back to identity).
+    _currentRotation = _matrixRotation(_transformer.value);
     _rotationStart = _currentRotation;
   }
 
@@ -329,6 +343,15 @@ class _MouseInteractiveViewerState extends State<MouseInteractiveViewer>
     } else {
       _gestureType ??= _getGestureType(details);
     }
+    // Free-transform path: apply scale + rotation + translation together so a
+    // single two-finger gesture can zoom, rotate and pan at the same time
+    // (photo-viewer style). Only taken when rotation is enabled; otherwise the
+    // original mutually-exclusive logic below runs unchanged.
+    if (widget.rotateEnabled) {
+      _onFreeTransformUpdate(details);
+      return;
+    }
+
     if (!_gestureIsSupported(_gestureType)) {
       return;
     }
@@ -397,6 +420,56 @@ class _MouseInteractiveViewerState extends State<MouseInteractiveViewer>
           translationChange,
         );
         _referenceFocalPoint = _transformer.toScene(details.localFocalPoint);
+    }
+  }
+
+  // Applies scale, rotation and translation from a single two-finger update so
+  // they compose into one free transform. The scene point that sat under the
+  // fingers when the gesture began ([_referenceFocalPoint]) is kept under the
+  // fingers throughout, which makes pinch-zoom focal-correct and also yields
+  // pan as the fingers move together. No new objects are allocated beyond the
+  // Matrix4 clones the matrix helpers already produce.
+  void _onFreeTransformUpdate(ScaleUpdateDetails details) {
+    // 1. Scale (relative to the previous frame).
+    if (widget.scaleEnabled && _scaleStart != null) {
+      final double currentScale = _transformer.value.getMaxScaleOnAxis();
+      final double desiredScale = _scaleStart! * details.scale;
+      final double scaleChange = desiredScale / currentScale;
+      if (scaleChange != 1.0) {
+        _transformer.value = _matrixScale(_transformer.value, scaleChange);
+      }
+    }
+
+    // 2. Rotation (any angle, around the current focal point).
+    if (details.rotation != 0.0 && _rotationStart != null) {
+      final double desiredRotation = _rotationStart! + details.rotation;
+      _transformer.value = _matrixRotate(
+        _transformer.value,
+        _currentRotation - desiredRotation,
+        details.localFocalPoint,
+      );
+      _currentRotation = desiredRotation;
+      widget.onRotateUpdate?.call(_currentRotation);
+    }
+
+    // 3. Translation: pin the original scene anchor under the (possibly moved)
+    // fingers. This keeps zoom/rotation focal-correct and provides panning.
+    if (_referenceFocalPoint != null) {
+      final Offset focalPointSceneNow = _transformer.toScene(
+        details.localFocalPoint,
+      );
+      _transformer.value = _matrixTranslate(
+        _transformer.value,
+        focalPointSceneNow - _referenceFocalPoint!,
+      );
+      // If a boundary stopped the translation, re-anchor so subsequent updates
+      // are relative to the new effective focal point.
+      final Offset focalPointSceneCheck = _transformer.toScene(
+        details.localFocalPoint,
+      );
+      if (_round(_referenceFocalPoint!) != _round(focalPointSceneCheck)) {
+        _referenceFocalPoint = focalPointSceneCheck;
+      }
     }
   }
 
@@ -749,6 +822,13 @@ double _getFinalTime(
   double effectivelyMotionless = 10,
 }) {
   return math.log(effectivelyMotionless / velocity) / math.log(drag / 100);
+}
+
+// Extracts the Z-axis rotation (radians) encoded in an affine 2D matrix.
+// Uniform scale and translation do not affect the result; flips are applied to
+// the child widget rather than this matrix, so they never reach here.
+double _matrixRotation(Matrix4 matrix) {
+  return math.atan2(matrix.storage[1], matrix.storage[0]);
 }
 
 Offset _getMatrixTranslation(Matrix4 matrix) {

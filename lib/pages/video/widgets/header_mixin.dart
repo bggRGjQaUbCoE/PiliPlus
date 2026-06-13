@@ -12,6 +12,8 @@ mixin HeaderMixin<T extends StatefulWidget> on State<T> {
 
   bool get isFullScreen => plPlayerController.isFullScreen.value;
 
+  ThemeData? get theme => null;
+
   Future<void>? showBottomSheet(
     StatefulWidgetBuilder builder, {
     ValueGetter<EdgeInsets>? padding,
@@ -21,7 +23,16 @@ mixin HeaderMixin<T extends StatefulWidget> on State<T> {
       maxWidth: 512,
       padding: padding,
       child: StatefulBuilder(
-        builder: (context, setState) => builder(context, setState),
+        builder: (context, setState) {
+          final theme = this.theme;
+          if (theme != null) {
+            return Theme(
+              data: theme,
+              child: builder(context, setState),
+            );
+          }
+          return builder(context, setState);
+        },
       ),
     );
   }

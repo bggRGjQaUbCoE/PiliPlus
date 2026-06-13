@@ -7,6 +7,7 @@ import 'package:PiliPlus/plugin/pl_player/widgets/common_btn.dart';
 import 'package:PiliPlus/plugin/pl_player/widgets/play_pause_btn.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
+import 'package:PiliPlus/utils/theme_utils.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -37,6 +38,8 @@ class _BottomControlState extends State<BottomControl> with HeaderMixin {
   late final LiveRoomController liveRoomCtr = widget.liveRoomCtr;
   @override
   late final PlPlayerController plPlayerController = widget.plPlayerController;
+  @override
+  ThemeData get theme => ThemeUtils.darkTheme;
 
   @override
   Widget build(BuildContext context) {

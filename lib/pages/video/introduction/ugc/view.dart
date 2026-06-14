@@ -1,5 +1,6 @@
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/style.dart';
+import 'package:PiliPlus/common/widgets/custom_icon.dart';
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
 import 'package:PiliPlus/common/widgets/gesture/tap_gesture_recognizer.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
@@ -524,17 +525,17 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
               onCancelTriple: introController.onCancelTriple,
             ),
           ),
-          Obx(
-            () => ActionItem(
-              icon: const Icon(FontAwesomeIcons.thumbsDown),
-              selectIcon: const Icon(FontAwesomeIcons.solidThumbsDown),
-              onTap: () => introController.handleAction(
-                introController.actionDislikeVideo,
-              ),
-              selectStatus: introController.hasDislike.value,
-              text: "点踩",
-            ),
-          ),
+          // Obx(
+          //   () => ActionItem(
+          //     icon: const Icon(FontAwesomeIcons.thumbsDown),
+          //     selectIcon: const Icon(FontAwesomeIcons.solidThumbsDown),
+          //     onTap: () => introController.handleAction(
+          //       introController.actionDislikeVideo,
+          //     ),
+          //     selectStatus: introController.hasDislike.value,
+          //     text: "点踩",
+          //   ),
+          // ),
           Obx(
             () => ActionItem(
               animation: introController.tripleAnimation,
@@ -562,6 +563,11 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
                   ? NumUtils.numFormat(videoDetail.stat!.favorite)
                   : null,
             ),
+          ),
+          ActionItem(
+            icon: const Icon(CustomIcons.download),
+            onTap: () => videoDetailCtr.onDownload(context),
+            text: '缓存',
           ),
           Obx(
             () => ActionItem(

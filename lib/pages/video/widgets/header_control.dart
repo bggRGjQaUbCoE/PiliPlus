@@ -1835,6 +1835,15 @@ class HeaderControlState extends State<HeaderControl>
                   height: btnHeight,
                   child: ActionItem(
                     expand: false,
+                    icon: const Icon(CustomIcons.download, color: Colors.white),
+                    onTap: () => videoDetailCtr.onDownload(context),
+                  ),
+                ),
+                SizedBox(
+                  width: btnWidth,
+                  height: btnHeight,
+                  child: ActionItem(
+                    expand: false,
                     icon: const Icon(
                       FontAwesomeIcons.shareFromSquare,
                       color: Colors.white,

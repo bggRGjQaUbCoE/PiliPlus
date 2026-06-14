@@ -878,16 +878,6 @@ class _LiveRoomPageState extends State<LiveRoomPage>
             ),
           ),
         ),
-        Positioned(
-          top: -6,
-          right: 6,
-          child: Obx(
-            () => Badge.count(
-              isLabelVisible: _liveRoomController.superChatMsg.isNotEmpty,
-              count: _liveRoomController.superChatMsg.length,
-            ),
-          ),
-        ),
       ],
     );
   }

@@ -1,3 +1,4 @@
+import 'package:PiliPlus/common/widgets/custom_icon.dart';
 import 'package:PiliPlus/common/widgets/flutter/popup_menu.dart';
 import 'package:PiliPlus/common/widgets/gesture/tap_gesture_recognizer.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
@@ -45,6 +46,7 @@ class LiveRoomChatPanel extends StatelessWidget {
         ? colorScheme.primary
         : colorScheme.inversePrimary;
     return Stack(
+      clipBehavior: .none,
       children: [
         Obx(
           () => ListView.separated(
@@ -184,20 +186,24 @@ class LiveRoomChatPanel extends StatelessWidget {
           width: 32,
           height: 32,
           child: PopupMenuButton(
-            iconSize: 19,
+            iconSize: 18,
             padding: .zero,
+            position: .under,
+            tooltip: '',
+            iconColor: const Color(0xFFEEEEEE),
+            icon: const Icon(CustomIcons.dm_settings),
             itemBuilder: (context) => [
               if (liveRoomController.msgStream != null)
                 PopupMenuItem(
                   height: 35,
                   onTap: liveRoomController.closeLiveMsg,
-                  child: const Text('Pause'),
+                  child: const Text('暂停'),
                 )
               else
                 PopupMenuItem(
                   height: 35,
                   onTap: liveRoomController.startLiveMsg,
-                  child: const Text('Resume'),
+                  child: const Text('恢复'),
                 ),
               PopupMenuItem(
                 height: 35,
@@ -205,9 +211,19 @@ class LiveRoomChatPanel extends StatelessWidget {
                   ..danmakuController?.clear()
                   ..messages.clear()
                   ..disableAutoScroll.value = false,
-                child: const Text('Clear'),
+                child: const Text('清空'),
               ),
             ],
+          ),
+        ),
+        Positioned(
+          top: 8,
+          right: 48,
+          child: Obx(
+            () => Badge.count(
+              isLabelVisible: liveRoomController.superChatMsg.isNotEmpty,
+              count: liveRoomController.superChatMsg.length,
+            ),
           ),
         ),
       ],

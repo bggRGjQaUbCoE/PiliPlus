@@ -4,11 +4,11 @@ import 'package:PiliPlus/common/widgets/flutter/list_tile.dart';
 import 'package:PiliPlus/common/widgets/view_safe_area.dart';
 import 'package:PiliPlus/pages/setting/widgets/switch_item.dart';
 import 'package:PiliPlus/utils/extension/context_ext.dart';
+import 'package:PiliPlus/utils/filtering_text.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:flutter/material.dart' hide ListTile;
-import 'package:flutter/services.dart' show FilteringTextInputFormatter;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:hive_ce/hive.dart';
@@ -74,9 +74,7 @@ class _PlaySpeedPageState extends State<PlaySpeedPage> {
                 border: OutlineInputBorder(borderRadius: .all(.circular(6))),
               ),
               onChanged: (value) => initialValue = value,
-              inputFormatters: [
-                FilteringTextInputFormatter.allow(RegExp(r'[\d\.]+')),
-              ],
+              inputFormatters: FilteringText.decimal,
             ),
           ],
         ),

@@ -35,7 +35,7 @@ class SelectDialog<T> extends StatelessWidget {
       clipBehavior: Clip.hardEdge,
       title: Text(title),
       constraints: subtitleBuilder != null
-          ? const BoxConstraints(maxWidth: 320, minWidth: 320)
+          ? const BoxConstraints.tightFor(width: 320)
           : null,
       contentPadding: const EdgeInsets.symmetric(vertical: 12),
       content: Material(

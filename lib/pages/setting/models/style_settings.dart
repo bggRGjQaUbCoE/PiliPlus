@@ -220,7 +220,7 @@ List<SettingsModel> get styleSettings => [
   NormalModel(
     onTap: (context, setState) => _showQualityDialog(
       context: context,
-      title: '图片质量',
+      title: const Text('图片质量'),
       initValue: Pref.picQuality,
       onChanged: (picQuality) async {
         GlobalData().imgQuality = picQuality;
@@ -239,7 +239,7 @@ List<SettingsModel> get styleSettings => [
   NormalModel(
     onTap: (context, setState) => _showQualityDialog(
       context: context,
-      title: '查看大图质量',
+      title: const Text('查看大图质量'),
       initValue: Pref.previewQ,
       onChanged: (picQuality) async {
         await GStorage.setting.put(SettingBoxKey.previewQuality, picQuality);
@@ -381,7 +381,7 @@ List<SettingsModel> get styleSettings => [
 
 void _showQualityDialog({
   required BuildContext context,
-  required String title,
+  required Widget title,
   required int initValue,
   required ValueChanged<int> onChanged,
 }) {
@@ -442,9 +442,7 @@ void _showUiScaleDialog(
             ),
             TextFormField(
               controller: textController,
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
-              ),
+              keyboardType: const .numberWithOptions(decimal: true),
               inputFormatters: [
                 LengthLimitingTextInputFormatter(4),
                 FilteringTextInputFormatter.allow(RegExp(r'[\d.]+')),
@@ -637,7 +635,7 @@ Future<void> _showFontWeightDialog(BuildContext context) async {
   final res = await showDialog<double>(
     context: context,
     builder: (context) => SliderDialog(
-      title: 'App字体字重',
+      title: const Text('App字体字重'),
       value: Pref.appFontWeight.toDouble() + 1,
       min: 1,
       max: FontWeight.values.length.toDouble(),
@@ -676,11 +674,11 @@ Future<void> _showCardWidthDialog(
   final res = await showDialog<(double, double)>(
     context: context,
     builder: (context) => DualSliderDialog(
-      title: '列表最大列宽度（默认240dp）',
+      title: const Text('列表最大列宽度（默认240dp）'),
       value1: Pref.recommendCardWidth,
       value2: Pref.smallCardWidth,
-      description1: '主页推荐流',
-      description2: '其他',
+      description1: const Text('主页推荐流'),
+      description2: const Text('其他'),
       min: 150.0,
       max: 500.0,
       divisions: 35,
@@ -853,7 +851,7 @@ Future<void> _showToastDialog(
   final res = await showDialog<double>(
     context: context,
     builder: (context) => SliderDialog(
-      title: 'Toast不透明度',
+      title: const Text('Toast不透明度'),
       value: CustomToast.toastOpacity,
       min: 0.0,
       max: 1.0,

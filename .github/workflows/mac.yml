@@ -33,7 +33,6 @@ jobs:
       - name: Apply Patch
         shell: pwsh
         run: lib/scripts/patch.ps1 macOS
-        continue-on-error: true
 
       - name: Build Mac
         run: flutter build macos --release --dart-define-from-file=pili_release.json

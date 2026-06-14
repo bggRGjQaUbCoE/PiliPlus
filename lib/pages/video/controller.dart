@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 import 'dart:math' show min;
 import 'dart:ui';
 
@@ -54,12 +53,10 @@ import 'package:PiliPlus/services/download/download_service.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/connectivity_utils.dart';
 import 'package:PiliPlus/utils/extension/context_ext.dart';
-import 'package:PiliPlus/utils/extension/file_ext.dart';
 import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/size_ext.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
-import 'package:PiliPlus/utils/path_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
@@ -75,7 +72,6 @@ import 'package:flutter_volume_controller/flutter_volume_controller.dart';
 import 'package:get/get.dart';
 import 'package:hive_ce/hive.dart';
 import 'package:media_kit/media_kit.dart' hide Subtitle;
-import 'package:path/path.dart' as path;
 
 class VideoDetailController extends GetxController
     with GetTickerProviderStateMixin, BlockMixin {
@@ -648,7 +644,7 @@ class VideoDetailController extends GetxController
     await Get.key.currentState!.push(
       PublishRoute(
         pageBuilder: (buildContext, animation, secondaryAnimation) {
-          return SendDanmakuPanel(
+          final child = SendDanmakuPanel(
             cid: cid.value,
             bvid: bvid,
             progress: plPlayerController.position.inMilliseconds,
@@ -658,10 +654,13 @@ class VideoDetailController extends GetxController
               savedDanmaku = null;
               plPlayerController.danmakuController?.addDanmaku(danmakuModel);
             },
-            darkVideoPage: plPlayerController.darkVideoPage,
             dmConfig: dmConfig,
             onSaveDmConfig: (dmConfig) => this.dmConfig = dmConfig,
           );
+          if (plPlayerController.darkVideoPage) {
+            return Theme(data: ThemeUtils.darkTheme, child: child);
+          }
+          return child;
         },
       ),
     );
@@ -740,15 +739,10 @@ class VideoDetailController extends GetxController
   }
 
   Future<void> playerInit({
-    String? video,
-    String? audio,
-    Duration? seekToTime,
-    Duration? duration,
     bool? autoplay,
-    Volume? volume,
     bool autoFullScreenFlag = false,
   }) async {
-    Duration? seek = seekToTime ?? defaultST ?? playedTime;
+    Duration? seek = defaultST ?? playedTime;
     if (seek == null || seek == Duration.zero) {
       seek = getFirstSegment();
     }
@@ -761,15 +755,13 @@ class VideoDetailController extends GetxController
               hasDashAudio: entry.hasDashAudio,
             )
           : NetworkSource(
-              videoSource: video ?? videoUrl!,
-              audioSource: audio ?? audioUrl,
+              videoSource: videoUrl!,
+              audioSource: audioUrl,
             ),
       seekTo: seek,
-      duration:
-          duration ??
-          (data.timeLength == null
-              ? null
-              : Duration(milliseconds: data.timeLength!)),
+      duration: data.timeLength == null
+          ? null
+          : Duration(milliseconds: data.timeLength!),
       isVertical: isVertical.value,
       aid: aid,
       bvid: bvid,
@@ -785,7 +777,7 @@ class VideoDetailController extends GetxController
       },
       width: firstVideo.width,
       height: firstVideo.height,
-      volume: volume ?? this.volume,
+      volume: volume,
       autoFullScreenFlag: autoFullScreenFlag,
     );
 
@@ -819,14 +811,13 @@ class VideoDetailController extends GetxController
       return;
     }
     currLang.value = language;
-    queryVideoUrl(defaultST: playedTime);
+    queryVideoUrl(fromReset: true);
   }
 
   Volume? volume;
 
   // 视频链接
   Future<void> queryVideoUrl({
-    Duration? defaultST,
     bool fromReset = false,
     bool autoFullScreenFlag = false,
   }) async {
@@ -870,11 +861,13 @@ class VideoDetailController extends GetxController
 
       volume = data.volume;
 
-      final progress = args.remove('progress');
-      if (progress != null) {
-        this.defaultST = Duration(milliseconds: progress);
-      } else if (defaultST == null && data.lastPlayTime != null) {
-        this.defaultST = Duration(milliseconds: data.lastPlayTime!);
+      if (!fromReset) {
+        final progress = args.remove('progress');
+        if (progress != null) {
+          defaultST = Duration(milliseconds: progress);
+        } else {
+          defaultST = Duration(milliseconds: data.lastPlayTime);
+        }
       }
 
       if (!isUgc && !fromReset && plPlayerController.enablePgcSkip) {
@@ -1032,22 +1025,16 @@ class VideoDetailController extends GetxController
       );
     }
     if (plPlayerController.isFullScreen.value || showVideoSheet) {
+      final child = PostPanel(
+        enableSlide: false,
+        videoDetailController: this,
+        plPlayerController: plPlayerController,
+      );
       PageUtils.showVideoBottomSheet(
         context,
         child: plPlayerController.darkVideoPage
-            ? Theme(
-                data: ThemeUtils.darkTheme,
-                child: PostPanel(
-                  enableSlide: false,
-                  videoDetailController: this,
-                  plPlayerController: plPlayerController,
-                ),
-              )
-            : PostPanel(
-                enableSlide: false,
-                videoDetailController: this,
-                plPlayerController: plPlayerController,
-              ),
+            ? Theme(data: ThemeUtils.darkTheme, child: child)
+            : child,
       );
     } else {
       childKey.currentState?.showBottomSheet(
@@ -1081,19 +1068,8 @@ class VideoDetailController extends GetxController
       final sub = subtitles[index - 1];
 
       String subUri = subtitle.id;
-      File? file;
       if (subtitle.isData) {
-        subUri = path.join(tmpDirPath, '${cid.value}-${sub.lan}.vtt');
-        file = File(subUri);
-        if (!file.existsSync()) {
-          await file.writeAsString(subtitle.id);
-          if (plPlayerController.videoPlayerController?.disposed == false) {
-            plPlayerController.videoPlayerController!.release.add(file.tryDel);
-          } else {
-            file.tryDel();
-            return;
-          }
-        }
+        subUri = 'memory://$subUri';
       }
       await plPlayerController.videoPlayerController?.setSubtitleTrack(
         SubtitleTrack(subUri, sub.lanDoc, sub.lan, uri: true),
@@ -1370,26 +1346,18 @@ class VideoDetailController extends GetxController
       ).videoDetail.value.title;
     } catch (_) {}
     if (plPlayerController.isFullScreen.value || showVideoSheet) {
+      final child = NoteListPage(
+        oid: aid,
+        enableSlide: false,
+        heroTag: heroTag,
+        isStein: graphVersion != null,
+        title: title,
+      );
       PageUtils.showVideoBottomSheet(
         context,
         child: plPlayerController.darkVideoPage
-            ? Theme(
-                data: ThemeUtils.darkTheme,
-                child: NoteListPage(
-                  oid: aid,
-                  enableSlide: false,
-                  heroTag: heroTag,
-                  isStein: graphVersion != null,
-                  title: title,
-                ),
-              )
-            : NoteListPage(
-                oid: aid,
-                enableSlide: false,
-                heroTag: heroTag,
-                isStein: graphVersion != null,
-                title: title,
-              ),
+            ? Theme(data: ThemeUtils.darkTheme, child: child)
+            : child,
       );
     } else {
       childKey.currentState?.showBottomSheet(

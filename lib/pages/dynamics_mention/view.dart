@@ -123,10 +123,7 @@ class _DynMentionPanelState
                 padding: EdgeInsets.only(left: 12, right: 4),
                 child: Icon(Icons.search, size: 20),
               ),
-              prefixIconConstraints: const BoxConstraints(
-                minHeight: 0,
-                minWidth: 0,
-              ),
+              prefixIconConstraints: const .new(minHeight: 0, minWidth: 0),
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: 16,
                 vertical: 6,

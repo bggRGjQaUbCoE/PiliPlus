@@ -225,9 +225,10 @@ abstract class CommonRichTextPubPageState<T extends CommonRichTextPubPage>
       const Duration(milliseconds: 500),
       () async {
         try {
-          List<XFile> pickedFiles = await imagePicker.pickMultiImage(
+          final pickedFiles = await imagePicker.pickMultiImage(
             limit: limit,
             imageQuality: 100,
+            requestFullMetadata: false,
           );
           if (pickedFiles.isNotEmpty) {
             for (int i = 0; i < pickedFiles.length; i++) {
@@ -334,8 +335,8 @@ abstract class CommonRichTextPubPageState<T extends CommonRichTextPubPage>
         _onInsertUser(res, fromClick);
       } else if (res is Set<MentionItem>) {
         for (final e in res) {
-          e.checked = false;
-          _onInsertUser(e, fromClick);
+          _onInsertUser(e..checked = false, fromClick);
+          fromClick = true;
         }
         res.clear();
       }

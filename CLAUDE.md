@@ -8,7 +8,7 @@ PiliPlus is a third-party BiliBili client built with Flutter, targeting Android,
 
 ## Toolchain
 
-- **Flutter is pinned to `3.44.1`** via `.fvmrc` and `pubspec.yaml` (`environment.flutter`). Use FVM or the exact matching version — the project relies on patched Flutter SDK internals (see below).
+- **Flutter is pinned to `3.44.2`** via `.fvmrc` and `pubspec.yaml` (`environment.flutter`). Use FVM or the exact matching version — the project relies on patched Flutter SDK internals (see below).
 - Dart SDK `>=3.12.0`. Java 17 for Android.
 
 ## Common commands

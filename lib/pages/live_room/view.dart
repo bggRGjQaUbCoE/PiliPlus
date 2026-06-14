@@ -48,6 +48,7 @@ import 'package:PiliPlus/utils/share_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
+import 'package:PiliPlus/utils/theme_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'package:canvas_danmaku/danmaku_screen.dart';
@@ -56,6 +57,8 @@ import 'package:flutter/material.dart' hide PageView;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:screen_brightness_platform_interface/screen_brightness_platform_interface.dart';
+
+const baseWhite = Color(0xFFEEEEEE);
 
 class LiveRoomPage extends StatefulWidget {
   const LiveRoomPage({super.key});
@@ -233,7 +236,10 @@ class _LiveRoomPageState extends State<LiveRoomPage>
         child: child,
       );
     }
-    return child;
+    return Theme(
+      data: ThemeUtils.darkTheme,
+      child: child,
+    );
   }
 
   Widget videoPlayerPanel(
@@ -541,7 +547,6 @@ class _LiveRoomPageState extends State<LiveRoomPage>
   }
 
   PreferredSizeWidget _buildAppBar(bool isFullScreen) {
-    final color = Theme.of(context).colorScheme.onSurfaceVariant;
     return AppBar(
       primary: !plPlayerController.removeSafeArea,
       toolbarHeight: isFullScreen ? 0 : null,
@@ -563,7 +568,7 @@ class _LiveRoomPageState extends State<LiveRoomPage>
                       Get.toNamed('/member?mid=${roomInfoH5.roomInfo?.uid}'),
                   child: Row(
                     spacing: 10,
-                    mainAxisSize: MainAxisSize.min,
+                    mainAxisSize: .min,
                     children: [
                       NetworkImgLayer(
                         width: 34,
@@ -623,47 +628,35 @@ class _LiveRoomPageState extends State<LiveRoomPage>
             return <PopupMenuEntry>[
               PopupMenuItem(
                 onTap: () => Utils.copyText(liveUrl),
-                child: Row(
+                child: const Row(
                   spacing: 10,
-                  mainAxisSize: MainAxisSize.min,
+                  mainAxisSize: .min,
                   children: [
-                    Icon(
-                      Icons.copy,
-                      size: 19,
-                      color: color,
-                    ),
-                    const Text('复制链接'),
+                    Icon(Icons.copy, size: 19),
+                    Text('复制链接'),
                   ],
                 ),
               ),
               if (PlatformUtils.isMobile)
                 PopupMenuItem(
                   onTap: () => ShareUtils.shareText(liveUrl),
-                  child: Row(
+                  child: const Row(
                     spacing: 10,
-                    mainAxisSize: MainAxisSize.min,
+                    mainAxisSize: .min,
                     children: [
-                      Icon(
-                        Icons.share,
-                        size: 19,
-                        color: color,
-                      ),
-                      const Text('分享直播间'),
+                      Icon(Icons.share, size: 19),
+                      Text('分享直播间'),
                     ],
                   ),
                 ),
               PopupMenuItem(
                 onTap: () => PageUtils.inAppWebview(liveUrl, off: true),
-                child: Row(
+                child: const Row(
                   spacing: 10,
-                  mainAxisSize: MainAxisSize.min,
+                  mainAxisSize: .min,
                   children: [
-                    Icon(
-                      Icons.open_in_browser,
-                      size: 19,
-                      color: color,
-                    ),
-                    const Text('浏览器打开'),
+                    Icon(Icons.open_in_browser, size: 19),
+                    Text('浏览器打开'),
                   ],
                 ),
               ),
@@ -690,16 +683,12 @@ class _LiveRoomPageState extends State<LiveRoomPage>
                       SmartDialog.showToast(e.toString());
                     }
                   },
-                  child: Row(
+                  child: const Row(
                     spacing: 10,
-                    mainAxisSize: MainAxisSize.min,
+                    mainAxisSize: .min,
                     children: [
-                      Icon(
-                        Icons.forward_to_inbox,
-                        size: 19,
-                        color: color,
-                      ),
-                      const Text('分享至消息'),
+                      Icon(Icons.forward_to_inbox, size: 19),
+                      Text('分享至消息'),
                     ],
                   ),
                 ),
@@ -800,25 +789,20 @@ class _LiveRoomPageState extends State<LiveRoomPage>
 
   Widget get _buildInputWidget {
     final child = Container(
-      padding: EdgeInsets.only(
-        top: 5,
-        left: 10,
-        right: 10,
-        bottom: padding.bottom,
-      ),
+      padding: .only(top: 5, left: 10, right: 10, bottom: padding.bottom),
       height: 70 + padding.bottom,
       decoration: const BoxDecoration(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: .vertical(top: .circular(20)),
         border: Border(top: BorderSide(color: Color(0x1AFFFFFF))),
         color: Color(0x1AFFFFFF),
       ),
       child: GestureDetector(
         onTap: _liveRoomController.onSendDanmaku,
-        behavior: HitTestBehavior.opaque,
+        behavior: .opaque,
         child: Padding(
-          padding: const EdgeInsets.only(top: 5, bottom: 10),
+          padding: const .only(top: 5, bottom: 10),
           child: Align(
-            alignment: Alignment.topCenter,
+            alignment: .topCenter,
             child: Row(
               spacing: 6,
               children: [
@@ -830,9 +814,7 @@ class _LiveRoomPageState extends State<LiveRoomPage>
                       width: 34,
                       height: 34,
                       child: IconButton(
-                        style: IconButton.styleFrom(
-                          padding: EdgeInsets.zero,
-                        ),
+                        style: IconButton.styleFrom(padding: .zero),
                         onPressed: () {
                           final newVal = !enableShowLiveDanmaku;
                           plPlayerController.enableShowDanmaku.value = newVal;
@@ -847,12 +829,12 @@ class _LiveRoomPageState extends State<LiveRoomPage>
                             ? const Icon(
                                 size: 22,
                                 CustomIcons.dm_on,
-                                color: Color(0xFFEEEEEE),
+                                color: baseWhite,
                               )
                             : const Icon(
                                 size: 22,
                                 CustomIcons.dm_off,
-                                color: Color(0xFFEEEEEE),
+                                color: baseWhite,
                               ),
                       ),
                     );
@@ -861,7 +843,7 @@ class _LiveRoomPageState extends State<LiveRoomPage>
                 const Expanded(
                   child: Text(
                     '发送弹幕',
-                    style: TextStyle(color: Color(0xFFEEEEEE)),
+                    style: TextStyle(color: baseWhite),
                   ),
                 ),
                 Builder(
@@ -882,7 +864,7 @@ class _LiveRoomPageState extends State<LiveRoomPage>
                               dimension: 34,
                               child: Icon(
                                 size: 22,
-                                color: Color(0xFFEEEEEE),
+                                color: baseWhite,
                                 Icons.thumb_up_off_alt,
                               ),
                             ),
@@ -930,7 +912,7 @@ class _LiveRoomPageState extends State<LiveRoomPage>
                     onPressed: () => _liveRoomController.onSendDanmaku(true),
                     icon: const Icon(
                       size: 22,
-                      color: Color(0xFFEEEEEE),
+                      color: baseWhite,
                       Icons.emoji_emotions_outlined,
                     ),
                   ),

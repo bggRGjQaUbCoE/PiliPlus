@@ -17,10 +17,7 @@ abstract final class SpaceGrpc {
       GrpcUrl.opusSpaceFlow,
       OpusSpaceFlowReq(
         hostMid: Int64(hostMid),
-        pagination: Pagination(
-          pageSize: 20,
-          next: next,
-        ),
+        pagination: Pagination(pageSize: 20, next: next),
         filterType: filterType,
       ),
       OpusSpaceFlowResp.fromBuffer,

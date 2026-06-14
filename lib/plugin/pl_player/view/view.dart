@@ -25,8 +25,6 @@ import 'package:PiliPlus/models/common/super_resolution_type.dart';
 import 'package:PiliPlus/models/common/video/video_quality.dart';
 import 'package:PiliPlus/models/video/play/url.dart';
 import 'package:PiliPlus/models_new/video/video_detail/episode.dart' as ugc;
-import 'package:PiliPlus/models_new/video/video_detail/episode.dart';
-import 'package:PiliPlus/models_new/video/video_detail/section.dart';
 import 'package:PiliPlus/models_new/video/video_detail/ugc_season.dart';
 import 'package:PiliPlus/pages/common/common_intro_controller.dart';
 import 'package:PiliPlus/pages/danmaku/danmaku_model.dart';
@@ -261,6 +259,8 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     );
 
     _transformationController = TransformationController();
+    plPlayerController.onBeforeExitFullScreen =
+        _resetVideoTransformOnExitFullScreen;
 
     _animationController = AnimationController(
       vsync: this,
@@ -380,6 +380,10 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     _scaleGestureRecognizer.dispose();
     _brightnessListener?.cancel();
     _controlsListener?.cancel();
+    if (plPlayerController.onBeforeExitFullScreen ==
+        _resetVideoTransformOnExitFullScreen) {
+      plPlayerController.onBeforeExitFullScreen = null;
+    }
     _animationController.dispose();
     _transformationController.dispose();
     _removeDmAction();
@@ -579,9 +583,9 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
           String bvid = plPlayerController.bvid;
           List<ugc.BaseEpisodeItem> episodes = [];
           if (isSeason) {
-            final List<SectionItem> sections = videoDetail.ugcSeason!.sections!;
+            final sections = videoDetail.ugcSeason!.sections!;
             for (int i = 0; i < sections.length; i++) {
-              final List<EpisodeItem> episodesList = sections[i].episodes!;
+              final episodesList = sections[i].episodes!;
               for (final item in episodesList) {
                 if (item.cid == currentCid) {
                   index = i;
@@ -811,18 +815,12 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
           if (videoInfo.dash == null) {
             return const SizedBox.shrink();
           }
-          final List<FormatItem> videoFormat = videoInfo.supportFormats!;
-          final int totalQaSam = videoFormat.length;
-          int usefulQaSam = 0;
-          final List<VideoItem> video = videoInfo.dash!.video!;
-          final Set<int> idSet = {};
-          for (final VideoItem item in video) {
-            final int id = item.id!;
-            if (!idSet.contains(id)) {
-              idSet.add(id);
-              usefulQaSam++;
-            }
-          }
+          final videoFormat = videoInfo.supportFormats!;
+          final totalQaSam = videoFormat.length;
+          final usefulQaSam = videoInfo.dash!.video!
+              .map((i) => i.id)
+              .toSet()
+              .length;
           return PopupMenuButton<int>(
             tooltip: '画质',
             requestFocus: false,
@@ -892,16 +890,8 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
         height: 30,
         tooltip: isFullScreen ? '退出全屏' : '全屏',
         icon: isFullScreen
-            ? const Icon(
-                Icons.fullscreen_exit,
-                size: 24,
-                color: Colors.white,
-              )
-            : const Icon(
-                Icons.fullscreen,
-                size: 24,
-                color: Colors.white,
-              ),
+            ? const Icon(Icons.fullscreen_exit, size: 24, color: Colors.white)
+            : const Icon(Icons.fullscreen, size: 24, color: Colors.white),
         onTap: () =>
             plPlayerController.triggerFullScreen(status: !isFullScreen),
         onSecondaryTap: () => plPlayerController.triggerFullScreen(
@@ -914,29 +904,24 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     final isNotFileSource = !plPlayerController.isFileSource;
 
     List<BottomControlType> userSpecifyItemLeft = [
-      BottomControlType.playOrPause,
-      BottomControlType.time,
-      if (!isNotFileSource || anySeason) ...[
-        BottomControlType.pre,
-        BottomControlType.next,
-      ],
+      .playOrPause,
+      .time,
+      if (!isNotFileSource || anySeason) ...[.pre, .next],
     ];
 
     final flag =
         isFullScreen || plPlayerController.isDesktopPip || maxWidth >= 500;
-    List<BottomControlType> userSpecifyItemRight = [
-      if (isNotFileSource && plPlayerController.showDmChart)
-        BottomControlType.dmChart,
-      if (plPlayerController.isAnim) BottomControlType.superResolution,
-      if (isNotFileSource && plPlayerController.showViewPoints)
-        BottomControlType.viewPoints,
-      if (isNotFileSource && anySeason) BottomControlType.episode,
-      if (flag) BottomControlType.fit,
-      if (isNotFileSource) BottomControlType.aiTranslate,
-      BottomControlType.subtitle,
-      BottomControlType.speed,
-      if (isNotFileSource && flag) BottomControlType.qa,
-      if (!plPlayerController.isDesktopPip) BottomControlType.fullscreen,
+    final List<BottomControlType> userSpecifyItemRight = [
+      if (isNotFileSource && plPlayerController.showDmChart) .dmChart,
+      if (plPlayerController.isAnim) .superResolution,
+      if (isNotFileSource && plPlayerController.showViewPoints) .viewPoints,
+      if (isNotFileSource && anySeason) .episode,
+      if (flag) .fit,
+      if (isNotFileSource) .aiTranslate,
+      .subtitle,
+      .speed,
+      if (isNotFileSource && flag) .qa,
+      if (!plPlayerController.isDesktopPip) .fullscreen,
     ];
     return PlayerBar(
       children: [
@@ -997,6 +982,49 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
   }
 
   bool get _isVideoTransformed => _curScale != 1.0 || _curRotation != 0.0;
+
+  // 还原视频的缩放/旋转/平移（“还原屏幕”）。
+  // animated=true 时带过渡动画（手动点击按钮使用）；
+  // animated=false 时瞬时还原（退出全屏自动调用，避免与退出动画产生闪烁）。
+  Future<void> _resetVideoTransform({bool animated = true}) async {
+    showRestoreScaleBtn.value = false;
+    _curScale = 1.0;
+    _curRotation = 0.0;
+    if (!animated) {
+      _transformationController.value = Matrix4.identity();
+      return;
+    }
+    final animController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 255),
+    );
+    final anim = animController.drive(
+      Matrix4Tween(
+        begin: _transformationController.value,
+        end: Matrix4.identity(),
+      ).chain(CurveTween(curve: Curves.easeOut)),
+    );
+    void listener() {
+      _transformationController.value = anim.value;
+    }
+
+    animController.addListener(listener);
+    await animController.forward(from: 0);
+    animController
+      ..removeListener(listener)
+      ..dispose();
+  }
+
+  // 退出全屏时由控制器回调：若视频存在缩放/旋转/平移则瞬时还原为默认状态。
+  void _resetVideoTransformOnExitFullScreen() {
+    if (_transformationController.value.isIdentity()) {
+      if (showRestoreScaleBtn.value) {
+        showRestoreScaleBtn.value = false;
+      }
+      return;
+    }
+    _resetVideoTransform(animated: false);
+  }
 
   void _onPanUpdate(ScaleUpdateDetails details) {
     if (_gestureType == null) {
@@ -1071,21 +1099,14 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
             displayTime: const Duration(milliseconds: 1500),
             maskColor: Colors.transparent,
             builder: (context) => Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 8,
-                vertical: 4,
-              ),
+              padding: const .symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                borderRadius: const BorderRadius.all(
-                  Radius.circular(6),
-                ),
+                borderRadius: const .all(.circular(6)),
                 color: colorScheme.secondaryContainer,
               ),
               child: Text(
                 '松开手指，取消进退',
-                style: TextStyle(
-                  color: colorScheme.onSecondaryContainer,
-                ),
+                style: TextStyle(color: colorScheme.onSecondaryContainer),
               ),
             ),
           );
@@ -1145,7 +1166,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
           final double volume = clampDouble(
             plPlayerController.volume.value - delta.dy / level,
             0.0,
-            PlPlayerController.maxVolume,
+            plPlayerController.maxVolume,
           );
           plPlayerController.setVolume(volume);
         },
@@ -1363,7 +1384,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
           final double volume = clampDouble(
             plPlayerController.volume.value - event.localPanDelta.dy / level,
             0.0,
-            PlPlayerController.maxVolume,
+            plPlayerController.maxVolume,
           );
           plPlayerController.setVolume(volume);
         },
@@ -1387,7 +1408,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       final volume = clampDouble(
         plPlayerController.volume.value + offset,
         0.0,
-        PlPlayerController.maxVolume,
+        plPlayerController.maxVolume,
       );
       plPlayerController.setVolume(volume);
     }
@@ -1728,30 +1749,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                           ),
                         ),
                       ),
-                      onPressed: () async {
-                        showRestoreScaleBtn.value = false;
-                        _curScale = 1.0;
-                        _curRotation = 0.0;
-                        final animController = AnimationController(
-                          vsync: this,
-                          duration: const Duration(milliseconds: 255),
-                        );
-                        final anim = animController.drive(
-                          Matrix4Tween(
-                            begin: _transformationController.value,
-                            end: Matrix4.identity(),
-                          ).chain(CurveTween(curve: Curves.easeOut)),
-                        );
-                        void listener() {
-                          _transformationController.value = anim.value;
-                        }
-
-                        animController.addListener(listener);
-                        await animController.forward(from: 0);
-                        animController
-                          ..removeListener(listener)
-                          ..dispose();
-                      },
+                      onPressed: _resetVideoTransform,
                       child: const Text('还原屏幕'),
                     ),
                   ),

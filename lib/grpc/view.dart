@@ -10,9 +10,7 @@ abstract final class ViewGrpc {
   }) {
     return GrpcReq.request(
       GrpcUrl.view,
-      ViewReq(
-        bvid: bvid,
-      ),
+      ViewReq(bvid: bvid),
       ViewReply.fromBuffer,
     );
   }

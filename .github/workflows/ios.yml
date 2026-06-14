@@ -33,7 +33,6 @@ jobs:
       - name: Apply Patch
         shell: pwsh
         run: lib/scripts/patch.ps1 iOS
-        continue-on-error: true
 
       - name: Build iOS
         run: |

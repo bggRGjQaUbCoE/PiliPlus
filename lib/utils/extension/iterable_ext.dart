@@ -64,4 +64,8 @@ extension ListExt<T> on List<T> {
     if (index < 0 || index >= length) return null;
     return this[index];
   }
+
+  T getOrFirst(int index) {
+    return getOrNull(index) ?? first;
+  }
 }

@@ -12,6 +12,7 @@ import 'package:PiliPlus/plugin/pl_player/models/bottom_progress_behavior.dart';
 import 'package:PiliPlus/plugin/pl_player/models/fullscreen_mode.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_repeat.dart';
 import 'package:PiliPlus/services/service_locator.dart';
+import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
@@ -27,7 +28,7 @@ List<SettingsModel> get playSettings => [
     subtitle: '是否展示弹幕',
     leading: Icon(CustomIcons.dm_settings),
     setKey: SettingBoxKey.enableShowDanmaku,
-    defaultVal: true,
+    defaultVal: false,
   ),
   if (PlatformUtils.isMobile)
     const SwitchModel(
@@ -101,6 +102,20 @@ List<SettingsModel> get playSettings => [
     setKey: SettingBoxKey.enableSlideFS,
     defaultVal: true,
   ),
+  if (PlatformUtils.isMobile)
+    NormalModel(
+      title: '播放器音量',
+      leading: const Icon(Icons.volume_up),
+      getSubtitle: () => '当前:「${Pref.playerVolume.toStringAsFixed(0)}%」',
+      onTap: showPlayerVolumeDialog,
+    )
+  else
+    NormalModel(
+      title: '最高音量',
+      leading: const Icon(Icons.volume_up),
+      getSubtitle: () => '当前:「${(Pref.maxVolume * 100).toStringAsFixed(0)}%」',
+      onTap: _showMaxVolumeDialog,
+    ),
   getVideoFilterSelectModel(
     title: '双击快进/快退时长',
     suffix: 's',
@@ -362,7 +377,7 @@ Future<void> _showAngleDegreesDialog(
   final res = await showDialog<double>(
     context: context,
     builder: (context) => SliderDialog(
-      title: '倾斜角度阈值',
+      title: const Text('倾斜角度阈值'),
       min: 10.0,
       max: 90.0,
       divisions: 90,
@@ -374,5 +389,69 @@ Future<void> _showAngleDegreesDialog(
   if (res != null) {
     await GStorage.setting.put(SettingBoxKey.angleDegrees, res.toInt());
     setState();
+  }
+}
+
+Future<void> showPlayerVolumeDialog(
+  BuildContext context,
+  VoidCallback setState, {
+  ValueChanged<double>? onChanged,
+}) {
+  return showVolumeDialog(
+    context,
+    title: const Text('播放器音量'),
+    value: Pref.playerVolume,
+    onChanged: (value) => GStorage.setting
+        .put(SettingBoxKey.playerVolume, value)
+        .whenComplete(() {
+          setState();
+          onChanged?.call(value);
+        }),
+  );
+}
+
+Future<void> _showMaxVolumeDialog(
+  BuildContext context,
+  VoidCallback setState,
+) {
+  return showVolumeDialog(
+    context,
+    title: const Text('最高音量'),
+    value: Pref.maxVolume * 100,
+    onChanged: (rawValue) {
+      final maxVolume = (rawValue / 100).toPrecision(2);
+      if (Pref.desktopVolume > maxVolume) {
+        GStorage.setting.put(SettingBoxKey.desktopVolume, maxVolume);
+      }
+      GStorage.setting
+          .put(SettingBoxKey.maxVolume, maxVolume)
+          .whenComplete(setState);
+    },
+  );
+}
+
+const kMinVolume = 100.0;
+const kMaxVolume = 300.0;
+
+Future<void> showVolumeDialog(
+  BuildContext context, {
+  required Widget title,
+  required double value,
+  required ValueChanged<double> onChanged,
+}) async {
+  final res = await showDialog<double>(
+    context: context,
+    builder: (context) => SliderDialog(
+      title: title,
+      min: kMinVolume,
+      max: kMaxVolume,
+      divisions: 40,
+      precise: 0,
+      value: value,
+      suffix: '%',
+    ),
+  );
+  if (res != null) {
+    onChanged(res);
   }
 }

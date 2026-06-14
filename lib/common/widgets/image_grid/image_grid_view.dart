@@ -22,7 +22,6 @@ import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/image_grid/image_grid_builder.dart';
-import 'package:PiliPlus/models/common/badge_type.dart';
 import 'package:PiliPlus/models/common/image_preview_type.dart';
 import 'package:PiliPlus/utils/extension/context_ext.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
@@ -209,9 +208,9 @@ class ImageGridView extends StatelessWidget {
             width: width,
             height: height,
             decoration: BoxDecoration(
-              color: Theme.of(
+              color: ColorScheme.of(
                 context,
-              ).colorScheme.onInverseSurface.withValues(alpha: 0.4),
+              ).onInverseSurface.withValues(alpha: 0.4),
             ),
             child: Image.asset(
               Assets.loading,
@@ -221,6 +220,7 @@ class ImageGridView extends StatelessWidget {
             ),
           );
           return List.generate(picArr.length, (index) {
+            void onTap() => _onTap(context, index);
             final item = picArr[index];
             final borderRadius = _borderRadius(
               info.column,
@@ -241,30 +241,21 @@ class ImageGridView extends StatelessWidget {
                   getPlaceHolder: () => placeHolder,
                 ),
                 if (item.isLivePhoto)
-                  const PBadge(
-                    text: 'Live',
-                    right: 8,
-                    bottom: 8,
-                    type: PBadgeType.gray,
-                  )
+                  const PBadge(text: 'Live', right: 8, bottom: 8, type: .gray)
                 else if (item.isLongPic)
-                  const PBadge(
-                    text: '长图',
-                    right: 8,
-                    bottom: 8,
-                  ),
+                  const PBadge(text: '长图', right: 8, bottom: 8),
               ],
             );
             if (!item.isLongPic) {
-              child = Hero(
-                tag: '${item.url}$hashCode',
-                child: child,
-              );
+              child = Hero(tag: '${item.url}$hashCode', child: child);
             }
-            return LayoutId(
-              id: index,
+            child = Semantics(
+              label: '图片，第 ${index + 1} 张，共 ${picArr.length} 张',
+              button: true,
+              onTap: onTap,
               child: child,
             );
+            return LayoutId(id: index, child: child);
           });
         },
       ),

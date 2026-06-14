@@ -242,24 +242,23 @@ abstract final class VideoHttp {
       if (res.data['code'] == 0) {
         late PlayUrlModel data;
         switch (videoType) {
-          case VideoType.ugc:
+          case .ugc:
             data = PlayUrlModel.fromJson(res.data['data']);
-            break;
-          case VideoType.pugv:
-            final result = res.data['data'];
-            data = PlayUrlModel.fromJson(result)
-              ..lastPlayTime =
-                  result?['play_view_business_info']?['user_status']?['watch_progress']?['current_watch_progress'];
-            break;
-          case VideoType.pgc:
+
+          case .pgc:
             final result = res.data['result'];
             data = PlayUrlModel.fromJson(result['video_info'])
               ..lastPlayTime =
-                  result?['play_view_business_info']?['user_status']?['watch_progress']?['current_watch_progress'];
-            break;
+                  result['play_view_business_info']?['user_status']?['watch_progress']?['current_watch_progress'];
+
+          case .pugv:
+            final result = res.data['data'];
+            data = PlayUrlModel.fromJson(result)
+              ..lastPlayTime =
+                  result['play_view_business_info']?['user_status']?['watch_progress']?['current_watch_progress'];
         }
         return Success(data);
-      } else if (epid != null && videoType == VideoType.ugc) {
+      } else if (epid != null && videoType == .ugc) {
         return await videoUrl(
           avid: avid,
           bvid: bvid,
@@ -268,7 +267,7 @@ abstract final class VideoHttp {
           epid: epid,
           seasonId: seasonId,
           tryLook: tryLook,
-          videoType: VideoType.pgc,
+          videoType: .pgc,
         );
       }
       return Error(_parseVideoErr(res.data['code'], res.data['message']));
@@ -851,7 +850,7 @@ abstract final class VideoHttp {
       ..writeAll(
         list.map(
           (item) =>
-              '${item?['sid'] ?? 0}\n${_subtitleTimecode(item['from'])} --> ${_subtitleTimecode(item['to'])}\n${item['content'].trim()}',
+              '${_subtitleTimecode(item['from'])} --> ${_subtitleTimecode(item['to'])}\n${item['content'].trim()}',
         ),
         '\n\n',
       );

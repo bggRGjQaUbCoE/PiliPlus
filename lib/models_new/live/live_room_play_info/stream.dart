@@ -1,13 +1,15 @@
 import 'package:PiliPlus/models_new/live/live_room_play_info/format.dart';
 
 class Stream {
-  List<Format>? format;
+  String? protocolName;
+  List<Format> format;
 
-  Stream({this.format});
+  Stream({this.protocolName, required this.format});
 
   factory Stream.fromJson(Map<String, dynamic> json) => Stream(
-    format: (json['format'] as List<dynamic>?)
-        ?.map((e) => Format.fromJson(e as Map<String, dynamic>))
+    protocolName: json['protocol_name'],
+    format: (json['format'] as List<dynamic>)
+        .map((e) => Format.fromJson(e as Map<String, dynamic>))
         .toList(),
   );
 }

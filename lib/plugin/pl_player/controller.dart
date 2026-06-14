@@ -17,6 +17,8 @@ import 'package:PiliPlus/models/user/danmaku_rule.dart';
 import 'package:PiliPlus/models/video/play/url.dart';
 import 'package:PiliPlus/models_new/video/video_shot/data.dart';
 import 'package:PiliPlus/pages/danmaku/danmaku_model.dart';
+import 'package:PiliPlus/pages/setting/models/play_settings.dart'
+    show kMaxVolume;
 import 'package:PiliPlus/pages/sponsor_block/block_mixin.dart';
 import 'package:PiliPlus/plugin/pl_player/models/data_source.dart';
 import 'package:PiliPlus/plugin/pl_player/models/data_status.dart';
@@ -34,6 +36,7 @@ import 'package:PiliPlus/utils/android/android_helper.dart';
 import 'package:PiliPlus/utils/android/bindings.g.dart';
 import 'package:PiliPlus/utils/asset_utils.dart';
 import 'package:PiliPlus/utils/device_utils.dart';
+import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:PiliPlus/utils/extension/box_ext.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/feed_back.dart';
@@ -44,7 +47,6 @@ import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
-import 'package:PiliPlus/utils/theme_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:archive/archive.dart' show getCrc32;
 import 'package:canvas_danmaku/canvas_danmaku.dart';
@@ -770,13 +772,12 @@ class PlPlayerController with BlockConfigMixin {
     assert(_videoPlayerController == null);
     final opt = {
       'video-sync': Pref.videoSync,
+      if (Platform.isAndroid) 'ao': Pref.audioOutput,
+      'volume':
+          (PlatformUtils.isMobile ? Pref.playerVolume : volume.value * 100)
+              .toString(),
+      'volume-max': kMaxVolume.toString(),
     };
-    if (Platform.isAndroid) {
-      opt['volume-max'] = '100';
-      opt['ao'] = Pref.audioOutput;
-    } else if (PlatformUtils.isDesktop) {
-      opt['volume'] = (volume.value * 100).toString();
-    }
     final autosync = Pref.autosync;
     if (autosync != '0') {
       opt['autosync'] = autosync;
@@ -784,9 +785,6 @@ class PlPlayerController with BlockConfigMixin {
 
     final player = await Player.create(
       configuration: PlayerConfiguration(
-        bufferSize: Pref.expandBuffer
-            ? (isLive ? 64 * 1024 * 1024 : 32 * 1024 * 1024)
-            : (isLive ? 16 * 1024 * 1024 : 4 * 1024 * 1024),
         logLevel: kDebugMode ? .warn : .error,
         options: opt,
       ),
@@ -803,16 +801,18 @@ class PlPlayerController with BlockConfigMixin {
       ),
     );
 
-    player.setMediaHeader(
-      userAgent: BrowserUa.pc,
-      referer: HttpString.baseUrl,
-    );
-    // await player.setAudioTrack(.auto());
+    player.setMediaHeader(userAgent: BrowserUa.pc, referer: HttpString.baseUrl);
 
     _startListeners(player);
 
     return player;
   }
+
+  Map<String, String>? _buffer;
+  Map<String, String> get buffer =>
+      _buffer ??= Pref.initBuffer(_playbackSpeed.value);
+  Map<String, String>? _liveBuffer;
+  Map<String, String> get liveBuffer => _liveBuffer ??= Pref.initLiveBuffer();
 
   // 配置播放器
   Future<void> _createVideoController(
@@ -845,6 +845,16 @@ class PlPlayerController with BlockConfigMixin {
     }
 
     final Map<String, String> extras = {};
+
+    if (dataSource is FileSource) {
+      extras['cache'] = 'no';
+    } else {
+      if (isLive) {
+        extras.addAll(liveBuffer);
+      } else {
+        extras.addAll(buffer);
+      }
+    }
 
     String video = dataSource.videoSource;
     if (dataSource.audioSource case final audio? when (audio.isNotEmpty)) {
@@ -895,11 +905,8 @@ class PlPlayerController with BlockConfigMixin {
     if (dataSource is FileSource) {
       return null;
     }
-    if (_videoPlayerController?.current.isNotEmpty ?? false) {
-      return _videoPlayerController!.open(
-        _videoPlayerController!.current.last.copyWith(start: position),
-        play: true,
-      );
+    if (_videoPlayerController case final ctr? when (ctr.current.isNotEmpty)) {
+      return ctr.open(ctr.current.last.copyWith(start: position), play: true);
     }
     return null;
   }
@@ -1250,13 +1257,13 @@ class PlPlayerController with BlockConfigMixin {
   Timer? volumeTimer;
   bool volumeInterceptEventStream = false;
 
-  static final double maxVolume = PlatformUtils.isDesktop ? 2.0 : 1.0;
+  final double maxVolume = PlatformUtils.isDesktop ? Pref.maxVolume : 1.0;
   Future<void> setVolume(double volume, {bool showIndicator = true}) async {
     if (this.volume.value != volume) {
       this.volume.value = volume;
       try {
         if (PlatformUtils.isDesktop) {
-          _videoPlayerController!.setVolume(volume * 100);
+          await _videoPlayerController!.setVolume(volume * 100);
         } else {
           FlutterVolumeController.updateShowSystemUI(false);
           await FlutterVolumeController.setVolume(volume);
@@ -1420,6 +1427,12 @@ class PlPlayerController with BlockConfigMixin {
 
   double screenRatio = 0.0;
   bool isManualFS = true;
+
+  /// 退出全屏前的回调，由播放器视图注册，用于在退出全屏时自动还原视频的
+  /// 缩放/旋转/平移（“还原屏幕”）。在执行退出全屏的方向/系统栏切换之前调用，
+  /// 以避免与退出动画产生明显闪烁。
+  VoidCallback? onBeforeExitFullScreen;
+
   late final FullScreenMode mode = Pref.fullScreenMode;
   late final horizontalScreen = Pref.horizontalScreen;
   late final removeSafeArea = Pref.removeSafeArea;
@@ -1481,6 +1494,8 @@ class PlPlayerController with BlockConfigMixin {
           await enterDesktopFullScreen(inAppFullScreen: inAppFullScreen);
         }
       } else {
+        // 退出全屏前先还原视频的缩放/旋转/平移，再执行退出逻辑
+        onBeforeExitFullScreen?.call();
         if (PlatformUtils.isMobile) {
           if (!removeSafeArea) {
             showSystemBar();
@@ -1724,50 +1739,55 @@ class PlPlayerController with BlockConfigMixin {
     videoShot = await VideoHttp.videoshot(bvid: bvid, cid: cid!);
   }
 
-  void takeScreenshot() {
+  Future<void> takeScreenshot() async {
     SmartDialog.showToast('截图中');
-    videoPlayerController?.screenshot(format: .png).then((value) {
-      if (value != null) {
-        SmartDialog.showToast('点击弹窗保存截图');
-        showDialog(
-          context: Get.context!,
-          builder: (context) => GestureDetector(
-            onTap: () {
-              Get.back();
+    final time = DurationUtils.formatDuration(
+      position.inMilliseconds / 1000,
+    ).replaceAll(':', '-');
+    final image = await videoPlayerController?.screenshot();
+    if (image != null) {
+      SmartDialog.showToast('点击弹窗保存截图');
+      showDialog(
+        context: Get.context!,
+        builder: (context) => GestureDetector(
+          onTap: () async {
+            final bytes = await image.toByteData(format: .png);
+            if (bytes != null) {
               ImageUtils.saveByteImg(
-                bytes: value,
-                fileName: 'screenshot_${ImageUtils.time}',
+                bytes: bytes.buffer.asUint8List(),
+                fileName: 'screenshot_${cid}_$time',
               );
-            },
-            child: Align(
-              alignment: Alignment.centerRight,
-              child: Padding(
-                padding: const EdgeInsets.only(right: 12),
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    maxWidth: min(DeviceUtils.size.width / 3, 350),
+            }
+            Get.back();
+          },
+          child: Align(
+            alignment: Alignment.centerRight,
+            child: Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth: min(MediaQuery.widthOf(context) / 3, 350),
+                ),
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      width: 5,
+                      color: ColorScheme.of(context).surface,
+                    ),
                   ),
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        width: 5,
-                        color: ThemeUtils.theme.colorScheme.surface,
-                      ),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(5),
-                      child: Image.memory(value),
-                    ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(5),
+                    child: RawImage(image: image),
                   ),
                 ),
               ),
             ),
           ),
-        );
-      } else {
-        SmartDialog.showToast('截图失败');
-      }
-    });
+        ),
+      ).whenComplete(image.dispose);
+    } else {
+      SmartDialog.showToast('截图失败');
+    }
   }
 
   void onPopInvokedWithResult(bool didPop, Object? result) {

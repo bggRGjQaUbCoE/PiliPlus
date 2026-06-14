@@ -915,16 +915,16 @@ class ReplyItemGrpc extends StatelessWidget {
       },
     );
 
-    if (urlKeys.isNotEmpty) {
-      List<String> unmatchedItems = urlKeys
-          .where((url) => !matchedUrls.contains(url))
-          .toList();
-      if (unmatchedItems.isNotEmpty) {
-        for (final patternStr in unmatchedItems) {
-          addUrl(patternStr, content.urls[patternStr]!);
-        }
-      }
-    }
+    // if (urlKeys.isNotEmpty) {
+    //   List<String> unmatchedItems = urlKeys
+    //       .where((url) => !matchedUrls.contains(url))
+    //       .toList();
+    //   if (unmatchedItems.isNotEmpty) {
+    //     for (final patternStr in unmatchedItems) {
+    //       addUrl(patternStr, content.urls[patternStr]!);
+    //     }
+    //   }
+    // }
 
     if (!hasNote && replyControl.isNote && replyControl.isNoteV2) {
       final Color color;

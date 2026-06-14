@@ -13,7 +13,7 @@ List<SettingsModel> get recommendSettings => [
     subtitle: '若web端推荐不太符合预期，可尝试切换至app端推荐',
     leading: Icon(Icons.model_training_outlined),
     setKey: SettingBoxKey.appRcmd,
-    defaultVal: true,
+    defaultVal: false,
     needReboot: true,
   ),
   SwitchModel(

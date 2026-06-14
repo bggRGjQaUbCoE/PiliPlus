@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 class DualSliderDialog extends StatefulWidget {
   final double value1;
   final double value2;
-  final String title;
-  final String description1;
-  final String description2;
+  final Widget title;
+  final Widget description1;
+  final Widget description2;
   final double min;
   final double max;
   final int? divisions;
@@ -45,7 +45,7 @@ class _DualSliderDialogState extends State<DualSliderDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(widget.title),
+      title: widget.title,
       contentPadding: const EdgeInsets.only(
         top: 20,
         left: 8,
@@ -55,7 +55,7 @@ class _DualSliderDialogState extends State<DualSliderDialog> {
       content: Column(
         mainAxisSize: .min,
         children: [
-          Text(widget.description1),
+          widget.description1,
           Builder(
             builder: (context) {
               return Slider(
@@ -72,7 +72,7 @@ class _DualSliderDialogState extends State<DualSliderDialog> {
               );
             },
           ),
-          Text(widget.description2),
+          widget.description2,
           Builder(
             builder: (context) {
               return Slider(

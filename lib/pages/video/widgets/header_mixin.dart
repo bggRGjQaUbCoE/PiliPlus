@@ -4,6 +4,7 @@ import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/utils/danmaku_options.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
+import 'package:PiliPlus/utils/theme_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -11,6 +12,13 @@ mixin HeaderMixin<T extends StatefulWidget> on State<T> {
   PlPlayerController get plPlayerController;
 
   bool get isFullScreen => plPlayerController.isFullScreen.value;
+
+  ThemeData? get theme {
+    if (plPlayerController.darkVideoPage) {
+      return ThemeUtils.darkTheme;
+    }
+    return null;
+  }
 
   Future<void>? showBottomSheet(
     StatefulWidgetBuilder builder, {
@@ -21,12 +29,16 @@ mixin HeaderMixin<T extends StatefulWidget> on State<T> {
       maxWidth: 512,
       padding: padding,
       child: StatefulBuilder(
-        builder: (context, setState) => plPlayerController.darkVideoPage
-            ? Theme(
-                data: Theme.of(this.context),
-                child: builder(this.context, setState),
-              )
-            : builder(context, setState),
+        builder: (context, setState) {
+          final theme = this.theme;
+          if (theme != null) {
+            return Theme(
+              data: theme,
+              child: builder(this.context, setState),
+            );
+          }
+          return builder(context, setState);
+        },
       ),
     );
   }

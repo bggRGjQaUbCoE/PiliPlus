@@ -14,7 +14,8 @@ abstract final class SettingBoxKey {
       defaultPicQa = 'defaultPicQa',
       enableHA = 'enableHA',
       audioOutput = 'audioOutput',
-      expandBuffer = 'expandBuffer',
+      bufferSize = 'bufferSize',
+      bufferSec = 'bufferSec',
       hardwareDecoding = 'hardwareDecoding',
       videoSync = 'videoSync',
       autosync = 'autosync',
@@ -28,7 +29,9 @@ abstract final class SettingBoxKey {
       pauseOnMinimize = 'pauseOnMinimize',
       pgcSkipType = 'pgcSkipType',
       audioPlayMode = 'audioPlayMode',
-      showBatteryLevel = 'showBatteryLevel';
+      showBatteryLevel = 'showBatteryLevel',
+      playerVolume = 'playerVolume',
+      maxVolume = 'maxVolume';
 
   static const String enableVerticalExpand = 'enableVerticalExpand',
       feedBackEnable = 'feedBackEnable',

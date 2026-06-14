@@ -57,7 +57,8 @@ abstract final class SettingBoxKey {
       enableImgMenu = 'enableImgMenu',
       touchSlopH = 'touchSlopH',
       floatingNavBar = 'floatingNavBar',
-      angleDegrees = 'angleDegrees';
+      angleDegrees = 'angleDegrees',
+      liveStream = 'liveStream';
 
   static const String windowSize = 'windowSize',
       windowPosition = 'windowPosition',

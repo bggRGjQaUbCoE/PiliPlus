@@ -18,6 +18,8 @@ import 'package:PiliPlus/utils/extension/context_ext.dart';
 import 'package:PiliPlus/utils/extension/size_ext.dart';
 import 'package:PiliPlus/utils/extension/string_ext.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
+import 'package:PiliPlus/utils/storage.dart';
+import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
@@ -431,6 +433,14 @@ class _LiveHeaderControlState extends State<LiveHeaderControl>
                                                 formatIndex: format.$1,
                                                 codecIndex: codec.$1,
                                                 liveUrlIndex: url.$1,
+                                              );
+                                              GStorage.setting.put(
+                                                SettingBoxKey.liveStream,
+                                                [
+                                                  stream.$2.protocolName,
+                                                  format.$2.formatName,
+                                                  codec.$2.codecName,
+                                                ],
                                               );
                                             },
                                     );

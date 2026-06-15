@@ -501,7 +501,7 @@ packages:
     description:
       path: "."
       ref: dev
-      resolved-ref: "8a987e491225341839bafb3d3171c4b2d797ef73"
+      resolved-ref: "05157d42a866505c1a75b891c0d2e88e189baaf2"
       url: "https://github.com/bggRGjQaUbCoE/flutter_file_picker.git"
     source: git
     version: "12.0.0-beta.6"
@@ -954,7 +954,7 @@ packages:
     description:
       path: "pkgs/jnigen"
       ref: HEAD
-      resolved-ref: "496f2f0bbe583307a7d5ce4c33e81f0797cb65fe"
+      resolved-ref: "1ec45a929a7517d6bf133f02aef1e15490c75442"
       url: "https://github.com/dart-lang/native.git"
     source: git
     version: "0.17.0-wip"
@@ -1253,10 +1253,10 @@ packages:
     dependency: "direct main"
     description:
       name: path_provider
-      sha256: "50c5dd5b6e1aaf6fb3a78b33f6aa3afca52bf903a8a5298f53101fdaee55bbcd"
+      sha256: a7f4874f987173da295a61c181b8ee71dab59b332a486b391babf26a1b884825
       url: "https://pub.dev"
     source: hosted
-    version: "2.1.5"
+    version: "2.1.6"
   path_provider_android:
     dependency: transitive
     description:
@@ -1285,10 +1285,10 @@ packages:
     dependency: transitive
     description:
       name: path_provider_platform_interface
-      sha256: "88f5779f72ba699763fa3a3b06aa4bf6de76c8e5de842cf6f29e2e06476c2334"
+      sha256: "484838772624c3a4b94f1e44a3e19897fee738f2d5c4ce448443b0417f7c9dda"
       url: "https://pub.dev"
     source: hosted
-    version: "2.1.2"
+    version: "2.1.3"
   path_provider_windows:
     dependency: transitive
     description:
@@ -1309,10 +1309,10 @@ packages:
     dependency: "direct main"
     description:
       name: permission_handler_apple
-      sha256: e20daf680eef1ca62ffe8c8c526b778cc386d50137c77ac71c8ec9c88c13fb9d
+      sha256: "79dfa1df734798aa3cfdad166d3a3698c206d8813de13516ea1071b5d7e2f420"
       url: "https://pub.dev"
     source: hosted
-    version: "9.4.9"
+    version: "9.4.10"
   permission_handler_platform_interface:
     dependency: "direct main"
     description:
@@ -1446,27 +1446,27 @@ packages:
     description:
       path: screen_brightness_android
       ref: dev
-      resolved-ref: eefbba22c9be36a4217183d913413df349759f6f
+      resolved-ref: ac1a22f48335634ebd839a41bec16e0f9bf62158
       url: "https://github.com/bggRGjQaUbCoE/screen_brightness.git"
     source: git
-    version: "2.1.5"
+    version: "2.1.6"
   screen_brightness_ios:
     dependency: "direct overridden"
     description:
       name: screen_brightness_ios
-      sha256: "0792d8f98852558f831b4b75241c46047b884598b3f4d982b37dc2dd43e2b2e1"
+      sha256: "352d355e8523a186ba1e494b74218e5ca96e51975a0630b8ed89fbb7ff609762"
       url: "https://pub.dev"
     source: hosted
-    version: "2.1.3"
+    version: "2.1.4"
   screen_brightness_platform_interface:
     dependency: "direct main"
     description:
       path: screen_brightness_platform_interface
       ref: dev
-      resolved-ref: eefbba22c9be36a4217183d913413df349759f6f
+      resolved-ref: ac1a22f48335634ebd839a41bec16e0f9bf62158
       url: "https://github.com/bggRGjQaUbCoE/screen_brightness.git"
     source: git
-    version: "2.1.1"
+    version: "2.1.2"
   screen_retriever:
     dependency: "direct main"
     description:

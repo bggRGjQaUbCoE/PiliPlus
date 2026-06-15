@@ -525,17 +525,17 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
               onCancelTriple: introController.onCancelTriple,
             ),
           ),
-          // Obx(
-          //   () => ActionItem(
-          //     icon: const Icon(FontAwesomeIcons.thumbsDown),
-          //     selectIcon: const Icon(FontAwesomeIcons.solidThumbsDown),
-          //     onTap: () => introController.handleAction(
-          //       introController.actionDislikeVideo,
-          //     ),
-          //     selectStatus: introController.hasDislike.value,
-          //     text: "点踩",
-          //   ),
-          // ),
+          Obx(
+            () => ActionItem(
+              icon: const Icon(FontAwesomeIcons.thumbsDown),
+              selectIcon: const Icon(FontAwesomeIcons.solidThumbsDown),
+              onTap: () => introController.handleAction(
+                introController.actionDislikeVideo,
+              ),
+              selectStatus: introController.hasDislike.value,
+              text: "点踩",
+            ),
+          ),
           Obx(
             () => ActionItem(
               animation: introController.tripleAnimation,

@@ -1,5 +1,6 @@
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
+import 'package:PiliPlus/common/widgets/scroll_physics.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/dynamic/dynamics_type.dart';
 import 'package:PiliPlus/models/dynamics/result.dart';
@@ -54,7 +55,7 @@ class _DynamicsTabPageState extends State<DynamicsTabPage>
         key: widget.dynamicsType == .all
             ? null
             : PageStorageKey(widget.dynamicsType),
-        physics: const AlwaysScrollableScrollPhysics(),
+        physics: ReloadScrollPhysics(controller: controller),
         controller: controller.scrollController,
         slivers: [
           SliverPadding(

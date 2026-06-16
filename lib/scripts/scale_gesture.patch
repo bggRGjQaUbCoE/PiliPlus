@@ -1,0 +1,13 @@
+diff --git a/packages/flutter/lib/src/gestures/scale.dart b/packages/flutter/lib/src/gestures/scale.dart
+index fe3cdf27a41..7fe56080bc1 100644
+--- a/packages/flutter/lib/src/gestures/scale.dart
++++ b/packages/flutter/lib/src/gestures/scale.dart
+@@ -398,6 +398,8 @@ class ScaleGestureRecognizer extends OneSequenceGestureRecognizer {
+ 
+   _ScaleState _state = _ScaleState.ready;
+ 
++  bool get isReadyState => _state == _ScaleState.ready;
++
+   Matrix4? _lastTransform;
+ 
+   /// {@template flutter.gestures.scale.trackpadScrollCausesScale}

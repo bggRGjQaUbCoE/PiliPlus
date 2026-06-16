@@ -24,6 +24,8 @@ $ImageCachePatch = "lib/scripts/image_cache.patch"
 
 $ImageAnimPatch = "lib/scripts/image_anim.patch"
 
+$ScaleGesturePatch = "lib/scripts/scale_gesture.patch"
+
 # TODO: remove
 # https://github.com/flutter/flutter/issues/90223
 $ModalBarrierPatch = "lib/scripts/modal_barrier.patch"
@@ -38,7 +40,7 @@ $picks   = @()
 $reverts = @()
 $patches = @($ModalBarrierPatch, $TextSelectionPatch, $MouseCursorPatch,
             $NavigationBarPatch, $PaddingPatch, $ImageCachePatch, $ImageAnimPatch,
-            $LayoutBuilderPatch)
+            $LayoutBuilderPatch, $ScaleGesturePatch)
 
 switch ($platform.ToLower()) {
     "android" {

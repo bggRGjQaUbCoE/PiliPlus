@@ -1771,62 +1771,77 @@ class HeaderControlState extends State<HeaderControl>
                   width: btnWidth,
                   height: btnHeight,
                   child: Obx(
-                    () => ActionItem(
-                      expand: false,
-                      icon: const Icon(
-                        BiliIcons.ugcvideo_ic_like,
-                        color: Colors.white,
-                      ),
-                      selectStatus: introController.hasLike.value,
-                      animation: introController.tripleAnimation,
-                      onStartTriple: () {
-                        plPlayerController.tripling = true;
-                        introController.onStartTriple();
-                      },
-                      onCancelTriple: ([bool isTapUp = false]) {
-                        plPlayerController
-                          ..tripling = false
-                          ..hideTaskControls();
-                        introController.onCancelTriple(isTapUp);
-                      },
-                    ),
+                    () {
+                      final hasLike = introController.hasLike.value;
+                      return ActionItem(
+                        expand: false,
+                        icon: hasLike
+                            ? const Icon(BiliIcons.topbar_liked)
+                            : const Icon(
+                                BiliIcons.topbar_like,
+                                color: Colors.white,
+                              ),
+                        selectStatus: hasLike,
+                        animation: introController.tripleAnimation,
+                        onStartTriple: () {
+                          plPlayerController.tripling = true;
+                          introController.onStartTriple();
+                        },
+                        onCancelTriple: ([bool isTapUp = false]) {
+                          plPlayerController
+                            ..tripling = false
+                            ..hideTaskControls();
+                          introController.onCancelTriple(isTapUp);
+                        },
+                      );
+                    },
                   ),
                 ),
                 SizedBox(
                   width: btnWidth,
                   height: btnHeight,
                   child: Obx(
-                    () => ActionItem(
-                      expand: false,
-                      animation: introController.tripleAnimation,
-                      icon: const Icon(
-                        BiliIcons.ugcvideo_ic_coin,
-                        color: Colors.white,
-                        size: 20,
-                      ),
-                      onTap: introController.actionCoinVideo,
-                      selectStatus: introController.hasCoin,
-                    ),
+                    () {
+                      final hasCoin = introController.hasCoin;
+                      return ActionItem(
+                        expand: false,
+                        animation: introController.tripleAnimation,
+                        icon: hasCoin
+                            ? const Icon(BiliIcons.topbar_coined)
+                            : const Icon(
+                                BiliIcons.topbar_coin,
+                                color: Colors.white,
+                              ),
+                        onTap: introController.actionCoinVideo,
+                        selectStatus: hasCoin,
+                      );
+                    },
                   ),
                 ),
                 SizedBox(
                   width: btnWidth,
                   height: btnHeight,
                   child: Obx(
-                    () => ActionItem(
-                      expand: false,
-                      animation: introController.tripleAnimation,
-                      icon: const Icon(
-                        BiliIcons.ugcvideo_ic_favorite,
-                        color: Colors.white,
-                      ),
-                      onTap: () => introController.showFavBottomSheet(context),
-                      onLongPress: () => introController.showFavBottomSheet(
-                        context,
-                        isLongPress: true,
-                      ),
-                      selectStatus: introController.hasFav.value,
-                    ),
+                    () {
+                      final hasFav = introController.hasFav.value;
+                      return ActionItem(
+                        expand: false,
+                        animation: introController.tripleAnimation,
+                        icon: hasFav
+                            ? const Icon(BiliIcons.topbar_favorited)
+                            : const Icon(
+                                BiliIcons.topbar_favorite,
+                                color: Colors.white,
+                              ),
+                        onTap: () =>
+                            introController.showFavBottomSheet(context),
+                        onLongPress: () => introController.showFavBottomSheet(
+                          context,
+                          isLongPress: true,
+                        ),
+                        selectStatus: hasFav,
+                      );
+                    },
                   ),
                 ),
                 SizedBox(
@@ -1835,7 +1850,7 @@ class HeaderControlState extends State<HeaderControl>
                   child: ActionItem(
                     expand: false,
                     icon: const Icon(
-                      BiliIcons.ugcvideo_ic_offline,
+                      BiliIcons.ugcvideo_ic_offline_outline,
                       color: Colors.white,
                     ),
                     onTap: () => videoDetailCtr.onDownload(context),
@@ -1847,7 +1862,7 @@ class HeaderControlState extends State<HeaderControl>
                   child: ActionItem(
                     expand: false,
                     icon: const Icon(
-                      BiliIcons.ugcvideo_ic_share,
+                      BiliIcons.topbar_share,
                       color: Colors.white,
                     ),
                     onTap: () => introController.actionShareVideo(context),

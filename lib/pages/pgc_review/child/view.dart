@@ -18,7 +18,6 @@ import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
 class PgcReviewChildPage extends StatefulWidget {
@@ -262,13 +261,13 @@ class _PgcReviewChildPageState extends State<PgcReviewChildPage>
                               (index) {
                                 if (index <= item.score - 1) {
                                   return const Icon(
-                                    BiliIcons.star_favorite_solid,
+                                    BiliIcons.ic_favorited,
                                     size: 13,
                                     color: Color(0xFFFFAD35),
                                   );
                                 }
                                 return const Icon(
-                                  BiliIcons.star_favorite_line,
+                                  BiliIcons.ic_favorite,
                                   size: 14,
                                   color: Colors.grey,
                                 );
@@ -327,8 +326,8 @@ class _PgcReviewChildPageState extends State<PgcReviewChildPage>
                             ),
                             child: Icon(
                               isDislike
-                                  ? FontAwesomeIcons.solidThumbsDown
-                                  : FontAwesomeIcons.thumbsDown,
+                                  ? BiliIcons.ic_disliked
+                                  : BiliIcons.ic_dislike,
                               size: 16,
                               color: isDislike ? primary : color,
                             ),

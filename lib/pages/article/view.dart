@@ -1,8 +1,9 @@
 import 'dart:math';
 
 import 'package:PiliPlus/common/widgets/badge.dart';
-import 'package:PiliPlus/common/widgets/custom_icon.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
+import 'package:PiliPlus/common/widgets/icon/bili_icons.dart';
+import 'package:PiliPlus/common/widgets/icon/custom_icons.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/scaffold.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart';
@@ -26,7 +27,6 @@ import 'package:PiliPlus/utils/utils.dart';
 import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:html/parser.dart' as parser;
 
@@ -587,7 +587,7 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
                         final forward = stats.forward;
                         return textIconButton(
                           text: '转发',
-                          icon: FontAwesomeIcons.shareFromSquare,
+                          icon: BiliIcons.ic_share,
                           stat: forward,
                           onPressed: () {
                             if (controller.opusData == null &&
@@ -635,8 +635,8 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
                   ),
                   Expanded(
                     child: textIconButton(
-                      icon: FontAwesomeIcons.star,
-                      activatedIcon: FontAwesomeIcons.solidStar,
+                      icon: BiliIcons.ic_favorite,
+                      activatedIcon: BiliIcons.ic_favorited,
                       text: '收藏',
                       stat: stats.favorite,
                       onPressed: controller.onFav,
@@ -644,8 +644,8 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
                   ),
                   Expanded(
                     child: textIconButton(
-                      icon: FontAwesomeIcons.thumbsUp,
-                      activatedIcon: FontAwesomeIcons.solidThumbsUp,
+                      icon: BiliIcons.ic_like,
+                      activatedIcon: BiliIcons.ic_liked,
                       text: '点赞',
                       stat: stats.like,
                       onPressed: controller.onLike,

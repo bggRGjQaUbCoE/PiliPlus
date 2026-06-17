@@ -1,8 +1,9 @@
 import 'dart:math';
 
-import 'package:PiliPlus/common/widgets/custom_icon.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/flutter/text_field/controller.dart';
+import 'package:PiliPlus/common/widgets/icon/bili_icons.dart';
+import 'package:PiliPlus/common/widgets/icon/custom_icons.dart';
 import 'package:PiliPlus/common/widgets/pair.dart';
 import 'package:PiliPlus/common/widgets/scaffold.dart';
 import 'package:PiliPlus/http/constants.dart';
@@ -23,7 +24,6 @@ import 'package:PiliPlus/utils/request_utils.dart';
 import 'package:PiliPlus/utils/share_utils.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
 class DynamicDetailPage extends StatefulWidget {
@@ -403,7 +403,7 @@ class _DynamicDetailPageState extends CommonDynPageState<DynamicDetailPage> {
                     builder: (btnContext) {
                       final forward = moduleStat?.forward;
                       return textIconButton(
-                        icon: FontAwesomeIcons.shareFromSquare,
+                        icon: BiliIcons.ic_share,
                         text: '转发',
                         stat: forward,
                         onPressed: (_) => showModalBottomSheet(
@@ -441,8 +441,8 @@ class _DynamicDetailPageState extends CommonDynPageState<DynamicDetailPage> {
                   child: Builder(
                     builder: (context) {
                       return textIconButton(
-                        icon: FontAwesomeIcons.thumbsUp,
-                        activatedIcon: FontAwesomeIcons.solidThumbsUp,
+                        icon: BiliIcons.ic_like,
+                        activatedIcon: BiliIcons.ic_liked,
                         text: '点赞',
                         stat: moduleStat?.like,
                         onPressed: (iconColor) => RequestUtils.onLikeDynamic(

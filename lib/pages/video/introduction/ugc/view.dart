@@ -1,8 +1,8 @@
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/style.dart';
-import 'package:PiliPlus/common/widgets/custom_icon.dart';
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
 import 'package:PiliPlus/common/widgets/gesture/tap_gesture_recognizer.dart';
+import 'package:PiliPlus/common/widgets/icon/bili_icons.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/pendant_avatar.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart';
@@ -515,8 +515,7 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
           Obx(
             () => ActionItem(
               animation: introController.tripleAnimation,
-              icon: const Icon(FontAwesomeIcons.thumbsUp),
-              selectIcon: const Icon(FontAwesomeIcons.solidThumbsUp),
+              icon: const Icon(BiliIcons.ugcvideo_ic_like),
               selectStatus: introController.hasLike.value,
               text: !isLoading
                   ? NumUtils.numFormat(videoDetail.stat!.like)
@@ -527,8 +526,7 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
           ),
           Obx(
             () => ActionItem(
-              icon: const Icon(FontAwesomeIcons.thumbsDown),
-              selectIcon: const Icon(FontAwesomeIcons.solidThumbsDown),
+              icon: const Icon(BiliIcons.ugcvideo_ic_dislike),
               onTap: () => introController.handleAction(
                 introController.actionDislikeVideo,
               ),
@@ -539,8 +537,7 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
           Obx(
             () => ActionItem(
               animation: introController.tripleAnimation,
-              icon: const Icon(FontAwesomeIcons.b),
-              selectIcon: const Icon(FontAwesomeIcons.b),
+              icon: const Icon(BiliIcons.ugcvideo_ic_coin, size: 20),
               onTap: introController.actionCoinVideo,
               selectStatus: introController.hasCoin,
               text: !isLoading
@@ -551,8 +548,7 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
           Obx(
             () => ActionItem(
               animation: introController.tripleAnimation,
-              icon: const Icon(FontAwesomeIcons.star),
-              selectIcon: const Icon(FontAwesomeIcons.solidStar),
+              icon: const Icon(BiliIcons.ugcvideo_ic_favorite),
               onTap: () => introController.showFavBottomSheet(context),
               onLongPress: () => introController.showFavBottomSheet(
                 context,
@@ -565,14 +561,13 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
             ),
           ),
           ActionItem(
-            icon: const Icon(CustomIcons.download),
+            icon: const Icon(BiliIcons.ugcvideo_ic_offline),
             onTap: () => videoDetailCtr.onDownload(context),
             text: '缓存',
           ),
           Obx(
             () => ActionItem(
-              icon: const Icon(FontAwesomeIcons.clock),
-              selectIcon: const Icon(FontAwesomeIcons.solidClock),
+              icon: const Icon(FontAwesomeIcons.solidClock, size: 19),
               onTap: () =>
                   introController.handleAction(introController.viewLater),
               selectStatus: introController.hasLater.value,
@@ -580,7 +575,7 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
             ),
           ),
           ActionItem(
-            icon: const Icon(FontAwesomeIcons.shareFromSquare),
+            icon: const Icon(BiliIcons.ugcvideo_ic_share),
             onTap: () => introController.actionShareVideo(context),
             selectStatus: false,
             text: !isLoading

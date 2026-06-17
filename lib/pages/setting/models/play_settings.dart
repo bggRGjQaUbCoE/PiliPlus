@@ -1,6 +1,6 @@
 import 'dart:io' show Platform;
 
-import 'package:PiliPlus/common/widgets/custom_icon.dart';
+import 'package:PiliPlus/common/widgets/icon/bili_icons.dart';
 import 'package:PiliPlus/pages/setting/models/model.dart';
 import 'package:PiliPlus/pages/setting/widgets/slider_dialog.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_repeat.dart';
@@ -17,7 +17,7 @@ List<SettingsModel> get playSettings => [
   const SwitchModel(
     title: '弹幕开关',
     subtitle: '是否展示弹幕',
-    leading: Icon(CustomIcons.dm_settings),
+    leading: Icon(BiliIcons.danmaku_settings),
     setKey: SettingBoxKey.enableShowDanmaku,
     defaultVal: true,
   ),

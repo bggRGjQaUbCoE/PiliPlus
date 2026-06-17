@@ -5,6 +5,7 @@ import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/button/icon_button.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/gesture/tap_gesture_recognizer.dart';
+import 'package:PiliPlus/common/widgets/icon/bili_icons.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/image_viewer/hero.dart';
 import 'package:PiliPlus/common/widgets/progress_bar/audio_video_progress_bar.dart';
@@ -667,10 +668,7 @@ class _AudioPageState extends State<AudioPage> {
           Obx(
             () => ActionItem(
               animation: _controller.tripleAnimation,
-              icon: const Icon(FontAwesomeIcons.thumbsUp),
-              selectIcon: const Icon(
-                FontAwesomeIcons.solidThumbsUp,
-              ),
+              icon: const Icon(BiliIcons.ugcvideo_ic_like),
               selectStatus: _controller.hasLike.value,
               text: NumUtils.numFormat(audioItem.stat.like),
               onStartTriple: _controller.onStartTriple,
@@ -680,8 +678,7 @@ class _AudioPageState extends State<AudioPage> {
           Obx(
             () => ActionItem(
               animation: _controller.tripleAnimation,
-              icon: const Icon(FontAwesomeIcons.b),
-              selectIcon: const Icon(FontAwesomeIcons.b),
+              icon: const Icon(BiliIcons.ugcvideo_ic_coin, size: 20),
               onTap: _controller.actionCoinVideo,
               selectStatus: _controller.hasCoin,
               text: NumUtils.numFormat(audioItem.stat.coin),
@@ -690,10 +687,7 @@ class _AudioPageState extends State<AudioPage> {
           Obx(
             () => ActionItem(
               animation: _controller.tripleAnimation,
-              icon: const Icon(FontAwesomeIcons.star),
-              selectIcon: const Icon(
-                FontAwesomeIcons.solidStar,
-              ),
+              icon: const Icon(BiliIcons.ugcvideo_ic_favorite),
               onTap: () => _controller.showFavBottomSheet(context),
               onLongPress: () => _controller.showFavBottomSheet(
                 context,
@@ -704,22 +698,21 @@ class _AudioPageState extends State<AudioPage> {
             ),
           ),
           ActionItem(
-            icon: const Icon(FontAwesomeIcons.comment),
+            icon: const Icon(FontAwesomeIcons.solidCommentDots),
             onTap: _controller.showReply,
             text: NumUtils.numFormat(audioItem.stat.reply),
           ),
           ActionItem(
-            icon: const Icon(
-              FontAwesomeIcons.shareFromSquare,
-            ),
+            icon: const Icon(BiliIcons.ugcvideo_ic_share),
             onTap: () => _controller.actionShareVideo(context),
             selectStatus: false,
             text: NumUtils.numFormat(audioItem.stat.share),
           ),
-          if (audioItem.associatedItem.hasOid() &&
-              audioItem.associatedItem.subId.isNotEmpty)
+          if (kDebugMode ||
+              (audioItem.associatedItem.hasOid() &&
+                  audioItem.associatedItem.subId.isNotEmpty))
             ActionItem(
-              icon: const Icon(FontAwesomeIcons.circlePlay),
+              icon: const Icon(FontAwesomeIcons.solidCirclePlay, size: 18),
               onTap: () {
                 _controller.player?.pause();
                 PageUtils.toVideoPage(

@@ -1,4 +1,4 @@
-import 'package:PiliPlus/common/widgets/custom_icon.dart';
+import 'package:PiliPlus/common/widgets/icon/bili_icons.dart';
 import 'package:PiliPlus/http/pgc.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:flutter/material.dart';
@@ -96,12 +96,12 @@ class _PgcReviewPostPanelState extends State<PgcReviewPostPanel> {
                     return Obx(
                       () => index <= _score.value - 1
                           ? const Icon(
-                              CustomIcons.star_favorite_solid,
+                              BiliIcons.star_favorite_solid,
                               size: 50,
                               color: Color(0xFFFFAD35),
                             )
                           : const Icon(
-                              CustomIcons.star_favorite_line,
+                              BiliIcons.star_favorite_line,
                               size: 50,
                               color: Colors.grey,
                             ),

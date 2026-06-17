@@ -1,3 +1,4 @@
+import 'package:PiliPlus/common/widgets/icon/bili_icons.dart';
 import 'package:PiliPlus/models/dynamics/result.dart';
 import 'package:PiliPlus/pages/dynamics_repost/view.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
@@ -5,7 +6,6 @@ import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/request_utils.dart';
 import 'package:easy_debounce/easy_throttle.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class ActionPanel extends StatelessWidget {
   const ActionPanel({
@@ -55,7 +55,7 @@ class ActionPanel extends StatelessWidget {
                   ),
                 ),
                 icon: Icon(
-                  FontAwesomeIcons.shareFromSquare,
+                  BiliIcons.ic_share,
                   size: 16,
                   color: outline,
                   semanticLabel: "转发",
@@ -78,7 +78,7 @@ class ActionPanel extends StatelessWidget {
               () => PageUtils.pushDynDetail(item, isPush: true),
             ),
             icon: Icon(
-              FontAwesomeIcons.comment,
+              BiliIcons.ic_comment,
               size: 16,
               color: outline,
               semanticLabel: "评论",
@@ -93,9 +93,7 @@ class ActionPanel extends StatelessWidget {
           child: Builder(
             builder: (context) {
               final likeIcon = Icon(
-                like.status!
-                    ? FontAwesomeIcons.solidThumbsUp
-                    : FontAwesomeIcons.thumbsUp,
+                like.status! ? BiliIcons.ic_liked : BiliIcons.ic_like,
                 size: 16,
                 color: like.status! ? primary : outline,
                 semanticLabel: like.status! ? "已赞" : "点赞",

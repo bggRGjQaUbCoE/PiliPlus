@@ -1,8 +1,8 @@
 import 'package:PiliPlus/common/skeleton/video_reply.dart';
 import 'package:PiliPlus/common/style.dart';
-import 'package:PiliPlus/common/widgets/custom_icon.dart';
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
+import 'package:PiliPlus/common/widgets/icon/bili_icons.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/sliver/sliver_floating_header.dart';
@@ -262,13 +262,13 @@ class _PgcReviewChildPageState extends State<PgcReviewChildPage>
                               (index) {
                                 if (index <= item.score - 1) {
                                   return const Icon(
-                                    CustomIcons.star_favorite_solid,
+                                    BiliIcons.star_favorite_solid,
                                     size: 13,
                                     color: Color(0xFFFFAD35),
                                   );
                                 }
                                 return const Icon(
-                                  CustomIcons.star_favorite_line,
+                                  BiliIcons.star_favorite_line,
                                   size: 14,
                                   color: Colors.grey,
                                 );
@@ -349,9 +349,7 @@ class _PgcReviewChildPageState extends State<PgcReviewChildPage>
                             spacing: 4,
                             children: [
                               Icon(
-                                isLike
-                                    ? FontAwesomeIcons.solidThumbsUp
-                                    : FontAwesomeIcons.thumbsUp,
+                                isLike ? BiliIcons.ic_liked : BiliIcons.ic_like,
                                 size: 16,
                                 color: isLike ? primary : color,
                               ),

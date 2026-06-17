@@ -4,8 +4,9 @@ import 'dart:io' show Platform, File;
 import 'dart:typed_data' show Uint8List;
 
 import 'package:PiliPlus/common/constants.dart';
-import 'package:PiliPlus/common/widgets/custom_icon.dart';
 import 'package:PiliPlus/common/widgets/dialog/report.dart';
+import 'package:PiliPlus/common/widgets/icon/bili_icons.dart';
+import 'package:PiliPlus/common/widgets/icon/custom_icons.dart';
 import 'package:PiliPlus/common/widgets/marquee.dart';
 import 'package:PiliPlus/http/danmaku.dart';
 import 'package:PiliPlus/http/danmaku_block.dart';
@@ -631,7 +632,7 @@ class HeaderControlState extends State<HeaderControl>
                     Get.back();
                     showSetDanmaku();
                   },
-                  leading: const Icon(CustomIcons.dm_settings, size: 20),
+                  leading: const Icon(BiliIcons.danmaku_settings, size: 20),
                   title: const Text('弹幕设置', style: titleStyle),
                 ),
                 ListTile(
@@ -1694,12 +1695,12 @@ class HeaderControlState extends State<HeaderControl>
                         icon: enableShowDanmaku
                             ? const Icon(
                                 size: 20,
-                                CustomIcons.dm_on,
+                                BiliIcons.danmaku_opened,
                                 color: Colors.white,
                               )
                             : const Icon(
                                 size: 20,
-                                CustomIcons.dm_off,
+                                BiliIcons.danmaku_closed,
                                 color: Colors.white,
                               ),
                       );
@@ -1716,7 +1717,7 @@ class HeaderControlState extends State<HeaderControl>
                   onPressed: showSetDanmaku,
                   icon: const Icon(
                     size: 20,
-                    CustomIcons.dm_settings,
+                    BiliIcons.danmaku_settings,
                     color: Colors.white,
                   ),
                 ),
@@ -1773,10 +1774,9 @@ class HeaderControlState extends State<HeaderControl>
                     () => ActionItem(
                       expand: false,
                       icon: const Icon(
-                        FontAwesomeIcons.thumbsUp,
+                        BiliIcons.ugcvideo_ic_like,
                         color: Colors.white,
                       ),
-                      selectIcon: const Icon(FontAwesomeIcons.solidThumbsUp),
                       selectStatus: introController.hasLike.value,
                       animation: introController.tripleAnimation,
                       onStartTriple: () {
@@ -1800,10 +1800,10 @@ class HeaderControlState extends State<HeaderControl>
                       expand: false,
                       animation: introController.tripleAnimation,
                       icon: const Icon(
-                        FontAwesomeIcons.b,
+                        BiliIcons.ugcvideo_ic_coin,
                         color: Colors.white,
+                        size: 20,
                       ),
-                      selectIcon: const Icon(FontAwesomeIcons.b),
                       onTap: introController.actionCoinVideo,
                       selectStatus: introController.hasCoin,
                     ),
@@ -1817,10 +1817,9 @@ class HeaderControlState extends State<HeaderControl>
                       expand: false,
                       animation: introController.tripleAnimation,
                       icon: const Icon(
-                        FontAwesomeIcons.star,
+                        BiliIcons.ugcvideo_ic_favorite,
                         color: Colors.white,
                       ),
-                      selectIcon: const Icon(FontAwesomeIcons.solidStar),
                       onTap: () => introController.showFavBottomSheet(context),
                       onLongPress: () => introController.showFavBottomSheet(
                         context,
@@ -1835,7 +1834,10 @@ class HeaderControlState extends State<HeaderControl>
                   height: btnHeight,
                   child: ActionItem(
                     expand: false,
-                    icon: const Icon(CustomIcons.download, color: Colors.white),
+                    icon: const Icon(
+                      BiliIcons.ugcvideo_ic_offline,
+                      color: Colors.white,
+                    ),
                     onTap: () => videoDetailCtr.onDownload(context),
                   ),
                 ),
@@ -1845,7 +1847,7 @@ class HeaderControlState extends State<HeaderControl>
                   child: ActionItem(
                     expand: false,
                     icon: const Icon(
-                      FontAwesomeIcons.shareFromSquare,
+                      BiliIcons.ugcvideo_ic_share,
                       color: Colors.white,
                     ),
                     onTap: () => introController.actionShareVideo(context),

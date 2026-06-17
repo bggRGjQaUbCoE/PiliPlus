@@ -3,8 +3,8 @@ import 'dart:math' as math;
 
 import 'package:PiliPlus/common/assets.dart';
 import 'package:PiliPlus/common/style.dart';
-import 'package:PiliPlus/common/widgets/custom_icon.dart';
 import 'package:PiliPlus/common/widgets/flutter/pop_scope.dart';
+import 'package:PiliPlus/common/widgets/icon/bili_icons.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/keep_alive_wrapper.dart';
 import 'package:PiliPlus/common/widgets/route_aware_mixin.dart';
@@ -1183,8 +1183,8 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                             icon: Icon(
                               size: 22,
                               enableShowDanmaku
-                                  ? CustomIcons.dm_on
-                                  : CustomIcons.dm_off,
+                                  ? BiliIcons.danmaku_opened
+                                  : BiliIcons.danmaku_closed,
                               color: enableShowDanmaku
                                   ? themeData.colorScheme.secondary
                                   : themeData.colorScheme.outline,

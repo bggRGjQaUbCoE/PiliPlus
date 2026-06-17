@@ -292,3 +292,6 @@ flutter:
     - family: custom_icon
       fonts:
         - asset: assets/fonts/custom_icon.ttf
+    - family: bili_icon
+      fonts:
+        - asset: assets/fonts/bili_icon.ttf

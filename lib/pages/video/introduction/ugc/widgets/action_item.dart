@@ -7,7 +7,6 @@ class ActionItem extends StatelessWidget {
   const ActionItem({
     super.key,
     required this.icon,
-    this.selectIcon,
     this.onTap,
     this.onLongPress,
     this.text,
@@ -16,11 +15,9 @@ class ActionItem extends StatelessWidget {
     this.animation,
     this.onStartTriple,
     this.onCancelTriple,
-  }) : assert(!selectStatus || selectIcon != null),
-       _isThumbsUp = onStartTriple != null;
+  }) : _isThumbsUp = onStartTriple != null;
 
   final Icon icon;
-  final Icon? selectIcon;
   final VoidCallback? onTap;
   final VoidCallback? onLongPress;
   final String? text;
@@ -39,8 +36,8 @@ class ActionItem extends StatelessWidget {
         ? colorScheme.inversePrimary
         : colorScheme.primary;
     Widget child = Icon(
-      selectStatus ? selectIcon!.icon! : icon.icon,
-      size: 18,
+      icon.icon,
+      size: icon.size ?? 20.5,
       color: selectStatus ? primary : icon.color ?? colorScheme.outline,
     );
 
@@ -51,8 +48,12 @@ class ActionItem extends StatelessWidget {
         children: [
           AnimatedBuilder(
             animation: animation!,
-            builder: (context, child) =>
-                Arc(size: 28, color: primary, progress: -animation!.value),
+            builder: (context, child) => Arc(
+              size: 28,
+              color: primary,
+              progress: -animation!.value,
+              strokeWidth: 1.6,
+            ),
           ),
           child,
         ],

@@ -1,4 +1,4 @@
-import 'package:PiliPlus/common/widgets/custom_icon.dart';
+import 'package:PiliPlus/common/widgets/icon/bili_icons.dart';
 import 'package:PiliPlus/pages/live_room/controller.dart';
 import 'package:PiliPlus/pages/video/widgets/header_mixin.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
@@ -96,12 +96,12 @@ class _BottomControlState extends State<BottomControl> with HeaderMixin {
                 icon: enableShowLiveDanmaku
                     ? const Icon(
                         size: 18,
-                        CustomIcons.dm_on,
+                        BiliIcons.danmaku_opened,
                         color: Colors.white,
                       )
                     : const Icon(
                         size: 18,
-                        CustomIcons.dm_off,
+                        BiliIcons.danmaku_closed,
                         color: Colors.white,
                       ),
                 onTap: () {
@@ -120,7 +120,7 @@ class _BottomControlState extends State<BottomControl> with HeaderMixin {
             tooltip: '弹幕设置',
             icon: const Icon(
               size: 18,
-              CustomIcons.dm_settings,
+              BiliIcons.danmaku_settings,
               color: Colors.white,
             ),
             onTap: () => showSetDanmaku(isLive: true),

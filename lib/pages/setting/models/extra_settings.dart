@@ -1,9 +1,9 @@
 import 'dart:io' show Platform;
 
-import 'package:PiliPlus/common/widgets/custom_icon.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/gesture/horizontal_drag_gesture_recognizer.dart'
     show deviceTouchSlop, touchSlopH;
+import 'package:PiliPlus/common/widgets/icon/custom_icons.dart';
 import 'package:PiliPlus/common/widgets/image_grid/image_grid_view.dart'
     show ImageGridView;
 import 'package:PiliPlus/http/fav.dart';

@@ -1,6 +1,6 @@
 // 内容
-import 'package:PiliPlus/common/widgets/custom_icon.dart';
 import 'package:PiliPlus/common/widgets/flutter/text/text.dart' as custom_text;
+import 'package:PiliPlus/common/widgets/icon/bili_icons.dart';
 import 'package:PiliPlus/common/widgets/image_grid/image_grid_view.dart';
 import 'package:PiliPlus/models/dynamics/result.dart';
 import 'package:PiliPlus/pages/dynamics/widgets/rich_node_panel.dart';
@@ -50,7 +50,7 @@ Widget content(
                       padding: const EdgeInsets.only(right: 4),
                       child: Icon(
                         size: 18,
-                        CustomIcons.topic_tag,
+                        BiliIcons.topic_tag,
                         color: theme.colorScheme.primary,
                       ),
                     ),

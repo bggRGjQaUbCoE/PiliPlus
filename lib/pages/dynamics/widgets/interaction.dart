@@ -1,8 +1,8 @@
 import 'package:PiliPlus/common/widgets/gesture/tap_gesture_recognizer.dart';
+import 'package:PiliPlus/common/widgets/icon/bili_icons.dart';
 import 'package:PiliPlus/models/dynamics/result.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_navigation/src/extension_navigation.dart';
 
@@ -63,8 +63,8 @@ Widget _item(
               size: 13,
               color: theme.colorScheme.outline,
               switch (item.type) {
-                1 => FontAwesomeIcons.comment,
-                _ => FontAwesomeIcons.thumbsUp,
+                1 => BiliIcons.ic_comment,
+                _ => BiliIcons.ic_like,
               },
             ),
           ),

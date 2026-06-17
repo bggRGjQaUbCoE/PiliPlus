@@ -3,10 +3,10 @@ import 'dart:math' show max;
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/button/icon_button.dart';
 import 'package:PiliPlus/common/widgets/button/toolbar_icon_button.dart';
-import 'package:PiliPlus/common/widgets/custom_icon.dart';
 import 'package:PiliPlus/common/widgets/flutter/draggable_scrollable_sheet.dart';
 import 'package:PiliPlus/common/widgets/flutter/text_field/controller.dart';
 import 'package:PiliPlus/common/widgets/flutter/text_field/text_field.dart';
+import 'package:PiliPlus/common/widgets/icon/bili_icons.dart';
 import 'package:PiliPlus/common/widgets/pair.dart';
 import 'package:PiliPlus/common/widgets/time_picker.dart';
 import 'package:PiliPlus/http/dynamics.dart';
@@ -182,7 +182,7 @@ class _CreateDynPanelState extends CommonRichTextPubPageState<CreateDynPanel> {
                                   child: Padding(
                                     padding: const EdgeInsets.only(right: 5),
                                     child: Icon(
-                                      CustomIcons.topic_tag,
+                                      BiliIcons.topic_tag,
                                       size: 18,
                                       color: hasTopic
                                           ? null
@@ -637,7 +637,7 @@ class _CreateDynPanelState extends CommonRichTextPubPageState<CreateDynPanel> {
         children: [
           item(
             onTap: _onReserve,
-            icon: Icon(CustomIcons.live_reserve, size: 28, color: color),
+            icon: Icon(BiliIcons.live_reserve, size: 28, color: color),
             title: '直播预约',
           ),
         ],

@@ -1,4 +1,4 @@
-import 'package:PiliPlus/common/widgets/custom_icon.dart';
+import 'package:PiliPlus/common/widgets/icon/bili_icons.dart';
 import 'package:PiliPlus/models_new/dynamic/dyn_topic_top/topic_item.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:flutter/material.dart';
@@ -28,7 +28,7 @@ class DynTopicItem extends StatelessWidget {
                 child: Padding(
                   padding: EdgeInsets.only(right: 5),
                   child: Icon(
-                    CustomIcons.topic_tag,
+                    BiliIcons.topic_tag,
                     size: 18,
                   ),
                 ),

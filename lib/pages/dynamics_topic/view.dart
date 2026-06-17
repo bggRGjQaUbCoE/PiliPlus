@@ -1,7 +1,7 @@
 import 'package:PiliPlus/common/assets.dart';
-import 'package:PiliPlus/common/widgets/custom_icon.dart';
 import 'package:PiliPlus/common/widgets/dynamic_sliver_app_bar/dynamic_sliver_app_bar.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
+import 'package:PiliPlus/common/widgets/icon/bili_icons.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/pair.dart';
@@ -23,7 +23,6 @@ import 'package:PiliPlus/utils/utils.dart';
 import 'package:PiliPlus/utils/waterfall.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:waterfall_flow/waterfall_flow.dart'
@@ -164,7 +163,7 @@ class _DynTopicPageState extends State<DynTopicPage>
                       SmartDialog.showToast('账号未登录');
                     }
                   },
-                  icon: const Icon(CustomIcons.topic_tag, size: 20),
+                  icon: const Icon(BiliIcons.topic_tag, size: 20),
                   label: const Text('参与话题'),
                 ),
               ),
@@ -280,8 +279,8 @@ class _DynTopicPageState extends State<DynTopicPage>
                     ),
                     onPressed: _controller.onLike,
                     icon: _controller.isLike.value
-                        ? const Icon(FontAwesomeIcons.solidThumbsUp, size: 13)
-                        : const Icon(FontAwesomeIcons.thumbsUp, size: 13),
+                        ? const Icon(BiliIcons.ic_liked, size: 13)
+                        : const Icon(BiliIcons.ic_like, size: 13),
                     label: Text(
                       NumUtils.numFormat(response.topicItem!.like),
                       style: const TextStyle(fontSize: 13),
@@ -304,8 +303,8 @@ class _DynTopicPageState extends State<DynTopicPage>
                     ),
                     onPressed: _controller.onFav,
                     icon: _controller.isFav.value
-                        ? const Icon(FontAwesomeIcons.solidStar, size: 13)
-                        : const Icon(FontAwesomeIcons.star, size: 13),
+                        ? const Icon(BiliIcons.ic_favorited, size: 13)
+                        : const Icon(BiliIcons.ic_favorite, size: 13),
                     label: Text(
                       NumUtils.numFormat(response.topicItem!.fav),
                       style: const TextStyle(fontSize: 13),

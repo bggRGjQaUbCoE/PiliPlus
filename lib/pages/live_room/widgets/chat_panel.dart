@@ -1,6 +1,6 @@
-import 'package:PiliPlus/common/widgets/custom_icon.dart';
 import 'package:PiliPlus/common/widgets/flutter/popup_menu.dart';
 import 'package:PiliPlus/common/widgets/gesture/tap_gesture_recognizer.dart';
+import 'package:PiliPlus/common/widgets/icon/bili_icons.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/http/live.dart';
 import 'package:PiliPlus/models_new/live/live_danmaku/danmaku_msg.dart';
@@ -191,7 +191,7 @@ class LiveRoomChatPanel extends StatelessWidget {
             position: .under,
             tooltip: '',
             iconColor: const Color(0xFFEEEEEE),
-            icon: const Icon(CustomIcons.dm_settings),
+            icon: const Icon(BiliIcons.danmaku_settings),
             itemBuilder: (context) => [
               if (liveRoomController.msgStream != null)
                 PopupMenuItem(

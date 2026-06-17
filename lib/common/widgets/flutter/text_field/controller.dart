@@ -652,6 +652,9 @@ class RichTextEditingController extends TextEditingController {
         }
 
       case TextEditingDeltaNonTextUpdate e:
+        if (!_isSelectionValid(e.selection, items.lastOrNull?.range.end ?? 0)) {
+          return;
+        }
         newSelection = e.selection;
         if (newSelection.isCollapsed) {
           final newPos = dragOffset(newSelection.base);
@@ -682,6 +685,10 @@ class RichTextEditingController extends TextEditingController {
         items.remove(item);
       }
     }
+  }
+
+  static bool _isSelectionValid(TextSelection selection, int length) {
+    return selection.start <= length && selection.end <= length;
   }
 
   TextStyle? composingStyle;

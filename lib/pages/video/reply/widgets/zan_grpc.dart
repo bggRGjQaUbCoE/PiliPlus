@@ -106,70 +106,69 @@ class ZanButtonGrpc extends StatelessWidget {
     final isDislike = action == $fixnum.Int64.TWO;
     final outline = theme.colorScheme.outline;
     final primary = theme.colorScheme.primary;
-    final ButtonStyle style = TextButton.styleFrom(
-      padding: EdgeInsets.zero,
-      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-      visualDensity: VisualDensity.compact,
-    );
     return Row(
-      mainAxisSize: MainAxisSize.min,
+      mainAxisSize: .min,
       children: [
-        SizedBox(
-          height: 32,
-          child: TextButton(
-            style: style,
-            onPressed: () => EasyThrottle.throttle(
-              'interactAction',
-              const Duration(milliseconds: 200),
-              () => onHateReply(
-                context,
-                isProcessing,
-                () => isProcessing = false,
-                isLike: isLike,
-                isDislike: isDislike,
-              ),
-            ),
-            child: Icon(
-              isDislike ? BiliIcons.ic_disliked : BiliIcons.ic_dislike,
-              size: 16,
-              color: isDislike ? primary : outline,
-              semanticLabel: isDislike ? '已踩' : '点踩',
+        TextButton(
+          style: const ButtonStyle(
+            visualDensity: .compact,
+            tapTargetSize: .shrinkWrap,
+            padding: WidgetStatePropertyAll(.zero),
+            minimumSize: WidgetStatePropertyAll(.square(40)),
+          ),
+          onPressed: () => EasyThrottle.throttle(
+            'interactAction',
+            const Duration(milliseconds: 200),
+            () => onHateReply(
+              context,
+              isProcessing,
+              () => isProcessing = false,
+              isLike: isLike,
+              isDislike: isDislike,
             ),
           ),
+          child: Icon(
+            isDislike ? BiliIcons.ic_disliked : BiliIcons.ic_dislike,
+            size: 16,
+            color: isDislike ? primary : outline,
+            semanticLabel: isDislike ? '已踩' : '点踩',
+          ),
         ),
-        SizedBox(
-          height: 32,
-          child: TextButton(
-            style: style,
-            onPressed: () => EasyThrottle.throttle(
-              'interactAction',
-              const Duration(milliseconds: 200),
-              () => onLikeReply(
-                context,
-                isProcessing,
-                () => isProcessing = false,
-                isLike: isLike,
-                isDislike: isDislike,
+        TextButton(
+          style: const ButtonStyle(
+            visualDensity: .compact,
+            tapTargetSize: .shrinkWrap,
+            minimumSize: WidgetStatePropertyAll(.square(40)),
+            padding: WidgetStatePropertyAll(.symmetric(horizontal: 8)),
+          ),
+          onPressed: () => EasyThrottle.throttle(
+            'interactAction',
+            const Duration(milliseconds: 200),
+            () => onLikeReply(
+              context,
+              isProcessing,
+              () => isProcessing = false,
+              isLike: isLike,
+              isDislike: isDislike,
+            ),
+          ),
+          child: Row(
+            spacing: 4,
+            children: [
+              Icon(
+                isLike ? BiliIcons.ic_liked : BiliIcons.ic_like,
+                size: 16,
+                color: isLike ? primary : outline,
+                semanticLabel: isLike ? '已赞' : '点赞',
               ),
-            ),
-            child: Row(
-              spacing: 4,
-              children: [
-                Icon(
-                  isLike ? BiliIcons.ic_liked : BiliIcons.ic_like,
-                  size: 16,
+              Text(
+                NumUtils.numFormat(replyItem.like.toInt()),
+                style: TextStyle(
                   color: isLike ? primary : outline,
-                  semanticLabel: isLike ? '已赞' : '点赞',
+                  fontSize: theme.textTheme.labelSmall!.fontSize,
                 ),
-                Text(
-                  NumUtils.numFormat(replyItem.like.toInt()),
-                  style: TextStyle(
-                    color: isLike ? primary : outline,
-                    fontSize: theme.textTheme.labelSmall!.fontSize,
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ],

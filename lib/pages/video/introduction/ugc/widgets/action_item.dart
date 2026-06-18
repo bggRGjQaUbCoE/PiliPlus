@@ -38,7 +38,12 @@ class ActionItem extends StatelessWidget {
     Widget child = Icon(
       icon.icon,
       size: icon.size ?? 20.5,
-      color: selectStatus ? primary : icon.color ?? colorScheme.outline,
+      color: selectStatus
+          ? primary
+          : icon.color ??
+                (colorScheme.isDark
+                    ? colorScheme.outline
+                    : colorScheme.outline.withValues(alpha: .85)),
     );
 
     if (animation != null) {

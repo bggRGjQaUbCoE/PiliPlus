@@ -304,63 +304,64 @@ class _PgcReviewChildPageState extends State<PgcReviewChildPage>
                 builder: (context) {
                   final Color color = theme.colorScheme.outline;
                   final Color primary = theme.colorScheme.primary;
-                  final ButtonStyle style = TextButton.styleFrom(
-                    padding: EdgeInsets.zero,
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    visualDensity: VisualDensity.compact,
-                  );
                   final isLike = item.stat?.liked == 1;
                   late final isDislike = item.stat?.disliked == 1;
                   return Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
+                    mainAxisAlignment: .end,
                     children: [
                       if (!isLongReview)
-                        SizedBox(
-                          height: 32,
-                          child: TextButton(
-                            style: style,
-                            onPressed: () => _controller.onDislike(
-                              item,
-                              isDislike,
-                              item.reviewId,
-                            ),
-                            child: Icon(
-                              isDislike
-                                  ? BiliIcons.ic_disliked
-                                  : BiliIcons.ic_dislike,
-                              size: 16,
-                              color: isDislike ? primary : color,
-                            ),
+                        TextButton(
+                          style: const ButtonStyle(
+                            visualDensity: .compact,
+                            tapTargetSize: .shrinkWrap,
+                            padding: WidgetStatePropertyAll(.zero),
+                            minimumSize: WidgetStatePropertyAll(.square(40)),
+                          ),
+                          onPressed: () => _controller.onDislike(
+                            item,
+                            isDislike,
+                            item.reviewId,
+                          ),
+                          child: Icon(
+                            isDislike
+                                ? BiliIcons.ic_disliked
+                                : BiliIcons.ic_dislike,
+                            size: 16,
+                            color: isDislike ? primary : color,
                           ),
                         ),
-                      SizedBox(
-                        height: 32,
-                        child: TextButton(
-                          style: style,
-                          onPressed: isLongReview
-                              ? null
-                              : () => _controller.onLike(
-                                  item,
-                                  isLike,
-                                  item.reviewId,
-                                ),
-                          child: Row(
-                            spacing: 4,
-                            children: [
-                              Icon(
-                                isLike ? BiliIcons.ic_liked : BiliIcons.ic_like,
-                                size: 16,
-                                color: isLike ? primary : color,
-                              ),
-                              Text(
-                                NumUtils.numFormat(item.stat?.likes ?? 0),
-                                style: TextStyle(
-                                  color: isLike ? primary : color,
-                                  fontSize: 12,
-                                ),
-                              ),
-                            ],
+                      TextButton(
+                        style: const ButtonStyle(
+                          visualDensity: .compact,
+                          tapTargetSize: .shrinkWrap,
+                          minimumSize: WidgetStatePropertyAll(.square(40)),
+                          padding: WidgetStatePropertyAll(
+                            .symmetric(horizontal: 8),
                           ),
+                        ),
+                        onPressed: isLongReview
+                            ? null
+                            : () => _controller.onLike(
+                                item,
+                                isLike,
+                                item.reviewId,
+                              ),
+                        child: Row(
+                          spacing: 4,
+                          children: [
+                            Icon(
+                              isLike ? BiliIcons.ic_liked : BiliIcons.ic_like,
+                              size: 16,
+                              color: isLike ? primary : color,
+                            ),
+                            Text(
+                              NumUtils.numFormat(item.stat?.likes ?? 0),
+                              style: TextStyle(
+                                color: isLike ? primary : color,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],

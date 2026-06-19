@@ -75,7 +75,11 @@ class ActionPanel extends StatelessWidget {
             onPressed: () => EasyThrottle.throttle(
               'interactAction',
               const Duration(milliseconds: 200),
-              () => PageUtils.pushDynDetail(item, isPush: true),
+              () => PageUtils.pushDynDetail(
+                item,
+                isPush: true,
+                viewComment: true,
+              ),
             ),
             icon: Icon(
               BiliIcons.ic_comment,

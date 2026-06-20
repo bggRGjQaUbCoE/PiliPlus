@@ -460,7 +460,7 @@ packages:
     description:
       path: "."
       ref: mod
-      resolved-ref: e55d90cf2a1666e6ccf63e3f5779c8c4b12c5204
+      resolved-ref: "66486fdeb963149ba27d2dc1719c9a9005de5d18"
       url: "https://github.com/bggRGjQaUbCoE/extended_nested_scroll_view.git"
     source: git
     version: "6.2.1"
@@ -954,7 +954,7 @@ packages:
     description:
       path: "pkgs/jnigen"
       ref: HEAD
-      resolved-ref: "1ec45a929a7517d6bf133f02aef1e15490c75442"
+      resolved-ref: c525f5b04382f42afe568722d86b9a81dd1e8aad
       url: "https://github.com/dart-lang/native.git"
     source: git
     version: "0.17.0-wip"

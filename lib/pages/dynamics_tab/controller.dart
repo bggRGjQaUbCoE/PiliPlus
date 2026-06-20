@@ -1,11 +1,12 @@
 import 'dart:async' show StreamSubscription;
 
-import 'package:PiliPlus/common/widgets/scroll_physics.dart';
 import 'package:PiliPlus/http/dynamics.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/msg.dart';
 import 'package:PiliPlus/models/common/dynamic/dynamics_type.dart';
 import 'package:PiliPlus/models/dynamics/result.dart';
+import 'package:PiliPlus/pages/common/common_controller.dart'
+    show CommonReloadMixin;
 import 'package:PiliPlus/pages/common/common_list_controller.dart';
 import 'package:PiliPlus/pages/dynamics/controller.dart';
 import 'package:PiliPlus/pages/main/controller.dart';
@@ -15,11 +16,13 @@ import 'package:get/get.dart';
 
 class DynamicsTabController
     extends CommonListController<DynamicsDataModel, DynamicItemModel>
-    with AccountMixin, ReloadMixin {
+    with AccountMixin, CommonReloadMixin {
   DynamicsTabController({required this.dynamicsType});
   final DynamicsTabType dynamicsType;
   String offset = '';
   int? mid;
+  late int flag = 0;
+
   late final MainController mainController = Get.find<MainController>();
   final dynamicsController = Get.find<DynamicsController>();
   StreamSubscription? _listener;
@@ -31,6 +34,7 @@ class DynamicsTabController
     if (dynamicsType == .up) {
       _listener = dynamicsController.mid.listen((mid) {
         if (mid != -1) {
+          flag++;
           this.mid = mid;
           onReload();
         }
@@ -72,12 +76,6 @@ class DynamicsTabController
     } else {
       res.toast();
     }
-  }
-
-  @override
-  Future<void> onReload() {
-    reload = true;
-    return super.onReload();
   }
 
   void onBlock(int index) {

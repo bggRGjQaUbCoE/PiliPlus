@@ -3,6 +3,10 @@ import 'dart:io' show Platform;
 import 'package:flutter/gestures.dart' show PointerDeviceKind;
 import 'package:flutter/material.dart';
 
+const _clampingPhysics = ClampingScrollPhysics();
+const _bouncingPhysics = BouncingScrollPhysics();
+const _bouncingDesktopPhysics = BouncingScrollPhysics(decelerationRate: .fast);
+
 class CustomScrollBehavior extends MaterialScrollBehavior {
   const CustomScrollBehavior();
 
@@ -27,6 +31,17 @@ class CustomScrollBehavior extends MaterialScrollBehavior {
       );
     }
     return child;
+  }
+
+  @override
+  ScrollPhysics getScrollPhysics(BuildContext context) {
+    if (Platform.isIOS) {
+      return _bouncingPhysics;
+    }
+    if (Platform.isMacOS) {
+      return _bouncingDesktopPhysics;
+    }
+    return _clampingPhysics;
   }
 
   @override

@@ -79,10 +79,9 @@ class _MemberLikeArcPageState extends State<MemberLikeArcPage> {
 
   Widget _buildBody(LoadingState<List<CoinLikeArcItem>?> loadingState) {
     return switch (loadingState) {
-      Loading() => SliverGrid.builder(
+      Loading() => SliverGrid(
         gridDelegate: gridDelegate,
-        itemCount: 16,
-        itemBuilder: (context, index) => const VideoCardVSkeleton(),
+        delegate: videoVDelegate,
       ),
       Success(:final response) =>
         response != null && response.isNotEmpty

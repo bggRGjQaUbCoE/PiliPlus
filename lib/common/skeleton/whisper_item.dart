@@ -1,7 +1,14 @@
 import 'package:flutter/material.dart';
 
-class WhisperItemSkeleton extends StatelessWidget {
-  const WhisperItemSkeleton({super.key});
+const _ = _WhisperItemSkeleton();
+const whisperSkeleton = SliverList(
+  delegate: SliverChildListDelegate.fixed(
+    [_, _, _, _, _, _, _, _, _, _],
+  ),
+);
+
+class _WhisperItemSkeleton extends StatelessWidget {
+  const _WhisperItemSkeleton();
 
   @override
   Widget build(BuildContext context) {

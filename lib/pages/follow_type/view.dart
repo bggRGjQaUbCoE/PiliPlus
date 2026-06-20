@@ -49,10 +49,9 @@ abstract class FollowTypePageState<T extends StatefulWidget> extends State<T> {
     LoadingState<List<FollowItemModel>?> loadingState,
   ) {
     return switch (loadingState) {
-      Loading() => SliverGrid.builder(
+      Loading() => SliverGrid(
         gridDelegate: gridDelegate,
-        itemBuilder: (context, index) => const MsgFeedTopSkeleton(),
-        itemCount: 16,
+        delegate: sysFeedDelegate,
       ),
       Success(:final response) =>
         response != null && response.isNotEmpty

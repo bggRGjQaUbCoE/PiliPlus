@@ -1,8 +1,14 @@
 import 'package:PiliPlus/utils/global_data.dart';
 import 'package:flutter/material.dart';
 
-class DynamicCardSkeleton extends StatelessWidget {
-  const DynamicCardSkeleton({super.key});
+const _ = _DynamicCardSkeleton();
+const dynSkeleton_ = SliverList(delegate: dynDelegate);
+const dynDelegate = SliverChildListDelegate.fixed(
+  [_, _, _, _, _, _, _, _, _, _],
+);
+
+class _DynamicCardSkeleton extends StatelessWidget {
+  const _DynamicCardSkeleton();
 
   @override
   Widget build(BuildContext context) {

@@ -8,10 +8,9 @@ import 'package:flutter/rendering.dart';
 mixin GridMixin {
   late final gridDelegate = Grid.videoCardHDelegate();
 
-  Widget get gridSkeleton => SliverGrid.builder(
+  Widget get gridSkeleton => SliverGrid(
     gridDelegate: gridDelegate,
-    itemBuilder: (_, _) => const VideoCardHSkeleton(),
-    itemCount: 10,
+    delegate: videoHDelegate,
   );
 }
 

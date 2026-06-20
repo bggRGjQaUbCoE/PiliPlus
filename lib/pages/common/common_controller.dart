@@ -1,3 +1,4 @@
+import 'package:PiliPlus/common/widgets/scroll_physics.dart' show ReloadMixin;
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/utils/extension/scroll_controller_ext.dart';
 import 'package:flutter/widgets.dart' show ScrollController;
@@ -48,5 +49,16 @@ abstract class CommonController<R, T> extends GetxController
   void onClose() {
     scrollController.dispose();
     super.onClose();
+  }
+}
+
+mixin CommonReloadMixin<R, T> on CommonController<R, T> implements ReloadMixin {
+  @override
+  late bool reload = false;
+
+  @override
+  Future<void> onReload() {
+    reload = true;
+    return super.onReload();
   }
 }

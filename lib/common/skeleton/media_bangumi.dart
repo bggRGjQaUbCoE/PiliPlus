@@ -1,6 +1,11 @@
 import 'package:PiliPlus/common/style.dart';
 import 'package:flutter/material.dart';
 
+const _ = MediaPgcSkeleton();
+const pgcDelegate = SliverChildListDelegate.fixed(
+  [_, _, _, _, _, _, _, _, _, _],
+);
+
 class MediaPgcSkeleton extends StatefulWidget {
   const MediaPgcSkeleton({super.key});
 

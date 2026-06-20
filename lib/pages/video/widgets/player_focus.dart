@@ -24,6 +24,7 @@ class PlayerFocus extends StatelessWidget {
     this.canPlay,
     this.onSkipSegment,
     this.onRefresh,
+    this.onDownload,
   });
 
   final Widget child;
@@ -33,6 +34,7 @@ class PlayerFocus extends StatelessWidget {
   final ValueGetter<bool>? canPlay;
   final ValueGetter<bool>? onSkipSegment;
   final VoidCallback? onRefresh;
+  final VoidCallback? onDownload;
 
   static bool _shouldHandle(LogicalKeyboardKey logicalKey) {
     return logicalKey == LogicalKeyboardKey.tab ||
@@ -222,6 +224,10 @@ class PlayerFocus extends StatelessWidget {
               !plPlayerController.controlsLock.value,
             );
           }
+          return true;
+
+        case LogicalKeyboardKey.keyX:
+          onDownload?.call();
           return true;
 
         case LogicalKeyboardKey.enter:

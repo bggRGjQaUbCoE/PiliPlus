@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 
-class VideoReplySkeleton extends StatelessWidget {
-  const VideoReplySkeleton({super.key});
+const _ = _VideoReplySkeleton();
+const replySkeleton = SliverList(
+  delegate: SliverChildListDelegate.fixed([_, _, _, _, _]),
+);
+
+class _VideoReplySkeleton extends StatelessWidget {
+  const _VideoReplySkeleton();
 
   @override
   Widget build(BuildContext context) {

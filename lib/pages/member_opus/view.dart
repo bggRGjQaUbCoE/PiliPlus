@@ -156,10 +156,7 @@ class _MemberOpusState extends State<MemberOpus>
     return switch (loadingState) {
       Loading() => SliverWaterfallFlow(
         gridDelegate: gridDelegate,
-        delegate: SliverChildBuilderDelegate(
-          (context, index) => const SpaceOpusSkeleton(),
-          childCount: 10,
-        ),
+        delegate: opusDelegate,
       ),
       Success(:final response) =>
         response != null && response.isNotEmpty

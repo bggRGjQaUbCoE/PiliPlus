@@ -3,6 +3,7 @@ import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/scaffold.dart';
+import 'package:PiliPlus/common/widgets/scroll_physics.dart';
 import 'package:PiliPlus/common/widgets/sliver/sliver_floating_header.dart';
 import 'package:PiliPlus/common/widgets/view_safe_area.dart';
 import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
@@ -80,7 +81,7 @@ class _MainReplyPageState extends State<MainReplyPage>
                   right: padding.right,
                 ),
                 child: CustomScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(),
+                  physics: ReloadScrollPhysics(controller: _controller),
                   slivers: [
                     buildReplyHeader(colorScheme),
                     Obx(
@@ -131,11 +132,7 @@ class _MainReplyPageState extends State<MainReplyPage>
     LoadingState<List<ReplyInfo>?> loadingState,
   ) {
     return switch (loadingState) {
-      Loading() => SliverPrototypeExtentList.builder(
-        itemCount: 10,
-        itemBuilder: (_, _) => const VideoReplySkeleton(),
-        prototypeItem: const VideoReplySkeleton(),
-      ),
+      Loading() => replySkeleton,
       Success(:final response) =>
         response != null && response.isNotEmpty
             ? SliverList.builder(

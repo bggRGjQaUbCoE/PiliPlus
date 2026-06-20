@@ -1,7 +1,14 @@
 import 'package:flutter/material.dart';
 
-class MsgFeedSysMsgSkeleton extends StatelessWidget {
-  const MsgFeedSysMsgSkeleton({super.key});
+const _ = _MsgFeedSysMsgSkeleton();
+const sysMsgSkeleton = SliverList(
+  delegate: SliverChildListDelegate.fixed(
+    [_, _, _, _, _, _, _, _, _, _],
+  ),
+);
+
+class _MsgFeedSysMsgSkeleton extends StatelessWidget {
+  const _MsgFeedSysMsgSkeleton();
 
   @override
   Widget build(BuildContext context) {

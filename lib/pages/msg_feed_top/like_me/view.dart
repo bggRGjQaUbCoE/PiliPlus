@@ -82,10 +82,7 @@ class _LikeMePageState extends State<LikeMePage> {
       color: Colors.grey.withValues(alpha: 0.1),
     );
     return switch (loadingState) {
-      Loading() => SliverList.builder(
-        itemCount: 12,
-        itemBuilder: (context, index) => const MsgFeedTopSkeleton(),
-      ),
+      Loading() => sysFeedSkeleton,
       Success(:final response) => Builder(
         builder: (context) {
           Pair<List<MsgLikeItem>, List<MsgLikeItem>> pair = response;

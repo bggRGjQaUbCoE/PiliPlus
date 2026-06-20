@@ -187,11 +187,7 @@ class _NoteListPageState extends State<NoteListPage>
       color: theme.colorScheme.outline.withValues(alpha: 0.1),
     );
     return switch (loadingState) {
-      Loading() => SliverPrototypeExtentList.builder(
-        prototypeItem: const VideoReplySkeleton(),
-        itemBuilder: (_, _) => const VideoReplySkeleton(),
-        itemCount: 8,
-      ),
+      Loading() => replySkeleton,
       Success(:final response) =>
         response != null && response.isNotEmpty
             ? SliverList.separated(

@@ -1,8 +1,13 @@
 import 'package:PiliPlus/common/style.dart';
 import 'package:flutter/material.dart';
 
-class VideoCardVSkeleton extends StatelessWidget {
-  const VideoCardVSkeleton({super.key});
+const _ = _VideoCardVSkeleton();
+const videoVDelegate = SliverChildListDelegate.fixed(
+  [_, _, _, _, _, _, _, _, _, _],
+);
+
+class _VideoCardVSkeleton extends StatelessWidget {
+  const _VideoCardVSkeleton();
 
   @override
   Widget build(BuildContext context) {

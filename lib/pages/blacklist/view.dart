@@ -65,10 +65,7 @@ class _BlackListPageState extends State<BlackListPage> {
   Widget _buildBody(LoadingState<List<BlackListItem>?> loadingState) {
     late final style = TextStyle(color: Theme.of(context).colorScheme.outline);
     return switch (loadingState) {
-      Loading() => SliverList.builder(
-        itemCount: 12,
-        itemBuilder: (context, index) => const MsgFeedTopSkeleton(),
-      ),
+      Loading() => sysFeedSkeleton,
       Success(:final response) =>
         response != null && response.isNotEmpty
             ? SliverList.builder(

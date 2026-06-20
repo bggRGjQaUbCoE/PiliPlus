@@ -1046,6 +1046,9 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
           return false;
         },
         onSkipSegment: videoDetailController.onSkipSegment,
+        onDownload: videoDetailController.isFileSource
+            ? null
+            : () => videoDetailController.onDownload(context),
         child: child,
       );
     }

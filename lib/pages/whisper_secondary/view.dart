@@ -96,10 +96,7 @@ class _WhisperSecPageState extends State<WhisperSecPage> {
       color: Colors.grey.withValues(alpha: 0.1),
     );
     return switch (loadingState) {
-      Loading() => SliverList.builder(
-        itemCount: 12,
-        itemBuilder: (context, index) => const WhisperItemSkeleton(),
-      ),
+      Loading() => whisperSkeleton,
       Success(:final response) =>
         response != null && response.isNotEmpty
             ? SliverList.separated(

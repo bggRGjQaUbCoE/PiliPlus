@@ -66,12 +66,7 @@ class _SysMsgPageState extends State<SysMsgPage> {
       color: Colors.grey.withValues(alpha: 0.1),
     );
     return switch (loadingState) {
-      Loading() => ViewSliverSafeArea(
-        sliver: SliverList.builder(
-          itemCount: 12,
-          itemBuilder: (context, index) => const MsgFeedSysMsgSkeleton(),
-        ),
-      ),
+      Loading() => const ViewSliverSafeArea(sliver: sysMsgSkeleton),
       Success(:final response) =>
         response != null && response.isNotEmpty
             ? SliverList.separated(

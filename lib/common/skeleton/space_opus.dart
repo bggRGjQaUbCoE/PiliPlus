@@ -1,8 +1,13 @@
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart';
 
-class SpaceOpusSkeleton extends StatelessWidget {
-  const SpaceOpusSkeleton({super.key});
+const _ = _SpaceOpusSkeleton();
+const opusDelegate = SliverChildListDelegate.fixed(
+  [_, _, _, _, _, _, _, _, _, _],
+);
+
+class _SpaceOpusSkeleton extends StatelessWidget {
+  const _SpaceOpusSkeleton();
 
   @override
   Widget build(BuildContext context) {

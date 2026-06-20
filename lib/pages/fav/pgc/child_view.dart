@@ -170,10 +170,9 @@ class _FavPgcChildPageState extends State<FavPgcChildPage>
 
   Widget _buildBody(LoadingState<List<FavPgcItemModel>?> loadingState) {
     return switch (loadingState) {
-      Loading() => SliverGrid.builder(
+      Loading() => SliverGrid(
         gridDelegate: gridDelegate,
-        itemBuilder: (context, index) => const FavPgcItemSkeleton(),
-        itemCount: 10,
+        delegate: favPgcDelegate,
       ),
       Success(:final response) =>
         response != null && response.isNotEmpty

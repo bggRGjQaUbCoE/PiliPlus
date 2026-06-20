@@ -5,6 +5,7 @@ import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/icon/bili_icons.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
+import 'package:PiliPlus/common/widgets/scroll_physics.dart';
 import 'package:PiliPlus/common/widgets/sliver/sliver_floating_header.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/pgc_review_type.dart';
@@ -66,7 +67,7 @@ class _PgcReviewChildPageState extends State<PgcReviewChildPage>
       onRefresh: _controller.onRefresh,
       child: CustomScrollView(
         controller: _controller.scrollController,
-        physics: const AlwaysScrollableScrollPhysics(),
+        physics: ReloadScrollPhysics(controller: _controller),
         slivers: [
           _buildHeader(theme),
           SliverPadding(
@@ -91,11 +92,7 @@ class _PgcReviewChildPageState extends State<PgcReviewChildPage>
       color: theme.colorScheme.outline.withValues(alpha: 0.1),
     );
     return switch (loadingState) {
-      Loading() => SliverPrototypeExtentList.builder(
-        prototypeItem: const VideoReplySkeleton(),
-        itemBuilder: (_, _) => const VideoReplySkeleton(),
-        itemCount: 8,
-      ),
+      Loading() => replySkeleton,
       Success(:final response) =>
         response != null && response.isNotEmpty
             ? SliverList.separated(

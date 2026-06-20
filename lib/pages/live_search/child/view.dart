@@ -60,15 +60,13 @@ class _LiveSearchChildPageState extends State<LiveSearchChildPage>
 
   Widget get _buildLoading {
     return switch (widget.searchType) {
-      .room => SliverGrid.builder(
+      .room => SliverGrid(
         gridDelegate: roomDelegate,
-        itemBuilder: (context, index) => const VideoCardVSkeleton(),
-        itemCount: 10,
+        delegate: videoVDelegate,
       ),
-      .user => SliverGrid.builder(
+      .user => SliverGrid(
         gridDelegate: userDelegate,
-        itemBuilder: (context, index) => const MsgFeedTopSkeleton(),
-        itemCount: 12,
+        delegate: sysFeedDelegate,
       ),
     };
   }

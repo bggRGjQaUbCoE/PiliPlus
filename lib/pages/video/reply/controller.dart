@@ -3,11 +3,14 @@ import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
 import 'package:PiliPlus/grpc/reply.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/video/video_type.dart';
+import 'package:PiliPlus/pages/common/common_controller.dart'
+    show CommonReloadMixin;
 import 'package:PiliPlus/pages/common/reply_controller.dart';
 import 'package:PiliPlus/pages/video/controller.dart';
 import 'package:get/get.dart';
 
-class VideoReplyController extends ReplyController<MainListReply> {
+class VideoReplyController extends ReplyController<MainListReply>
+    with CommonReloadMixin {
   VideoReplyController({
     required this.aid,
     required this.videoType,

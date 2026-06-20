@@ -3,12 +3,15 @@ import 'package:PiliPlus/http/pgc.dart';
 import 'package:PiliPlus/models/common/pgc_review_type.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_review/data.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_review/list.dart';
+import 'package:PiliPlus/pages/common/common_controller.dart'
+    show CommonReloadMixin;
 import 'package:PiliPlus/pages/common/common_list_controller.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 
 class PgcReviewController
-    extends CommonListController<PgcReviewData, PgcReviewItemModel> {
+    extends CommonListController<PgcReviewData, PgcReviewItemModel>
+    with CommonReloadMixin {
   PgcReviewController({required this.type, required this.mediaId});
 
   final PgcReviewType type;

@@ -1,4 +1,3 @@
-import 'package:PiliPlus/common/widgets/scroll_physics.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/member.dart';
 import 'package:PiliPlus/http/search.dart';
@@ -9,6 +8,8 @@ import 'package:PiliPlus/models/common/video/source_type.dart';
 import 'package:PiliPlus/models_new/space/space_archive/data.dart';
 import 'package:PiliPlus/models_new/space/space_archive/episodic_button.dart';
 import 'package:PiliPlus/models_new/space/space_archive/item.dart';
+import 'package:PiliPlus/pages/common/common_controller.dart'
+    show CommonReloadMixin;
 import 'package:PiliPlus/pages/common/common_list_controller.dart';
 import 'package:PiliPlus/utils/extension/dimension_ext.dart';
 import 'package:PiliPlus/utils/extension/iterable_ext.dart';
@@ -18,7 +19,7 @@ import 'package:get/get.dart';
 
 class MemberVideoCtr
     extends CommonListController<SpaceArchiveData, SpaceArchiveItem>
-    with ReloadMixin {
+    with CommonReloadMixin {
   MemberVideoCtr({
     required this.type,
     required this.mid,
@@ -226,7 +227,6 @@ class MemberVideoCtr
 
   @override
   Future<void> onReload() {
-    reload = true;
     isLocating.value = false;
     return super.onReload();
   }

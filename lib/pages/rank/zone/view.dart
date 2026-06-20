@@ -28,10 +28,9 @@ class ZonePage extends StatelessWidget {
 
     Widget buildBody(LoadingState<List<dynamic>?> loadingState) {
       return switch (loadingState) {
-        Loading() => SliverGrid.builder(
+        Loading() => SliverGrid(
           gridDelegate: gridDelegate,
-          itemBuilder: (_, _) => const VideoCardHSkeleton(),
-          itemCount: 10,
+          delegate: videoHDelegate,
         ),
         Success(:final response) =>
           response != null && response.isNotEmpty

@@ -101,9 +101,8 @@ class _SearchAllPanelState
   }
 
   @override
-  Widget get buildLoading => SliverGrid.builder(
+  Widget get buildLoading => SliverGrid(
     gridDelegate: Grid.videoCardHDelegate(),
-    itemBuilder: (context, index) => const VideoCardHSkeleton(),
-    itemCount: 10,
+    delegate: videoHDelegate,
   );
 }

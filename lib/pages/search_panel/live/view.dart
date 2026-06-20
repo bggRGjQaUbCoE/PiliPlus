@@ -73,9 +73,8 @@ class _SearchLivePanelState
   }
 
   @override
-  Widget get buildLoading => SliverGrid.builder(
+  Widget get buildLoading => SliverGrid(
     gridDelegate: gridDelegate,
-    itemBuilder: (context, index) => const VideoCardVSkeleton(),
-    itemCount: 10,
+    delegate: videoVDelegate,
   );
 }

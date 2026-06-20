@@ -79,10 +79,7 @@ class _ReplyMePageState extends State<ReplyMePage> {
       color: Colors.grey.withValues(alpha: 0.1),
     );
     return switch (loadingState) {
-      Loading() => SliverList.builder(
-        itemCount: 12,
-        itemBuilder: (context, index) => const MsgFeedTopSkeleton(),
-      ),
+      Loading() => sysFeedSkeleton,
       Success(:final response) =>
         response != null && response.isNotEmpty
             ? SliverList.separated(

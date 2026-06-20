@@ -551,7 +551,7 @@ class RefreshIndicatorState extends State<RefreshIndicator>
     return ScrollConfiguration(
       behavior: RefreshScrollBehavior(
         scrollPhysics: RefreshScrollPhysics(
-          parent: const RangeMaintainingScrollPhysics(),
+          // parent: const RangeMaintainingScrollPhysics(),
           onDrag: _onDrag,
         ),
       ),

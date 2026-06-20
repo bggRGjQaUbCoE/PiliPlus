@@ -65,13 +65,12 @@ class _SearchPgcPanelState
   }
 
   @override
-  Widget get buildLoading => SliverGrid.builder(
+  Widget get buildLoading => SliverGrid(
     gridDelegate: SliverGridDelegateWithExtentAndRatio(
       mainAxisSpacing: 2,
       maxCrossAxisExtent: Grid.smallCardWidth * 2,
       childAspectRatio: Style.aspectRatio * 1.5,
     ),
-    itemBuilder: (context, index) => const MediaPgcSkeleton(),
-    itemCount: 10,
+    delegate: pgcDelegate,
   );
 }

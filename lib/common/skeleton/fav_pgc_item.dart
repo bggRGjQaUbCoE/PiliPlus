@@ -1,8 +1,13 @@
 import 'package:PiliPlus/common/style.dart';
 import 'package:flutter/material.dart';
 
-class FavPgcItemSkeleton extends StatelessWidget {
-  const FavPgcItemSkeleton({super.key});
+const _ = _FavPgcItemSkeleton();
+const favPgcDelegate = SliverChildListDelegate.fixed(
+  [_, _, _, _, _, _, _, _, _, _],
+);
+
+class _FavPgcItemSkeleton extends StatelessWidget {
+  const _FavPgcItemSkeleton();
 
   @override
   Widget build(BuildContext context) {

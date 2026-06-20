@@ -62,10 +62,9 @@ class _LiveFollowPageState extends State<LiveFollowPage> {
 
   Widget _buildBody(LoadingState<List<LiveFollowItem>?> loadingState) {
     return switch (loadingState) {
-      Loading() => SliverGrid.builder(
+      Loading() => SliverGrid(
         gridDelegate: gridDelegate,
-        itemBuilder: (context, index) => const VideoCardVSkeleton(),
-        itemCount: 10,
+        delegate: videoVDelegate,
       ),
       Success(:final response) =>
         response != null && response.isNotEmpty

@@ -52,9 +52,11 @@ class _DynamicsTabPageState extends State<DynamicsTabPage>
         return controller.onRefresh();
       },
       child: CustomScrollView(
-        key: widget.dynamicsType == .all
-            ? null
-            : PageStorageKey(widget.dynamicsType),
+        key: switch (widget.dynamicsType) {
+          .all => null,
+          .up => PageStorageKey('${widget.dynamicsType}${controller.flag}'),
+          _ => PageStorageKey(widget.dynamicsType),
+        },
         physics: ReloadScrollPhysics(controller: controller),
         controller: controller.scrollController,
         slivers: [

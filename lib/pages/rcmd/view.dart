@@ -131,9 +131,8 @@ class _RcmdPageState extends State<RcmdPage>
     };
   }
 
-  Widget get _buildSkeleton => SliverGrid.builder(
+  Widget get _buildSkeleton => SliverGrid(
     gridDelegate: gridDelegate,
-    itemBuilder: (context, index) => const VideoCardVSkeleton(),
-    itemCount: 10,
+    delegate: videoVDelegate,
   );
 }

@@ -112,9 +112,8 @@ class _SearchUserPanelState
   }
 
   @override
-  Widget get buildLoading => SliverGrid.builder(
+  Widget get buildLoading => SliverGrid(
     gridDelegate: gridDelegate,
-    itemBuilder: (context, index) => const MsgFeedTopSkeleton(),
-    itemCount: 10,
+    delegate: sysFeedDelegate,
   );
 }

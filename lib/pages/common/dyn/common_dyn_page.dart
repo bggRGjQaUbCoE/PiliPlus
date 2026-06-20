@@ -121,10 +121,7 @@ mixin CommonDynPageMixin<T extends StatefulWidget>
 
   Widget replyList(LoadingState<List<ReplyInfo>?> loadingState) {
     return switch (loadingState) {
-      Loading() => SliverList.builder(
-        itemCount: 12,
-        itemBuilder: (context, index) => const VideoReplySkeleton(),
-      ),
+      Loading() => replySkeleton,
       Success(:final response) =>
         response != null && response.isNotEmpty
             ? SliverList.builder(

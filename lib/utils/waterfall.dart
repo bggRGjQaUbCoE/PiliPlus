@@ -43,17 +43,9 @@ mixin DynMixin {
 
   Widget get dynSkeleton {
     if (GlobalData.dynamicsWaterfallFlow) {
-      return SliverGrid.builder(
-        gridDelegate: skeDelegate,
-        itemBuilder: (_, _) => const DynamicCardSkeleton(),
-        itemCount: 10,
-      );
+      return SliverGrid(gridDelegate: skeDelegate, delegate: dynDelegate);
     }
-    return SliverPrototypeExtentList.builder(
-      prototypeItem: const DynamicCardSkeleton(),
-      itemBuilder: (_, _) => const DynamicCardSkeleton(),
-      itemCount: 10,
-    );
+    return dynSkeleton_;
   }
 }
 

@@ -77,10 +77,7 @@ class _MemberShopState extends State<MemberShop>
       case Loading():
         return SliverWaterfallFlow(
           gridDelegate: gridDelegate,
-          delegate: SliverChildBuilderDelegate(
-            (context, index) => const SpaceOpusSkeleton(),
-            childCount: 10,
-          ),
+          delegate: opusDelegate,
         );
       case Success(:final response):
         if (response == null || response.isEmpty) {

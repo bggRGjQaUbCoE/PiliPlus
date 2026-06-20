@@ -4,6 +4,7 @@ import 'package:PiliPlus/common/widgets/colored_box_transition.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/scaffold.dart';
+import 'package:PiliPlus/common/widgets/scroll_physics.dart';
 import 'package:PiliPlus/common/widgets/sliver/sliver_pinned_header.dart';
 import 'package:PiliPlus/common/widgets/view_safe_area.dart';
 import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
@@ -189,7 +190,7 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
       child: CustomScrollView(
         key: ValueKey(scrollController.hashCode),
         controller: scrollController,
-        physics: const AlwaysScrollableScrollPhysics(),
+        physics: ReloadScrollPhysics(controller: _controller),
         slivers: [
           if (!isDialogue) ...[
             if ((widget.firstFloor ?? _controller.firstFloor.value)
@@ -284,11 +285,7 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
   ) {
     final jumpIndex = _controller.index.value;
     return switch (loadingState) {
-      Loading() => SliverPrototypeExtentList.builder(
-        prototypeItem: const VideoReplySkeleton(),
-        itemBuilder: (_, _) => const VideoReplySkeleton(),
-        itemCount: 8,
-      ),
+      Loading() => replySkeleton,
       Success(:final response!) => SuperSliverList.builder(
         listController: _controller.listController,
         itemBuilder: (context, index) {

@@ -171,10 +171,9 @@ class _LivePageState extends State<LivePage>
 
   Widget _buildBody(ThemeData theme, LoadingState<List?> loadingState) {
     return switch (loadingState) {
-      Loading() => SliverGrid.builder(
+      Loading() => SliverGrid(
         gridDelegate: gridDelegate,
-        itemBuilder: (context, index) => const VideoCardVSkeleton(),
-        itemCount: 10,
+        delegate: videoVDelegate,
       ),
       Success(:final response) => SliverMainAxisGroup(
         slivers: [

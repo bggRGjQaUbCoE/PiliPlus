@@ -173,9 +173,8 @@ class _HorizontalMemberPageState extends State<HorizontalMemberPage> {
     LoadingState<List<SpaceArchiveItem>?> loadingState,
   ) {
     return switch (loadingState) {
-      Loading() => SliverFixedExtentList.builder(
-        itemCount: 10,
-        itemBuilder: (_, _) => const VideoCardHSkeleton(),
+      Loading() => const SliverFixedExtentList(
+        delegate: videoHDelegate,
         itemExtent: 112,
       ),
       Success(:final response) =>

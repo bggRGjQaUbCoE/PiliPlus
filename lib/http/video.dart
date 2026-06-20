@@ -178,6 +178,7 @@ abstract final class VideoHttp {
       for (final i in res.data['data']['list']) {
         if (!GlobalData().blackMids.contains(i['owner']['mid']) &&
             !RecommendFilter.filterTitle(i['title']) &&
+            !RecommendFilter.filterTagInJson(i) &&
             !RecommendFilter.filterLikeRatio(
               i['stat']['like'],
               i['stat']['view'],
@@ -868,6 +869,7 @@ abstract final class VideoHttp {
   static bool _canAddRank(Map i) {
     if (!GlobalData().blackMids.contains(i['owner']['mid']) &&
         !RecommendFilter.filterTitle(i['title']) &&
+        !RecommendFilter.filterTagInJson(i) &&
         !RecommendFilter.filterLikeRatio(
           i['stat']['like'],
           i['stat']['view'],

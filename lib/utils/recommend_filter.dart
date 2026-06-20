@@ -12,6 +12,8 @@ abstract final class RecommendFilter {
     caseSensitive: false,
   );
   static bool enableFilter = rcmdRegExp.pattern.isNotEmpty;
+  static RegExp tagRegExp = RegExp(Pref.banWordForTag, caseSensitive: false);
+  static bool enableTagFilter = tagRegExp.pattern.isNotEmpty;
 
   static bool filter(BaseVideoItemModel videoItem) {
     //由于相关视频中没有已关注标签，只能视为非关注视频
@@ -35,10 +37,19 @@ abstract final class RecommendFilter {
     return (enableFilter && rcmdRegExp.hasMatch(title));
   }
 
+  static bool filterTag(Iterable<String>? tags) {
+    return enableTagFilter && tags != null && tags.any(tagRegExp.hasMatch);
+  }
+
+  static bool filterTagInJson(Map json) {
+    return filterTag(BaseVideoItemModel.parseTags(json));
+  }
+
   static bool filterAll(BaseVideoItemModel videoItem) {
     return (videoItem.duration > 0 &&
             videoItem.duration < minDurationForRcmd) ||
         filterLikeRatio(videoItem.stat.like, videoItem.stat.view) ||
-        filterTitle(videoItem.title);
+        filterTitle(videoItem.title) ||
+        filterTag(videoItem.tags);
   }
 }

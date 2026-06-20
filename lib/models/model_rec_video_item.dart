@@ -24,6 +24,7 @@ class RcmdVideoItemModel extends BaseRcmdVideoItemModel {
     pubdate = json["pubdate"];
     owner = Owner.fromJson(json["owner"]);
     stat = Stat.fromJson(json["stat"]);
+    tags = BaseVideoItemModel.parseTags(json);
     isFollowed = json["is_followed"] == 1;
     // rcmdReason = json["rcmd_reason"] != null
     //     ? RcmdReason.fromJson(json["rcmd_reason"])

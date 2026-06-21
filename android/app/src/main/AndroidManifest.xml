@@ -43,6 +43,9 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         tools:replace="android:allowBackup">
+        <meta-data
+            android:name="io.flutter.embedding.android.EnableImpeller"
+            android:value="false" />
         <activity
             android:name=".MainActivity"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"

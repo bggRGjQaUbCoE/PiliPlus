@@ -15,7 +15,8 @@ import 'package:PiliPlus/pages/video/controller.dart';
 import 'package:PiliPlus/pages/video/post_panel/popup_menu_text.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/utils/duration_utils.dart';
-import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart';
+import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart'
+    show ExtendedNestedScrollController, ExtendedVisibilityDetector;
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show FilteringTextInputFormatter;

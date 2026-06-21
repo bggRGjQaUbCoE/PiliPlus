@@ -3,7 +3,6 @@ import 'dart:math';
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/button/more_btn.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
-import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
 import 'package:PiliPlus/common/widgets/scaffold.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart';
@@ -12,20 +11,18 @@ import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/fav_type.dart';
 import 'package:PiliPlus/models/common/home_tab_type.dart';
 import 'package:PiliPlus/models_new/fav/fav_pgc/list.dart';
-import 'package:PiliPlus/models_new/pgc/pgc_index_result/list.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_timeline/result.dart';
 import 'package:PiliPlus/pages/pgc/controller.dart';
 import 'package:PiliPlus/pages/pgc/widgets/pgc_card_v.dart';
 import 'package:PiliPlus/pages/pgc/widgets/pgc_card_v_timeline.dart';
 import 'package:PiliPlus/pages/pgc_index/controller.dart';
 import 'package:PiliPlus/pages/pgc_index/view.dart';
-import 'package:PiliPlus/pages/pgc_index/widgets/pgc_card_v_pgc_index.dart';
 import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:PiliPlus/utils/grid.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-class PgcPage extends StatefulWidget {
+class PgcPage extends StatelessWidget {
   const PgcPage({
     super.key,
     required this.tabType,
@@ -34,45 +31,31 @@ class PgcPage extends StatefulWidget {
   final HomeTabType tabType;
 
   @override
-  State<PgcPage> createState() => _PgcPageState();
-}
-
-class _PgcPageState extends State<PgcPage> with AutomaticKeepAliveClientMixin {
-  late final PgcController controller;
-
-  @override
-  void initState() {
-    controller = Get.put(
-      PgcController(tabType: widget.tabType),
-      tag: widget.tabType.name,
-    );
-    super.initState();
-  }
-
-  @override
-  bool get wantKeepAlive => true;
-
-  @override
   Widget build(BuildContext context) {
-    super.build(context);
-    final ThemeData theme = Theme.of(context);
+    final theme = Theme.of(context);
+    final controller = Get.put(
+      PgcController(tabType: tabType),
+      tag: tabType.name,
+    );
     return refreshIndicator(
       onRefresh: controller.onRefresh,
       child: CustomScrollView(
-        controller: controller.scrollController,
         physics: const AlwaysScrollableScrollPhysics(),
         slivers: [
-          _buildFollow(theme),
+          _buildFollow(theme, controller),
           if (controller.showPgcTimeline)
             SliverToBoxAdapter(
               child: SizedBox(
                 height: Grid.smallCardWidth / 2 / 0.75 + 96,
                 child: Obx(
-                  () => _buildTimeline(theme, controller.timelineState.value),
+                  () => _buildTimeline(
+                    theme,
+                    controller,
+                    controller.timelineState.value,
+                  ),
                 ),
               ),
             ),
-          ..._buildRcmd(theme),
         ],
       ),
     );
@@ -80,6 +63,7 @@ class _PgcPageState extends State<PgcPage> with AutomaticKeepAliveClientMixin {
 
   Widget _buildTimeline(
     ThemeData theme,
+    PgcController controller,
     LoadingState<List<TimelineResult>?> loadingState,
   ) => switch (loadingState) {
     Loading() => m3eLoading,
@@ -99,10 +83,7 @@ class _PgcPageState extends State<PgcPage> with AutomaticKeepAliveClientMixin {
                       Row(
                         children: [
                           const SizedBox(width: 16),
-                          Text(
-                            '追番时间表',
-                            style: theme.textTheme.titleMedium,
-                          ),
+                          Text('追番时间表', style: theme.textTheme.titleMedium),
                           const SizedBox(width: 16),
                           Expanded(
                             child: TabBar(
@@ -113,8 +94,8 @@ class _PgcPageState extends State<PgcPage> with AutomaticKeepAliveClientMixin {
                                 Colors.transparent,
                               ),
                               splashFactory: NoSplash.splashFactory,
-                              padding: const EdgeInsets.only(right: 10),
-                              indicatorPadding: const EdgeInsets.symmetric(
+                              padding: const .only(right: 10),
+                              indicatorPadding: const .symmetric(
                                 horizontal: 4,
                                 vertical: 10,
                               ),
@@ -161,14 +142,14 @@ class _PgcPageState extends State<PgcPage> with AutomaticKeepAliveClientMixin {
                               return const SizedBox.shrink();
                             }
                             return ListView.builder(
-                              physics: const AlwaysScrollableScrollPhysics(),
-                              scrollDirection: Axis.horizontal,
+                              padding: .zero,
+                              scrollDirection: .horizontal,
                               itemCount: item.episodes!.length,
-                              padding: EdgeInsets.zero,
+                              physics: const AlwaysScrollableScrollPhysics(),
                               itemBuilder: (context, index) {
                                 return Container(
                                   width: Grid.smallCardWidth / 2,
-                                  margin: EdgeInsets.only(
+                                  margin: .only(
                                     left: Style.safeSpace,
                                     right: index == item.episodes!.length - 1
                                         ? Style.safeSpace
@@ -190,198 +171,71 @@ class _PgcPageState extends State<PgcPage> with AutomaticKeepAliveClientMixin {
             )
           : const SizedBox.shrink(),
     Error(:final errMsg) => GestureDetector(
-      behavior: HitTestBehavior.opaque,
+      behavior: .opaque,
       onTap: controller.queryPgcTimeline,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        alignment: Alignment.center,
-        child: Text(
-          errMsg ?? '',
-          textAlign: TextAlign.center,
-        ),
+        alignment: .center,
+        padding: const .symmetric(horizontal: 16),
+        child: Text(errMsg ?? '', textAlign: .center),
       ),
     ),
   };
 
-  List<Widget> _buildRcmd(ThemeData theme) => [
-    _buildRcmdTitle(theme),
-    SliverPadding(
-      padding: const EdgeInsets.only(
-        left: Style.safeSpace,
-        right: Style.safeSpace,
-        bottom: 100,
-      ),
-      sliver: Obx(
-        () => _buildRcmdBody(controller.loadingState.value),
-      ),
-    ),
-  ];
-
-  Widget _buildRcmdTitle(ThemeData theme) => SliverToBoxAdapter(
-    child: Padding(
-      padding: const EdgeInsets.only(
-        top: 10,
-        bottom: 10,
-        left: 16,
-        right: 10,
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            '推荐',
-            style: theme.textTheme.titleMedium,
-          ),
-          moreTextButton(
-            padding: const EdgeInsets.symmetric(vertical: 2),
-            onTap: () {
-              if (widget.tabType == HomeTabType.bangumi) {
-                Get.to(const PgcIndexPage());
-              } else {
-                List<String> titles = const [
-                  '全部',
-                  '电影',
-                  '电视剧',
-                  '纪录片',
-                  '综艺',
-                ];
-                List<int> types = const [102, 2, 5, 3, 7];
-                Get.to(
-                  scaffold(
-                    appBar: AppBar(title: const Text('索引')),
-                    body: DefaultTabController(
-                      length: types.length,
-                      child: Builder(
-                        builder: (context) {
-                          return Column(
-                            children: [
-                              ViewSafeArea(
-                                child: TabBar(
-                                  tabs: titles
-                                      .map((title) => Tab(text: title))
-                                      .toList(),
-                                  onTap: (index) {
-                                    try {
-                                      if (!DefaultTabController.of(
-                                        context,
-                                      ).indexIsChanging) {
-                                        Get.find<PgcIndexController>(
-                                          tag: types[index].toString(),
-                                        ).animateToTop();
-                                      }
-                                    } catch (_) {}
-                                  },
-                                ),
-                              ),
-                              Expanded(
-                                child: tabBarView(
-                                  children: types
-                                      .map(
-                                        (type) => PgcIndexPage(indexType: type),
-                                      )
-                                      .toList(),
-                                ),
-                              ),
-                            ],
-                          );
-                        },
+  Widget _buildFollow(ThemeData theme, PgcController controller) =>
+      SliverToBoxAdapter(
+        child: Obx(
+          () => controller.accountService.isLogin.value
+              ? Column(
+                  children: [
+                    _buildFollowTitle(theme, controller),
+                    SizedBox(
+                      height: Grid.smallCardWidth / 2 / 0.75 + 50,
+                      child: Obx(
+                        () => _buildFollowBody(
+                          controller,
+                          controller.loadingState.value,
+                        ),
                       ),
                     ),
-                  ),
-                );
-              }
-            },
-            color: theme.colorScheme.secondary,
-          ),
-        ],
-      ),
-    ),
-  );
+                  ],
+                )
+              : const SizedBox.shrink(),
+        ),
+      );
 
-  late final gridDelegate = SliverGridDelegateWithExtentAndRatio(
-    mainAxisSpacing: Style.cardSpace,
-    crossAxisSpacing: Style.cardSpace,
-    maxCrossAxisExtent: Grid.smallCardWidth * 0.6,
-    childAspectRatio: 0.75,
-    mainAxisExtent: 50,
-  );
-
-  Widget _buildRcmdBody(LoadingState<List<PgcIndexItem>?> loadingState) {
-    return switch (loadingState) {
-      Loading() => const SliverToBoxAdapter(),
-      Success(:final response) =>
-        response != null && response.isNotEmpty
-            ? SliverGrid.builder(
-                gridDelegate: gridDelegate,
-                itemBuilder: (context, index) {
-                  if (index == response.length - 1) {
-                    controller.onLoadMore();
-                  }
-                  return PgcCardVPgcIndex(item: response[index]);
-                },
-                itemCount: response.length,
-              )
-            : HttpError(onReload: controller.onReload),
-      Error(:final errMsg) => HttpError(
-        errMsg: errMsg,
-        onReload: controller.onReload,
-      ),
-    };
-  }
-
-  Widget _buildFollow(ThemeData theme) => SliverToBoxAdapter(
-    child: Obx(
-      () => controller.accountService.isLogin.value
-          ? Column(
-              children: [
-                _buildFollowTitle(theme),
-                SizedBox(
-                  height: Grid.smallCardWidth / 2 / 0.75 + 50,
-                  child: Obx(
-                    () => _buildFollowBody(controller.followState.value),
-                  ),
-                ),
-              ],
-            )
-          : const SizedBox.shrink(),
-    ),
-  );
-
-  Widget _buildFollowTitle(ThemeData theme) => Padding(
-    padding: const EdgeInsets.only(left: 16),
+  Widget _buildFollowTitle(
+    ThemeData theme,
+    PgcController controller,
+  ) => Padding(
+    padding: const .only(left: 16),
     child: Row(
       children: [
         Obx(
           () => Text(
-            '最近${widget.tabType == HomeTabType.bangumi ? '追番' : '追剧'}${controller.followCount.value == -1 ? '' : ' ${controller.followCount.value}'}',
+            '最近${tabType == .bangumi ? '追番' : '追剧'}${controller.followCount.value == -1 ? '' : ' ${controller.followCount.value}'}',
             style: theme.textTheme.titleMedium,
           ),
         ),
         const Spacer(),
+        _buildIndexBtn(),
         IconButton(
           tooltip: '刷新',
-          onPressed: () => controller
-            ..followPage = 1
-            ..followEnd = false
-            ..queryPgcFollow(),
-          icon: const Icon(
-            Icons.refresh,
-            size: 20,
-          ),
+          onPressed: () => controller..onRefresh(),
+          icon: const Icon(Icons.refresh, size: 20),
         ),
         Obx(
           () => controller.accountService.isLogin.value
               ? Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  padding: const .symmetric(horizontal: 10),
                   child: moreTextButton(
                     text: '查看全部',
                     onTap: () => Get.toNamed(
                       '/fav',
-                      arguments: widget.tabType == HomeTabType.bangumi
+                      arguments: tabType == .bangumi
                           ? FavTabType.bangumi.index
                           : FavTabType.cinema.index,
                     ),
-                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    padding: const .symmetric(vertical: 8),
                     color: theme.colorScheme.secondary,
                   ),
                 )
@@ -391,23 +245,27 @@ class _PgcPageState extends State<PgcPage> with AutomaticKeepAliveClientMixin {
     ),
   );
 
-  Widget _buildFollowBody(LoadingState<List<FavPgcItemModel>?> loadingState) {
-    return switch (loadingState) {
+  Widget _buildFollowBody(
+    PgcController controller,
+    LoadingState<List<FavPgcItemModel>?> state,
+  ) {
+    return switch (state) {
       Loading() => m3eLoading,
       Success(:final response) =>
         response != null && response.isNotEmpty
             ? ListView.builder(
-                controller: controller.followController,
-                scrollDirection: Axis.horizontal,
+                padding: .zero,
                 itemCount: response.length,
-                padding: EdgeInsets.zero,
+                scrollDirection: .horizontal,
+                key: PageStorageKey(tabType),
+                controller: controller.scrollController,
                 itemBuilder: (context, index) {
                   if (index == response.length - 1) {
-                    controller.queryPgcFollow(false);
+                    controller.onLoadMore();
                   }
                   return Container(
                     width: Grid.smallCardWidth / 2,
-                    margin: EdgeInsets.only(
+                    margin: .only(
                       left: Style.safeSpace,
                       right: index == response.length - 1 ? Style.safeSpace : 0,
                     ),
@@ -416,18 +274,71 @@ class _PgcPageState extends State<PgcPage> with AutomaticKeepAliveClientMixin {
                 },
               )
             : Center(
-                child: Text(
-                  '还没有${widget.tabType == HomeTabType.bangumi ? '追番' : '追剧'}',
-                ),
+                child: Text('还没有${tabType == .bangumi ? '追番' : '追剧'}'),
               ),
       Error(:final errMsg) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        alignment: Alignment.center,
-        child: Text(
-          errMsg ?? '',
-          textAlign: TextAlign.center,
-        ),
+        alignment: .center,
+        padding: const .symmetric(horizontal: 16),
+        child: Text(errMsg ?? '', textAlign: .center),
       ),
     };
+  }
+
+  Widget _buildIndexBtn() {
+    return IconButton(
+      tooltip: '索引',
+      onPressed: () {
+        if (tabType == .bangumi) {
+          Get.to(const PgcIndexPage());
+        } else {
+          const titles = ['全部', '电影', '电视剧', '纪录片', '综艺'];
+          List<int> types = const [102, 2, 5, 3, 7];
+          Get.to(
+            scaffold(
+              appBar: AppBar(title: const Text('索引')),
+              body: DefaultTabController(
+                length: types.length,
+                child: Builder(
+                  builder: (context) {
+                    return Column(
+                      children: [
+                        ViewSafeArea(
+                          child: TabBar(
+                            tabs: titles
+                                .map((title) => Tab(text: title))
+                                .toList(),
+                            onTap: (index) {
+                              try {
+                                if (!DefaultTabController.of(
+                                  context,
+                                ).indexIsChanging) {
+                                  Get.find<PgcIndexController>(
+                                    tag: types[index].toString(),
+                                  ).animateToTop();
+                                }
+                              } catch (_) {}
+                            },
+                          ),
+                        ),
+                        Expanded(
+                          child: tabBarView(
+                            children: types
+                                .map(
+                                  (type) => PgcIndexPage(indexType: type),
+                                )
+                                .toList(),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+              ),
+            ),
+          );
+        }
+      },
+      icon: const Icon(Icons.filter_list, size: 20),
+    );
   }
 }

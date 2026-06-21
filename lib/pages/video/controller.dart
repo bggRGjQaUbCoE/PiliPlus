@@ -58,7 +58,8 @@ import 'package:PiliPlus/utils/theme_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:PiliPlus/utils/video_utils.dart';
 import 'package:collection/collection.dart';
-import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart';
+import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart'
+    show ExtendedNestedScrollViewState;
 import 'package:flutter/foundation.dart' show kDebugMode, clampDouble;
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';

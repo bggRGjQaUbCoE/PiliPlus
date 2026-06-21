@@ -7,7 +7,8 @@ import 'package:PiliPlus/pages/common/slide/common_slide_page.dart';
 import 'package:PiliPlus/pages/video/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/utils/duration_utils.dart';
-import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart';
+import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart'
+    show ExtendedNestedScrollController, ExtendedVisibilityDetector;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 

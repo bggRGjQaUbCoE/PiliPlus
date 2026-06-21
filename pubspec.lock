@@ -459,8 +459,8 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: mod
-      resolved-ref: "66486fdeb963149ba27d2dc1719c9a9005de5d18"
+      ref: dev
+      resolved-ref: "4f39947d2ceda6fa56503e0efc794fcf0d4ef5a6"
       url: "https://github.com/bggRGjQaUbCoE/extended_nested_scroll_view.git"
     source: git
     version: "6.2.1"

@@ -5,7 +5,8 @@ import 'package:PiliPlus/pages/download/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_repeat.dart';
 import 'package:PiliPlus/services/service_locator.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
-import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart';
+import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart'
+    show ExtendedNestedScrollController;
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/scheduler.dart' show SchedulerBinding;
 import 'package:get/get.dart';

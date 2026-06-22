@@ -542,9 +542,6 @@ abstract final class Pref {
     defaultValue: deviceTouchSlop + 6.0,
   );
 
-  static bool get floatingNavBar =>
-      _setting.get(SettingBoxKey.floatingNavBar, defaultValue: false);
-
   static int get angleDegrees =>
       _setting.get(SettingBoxKey.angleDegrees, defaultValue: 30);
 

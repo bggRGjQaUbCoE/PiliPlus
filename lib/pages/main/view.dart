@@ -2,10 +2,8 @@ import 'dart:io' show Platform, exit;
 
 import 'package:PiliPlus/common/assets.dart';
 import 'package:PiliPlus/common/constants.dart';
-import 'package:PiliPlus/common/widgets/floating_navigation_bar.dart';
 import 'package:PiliPlus/common/widgets/flutter/pop_scope.dart';
 import 'package:PiliPlus/common/widgets/route_aware_mixin.dart';
-import 'package:PiliPlus/common/widgets/scaffold.dart';
 import 'package:PiliPlus/models/common/nav_bar_config.dart';
 import 'package:PiliPlus/pages/home/view.dart';
 import 'package:PiliPlus/pages/main/controller.dart';
@@ -224,23 +222,6 @@ class _MainAppState extends PopScopeState<MainApp>
   }
 
   Widget? get _bottomNav {
-    if (_mainController.floatingNavBar) {
-      return Obx(
-        () => FloatingNavigationBar(
-          onDestinationSelected: _mainController.setIndex,
-          selectedIndex: _mainController.selectedIndex.value,
-          destinations: NavigationBarType.values
-              .map(
-                (e) => FloatingNavigationDestination(
-                  label: e.label,
-                  icon: _buildIcon(type: e),
-                  selectedIcon: _buildIcon(type: e, selected: true),
-                ),
-              )
-              .toList(),
-        ),
-      );
-    }
     return Obx(
       () => NavigationBar(
         maintainBottomViewPadding: true,
@@ -354,28 +335,14 @@ class _MainAppState extends PopScopeState<MainApp>
       child: child,
     );
 
-    child = scaffold(
-      appBar: AppBar(toolbarHeight: 0),
-      body: _mainController.floatingNavBar
-          ? Stack(
-              clipBehavior: .none,
-              children: [
-                child,
-                if (bottomNav != null)
-                  Positioned(
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    child: bottomNav,
-                  ),
-              ],
-            )
-          : Column(
-              children: [
-                Expanded(child: child),
-                ?bottomNav,
-              ],
-            ),
+    child = Material(
+      child: Column(
+        children: [
+          AppBar(toolbarHeight: 0),
+          Expanded(child: child),
+          ?bottomNav,
+        ],
+      ),
     );
 
     if (PlatformUtils.isMobile) {

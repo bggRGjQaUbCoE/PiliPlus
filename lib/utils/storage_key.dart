@@ -56,7 +56,6 @@ abstract final class SettingBoxKey {
       followOrderType = 'followOrderType',
       enableImgMenu = 'enableImgMenu',
       touchSlopH = 'touchSlopH',
-      floatingNavBar = 'floatingNavBar',
       angleDegrees = 'angleDegrees',
       liveStream = 'liveStream';
 

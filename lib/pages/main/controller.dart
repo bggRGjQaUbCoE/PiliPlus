@@ -34,8 +34,6 @@ class MainController extends GetxController
   late final RxString msgUnReadCount = ''.obs;
   late int lastCheckUnreadAt = 0;
 
-  final floatingNavBar = Pref.floatingNavBar;
-
   static const _dynamicPeriod = 5 * 60 * 1000;
   late int _lastSelectTime = 0;
 

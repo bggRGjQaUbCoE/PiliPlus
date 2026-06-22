@@ -449,6 +449,44 @@ extension type AndroidHelper._(jni$_.JObject _$this) implements jni$_.JObject {
       isPlaying ? 1 : 0,
     ).check();
   }
+
+  static final _id_setPreferredDisplayMode = _class.staticMethodId(
+    r'setPreferredDisplayMode',
+    r'(JI)V',
+  );
+
+  static final _setPreferredDisplayMode =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JThrowablePtr Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+                jni$_.VarArgs<(jni$_.Int64, jni$_.Int32)>,
+              )
+            >
+          >('globalEnv_CallStaticVoidMethod')
+          .asFunction<
+            jni$_.JThrowablePtr Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+              core$_.int,
+              core$_.int,
+            )
+          >();
+
+  /// from: `static public void setPreferredDisplayMode(long engineId, int mode)`
+  static void setPreferredDisplayMode(
+    core$_.int engineId,
+    core$_.int mode,
+  ) {
+    final _$$classRef = _class.reference;
+    _setPreferredDisplayMode(
+      _$$classRef.pointer,
+      _id_setPreferredDisplayMode.pointer,
+      engineId,
+      mode,
+    ).check();
+  }
 }
 
 final class $AndroidHelper$Type$ extends jni$_.JType<AndroidHelper> {

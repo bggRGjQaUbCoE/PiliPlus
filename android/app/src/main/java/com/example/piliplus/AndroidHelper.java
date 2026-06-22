@@ -18,6 +18,8 @@ import android.net.Uri;
 import android.os.Build;
 import android.provider.Settings;
 import android.util.Rational;
+import android.view.Window;
+import android.view.WindowManager;
 
 import androidx.annotation.DrawableRes;
 import androidx.annotation.Keep;
@@ -149,5 +151,14 @@ public final class AndroidHelper {
                 title,
                 Objects.requireNonNull(MediaHelper.buildMediaButtonPendingIntent(activity, mbrComponent, action))
         );
+    }
+
+    public static void setPreferredDisplayMode(long engineId, int mode) {
+        Activity activity = JniFlutterPlugin.getActivity(engineId);
+        assert activity != null;
+        final Window window = activity.getWindow();
+        final WindowManager.LayoutParams params = window.getAttributes();
+        params.preferredDisplayModeId = mode;
+        window.setAttributes(params);
     }
 }

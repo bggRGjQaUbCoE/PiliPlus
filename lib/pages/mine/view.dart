@@ -10,6 +10,7 @@ import 'package:PiliPlus/pages/mine/controller.dart';
 import 'package:PiliPlus/pages/mine/widgets/item.dart';
 import 'package:PiliPlus/utils/bili_utils.dart';
 import 'package:PiliPlus/utils/extension/get_ext.dart';
+import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:flutter/material.dart' hide ListTile;
@@ -213,7 +214,7 @@ class _MediaPageState extends State<MinePage>
                               child: Image.asset(
                                 Assets.vipIcon,
                                 height: 19,
-                                cacheHeight: 19,
+                                cacheHeight: 19.cacheSize,
                                 semanticLabel: "大会员",
                               ),
                             ),
@@ -223,7 +224,7 @@ class _MediaPageState extends State<MinePage>
                         child: Image.asset(
                           width: 55,
                           height: 55,
-                          cacheHeight: 55,
+                          cacheHeight: 55.cacheSize,
                           Assets.avatarPlaceHolder,
                           semanticLabel: "默认头像",
                         ),
@@ -257,7 +258,7 @@ class _MediaPageState extends State<MinePage>
                               isSeniorMember: userInfo.isSeniorMember == 1,
                             ),
                             height: 10,
-                            cacheHeight: 10,
+                            cacheHeight: 10.cacheSize,
                           ),
                         ],
                       ),

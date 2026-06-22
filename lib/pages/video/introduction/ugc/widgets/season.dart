@@ -6,6 +6,7 @@ import 'package:PiliPlus/models_new/video/video_detail/episode.dart';
 import 'package:PiliPlus/models_new/video/video_detail/section.dart';
 import 'package:PiliPlus/pages/video/controller.dart';
 import 'package:PiliPlus/pages/video/introduction/ugc/controller.dart';
+import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -129,7 +130,7 @@ class _SeasonPanelState extends State<SeasonPanel> {
                   Assets.livingStatic,
                   color: theme.colorScheme.primary,
                   height: 12,
-                  cacheHeight: 12,
+                  cacheHeight: 12.cacheSize,
                   semanticLabel: "正在播放：",
                 ),
                 const SizedBox(width: 10),

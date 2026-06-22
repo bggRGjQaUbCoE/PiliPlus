@@ -231,7 +231,7 @@ class ImageGridView extends StatelessWidget {
               Assets.loading,
               width: width,
               height: height,
-              cacheWidth: width,
+              cacheWidth: width.cacheSize,
             ),
           );
           return List.generate(picArr.length, (index) {
@@ -251,7 +251,7 @@ class ImageGridView extends StatelessWidget {
                   height: height,
                   borderRadius: borderRadius,
                   alignment: item.isLongPic ? .topCenter : .center,
-                  cacheWidth: item.width <= item.height,
+                  cacheWidthBool: item.width <= item.height,
                   getPlaceHolder: () => placeHolder,
                 ),
                 if (item.isLivePhoto)

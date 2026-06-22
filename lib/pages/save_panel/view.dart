@@ -15,6 +15,7 @@ import 'package:PiliPlus/pages/video/introduction/ugc/controller.dart';
 import 'package:PiliPlus/pages/video/reply/widgets/reply_item_grpc.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/extension/context_ext.dart';
+import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
@@ -510,7 +511,7 @@ class _SavePanelState extends State<SavePanel> {
                                   child: Image.asset(
                                     Assets.logo2,
                                     width: 100,
-                                    cacheWidth: 100,
+                                    cacheWidth: 100.cacheSize,
                                     color: theme.colorScheme.onSurfaceVariant,
                                   ),
                                 ),

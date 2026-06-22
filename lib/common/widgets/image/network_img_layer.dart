@@ -1,6 +1,7 @@
 import 'package:PiliPlus/common/assets.dart';
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
+import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -19,7 +20,7 @@ class NetworkImgLayer extends StatelessWidget {
     this.getPlaceHolder,
     this.fit = .cover,
     this.alignment = .center,
-    this.cacheWidth,
+    this.cacheWidthBool,
   });
 
   final String? src;
@@ -33,7 +34,7 @@ class NetworkImgLayer extends StatelessWidget {
   final ValueGetter<Widget>? getPlaceHolder;
   final BoxFit fit;
   final Alignment alignment;
-  final bool? cacheWidth;
+  final bool? cacheWidthBool;
 
   @override
   Widget build(BuildContext context) {
@@ -60,7 +61,7 @@ class NetworkImgLayer extends StatelessWidget {
     required bool isAvatar,
   }) {
     double? memCacheWidth, memCacheHeight;
-    if (cacheWidth ?? width <= height) {
+    if (cacheWidthBool ?? width <= height) {
       memCacheWidth = width;
     } else {
       memCacheHeight = height;
@@ -69,8 +70,8 @@ class NetworkImgLayer extends StatelessWidget {
       imageUrl: ImageUtils.thumbnailUrl(src, maxQuality: quality),
       width: width,
       height: height,
-      memCacheWidth: memCacheWidth,
-      memCacheHeight: memCacheHeight,
+      memCacheWidth: memCacheWidth?.cacheSize,
+      memCacheHeight: memCacheHeight?.cacheSize,
       fit: fit,
       alignment: alignment,
       fadeOutDuration: fadeOutDuration,
@@ -105,7 +106,7 @@ class NetworkImgLayer extends StatelessWidget {
           isAvatar ? Assets.avatarPlaceHolder : Assets.loading,
           width: width,
           height: height,
-          cacheWidth: width,
+          cacheWidth: width.cacheSize,
         ),
       ),
     );

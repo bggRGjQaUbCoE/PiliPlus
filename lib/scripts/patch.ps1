@@ -20,7 +20,7 @@ $LayoutBuilderPatch = "lib/scripts/layout_builder.patch"
 
 # https://github.com/flutter/flutter/issues/56239
 # ref https://github.com/flutter/flutter/pull/184549
-$ImageCachePatch = "lib/scripts/image_cache.patch"
+# $ImageCachePatch = "lib/scripts/image_cache.patch"
 
 $ImageAnimPatch = "lib/scripts/image_anim.patch"
 
@@ -39,7 +39,7 @@ Set-Location $env:FLUTTER_ROOT
 $picks   = @()
 $reverts = @()
 $patches = @($ModalBarrierPatch, $TextSelectionPatch, $MouseCursorPatch,
-            $NavigationBarPatch, $PaddingPatch, $ImageCachePatch, $ImageAnimPatch,
+            $NavigationBarPatch, $PaddingPatch, $ImageAnimPatch,
             $LayoutBuilderPatch, $ScaleGesturePatch)
 
 switch ($platform.ToLower()) {

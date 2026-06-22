@@ -188,15 +188,15 @@ class DetailItem extends StatelessWidget {
                                   width: maxWidth,
                                   height: maxHeight,
                                   fit: BoxFit.cover,
-                                  cacheWidth: cacheWidth,
-                                  cacheHeight: cacheHeight,
+                                  cacheWidth: cacheWidth?.cacheSize,
+                                  cacheHeight: cacheHeight?.cacheSize,
                                 ),
                               )
                             : NetworkImgLayer(
                                 src: entry.cover,
                                 width: maxWidth,
                                 height: maxHeight,
-                                cacheWidth: entry.pageData?.cacheWidth,
+                                cacheWidthBool: entry.pageData?.cacheWidth,
                               );
                       },
                     ),

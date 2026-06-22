@@ -93,8 +93,8 @@ packages:
     dependency: "direct main"
     description:
       path: audio_service
-      ref: dev
-      resolved-ref: "2b1021f656579c871d2baa9100254b3e12b9428a"
+      ref: main
+      resolved-ref: "81cf56d5a8b8e9c8aa5a4c9396aebe094e09622f"
       url: "https://github.com/bggRGjQaUbCoE/audio_service.git"
     source: git
     version: "0.18.18"
@@ -206,8 +206,8 @@ packages:
     dependency: "direct main"
     description:
       path: cached_network_image
-      ref: dev
-      resolved-ref: a7d0041a368b05144bd14b04a1306fd2aa5ab87f
+      ref: develop
+      resolved-ref: "5b79ff9f53a9a55b57d4d6fc52eb529fdfdb30d7"
       url: "https://github.com/bggRGjQaUbCoE/flutter_cached_network_image_ce.git"
     source: git
     version: "4.6.4"
@@ -215,8 +215,8 @@ packages:
     dependency: transitive
     description:
       path: cached_network_image_platform_interface
-      ref: a7d0041a368b05144bd14b04a1306fd2aa5ab87f
-      resolved-ref: a7d0041a368b05144bd14b04a1306fd2aa5ab87f
+      ref: "5b79ff9f53a9a55b57d4d6fc52eb529fdfdb30d7"
+      resolved-ref: "5b79ff9f53a9a55b57d4d6fc52eb529fdfdb30d7"
       url: "https://github.com/bggRGjQaUbCoE/flutter_cached_network_image_ce.git"
     source: git
     version: "5.2.0"
@@ -1203,11 +1203,10 @@ packages:
   octo_image:
     dependency: transitive
     description:
-      path: "."
-      ref: dev
-      resolved-ref: adb9eeec1fa6dc7becb58596f93715141190519d
-      url: "https://github.com/bggRGjQaUbCoE/octo_image.git"
-    source: git
+      name: octo_image
+      sha256: "34faa6639a78c7e3cbe79be6f9f96535867e879748ade7d17c9b1ae7536293bd"
+      url: "https://pub.dev"
+    source: hosted
     version: "2.1.0"
   package_config:
     dependency: transitive

@@ -11,6 +11,7 @@ import 'package:PiliPlus/pages/search_trending/controller.dart';
 import 'package:PiliPlus/utils/color_utils.dart';
 import 'package:PiliPlus/utils/extension/context_ext.dart';
 import 'package:PiliPlus/utils/extension/get_ext.dart';
+import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/size_ext.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:cached_network_image_ce/cached_network_image.dart';
@@ -85,7 +86,7 @@ class _SearchTrendingPageState extends State<SearchTrendingPage> {
                         child: Image.asset(
                           width: width,
                           height: height,
-                          cacheWidth: width,
+                          cacheWidth: width.cacheSize,
                           Assets.trendingBanner,
                           filterQuality: FilterQuality.low,
                         ),
@@ -207,7 +208,7 @@ class _SearchTrendingPageState extends State<SearchTrendingPage> {
                           const SizedBox(width: 4),
                           CachedNetworkImage(
                             height: 16,
-                            memCacheHeight: 16,
+                            memCacheHeight: 16.cacheSize,
                             imageUrl: ImageUtils.thumbnailUrl(item.icon!),
                             placeholder: (_, _) => const SizedBox.shrink(),
                           ),
@@ -217,7 +218,7 @@ class _SearchTrendingPageState extends State<SearchTrendingPage> {
                             Assets.livingRect,
                             width: 51,
                             height: 16,
-                            cacheHeight: 16,
+                            cacheHeight: 16.cacheSize,
                           ),
                         ],
                       ],

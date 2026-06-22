@@ -41,7 +41,7 @@ dependencies:
     git:
       url: https://github.com/bggRGjQaUbCoE/audio_service.git
       path: audio_service
-      ref: dev
+      ref: main
   audio_session: ^0.2.2
   battery_plus: ^7.0.0
   brotli: ^0.6.0
@@ -49,7 +49,7 @@ dependencies:
     git:
       url: https://github.com/bggRGjQaUbCoE/flutter_cached_network_image_ce.git
       path: cached_network_image
-      ref: dev
+      ref: develop
   canvas_danmaku:
     git:
       url: https://github.com/bggRGjQaUbCoE/canvas_danmaku.git

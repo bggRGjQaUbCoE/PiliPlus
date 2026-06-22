@@ -18,6 +18,7 @@ import 'package:PiliPlus/services/download/download_service.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/duration_utils.dart';
+import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
@@ -393,7 +394,7 @@ class _DownloadPanelState extends State<DownloadPanel> {
                               src: cover,
                               width: 160,
                               height: 110,
-                              cacheWidth: cacheWidth,
+                              cacheWidthBool: cacheWidth,
                             ),
                             if (duration != null && duration > 0)
                               PBadge(
@@ -427,7 +428,7 @@ class _DownloadPanelState extends State<DownloadPanel> {
                           Assets.livingStatic,
                           color: primary,
                           height: 12,
-                          cacheHeight: 12,
+                          cacheHeight: 12.cacheSize,
                           semanticLabel: '正在播放：',
                         ),
                       Expanded(

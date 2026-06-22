@@ -1,8 +1,20 @@
 import 'dart:math' show pow;
 
+import 'package:flutter/foundation.dart' show PlatformDispatcher;
+
 const unitArr = ['B', 'K', 'M', 'G', 'T', 'P'];
 
+final devicePixelRatio =
+    PlatformDispatcher.instance.views.first.devicePixelRatio;
+
 extension NumExt on num {
+  int? get cacheSize {
+    if (this == 0) {
+      return null;
+    }
+    return (this * devicePixelRatio).round();
+  }
+
   String get formatSize {
     var value = this;
     int index = 0;

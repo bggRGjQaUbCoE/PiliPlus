@@ -13,6 +13,7 @@ import 'package:PiliPlus/models/dynamics/article_content_model.dart'
 import 'package:PiliPlus/models/dynamics/result.dart';
 import 'package:PiliPlus/pages/dynamics/widgets/vote.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
+import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
@@ -224,7 +225,7 @@ class OpusContent extends StatelessWidget {
                 Widget child = CachedNetworkImage(
                   width: width,
                   height: height,
-                  memCacheWidth: width,
+                  memCacheWidth: width.cacheSize,
                   imageUrl: ImageUtils.thumbnailUrl(pic.url!, maxQuality: 60),
                   fadeInDuration: const Duration(milliseconds: 120),
                   fadeOutDuration: const Duration(milliseconds: 120),
@@ -265,7 +266,7 @@ class OpusContent extends StatelessWidget {
                 fit: .contain,
                 height: height,
                 width: maxWidth,
-                memCacheWidth: maxWidth,
+                memCacheWidth: maxWidth.cacheSize,
                 imageUrl: ImageUtils.thumbnailUrl(element.line!.pic!.url!),
                 placeholder: (_, _) => const SizedBox.shrink(),
               );
@@ -736,7 +737,7 @@ Widget moduleBlockedItem(
                         : moduleBlocked.bgImg!.imgDay,
                   ),
                 ),
-                width: width,
+                width: width.cacheSize,
               ),
             ),
           );
@@ -745,7 +746,7 @@ Widget moduleBlockedItem(
   Widget icon(double width) {
     return CachedNetworkImage(
       width: width,
-      memCacheWidth: width,
+      memCacheWidth: width.cacheSize,
       fit: .contain,
       imageUrl: ImageUtils.thumbnailUrl(
         isDarkMode ? moduleBlocked.icon!.imgDark : moduleBlocked.icon!.imgDay,
@@ -781,7 +782,7 @@ Widget moduleBlockedItem(
             CachedNetworkImage(
               height: 16,
               color: Colors.white,
-              memCacheHeight: 16,
+              memCacheHeight: 16.cacheSize,
               placeholder: (_, _) => const SizedBox.shrink(),
               imageUrl: ImageUtils.safeThumbnailUrl(moduleBlocked.button!.icon),
             ),

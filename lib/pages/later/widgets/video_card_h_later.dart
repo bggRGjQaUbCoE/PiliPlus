@@ -97,7 +97,7 @@ class VideoCardHLater extends StatelessWidget {
                           src: videoItem.pic,
                           width: maxWidth,
                           height: maxHeight,
-                          cacheWidth: videoItem.dimension?.cacheWidth,
+                          cacheWidthBool: videoItem.dimension?.cacheWidth,
                         ),
                         if (videoItem.isCharging == true)
                           const PBadge(

@@ -5,6 +5,7 @@ import 'package:PiliPlus/common/assets.dart';
 import 'package:PiliPlus/models_new/video/video_detail/page.dart';
 import 'package:PiliPlus/pages/video/controller.dart';
 import 'package:PiliPlus/pages/video/introduction/ugc/controller.dart';
+import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -200,7 +201,7 @@ class _PagesPanelState extends State<PagesPanel> {
                               Assets.livingStatic,
                               color: theme.colorScheme.primary,
                               height: 12,
-                              cacheHeight: 12,
+                              cacheHeight: 12.cacheSize,
                               semanticLabel: "正在播放：",
                             ),
                             const SizedBox(width: 6),

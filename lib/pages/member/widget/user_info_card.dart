@@ -27,6 +27,7 @@ import 'package:PiliPlus/utils/app_scheme.dart';
 import 'package:PiliPlus/utils/bili_utils.dart';
 import 'package:PiliPlus/utils/color_utils.dart';
 import 'package:PiliPlus/utils/extension/context_ext.dart';
+import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/string_ext.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
@@ -222,7 +223,7 @@ class UserInfoCard extends StatelessWidget {
               isSeniorMember: card.levelInfo?.identity == 2,
             ),
             height: 11,
-            cacheHeight: 11,
+            cacheHeight: 11.cacheSize,
             semanticLabel: '等级${card.levelInfo?.currentLevel}',
           ),
           if (card.vip?.status == 1)
@@ -630,7 +631,7 @@ class UserInfoCard extends StatelessWidget {
                     alignment: Alignment(0.0, img.dy),
                     height: kHeaderHeight,
                     width: width,
-                    memCacheWidth: memCacheWidth,
+                    memCacheWidth: memCacheWidth.cacheSize,
                     imageUrl: ImageUtils.thumbnailUrl(img.header),
                     fadeInDuration: const Duration(milliseconds: 120),
                     fadeOutDuration: const Duration(milliseconds: 120),
@@ -688,7 +689,7 @@ class UserInfoCard extends StatelessWidget {
           alignment: alignment,
           height: kHeaderHeight,
           width: width,
-          memCacheWidth: width,
+          memCacheWidth: width.cacheSize,
           imageUrl: ImageUtils.thumbnailUrl(imgUrl),
           placeholder: (_, _) =>
               const SizedBox(width: .infinity, height: kHeaderHeight),
@@ -735,7 +736,7 @@ class UserInfoCard extends StatelessWidget {
           if (icon != null) ...[
             CachedNetworkImage(
               height: 20,
-              memCacheHeight: 20,
+              memCacheHeight: 20.cacheSize,
               imageUrl: ImageUtils.thumbnailUrl(icon),
               placeholder: (_, _) => const SizedBox.shrink(),
               fadeInDuration: .zero,

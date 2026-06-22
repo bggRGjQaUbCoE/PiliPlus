@@ -478,8 +478,8 @@ class _GalleryViewerState extends State<GalleryViewer>
         child = Image(
           key: _key,
           image: ResizeImage.resizeIfNeeded(
-            cacheWidth,
-            cacheHeight,
+            cacheWidth?.cacheSize,
+            cacheHeight?.cacheSize,
             CachedNetworkImageProvider(_getActualUrl(item.url, index: index)),
           ),
           minScale: widget.minScale,
@@ -498,8 +498,8 @@ class _GalleryViewerState extends State<GalleryViewer>
               } else {
                 return Image(
                   image: ResizeImage.resizeIfNeeded(
-                    cacheWidth,
-                    cacheHeight,
+                    cacheWidth?.cacheSize,
+                    cacheHeight?.cacheSize,
                     CachedNetworkImageProvider(
                       ImageUtils.thumbnailUrl(
                         item.url,

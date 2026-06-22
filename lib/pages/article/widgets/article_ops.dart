@@ -4,6 +4,7 @@ import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/models_new/article/article_view/ops.dart';
 import 'package:PiliPlus/pages/dynamics/widgets/vote.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
+import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -71,7 +72,7 @@ class ArticleOpus extends StatelessWidget {
                       child: CachedNetworkImage(
                         width: width,
                         height: height,
-                        memCacheWidth: width,
+                        memCacheWidth: width.cacheSize,
                         imageUrl: ImageUtils.thumbnailUrl(
                           card.url,
                           maxQuality: 60,

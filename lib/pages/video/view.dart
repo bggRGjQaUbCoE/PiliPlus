@@ -46,6 +46,7 @@ import 'package:PiliPlus/services/service_locator.dart';
 import 'package:PiliPlus/services/shutdown_timer_service.dart'
     show shutdownTimerService;
 import 'package:PiliPlus/utils/accounts.dart';
+import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/scroll_controller_ext.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
@@ -1235,7 +1236,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                         src: videoDetailController.cover.value,
                         width: width,
                         height: height,
-                        cacheWidth: true,
+                        cacheWidthBool: true,
                         getPlaceHolder: () => Center(
                           child: Image.asset(Assets.loading),
                         ),
@@ -1319,7 +1320,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                       Assets.play,
                       width: 60,
                       height: 60,
-                      cacheHeight: 60,
+                      cacheHeight: 60.cacheSize,
                     ),
                   ),
                 ),

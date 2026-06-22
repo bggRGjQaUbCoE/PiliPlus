@@ -11,6 +11,7 @@ import 'package:PiliPlus/pages/dynamics/widgets/live_panel_sub.dart';
 import 'package:PiliPlus/pages/dynamics/widgets/live_rcmd_panel.dart';
 import 'package:PiliPlus/pages/dynamics/widgets/video_panel.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
+import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:cached_network_image_ce/cached_network_image.dart';
@@ -144,7 +145,7 @@ Widget module(
                       width: 45,
                       height: 45,
                       fit: BoxFit.cover,
-                      memCacheWidth: 45,
+                      memCacheWidth: 45.cacheSize,
                       imageUrl: ImageUtils.safeThumbnailUrl(common.cover),
                     ),
                   ),

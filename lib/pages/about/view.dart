@@ -109,7 +109,7 @@ class _AboutPageState extends State<AboutPage> {
               width: 150,
               height: 150,
               excludeFromSemantics: true,
-              cacheWidth: 150,
+              cacheWidth: 150.cacheSize,
               Assets.logo,
             ),
           ),

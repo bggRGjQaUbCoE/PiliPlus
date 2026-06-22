@@ -19,6 +19,7 @@ import 'package:PiliPlus/pages/dynamics_repost/view.dart';
 import 'package:PiliPlus/pages/webview/view.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/extension/get_ext.dart';
+import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/grid.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
@@ -290,8 +291,10 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
                                         CachedNetworkImage(
                                           height: height,
                                           width: maxWidth,
-                                          memCacheWidth: memCacheWidth,
-                                          memCacheHeight: memCacheHeight,
+                                          memCacheWidth:
+                                              memCacheWidth?.cacheSize,
+                                          memCacheHeight:
+                                              memCacheHeight?.cacheSize,
                                           fit: pic.isLongPic == true
                                               ? BoxFit.cover
                                               : null,

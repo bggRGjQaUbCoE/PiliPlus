@@ -12,32 +12,32 @@ index 30429ea5e02..79f727ab472 100644
    /// Creates a widget that displays an [ImageStream] obtained from the network.
 @@ -471,6 +472,7 @@ class Image extends StatefulWidget {
      Map<String, String>? headers,
-     num? cacheWidth,
-     num? cacheHeight,
+     int? cacheWidth,
+     int? cacheHeight,
 +    this.isPaused = true,
      WebHtmlElementStrategy webHtmlElementStrategy = WebHtmlElementStrategy.never,
    }) : image = ResizeImage.resizeIfNeeded(
           cacheWidth,
 @@ -540,6 +542,7 @@ class Image extends StatefulWidget {
      this.filterQuality = FilterQuality.medium,
-     num? cacheWidth,
-     num? cacheHeight,
+     int? cacheWidth,
+     int? cacheHeight,
 +    this.isPaused = true,
    }) : // FileImage is not supported on Flutter Web therefore neither this method.
         assert(
           !kIsWeb,
 @@ -703,6 +706,7 @@ class Image extends StatefulWidget {
      this.filterQuality = FilterQuality.medium,
-     num? cacheWidth,
-     num? cacheHeight,
+     int? cacheWidth,
+     int? cacheHeight,
 +    this.isPaused = true,
    }) : image = ResizeImage.resizeIfNeeded(
           cacheWidth,
           cacheHeight,
 @@ -765,6 +769,7 @@ class Image extends StatefulWidget {
      this.filterQuality = FilterQuality.medium,
-     num? cacheWidth,
-     num? cacheHeight,
+     int? cacheWidth,
+     int? cacheHeight,
 +    this.isPaused = true,
    }) : image = ResizeImage.resizeIfNeeded(
           cacheWidth,

@@ -3,6 +3,7 @@ import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/models/dynamics/result.dart';
+import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:flutter/material.dart';
 
 Widget livePanelSub(
@@ -58,7 +59,7 @@ Widget livePanelSub(
                 top: 6,
                 child: Image.asset(
                   height: 16,
-                  cacheHeight: 16,
+                  cacheHeight: 16.cacheSize,
                   Assets.livingRect,
                   filterQuality: FilterQuality.low,
                 ),

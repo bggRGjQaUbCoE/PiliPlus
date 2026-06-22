@@ -7,6 +7,7 @@ import 'package:PiliPlus/models/common/video/video_quality.dart';
 import 'package:PiliPlus/models_new/download/bili_download_entry_info.dart';
 import 'package:PiliPlus/pages/video/introduction/local/controller.dart';
 import 'package:PiliPlus/utils/duration_utils.dart';
+import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/path_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -86,8 +87,8 @@ class _LocalIntroPanelState extends State<LocalIntroPanel>
                                 width: 160,
                                 height: 110,
                                 fit: BoxFit.cover,
-                                cacheWidth: cacheWidth ? 160 : null,
-                                cacheHeight: cacheWidth ? null : 110,
+                                cacheWidth: cacheWidth ? 160.cacheSize : null,
+                                cacheHeight: cacheWidth ? null : 110.cacheSize,
                               ),
                             )
                           : NetworkImgLayer(

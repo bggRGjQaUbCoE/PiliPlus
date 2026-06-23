@@ -4869,6 +4869,7 @@ class EditableTextState extends State<EditableText>
   }
 
   void _handleFocusChanged() {
+    _deletedRange = null;
     _openOrCloseInputConnectionIfNeeded();
     _startOrStopCursorTimerIfNeeded();
     _updateOrDisposeSelectionOverlayIfNeeded();

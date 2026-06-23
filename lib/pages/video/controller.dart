@@ -19,7 +19,6 @@ import 'package:PiliPlus/models/common/sponsor_block/segment_model.dart';
 import 'package:PiliPlus/models/common/sponsor_block/segment_type.dart';
 import 'package:PiliPlus/models/common/video/audio_quality.dart';
 import 'package:PiliPlus/models/common/video/source_type.dart';
-import 'package:PiliPlus/models/common/video/subtitle_pref_type.dart';
 import 'package:PiliPlus/models/common/video/video_decode_type.dart';
 import 'package:PiliPlus/models/common/video/video_quality.dart';
 import 'package:PiliPlus/models/common/video/video_type.dart';
@@ -1050,16 +1049,14 @@ class VideoDetailController extends GetxController
 
   RxList<Subtitle> subtitles = RxList<Subtitle>();
   final Map<int, ({bool isData, String id})> vttSubtitles = {};
-  late final RxInt vttSubtitlesIndex = (-1).obs;
-  late final RxBool showVP = true.obs;
-  late final RxList<ViewPointSegment> viewPointList = <ViewPointSegment>[].obs;
+  late final vttSubtitlesIndex = (-1).obs;
+  late final showVP = true.obs;
+  late final viewPointList = <ViewPointSegment>[].obs;
 
   // 设定字幕轨道
   Future<void> setSubtitle(int index) async {
     if (index <= 0) {
-      await plPlayerController.videoPlayerController?.setSubtitleTrack(
-        SubtitleTrack.no(),
-      );
+      await plPlayerController.videoPlayerController?.setSubtitleTrack(.no());
       vttSubtitlesIndex.value = index;
       return;
     }
@@ -1136,9 +1133,9 @@ class VideoDetailController extends GetxController
     );
     if (res case Success(:final response)) {
       // interactive video
+      late final introCtr = Get.find<UgcIntroController>(tag: heroTag);
       if (isUgc && graphVersion == null) {
         try {
-          final introCtr = Get.find<UgcIntroController>(tag: heroTag);
           if (introCtr.videoDetail.value.rights?.isSteinGate == 1) {
             graphVersion = response.interaction?.graphVersion;
             getSteinEdgeInfo();
@@ -1150,22 +1147,18 @@ class VideoDetailController extends GetxController
 
       if (isUgc && continuePlayingPart) {
         continuePlayingPart = false;
-        try {
-          UgcIntroController ugcIntroController = Get.find<UgcIntroController>(
-            tag: heroTag,
-          );
-          if ((ugcIntroController.videoDetail.value.pages?.length ?? 0) > 1 &&
-              response.lastPlayCid != null &&
-              response.lastPlayCid != 0) {
-            if (response.lastPlayCid != cid.value) {
-              int index = ugcIntroController.videoDetail.value.pages!
-                  .indexWhere((item) => item.cid == response.lastPlayCid);
+        final lastCid = response.lastPlayCid;
+        if (lastCid != null && lastCid != 0 && lastCid != cid.value) {
+          try {
+            final pages = introCtr.videoDetail.value.pages;
+            if (pages != null && pages.length > 1) {
+              final index = pages.indexWhere((item) => item.cid == lastCid);
               if (index != -1) {
                 onAddItem(index);
               }
             }
-          }
-        } catch (_) {}
+          } catch (_) {}
+        }
       }
 
       if (plPlayerController.showViewPoints &&
@@ -1184,16 +1177,14 @@ class VideoDetailController extends GetxController
         } catch (_) {}
       }
 
-      if (response.subtitle?.subtitles?.isNotEmpty == true) {
-        subtitles.value = response.subtitle!.subtitles!;
-
+      if (response.subtitle?.subtitles case final sub? when (sub.isNotEmpty)) {
+        subtitles.value = sub;
         final idx = switch (Pref.subtitlePreferenceV2) {
-          SubtitlePrefType.off => 0,
-          SubtitlePrefType.on => 1,
-          SubtitlePrefType.withoutAi =>
-            subtitles.first.lan.startsWith('ai') ? 0 : 1,
-          SubtitlePrefType.auto =>
-            !subtitles.first.lan.startsWith('ai') ||
+          .off => 0,
+          .on => 1,
+          .withoutAi => sub.first.lan.startsWith('ai') ? 0 : 1,
+          .auto =>
+            !sub.first.lan.startsWith('ai') ||
                     (PlatformUtils.isMobile &&
                         (await FlutterVolumeController.getVolume() ?? 0.0) <=
                             0.0)

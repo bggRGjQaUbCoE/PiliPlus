@@ -110,7 +110,7 @@ class _ViewPointsPageState extends State<ViewPointsPage>
           }
         }
         final isCurr = currentIndex == index;
-        return _buildItem(theme, segment, isCurr);
+        return _buildItem(theme.colorScheme, segment, isCurr);
       },
     );
     if (_isNested) {
@@ -122,8 +122,11 @@ class _ViewPointsPageState extends State<ViewPointsPage>
     return child;
   }
 
-  Widget _buildItem(ThemeData theme, ViewPointSegment segment, bool isCurr) {
-    final theme = Theme.of(context);
+  Widget _buildItem(
+    ColorScheme colorScheme,
+    ViewPointSegment segment,
+    bool isCurr,
+  ) {
     return Material(
       type: MaterialType.transparency,
       child: InkWell(
@@ -137,18 +140,11 @@ class _ViewPointsPageState extends State<ViewPointsPage>
               }
             : null,
         child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: Style.safeSpace,
-            vertical: 5,
-          ),
+          padding: const .symmetric(horizontal: Style.safeSpace, vertical: 5),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              NetworkImgLayer(
-                src: segment.url,
-                width: 140.8,
-                height: 88,
-              ),
+              NetworkImgLayer(src: segment.url, width: 140.8, height: 88),
               const SizedBox(width: 10),
               Expanded(
                 child: Column(
@@ -163,14 +159,14 @@ class _ViewPointsPageState extends State<ViewPointsPage>
                       style: isCurr
                           ? TextStyle(
                               fontWeight: FontWeight.bold,
-                              color: theme.colorScheme.primary,
+                              color: colorScheme.primary,
                             )
                           : null,
                     ),
                     Text(
                       '${segment.from != null ? DurationUtils.formatDuration(segment.from) : ''} - '
                       '${segment.to != null ? DurationUtils.formatDuration(segment.to) : ''}',
-                      style: TextStyle(color: theme.colorScheme.outline),
+                      style: TextStyle(color: colorScheme.outline),
                     ),
                   ],
                 ),

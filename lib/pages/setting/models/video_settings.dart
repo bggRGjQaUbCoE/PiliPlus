@@ -127,16 +127,11 @@ List<SettingsModel> get videoSettings => [
   NormalModel(
     title: '首选解码格式',
     leading: const Icon(Icons.movie_creation_outlined),
-    getSubtitle: () =>
-        '首选解码格式：${VideoDecodeFormatType.fromCode(Pref.defaultDecode).description}，请根据设备支持情况与需求调整',
-    onTap: _showDecodeDialog,
-  ),
-  NormalModel(
-    title: '次选解码格式',
-    getSubtitle: () =>
-        '非杜比视频次选：${VideoDecodeFormatType.fromCode(Pref.secondDecode).description}，仍无则选择首个提供的解码格式',
-    leading: const Icon(Icons.swap_horizontal_circle_outlined),
-    onTap: _showSecondDecodeDialog,
+    getSubtitle: () {
+      final list = Pref.preferCodecs;
+      return '首选解码格式：${(list.isEmpty ? '第一个可用' : list.map((i) => i.name).join(","))}，请根据设备支持情况与需求调整';
+    },
+    onTap: _showCodecsDialog,
   ),
   if (kDebugMode || Platform.isAndroid)
     NormalModel(
@@ -349,42 +344,25 @@ Future<void> _showLiveCellularQaDialog(
   }
 }
 
-Future<void> _showDecodeDialog(
+Future<void> _showCodecsDialog(
   BuildContext context,
   VoidCallback setState,
 ) async {
-  final res = await showDialog<String>(
+  final res = await showDialog<List<VideoDecodeFormatType>>(
     context: context,
-    builder: (context) => SelectDialog<String>(
-      title: '默认解码格式',
-      value: Pref.defaultDecode,
-      values: VideoDecodeFormatType.values
-          .map((e) => (e.codes.first, e.description))
-          .toList(),
+    builder: (context) => OrderedMultiSelectDialog<VideoDecodeFormatType>(
+      title: '首选解码格式',
+      initValues: Pref.preferCodecs,
+      values: {for (final e in VideoDecodeFormatType.values) e: e.name},
     ),
   );
   if (res != null) {
-    await GStorage.setting.put(SettingBoxKey.defaultDecode, res);
-    setState();
-  }
-}
-
-Future<void> _showSecondDecodeDialog(
-  BuildContext context,
-  VoidCallback setState,
-) async {
-  final res = await showDialog<String>(
-    context: context,
-    builder: (context) => SelectDialog<String>(
-      title: '次选解码格式',
-      value: Pref.secondDecode,
-      values: VideoDecodeFormatType.values
-          .map((e) => (e.codes.first, e.description))
-          .toList(),
-    ),
-  );
-  if (res != null) {
-    await GStorage.setting.put(SettingBoxKey.secondDecode, res);
+    await (res.isEmpty
+        ? GStorage.setting.delete(SettingBoxKey.preferCodecs)
+        : GStorage.setting.put(
+            SettingBoxKey.preferCodecs,
+            res.map((i) => i.name).toList(),
+          ));
     setState();
   }
 }

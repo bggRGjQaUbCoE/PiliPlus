@@ -143,8 +143,7 @@ class VideoDetailController extends GetxController
   Box setting = GStorage.setting;
 
   // 预设的解码格式
-  late String cacheDecode = Pref.defaultDecode; // def avc
-  late String cacheSecondDecode = Pref.secondDecode; // def av1
+  late List<VideoDecodeFormatType> preferCodecs = Pref.preferCodecs;
 
   bool get showReply => isFileSource
       ? false
@@ -669,31 +668,38 @@ class VideoDetailController extends GetxController
     }
   }
 
-  VideoItem findVideoByQa(int qa) {
+  VideoItem findVideoByQa(int qa, {bool setCodecs = false}) {
     /// 根据currentVideoQa和currentDecodeFormats 重新设置videoUrl
     final videoList = data.dash!.video!.where((i) => i.id == qa).toList();
 
-    final currentDecodeFormats = this.currentDecodeFormats.codes;
-    final defaultDecodeFormats = VideoDecodeFormatType.fromString(
-      cacheDecode,
-    ).codes;
-    final secondDecodeFormats = VideoDecodeFormatType.fromString(
-      cacheSecondDecode,
-    ).codes;
-
-    VideoItem? video;
-    for (final i in videoList) {
-      final codec = i.codecs!;
-      if (currentDecodeFormats.any(codec.startsWith)) {
-        video = i;
-        break;
-      } else if (defaultDecodeFormats.any(codec.startsWith)) {
-        video = i;
-      } else if (video == null && secondDecodeFormats.any(codec.startsWith)) {
-        video = i;
+    final currentCodes = currentDecodeFormats.codes;
+    VideoItem? bestVideo;
+    int bestIndex = preferCodecs.length;
+    for (final video in videoList) {
+      final c = video.codecs!;
+      if (currentCodes.any(c.startsWith)) {
+        return video;
+      }
+      for (int i = 0; i < bestIndex; i++) {
+        if (preferCodecs[i].codes.any(c.startsWith)) {
+          bestIndex = i;
+          bestVideo = video;
+          break;
+        }
       }
     }
-    return video ?? videoList.first;
+
+    if (setCodecs) {
+      if (bestIndex < preferCodecs.length) {
+        currentDecodeFormats = preferCodecs[bestIndex];
+      } else {
+        currentDecodeFormats = VideoDecodeFormatType.fromString(
+          videoList.first.codecs!,
+        );
+      }
+    }
+
+    return bestVideo ?? videoList.first;
   }
 
   /// 更新画质、音质
@@ -706,11 +712,7 @@ class VideoDetailController extends GetxController
       ..isBuffering.value = false
       ..buffered.value = Duration.zero;
 
-    final video = findVideoByQa(currentVideoQa.code);
-    if (firstVideo.codecs != video.codecs) {
-      currentDecodeFormats = VideoDecodeFormatType.fromString(video.codecs!);
-    }
-    firstVideo = video;
+    firstVideo = findVideoByQa(currentVideoQa.code, setCodecs: true);
     videoUrl = VideoUtils.getCdnUrl(firstVideo.playUrls);
 
     /// 根据currentAudioQa 重新设置audioUrl
@@ -814,9 +816,34 @@ class VideoDetailController extends GetxController
     queryVideoUrl(fromReset: true);
   }
 
+  static VideoDecodeFormatType selectCodec(
+    Iterable<String> codecs,
+    List<VideoDecodeFormatType> preferCodecs,
+  ) {
+    if (preferCodecs.isNotEmpty) {
+      int bestIndex = preferCodecs.length;
+      for (final e in codecs) {
+        for (int i = 0; i < bestIndex; i++) {
+          if (preferCodecs[i].codes.any(e.startsWith)) {
+            bestIndex = i;
+            if (bestIndex == 0) {
+              return preferCodecs[0];
+            }
+            break;
+          }
+        }
+      }
+      if (bestIndex < preferCodecs.length) {
+        return preferCodecs[bestIndex];
+      }
+    }
+    return VideoDecodeFormatType.fromString(codecs.first);
+  }
+
   Volume? volume;
 
   // 视频链接
+  /// TODO: merge [DownloadHttp.getVideoUrl].
   Future<void> queryVideoUrl({
     bool fromReset = false,
     bool autoFullScreenFlag = false,
@@ -897,7 +924,7 @@ class VideoDetailController extends GetxController
           quality: videoQuality,
         );
         _setVideoHeight();
-        currentDecodeFormats = VideoDecodeFormatType.fromString('avc1');
+        currentDecodeFormats = VideoDecodeFormatType.AVC;
         currentVideoQa.value = videoQuality;
         await _initPlayerIfNeeded(autoFullScreenFlag);
         isQuerying = false;
@@ -929,41 +956,24 @@ class VideoDetailController extends GetxController
       }
       currentVideoQa.value = VideoQuality.fromCode(targetVideoQa);
 
+      /// 优先顺序 设置中指定解码格式 -> 当前可选的首个解码格式
+      final supportFormats = data.supportFormats!;
+
+      // 根据画质选编码格式
+      currentDecodeFormats = selectCodec(
+        supportFormats
+            .firstWhere(
+              (e) => e.quality == targetVideoQa,
+              orElse: () => supportFormats.first,
+            )
+            .codecs!,
+        preferCodecs,
+      );
+
       /// 取出符合当前画质的videoList
-      final List<VideoItem> videosList = videoList
+      final videosList = videoList
           .where((e) => e.quality.code == targetVideoQa)
           .toList();
-
-      /// 优先顺序 设置中指定解码格式 -> 当前可选的首个解码格式
-      final List<FormatItem> supportFormats = data.supportFormats!;
-      // 根据画质选编码格式
-      final List<String> supportDecodeFormats = supportFormats
-          .firstWhere(
-            (e) => e.quality == targetVideoQa,
-            orElse: () => supportFormats.first,
-          )
-          .codecs!;
-      // 默认从设置中取AV1
-      currentDecodeFormats = VideoDecodeFormatType.fromString(cacheDecode);
-      VideoDecodeFormatType secondDecodeFormats =
-          VideoDecodeFormatType.fromString(cacheSecondDecode);
-      // 当前视频没有对应格式返回第一个
-      int flag = 0;
-      for (final e in supportDecodeFormats) {
-        if (currentDecodeFormats.codes.any(e.startsWith)) {
-          flag = 1;
-          break;
-        } else if (secondDecodeFormats.codes.any(e.startsWith)) {
-          flag = 2;
-        }
-      }
-      if (flag == 2) {
-        currentDecodeFormats = secondDecodeFormats;
-      } else if (flag == 0) {
-        currentDecodeFormats = VideoDecodeFormatType.fromString(
-          supportDecodeFormats.first,
-        );
-      }
 
       /// 取出符合当前解码格式的videoItem
       firstVideo = videosList.firstWhere(

@@ -1069,28 +1069,26 @@ class HeaderControlState extends State<HeaderControl>
 
   // 选择解码格式
   void showSetDecodeFormats() {
-    final VideoItem firstVideo = videoDetailCtr.firstVideo;
+    final firstCode = videoDetailCtr.firstVideo.quality.code;
     // 当前视频可用的解码格式
-    final List<FormatItem> videoFormat = videoInfo.supportFormats!;
-    final List<String>? list = videoFormat
-        .firstWhere((FormatItem e) => e.quality == firstVideo.quality.code)
-        .codecs;
+    final videoFormat = videoInfo.supportFormats!;
+
+    final list = videoFormat.firstWhere((e) => e.quality == firstCode).codecs;
     if (list == null) {
       SmartDialog.showToast('当前视频不支持选择解码格式');
       return;
     }
 
     // 当前选中的解码格式
-    final VideoDecodeFormatType currentDecodeFormats =
-        videoDetailCtr.currentDecodeFormats;
+    final curCodecs = videoDetailCtr.currentDecodeFormats.codes;
     showBottomSheet(
       (context, setState) {
-        final theme = Theme.of(context);
+        final colorScheme = ColorScheme.of(context);
         return Padding(
           padding: const EdgeInsets.all(12),
           child: Material(
             clipBehavior: Clip.hardEdge,
-            color: theme.colorScheme.surface,
+            color: colorScheme.surface,
             borderRadius: const BorderRadius.all(Radius.circular(12)),
             child: Column(
               children: [
@@ -1108,30 +1106,22 @@ class HeaderControlState extends State<HeaderControl>
                         itemBuilder: (context, index) {
                           final item = list[index];
                           final format = VideoDecodeFormatType.fromString(item);
-                          final isCurr = currentDecodeFormats.codes.any(
-                            item.startsWith,
-                          );
+                          final isCurr = curCodecs.any(item.startsWith);
                           return ListTile(
                             dense: true,
                             onTap: () {
-                              if (isCurr) {
-                                return;
-                              }
+                              if (isCurr) return;
                               Get.back();
                               videoDetailCtr
                                 ..currentDecodeFormats = format
                                 ..updatePlayer();
+                              SmartDialog.showToast("解码已变为：${format.name}");
                             },
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 20,
-                            ),
+                            contentPadding: const .symmetric(horizontal: 20),
                             title: Text(format.description),
                             subtitle: Text(item, style: subTitleStyle),
                             trailing: isCurr
-                                ? Icon(
-                                    Icons.done,
-                                    color: theme.colorScheme.primary,
-                                  )
+                                ? Icon(Icons.done, color: colorScheme.primary)
                                 : null,
                           );
                         },

@@ -245,15 +245,33 @@ abstract final class Pref {
     defaultValue: AudioQuality.k192.code,
   );
 
-  static String get defaultDecode => _setting.get(
-    SettingBoxKey.defaultDecode,
-    defaultValue: VideoDecodeFormatType.AVC.codes.first,
-  );
+  static List<VideoDecodeFormatType> get preferCodecs {
+    // TODO: remove next 2 version
+    if (_setting.get('defaultDecode') case String codecStr) {
+      String? codecStr2 = _setting.get('secondDecode');
+      _setting.deleteAll(const ['defaultDecode', 'secondDecode']);
+      final codecs = [
+        VideoDecodeFormatType.values.firstWhere(
+          (i) => i.codes.contains(codecStr),
+        ),
+        if (codecStr2 != null && codecStr2 != codecStr)
+          VideoDecodeFormatType.values.firstWhere(
+            (i) => i.codes.contains(codecStr2),
+          ),
+      ];
+      _setting.put(
+        SettingBoxKey.preferCodecs,
+        codecs.map((i) => i.name).toList(),
+      );
+      return codecs;
+    }
 
-  static String get secondDecode => _setting.get(
-    SettingBoxKey.secondDecode,
-    defaultValue: VideoDecodeFormatType.AV1.codes.first,
-  );
+    final codecs = _setting.get(SettingBoxKey.preferCodecs);
+    if (codecs is List && codecs.isNotEmpty) {
+      return codecs.map((i) => VideoDecodeFormatType.values.byName(i)).toList();
+    }
+    return const [];
+  }
 
   static String get hardwareDecoding => _setting.get(
     SettingBoxKey.hardwareDecoding,

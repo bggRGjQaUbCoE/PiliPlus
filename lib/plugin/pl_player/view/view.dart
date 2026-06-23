@@ -724,19 +724,16 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                       ),
                     ),
                   ),
-                  ...videoDetailController.subtitles.indexed.map((e) {
+                  ...videoDetailController.subtitles.mapIndexed((i, e) {
                     return PopupMenuItem<int>(
-                      value: e.$1 + 1,
+                      value: i + 1,
                       height: 35,
-                      onTap: () => videoDetailController.setSubtitle(e.$1 + 1),
+                      onTap: () => videoDetailController.setSubtitle(i + 1),
                       child: Text(
-                        "${e.$2.lanDoc}",
+                        e.lanDoc ?? e.lan,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 13,
-                        ),
+                        style: const .new(color: Colors.white, fontSize: 13),
                       ),
                     );
                   }),

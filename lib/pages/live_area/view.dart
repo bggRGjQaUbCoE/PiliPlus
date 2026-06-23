@@ -84,7 +84,7 @@ class _LiveAreaPageState extends State<LiveAreaPage> {
                 children: [
                   TabBar(
                     isScrollable: true,
-                    tabAlignment: TabAlignment.start,
+                    tabAlignment: .start,
                     controller: _controller.tabController,
                     tabs: response.map((e) => Tab(text: e.name)).toList(),
                   ),

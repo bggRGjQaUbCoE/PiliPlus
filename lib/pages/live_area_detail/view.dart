@@ -82,7 +82,7 @@ class _LiveAreaDetailPageState extends State<LiveAreaDetailPage> {
                         child: TabBar(
                           dividerHeight: 0,
                           isScrollable: true,
-                          tabAlignment: TabAlignment.start,
+                          tabAlignment: .start,
                           dividerColor: Colors.transparent,
                           controller: _controller.tabController,
                           tabs: response

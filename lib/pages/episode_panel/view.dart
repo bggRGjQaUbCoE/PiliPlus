@@ -215,11 +215,11 @@ class _EpisodePanelState extends State<EpisodePanel>
           _buildToolbar(theme),
           if (_isMulti)
             TabBar(
-              controller: _tabController,
-              padding: const EdgeInsets.only(right: 60),
-              isScrollable: true,
-              tabs: widget.list.map((item) => Tab(text: item.title)).toList(),
               dividerHeight: 1,
+              isScrollable: true,
+              controller: _tabController,
+              padding: const .only(right: 60),
+              tabs: widget.list.map((item) => Tab(text: item.title)).toList(),
               dividerColor: theme.dividerColor.withValues(alpha: 0.1),
             ),
           Expanded(child: enableSlide ? slideList(theme) : buildList(theme)),

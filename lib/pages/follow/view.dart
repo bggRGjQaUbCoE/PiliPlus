@@ -131,7 +131,7 @@ class _FollowPageState extends State<FollowPage> {
           ViewSafeArea(
             child: TabBar(
               isScrollable: true,
-              tabAlignment: TabAlignment.start,
+              tabAlignment: .start,
               controller: _followController.tabController,
               tabs: List.generate(_followController.tabs.length, (index) {
                 return Obx(() {

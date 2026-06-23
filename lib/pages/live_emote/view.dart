@@ -174,11 +174,11 @@ class _LiveEmotePanelState extends State<LiveEmotePanel>
                     color: theme.dividerColor.withValues(alpha: 0.1),
                   ),
                   TabBar(
-                    controller: _emotePanelController.tabController,
-                    padding: const EdgeInsets.only(right: 60),
-                    dividerColor: Colors.transparent,
                     dividerHeight: 0,
                     isScrollable: true,
+                    padding: const .only(right: 60),
+                    dividerColor: Colors.transparent,
+                    controller: _emotePanelController.tabController,
                     tabs: response
                         .map(
                           (item) => Padding(

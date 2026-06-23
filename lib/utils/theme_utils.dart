@@ -39,10 +39,7 @@ abstract final class ThemeUtils {
         centerTitle: false,
         scrolledUnderElevation: 0,
         backgroundColor: colorScheme.surface,
-        titleTextStyle: TextStyle(
-          fontSize: 16,
-          color: colorScheme.onSurface,
-        ),
+        titleTextStyle: TextStyle(fontSize: 16, color: colorScheme.onSurface),
       ),
       navigationBarTheme: NavigationBarThemeData(
         surfaceTintColor: isDynamic ? colorScheme.onSurfaceVariant : null,
@@ -59,10 +56,8 @@ abstract final class ThemeUtils {
       ),
       cardTheme: CardThemeData(
         elevation: 1,
-        margin: EdgeInsets.zero,
-        surfaceTintColor: isDynamic
-            ? colorScheme.onSurfaceVariant
-            : isDark
+        margin: .zero,
+        surfaceTintColor: isDynamic || isDark
             ? colorScheme.onSurfaceVariant
             : null,
         shadowColor: Colors.transparent,
@@ -73,10 +68,7 @@ abstract final class ThemeUtils {
         refreshBackgroundColor: colorScheme.onSecondary,
       ),
       dialogTheme: DialogThemeData(
-        titleTextStyle: TextStyle(
-          fontSize: 18,
-          color: colorScheme.onSurface,
-        ),
+        titleTextStyle: TextStyle(fontSize: 18, color: colorScheme.onSurface),
         backgroundColor: colorScheme.surface,
         constraints: const BoxConstraints(minWidth: 280, maxWidth: 420),
       ),
@@ -89,10 +81,7 @@ abstract final class ThemeUtils {
       // ignore: deprecated_member_use
       sliderTheme: const SliderThemeData(year2023: false),
       tooltipTheme: TooltipThemeData(
-        textStyle: const TextStyle(
-          color: Colors.white,
-          fontSize: 14,
-        ),
+        textStyle: const TextStyle(color: Colors.white, fontSize: 14),
         decoration: BoxDecoration(
           color: Colors.grey[700]!.withValues(alpha: 0.9),
           borderRadius: const BorderRadius.all(Radius.circular(4)),
@@ -111,6 +100,7 @@ abstract final class ThemeUtils {
           },
         ),
       ),
+      tabBarTheme: const TabBarThemeData(indicatorAnimation: .linear),
       pageTransitionsTheme: const PageTransitionsTheme(
         builders: {
           TargetPlatform.android: ZoomPageTransitionsBuilder(),

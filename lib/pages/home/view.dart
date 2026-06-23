@@ -40,13 +40,13 @@ class _HomePageState extends State<HomePage>
             height: 42,
             width: double.infinity,
             child: TabBar(
+              dividerHeight: 0,
+              isScrollable: true,
+              tabAlignment: .center,
+              splashBorderRadius: Style.mdRadius,
+              dividerColor: Colors.transparent,
               controller: _homeController.tabController,
               tabs: HomeTabType.values.map((e) => Tab(text: e.label)).toList(),
-              isScrollable: true,
-              dividerColor: Colors.transparent,
-              dividerHeight: 0,
-              splashBorderRadius: Style.mdRadius,
-              tabAlignment: TabAlignment.center,
               onTap: (_) {
                 if (!_homeController.tabController.indexIsChanging) {
                   _homeController.animateToTop();

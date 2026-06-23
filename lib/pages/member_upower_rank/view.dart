@@ -115,7 +115,7 @@ class _UpowerRankPageState extends State<UpowerRankPage>
                             children: [
                               TabBar(
                                 isScrollable: true,
-                                tabAlignment: TabAlignment.start,
+                                tabAlignment: .start,
                                 tabs: tabs
                                     .map(
                                       (e) => Tab(

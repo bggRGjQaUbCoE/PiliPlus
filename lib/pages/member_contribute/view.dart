@@ -56,29 +56,22 @@ class _MemberContributeState extends State<MemberContribute>
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               TabBar(
-                overlayColor: const WidgetStatePropertyAll(Colors.transparent),
-                splashFactory: NoSplash.splashFactory,
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                isScrollable: true,
-                tabs: _controller.tabs!,
-                tabAlignment: TabAlignment.start,
-                controller: _controller.tabController,
                 dividerHeight: 0,
                 indicatorWeight: 0,
-                indicatorPadding: const EdgeInsets.symmetric(
-                  horizontal: 3,
-                  vertical: 8,
-                ),
+                isScrollable: true,
+                indicatorSize: .tab,
+                tabAlignment: .start,
+                tabs: _controller.tabs!,
+                controller: _controller.tabController,
+                splashFactory: NoSplash.splashFactory,
+                padding: const .symmetric(horizontal: 8),
+                indicatorPadding: const .symmetric(horizontal: 3, vertical: 8),
+                overlayColor: const WidgetStatePropertyAll(Colors.transparent),
                 indicator: BoxDecoration(
                   color: theme.colorScheme.secondaryContainer,
                   borderRadius: const BorderRadius.all(Radius.circular(20)),
                 ),
-                indicatorSize: TabBarIndicatorSize.tab,
-                labelStyle:
-                    TabBarTheme.of(
-                      context,
-                    ).labelStyle?.copyWith(fontSize: 14) ??
-                    const TextStyle(fontSize: 14),
+                labelStyle: const TextStyle(fontSize: 14),
                 labelColor: theme.colorScheme.onSecondaryContainer,
                 unselectedLabelColor: theme.colorScheme.outline,
               ),

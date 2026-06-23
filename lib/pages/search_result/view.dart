@@ -101,10 +101,10 @@ class _SearchResultPageState extends State<SearchResultPage>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             TabBar(
-              overlayColor: const WidgetStatePropertyAll(Colors.transparent),
-              splashFactory: NoSplash.splashFactory,
-              padding: const EdgeInsets.only(top: 4, left: 8, right: 8),
               controller: _tabController,
+              splashFactory: NoSplash.splashFactory,
+              padding: const .only(top: 4, left: 8, right: 8),
+              overlayColor: const WidgetStatePropertyAll(Colors.transparent),
               tabs: SearchType.values
                   .map(
                     (item) => Obx(
@@ -128,13 +128,9 @@ class _SearchResultPageState extends State<SearchResultPage>
                 color: theme.colorScheme.secondaryContainer,
                 borderRadius: const BorderRadius.all(Radius.circular(20)),
               ),
-              indicatorSize: TabBarIndicatorSize.tab,
+              indicatorSize: .tab,
               labelColor: theme.colorScheme.onSecondaryContainer,
-              labelStyle:
-                  TabBarTheme.of(
-                    context,
-                  ).labelStyle?.copyWith(fontSize: 13) ??
-                  const TextStyle(fontSize: 13),
+              labelStyle: const TextStyle(fontSize: 13),
               dividerColor: Colors.transparent,
               dividerHeight: 0,
               unselectedLabelColor: theme.colorScheme.outline,

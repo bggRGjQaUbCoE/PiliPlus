@@ -186,11 +186,11 @@ class _EmotePanelState extends State<EmotePanel>
                       ),
                       Expanded(
                         child: TabBar(
-                          controller: _emotePanelController.tabController,
-                          padding: const EdgeInsets.only(right: 60),
-                          dividerColor: Colors.transparent,
                           dividerHeight: 0,
                           isScrollable: true,
+                          padding: const .only(right: 60),
+                          dividerColor: Colors.transparent,
+                          controller: _emotePanelController.tabController,
                           tabs: response
                               .map(
                                 (e) => Padding(

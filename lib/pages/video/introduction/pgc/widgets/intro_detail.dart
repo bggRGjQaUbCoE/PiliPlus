@@ -57,10 +57,10 @@ class _IntroDetailState extends State<PgcIntroPanel>
             children: [
               Expanded(
                 child: TabBar(
-                  controller: _tabController,
                   dividerHeight: 0,
                   isScrollable: true,
-                  tabAlignment: TabAlignment.start,
+                  tabAlignment: .start,
+                  controller: _tabController,
                   dividerColor: Colors.transparent,
                   tabs: const [
                     Tab(text: '详情'),

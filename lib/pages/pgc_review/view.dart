@@ -52,31 +52,24 @@ class _PgcReviewPageState extends State<PgcReviewPage>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             TabBar(
-              controller: _tabController,
-              isScrollable: true,
-              tabAlignment: TabAlignment.start,
               dividerHeight: 0,
               indicatorWeight: 0,
-              overlayColor: const WidgetStatePropertyAll(Colors.transparent),
+              isScrollable: true,
+              indicatorSize: .tab,
+              tabAlignment: .start,
+              controller: _tabController,
+              padding: const .only(left: 6),
+              dividerColor: Colors.transparent,
               splashFactory: NoSplash.splashFactory,
-              padding: const EdgeInsets.only(left: 6),
-              indicatorPadding: const EdgeInsets.symmetric(
-                horizontal: 3,
-                vertical: 8,
-              ),
+              indicatorPadding: const .symmetric(horizontal: 3, vertical: 8),
+              overlayColor: const WidgetStatePropertyAll(Colors.transparent),
               indicator: BoxDecoration(
+                borderRadius: const .all(.circular(20)),
                 color: theme.colorScheme.secondaryContainer,
-                borderRadius: const BorderRadius.all(Radius.circular(20)),
               ),
-              indicatorSize: TabBarIndicatorSize.tab,
               labelColor: theme.colorScheme.onSecondaryContainer,
               unselectedLabelColor: theme.colorScheme.outline,
-              labelStyle:
-                  TabBarTheme.of(
-                    context,
-                  ).labelStyle?.copyWith(fontSize: 13) ??
-                  const TextStyle(fontSize: 13),
-              dividerColor: Colors.transparent,
+              labelStyle: const TextStyle(fontSize: 13),
               tabs: PgcReviewType.values
                   .map((e) => Tab(text: e.label))
                   .toList(),

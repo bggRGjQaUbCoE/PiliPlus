@@ -87,9 +87,9 @@ class PgcPage extends StatelessWidget {
                           const SizedBox(width: 16),
                           Expanded(
                             child: TabBar(
-                              isScrollable: true,
-                              tabAlignment: TabAlignment.start,
                               dividerHeight: 0,
+                              isScrollable: true,
+                              tabAlignment: .start,
                               overlayColor: const WidgetStatePropertyAll(
                                 Colors.transparent,
                               ),
@@ -108,11 +108,7 @@ class PgcPage extends StatelessWidget {
                               indicatorSize: TabBarIndicatorSize.tab,
                               labelColor:
                                   theme.colorScheme.onSecondaryContainer,
-                              labelStyle:
-                                  TabBarTheme.of(
-                                    context,
-                                  ).labelStyle?.copyWith(fontSize: 14) ??
-                                  const TextStyle(fontSize: 14),
+                              labelStyle: const TextStyle(fontSize: 14),
                               dividerColor: Colors.transparent,
                               tabs: response.map(
                                 (item) {

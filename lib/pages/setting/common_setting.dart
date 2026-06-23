@@ -1,25 +1,29 @@
-import 'package:PiliPlus/pages/setting/models/extra_settings.dart';
+import 'package:PiliPlus/models/common/setting_type.dart';
 import 'package:flutter/material.dart';
 
-class ExtraSetting extends StatefulWidget {
-  const ExtraSetting({super.key, this.showAppBar = true});
+class CommonSetting extends StatefulWidget {
+  const CommonSetting({
+    super.key,
+    required this.settingType,
+    this.showAppBar = true,
+  });
 
   final bool showAppBar;
+  final SettingType settingType;
 
   @override
-  State<ExtraSetting> createState() => _ExtraSettingState();
+  State<CommonSetting> createState() => _CommonSettingState();
 }
 
-class _ExtraSettingState extends State<ExtraSetting> {
-  final settings = extraSettings;
-
+class _CommonSettingState extends State<CommonSetting> {
   @override
   Widget build(BuildContext context) {
     final showAppBar = widget.showAppBar;
+    final settings = widget.settingType.settings;
     final padding = MediaQuery.viewPaddingOf(context);
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      appBar: showAppBar ? AppBar(title: const Text('其它设置')) : null,
+      appBar: showAppBar ? AppBar(title: Text(widget.settingType.title)) : null,
       body: ListView.builder(
         padding: EdgeInsets.only(
           left: showAppBar ? padding.left : 0,

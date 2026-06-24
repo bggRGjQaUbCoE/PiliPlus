@@ -10,65 +10,181 @@ import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-class UpPanel extends StatefulWidget {
+class UpPanel extends StatelessWidget {
   const UpPanel({
-    required this.dynamicsController,
     super.key,
+    required this.upData,
+    required this.controller,
   });
 
-  final DynamicsController dynamicsController;
-
-  @override
-  State<UpPanel> createState() => _UpPanelState();
-}
-
-class _UpPanelState extends State<UpPanel> {
-  late final controller = widget.dynamicsController;
-  late final isTop = controller.upPanelPosition == .top;
-
-  void toFollowPage() => Get.to(const LiveFollowPage());
+  final FollowUpModel upData;
+  final DynamicsController controller;
 
   @override
   Widget build(BuildContext context) {
-    final accountService = controller.accountService;
-    if (!accountService.isLogin.value) {
-      return const SizedBox.shrink();
-    }
     final theme = Theme.of(context);
-    final upData = controller.upState.value.data;
-    final List<UpItem> upList = upData.upList;
-    final List<LiveUserItem>? liveList = upData.liveUsers?.items;
+    final upList = upData.upList;
+    final liveList = upData.liveUsers?.items;
+
+    final isTop = controller.upPanelPosition == .top;
+    void toFollowPage() => Get.to(const LiveFollowPage());
+
+    Widget buildItem(UpItem item) {
+      final hostMid = controller.innerController.hostMid;
+      final isLive = item is LiveUserItem;
+      final isCurrent = isLive || hostMid == -1 || hostMid == item.mid;
+
+      final isAll = item.mid == -1;
+      void toMemberPage() => Get.toNamed('/member?mid=${item.mid}');
+
+      Widget avatar;
+      if (isAll) {
+        avatar = DecoratedBox(
+          decoration: const BoxDecoration(
+            shape: .circle,
+            color: Color(0xFF5CB67B),
+          ),
+          child: Image.asset(
+            width: 38,
+            height: 38,
+            cacheWidth: 38.cacheSize,
+            Assets.logo2,
+            color: Colors.white,
+          ),
+        );
+      } else {
+        avatar = Padding(
+          padding: const .symmetric(horizontal: 4),
+          child: NetworkImgLayer(
+            width: 38,
+            height: 38,
+            src: item.face,
+            type: .avatar,
+          ),
+        );
+        if (isLive) {
+          avatar = Stack(
+            clipBehavior: .none,
+            children: [
+              avatar,
+              Positioned(
+                top: isLive && !isTop ? -5 : 0,
+                right: -6,
+                child: Badge(
+                  label: const Text(' Live '),
+                  textColor: theme.colorScheme.onSecondaryContainer,
+                  backgroundColor: theme.colorScheme.secondaryContainer
+                      .withValues(alpha: 0.75),
+                ),
+              ),
+            ],
+          );
+        } else if (item.hasUpdate ?? false) {
+          avatar = Stack(
+            clipBehavior: .none,
+            children: [
+              avatar,
+              Positioned(
+                top: 0,
+                right: 4,
+                child: Badge(
+                  smallSize: 8,
+                  backgroundColor: theme.colorScheme.primary,
+                ),
+              ),
+            ],
+          );
+        }
+      }
+
+      return SizedBox(
+        height: 76,
+        width: isTop ? 70 : null,
+        child: InkWell(
+          onTap: () {
+            if (isLive) {
+              PageUtils.toLiveRoom(item.roomId);
+            } else {
+              if (isAll) {
+                if (hostMid == -1) {
+                  controller.singleRefresh();
+                }
+                controller.innerController.dynamicsType.value = .all;
+              } else {
+                item.hasUpdate = false;
+                controller.innerController.dynamicsType.value = .up;
+              }
+              controller.innerController
+                ..hostMid = item.mid
+                ..onReload();
+              (context as Element).markNeedsBuild();
+            }
+          },
+          // onDoubleTap: isLive ? () => _onSelect(data) : null,
+          onLongPress: !isAll ? toMemberPage : null,
+          onSecondaryTap: !isAll && !PlatformUtils.isMobile
+              ? toMemberPage
+              : null,
+          child: Opacity(
+            opacity: isCurrent ? 1 : 0.6,
+            child: Column(
+              spacing: 4,
+              mainAxisSize: .min,
+              mainAxisAlignment: .center,
+              children: [
+                avatar,
+                Padding(
+                  padding: const .symmetric(horizontal: 4),
+                  child: Text(
+                    isTop ? '${item.uname}\n' : item.uname!,
+                    maxLines: 2,
+                    textAlign: .center,
+                    style: TextStyle(
+                      color: hostMid == item.mid
+                          ? theme.colorScheme.primary
+                          : theme.colorScheme.outline,
+                      height: 1.1,
+                      fontSize: 12.5,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
     return CustomScrollView(
-      scrollDirection: isTop ? Axis.horizontal : Axis.vertical,
-      physics: const AlwaysScrollableScrollPhysics(),
       controller: controller.scrollController,
+      physics: const AlwaysScrollableScrollPhysics(),
+      scrollDirection: isTop ? .horizontal : .vertical,
       slivers: [
         SliverToBoxAdapter(
           child: InkWell(
-            onTap: () => setState(() {
+            onTap: () {
               controller.showLiveUp = !controller.showLiveUp;
-            }),
+              (context as Element).markNeedsBuild();
+            },
             onLongPress: toFollowPage,
             onSecondaryTap: PlatformUtils.isMobile ? null : toFollowPage,
             child: Container(
-              alignment: Alignment.center,
+              alignment: .center,
               height: isTop ? 76 : 60,
-              padding: isTop ? const EdgeInsets.only(left: 12, right: 6) : null,
+              padding: isTop ? const .only(left: 12, right: 6) : null,
               child: Text.rich(
-                textAlign: TextAlign.center,
+                textAlign: .center,
                 style: TextStyle(
                   fontSize: 13,
                   color: theme.colorScheme.primary,
                 ),
                 TextSpan(
                   children: [
-                    TextSpan(
-                      text: 'Live(${upData.liveUsers?.count ?? 0})',
-                    ),
+                    TextSpan(text: 'Live(${upData.liveUsers?.count ?? 0})'),
                     if (!isTop) ...[
                       const TextSpan(text: '\n'),
                       WidgetSpan(
-                        alignment: PlaceholderAlignment.middle,
+                        alignment: .middle,
                         child: Icon(
                           controller.showLiveUp
                               ? Icons.expand_less
@@ -79,7 +195,7 @@ class _UpPanelState extends State<UpPanel> {
                       ),
                     ] else
                       WidgetSpan(
-                        alignment: PlaceholderAlignment.middle,
+                        alignment: .middle,
                         child: Icon(
                           controller.showLiveUp
                               ? Icons.keyboard_arrow_right
@@ -98,157 +214,32 @@ class _UpPanelState extends State<UpPanel> {
           SliverList.builder(
             itemCount: liveList.length,
             itemBuilder: (context, index) {
-              return upItemBuild(theme, liveList[index]);
+              return buildItem(liveList[index]);
             },
           ),
         SliverToBoxAdapter(
-          child: upItemBuild(theme, UpItem(face: '', uname: '全部动态', mid: -1)),
+          child: buildItem(UpItem(face: '', uname: '全部动态', mid: -1)),
         ),
         SliverToBoxAdapter(
           child: Obx(
-            () => upItemBuild(
-              theme,
+            () => buildItem(
               UpItem(
                 uname: '我',
-                face: accountService.face.value,
+                face: controller.accountService.face.value,
                 mid: Accounts.main.mid,
               ),
             ),
           ),
         ),
-        if (upList.isNotEmpty)
+        if (upList != null && upList.isNotEmpty)
           SliverList.builder(
             itemCount: upList.length,
             itemBuilder: (context, index) {
-              return upItemBuild(theme, upList[index]);
+              return buildItem(upList[index]);
             },
           ),
         if (!isTop) const SliverToBoxAdapter(child: SizedBox(height: 200)),
       ],
-    );
-  }
-
-  void _onSelect(UpItem data) {
-    controller
-      ..currentMid = data.mid
-      ..onSelectUp(data.mid);
-
-    data.hasUpdate = false;
-
-    setState(() {});
-  }
-
-  Widget upItemBuild(ThemeData theme, UpItem data) {
-    final currentMid = controller.currentMid;
-    final isLive = data is LiveUserItem;
-    final isCurrent = isLive || currentMid == data.mid || currentMid == -1;
-
-    final isAll = data.mid == -1;
-    void toMemberPage() => Get.toNamed('/member?mid=${data.mid}');
-
-    Widget avatar;
-    if (isAll) {
-      avatar = DecoratedBox(
-        decoration: BoxDecoration(
-          shape: .circle,
-          border: Border.all(
-            width: 5,
-            color: const Color(0xFF5CB67B),
-          ),
-        ),
-        child: Image.asset(
-          width: 38,
-          height: 38,
-          cacheWidth: 38.cacheSize,
-          Assets.logo,
-        ),
-      );
-    } else {
-      avatar = Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 4),
-        child: NetworkImgLayer(
-          width: 38,
-          height: 38,
-          src: data.face,
-          type: .avatar,
-        ),
-      );
-      if (isLive) {
-        avatar = Stack(
-          clipBehavior: .none,
-          children: [
-            avatar,
-            Positioned(
-              top: isLive && !isTop ? -5 : 0,
-              right: -6,
-              child: Badge(
-                label: const Text(' Live '),
-                textColor: theme.colorScheme.onSecondaryContainer,
-                backgroundColor: theme.colorScheme.secondaryContainer
-                    .withValues(alpha: 0.75),
-              ),
-            ),
-          ],
-        );
-      } else if (data.hasUpdate ?? false) {
-        avatar = Stack(
-          clipBehavior: .none,
-          children: [
-            avatar,
-            Positioned(
-              top: 0,
-              right: 4,
-              child: Badge(
-                smallSize: 8,
-                backgroundColor: theme.colorScheme.primary,
-              ),
-            ),
-          ],
-        );
-      }
-    }
-
-    return SizedBox(
-      height: 76,
-      width: isTop ? 70 : null,
-      child: InkWell(
-        onTap: () {
-          if (isLive) {
-            PageUtils.toLiveRoom(data.roomId);
-          } else {
-            _onSelect(data);
-          }
-        },
-        // onDoubleTap: isLive ? () => _onSelect(data) : null,
-        onLongPress: !isAll ? toMemberPage : null,
-        onSecondaryTap: !isAll && !PlatformUtils.isMobile ? toMemberPage : null,
-        child: Opacity(
-          opacity: isCurrent ? 1 : 0.6,
-          child: Column(
-            spacing: 4,
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              avatar,
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4),
-                child: Text(
-                  isTop ? '${data.uname}\n' : data.uname!,
-                  maxLines: 2,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: currentMid == data.mid
-                        ? theme.colorScheme.primary
-                        : theme.colorScheme.outline,
-                    height: 1.1,
-                    fontSize: 12.5,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }

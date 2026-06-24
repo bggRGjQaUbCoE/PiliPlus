@@ -1,5 +1,3 @@
-import 'dart:async' show StreamSubscription;
-
 import 'package:PiliPlus/http/dynamics.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/msg.dart';
@@ -17,53 +15,41 @@ import 'package:get/get.dart';
 class DynamicsTabController
     extends CommonListController<DynamicsDataModel, DynamicItemModel>
     with AccountMixin, CommonReloadMixin {
-  DynamicsTabController({required this.dynamicsType});
-  final DynamicsTabType dynamicsType;
-  String offset = '';
-  int? mid;
-  late int flag = 0;
+  int hostMid = -1;
+  String? offset;
+  final Rx<DynamicsTabType> dynamicsType = Rx(.all);
 
-  late final MainController mainController = Get.find<MainController>();
-  final dynamicsController = Get.find<DynamicsController>();
-  StreamSubscription? _listener;
+  late final outerController = Get.find<DynamicsController>();
+  late final MainController _mainController = Get.find<MainController>();
 
   @override
   void onInit() {
     super.onInit();
     queryData();
-    if (dynamicsType == .up) {
-      _listener = dynamicsController.mid.listen((mid) {
-        if (mid != -1) {
-          flag++;
-          this.mid = mid;
-          onReload();
-        }
-      });
-    }
   }
 
   @override
   Future<void> onRefresh() {
-    if (dynamicsType == .all) {
-      mainController.setDynCount();
+    if (dynamicsType.value == .all) {
+      _mainController.setDynCount();
     }
-    offset = '';
+    offset = null;
     return super.onRefresh();
   }
 
   @override
   List<DynamicItemModel>? getDataList(DynamicsDataModel response) {
-    offset = response.offset ?? '';
+    offset = response.offset;
     return response.items;
   }
 
   @override
   Future<LoadingState<DynamicsDataModel>> customGetData() =>
       DynamicsHttp.followDynamic(
-        type: dynamicsType,
         offset: offset,
-        mid: mid,
-        tempBannedList: dynamicsController.tempBannedList,
+        hostMid: hostMid,
+        type: dynamicsType.value,
+        tempBannedList: outerController.tempBannedList,
       );
 
   Future<void> onRemove(int index, dynamic dynamicId) async {
@@ -79,7 +65,7 @@ class DynamicsTabController
   }
 
   void onBlock(int index) {
-    if (dynamicsType != .up) {
+    if (dynamicsType.value != .up) {
       loadingState
         ..value.data!.removeAt(index)
         ..refresh();
@@ -101,10 +87,4 @@ class DynamicsTabController
 
   @override
   void onChangeAccount(bool isLogin) => onReload();
-
-  @override
-  void onClose() {
-    _listener?.cancel();
-    super.onClose();
-  }
 }

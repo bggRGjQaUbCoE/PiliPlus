@@ -1,13 +1,11 @@
-import 'package:PiliPlus/common/widgets/scroll_physics.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/dynamic/dynamics_type.dart';
-import 'package:PiliPlus/models/common/dynamic/up_panel_position.dart';
 import 'package:PiliPlus/models/dynamics/up.dart';
 import 'package:PiliPlus/pages/dynamics/controller.dart';
 import 'package:PiliPlus/pages/dynamics/widgets/up_panel.dart';
 import 'package:PiliPlus/pages/dynamics_create/view.dart';
+import 'package:PiliPlus/pages/dynamics_tab/controller.dart';
 import 'package:PiliPlus/pages/dynamics_tab/view.dart';
-import 'package:PiliPlus/utils/extension/get_ext.dart';
 import 'package:flutter/material.dart' hide DraggableScrollableSheet;
 import 'package:get/get.dart';
 
@@ -20,52 +18,59 @@ class DynamicsPage extends StatefulWidget {
 
 class _DynamicsPageState extends State<DynamicsPage>
     with AutomaticKeepAliveClientMixin {
-  final _dynamicsController = Get.putOrFind(DynamicsController.new);
-  UpPanelPosition get upPanelPosition => _dynamicsController.upPanelPosition;
+  late ColorScheme colorScheme;
+  late final DynamicsController _outerController;
+  late final DynamicsTabController _innerController;
 
   @override
-  bool get wantKeepAlive => true;
+  void initState() {
+    super.initState();
+    _outerController = Get.put(DynamicsController());
+    _innerController = Get.put(DynamicsTabController());
+  }
 
-  Widget _createDynamicBtn(ThemeData theme, {bool isRight = true}) => Center(
-    child: Container(
-      width: 34,
-      height: 34,
-      margin: EdgeInsets.only(left: !isRight ? 16 : 0, right: isRight ? 16 : 0),
-      child: IconButton(
-        tooltip: '发布动态',
-        style: ButtonStyle(
-          padding: const WidgetStatePropertyAll(EdgeInsets.zero),
-          backgroundColor: WidgetStatePropertyAll(
-            theme.colorScheme.secondaryContainer,
-          ),
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    colorScheme = ColorScheme.of(context);
+  }
+
+  Widget _createDynamicBtn() => SizedBox(
+    width: 34,
+    height: 34,
+    child: IconButton(
+      tooltip: '发布动态',
+      style: ButtonStyle(
+        padding: const WidgetStatePropertyAll(.zero),
+        backgroundColor: WidgetStatePropertyAll(
+          colorScheme.secondaryContainer,
         ),
-        onPressed: () => CreateDynPanel.onCreateDyn(context),
-        icon: Icon(
-          Icons.add,
-          size: 18,
-          color: theme.colorScheme.onSecondaryContainer,
-        ),
+      ),
+      onPressed: () => CreateDynPanel.onCreateDyn(context),
+      icon: Icon(
+        Icons.add,
+        size: 18,
+        color: colorScheme.onSecondaryContainer,
       ),
     ),
   );
 
-  Widget upPanelPart(ThemeData theme, {bool isTop = false}) {
-    final needBg = upPanelPosition.index > 2;
+  Widget upPanelPart({bool isTop = false}) {
     return Material(
-      type: needBg ? .canvas : .transparency,
-      color: needBg ? theme.colorScheme.surface : null,
+      type: .transparency,
       child: SizedBox(
         width: isTop ? null : 64,
         height: isTop ? 76 : null,
         child: NotificationListener<ScrollEndNotification>(
           onNotification: (notification) {
             final metrics = notification.metrics;
-            if (metrics.pixels >= metrics.maxScrollExtent - 300) {
-              _dynamicsController.onLoadMoreUp();
+            if (metrics.pixels >= metrics.maxScrollExtent - 300 &&
+                !_outerController.isEnd) {
+              _outerController.onLoadMore();
             }
             return false;
           },
-          child: Obx(() => _buildUpPanel(_dynamicsController.upState.value)),
+          child: Obx(() => _buildUpPanel(_outerController.loadingState.value)),
         ),
       ),
     );
@@ -74,15 +79,14 @@ class _DynamicsPageState extends State<DynamicsPage>
   Widget _buildUpPanel(LoadingState<FollowUpModel> upState) {
     return switch (upState) {
       Loading() => const SizedBox.shrink(),
-      Success<FollowUpModel>() => UpPanel(
-        dynamicsController: _dynamicsController,
+      Success<FollowUpModel>(:final response) => UpPanel(
+        controller: _outerController,
+        upData: response,
       ),
       Error() => Center(
         child: IconButton(
           icon: const Icon(Icons.refresh),
-          onPressed: () => _dynamicsController
-            ..upState.value = LoadingState<FollowUpModel>.loading()
-            ..queryFollowUp(),
+          onPressed: _outerController.onReload,
         ),
       ),
     };
@@ -91,79 +95,107 @@ class _DynamicsPageState extends State<DynamicsPage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    final theme = Theme.of(context);
 
-    Widget? leading;
-    List<Widget>? actions;
+    final tab = _buildTab();
+    Widget child = DynamicsTabPage(controller: _innerController);
 
-    Widget child = tabBarView(
-      controller: _dynamicsController.tabController,
-      children: DynamicsTabType.values
-          .map((e) => DynamicsTabPage(dynamicsType: e))
-          .toList(),
-    );
-
-    switch (upPanelPosition) {
+    switch (_outerController.upPanelPosition) {
       case .top:
-        child = Column(
+        return Column(
           children: [
-            upPanelPart(theme, isTop: true),
+            tab,
+            upPanelPart(isTop: true),
             Expanded(child: child),
           ],
         );
-        actions = [_createDynamicBtn(theme)];
       case .leftFixed:
         child = Row(
           children: [
-            upPanelPart(theme),
+            upPanelPart(),
             Expanded(child: child),
           ],
         );
-        actions = [_createDynamicBtn(theme)];
       case .rightFixed:
         child = Row(
           children: [
             Expanded(child: child),
-            upPanelPart(theme),
+            upPanelPart(),
           ],
         );
-        actions = [_createDynamicBtn(theme)];
     }
 
     return Column(
       children: [
-        AppBar(
-          primary: false,
-          leading: leading,
-          leadingWidth: 50,
-          toolbarHeight: 50,
-          backgroundColor: Colors.transparent,
-          title: SizedBox(
-            height: 50,
-            child: TabBar(
-              dividerHeight: 0,
-              isScrollable: true,
-              tabAlignment: .center,
-              dividerColor: Colors.transparent,
-              labelColor: theme.colorScheme.primary,
-              indicatorColor: theme.colorScheme.primary,
-              controller: _dynamicsController.tabController,
-              unselectedLabelColor: theme.colorScheme.onSurface,
-              labelStyle: const TextStyle(fontSize: 13),
-              tabs: DynamicsTabType.values
-                  .map((e) => Tab(text: e.label))
-                  .toList(),
-              onTap: (index) {
-                if (!_dynamicsController.tabController.indexIsChanging) {
-                  _dynamicsController.animateToTop();
-                }
-              },
-            ),
-          ),
-          actions: actions,
-        ),
+        tab,
         Expanded(child: child),
       ],
     );
   }
+
+  Widget _buildTab() {
+    return Row(
+      children: [
+        Expanded(
+          child: Obx(
+            () {
+              final dynamicsType = _innerController.dynamicsType.value;
+              return Row(
+                children: DynamicsTabType.values.map((e) {
+                  final isCurr = e == dynamicsType;
+                  return InkWell(
+                    onTap: e == .up && !isCurr
+                        ? null
+                        : () {
+                            if (isCurr) {
+                              _outerController.animateToTop();
+                              return;
+                            }
+                            if (dynamicsType == .up) {
+                              _innerController.hostMid = -1;
+                              _outerController.loadingState.refresh();
+                            }
+                            _innerController
+                              ..dynamicsType.value = e
+                              ..onReload();
+                          },
+                    child: DecoratedBox(
+                      decoration: isCurr
+                          ? BoxDecoration(
+                              border: Border(
+                                bottom: BorderSide(
+                                  width: 2.0,
+                                  color: colorScheme.primary,
+                                ),
+                              ),
+                            )
+                          : const BoxDecoration(),
+                      child: Container(
+                        height: 46,
+                        alignment: .center,
+                        padding: const .symmetric(horizontal: 16),
+                        child: Text(
+                          e.label,
+                          style: isCurr
+                              ? TextStyle(
+                                  fontSize: 13,
+                                  color: colorScheme.primary,
+                                )
+                              : const TextStyle(fontSize: 13),
+                        ),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              );
+            },
+          ),
+        ),
+        _createDynamicBtn(),
+        const SizedBox(width: 16),
+      ],
+    );
+  }
+
+  @override
+  bool get wantKeepAlive => true;
 }

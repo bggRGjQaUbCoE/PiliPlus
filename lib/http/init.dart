@@ -15,6 +15,7 @@ import 'package:brotli/brotli.dart';
 import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
 import 'package:dio_http2_adapter/dio_http2_adapter.dart';
+import 'package:flutter/foundation.dart' show kDebugMode;
 
 abstract final class Request {
   static const _gzipDecoder = GZipDecoder();
@@ -163,15 +164,15 @@ abstract final class Request {
     }
 
     // 日志拦截器 输出请求、响应内容
-    // if (kDebugMode) {
-    //   dio.interceptors.add(
-    //     LogInterceptor(
-    //       request: false,
-    //       requestHeader: false,
-    //       responseHeader: false,
-    //     ),
-    //   );
-    // }
+    if (kDebugMode) {
+      dio.interceptors.add(
+        LogInterceptor(
+          request: false,
+          requestHeader: false,
+          responseHeader: false,
+        ),
+      );
+    }
 
     dio
       ..transformer = BackgroundTransformer()

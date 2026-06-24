@@ -311,13 +311,15 @@ abstract final class RequestUtils {
         await Future.delayed(const Duration(milliseconds: 450));
         final res = await DynamicsHttp.dynamicDetail(id: id);
         if (res case final Success<DynamicItemModel> e) {
-          final ctr = Get.find<DynamicsTabController>(tag: 'all');
-          if (ctr.loadingState.value case Success(:final response?)) {
-            response.insert(0, e.response);
-            ctr.loadingState.refresh();
-            return;
+          final ctr = Get.find<DynamicsTabController>();
+          if (ctr.dynamicsType.value == .all) {
+            if (ctr.loadingState.value case Success(:final response?)) {
+              response.insert(0, e.response);
+              ctr.loadingState.refresh();
+              return;
+            }
+            ctr.loadingState.value = Success([e.response]);
           }
-          ctr.loadingState.value = Success([e.response]);
         }
       } catch (e) {
         if (kDebugMode) debugPrint('create dyn $e');

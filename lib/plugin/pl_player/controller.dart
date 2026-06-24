@@ -766,11 +766,8 @@ class PlPlayerController with BlockConfigMixin {
     return player;
   }
 
-  Map<String, String>? _buffer;
-  Map<String, String> get buffer =>
-      _buffer ??= Pref.initBuffer(_playbackSpeed.value);
-  Map<String, String>? _liveBuffer;
-  Map<String, String> get liveBuffer => _liveBuffer ??= Pref.initLiveBuffer();
+  late final buffer = Pref.initBuffer(_playbackSpeed.value);
+  late final liveBuffer = Pref.initLiveBuffer();
 
   // 配置播放器
   Future<void> _createVideoController(
@@ -799,17 +796,14 @@ class PlPlayerController with BlockConfigMixin {
       }
     }
 
-    final Map<String, String> extras = {};
-
-    if (dataSource is FileSource) {
-      extras['cache'] = 'no';
-    } else {
-      if (isLive) {
-        extras.addAll(liveBuffer);
-      } else {
-        extras.addAll(buffer);
-      }
-    }
+    final Map<String, String> extras = {
+      if (dataSource is FileSource)
+        'cache': 'no'
+      else if (isLive)
+        ...liveBuffer
+      else
+        ...buffer,
+    };
 
     String video = dataSource.videoSource;
     if (dataSource.audioSource case final audio? when (audio.isNotEmpty)) {

@@ -98,7 +98,7 @@ class RenderLevel extends RenderBox {
       3 => const Color(0xFF7BCDEF),
       4 => const Color(0xFFFEBB8B),
       5 => const Color(0xFFEE672A),
-      _ => const Color(0xFFFF0000),
+      _ => const Color(0xFFF04C49),
     };
   }
 }
@@ -140,20 +140,21 @@ extension type LevelCanvas(Canvas _) implements Canvas {
   void drawBolt() => drawParagraph(_boltIcon, const Offset(840, 5));
 
   void _draw1(Paint paint) {
-    drawRRect(const .fromLTRBXY(673, _botY, 833, _botYB, 20, 20), paint);
-    drawRRect(
-      .fromLTRBAndCorners(
-        673,
-        _topY,
-        787,
-        _topYB,
-        topLeft: _r,
-        bottomLeft: _r,
-        topRight: _r,
-      ),
-      paint,
-    );
-    drawRect(const .fromLTRB(719, _topYB, 787, _botY), paint);
+    final path = Path()
+      ..addRRect(const .fromLTRBXY(673, _botY, 833, _botYB, 20, 20))
+      ..addRRect(
+        .fromLTRBAndCorners(
+          673,
+          _topY,
+          787,
+          _topYB,
+          topLeft: _r,
+          bottomLeft: _r,
+          topRight: _r,
+        ),
+      )
+      ..addRect(const .fromLTRB(719, _topYB, 787, _botY));
+    drawPath(path, paint);
   }
 
   void drawLEDigit(int digit, Paint paint) {
@@ -195,8 +196,9 @@ extension type LevelCanvas(Canvas _) implements Canvas {
     Paint paint,
   ) {
     // 横段
+    final path = Path();
     if (a) {
-      _drawRRect(
+      _addRRect(
         _left,
         _topY,
         _right,
@@ -205,11 +207,11 @@ extension type LevelCanvas(Canvas _) implements Canvas {
         _r,
         f ? .zero : _r,
         b ? .zero : _r,
-        paint,
+        path,
       );
     }
     if (g) {
-      _drawRRect(
+      _addRRect(
         _left,
         _midY,
         _right,
@@ -218,11 +220,11 @@ extension type LevelCanvas(Canvas _) implements Canvas {
         b ? .zero : _r,
         e ? .zero : _r,
         c ? .zero : _r,
-        paint,
+        path,
       );
     }
     if (d) {
-      _drawRRect(
+      _addRRect(
         _left,
         _botY,
         _right,
@@ -231,7 +233,7 @@ extension type LevelCanvas(Canvas _) implements Canvas {
         c ? .zero : _r,
         _r,
         _r,
-        paint,
+        path,
       );
     }
 
@@ -242,7 +244,7 @@ extension type LevelCanvas(Canvas _) implements Canvas {
       final bottom = g ? _midY : (e ? _midMid : _midYB);
       final rTop = a ? Radius.zero : _r;
       final rBot = g || e ? Radius.zero : _r;
-      _drawRRect(_left, top, _lColR, bottom, rTop, rTop, rBot, rBot, paint);
+      _addRRect(_left, top, _lColR, bottom, rTop, rTop, rBot, rBot, path);
     }
 
     // 右上竖段 b
@@ -251,7 +253,7 @@ extension type LevelCanvas(Canvas _) implements Canvas {
       final bottom = g ? _midY : (c ? _midMid : _midYB);
       final rTop = a ? Radius.zero : _r;
       final rBot = g || c ? Radius.zero : _r;
-      _drawRRect(_rColL, top, _right, bottom, rTop, rTop, rBot, rBot, paint);
+      _addRRect(_rColL, top, _right, bottom, rTop, rTop, rBot, rBot, path);
     }
 
     // 左下竖段 e
@@ -260,7 +262,7 @@ extension type LevelCanvas(Canvas _) implements Canvas {
       final bottom = d ? _botY : _botYB;
       final rTop = g || f ? Radius.zero : _r;
       final rBot = d ? Radius.zero : _r;
-      _drawRRect(_left, top, _lColR, bottom, rTop, rTop, rBot, rBot, paint);
+      _addRRect(_left, top, _lColR, bottom, rTop, rTop, rBot, rBot, path);
     }
 
     // 右下竖段 c
@@ -269,12 +271,14 @@ extension type LevelCanvas(Canvas _) implements Canvas {
       final bottom = d ? _botY : _botYB;
       final rTop = g || b ? Radius.zero : _r;
       final rBot = d ? Radius.zero : _r;
-      _drawRRect(_rColL, top, _right, bottom, rTop, rTop, rBot, rBot, paint);
+      _addRRect(_rColL, top, _right, bottom, rTop, rTop, rBot, rBot, path);
     }
+
+    drawPath(path, paint);
   }
 
   /// 绘制圆角矩形，四角全零时退化为矩形
-  void _drawRRect(
+  void _addRRect(
     double l,
     double t,
     double r,
@@ -283,12 +287,12 @@ extension type LevelCanvas(Canvas _) implements Canvas {
     Radius tr,
     Radius bl,
     Radius br,
-    Paint paint,
+    Path path,
   ) {
     if (tl == .zero && tr == .zero && bl == .zero && br == .zero) {
-      drawRect(.fromLTRB(l, t, r, b), paint);
+      path.addRect(.fromLTRB(l, t, r, b));
     } else {
-      drawRRect(
+      path.addRRect(
         .fromLTRBAndCorners(
           l,
           t,
@@ -299,7 +303,6 @@ extension type LevelCanvas(Canvas _) implements Canvas {
           bottomLeft: bl,
           bottomRight: br,
         ),
-        paint,
       );
     }
   }
@@ -315,62 +318,79 @@ extension type LevelCanvas(Canvas _) implements Canvas {
     )
     ..lineTo(395, 408)
     ..arcToPoint(
-      const Offset(420, 415.5), // 避免拼接裂缝, 实为419.5, 415
+      const Offset(419.5, 415),
       radius: const .circular(50),
       clockwise: false,
     )
-    ..lineTo(420, 340.5) // 419.5, 340
+    ..arcToPoint(
+      const Offset(444, 408),
+      radius: const .circular(50),
+      clockwise: false,
+    )
+    ..lineTo(539, 313)
+    ..arcToPoint(
+      const Offset(543, 292),
+      radius: const .circular(50),
+      clockwise: false,
+    )
+    ..lineTo(543, 282)
+    ..lineTo(476, 282)
+    ..lineTo(419.5, 340)
     ..lineTo(363, 282)
     ..close();
 
   void drawLevelLv(Paint paint) {
     const double lvTop = 106;
 
-    drawRRect(
-      .fromLTRBAndCorners(
-        56,
-        lvTop,
-        123,
-        _botYB,
-        topLeft: _r,
-        topRight: _r,
-        bottomLeft: _r,
-      ),
+    drawPath(
+      Path()
+        ..addRRect(
+          .fromLTRBAndCorners(
+            56,
+            lvTop,
+            123,
+            _botYB,
+            topLeft: _r,
+            topRight: _r,
+            bottomLeft: _r,
+          ),
+        )
+        ..addRRect(
+          .fromLTRBAndCorners(
+            123,
+            _botY,
+            256,
+            _botYB,
+            topRight: _r,
+            bottomRight: _r,
+          ),
+        ),
       paint,
     );
-    drawRRect(
-      .fromLTRBAndCorners(
-        123,
-        _botY,
-        256,
-        _botYB,
-        topRight: _r,
-        bottomRight: _r,
-      ),
-      paint,
-    );
 
-    final vL = RRect.fromLTRBAndCorners(
-      _vLeft,
-      lvTop,
-      363,
-      282,
-      topLeft: _r,
-      topRight: _r,
-    );
-
-    drawRRect(vL, paint);
-
-    const double vSymmetryX = 419.5;
-
-    drawPath(vV, paint);
-    save();
-    translate(vSymmetryX, 0);
-    scale(-1, 1);
-    translate(-vSymmetryX, 0);
-    drawRRect(vL, paint);
-    drawPath(vV, paint);
-    restore();
+    final path = Path()
+      ..addRRect(
+        RRect.fromLTRBAndCorners(
+          _vLeft,
+          lvTop,
+          363,
+          282,
+          topLeft: _r,
+          topRight: _r,
+        ),
+      )
+      ..addRRect(
+        RRect.fromLTRBAndCorners(
+          476,
+          lvTop,
+          543,
+          282,
+          topLeft: _r,
+          topRight: _r,
+        ),
+      )
+      ..addPath(vV, .zero);
+    drawPath(path, paint);
   }
 
   static const double _totalR = 930;
@@ -380,29 +400,29 @@ extension type LevelCanvas(Canvas _) implements Canvas {
   void drawLevelBack(Paint paint, {bool bolt = false}) {
     const radius = Radius.circular(27);
     final double right = bolt ? _extendR : _totalR;
-    drawRRect(
-      RRect.fromLTRBAndCorners(
-        0,
-        48,
-        right,
-        _totalB,
-        topLeft: radius,
-        bottomLeft: radius,
-        bottomRight: radius,
-      ),
-      paint,
-    );
-    drawRRect(
-      RRect.fromLTRBAndCorners(
-        576,
-        0,
-        right,
-        48,
-        topLeft: radius,
-        topRight: radius,
-      ),
-      paint,
-    );
+    final path = Path()
+      ..addRRect(
+        RRect.fromLTRBAndCorners(
+          0,
+          48,
+          right,
+          _totalB,
+          topLeft: radius,
+          bottomLeft: radius,
+          bottomRight: radius,
+        ),
+      )
+      ..addRRect(
+        RRect.fromLTRBAndCorners(
+          576,
+          0,
+          right,
+          48,
+          topLeft: radius,
+          topRight: radius,
+        ),
+      );
+    drawPath(path, paint);
 
     if (bolt) drawBolt();
   }

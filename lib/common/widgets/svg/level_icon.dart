@@ -1,3 +1,4 @@
+// dart format width=120
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -59,11 +60,11 @@ class RenderLevel extends RenderBox {
 
   @override
   Size computeDryLayout(covariant BoxConstraints constraints) {
-    return Size(
-      (_flash ? LevelCanvas._extendR : LevelCanvas._totalR) *
-          _height /
-          LevelCanvas._totalB,
-      _height,
+    return constraints.constrainSizeAndAttemptToPreserveAspectRatio(
+      Size(
+        (_flash ? LevelCanvas._extendR : LevelCanvas._totalR) * _height / LevelCanvas._totalB,
+        _height,
+      ),
     );
   }
 
@@ -141,18 +142,7 @@ extension type LevelCanvas(Canvas _) implements Canvas {
 
   void _draw1(Paint paint) {
     drawRRect(const .fromLTRBXY(673, _botY, 833, _botYB, 20, 20), paint);
-    drawRRect(
-      .fromLTRBAndCorners(
-        673,
-        _topY,
-        787,
-        _topYB,
-        topLeft: _r,
-        bottomLeft: _r,
-        topRight: _r,
-      ),
-      paint,
-    );
+    drawRRect(.fromLTRBAndCorners(673, _topY, 787, _topYB, topLeft: _r, bottomLeft: _r, topRight: _r), paint);
     drawRect(const .fromLTRB(719, _topYB, 787, _botY), paint);
   }
 
@@ -184,62 +174,23 @@ extension type LevelCanvas(Canvas _) implements Canvas {
     );
   }
 
-  void _drawSegments(
-    bool a,
-    bool b,
-    bool c,
-    bool d,
-    bool e,
-    bool f,
-    bool g,
-    Paint paint,
-  ) {
+  void _drawSegments(bool a, bool b, bool c, bool d, bool e, bool f, bool g, Paint paint) {
     // 横段
     if (a) {
-      _drawRRect(
-        _left,
-        _topY,
-        _right,
-        _topYB,
-        _r,
-        _r,
-        f ? .zero : _r,
-        b ? .zero : _r,
-        paint,
-      );
+      _drawRRect(_left, _topY, _right, _topYB, _r, _r, f ? .zero : _r, b ? .zero : _r, paint);
     }
     if (g) {
-      _drawRRect(
-        _left,
-        _midY,
-        _right,
-        _midYB,
-        f ? .zero : _r,
-        b ? .zero : _r,
-        e ? .zero : _r,
-        c ? .zero : _r,
-        paint,
-      );
+      _drawRRect(_left, _midY, _right, _midYB, f ? .zero : _r, b ? .zero : _r, e ? .zero : _r, c ? .zero : _r, paint);
     }
     if (d) {
-      _drawRRect(
-        _left,
-        _botY,
-        _right,
-        _botYB,
-        e ? .zero : _r,
-        c ? .zero : _r,
-        _r,
-        _r,
-        paint,
-      );
+      _drawRRect(_left, _botY, _right, _botYB, e ? .zero : _r, c ? .zero : _r, _r, _r, paint);
     }
 
     // 竖段
     // 左上竖段 f
     if (f) {
-      final top = a ? _topYB : _topY; // 有上横则齐底，否则到顶
-      final bottom = g ? _midY : (e ? _midMid : _midYB);
+      final top = (a ? _topYB : _topY) - 1; // 有上横则齐底，否则到顶
+      final bottom = (g ? _midY : (e ? _midMid : _midYB)) + 1;
       final rTop = a ? Radius.zero : _r;
       final rBot = g || e ? Radius.zero : _r;
       _drawRRect(_left, top, _lColR, bottom, rTop, rTop, rBot, rBot, paint);
@@ -247,8 +198,8 @@ extension type LevelCanvas(Canvas _) implements Canvas {
 
     // 右上竖段 b
     if (b) {
-      final top = a ? _topYB : _topY;
-      final bottom = g ? _midY : (c ? _midMid : _midYB);
+      final top = (a ? _topYB : _topY) - 1;
+      final bottom = (g ? _midY : (c ? _midMid : _midYB)) + 1;
       final rTop = a ? Radius.zero : _r;
       final rBot = g || c ? Radius.zero : _r;
       _drawRRect(_rColL, top, _right, bottom, rTop, rTop, rBot, rBot, paint);
@@ -256,8 +207,8 @@ extension type LevelCanvas(Canvas _) implements Canvas {
 
     // 左下竖段 e
     if (e) {
-      final top = g ? _midYB : (f ? _midMid : _midY);
-      final bottom = d ? _botY : _botYB;
+      final top = (g ? _midYB : (f ? _midMid : _midY)) - 1;
+      final bottom = (d ? _botY : _botYB) + 1;
       final rTop = g || f ? Radius.zero : _r;
       final rBot = d ? Radius.zero : _r;
       _drawRRect(_left, top, _lColR, bottom, rTop, rTop, rBot, rBot, paint);
@@ -265,8 +216,8 @@ extension type LevelCanvas(Canvas _) implements Canvas {
 
     // 右下竖段 c
     if (c) {
-      final top = g ? _midYB : (b ? _midMid : _midY);
-      final bottom = d ? _botY : _botYB;
+      final top = (g ? _midYB : (b ? _midMid : _midY)) - 1;
+      final bottom = (d ? _botY : _botYB) + 1;
       final rTop = g || b ? Radius.zero : _r;
       final rBot = d ? Radius.zero : _r;
       _drawRRect(_rColL, top, _right, bottom, rTop, rTop, rBot, rBot, paint);
@@ -274,33 +225,11 @@ extension type LevelCanvas(Canvas _) implements Canvas {
   }
 
   /// 绘制圆角矩形，四角全零时退化为矩形
-  void _drawRRect(
-    double l,
-    double t,
-    double r,
-    double b,
-    Radius tl,
-    Radius tr,
-    Radius bl,
-    Radius br,
-    Paint paint,
-  ) {
+  void _drawRRect(double l, double t, double r, double b, Radius tl, Radius tr, Radius bl, Radius br, Paint paint) {
     if (tl == .zero && tr == .zero && bl == .zero && br == .zero) {
       drawRect(.fromLTRB(l, t, r, b), paint);
     } else {
-      drawRRect(
-        .fromLTRBAndCorners(
-          l,
-          t,
-          r,
-          b,
-          topLeft: tl,
-          topRight: tr,
-          bottomLeft: bl,
-          bottomRight: br,
-        ),
-        paint,
-      );
+      drawRRect(.fromLTRBAndCorners(l, t, r, b, topLeft: tl, topRight: tr, bottomLeft: bl, bottomRight: br), paint);
     }
   }
 
@@ -311,69 +240,29 @@ extension type LevelCanvas(Canvas _) implements Canvas {
 
     const double vLeft = 296;
     const double lvTop = 106;
+    const double llr = 123;
+    const double vtb = 282;
 
     canvas
-      ..drawRRect(
-        .fromLTRBAndCorners(
-          56,
-          lvTop,
-          123,
-          _botYB,
-          topLeft: _r,
-          topRight: _r,
-          bottomLeft: _r,
-        ),
-        paint,
-      )
-      ..drawRRect(
-        .fromLTRBAndCorners(
-          123,
-          _botY,
-          256,
-          _botYB,
-          topRight: _r,
-          bottomRight: _r,
-        ),
-        paint,
-      )
-      ..drawRRect(
-        .fromLTRBAndCorners(vLeft, lvTop, 363, 282, topLeft: _r, topRight: _r),
-        paint,
-      )
-      ..drawRRect(
-        .fromLTRBAndCorners(476, lvTop, 543, 282, topLeft: _r, topRight: _r),
-        paint,
-      )
+      // L
+      ..drawRRect(.fromLTRBAndCorners(56, lvTop, llr, _botYB, topLeft: _r, topRight: _r, bottomLeft: _r), paint)
+      ..drawRRect(.fromLTRBAndCorners(llr - 1, _botY, 256, _botYB, topRight: _r, bottomRight: _r), paint)
+      // V
+      ..drawRRect(.fromLTRBAndCorners(vLeft, lvTop, 363, vtb + 1, topLeft: _r, topRight: _r), paint)
+      ..drawRRect(.fromLTRBAndCorners(476, lvTop, 543, vtb + 1, topLeft: _r, topRight: _r), paint)
       ..drawPath(
         Path()
-          ..moveTo(vLeft, 282)
+          ..moveTo(vLeft, vtb)
           ..lineTo(vLeft, 292)
-          ..arcToPoint(
-            const Offset(300, 313),
-            radius: const .circular(50),
-            clockwise: false,
-          )
+          ..arcToPoint(const Offset(300, 313), radius: const .circular(50), clockwise: false)
           ..lineTo(395, 408)
-          ..arcToPoint(
-            const Offset(419.5, 415),
-            radius: const .circular(50),
-            clockwise: false,
-          )
-          ..arcToPoint(
-            const Offset(444, 408),
-            radius: const .circular(50),
-            clockwise: false,
-          )
+          ..arcToPoint(const Offset(444, 408), radius: const .circular(50), clockwise: false)
           ..lineTo(539, 313)
-          ..arcToPoint(
-            const Offset(543, 292),
-            radius: const .circular(50),
-            clockwise: false,
-          )
-          ..lineTo(543, 282)
-          ..lineTo(476, 282)
+          ..arcToPoint(const Offset(543, 292), radius: const .circular(50), clockwise: false)
+          ..lineTo(543, vtb)
+          ..lineTo(476, vtb)
           ..lineTo(419.5, 340)
-          ..lineTo(363, 282)
+          ..lineTo(363, vtb)
           ..close(),
         paint,
       );
@@ -389,27 +278,13 @@ extension type LevelCanvas(Canvas _) implements Canvas {
   void drawLevelBack(Paint paint, {bool bolt = false}) {
     const radius = Radius.circular(27);
     final double right = bolt ? _extendR : _totalR;
+    const double blockTop = 48;
     drawRRect(
-      RRect.fromLTRBAndCorners(
-        0,
-        48,
-        right,
-        _totalB,
-        topLeft: radius,
-        bottomLeft: radius,
-        bottomRight: radius,
-      ),
+      RRect.fromLTRBAndCorners(0, blockTop, right, _totalB, topLeft: radius, bottomLeft: radius, bottomRight: radius),
       paint,
     );
     drawRRect(
-      RRect.fromLTRBAndCorners(
-        576,
-        0,
-        right,
-        48,
-        topLeft: radius,
-        topRight: radius,
-      ),
+      RRect.fromLTRBAndCorners(576, 0, right, blockTop + 1, topLeft: radius, topRight: radius),
       paint,
     );
 

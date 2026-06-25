@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:PiliPlus/common/assets.dart';
 import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
+import 'package:PiliPlus/common/widgets/dialog/simple_dialog_option.dart';
 import 'package:PiliPlus/common/widgets/flutter/list_tile.dart';
 import 'package:PiliPlus/common/widgets/pendant_avatar.dart';
 import 'package:PiliPlus/grpc/bilibili/app/im/v1.pb.dart'
@@ -62,7 +63,7 @@ class WhisperSessionItem extends StatelessWidget {
             clipBehavior: Clip.hardEdge,
             contentPadding: const EdgeInsets.symmetric(vertical: 12),
             children: [
-              SimpleDialogOption(
+              DialogOption(
                 onPressed: () {
                   Get.back();
                   onSetTop(item.isPinned, item.id);
@@ -70,7 +71,7 @@ class WhisperSessionItem extends StatelessWidget {
                 child: Text(item.isPinned ? '移除置顶' : '置顶'),
               ),
               if (item.id.privateId.hasTalkerUid())
-                SimpleDialogOption(
+                DialogOption(
                   onPressed: () {
                     Get.back();
                     onSetMute(item.isMuted, item.id.privateId.talkerUid);
@@ -78,7 +79,7 @@ class WhisperSessionItem extends StatelessWidget {
                   child: Text('${item.isMuted ? '关闭' : '开启'}免打扰'),
                 ),
               if (item.id.privateId.hasTalkerUid())
-                SimpleDialogOption(
+                DialogOption(
                   onPressed: () {
                     Get.back();
                     showConfirmDialog(

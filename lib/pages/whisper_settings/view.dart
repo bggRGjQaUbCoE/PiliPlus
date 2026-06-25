@@ -1,3 +1,4 @@
+import 'package:PiliPlus/common/widgets/dialog/simple_dialog_option.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
 import 'package:PiliPlus/grpc/bilibili/app/im/v1.pb.dart'
     show IMSettingType, Setting;
@@ -90,7 +91,7 @@ class _WhisperSettingsPageState extends State<WhisperSettingsPage> {
               if (e.selected) {
                 selected ??= e.text;
               }
-              return SimpleDialogOption(
+              return DialogOption(
                 onPressed: () async {
                   if (!e.selected) {
                     Get.back();

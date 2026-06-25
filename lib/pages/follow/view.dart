@@ -1,4 +1,5 @@
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
+import 'package:PiliPlus/common/widgets/dialog/simple_dialog_option.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart';
 import 'package:PiliPlus/common/widgets/view_safe_area.dart';
@@ -198,7 +199,7 @@ class _FollowPageState extends State<FollowPage> {
         clipBehavior: Clip.hardEdge,
         contentPadding: const EdgeInsets.symmetric(vertical: 12),
         children: [
-          SimpleDialogOption(
+          DialogOption(
             onPressed: () {
               Get.back();
               String tagName = item.name!;
@@ -223,7 +224,7 @@ class _FollowPageState extends State<FollowPage> {
             },
             child: const Text('修改名称', style: TextStyle(fontSize: 14)),
           ),
-          SimpleDialogOption(
+          DialogOption(
             onPressed: () {
               Get.back();
               showConfirmDialog(

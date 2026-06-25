@@ -18,6 +18,7 @@
 import 'dart:io' show File, Platform;
 
 import 'package:PiliPlus/common/widgets/colored_box_transition.dart';
+import 'package:PiliPlus/common/widgets/dialog/simple_dialog_option.dart';
 import 'package:PiliPlus/common/widgets/flutter/page/page_view.dart';
 import 'package:PiliPlus/common/widgets/gesture/image_horizontal_drag_gesture_recognizer.dart';
 import 'package:PiliPlus/common/widgets/image_viewer/image.dart';
@@ -539,21 +540,21 @@ class _GalleryViewerState extends State<GalleryViewer>
         contentPadding: const EdgeInsets.symmetric(vertical: 12),
         children: [
           if (PlatformUtils.isMobile)
-            SimpleDialogOption(
+            DialogOption(
               onPressed: () {
                 Get.back();
                 ImageUtils.onShareImg(item.url);
               },
               child: const Text('分享', style: TextStyle(fontSize: 14)),
             ),
-          SimpleDialogOption(
+          DialogOption(
             onPressed: () {
               Get.back();
               Utils.copyText(item.url);
             },
             child: const Text('复制链接', style: TextStyle(fontSize: 14)),
           ),
-          SimpleDialogOption(
+          DialogOption(
             onPressed: () {
               Get.back();
               ImageUtils.downloadImg([item.url]);
@@ -561,7 +562,7 @@ class _GalleryViewerState extends State<GalleryViewer>
             child: const Text('保存图片', style: TextStyle(fontSize: 14)),
           ),
           if (PlatformUtils.isDesktop)
-            SimpleDialogOption(
+            DialogOption(
               onPressed: () {
                 Get.back();
                 PageUtils.launchURL(item.url);
@@ -569,7 +570,7 @@ class _GalleryViewerState extends State<GalleryViewer>
               child: const Text('网页打开', style: TextStyle(fontSize: 14)),
             )
           else if (widget.sources.length > 1)
-            SimpleDialogOption(
+            DialogOption(
               onPressed: () {
                 Get.back();
                 ImageUtils.downloadImg(
@@ -579,7 +580,7 @@ class _GalleryViewerState extends State<GalleryViewer>
               child: const Text('保存全部图片', style: TextStyle(fontSize: 14)),
             ),
           if (item.sourceType == SourceType.livePhoto)
-            SimpleDialogOption(
+            DialogOption(
               onPressed: () {
                 Get.back();
                 ImageUtils.downloadLivePhoto(

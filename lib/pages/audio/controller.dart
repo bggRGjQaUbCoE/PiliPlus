@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:PiliPlus/common/constants.dart';
+import 'package:PiliPlus/common/widgets/dialog/simple_dialog_option.dart';
 import 'package:PiliPlus/grpc/audio.dart';
 import 'package:PiliPlus/grpc/bilibili/app/listener/v1.pb.dart'
     show
@@ -537,14 +538,14 @@ class AudioController extends GetxController
         clipBehavior: Clip.hardEdge,
         contentPadding: const EdgeInsets.symmetric(vertical: 12),
         children: [
-          SimpleDialogOption(
+          DialogOption(
             child: const Text('复制链接', style: TextStyle(fontSize: 14)),
             onPressed: () {
               Get.back();
               Utils.copyText(audioUrl);
             },
           ),
-          SimpleDialogOption(
+          DialogOption(
             child: const Text('其它app打开', style: TextStyle(fontSize: 14)),
             onPressed: () {
               Get.back();
@@ -552,7 +553,7 @@ class AudioController extends GetxController
             },
           ),
           if (PlatformUtils.isMobile)
-            SimpleDialogOption(
+            DialogOption(
               child: const Text('分享视频', style: TextStyle(fontSize: 14)),
               onPressed: () {
                 Get.back();
@@ -568,7 +569,7 @@ class AudioController extends GetxController
                 }
               },
             ),
-          SimpleDialogOption(
+          DialogOption(
             child: const Text('分享至动态', style: TextStyle(fontSize: 14)),
             onPressed: () {
               Get.back();
@@ -592,7 +593,7 @@ class AudioController extends GetxController
             },
           ),
           if (isUgc)
-            SimpleDialogOption(
+            DialogOption(
               child: const Text('分享至消息', style: TextStyle(fontSize: 14)),
               onPressed: () {
                 Get.back();

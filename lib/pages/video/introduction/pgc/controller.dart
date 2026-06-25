@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math' show max;
 
+import 'package:PiliPlus/common/widgets/dialog/simple_dialog_option.dart';
 import 'package:PiliPlus/http/constants.dart';
 import 'package:PiliPlus/http/fav.dart';
 import 'package:PiliPlus/http/loading_state.dart';
@@ -127,14 +128,14 @@ class PgcIntroController extends CommonIntroController {
         clipBehavior: Clip.hardEdge,
         contentPadding: const EdgeInsets.symmetric(vertical: 12),
         children: [
-          SimpleDialogOption(
+          DialogOption(
             child: const Text('复制链接', style: TextStyle(fontSize: 14)),
             onPressed: () {
               Get.back();
               Utils.copyText(videoUrl);
             },
           ),
-          SimpleDialogOption(
+          DialogOption(
             child: const Text('其它app打开', style: TextStyle(fontSize: 14)),
             onPressed: () {
               Get.back();
@@ -142,7 +143,7 @@ class PgcIntroController extends CommonIntroController {
             },
           ),
           if (PlatformUtils.isMobile)
-            SimpleDialogOption(
+            DialogOption(
               child: const Text('分享视频', style: TextStyle(fontSize: 14)),
               onPressed: () {
                 final item = pgcItem.episodes?.firstWhereOrNull(
@@ -155,7 +156,7 @@ class PgcIntroController extends CommonIntroController {
                 );
               },
             ),
-          SimpleDialogOption(
+          DialogOption(
             child: const Text('分享至动态', style: TextStyle(fontSize: 14)),
             onPressed: () {
               Get.back();
@@ -193,7 +194,7 @@ class PgcIntroController extends CommonIntroController {
               );
             },
           ),
-          SimpleDialogOption(
+          DialogOption(
             child: const Text(
               '分享至消息',
               style: TextStyle(fontSize: 14),

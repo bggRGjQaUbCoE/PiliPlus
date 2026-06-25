@@ -1,6 +1,7 @@
 import 'dart:async' show StreamSubscription, Timer;
 import 'dart:math' as math;
 
+import 'package:PiliPlus/common/widgets/dialog/simple_dialog_option.dart';
 import 'package:PiliPlus/common/widgets/progress_bar/segment_progress_bar.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/sponsor_block.dart';
@@ -289,21 +290,21 @@ mixin BlockMixin on GetxController {
         clipBehavior: Clip.hardEdge,
         contentPadding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
         children: [
-          SimpleDialogOption(
+          DialogOption(
             child: const Text('赞成票', style: TextStyle(fontSize: 14)),
             onPressed: () {
               Get.back();
               _doVote(segment.uuid, 1);
             },
           ),
-          SimpleDialogOption(
+          DialogOption(
             child: const Text('反对票', style: TextStyle(fontSize: 14)),
             onPressed: () {
               Get.back();
               _doVote(segment.uuid, 0);
             },
           ),
-          SimpleDialogOption(
+          DialogOption(
             child: const Text('更改类别', style: TextStyle(fontSize: 14)),
             onPressed: () {
               Get.back();

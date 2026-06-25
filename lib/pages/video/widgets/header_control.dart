@@ -7,6 +7,7 @@ import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/widgets/button/icon_button.dart';
 import 'package:PiliPlus/common/widgets/custom_icon.dart';
 import 'package:PiliPlus/common/widgets/dialog/report.dart';
+import 'package:PiliPlus/common/widgets/dialog/simple_dialog_option.dart';
 import 'package:PiliPlus/common/widgets/marquee.dart';
 import 'package:PiliPlus/http/danmaku.dart';
 import 'package:PiliPlus/http/danmaku_block.dart';
@@ -1143,11 +1144,11 @@ class HeaderControlState extends State<HeaderControl>
       builder: (context) => SimpleDialog(
         title: const Text('选择格式'),
         children: [
-          SimpleDialogOption(
+          DialogOption(
             onPressed: () => Get.back(result: _SubtitleFormat.json),
             child: const Text('JSON'),
           ),
-          SimpleDialogOption(
+          DialogOption(
             onPressed: () => Get.back(result: _SubtitleFormat.vtt),
             child: const Text('WEBVTT'),
           ),
@@ -1167,7 +1168,7 @@ class HeaderControlState extends State<HeaderControl>
           title: const Text('保存字幕'),
           children: List.generate(subtitles.length, (i) {
             final item = subtitles[i];
-            return SimpleDialogOption(
+            return DialogOption(
               onPressed: () async {
                 Get.back();
                 final url = item.subtitleUrl;

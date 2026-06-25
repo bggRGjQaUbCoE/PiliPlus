@@ -1,3 +1,4 @@
+import 'package:PiliPlus/common/widgets/dialog/simple_dialog_option.dart';
 import 'package:PiliPlus/models/common/pgc_review_type.dart';
 import 'package:PiliPlus/pages/pgc_review/child/controller.dart';
 import 'package:PiliPlus/pages/pgc_review/child/view.dart';
@@ -119,7 +120,7 @@ class _PgcReviewPageState extends State<PgcReviewPage>
                 clipBehavior: Clip.hardEdge,
                 contentPadding: const EdgeInsets.symmetric(vertical: 12),
                 children: [
-                  SimpleDialogOption(
+                  DialogOption(
                     child: const Text('写短评', style: TextStyle(fontSize: 14)),
                     onPressed: () {
                       Get.back();
@@ -136,7 +137,7 @@ class _PgcReviewPageState extends State<PgcReviewPage>
                       );
                     },
                   ),
-                  SimpleDialogOption(
+                  DialogOption(
                     child: const Text('写长评', style: TextStyle(fontSize: 14)),
                     onPressed: () => Get
                       ..back()

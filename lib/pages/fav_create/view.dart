@@ -1,5 +1,6 @@
 import 'dart:io' show File;
 
+import 'package:PiliPlus/common/widgets/dialog/simple_dialog_option.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
 import 'package:PiliPlus/http/fav.dart';
@@ -199,7 +200,7 @@ class _CreateFavPageState extends State<CreateFavPage> {
                             clipBehavior: Clip.hardEdge,
                             contentPadding: const .symmetric(vertical: 12),
                             children: [
-                              SimpleDialogOption(
+                              DialogOption(
                                 onPressed: () {
                                   Get.back();
                                   _pickImg(context, theme);
@@ -209,7 +210,7 @@ class _CreateFavPageState extends State<CreateFavPage> {
                                   style: TextStyle(fontSize: 14),
                                 ),
                               ),
-                              SimpleDialogOption(
+                              DialogOption(
                                 onPressed: () {
                                   Get.back();
                                   _cover = null;

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
+import 'package:PiliPlus/common/widgets/dialog/simple_dialog_option.dart';
 import 'package:PiliPlus/grpc/bilibili/im/type.pbenum.dart';
 import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
     show ReplyInfo;
@@ -173,7 +174,7 @@ abstract final class RequestUtils {
             clipBehavior: Clip.hardEdge,
             contentPadding: const EdgeInsets.symmetric(vertical: 12),
             children: [
-              SimpleDialogOption(
+              DialogOption(
                 onPressed: () async {
                   Get.back();
                   final res = await MemberHttp.specialAction(
@@ -189,7 +190,7 @@ abstract final class RequestUtils {
                 },
                 child: Text(text, style: const TextStyle(fontSize: 14)),
               ),
-              SimpleDialogOption(
+              DialogOption(
                 onPressed: () async {
                   Get.back();
                   final result = await showModalBottomSheet<Set<int>>(
@@ -229,7 +230,7 @@ abstract final class RequestUtils {
                 },
                 child: const Text('设置分组', style: TextStyle(fontSize: 14)),
               ),
-              SimpleDialogOption(
+              DialogOption(
                 onPressed: () async {
                   Get.back();
                   final res = await VideoHttp.relationMod(

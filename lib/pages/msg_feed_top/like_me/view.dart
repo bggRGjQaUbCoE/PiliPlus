@@ -1,5 +1,6 @@
 import 'package:PiliPlus/common/skeleton/msg_feed_top.dart';
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
+import 'package:PiliPlus/common/widgets/dialog/simple_dialog_option.dart';
 import 'package:PiliPlus/common/widgets/flutter/list_tile.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
@@ -196,7 +197,7 @@ class _LikeMePageState extends State<LikeMePage> {
           clipBehavior: Clip.hardEdge,
           contentPadding: const EdgeInsets.symmetric(vertical: 12),
           children: [
-            SimpleDialogOption(
+            DialogOption(
               onPressed: () {
                 Get.back();
                 showConfirmDialog(
@@ -208,7 +209,7 @@ class _LikeMePageState extends State<LikeMePage> {
               },
               child: const Text('删除', style: TextStyle(fontSize: 14)),
             ),
-            SimpleDialogOption(
+            DialogOption(
               onPressed: () {
                 Get.back();
                 if (isNotice) {

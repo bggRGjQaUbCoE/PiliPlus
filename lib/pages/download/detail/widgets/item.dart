@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
+import 'package:PiliPlus/common/widgets/dialog/simple_dialog_option.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/progress_bar/video_progress_indicator.dart';
 import 'package:PiliPlus/common/widgets/select_mask.dart';
@@ -65,7 +66,7 @@ class DetailItem extends StatelessWidget {
               clipBehavior: Clip.hardEdge,
               contentPadding: const EdgeInsets.symmetric(vertical: 12),
               children: [
-                SimpleDialogOption(
+                DialogOption(
                   onPressed: () {
                     Get.back();
                     showConfirmDialog(
@@ -76,7 +77,7 @@ class DetailItem extends StatelessWidget {
                   },
                   child: const Text('删除', style: TextStyle(fontSize: 14)),
                 ),
-                SimpleDialogOption(
+                DialogOption(
                   onPressed: () async {
                     Get.back();
                     final res = await downloadService.downloadDanmaku(

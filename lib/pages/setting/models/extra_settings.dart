@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:math' show max;
 
 import 'package:PiliPlus/common/widgets/custom_icon.dart';
+import 'package:PiliPlus/common/widgets/dialog/simple_dialog_option.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/gesture/horizontal_drag_gesture_recognizer.dart'
     show deviceTouchSlop, touchSlopH;
@@ -716,14 +717,14 @@ void _showDownPathDialog(BuildContext context, VoidCallback setState) {
       clipBehavior: Clip.hardEdge,
       contentPadding: const EdgeInsets.symmetric(vertical: 12),
       children: [
-        SimpleDialogOption(
+        DialogOption(
           onPressed: () {
             Get.back();
             Utils.copyText(downloadPath);
           },
           child: const Text('复制', style: TextStyle(fontSize: 14)),
         ),
-        SimpleDialogOption(
+        DialogOption(
           onPressed: () {
             Get.back();
             final defPath = defDownloadPath;
@@ -735,7 +736,7 @@ void _showDownPathDialog(BuildContext context, VoidCallback setState) {
           },
           child: const Text('重置', style: TextStyle(fontSize: 14)),
         ),
-        SimpleDialogOption(
+        DialogOption(
           onPressed: () async {
             Get.back();
             final path = await FilePicker.getDirectoryPath();

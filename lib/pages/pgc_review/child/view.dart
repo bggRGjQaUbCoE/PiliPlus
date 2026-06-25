@@ -2,6 +2,7 @@ import 'package:PiliPlus/common/skeleton/video_reply.dart';
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/custom_icon.dart';
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
+import 'package:PiliPlus/common/widgets/dialog/simple_dialog_option.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
@@ -125,7 +126,7 @@ class _PgcReviewChildPageState extends State<PgcReviewChildPage>
         contentPadding: const EdgeInsets.symmetric(vertical: 12),
         children: [
           if (item.author!.mid == Accounts.main.mid) ...[
-            SimpleDialogOption(
+            DialogOption(
               child: const Text('编辑', style: TextStyle(fontSize: 14)),
               onPressed: () {
                 Get.back();
@@ -145,7 +146,7 @@ class _PgcReviewChildPageState extends State<PgcReviewChildPage>
                 );
               },
             ),
-            SimpleDialogOption(
+            DialogOption(
               child: const Text('删除', style: TextStyle(fontSize: 14)),
               onPressed: () {
                 Get.back();
@@ -157,7 +158,7 @@ class _PgcReviewChildPageState extends State<PgcReviewChildPage>
               },
             ),
           ],
-          SimpleDialogOption(
+          DialogOption(
             child: const Text('举报', style: TextStyle(fontSize: 14)),
             onPressed: () => Get
               ..back()

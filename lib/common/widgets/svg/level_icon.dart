@@ -79,7 +79,7 @@ class RenderLevel extends RenderBox {
     LevelCanvas(context.canvas)
       ..save()
       ..translate(offset.dx, offset.dy)
-      ..scale(_height / LevelCanvas._totalB)
+      ..scale(size.height / LevelCanvas._totalB)
       ..drawLevelBack(paint, bolt: _flash)
       ..drawLevelLv()
       ..drawLEDigit(_level, paint..color = Colors.white)

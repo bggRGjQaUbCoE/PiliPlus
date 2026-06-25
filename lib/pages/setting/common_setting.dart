@@ -1,4 +1,5 @@
 import 'package:PiliPlus/models/common/setting_type.dart';
+import 'package:PiliPlus/pages/setting/models/model.dart';
 import 'package:flutter/material.dart';
 
 class CommonSetting extends StatefulWidget {
@@ -16,10 +17,17 @@ class CommonSetting extends StatefulWidget {
 }
 
 class _CommonSettingState extends State<CommonSetting> {
+  late final List<SettingsModel> settings;
+
+  @override
+  void initState() {
+    super.initState();
+    settings = widget.settingType.settings;
+  }
+
   @override
   Widget build(BuildContext context) {
     final showAppBar = widget.showAppBar;
-    final settings = widget.settingType.settings;
     final padding = MediaQuery.viewPaddingOf(context);
     return Scaffold(
       resizeToAvoidBottomInset: false,

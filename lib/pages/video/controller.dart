@@ -816,30 +816,6 @@ class VideoDetailController extends GetxController
     queryVideoUrl(fromReset: true);
   }
 
-  static VideoDecodeFormatType selectCodec(
-    Iterable<String> codecs,
-    List<VideoDecodeFormatType> preferCodecs,
-  ) {
-    if (preferCodecs.isNotEmpty) {
-      int bestIndex = preferCodecs.length;
-      for (final e in codecs) {
-        for (int i = 0; i < bestIndex; i++) {
-          if (preferCodecs[i].codes.any(e.startsWith)) {
-            bestIndex = i;
-            if (bestIndex == 0) {
-              return preferCodecs[0];
-            }
-            break;
-          }
-        }
-      }
-      if (bestIndex < preferCodecs.length) {
-        return preferCodecs[bestIndex];
-      }
-    }
-    return VideoDecodeFormatType.fromString(codecs.first);
-  }
-
   Volume? volume;
 
   // 视频链接
@@ -960,7 +936,7 @@ class VideoDetailController extends GetxController
       final supportFormats = data.supportFormats!;
 
       // 根据画质选编码格式
-      currentDecodeFormats = selectCodec(
+      currentDecodeFormats = VideoUtils.selectCodec(
         supportFormats
             .firstWhere(
               (e) => e.quality == targetVideoQa,

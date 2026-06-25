@@ -7,7 +7,6 @@ import 'package:PiliPlus/models/common/video/video_type.dart';
 import 'package:PiliPlus/models/video/play/url.dart';
 import 'package:PiliPlus/models_new/download/bili_download_entry_info.dart';
 import 'package:PiliPlus/models_new/download/bili_download_media_file_info.dart';
-import 'package:PiliPlus/pages/video/controller.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
@@ -63,7 +62,7 @@ abstract final class DownloadHttp {
           orElse: () => supportFormats.first,
         );
 
-        final currentDecodeFormats = VideoDetailController.selectCodec(
+        final currentDecodeFormats = VideoUtils.selectCodec(
           targetSupportFormats.codecs!,
           Pref.preferCodecs,
         );

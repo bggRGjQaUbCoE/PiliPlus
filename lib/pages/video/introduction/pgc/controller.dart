@@ -156,20 +156,21 @@ class PgcIntroController extends CommonIntroController {
                 );
               },
             ),
-          DialogOption(
-            child: const Text('分享至动态', style: TextStyle(fontSize: 14)),
-            onPressed: () {
-              Get.back();
-              final item = pgcItem.episodes?.firstWhereOrNull(
-                (item) => item.epId == epId,
-              );
-              showModalBottomSheet(
-                context: context,
-                isScrollControlled: true,
-                useSafeArea: true,
-                builder: (context) => RepostPanel(
-                  rid: epId,
-                  /*
+          if (isLogin)
+            DialogOption(
+              child: const Text('分享至动态', style: TextStyle(fontSize: 14)),
+              onPressed: () {
+                Get.back();
+                final item = pgcItem.episodes?.firstWhereOrNull(
+                  (item) => item.epId == epId,
+                );
+                showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  useSafeArea: true,
+                  builder: (context) => RepostPanel(
+                    rid: epId,
+                    /*
                     1：番剧 // 4097
                     2：电影 // 4098
                     3：纪录片 // 4101
@@ -178,62 +179,63 @@ class PgcIntroController extends CommonIntroController {
                     6：漫画
                     7：综艺 // 4099
                   */
-                  dynType: switch (pgcItem.type) {
-                    1 => 4097,
-                    2 => 4098,
-                    3 => 4101,
-                    4 => 4100,
-                    5 || 7 => 4099,
-                    _ => -1,
-                  },
-                  pic: pgcItem.cover,
-                  title:
-                      '${pgcItem.title}${item != null ? '\n${item.showTitle}' : ''}',
-                  uname: '',
-                ),
-              );
-            },
-          ),
-          DialogOption(
-            child: const Text(
-              '分享至消息',
-              style: TextStyle(fontSize: 14),
-            ),
-            onPressed: () {
-              Get.back();
-              try {
-                final item = pgcItem.episodes!.firstWhere(
-                  (item) => item.epId == epId,
-                );
-                final title =
-                    item.shareCopy ??
-                    '${pgcItem.title} ${item.showTitle ?? item.longTitle}';
-                PageUtils.pmShare(
-                  context,
-                  content: {
-                    "id": epId!.toString(),
-                    "title": title,
-                    "url": item.shareUrl,
-                    "headline": title,
-                    "source": 16,
-                    "thumb": item.cover,
-                    "source_desc": switch (pgcItem.type) {
-                      1 => '番剧',
-                      2 => '电影',
-                      3 => '纪录片',
-                      4 => '国创',
-                      5 => '电视剧',
-                      6 => '漫画',
-                      7 => '综艺',
-                      _ => null,
+                    dynType: switch (pgcItem.type) {
+                      1 => 4097,
+                      2 => 4098,
+                      3 => 4101,
+                      4 => 4100,
+                      5 || 7 => 4099,
+                      _ => -1,
                     },
-                  },
+                    pic: pgcItem.cover,
+                    title:
+                        '${pgcItem.title}${item != null ? '\n${item.showTitle}' : ''}',
+                    uname: '',
+                  ),
                 );
-              } catch (e) {
-                SmartDialog.showToast(e.toString());
-              }
-            },
-          ),
+              },
+            ),
+          if (isLogin)
+            DialogOption(
+              child: const Text(
+                '分享至消息',
+                style: TextStyle(fontSize: 14),
+              ),
+              onPressed: () {
+                Get.back();
+                try {
+                  final item = pgcItem.episodes!.firstWhere(
+                    (item) => item.epId == epId,
+                  );
+                  final title =
+                      item.shareCopy ??
+                      '${pgcItem.title} ${item.showTitle ?? item.longTitle}';
+                  PageUtils.pmShare(
+                    context,
+                    content: {
+                      "id": epId!.toString(),
+                      "title": title,
+                      "url": item.shareUrl,
+                      "headline": title,
+                      "source": 16,
+                      "thumb": item.cover,
+                      "source_desc": switch (pgcItem.type) {
+                        1 => '番剧',
+                        2 => '电影',
+                        3 => '纪录片',
+                        4 => '国创',
+                        5 => '电视剧',
+                        6 => '漫画',
+                        7 => '综艺',
+                        _ => null,
+                      },
+                    },
+                  );
+                } catch (e) {
+                  SmartDialog.showToast(e.toString());
+                }
+              },
+            ),
         ],
       ),
     );

@@ -569,30 +569,31 @@ class AudioController extends GetxController
                 }
               },
             ),
-          DialogOption(
-            child: const Text('分享至动态', style: TextStyle(fontSize: 14)),
-            onPressed: () {
-              Get.back();
-              if (audioItem.value case DetailItem(
-                :final arc,
-                :final owner,
-              )) {
-                showModalBottomSheet(
-                  context: context,
-                  isScrollControlled: true,
-                  useSafeArea: true,
-                  builder: (context) => RepostPanel(
-                    rid: oid.toInt(),
-                    dynType: isUgc ? 8 : 256,
-                    pic: arc.cover,
-                    title: arc.title,
-                    uname: owner.name,
-                  ),
-                );
-              }
-            },
-          ),
-          if (isUgc)
+          if (isLogin)
+            DialogOption(
+              child: const Text('分享至动态', style: TextStyle(fontSize: 14)),
+              onPressed: () {
+                Get.back();
+                if (audioItem.value case DetailItem(
+                  :final arc,
+                  :final owner,
+                )) {
+                  showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    useSafeArea: true,
+                    builder: (context) => RepostPanel(
+                      rid: oid.toInt(),
+                      dynType: isUgc ? 8 : 256,
+                      pic: arc.cover,
+                      title: arc.title,
+                      uname: owner.name,
+                    ),
+                  );
+                }
+              },
+            ),
+          if (isUgc && isLogin)
             DialogOption(
               child: const Text('分享至消息', style: TextStyle(fontSize: 14)),
               onPressed: () {

@@ -344,54 +344,56 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
                 );
               },
             ),
-          ListTile(
-            dense: true,
-            title: const Text(
-              '分享至动态',
-              style: TextStyle(fontSize: 14),
-            ),
-            onTap: () {
-              Get.back();
-              showModalBottomSheet(
-                context: context,
-                isScrollControlled: true,
-                useSafeArea: true,
-                builder: (context) => RepostPanel(
-                  rid: videoDetail.aid,
-                  dynType: 8,
-                  pic: videoDetail.pic,
-                  title: videoDetail.title,
-                  uname: videoDetail.owner?.name,
-                ),
-              );
-            },
-          ),
-          ListTile(
-            dense: true,
-            title: const Text(
-              '分享至消息',
-              style: TextStyle(fontSize: 14),
-            ),
-            onTap: () {
-              Get.back();
-              try {
-                PageUtils.pmShare(
-                  context,
-                  content: {
-                    "id": videoDetail.aid!.toString(),
-                    "title": videoDetail.title!,
-                    "headline": videoDetail.title!,
-                    "source": 5,
-                    "thumb": videoDetail.pic!,
-                    "author": videoDetail.owner!.name!,
-                    "author_id": videoDetail.owner!.mid!.toString(),
-                  },
+          if (isLogin)
+            ListTile(
+              dense: true,
+              title: const Text(
+                '分享至动态',
+                style: TextStyle(fontSize: 14),
+              ),
+              onTap: () {
+                Get.back();
+                showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  useSafeArea: true,
+                  builder: (context) => RepostPanel(
+                    rid: videoDetail.aid,
+                    dynType: 8,
+                    pic: videoDetail.pic,
+                    title: videoDetail.title,
+                    uname: videoDetail.owner?.name,
+                  ),
                 );
-              } catch (e) {
-                SmartDialog.showToast(e.toString());
-              }
-            },
-          ),
+              },
+            ),
+          if (isLogin)
+            ListTile(
+              dense: true,
+              title: const Text(
+                '分享至消息',
+                style: TextStyle(fontSize: 14),
+              ),
+              onTap: () {
+                Get.back();
+                try {
+                  PageUtils.pmShare(
+                    context,
+                    content: {
+                      "id": videoDetail.aid!.toString(),
+                      "title": videoDetail.title!,
+                      "headline": videoDetail.title!,
+                      "source": 5,
+                      "thumb": videoDetail.pic!,
+                      "author": videoDetail.owner!.name!,
+                      "author_id": videoDetail.owner!.mid!.toString(),
+                    },
+                  );
+                } catch (e) {
+                  SmartDialog.showToast(e.toString());
+                }
+              },
+            ),
         ],
       ),
     );

@@ -232,18 +232,19 @@ class LiveRoomController extends GetxController {
     final pref = Pref.liveStream;
     if (pref != null) {
       try {
-        final protocolName = pref[0];
-        final formatName = pref[1];
-        final codecName = pref[2];
-        for (var i in stream.indexed) {
-          if (i.$2.protocolName == protocolName) {
-            streamIndex = i.$1;
-            for (var j in i.$2.format.indexed) {
-              if (j.$2.formatName == formatName) {
-                formatIndex = j.$1;
-                for (var k in j.$2.codec.indexed) {
-                  if (k.$2.codecName == codecName) {
-                    codecIndex = k.$1;
+        final String protocolName = pref[0];
+        final String formatName = pref[1];
+        final String codecName = pref[2];
+        for (var (i, s) in stream.indexed) {
+          if (s.protocolName == protocolName) {
+            streamIndex = i;
+            for (var (j, f) in s.format.indexed) {
+              if (f.formatName == formatName) {
+                formatIndex = j;
+                for (var (k, c) in f.codec.indexed) {
+                  if (c.codecName == codecName) {
+                    codecIndex = k;
+                    return;
                   }
                 }
               }

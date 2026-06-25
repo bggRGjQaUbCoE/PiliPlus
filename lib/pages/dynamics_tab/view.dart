@@ -105,6 +105,7 @@ class _DynamicsTabPageState extends State<DynamicsTabPage>
                                 controller.onRemove(index, idStr),
                             onBlock: () => controller.onBlock(index),
                             onUnfold: () => controller.onUnfold(item, index),
+                            onAddBanWord: controller.onAddBanWords,
                           );
                         },
                         childCount: response.length,
@@ -122,6 +123,7 @@ class _DynamicsTabPageState extends State<DynamicsTabPage>
                               controller.onRemove(index, idStr),
                           onBlock: () => controller.onBlock(index),
                           onUnfold: () => controller.onUnfold(item, index),
+                          onAddBanWord: controller.onAddBanWords,
                         );
                       },
                       itemCount: response.length,

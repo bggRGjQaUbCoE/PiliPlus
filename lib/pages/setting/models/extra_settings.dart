@@ -225,8 +225,13 @@ List<SettingsModel> get extraSettings => [
     title: '动态关键词过滤',
     key: SettingBoxKey.banWordForDyn,
     onChanged: (value) {
-      DynamicsDataModel.banWordForDyn = value;
-      DynamicsDataModel.enableFilter = value.pattern.isNotEmpty;
+      final escaped = value.pattern
+          .split('|')
+          .where((w) => w.isNotEmpty)
+          .map(RegExp.escape)
+          .join('|');
+      DynamicsDataModel.banWordForDyn = RegExp(escaped, caseSensitive: false);
+      DynamicsDataModel.enableFilter = escaped.isNotEmpty;
     },
   ),
   const SwitchModel(

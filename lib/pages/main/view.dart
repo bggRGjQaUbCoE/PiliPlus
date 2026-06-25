@@ -47,6 +47,7 @@ class _MainAppState extends PopScopeState<MainApp>
   late final _setting = GStorage.setting;
   late EdgeInsets _padding;
   late ThemeData theme;
+  Brightness? _brightness;
 
   @override
   bool get initCanPop => false;
@@ -78,7 +79,10 @@ class _MainAppState extends PopScopeState<MainApp>
     NetworkImgLayer.reduce =
         NetworkImgLayer.reduceLuxColor != null && brightness.isDark;
     if (PlatformUtils.isDesktop) {
-      windowManager.setBrightness(brightness);
+      if (_brightness != brightness) {
+        _brightness = brightness;
+        windowManager.setBrightness(brightness);
+      }
     }
     if (!_mainController.useSideBar) {
       _mainController.useBottomNav = MediaQuery.sizeOf(context).isPortrait;

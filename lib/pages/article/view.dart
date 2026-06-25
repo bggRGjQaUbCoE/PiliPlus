@@ -5,6 +5,7 @@ import 'package:PiliPlus/common/widgets/custom_icon.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart';
+import 'package:PiliPlus/common/widgets/sliver/sliver_to_box_adapter.dart';
 import 'package:PiliPlus/models/common/badge_type.dart';
 import 'package:PiliPlus/models/common/image_preview_type.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
@@ -51,45 +52,32 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
   };
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (scrollController.hasClients) {
-        controller.showTitle.value =
-            scrollController.positions.last.pixels >= 45;
-      }
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Scaffold(
+    final child = Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: _buildAppBar(),
       body: Padding(
         padding: EdgeInsets.only(left: padding.left, right: padding.right),
-        child: _buildPage(theme),
+        child: _buildPage(),
       ),
       floatingActionButtonLocation: floatingActionButtonLocation,
       floatingActionButton: SlideTransition(
         position: fabAnimation,
-        child: _buildBottom(theme),
+        child: _buildBottom(),
       ),
     );
+    return fabAnimWrapper(child);
   }
 
-  Widget _buildPage(ThemeData theme) {
+  Widget _buildPage() {
     double padding = max(maxWidth / 2 - Grid.smallCardWidth, 0);
     if (isPortrait) {
       return Padding(
         padding: EdgeInsets.symmetric(horizontal: padding),
         child: CustomScrollView(
-          controller: scrollController,
           physics: const AlwaysScrollableScrollPhysics(),
           slivers: [
             _buildContent(
-              theme,
               maxWidth - this.padding.horizontal - 2 * padding - 24,
             ),
             SliverToBoxAdapter(
@@ -98,8 +86,8 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
                 color: theme.dividerColor.withValues(alpha: 0.05),
               ),
             ),
-            buildReplyHeader(theme),
-            Obx(() => replyList(theme, controller.loadingState.value)),
+            buildReplyHeader(),
+            Obx(() => replyList(controller.loadingState.value)),
           ],
         ),
       );
@@ -114,7 +102,6 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
         Expanded(
           flex: flex,
           child: CustomScrollView(
-            controller: scrollController,
             physics: const AlwaysScrollableScrollPhysics(),
             slivers: [
               SliverPadding(
@@ -123,7 +110,6 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
                   bottom: this.padding.bottom + 100,
                 ),
                 sliver: _buildContent(
-                  theme,
                   (maxWidth - this.padding.horizontal) * flex / (flex + flex1) -
                       padding -
                       32,
@@ -146,11 +132,10 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
               body: refreshIndicator(
                 onRefresh: controller.onRefresh,
                 child: CustomScrollView(
-                  controller: scrollController,
                   physics: const AlwaysScrollableScrollPhysics(),
                   slivers: [
-                    buildReplyHeader(theme),
-                    Obx(() => replyList(theme, controller.loadingState.value)),
+                    buildReplyHeader(),
+                    Obx(() => replyList(controller.loadingState.value)),
                   ],
                 ),
               ),
@@ -161,7 +146,7 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
     );
   }
 
-  Widget _buildContent(ThemeData theme, double maxWidth) => SliverPadding(
+  Widget _buildContent(double maxWidth) => SliverPadding(
     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
     sliver: Obx(
       () {
@@ -339,7 +324,9 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
                   ),
                 ),
               if (controller.summary.title != null)
-                SliverToBoxAdapter(
+                SliverToBoxWithVisibilityAdapter(
+                  onVisibilityChanged: (bool visible) =>
+                      controller.showTitle.value = !visible,
                   child: Text(
                     controller.summary.title!,
                     style: const TextStyle(
@@ -495,7 +482,7 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
     ],
   );
 
-  Widget _buildBottom(ThemeData theme) {
+  Widget _buildBottom() {
     if (!controller.showDynActionBar) {
       return fabButton;
     }

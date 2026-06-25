@@ -7,6 +7,7 @@ import 'package:PiliPlus/common/widgets/view_safe_area.dart';
 import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
     show ReplyInfo;
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/models/common/enum_with_label.dart';
 import 'package:PiliPlus/pages/common/dyn/common_dyn_controller.dart';
 import 'package:PiliPlus/pages/common/fab_mixin.dart';
 import 'package:PiliPlus/pages/video/reply/widgets/reply_item_grpc.dart';
@@ -21,56 +22,70 @@ import 'package:easy_debounce/easy_throttle.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-abstract class CommonDynPageState<T extends StatefulWidget> extends State<T>
-    with SingleTickerProviderStateMixin, BaseFabMixin, FabMixin {
-  CommonDynController get controller;
+enum DynType implements EnumWithLabel {
+  reply('评论'),
+  reaction('赞与转发');
 
-  late final ScrollController scrollController;
+  @override
+  final String label;
+  const DynType(this.label);
+}
+
+abstract class CommonDynPageState<T extends StatefulWidget> extends State<T>
+    with
+        SingleTickerProviderStateMixin<T>,
+        BaseFabMixin,
+        FabMixin,
+        CommonDynPageMixin<T> {}
+
+abstract class CommonDynPageMultiState<T extends StatefulWidget>
+    extends State<T>
+    with
+        TickerProviderStateMixin<T>,
+        BaseFabMixin,
+        FabMixin,
+        CommonDynPageMixin<T> {
+  late final TabController tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    tabController = TabController(length: DynType.values.length, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    tabController.dispose();
+    super.dispose();
+  }
+}
+
+mixin CommonDynPageMixin<T extends StatefulWidget>
+    on State<T>, TickerProvider, BaseFabMixin<T>, FabMixin<T> {
+  CommonDynController get controller;
 
   bool get horizontalPreview => !isPortrait && controller.horizontalPreview;
 
   dynamic get arguments;
 
+  late ThemeData theme;
   late EdgeInsets padding;
   late bool isPortrait;
   late double maxWidth;
   late double maxHeight;
 
   @override
-  void initState() {
-    super.initState();
-    scrollController = ScrollController()..addListener(listener);
-  }
-
-  void listener() {
-    final pos = scrollController.positions;
-    controller.showTitle.value = pos.first.pixels > 55;
-    if (pos.any((e) => e.userScrollDirection == .forward)) {
-      showFab();
-    } else if (pos.any((e) => e.userScrollDirection == .reverse)) {
-      hideFab();
-    }
-  }
-
-  @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     final size = MediaQuery.sizeOf(context);
+    theme = Theme.of(context);
     maxWidth = size.width;
     maxHeight = size.height;
     isPortrait = size.isPortrait;
     padding = MediaQuery.viewPaddingOf(context);
   }
 
-  @override
-  void dispose() {
-    scrollController
-      ..removeListener(listener)
-      ..dispose();
-    super.dispose();
-  }
-
-  Widget buildReplyHeader(ThemeData theme) {
+  Widget buildReplyHeader() {
     final secondary = theme.colorScheme.secondary;
     return SliverPinnedHeader(
       backgroundColor: theme.colorScheme.surface,
@@ -104,10 +119,7 @@ abstract class CommonDynPageState<T extends StatefulWidget> extends State<T>
     );
   }
 
-  Widget replyList(
-    ThemeData theme,
-    LoadingState<List<ReplyInfo>?> loadingState,
-  ) {
+  Widget replyList(LoadingState<List<ReplyInfo>?> loadingState) {
     return switch (loadingState) {
       Loading() => SliverList.builder(
         itemCount: 12,
@@ -137,7 +149,7 @@ abstract class CommonDynPageState<T extends StatefulWidget> extends State<T>
                       replyItem: response[index],
                       replyLevel: 1,
                       replyReply: (replyItem, id) =>
-                          replyReply(context, replyItem, id, theme),
+                          replyReply(context, replyItem, id),
                       onReply: controller.onReply,
                       onDelete: (item, subIndex) =>
                           controller.onRemove(index, item, subIndex),
@@ -166,12 +178,7 @@ abstract class CommonDynPageState<T extends StatefulWidget> extends State<T>
     };
   }
 
-  void replyReply(
-    BuildContext context,
-    ReplyInfo replyItem,
-    int? id,
-    ThemeData theme,
-  ) {
+  void replyReply(BuildContext context, ReplyInfo replyItem, int? id) {
     EasyThrottle.throttle('replyReply', const Duration(milliseconds: 500), () {
       int oid = replyItem.oid.toInt();
       int rpid = replyItem.id.toInt();
@@ -295,4 +302,22 @@ abstract class CommonDynPageState<T extends StatefulWidget> extends State<T>
     tooltip: '评论',
     child: const Icon(Icons.reply),
   );
+
+  Widget fabAnimWrapper(Widget child) {
+    return NotificationListener<UserScrollNotification>(
+      onNotification: (notification) {
+        if (notification.metrics.axisDirection == .down) {
+          switch (notification.direction) {
+            case .forward:
+              showFab();
+            case .reverse:
+              hideFab();
+            default:
+          }
+        }
+        return false;
+      },
+      child: child,
+    );
+  }
 }

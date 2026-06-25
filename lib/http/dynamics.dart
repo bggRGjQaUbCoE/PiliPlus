@@ -18,6 +18,7 @@ import 'package:PiliPlus/models_new/article/article_view/data.dart';
 import 'package:PiliPlus/models_new/bubble/data.dart';
 import 'package:PiliPlus/models_new/dynamic/dyn_mention/data.dart';
 import 'package:PiliPlus/models_new/dynamic/dyn_mention/group.dart';
+import 'package:PiliPlus/models_new/dynamic/dyn_reaction/data.dart';
 import 'package:PiliPlus/models_new/dynamic/dyn_reserve/data.dart';
 import 'package:PiliPlus/models_new/dynamic/dyn_reserve_info/data.dart';
 import 'package:PiliPlus/models_new/dynamic/dyn_topic_feed/topic_card_list.dart';
@@ -803,6 +804,25 @@ abstract final class DynamicsHttp {
     );
     if (res.data['code'] == 0) {
       return Success(BubbleData.fromJson(res.data['data']));
+    } else {
+      return Error(res.data['message']);
+    }
+  }
+
+  static Future<LoadingState<DynReactionData>> dynReaction({
+    required Object id,
+    String? offset,
+  }) async {
+    final res = await Request().get(
+      Api.dynReaction,
+      queryParameters: {
+        'id': id,
+        'offset': offset,
+        'web_location': 333.1369,
+      },
+    );
+    if (res.data['code'] == 0) {
+      return Success(DynReactionData.fromJson(res.data['data']));
     } else {
       return Error(res.data['message']);
     }

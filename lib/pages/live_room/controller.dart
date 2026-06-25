@@ -209,6 +209,7 @@ class LiveRoomController extends GetxController {
       startLiveTimer();
       isPortrait.value = response.isPortrait ?? false;
       stream = playurl.stream;
+      _initStreamIndex();
       await initLiveUrl(
         streamIndex: streamIndex,
         formatIndex: formatIndex,
@@ -226,6 +227,32 @@ class LiveRoomController extends GetxController {
   int formatIndex = 0;
   int codecIndex = 0;
   int liveUrlIndex = 0;
+
+  void _initStreamIndex() {
+    final pref = Pref.liveStream;
+    if (pref != null) {
+      try {
+        final protocolName = pref[0];
+        final formatName = pref[1];
+        final codecName = pref[2];
+        for (var i in stream.indexed) {
+          if (i.$2.protocolName == protocolName) {
+            streamIndex = i.$1;
+            for (var j in i.$2.format.indexed) {
+              if (j.$2.formatName == formatName) {
+                formatIndex = j.$1;
+                for (var k in j.$2.codec.indexed) {
+                  if (k.$2.codecName == codecName) {
+                    codecIndex = k.$1;
+                  }
+                }
+              }
+            }
+          }
+        }
+      } catch (_) {}
+    }
+  }
 
   Future<void>? initLiveUrl({
     int streamIndex = 0,

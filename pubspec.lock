@@ -29,10 +29,10 @@ packages:
     dependency: "direct main"
     description:
       name: app_links
-      sha256: "4ec328cd9fd51fd0e7eb8870a9612c1fde0f091901932238c4f4e60b5f7f1315"
+      sha256: "9d3c82f634c7f5b5c752f7ee46b67724246043f5e1d5fc1b433dd5b38d780dbe"
       url: "https://pub.dev"
     source: hosted
-    version: "7.1.2"
+    version: "7.2.0"
   app_links_linux:
     dependency: transitive
     description:
@@ -485,7 +485,7 @@ packages:
     description:
       path: "."
       ref: mod
-      resolved-ref: e55d90cf2a1666e6ccf63e3f5779c8c4b12c5204
+      resolved-ref: "66486fdeb963149ba27d2dc1719c9a9005de5d18"
       url: "https://github.com/bggRGjQaUbCoE/extended_nested_scroll_view.git"
     source: git
     version: "6.2.1"
@@ -526,10 +526,10 @@ packages:
     description:
       path: "."
       ref: dev
-      resolved-ref: "8a987e491225341839bafb3d3171c4b2d797ef73"
+      resolved-ref: "02eb0aede6ca2278bea54eb5cc9ec520bf8165fc"
       url: "https://github.com/bggRGjQaUbCoE/flutter_file_picker.git"
     source: git
-    version: "12.0.0-beta.6"
+    version: "12.0.0-beta.7"
   file_selector_linux:
     dependency: transitive
     description:
@@ -993,7 +993,7 @@ packages:
     description:
       path: "pkgs/jnigen"
       ref: HEAD
-      resolved-ref: "496f2f0bbe583307a7d5ce4c33e81f0797cb65fe"
+      resolved-ref: "4dab66c9aa059bc730c2fb86c5716eaac3bd9f4b"
       url: "https://github.com/dart-lang/native.git"
     source: git
     version: "0.17.0-wip"
@@ -1290,10 +1290,10 @@ packages:
     dependency: "direct main"
     description:
       name: path_provider
-      sha256: "50c5dd5b6e1aaf6fb3a78b33f6aa3afca52bf903a8a5298f53101fdaee55bbcd"
+      sha256: a7f4874f987173da295a61c181b8ee71dab59b332a486b391babf26a1b884825
       url: "https://pub.dev"
     source: hosted
-    version: "2.1.5"
+    version: "2.1.6"
   path_provider_android:
     dependency: transitive
     description:
@@ -1322,10 +1322,10 @@ packages:
     dependency: transitive
     description:
       name: path_provider_platform_interface
-      sha256: "88f5779f72ba699763fa3a3b06aa4bf6de76c8e5de842cf6f29e2e06476c2334"
+      sha256: "484838772624c3a4b94f1e44a3e19897fee738f2d5c4ce448443b0417f7c9dda"
       url: "https://pub.dev"
     source: hosted
-    version: "2.1.2"
+    version: "2.1.3"
   path_provider_windows:
     dependency: transitive
     description:
@@ -1346,10 +1346,10 @@ packages:
     dependency: "direct main"
     description:
       name: permission_handler_apple
-      sha256: e20daf680eef1ca62ffe8c8c526b778cc386d50137c77ac71c8ec9c88c13fb9d
+      sha256: "79dfa1df734798aa3cfdad166d3a3698c206d8813de13516ea1071b5d7e2f420"
       url: "https://pub.dev"
     source: hosted
-    version: "9.4.9"
+    version: "9.4.10"
   permission_handler_platform_interface:
     dependency: "direct main"
     description:
@@ -1483,26 +1483,26 @@ packages:
     description:
       path: screen_brightness_android
       ref: main
-      resolved-ref: "239b9e4595f257184c8afcaf21167f8667ba367d"
+      resolved-ref: "350f4433ca48d84f4dd0bfa509ab8aea734a6105"
       url: "https://github.com/bggRGjQaUbCoE/screen_brightness.git"
     source: git
-    version: "2.1.5"
+    version: "2.1.6"
   screen_brightness_ios:
     dependency: transitive
     description:
       name: screen_brightness_ios
-      sha256: "0792d8f98852558f831b4b75241c46047b884598b3f4d982b37dc2dd43e2b2e1"
+      sha256: "352d355e8523a186ba1e494b74218e5ca96e51975a0630b8ed89fbb7ff609762"
       url: "https://pub.dev"
     source: hosted
-    version: "2.1.3"
+    version: "2.1.4"
   screen_brightness_platform_interface:
     dependency: "direct main"
     description:
       name: screen_brightness_platform_interface
-      sha256: "59d50850d6735d677780fc7359c8e997d0ff6df91c8465161c9e617a7b0a11d8"
+      sha256: "2de60c0ba569b898950029cc1f7e9dd72bda44a22beb5054aac331cb6fce2ff2"
       url: "https://pub.dev"
     source: hosted
-    version: "2.1.1"
+    version: "2.1.2"
   screen_retriever:
     dependency: "direct main"
     description:
@@ -1841,10 +1841,10 @@ packages:
     dependency: transitive
     description:
       name: vector_graphics_compiler
-      sha256: "7ee12e6dffe0fc8e755179d6d91b3b34f5924223fc104d85572ef9180d73d172"
+      sha256: "142a9146f447d15b10bdc00e21d5f4d83e5b32bb5f8f8f5a04c75311344923a3"
       url: "https://pub.dev"
     source: hosted
-    version: "1.2.5"
+    version: "1.2.6"
   vector_math:
     dependency: "direct main"
     description:
@@ -1985,4 +1985,4 @@ packages:
     version: "3.1.3"
 sdks:
   dart: ">=3.12.0 <4.0.0"
-  flutter: "3.44.2"
+  flutter: "3.44.3"

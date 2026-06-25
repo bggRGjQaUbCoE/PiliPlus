@@ -156,7 +156,8 @@ abstract final class SettingBoxKey {
       touchSlopH = 'touchSlopH',
       floatingNavBar = 'floatingNavBar',
       removeSafeArea = 'removeSafeArea',
-      angleDegrees = 'angleDegrees';
+      angleDegrees = 'angleDegrees',
+      liveStream = 'liveStream';
 
   static const String minimizeOnExit = 'minimizeOnExit',
       windowSize = 'windowSize',

@@ -7,6 +7,7 @@ import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/image_viewer/hero.dart';
 import 'package:PiliPlus/common/widgets/marquee.dart';
+import 'package:PiliPlus/common/widgets/sliver/sliver_to_box_adapter.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/music.dart';
 import 'package:PiliPlus/models/common/image_preview_type.dart';
@@ -52,8 +53,7 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Scaffold(
+    final child = Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: _buildAppBar(),
       body: Padding(
@@ -61,11 +61,12 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
         child: isPortrait
             ? refreshIndicator(
                 onRefresh: controller.onRefresh,
-                child: _buildBody(theme),
+                child: _buildBody(),
               )
-            : _buildBody(theme),
+            : _buildBody(),
       ),
     );
+    return fabAnimWrapper(child);
   }
 
   PreferredSizeWidget _buildAppBar() => AppBar(
@@ -107,7 +108,7 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
           ],
   );
 
-  Widget _buildBody(ThemeData theme) => Obx(() {
+  Widget _buildBody() => Obx(() {
     switch (controller.infoState.value) {
       case Success(:final response):
         double padding = max(maxWidth / 2 - Grid.smallCardWidth, 0);
@@ -116,17 +117,18 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
           child = Padding(
             padding: EdgeInsets.symmetric(horizontal: padding),
             child: CustomScrollView(
-              controller: scrollController,
               physics: const AlwaysScrollableScrollPhysics(),
               slivers: [
-                SliverToBoxAdapter(
-                  child: _buildCard(theme, response, maxWidth),
+                SliverToBoxWithOffsetAdapter(
+                  offset: 45,
+                  onVisibilityChanged: controller.showTitle.call,
+                  child: _buildCard(response, maxWidth),
                 ),
                 SliverToBoxAdapter(
-                  child: _buildChart(theme, response, maxWidth),
+                  child: _buildChart(response, maxWidth),
                 ),
-                buildReplyHeader(theme),
-                Obx(() => replyList(theme, controller.loadingState.value)),
+                buildReplyHeader(),
+                Obx(() => replyList(controller.loadingState.value)),
               ],
             ),
           );
@@ -142,7 +144,6 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
               Expanded(
                 flex: flex,
                 child: CustomScrollView(
-                  controller: scrollController,
                   physics: const AlwaysScrollableScrollPhysics(),
                   slivers: [
                     SliverPadding(
@@ -150,7 +151,7 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
                         left: padding,
                       ),
                       sliver: SliverToBoxAdapter(
-                        child: _buildCard(theme, response, leftWidth),
+                        child: _buildCard(response, leftWidth),
                       ),
                     ),
                     SliverPadding(
@@ -159,7 +160,7 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
                         bottom: this.padding.bottom + 100,
                       ),
                       sliver: SliverToBoxAdapter(
-                        child: _buildChart(theme, response, leftWidth),
+                        child: _buildChart(response, leftWidth),
                       ),
                     ),
                   ],
@@ -175,13 +176,11 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
                     body: refreshIndicator(
                       onRefresh: controller.onRefresh,
                       child: CustomScrollView(
-                        controller: scrollController,
                         physics: const AlwaysScrollableScrollPhysics(),
                         slivers: [
-                          buildReplyHeader(theme),
+                          buildReplyHeader(),
                           Obx(
-                            () =>
-                                replyList(theme, controller.loadingState.value),
+                            () => replyList(controller.loadingState.value),
                           ),
                         ],
                       ),
@@ -196,7 +195,7 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
           clipBehavior: Clip.none,
           children: [
             child,
-            _buildBottom(theme, response),
+            _buildBottom(response),
           ],
         );
       default:
@@ -204,7 +203,7 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
     }
   });
 
-  Widget _buildBottom(ThemeData theme, MusicDetail item) {
+  Widget _buildBottom(MusicDetail item) {
     if (!controller.showDynActionBar) {
       return Positioned(
         right: kFloatingActionButtonMargin,
@@ -387,8 +386,7 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
 
   Widget _buildRank(
     int? rank,
-    String name,
-    ThemeData theme, [
+    String name, [
     VoidCallback? onTap,
   ]) {
     final outline = theme.colorScheme.outline;
@@ -424,7 +422,7 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
           );
   }
 
-  Widget _buildCard(ThemeData theme, MusicDetail item, double maxWidth) {
+  Widget _buildCard(MusicDetail item, double maxWidth) {
     final textTheme = theme.textTheme;
     return SizedBox(
       width: maxWidth,
@@ -569,12 +567,11 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text('热歌榜排名'),
-                  _buildRank(item.hotSongHeat?.lastHeat, '热度', theme),
-                  _buildRank(item.listenPv, '总播放量', theme),
+                  _buildRank(item.hotSongHeat?.lastHeat, '热度'),
+                  _buildRank(item.listenPv, '总播放量'),
                   _buildRank(
                     item.musicRelation,
                     '使用稿件量',
-                    theme,
                     () => Get.to(
                       const MusicRecommendPage(),
                       arguments: (id: controller.musicId, item: item),
@@ -589,7 +586,7 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
     );
   }
 
-  Widget? _buildChart(ThemeData theme, MusicDetail item, double maxWidth) {
+  Widget? _buildChart(MusicDetail item, double maxWidth) {
     final heat = item.hotSongHeat?.songHeat;
     if (heat == null || heat.isEmpty) return null;
     final colorScheme = theme.colorScheme;

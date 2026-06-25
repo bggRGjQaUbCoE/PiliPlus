@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'dart:math' show pow, sqrt;
+import 'dart:math' show pow;
 
 import 'package:PiliPlus/common/widgets/gesture/horizontal_drag_gesture_recognizer.dart'
     show deviceTouchSlop;
@@ -106,8 +106,10 @@ abstract final class Pref {
 
   static List<double> get springDescription => List<double>.from(
     _setting.get(SettingBoxKey.springDescription) ??
-        [0.5, 100.0, 2.2 * sqrt(50)], // [mass, stiffness, damping]
+        // duration: 0.3, bounce: 0.0
+        const [1.0, 438.64908449286037, 41.88790204786391],
   );
+  //   [0.5, 100.0, 2.2 * math.sqrt(50)], // [mass, stiffness, damping]
 
   static List<double> get speedList => List<double>.from(
     _video.get(
@@ -257,7 +259,7 @@ abstract final class Pref {
   static String get hardwareDecoding => _setting.get(
     SettingBoxKey.hardwareDecoding,
     defaultValue: Platform.isAndroid
-        ? HwDecType.autoSafe.hwdec
+        ? HwDecType.androidDefault
         : HwDecType.auto.hwdec,
   );
 
@@ -1017,4 +1019,6 @@ abstract final class Pref {
 
   static double get maxVolume => // desktop
       _setting.get(SettingBoxKey.maxVolume, defaultValue: 2.0);
+
+  static List? get liveStream => _setting.get(SettingBoxKey.liveStream);
 }

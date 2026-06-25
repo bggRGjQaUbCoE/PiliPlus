@@ -325,7 +325,12 @@ class _PgcReviewChildPageState extends State<PgcReviewChildPage>
                         SizedBox(
                           height: 32,
                           child: TextButton(
-                            style: style,
+                            style: const ButtonStyle(
+                              visualDensity: .compact,
+                              tapTargetSize: .shrinkWrap,
+                              padding: WidgetStatePropertyAll(.zero),
+                              minimumSize: WidgetStatePropertyAll(.square(40)),
+                            ),
                             onPressed: () => _controller.onDislike(
                               item,
                               isDislike,

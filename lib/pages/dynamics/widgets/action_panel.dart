@@ -67,7 +67,11 @@ class ActionPanel extends StatelessWidget {
         ),
         Expanded(
           child: TextButton.icon(
-            onPressed: () => PageUtils.pushDynDetail(item, isPush: true),
+            onPressed: () => PageUtils.pushDynDetail(
+              item,
+              isPush: true,
+              viewComment: true,
+            ),
             icon: Icon(
               FontAwesomeIcons.comment,
               size: 16,

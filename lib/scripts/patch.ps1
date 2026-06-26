@@ -32,6 +32,10 @@ $NavigationDrawerPatch = "lib/scripts/navigation_drawer.patch"
 $PopupMenuPatch = "lib/scripts/popup_menu.patch"
 
 # TODO: remove
+# https://github.com/flutter/flutter/pull/183261
+$SelectableRegionPatch = "lib/scripts/null_safety_for_selectable_region.patch"
+
+# TODO: remove
 # https://github.com/flutter/flutter/issues/90223
 $ModalBarrierPatch = "lib/scripts/modal_barrier.patch"
 
@@ -58,7 +62,7 @@ $picks   = @()
 $reverts = @()
 $patches = @($ModalBarrierPatch, $TextSelectionPatch, $MouseCursorPatch,
             $ImageAnimPatch, $LayoutBuilderPatch, $NavigationDrawerPatch,
-            $PopupMenuPatch)
+            $PopupMenuPatch, $SelectableRegionPatch)
 
 switch ($platform.ToLower()) {
     "android" {

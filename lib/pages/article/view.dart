@@ -101,21 +101,25 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
       children: [
         Expanded(
           flex: flex,
-          child: CustomScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            slivers: [
-              SliverPadding(
-                padding: EdgeInsets.only(
-                  left: padding,
-                  bottom: this.padding.bottom + 100,
+          child: SelectionArea(
+            child: CustomScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              slivers: [
+                SliverPadding(
+                  padding: EdgeInsets.only(
+                    left: padding,
+                    bottom: this.padding.bottom + 100,
+                  ),
+                  sliver: _buildContent(
+                    (maxWidth - this.padding.horizontal) *
+                            flex /
+                            (flex + flex1) -
+                        padding -
+                        32,
+                  ),
                 ),
-                sliver: _buildContent(
-                  (maxWidth - this.padding.horizontal) * flex / (flex + flex1) -
-                      padding -
-                      32,
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
         VerticalDivider(
@@ -151,7 +155,7 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
     sliver: Obx(
       () {
         if (controller.isLoaded.value) {
-          late Widget content;
+          final Widget content;
           if (controller.opus != null) {
             // if (kDebugMode) debugPrint('json page');
             content = OpusContent(
@@ -159,9 +163,9 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
               images: controller.images,
               maxWidth: maxWidth,
             );
-          } else if (controller.opusData?.modules.moduleBlocked != null) {
+          } else if (controller.opusData?.modules.moduleBlocked
+              case final moduleBlocked?) {
             // if (kDebugMode) debugPrint('moduleBlocked');
-            final moduleBlocked = controller.opusData!.modules.moduleBlocked!;
             content = SliverToBoxAdapter(
               child: moduleBlockedItem(context, theme, moduleBlocked),
             );
@@ -201,137 +205,130 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
             content = const SliverToBoxAdapter(child: Text('NULL'));
           }
 
-          int? pubTime =
+          final pubTime =
               controller.opusData?.modules.moduleAuthor?.pubTs ??
               controller.articleData?.publishTime;
           return SliverMainAxisGroup(
             slivers: [
-              if (controller.type != 'read' &&
-                  controller
-                          .opusData
-                          ?.modules
-                          .moduleTop
-                          ?.display
-                          ?.album
-                          ?.pics
-                          ?.isNotEmpty ==
-                      true)
-                SliverToBoxAdapter(
-                  child: Builder(
-                    builder: (context) {
-                      final pics = controller
-                          .opusData!
-                          .modules
-                          .moduleTop!
-                          .display!
-                          .album!
-                          .pics!;
-                      final length = pics.length;
-                      final first = pics.first;
-                      double height;
-                      if (first.height != null && first.width != null) {
-                        final ratio = first.height! / first.width!;
-                        height = min(maxWidth * ratio, maxHeight * 0.55);
-                      } else {
-                        height = maxHeight * 0.55;
-                      }
-                      return Stack(
-                        clipBehavior: Clip.none,
-                        children: [
-                          Container(
-                            height: height,
-                            width: maxWidth,
-                            margin: const EdgeInsets.only(bottom: 10),
-                            child: PageView.builder(
-                              physics: clampingScrollPhysics,
-                              onPageChanged: (value) =>
-                                  controller.topIndex.value = value,
-                              itemCount: length,
-                              itemBuilder: (context, index) {
-                                final pic = pics[index];
-                                int? memCacheWidth, memCacheHeight;
-                                if (pic.isLongPic ?? false) {
-                                  memCacheWidth = maxWidth.cacheSize(context);
-                                } else if (pic.width != null &&
-                                    pic.height != null) {
-                                  if (pic.width! > pic.height!) {
+              if (controller.type != 'read')
+                if (controller.opusData?.modules.moduleTop?.display?.album?.pics
+                    case final pics?)
+                  SliverToBoxAdapter(
+                    child: Builder(
+                      builder: (context) {
+                        final length = pics.length;
+                        final first = pics.first;
+                        double height;
+                        if (first.height != null && first.width != null) {
+                          final ratio = first.height! / first.width!;
+                          height = min(maxWidth * ratio, maxHeight * 0.55);
+                        } else {
+                          height = maxHeight * 0.55;
+                        }
+                        return Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            Container(
+                              height: height,
+                              width: maxWidth,
+                              margin: const EdgeInsets.only(bottom: 10),
+                              child: PageView.builder(
+                                physics: clampingScrollPhysics,
+                                onPageChanged: (value) =>
+                                    controller.topIndex.value = value,
+                                itemCount: length,
+                                itemBuilder: (context, index) {
+                                  final pic = pics[index];
+                                  int? memCacheWidth, memCacheHeight;
+                                  if (pic.isLongPic ?? false) {
                                     memCacheWidth = maxWidth.cacheSize(context);
-                                  } else {
-                                    memCacheHeight = height.cacheSize(context);
+                                  } else if (pic.width != null &&
+                                      pic.height != null) {
+                                    if (pic.width! > pic.height!) {
+                                      memCacheWidth = maxWidth.cacheSize(
+                                        context,
+                                      );
+                                    } else {
+                                      memCacheHeight = height.cacheSize(
+                                        context,
+                                      );
+                                    }
                                   }
-                                }
-                                return GestureDetector(
-                                  behavior: HitTestBehavior.opaque,
-                                  onTap: () => PageUtils.imageView(
-                                    quality: 60,
-                                    imgList: pics
-                                        .map((e) => SourceModel(url: e.url!))
-                                        .toList(),
-                                    initialPage: index,
-                                  ),
-                                  child: Hero(
-                                    tag: pic.url!,
-                                    child: Stack(
-                                      clipBehavior: Clip.none,
-                                      alignment: Alignment.center,
-                                      children: [
-                                        CachedNetworkImage(
-                                          height: height,
-                                          width: maxWidth,
-                                          memCacheWidth: memCacheWidth,
-                                          memCacheHeight: memCacheHeight,
-                                          fit: pic.isLongPic == true
-                                              ? BoxFit.cover
-                                              : null,
-                                          imageUrl: ImageUtils.thumbnailUrl(
-                                            pic.url,
-                                            60,
-                                          ),
-                                          fadeInDuration: const Duration(
-                                            milliseconds: 120,
-                                          ),
-                                          fadeOutDuration: const Duration(
-                                            milliseconds: 120,
-                                          ),
-                                          placeholder: (_, _) =>
-                                              const SizedBox.shrink(),
-                                        ),
-                                        if (pic.isLongPic == true)
-                                          const PBadge(
-                                            right: 12,
-                                            bottom: 12,
-                                            text: '长图',
-                                            type: .primary,
-                                          ),
-                                      ],
+                                  return GestureDetector(
+                                    behavior: HitTestBehavior.opaque,
+                                    onTap: () => PageUtils.imageView(
+                                      quality: 60,
+                                      imgList: pics
+                                          .map((e) => SourceModel(url: e.url!))
+                                          .toList(),
+                                      initialPage: index,
                                     ),
-                                  ),
-                                );
-                              },
+                                    child: Hero(
+                                      tag: pic.url!,
+                                      child: Stack(
+                                        clipBehavior: Clip.none,
+                                        alignment: Alignment.center,
+                                        children: [
+                                          CachedNetworkImage(
+                                            height: height,
+                                            width: maxWidth,
+                                            memCacheWidth: memCacheWidth,
+                                            memCacheHeight: memCacheHeight,
+                                            fit: pic.isLongPic == true
+                                                ? BoxFit.cover
+                                                : null,
+                                            imageUrl: ImageUtils.thumbnailUrl(
+                                              pic.url,
+                                              60,
+                                            ),
+                                            fadeInDuration: const Duration(
+                                              milliseconds: 120,
+                                            ),
+                                            fadeOutDuration: const Duration(
+                                              milliseconds: 120,
+                                            ),
+                                            placeholder: (_, _) =>
+                                                const SizedBox.shrink(),
+                                          ),
+                                          if (pic.isLongPic == true)
+                                            const PBadge(
+                                              right: 12,
+                                              bottom: 12,
+                                              text: '长图',
+                                              type: .primary,
+                                            ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
                             ),
-                          ),
-                          Obx(
-                            () => PBadge(
-                              top: 12,
-                              right: 12,
-                              type: PBadgeType.gray,
-                              text: '${controller.topIndex.value + 1}/$length',
+                            Obx(
+                              () => PBadge(
+                                top: 12,
+                                right: 12,
+                                type: PBadgeType.gray,
+                                text:
+                                    '${controller.topIndex.value + 1}/$length',
+                              ),
                             ),
-                          ),
-                        ],
-                      );
-                    },
+                          ],
+                        );
+                      },
+                    ),
                   ),
-                ),
               if (controller.summary.title != null)
                 SliverToBoxWithVisibilityAdapter(
                   onVisibilityChanged: (bool visible) =>
                       controller.showTitle.value = !visible,
-                  child: Text(
-                    controller.summary.title!,
-                    style: const TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.bold,
+                  child: SelectionContainer.disabled(
+                    child: Text(
+                      controller.summary.title!,
+                      style: const TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
@@ -355,20 +352,24 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                controller.summary.author?.name ?? '',
-                                style: TextStyle(
-                                  fontSize:
-                                      theme.textTheme.titleSmall!.fontSize,
+                              SelectionContainer.disabled(
+                                child: Text(
+                                  controller.summary.author?.name ?? '',
+                                  style: TextStyle(
+                                    fontSize:
+                                        theme.textTheme.titleSmall!.fontSize,
+                                  ),
                                 ),
                               ),
                               if (pubTime != null)
-                                Text(
-                                  DateFormatUtils.format(pubTime),
-                                  style: TextStyle(
-                                    color: theme.colorScheme.outline,
-                                    fontSize:
-                                        theme.textTheme.labelSmall!.fontSize,
+                                SelectionContainer.disabled(
+                                  child: Text(
+                                    DateFormatUtils.format(pubTime),
+                                    style: TextStyle(
+                                      color: theme.colorScheme.outline,
+                                      fontSize:
+                                          theme.textTheme.labelSmall!.fontSize,
+                                    ),
                                   ),
                                 ),
                             ],
@@ -382,9 +383,11 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
               if (controller.type != 'read' &&
                   controller.opusData?.modules.moduleCollection != null)
                 SliverToBoxAdapter(
-                  child: opusCollection(
-                    theme,
-                    controller.opusData!.modules.moduleCollection!,
+                  child: SelectionContainer.disabled(
+                    child: opusCollection(
+                      theme,
+                      controller.opusData!.modules.moduleCollection!,
+                    ),
                   ),
                 ),
               content,

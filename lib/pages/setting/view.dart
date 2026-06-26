@@ -119,7 +119,6 @@ class _SettingPageState extends State<SettingPage> {
                       .playSetting ||
                       .styleSetting ||
                       .extraSetting => CommonSetting(
-                        key: ValueKey(_type),
                         settingType: _type,
                         showAppBar: false,
                       ),

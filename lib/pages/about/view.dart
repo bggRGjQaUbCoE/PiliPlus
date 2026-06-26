@@ -7,6 +7,7 @@ import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
 import 'package:PiliPlus/common/widgets/dialog/export_import.dart';
+import 'package:PiliPlus/common/widgets/dialog/simple_dialog_option.dart';
 import 'package:PiliPlus/common/widgets/flutter/list_tile.dart';
 import 'package:PiliPlus/pages/mine/controller.dart';
 import 'package:PiliPlus/services/logger.dart';
@@ -276,9 +277,8 @@ Commit Hash: ${BuildConfig.commitHash}''',
                   clipBehavior: Clip.hardEdge,
                   title: const Text('是否重置所有设置？'),
                   children: [
-                    ListTile(
-                      dense: true,
-                      onTap: () async {
+                    DialogOption(
+                      onPressed: () async {
                         Get.back();
                         await Future.wait([
                           GStorage.setting.clear(),
@@ -286,16 +286,15 @@ Commit Hash: ${BuildConfig.commitHash}''',
                         ]);
                         SmartDialog.showToast('重置成功');
                       },
-                      title: const Text('重置可导出的设置', style: style),
+                      child: const Text('重置可导出的设置', style: style),
                     ),
-                    ListTile(
-                      dense: true,
-                      onTap: () async {
+                    DialogOption(
+                      onPressed: () async {
                         Get.back();
                         await GStorage.clear();
                         SmartDialog.showToast('重置成功');
                       },
-                      title: const Text('重置所有数据（含登录信息）', style: style),
+                      child: const Text('重置所有数据（含登录信息）', style: style),
                     ),
                   ],
                 );

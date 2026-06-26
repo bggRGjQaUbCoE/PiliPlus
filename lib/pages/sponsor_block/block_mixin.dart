@@ -287,8 +287,8 @@ mixin BlockMixin on GetxController {
     showDialog(
       context: Get.context!,
       builder: (context) => SimpleDialog(
-        clipBehavior: Clip.hardEdge,
-        contentPadding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
+        clipBehavior: .hardEdge,
+        contentPadding: const .symmetric(vertical: 10),
         children: [
           DialogOption(
             child: const Text('赞成票', style: TextStyle(fontSize: 14)),
@@ -325,8 +325,8 @@ mixin BlockMixin on GetxController {
     showDialog(
       context: Get.context!,
       builder: (context) => SimpleDialog(
-        clipBehavior: Clip.hardEdge,
-        contentPadding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
+        clipBehavior: .hardEdge,
+        contentPadding: const .symmetric(vertical: 10),
         children: SegmentType.values
             .map(
               (item) => ListTile(
@@ -375,8 +375,8 @@ mixin BlockMixin on GetxController {
     showDialog(
       context: Get.context!,
       builder: (context) => SimpleDialog(
-        clipBehavior: Clip.hardEdge,
-        contentPadding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
+        clipBehavior: .hardEdge,
+        contentPadding: const .symmetric(vertical: 10),
         children: _segmentList
             .map(
               (item) => ListTile(

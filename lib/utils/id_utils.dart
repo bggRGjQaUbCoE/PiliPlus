@@ -3,7 +3,7 @@
 import 'dart:convert' show ascii, base64;
 
 import 'package:PiliPlus/utils/utils.dart';
-import 'package:flutter_sortable_wrap/sortable_utils.dart';
+import 'package:collection/collection.dart';
 import 'package:uuid/v4.dart';
 
 abstract final class IdUtils {

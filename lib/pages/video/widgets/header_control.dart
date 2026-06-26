@@ -1164,7 +1164,8 @@ class HeaderControlState extends State<HeaderControl>
         final subtitles = videoDetailCtr.subtitles;
         return SimpleDialog(
           clipBehavior: Clip.hardEdge,
-          contentPadding: const EdgeInsets.fromLTRB(0, 12, 0, 12),
+          contentPadding: const .only(bottom: 12),
+          titlePadding: const .fromLTRB(20, 20, 20, 12),
           title: const Text('保存字幕'),
           children: List.generate(subtitles.length, (i) {
             final item = subtitles[i];
@@ -1224,7 +1225,7 @@ class HeaderControlState extends State<HeaderControl>
                 }
               },
               child: Text(
-                item.lanDoc!,
+                item.lanDoc ?? item.lan,
                 style: const TextStyle(fontSize: 14),
               ),
             );

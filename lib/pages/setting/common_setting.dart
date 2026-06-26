@@ -17,22 +17,41 @@ class CommonSetting extends StatefulWidget {
 }
 
 class _CommonSettingState extends State<CommonSetting> {
-  late final List<SettingsModel> settings;
+  late EdgeInsets padding;
+  late List<SettingsModel> settings;
+
+  void _initSetting() {
+    settings = widget.settingType.settings;
+  }
 
   @override
   void initState() {
     super.initState();
-    settings = widget.settingType.settings;
+    _initSetting();
+  }
+
+  @override
+  void didUpdateWidget(CommonSetting oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.settingType != oldWidget.settingType) {
+      _initSetting();
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    padding = MediaQuery.viewPaddingOf(context);
   }
 
   @override
   Widget build(BuildContext context) {
     final showAppBar = widget.showAppBar;
-    final padding = MediaQuery.viewPaddingOf(context);
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: showAppBar ? AppBar(title: Text(widget.settingType.title)) : null,
       body: ListView.builder(
+        key: ValueKey(widget.settingType),
         padding: EdgeInsets.only(
           left: showAppBar ? padding.left : 0,
           right: showAppBar ? padding.right : 0,

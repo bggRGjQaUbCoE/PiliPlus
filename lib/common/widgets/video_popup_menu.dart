@@ -207,11 +207,12 @@ class VideoPopupMenu extends StatelessWidget {
                           builder: (context) => SimpleDialog(
                             contentPadding: const .all(24),
                             children: [
-                              const Text("web端暂不支持精细选择"),
+                              const Center(child: Text("web端暂不支持精细选择")),
                               const SizedBox(height: 5),
                               Wrap(
                                 spacing: 5.0,
                                 runSpacing: 2.0,
+                                alignment: .center,
                                 children: [
                                   FilledButton.tonal(
                                     onPressed: () async {

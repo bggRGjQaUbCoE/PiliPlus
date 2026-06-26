@@ -162,7 +162,8 @@ class _VotePanelState extends State<VotePanel> {
                       return SimpleDialog(
                         clipBehavior: .hardEdge,
                         title: const Text('关注的人的投票'),
-                        contentPadding: const .only(top: 10, bottom: 12),
+                        contentPadding: const .only(bottom: 12),
+                        titlePadding: const .fromLTRB(20, 20, 20, 10),
                         children: list
                             .map(
                               (e) => ListTile(

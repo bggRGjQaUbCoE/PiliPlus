@@ -79,6 +79,7 @@ import 'package:flutter_volume_controller/flutter_volume_controller.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 import 'package:screen_brightness_platform_interface/screen_brightness_platform_interface.dart';
 import 'package:window_manager/window_manager.dart';
@@ -336,14 +337,45 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
           _pauseDueToPauseUponEnteringBackgroundMode = true;
           player.pause();
         }
-      } else {
+      } else if (state == .resumed) {
         if (_pauseDueToPauseUponEnteringBackgroundMode) {
           _pauseDueToPauseUponEnteringBackgroundMode = false;
-          player?.play();
+          unawaited(_resumeAfterBackground(player));
         }
       }
     }
   }
+
+  Future<void> _resumeAfterBackground(Player? player) async {
+    if (Platform.isAndroid &&
+        !plPlayerController.isLive &&
+        !plPlayerController.isFileSource) {
+      try {
+        if (widget.videoDetailController case final controller?) {
+          controller.playedTime = plPlayerController.position;
+          await controller.queryVideoUrl(fromReset: true);
+          if (_isPlayingAfterResume()) {
+            return;
+          }
+        }
+      } catch (_) {}
+
+      try {
+        final future = plPlayerController.refreshPlayer();
+        if (future != null) {
+          await future;
+          if (_isPlayingAfterResume()) {
+            return;
+          }
+        }
+      } catch (_) {}
+    }
+    await (plPlayerController.videoPlayerController ?? player)?.play();
+  }
+
+  bool _isPlayingAfterResume() =>
+      plPlayerController.videoPlayerController?.state.playing == true ||
+      plPlayerController.playerStatus.isPlaying;
 
   Future<void> setBrightness(double value) async {
     _brightnessValue.value = value;

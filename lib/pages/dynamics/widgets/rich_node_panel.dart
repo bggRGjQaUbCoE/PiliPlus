@@ -12,6 +12,7 @@ import 'package:PiliPlus/models/common/image_preview_type.dart'
 import 'package:PiliPlus/models/dynamics/result.dart';
 import 'package:PiliPlus/pages/dynamics/widgets/vote.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
+import 'package:PiliPlus/utils/parse_string.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -161,13 +162,11 @@ TextSpan? richNode(
                   text: '投票：${i.text}',
                   style: style,
                   recognizer: NoDeadlineTapGestureRecognizer()
-                    ..onTap = () {
-                      final dynIdStr = item.basic?.commentIdStr;
-                      final dynId = dynIdStr != null
-                          ? int.tryParse(dynIdStr)
-                          : null;
-                      showVoteDialog(context, int.parse(i.rid!), dynId);
-                    },
+                    ..onTap = () => showVoteDialog(
+                      context,
+                      int.parse(i.rid!),
+                      parseIntOrNull(item.basic?.commentIdStr),
+                    ),
                 ),
               );
             break;

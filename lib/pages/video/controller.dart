@@ -908,11 +908,12 @@ class VideoDetailController extends GetxController
       final curHighestVideoQa = videoList.first.quality.code;
       // 预设的画质为null，则当前可用的最高质量
       int targetVideoQa = curHighestVideoQa;
+      final cacheVideoQa = plPlayerController.cacheVideoQa!;
       if (data.acceptQuality?.isNotEmpty == true &&
-          plPlayerController.cacheVideoQa! <= curHighestVideoQa) {
+          cacheVideoQa <= curHighestVideoQa) {
         // 如果预设的画质低于当前最高
         targetVideoQa = data.acceptQuality!.findClosestTarget(
-          (e) => e <= plPlayerController.cacheVideoQa!,
+          (e) => e <= cacheVideoQa,
           (a, b) => a > b ? a : b,
         );
       }

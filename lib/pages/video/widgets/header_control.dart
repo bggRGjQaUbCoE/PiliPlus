@@ -572,7 +572,17 @@ class HeaderControlState extends State<HeaderControl>
                               onTap: () {
                                 plPlayerController.onlyPlayAudio.value =
                                     !onlyPlayAudio;
-                                widget.videoDetailCtr.playerInit();
+                                final player =
+                                    plPlayerController.videoPlayerController!;
+                                if (onlyPlayAudio &&
+                                    player.state.tracks.video.length <= 2) {
+                                  videoDetailCtr.playerInit();
+                                } else {
+                                  player.setProperty(
+                                    'file-local-options/vid',
+                                    onlyPlayAudio ? 'auto' : 'no',
+                                  );
+                                }
                               },
                               text: " 听视频 ",
                               selectStatus: onlyPlayAudio,

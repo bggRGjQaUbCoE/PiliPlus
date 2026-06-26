@@ -1,3 +1,4 @@
+import 'package:PiliPlus/models_new/live/live_feed_index/feedback.dart';
 import 'package:PiliPlus/models_new/live/live_feed_index/watched_show.dart';
 import 'package:PiliPlus/utils/parse_string.dart';
 
@@ -14,6 +15,7 @@ class CardLiveItem {
   int? areaV2Id;
   int? areaV2ParentId;
   WatchedShow? watchedShow;
+  List<Feedback>? feedback;
 
   CardLiveItem({
     this.roomid,
@@ -27,6 +29,7 @@ class CardLiveItem {
     this.areaV2Id,
     this.areaV2ParentId,
     this.watchedShow,
+    this.feedback,
   }) : _systemCover = nonNullOrEmptyString(systemCover);
 
   factory CardLiveItem.fromJson(Map<String, dynamic> json) => CardLiveItem(
@@ -43,5 +46,8 @@ class CardLiveItem {
     watchedShow: json['watched_show'] == null
         ? null
         : WatchedShow.fromJson(json['watched_show'] as Map<String, dynamic>),
+    feedback: (json['feedback'] as List?)
+        ?.map((x) => Feedback.fromJson(x))
+        .toList(),
   );
 }

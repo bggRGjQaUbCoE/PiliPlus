@@ -1014,4 +1014,7 @@ abstract final class Api {
   static const String replyReport = '/x/v2/reply/report';
 
   static const String dynReaction = '/x/polymer/web-dynamic/v1/detail/reaction';
+
+  static const String liveFeedback =
+      '${HttpString.liveBaseUrl}/xlive/app-interface/v2/index/feedback';
 }

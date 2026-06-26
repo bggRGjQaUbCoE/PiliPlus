@@ -177,7 +177,7 @@ class AccountManager extends Interceptor {
       'site/getCoin',
     ];
     String url = err.requestOptions.uri.toString();
-    if (kDebugMode) debugPrint('🌹🌹ApiInterceptor: $url');
+    if (kDebugMode) debugPrint('🌹🌹ApiInterceptor: $url\n$err');
     if (skipShow.any((i) => url.contains(i)) ||
         (url.contains('skipSegments') && err.requestOptions.method == 'GET')) {
       // skip

@@ -7,6 +7,7 @@ import 'package:PiliPlus/common/widgets/radio_widget.dart';
 import 'package:PiliPlus/http/init.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/login.dart';
+import 'package:PiliPlus/main.dart' show webViewEnvironment;
 import 'package:PiliPlus/models/common/account_type.dart';
 import 'package:PiliPlus/models/login/model.dart';
 import 'package:PiliPlus/pages/login/geetest/geetest_webview_dialog.dart';
@@ -17,6 +18,7 @@ import 'package:PiliPlus/utils/theme_utils.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart' as web;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 
@@ -47,6 +49,15 @@ class LoginPageController extends GetxController
   Timer? smsSendCooldownTimer;
 
   bool _isReq = false;
+  bool _isImportingWebLogin = false;
+
+  static const Set<String> _requiredWebLoginCookies = {
+    'SESSDATA',
+    'DedeUserID',
+    'bili_jct',
+    'DedeUserID__ckMd5',
+    'sid',
+  };
 
   @override
   void onInit() {
@@ -157,43 +168,139 @@ class LoginPageController extends GetxController
       SmartDialog.showToast('cookie不能为空');
       return;
     }
+    final cookieMap = _cookieMapFromText(cookieTextController.text);
+    final missing = _requiredWebLoginCookies.difference(cookieMap.keys.toSet());
+    if (missing.isNotEmpty) {
+      SmartDialog.showToast('缺少必要cookie: ${missing.join(", ")}');
+      return;
+    }
+    final saved = await _saveCookieAccount(
+      cookieMap,
+      invalidToast: '哔哩哔哩登录已失效，请重新登录',
+      errorToast: '获取哔哩哔哩用户信息失败，可前往账号管理重试',
+    );
+    if (saved) {
+      await _completeLogin();
+      Get.back();
+    }
+  }
+
+  static Map<String, String> _cookieMapFromText(String cookieText) {
+    final map = <String, String>{};
+    for (final item in validateCookie(cookieText).split(';')) {
+      final trimmed = item.trim();
+      if (trimmed.isEmpty) {
+        continue;
+      }
+      final cookie = Cookie.fromSetCookieValue(trimmed);
+      if (cookie.value.isNotEmpty) {
+        map[cookie.name] = cookie.value;
+      }
+    }
+    return map;
+  }
+
+  static String _cookieHeader(Map<String, String> cookieMap) {
+    return cookieMap.entries
+        .map((entry) => '${entry.key}=${entry.value}')
+        .join('; ');
+  }
+
+  Future<bool> _saveCookieAccount(
+    Map<String, String> cookieMap, {
+    required String invalidToast,
+    required String errorToast,
+  }) async {
+    if (cookieMap.isEmpty) {
+      SmartDialog.showToast(invalidToast);
+      return false;
+    }
     try {
       final result = await Request().get(
         "/x/member/web/account",
         options: Options(
-          headers: {
-            "cookie": validateCookie(cookieTextController.text),
-          },
+          headers: {"cookie": _cookieHeader(cookieMap)},
           extra: {'account': AnonymousAccount()},
         ),
       );
       if (result.data['code'] == 0) {
-        try {
-          await LoginAccount(
-            BiliCookieJar.fromJson(
-              Map.fromEntries(
-                cookieTextController.text.split(';').map((item) {
-                  final list = item.split('=');
-                  return MapEntry(list.first, list.skip(1).join());
-                }),
-              ),
-            ),
-            null,
-            null,
-          ).onChange();
-          if (!Accounts.main.isLogin) await switchAccountDialog(Get.context!);
-          SmartDialog.showToast('登录成功');
-          Get.back();
-        } catch (e) {
-          SmartDialog.showToast("登录失败: $e");
-        }
-      } else {
-        SmartDialog.showToast("哔哩哔哩登录已失效，请重新登录");
+        await _saveAccount(
+          LoginAccount(BiliCookieJar.fromJson(cookieMap), null, null),
+        );
+        return true;
       }
+      SmartDialog.showToast(invalidToast);
     } catch (e) {
-      SmartDialog.showToast("获取哔哩哔哩用户信息失败，可前往账号管理重试");
+      SmartDialog.showToast('$errorToast: $e');
+    }
+    return false;
+  }
+
+  Future<void> importWebLoginCookies({bool showResultToast = false}) async {
+    if (!Platform.isAndroid || _isImportingWebLogin) {
+      return;
+    }
+    _isImportingWebLogin = true;
+    try {
+      final cookieManager = web.CookieManager.instance(
+        webViewEnvironment: webViewEnvironment,
+      );
+      final cookiesByName = <String, web.Cookie>{};
+      for (final url in const [
+        'https://www.bilibili.com',
+        'https://passport.bilibili.com',
+        'https://api.bilibili.com',
+      ]) {
+        final cookies = await cookieManager.getCookies(url: web.WebUri(url));
+        for (final cookie in cookies) {
+          if (_webCookieValue(cookie).isNotEmpty) {
+            cookiesByName[cookie.name] = cookie;
+          }
+        }
+      }
+      await setCookieAccountFromWebCookies(
+        cookiesByName.values.toList(),
+        showResultToast: showResultToast,
+      );
+    } catch (e) {
+      if (showResultToast) {
+        SmartDialog.showToast('检测网页登录状态失败: $e');
+      }
+    } finally {
+      _isImportingWebLogin = false;
     }
   }
+
+  Future<void> setCookieAccountFromWebCookies(
+    List<web.Cookie> cookies, {
+    bool showResultToast = true,
+  }) async {
+    final cookieMap = {
+      for (final cookie in cookies)
+        if (_webCookieValue(cookie).isNotEmpty)
+          cookie.name: _webCookieValue(cookie),
+    };
+    final missing = _requiredWebLoginCookies.difference(cookieMap.keys.toSet());
+    if (missing.isNotEmpty) {
+      if (showResultToast) {
+        SmartDialog.showToast('网页登录态未生效，请完成扫码授权后重试');
+      }
+      return;
+    }
+
+    final saved = await _saveCookieAccount(
+      cookieMap,
+      invalidToast: '网页登录态未生效，请完成扫码授权后重试',
+      errorToast: '登录失败',
+    );
+    if (saved) {
+      await _completeLogin();
+      Get.back();
+    }
+  }
+
+  static String _webCookieValue(web.Cookie cookie) =>
+      cookie.value?.toString() ?? '';
 
   // app端密码登录
   Future<void> loginByPassword() async {
@@ -624,17 +731,25 @@ class LoginPageController extends GetxController
       tokenInfo['access_token'],
       tokenInfo['refresh_token'],
     );
-    await Future.wait([account.onChange(), AnonymousAccount().delete()]);
-    for (int i = 0; i < AccountType.values.length; i++) {
-      if (Accounts.accountMode[i].mid == account.mid) {
-        Accounts.accountMode[i] = account;
-      }
-    }
+    await _saveAccount(account);
+    await _completeLogin();
+  }
+
+  Future<void> _completeLogin() async {
     if (Accounts.main.isLogin) {
       SmartDialog.showToast('登录成功');
     } else {
       SmartDialog.showToast('登录成功, 请先设置账号模式');
       await switchAccountDialog(Get.context!);
+    }
+  }
+
+  Future<void> _saveAccount(LoginAccount account) async {
+    await Future.wait([account.onChange(), AnonymousAccount().delete()]);
+    for (int i = 0; i < AccountType.values.length; i++) {
+      if (Accounts.accountMode[i].mid == account.mid) {
+        Accounts.accountMode[i] = account;
+      }
     }
   }
 

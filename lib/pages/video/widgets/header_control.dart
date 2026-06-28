@@ -1,3 +1,5 @@
+// Modified by barmxds6ch on 2026-06-28.
+// SPDX-License-Identifier: GPL-3.0-only
 import 'dart:async' show Timer;
 import 'dart:convert' show jsonDecode, utf8;
 import 'dart:io' show Platform, File;
@@ -517,6 +519,41 @@ class HeaderControlState extends State<HeaderControl>
                         setting.put(SettingBoxKey.CDNService, result.name);
                         SmartDialog.showToast('已设置为 ${result.desc}，正在重载视频');
                         videoDetailCtr.queryVideoUrl(fromReset: true);
+                      }
+                    },
+                  ),
+                if (videoDetailCtr.isUgc && videoDetailCtr.ownerMid != null)
+                  ListTile(
+                    dense: true,
+                    title: Text(
+                      '${Pref.blockWhitelist.keys.contains(videoDetailCtr.ownerMid) ? '' : '不'}跳过此UP主',
+                      style: titleStyle,
+                    ),
+                    leading: const Icon(
+                      Icons.person_add_alt_1_outlined,
+                      size: 20,
+                    ),
+                    onTap: () {
+                      Get.back();
+                      final currentMap = Map<int, String>.from(
+                        Pref.blockWhitelist,
+                      );
+                      final ownerMid = videoDetailCtr.ownerMid;
+                      final ownerName = videoDetailCtr.ownerName;
+                      final isWhitelisted =
+                          ownerMid != null &&
+                          currentMap.keys.contains(ownerMid);
+                      if (ownerMid != null) {
+                        if (isWhitelisted) {
+                          currentMap.remove(ownerMid);
+                        } else {
+                          currentMap[ownerMid] =
+                              ownerName ?? ownerMid.toString();
+                        }
+                        Pref.blockWhitelist = currentMap;
+                        SmartDialog.showToast(
+                          '已将UP主${isWhitelisted ? '移出' : '加入'}豁免名单，重启视频生效',
+                        );
                       }
                     },
                   ),

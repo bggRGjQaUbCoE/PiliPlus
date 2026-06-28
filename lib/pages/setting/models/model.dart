@@ -1,5 +1,9 @@
+// Modified by barmxds6ch on 2026-06-28.
+// SPDX-License-Identifier: GPL-3.0-only
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/models/common/enum_with_label.dart';
+import 'package:PiliPlus/pages/setting/widgets/list_editor_dialog.dart'
+    show ListEditorDialog;
 import 'package:PiliPlus/pages/setting/widgets/normal_item.dart';
 import 'package:PiliPlus/pages/setting/widgets/popup_item.dart';
 import 'package:PiliPlus/pages/setting/widgets/select_dialog.dart';
@@ -110,6 +114,7 @@ class NormalModel extends SettingsModel {
   final String? title;
   final ValueGetter<String>? getTitle;
   final ValueGetter<String>? getSubtitle;
+  final TextStyle? subtitleStyle;
   final Widget Function(ThemeData theme)? getTrailing;
   final void Function(BuildContext context, VoidCallback setState)? onTap;
 
@@ -118,6 +123,7 @@ class NormalModel extends SettingsModel {
     super.leading,
     super.contentPadding,
     super.titleStyle,
+    this.subtitleStyle,
     this.title,
     this.getTitle,
     this.getSubtitle,
@@ -130,6 +136,7 @@ class NormalModel extends SettingsModel {
     super.leading,
     super.contentPadding,
     super.titleStyle,
+    this.subtitleStyle,
     this.title,
     this.getTitle,
     this.getSubtitle,
@@ -153,6 +160,7 @@ class NormalModel extends SettingsModel {
     onTap: onTap,
     contentPadding: contentPadding,
     titleStyle: titleStyle,
+    subtitleStyle: subtitleStyle,
   );
 }
 
@@ -261,6 +269,91 @@ SettingsModel getBanWordModel({
         ),
       );
     },
+  );
+}
+
+/// Creates a list-based UID filter model with user names using ListEditorDialog
+///
+/// 支持显示用户名的 UID 过滤模型
+SettingsModel getListUidWithNameModel({
+  required String title,
+  required Map<int, String> Function() getUidsMap,
+  required void Function(Map<int, String>) setUidsMap,
+  required void Function() onUpdate,
+  Widget? leading,
+  String emptySubtitle = '点击添加',
+  String Function(int count)? countSubtitleBuilder,
+  TextStyle? titleStyle,
+  TextStyle? subtitleStyle,
+}) {
+  return NormalModel(
+    leading: leading,
+    title: title,
+    getSubtitle: () {
+      final uidsMap = getUidsMap();
+      if (uidsMap.isEmpty) return emptySubtitle;
+      return countSubtitleBuilder?.call(uidsMap.length) ??
+          '已屏蔽 ${uidsMap.length} 个用户';
+    },
+    onTap: (context, setState) async {
+      final uidsMap = getUidsMap();
+      // 将 Map 转换为显示格式："用户名 (UID)"
+      final items = uidsMap.entries.map((e) {
+        return '${e.value} (${e.key})';
+      }).toList();
+
+      final result = await showDialog<List<String>>(
+        context: context,
+        builder: (context) {
+          return ListEditorDialog(
+            title: title,
+            initialItems: items,
+            hintText: '输入用户UID',
+            itemLabel: 'UID',
+            keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            allowEdit: false,
+            validator: (value) {
+              if (value.isEmpty) return '请输入UID';
+              final uid = int.tryParse(value);
+              if (uid == null) return 'UID必须是数字';
+              if (uid <= 0) return 'UID必须大于0';
+              return null;
+            },
+          );
+        },
+      );
+
+      if (result != null) {
+        final newMap = <int, String>{};
+
+        for (final item in result) {
+          // 解析格式 "用户名 (UID)" 或纯数字 "UID"
+          final match = RegExp(r'(.+?)\s*\((\d+)\)$').firstMatch(item);
+          if (match != null) {
+            // 格式: "用户名 (UID)"
+            final name = match.group(1)?.trim() ?? '';
+            final uid = int.tryParse(match.group(2) ?? '');
+            if (uid != null && uid > 0) {
+              newMap[uid] = name;
+            }
+          } else {
+            // 纯数字格式：新添加的UID
+            final uid = int.tryParse(item);
+            if (uid != null && uid > 0) {
+              newMap[uid] = 'UID:$uid'; // 默认名称
+            }
+          }
+        }
+
+        setUidsMap(newMap);
+        onUpdate();
+        setState();
+        SmartDialog.showToast('已保存');
+      }
+    },
+    titleStyle: titleStyle,
+    subtitleStyle: subtitleStyle,
   );
 }
 

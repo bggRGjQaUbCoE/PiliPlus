@@ -1,3 +1,5 @@
+// Modified by barmxds6ch on 2026-06-28.
+// SPDX-License-Identifier: GPL-3.0-only
 import 'dart:async' show StreamSubscription, Timer;
 import 'dart:math' as math;
 
@@ -54,6 +56,8 @@ mixin BlockMixin on GetxController {
   bool get preInitPlayer;
   int get currPosInMilliseconds;
   bool get isFullScreen => false;
+
+  int? get ownerMid => null;
 
   bool get isUgc;
   late final isBlock = isUgc || !blockConfig.enablePgcSkip;
@@ -117,6 +121,10 @@ mixin BlockMixin on GetxController {
 
   Future<void> handleSBData(List<SegmentItemModel> list) async {
     if (list.isNotEmpty) {
+      final currentOwnerMid = ownerMid;
+      final isWhitelisted =
+          currentOwnerMid != null &&
+          Pref.blockWhitelist.keys.contains(currentOwnerMid);
       try {
         Future<void>? future;
         final duration = list.first.videoDuration ?? timeLength!;
@@ -130,10 +138,18 @@ mixin BlockMixin on GetxController {
               )
               .map(
                 (item) {
-                  final segmentModel = SegmentModel.fromItemModel(
+                  final rawSegmentModel = SegmentModel.fromItemModel(
                     item,
                     isBlock ? blockConfig : null,
                   );
+                  final segmentModel = isWhitelisted
+                      ? SegmentModel(
+                          uuid: rawSegmentModel.uuid,
+                          segmentType: rawSegmentModel.segmentType,
+                          segment: rawSegmentModel.segment,
+                          skipType: SkipType.showOnly,
+                        )
+                      : rawSegmentModel;
                   if (segmentModel.segment == const (0, 0)) {
                     videoLabel?.value +=
                         '${videoLabel!.value.isNotEmpty ? '/' : ''}${segmentModel.segmentType.title}';

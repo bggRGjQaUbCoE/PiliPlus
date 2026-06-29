@@ -22,7 +22,7 @@ class PopupMenuText<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final select = value();
-    final secondary = Theme.of(context).colorScheme.secondary;
+    final secondary = ColorScheme.of(context).secondary;
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -37,19 +37,11 @@ class PopupMenuText<T> extends StatelessWidget {
           },
           itemBuilder: itemBuilder,
           child: Text.rich(
-            style: TextStyle(
-              height: 1,
-              fontSize: 14,
-              color: secondary,
-            ),
-            strutStyle: const StrutStyle(
-              height: 1,
-              leading: 0,
-              fontSize: 14,
-            ),
+            style: TextStyle(height: 1, fontSize: 14, color: secondary),
+            strutStyle: const StrutStyle(height: 1, leading: 0, fontSize: 14),
             TextSpan(
+              text: getSelectTitle(select),
               children: [
-                TextSpan(text: getSelectTitle(select)),
                 WidgetSpan(
                   alignment: .middle,
                   child: Icon(

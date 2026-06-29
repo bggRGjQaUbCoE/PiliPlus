@@ -189,7 +189,7 @@ void main() async {
   if (Pref.enableLog) {
     // 异常捕获 logo记录
     final customParameters = {
-      'Build Time': DateFormatUtils.format(
+      BuildConfig.timestampLabel: DateFormatUtils.format(
         BuildConfig.buildTime,
         format: DateFormatUtils.longFormatDs,
       ),

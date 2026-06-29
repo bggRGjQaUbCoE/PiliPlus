@@ -26,21 +26,21 @@ jobs:
           channel: stable
           flutter-version-file: pubspec.yaml
 
-      - name: Set and Extract version
-        shell: pwsh
-        run: lib/scripts/build.ps1
+      - name: Apply Patches
+        run: lib/scripts/pre-build.sh apply-patches --platform ios
+        continue-on-error: true
 
-      - name: Apply Patch
-        shell: pwsh
-        run: lib/scripts/patch.ps1 iOS
+      - name: Set and Extract version
+        run: lib/scripts/pre-build.sh gen-build-info --ci --platform ios --tag "${{ inputs.tag }}"
 
       - name: Build iOS
         run: |
+          VERSION="${{ env.version_name }}+${{ env.version_code }}"
           flutter build ios --release --no-codesign --dart-define-from-file=pili_release.json
           ln -sf ./build/ios/iphoneos Payload
           # make AltSign happy...
           find Payload/Runner.app/Frameworks -type d -name "*.framework" -exec codesign --force --sign - --preserve-metadata=identifier,entitlements {} \;
-          zip -r9 PiliPlus_ios_${{env.version}}.ipa Payload/Runner.app
+          zip -r9 PiliPlus_ios_${VERSION}.ipa Payload/Runner.app
 
       - name: Release
         if: ${{ github.event.inputs.tag != '' }}

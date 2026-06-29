@@ -23,21 +23,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y clang cmake libgtk-3-dev ninja-build libayatana-appindicator3-dev unzip webkit2gtk-4.1 libasound2-dev rpm patchelf
-          sudo apt-get install -y gcc g++ autoconf automake debhelper glslang-dev ladspa-sdk xutils-dev libasound2-dev \
-              libarchive-dev libbluray-dev libbs2b-dev libcaca-dev libcdio-paranoia-dev libdrm-dev \
-              libdav1d-dev libdvdnav-dev libegl1-mesa-dev libepoxy-dev libfontconfig-dev libfreetype6-dev \
-              libfribidi-dev libgl1-mesa-dev libgbm-dev libgme-dev libgsm1-dev libharfbuzz-dev libjpeg-dev \
-              libbrotli-dev liblcms2-dev libmodplug-dev libmp3lame-dev libopenal-dev \
-              libopus-dev libopencore-amrnb-dev libopencore-amrwb-dev libpulse-dev librtmp-dev \
-              libsdl2-dev libsixel-dev libssh-dev libsoxr-dev libspeex-dev libtool \
-              libv4l-dev libva-dev libvdpau-dev libvorbis-dev libvo-amrwbenc-dev \
-              libunwind-dev libvpx-dev libwayland-dev libx11-dev libxext-dev \
-              libxkbcommon-dev libxrandr-dev libxss-dev libxv-dev libxvidcore-dev \
-              linux-libc-dev nasm ninja-build pkg-config python3 python3-docutils wayland-protocols \
-              x11proto-core-dev zlib1g-dev libfdk-aac-dev libtheora-dev libwebp-dev \
-              unixodbc-dev libpq-dev libxxhash-dev libaom-dev \
-              libgtk-3-0 libblkid1 liblzma5 libmpv-dev
+          sudo apt-get install -y libgtk-3-dev libayatana-appindicator3-dev webkit2gtk-4.1 libasound2-dev libmpv-dev
         shell: bash
 
       - name: Setup flutter
@@ -47,26 +33,29 @@ jobs:
           flutter-version-file: pubspec.yaml
           cache: true
 
-      - name: Set and Extract version
-        shell: pwsh
-        run: lib/scripts/build.ps1
+      - name: Apply Patches
+        run: lib/scripts/pre-build.sh apply-patches --platform linux
+        continue-on-error: true
 
-      - name: Apply Patch
-        shell: pwsh
-        run: lib/scripts/patch.ps1 Linux
+      - name: Set and Extract version
+        run: lib/scripts/pre-build.sh gen-build-info --ci --platform linux --tag "${{ inputs.tag }}"
 
         #TODO: deb and rpm packages need to be build
       - name: Build Linux
         run: flutter build linux --release -v --pub --dart-define-from-file=pili_release.json
 
       - name: Package .tar.gz
-        run: tar -zcvf PiliPlus_linux_${{ env.version }}_amd64.tar.gz -C build/linux/x64/release/bundle .
+        run: |
+          VERSION="${{ env.version_name }}+${{ env.version_code }}"
+          tar -zcvf "PiliPlus_linux_${VERSION}_amd64.tar.gz" -C build/linux/x64/release/bundle .
 
       - name: Packege deb
         run: |
+          VERSION="${{ env.version_name }}+${{ env.version_code }}"
+          VERSION_NAME="${{ env.version_name }}"
           printf "建立构建目录...\n"
-          mkdir "PiliPlus_linux_${{ env.version }}_amd64"
-          pushd "PiliPlus_linux_${{ env.version }}_amd64"
+          mkdir "PiliPlus_linux_${VERSION}_amd64"
+          pushd "PiliPlus_linux_${VERSION}_amd64"
           mkdir -p opt/PiliPlus
           mkdir -p usr/share/applications
           mkdir -p usr/share/icons/hicolor/512x512/apps
@@ -79,7 +68,7 @@ jobs:
 
           printf "修改控制文件...\n"
           # 替换版本号
-          sed -i  "2s/version_need_change/${{ env.version }}/g" DEBIAN/control
+          sed -i  "2s/version_need_change/${VERSION_NAME/.r/+r}/g" DEBIAN/control
           # 计算安装大小并替换
           SIZE_KB=$(du -s -b --apparent-size . | awk '{print int($1)}')
           SIZE_KB=$(($SIZE_KB - $(du -s -b --apparent-size DEBIAN | awk '{print int($1)}')))
@@ -101,40 +90,44 @@ jobs:
 
           printf "打包 deb 文件...\n"
           popd
-          dpkg-deb --build --verbose --root-owner-group "PiliPlus_linux_${{ env.version }}_amd64"
-          printf "完成: PiliPlus_linux_%s_amd64.deb\n" "${{ env.version }}"
+          dpkg-deb --build --verbose --root-owner-group "PiliPlus_linux_${VERSION}_amd64"
+          printf "完成: PiliPlus_linux_%s_amd64.deb\n" "${VERSION}"
         shell: bash
 
       - name: Packege rpm
         run: |
+          VERSION="${{ env.version_name }}+${{ env.version_code }}"
+          VERSION_NAME="${{ env.version_name }}"
           printf "建立 RPM 构建目录...\n"
           RPM_BUILD_ROOT="$PWD/rpm_build"
           mkdir -p "$RPM_BUILD_ROOT/BUILD" "$RPM_BUILD_ROOT/RPMS" "$RPM_BUILD_ROOT/SOURCES" "$RPM_BUILD_ROOT/SPECS" "$RPM_BUILD_ROOT/SRPMS"
 
           printf "准备源码归档（仅包含运行时与元数据）...\n"
           DATE="$(date '+%a %b %d %Y')"
-          SRC_DIR="$PWD/piliplus-${{ env.version }}"
+          SRC_DIR="$PWD/piliplus-${VERSION}"
           mkdir -p "$SRC_DIR/bundle" "$SRC_DIR/assets"
           cp -r build/linux/x64/release/bundle/* "$SRC_DIR/bundle/"
           cp assets/linux/com.example.piliplus.desktop "$SRC_DIR/assets/com.example.piliplus.desktop"
           cp assets/images/logo/logo.png "$SRC_DIR/assets/piliplus.png"
-          tar -zcvf "$RPM_BUILD_ROOT/SOURCES/piliplus-${{ env.version }}.tar.gz" -C "$PWD" "piliplus-${{ env.version }}"
+          tar -zcvf "$RPM_BUILD_ROOT/SOURCES/piliplus-${VERSION}.tar.gz" -C "$PWD" "piliplus-${VERSION}"
 
           printf "生成 spec 文件...\n"
+          RPM_RELEASE="$((1 + ${{ env.patch_number }}))"
+          (("${RPM_RELEASE}" > 1)) && RPM_RELEASE="${RPM_RELEASE}.${VERSION_NAME##*.}" || true
           cat > "$RPM_BUILD_ROOT/SPECS/piliplus.spec" <<EOF
           Name:           piliplus
-          Version:        ${{ env.version }}
-          Release:        1%{?dist}
+          Version:        ${{ env.base_version }}
+          Release:        ${RPM_RELEASE}%{?dist}
           Summary:        PiliPlus Linux Version
           License:        GPL-3.0
-          Source0:        piliplus-${{ env.version }}.tar.gz
+          Source0:        piliplus-${VERSION}.tar.gz
           Requires:       desktop-file-utils, hicolor-icon-theme
 
           %description
           使用 Flutter 开发的 BiliBili 第三方客户端
 
           %prep
-          %setup -q -n piliplus-${{ env.version }}
+          %setup -q -n piliplus-${VERSION}
 
           %build
 
@@ -169,7 +162,7 @@ jobs:
           /usr/share/icons/hicolor/512x512/apps/piliplus.png
 
           %changelog
-          * DATE - ${{ env.version }}-1
+          * DATE - ${VERSION}-1
           - Initial RPM release
           EOF
 
@@ -179,13 +172,14 @@ jobs:
           rpmbuild --define "_topdir $RPM_BUILD_ROOT" -bb "$RPM_BUILD_ROOT/SPECS/piliplus.spec"
 
           printf "移动生成的 RPM...\n"
-          find "$RPM_BUILD_ROOT/RPMS" -name "*.rpm" -exec mv {} "PiliPlus_linux_${{ env.version }}_amd64.rpm" \;
+          find "$RPM_BUILD_ROOT/RPMS" -name "*.rpm" -exec mv {} "PiliPlus_linux_${VERSION}_amd64.rpm" \;
 
-          printf "完成: PiliPlus_linux_%s_amd64.rpm\n" "${{ env.version }}"
+          printf "完成: PiliPlus_linux_%s_amd64.rpm\n" "${VERSION}"
         shell: bash
 
       - name: Package AppImage
         run: |
+          VERSION="${{ env.version_name }}+${{ env.version_code }}"
           printf "下载 appimagetool...\n"
           wget -q https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage
           chmod +x appimagetool-x86_64.AppImage
@@ -222,9 +216,9 @@ jobs:
           sed -i 's|Icon=piliplus|Icon=piliplus|g' "$APPDIR/com.example.piliplus.desktop"
 
           printf "打包 AppImage...\n"
-          ARCH=x86_64 ./appimagetool-x86_64.AppImage "$APPDIR" "PiliPlus_linux_${{ env.version }}_amd64.AppImage"
+          ARCH=x86_64 ./appimagetool-x86_64.AppImage "$APPDIR" "PiliPlus_linux_${VERSION}_amd64.AppImage"
 
-          printf "完成: PiliPlus_linux_%s_amd64.AppImage\n" "${{ env.version }}"
+          printf "完成: PiliPlus_linux_%s_amd64.AppImage\n" "${VERSION}"
         shell: bash
 
       - name: Release

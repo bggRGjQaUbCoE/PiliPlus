@@ -311,13 +311,11 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
       if (plPlayerController.autoEnterFullScreen) {
         plPlayerController.triggerFullScreen();
       }
-      return plPlayerController.play();
-    } else {
-      return videoDetailController.playerInit(
-        autoplay: true,
-        autoFullScreenFlag: true,
-      );
     }
+    return videoDetailController.playerInit(
+      autoplay: true,
+      autoFullScreenFlag: true,
+    );
   }
 
   @override

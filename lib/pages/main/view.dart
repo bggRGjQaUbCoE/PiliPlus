@@ -510,7 +510,12 @@ class _MainAppState extends PopScopeState<MainApp>
                     ? Text(dynCount.toString())
                     : null,
                 padding: const .symmetric(horizontal: 6),
-                child: icon,
+                // Keep the same 24px box as the other icons so the label stays
+                // aligned in the horizontal NavigationDrawer layout.
+                child: SizedBox.square(
+                  dimension: 24,
+                  child: Center(child: icon),
+                ),
               );
             },
           )

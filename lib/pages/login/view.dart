@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/dial_prefix.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
@@ -5,6 +7,7 @@ import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/pages/login/controller.dart';
+import 'package:PiliPlus/pages/login/third_party_login_view.dart';
 import 'package:PiliPlus/utils/extension/size_ext.dart';
 import 'package:PiliPlus/utils/extension/widget_ext.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
@@ -206,7 +209,45 @@ class _LoginPageState extends State<LoginPage> {
           icon: const Icon(Icons.login),
           label: const Text('登录'),
         ),
+        if (Platform.isAndroid) ...[
+          const SizedBox(height: 8),
+          TextButton.icon(
+            onPressed: _openThirdPartyLogin,
+            icon: const Icon(Icons.language_outlined),
+            label: const Text('网页登录获取 Cookie'),
+          ),
+        ],
       ],
+    );
+  }
+
+  Future<void> _openThirdPartyLogin() {
+    return showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      builder: (context) => FractionallySizedBox(
+        heightFactor: 0.92,
+        child: Column(
+          children: [
+            ListTile(
+              leading: const Icon(Icons.language_outlined),
+              title: const Text('网页登录'),
+              trailing: IconButton(
+                tooltip: '关闭',
+                icon: const Icon(Icons.close),
+                onPressed: Get.back,
+              ),
+            ),
+            Expanded(
+              child: ThirdPartyLoginView(
+                controller: _loginPageCtr,
+                padding: MediaQuery.viewPaddingOf(context).copyWith(top: 0),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

@@ -356,16 +356,30 @@ abstract final class VideoHttp {
     required int multiply,
     int selectLike = 0,
   }) async {
+    final hasAccessKey = !Accounts.main.accessKey.isNullOrEmpty;
+    late final Options opts;
+    if (hasAccessKey) {
+      opts = Options(contentType: Headers.formUrlEncodedContentType);
+    } else {
+      opts = Options(
+        contentType: Headers.formUrlEncodedContentType,
+        headers: {
+          'origin': 'https://www.bilibili.com',
+          'referer': 'https://www.bilibili.com/video/$bvid',
+          'user-agent': BrowserUa.pc,
+        },
+      );
+    }
     final res = await Request().post(
-      Api.coinVideo,
+      hasAccessKey ? Api.coinVideo : Api.coinVideoWeb,
       data: {
         'aid': IdUtils.bv2av(bvid).toString(),
         // 'bvid': bvid,
         'multiply': multiply.toString(),
         'select_like': selectLike.toString(),
-        // 'csrf': Accounts.main.csrf,
+        if (!hasAccessKey) 'csrf': Accounts.main.csrf,
       },
-      options: Options(contentType: Headers.formUrlEncodedContentType),
+      options: opts,
     );
     if (res.data['code'] == 0) {
       return const Success(null);
@@ -436,13 +450,33 @@ abstract final class VideoHttp {
     required String bvid,
     required bool type,
   }) async {
+    final hasAccessKey = !Accounts.main.accessKey.isNullOrEmpty;
+    late final Options opts;
+    if (hasAccessKey) {
+      opts = Options(contentType: Headers.formUrlEncodedContentType);
+    } else {
+      opts = Options(
+        contentType: Headers.formUrlEncodedContentType,
+        headers: {
+          'origin': 'https://www.bilibili.com',
+          'referer': 'https://www.bilibili.com/video/$bvid',
+          'user-agent': BrowserUa.pc,
+        },
+      );
+    }
     final res = await Request().post(
-      Api.likeVideo,
-      data: {'aid': IdUtils.bv2av(bvid).toString(), 'like': type ? '0' : '1'},
-      options: Options(contentType: Headers.formUrlEncodedContentType),
+      hasAccessKey ? Api.likeVideo : Api.likeVideoWeb,
+      data: hasAccessKey
+          ? {'aid': IdUtils.bv2av(bvid).toString(), 'like': type ? '0' : '1'}
+          : {
+              'aid': IdUtils.bv2av(bvid).toString(),
+              'like': type ? '1' : '2',
+              'csrf': Accounts.main.csrf,
+            },
+      options: opts,
     );
     if (res.data['code'] == 0) {
-      return Success(res.data['data']['toast']);
+      return Success(res.data['data']?['toast'] as String? ?? '点赞成功');
     } else {
       return Error(res.data['message']);
     }
@@ -454,7 +488,7 @@ abstract final class VideoHttp {
     required bool type,
   }) async {
     if (Accounts.main.accessKey.isNullOrEmpty) {
-      return const Error('请退出账号后重新登录');
+      return const Error('点踩仅支持扫码或密码登录');
     }
     final res = await Request().post(
       Api.dislikeVideo,

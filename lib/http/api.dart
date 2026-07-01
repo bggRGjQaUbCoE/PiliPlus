@@ -47,6 +47,10 @@ abstract final class Api {
   // https://api.bilibili.com/x/web-interface/archive/like
   // static const String likeVideo = '/x/web-interface/archive/like';
 
+  /// web端点赞接口（无access_key时fallback）
+  static const String likeVideoWeb = '/x/web-interface/archive/like';
+
+
   // 改用app端点赞接口
   static const String likeVideo = '${HttpString.appBaseUrl}/x/v2/view/like';
   //判断视频是否被点赞（双端）Get
@@ -74,6 +78,10 @@ abstract final class Api {
   /// select_like	num	是否附加点赞	非必要	0：不点赞 1：同时点赞 默认为0
   // csrf	str	CSRF Token（位于cookie）	必要
   // https://api.bilibili.com/x/web-interface/coin/add
+
+  /// web端投币接口（无access_key时fallback）
+  static const String coinVideoWeb = '/x/web-interface/coin/add';
+
   // static const String coinVideo = '/x/web-interface/coin/add';
 
   // 改用app端投币接口

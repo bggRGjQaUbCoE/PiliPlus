@@ -39,7 +39,11 @@ class DynamicsDataModel {
   }
 
   static RegExp banWordForDyn = RegExp(
-    Pref.banWordForDyn,
+    Pref.banWordForDyn
+        .split('|')
+        .where((w) => w.isNotEmpty)
+        .map(RegExp.escape)
+        .join('|'),
     caseSensitive: false,
   );
   static bool enableFilter = banWordForDyn.pattern.isNotEmpty;

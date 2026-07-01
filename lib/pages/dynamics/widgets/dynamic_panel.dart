@@ -24,6 +24,7 @@ class DynamicPanel extends StatelessWidget {
   onSetPubSetting;
   final VoidCallback? onEdit;
   final ValueChanged<int>? onSetReplySubject;
+  final ValueChanged<List<String>>? onAddBanWord;
 
   const DynamicPanel({
     super.key,
@@ -38,6 +39,7 @@ class DynamicPanel extends StatelessWidget {
     this.onSetPubSetting,
     this.onEdit,
     this.onSetReplySubject,
+    this.onAddBanWord,
   });
 
   @override
@@ -56,6 +58,7 @@ class DynamicPanel extends StatelessWidget {
       onSetPubSetting: onSetPubSetting,
       onEdit: onEdit,
       onSetReplySubject: onSetReplySubject,
+      onAddBanWord: onAddBanWord,
     );
 
     void showMore() => _imageSaveDialog(context, authorWidget.morePanel);

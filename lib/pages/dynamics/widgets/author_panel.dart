@@ -25,6 +25,8 @@ import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/request_utils.dart';
 import 'package:PiliPlus/utils/share_utils.dart';
+import 'package:PiliPlus/utils/storage.dart';
+import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
@@ -42,6 +44,7 @@ class AuthorPanel extends StatelessWidget {
   onSetPubSetting;
   final VoidCallback? onEdit;
   final ValueChanged<int>? onSetReplySubject;
+  final ValueChanged<List<String>>? onAddBanWord;
 
   const AuthorPanel({
     super.key,
@@ -54,6 +57,7 @@ class AuthorPanel extends StatelessWidget {
     this.onSetPubSetting,
     this.onEdit,
     this.onSetReplySubject,
+    this.onAddBanWord,
   });
 
   @override
@@ -386,6 +390,19 @@ class AuthorPanel extends StatelessWidget {
                 },
                 minLeadingWidth: 0,
               ),
+              if (onAddBanWord != null)
+                ListTile(
+                  onTap: () {
+                    Get.back();
+                    showKeywordBlockPanel(context);
+                  },
+                  minLeadingWidth: 0,
+                  leading: const Icon(Icons.playlist_add, size: 19),
+                  title: Text(
+                    '屏蔽关键词…',
+                    style: theme.textTheme.titleSmall,
+                  ),
+                ),
               if (kDebugMode || moduleAuthor.mid == Accounts.main.mid) ...[
                 ListTile(
                   onTap: () {
@@ -636,5 +653,388 @@ class AuthorPanel extends StatelessWidget {
         );
       },
     );
+  }
+
+  /// 提取动态文本中的候选关键词
+  static List<String> _extractKeywords(DynamicItemModel item) {
+    final moduleDynamic = item.modules.moduleDynamic;
+    final opus = moduleDynamic?.major?.opus;
+    final texts = <String>[
+      ?opus?.title,
+      ?opus?.summary?.text,
+      ?moduleDynamic?.desc?.text,
+      ...switch (moduleDynamic?.major?.type) {
+        'MAJOR_TYPE_ARCHIVE' => [moduleDynamic?.major?.archive?.title ?? ''],
+        'MAJOR_TYPE_UGC_SEASON' => [
+          moduleDynamic?.major?.ugcSeason?.title ?? '',
+        ],
+        'MAJOR_TYPE_PGC' => [moduleDynamic?.major?.pgc?.title ?? ''],
+        'MAJOR_TYPE_COURSES' => [moduleDynamic?.major?.courses?.title ?? ''],
+        _ => <String>[],
+      },
+    ];
+
+    // 同时提取转发来源（orig）中的文本
+    if (item.orig case final orig?) {
+      final origDynamic = orig.modules.moduleDynamic;
+      final origOpus = origDynamic?.major?.opus;
+      texts.addAll([
+        ?origOpus?.title,
+        ?origOpus?.summary?.text,
+        ?origDynamic?.desc?.text,
+        ...switch (origDynamic?.major?.type) {
+          'MAJOR_TYPE_ARCHIVE' => [origDynamic?.major?.archive?.title ?? ''],
+          'MAJOR_TYPE_UGC_SEASON' => [
+            origDynamic?.major?.ugcSeason?.title ?? '',
+          ],
+          'MAJOR_TYPE_PGC' => [origDynamic?.major?.pgc?.title ?? ''],
+          'MAJOR_TYPE_COURSES' => [origDynamic?.major?.courses?.title ?? ''],
+          _ => <String>[],
+        },
+      ]);
+    }
+
+    final candidates = <String>{};
+    for (final text in texts) {
+      // 按标点符号拆分
+      for (final segment in text.split(RegExp(r'[，。！？,\.!?\、；;：:\|\s\n\r]+'))) {
+        final trimmed = segment.trim();
+        if (trimmed.length >= 2 && trimmed.length <= 30) {
+          candidates.add(trimmed);
+        }
+      }
+    }
+    final result = candidates.toList()
+      ..sort((a, b) => b.length.compareTo(a.length));
+    return result.take(15).toList();
+  }
+
+  void showKeywordBlockPanel(BuildContext context) {
+    final keywords = _extractKeywords(item);
+    if (keywords.isEmpty) {
+      SmartDialog.showToast('未提取到可屏蔽的关键词');
+      return;
+    }
+
+    // 获取已存在的屏蔽词列表
+    final existingBanWords =
+        (GStorage.setting.get(SettingBoxKey.banWordForDyn, defaultValue: '')
+                as String)
+            .split('|')
+            .where((w) => w.isNotEmpty)
+            .map((w) => w.toLowerCase())
+            .toSet();
+
+    final customInputController = TextEditingController();
+    final customInputFocusNode = FocusNode();
+    showModalBottomSheet(
+      context: context,
+      useSafeArea: true,
+      isScrollControlled: true,
+      constraints: BoxConstraints(
+        maxWidth: min(640, context.mediaQueryShortestSide),
+      ),
+      builder: (context1) {
+        final theme = Theme.of(context);
+        // 暂存用户选中的关键词（不立即保存）
+        final pendingAdds = <String>{};
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.viewPaddingOf(context1).bottom,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // 标题栏
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 12, 12, 4),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            '选择要屏蔽的关键词',
+                            style: theme.textTheme.titleMedium,
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: Get.back,
+                          icon: Icon(
+                            Icons.close,
+                            color: theme.colorScheme.outline,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Text(
+                      '点击切换选中，长按可填入输入框编辑',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: theme.colorScheme.outline,
+                      ),
+                    ),
+                  ),
+                  const Divider(height: 16),
+                  // 关键词列表
+                  Flexible(
+                    child: ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: keywords.length,
+                      itemBuilder: (context, index) {
+                        final keyword = keywords[index];
+                        final isExisting = existingBanWords.contains(
+                          keyword.toLowerCase(),
+                        );
+                        final isPending = pendingAdds.contains(keyword);
+
+                        IconData leadingIcon;
+                        Color iconColor;
+                        Color? textColor;
+                        TextDecoration? textDecoration;
+                        bool canTap;
+
+                        if (isExisting) {
+                          leadingIcon = Icons.check_circle;
+                          iconColor = Colors.green;
+                          textColor = theme.colorScheme.outline;
+                          textDecoration = TextDecoration.lineThrough;
+                          canTap = false;
+                        } else if (isPending) {
+                          leadingIcon = Icons.remove_circle_outline;
+                          iconColor = theme.colorScheme.error;
+                          canTap = true;
+                        } else {
+                          leadingIcon = Icons.add_circle_outline;
+                          iconColor = theme.colorScheme.primary;
+                          canTap = true;
+                        }
+
+                        return Tooltip(
+                          message: canTap ? '长按填入输入框编辑' : '已屏蔽',
+                          child: ListTile(
+                            dense: true,
+                            enabled: canTap || isExisting,
+                            leading: Icon(
+                              leadingIcon,
+                              size: 22,
+                              color: iconColor,
+                            ),
+                            title: Text(
+                              keyword,
+                              style: TextStyle(
+                                fontSize: 14,
+                                decoration: textDecoration,
+                                color: textColor,
+                              ),
+                            ),
+                            subtitle: isExisting
+                                ? const Text(
+                                    '已屏蔽',
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      color: Colors.green,
+                                    ),
+                                  )
+                                : null,
+                            onTap: canTap
+                                ? () {
+                                    setDialogState(() {
+                                      if (isPending) {
+                                        pendingAdds.remove(keyword);
+                                      } else {
+                                        pendingAdds.add(keyword);
+                                      }
+                                    });
+                                  }
+                                : null,
+                            onLongPress: () {
+                              customInputController
+                                ..text = keyword
+                                ..selection = TextSelection(
+                                  baseOffset: 0,
+                                  extentOffset: keyword.length,
+                                );
+                              customInputFocusNode.requestFocus();
+                            },
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  // 自定义输入关键词
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(12, 4, 12, 0),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: SizedBox(
+                            height: 36,
+                            child: TextField(
+                              controller: customInputController,
+                              focusNode: customInputFocusNode,
+                              style: const TextStyle(fontSize: 14),
+                              decoration: InputDecoration(
+                                isDense: true,
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 8,
+                                ),
+                                hintText: '输入自定义关键词',
+                                hintStyle: TextStyle(
+                                  fontSize: 14,
+                                  color: theme.colorScheme.outline,
+                                ),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: BorderSide(
+                                    color: theme.colorScheme.outlineVariant,
+                                  ),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: BorderSide(
+                                    color: theme.colorScheme.outlineVariant,
+                                  ),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: BorderSide(
+                                    color: theme.colorScheme.primary,
+                                  ),
+                                ),
+                              ),
+                              onSubmitted: (value) {
+                                final trimmed = value.trim();
+                                if (trimmed.contains('|')) {
+                                  SmartDialog.showToast('关键词不能包含 | 字符');
+                                  return;
+                                }
+                                if (trimmed.length < 2) {
+                                  SmartDialog.showToast('关键词至少需要 2 个字符');
+                                  return;
+                                }
+                                setDialogState(() {
+                                  pendingAdds.add(trimmed);
+                                  customInputController.clear();
+                                });
+                              },
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        IconButton(
+                          icon: const Icon(Icons.add_circle_outline),
+                          color: theme.colorScheme.primary,
+                          onPressed: () {
+                            final trimmed = customInputController.text.trim();
+                            if (trimmed.contains('|')) {
+                              SmartDialog.showToast('关键词不能包含 | 字符');
+                              return;
+                            }
+                            if (trimmed.length < 2) {
+                              SmartDialog.showToast('关键词至少需要 2 个字符');
+                              return;
+                            }
+                            setDialogState(() {
+                              pendingAdds.add(trimmed);
+                              customInputController.clear();
+                            });
+                            customInputFocusNode.unfocus();
+                          },
+                          tooltip: '添加自定义关键词',
+                        ),
+                      ],
+                    ),
+                  ),
+                  // 自定义关键词标签（可反悔）
+                  Builder(
+                    builder: (context) {
+                      final customPending = pendingAdds
+                          .where((k) => !keywords.contains(k))
+                          .toList();
+                      if (customPending.isEmpty) {
+                        return const SizedBox.shrink();
+                      }
+                      return Padding(
+                        padding: const EdgeInsets.fromLTRB(12, 4, 12, 0),
+                        child: Wrap(
+                          spacing: 6,
+                          runSpacing: 4,
+                          children: customPending.map((k) {
+                            return Chip(
+                              materialTapTargetSize:
+                                  MaterialTapTargetSize.shrinkWrap,
+                              visualDensity: VisualDensity.compact,
+                              label: Text(
+                                k,
+                                style: const TextStyle(fontSize: 12),
+                              ),
+                              deleteIcon: const Icon(Icons.close, size: 14),
+                              onDeleted: () {
+                                setDialogState(() => pendingAdds.remove(k));
+                              },
+                            );
+                          }).toList(),
+                        ),
+                      );
+                    },
+                  ),
+                  const Divider(height: 8),
+                  // 底部操作栏
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
+                    child: SafeArea(
+                      top: false,
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: TextButton(
+                              onPressed: Get.back,
+                              child: Text(
+                                '取消',
+                                style: TextStyle(
+                                  color: theme.colorScheme.outline,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            flex: 2,
+                            child: FilledButton(
+                              onPressed: pendingAdds.isNotEmpty
+                                  ? () {
+                                      Get.back();
+                                      onAddBanWord?.call(
+                                        pendingAdds.toList(),
+                                      );
+                                    }
+                                  : null,
+                              child: Text(
+                                pendingAdds.isNotEmpty
+                                    ? '确认添加（${pendingAdds.length}）'
+                                    : '确认添加',
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    ).then((_) {
+      customInputController.dispose();
+      customInputFocusNode.dispose();
+    });
   }
 }

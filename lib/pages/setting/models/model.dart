@@ -249,10 +249,15 @@ SettingsModel getBanWordModel({
             TextButton(
               child: const Text('保存'),
               onPressed: () {
+                try {
+                  onChanged(RegExp(editValue, caseSensitive: false));
+                } catch (e) {
+                  SmartDialog.showToast('关键词格式有误');
+                  return;
+                }
                 Get.back();
                 banWord = editValue;
                 setState();
-                onChanged(RegExp(banWord, caseSensitive: false));
                 SmartDialog.showToast('已保存');
                 GStorage.setting.put(key, banWord);
               },

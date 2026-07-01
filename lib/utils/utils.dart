@@ -1,3 +1,5 @@
+// Modified by barmxds6ch on 2026-06-28.
+// SPDX-License-Identifier: GPL-3.0-only
 import 'dart:convert' show JsonEncoder, base64;
 import 'dart:math' show Random;
 
@@ -8,7 +10,23 @@ import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 abstract final class Utils {
   static final random = Random();
 
-  static const jsonEncoder = JsonEncoder.withIndent('    ');
+  static Object? _toEncodable(Object? value) {
+    if (value is Map) {
+      return value.map((k, v) => MapEntry(k.toString(), v));
+    }
+    if (value is num || value is bool || value is String || value == null) {
+      return value;
+    }
+    try {
+      final result = (value as dynamic).toJson();
+      if (result != null) {
+        return result;
+      }
+    } catch (_) {}
+    return value.toString();
+  }
+
+  static const jsonEncoder = JsonEncoder.withIndent('    ', _toEncodable);
 
   static final numericRegex = RegExp(r'^[\d\.]+$');
   static bool isStringNumeric(String str) {

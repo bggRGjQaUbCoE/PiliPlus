@@ -1,3 +1,5 @@
+// Modified by barmxds6ch on 2026-06-28.
+// SPDX-License-Identifier: GPL-3.0-only
 import 'dart:io';
 
 import 'package:PiliPlus/common/widgets/gesture/horizontal_drag_gesture_recognizer.dart'
@@ -133,6 +135,47 @@ abstract final class Pref {
         )
         .toList();
   }
+
+  static Map<int, String> get blockWhitelist {
+    final data = _setting.get(SettingBoxKey.blockWhitelist);
+
+    if (data is Set) {
+      final map = <int, String>{};
+      for (final mid in data) {
+        if (mid is int) {
+          map[mid] = 'UID:$mid';
+        }
+      }
+      _setting.put(SettingBoxKey.blockWhitelist, map);
+      return map;
+    }
+
+    if (data is Map) {
+      final map = <int, String>{};
+      for (final entry in data.entries) {
+        final key = entry.key;
+        final value = entry.value;
+        int? uid;
+        if (key is int) {
+          uid = key;
+        } else if (key is String) {
+          uid = int.tryParse(key);
+        }
+        if (uid != null && value is String) {
+          map[uid] = value;
+        }
+      }
+      if (map.isNotEmpty && data.keys.first is! int) {
+        _setting.put(SettingBoxKey.blockWhitelist, map);
+      }
+      return map;
+    }
+
+    return <int, String>{};
+  }
+
+  static set blockWhitelist(Map<int, String> blockWhitelist) =>
+      _setting.put(SettingBoxKey.blockWhitelist, blockWhitelist);
 
   static List<Color> get blockColor {
     final list = _setting.get(SettingBoxKey.blockColor) as List?;

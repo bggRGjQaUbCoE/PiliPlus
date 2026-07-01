@@ -1,3 +1,5 @@
+// Modified by barmxds6ch on 2026-06-28.
+// SPDX-License-Identifier: GPL-3.0-only
 import 'dart:async';
 import 'dart:math' show min;
 import 'dart:ui';
@@ -126,6 +128,21 @@ class VideoDetailController extends GetxController
   bool get setSystemBrightness => plPlayerController.setSystemBrightness;
   bool get removeSafeArea => plPlayerController.removeSafeArea;
   double get uiScale => plPlayerController.uiScale;
+
+  @override
+  int? get ownerMid {
+    final introController = Get.isRegistered<UgcIntroController>(tag: heroTag)
+        ? Get.find<UgcIntroController>(tag: heroTag)
+        : null;
+    return introController?.videoDetail.value.owner?.mid;
+  }
+
+  String? get ownerName {
+    final introController = Get.isRegistered<UgcIntroController>(tag: heroTag)
+        ? Get.find<UgcIntroController>(tag: heroTag)
+        : null;
+    return introController?.videoDetail.value.owner?.name;
+  }
 
   late VideoItem firstVideo;
   String? videoUrl;

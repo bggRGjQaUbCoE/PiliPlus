@@ -1,3 +1,5 @@
+// Modified by barmxds6ch on 2026-06-28.
+// SPDX-License-Identifier: GPL-3.0-only
 // ignore_for_file: constant_identifier_names
 
 abstract final class SettingBoxKey {
@@ -182,6 +184,7 @@ abstract final class SettingBoxKey {
 
   static const String enableSponsorBlock = 'enableSponsorBlock',
       blockSettings = 'blockSettings',
+      blockWhitelist = 'blockWhitelist',
       blockLimit = 'blockLimit',
       blockColor = 'blockColor',
       blockUserID = 'blockUserID',

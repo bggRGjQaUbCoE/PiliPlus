@@ -64,6 +64,14 @@ List<SettingsModel> get recommendSettings => [
     },
   ),
   getBanWordModel(
+    title: '标签关键词过滤',
+    key: SettingBoxKey.banWordForTag,
+    onChanged: (value) {
+      RecommendFilter.tagRegExp = value;
+      RecommendFilter.enableTagFilter = value.pattern.isNotEmpty;
+    },
+  ),
+  getBanWordModel(
     title: 'App推荐/热门/排行榜: 视频分区关键词过滤',
     key: SettingBoxKey.banWordForZone,
     onChanged: (value) {

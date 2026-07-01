@@ -298,6 +298,9 @@ abstract final class Pref {
   static String get banWordForRecommend =>
       _setting.get(SettingBoxKey.banWordForRecommend, defaultValue: '');
 
+  static String get banWordForTag =>
+      _setting.get(SettingBoxKey.banWordForTag, defaultValue: '');
+
   static String get banWordForReply =>
       _setting.get(SettingBoxKey.banWordForReply, defaultValue: '');
 

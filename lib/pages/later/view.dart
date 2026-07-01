@@ -50,6 +50,13 @@ class _LaterPageState extends State<LaterPage>
       length: LaterViewType.values.length,
       vsync: this,
     )..addListener(listener);
+
+    for (final type in LaterViewType.values) {
+      Get.put(
+        LaterController(type),
+        tag: type.type.toString(),
+      );
+    }
   }
 
   @override

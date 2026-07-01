@@ -33,8 +33,8 @@ class _LaterViewChildPageState extends State<LaterViewChildPage>
   @override
   void initState() {
     super.initState();
-    _laterController = Get.put(
-      LaterController(widget.laterViewType),
+    _laterController = Get.putOrFind(
+      () => LaterController(widget.laterViewType),
       tag: widget.laterViewType.type.toString(),
     );
   }

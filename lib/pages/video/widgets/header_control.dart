@@ -1,4 +1,4 @@
-import 'dart:async' show Timer;
+import 'dart:async' show Timer, StreamSubscription;
 import 'dart:convert' show jsonDecode, utf8;
 import 'dart:io' show Platform, File;
 import 'dart:typed_data' show Uint8List;
@@ -94,6 +94,7 @@ mixin TimeBatteryMixin<T extends StatefulWidget> on State<T> {
   @override
   void dispose() {
     stopClock();
+    _batterySubscription?.cancel();
     super.dispose();
   }
 
@@ -126,7 +127,27 @@ mixin TimeBatteryMixin<T extends StatefulWidget> on State<T> {
 
   late final _battery = Battery();
   late final RxnInt _batteryLevel = RxnInt();
+  late final RxBool _isCharging = false.obs;
   late final _showBatteryLevel = Pref.showBatteryLevel;
+
+  StreamSubscription<BatteryState>? _batterySubscription;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _battery.batteryState.then((state) {
+      _isCharging.value = state == BatteryState.charging;
+    }).catchError((_) {});
+      
+    _batterySubscription = _battery.onBatteryStateChanged.listen((BatteryState state) async {
+      _isCharging.value = state == BatteryState.charging;
+      try {
+        _batteryLevel.value = await _battery.batteryLevel;
+      } catch (_) {}
+    });
+  }
+      
   void getBatteryLevelIfNeeded() {
     if (!_showCurrTime || !_showBatteryLevel) return;
     EasyThrottle.throttle(
@@ -135,6 +156,8 @@ mixin TimeBatteryMixin<T extends StatefulWidget> on State<T> {
       () async {
         try {
           _batteryLevel.value = await _battery.batteryLevel;
+          final state = await _battery.batteryState;
+          _isCharging.value = state == BatteryState.charging;
         } catch (_) {}
       },
     );
@@ -150,15 +173,28 @@ mixin TimeBatteryMixin<T extends StatefulWidget> on State<T> {
               if (batteryLevel == null) {
                 return const SizedBox.shrink();
               }
-              return Text(
-                '$batteryLevel%',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 13,
-                ),
-              );
-            },
-          ),
+              return Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    '$batteryLevel%',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 13,
+                    ),
+                  ),
+                  if (_isCharging.value)
+                    const Padding(
+                      padding: EdgeInsets.only(left: 2),
+                      child: Icon(
+                        Icons.bolt,
+                        size: 13,
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
           const SizedBox(width: 10),
         ],
         Obx(

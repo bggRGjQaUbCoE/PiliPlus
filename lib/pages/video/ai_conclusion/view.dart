@@ -41,6 +41,7 @@ class AiConclusionPanel extends CommonSlidePage {
                   fontSize: 15,
                   height: 1.5,
                 ),
+                contextMenuBuilder: siteSearchMenuBuilder(),
               ),
             ),
           ),

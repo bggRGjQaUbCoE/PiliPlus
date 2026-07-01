@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/custom_icon.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
+import 'package:PiliPlus/common/widgets/selectable_text.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/image_viewer/hero.dart';
 import 'package:PiliPlus/common/widgets/marquee.dart';
@@ -561,6 +562,7 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
                   if (!item.album.isNullOrEmpty) '专辑：${item.album}',
                   if (!item.musicSource.isNullOrEmpty) '出处：${item.musicSource}',
                 ].join('\n'),
+                contextMenuBuilder: siteSearchMenuBuilder(),
               ),
               const Divider(),
               Row(

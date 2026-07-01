@@ -348,6 +348,7 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
       selectableRichText(
         style: const TextStyle(height: 1.4),
         buildContent(theme, videoDetail),
+        contextMenuBuilder: siteSearchMenuBuilder(),
       ),
     ],
     Obx(() {

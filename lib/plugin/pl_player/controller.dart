@@ -723,9 +723,14 @@ class PlPlayerController with BlockConfigMixin {
 
   Future<Player> _initPlayer() async {
     assert(_videoPlayerController == null);
+    // 部分设备（如联发科 MTK）的 AAudio HAL 在 seek/flush 后
+    // AAudioStream_getTimestamp 返回异常，会导致视频调度器死等音频时钟而画面冻结。
+    // 当用户单独选用 aaudio 时强制前置 opensles 规避，opensles 不可用时才回退 aaudio。
+    final audioOutput = Pref.audioOutput;
     final opt = {
       'video-sync': Pref.videoSync,
-      if (Platform.isAndroid) 'ao': Pref.audioOutput,
+      if (Platform.isAndroid)
+        'ao': audioOutput == 'aaudio' ? 'opensles,aaudio' : audioOutput,
       'volume':
           (PlatformUtils.isMobile ? Pref.playerVolume : volume.value * 100)
               .toString(),

@@ -28,9 +28,9 @@ jobs:
             libdav1d-dev libdvdnav-dev libegl1-mesa-dev libepoxy-dev libfontconfig-dev libfreetype6-dev \
             libfribidi-dev libgl1-mesa-dev libgbm-dev libgme-dev libgsm1-dev libharfbuzz-dev libjpeg-dev \
             libbrotli-dev liblcms2-dev libmodplug-dev libmp3lame-dev libopenal-dev \
-            libopus-dev libopencore-amrnb-dev libopencore-amrwbenc-dev libpulse-dev librtmp-dev \
+            libopus-dev libopencore-amrnb-dev libpulse-dev librtmp-dev \
             libsdl2-dev libsixel-dev libssh-dev libsoxr-dev libspeex-dev libtool \
-            libv4l-dev libva-dev libvdpau-dev libvorbis-dev libvo-amrwbenc-dev \
+            libv4l-dev libva-dev libvdpau-dev libvorbis-dev \
             libunwind-dev libvpx-dev libwayland-dev libx11-dev libxext-dev \
             libxkbcommon-dev libxrandr-dev libxss-dev libxv-dev libxvidcore-dev \
             linux-libc-dev nasm pkg-config python3 wget curl git powershell

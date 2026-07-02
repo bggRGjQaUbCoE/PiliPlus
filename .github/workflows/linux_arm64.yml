@@ -1,0 +1,183 @@
+name: Build for Linux arm64
+
+on:
+  workflow_call:
+    inputs:
+      tag:
+        description: "tag"
+        required: false
+        default: ""
+        type: string
+  workflow_dispatch:
+
+jobs:
+  build-linux-app:
+    name: Release Linux arm64
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/cirruslabs/flutter:3.44.4
+      options: --platform linux/arm64/v8
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Install dependencies
+        run: |
+          apt-get update
+          apt-get install -y clang cmake libgtk-3-dev ninja-build libayatana-appindicator3-dev unzip webkit2gtk-4.1 libasound2-dev rpm patchelf
+          apt-get install -y gcc g++ autoconf automake debhelper glslang-dev ladspa-sdk xutils-dev libasound2-dev \
+              libarchive-dev libbluray-dev libbs2b-dev libcaca-dev libcdio-paranoia-dev libdrm-dev \
+              libdav1d-dev libdvdnav-dev libegl1-mesa-dev libepoxy-dev libfontconfig-dev libfreetype6-dev \
+              libfribidi-dev libgl1-mesa-dev libgbm-dev libgme-dev libgsm1-dev libharfbuzz-dev libjpeg-dev \
+              libbrotli-dev liblcms2-dev libmodplug-dev libmp3lame-dev libopenal-dev \
+              libopus-dev libopencore-amrnb-dev libopencore-amrwb-dev libpulse-dev librtmp-dev \
+              libsdl2-dev libsixel-dev libssh-dev libsoxr-dev libspeex-dev libtool \
+              libv4l-dev libva-dev libvdpau-dev libvorbis-dev libvo-amrwbenc-dev \
+              libunwind-dev libvpx-dev libwayland-dev libx11-dev libxext-dev \
+              libxkbcommon-dev libxrandr-dev libxss-dev libxv-dev libxvidcore-dev \
+              linux-libc-dev nasm ninja-build pkg-config python3 python3-docutils wayland-protocols \
+              x11proto-core-dev zlib1g-dev libfdk-aac-dev libtheora-dev libwebp-dev \
+              unixodbc-dev libpq-dev libxxhash-dev libaom-dev \
+              libgtk-3-0 libblkid1 liblzma5 libmpv-dev
+        shell: bash
+
+      - name: Set flutter path
+        run: |
+          echo "FLUTTER_ROOT=/usr/local/flutter" >> $GITHUB_ENV
+          echo "/usr/local/flutter/bin" >> $GITHUB_PATH
+          flutter --version
+        shell: bash
+
+      - name: Set and Extract version
+        shell: pwsh
+        run: lib/scripts/build.ps1
+
+      - name: Apply Patch
+        shell: pwsh
+        run: lib/scripts/patch.ps1 Linux
+
+      - name: Build Linux arm64
+        run: flutter build linux --release -v --pub --dart-define-from-file=pili_release.json
+
+      - name: Package .tar.gz
+        run: tar -zcvf PiliPlus_linux_${{ env.version }}_arm64.tar.gz -C build/linux/x64/release/bundle .
+
+      - name: Package deb
+        run: |
+          printf "建立构建目录...\n"
+          mkdir "PiliPlus_linux_${{ env.version }}_arm64"
+          pushd "PiliPlus_linux_${{ env.version }}_arm64"
+          mkdir -p opt/PiliPlus
+          mkdir -p usr/share/applications
+          mkdir -p usr/share/icons/hicolor/512x512/apps
+
+          printf "复制文件...\n"
+          cp -r ../build/linux/x64/release/bundle/* opt/PiliPlus
+          cp -r ../assets/linux/DEBIAN .
+          cp ../assets/linux/com.example.piliplus.desktop usr/share/applications
+          cp ../assets/images/logo/logo.png usr/share/icons/hicolor/512x512/apps/piliplus.png
+
+          printf "修改控制文件...\n"
+          sed -i "s/Architecture: amd64/Architecture: arm64/g" DEBIAN/control
+          sed -i  "2s/version_need_change/${{ env.version }}/g" DEBIAN/control
+          SIZE_KB=$(du -s -b --apparent-size . | awk '{print int($1)}')
+          SIZE_KB=$(($SIZE_KB - $(du -s -b --apparent-size DEBIAN | awk '{print int($1)}')))
+          SIZE_KB=$(echo $SIZE_KB | awk '{print int($1/1024 + 0.999)}')
+          printf "\t安装大小: %s KB\n" "$SIZE_KB"
+          sed -i "9s/size_need_change/${SIZE_KB}/g" DEBIAN/control
+
+          printf "生成并写入 md5sums ...\n"
+          md5sum opt/PiliPlus/piliplus >> DEBIAN/md5sums
+          md5sum opt/PiliPlus/lib/* >> DEBIAN/md5sums
+          md5sum opt/PiliPlus/data/icudtl.dat >> DEBIAN/md5sums
+
+          printf "设置权限...\n"
+          chmod 0644 DEBIAN/control
+          chmod 0644 DEBIAN/md5sums
+          chmod 0755 DEBIAN/postinst
+          chmod 0755 DEBIAN/postrm
+          chmod 0755 DEBIAN/prerm
+
+          printf "打包 deb 文件...\n"
+          popd
+          dpkg-deb --build --verbose --root-owner-group "PiliPlus_linux_${{ env.version }}_arm64"
+          printf "完成: PiliPlus_linux_%s_arm64.deb\n" "${{ env.version }}"
+        shell: bash
+
+      - name: Package AppImage
+        run: |
+          printf "下载 appimagetool...\n"
+          wget -q https://github.com/AppImage/AppImageKit/releases/download/13/appimagetool-aarch64.AppImage
+          chmod +x appimagetool-aarch64.AppImage
+
+          printf "建立 AppDir 目录结构...\n"
+          APPDIR="PiliPlus.AppDir"
+          mkdir -p "$APPDIR/usr/bin"
+          mkdir -p "$APPDIR/usr/lib"
+          mkdir -p "$APPDIR/usr/share/applications"
+          mkdir -p "$APPDIR/usr/share/icons/hicolor/512x512/apps"
+
+          printf "复制应用文件...\n"
+          cp -r build/linux/x64/release/bundle/* "$APPDIR/usr/bin/"
+
+          printf "复制桌面文件和图标...\n"
+          cp assets/linux/com.example.piliplus.desktop "$APPDIR/com.example.piliplus.desktop"
+          cp assets/linux/com.example.piliplus.desktop "$APPDIR/usr/share/applications/com.example.piliplus.desktop"
+          cp assets/images/logo/logo.png "$APPDIR/piliplus.png"
+          cp assets/images/logo/logo.png "$APPDIR/usr/share/icons/hicolor/512x512/apps/piliplus.png"
+
+          printf "创建 AppRun 启动脚本...\n"
+          cat > "$APPDIR/AppRun" <<'APPRUN_EOF'
+          #!/bin/bash
+          SELF=$(readlink -f "$0")
+          HERE=${SELF%/*}
+          export PATH="${HERE}/usr/bin:${PATH}"
+          export LD_LIBRARY_PATH="${HERE}/usr/lib:${LD_LIBRARY_PATH}"
+          exec "${HERE}/usr/bin/piliplus" "$@"
+          APPRUN_EOF
+          chmod +x "$APPDIR/AppRun"
+
+          printf "修改桌面文件中的 Exec 路径...\n"
+          sed -i 's|Exec=piliplus|Exec=piliplus|g' "$APPDIR/com.example.piliplus.desktop"
+          sed -i 's|Icon=piliplus|Icon=piliplus|g' "$APPDIR/com.example.piliplus.desktop"
+
+          printf "打包 AppImage...\n"
+          ARCH=aarch64 ./appimagetool-aarch64.AppImage "$APPDIR" "PiliPlus_linux_${{ env.version }}_arm64.AppImage"
+
+          printf "完成: PiliPlus_linux_%s_arm64.AppImage\n" "${{ env.version }}"
+        shell: bash
+
+      - name: Release
+        if: ${{ github.event.inputs.tag != '' }}
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ github.event.inputs.tag }}
+          name: ${{ github.event.inputs.tag }}
+          files: |
+            PiliPlus_linux_*.tar.gz
+            PiliPlus_linux_*.deb
+            PiliPlus_linux_*.AppImage
+
+      - name: Upload linux targz package
+        uses: actions/upload-artifact@v7
+        with:
+          archive: false
+          name: Linux_targz_arm64_package
+          path: PiliPlus_linux_*.tar.gz
+
+      - name: Upload linux deb package
+        uses: actions/upload-artifact@v7
+        with:
+          archive: false
+          name: Linux_deb_arm64_package
+          path: PiliPlus_linux_*.deb
+
+      - name: Upload linux AppImage package
+        uses: actions/upload-artifact@v7
+        with:
+          archive: false
+          name: Linux_AppImage_arm64_package
+          path: PiliPlus_linux_*.AppImage

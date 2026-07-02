@@ -60,7 +60,7 @@ jobs:
 
       - name: Package .tar.gz
         run: |
-          tar -zcvf PiliPlus_linux_${{ steps.get_version.outputs.VERSION }}_arm64.tar.gz -C build/linux/arm64/release/bundle .
+          tar -zcvf PiliPlus_linux_${{ steps.get_version.outputs.VERSION }}_arm64.tar.gz -C build/linux/x64/release/bundle .
 
       - name: Package deb
         run: |
@@ -70,7 +70,7 @@ jobs:
           mkdir -p usr/share/applications
           mkdir -p usr/share/icons/hicolor/512x512/apps
 
-          cp -r ../build/linux/arm64/release/bundle/* opt/PiliPlus
+          cp -r ../build/linux/x64/release/bundle/* opt/PiliPlus
           cp -r ../assets/linux/DEBIAN .
           cp ../assets/linux/com.example.piliplus.desktop usr/share/applications
           cp ../assets/images/logo/logo.png usr/share/icons/hicolor/512x512/apps/piliplus.png

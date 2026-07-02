@@ -40,12 +40,14 @@ jobs:
           wget -q https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_3.44.4-stable.tar.xz
           tar xf flutter_linux_3.44.4-stable.tar.xz
           rm flutter_linux_3.44.4-stable.tar.xz
-          echo "$(pwd)/flutter/bin" >> $GITHUB_PATH
+          export PATH="$(pwd)/flutter/bin:$PATH"
+          echo "FLUTTER_PATH=$(pwd)/flutter/bin" >> $GITHUB_ENV
           flutter config --enable-linux-desktop
           flutter --version
 
       - name: Build app
         run: |
+          export PATH="$FLUTTER_PATH:$PATH"
           powershell -Command 'lib/scripts/build.ps1'
           powershell -Command 'lib/scripts/patch.ps1 Linux'
           flutter build linux --release --pub --dart-define-from-file=pili_release.json

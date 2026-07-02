@@ -27,7 +27,8 @@ jobs:
 
       - name: Build in Docker with custom image
         run: |
-          cat > /tmp/Dockerfile << 'DOCKERFILE_EOF'
+          mkdir -p /tmp/build
+          cat > /tmp/build/Dockerfile << 'DOCKERFILE_EOF'
           FROM ubuntu:24.04
 
           ENV DEBIAN_FRONTEND=noninteractive
@@ -61,7 +62,7 @@ jobs:
           WORKDIR /workspace
           DOCKERFILE_EOF
 
-          docker build --platform linux/arm64 -t piliplus-arm64-build /tmp/Dockerfile
+          docker build --platform linux/arm64 -t piliplus-arm64-build /tmp/build
 
           docker run --rm --platform linux/arm64 \
             -v ${{ github.workspace }}:/workspace \

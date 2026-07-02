@@ -48,6 +48,6 @@ jobs:
       - name: Build app
         run: |
           export PATH="$FLUTTER_PATH:$PATH"
-          powershell -Command 'lib/scripts/build.ps1'
-          powershell -Command 'lib/scripts/patch.ps1 Linux'
+          pwsh -Command 'lib/scripts/build.ps1'
+          pwsh -Command 'lib/scripts/patch.ps1 Linux'
           flutter build linux --release --pub --dart-define-from-file=pili_release.json

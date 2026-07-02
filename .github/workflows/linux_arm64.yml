@@ -27,7 +27,7 @@ jobs:
           FROM ubuntu:24.04
 
           ENV DEBIAN_FRONTEND=noninteractive
-          ENV PATH="/root/flutter/bin:/root/flutter/bin/cache/dart-sdk/bin:$PATH"
+          ENV PATH="/root/flutter/bin:/root/flutter/bin/cache/dart-sdk/bin:/usr/local/powershell:$PATH"
 
           RUN apt-get update && apt-get install -y clang cmake libgtk-3-dev ninja-build libayatana-appindicator3-dev unzip \
             libasound2-dev rpm patchelf libmpv-dev webkit2gtk-4.1 \
@@ -41,8 +41,14 @@ jobs:
             libv4l-dev libva-dev libvdpau-dev libvorbis-dev \
             libunwind-dev libvpx-dev libwayland-dev libx11-dev libxext-dev \
             libxkbcommon-dev libxrandr-dev libxss-dev libxv-dev libxvidcore-dev \
-            linux-libc-dev nasm pkg-config python3 wget curl git pwsh && \
+            linux-libc-dev nasm pkg-config python3 wget curl git && \
             rm -rf /var/lib/apt/lists/*
+
+          RUN wget -q https://github.com/PowerShell/PowerShell/releases/download/v7.4.12/powershell-7.4.12-linux-arm64.tar.gz && \
+              mkdir -p /usr/local/powershell && \
+              tar xf powershell-7.4.12-linux-arm64.tar.gz -C /usr/local/powershell && \
+              rm powershell-7.4.12-linux-arm64.tar.gz && \
+              ln -s /usr/local/powershell/pwsh /usr/bin/pwsh
 
           RUN wget -q https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_3.44.4-stable.tar.xz && \
               tar xf flutter_linux_3.44.4-stable.tar.xz && \

@@ -51,7 +51,9 @@ jobs:
 
           RUN wget -q https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_3.44.4-stable.tar.xz && \
               tar xf flutter_linux_3.44.4-stable.tar.xz && \
-              rm flutter_linux_3.44.4-stable.tar.xz
+              rm flutter_linux_3.44.4-stable.tar.xz && \
+              ls -la /root/flutter/bin/ && \
+              ls -la /root/flutter/bin/cache/dart-sdk/bin/
 
           RUN /root/flutter/bin/flutter config --enable-linux-desktop && \
               /root/flutter/bin/flutter --version

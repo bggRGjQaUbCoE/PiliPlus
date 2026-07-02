@@ -53,7 +53,8 @@ jobs:
               tar xf flutter_linux_3.44.4-stable.tar.xz -C /root && \
               rm flutter_linux_3.44.4-stable.tar.xz
 
-          RUN /root/flutter/bin/flutter config --enable-linux-desktop && \
+          RUN git config --global --add safe.directory /root/flutter && \
+              /root/flutter/bin/flutter config --enable-linux-desktop && \
               /root/flutter/bin/flutter --version
 
           WORKDIR /workspace
@@ -65,7 +66,7 @@ jobs:
             -v "$(pwd):/workspace" \
             -w /workspace \
             piliplus-arm64-build \
-            bash -c "uname -m && /usr/local/powershell/pwsh -Command 'lib/scripts/build.ps1' && /usr/local/powershell/pwsh -Command 'lib/scripts/patch.ps1 Linux' && /root/flutter/bin/flutter build linux --release --pub --dart-define-from-file=pili_release.json && file build/linux/x64/release/bundle/piliplus"
+            bash -c "git config --global --add safe.directory /workspace && uname -m && /usr/local/powershell/pwsh -Command 'lib/scripts/build.ps1' && /usr/local/powershell/pwsh -Command 'lib/scripts/patch.ps1 Linux' && /root/flutter/bin/flutter build linux --release --pub --dart-define-from-file=pili_release.json && file build/linux/x64/release/bundle/piliplus"
 
       - name: Get version
         id: get_version

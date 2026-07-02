@@ -28,7 +28,7 @@ jobs:
             libdav1d-dev libdvdnav-dev libegl1-mesa-dev libepoxy-dev libfontconfig-dev libfreetype6-dev \
             libfribidi-dev libgl1-mesa-dev libgbm-dev libgme-dev libgsm1-dev libharfbuzz-dev libjpeg-dev \
             libbrotli-dev liblcms2-dev libmodplug-dev libmp3lame-dev libopenal-dev \
-            libopus-dev libopencore-amrnb-dev libopencore-amrwb-dev libpulse-dev librtmp-dev \
+            libopus-dev libopencore-amrnb-dev libopencore-amrwbenc-dev libpulse-dev librtmp-dev \
             libsdl2-dev libsixel-dev libssh-dev libsoxr-dev libspeex-dev libtool \
             libv4l-dev libva-dev libvdpau-dev libvorbis-dev libvo-amrwbenc-dev \
             libunwind-dev libvpx-dev libwayland-dev libx11-dev libxext-dev \
@@ -51,3 +51,58 @@ jobs:
           pwsh -Command 'lib/scripts/build.ps1'
           pwsh -Command 'lib/scripts/patch.ps1 Linux'
           flutter build linux --release --pub --dart-define-from-file=pili_release.json
+
+      - name: Get version
+        id: get_version
+        run: |
+          VERSION=$(grep -E '^version:' pubspec.yaml | awk '{print $2}')
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Package .tar.gz
+        run: |
+          tar -zcvf PiliPlus_linux_${{ steps.get_version.outputs.VERSION }}_arm64.tar.gz -C build/linux/arm64/release/bundle .
+
+      - name: Package deb
+        run: |
+          mkdir "PiliPlus_linux_${{ steps.get_version.outputs.VERSION }}_arm64"
+          pushd "PiliPlus_linux_${{ steps.get_version.outputs.VERSION }}_arm64"
+          mkdir -p opt/PiliPlus
+          mkdir -p usr/share/applications
+          mkdir -p usr/share/icons/hicolor/512x512/apps
+
+          cp -r ../build/linux/arm64/release/bundle/* opt/PiliPlus
+          cp -r ../assets/linux/DEBIAN .
+          cp ../assets/linux/com.example.piliplus.desktop usr/share/applications
+          cp ../assets/images/logo/logo.png usr/share/icons/hicolor/512x512/apps/piliplus.png
+
+          sed -i "s/Architecture: amd64/Architecture: arm64/g" DEBIAN/control
+          sed -i "2s/version_need_change/${{ steps.get_version.outputs.VERSION }}/g" DEBIAN/control
+          SIZE_KB=$(du -s -b --apparent-size . | awk '{print int($1)}')
+          SIZE_KB=$(($SIZE_KB - $(du -s -b --apparent-size DEBIAN | awk '{print int($1)}')))
+          SIZE_KB=$(echo $SIZE_KB | awk '{print int($1/1024 + 0.999)}')
+          sed -i "9s/size_need_change/${SIZE_KB}/g" DEBIAN/control
+
+          md5sum opt/PiliPlus/piliplus >> DEBIAN/md5sums
+          md5sum opt/PiliPlus/lib/* >> DEBIAN/md5sums
+          md5sum opt/PiliPlus/data/icudtl.dat >> DEBIAN/md5sums
+
+          chmod 0644 DEBIAN/control
+          chmod 0644 DEBIAN/md5sums
+          chmod 0755 DEBIAN/postinst
+          chmod 0755 DEBIAN/postrm
+          chmod 0755 DEBIAN/prerm
+
+          popd
+          dpkg-deb --build --verbose --root-owner-group "PiliPlus_linux_${{ steps.get_version.outputs.VERSION }}_arm64"
+
+      - name: Upload tar.gz
+        uses: actions/upload-artifact@v7
+        with:
+          name: PiliPlus_linux_arm64_tar
+          path: PiliPlus_linux_*_arm64.tar.gz
+
+      - name: Upload deb
+        uses: actions/upload-artifact@v7
+        with:
+          name: PiliPlus_linux_arm64_deb
+          path: PiliPlus_linux_*_arm64.deb

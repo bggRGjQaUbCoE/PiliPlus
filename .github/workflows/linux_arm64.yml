@@ -1,22 +1,16 @@
-name: Build for Linux arm64
+name: Build Linux arm64
 
 on:
-  workflow_call:
-    inputs:
-      tag:
-        description: "tag"
-        required: false
-        default: ""
-        type: string
+  push:
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
-  build-linux-app:
-    name: Release Linux arm64
+  build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v7
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -26,114 +20,12 @@ jobs:
           platforms: linux/arm64
 
       - name: Build Docker image
-        run: docker build --platform linux/arm64 -t piliplus-arm64-build -f Dockerfile.arm64 .
+        run: docker build --platform linux/arm64 -t piliplus-arm64 -f Dockerfile.arm64 .
 
-      - name: Run build in Docker
+      - name: Build Flutter app
         run: |
           docker run --rm --platform linux/arm64 \
             -v "$(pwd):/workspace" \
             -w /workspace \
-            piliplus-arm64-build \
+            piliplus-arm64 \
             bash -c "flutter --version && powershell -Command 'lib/scripts/build.ps1' && powershell -Command 'lib/scripts/patch.ps1 Linux' && flutter build linux --release --pub --dart-define-from-file=pili_release.json"
-
-      - name: Set version from build
-        shell: pwsh
-        run: lib/scripts/build.ps1
-
-      - name: Package .tar.gz
-        run: tar -zcvf PiliPlus_linux_${{ env.version }}_arm64.tar.gz -C build/linux/arm64/release/bundle .
-
-      - name: Package deb
-        run: |
-          mkdir "PiliPlus_linux_${{ env.version }}_arm64"
-          pushd "PiliPlus_linux_${{ env.version }}_arm64"
-          mkdir -p opt/PiliPlus
-          mkdir -p usr/share/applications
-          mkdir -p usr/share/icons/hicolor/512x512/apps
-
-          cp -r ../build/linux/arm64/release/bundle/* opt/PiliPlus
-          cp -r ../assets/linux/DEBIAN .
-          cp ../assets/linux/com.example.piliplus.desktop usr/share/applications
-          cp ../assets/images/logo/logo.png usr/share/icons/hicolor/512x512/apps/piliplus.png
-
-          sed -i "s/Architecture: amd64/Architecture: arm64/g" DEBIAN/control
-          sed -i "2s/version_need_change/${{ env.version }}/g" DEBIAN/control
-          SIZE_KB=$(du -s -b --apparent-size . | awk '{print int($1)}')
-          SIZE_KB=$(($SIZE_KB - $(du -s -b --apparent-size DEBIAN | awk '{print int($1)}')))
-          SIZE_KB=$(echo $SIZE_KB | awk '{print int($1/1024 + 0.999)}')
-          sed -i "9s/size_need_change/${SIZE_KB}/g" DEBIAN/control
-
-          md5sum opt/PiliPlus/piliplus >> DEBIAN/md5sums
-          md5sum opt/PiliPlus/lib/* >> DEBIAN/md5sums
-          md5sum opt/PiliPlus/data/icudtl.dat >> DEBIAN/md5sums
-
-          chmod 0644 DEBIAN/control
-          chmod 0644 DEBIAN/md5sums
-          chmod 0755 DEBIAN/postinst
-          chmod 0755 DEBIAN/postrm
-          chmod 0755 DEBIAN/prerm
-
-          popd
-          dpkg-deb --build --verbose --root-owner-group "PiliPlus_linux_${{ env.version }}_arm64"
-
-      - name: Package AppImage
-        run: |
-          wget -q https://github.com/AppImage/AppImageKit/releases/download/13/appimagetool-aarch64.AppImage
-          chmod +x appimagetool-aarch64.AppImage
-
-          APPDIR="PiliPlus.AppDir"
-          mkdir -p "$APPDIR/usr/bin"
-          mkdir -p "$APPDIR/usr/lib"
-          mkdir -p "$APPDIR/usr/share/applications"
-          mkdir -p "$APPDIR/usr/share/icons/hicolor/512x512/apps"
-
-          cp -r build/linux/arm64/release/bundle/* "$APPDIR/usr/bin/"
-
-          cp assets/linux/com.example.piliplus.desktop "$APPDIR/com.example.piliplus.desktop"
-          cp assets/linux/com.example.piliplus.desktop "$APPDIR/usr/share/applications/com.example.piliplus.desktop"
-          cp assets/images/logo/logo.png "$APPDIR/piliplus.png"
-          cp assets/images/logo/logo.png "$APPDIR/usr/share/icons/hicolor/512x512/apps/piliplus.png"
-
-          cat > "$APPDIR/AppRun" <<'APPRUN_EOF'
-#!/bin/bash
-SELF=$(readlink -f "$0")
-HERE=${SELF%/*}
-export PATH="${HERE}/usr/bin:${PATH}"
-export LD_LIBRARY_PATH="${HERE}/usr/lib:${LD_LIBRARY_PATH}"
-exec "${HERE}/usr/bin/piliplus" "$@"
-APPRUN_EOF
-          chmod +x "$APPDIR/AppRun"
-
-          ARCH=aarch64 ./appimagetool-aarch64.AppImage "$APPDIR" "PiliPlus_linux_${{ env.version }}_arm64.AppImage"
-
-      - name: Release
-        if: ${{ github.event.inputs.tag != '' }}
-        uses: softprops/action-gh-release@v3
-        with:
-          tag_name: ${{ github.event.inputs.tag }}
-          name: ${{ github.event.inputs.tag }}
-          files: |
-            PiliPlus_linux_*.tar.gz
-            PiliPlus_linux_*.deb
-            PiliPlus_linux_*.AppImage
-
-      - name: Upload linux targz package
-        uses: actions/upload-artifact@v7
-        with:
-          archive: false
-          name: Linux_targz_arm64_package
-          path: PiliPlus_linux_*.tar.gz
-
-      - name: Upload linux deb package
-        uses: actions/upload-artifact@v7
-        with:
-          archive: false
-          name: Linux_deb_arm64_package
-          path: PiliPlus_linux_*.deb
-
-      - name: Upload linux AppImage package
-        uses: actions/upload-artifact@v7
-        with:
-          archive: false
-          name: Linux_AppImage_arm64_package
-          path: PiliPlus_linux_*.AppImage

@@ -41,7 +41,7 @@ jobs:
             libv4l-dev libva-dev libvdpau-dev libvorbis-dev \
             libunwind-dev libvpx-dev libwayland-dev libx11-dev libxext-dev \
             libxkbcommon-dev libxrandr-dev libxss-dev libxv-dev libxvidcore-dev \
-            linux-libc-dev nasm pkg-config python3 wget curl git powershell && \
+            linux-libc-dev nasm pkg-config python3 wget curl git pwsh && \
             rm -rf /var/lib/apt/lists/*
 
           RUN wget -q https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_3.44.4-stable.tar.xz && \

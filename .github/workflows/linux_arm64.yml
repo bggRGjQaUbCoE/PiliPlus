@@ -30,7 +30,7 @@ jobs:
           ENV DEBIAN_FRONTEND=noninteractive
           ENV FLUTTER_ROOT=/root/flutter
 
-          RUN apt-get update && apt-get install -y clang cmake libgtk-3-dev ninja-build libayatana-appindicator3-dev unzip fonts-noto fonts-noto-color-emoji \
+          RUN apt-get update && apt-get install -y clang cmake libgtk-3-dev ninja-build libayatana-appindicator3-dev unzip fonts-noto fonts-noto-math fonts-noto-color-emoji \
             libasound2-dev rpm patchelf libmpv-dev webkit2gtk-4.1 \
             gcc g++ autoconf automake debhelper glslang-dev ladspa-sdk xutils-dev \
             libarchive-dev libbluray-dev libbs2b-dev libcaca-dev libcdio-paranoia-dev libdrm-dev \
@@ -67,9 +67,8 @@ jobs:
 
           docker run --rm --platform linux/arm64 \
             -v "$(pwd):/workspace" \
-            -w /workspace \
             piliplus-arm64-build \
-            bash -c "git config --global --add safe.directory /workspace && uname -m && /usr/local/powershell/pwsh -Command 'lib/scripts/build.ps1' && /usr/local/powershell/pwsh -Command 'lib/scripts/patch.ps1 Linux' && /root/flutter/bin/flutter build linux --release --pub --dart-define-from-file=pili_release.json && file build/linux/arm64/release/bundle/piliplus"
+            bash -c "cd /workspace && git config --global --add safe.directory /workspace && uname -m && /usr/local/powershell/pwsh -Command 'lib/scripts/build.ps1' && /usr/local/powershell/pwsh -Command 'lib/scripts/patch.ps1 Linux' && /root/flutter/bin/flutter build linux --release --pub --dart-define-from-file=pili_release.json && file build/linux/arm64/release/bundle/piliplus"
 
       - name: Get version
         id: get_version

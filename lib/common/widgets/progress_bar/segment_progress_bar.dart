@@ -200,6 +200,7 @@ class RenderViewPointProgressBar
         ui.ParagraphBuilder(
             ui.ParagraphStyle(
               textDirection: .ltr,
+              fontFamily: 'Noto Sans CJK SC',
               strutStyle: ui.StrutStyle(
                 leading: 0,
                 height: 1,

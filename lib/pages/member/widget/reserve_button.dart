@@ -87,6 +87,7 @@ class RenderReserveBtn extends RenderProxyBox {
         fontSize: 12,
         color: _color,
         fontWeight: .bold,
+        fontFamily: 'Noto Sans CJK SC',
       ),
     );
   }

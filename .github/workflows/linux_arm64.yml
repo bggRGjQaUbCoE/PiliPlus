@@ -48,6 +48,7 @@ jobs:
               mkdir -p /usr/local/powershell && \
               tar xf powershell-7.4.12-linux-arm64.tar.gz -C /usr/local/powershell && \
               rm powershell-7.4.12-linux-arm64.tar.gz && \
+              chmod +x /usr/local/powershell/pwsh && \
               ln -s /usr/local/powershell/pwsh /usr/bin/pwsh
 
           RUN wget -q https://github.com/zhzhzhy/Flutter-SDK-ARM64/releases/download/Flutter-SDK-2026-07-03/Flutter-SDK-ARM64.zip && \

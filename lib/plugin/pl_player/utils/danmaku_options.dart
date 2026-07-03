@@ -30,6 +30,7 @@ abstract final class DanmakuOptions {
     return DanmakuOption(
       fontSize: 15 * (notFullscreen ? danmakuFontScale : danmakuFontScaleFS),
       fontWeight: danmakuFontWeight,
+      fontFamily: 'Noto Sans CJK SC',
       area: danmakuShowArea,
       duration: danmakuDuration / speed,
       staticDuration: danmakuStaticDuration / speed,

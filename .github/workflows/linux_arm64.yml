@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - linux-arm64-font-fix
   workflow_dispatch:
 
 jobs:
@@ -49,9 +50,9 @@ jobs:
               rm powershell-7.4.12-linux-arm64.tar.gz && \
               ln -s /usr/local/powershell/pwsh /usr/bin/pwsh
 
-          RUN wget -q https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_3.44.4-stable.tar.xz && \
-              tar xf flutter_linux_3.44.4-stable.tar.xz -C /root && \
-              rm flutter_linux_3.44.4-stable.tar.xz
+          RUN wget -q https://github.com/zhzhzhy/Flutter-SDK-ARM64/releases/download/3.44.4/flutter_linux_arm64_3.44.4-stable.tar.xz && \
+              tar xf flutter_linux_arm64_3.44.4-stable.tar.xz -C /root && \
+              rm flutter_linux_arm64_3.44.4-stable.tar.xz
 
           RUN git config --global --add safe.directory /root/flutter && \
               /root/flutter/bin/flutter config --enable-linux-desktop && \
@@ -66,7 +67,7 @@ jobs:
             -v "$(pwd):/workspace" \
             -w /workspace \
             piliplus-arm64-build \
-            bash -c "git config --global --add safe.directory /workspace && uname -m && /usr/local/powershell/pwsh -Command 'lib/scripts/build.ps1' && /usr/local/powershell/pwsh -Command 'lib/scripts/patch.ps1 Linux' && /root/flutter/bin/flutter build linux --release --pub --dart-define-from-file=pili_release.json && file build/linux/x64/release/bundle/piliplus"
+            bash -c "git config --global --add safe.directory /workspace && uname -m && /usr/local/powershell/pwsh -Command 'lib/scripts/build.ps1' && /usr/local/powershell/pwsh -Command 'lib/scripts/patch.ps1 Linux' && /root/flutter/bin/flutter build linux --release --pub --dart-define-from-file=pili_release.json && file build/linux/arm64/release/bundle/piliplus"
 
       - name: Get version
         id: get_version
@@ -76,7 +77,7 @@ jobs:
 
       - name: Package .tar.gz
         run: |
-          tar -zcvf PiliPlus_linux_${{ steps.get_version.outputs.VERSION }}_arm64.tar.gz -C build/linux/x64/release/bundle .
+          tar -zcvf PiliPlus_linux_${{ steps.get_version.outputs.VERSION }}_arm64.tar.gz -C build/linux/arm64/release/bundle .
 
       - name: Package deb
         run: |
@@ -86,7 +87,7 @@ jobs:
           mkdir -p usr/share/applications
           mkdir -p usr/share/icons/hicolor/512x512/apps
 
-          cp -r ../build/linux/x64/release/bundle/* opt/PiliPlus
+          cp -r ../build/linux/arm64/release/bundle/* opt/PiliPlus
           cp -r ../assets/linux/DEBIAN .
           cp ../assets/linux/com.example.piliplus.desktop usr/share/applications
           cp ../assets/images/logo/logo.png usr/share/icons/hicolor/512x512/apps/piliplus.png
@@ -122,3 +123,26 @@ jobs:
         with:
           name: PiliPlus_linux_arm64_deb
           path: PiliPlus_linux_*_arm64.deb
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.get_version.outputs.VERSION }}
+          release_name: PiliPlus v${{ steps.get_version.outputs.VERSION }}
+          body: |
+            ## Release Notes
+            
+            ### Linux ARM64 Build
+            
+            - Built using Flutter ARM64 SDK from https://github.com/zhzhzhy/Flutter-SDK-ARM64
+            - Fixed Chinese font display issue (方块/口口口)
+            - Updated font family name in pubspec.yaml to match actual font file
+            - Set default fontFamily in ThemeData
+            
+            ### Assets
+            
+            - PiliPlus_linux_${{ steps.get_version.outputs.VERSION }}_arm64.deb (ARM64)
+            - PiliPlus_linux_${{ steps.get_version.outputs.VERSION }}_arm64.tar.gz (ARM64)
+          files: |
+            PiliPlus_linux_${{ steps.get_version.outputs.VERSION }}_arm64.deb
+            PiliPlus_linux_${{ steps.get_version.outputs.VERSION }}_arm64.tar.gz

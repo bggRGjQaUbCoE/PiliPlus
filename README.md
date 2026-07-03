@@ -211,6 +211,50 @@
 
 <br/>
 
+## Linux ARM64 编译与修复
+
+### 编译环境
+
+由于官方Flutter SDK不提供ARM64 Linux版本，我们使用社区编译的Flutter SDK：
+
+- **Flutter SDK**: https://github.com/zhzhzhy/Flutter-SDK-ARM64
+
+### 中文字体显示修复
+
+在ARM64环境下编译后，中文字体显示为方块（口口口）的问题已修复。修复过程如下：
+
+**问题根因：**
+1. `pubspec.yaml` 中配置的字体family名称 `NotoSansSC` 与字体文件内部实际名称 `"Noto Sans CJK SC"` 不匹配
+2. `ThemeData` 中未设置默认字体，导致Flutter使用系统默认字体渲染中文，但ARM64环境下系统默认字体可能不支持中文
+
+**修复方案：**
+1. 修改 [pubspec.yaml](file:///home/xieyizhou/PiliPlus/pubspec.yaml#L284-L286)：将字体family名称改为 `"Noto Sans CJK SC"`
+2. 修改 [theme_utils.dart](file:///home/xieyizhou/PiliPlus/lib/utils/theme_utils.dart#L45)：在 `ThemeData` 中添加 `fontFamily: 'Noto Sans CJK SC'`
+
+### 手动编译步骤
+
+```bash
+# 1. 安装依赖
+sudo apt-get install clang cmake libgtk-3-dev ninja-build libayatana-appindicator3-dev libmpv-dev webkit2gtk-4.1
+
+# 2. 下载Flutter ARM64 SDK
+wget https://github.com/zhzhzhy/Flutter-SDK-ARM64/releases/download/3.44.4/flutter_linux_arm64_3.44.4-stable.tar.xz
+tar xf flutter_linux_arm64_3.44.4-stable.tar.xz
+
+# 3. 配置Flutter
+export PATH="$PATH:/path/to/flutter/bin"
+flutter config --enable-linux-desktop
+
+# 4. 构建项目
+cd PiliPlus
+flutter pub get
+flutter build linux --release
+
+# 5. 打包deb（可选）
+VERSION=$(grep -E '^version:' pubspec.yaml | awk '{print $2}')
+# 参考 .github/workflows/linux_arm64.yml 中的打包流程
+```
+
 ## 下载
 
 可以通过右侧release进行下载或拉取代码到本地进行编译

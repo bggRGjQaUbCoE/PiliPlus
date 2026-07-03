@@ -68,7 +68,7 @@ jobs:
           docker run --rm --platform linux/arm64 \
             -v "$(pwd):/workspace" \
             piliplus-arm64-build \
-            bash -c "cd /workspace && git config --global --add safe.directory /workspace && uname -m && /usr/local/powershell/pwsh -Command 'lib/scripts/build.ps1' && /usr/local/powershell/pwsh -Command 'lib/scripts/patch.ps1 Linux' && /root/flutter/bin/flutter build linux --release --pub --dart-define-from-file=pili_release.json && file build/linux/arm64/release/bundle/piliplus"
+            bash -c "cd /workspace && git config --global --add safe.directory /workspace && uname -m && /usr/local/powershell/pwsh -Command 'Set-Location /workspace; lib/scripts/build.ps1' && /usr/local/powershell/pwsh -Command 'Set-Location /workspace; lib/scripts/patch.ps1 Linux' && /root/flutter/bin/flutter build linux --release --pub --dart-define-from-file=pili_release.json && file build/linux/arm64/release/bundle/piliplus"
 
       - name: Get version
         id: get_version

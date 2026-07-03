@@ -30,7 +30,7 @@ jobs:
           ENV DEBIAN_FRONTEND=noninteractive
           ENV FLUTTER_ROOT=/root/flutter
 
-          RUN apt-get update && apt-get install -y clang cmake libgtk-3-dev ninja-build libayatana-appindicator3-dev unzip fonts-noto fonts-noto-math fonts-noto-color-emoji \
+          RUN apt-get update && apt-get install -y clang cmake libgtk-3-dev ninja-build libayatana-appindicator3-dev unzip fonts-noto fonts-noto-color-emoji \
             libasound2-dev rpm patchelf libmpv-dev webkit2gtk-4.1 \
             gcc g++ autoconf automake debhelper glslang-dev ladspa-sdk xutils-dev \
             libarchive-dev libbluray-dev libbs2b-dev libcaca-dev libcdio-paranoia-dev libdrm-dev \

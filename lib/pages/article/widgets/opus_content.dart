@@ -702,11 +702,7 @@ class OpusContent extends StatelessWidget {
           );
         }
       },
-      separatorBuilder: (context, index) => const Text(
-        ' \n',
-        strutStyle: StrutStyle(height: 1, fontSize: 5),
-        style: TextStyle(height: 1, fontSize: 5),
-      ),
+      separatorBuilder: (context, index) => const SizedBox(height: 10),
     );
   }
 }

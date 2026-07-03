@@ -74,21 +74,27 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
     if (isPortrait) {
       return Padding(
         padding: EdgeInsets.symmetric(horizontal: padding),
-        child: CustomScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          slivers: [
-            _buildContent(
-              maxWidth - this.padding.horizontal - 2 * padding - 24,
-            ),
-            SliverToBoxAdapter(
-              child: Divider(
-                thickness: 8,
-                color: theme.dividerColor.withValues(alpha: 0.05),
+        child: SelectionArea(
+          child: CustomScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            slivers: [
+              _buildContent(
+                maxWidth - this.padding.horizontal - 2 * padding - 24,
               ),
-            ),
-            buildReplyHeader(),
-            Obx(() => replyList(controller.loadingState.value)),
-          ],
+              SelectionContainer.disabled(
+                child: SliverToBoxAdapter(
+                  child: Divider(
+                    thickness: 8,
+                    color: theme.dividerColor.withValues(alpha: 0.05),
+                  ),
+                ),
+              ),
+              SelectionContainer.disabled(child: buildReplyHeader()),
+              SelectionContainer.disabled(
+                child: Obx(() => replyList(controller.loadingState.value)),
+              ),
+            ],
+          ),
         ),
       );
     }
@@ -212,7 +218,7 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
             slivers: [
               if (controller.type != 'read')
                 if (controller.opusData?.modules.moduleTop?.display?.album?.pics
-                    case final pics?)
+                    case final pics? when pics.isNotEmpty)
                   SliverToBoxAdapter(
                     child: Builder(
                       builder: (context) {
@@ -322,13 +328,11 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
                 SliverToBoxWithVisibilityAdapter(
                   onVisibilityChanged: (bool visible) =>
                       controller.showTitle.value = !visible,
-                  child: SelectionContainer.disabled(
-                    child: Text(
-                      controller.summary.title!,
-                      style: const TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.bold,
-                      ),
+                  child: Text(
+                    controller.summary.title!,
+                    style: const TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
@@ -339,31 +343,29 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
                     onTap: () => Get.toNamed(
                       '/member?mid=${controller.summary.author?.mid}',
                     ),
-                    child: Row(
-                      children: [
-                        NetworkImgLayer(
-                          width: 40,
-                          height: 40,
-                          type: ImageType.avatar,
-                          src: controller.summary.author?.face,
-                        ),
-                        const SizedBox(width: 10),
-                        Flexible(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              SelectionContainer.disabled(
-                                child: Text(
+                    child: SelectionContainer.disabled(
+                      child: Row(
+                        children: [
+                          NetworkImgLayer(
+                            width: 40,
+                            height: 40,
+                            type: ImageType.avatar,
+                            src: controller.summary.author?.face,
+                          ),
+                          const SizedBox(width: 10),
+                          Flexible(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
                                   controller.summary.author?.name ?? '',
                                   style: TextStyle(
                                     fontSize:
                                         theme.textTheme.titleSmall!.fontSize,
                                   ),
                                 ),
-                              ),
-                              if (pubTime != null)
-                                SelectionContainer.disabled(
-                                  child: Text(
+                                if (pubTime != null)
+                                  Text(
                                     DateFormatUtils.format(pubTime),
                                     style: TextStyle(
                                       color: theme.colorScheme.outline,
@@ -371,11 +373,11 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
                                           theme.textTheme.labelSmall!.fontSize,
                                     ),
                                   ),
-                                ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),

@@ -284,3 +284,6 @@ flutter:
     - family: Noto Sans CJK SC
       fonts:
         - asset: assets/fonts/NotoSansSC-Regular.ttf
+    - family: Noto Sans
+      fonts:
+        - asset: assets/fonts/NotoSans-Regular.ttf

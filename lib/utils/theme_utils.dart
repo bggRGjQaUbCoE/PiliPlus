@@ -43,7 +43,7 @@ abstract final class ThemeUtils {
       colorScheme: colorScheme,
       useMaterial3: true,
       fontFamily: 'Noto Sans CJK SC',
-      fontFamilyFallback: ['Noto Color Emoji'],
+      fontFamilyFallback: ['Noto Sans', 'Noto Color Emoji'],
       textTheme: fontWeight == null
           ? null
           : TextTheme(

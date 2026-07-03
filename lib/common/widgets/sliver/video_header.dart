@@ -25,6 +25,15 @@ class VideoHeader extends SliverPinnedDynamicHeader {
       onScrollRatioChanged: onScrollRatioChanged,
     );
   }
+
+  @override
+  void updateRenderObject(
+    BuildContext context,
+    RenderVideoHeader renderObject,
+  ) {
+    super.updateRenderObject(context, renderObject);
+    renderObject.minVideoHeight = minVideoHeight;
+  }
 }
 
 class RenderVideoHeader extends RenderSliverPinnedDynamicHeader {
@@ -36,7 +45,7 @@ class RenderVideoHeader extends RenderSliverPinnedDynamicHeader {
   });
 
   double? _scrollRatio;
-  final double minVideoHeight;
+  double minVideoHeight;
   final ValueChanged<double> onScrollRatioChanged;
 
   @override

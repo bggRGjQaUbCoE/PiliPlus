@@ -50,9 +50,9 @@ jobs:
               rm powershell-7.4.12-linux-arm64.tar.gz && \
               ln -s /usr/local/powershell/pwsh /usr/bin/pwsh
 
-          RUN wget -q https://github.com/zhzhzhy/Flutter-SDK-ARM64/releases/download/3.44.4/flutter_linux_arm64_3.44.4-stable.tar.xz && \
-              tar xf flutter_linux_arm64_3.44.4-stable.tar.xz -C /root && \
-              rm flutter_linux_arm64_3.44.4-stable.tar.xz
+          RUN wget -q https://github.com/zhzhzhy/Flutter-SDK-ARM64/releases/download/Flutter-SDK-2026-07-03/Flutter-SDK-ARM64.zip && \
+              unzip -q Flutter-SDK-ARM64.zip -d /root && \
+              rm Flutter-SDK-ARM64.zip
 
           RUN git config --global --add safe.directory /root/flutter && \
               /root/flutter/bin/flutter config --enable-linux-desktop && \

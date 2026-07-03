@@ -1,5 +1,5 @@
 diff --git a/packages/flutter/lib/src/widgets/selectable_region.dart b/packages/flutter/lib/src/widgets/selectable_region.dart
-index 59de8bae20bea..5a6923f3a6ace 100644
+index 59de8bae20b..5a6923f3a6a 100644
 --- a/packages/flutter/lib/src/widgets/selectable_region.dart
 +++ b/packages/flutter/lib/src/widgets/selectable_region.dart
 @@ -29,8 +29,10 @@ import 'framework.dart';
@@ -14,19 +14,19 @@ index 59de8bae20bea..5a6923f3a6ace 100644
  import 'tap_region.dart';
  import 'text_editing_intents.dart';
 @@ -1775,12 +1777,12 @@ class SelectableRegionState extends State<SelectableRegion>
-
+ 
    /// The line height at the start of the current selection.
    double get startGlyphHeight {
 -    return _selectionDelegate.value.startSelectionPoint!.lineHeight;
 +    return _selectionDelegate.value.startSelectionPoint?.lineHeight ?? 0;
    }
-
+ 
    /// The line height at the end of the current selection.
    double get endGlyphHeight {
 -    return _selectionDelegate.value.endSelectionPoint!.lineHeight;
 +    return _selectionDelegate.value.endSelectionPoint?.lineHeight ?? 0;
    }
-
+ 
    /// Returns the local coordinates of the endpoints of the current selection.
 @@ -1946,7 +1948,7 @@ class SelectableRegionState extends State<SelectableRegion>
      if (_webContextMenuEnabled) {
@@ -59,15 +59,15 @@ index 59de8bae20bea..5a6923f3a6ace 100644
 +    );
    }
  }
-
+ 
 diff --git a/packages/flutter/test/widgets/selectable_region_test.dart b/packages/flutter/test/widgets/selectable_region_test.dart
-index fb5966b840c24..b2cf23192f116 100644
+index f7bd4071c8a..a82a9448120 100644
 --- a/packages/flutter/test/widgets/selectable_region_test.dart
 +++ b/packages/flutter/test/widgets/selectable_region_test.dart
 @@ -841,6 +841,125 @@ void main() {
        expect(renderSelectionSpy.events.length, 0);
      });
-
+ 
 +    testWidgets(
 +      'SelectionArea + ListView: select across multiple lines and scroll does not crash',
 +      (WidgetTester tester) async {
@@ -189,11 +189,11 @@ index fb5966b840c24..b2cf23192f116 100644
 +
      testWidgets('mouse long press does not send select-word event', (WidgetTester tester) async {
        final spy = UniqueKey();
-
-@@ -6612,6 +6731,56 @@ void main() {
+ 
+@@ -6690,6 +6809,56 @@ void main() {
    });
  }
-
+ 
 +/// A [SelectionContainerDelegate] that can return [SelectionGeometry] with null
 +/// [startSelectionPoint] and [endSelectionPoint] to test off-screen selection handling.
 +class NullSelectionPointDelegate extends StaticSelectionContainerDelegate {

@@ -68,7 +68,7 @@ jobs:
           docker run --rm --platform linux/arm64 \
             -v "$(pwd):/workspace" \
             piliplus-arm64-build \
-            bash -c "cd /workspace && git config --global --add safe.directory /workspace && uname -m && /usr/local/powershell/pwsh -Command 'Set-Location /workspace; lib/scripts/build.ps1' && /usr/local/powershell/pwsh -Command 'Set-Location /workspace; lib/scripts/patch.ps1 Linux' && /root/flutter/bin/flutter build linux --release --pub --dart-define-from-file=pili_release.json && file build/linux/arm64/release/bundle/piliplus"
+            bash -c "cd /workspace && git config --global --add safe.directory /workspace && uname -m && cd /workspace && /usr/local/powershell/pwsh -Command 'lib/scripts/build.ps1' && cd /workspace && /usr/local/powershell/pwsh -Command 'lib/scripts/patch.ps1 Linux' && /root/flutter/bin/flutter build linux --release --pub --dart-define-from-file=pili_release.json && file build/linux/arm64/release/bundle/piliplus"
 
       - name: Get version
         id: get_version
@@ -128,8 +128,8 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ steps.get_version.outputs.VERSION }}
-          release_name: PiliPlus v${{ steps.get_version.outputs.VERSION }}
+          tag_name: v${{ steps.get_version.outputs.VERSION }}-arm64
+          release_name: PiliPlus v${{ steps.get_version.outputs.VERSION }} Linux ARM64
           body: |
             ## Release Notes
             
@@ -138,7 +138,11 @@ jobs:
             - Built using Flutter ARM64 SDK from https://github.com/zhzhzhy/Flutter-SDK-ARM64
             - Fixed Chinese font display issue (方块/口口口)
             - Updated font family name in pubspec.yaml to match actual font file
-            - Set default fontFamily in ThemeData
+            - Set default fontFamily in ThemeData with fontFamilyFallback for emoji and mathematical symbols
+            - Added Noto Sans CJK SC font for Chinese support
+            - Added Noto Sans font for extended Latin support
+            - Added Noto Sans Math font for mathematical alphanumeric symbols (e.g. 𝐌𝐲 𝐩𝐚𝐢𝐧)
+            - Added Noto Color Emoji font for emoji support
             
             ### Assets
             

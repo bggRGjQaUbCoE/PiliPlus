@@ -21,7 +21,15 @@ jobs:
         with:
           platforms: linux/arm64
 
-      - name: Build and run in Docker
+      - name: Cache Docker image
+        id: docker-cache
+        uses: actions/cache@v4
+        with:
+          path: /tmp/piliplus-arm64-image.tar
+          key: docker-arm64-v2
+
+      - name: Build Docker image
+        if: steps.docker-cache.outputs.cache-hit != 'true'
         run: |
           mkdir -p /tmp/build
           cat > /tmp/build/Dockerfile << 'DOCKERFILE_EOF'
@@ -64,9 +72,26 @@ jobs:
           DOCKERFILE_EOF
 
           docker build --platform linux/arm64 -t piliplus-arm64-build /tmp/build
+          docker save piliplus-arm64-build -o /tmp/piliplus-arm64-image.tar
 
+      - name: Load Docker image
+        if: steps.docker-cache.outputs.cache-hit == 'true'
+        run: docker load -i /tmp/piliplus-arm64-image.tar
+
+      - name: Cache Flutter pub dependencies
+        uses: actions/cache@v4
+        with:
+          path: .pub-cache
+          key: flutter-pub-${{ hashFiles('pubspec.lock') }}
+          restore-keys: |
+            flutter-pub-
+
+      - name: Build in Docker
+        run: |
+          mkdir -p .pub-cache
           docker run --rm --platform linux/arm64 \
             -v "$(pwd):/workspace" \
+            -v "$(pwd)/.pub-cache:/root/.pub-cache" \
             -e GITHUB_ENV=/tmp/github_env \
             -e GITHUB_WORKSPACE=/workspace \
             -e FLUTTER_ROOT=/root/flutter \

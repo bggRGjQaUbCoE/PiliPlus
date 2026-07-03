@@ -1,4 +1,4 @@
-name: Build Linux arm64
+name: Build for Linux arm64
 
 on:
   push:

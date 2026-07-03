@@ -75,6 +75,7 @@ abstract final class ThemeUtils {
           fontSize: 16,
           color: colorScheme.onSurface,
           fontWeight: fontWeight,
+          fontFamily: 'Noto Sans CJK SC',
         ),
       ),
       navigationBarTheme: NavigationBarThemeData(
@@ -84,7 +85,10 @@ abstract final class ThemeUtils {
         actionTextColor: colorScheme.primary,
         backgroundColor: colorScheme.secondaryContainer,
         closeIconColor: colorScheme.secondary,
-        contentTextStyle: TextStyle(color: colorScheme.onSecondaryContainer),
+        contentTextStyle: TextStyle(
+          color: colorScheme.onSecondaryContainer,
+          fontFamily: 'Noto Sans CJK SC',
+        ),
         elevation: 20,
       ),
       popupMenuTheme: PopupMenuThemeData(
@@ -110,6 +114,7 @@ abstract final class ThemeUtils {
           fontSize: 18,
           color: colorScheme.onSurface,
           fontWeight: fontWeight,
+          fontFamily: 'Noto Sans CJK SC',
         ),
         backgroundColor: colorScheme.surface,
         constraints: const BoxConstraints(minWidth: 280, maxWidth: 420),
@@ -126,6 +131,7 @@ abstract final class ThemeUtils {
         textStyle: const TextStyle(
           color: Colors.white,
           fontSize: 14,
+          fontFamily: 'Noto Sans CJK SC',
         ),
         decoration: BoxDecoration(
           color: Colors.grey[700]!.withValues(alpha: 0.9),

@@ -89,14 +89,33 @@ jobs:
       - name: Build in Docker
         run: |
           mkdir -p .pub-cache
+          cat > /tmp/build_script.sh << 'SCRIPT_EOF'
+          #!/bin/bash
+          set -x
+          touch /tmp/github_env
+          cd /workspace
+          git config --global --add safe.directory /workspace
+          echo "=== Architecture ==="
+          uname -m
+          echo "=== Running build.ps1 ==="
+          /usr/local/powershell/pwsh -Command 'lib/scripts/build.ps1' || { echo "build.ps1 failed with exit code $?"; exit 1; }
+          echo "=== Running patch.ps1 ==="
+          /usr/local/powershell/pwsh -Command 'lib/scripts/patch.ps1 Linux' || { echo "patch.ps1 failed with exit code $?"; exit 1; }
+          echo "=== Flutter build ==="
+          /root/flutter/bin/flutter build linux --release --pub --dart-define-from-file=pili_release.json || { echo "flutter build failed with exit code $?"; exit 1; }
+          echo "=== Build result ==="
+          file build/linux/arm64/release/bundle/piliplus
+          SCRIPT_EOF
+          chmod +x /tmp/build_script.sh
           docker run --rm --platform linux/arm64 \
             -v "$(pwd):/workspace" \
             -v "$(pwd)/.pub-cache:/root/.pub-cache" \
+            -v "/tmp/build_script.sh:/tmp/build_script.sh:ro" \
             -e GITHUB_ENV=/tmp/github_env \
             -e GITHUB_WORKSPACE=/workspace \
             -e FLUTTER_ROOT=/root/flutter \
             piliplus-arm64-build \
-            bash -c "touch /tmp/github_env && cd /workspace && git config --global --add safe.directory /workspace && uname -m && cd /workspace && /usr/local/powershell/pwsh -Command 'lib/scripts/build.ps1' && cd /workspace && /usr/local/powershell/pwsh -Command 'lib/scripts/patch.ps1 Linux' && /root/flutter/bin/flutter build linux --release --pub --dart-define-from-file=pili_release.json && file build/linux/arm64/release/bundle/piliplus"
+            bash /tmp/build_script.sh
 
       - name: Get version
         id: get_version

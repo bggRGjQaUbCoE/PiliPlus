@@ -41,6 +41,7 @@ import 'package:PiliPlus/utils/request_utils.dart';
 import 'package:PiliPlus/utils/share_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
+import 'package:dio/dio.dart';
 import 'package:expandable/expandable.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
@@ -397,6 +398,27 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
         ],
       ),
     );
+  }
+
+  // 下载视频
+  Future<void> actionDownloadVideo(BuildContext context) async {
+    feedBack();
+    try {
+      final res = await Request().post(
+        Pref.downloadServerUrl,
+        data: {
+          'bid': bvid,
+        },
+        options: Options(contentType: Headers.jsonContentType),
+      );
+      if (res.statusCode == 200 || res.statusCode == 201) {
+        SmartDialog.showToast('下载请求已发送: ${res.statusCode}');
+      } else {
+        SmartDialog.showToast('下载请求失败: ${res.statusCode}');
+      }
+    } catch (e) {
+      SmartDialog.showToast('下载请求出错: $e');
+    }
   }
 
   // 查询关注状态

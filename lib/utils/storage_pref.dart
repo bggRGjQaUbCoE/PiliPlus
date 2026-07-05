@@ -1032,4 +1032,10 @@ abstract final class Pref {
       _setting.get(SettingBoxKey.maxVolume, defaultValue: 2.0);
 
   static List? get liveStream => _setting.get(SettingBoxKey.liveStream);
+
+  static String get downloadServerUrl =>
+      _setting.get(SettingBoxKey.downloadServerUrl, defaultValue: 'http://localhost:9889/task');
+
+  static bool get enableDownloadServer =>
+      _setting.get(SettingBoxKey.enableDownloadServer, defaultValue: false);
 }

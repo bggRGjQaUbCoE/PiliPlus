@@ -35,8 +35,9 @@ import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
-import 'package:PiliPlus/utils/request_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
+import 'package:PiliPlus/utils/storage_pref.dart';
+import 'package:PiliPlus/utils/request_utils.dart';
 import 'package:expandable/expandable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -605,6 +606,14 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
                 ? NumUtils.numFormat(videoDetail.stat!.share!)
                 : null,
           ),
+          if (Pref.enableDownloadServer)
+            ActionItem(
+              icon: const Icon(FontAwesomeIcons.download),
+              onTap: () => introController.actionDownloadVideo(context),
+              selectStatus: false,
+              semanticsLabel: '下载',
+              text: '下载',
+            ),
         ],
       ),
     );

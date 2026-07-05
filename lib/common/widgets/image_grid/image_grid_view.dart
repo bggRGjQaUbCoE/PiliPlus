@@ -173,17 +173,28 @@ class ImageGridView extends StatelessWidget {
           onTap: () => ImageUtils.downloadImg([item.url]),
           child: const Text('保存图片', style: TextStyle(fontSize: 14)),
         ),
+        if (allPicArr != null)
+          PopupMenuItem(
+            height: 42,
+            onTap: () => PageUtils.imageView(
+              initialPage: index,
+              imgList: imgList,
+              allSources: allImgList,
+              tag: hashCode.toString(),
+            ),
+            child: const Text('查看所有图片', style: TextStyle(fontSize: 14)),
+          ),
         if (PlatformUtils.isDesktop)
           PopupMenuItem(
             height: 42,
             onTap: () => PageUtils.launchURL(item.url),
             child: const Text('网页打开', style: TextStyle(fontSize: 14)),
           )
-        else if (picArr.length > 1)
+        else if (allPicArr != null)
           PopupMenuItem(
             height: 42,
             onTap: () =>
-                ImageUtils.downloadImg(picArr.map((item) => item.url).toList()),
+                ImageUtils.downloadImg(allImgList.map((item) => item.url).toList()),
             child: const Text('保存全部', style: TextStyle(fontSize: 14)),
           ),
         if (item.isLivePhoto)

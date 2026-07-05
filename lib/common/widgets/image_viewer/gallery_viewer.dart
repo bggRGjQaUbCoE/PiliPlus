@@ -577,7 +577,7 @@ class _GalleryViewerState extends State<GalleryViewer>
                 Get.back();
                 _viewAllMedia();
               },
-              child: const Text('查看所有资源',
+              child: const Text('显示所有图片',
                   style: TextStyle(fontSize: 14)),
             ),
           if (PlatformUtils.isDesktop)
@@ -663,7 +663,7 @@ class _GalleryViewerState extends State<GalleryViewer>
           PopupMenuItem(
             height: 42,
             onTap: _viewAllMedia,
-            child: const Text('查看所有资源',
+            child: const Text('显示所有图片',
                 style: TextStyle(fontSize: 14)),
           ),
         PopupMenuItem(

@@ -266,7 +266,7 @@ class _GalleryOverviewViewState extends State<GalleryOverviewView> {
                           ),
                       },
                     ),
-                    if (item.isLivePhoto)
+                    if (item.sourceType == SourceType.livePhoto)
                       const PBadge(text: 'Live', right: 8, bottom: 8, type: PBadgeType.gray)
                     else if (item.isLongPic)
                       const PBadge(text: '长图', right: 8, bottom: 8),

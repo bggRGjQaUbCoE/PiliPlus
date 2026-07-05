@@ -158,6 +158,32 @@ class ImageGridView extends StatelessWidget {
   void _showMenu(BuildContext context, int index, Offset offset) {
     HapticFeedback.mediumImpact();
     final item = picArr[index];
+    final imgList = picArr.map(
+      (item) {
+        final isLive = item.isLivePhoto;
+        return SourceModel(
+          sourceType: isLive ? .livePhoto : .networkImage,
+          url: item.url,
+          liveUrl: isLive ? item.liveUrl : null,
+          width: isLive ? item.width.toInt() : null,
+          height: isLive ? item.height.toInt() : null,
+          isLongPic: item.isLongPic,
+        );
+      },
+    ).toList();
+    final allImgList = (allPicArr ?? picArr).map(
+      (item) {
+        final isLive = item.isLivePhoto;
+        return SourceModel(
+          sourceType: isLive ? .livePhoto : .networkImage,
+          url: item.url,
+          liveUrl: isLive ? item.liveUrl : null,
+          width: isLive ? item.width.toInt() : null,
+          height: isLive ? item.height.toInt() : null,
+          isLongPic: item.isLongPic,
+        );
+      },
+    ).toList();
     showMenu(
       context: context,
       position: PageUtils.menuPosition(offset),

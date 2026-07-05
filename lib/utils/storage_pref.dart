@@ -1005,6 +1005,12 @@ abstract final class Pref {
   static bool get enableImgMenu =>
       _setting.get(SettingBoxKey.enableImgMenu, defaultValue: false);
 
+  static bool get imageBrowserHideSystemBar =>
+      _setting.get(
+        SettingBoxKey.imageBrowserHideSystemBar,
+        defaultValue: true,
+      );
+
   static bool get showDynDispute =>
       _setting.get(SettingBoxKey.showDynDispute, defaultValue: false);
 

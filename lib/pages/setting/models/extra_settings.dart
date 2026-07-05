@@ -454,6 +454,13 @@ List<SettingsModel> get extraSettings => [
     defaultVal: false,
     onChanged: (value) => ImageGridView.enableImgMenu = value,
   ),
+  const SwitchModel(
+    title: '图片浏览器隐藏系统导航栏',
+    subtitle: '关闭后查看单张大图时保留底部系统导航栏',
+    leading: Icon(Icons.bottom_navigation_outlined),
+    setKey: SettingBoxKey.imageBrowserHideSystemBar,
+    defaultVal: true,
+  ),
   SwitchModel(
     setKey: SettingBoxKey.feedBackEnable,
     onChanged: (value) {

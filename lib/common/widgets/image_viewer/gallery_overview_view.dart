@@ -4,7 +4,6 @@ import 'package:PiliPlus/common/assets.dart';
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/flutter/pop_scope.dart';
-import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/image_viewer/gallery_viewer.dart';
 import 'package:PiliPlus/common/widgets/image_viewer/hero_dialog_route.dart';
 import 'package:PiliPlus/common/widgets/select_mask.dart';
@@ -12,6 +11,7 @@ import 'package:PiliPlus/models/common/badge_type.dart';
 import 'package:PiliPlus/models/common/image_preview_type.dart';
 import 'package:PiliPlus/utils/global_data.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
+import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -70,11 +70,18 @@ class _GalleryOverviewViewState extends State<GalleryOverviewView> {
   }
 
   void _selectAll() {
+    final isAllSelected = _selected.length == widget.sources.length &&
+        widget.sources.isNotEmpty;
     setState(() {
-      _enableMultiSelect = true;
-      _selected
-        ..clear()
-        ..addAll(List.generate(widget.sources.length, (index) => index));
+      if (isAllSelected) {
+        _enableMultiSelect = false;
+        _selected.clear();
+      } else {
+        _enableMultiSelect = true;
+        _selected
+          ..clear()
+          ..addAll(List.generate(widget.sources.length, (index) => index));
+      }
     });
   }
 
@@ -156,6 +163,16 @@ class _GalleryOverviewViewState extends State<GalleryOverviewView> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final padding = MediaQuery.viewPaddingOf(context);
+    final size = MediaQuery.sizeOf(context);
+    final horizontalPadding = 24.0;
+    final spacingWidth = _spacing * (_crossAxisCount - 1);
+    final tileExtent =
+        (size.width -
+                padding.left -
+                padding.right -
+                horizontalPadding -
+                spacingWidth) /
+        _crossAxisCount;
     return popScope(
       canPop: !_enableMultiSelect,
       onPopInvokedWithResult: (didPop, result) {
@@ -185,7 +202,9 @@ class _GalleryOverviewViewState extends State<GalleryOverviewView> {
           actions: [
             if (_enableMultiSelect)
               IconButton(
-                tooltip: '全选',
+                tooltip: _selected.length == widget.sources.length
+                    ? '取消全选'
+                    : '全选',
                 onPressed: _selectAll,
                 icon: const Icon(Icons.select_all_outlined),
               )
@@ -235,36 +254,52 @@ class _GalleryOverviewViewState extends State<GalleryOverviewView> {
                   alignment: Alignment.center,
                   children: [
                     Positioned.fill(
-                      child: switch (item.sourceType) {
-                        SourceType.fileImage => Image.file(
-                            File(item.url),
-                            fit: BoxFit.cover,
-                            filterQuality: FilterQuality.low,
-                            errorBuilder: (_, __, ___) => Container(
-                              color: theme.colorScheme.onInverseSurface.withValues(alpha: 0.4),
-                              alignment: Alignment.center,
-                              child: const Icon(Icons.broken_image_outlined),
-                            ),
-                          ),
-                        _ => NetworkImgLayer(
-                            src: item.url,
-                            width: 1,
-                            height: 1,
-                            borderRadius: borderRadius,
-                            fit: BoxFit.cover,
-                            alignment: item.isLongPic ? Alignment.topCenter : Alignment.center,
-                            cacheWidth: false,
-                            getPlaceHolder: () => Container(
-                              color: theme.colorScheme.onInverseSurface.withValues(alpha: 0.4),
-                              alignment: Alignment.center,
-                              child: Image.asset(
-                                Assets.loading,
-                                width: 28,
-                                height: 28,
+                      child: ClipRRect(
+                        borderRadius: borderRadius,
+                        child: switch (item.sourceType) {
+                          SourceType.fileImage => Image.file(
+                              File(item.url),
+                              width: tileExtent,
+                              height: tileExtent,
+                              fit: BoxFit.cover,
+                              filterQuality: FilterQuality.high,
+                              errorBuilder: (_, __, ___) => Container(
+                                color: theme.colorScheme.onInverseSurface
+                                    .withValues(alpha: 0.4),
+                                alignment: Alignment.center,
+                                child: const Icon(Icons.broken_image_outlined),
                               ),
                             ),
-                          ),
-                      },
+                          _ => CachedNetworkImage(
+                              imageUrl: ImageUtils.thumbnailUrl(
+                                item.url,
+                                100,
+                              ),
+                              width: tileExtent,
+                              height: tileExtent,
+                              fit: BoxFit.cover,
+                              alignment: item.isLongPic
+                                  ? Alignment.topCenter
+                                  : Alignment.center,
+                              filterQuality: FilterQuality.high,
+                              placeholder: (_, __) => Container(
+                                color: theme.colorScheme.onInverseSurface
+                                    .withValues(alpha: 0.4),
+                                alignment: Alignment.center,
+                                child: Image.asset(
+                                  Assets.loading,
+                                  width: 28,
+                                  height: 28,
+                                ),
+                              ),
+                              errorWidget: (_, __, ___) => Container(
+                                color: theme.colorScheme.onInverseSurface
+                                    .withValues(alpha: 0.4),
+                                alignment: Alignment.center,
+                                child: const Icon(Icons.broken_image_outlined),
+                              ),
+                            ),
+                        },
                     ),
                     if (item.sourceType == SourceType.livePhoto)
                       const PBadge(text: 'Live', right: 8, bottom: 8, type: PBadgeType.gray)

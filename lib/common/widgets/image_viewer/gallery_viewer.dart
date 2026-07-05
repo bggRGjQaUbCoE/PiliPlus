@@ -540,6 +540,7 @@ class _GalleryViewerState extends State<GalleryViewer>
     final item = widget.sources[_currIndex.value];
     if (item.sourceType == .fileImage) return;
     HapticFeedback.mediumImpact();
+    final canViewAllMedia = _canViewAllMedia;
     showDialog(
       context: context,
       builder: (context) => SimpleDialog(
@@ -570,7 +571,7 @@ class _GalleryViewerState extends State<GalleryViewer>
             child: const Text('保存图片',
                 style: TextStyle(fontSize: 14)),
           ),
-          if (widget.allSources != null)
+          if (canViewAllMedia)
             DialogOption(
               onPressed: () {
                 Get.back();
@@ -625,7 +626,7 @@ class _GalleryViewerState extends State<GalleryViewer>
 
   void _viewAllMedia() {
     final allSources = widget.allSources;
-    if (allSources == null || allSources.isEmpty) {
+    if (!_canViewAllMedia || allSources == null || allSources.isEmpty) {
       return;
     }
     final item = widget.sources[_currIndex.value];
@@ -641,6 +642,7 @@ class _GalleryViewerState extends State<GalleryViewer>
   void _showDesktopMenu(TapUpDetails details) {
     final item = widget.sources[_currIndex.value];
     if (item.sourceType == .fileImage) return;
+    final canViewAllMedia = _canViewAllMedia;
     showMenu(
       context: context,
       position: PageUtils.menuPosition(details.globalPosition),
@@ -657,7 +659,7 @@ class _GalleryViewerState extends State<GalleryViewer>
           child: const Text('保存图片',
               style: TextStyle(fontSize: 14)),
         ),
-        if (widget.allSources != null)
+        if (canViewAllMedia)
           PopupMenuItem(
             height: 42,
             onTap: _viewAllMedia,
@@ -673,6 +675,9 @@ class _GalleryViewerState extends State<GalleryViewer>
       ],
     );
   }
+
+  bool get _canViewAllMedia =>
+      widget.allSources != null && !widget.tag.endsWith('#all');
 
   Widget loadingBuilder(
     BuildContext context,

@@ -300,6 +300,7 @@ class _GalleryOverviewViewState extends State<GalleryOverviewView> {
                               ),
                             ),
                         },
+                      ),
                     ),
                     if (item.sourceType == SourceType.livePhoto)
                       const PBadge(text: 'Live', right: 8, bottom: 8, type: PBadgeType.gray)

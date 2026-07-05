@@ -32,7 +32,6 @@ import 'package:PiliPlus/plugin/pl_player/utils/fullscreen.dart';
 import 'package:PiliPlus/utils/device_utils.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/string_ext.dart';
-import 'package:PiliPlus/utils/image_clipboard.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:PiliPlus/utils/max_screen_size.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
@@ -561,18 +560,6 @@ class _GalleryViewerState extends State<GalleryViewer>
               Utils.copyText(item.url);
             },
             child: const Text('复制链接',
-                style: TextStyle(fontSize: 14)),
-          ),
-          DialogOption(
-            onPressed: () {
-              Get.back();
-              ImageClipboard.copyImage(item.url).then((success) {
-                if (!success) {
-                  ImageUtils.downloadImg([item.url]);
-                }
-              });
-            },
-            child: const Text('复制图片',
                 style: TextStyle(fontSize: 14)),
           ),
           DialogOption(

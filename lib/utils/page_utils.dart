@@ -45,6 +45,7 @@ abstract final class PageUtils {
   static Future<void> imageView({
     int initialPage = 0,
     required List<SourceModel> imgList,
+    List<SourceModel>? allSources,
     int? quality,
     ValueChanged<int>? onPageChanged,
     String tag = '',
@@ -53,6 +54,7 @@ abstract final class PageUtils {
       HeroDialogRoute(
         pageBuilder: (context, animation, secondaryAnimation) => GalleryViewer(
           sources: imgList,
+          allSources: allSources,
           initIndex: initialPage,
           quality: quality ?? GlobalData().imgQuality,
           onPageChanged: onPageChanged,

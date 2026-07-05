@@ -1,4 +1,4 @@
-/*
+﻿/*
  * This file is part of PiliPlus
  *
  * PiliPlus is free software: you can redistribute it and/or modify
@@ -57,6 +57,7 @@ class GalleryViewer extends StatefulWidget {
     this.maxScale = 8.0,
     required this.quality,
     required this.sources,
+    this.allSources,
     this.initIndex = 0,
     this.onPageChanged,
     this.tag = '',
@@ -66,6 +67,7 @@ class GalleryViewer extends StatefulWidget {
   final double maxScale;
   final int quality;
   final List<SourceModel> sources;
+  final List<SourceModel>? allSources;
   final int initIndex;
   final ValueChanged<int>? onPageChanged;
   final String tag;
@@ -552,22 +554,35 @@ class _GalleryViewerState extends State<GalleryViewer>
               Get.back();
               Utils.copyText(item.url);
             },
-            child: const Text('复制链接', style: TextStyle(fontSize: 14)),
+            child: const Text('复制链接',
+                style: TextStyle(fontSize: 14)),
           ),
           DialogOption(
             onPressed: () {
               Get.back();
               ImageUtils.downloadImg([item.url]);
             },
-            child: const Text('保存图片', style: TextStyle(fontSize: 14)),
+            child: const Text('保存图片',
+                style: TextStyle(fontSize: 14)),
           ),
+          if (widget.allSources != null &&
+              widget.allSources!.length > widget.sources.length)
+            DialogOption(
+              onPressed: () {
+                Get.back();
+                _viewAllMedia();
+              },
+              child: const Text('查看所有资源',
+                  style: TextStyle(fontSize: 14)),
+            ),
           if (PlatformUtils.isDesktop)
             DialogOption(
               onPressed: () {
                 Get.back();
                 PageUtils.launchURL(item.url);
               },
-              child: const Text('网页打开', style: TextStyle(fontSize: 14)),
+              child: const Text('网页打开',
+                  style: TextStyle(fontSize: 14)),
             )
           else if (widget.sources.length > 1)
             DialogOption(
@@ -577,7 +592,8 @@ class _GalleryViewerState extends State<GalleryViewer>
                   widget.sources.map((item) => item.url).toList(),
                 );
               },
-              child: const Text('保存全部图片', style: TextStyle(fontSize: 14)),
+              child: const Text('保存全部图片',
+                  style: TextStyle(fontSize: 14)),
             ),
           if (item.sourceType == SourceType.livePhoto)
             DialogOption(
@@ -600,6 +616,33 @@ class _GalleryViewerState extends State<GalleryViewer>
     );
   }
 
+  int _matchAllSourceIndex(SourceModel item) {
+    final allSources = widget.allSources;
+    if (allSources == null || allSources.isEmpty) {
+      return _currIndex.value.clamp(0, widget.sources.length - 1);
+    }
+    final matchIndex = allSources.indexWhere(
+      (source) => source.url == item.url && source.liveUrl == item.liveUrl,
+    );
+    if (matchIndex != -1) {
+      return matchIndex;
+    }
+    return _currIndex.value.clamp(0, allSources.length - 1);
+  }
+
+  void _viewAllMedia() {
+    final allSources = widget.allSources;
+    if (allSources == null || allSources.length <= widget.sources.length) {
+      return;
+    }
+    final item = widget.sources[_currIndex.value];
+    PageUtils.imageView(
+      initialPage: _matchAllSourceIndex(item),
+      imgList: allSources,
+      tag: '${widget.tag}#all',
+    );
+  }
+
   void _showDesktopMenu(TapUpDetails details) {
     final item = widget.sources[_currIndex.value];
     if (item.sourceType == .fileImage) return;
@@ -610,29 +653,29 @@ class _GalleryViewerState extends State<GalleryViewer>
         PopupMenuItem(
           height: 42,
           onTap: () => Utils.copyText(item.url),
-          child: const Text('复制链接', style: TextStyle(fontSize: 14)),
+          child: const Text('复制链接',
+              style: TextStyle(fontSize: 14)),
         ),
         PopupMenuItem(
           height: 42,
           onTap: () => ImageUtils.downloadImg([item.url]),
-          child: const Text('保存图片', style: TextStyle(fontSize: 14)),
+          child: const Text('保存图片',
+              style: TextStyle(fontSize: 14)),
         ),
+        if (widget.allSources != null &&
+            widget.allSources!.length > widget.sources.length)
+          PopupMenuItem(
+            height: 42,
+            onTap: _viewAllMedia,
+            child: const Text('查看所有资源',
+                style: TextStyle(fontSize: 14)),
+          ),
         PopupMenuItem(
           height: 42,
           onTap: () => PageUtils.launchURL(item.url),
-          child: const Text('网页打开', style: TextStyle(fontSize: 14)),
+          child: const Text('网页打开',
+              style: TextStyle(fontSize: 14)),
         ),
-        if (item.sourceType == SourceType.livePhoto)
-          PopupMenuItem(
-            height: 42,
-            onTap: () => ImageUtils.downloadLivePhoto(
-              url: item.url,
-              liveUrl: item.liveUrl!,
-              width: item.width!,
-              height: item.height!,
-            ),
-            child: const Text('保存视频', style: TextStyle(fontSize: 14)),
-          ),
       ],
     );
   }

@@ -65,11 +65,13 @@ class ImageGridView extends StatelessWidget {
   const ImageGridView({
     super.key,
     required this.picArr,
+    this.allPicArr,
     this.onViewImage,
     this.fullScreen = false,
   });
 
   final List<ImageModel> picArr;
+  final List<ImageModel>? allPicArr;
   final VoidCallback? onViewImage;
   final bool fullScreen;
 
@@ -80,6 +82,19 @@ class ImageGridView extends StatelessWidget {
     final imgList = picArr.map(
       (item) {
         bool isLive = item.isLivePhoto;
+        return SourceModel(
+          sourceType: isLive ? .livePhoto : .networkImage,
+          url: item.url,
+          liveUrl: isLive ? item.liveUrl : null,
+          width: isLive ? item.width.toInt() : null,
+          height: isLive ? item.height.toInt() : null,
+          isLongPic: item.isLongPic,
+        );
+      },
+    ).toList();
+    final allImgList = (allPicArr ?? picArr).map(
+      (item) {
+        final isLive = item.isLivePhoto;
         return SourceModel(
           sourceType: isLive ? .livePhoto : .networkImage,
           url: item.url,
@@ -108,6 +123,7 @@ class ImageGridView extends StatelessWidget {
     PageUtils.imageView(
       initialPage: index,
       imgList: imgList,
+      allSources: allImgList,
       tag: hashCode.toString(),
     );
   }

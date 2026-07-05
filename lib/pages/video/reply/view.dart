@@ -180,6 +180,7 @@ class _VideoReplyPanelState extends State<VideoReplyPanel>
           var count = response.length + 1;
           final voteCard = _videoReplyController.voteCard;
           final hasVote = voteCard != null;
+          final allPicArr = _videoReplyController.allImageModels;
           if (hasVote) {
             count++;
           }
@@ -214,8 +215,9 @@ class _VideoReplyPanelState extends State<VideoReplyPanel>
                       _videoReplyController.onRemove(index, item, subIndex),
                   upMid: _videoReplyController.upMid,
                   getTag: () => heroTag,
-                  onCheckReply: (item) =>
-                      _videoReplyController.onCheckReply(item, isManual: true),
+                  onCheckReply: (item) => _videoReplyController
+                      .onCheckReply(item, isManual: true),
+                  allPicArr: allPicArr,
                   onToggleTop: (item) => _videoReplyController.onToggleTop(
                     item,
                     index,

@@ -1,3 +1,5 @@
+import 'package:PiliPlus/common/widgets/image_grid/image_grid_view.dart'
+    show ImageModel;
 import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
     show MainListReply, ReplyInfo;
 import 'package:PiliPlus/grpc/reply.dart';
@@ -39,4 +41,33 @@ class VideoReplyController extends ReplyController<MainListReply>
     cursorNext: cursorNext,
     offset: paginationReply?.nextOffset,
   );
+
+  List<ImageModel> get allImageModels {
+    final replies = loadingState.value.dataOrNull;
+    if (replies == null || replies.isEmpty) {
+      return const [];
+    }
+    final images = <ImageModel>[];
+    void collect(List<ReplyInfo> items) {
+      for (final reply in items) {
+        if (reply.content.pictures.isNotEmpty) {
+          images.addAll(
+            reply.content.pictures.map(
+              (item) => ImageModel(
+                width: item.imgWidth,
+                height: item.imgHeight,
+                url: item.imgSrc,
+              ),
+            ),
+          );
+        }
+        if (reply.replies.isNotEmpty) {
+          collect(reply.replies);
+        }
+      }
+    }
+
+    collect(replies);
+    return images;
+  }
 }

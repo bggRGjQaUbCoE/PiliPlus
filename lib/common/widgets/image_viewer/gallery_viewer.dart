@@ -23,6 +23,7 @@ import 'package:PiliPlus/common/widgets/flutter/page/page_view.dart';
 import 'package:PiliPlus/common/widgets/gesture/image_horizontal_drag_gesture_recognizer.dart';
 import 'package:PiliPlus/common/widgets/image_viewer/image.dart';
 import 'package:PiliPlus/common/widgets/image_viewer/loading_indicator.dart';
+import 'package:PiliPlus/common/widgets/image_viewer/gallery_overview_view.dart';
 import 'package:PiliPlus/common/widgets/image_viewer/viewer.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart';
 import 'package:PiliPlus/main.dart' show tmpPadding;
@@ -636,10 +637,12 @@ class _GalleryViewerState extends State<GalleryViewer>
       return;
     }
     final item = widget.sources[_currIndex.value];
-    PageUtils.imageView(
-      initialPage: _matchAllSourceIndex(item),
-      imgList: allSources,
-      tag: '${widget.tag}#all',
+    Get.to(
+      () => GalleryOverviewView(
+        sources: allSources,
+        initIndex: _matchAllSourceIndex(item),
+        tag: '${widget.tag}#all',
+      ),
     );
   }
 

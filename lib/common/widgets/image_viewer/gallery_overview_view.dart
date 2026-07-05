@@ -70,8 +70,8 @@ class _GalleryOverviewViewState extends State<GalleryOverviewView> {
   }
 
   void _selectAll() {
-    final isAllSelected = _selected.length == widget.sources.length &&
-        widget.sources.isNotEmpty;
+    final isAllSelected =
+        _selected.length == widget.sources.length && widget.sources.isNotEmpty;
     setState(() {
       if (isAllSelected) {
         _enableMultiSelect = false;
@@ -148,10 +148,12 @@ class _GalleryOverviewViewState extends State<GalleryOverviewView> {
       final horizontalPadding = 24.0;
       final spacingWidth = _spacing * (_crossAxisCount - 1);
       final tileExtent =
-          (mediaQuery.size.width - mediaQuery.padding.left - mediaQuery.padding.right -
-                  horizontalPadding -
-                  spacingWidth) /
-              _crossAxisCount;
+          (mediaQuery.size.width -
+              mediaQuery.padding.left -
+              mediaQuery.padding.right -
+              horizontalPadding -
+              spacingWidth) /
+          _crossAxisCount;
       final row = widget.initIndex ~/ _crossAxisCount;
       final offset = row * (tileExtent + _spacing);
       final max = _scrollController.position.maxScrollExtent;
@@ -168,10 +170,10 @@ class _GalleryOverviewViewState extends State<GalleryOverviewView> {
     final spacingWidth = _spacing * (_crossAxisCount - 1);
     final tileExtent =
         (size.width -
-                padding.left -
-                padding.right -
-                horizontalPadding -
-                spacingWidth) /
+            padding.left -
+            padding.right -
+            horizontalPadding -
+            spacingWidth) /
         _crossAxisCount;
     return popScope(
       canPop: !_enableMultiSelect,
@@ -192,12 +194,16 @@ class _GalleryOverviewViewState extends State<GalleryOverviewView> {
                 Get.back<void>();
               }
             },
-            icon: Icon(_enableMultiSelect ? Icons.close_outlined : Icons.arrow_back_ios_new),
+            icon: Icon(
+              _enableMultiSelect
+                  ? Icons.close_outlined
+                  : Icons.arrow_back_ios_new,
+            ),
           ),
           title: Text(
             _enableMultiSelect
                 ? '已选 ${_selected.length}/${widget.sources.length}'
-                : '资源总览',
+                : '图片总览',
           ),
           actions: [
             if (_enableMultiSelect)
@@ -267,7 +273,9 @@ class _GalleryOverviewViewState extends State<GalleryOverviewView> {
                                   color: theme.colorScheme.onInverseSurface
                                       .withValues(alpha: 0.4),
                                   alignment: Alignment.center,
-                                  child: const Icon(Icons.broken_image_outlined),
+                                  child: const Icon(
+                                    Icons.broken_image_outlined,
+                                  ),
                                 ),
                               )
                             : CachedNetworkImage(
@@ -296,17 +304,28 @@ class _GalleryOverviewViewState extends State<GalleryOverviewView> {
                                   color: theme.colorScheme.onInverseSurface
                                       .withValues(alpha: 0.4),
                                   alignment: Alignment.center,
-                                  child: const Icon(Icons.broken_image_outlined),
+                                  child: const Icon(
+                                    Icons.broken_image_outlined,
+                                  ),
                                 ),
                               ),
                       ),
                     ),
                     if (item.sourceType == SourceType.livePhoto)
-                      const PBadge(text: 'Live', right: 8, bottom: 8, type: PBadgeType.gray)
+                      const PBadge(
+                        text: 'Live',
+                        right: 8,
+                        bottom: 8,
+                        type: PBadgeType.gray,
+                      )
                     else if (item.isLongPic)
                       const PBadge(text: '长图', right: 8, bottom: 8),
                     Positioned.fill(
-                      child: selectMask(theme.colorScheme, checked, borderRadius: borderRadius),
+                      child: selectMask(
+                        theme.colorScheme,
+                        checked,
+                        borderRadius: borderRadius,
+                      ),
                     ),
                   ],
                 ),

@@ -570,14 +570,13 @@ class _GalleryViewerState extends State<GalleryViewer>
             child: const Text('保存图片',
                 style: TextStyle(fontSize: 14)),
           ),
-          if (widget.allSources != null &&
-              widget.allSources!.length > widget.sources.length)
+          if (widget.allSources != null)
             DialogOption(
               onPressed: () {
                 Get.back();
                 _viewAllMedia();
               },
-              child: const Text('显示所有图片',
+              child: const Text('查看所有图片',
                   style: TextStyle(fontSize: 14)),
             ),
           if (PlatformUtils.isDesktop)
@@ -626,7 +625,7 @@ class _GalleryViewerState extends State<GalleryViewer>
 
   void _viewAllMedia() {
     final allSources = widget.allSources;
-    if (allSources == null || allSources.length <= widget.sources.length) {
+    if (allSources == null || allSources.isEmpty) {
       return;
     }
     final item = widget.sources[_currIndex.value];
@@ -658,12 +657,11 @@ class _GalleryViewerState extends State<GalleryViewer>
           child: const Text('保存图片',
               style: TextStyle(fontSize: 14)),
         ),
-        if (widget.allSources != null &&
-            widget.allSources!.length > widget.sources.length)
+        if (widget.allSources != null)
           PopupMenuItem(
             height: 42,
             onTap: _viewAllMedia,
-            child: const Text('显示所有图片',
+            child: const Text('查看所有图片',
                 style: TextStyle(fontSize: 14)),
           ),
         PopupMenuItem(

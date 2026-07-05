@@ -256,50 +256,49 @@ class _GalleryOverviewViewState extends State<GalleryOverviewView> {
                     Positioned.fill(
                       child: ClipRRect(
                         borderRadius: borderRadius,
-                        child: switch (item.sourceType) {
-                          SourceType.fileImage => Image.file(
-                              File(item.url),
-                              width: tileExtent,
-                              height: tileExtent,
-                              fit: BoxFit.cover,
-                              filterQuality: FilterQuality.high,
-                              errorBuilder: (_, __, ___) => Container(
-                                color: theme.colorScheme.onInverseSurface
-                                    .withValues(alpha: 0.4),
-                                alignment: Alignment.center,
-                                child: const Icon(Icons.broken_image_outlined),
-                              ),
-                            ),
-                          _ => CachedNetworkImage(
-                              imageUrl: ImageUtils.thumbnailUrl(
-                                item.url,
-                                100,
-                              ),
-                              width: tileExtent,
-                              height: tileExtent,
-                              fit: BoxFit.cover,
-                              alignment: item.isLongPic
-                                  ? Alignment.topCenter
-                                  : Alignment.center,
-                              filterQuality: FilterQuality.high,
-                              placeholder: (_, __) => Container(
-                                color: theme.colorScheme.onInverseSurface
-                                    .withValues(alpha: 0.4),
-                                alignment: Alignment.center,
-                                child: Image.asset(
-                                  Assets.loading,
-                                  width: 28,
-                                  height: 28,
+                        child: item.sourceType == SourceType.fileImage
+                            ? Image.file(
+                                File(item.url),
+                                width: tileExtent,
+                                height: tileExtent,
+                                fit: BoxFit.cover,
+                                filterQuality: FilterQuality.high,
+                                errorBuilder: (_, __, ___) => Container(
+                                  color: theme.colorScheme.onInverseSurface
+                                      .withValues(alpha: 0.4),
+                                  alignment: Alignment.center,
+                                  child: const Icon(Icons.broken_image_outlined),
+                                ),
+                              )
+                            : CachedNetworkImage(
+                                imageUrl: ImageUtils.thumbnailUrl(
+                                  item.url,
+                                  100,
+                                ),
+                                width: tileExtent,
+                                height: tileExtent,
+                                fit: BoxFit.cover,
+                                alignment: item.isLongPic
+                                    ? Alignment.topCenter
+                                    : Alignment.center,
+                                filterQuality: FilterQuality.high,
+                                placeholder: (_, __) => Container(
+                                  color: theme.colorScheme.onInverseSurface
+                                      .withValues(alpha: 0.4),
+                                  alignment: Alignment.center,
+                                  child: Image.asset(
+                                    Assets.loading,
+                                    width: 28,
+                                    height: 28,
+                                  ),
+                                ),
+                                errorWidget: (_, __, ___) => Container(
+                                  color: theme.colorScheme.onInverseSurface
+                                      .withValues(alpha: 0.4),
+                                  alignment: Alignment.center,
+                                  child: const Icon(Icons.broken_image_outlined),
                                 ),
                               ),
-                              errorWidget: (_, __, ___) => Container(
-                                color: theme.colorScheme.onInverseSurface
-                                    .withValues(alpha: 0.4),
-                                alignment: Alignment.center,
-                                child: const Icon(Icons.broken_image_outlined),
-                              ),
-                            ),
-                        },
                       ),
                     ),
                     if (item.sourceType == SourceType.livePhoto)

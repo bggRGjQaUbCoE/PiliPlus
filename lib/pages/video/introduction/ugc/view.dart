@@ -123,24 +123,49 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
                     child: Row(
                       children: [
                         if (videoDetail.staff.isNullOrEmpty) ...[
-                          _buildAvatar(
-                            theme,
-                            () {
-                              if (mid != null) {
-                                feedBack();
-                                if (!isPortrait &&
-                                    introController.horizontalMemberPage) {
-                                  widget.onShowMemberPage(mid);
-                                } else {
-                                  Get.toNamed(
-                                    '/member?mid=$mid&from_view_aid=${videoDetailCtr.aid}',
-                                  );
+                          if (!isHorizontal) ...[
+                            Expanded(
+                              child: Align(
+                                alignment: Alignment.centerLeft,
+                                child: _buildAvatar(
+                                  theme,
+                                  () {
+                                    if (mid != null) {
+                                      feedBack();
+                                      if (!isPortrait &&
+                                          introController.horizontalMemberPage) {
+                                        widget.onShowMemberPage(mid);
+                                      } else {
+                                        Get.toNamed(
+                                          '/member?mid=$mid&from_view_aid=${videoDetailCtr.aid}',
+                                        );
+                                      }
+                                    }
+                                  },
+                                ),
+                              ),
+                            ),
+                            followButton(context, theme),
+                          ] else ...[
+                            _buildAvatar(
+                              theme,
+                              () {
+                                if (mid != null) {
+                                  feedBack();
+                                  if (!isPortrait &&
+                                      introController.horizontalMemberPage) {
+                                    widget.onShowMemberPage(mid);
+                                  } else {
+                                    Get.toNamed(
+                                      '/member?mid=$mid&from_view_aid=${videoDetailCtr.aid}',
+                                    );
+                                  }
                                 }
-                              }
-                            },
-                          ),
-                          const SizedBox(width: 10),
-                          followButton(context, theme),
+                              },
+                            ),
+                            const SizedBox(width: 10),
+                            followButton(context, theme),
+                          ],
                         ] else
                           Expanded(
                             child: SingleChildScrollView(
@@ -171,7 +196,7 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
                               children: [
                                 if (Pref.enableFavShortcutRow) ...[
                                   Flexible(
-                                    flex: 6 + (Pref.enableDownloadServer ? 1 : 0),
+                                    flex: 6,
                                     child: actionGrid(
                                       context,
                                       isLoading,
@@ -181,7 +206,7 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
                                   ),
                                   const SizedBox(width: 8),
                                   Flexible(
-                                    flex: 1 + introController.favShortcutList.length,
+                                    flex: 2 + introController.favShortcutList.length,
                                     child: favShortcutRow(context, introController, distributeEvenly: true),
                                   ),
                                 ] else
@@ -297,7 +322,7 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
                     ),
                     if (Pref.enableFavShortcutRow) ...[
                       const SizedBox(height: 8),
-                      favShortcutRow(context, introController),
+                      favShortcutRow(context, introController, distributeEvenly: true),
                     ],
                   ],
                   // 合集
@@ -630,14 +655,6 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
                 ? NumUtils.numFormat(videoDetail.stat!.share!)
                 : null,
           ),
-          if (Pref.enableDownloadServer)
-            ActionItem(
-              icon: const Icon(FontAwesomeIcons.download),
-              onTap: () => introController.actionDownloadVideo(context),
-              selectStatus: false,
-              semanticsLabel: '下载',
-              text: '下载',
-            ),
         ],
       ),
     );
@@ -652,6 +669,14 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
       height: 48,
       child: Obx(
         () {
+          final downloadButton = _buildFavShortcutButton(
+            context: context,
+            icon: const Icon(FontAwesomeIcons.download),
+            label: '下载',
+            isActive: false,
+            expanded: distributeEvenly,
+            onTap: () => introController.actionDownloadVideo(context),
+          );
           final addButton = _buildFavShortcutButton(
             context: context,
             icon: const Icon(Icons.add),
@@ -683,6 +708,7 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
             return Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Expanded(child: downloadButton),
                 Expanded(child: addButton),
                 ...itemButtons.map((b) => Expanded(child: b)),
               ],
@@ -695,6 +721,7 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                downloadButton,
                 addButton,
                 ...itemButtons,
               ],

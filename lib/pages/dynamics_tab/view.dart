@@ -27,9 +27,7 @@ class DynamicsTabPage extends StatefulWidget {
 
 class _DynamicsTabPageState extends State<DynamicsTabPage>
     with AutomaticKeepAliveClientMixin, DynMixin {
-  StreamSubscription? _listener;
-
-  DynamicsController dynamicsController = Get.putOrFind(DynamicsController.new);
+  final dynamicsController = Get.putOrFind(DynamicsController.new);
   late final DynamicsTabController controller;
 
   @override
@@ -38,38 +36,22 @@ class _DynamicsTabPageState extends State<DynamicsTabPage>
   @override
   void initState() {
     controller = Get.putOrFind(
-      () =>
-          DynamicsTabController(dynamicsType: widget.dynamicsType)
-            ..mid = dynamicsController.mid.value,
+      () => DynamicsTabController(dynamicsType: widget.dynamicsType),
       tag: widget.dynamicsType.name,
     );
     super.initState();
-    if (widget.dynamicsType == DynamicsTabType.up) {
-      _listener = dynamicsController.mid.listen((mid) {
-        if (mid != -1) {
-          controller
-            ..mid = mid
-            ..onReload();
-        }
-      });
-    }
   }
 
-  @override
-  void dispose() {
-    _listener?.cancel();
-    dynamicsController.mid.close();
-    super.dispose();
+  Future<void> onRefresh() {
+    dynamicsController.singleRefresh();
+    return controller.onRefresh();
   }
 
   @override
   Widget build(BuildContext context) {
     super.build(context);
     return refreshIndicator(
-      onRefresh: () {
-        dynamicsController.queryFollowUp();
-        return controller.onRefresh();
-      },
+      onRefresh: onRefresh,
       child: CustomScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         controller: controller.scrollController,

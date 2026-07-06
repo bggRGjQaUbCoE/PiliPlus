@@ -292,60 +292,59 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
     String videoUrl = '${HttpString.baseUrl}/video/$bvid';
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
+      builder: (_) => SimpleDialog(
         clipBehavior: Clip.hardEdge,
         contentPadding: const EdgeInsets.symmetric(vertical: 12),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
+        children: [
+          ListTile(
+            dense: true,
+            title: const Text(
+              '复制链接',
+              style: TextStyle(fontSize: 14),
+            ),
+            onTap: () {
+              Get.back();
+              Utils.copyText(videoUrl);
+            },
+            trailing: playedTimePos.isNotEmpty
+                ? iconButton(
+                    tooltip: '精确分享',
+                    icon: const Icon(Icons.timer_outlined),
+                    onPressed: () {
+                      Get.back();
+                      Utils.copyText('$videoUrl$playedTimePos');
+                    },
+                  )
+                : null,
+          ),
+          ListTile(
+            dense: true,
+            title: const Text(
+              '其它app打开',
+              style: TextStyle(fontSize: 14),
+            ),
+            onTap: () {
+              Get.back();
+              PageUtils.launchURL(videoUrl);
+            },
+          ),
+          if (PlatformUtils.isMobile)
             ListTile(
               dense: true,
               title: const Text(
-                '复制链接',
+                '分享视频',
                 style: TextStyle(fontSize: 14),
               ),
               onTap: () {
                 Get.back();
-                Utils.copyText(videoUrl);
-              },
-              trailing: playedTimePos.isNotEmpty
-                  ? iconButton(
-                      tooltip: '精确分享',
-                      icon: const Icon(Icons.timer_outlined),
-                      onPressed: () {
-                        Get.back();
-                        Utils.copyText('$videoUrl$playedTimePos');
-                      },
-                    )
-                  : null,
-            ),
-            ListTile(
-              dense: true,
-              title: const Text(
-                '其它app打开',
-                style: TextStyle(fontSize: 14),
-              ),
-              onTap: () {
-                Get.back();
-                PageUtils.launchURL(videoUrl);
+                ShareUtils.shareText(
+                  '${videoDetail.title} '
+                  'UP主: ${videoDetail.owner!.name!}'
+                  ' - $videoUrl',
+                );
               },
             ),
-            if (PlatformUtils.isMobile)
-              ListTile(
-                dense: true,
-                title: const Text(
-                  '分享视频',
-                  style: TextStyle(fontSize: 14),
-                ),
-                onTap: () {
-                  Get.back();
-                  ShareUtils.shareText(
-                    '${videoDetail.title} '
-                    'UP主: ${videoDetail.owner!.name!}'
-                    ' - $videoUrl',
-                  );
-                },
-              ),
+          if (isLogin)
             ListTile(
               dense: true,
               title: const Text(
@@ -368,6 +367,7 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
                 );
               },
             ),
+          if (isLogin)
             ListTile(
               dense: true,
               title: const Text(
@@ -394,8 +394,7 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
                 }
               },
             ),
-          ],
-        ),
+        ],
       ),
     );
   }

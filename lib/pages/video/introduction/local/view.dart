@@ -42,7 +42,7 @@ class _LocalIntroPanelState extends State<LocalIntroPanel>
           final item = _controller.list[index];
           return _buildItem(theme, currIndex == index, index, item);
         },
-        itemExtent: 100,
+        itemExtent: 112,
       );
     });
   }
@@ -59,7 +59,7 @@ class _LocalIntroPanelState extends State<LocalIntroPanel>
     return Padding(
       padding: const EdgeInsets.only(bottom: 2),
       child: SizedBox(
-        height: 98,
+        height: 110,
         child: Material(
           type: MaterialType.transparency,
           child: InkWell(
@@ -85,15 +85,15 @@ class _LocalIntroPanelState extends State<LocalIntroPanel>
                               borderRadius: Style.mdRadius,
                               child: Image.file(
                                 cover,
-                                width: 140.8,
-                                height: 88,
+                                width: 160,
+                                height: 100,
                                 fit: BoxFit.cover,
                                 cacheWidth: cacheWidth
-                                    ? 140.8.cacheSize(context)
+                                    ? 160.cacheSize(context)
                                     : null,
                                 cacheHeight: cacheWidth
                                     ? null
-                                    : 88.cacheSize(context),
+                                    : 100.cacheSize(context),
                                 colorBlendMode: NetworkImgLayer.reduce
                                     ? BlendMode.modulate
                                     : null,
@@ -104,8 +104,8 @@ class _LocalIntroPanelState extends State<LocalIntroPanel>
                             )
                           : NetworkImgLayer(
                               src: entry.cover,
-                              width: 140.8,
-                              height: 88,
+                              width: 160,
+                              height: 100,
                             ),
                       PBadge(
                         text: DurationUtils.formatDuration(

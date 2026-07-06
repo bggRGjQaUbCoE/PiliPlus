@@ -207,13 +207,7 @@ class RenderViewPointProgressBar
               ),
             ),
           )
-          ..pushStyle(
-            ui.TextStyle(
-              color: Colors.white,
-              fontSize: size,
-              height: 1,
-            ),
-          )
+          ..pushStyle(.new(color: Colors.white, fontSize: size, height: 1))
           ..addText(title);
     return builder.build()
       ..layout(const ui.ParagraphConstraints(width: double.infinity));

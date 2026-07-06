@@ -7,6 +7,16 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+val agpMajorVersion = com.android.Version.ANDROID_GRADLE_PLUGIN_VERSION
+    .substringBefore('.')
+    .toInt()
+val builtInKotlinProperty = providers.gradleProperty("android.builtInKotlin").orNull
+val isBuiltInKotlinEnabled = agpMajorVersion >= 9 &&
+        (builtInKotlinProperty == null || builtInKotlinProperty.toBoolean())
+if (!isBuiltInKotlinEnabled) {
+    apply(plugin = "org.jetbrains.kotlin.android")
+}
+
 android {
     namespace = "com.example.piliplus"
     compileSdk = flutter.compileSdkVersion

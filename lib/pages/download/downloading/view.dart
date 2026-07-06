@@ -22,7 +22,7 @@ class DownloadingPage extends StatefulWidget {
 }
 
 class _DownloadingPageState extends State<DownloadingPage>
-    with BaseMultiSelectMixin<BiliDownloadEntryInfo> {
+    with BaseMultiSelectMixin<BiliDownloadEntryInfo>, GridMixin {
   final _downloadService = Get.find<DownloadService>();
   late final _waitDownloadQueue = _downloadService.waitDownloadQueue;
   @override
@@ -69,11 +69,7 @@ class _DownloadingPageState extends State<DownloadingPage>
                 sliver: Obx(() {
                   if (_waitDownloadQueue.isNotEmpty) {
                     return SliverGrid.builder(
-                      gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-                        mainAxisSpacing: 2,
-                        mainAxisExtent: 100,
-                        maxCrossAxisExtent: Grid.smallCardWidth * 2,
-                      ),
+                      gridDelegate: gridDelegate,
                       itemCount: _waitDownloadQueue.length,
                       itemBuilder: (context, index) {
                         final entry = _waitDownloadQueue[index];

@@ -17,18 +17,13 @@ class HistorySearchPage extends StatefulWidget {
 
 class _HistorySearchPageState
     extends
-        CommonSearchPageState<
-          HistorySearchPage,
-          HistoryData,
-          HistoryItemModel
-        > {
+        CommonSearchPageState<HistorySearchPage, HistoryData, HistoryItemModel>
+    with GridMixin {
   @override
   final HistorySearchController controller = Get.put(
     HistorySearchController(),
     tag: Utils.generateRandomString(8),
   );
-
-  late final gridDelegate = Grid.videoCardHDelegate(context, minHeight: 110);
 
   @override
   Widget buildList(List<HistoryItemModel> list) {

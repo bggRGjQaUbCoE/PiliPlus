@@ -13,6 +13,7 @@ import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 
 class PgcPanel extends StatefulWidget {
@@ -213,11 +214,10 @@ class _PgcPanelState extends State<PgcPanel> {
                     if (item.badge?.isNotEmpty == true) ...[
                       const SizedBox(width: 2),
                       if (item.badge == '会员')
-                        Image.asset(
+                        SvgPicture.asset(
                           Assets.vipIcon,
                           height: 16,
-                          cacheHeight: 16.cacheSize(context),
-                          semanticLabel: "大会员",
+                          semanticsLabel: "大会员",
                         )
                       else
                         Text(

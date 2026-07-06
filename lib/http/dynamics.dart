@@ -4,6 +4,7 @@ import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/widgets/pair.dart';
 import 'package:PiliPlus/http/api.dart';
 import 'package:PiliPlus/http/constants.dart';
+import 'package:PiliPlus/http/error_msg.dart';
 import 'package:PiliPlus/http/init.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/reply.dart';
@@ -33,19 +34,14 @@ import 'package:dio/dio.dart';
 abstract final class DynamicsHttp {
   @pragma('vm:notify-debugger-on-exception')
   static Future<LoadingState<DynamicsDataModel>> followDynamic({
-    DynamicsTabType type = DynamicsTabType.all,
+    int? hostMid,
     String? offset,
-    int? mid,
     Set<int>? tempBannedList,
+    DynamicsTabType type = .all,
   }) async {
     Map<String, dynamic> data = {
-      if (type == DynamicsTabType.up)
-        'host_mid': mid
-      else ...{
-        'type': type.name,
-        'timezone_offset': '-480',
-      },
-      'offset': offset,
+      if (type == .up) 'host_mid': hostMid else 'type': type.name,
+      'offset': ?offset,
       'features': Constants.dynFeatures,
     };
     final res = await Request().get(Api.followDynamic, queryParameters: data);
@@ -61,7 +57,7 @@ abstract final class DynamicsHttp {
           return await followDynamic(
             type: type,
             offset: data.offset,
-            mid: mid,
+            hostMid: hostMid,
             tempBannedList: tempBannedList,
           );
         }
@@ -89,19 +85,42 @@ abstract final class DynamicsHttp {
     }
   }
 
-  static Future<LoadingState<DynUpList>> dynUpList(String? offset) async {
+  static Future<LoadingState<FollowUpModel>> dynUpList(String? offset) async {
     final res = await Request().get(
       Api.dynUplist,
       queryParameters: {
-        'offset': offset,
+        'offset': ?offset,
         'platform': 'web',
         'web_location': 333.1365,
       },
     );
     if (res.data['code'] == 0) {
-      return Success(DynUpList.fromJson(res.data['data']));
+      return Success(FollowUpModel.fromUpList(res.data['data']));
     } else {
       return Error(res.data['message']);
+    }
+  }
+
+  static Future<LoadingState<FollowUpModel>> followings({
+    int? vmid,
+    int? pn,
+    int ps = 20,
+    String orderType = '', // ''=>最近关注，'attention'=>最常访问
+  }) async {
+    final res = await Request().get(
+      Api.followings,
+      queryParameters: {
+        'vmid': vmid,
+        'pn': pn,
+        'ps': ps,
+        'order': 'desc',
+        'order_type': orderType,
+      },
+    );
+    if (res.data['code'] == 0) {
+      return Success(FollowUpModel.fromFollowList(res.data['data']));
+    } else {
+      return Error(errorMsg[res.data['code']] ?? res.data['message']);
     }
   }
 
@@ -817,7 +836,7 @@ abstract final class DynamicsHttp {
       Api.dynReaction,
       queryParameters: {
         'id': id,
-        'offset': offset,
+        'offset': ?offset,
         'web_location': 333.1369,
       },
     );

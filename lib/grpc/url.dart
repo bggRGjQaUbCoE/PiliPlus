@@ -14,6 +14,7 @@ abstract final class GrpcUrl {
 
   // danmaku
   static const dmSegMobile = '/bilibili.community.service.dm.v1.DM/DmSegMobile';
+  static const dmView = '/bilibili.community.service.dm.v1.DM/DmView';
 
   // reply
   static const reply = '/bilibili.main.community.reply.v1.Reply';

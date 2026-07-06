@@ -2,7 +2,6 @@ import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/video.dart';
 import 'package:PiliPlus/models/common/account_type.dart';
 import 'package:PiliPlus/models/common/video/audio_quality.dart';
-import 'package:PiliPlus/models/common/video/video_decode_type.dart';
 import 'package:PiliPlus/models/common/video/video_quality.dart';
 import 'package:PiliPlus/models/common/video/video_type.dart';
 import 'package:PiliPlus/models/video/play/url.dart';
@@ -40,9 +39,9 @@ abstract final class DownloadHttp {
       },
     );
     if (res case Success(:final response)) {
-      final Dash? dash = response.dash;
+      final dash = response.dash;
       if (dash != null) {
-        final List<VideoItem> videoList = dash.video!;
+        final videoList = dash.video!;
         final curHighestVideoQa = videoList.first.quality.code;
         final preferVideoQa = entry.preferedVideoQuality;
         int targetVideoQa = curHighestVideoQa;
@@ -55,19 +54,18 @@ abstract final class DownloadHttp {
           );
         }
 
-        /// 取出符合当前画质的videoList
-        final List<VideoItem> videosList = videoList
-            .where((e) => e.quality.code == targetVideoQa)
-            .toList();
-
         /// 优先顺序 设置中指定解码格式 -> 当前可选的首个解码格式
-        final List<FormatItem> supportFormats = response.supportFormats!;
+        final supportFormats = response.supportFormats!;
         // 根据画质选编码格式
-        final FormatItem targetSupportFormats = supportFormats.firstWhere(
+        final targetSupportFormats = supportFormats.firstWhere(
           (e) => e.quality == targetVideoQa,
           orElse: () => supportFormats.first,
         );
-        final List<String> supportDecodeFormats = targetSupportFormats.codecs!;
+
+        final currentDecodeFormats = VideoUtils.selectCodec(
+          targetSupportFormats.codecs!,
+          Pref.preferCodecs,
+        );
 
         entry
           ..typeTag = targetVideoQa.toString()
@@ -77,31 +75,10 @@ abstract final class DownloadHttp {
               targetSupportFormats.newDesc ??
               VideoQuality.fromCode(targetVideoQa).desc;
 
-        String preferDecode = Pref.defaultDecode; // def avc
-        String preferSecondDecode = Pref.secondDecode; // def av1
-
-        // 默认从设置中取AV1
-        VideoDecodeFormatType currentDecodeFormats =
-            VideoDecodeFormatType.fromString(preferDecode);
-        VideoDecodeFormatType secondDecodeFormats =
-            VideoDecodeFormatType.fromString(preferSecondDecode);
-        // 当前视频没有对应格式返回第一个
-        int flag = 0;
-        for (final e in supportDecodeFormats) {
-          if (currentDecodeFormats.codes.any(e.startsWith)) {
-            flag = 1;
-            break;
-          } else if (secondDecodeFormats.codes.any(e.startsWith)) {
-            flag = 2;
-          }
-        }
-        if (flag == 2) {
-          currentDecodeFormats = secondDecodeFormats;
-        } else if (flag == 0) {
-          currentDecodeFormats = VideoDecodeFormatType.fromString(
-            supportDecodeFormats.first,
-          );
-        }
+        /// 取出符合当前画质的videoList
+        final videosList = videoList
+            .where((e) => e.quality.code == targetVideoQa)
+            .toList();
 
         /// 取出符合当前解码格式的videoItem
         final videoDash = videosList.firstWhere(

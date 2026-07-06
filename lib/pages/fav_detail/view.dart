@@ -226,84 +226,85 @@ class _FavDetailPageState extends State<FavDetailPage> with GridMixin {
           );
         },
       ),
-      PopupMenuButton(
-        icon: const Icon(Icons.more_vert),
-        itemBuilder: (context) {
-          final isOwner = _favDetailController.isOwner;
-          final folderInfo = _favDetailController.folderInfo.value;
-          return [
-            if (isOwner) ...[
-              PopupMenuItem(
-                onTap: _favDetailController.onSort,
-                child: const Text('排序'),
-              ),
-              PopupMenuItem(
-                onTap: () =>
-                    Get.toNamed(
-                      '/createFav',
-                      parameters: {'mediaId': mediaId},
-                    )?.then((res) {
-                      if (res is FavFolderInfo) {
-                        _favDetailController.folderInfo.value = res;
-                      }
-                    }),
-                child: const Text('编辑信息'),
-              ),
-            ] else
-              PopupMenuItem(
-                onTap: () =>
-                    _favDetailController.onFav(folderInfo.favState == 1),
-                child: Text('${folderInfo.favState == 1 ? '取消' : ''}收藏'),
-              ),
-            if (BiliUtils.isPublicFav(folderInfo.attr))
-              PopupMenuItem(
-                onTap: () => showModalBottomSheet(
-                  context: context,
-                  isScrollControlled: true,
-                  useSafeArea: true,
-                  builder: (context) => RepostPanel(
-                    rid: _favDetailController.mediaId,
-                    dynType: 4300,
-                    pic: folderInfo.cover,
-                    title: folderInfo.title,
-                    uname: folderInfo.upper?.name,
-                  ),
-                ),
-                child: const Text('分享至动态'),
-              ),
-            if (isOwner) ...<PopupMenuEntry>[
-              PopupMenuItem(
-                onTap: _favDetailController.cleanFav,
-                child: const Text('清除失效内容'),
-              ),
-              if (!BiliUtils.isDefaultFav(folderInfo.attr)) ...[
-                const PopupMenuDivider(height: 12),
+      if (_favDetailController.account.isLogin)
+        PopupMenuButton(
+          icon: const Icon(Icons.more_vert),
+          itemBuilder: (context) {
+            final isOwner = _favDetailController.isOwner;
+            final folderInfo = _favDetailController.folderInfo.value;
+            return [
+              if (isOwner) ...[
                 PopupMenuItem(
-                  onTap: () => showConfirmDialog(
+                  onTap: _favDetailController.onSort,
+                  child: const Text('排序'),
+                ),
+                PopupMenuItem(
+                  onTap: () =>
+                      Get.toNamed(
+                        '/createFav',
+                        parameters: {'mediaId': mediaId},
+                      )?.then((res) {
+                        if (res is FavFolderInfo) {
+                          _favDetailController.folderInfo.value = res;
+                        }
+                      }),
+                  child: const Text('编辑信息'),
+                ),
+              ] else
+                PopupMenuItem(
+                  onTap: () =>
+                      _favDetailController.onFav(folderInfo.favState == 1),
+                  child: Text('${folderInfo.favState == 1 ? '取消' : ''}收藏'),
+                ),
+              if (BiliUtils.isPublicFav(folderInfo.attr))
+                PopupMenuItem(
+                  onTap: () => showModalBottomSheet(
                     context: context,
-                    title: const Text('确定删除该收藏夹?'),
-                    onConfirm: () =>
-                        FavHttp.deleteFolder(mediaIds: mediaId).then((res) {
-                          if (res.isSuccess) {
-                            SmartDialog.showToast('删除成功');
-                            Get.back(result: true);
-                          } else {
-                            res.toast();
-                          }
-                        }),
-                  ),
-                  child: Text(
-                    '删除',
-                    style: TextStyle(
-                      color: theme.colorScheme.error,
+                    isScrollControlled: true,
+                    useSafeArea: true,
+                    builder: (context) => RepostPanel(
+                      rid: _favDetailController.mediaId,
+                      dynType: 4300,
+                      pic: folderInfo.cover,
+                      title: folderInfo.title,
+                      uname: folderInfo.upper?.name,
                     ),
                   ),
+                  child: const Text('分享至动态'),
                 ),
+              if (isOwner) ...<PopupMenuEntry>[
+                PopupMenuItem(
+                  onTap: _favDetailController.cleanFav,
+                  child: const Text('清除失效内容'),
+                ),
+                if (!BiliUtils.isDefaultFav(folderInfo.attr)) ...[
+                  const PopupMenuDivider(height: 12),
+                  PopupMenuItem(
+                    onTap: () => showConfirmDialog(
+                      context: context,
+                      title: const Text('确定删除该收藏夹?'),
+                      onConfirm: () =>
+                          FavHttp.deleteFolder(mediaIds: mediaId).then((res) {
+                            if (res.isSuccess) {
+                              SmartDialog.showToast('删除成功');
+                              Get.back(result: true);
+                            } else {
+                              res.toast();
+                            }
+                          }),
+                    ),
+                    child: Text(
+                      '删除',
+                      style: TextStyle(
+                        color: theme.colorScheme.error,
+                      ),
+                    ),
+                  ),
+                ],
               ],
-            ],
-          ];
-        },
-      ),
+            ];
+          },
+        ),
       const SizedBox(width: 10),
     ];
   }

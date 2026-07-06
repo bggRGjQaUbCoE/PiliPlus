@@ -21,4 +21,12 @@ abstract final class DmGrpc {
       isolate: true,
     );
   }
+
+  static Future<LoadingState<DmViewReply>> dmView(int aid, int cid) {
+    return GrpcReq.request(
+      GrpcUrl.dmView,
+      DmViewReq(pid: Int64(aid), oid: Int64(cid), type: 1),
+      DmViewReply.fromBuffer,
+    );
+  }
 }

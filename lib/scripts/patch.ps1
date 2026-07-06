@@ -29,6 +29,16 @@ $LayoutBuilderPatch = "lib/scripts/layout_builder.patch"
 # https://github.com/bggRGjQaUbCoE/PiliPlus/issues/2308
 $NavigationDrawerPatch = "lib/scripts/navigation_drawer.patch"
 
+$PopupMenuPatch = "lib/scripts/popup_menu.patch"
+
+$FABPatch = "lib/scripts/fab.patch"
+
+$SelectableRegionSelectionPatch = "lib/scripts/selectable_region.patch"
+
+# TODO: remove
+# https://github.com/flutter/flutter/pull/183261
+$SelectableRegionPatch = "lib/scripts/null_safety_for_selectable_region.patch"
+
 # TODO: remove
 # https://github.com/flutter/flutter/issues/90223
 $ModalBarrierPatch = "lib/scripts/modal_barrier.patch"
@@ -55,7 +65,8 @@ Set-Location $env:FLUTTER_ROOT
 $picks   = @()
 $reverts = @()
 $patches = @($ModalBarrierPatch, $TextSelectionPatch, $MouseCursorPatch,
-            $ImageAnimPatch, $LayoutBuilderPatch, $NavigationDrawerPatch)
+            $ImageAnimPatch, $LayoutBuilderPatch, $NavigationDrawerPatch,
+            $PopupMenuPatch, $FABPatch, $SelectableRegionPatch, $SelectableRegionSelectionPatch)
 
 switch ($platform.ToLower()) {
     "android" {

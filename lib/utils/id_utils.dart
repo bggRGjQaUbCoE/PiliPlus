@@ -3,6 +3,7 @@
 import 'dart:convert' show ascii, base64;
 
 import 'package:PiliPlus/utils/utils.dart';
+import 'package:collection/collection.dart';
 import 'package:uuid/v4.dart';
 
 abstract final class IdUtils {
@@ -24,12 +25,6 @@ abstract final class IdUtils {
   static final avRegexExact = RegExp(r'^av(\d+)$', caseSensitive: false);
   static final digitOnlyRegExp = RegExp(r'^\d+$');
 
-  static void swap<T>(List<T> list, int idx1, int idx2) {
-    final idx1Value = list[idx1];
-    list[idx1] = list[idx2];
-    list[idx2] = idx1Value;
-  }
-
   /// av转bv
   static String av2bv(int aid) {
     final bytes = ['B', 'V', '1', '0', '0', '0', '0', '0', '0', '0', '0', '0'];
@@ -40,18 +35,18 @@ abstract final class IdUtils {
       tmp ~/= BASE;
     }
 
-    swap(bytes, 3, 9);
-    swap(bytes, 4, 7);
+    bytes
+      ..swap(3, 9)
+      ..swap(4, 7);
 
     return bytes.join();
   }
 
   /// bv转av
   static int bv2av(String bvid) {
-    final bvidArr = bvid.codeUnits.sublist(3);
-
-    swap(bvidArr, 0, 6);
-    swap(bvidArr, 1, 4);
+    final bvidArr = bvid.codeUnits.sublist(3)
+      ..swap(0, 6)
+      ..swap(1, 4);
 
     final tmp = bvidArr.fold(0, (pre, char) => pre * BASE + invData[char]!);
     return (tmp & MASK_CODE) ^ XOR_CODE;

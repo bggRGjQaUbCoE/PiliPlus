@@ -262,6 +262,7 @@ abstract final class SearchHttp {
 
   static Future<LoadingState<SearchTrendingData>> searchTrending({
     int limit = 30,
+    bool needsTop = false,
   }) async {
     final res = await Request().get(
       Api.searchTrending,
@@ -270,7 +271,9 @@ abstract final class SearchHttp {
       },
     );
     if (res.data['code'] == 0) {
-      return Success(SearchTrendingData.fromJson(res.data['data']));
+      return Success(
+        SearchTrendingData.fromJson(res.data['data'], needsTop: needsTop),
+      );
     } else {
       return Error(res.data['message']);
     }

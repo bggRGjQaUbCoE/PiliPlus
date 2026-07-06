@@ -2,6 +2,7 @@ import 'package:PiliPlus/common/skeleton/video_reply.dart';
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/custom_icon.dart';
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
+import 'package:PiliPlus/common/widgets/dialog/simple_dialog_option.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
@@ -14,7 +15,6 @@ import 'package:PiliPlus/pages/pgc_review/child/controller.dart';
 import 'package:PiliPlus/pages/pgc_review/post/view.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/bili_utils.dart';
-import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
@@ -121,71 +121,56 @@ class _PgcReviewChildPageState extends State<PgcReviewChildPage>
   Widget _itemWidget(ThemeData theme, int index, PgcReviewItemModel item) {
     void showMore() => showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (context) => SimpleDialog(
         clipBehavior: Clip.hardEdge,
         contentPadding: const EdgeInsets.symmetric(vertical: 12),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (item.author!.mid == Accounts.main.mid) ...[
-              ListTile(
-                dense: true,
-                title: const Text(
-                  '编辑',
-                  style: TextStyle(fontSize: 14),
-                ),
-                onTap: () {
-                  Get.back();
-                  showModalBottomSheet(
-                    context: context,
-                    useSafeArea: true,
-                    isScrollControlled: true,
-                    builder: (context) {
-                      return PgcReviewPostPanel(
-                        name: widget.name,
-                        mediaId: widget.mediaId,
-                        reviewId: item.reviewId,
-                        content: item.content,
-                        score: item.score,
-                      );
-                    },
-                  );
-                },
-              ),
-              ListTile(
-                dense: true,
-                title: const Text(
-                  '删除',
-                  style: TextStyle(fontSize: 14),
-                ),
-                onTap: () {
-                  Get.back();
-                  showConfirmDialog(
-                    context: context,
-                    title: const Text('删除短评，同时删除评分？'),
-                    onConfirm: () => _controller.onDel(index, item.reviewId!),
-                  );
-                },
-              ),
-            ],
-            ListTile(
-              dense: true,
-              title: const Text(
-                '举报',
-                style: TextStyle(fontSize: 14),
-              ),
-              onTap: () => Get
-                ..back()
-                ..toNamed(
-                  '/webview',
-                  parameters: {
-                    'url':
-                        'https://www.bilibili.com/appeal/?reviewId=${item.reviewId}&type=shortComment&mediaId=${widget.mediaId}',
+        children: [
+          if (item.author!.mid == Accounts.main.mid) ...[
+            DialogOption(
+              child: const Text('编辑', style: TextStyle(fontSize: 14)),
+              onPressed: () {
+                Get.back();
+                showModalBottomSheet(
+                  context: context,
+                  useSafeArea: true,
+                  isScrollControlled: true,
+                  builder: (context) {
+                    return PgcReviewPostPanel(
+                      name: widget.name,
+                      mediaId: widget.mediaId,
+                      reviewId: item.reviewId,
+                      content: item.content,
+                      score: item.score,
+                    );
                   },
-                ),
+                );
+              },
+            ),
+            DialogOption(
+              child: const Text('删除', style: TextStyle(fontSize: 14)),
+              onPressed: () {
+                Get.back();
+                showConfirmDialog(
+                  context: context,
+                  title: const Text('删除短评，同时删除评分？'),
+                  onConfirm: () => _controller.onDel(index, item.reviewId!),
+                );
+              },
             ),
           ],
-        ),
+          DialogOption(
+            child: const Text('举报', style: TextStyle(fontSize: 14)),
+            onPressed: () => Get
+              ..back()
+              ..toNamed(
+                '/webview',
+                parameters: {
+                  'url':
+                      'https://www.bilibili.com/appeal/?reviewId=${item.reviewId}&type=shortComment&mediaId=${widget.mediaId}',
+                },
+              ),
+          ),
+        ],
       ),
     );
 
@@ -244,10 +229,9 @@ class _PgcReviewChildPageState extends State<PgcReviewChildPage>
                                 fontSize: 13,
                               ),
                             ),
-                            Image.asset(
-                              BiliUtils.levelName(item.author!.level!),
+                            BiliUtils.levelPicture(
+                              item.author!.level!,
                               height: 11,
-                              cacheHeight: 11.cacheSize(context),
                             ),
                           ],
                         ),
@@ -393,7 +377,7 @@ class _PgcReviewChildPageState extends State<PgcReviewChildPage>
     child: Padding(
       padding: const EdgeInsets.fromLTRB(12, 2.5, 6, 2.5),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisAlignment: .spaceBetween,
         children: [
           Obx(
             () {

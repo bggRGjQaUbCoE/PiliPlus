@@ -4,6 +4,7 @@ import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/appbar/appbar.dart';
 import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
+import 'package:PiliPlus/common/widgets/dialog/simple_dialog_option.dart';
 import 'package:PiliPlus/common/widgets/flutter/pop_scope.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
@@ -32,7 +33,7 @@ class DownloadPage extends StatefulWidget {
   State<DownloadPage> createState() => _DownloadPageState();
 }
 
-class _DownloadPageState extends State<DownloadPage> {
+class _DownloadPageState extends State<DownloadPage> with GridMixin {
   final _downloadService = Get.find<DownloadService>();
   final _controller = Get.put(DownloadPageController());
   final _progress = ChangeNotifier();
@@ -138,7 +139,7 @@ class _DownloadPageState extends State<DownloadPage> {
                         ),
                         SliverToBoxAdapter(
                           child: SizedBox(
-                            height: 100,
+                            height: 110,
                             child: DetailItem(
                               entry: entry,
                               progress: _progress,
@@ -171,12 +172,7 @@ class _DownloadPageState extends State<DownloadPage> {
                           ),
                         ),
                         SliverGrid.builder(
-                          gridDelegate:
-                              SliverGridDelegateWithMaxCrossAxisExtent(
-                                mainAxisSpacing: 2,
-                                mainAxisExtent: 100,
-                                maxCrossAxisExtent: Grid.smallCardWidth * 2,
-                              ),
+                          gridDelegate: gridDelegate,
                           itemBuilder: (context, index) {
                             final item = _controller.pages[index];
                             if (item.entries.length == 1) {
@@ -232,59 +228,48 @@ class _DownloadPageState extends State<DownloadPage> {
         ? null
         : showDialog(
             context: context,
-            builder: (context) => AlertDialog(
+            builder: (context) => SimpleDialog(
               clipBehavior: Clip.hardEdge,
               contentPadding: const EdgeInsets.symmetric(vertical: 12),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  ListTile(
-                    onTap: () {
-                      Get.back();
-                      showConfirmDialog(
-                        context: context,
-                        title: const Text('确定删除？'),
-                        onConfirm: () async {
-                          await GStorage.watchProgress.deleteAll(
-                            pageInfo.entries.map((e) => e.cid.toString()),
-                          );
-                          _downloadService.deletePage(
-                            pageDirPath: pageInfo.dirPath,
-                          );
-                        },
-                      );
-                    },
-                    dense: true,
-                    title: const Text(
-                      '删除',
-                      style: TextStyle(fontSize: 14),
-                    ),
-                  ),
-                  ListTile(
-                    onTap: () async {
-                      Get.back();
-                      final res = await Future.wait(
-                        pageInfo.entries.map(
-                          (e) => _downloadService.downloadDanmaku(
-                            entry: e,
-                            isUpdate: true,
-                          ),
+              children: [
+                DialogOption(
+                  onPressed: () {
+                    Get.back();
+                    showConfirmDialog(
+                      context: context,
+                      title: const Text('确定删除？'),
+                      onConfirm: () async {
+                        await GStorage.watchProgress.deleteAll(
+                          pageInfo.entries.map((e) => e.cid.toString()),
+                        );
+                        _downloadService.deletePage(
+                          pageDirPath: pageInfo.dirPath,
+                        );
+                      },
+                    );
+                  },
+                  child: const Text('删除', style: TextStyle(fontSize: 14)),
+                ),
+                DialogOption(
+                  onPressed: () async {
+                    Get.back();
+                    final res = await Future.wait(
+                      pageInfo.entries.map(
+                        (e) => _downloadService.downloadDanmaku(
+                          entry: e,
+                          isUpdate: true,
                         ),
-                      );
-                      if (res.every((e) => e)) {
-                        SmartDialog.showToast('更新成功');
-                      } else {
-                        SmartDialog.showToast('更新失败');
-                      }
-                    },
-                    dense: true,
-                    title: const Text(
-                      '更新弹幕',
-                      style: TextStyle(fontSize: 14),
-                    ),
-                  ),
-                ],
-              ),
+                      ),
+                    );
+                    if (res.every((e) => e)) {
+                      SmartDialog.showToast('更新成功');
+                    } else {
+                      SmartDialog.showToast('更新失败');
+                    }
+                  },
+                  child: const Text('更新弹幕', style: TextStyle(fontSize: 14)),
+                ),
+              ],
             ),
           );
     final first = pageInfo.entries.first;

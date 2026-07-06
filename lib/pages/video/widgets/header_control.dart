@@ -7,6 +7,7 @@ import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/widgets/button/icon_button.dart';
 import 'package:PiliPlus/common/widgets/custom_icon.dart';
 import 'package:PiliPlus/common/widgets/dialog/report.dart';
+import 'package:PiliPlus/common/widgets/dialog/simple_dialog_option.dart';
 import 'package:PiliPlus/common/widgets/marquee.dart';
 import 'package:PiliPlus/http/danmaku.dart';
 import 'package:PiliPlus/http/danmaku_block.dart';
@@ -789,9 +790,7 @@ class HeaderControlState extends State<HeaderControl>
           content: Material(
             type: MaterialType.transparency,
             child: ListTileTheme(
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 24,
-              ),
+              contentPadding: const .symmetric(horizontal: 24),
               child: SingleChildScrollView(
                 child: Column(
                   children: [
@@ -1071,28 +1070,26 @@ class HeaderControlState extends State<HeaderControl>
 
   // 选择解码格式
   void showSetDecodeFormats() {
-    final VideoItem firstVideo = videoDetailCtr.firstVideo;
+    final firstCode = videoDetailCtr.firstVideo.quality.code;
     // 当前视频可用的解码格式
-    final List<FormatItem> videoFormat = videoInfo.supportFormats!;
-    final List<String>? list = videoFormat
-        .firstWhere((FormatItem e) => e.quality == firstVideo.quality.code)
-        .codecs;
+    final videoFormat = videoInfo.supportFormats!;
+
+    final list = videoFormat.firstWhere((e) => e.quality == firstCode).codecs;
     if (list == null) {
       SmartDialog.showToast('当前视频不支持选择解码格式');
       return;
     }
 
     // 当前选中的解码格式
-    final VideoDecodeFormatType currentDecodeFormats =
-        videoDetailCtr.currentDecodeFormats;
+    final curCodecs = videoDetailCtr.currentDecodeFormats.codes;
     showBottomSheet(
       (context, setState) {
-        final theme = Theme.of(context);
+        final colorScheme = ColorScheme.of(context);
         return Padding(
           padding: const EdgeInsets.all(12),
           child: Material(
             clipBehavior: Clip.hardEdge,
-            color: theme.colorScheme.surface,
+            color: colorScheme.surface,
             borderRadius: const BorderRadius.all(Radius.circular(12)),
             child: Column(
               children: [
@@ -1110,30 +1107,22 @@ class HeaderControlState extends State<HeaderControl>
                         itemBuilder: (context, index) {
                           final item = list[index];
                           final format = VideoDecodeFormatType.fromString(item);
-                          final isCurr = currentDecodeFormats.codes.any(
-                            item.startsWith,
-                          );
+                          final isCurr = curCodecs.any(item.startsWith);
                           return ListTile(
                             dense: true,
                             onTap: () {
-                              if (isCurr) {
-                                return;
-                              }
+                              if (isCurr) return;
                               Get.back();
                               videoDetailCtr
                                 ..currentDecodeFormats = format
                                 ..updatePlayer();
+                              SmartDialog.showToast("解码已变为：${format.name}");
                             },
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 20,
-                            ),
+                            contentPadding: const .symmetric(horizontal: 20),
                             title: Text(format.description),
                             subtitle: Text(item, style: subTitleStyle),
                             trailing: isCurr
-                                ? Icon(
-                                    Icons.done,
-                                    color: theme.colorScheme.primary,
-                                  )
+                                ? Icon(Icons.done, color: colorScheme.primary)
                                 : null,
                           );
                         },
@@ -1149,69 +1138,100 @@ class HeaderControlState extends State<HeaderControl>
     );
   }
 
+  Future<_SubtitleFormat?> _showFormatDialog() {
+    return showDialog<_SubtitleFormat>(
+      context: context,
+      builder: (context) => SimpleDialog(
+        title: const Text('选择格式'),
+        children: [
+          DialogOption(
+            onPressed: () => Get.back(result: _SubtitleFormat.json),
+            child: const Text('JSON'),
+          ),
+          DialogOption(
+            onPressed: () => Get.back(result: _SubtitleFormat.vtt),
+            child: const Text('WEBVTT'),
+          ),
+        ],
+      ),
+    );
+  }
+
   void onExportSubtitle() {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        clipBehavior: Clip.hardEdge,
-        contentPadding: const EdgeInsets.fromLTRB(0, 12, 0, 12),
-        title: const Text('保存字幕'),
-        content: SingleChildScrollView(
-          child: Column(
-            children: videoDetailCtr.subtitles
-                .map(
-                  (item) => ListTile(
-                    dense: true,
-                    onTap: () async {
-                      Get.back();
-                      final url = item.subtitleUrl;
-                      if (url == null || url.isEmpty) return;
-                      try {
-                        final res = await Request.dio.get<Uint8List>(
-                          url.http2https,
-                          options: Options(
-                            responseType: ResponseType.bytes,
-                            headers: Constants.baseHeaders,
-                            extra: {'account': const NoAccount()},
-                          ),
+      builder: (context) {
+        final subtitles = videoDetailCtr.subtitles;
+        return SimpleDialog(
+          clipBehavior: Clip.hardEdge,
+          contentPadding: const .only(bottom: 12),
+          titlePadding: const .fromLTRB(20, 20, 20, 12),
+          title: const Text('保存字幕'),
+          children: List.generate(subtitles.length, (i) {
+            final item = subtitles[i];
+            return DialogOption(
+              onPressed: () async {
+                Get.back();
+                final url = item.subtitleUrl;
+                if (url == null || url.isEmpty) return;
+                final format = await _showFormatDialog();
+                if (format == null) return;
+                try {
+                  final Uint8List bytes;
+                  switch (format) {
+                    case .vtt:
+                      var subtitle = videoDetailCtr.vttSubtitles[i];
+                      if (subtitle == null) {
+                        final res = await VideoHttp.vttSubtitles(
+                          item.subtitleUrl!,
                         );
-                        if (res.statusCode == 200) {
-                          final bytes = Uint8List.fromList(
-                            Request.responseBytesDecoder(
-                              res.data!,
-                              res.headers.map,
-                            ),
-                          );
-                          String name =
-                              '${introController.videoDetail.value.title}-${videoDetailCtr.bvid}-${videoDetailCtr.cid.value}-${item.lanDoc}.json';
-                          if (Platform.isWindows) {
-                            // Reserved characters may not be used in file names. See: https://docs.microsoft.com/en-us/windows/win32/fileio/naming-a-file#naming-conventions
-                            name = name.replaceAll(
-                              RegExp(r'[<>:/\\|?*"]'),
-                              '',
-                            );
-                          }
-                          StorageUtils.saveBytes2File(
-                            name: name,
-                            bytes: bytes,
-                            allowedExtensions: const ['json'],
-                          );
-                        }
-                      } catch (e, s) {
-                        Utils.reportError(e, s);
-                        SmartDialog.showToast(e.toString());
+                        if (res == null) return;
+                        subtitle = (isData: true, id: res);
+                        videoDetailCtr.vttSubtitles[i] = subtitle;
                       }
-                    },
-                    title: Text(
-                      item.lanDoc!,
-                      style: const TextStyle(fontSize: 14),
-                    ),
-                  ),
-                )
-                .toList(),
-          ),
-        ),
-      ),
+                      bytes = utf8.encode(subtitle.id);
+                    case .json:
+                      final res = await Request.dio.get<Uint8List>(
+                        url.http2https,
+                        options: Options(
+                          responseType: ResponseType.bytes,
+                          headers: Constants.baseHeaders,
+                          extra: {'account': const NoAccount()},
+                        ),
+                      );
+                      if (res.statusCode != 200) return;
+                      bytes = Uint8List.fromList(
+                        Request.responseBytesDecoder(
+                          res.data!,
+                          res.headers.map,
+                        ),
+                      );
+                  }
+                  String name =
+                      '${introController.videoDetail.value.title}-${videoDetailCtr.bvid}-${videoDetailCtr.cid.value}-${item.lanDoc}.${format.name}';
+                  // Reserved characters may not be used in file names. See: https://docs.microsoft.com/en-us/windows/win32/fileio/naming-a-file#naming-conventions
+                  name = name.replaceAll(
+                    Platform.isWindows ? RegExp(r'[<>:/\\|?*"]') : '/',
+                    '_',
+                  );
+                  StorageUtils.saveBytes2File(
+                    name: name,
+                    bytes: bytes,
+                    allowedExtensions: [format.name],
+                  );
+                } catch (e, s) {
+                  Utils.reportError(e, s);
+                  SmartDialog.showToast(e.toString());
+                }
+              },
+              child: Text(
+                item.lanDoc ?? item.lan,
+                style: const TextStyle(fontSize: 14),
+              ),
+            );
+          }),
+        );
+      },
     );
   }
 
@@ -2065,3 +2085,5 @@ class HeaderControlState extends State<HeaderControl>
     );
   }
 }
+
+enum _SubtitleFormat { json, vtt }

@@ -1,0 +1,16 @@
+diff --git a/packages/flutter/lib/src/material/popup_menu.dart b/packages/flutter/lib/src/material/popup_menu.dart
+index 8b84b2760d5..6ff222c4541 100644
+--- a/packages/flutter/lib/src/material/popup_menu.dart
++++ b/packages/flutter/lib/src/material/popup_menu.dart
+@@ -446,6 +446,11 @@ class PopupMenuItemState<T, W extends PopupMenuItem<T>> extends State<W> {
+         data: IconThemeData(opacity: isDark ? 0.5 : 0.38),
+         child: item,
+       );
++    } else {
++      item = IconTheme.merge(
++        data: IconThemeData(color: style.color),
++        child: item,
++      );
+     }
+ 
+     return MergeSemantics(

@@ -21,7 +21,7 @@ version: 2.0.9+1
 
 environment:
   sdk: ">=3.12.0"
-  flutter: 3.44.3
+  flutter: 3.44.4
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -47,7 +47,7 @@ dependencies:
   brotli: ^0.6.0
   cached_network_image_ce:
     git:
-      url: https://github.com/bggRGjQaUbCoE/flutter_cached_network_image_ce.git
+      url: https://github.com/My-Responsitories/flutter_cached_network_image_ce.git
       path: cached_network_image
       ref: develop
   canvas_danmaku:
@@ -219,11 +219,11 @@ dependency_overrides:
       url: https://github.com/My-Responsitories/media-kit.git
       path: media_kit_video
       ref: version_1.2.5
-  screen_brightness_android:
+  cached_network_image_ce:
     git:
-      url: https://github.com/bggRGjQaUbCoE/screen_brightness.git
-      path: screen_brightness_android
-      ref: main
+      url: https://github.com/My-Responsitories/flutter_cached_network_image_ce.git
+      path: cached_network_image
+      ref: develop
 
 dev_dependencies:
   flutter_test:
@@ -265,7 +265,6 @@ flutter:
 
   assets:
     - path: assets/images/
-    - path: assets/images/lv/
     - path: assets/images/logo/
     - path: assets/images/logo/ico/
       platforms: [windows]

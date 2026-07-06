@@ -5,6 +5,7 @@ import 'package:PiliPlus/common/widgets/flutter/list_tile.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
+import 'package:PiliPlus/common/widgets/sliver/trending_header.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models_new/search/search_trending/list.dart';
 import 'package:PiliPlus/pages/search_trending/controller.dart';
@@ -15,7 +16,6 @@ import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/size_ext.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:cached_network_image_ce/cached_network_image.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' hide ListTile;
 import 'package:flutter/services.dart' show SystemUiOverlayStyle;
 import 'package:get/get.dart';
@@ -34,28 +34,6 @@ class _SearchTrendingPageState extends State<SearchTrendingPage> {
   final RxDouble _scrollRatio = 0.0.obs;
 
   @override
-  void initState() {
-    super.initState();
-    _controller.scrollController.addListener(listener);
-  }
-
-  @override
-  void dispose() {
-    _controller.scrollController.removeListener(listener);
-    super.dispose();
-  }
-
-  void listener() {
-    if (_controller.scrollController.hasClients) {
-      _scrollRatio.value = clampDouble(
-        _controller.scrollController.position.pixels / _offset,
-        0.0,
-        1.0,
-      );
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final padding = MediaQuery.viewPaddingOf(context);
@@ -63,14 +41,13 @@ class _SearchTrendingPageState extends State<SearchTrendingPage> {
     final maxWidth = size.width - padding.horizontal;
     final width = size.isPortrait ? maxWidth : min(640.0, maxWidth * 0.6);
     final height = width * 528 / 1125;
-    _offset = height - 56 - padding.top;
-    listener();
+    _offset = height - kToolbarHeight - padding.top;
     return Scaffold(
       extendBody: true,
       extendBodyBehindAppBar: true,
       resizeToAvoidBottomInset: false,
       appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(56),
+        preferredSize: const Size.fromHeight(kToolbarHeight),
         child: Obx(
           () {
             final scrollRatio = _scrollRatio.value;
@@ -80,9 +57,7 @@ class _SearchTrendingPageState extends State<SearchTrendingPage> {
                 opacity: scrollRatio,
                 child: Text(
                   'bilibili热搜',
-                  style: TextStyle(
-                    color: flag ? null : Colors.white,
-                  ),
+                  style: TextStyle(color: flag ? null : Colors.white),
                 ),
               ),
               backgroundColor: theme.colorScheme.surface.withValues(
@@ -92,15 +67,13 @@ class _SearchTrendingPageState extends State<SearchTrendingPage> {
               systemOverlayStyle: flag
                   ? null
                   : const SystemUiOverlayStyle(
-                      statusBarBrightness: Brightness.dark,
-                      statusBarIconBrightness: Brightness.light,
+                      statusBarBrightness: .dark,
+                      statusBarIconBrightness: .light,
                     ),
               shape: scrollRatio == 1
                   ? Border(
                       bottom: BorderSide(
-                        color: theme.colorScheme.outline.withValues(
-                          alpha: 0.1,
-                        ),
+                        color: theme.colorScheme.outline.withValues(alpha: 0.1),
                       ),
                     )
                   : null,
@@ -109,10 +82,7 @@ class _SearchTrendingPageState extends State<SearchTrendingPage> {
         ),
       ),
       body: Padding(
-        padding: EdgeInsets.only(
-          left: padding.left,
-          right: padding.right,
-        ),
+        padding: .only(left: padding.left, right: padding.right),
         child: Center(
           child: SizedBox(
             width: width,
@@ -122,7 +92,9 @@ class _SearchTrendingPageState extends State<SearchTrendingPage> {
                 controller: _controller.scrollController,
                 physics: const AlwaysScrollableScrollPhysics(),
                 slivers: [
-                  SliverToBoxAdapter(
+                  TrendingHeader(
+                    offset: _offset,
+                    onScrollRatioChanged: _scrollRatio.call,
                     child: Image.asset(
                       width: width,
                       height: height,

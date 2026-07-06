@@ -1,5 +1,6 @@
 import 'package:PiliPlus/common/skeleton/msg_feed_top.dart';
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
+import 'package:PiliPlus/common/widgets/dialog/simple_dialog_option.dart';
 import 'package:PiliPlus/common/widgets/flutter/list_tile.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
@@ -97,13 +98,9 @@ class _LikeMePageState extends State<LikeMePage> {
                       if (total.isEmpty && index == latest.length - 1) {
                         _likeMeController.onLoadMore();
                       }
-                      return _buildItem(
-                        theme,
-                        latest[index],
-                        (id) {
-                          _likeMeController.onRemove(id, index, true);
-                        },
-                      );
+                      return _buildItem(theme, latest[index], (id) {
+                        _likeMeController.onRemove(id, index, true);
+                      });
                     },
                     itemCount: latest.length,
                     separatorBuilder: (context, index) => divider,
@@ -116,13 +113,9 @@ class _LikeMePageState extends State<LikeMePage> {
                       if (index == total.length - 1) {
                         _likeMeController.onLoadMore();
                       }
-                      return _buildItem(
-                        theme,
-                        total[index],
-                        (id) {
-                          _likeMeController.onRemove(id, index, false);
-                        },
-                      );
+                      return _buildItem(theme, total[index], (id) {
+                        _likeMeController.onRemove(id, index, false);
+                      });
                     },
                     itemCount: total.length,
                     separatorBuilder: (context, index) => divider,
@@ -200,51 +193,43 @@ class _LikeMePageState extends State<LikeMePage> {
       context: context,
       builder: (context) {
         final isNotice = item.noticeState == 0;
-        return AlertDialog(
+        return SimpleDialog(
           clipBehavior: Clip.hardEdge,
           contentPadding: const EdgeInsets.symmetric(vertical: 12),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                onTap: () {
-                  Get.back();
+          children: [
+            DialogOption(
+              onPressed: () {
+                Get.back();
+                showConfirmDialog(
+                  context: context,
+                  title: const Text('删除'),
+                  content: const Text('该条通知删除后，当有新点赞时会重新出现在列表，是否继续？'),
+                  onConfirm: () => onRemove(item.id),
+                );
+              },
+              child: const Text('删除', style: TextStyle(fontSize: 14)),
+            ),
+            DialogOption(
+              onPressed: () {
+                Get.back();
+                if (isNotice) {
                   showConfirmDialog(
                     context: context,
-                    title: const Text('删除'),
-                    content: const Text('该条通知删除后，当有新点赞时会重新出现在列表，是否继续？'),
-                    onConfirm: () => onRemove(item.id),
+                    title: const Text('不再通知'),
+                    content: const Text('这条内容的点赞将不再通知，但仍可在列表内查看，是否继续？'),
+                    onConfirm: () =>
+                        _likeMeController.onSetNotice(item, isNotice),
                   );
-                },
-                dense: true,
-                title: const Text(
-                  '删除',
-                  style: TextStyle(fontSize: 14),
-                ),
+                } else {
+                  _likeMeController.onSetNotice(item, isNotice);
+                }
+              },
+              child: Text(
+                isNotice ? '不再通知' : '接收通知',
+                style: const TextStyle(fontSize: 14),
               ),
-              ListTile(
-                onTap: () {
-                  Get.back();
-                  if (isNotice) {
-                    showConfirmDialog(
-                      context: context,
-                      title: const Text('不再通知'),
-                      content: const Text('这条内容的点赞将不再通知，但仍可在列表内查看，是否继续？'),
-                      onConfirm: () =>
-                          _likeMeController.onSetNotice(item, isNotice),
-                    );
-                  } else {
-                    _likeMeController.onSetNotice(item, isNotice);
-                  }
-                },
-                dense: true,
-                title: Text(
-                  isNotice ? '不再通知' : '接收通知',
-                  style: const TextStyle(fontSize: 14),
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         );
       },
     );
@@ -336,9 +321,7 @@ class _LikeMePageState extends State<LikeMePage> {
               width: 45,
               height: 45,
               src: item.item!.image,
-              borderRadius: const BorderRadius.all(
-                Radius.circular(8),
-              ),
+              borderRadius: const BorderRadius.all(Radius.circular(8)),
             ),
           if (item.noticeState == 1) ...[
             if (item.item?.image?.isNotEmpty == true) const SizedBox(width: 4),

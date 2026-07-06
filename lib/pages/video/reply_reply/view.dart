@@ -246,9 +246,9 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
     return SliverPinnedHeader(
       backgroundColor: colorScheme.surface,
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(12, 2.5, 6, 2.5),
+        padding: const .fromLTRB(12, 2.5, 6, 2.5),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          mainAxisAlignment: .spaceBetween,
           children: [
             Obx(
               () {

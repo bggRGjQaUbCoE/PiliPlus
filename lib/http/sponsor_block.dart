@@ -79,7 +79,7 @@ abstract final class SponsorBlock {
     int? type,
     SegmentType? category,
   }) async {
-    assert((type == null) == (category == null));
+    assert((type == null) != (category == null));
     final res = await Request().post(
       _api(SponsorBlockApi.voteOnSponsorTime),
       queryParameters: {

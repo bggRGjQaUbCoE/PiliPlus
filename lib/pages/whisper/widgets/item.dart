@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:PiliPlus/common/assets.dart';
 import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
+import 'package:PiliPlus/common/widgets/dialog/simple_dialog_option.dart';
 import 'package:PiliPlus/common/widgets/flutter/list_tile.dart';
 import 'package:PiliPlus/common/widgets/pendant_avatar.dart';
 import 'package:PiliPlus/grpc/bilibili/app/im/v1.pb.dart'
@@ -56,48 +57,39 @@ class WhisperSessionItem extends StatelessWidget {
           : null,
       onLongPress: () => showDialog(
         context: context,
-        builder: (context) => AlertDialog(
+        builder: (context) => SimpleDialog(
           clipBehavior: Clip.hardEdge,
           contentPadding: const EdgeInsets.symmetric(vertical: 12),
-          content: DefaultTextStyle(
-            style: const TextStyle(fontSize: 14),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ListTile(
-                  dense: true,
-                  onTap: () {
-                    Get.back();
-                    onSetTop(item.isPinned, item.id);
-                  },
-                  title: Text(item.isPinned ? '移除置顶' : '置顶'),
-                ),
-                if (item.id.privateId.hasTalkerUid())
-                  ListTile(
-                    dense: true,
-                    onTap: () {
-                      Get.back();
-                      onSetMute(item.isMuted, item.id.privateId.talkerUid);
-                    },
-                    title: Text('${item.isMuted ? '关闭' : '开启'}免打扰'),
-                  ),
-                if (item.id.privateId.hasTalkerUid())
-                  ListTile(
-                    dense: true,
-                    onTap: () {
-                      Get.back();
-                      showConfirmDialog(
-                        context: context,
-                        title: const Text('确定删除该对话？'),
-                        onConfirm: () =>
-                            onRemove(item.id.privateId.talkerUid.toInt()),
-                      );
-                    },
-                    title: const Text('删除'),
-                  ),
-              ],
+          children: [
+            DialogOption(
+              onPressed: () {
+                Get.back();
+                onSetTop(item.isPinned, item.id);
+              },
+              child: Text(item.isPinned ? '移除置顶' : '置顶'),
             ),
-          ),
+            if (item.id.privateId.hasTalkerUid())
+              DialogOption(
+                onPressed: () {
+                  Get.back();
+                  onSetMute(item.isMuted, item.id.privateId.talkerUid);
+                },
+                child: Text('${item.isMuted ? '关闭' : '开启'}免打扰'),
+              ),
+            if (item.id.privateId.hasTalkerUid())
+              DialogOption(
+                onPressed: () {
+                  Get.back();
+                  showConfirmDialog(
+                    context: context,
+                    title: const Text('确定删除该对话？'),
+                    onConfirm: () =>
+                        onRemove(item.id.privateId.talkerUid.toInt()),
+                  );
+                },
+                child: const Text('删除'),
+              ),
+          ],
         ),
       ),
       onSecondaryTapUp: PlatformUtils.isDesktop

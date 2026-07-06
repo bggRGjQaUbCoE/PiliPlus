@@ -98,37 +98,32 @@ class _MemberOpusState extends State<MemberOpus>
                 child: FloatingActionButton.extended(
                   onPressed: () => showDialog(
                     context: context,
-                    builder: (context) => AlertDialog(
+                    builder: (context) => SimpleDialog(
                       clipBehavior: Clip.hardEdge,
                       contentPadding: const EdgeInsets.symmetric(vertical: 12),
-                      content: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: _controller.filter!
-                            .map(
-                              (e) => ListTile(
-                                onTap: () {
-                                  if (e == _controller.type.value) {
-                                    return;
-                                  }
-                                  Get.back();
-                                  _controller
-                                    ..type.value = e
-                                    ..onReload();
-                                },
-                                tileColor: e == _controller.type.value
-                                    ? Theme.of(
-                                        context,
-                                      ).colorScheme.onInverseSurface
-                                    : null,
-                                dense: true,
-                                title: Text(
-                                  e.text ?? e.tabName!,
-                                  style: const TextStyle(fontSize: 14),
-                                ),
+                      children: _controller.filter!
+                          .map(
+                            (e) => ListTile(
+                              dense: true,
+                              onTap: () {
+                                if (e == _controller.type.value) {
+                                  return;
+                                }
+                                Get.back();
+                                _controller
+                                  ..type.value = e
+                                  ..onReload();
+                              },
+                              tileColor: e == _controller.type.value
+                                  ? ColorScheme.of(context).onInverseSurface
+                                  : null,
+                              title: Text(
+                                e.text ?? e.tabName!,
+                                style: const TextStyle(fontSize: 14),
                               ),
-                            )
-                            .toList(),
-                      ),
+                            ),
+                          )
+                          .toList(),
                     ),
                   ),
                   icon: const Icon(size: 20, Icons.sort),

@@ -20,7 +20,6 @@ import 'package:PiliPlus/pages/video/introduction/ugc/controller.dart';
 import 'package:PiliPlus/pages/video/member/controller.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/bili_utils.dart';
-import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
@@ -67,7 +66,7 @@ class _HorizontalMemberPageState extends State<HorizontalMemberPage> {
       final index = res.response?.indexWhere((e) => e.bvid == _bvid) ?? -1;
       if (index != -1) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          _controller.scrollController.jumpTo(100.0 * index);
+          _controller.scrollController.jumpTo(112.0 * index);
         });
       }
     }
@@ -178,7 +177,7 @@ class _HorizontalMemberPageState extends State<HorizontalMemberPage> {
       Loading() => SliverFixedExtentList.builder(
         itemCount: 10,
         itemBuilder: (_, _) => const VideoCardHSkeleton(),
-        itemExtent: 100,
+        itemExtent: 112,
       ),
       Success(:final response) =>
         response != null && response.isNotEmpty
@@ -210,7 +209,7 @@ class _HorizontalMemberPageState extends State<HorizontalMemberPage> {
                       );
                     },
                     itemCount: response.length,
-                    itemExtent: 100,
+                    itemExtent: 112,
                   ),
                 ],
               )
@@ -257,13 +256,10 @@ class _HorizontalMemberPageState extends State<HorizontalMemberPage> {
             ),
           ),
           const SizedBox(width: 8),
-          Image.asset(
-            BiliUtils.levelName(
-              memberInfoModel.level!,
-              isSeniorMember: memberInfoModel.isSeniorMember == 1,
-            ),
+          BiliUtils.levelPicture(
+            memberInfoModel.level!,
+            isSeniorMember: memberInfoModel.isSeniorMember == 1,
             height: 11,
-            cacheHeight: 11.cacheSize(context),
           ),
         ],
       ),

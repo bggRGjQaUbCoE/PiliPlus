@@ -92,7 +92,7 @@ class _MemberPageState extends State<MemberPage> {
         () => switch (_userController.loadingState.value) {
           Loading() => m3eLoading,
           Success(:final response) => ExtendedNestedScrollView(
-            key: _userController.key,
+            key: _userController.scrollKey,
             onlyOneScrollInBody: true,
             pinnedHeaderSliverHeightBuilder: () =>
                 kToolbarHeight + MediaQuery.viewPaddingOf(context).top,

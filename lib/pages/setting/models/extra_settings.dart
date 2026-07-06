@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:math' show max;
 
 import 'package:PiliPlus/common/widgets/custom_icon.dart';
+import 'package:PiliPlus/common/widgets/dialog/simple_dialog_option.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/gesture/horizontal_drag_gesture_recognizer.dart'
     show deviceTouchSlop, touchSlopH;
@@ -595,19 +596,10 @@ List<SettingsModel> get extraSettings => [
       onTap: _showProxyDialog,
     ),
   ),
-  const SwitchModel(
-    title: '自动清除缓存',
-    subtitle: '每次启动时清除缓存',
-    leading: Icon(Icons.auto_delete_outlined),
-    setKey: SettingBoxKey.autoClearCache,
-    defaultVal: false,
-  ),
   NormalModel(
     title: '最大缓存大小',
-    getSubtitle: () {
-      final num = Pref.maxCacheSize;
-      return '当前最大缓存大小: 「${num == 0 ? '无限' : CacheManager.formatSize(Pref.maxCacheSize)}」';
-    },
+    getSubtitle: () =>
+        '当前最大缓存大小: 「${CacheManager.formatSize(Pref.maxCacheSize)}」',
     leading: const Icon(Icons.delete_outlined),
     onTap: _showCacheDialog,
   ),
@@ -721,48 +713,42 @@ Future<void> audioNormalization(
 void _showDownPathDialog(BuildContext context, VoidCallback setState) {
   showDialog(
     context: context,
-    builder: (context) => AlertDialog(
+    builder: (context) => SimpleDialog(
       clipBehavior: Clip.hardEdge,
       contentPadding: const EdgeInsets.symmetric(vertical: 12),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ListTile(
-            onTap: () {
-              Get.back();
-              Utils.copyText(downloadPath);
-            },
-            dense: true,
-            title: const Text('复制', style: TextStyle(fontSize: 14)),
-          ),
-          ListTile(
-            onTap: () {
-              Get.back();
-              final defPath = defDownloadPath;
-              if (downloadPath == defPath) return;
-              downloadPath = defPath;
-              setState();
-              Get.find<DownloadService>().initDownloadList();
-              GStorage.setting.delete(SettingBoxKey.downloadPath);
-            },
-            dense: true,
-            title: const Text('重置', style: TextStyle(fontSize: 14)),
-          ),
-          ListTile(
-            onTap: () async {
-              Get.back();
-              final path = await FilePicker.getDirectoryPath();
-              if (path == null || path == downloadPath) return;
-              downloadPath = path;
-              setState();
-              Get.find<DownloadService>().initDownloadList();
-              GStorage.setting.put(SettingBoxKey.downloadPath, path);
-            },
-            dense: true,
-            title: const Text('设置新路径', style: TextStyle(fontSize: 14)),
-          ),
-        ],
-      ),
+      children: [
+        DialogOption(
+          onPressed: () {
+            Get.back();
+            Utils.copyText(downloadPath);
+          },
+          child: const Text('复制', style: TextStyle(fontSize: 14)),
+        ),
+        DialogOption(
+          onPressed: () {
+            Get.back();
+            final defPath = defDownloadPath;
+            if (downloadPath == defPath) return;
+            downloadPath = defPath;
+            setState();
+            Get.find<DownloadService>().initDownloadList();
+            GStorage.setting.delete(SettingBoxKey.downloadPath);
+          },
+          child: const Text('重置', style: TextStyle(fontSize: 14)),
+        ),
+        DialogOption(
+          onPressed: () async {
+            Get.back();
+            final path = await FilePicker.getDirectoryPath();
+            if (path == null || path == downloadPath) return;
+            downloadPath = path;
+            setState();
+            Get.find<DownloadService>().initDownloadList();
+            GStorage.setting.put(SettingBoxKey.downloadPath, path);
+          },
+          child: const Text('设置新路径', style: TextStyle(fontSize: 14)),
+        ),
+      ],
     ),
   );
 }

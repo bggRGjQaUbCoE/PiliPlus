@@ -29,7 +29,8 @@ class _DownloadSearchPageState
           DownloadSearchPage,
           List<BiliDownloadEntryInfo>,
           BiliDownloadEntryInfo
-        > {
+        >
+    with GridMixin {
   @override
   DownloadSearchController controller = Get.put(DownloadSearchController());
   final _downloadService = Get.find<DownloadService>();
@@ -84,11 +85,7 @@ class _DownloadSearchPageState
   Widget buildList(List<BiliDownloadEntryInfo> list) {
     if (list.isNotEmpty) {
       return SliverGrid.builder(
-        gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-          mainAxisSpacing: 2,
-          mainAxisExtent: 100,
-          maxCrossAxisExtent: Grid.smallCardWidth * 2,
-        ),
+        gridDelegate: gridDelegate,
         itemBuilder: (context, index) {
           final entry = list[index];
           return DetailItem(

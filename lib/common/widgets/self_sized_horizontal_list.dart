@@ -28,6 +28,9 @@ class _SelfSizedHorizontalListState extends State<SelfSizedHorizontalList> {
   @override
   Widget build(BuildContext context) {
     if (_height == null) {
+      if (widget.itemCount == 0) {
+        return const SizedBox.shrink();
+      }
       return OnlyLayoutWidget(
         onPerformLayout: (Size size) {
           if (!mounted) return;

@@ -25,7 +25,11 @@ class DynReactController
   @override
   bool customHandleResponse(bool isRefresh, Success<DynReactionData> response) {
     if (isRefresh) {
-      count.value = response.response.total;
+      final res = response.response;
+      final total = res.total;
+      if (!(total == 0 && res.items?.isNotEmpty == true)) {
+        count.value = total;
+      }
     }
     return false;
   }

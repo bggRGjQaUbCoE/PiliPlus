@@ -57,7 +57,7 @@ class _MediaListPanelState extends State<MediaListPanel>
     final bvid = widget.bvid;
     final bvIndex = widget.mediaList.indexWhere((item) => item.bvid == bvid);
     _controller = ScrollController(
-      initialScrollOffset: bvIndex <= 0 ? 0 : bvIndex * 100.0 + 7,
+      initialScrollOffset: bvIndex <= 0 ? 0 : bvIndex * 112.0 + 7,
     );
   }
 
@@ -131,7 +131,7 @@ class _MediaListPanelState extends State<MediaListPanel>
           ),
           sliver: Obx(
             () => SliverFixedExtentList.builder(
-              itemExtent: 100,
+              itemExtent: 112,
               itemCount: widget.mediaList.length,
               itemBuilder: (context, index) {
                 if (index == widget.mediaList.length - 1 &&
@@ -166,7 +166,7 @@ class _MediaListPanelState extends State<MediaListPanel>
     return Padding(
       padding: const EdgeInsets.only(bottom: 2),
       child: SizedBox(
-        height: 98,
+        height: 110,
         child: Material(
           type: MaterialType.transparency,
           child: InkWell(
@@ -196,8 +196,8 @@ class _MediaListPanelState extends State<MediaListPanel>
                         children: [
                           NetworkImgLayer(
                             src: item.cover,
-                            width: 140.8,
-                            height: 88,
+                            width: 160,
+                            height: 100,
                           ),
                           if (item.badge?.isNotEmpty == true)
                             PBadge(

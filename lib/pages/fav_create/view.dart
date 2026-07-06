@@ -1,5 +1,6 @@
 import 'dart:io' show File;
 
+import 'package:PiliPlus/common/widgets/dialog/simple_dialog_option.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
 import 'package:PiliPlus/http/fav.dart';
@@ -195,37 +196,32 @@ class _CreateFavPageState extends State<CreateFavPage> {
                       if (_cover?.isNotEmpty == true) {
                         showDialog(
                           context: context,
-                          builder: (_) => AlertDialog(
+                          builder: (_) => SimpleDialog(
                             clipBehavior: Clip.hardEdge,
                             contentPadding: const .symmetric(vertical: 12),
-                            content: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                ListTile(
-                                  dense: true,
-                                  onTap: () {
-                                    Get.back();
-                                    _pickImg(context, theme);
-                                  },
-                                  title: const Text(
-                                    '替换封面',
-                                    style: TextStyle(fontSize: 14),
-                                  ),
+                            children: [
+                              DialogOption(
+                                onPressed: () {
+                                  Get.back();
+                                  _pickImg(context, theme);
+                                },
+                                child: const Text(
+                                  '替换封面',
+                                  style: TextStyle(fontSize: 14),
                                 ),
-                                ListTile(
-                                  dense: true,
-                                  onTap: () {
-                                    Get.back();
-                                    _cover = null;
-                                    (context as Element).markNeedsBuild();
-                                  },
-                                  title: const Text(
-                                    '移除封面',
-                                    style: TextStyle(fontSize: 14),
-                                  ),
+                              ),
+                              DialogOption(
+                                onPressed: () {
+                                  Get.back();
+                                  _cover = null;
+                                  (context as Element).markNeedsBuild();
+                                },
+                                child: const Text(
+                                  '移除封面',
+                                  style: TextStyle(fontSize: 14),
                                 ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
                         );
                       } else {

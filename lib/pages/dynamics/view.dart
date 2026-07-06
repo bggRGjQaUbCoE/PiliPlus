@@ -65,11 +65,13 @@ class _DynamicsPageState extends CommonPageState<DynamicsPage>
           onNotification: (notification) {
             final metrics = notification.metrics;
             if (metrics.pixels >= metrics.maxScrollExtent - 300) {
-              _dynamicsController.onLoadMoreUp();
+              _dynamicsController.onLoadMore();
             }
             return false;
           },
-          child: Obx(() => _buildUpPanel(_dynamicsController.upState.value)),
+          child: Obx(
+            () => _buildUpPanel(_dynamicsController.loadingState.value),
+          ),
         ),
       ),
     );
@@ -78,15 +80,14 @@ class _DynamicsPageState extends CommonPageState<DynamicsPage>
   Widget _buildUpPanel(LoadingState<FollowUpModel> upState) {
     return switch (upState) {
       Loading() => const SizedBox.shrink(),
-      Success<FollowUpModel>() => UpPanel(
+      Success(:final response) => UpPanel(
+        upData: response,
         dynamicsController: _dynamicsController,
       ),
       Error() => Center(
         child: IconButton(
           icon: const Icon(Icons.refresh),
-          onPressed: () => _dynamicsController
-            ..upState.value = LoadingState<FollowUpModel>.loading()
-            ..queryFollowUp(),
+          onPressed: _dynamicsController.onReload,
         ),
       ),
     };

@@ -132,7 +132,7 @@ class Word {
     style = json['style'] == null ? null : Style.fromJson(json['style']);
     if (json['color'] case final String rawColor
         when rawColor.startsWith('#')) {
-      color = ColourUtils.parse2Int(json['color']);
+      color = ColourUtils.parse2Int(rawColor);
     }
     fontLevel = json['font_level'];
   }

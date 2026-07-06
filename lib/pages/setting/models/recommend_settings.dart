@@ -93,8 +93,8 @@ List<SettingsModel> get recommendSettings => [
     onChanged: (value) => RecommendFilter.exemptFilterForFollowed = value,
   ),
   SwitchModel(
-    title: '过滤器也应用于相关视频',
-    subtitle: '视频详情页的相关视频也进行过滤¹',
+    title: '过滤器也应用于详情页相关视频',
+    subtitle: '其它（如热门视频、搜索等）均不受过滤器影响，无法豁免相关视频中的已关注UP',
     leading: const Icon(Icons.explore_outlined),
     setKey: SettingBoxKey.applyFilterToRelatedVideos,
     defaultVal: true,

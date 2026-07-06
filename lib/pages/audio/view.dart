@@ -755,19 +755,19 @@ class _AudioPageState extends State<AudioPage> {
   }
 
   void _onDragStart(ThumbDragDetails details) {
-    // do nothing
+    _controller
+      ..isDragging = true
+      ..position.value = details.seconds;
   }
 
   void _onDragUpdate(ThumbDragDetails details) {
-    _controller
-      ..isDragging = true
-      ..position.value = details.timeStamp;
+    _controller.position.value = details.seconds;
   }
 
-  void _onSeek(Duration value) {
+  void _onSeek(int milliseconds) {
     _controller
-      ..player?.seek(value)
-      ..isDragging = false;
+      ..isDragging = false
+      ..player?.seek(Duration(milliseconds: milliseconds));
   }
 
   Widget _buildProgressBar(ColorScheme colorScheme) {
@@ -839,7 +839,7 @@ class _AudioPageState extends State<AudioPage> {
               final position = _controller.position.value;
               if (_controller.player != null) {
                 return Text(
-                  DurationUtils.formatDuration(position.inSeconds),
+                  DurationUtils.formatDuration(position),
                 );
               }
               return const SizedBox.shrink();
@@ -848,7 +848,7 @@ class _AudioPageState extends State<AudioPage> {
               final duration = _controller.duration.value;
               if (_controller.player != null) {
                 return Text(
-                  DurationUtils.formatDuration(duration.inSeconds),
+                  DurationUtils.formatDuration(duration),
                 );
               }
               return const SizedBox.shrink();

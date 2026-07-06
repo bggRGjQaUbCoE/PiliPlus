@@ -217,14 +217,10 @@ class UserInfoCard extends StatelessWidget {
               ),
             ),
           ),
-          Image.asset(
-            BiliUtils.levelName(
-              card.levelInfo!.currentLevel!,
-              isSeniorMember: card.levelInfo?.identity == 2,
-            ),
+          BiliUtils.levelPicture(
+            card.levelInfo!.currentLevel!,
+            isSeniorMember: card.levelInfo?.identity == 2,
             height: 11,
-            cacheHeight: 11.cacheSize(context),
-            semanticLabel: '等级${card.levelInfo?.currentLevel}',
           ),
           if (card.vip?.status == 1)
             Container(

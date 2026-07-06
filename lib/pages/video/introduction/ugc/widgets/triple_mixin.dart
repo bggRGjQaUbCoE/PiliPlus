@@ -84,6 +84,8 @@ mixin TripleMixin on GetxController, TickerProvider {
     _timer = null;
   }
 
+  bool get isTripling => _tripleAnimCtr?.status == .forward;
+
   static final _duration = PlatformUtils.isMobile
       ? const Duration(milliseconds: 200)
       : const Duration(milliseconds: 255);
@@ -104,7 +106,7 @@ mixin TripleMixin on GetxController, TickerProvider {
   }
 
   void onCancelTriple([bool isTapUp = false]) {
-    if (tripleAnimCtr.status == AnimationStatus.forward) {
+    if (tripleAnimCtr.status == .forward) {
       tripleAnimCtr.reverse();
     } else if (_timer != null && _timer!.tick == 0) {
       _cancelTimer();

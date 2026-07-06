@@ -10,6 +10,7 @@ import 'package:PiliPlus/common/widgets/selectable_text.dart';
 import 'package:PiliPlus/common/widgets/stat/stat.dart';
 import 'package:PiliPlus/http/sponsor_block.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
+import 'package:PiliPlus/models/common/quick_fav_item.dart';
 import 'package:PiliPlus/models/common/stat_type.dart';
 import 'package:PiliPlus/models_new/video/video_ai_conclusion/model_result.dart';
 import 'package:PiliPlus/models_new/video/video_detail/data.dart';
@@ -122,27 +123,23 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
                     child: Row(
                       children: [
                         if (videoDetail.staff.isNullOrEmpty) ...[
-                          Expanded(
-                            child: Align(
-                              alignment: Alignment.centerLeft,
-                              child: _buildAvatar(
-                                theme,
-                                () {
-                                  if (mid != null) {
-                                    feedBack();
-                                    if (!isPortrait &&
-                                        introController.horizontalMemberPage) {
-                                      widget.onShowMemberPage(mid);
-                                    } else {
-                                      Get.toNamed(
-                                        '/member?mid=$mid&from_view_aid=${videoDetailCtr.aid}',
-                                      );
-                                    }
-                                  }
-                                },
-                              ),
-                            ),
+                          _buildAvatar(
+                            theme,
+                            () {
+                              if (mid != null) {
+                                feedBack();
+                                if (!isPortrait &&
+                                    introController.horizontalMemberPage) {
+                                  widget.onShowMemberPage(mid);
+                                } else {
+                                  Get.toNamed(
+                                    '/member?mid=$mid&from_view_aid=${videoDetailCtr.aid}',
+                                  );
+                                }
+                              }
+                            },
                           ),
+                          const SizedBox(width: 10),
                           followButton(context, theme),
                         ] else
                           Expanded(
@@ -169,11 +166,34 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
                         if (isHorizontal) ...[
                           const SizedBox(width: 10),
                           Expanded(
-                            child: actionGrid(
-                              context,
-                              isLoading,
-                              videoDetail,
-                              introController,
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                if (Pref.enableFavShortcutRow) ...[
+                                  Flexible(
+                                    flex: 6 + (Pref.enableDownloadServer ? 1 : 0),
+                                    child: actionGrid(
+                                      context,
+                                      isLoading,
+                                      videoDetail,
+                                      introController,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Flexible(
+                                    flex: 1 + introController.favShortcutList.length,
+                                    child: favShortcutRow(context, introController, distributeEvenly: true),
+                                  ),
+                                ] else
+                                  Expanded(
+                                    child: actionGrid(
+                                      context,
+                                      isLoading,
+                                      videoDetail,
+                                      introController,
+                                    ),
+                                  ),
+                              ],
                             ),
                           ),
                         ],
@@ -275,6 +295,10 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
                       videoDetail,
                       introController,
                     ),
+                    if (Pref.enableFavShortcutRow) ...[
+                      const SizedBox(height: 8),
+                      favShortcutRow(context, introController),
+                    ],
                   ],
                   // 合集
                   if (!isLoading &&
@@ -617,6 +641,147 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
         ],
       ),
     );
+  }
+
+  Widget favShortcutRow(
+    BuildContext context,
+    UgcIntroController introController, {
+    bool distributeEvenly = false,
+  }) {
+    return SizedBox(
+      height: 48,
+      child: Obx(
+        () {
+          final addButton = _buildFavShortcutButton(
+            context: context,
+            icon: const Icon(Icons.add),
+            label: '添加',
+            isActive: false,
+            expanded: distributeEvenly,
+            onTap: () => introController.showFavShortcutSelector(context),
+          );
+          final itemButtons = introController.favShortcutList.map(
+            (item) => _buildFavShortcutButton(
+              context: context,
+              icon: const Icon(FontAwesomeIcons.star),
+              selectIcon: const Icon(FontAwesomeIcons.solidStar),
+              label: item.title,
+              isActive: introController.favIds.value?.contains(item.id) == true,
+              expanded: distributeEvenly,
+              onTap: () => introController.handleAction(
+                () => introController.toggleFavShortcut(item.id),
+              ),
+              onLongPress: () => _showRemoveFavShortcutDialog(
+                context,
+                introController,
+                item,
+              ),
+            ),
+          );
+
+          if (distributeEvenly) {
+            return Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(child: addButton),
+                ...itemButtons.map((b) => Expanded(child: b)),
+              ],
+            );
+          }
+
+          return SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                addButton,
+                ...itemButtons,
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildFavShortcutButton({
+    required BuildContext context,
+    required Icon icon,
+    Icon? selectIcon,
+    required String label,
+    required bool isActive,
+    required VoidCallback onTap,
+    VoidCallback? onLongPress,
+    bool expanded = false,
+  }) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final primary = colorScheme.primary;
+    final iconWidget = Icon(
+      isActive ? (selectIcon?.icon ?? icon.icon) : icon.icon,
+      size: 18,
+      color: isActive ? primary : icon.color ?? colorScheme.outline,
+    );
+    final button = Material(
+      type: MaterialType.transparency,
+      child: InkWell(
+        borderRadius: const BorderRadius.all(Radius.circular(6)),
+        onTap: onTap,
+        onLongPress: onLongPress,
+        onSecondaryTap:
+            PlatformUtils.isMobile ? null : onLongPress,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SizedBox.square(dimension: 28, child: iconWidget),
+            Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: isActive ? primary : colorScheme.outline,
+                fontSize: theme.textTheme.labelSmall!.fontSize,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (expanded) {
+      return button;
+    }
+    return SizedBox(width: 72, child: button);
+  }
+
+  Future<void> _showRemoveFavShortcutDialog(
+    BuildContext context,
+    UgcIntroController introController,
+    QuickFavItem item,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('移除快捷收藏夹'),
+        content: Text('确认移除「${item.title}」快捷收藏按钮？'),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(result: false),
+            child: Text(
+              '取消',
+              style: TextStyle(color: Theme.of(context).colorScheme.outline),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Get.back(result: true),
+            child: const Text('确认'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) {
+      introController.removeFavShortcut(item.id);
+    }
   }
 
   static final RegExp urlRegExp = RegExp(

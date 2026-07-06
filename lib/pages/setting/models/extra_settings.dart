@@ -503,6 +503,13 @@ List<SettingsModel> get extraSettings => [
     onTap: _showFavDialog,
     defaultVal: false,
   ),
+  const SwitchModel(
+    title: '显示快捷收藏夹栏',
+    subtitle: '在收藏按钮下方显示常用收藏夹快捷入口',
+    leading: Icon(Icons.bookmark_border_outlined),
+    setKey: SettingBoxKey.enableFavShortcutRow,
+    defaultVal: false,
+  ),
   SwitchModel(
     title: '评论区搜索关键词',
     subtitle: '展示评论区搜索关键词',

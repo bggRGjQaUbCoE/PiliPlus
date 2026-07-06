@@ -12,6 +12,7 @@ import 'package:PiliPlus/models/common/follow_order_type.dart';
 import 'package:PiliPlus/models/common/member/tab_type.dart';
 import 'package:PiliPlus/models/common/msg/msg_unread_type.dart';
 import 'package:PiliPlus/models/common/nav_bar_config.dart';
+import 'package:PiliPlus/models/common/quick_fav_item.dart';
 import 'package:PiliPlus/models/common/reply/reply_sort_type.dart';
 import 'package:PiliPlus/models/common/sponsor_block/segment_type.dart';
 import 'package:PiliPlus/models/common/sponsor_block/skip_type.dart';
@@ -723,6 +724,18 @@ abstract final class Pref {
 
   static bool get enableQuickFav =>
       _setting.get(SettingBoxKey.enableQuickFav, defaultValue: false);
+
+  static bool get enableFavShortcutRow =>
+      _setting.get(SettingBoxKey.enableFavShortcutRow, defaultValue: false);
+
+  static List<QuickFavItem> get favShortcutList {
+    final list = _setting.get(SettingBoxKey.favShortcutList) as List?;
+    if (list == null) return [];
+    return list
+        .whereType<Map>()
+        .map((e) => QuickFavItem.fromJson(e.cast<String, dynamic>()))
+        .toList();
+  }
 
   static bool get p1080 =>
       _setting.get(SettingBoxKey.p1080, defaultValue: true);

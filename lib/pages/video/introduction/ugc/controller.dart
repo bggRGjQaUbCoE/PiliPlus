@@ -73,6 +73,7 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
   @override
   void onInit() {
     super.onInit();
+    loadFavShortcutList();
     bool alwaysExpandIntroPanel = Pref.alwaysExpandIntroPanel;
     expandableCtr = ExpandableController(
       initialExpanded: alwaysExpandIntroPanel,

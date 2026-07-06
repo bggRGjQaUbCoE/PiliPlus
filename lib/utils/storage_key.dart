@@ -63,6 +63,8 @@ abstract final class SettingBoxKey {
       enableHotKey = 'enableHotKey',
       enableSearchRcmd = 'enableSearchRcmd',
       enableQuickFav = 'enableQuickFav',
+      enableFavShortcutRow = 'enableFavShortcutRow',
+      favShortcutList = 'favShortcutList',
       enableWordRe = 'enableWordRe',
       enableSearchWord = 'enableSearchWord',
       enableSystemProxy = 'enableSystemProxy',

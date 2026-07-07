@@ -463,44 +463,41 @@ class _PostPanelState extends State<PostPanel>
             tooltip: '预览',
             icon: const Icon(Icons.preview_outlined),
             onPressed: () async {
-              final player = plPlayerController.videoPlayerController;
-              if (player != null) {
-                final start = (item.segment.first * 1000).round();
-                Future<void> seekTo() => player.seek(
-                  Duration(milliseconds: (item.segment.second * 1000).round()),
-                );
-                if (start <= 0) {
-                  seekTo();
-                  if (!player.state.playing) {
-                    await player.play();
+              final start = (item.segment.first * 1000).round();
+              Future<void> seekToEnd() => plPlayerController.seekTo(
+                Duration(milliseconds: (item.segment.second * 1000).round()),
+              );
+              if (start <= 0) {
+                await seekToEnd();
+                if (!plPlayerController.playerStatus.value.isPlaying) {
+                  await plPlayerController.play();
+                }
+                return;
+              }
+              final seek = max(0, start - 2000);
+              await plPlayerController.seekTo(Duration(milliseconds: seek));
+              if (!plPlayerController.playerStatus.value.isPlaying) {
+                await plPlayerController.play();
+              }
+              if (start > seek) {
+                Timer? timer;
+                late final ValueChanged<Duration> listener;
+                void cancel() {
+                  timer?.cancel();
+                  plPlayerController.removePositionListener(listener);
+                }
+
+                final duration = Duration(milliseconds: start);
+                listener = (pos) {
+                  if (pos >= duration) {
+                    seekToEnd();
+                    cancel();
                   }
-                  return;
-                }
-                final seek = max(0, start - 2000);
-                await player.seek(Duration(milliseconds: seek));
-                if (!player.state.playing) {
-                  await player.play();
-                }
-                if (start > seek) {
-                  final posSub = player.stream.position.listen(
-                    null,
-                    cancelOnError: true,
-                  );
-                  final timer = Timer(
-                    const Duration(seconds: 10),
-                    posSub.cancel,
-                  );
-                  final duration = Duration(milliseconds: start);
-                  posSub.onData((pos) {
-                    if (pos >= duration) {
-                      seekTo();
-                      timer.cancel();
-                      posSub.cancel();
-                    }
-                  });
-                } else {
-                  seekTo();
-                }
+                };
+                timer = Timer(const Duration(seconds: 10), cancel);
+                plPlayerController.addPositionListener(listener);
+              } else {
+                await seekToEnd();
               }
             },
           ),

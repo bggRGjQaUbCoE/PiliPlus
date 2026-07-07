@@ -149,4 +149,5 @@ pili_release.json
 
 dist
 
-test*
+test*Payload/
+*.ipa

@@ -1,4 +1,5 @@
 import 'package:PiliPlus/common/style.dart';
+import 'package:PiliPlus/services/app_font_manager.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:flutter/cupertino.dart' show CupertinoThemeData;
@@ -38,9 +39,14 @@ abstract final class ThemeUtils {
     final fontWeight = appFontWeight == -1
         ? null
         : FontWeight.values[appFontWeight];
-    late final textStyle = TextStyle(fontWeight: fontWeight);
+    final fontFamily = AppFontManager.fontFamilyFor(Pref.appFontFamily);
+    late final textStyle = TextStyle(
+      fontFamily: fontFamily,
+      fontWeight: fontWeight,
+    );
     ThemeData themeData = ThemeData(
       colorScheme: colorScheme,
+      fontFamily: fontFamily,
       useMaterial3: true,
       textTheme: fontWeight == null
           ? null
@@ -73,6 +79,7 @@ abstract final class ThemeUtils {
         titleTextStyle: TextStyle(
           fontSize: 16,
           color: colorScheme.onSurface,
+          fontFamily: fontFamily,
           fontWeight: fontWeight,
         ),
       ),
@@ -83,7 +90,10 @@ abstract final class ThemeUtils {
         actionTextColor: colorScheme.primary,
         backgroundColor: colorScheme.secondaryContainer,
         closeIconColor: colorScheme.secondary,
-        contentTextStyle: TextStyle(color: colorScheme.onSecondaryContainer),
+        contentTextStyle: TextStyle(
+          color: colorScheme.onSecondaryContainer,
+          fontFamily: fontFamily,
+        ),
         elevation: 20,
       ),
       popupMenuTheme: PopupMenuThemeData(
@@ -108,6 +118,7 @@ abstract final class ThemeUtils {
         titleTextStyle: TextStyle(
           fontSize: 18,
           color: colorScheme.onSurface,
+          fontFamily: fontFamily,
           fontWeight: fontWeight,
         ),
         backgroundColor: colorScheme.surface,
@@ -122,8 +133,9 @@ abstract final class ThemeUtils {
       // ignore: deprecated_member_use
       sliderTheme: const SliderThemeData(year2023: false),
       tooltipTheme: TooltipThemeData(
-        textStyle: const TextStyle(
+        textStyle: TextStyle(
           color: Colors.white,
+          fontFamily: fontFamily,
           fontSize: 14,
         ),
         decoration: BoxDecoration(

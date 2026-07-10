@@ -12,6 +12,7 @@ String get defDownloadPath =>
     path.join(appSupportDirPath, PathUtils.downloadDir);
 
 abstract final class PathUtils {
+  static const appFontDir = 'fonts';
   static const videoNameType1 = '0.mp4';
   static const _fileExt = '.m4s';
   static const audioNameType2 = 'audio$_fileExt';

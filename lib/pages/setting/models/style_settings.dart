@@ -7,6 +7,7 @@ import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/scale_app.dart';
 import 'package:PiliPlus/common/widgets/stateful_builder.dart';
+import 'package:PiliPlus/models/common/app_font_family.dart';
 import 'package:PiliPlus/models/common/bar_hide_type.dart';
 import 'package:PiliPlus/models/common/dynamic/dynamic_badge_mode.dart';
 import 'package:PiliPlus/models/common/dynamic/up_panel_position.dart';
@@ -20,10 +21,12 @@ import 'package:PiliPlus/pages/mine/controller.dart';
 import 'package:PiliPlus/pages/setting/models/model.dart';
 import 'package:PiliPlus/pages/setting/slide_color_picker.dart';
 import 'package:PiliPlus/pages/setting/widgets/dual_slider_dialog.dart';
+import 'package:PiliPlus/pages/setting/widgets/app_font_family_dialog.dart';
 import 'package:PiliPlus/pages/setting/widgets/multi_select_dialog.dart';
 import 'package:PiliPlus/pages/setting/widgets/select_dialog.dart';
 import 'package:PiliPlus/pages/setting/widgets/slider_dialog.dart';
 import 'package:PiliPlus/plugin/pl_player/utils/fullscreen.dart';
+import 'package:PiliPlus/services/app_font_manager.dart';
 import 'package:PiliPlus/utils/extension/file_ext.dart';
 import 'package:PiliPlus/utils/extension/get_ext.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
@@ -81,6 +84,12 @@ List<SettingsModel> get styleSettings => [
     setKey: SettingBoxKey.useSideBar,
     defaultVal: false,
     needReboot: true,
+  ),
+  NormalModel(
+    title: 'App字体',
+    getSubtitle: () => '当前：${Pref.appFontFamily.label}',
+    leading: const Icon(Icons.font_download_outlined),
+    onTap: _showAppFontFamilyDialog,
   ),
   SplitModel(
     normalModel: const NormalModel.split(
@@ -644,6 +653,33 @@ Future<void> _showFontWeightDialog(BuildContext context) async {
   );
   if (res != null) {
     await GStorage.setting.put(SettingBoxKey.appFontWeight, res.toInt() - 1);
+    Get.updateMyAppTheme();
+  }
+}
+
+Future<void> _showAppFontFamilyDialog(
+  BuildContext context,
+  VoidCallback setState,
+) async {
+  final current = Pref.appFontFamily;
+  final res = await showDialog<AppFontFamily>(
+    context: context,
+    builder: (context) => AppFontFamilyDialog(value: current),
+  );
+  if (res != null && res != current) {
+    if (!res.isSystem) {
+      SmartDialog.showLoading(msg: '正在加载字体');
+      try {
+        await AppFontManager.load(res);
+      } catch (error) {
+        SmartDialog.showToast(error.toString());
+        return;
+      } finally {
+        SmartDialog.dismiss(status: SmartStatus.loading);
+      }
+    }
+    await GStorage.setting.put(SettingBoxKey.appFontFamily, res.name);
+    if (context.mounted) setState();
     Get.updateMyAppTheme();
   }
 }

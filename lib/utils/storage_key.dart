@@ -127,6 +127,7 @@ abstract final class SettingBoxKey {
       retryDelay = 'retryDelay',
       liveQuality = 'liveQuality',
       liveQualityCellular = 'liveQualityCellular',
+      appFontFamily = 'appFontFamily',
       appFontWeight = 'appFontWeight',
       fastForBackwardDuration = 'fastForBackwardDuration',
       recordSearchHistory = 'recordSearchHistory',

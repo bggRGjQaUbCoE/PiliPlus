@@ -267,10 +267,13 @@ abstract final class Pref {
     }
 
     final codecs = _setting.get(SettingBoxKey.preferCodecs);
-    if (codecs is List && codecs.isNotEmpty) {
+    if (codecs is List) {
       return codecs.map((i) => VideoDecodeFormatType.values.byName(i)).toList();
     }
-    return const [];
+    return const [
+      VideoDecodeFormatType.AVC,
+      VideoDecodeFormatType.AV1,
+    ];
   }
 
   static String get hardwareDecoding => _setting.get(

@@ -357,12 +357,10 @@ Future<void> _showCodecsDialog(
     ),
   );
   if (res != null) {
-    await (res.isEmpty
-        ? GStorage.setting.delete(SettingBoxKey.preferCodecs)
-        : GStorage.setting.put(
-            SettingBoxKey.preferCodecs,
-            res.map((i) => i.name).toList(),
-          ));
+    await GStorage.setting.put(
+      SettingBoxKey.preferCodecs,
+      res.map((i) => i.name).toList(),
+    );
     setState();
   }
 }

@@ -1,5 +1,6 @@
 import 'package:PiliPlus/models/common/app_font_family.dart';
 import 'package:PiliPlus/services/app_font_manager.dart';
+import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 
@@ -11,10 +12,40 @@ class AppFontFamilyDialog extends StatelessWidget {
 
   final AppFontFamily value;
 
-  static String _sizeLabel(AppFontFamily font) =>
-      '${(font.downloadSize! / (1024 * 1024)).toStringAsFixed(1)} MB';
+  static String _sizeLabel(int bytes) =>
+      '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
+
+  Future<bool> _confirmLicense(
+    BuildContext context,
+    AppFontFamily font,
+  ) async {
+    if (font.licenseUrl == null) return true;
+    return await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text('使用 ${font.label}'),
+            content: Text(font.licenseNotice!),
+            actions: [
+              TextButton(
+                onPressed: () => PageUtils.launchURL(font.licenseUrl!),
+                child: const Text('查看许可协议'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text('取消'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: const Text('同意并下载'),
+              ),
+            ],
+          ),
+        ) ??
+        false;
+  }
 
   Future<void> _download(BuildContext context, AppFontFamily font) async {
+    if (!await _confirmLicense(context, font) || !context.mounted) return;
     try {
       await AppFontManager.download(font);
       if (context.mounted) {
@@ -47,10 +78,10 @@ class AppFontFamilyDialog extends StatelessWidget {
         : progress != null
         ? progress.total > 0
               ? '正在下载 ${(progressValue! * 100).round()}%'
-              : '正在连接 GitHub'
+              : '正在连接下载源'
         : downloaded
-        ? '已下载 · ${_sizeLabel(font)}'
-        : _sizeLabel(font);
+        ? '已下载 · ${_sizeLabel(font.downloadSize!)}'
+        : _sizeLabel(font.transferSize!);
 
     Widget? trailing;
     if (!font.isSystem) {

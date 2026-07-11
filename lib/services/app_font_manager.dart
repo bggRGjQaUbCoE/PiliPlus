@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:PiliPlus/models/common/app_font_family.dart';
+import 'package:PiliPlus/services/app_font_archive_extractor.dart';
 import 'package:PiliPlus/utils/path_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
@@ -53,6 +54,13 @@ abstract final class AppFontManager {
   static File _fontFile(AppFontFamily font) =>
       File(path.join(_fontDirectory.path, font.fileName!));
 
+  static File? _fontLicenseFile(AppFontFamily font) {
+    final fileName = font.downloadArchive?.licenseFileName;
+    return fileName == null
+        ? null
+        : File(path.join(_fontDirectory.path, fileName));
+  }
+
   static ValueListenable<AppFontDownloadProgress?> downloadProgressOf(
     AppFontFamily font,
   ) => _progress[font]!;
@@ -80,6 +88,11 @@ abstract final class AppFontManager {
       for (final font in AppFontFamily.values) {
         if (!font.isSystem) {
           _deleteFile(File('${_fontFile(font).path}.part'));
+          _deleteFile(File('${_fontFile(font).path}.extract'));
+          final licenseFile = _fontLicenseFile(font);
+          if (licenseFile != null) {
+            _deleteFile(File('${licenseFile.path}.part'));
+          }
         }
       }
 
@@ -142,12 +155,19 @@ abstract final class AppFontManager {
   static Future<void> _download(AppFontFamily font) async {
     final target = _fontFile(font);
     final temporary = File('${target.path}.part');
+    final extracted = File('${target.path}.extract');
+    final licenseTarget = _fontLicenseFile(font);
+    final licenseTemporary = licenseTarget == null
+        ? null
+        : File('${licenseTarget.path}.part');
     final progress = _progress[font]!..value = (received: 0, total: -1);
     int lastPercent = -1;
 
     try {
       await _fontDirectory.create(recursive: true);
       _deleteFile(temporary);
+      _deleteFile(extracted);
+      if (licenseTemporary != null) _deleteFile(licenseTemporary);
       Object? lastError;
       StackTrace? lastStackTrace;
       for (final url in font.downloadUrls!) {
@@ -174,19 +194,43 @@ abstract final class AppFontManager {
             );
           }
 
-          if (await temporary.length() != font.downloadSize) {
-            throw const AppFontDownloadException('字体文件大小校验失败，请重试');
-          }
-          final digest = await sha256.bind(temporary.openRead()).first;
-          if (digest.toString() != font.sha256) {
-            throw const AppFontDownloadException('SHA-256 校验失败，请重试');
+          final downloadArchive = font.downloadArchive;
+          await _verifyFile(
+            temporary,
+            downloadArchive?.downloadSize ?? font.downloadSize!,
+            downloadArchive?.sha256 ?? font.sha256!,
+          );
+
+          File fontPayload = temporary;
+          if (downloadArchive != null) {
+            _deleteFile(extracted);
+            if (licenseTemporary != null) _deleteFile(licenseTemporary);
+            await compute(AppFontArchiveExtractor.extract, {
+              'archivePath': temporary.path,
+              'entryName': downloadArchive.entryName,
+              'outputPath': extracted.path,
+              'licenseEntryName': downloadArchive.licenseEntryName,
+              'licenseOutputPath': licenseTemporary?.path,
+            });
+            await _verifyFile(extracted, font.downloadSize!, font.sha256!);
+            fontPayload = extracted;
           }
 
+          if (licenseTarget != null && licenseTemporary != null) {
+            if (!licenseTemporary.existsSync()) {
+              throw const AppFontDownloadException('字体许可文件提取失败，请重试');
+            }
+            _deleteFile(licenseTarget);
+            await licenseTemporary.rename(licenseTarget.path);
+          }
           _deleteFile(target);
-          await temporary.rename(target.path);
+          await fontPayload.rename(target.path);
+          _deleteFile(temporary);
           return;
         } catch (error, stackTrace) {
           _deleteFile(temporary);
+          _deleteFile(extracted);
+          if (licenseTemporary != null) _deleteFile(licenseTemporary);
           lastError = error is AppFontDownloadException
               ? error
               : _downloadException(error);
@@ -199,12 +243,28 @@ abstract final class AppFontManager {
       );
     } catch (error, stackTrace) {
       _deleteFile(temporary);
+      _deleteFile(extracted);
+      if (licenseTemporary != null) _deleteFile(licenseTemporary);
       final exception = error is AppFontDownloadException
           ? error
           : _downloadException(error);
       Error.throwWithStackTrace(exception, stackTrace);
     } finally {
       progress.value = null;
+    }
+  }
+
+  static Future<void> _verifyFile(
+    File file,
+    int expectedSize,
+    String expectedSha256,
+  ) async {
+    if (await file.length() != expectedSize) {
+      throw const AppFontDownloadException('字体文件大小校验失败，请重试');
+    }
+    final digest = await sha256.bind(file.openRead()).first;
+    if (digest.toString() != expectedSha256) {
+      throw const AppFontDownloadException('SHA-256 校验失败，请重试');
     }
   }
 

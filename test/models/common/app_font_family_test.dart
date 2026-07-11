@@ -6,6 +6,10 @@ void main() {
     test('uses stable runtime font metadata', () {
       expect(AppFontFamily.system.fontFamily, isNull);
       expect(
+        AppFontFamily.lxgwWenKaiGbScreen.fontFamily,
+        'LXGW WenKai GB Screen',
+      );
+      expect(
         AppFontFamily.lxgwZhenKaiGb.fontFamily,
         'LXGW ZhenKai GB',
       );
@@ -13,6 +17,7 @@ void main() {
         AppFontFamily.sourceHanSerifCn.fontFamily,
         'Source Han Serif CN',
       );
+      expect(AppFontFamily.lxgwWenKaiGbScreen.label, '霞鹜文楷');
       expect(AppFontFamily.lxgwZhenKaiGb.label, '霞鹜臻楷');
       expect(AppFontFamily.sourceHanSerifCn.label, '思源宋体');
       expect(AppFontFamily.system.downloadUrls, isNull);

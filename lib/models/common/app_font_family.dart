@@ -1,5 +1,15 @@
 enum AppFontFamily {
   system(label: '系统默认'),
+  lxgwWenKaiGbScreen(
+    label: '霞鹜文楷',
+    fontFamily: 'LXGW WenKai GB Screen',
+    fileName: 'LXGWWenKaiGBScreen-1.522.ttf',
+    downloadUrls: [
+      'https://github.com/lxgw/LxgwWenKai-Screen/releases/download/v1.522/LXGWWenKaiGBScreen.ttf',
+    ],
+    downloadSize: 26037854,
+    sha256: '23ec023913e1851925eb94462c4b0ccd1d78bb89533745aaa8cc682ccd339dc0',
+  ),
   lxgwZhenKaiGb(
     label: '霞鹜臻楷',
     fontFamily: 'LXGW ZhenKai GB',

@@ -270,10 +270,7 @@ abstract final class Pref {
     if (codecs is List) {
       return codecs.map((i) => VideoDecodeFormatType.values.byName(i)).toList();
     }
-    return const [
-      VideoDecodeFormatType.AVC,
-      VideoDecodeFormatType.AV1,
-    ];
+    return const <VideoDecodeFormatType>[.AVC, .AV1];
   }
 
   static String get hardwareDecoding => _setting.get(

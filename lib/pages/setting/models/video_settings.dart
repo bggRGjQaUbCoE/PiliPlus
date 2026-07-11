@@ -127,10 +127,8 @@ List<SettingsModel> get videoSettings => [
   NormalModel(
     title: '首选解码格式',
     leading: const Icon(Icons.movie_creation_outlined),
-    getSubtitle: () {
-      final list = Pref.preferCodecs;
-      return '首选解码格式：${(list.isEmpty ? '第一个可用' : list.map((i) => i.name).join(","))}，请根据设备支持情况与需求调整';
-    },
+    getSubtitle: () =>
+        '首选解码格式：${(Pref.preferCodecs.map((i) => i.name).join(","))}，请根据设备支持情况与需求调整',
     onTap: _showCodecsDialog,
   ),
   if (kDebugMode || Platform.isAndroid)
@@ -356,7 +354,7 @@ Future<void> _showCodecsDialog(
       values: {for (final e in VideoDecodeFormatType.values) e: e.name},
     ),
   );
-  if (res != null) {
+  if (res != null && res.isNotEmpty) {
     await GStorage.setting.put(
       SettingBoxKey.preferCodecs,
       res.map((i) => i.name).toList(),

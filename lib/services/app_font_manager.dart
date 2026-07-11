@@ -148,35 +148,55 @@ abstract final class AppFontManager {
     try {
       await _fontDirectory.create(recursive: true);
       _deleteFile(temporary);
-      final response = await _dio.download(
-        font.downloadUrl!,
-        temporary.path,
-        deleteOnError: true,
-        onReceiveProgress: (received, total) {
-          final percent = total > 0 ? received * 100 ~/ total : -1;
-          if (percent != lastPercent) {
-            lastPercent = percent;
-            progress.value = (received: received, total: total);
+      Object? lastError;
+      StackTrace? lastStackTrace;
+      for (final url in font.downloadUrls!) {
+        try {
+          _deleteFile(temporary);
+          progress.value = (received: 0, total: -1);
+          lastPercent = -1;
+          final response = await _dio.download(
+            url,
+            temporary.path,
+            deleteOnError: true,
+            onReceiveProgress: (received, total) {
+              final percent = total > 0 ? received * 100 ~/ total : -1;
+              if (percent != lastPercent) {
+                lastPercent = percent;
+                progress.value = (received: received, total: total);
+              }
+            },
+          );
+          final statusCode = response.statusCode;
+          if (statusCode == null || statusCode < 200 || statusCode >= 300) {
+            throw AppFontDownloadException(
+              '字体下载失败（HTTP ${statusCode ?? '-'}）',
+            );
           }
-        },
+
+          if (await temporary.length() != font.downloadSize) {
+            throw const AppFontDownloadException('字体文件大小校验失败，请重试');
+          }
+          final digest = await sha256.bind(temporary.openRead()).first;
+          if (digest.toString() != font.sha256) {
+            throw const AppFontDownloadException('SHA-256 校验失败，请重试');
+          }
+
+          _deleteFile(target);
+          await temporary.rename(target.path);
+          return;
+        } catch (error, stackTrace) {
+          _deleteFile(temporary);
+          lastError = error is AppFontDownloadException
+              ? error
+              : _downloadException(error);
+          lastStackTrace = stackTrace;
+        }
+      }
+      Error.throwWithStackTrace(
+        lastError ?? const AppFontDownloadException('字体下载失败，请稍后重试'),
+        lastStackTrace ?? StackTrace.current,
       );
-      final statusCode = response.statusCode;
-      if (statusCode == null || statusCode < 200 || statusCode >= 300) {
-        throw AppFontDownloadException(
-          'GitHub 下载失败（HTTP ${statusCode ?? '-'}）',
-        );
-      }
-
-      if (await temporary.length() != font.downloadSize) {
-        throw const AppFontDownloadException('字体文件大小校验失败，请重试');
-      }
-      final digest = await sha256.bind(temporary.openRead()).first;
-      if (digest.toString() != font.sha256) {
-        throw const AppFontDownloadException('SHA-256 校验失败，请重试');
-      }
-
-      _deleteFile(target);
-      await temporary.rename(target.path);
     } catch (error, stackTrace) {
       _deleteFile(temporary);
       final exception = error is AppFontDownloadException
@@ -193,15 +213,15 @@ abstract final class AppFontManager {
       final statusCode = error.response?.statusCode;
       if (statusCode != null) {
         return AppFontDownloadException(
-          'GitHub 下载失败（HTTP $statusCode）',
+          '字体下载失败（HTTP $statusCode）',
         );
       }
       if (error.type == DioExceptionType.connectionTimeout ||
           error.type == DioExceptionType.receiveTimeout ||
           error.type == DioExceptionType.sendTimeout) {
-        return const AppFontDownloadException('GitHub 连接超时，请检查网络后重试');
+        return const AppFontDownloadException('字体下载连接超时，请检查网络后重试');
       }
-      return const AppFontDownloadException('无法从 GitHub 下载字体，请检查网络');
+      return const AppFontDownloadException('无法下载字体，请检查网络');
     }
     if (error is FileSystemException) {
       return const AppFontDownloadException('字体文件保存失败，请检查存储空间');

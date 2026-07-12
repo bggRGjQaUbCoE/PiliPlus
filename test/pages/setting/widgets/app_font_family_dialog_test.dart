@@ -27,18 +27,24 @@ void main() {
       ),
     );
 
-    expect(find.text('系统默认'), findsOneWidget);
-    expect(find.text('霞鹜文楷'), findsOneWidget);
-    expect(find.text('思源宋体'), findsOneWidget);
+    for (final font in AppFontFamily.values) {
+      expect(find.text(font.label), findsOneWidget);
+    }
     expect(find.text('24.8 MB'), findsOneWidget);
     expect(find.text('11.1 MB'), findsOneWidget);
-    expect(find.byTooltip('下载字体'), findsNWidgets(2));
+    expect(
+      find.byTooltip('下载字体'),
+      findsNWidgets(AppFontFamily.values.length - 1),
+    );
 
     final radios = tester
         .widgetList<Radio<AppFontFamily>>(
           find.byType(Radio<AppFontFamily>),
         )
         .toList(growable: false);
-    expect(radios.map((radio) => radio.enabled), [true, false, false]);
+    expect(
+      radios.map((radio) => radio.enabled),
+      [true, ...List.filled(AppFontFamily.values.length - 1, false)],
+    );
   });
 }

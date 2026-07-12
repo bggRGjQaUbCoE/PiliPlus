@@ -90,7 +90,9 @@ class PlPlayerController with BlockConfigMixin {
   final RxInt position = RxInt(0);
 
   int get positionInMilliseconds =>
-      videoPlayerController?.state.position.inMilliseconds ?? 0;
+      _androidHdrBackend?.state.position.inMilliseconds ??
+      videoPlayerController?.state.position.inMilliseconds ??
+      0;
 
   final RxInt buffered = RxInt(0);
 
@@ -1341,47 +1343,29 @@ class PlPlayerController with BlockConfigMixin {
     if (!isAndroidHdrBackend) return;
     Future.microtask(() async {
       final seekTo = Duration(seconds: position.value);
-      // Transient mid-stream errors (flaky PCDN range handling) are
-      // survivable: rebuild the HDR session once at the current position;
-      // only fall back to SDR when errors repeat within 30s.
-      final now = DateTime.now();
-      final canRetry =
-          _hdrLastRetry == null ||
-          now.difference(_hdrLastRetry!) > const Duration(seconds: 30);
-      if (canRetry && !_isAndroidHdrAudioError(event)) {
-        _hdrLastRetry = now;
-        final wasPlaying = playerStatus.isPlaying;
-        await _disposeAndroidHdrBackend();
-        await _createAndroidHdrBackend(
-          dataSource,
-          seekTo,
-          Duration(seconds: duration.value),
-        );
-        await _initializePlayer();
-        if (!wasPlaying) {
-          await pause(notify: false);
-        }
-        return;
-      }
       if (!_androidHdrAudioDisabled && _isAndroidHdrAudioError(event)) {
         _androidHdrAudioDisabled = true;
-        final wasPlaying = playerStatus.isPlaying;
-        await _disposeAndroidHdrBackend();
-        await _createAndroidHdrBackend(
-          dataSource,
-          seekTo,
-          Duration(seconds: duration.value),
-        );
-        await _initializePlayer();
-        if (!wasPlaying) {
-          await pause(notify: false);
-        }
-        return;
       }
+      // Never downgrade to the compat (media_kit) backend mid-stream:
+      // always rebuild the HDR session at the current position. A minimal
+      // spacing between rebuilds prevents a hot error loop.
+      final now = DateTime.now();
+      if (_hdrLastRetry != null &&
+          now.difference(_hdrLastRetry!) < const Duration(seconds: 2)) {
+        await Future.delayed(const Duration(seconds: 2));
+      }
+      _hdrLastRetry = DateTime.now();
+      final wasPlaying = playerStatus.isPlaying;
       await _disposeAndroidHdrBackend();
-      SmartDialog.showToast('已使用兼容播放');
-      await _createVideoController(dataSource, seekTo, null);
+      await _createAndroidHdrBackend(
+        dataSource,
+        seekTo,
+        Duration(seconds: duration.value),
+      );
       await _initializePlayer();
+      if (!wasPlaying) {
+        await pause(notify: false);
+      }
     });
   }
 
@@ -1671,14 +1655,16 @@ class PlPlayerController with BlockConfigMixin {
   }
 
   bool get isCompleted =>
-      videoPlayerController!.state.completed ||
+      (_androidHdrBackend?.state.completed ??
+          videoPlayerController?.state.completed ??
+          false) ||
       durationInMilliseconds - positionInMilliseconds <= 50;
 
   // 双击播放、暂停
   Future<void> onDoubleTapCenter() async {
     if (!isLive && isCompleted) {
-      await videoPlayerController!.seek(Duration.zero);
-      videoPlayerController!.play();
+      await seekTo(Duration.zero, isSeek: false);
+      await play();
     } else {
       if (playerStatus.isPlaying) {
         await pause();
@@ -1699,12 +1685,17 @@ class PlPlayerController with BlockConfigMixin {
     mountSeekForwardButton.value = true;
   }
 
+  Duration get _currentPlaybackPosition =>
+      _androidHdrBackend?.state.position ??
+      videoPlayerController?.state.position ??
+      Duration(milliseconds: positionInMilliseconds);
+
   void onForward(Duration duration) {
-    onForwardBackward(videoPlayerController!.state.position + duration);
+    onForwardBackward(_currentPlaybackPosition + duration);
   }
 
   void onBackward(Duration duration) {
-    onForwardBackward(videoPlayerController!.state.position - duration);
+    onForwardBackward(_currentPlaybackPosition - duration);
   }
 
   void onForwardBackward(Duration duration) {

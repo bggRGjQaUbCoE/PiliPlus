@@ -17,7 +17,7 @@ class DynTopicController
   String topicName = Get.parameters['name'] ?? '';
 
   int sortBy = 0;
-  String offset = '';
+  String? offset;
   final topicSortByConf = Rxn<TopicSortByConf>();
 
   double? appbarOffset;
@@ -49,13 +49,16 @@ class DynTopicController
 
   @override
   List<TopicCardItem>? getDataList(TopicCardList? response) {
-    offset = response?.offset ?? '';
-    topicSortByConf.value = response?.topicSortByConf;
-    sortBy = response?.topicSortByConf?.showSortBy ?? 0;
-    if (response?.hasMore == false) {
-      isEnd = true;
+    if (response != null) {
+      offset = response.offset;
+      topicSortByConf.value = response.topicSortByConf;
+      sortBy = response.topicSortByConf?.showSortBy ?? 0;
+      if (response.hasMore == false) {
+        isEnd = true;
+      }
+      return response.items;
     }
-    return response?.items;
+    return null;
   }
 
   @override
@@ -128,6 +131,18 @@ class DynTopicController
       this.isLike.value = !isLike;
     } else {
       res.toast();
+    }
+  }
+
+  Future<void> topicFold() async {
+    final res = await DynamicsHttp.topicFold(topicId: topicId, sortBy: sortBy);
+    if (res case Success(:final response)) {
+      if (response?.items case final items? when items.isNotEmpty) {
+        loadingState.value.data!
+          ..removeLast()
+          ..addAll(items);
+        loadingState.refresh();
+      }
     }
   }
 }

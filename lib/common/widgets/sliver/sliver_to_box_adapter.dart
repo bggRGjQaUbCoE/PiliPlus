@@ -78,7 +78,7 @@ class RenderSliverToBoxWithVisibilityAdapter extends RenderSliverToBoxAdapter {
     if (_visible != visible) {
       _visible = visible;
       WidgetsBinding.instance.addPostFrameCallback(
-        (_) => onVisibilityChanged(visible),
+        (_) => onVisibilityChanged(!visible),
       );
     }
   }

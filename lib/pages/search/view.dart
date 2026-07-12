@@ -153,7 +153,7 @@ class _SearchPageState extends State<SearchPage> {
                                     text: e.text,
                                     style: e.isEm
                                         ? TextStyle(
-                                            fontWeight: FontWeight.bold,
+                                            fontWeight: .bold,
                                             color: Theme.of(
                                               context,
                                             ).colorScheme.primary,
@@ -181,7 +181,7 @@ class _SearchPageState extends State<SearchPage> {
       strutStyle: const StrutStyle(leading: 0, height: 1),
       style: theme.textTheme.titleMedium!.copyWith(
         height: 1,
-        fontWeight: FontWeight.bold,
+        fontWeight: .bold,
       ),
     );
     final outline = theme.colorScheme.outline;
@@ -192,7 +192,7 @@ class _SearchPageState extends State<SearchPage> {
       color: outline,
     );
     return SliverPadding(
-      padding: EdgeInsets.fromLTRB(
+      padding: .fromLTRB(
         10,
         !isTrending && (isPortrait || _searchController.enableTrending)
             ? 4
@@ -203,10 +203,10 @@ class _SearchPageState extends State<SearchPage> {
       sliver: SliverMainAxisGroup(
         slivers: [
           SliverPadding(
-            padding: const EdgeInsets.fromLTRB(6, 0, 6, 6),
+            padding: const .fromLTRB(6, 0, 6, 6),
             sliver: SliverToBoxAdapter(
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisAlignment: .spaceBetween,
                 children: [
                   isTrending
                       ? Row(
@@ -263,10 +263,7 @@ class _SearchPageState extends State<SearchPage> {
                     label: Text(
                       '刷新',
                       strutStyle: const StrutStyle(leading: 0, height: 1),
-                      style: TextStyle(
-                        height: 1,
-                        color: secondary,
-                      ),
+                      style: TextStyle(height: 1, color: secondary),
                     ),
                   ),
                 ],
@@ -296,7 +293,7 @@ class _SearchPageState extends State<SearchPage> {
         }
         final secondary = theme.colorScheme.secondary;
         return SliverPadding(
-          padding: EdgeInsets.fromLTRB(
+          padding: .fromLTRB(
             10,
             !isPortrait
                 ? 25
@@ -309,7 +306,7 @@ class _SearchPageState extends State<SearchPage> {
           sliver: SliverMainAxisGroup(
             slivers: [
               SliverPadding(
-                padding: const EdgeInsets.fromLTRB(6, 0, 6, 6),
+                padding: const .fromLTRB(6, 0, 6, 6),
                 sliver: SliverToBoxAdapter(
                   child: Row(
                     children: [
@@ -318,7 +315,7 @@ class _SearchPageState extends State<SearchPage> {
                         strutStyle: const StrutStyle(leading: 0, height: 1),
                         style: theme.textTheme.titleMedium!.copyWith(
                           height: 1,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: .bold,
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -341,10 +338,7 @@ class _SearchPageState extends State<SearchPage> {
                         ),
                         label: Text(
                           '清空',
-                          style: TextStyle(
-                            height: 1,
-                            color: secondary,
-                          ),
+                          style: TextStyle(height: 1, color: secondary),
                         ),
                       ),
                     ],
@@ -365,10 +359,7 @@ class _SearchPageState extends State<SearchPage> {
                     onLongPress: _searchController.onLongSelect,
                     fontSize: 14,
                     height: 1,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 11,
-                      vertical: 8,
-                    ),
+                    padding: const .fromLTRB(11, 8, 11, 0),
                   ),
                 ),
               ),

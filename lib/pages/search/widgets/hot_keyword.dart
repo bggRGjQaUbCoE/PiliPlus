@@ -38,20 +38,20 @@ class SliverHotKeyword extends StatelessWidget {
         children: hotSearchList
             .map(
               (i) => Material(
-                type: MaterialType.transparency,
-                borderRadius: const BorderRadius.all(Radius.circular(3)),
+                type: .transparency,
+                borderRadius: const .all(.circular(3)),
                 child: InkWell(
-                  borderRadius: const BorderRadius.all(Radius.circular(3)),
+                  borderRadius: const .all(.circular(3)),
                   onTap: () => onClick?.call(i.keyword),
                   child: Padding(
-                    padding: const EdgeInsets.only(left: 2, right: 10),
+                    padding: const .only(left: 2, right: 10),
                     child: Tooltip(
                       message: i.keyword,
                       child: Row(
                         children: [
                           Flexible(
                             child: Padding(
-                              padding: const EdgeInsets.fromLTRB(6, 5, 0, 5),
+                              padding: const .fromLTRB(6, 5, 0, 5),
                               child: Text(
                                 i.keyword!,
                                 overflow: TextOverflow.ellipsis,
@@ -62,7 +62,7 @@ class SliverHotKeyword extends StatelessWidget {
                           ),
                           if (!i.icon.isNullOrEmpty)
                             Padding(
-                              padding: const EdgeInsets.only(left: 4),
+                              padding: const .only(left: 4),
                               child: CachedNetworkImage(
                                 height: 15,
                                 memCacheHeight: cacheHeight,
@@ -72,7 +72,7 @@ class SliverHotKeyword extends StatelessWidget {
                             )
                           else if (i.showLiveIcon == true)
                             Padding(
-                              padding: const EdgeInsets.only(left: 4),
+                              padding: const .only(left: 4),
                               child: Image.asset(
                                 Assets.livingRect,
                                 width: 48,

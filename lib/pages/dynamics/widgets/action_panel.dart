@@ -87,13 +87,23 @@ class ActionPanel extends StatelessWidget {
         Expanded(
           child: Builder(
             builder: (context) {
+              final IconData icon;
+              final Color color;
+              final String label;
+              if (like.status ?? false) {
+                icon = FontAwesomeIcons.solidThumbsUp;
+                color = primary;
+                label = '已赞';
+              } else {
+                icon = FontAwesomeIcons.thumbsUp;
+                color = outline;
+                label = '点赞';
+              }
               final likeIcon = Icon(
-                like.status!
-                    ? FontAwesomeIcons.solidThumbsUp
-                    : FontAwesomeIcons.thumbsUp,
+                icon,
                 size: 16,
-                color: like.status! ? primary : outline,
-                semanticLabel: like.status! ? "已赞" : "点赞",
+                color: color,
+                semanticLabel: label,
               );
               return TextButton.icon(
                 onPressed: () => RequestUtils.onLikeDynamic(

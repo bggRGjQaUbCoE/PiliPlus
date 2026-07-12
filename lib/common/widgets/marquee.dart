@@ -6,6 +6,7 @@ import 'package:flutter/scheduler.dart';
 class MarqueeText extends StatelessWidget {
   final String text;
   final TextStyle? style;
+  final StrutStyle? strutStyle;
   final double spacing;
   final double velocity;
   final ContextSingleTicker? provider;
@@ -14,6 +15,7 @@ class MarqueeText extends StatelessWidget {
     this.text, {
     super.key,
     this.style,
+    this.strutStyle,
     this.spacing = 0,
     this.velocity = 25,
     this.provider,
@@ -28,6 +30,7 @@ class MarqueeText extends StatelessWidget {
       child: Text(
         text,
         style: style,
+        strutStyle: strutStyle,
         maxLines: 1,
         textDirection: TextDirection.ltr,
       ),

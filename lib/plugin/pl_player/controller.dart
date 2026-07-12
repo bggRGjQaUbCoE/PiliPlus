@@ -1343,29 +1343,47 @@ class PlPlayerController with BlockConfigMixin {
     if (!isAndroidHdrBackend) return;
     Future.microtask(() async {
       final seekTo = Duration(seconds: position.value);
+      // Transient mid-stream errors (flaky PCDN range handling) are
+      // survivable: rebuild the HDR session once at the current position;
+      // only fall back to the compat backend when errors repeat within 30s.
+      final now = DateTime.now();
+      final canRetry =
+          _hdrLastRetry == null ||
+          now.difference(_hdrLastRetry!) > const Duration(seconds: 30);
+      if (canRetry && !_isAndroidHdrAudioError(event)) {
+        _hdrLastRetry = now;
+        final wasPlaying = playerStatus.isPlaying;
+        await _disposeAndroidHdrBackend();
+        await _createAndroidHdrBackend(
+          dataSource,
+          seekTo,
+          Duration(seconds: duration.value),
+        );
+        await _initializePlayer();
+        if (!wasPlaying) {
+          await pause(notify: false);
+        }
+        return;
+      }
       if (!_androidHdrAudioDisabled && _isAndroidHdrAudioError(event)) {
         _androidHdrAudioDisabled = true;
+        final wasPlaying = playerStatus.isPlaying;
+        await _disposeAndroidHdrBackend();
+        await _createAndroidHdrBackend(
+          dataSource,
+          seekTo,
+          Duration(seconds: duration.value),
+        );
+        await _initializePlayer();
+        if (!wasPlaying) {
+          await pause(notify: false);
+        }
+        return;
       }
-      // Never downgrade to the compat (media_kit) backend mid-stream:
-      // always rebuild the HDR session at the current position. A minimal
-      // spacing between rebuilds prevents a hot error loop.
-      final now = DateTime.now();
-      if (_hdrLastRetry != null &&
-          now.difference(_hdrLastRetry!) < const Duration(seconds: 2)) {
-        await Future.delayed(const Duration(seconds: 2));
-      }
-      _hdrLastRetry = DateTime.now();
-      final wasPlaying = playerStatus.isPlaying;
       await _disposeAndroidHdrBackend();
-      await _createAndroidHdrBackend(
-        dataSource,
-        seekTo,
-        Duration(seconds: duration.value),
-      );
+      SmartDialog.showToast('已使用兼容播放');
+      await _createVideoController(dataSource, seekTo, null);
       await _initializePlayer();
-      if (!wasPlaying) {
-        await pause(notify: false);
-      }
     });
   }
 

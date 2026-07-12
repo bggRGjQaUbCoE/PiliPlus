@@ -743,7 +743,7 @@ class PlPlayerController with BlockConfigMixin {
 
     final player = await Player.create(
       configuration: PlayerConfiguration(
-        logLevel: kDebugMode ? .warn : .error,
+        logLevel: (kDebugMode || Pref.enableLog) ? .warn : .error,
         options: opt,
       ),
     );
@@ -982,14 +982,15 @@ class PlPlayerController with BlockConfigMixin {
           isLive,
         );
       }),
-      if (kDebugMode)
-        stream.log.listen(((PlayerLog log) {
-          if (log.level == 'error' || log.level == 'fatal') {
-            Utils.reportError('${log.level}: ${log.prefix}: ${log.text}', null);
-          } else {
-            debugPrint(log.toString());
-          }
-        })),
+      stream.log.listen(((PlayerLog log) {
+        if (log.level == 'error' || log.level == 'fatal') {
+          Utils.reportError('${log.level}: ${log.prefix}: ${log.text}', null);
+        } else if (kDebugMode) {
+          debugPrint(log.toString());
+        } else if (log.level == 'warn' && Pref.enableLog) {
+          Utils.reportError('${log.level}: ${log.prefix}: ${log.text}', null);
+        }
+      })),
       stream.error.listen((String event) {
         if (dataSource is FileSource &&
             event.startsWith("Failed to open file")) {

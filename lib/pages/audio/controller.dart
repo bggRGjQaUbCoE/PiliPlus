@@ -426,38 +426,44 @@ class AudioController extends GetxController
         }
       }),
       stream.completed.listen((completed) {
-        _videoDetailController?.playedTime = player!.state.duration;
+        final player = this.player!;
+        if (!completed ||
+            !player.state.completed ||
+            player.state.duration == Duration.zero ||
+            player.state.duration - player.state.position >
+                const Duration(seconds: 1)) {
+          return;
+        }
+        _videoDetailController?.playedTime = player.state.duration;
         videoPlayerServiceHandler?.onStatusChange(
           PlayerStatus.completed,
           false,
           false,
         );
-        if (completed) {
-          makeHeartBeat(-1, type: .completed);
-          if (shutdownTimerService.isWaiting) {
-            shutdownTimerService.handleWaiting();
-          } else {
-            switch (playMode.value) {
-              case PlayRepeat.pause:
-                break;
-              case PlayRepeat.listOrder:
-                playNext(nextPart: true);
-                break;
-              case PlayRepeat.singleCycle:
-                onPlay();
-                break;
-              case PlayRepeat.listCycle:
-                if (!playNext(nextPart: true)) {
-                  if (index != null && index != 0 && playlist != null) {
-                    playIndex(0);
-                  } else {
-                    onPlay();
-                  }
+        makeHeartBeat(-1, type: .completed);
+        if (shutdownTimerService.isWaiting) {
+          shutdownTimerService.handleWaiting();
+        } else {
+          switch (playMode.value) {
+            case PlayRepeat.pause:
+              break;
+            case PlayRepeat.listOrder:
+              playNext(nextPart: true);
+              break;
+            case PlayRepeat.singleCycle:
+              onPlay();
+              break;
+            case PlayRepeat.listCycle:
+              if (!playNext(nextPart: true)) {
+                if (index != null && index != 0 && playlist != null) {
+                  playIndex(0);
+                } else {
+                  onPlay();
                 }
-                break;
-              case PlayRepeat.autoPlayRelated:
-                break;
-            }
+              }
+              break;
+            case PlayRepeat.autoPlayRelated:
+              break;
           }
         }
       }),

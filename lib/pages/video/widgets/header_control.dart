@@ -1219,7 +1219,7 @@ class HeaderControlState extends State<HeaderControl>
                           ? videoDetailCtr.vttSubtitles[i]?.id
                           : null;
                       if (subtitle == null) {
-                        final res = await VideoHttp.vttSubtitles(
+                        final res = await VideoHttp.getSubtitles(
                           item.subtitleUrl!,
                           format: format,
                         );

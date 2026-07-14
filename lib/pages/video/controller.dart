@@ -1047,19 +1047,19 @@ class VideoDetailController extends GetxController
       vttSubtitlesIndex.value = index;
     }
 
-    ({bool isData, String id})? subtitle = vttSubtitles[index - 1];
-    if (subtitle != null) {
-      await setSub(subtitle);
-    } else {
-      final result = await VideoHttp.vttSubtitles(
+    var subtitle = vttSubtitles[index - 1];
+    if (subtitle == null) {
+      final result = await VideoHttp.getSubtitles(
         subtitles[index - 1].subtitleUrl!,
       );
       if (!isClosed && result != null) {
-        final subtitle = (isData: true, id: result);
+        subtitle = (isData: true, id: result);
         vttSubtitles[index - 1] = subtitle;
-        await setSub(subtitle);
+      } else {
+        return;
       }
     }
+    await setSub(subtitle);
   }
 
   // interactive video

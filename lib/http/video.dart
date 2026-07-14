@@ -834,7 +834,7 @@ abstract final class VideoHttp {
     }
   }
 
-  static Future<String?> vttSubtitles(
+  static Future<String?> getSubtitles(
     String subtitleUrl, {
     SubtitleFormat format = .vtt,
   }) async {

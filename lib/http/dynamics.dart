@@ -456,7 +456,7 @@ abstract final class DynamicsHttp {
 
   static Future<LoadingState<TopicCardList?>> topicFeed({
     required Object topicId,
-    required String offset,
+    String? offset,
     required int sortBy,
   }) async {
     final res = await Request().get(
@@ -464,7 +464,7 @@ abstract final class DynamicsHttp {
       queryParameters: {
         'topic_id': topicId,
         'sort_by': sortBy,
-        'offset': offset,
+        'offset': ?offset,
         'page_size': 20,
         'source': 'Web',
         'features': Constants.dynFeatures,

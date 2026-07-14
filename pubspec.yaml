@@ -17,11 +17,11 @@ publish_to: "none" # Remove this line if you wish to publish to pub.dev
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
 # update when release
-version: 2.0.9+1
+version: 2.1.0+1
 
 environment:
   sdk: ">=3.12.0"
-  flutter: 3.44.5
+  flutter: 3.44.6
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -79,7 +79,6 @@ dependencies:
   dynamic_color: ^1.8.1
   easy_debounce: ^2.0.3
   encrypt: ^5.0.3
-  expandable: ^5.0.1
   extended_nested_scroll_view:
     git:
       url: https://github.com/bggRGjQaUbCoE/extended_nested_scroll_view.git
@@ -236,6 +235,7 @@ dev_dependencies:
     git:
       url: https://github.com/dart-lang/native.git
       path: pkgs/jnigen
+      ref: 55520836d363aac7f1ebae47387d03a30302be7b
 
 flutter_launcher_icons:
   android: true

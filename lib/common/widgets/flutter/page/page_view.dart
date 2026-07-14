@@ -430,49 +430,51 @@ class _PageViewState<T extends HorizontalDragGestureRecognizer>
                     widget.scrollBehavior?.getScrollPhysics(context),
         );
 
-    return NotificationListener<ScrollNotification>(
-      onNotification: (ScrollNotification notification) {
-        if (notification.depth == 0 &&
-            widget.onPageChanged != null &&
-            notification is ScrollUpdateNotification) {
-          final metrics = notification.metrics as PageMetrics;
-          final int currentPage = metrics.page!.round();
-          if (currentPage != _lastReportedPage) {
-            _lastReportedPage = currentPage;
-            widget.onPageChanged!(currentPage);
-          }
-        }
-        return false;
+    final child = Scrollable<T>(
+      dragStartBehavior: widget.dragStartBehavior,
+      axisDirection: axisDirection,
+      controller: _controller,
+      physics: physics,
+      restorationId: widget.restorationId,
+      hitTestBehavior: widget.hitTestBehavior,
+      scrollBehavior:
+          widget.scrollBehavior ??
+          ScrollConfiguration.of(context).copyWith(scrollbars: false),
+      viewportBuilder: (BuildContext context, ViewportOffset position) {
+        return Viewport(
+          scrollCacheExtent: widget.scrollCacheExtent,
+          axisDirection: axisDirection,
+          offset: position,
+          clipBehavior: widget.clipBehavior,
+          slivers: <Widget>[
+            SliverFillViewport(
+              viewportFraction: _controller.viewportFraction,
+              delegate: widget.childrenDelegate,
+              padEnds: widget.padEnds,
+              allowImplicitScrolling: widget.allowImplicitScrolling,
+            ),
+          ],
+        );
       },
-      child: Scrollable<T>(
-        dragStartBehavior: widget.dragStartBehavior,
-        axisDirection: axisDirection,
-        controller: _controller,
-        physics: physics,
-        restorationId: widget.restorationId,
-        hitTestBehavior: widget.hitTestBehavior,
-        scrollBehavior:
-            widget.scrollBehavior ??
-            ScrollConfiguration.of(context).copyWith(scrollbars: false),
-        viewportBuilder: (BuildContext context, ViewportOffset position) {
-          return Viewport(
-            scrollCacheExtent: widget.scrollCacheExtent,
-            axisDirection: axisDirection,
-            offset: position,
-            clipBehavior: widget.clipBehavior,
-            slivers: <Widget>[
-              SliverFillViewport(
-                viewportFraction: _controller.viewportFraction,
-                delegate: widget.childrenDelegate,
-                padEnds: widget.padEnds,
-                allowImplicitScrolling: widget.allowImplicitScrolling,
-              ),
-            ],
-          );
-        },
-        horizontalDragGestureRecognizer: widget.horizontalDragGestureRecognizer,
-      ),
+      horizontalDragGestureRecognizer: widget.horizontalDragGestureRecognizer,
     );
+    if (widget.onPageChanged != null) {
+      return NotificationListener<ScrollEndNotification>(
+        onNotification: (notification) {
+          if (notification.depth == 0) {
+            final metrics = notification.metrics as PageMetrics;
+            final int currentPage = metrics.page!.round();
+            if (currentPage != _lastReportedPage) {
+              _lastReportedPage = currentPage;
+              widget.onPageChanged!(currentPage);
+            }
+          }
+          return false;
+        },
+        child: child,
+      );
+    }
+    return child;
   }
 
   @override

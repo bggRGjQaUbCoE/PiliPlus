@@ -764,14 +764,13 @@ class _LiveRoomPageState extends State<LiveRoomPage>
         ..onSendDanmaku(),
     );
     return Padding(
-      padding: EdgeInsets.only(bottom: 12, top: isPortrait ? 12 : 0),
+      padding: .only(bottom: 12, top: isPortrait ? 12 : 0),
       child: _liveRoomController.showSuperChat
           ? PageView<CustomHorizontalDragGestureRecognizer>(
               key: pageKey,
               controller: _liveRoomController.pageController,
               physics: clampingScrollPhysics,
-              onPageChanged: (value) =>
-                  _liveRoomController.pageIndex.value = value,
+              onPageChanged: _liveRoomController.pageIndex.call,
               horizontalDragGestureRecognizer:
                   CustomHorizontalDragGestureRecognizer.new,
               children: [

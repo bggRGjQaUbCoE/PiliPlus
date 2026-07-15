@@ -9,9 +9,9 @@ class MainFlutterWindow: NSWindow {
     self.contentViewController = flutterViewController
     self.setFrame(self.frame, display: true)
 
-    // 背景别用默认黑色
-    self.isOpaque = false
-    self.backgroundColor = .clear
+    // 使用系统窗口背景色，避免启动防闪时把标题栏/窗口背景透成透明
+    self.isOpaque = true
+    self.backgroundColor = .windowBackgroundColor
 
     RegisterGeneratedPlugins(registry: flutterViewController)
 

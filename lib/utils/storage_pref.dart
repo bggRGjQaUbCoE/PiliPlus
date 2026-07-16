@@ -301,6 +301,14 @@ abstract final class Pref {
   static String get banWordForReply =>
       _setting.get(SettingBoxKey.banWordForReply, defaultValue: '');
 
+  static bool get filterMentionDominatedReply => _setting.get(
+    SettingBoxKey.filterMentionDominatedReply,
+    defaultValue: false,
+  );
+
+  static int get mentionFilterThreshold =>
+      _setting.get(SettingBoxKey.mentionFilterThreshold, defaultValue: 90);
+
   static String get banWordForZone =>
       _setting.get(SettingBoxKey.banWordForZone, defaultValue: '');
 

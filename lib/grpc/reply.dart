@@ -8,7 +8,11 @@ import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:fixnum/fixnum.dart';
 
 abstract final class ReplyGrpc {
+  static final RegExp _whitespaceRegExp = RegExp(r'\s+');
+
   static bool antiGoodsReply = Pref.antiGoodsReply;
+  static bool filterMentionDominatedReply = Pref.filterMentionDominatedReply;
+  static int mentionFilterThreshold = Pref.mentionFilterThreshold;
   static RegExp replyRegExp = RegExp(
     Pref.banWordForReply,
     caseSensitive: false,
@@ -36,8 +40,59 @@ abstract final class ReplyGrpc {
         reply.content.message.contains(Constants.goodsUrlPrefix);
   }
 
-  static bool needRemoveGrpc(ReplyInfo reply) {
+  static bool needRemoveMentionGrpc(ReplyInfo reply) {
+    final content = reply.content;
+    if (content.pictures.isNotEmpty) {
+      return false;
+    }
+
+    String message = content.message;
+    for (final emote in content.emotes.keys) {
+      message = message.replaceAll(emote, '\uFFFC');
+    }
+    message = message.replaceAll(_whitespaceRegExp, '');
+    if (message.isEmpty || content.atNameToMid.isEmpty) {
+      return false;
+    }
+
+    final mentionTokens =
+        content.atNameToMid.keys
+            .map((name) => '@${name.replaceAll(_whitespaceRegExp, '')}')
+            .toList()
+          ..sort((a, b) => b.length.compareTo(a.length));
+
+    for (final mention in mentionTokens) {
+      final prefix = '回复$mention';
+      if (message.startsWith(prefix)) {
+        final remaining = message.substring(prefix.length);
+        if (remaining.startsWith(':') || remaining.startsWith('：')) {
+          message = remaining.substring(1);
+          break;
+        }
+      }
+    }
+    if (message.isEmpty) {
+      return false;
+    }
+
+    String remaining = message;
+    int mentionLength = 0;
+    for (final mention in mentionTokens) {
+      final prevLength = remaining.length;
+      remaining = remaining.replaceAll(mention, '');
+      mentionLength += prevLength - remaining.length;
+    }
+    return mentionLength * 100 >= message.length * mentionFilterThreshold;
+  }
+
+  static bool needRemoveGrpc(
+    ReplyInfo reply, {
+    bool applyMentionFilter = true,
+  }) {
     return (enableFilter && replyRegExp.hasMatch(reply.content.message)) ||
+        (applyMentionFilter &&
+            filterMentionDominatedReply &&
+            needRemoveMentionGrpc(reply)) ||
         (antiGoodsReply && needRemoveGoodGrpc(reply));
   }
 
@@ -124,7 +179,10 @@ abstract final class ReplyGrpc {
       ),
       DialogListReply.fromBuffer,
     );
-    return res..dataOrNull?.replies.removeWhere(needRemoveGrpc);
+    return res
+      ..dataOrNull?.replies.removeWhere(
+        (reply) => needRemoveGrpc(reply, applyMentionFilter: false),
+      );
   }
 
   static Future<LoadingState<SearchItemReply>> searchItem({

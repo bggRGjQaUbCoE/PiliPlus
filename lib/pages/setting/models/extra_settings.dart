@@ -222,6 +222,18 @@ List<SettingsModel> get extraSettings => [
       ReplyGrpc.enableFilter = value.pattern.isNotEmpty;
     },
   ),
+  SplitModel(
+    normalModel: const NormalModel.split(
+      title: '过滤以 @ 用户为主的评论',
+      subtitle: '点击设置过滤阈值（默认 90%）',
+      leading: Icon(Icons.alternate_email),
+    ),
+    switchModel: SwitchModel.split(
+      setKey: SettingBoxKey.filterMentionDominatedReply,
+      onChanged: (value) => ReplyGrpc.filterMentionDominatedReply = value,
+      onTap: _showMentionFilterThresholdDialog,
+    ),
+  ),
   getBanWordModel(
     title: '动态关键词过滤',
     key: SettingBoxKey.banWordForDyn,
@@ -616,6 +628,26 @@ List<SettingsModel> get extraSettings => [
     },
   ),
 ];
+
+Future<void> _showMentionFilterThresholdDialog(BuildContext context) async {
+  final res = await showDialog<double>(
+    context: context,
+    builder: (context) => SliderDialog(
+      title: Text('@ 用户内容占比阈值（${Pref.mentionFilterThreshold}%）'),
+      min: 50,
+      max: 100,
+      divisions: 50,
+      precise: 0,
+      suffix: '%',
+      value: Pref.mentionFilterThreshold.toDouble(),
+    ),
+  );
+  if (res != null) {
+    final threshold = res.toInt();
+    ReplyGrpc.mentionFilterThreshold = threshold;
+    await GStorage.setting.put(SettingBoxKey.mentionFilterThreshold, threshold);
+  }
+}
 
 Future<void> audioNormalization(
   BuildContext context,

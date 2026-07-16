@@ -133,7 +133,7 @@ class _LiveHeaderControlState extends State<LiveHeaderControl>
           child,
           ...?timeBatteryWidgets,
           const SizedBox(width: 10),
-          if (PlatformUtils.isDesktop && !plPlayerController.isDesktopPip)
+          if (PlatformUtils.isDesktop)
             Obx(() {
               final isAlwaysOnTop = plPlayerController.isAlwaysOnTop.value;
               return ComBtn(

@@ -770,6 +770,10 @@ abstract final class Pref {
   static bool get autoPiP =>
       _setting.get(SettingBoxKey.autoPiP, defaultValue: false);
 
+  /// 桌面端画中画窗口是否默认置顶
+  static bool get pipAlwaysOnTop =>
+      _setting.get(SettingBoxKey.pipAlwaysOnTop, defaultValue: true);
+
   static bool get enableSponsorBlock =>
       _setting.get(SettingBoxKey.enableSponsorBlock, defaultValue: false);
 

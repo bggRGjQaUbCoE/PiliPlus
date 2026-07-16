@@ -248,7 +248,7 @@ class PlPlayerController with BlockConfigMixin {
     }
 
     await windowManager.setMinimumSize(size);
-    setAlwaysOnTop(true);
+    setAlwaysOnTop(Pref.pipAlwaysOnTop);
     windowManager
       ..setSize(size)
       ..setAspectRatio(width / height);

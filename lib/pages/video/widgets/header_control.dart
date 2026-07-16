@@ -1806,7 +1806,7 @@ class HeaderControlState extends State<HeaderControl>
               title,
               // show current datetime
               ...?timeBatteryWidgets,
-              if (PlatformUtils.isDesktop && !plPlayerController.isDesktopPip)
+              if (PlatformUtils.isDesktop)
                 Obx(() {
                   final isAlwaysOnTop = plPlayerController.isAlwaysOnTop.value;
                   return SizedBox(

@@ -232,6 +232,14 @@ List<SettingsModel> get playSettings => [
       defaultVal: false,
     ),
   ],
+  if (PlatformUtils.isDesktop)
+    const SwitchModel(
+      title: '桌面画中画窗口置顶',
+      subtitle: '进入桌面画中画时窗口默认置顶显示',
+      leading: Icon(Icons.push_pin_outlined),
+      setKey: SettingBoxKey.pipAlwaysOnTop,
+      defaultVal: true,
+    ),
   const SwitchModel(
     title: '全屏手势反向',
     subtitle: '默认播放器中部向上滑动进入全屏，向下退出\n开启后向下全屏，向上退出',

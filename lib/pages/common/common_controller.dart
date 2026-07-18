@@ -36,9 +36,69 @@ abstract class CommonController<R, T> extends GetxController
   bool isLoading = false;
   Rx<LoadingState> get loadingState;
 
+  Future<void>? _activeQuery;
+  int _latestQueryGeneration = 0;
+  bool _hasPendingRefresh = false;
+
   Future<LoadingState<R>> customGetData();
 
-  Future<void> queryData([bool isRefresh = true]);
+  Future<void> queryData([bool isRefresh = true]) {
+    if (isClosed) {
+      return Future<void>.value();
+    }
+    if (_activeQuery != null) {
+      if (!isRefresh) {
+        return Future<void>.value();
+      }
+      _latestQueryGeneration += 1;
+      _hasPendingRefresh = true;
+      return _activeQuery!;
+    }
+
+    final completer = Completer<void>();
+    _activeQuery = completer.future;
+    isLoading = true;
+    _latestQueryGeneration += 1;
+    unawaited(
+      _drainQueries(isRefresh).then(
+        completer.complete,
+        onError: completer.completeError,
+      ),
+    );
+    return completer.future;
+  }
+
+  Future<void> _drainQueries(bool isRefresh) async {
+    try {
+      while (true) {
+        final generation = _latestQueryGeneration;
+        _hasPendingRefresh = false;
+        try {
+          await handleQuery(
+            isRefresh,
+            () => !isClosed && generation == _latestQueryGeneration,
+          );
+        } catch (_) {
+          if (!isClosed && generation == _latestQueryGeneration) {
+            rethrow;
+          }
+        }
+
+        if (isClosed || !_hasPendingRefresh) {
+          return;
+        }
+        isRefresh = true;
+      }
+    } finally {
+      isLoading = false;
+      _activeQuery = null;
+    }
+  }
+
+  Future<void> handleQuery(
+    bool isRefresh,
+    bool Function() isCurrent,
+  );
 
   bool customHandleResponse(bool isRefresh, Success<R> response) {
     return false;

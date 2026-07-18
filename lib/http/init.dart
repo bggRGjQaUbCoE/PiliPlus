@@ -33,6 +33,26 @@ void configureHttpClientCertificateValidation(
 }
 
 @visibleForTesting
+LogInterceptor createHttpLogInterceptor({
+  void Function(Object)? logPrint,
+}) {
+  final interceptor = LogInterceptor(
+    request: false,
+    requestUrl: false,
+    requestHeader: false,
+    requestBody: false,
+    responseUrl: false,
+    responseHeader: false,
+    responseBody: false,
+    error: false,
+  );
+  if (logPrint != null) {
+    interceptor.logPrint = logPrint;
+  }
+  return interceptor;
+}
+
+@visibleForTesting
 void configureHttp11Client(
   HttpClient client, {
   required Uri? proxy,
@@ -278,13 +298,7 @@ class Request {
 
     // 日志拦截器 输出请求、响应内容
     if (kDebugMode) {
-      dio.interceptors.add(
-        LogInterceptor(
-          request: false,
-          requestHeader: false,
-          responseHeader: false,
-        ),
-      );
+      dio.interceptors.add(createHttpLogInterceptor());
     }
 
     dio

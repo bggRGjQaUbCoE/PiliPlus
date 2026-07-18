@@ -18,6 +18,7 @@ import 'package:PiliPlus/pages/rank/view.dart';
 import 'package:PiliPlus/pages/subscription_detail/view.dart';
 import 'package:PiliPlus/pages/video/reply_reply/view.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
+import 'package:PiliPlus/utils/domain_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/request_utils.dart';
 import 'package:PiliPlus/utils/url_utils.dart';
@@ -462,19 +463,20 @@ abstract final class PiliScheme {
       }
     }
 
-    if (!host.contains(bilibili) && !host.contains(b23_tv)) {
+    if (!isSameOrSubdomain(host, bilibili) &&
+        !isSameOrSubdomain(host, b23_tv)) {
       launchURL();
       return false;
     }
 
     // redirect
-    if (host.contains(b23_tv)) {
+    if (isSameOrSubdomain(host, b23_tv)) {
       String? redirectUrl = await UrlUtils.parseRedirectUrl(uri.toString());
       if (redirectUrl != null) {
         uri = Uri.parse(redirectUrl);
         host = uri.host;
       }
-      if (!host.contains(bilibili)) {
+      if (!isSameOrSubdomain(host, bilibili)) {
         launchURL();
         return false;
       }
@@ -483,7 +485,7 @@ abstract final class PiliScheme {
     final String path = uri.path;
     late final queryParameters = uri.queryParameters;
 
-    if (host.contains(bilibili_t)) {
+    if (isSameOrSubdomain(host, bilibili_t)) {
       if (_onPushDynDetail(uri, off)) {
         return true;
       } else if (path.startsWith('/vote')) {
@@ -500,7 +502,7 @@ abstract final class PiliScheme {
       }
       launchURL();
       return false;
-    } else if (host.contains(bilibili_live)) {
+    } else if (isSameOrSubdomain(host, bilibili_live)) {
       String? roomId = uriDigitRegExp.firstMatch(path)?.group(1);
       if (roomId != null) {
         PageUtils.toLiveRoom(int.parse(roomId), off: off);
@@ -508,7 +510,7 @@ abstract final class PiliScheme {
       }
       launchURL();
       return false;
-    } else if (host.contains(bilibili_space)) {
+    } else if (isSameOrSubdomain(host, bilibili_space)) {
       void toType({
         required String mid,
         required String? type,
@@ -558,7 +560,7 @@ abstract final class PiliScheme {
       }
       launchURL();
       return false;
-    } else if (host.contains(bilibili_search)) {
+    } else if (isSameOrSubdomain(host, bilibili_search)) {
       String? keyword = uri.queryParameters['keyword'];
       if (keyword != null) {
         PageUtils.toDupNamed(
@@ -570,7 +572,7 @@ abstract final class PiliScheme {
       }
       launchURL();
       return false;
-    } else if (host.contains(bilibili_music)) {
+    } else if (isSameOrSubdomain(host, bilibili_music)) {
       // music.bilibili.com/pc/music-detail?music_id=MA***
       // music.bilibili.com/h5-music-detail?music_id=MA***
       if (path.contains('music-detail')) {

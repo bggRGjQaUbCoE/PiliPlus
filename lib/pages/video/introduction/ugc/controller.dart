@@ -182,7 +182,11 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
 
   // 一键三连
   @override
-  Future<void> actionTriple() async {
+  Future<void> actionTriple(Object resourceKey) async {
+    if (resourceKey != actionResourceKey) return;
+    final targetBvid = bvid;
+    final targetAccount = Accounts.main;
+    final hadCoin = hasCoin;
     feedBack();
     if (!isLogin) {
       SmartDialog.showToast('账号未登录');
@@ -193,8 +197,12 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
       SmartDialog.showToast('已三连');
       return;
     }
-    final result = await VideoHttp.ugcTriple(bvid: bvid);
+    final result = await VideoHttp.ugcTriple(bvid: targetBvid);
     if (result case Success(:final response)) {
+      if (response.coin == true && !hadCoin && Accounts.main == targetAccount) {
+        GlobalData().afterCoin(2);
+      }
+      if (resourceKey != actionResourceKey) return;
       late final stat = videoDetail.value.stat;
       if (response.like == true && !hasLike.value) {
         stat?.like++;
@@ -203,14 +211,13 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
       if (response.coin == true && !hasCoin) {
         stat?.coin += 2;
         coinNum.value = 2;
-        GlobalData().afterCoin(2);
       }
       if (response.fav == true && !hasFav.value) {
         stat?.favorite++;
         hasFav.value = true;
       }
       hasDislike.value = false;
-      if (!hasCoin) {
+      if (!hadCoin && response.coin != true) {
         SmartDialog.showToast('投币失败');
       } else {
         SmartDialog.showToast('三连成功');
@@ -222,7 +229,9 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
 
   // （取消）点赞
   @override
-  Future<void> actionLikeVideo() async {
+  Future<void> actionLikeVideo(Object resourceKey) async {
+    if (resourceKey != actionResourceKey) return;
+    final targetBvid = bvid;
     if (!isLogin) {
       SmartDialog.showToast('账号未登录');
       return;
@@ -231,10 +240,13 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
       return;
     }
     final newVal = !hasLike.value;
-    final result = await VideoHttp.likeVideo(bvid: bvid, type: newVal);
+    final result = await VideoHttp.likeVideo(bvid: targetBvid, type: newVal);
     if (result case Success(:final response)) {
+      if (resourceKey != actionResourceKey) return;
       SmartDialog.showToast(newVal ? response : '取消赞');
-      videoDetail.value.stat?.like += newVal ? 1 : -1;
+      if (hasLike.value != newVal) {
+        videoDetail.value.stat?.like += newVal ? 1 : -1;
+      }
       hasLike.value = newVal;
       if (newVal) {
         hasDislike.value = false;

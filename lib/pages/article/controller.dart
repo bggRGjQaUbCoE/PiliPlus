@@ -11,14 +11,27 @@ import 'package:PiliPlus/models_new/article/article_view/data.dart';
 import 'package:PiliPlus/pages/common/dyn/common_dyn_controller.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
+import 'package:PiliPlus/utils/async_operation_guard.dart';
 import 'package:PiliPlus/utils/extension/get_ext.dart';
-import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/url_utils.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 
 class ArticleController extends CommonDynController {
+  final _favoriteGuard = AsyncOperationGuard();
+  final _likeGuard = AsyncOperationGuard();
+
+  Object get _actionResourceKey => (type, id, commentId);
+
+  void _applyStatMutation(DynamicStat stat, bool enabled) {
+    if (stat.status == enabled) return;
+    final nextCount = (stat.count ?? 0) + (enabled ? 1 : -1);
+    stat
+      ..status = enabled
+      ..count = nextCount > 0 ? nextCount : null;
+  }
+
   late String id;
   late String type;
 
@@ -180,48 +193,58 @@ class ArticleController extends CommonDynController {
     }
   }
 
-  Future<void> onFav() async {
-    final favorite = stats.value?.favorite;
-    bool isFav = favorite?.status == true;
-    final res = type == 'read'
+  Future<void> onFav() => _favoriteGuard.run(() async {
+    final resourceKey = _actionResourceKey;
+    final targetType = type;
+    final targetId = id;
+    final targetCommentId = commentId;
+    final isFav = stats.value?.favorite?.status == true;
+    final res = targetType == 'read'
         ? isFav
-              ? await FavHttp.delFavArticle(id: commentId)
-              : await FavHttp.addFavArticle(id: commentId)
-        : await FavHttp.communityAction(opusId: id, action: isFav ? 4 : 3);
+              ? await FavHttp.delFavArticle(id: targetCommentId)
+              : await FavHttp.addFavArticle(id: targetCommentId)
+        : await FavHttp.communityAction(
+            opusId: targetId,
+            action: isFav ? 4 : 3,
+          );
     if (res.isSuccess) {
-      favorite?.status = !isFav;
-      if (isFav) {
-        favorite?.count--;
-      } else {
-        favorite?.count++;
+      if (resourceKey == _actionResourceKey) {
+        final currentStats = stats.value;
+        if (currentStats != null) {
+          _applyStatMutation(
+            currentStats.favorite ??= DynamicStat(),
+            !isFav,
+          );
+          stats.refresh();
+        }
       }
-      stats.refresh();
       SmartDialog.showToast('${isFav ? '取消' : ''}收藏成功');
     } else {
       res.toast();
     }
-  }
+  });
 
-  Future<void> onLike() async {
-    final like = stats.value?.like;
-    bool isLike = like?.status == true;
+  Future<void> onLike() => _likeGuard.run(() async {
+    final resourceKey = _actionResourceKey;
+    final dynamicId = opusData?.idStr ?? articleData?.dynIdStr;
+    final isLike = stats.value?.like?.status == true;
     final res = await DynamicsHttp.thumbDynamic(
-      dynamicId: opusData?.idStr ?? articleData?.dynIdStr,
+      dynamicId: dynamicId,
       up: isLike ? 2 : 1,
     );
     if (res.isSuccess) {
-      like?.status = !isLike;
-      if (isLike) {
-        like?.count--;
-      } else {
-        like?.count++;
+      if (resourceKey == _actionResourceKey) {
+        final currentStats = stats.value;
+        if (currentStats != null) {
+          _applyStatMutation(currentStats.like ??= DynamicStat(), !isLike);
+          stats.refresh();
+        }
       }
-      stats.refresh();
       SmartDialog.showToast(!isLike ? '点赞成功' : '取消赞');
     } else {
       res.toast();
     }
-  }
+  });
 
   @override
   Future<void> onReload() {

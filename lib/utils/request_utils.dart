@@ -27,6 +27,7 @@ import 'package:PiliPlus/pages/fav_detail/controller.dart'
 import 'package:PiliPlus/pages/group_panel/view.dart';
 import 'package:PiliPlus/pages/login/geetest/geetest_webview_dialog.dart';
 import 'package:PiliPlus/utils/accounts.dart';
+import 'package:PiliPlus/utils/async_operation_guard.dart';
 import 'package:PiliPlus/utils/extension/context_ext.dart';
 import 'package:PiliPlus/utils/extension/size_ext.dart';
 import 'package:PiliPlus/utils/extension/string_ext.dart';
@@ -45,13 +46,32 @@ import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 
 abstract final class RequestUtils {
+  static final _dynamicLikeGuard = AsyncKeyedOperationGuard<Object>();
+  static final Map<
+    Object,
+    List<({DynamicItemModel item, VoidCallback onSuccess})>
+  >
+  _dynamicLikeTargets = {};
+  static int _historyStatusGeneration = 0;
+
   static Future<void> syncHistoryStatus() async {
     final account = Accounts.history;
+    final generation = ++_historyStatusGeneration;
+    await GStorage.localCache.delete(LocalCacheKey.historyPause);
+    if (generation != _historyStatusGeneration ||
+        !identical(account, Accounts.history)) {
+      return;
+    }
     if (!account.isLogin) {
       return;
     }
     final res = await UserHttp.historyStatus(account: account);
-    if (res case Success(:final response)) {
+    if (res
+        case Success(
+          :final response,
+        )
+        when generation == _historyStatusGeneration &&
+            identical(account, Accounts.history)) {
       GStorage.localCache.put(LocalCacheKey.historyPause, response);
     }
   }
@@ -379,31 +399,56 @@ abstract final class RequestUtils {
     DynamicItemModel item,
     bool uiStatus,
     VoidCallback onSuccess,
-  ) async {
-    feedBack();
+  ) {
+    final key = item.idStr ?? item;
+    (_dynamicLikeTargets[key] ??= []).add((
+      item: item,
+      onSuccess: onSuccess,
+    ));
+    return _dynamicLikeGuard.run(key, () async {
+      try {
+        feedBack();
 
-    final like = item.modules.moduleStat?.like;
-    final status = like?.status ?? false;
+        final like = item.modules.moduleStat?.like;
+        final status = like?.status ?? false;
+        void updateTargets(bool desiredStatus) {
+          final targets = _dynamicLikeTargets[key];
+          if (targets == null) return;
+          for (final target in targets) {
+            final targetLike = target.item.modules.moduleStat?.like;
+            if (targetLike != null && targetLike.status != desiredStatus) {
+              final nextCount =
+                  (targetLike.count ?? 0) + (desiredStatus ? 1 : -1);
+              targetLike
+                ..count = nextCount > 0 ? nextCount : null
+                ..status = desiredStatus;
+            }
+            try {
+              target.onSuccess();
+            } catch (_) {}
+          }
+        }
 
-    if (status ^ uiStatus) {
-      SmartDialog.showToast(status ? '点赞成功' : '取消赞');
-      onSuccess();
-      return;
-    }
+        if (status ^ uiStatus) {
+          SmartDialog.showToast(status ? '点赞成功' : '取消赞');
+          updateTargets(status);
+          return;
+        }
 
-    final res = await DynamicsHttp.thumbDynamic(
-      dynamicId: item.idStr!,
-      up: status ? 2 : 1, // 1 已点赞 2 不喜欢 0 未操作
-    );
-    if (res.isSuccess) {
-      SmartDialog.showToast(status ? '取消赞' : '点赞成功');
-      like
-        ?..count = (like.count ?? 0) + (status ? -1 : 1)
-        ..status = !status;
-      onSuccess();
-    } else {
-      res.toast();
-    }
+        final res = await DynamicsHttp.thumbDynamic(
+          dynamicId: item.idStr!,
+          up: status ? 2 : 1, // 1 已点赞 2 不喜欢 0 未操作
+        );
+        if (res.isSuccess) {
+          SmartDialog.showToast(status ? '取消赞' : '点赞成功');
+          updateTargets(!status);
+        } else {
+          res.toast();
+        }
+      } finally {
+        _dynamicLikeTargets.remove(key);
+      }
+    });
   }
 
   static void onCopyOrMove<T extends MultiSelectData>({

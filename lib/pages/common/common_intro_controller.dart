@@ -30,6 +30,9 @@ abstract class CommonIntroController extends GetxController
   late final String heroTag;
   late String bvid;
 
+  @override
+  Object get actionResourceKey => (bvid, Accounts.main);
+
   // 是否稍后再看
   final RxBool hasLater = false.obs;
 

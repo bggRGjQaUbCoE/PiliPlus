@@ -73,6 +73,14 @@ class AudioController extends GetxController
   late Int64 oid;
   late List<Int64> subId;
   late int itemType;
+
+  @override
+  Object get actionResourceKey => (
+    itemType,
+    oid.toInt(),
+    subId.map((item) => item.toString()).join(','),
+    Accounts.main,
+  );
   Int64? extraId;
   late final PlaylistSource from;
   @override
@@ -605,28 +613,36 @@ class AudioController extends GetxController
   }
 
   @override
-  Future<void> actionLikeVideo() async {
+  Future<void> actionLikeVideo(Object resourceKey) async {
+    if (resourceKey != actionResourceKey) return;
+    final targetOid = oid;
+    final targetSubId = List<Int64>.unmodifiable(subId);
+    final targetItemType = itemType;
     if (!isLogin) {
       SmartDialog.showToast('账号未登录');
       return;
     }
     final newVal = !hasLike.value;
     final res = await AudioGrpc.audioThumbUp(
-      oid: oid,
-      subId: subId,
-      itemType: itemType,
+      oid: targetOid,
+      subId: targetSubId,
+      itemType: targetItemType,
       type: newVal
           ? ThumbUpReq_ThumbType.LIKE
           : ThumbUpReq_ThumbType.CANCEL_LIKE,
     );
     if (res case Success(:final response)) {
+      if (resourceKey != actionResourceKey) return;
+      final changed = hasLike.value != newVal;
       hasLike.value = newVal;
-      try {
-        audioItem.value!.stat
-          ..hasLike_7 = newVal
-          ..like += newVal ? 1 : -1;
-        audioItem.refresh();
-      } catch (_) {}
+      if (changed) {
+        try {
+          audioItem.value!.stat
+            ..hasLike_7 = newVal
+            ..like += newVal ? 1 : -1;
+          audioItem.refresh();
+        } catch (_) {}
+      }
       SmartDialog.showToast(response.message);
     } else {
       res.toast();
@@ -634,21 +650,38 @@ class AudioController extends GetxController
   }
 
   @override
-  Future<void> actionTriple() async {
+  Future<void> actionTriple(Object resourceKey) async {
+    if (resourceKey != actionResourceKey) return;
+    final targetOid = oid;
+    final targetSubId = List<Int64>.unmodifiable(subId);
+    final targetItemType = itemType;
+    final targetAccount = Accounts.main;
+    final hadCoin = hasCoin;
     if (!isLogin) {
       SmartDialog.showToast('账号未登录');
       return;
     }
     final res = await AudioGrpc.audioTripleLike(
-      oid: oid,
-      subId: subId,
-      itemType: itemType,
+      oid: targetOid,
+      subId: targetSubId,
+      itemType: targetItemType,
     );
     if (res case Success(:final response)) {
-      hasLike.value = true;
+      if (response.coinOk && !hadCoin && Accounts.main == targetAccount) {
+        GlobalData().afterCoin(2);
+      }
+      if (resourceKey != actionResourceKey) return;
+      if (response.thumbOk && !hasLike.value) {
+        hasLike.value = true;
+        try {
+          audioItem.value!.stat
+            ..hasLike_7 = true
+            ..like += 1;
+          audioItem.refresh();
+        } catch (_) {}
+      }
       if (response.coinOk && !hasCoin) {
         coinNum.value = 2;
-        GlobalData().afterCoin(2);
         try {
           audioItem.value!.stat
             ..hasCoin_8 = true
@@ -656,8 +689,16 @@ class AudioController extends GetxController
           audioItem.refresh();
         } catch (_) {}
       }
-      hasFav.value = true;
-      if (!hasCoin) {
+      if (response.favOk && !hasFav.value) {
+        hasFav.value = true;
+        try {
+          audioItem.value!.stat
+            ..hasFav = true
+            ..favourite += 1;
+          audioItem.refresh();
+        } catch (_) {}
+      }
+      if (!hadCoin && !response.coinOk) {
         SmartDialog.showToast('投币失败');
       } else {
         SmartDialog.showToast('三连成功');

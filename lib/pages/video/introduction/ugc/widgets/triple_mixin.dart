@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:PiliPlus/pages/video/pay_coins/view.dart';
+import 'package:PiliPlus/utils/async_operation_guard.dart';
 import 'package:PiliPlus/utils/global_data.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:flutter/material.dart';
@@ -9,6 +10,8 @@ import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 
 mixin TripleMixin on GetxController, TickerProvider {
+  final _likeGuard = AsyncKeyedOperationGuard<Object>();
+
   // 是否点赞
   final RxBool hasLike = false.obs;
   // 投币数量
@@ -60,8 +63,9 @@ mixin TripleMixin on GetxController, TickerProvider {
     );
   }
 
-  void actionTriple();
-  void actionLikeVideo();
+  Object get actionResourceKey;
+  Future<void> actionTriple(Object resourceKey);
+  Future<void> actionLikeVideo(Object resourceKey);
 
   // no need for pugv
   AnimationController? _tripleAnimCtr;
@@ -78,10 +82,12 @@ mixin TripleMixin on GetxController, TickerProvider {
       .drive(CurveTween(curve: Curves.easeInOut));
 
   Timer? _timer;
+  Object? _timerResourceKey;
 
   void _cancelTimer() {
     _timer?.cancel();
     _timer = null;
+    _timerResourceKey = null;
   }
 
   bool get isTripling => _tripleAnimCtr?.status == .forward;
@@ -91,14 +97,21 @@ mixin TripleMixin on GetxController, TickerProvider {
       : const Duration(milliseconds: 255);
 
   void onStartTriple() {
-    _timer ??= Timer(_duration, () {
+    if (_timer != null) return;
+    final resourceKey = actionResourceKey;
+    _timerResourceKey = resourceKey;
+    _timer = Timer(_duration, () {
+      if (resourceKey != actionResourceKey) {
+        _cancelTimer();
+        return;
+      }
       HapticFeedback.lightImpact();
       if (hasTriple) {
         SmartDialog.showToast('已完成三连');
       } else {
         tripleAnimCtr.forward().whenComplete(() {
           tripleAnimCtr.reset();
-          actionTriple();
+          _likeGuard.run(resourceKey, () => actionTriple(resourceKey)).ignore();
         });
       }
       _cancelTimer();
@@ -109,9 +122,12 @@ mixin TripleMixin on GetxController, TickerProvider {
     if (tripleAnimCtr.status == .forward) {
       tripleAnimCtr.reverse();
     } else if (_timer != null && _timer!.tick == 0) {
+      final resourceKey = _timerResourceKey;
       _cancelTimer();
-      if (isTapUp) {
-        actionLikeVideo();
+      if (isTapUp && resourceKey != null && resourceKey == actionResourceKey) {
+        _likeGuard
+            .run(resourceKey, () => actionLikeVideo(resourceKey))
+            .ignore();
       }
     }
   }

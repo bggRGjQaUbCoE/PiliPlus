@@ -69,4 +69,55 @@ void main() {
     expect(requestCount, 3);
     expect(guard.isProcessing, isFalse);
   });
+
+  test(
+    'keyed guard serializes only operations for the same resource',
+    () async {
+      final firstResponse = Completer<void>();
+      final guard = AsyncKeyedOperationGuard<String>();
+      final events = <String>[];
+
+      final first = guard.run('dynamic-1', () async {
+        events.add('first:start');
+        await firstResponse.future;
+        events.add('first:end');
+      });
+      final duplicate = guard.run('dynamic-1', () {
+        events.add('duplicate');
+      });
+      final other = guard.run('dynamic-2', () {
+        events.add('other');
+      });
+
+      await Future.wait([duplicate, other]);
+      expect(events, ['first:start', 'other']);
+
+      firstResponse.complete();
+      await first;
+      await guard.run('dynamic-1', () {
+        events.add('after');
+      });
+
+      expect(events, ['first:start', 'other', 'first:end', 'after']);
+      expect(guard.trackedKeyCount, 0);
+    },
+  );
+
+  test('keyed guard releases failed operations before retry', () async {
+    final guard = AsyncKeyedOperationGuard<String>();
+
+    await expectLater(
+      guard.run('dynamic-1', () => throw StateError('request failed')),
+      throwsStateError,
+    );
+    expect(guard.trackedKeyCount, 0);
+
+    var retried = false;
+    await guard.run('dynamic-1', () {
+      retried = true;
+    });
+
+    expect(retried, isTrue);
+    expect(guard.trackedKeyCount, 0);
+  });
 }

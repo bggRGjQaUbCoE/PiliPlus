@@ -1,16 +1,15 @@
-import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
 import 'package:PiliPlus/http/dynamics.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/msg.dart';
 import 'package:PiliPlus/models/dynamics/vote_model.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/utils.dart';
-import 'package:flutter/widgets.dart' show Text;
 import 'package:get/get.dart';
 
 class CreateVoteController extends GetxController {
-  CreateVoteController(this.voteId);
+  CreateVoteController(this.voteId, {this.onQueryError});
   final int? voteId;
+  final Future<void> Function(String message)? onQueryError;
 
   String key = Utils.generateRandomString(6);
   final RxString title = ''.obs;
@@ -25,6 +24,7 @@ class CreateVoteController extends GetxController {
   late final end = now.copyWith(day: now.day + 90);
   late Rx<DateTime> endtime;
   final RxBool canCreate = false.obs;
+  final RxBool isSubmitting = false.obs;
 
   void updateCanCreate() {
     if (type.value == 0) {
@@ -70,11 +70,11 @@ class CreateVoteController extends GetxController {
       );
       canCreate.value = true;
     } else {
-      showConfirmDialog(
-        context: Get.context!,
-        title: Text(res.toString()),
-        onConfirm: Get.back,
-      );
+      if (onQueryError case final callback?) {
+        await callback(res.toString());
+      } else {
+        res.toast();
+      }
     }
   }
 
@@ -86,26 +86,34 @@ class CreateVoteController extends GetxController {
     }
   }
 
-  Future<void> onCreate() async {
-    final voteInfo = VoteInfo(
-      title: title.value,
-      desc: desc.value,
-      type: type.value,
-      duration: endtime.value.difference(now).inSeconds,
-      options: options,
-      onlyFansLevel: 0,
-      choiceCnt: choiceCnt.value,
-      votePublisher: Accounts.main.mid,
-      voteId: voteId,
-    );
-    final res = await (voteId == null
-        ? DynamicsHttp.createVote(voteInfo)
-        : DynamicsHttp.updateVote(voteInfo));
-    if (res case Success(:final response)) {
-      voteInfo.voteId = response;
-      Get.back(result: voteInfo);
-    } else {
+  Future<VoteInfo?> onCreate() async {
+    if (isSubmitting.value) {
+      return null;
+    }
+    isSubmitting.value = true;
+    try {
+      final voteInfo = VoteInfo(
+        title: title.value,
+        desc: desc.value,
+        type: type.value,
+        duration: endtime.value.difference(now).inSeconds,
+        options: options,
+        onlyFansLevel: 0,
+        choiceCnt: choiceCnt.value,
+        votePublisher: Accounts.main.mid,
+        voteId: voteId,
+      );
+      final res = await (voteId == null
+          ? DynamicsHttp.createVote(voteInfo)
+          : DynamicsHttp.updateVote(voteInfo));
+      if (res case Success(:final response)) {
+        voteInfo.voteId = response;
+        return voteInfo;
+      }
       res.toast();
+      return null;
+    } finally {
+      isSubmitting.value = false;
     }
   }
 

@@ -14,6 +14,7 @@ class CreateReserveController extends GetxController {
   late final Rx<DateTime> date;
   late final end = now.copyWith(day: now.day + 90);
   final RxBool canCreate = false.obs;
+  final RxBool isSubmitting = false.obs;
 
   @override
   void onInit() {
@@ -42,30 +43,36 @@ class CreateReserveController extends GetxController {
     }
   }
 
-  Future<void> onCreate() async {
-    final livePlanStartTime = date.value.millisecondsSinceEpoch ~/ 1000;
-    final res = sid == null
-        ? await DynamicsHttp.createReserve(
-            title: title.value,
-            subType: subType.value,
-            livePlanStartTime: livePlanStartTime,
-          )
-        : await DynamicsHttp.updateReserve(
-            sid: sid!,
-            subType: subType.value,
-            title: title.value,
-            livePlanStartTime: livePlanStartTime,
-          );
-    if (res case Success(:final response)) {
-      Get.back(
-        result: ReserveInfoData(
+  Future<ReserveInfoData?> onCreate() async {
+    if (isSubmitting.value) {
+      return null;
+    }
+    isSubmitting.value = true;
+    try {
+      final livePlanStartTime = date.value.millisecondsSinceEpoch ~/ 1000;
+      final res = sid == null
+          ? await DynamicsHttp.createReserve(
+              title: title.value,
+              subType: subType.value,
+              livePlanStartTime: livePlanStartTime,
+            )
+          : await DynamicsHttp.updateReserve(
+              sid: sid!,
+              subType: subType.value,
+              title: title.value,
+              livePlanStartTime: livePlanStartTime,
+            );
+      if (res case Success(:final response)) {
+        return ReserveInfoData(
           id: response,
           title: title.value,
           livePlanStartTime: livePlanStartTime,
-        ),
-      );
-    } else {
+        );
+      }
       res.toast();
+      return null;
+    } finally {
+      isSubmitting.value = false;
     }
   }
 }

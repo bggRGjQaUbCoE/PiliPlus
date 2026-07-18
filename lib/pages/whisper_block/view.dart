@@ -6,6 +6,7 @@ import 'package:PiliPlus/grpc/bilibili/app/im/v1.pb.dart'
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/pages/search/widgets/search_text.dart';
 import 'package:PiliPlus/pages/whisper_block/controller.dart';
+import 'package:PiliPlus/utils/route_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show LengthLimitingTextInputFormatter;
 import 'package:flutter_svg/svg.dart';
@@ -154,15 +155,15 @@ class _WhisperBlockPageState extends State<WhisperBlockPage> {
       enableDrag: false,
       useSafeArea: true,
       isScrollControlled: true,
-      builder: (context) {
-        final theme = Theme.of(context);
+      builder: (sheetContext) {
+        final theme = Theme.of(sheetContext);
         return Padding(
           padding:
               const EdgeInsets.symmetric(horizontal: 14, vertical: 12) +
               EdgeInsets.only(
                 bottom:
-                    MediaQuery.paddingOf(context).bottom +
-                    MediaQuery.viewInsetsOf(context).bottom,
+                    MediaQuery.paddingOf(sheetContext).bottom +
+                    MediaQuery.viewInsetsOf(sheetContext).bottom,
               ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -179,7 +180,7 @@ class _WhisperBlockPageState extends State<WhisperBlockPage> {
                     ),
                   ),
                   GestureDetector(
-                    onTap: Get.back,
+                    onTap: () => Navigator.of(sheetContext).pop(),
                     behavior: HitTestBehavior.opaque,
                     child: Icon(
                       Icons.clear,
@@ -212,15 +213,27 @@ class _WhisperBlockPageState extends State<WhisperBlockPage> {
                 inputFormatters: [LengthLimitingTextInputFormatter(20)],
               ),
               const SizedBox(height: 12),
-              FilledButton.tonal(
-                onPressed: () {
-                  if (keyword.isNotEmpty) {
-                    _controller.onAdd(keyword);
-                  }
-                },
-                child: const Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [Icon(Icons.add, size: 22), Text('添加消息屏蔽词')],
+              Obx(
+                () => FilledButton.tonal(
+                  onPressed: !_controller.isAdding.value
+                      ? () async {
+                          if (keyword.isEmpty) {
+                            return;
+                          }
+                          final route = ModalRoute.of<Object?>(sheetContext);
+                          final navigator = Navigator.of(sheetContext);
+                          if (await _controller.onAdd(keyword)) {
+                            completeRoute<Object?>(navigator, route);
+                          }
+                        }
+                      : null,
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.add, size: 22),
+                      Text('添加消息屏蔽词'),
+                    ],
+                  ),
                 ),
               ),
             ],

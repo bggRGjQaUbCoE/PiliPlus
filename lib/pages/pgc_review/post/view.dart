@@ -1,6 +1,7 @@
 import 'package:PiliPlus/common/widgets/custom_icon.dart';
 import 'package:PiliPlus/http/pgc.dart';
 import 'package:PiliPlus/utils/accounts.dart';
+import 'package:PiliPlus/utils/route_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -31,6 +32,7 @@ class _PgcReviewPostPanelState extends State<PgcReviewPostPanel> {
   late final RxInt _score = (widget.score ?? 0).obs;
   late final RxBool _shareFeed = false.obs;
   late final RxBool _enablePost = _isMod.obs;
+  final RxBool _isSubmitting = false.obs;
   late final _isMod = widget.reviewId != null;
 
   @override
@@ -69,7 +71,7 @@ class _PgcReviewPostPanelState extends State<PgcReviewPostPanel> {
             actions: [
               IconButton(
                 icon: const Icon(Icons.clear, size: 20),
-                onPressed: Get.back,
+                onPressed: () => Navigator.of(context).pop(),
               ),
               const SizedBox(width: 2),
             ],
@@ -211,7 +213,9 @@ class _PgcReviewPostPanelState extends State<PgcReviewPostPanel> {
                   borderRadius: BorderRadius.all(Radius.circular(6)),
                 ),
               ),
-              onPressed: _enablePost.value ? _onPost : null,
+              onPressed: _enablePost.value && !_isSubmitting.value
+                  ? _onPost
+                  : null,
               child: _isMod ? const Text('编辑') : const Text('发布'),
             ),
           ),
@@ -221,36 +225,52 @@ class _PgcReviewPostPanelState extends State<PgcReviewPostPanel> {
   }
 
   Future<void> _onPost() async {
-    if (_isMod) {
-      final res = await PgcHttp.pgcReviewMod(
-        mediaId: widget.mediaId,
-        score: _score.value * 2,
-        content: _controller.text,
-        reviewId: widget.reviewId,
-      );
-      if (res.isSuccess) {
-        Get.back();
-        SmartDialog.showToast('编辑成功');
+    if (_isSubmitting.value) {
+      return;
+    }
+    final route = ModalRoute.of<Object?>(context);
+    final navigator = Navigator.of(context);
+    _isSubmitting.value = true;
+    var success = false;
+    try {
+      if (_isMod) {
+        final res = await PgcHttp.pgcReviewMod(
+          mediaId: widget.mediaId,
+          score: _score.value * 2,
+          content: _controller.text,
+          reviewId: widget.reviewId,
+        );
+        if (res.isSuccess) {
+          success = true;
+          SmartDialog.showToast('编辑成功');
+        } else {
+          res.toast();
+        }
       } else {
-        res.toast();
+        if (!Accounts.main.isLogin) {
+          SmartDialog.showToast('账号未登录');
+          return;
+        }
+        final res = await PgcHttp.pgcReviewPost(
+          mediaId: widget.mediaId,
+          score: _score.value * 2,
+          content: _controller.text,
+          shareFeed: _shareFeed.value,
+        );
+        if (res.isSuccess) {
+          success = true;
+          SmartDialog.showToast('点评成功');
+        } else {
+          res.toast();
+        }
       }
-      return;
+    } finally {
+      if (mounted) {
+        _isSubmitting.value = false;
+      }
     }
-    if (!Accounts.main.isLogin) {
-      SmartDialog.showToast('账号未登录');
-      return;
-    }
-    final res = await PgcHttp.pgcReviewPost(
-      mediaId: widget.mediaId,
-      score: _score.value * 2,
-      content: _controller.text,
-      shareFeed: _isMod ? false : _shareFeed.value,
-    );
-    if (res.isSuccess) {
-      Get.back();
-      SmartDialog.showToast('点评成功');
-    } else {
-      res.toast();
+    if (success) {
+      completeRoute<Object?>(navigator, route);
     }
   }
 }

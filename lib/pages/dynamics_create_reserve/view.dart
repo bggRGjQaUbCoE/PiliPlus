@@ -1,6 +1,7 @@
 import 'package:PiliPlus/common/widgets/time_picker.dart';
 import 'package:PiliPlus/pages/dynamics_create_reserve/controller.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
+import 'package:PiliPlus/utils/route_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart' hide showTimePicker;
 import 'package:flutter/services.dart'
@@ -162,8 +163,9 @@ class _CreateReservePageState extends State<CreateReservePage> {
           const SizedBox(height: 25),
           Obx(() {
             return FilledButton.tonal(
-              onPressed: _controller.canCreate.value
-                  ? _controller.onCreate
+              onPressed:
+                  _controller.canCreate.value && !_controller.isSubmitting.value
+                  ? _onCreate
                   : null,
               child: const Text('添加预约'),
             );
@@ -171,6 +173,15 @@ class _CreateReservePageState extends State<CreateReservePage> {
         ],
       ),
     );
+  }
+
+  Future<void> _onCreate() async {
+    final route = ModalRoute.of<Object?>(context);
+    final navigator = Navigator.of(context);
+    final reserve = await _controller.onCreate();
+    if (reserve != null) {
+      completeRoute<Object?>(navigator, route, reserve);
+    }
   }
 
   Widget _buildInput(

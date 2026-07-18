@@ -32,9 +32,18 @@ String requestUrlForDiagnostics(RequestOptions options) {
 }
 
 class AccountManager extends Interceptor {
-  AccountManager();
+  AccountManager() : this._(Pref.blockServer, null);
 
-  String blockServer = Pref.blockServer;
+  @visibleForTesting
+  AccountManager.test({
+    required String blockServer,
+    required Account Function(String path) accountResolver,
+  }) : this._(blockServer, accountResolver);
+
+  AccountManager._(this.blockServer, this._accountResolver);
+
+  String blockServer;
+  final Account Function(String path)? _accountResolver;
 
   static String getCookies(List<Cookie> cookies) {
     // Sort cookies by path (longer path first).
@@ -57,6 +66,7 @@ class AccountManager extends Interceptor {
     final path = options.path;
 
     late final Account account = options.extra['account'] ?? _findAccount(path);
+    options.extra['account'] = account;
 
     if (account is NoAccount || _skipCookie(path)) return handler.next(options);
 
@@ -238,14 +248,16 @@ class AccountManager extends Interceptor {
         path.contains('biliimg.com');
   }
 
-  Account _findAccount(String path) => ApiType.loginApi.contains(path)
-      ? AnonymousAccount()
-      : Accounts.get(
-          AccountType.values.firstWhere(
-            (i) => ApiType.apiTypeSet[i]?.contains(path) == true,
-            orElse: () => AccountType.main,
-          ),
-        );
+  Account _findAccount(String path) =>
+      _accountResolver?.call(path) ??
+      (ApiType.loginApi.contains(path)
+          ? AnonymousAccount()
+          : Accounts.get(
+              AccountType.values.firstWhere(
+                (i) => ApiType.apiTypeSet[i]?.contains(path) == true,
+                orElse: () => AccountType.main,
+              ),
+            ));
 
   static Future<String> dioError(DioException error) async {
     switch (error.type) {

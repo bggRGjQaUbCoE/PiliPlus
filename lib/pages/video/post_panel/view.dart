@@ -470,16 +470,16 @@ class _PostPanelState extends State<PostPanel>
                   Duration(milliseconds: (item.segment.second * 1000).round()),
                 );
                 if (start <= 0) {
-                  seekTo();
+                  await seekTo();
                   if (!player.state.playing) {
-                    await player.play();
+                    await plPlayerController.play();
                   }
                   return;
                 }
                 final seek = max(0, start - 2000);
                 await player.seek(Duration(milliseconds: seek));
                 if (!player.state.playing) {
-                  await player.play();
+                  await plPlayerController.play();
                 }
                 if (start > seek) {
                   final posSub = player.stream.position.listen(

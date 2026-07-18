@@ -265,6 +265,9 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
       }
 
       if (exitFlag) {
+        audioSessionHandler
+            ?.setActive(false, owner: plPlayerController!)
+            .ignore();
         if (autoExitFullscreen) {
           plPlayerController!.triggerFullScreen(status: false);
           if (plPlayerController!.controlsLock.value) {

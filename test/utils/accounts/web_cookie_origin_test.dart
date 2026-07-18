@@ -21,4 +21,11 @@ void main() {
       expect(() => webCookieOrigin(null), throwsArgumentError);
     });
   });
+
+  test('Bilibili cookie matching is label-bound', () {
+    expect(isBilibiliCookieDomain('.bilibili.com'), isTrue);
+    expect(isBilibiliCookieDomain('api.bilibili.com'), isTrue);
+    expect(isBilibiliCookieDomain('evilbilibili.com'), isFalse);
+    expect(isBilibiliCookieDomain('bilibili.com.evil.test'), isFalse);
+  });
 }

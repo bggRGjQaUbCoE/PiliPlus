@@ -12,3 +12,11 @@ String webCookieOrigin(String? domain) {
   }
   return Uri(scheme: 'https', host: host, path: '/').toString();
 }
+
+bool isBilibiliCookieDomain(String? domain) {
+  var host = domain?.trim().toLowerCase();
+  while (host?.startsWith('.') == true) {
+    host = host!.substring(1);
+  }
+  return host == 'bilibili.com' || host?.endsWith('.bilibili.com') == true;
+}

@@ -12,6 +12,7 @@ import 'package:PiliPlus/services/account_service.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/accounts/account.dart';
 import 'package:PiliPlus/utils/extension/scroll_controller_ext.dart';
+import 'package:PiliPlus/utils/global_data.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
@@ -27,6 +28,7 @@ class MineController extends CommonDataController<FavFolderData, FavFolderData>
   AccountService accountService = Get.find<AccountService>();
 
   int? favFolderCount;
+  int _accountRequestGeneration = 0;
 
   // 用户信息 头像、昵称、lv
   final Rx<UserInfoData> userInfo = UserInfoData().obs;
@@ -79,9 +81,14 @@ class MineController extends CommonDataController<FavFolderData, FavFolderData>
   @override
   void onInit() {
     super.onInit();
-    UserInfoData? userInfoCache = Pref.userInfoCache;
-    if (userInfoCache != null) {
-      userInfo.value = userInfoCache;
+    final account = Accounts.main;
+    final UserInfoData? userInfoCache = Pref.userInfoCache;
+    if (account.isLogin && userInfoCache?.mid == account.mid) {
+      userInfo.value = userInfoCache!;
+    } else if (userInfoCache != null) {
+      GStorage.userInfo.delete('userInfoCache').ignore();
+    }
+    if (account.isLogin) {
       queryData();
       queryUserInfo();
     }
@@ -96,37 +103,61 @@ class MineController extends CommonDataController<FavFolderData, FavFolderData>
   }
 
   Future<void> queryUserInfo() async {
-    final res = await UserHttp.userInfo();
+    final account = Accounts.main;
+    final generation = ++_accountRequestGeneration;
+    bool isCurrent() =>
+        !isClosed &&
+        generation == _accountRequestGeneration &&
+        identical(account, Accounts.main);
+    late final LoadingState<UserInfoData> res;
+    try {
+      res = await UserHttp.userInfo(account: account);
+    } catch (_) {
+      return;
+    }
+    if (!isCurrent()) return;
     if (res case Success(:final response)) {
       if (response.isLogin == true) {
         userInfo.value = response;
+        GlobalData().coins = response.money;
         if (response != Pref.userInfoCache) {
           GStorage.userInfo.put('userInfoCache', response);
         }
-        accountService
-          ..face.value = response.face!
-          ..isLogin.value = true;
+        accountService.face.value = response.face ?? '';
       } else {
-        _onLogoutMain();
+        _onLogoutMain(account);
         return;
       }
     } else {
       final errMsg = res.toString();
       SmartDialog.showToast(errMsg);
       if (errMsg == '账号未登录') {
-        _onLogoutMain();
+        _onLogoutMain(account);
         return;
       }
     }
-    queryUserStatOwner();
+    await queryUserStatOwner(account, generation);
   }
 
-  void _onLogoutMain() => Accounts.deleteAll({Accounts.main});
+  void _onLogoutMain(Account account) {
+    if (identical(account, Accounts.main)) {
+      Accounts.deleteAll({account});
+    }
+  }
 
-  Future<void> queryUserStatOwner() async {
-    final res = await UserHttp.userStatOwner();
-    if (res case Success(:final response)) {
-      userStat.value = response;
+  Future<void> queryUserStatOwner(Account account, int generation) async {
+    late final LoadingState<UserStat> res;
+    try {
+      res = await UserHttp.userStatOwner(account: account);
+    } catch (_) {
+      return;
+    }
+    if (!isClosed &&
+        generation == _accountRequestGeneration &&
+        identical(account, Accounts.main)) {
+      if (res case Success(:final response)) {
+        userStat.value = response;
+      }
     }
   }
 
@@ -298,12 +329,13 @@ class MineController extends CommonDataController<FavFolderData, FavFolderData>
 
   @override
   void onChangeAccount(bool isLogin) {
+    _accountRequestGeneration += 1;
+    userInfo.value = UserInfoData();
+    userStat.value = const UserStat();
+    favFolderCount = null;
+    loadingState.value = LoadingState.loading();
     if (isLogin) {
       onRefresh();
-    } else {
-      userInfo.value = UserInfoData();
-      userStat.value = const UserStat();
-      loadingState.value = LoadingState.loading();
     }
   }
 }

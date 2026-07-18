@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:PiliPlus/http/browser_ua.dart';
 import 'package:PiliPlus/main.dart';
 import 'package:PiliPlus/models/common/webview_menu_type.dart';
+import 'package:PiliPlus/pages/webview/settings.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
 import 'package:PiliPlus/utils/cache_manager.dart';
 import 'package:PiliPlus/utils/login_utils.dart';
@@ -171,16 +172,7 @@ class _WebviewPageState extends State<WebviewPage> {
       body: SafeArea(
         child: InAppWebView(
           webViewEnvironment: webViewEnvironment,
-          initialSettings: InAppWebViewSettings(
-            clearCache: true,
-            javaScriptEnabled: true,
-            forceDark: ForceDark.AUTO,
-            useHybridComposition: false,
-            algorithmicDarkeningAllowed: true,
-            useShouldOverrideUrlLoading: true,
-            userAgent: userAgent,
-            mixedContentMode: MixedContentMode.MIXED_CONTENT_ALWAYS_ALLOW,
-          ),
+          initialSettings: buildAuthenticatedWebViewSettings(userAgent),
           initialUrlRequest: URLRequest(
             url: WebUri.uri(Uri.tryParse(_url) ?? Uri()),
           ),

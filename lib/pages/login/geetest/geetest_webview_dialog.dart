@@ -1,10 +1,10 @@
 import 'dart:convert' show base64, jsonDecode, jsonEncode, utf8;
 import 'dart:io' show Platform;
 
-import 'package:PiliPlus/http/browser_ua.dart';
 import 'package:PiliPlus/http/init.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/main.dart';
+import 'package:PiliPlus/pages/webview/settings.dart';
 import 'package:PiliPlus/utils/accounts/account.dart';
 import 'package:desktop_webview_window/desktop_webview_window.dart';
 import 'package:dio/dio.dart';
@@ -206,38 +206,7 @@ class _GeetestWebviewDialogState extends State<GeetestWebviewDialog> {
       children: [
         InAppWebView(
           webViewEnvironment: webViewEnvironment,
-          initialSettings: InAppWebViewSettings(
-            clearCache: true,
-            javaScriptEnabled: true,
-            forceDark: ForceDark.AUTO,
-            useHybridComposition: false,
-            algorithmicDarkeningAllowed: true,
-            useShouldOverrideUrlLoading: true,
-            userAgent: BrowserUa.mob,
-            mixedContentMode: .MIXED_CONTENT_ALWAYS_ALLOW,
-
-            incognito: true,
-            allowFileAccess: false,
-            allowsLinkPreview: false,
-            allowContentAccess: false,
-            useOnDownloadStart: false,
-            geolocationEnabled: false,
-            thirdPartyCookiesEnabled: false,
-            enterpriseAuthenticationAppLinkPolicyEnabled: false,
-            saveFormData: false,
-            safeBrowsingEnabled: false,
-            isFraudulentWebsiteWarningEnabled: false,
-            domStorageEnabled: false,
-            databaseEnabled: false,
-            cacheEnabled: false,
-            cacheMode: .LOAD_NO_CACHE,
-
-            horizontalScrollBarEnabled: false,
-            verticalScrollBarEnabled: false,
-            overScrollMode: .NEVER,
-
-            pageZoom: Platform.isIOS ? 3 : 1,
-          ),
+          initialSettings: buildGeetestWebViewSettings(),
           initialData: InAppWebViewInitialData(
             data:
                 '<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width"></head><body><script src="$_geetestJsUri"></script><script>R=flutter_inappwebview.callHandler</script></body></html>',

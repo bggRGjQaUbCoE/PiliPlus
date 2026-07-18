@@ -89,10 +89,43 @@ abstract final class GStorage {
 
   static Future<List<void>> importAllJsonSettings(
     Map<String, dynamic> map,
+  ) async {
+    final importedSetting = _settingsSection(map, setting.name);
+    final importedVideo = _settingsSection(map, video.name);
+    final previousSetting = setting.toMap();
+    final previousVideo = video.toMap();
+
+    try {
+      return await _replaceSettings(importedSetting, importedVideo);
+    } catch (error, stackTrace) {
+      try {
+        await _replaceSettings(previousSetting, previousVideo);
+      } catch (rollbackError, rollbackStackTrace) {
+        Error.throwWithStackTrace(rollbackError, rollbackStackTrace);
+      }
+      Error.throwWithStackTrace(error, stackTrace);
+    }
+  }
+
+  static Map<dynamic, dynamic> _settingsSection(
+    Map<String, dynamic> map,
+    String name,
   ) {
+    final section = map[name];
+    if (section is! Map) {
+      throw FormatException('Missing or invalid settings section: $name');
+    }
+    return Map<dynamic, dynamic>.from(section);
+  }
+
+  static Future<List<void>> _replaceSettings(
+    Map<dynamic, dynamic> settingValues,
+    Map<dynamic, dynamic> videoValues,
+  ) async {
+    await Future.wait([setting.clear(), video.clear()]);
     return Future.wait([
-      setting.clear().then((_) => setting.putAll(map[setting.name])),
-      video.clear().then((_) => video.putAll(map[video.name])),
+      setting.putAll(settingValues),
+      video.putAll(videoValues),
     ]);
   }
 

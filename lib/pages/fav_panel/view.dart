@@ -2,8 +2,11 @@ import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models_new/fav/fav_folder/list.dart';
 import 'package:PiliPlus/pages/common/common_intro_controller.dart';
+import 'package:PiliPlus/pages/video/introduction/ugc/widgets/triple_mixin.dart'
+    show ActionResourceSnapshot;
 import 'package:PiliPlus/utils/bili_utils.dart';
 import 'package:PiliPlus/utils/feed_back.dart';
+import 'package:PiliPlus/utils/route_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -11,10 +14,12 @@ class FavPanel extends StatefulWidget {
   const FavPanel({
     super.key,
     required this.ctr,
+    required this.resource,
     this.scrollController,
   });
 
   final FavMixin ctr;
+  final ActionResourceSnapshot resource;
   final ScrollController? scrollController;
 
   @override
@@ -31,7 +36,7 @@ class _FavPanelState extends State<FavPanel> {
   }
 
   Future<void> _queryVideoInFolder() async {
-    final res = await widget.ctr.queryVideoInFolder();
+    final res = await widget.ctr.queryVideoInFolder(widget.resource);
     if (mounted) {
       loadingState = res;
       setState(() {});
@@ -160,8 +165,16 @@ class _FavPanelState extends State<FavPanel> {
               ),
               FilledButton.tonal(
                 onPressed: () {
+                  final navigator = Navigator.of(context);
+                  final route = ModalRoute.of<Object?>(context);
                   feedBack();
-                  widget.ctr.actionFavVideo();
+                  widget.ctr.actionFavVideo(
+                    resource: widget.resource,
+                    completeRoute: () => completeRoute<Object?>(
+                      navigator,
+                      route,
+                    ),
+                  );
                 },
                 style: const ButtonStyle(visualDensity: .compact),
                 child: const Text('完成'),

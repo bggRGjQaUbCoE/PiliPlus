@@ -34,6 +34,7 @@ import 'package:PiliPlus/utils/extension/string_ext.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:PiliPlus/utils/history_status_cache.dart';
+import 'package:PiliPlus/utils/identity_key.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/theme_utils.dart';
@@ -57,7 +58,7 @@ abstract final class RequestUtils {
   static Object dynamicLikeOperationKey(
     Object account,
     DynamicItemModel item,
-  ) => (account, item.idStr ?? item);
+  ) => (IdentityKey(account), item.idStr ?? item);
 
   static Future<void> syncHistoryStatus() async {
     final account = Accounts.history;
@@ -421,7 +422,7 @@ abstract final class RequestUtils {
         final like = item.modules.moduleStat?.like;
         final status = like?.status ?? false;
         void updateTargets(bool desiredStatus) {
-          if (Accounts.main != account) return;
+          if (!identical(Accounts.main, account)) return;
           final targets = _dynamicLikeTargets[key];
           if (targets == null) return;
           for (final target in targets) {
@@ -450,7 +451,7 @@ abstract final class RequestUtils {
           up: status ? 2 : 1, // 1 已点赞 2 不喜欢 0 未操作
           account: account,
         );
-        if (Accounts.main != account) return;
+        if (!identical(Accounts.main, account)) return;
         if (res.isSuccess) {
           SmartDialog.showToast(status ? '取消赞' : '点赞成功');
           updateTargets(!status);

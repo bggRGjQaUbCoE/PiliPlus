@@ -197,9 +197,14 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
       SmartDialog.showToast('已三连');
       return;
     }
-    final result = await VideoHttp.ugcTriple(bvid: targetBvid);
+    final result = await VideoHttp.ugcTriple(
+      bvid: targetBvid,
+      account: targetAccount,
+    );
     if (result case Success(:final response)) {
-      if (response.coin == true && !hadCoin && Accounts.main == targetAccount) {
+      if (response.coin == true &&
+          !hadCoin &&
+          identical(Accounts.main, targetAccount)) {
         GlobalData().afterCoin(2);
       }
       if (resourceKey != actionResourceKey) return;
@@ -223,6 +228,7 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
         SmartDialog.showToast('三连成功');
       }
     } else {
+      if (resourceKey != actionResourceKey) return;
       result.toast();
     }
   }
@@ -232,6 +238,7 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
   Future<void> actionLikeVideo(Object resourceKey) async {
     if (resourceKey != actionResourceKey) return;
     final targetBvid = bvid;
+    final targetAccount = Accounts.main;
     if (!isLogin) {
       SmartDialog.showToast('账号未登录');
       return;
@@ -240,9 +247,13 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
       return;
     }
     final newVal = !hasLike.value;
-    final result = await VideoHttp.likeVideo(bvid: targetBvid, type: newVal);
+    final result = await VideoHttp.likeVideo(
+      bvid: targetBvid,
+      type: newVal,
+      account: targetAccount,
+    );
+    if (resourceKey != actionResourceKey) return;
     if (result case Success(:final response)) {
-      if (resourceKey != actionResourceKey) return;
       SmartDialog.showToast(newVal ? response : '取消赞');
       if (hasLike.value != newVal) {
         videoDetail.value.stat?.like += newVal ? 1 : -1;

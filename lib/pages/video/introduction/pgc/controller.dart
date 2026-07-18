@@ -24,6 +24,7 @@ import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:PiliPlus/utils/global_data.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
+import 'package:PiliPlus/utils/identity_key.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/share_utils.dart';
@@ -39,7 +40,12 @@ class PgcIntroController extends CommonIntroController {
   int? epId;
 
   @override
-  Object get actionResourceKey => (bvid, epId, seasonId, Accounts.main);
+  Object get actionResourceKey => (
+    bvid,
+    epId,
+    seasonId,
+    IdentityKey(Accounts.main),
+  );
 
   late final String pgcType = pgcItem.type == 1 || pgcItem.type == 4
       ? '追番'
@@ -105,14 +111,19 @@ class PgcIntroController extends CommonIntroController {
   Future<void> actionLikeVideo(Object resourceKey) async {
     if (resourceKey != actionResourceKey) return;
     final targetBvid = bvid;
+    final targetAccount = Accounts.main;
     if (!isLogin) {
       SmartDialog.showToast('账号未登录');
       return;
     }
     final newVal = !hasLike.value;
-    final result = await VideoHttp.likeVideo(bvid: targetBvid, type: newVal);
+    final result = await VideoHttp.likeVideo(
+      bvid: targetBvid,
+      type: newVal,
+      account: targetAccount,
+    );
+    if (resourceKey != actionResourceKey) return;
     if (result case Success(:final response)) {
-      if (resourceKey != actionResourceKey) return;
       SmartDialog.showToast(newVal ? response : '取消赞');
       if (hasLike.value != newVal) {
         pgcItem.stat?.like += newVal ? 1 : -1;
@@ -411,9 +422,12 @@ class PgcIntroController extends CommonIntroController {
     final result = await VideoHttp.pgcTriple(
       epId: targetEpId!,
       seasonId: targetSeasonId,
+      account: targetAccount,
     );
     if (result case Success(:final response)) {
-      if (response.coin == 1 && !hadCoin && Accounts.main == targetAccount) {
+      if (response.coin == 1 &&
+          !hadCoin &&
+          identical(Accounts.main, targetAccount)) {
         GlobalData().afterCoin(2);
       }
       if (resourceKey != actionResourceKey) return;
@@ -436,6 +450,7 @@ class PgcIntroController extends CommonIntroController {
         SmartDialog.showToast('三连成功');
       }
     } else {
+      if (resourceKey != actionResourceKey) return;
       result.toast();
     }
   }

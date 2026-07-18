@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:PiliPlus/pages/video/pay_coins/view.dart';
+import 'package:PiliPlus/utils/accounts.dart';
+import 'package:PiliPlus/utils/accounts/account.dart';
 import 'package:PiliPlus/utils/async_operation_guard.dart';
 import 'package:PiliPlus/utils/global_data.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
@@ -9,8 +11,19 @@ import 'package:flutter/services.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 
+typedef ActionResourceSnapshot = ({Object key, Account account});
+
+enum ResourceAction { like, triple, coin, favorite }
+
+bool matchesActionResource(
+  ActionResourceSnapshot resource, {
+  required Object currentKey,
+  required Account currentAccount,
+}) => resource.key == currentKey && identical(resource.account, currentAccount);
+
 mixin TripleMixin on GetxController, TickerProvider {
-  final _likeGuard = AsyncKeyedOperationGuard<Object>();
+  final _resourceActionGuard =
+      AsyncKeyedSerialOperationGuard<Object, ResourceAction>();
 
   // 是否点赞
   final RxBool hasLike = false.obs;
@@ -35,7 +48,29 @@ mixin TripleMixin on GetxController, TickerProvider {
 
   int get copyright;
 
-  void onPayCoin(int coin, bool coinWithLike);
+  void onPayCoin(
+    ActionResourceSnapshot resource,
+    int coin,
+    bool coinWithLike,
+  );
+
+  ActionResourceSnapshot get actionResourceSnapshot => (
+    key: actionResourceKey,
+    account: Accounts.main,
+  );
+
+  bool isCurrentActionResource(ActionResourceSnapshot resource) =>
+      matchesActionResource(
+        resource,
+        currentKey: actionResourceKey,
+        currentAccount: Accounts.main,
+      );
+
+  Future<void> runResourceAction(
+    Object resourceKey,
+    ResourceAction actionType,
+    FutureOr<void> Function() action,
+  ) => _resourceActionGuard.run(resourceKey, actionType, action);
 
   void actionCoinVideo() {
     if (!isLogin) {
@@ -56,8 +91,13 @@ mixin TripleMixin on GetxController, TickerProvider {
       // return;
     }
 
+    final resource = actionResourceSnapshot;
     PayCoinsPage.toPayCoinsPage(
-      onPayCoin: onPayCoin,
+      onPayCoin: (coin, coinWithLike) => runResourceAction(
+        resource.key,
+        ResourceAction.coin,
+        () => onPayCoin(resource, coin, coinWithLike),
+      ),
       hasCoin: coinNum == 1,
       hasCopyright: hasCopyright,
     );
@@ -111,7 +151,11 @@ mixin TripleMixin on GetxController, TickerProvider {
       } else {
         tripleAnimCtr.forward().whenComplete(() {
           tripleAnimCtr.reset();
-          _likeGuard.run(resourceKey, () => actionTriple(resourceKey)).ignore();
+          runResourceAction(
+            resourceKey,
+            ResourceAction.triple,
+            () => actionTriple(resourceKey),
+          ).ignore();
         });
       }
       _cancelTimer();
@@ -125,9 +169,11 @@ mixin TripleMixin on GetxController, TickerProvider {
       final resourceKey = _timerResourceKey;
       _cancelTimer();
       if (isTapUp && resourceKey != null && resourceKey == actionResourceKey) {
-        _likeGuard
-            .run(resourceKey, () => actionLikeVideo(resourceKey))
-            .ignore();
+        runResourceAction(
+          resourceKey,
+          ResourceAction.like,
+          () => actionLikeVideo(resourceKey),
+        ).ignore();
       }
     }
   }

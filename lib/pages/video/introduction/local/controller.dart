@@ -2,11 +2,13 @@ import 'package:PiliPlus/models_new/download/bili_download_entry_info.dart';
 import 'package:PiliPlus/models_new/video/video_detail/stat_detail.dart';
 import 'package:PiliPlus/pages/common/common_intro_controller.dart';
 import 'package:PiliPlus/pages/download/controller.dart';
+import 'package:PiliPlus/pages/video/introduction/ugc/widgets/triple_mixin.dart'
+    show ActionResourceSnapshot;
 import 'package:PiliPlus/plugin/pl_player/models/play_repeat.dart';
 import 'package:PiliPlus/services/service_locator.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart';
-import 'package:flutter/foundation.dart' show kDebugMode;
+import 'package:flutter/foundation.dart' show VoidCallback, kDebugMode;
 import 'package:flutter/scheduler.dart' show SchedulerBinding;
 import 'package:get/get.dart';
 
@@ -27,7 +29,11 @@ class LocalIntroController extends CommonIntroController {
   Future<void> actionTriple(Object resourceKey) async {}
 
   @override
-  Future<void> actionFavVideo({bool isQuick = false}) async {}
+  Future<void> actionFavVideo({
+    bool isQuick = false,
+    ActionResourceSnapshot? resource,
+    VoidCallback? completeRoute,
+  }) async {}
 
   @override
   (Object, int) get getFavRidType => throw UnimplementedError();

@@ -29,6 +29,7 @@ import 'package:PiliPlus/models_new/video/video_play_info/data.dart';
 import 'package:PiliPlus/models_new/video/video_relation/data.dart';
 import 'package:PiliPlus/models_new/video/video_shot/data.dart';
 import 'package:PiliPlus/utils/accounts.dart';
+import 'package:PiliPlus/utils/accounts/account.dart';
 import 'package:PiliPlus/utils/app_sign.dart';
 import 'package:PiliPlus/utils/extension/string_ext.dart';
 import 'package:PiliPlus/utils/global_data.dart';
@@ -356,7 +357,9 @@ abstract final class VideoHttp {
     required String bvid,
     required int multiply,
     int selectLike = 0,
+    Account? account,
   }) async {
+    account ??= Accounts.main;
     final res = await Request().post(
       Api.coinVideo,
       data: {
@@ -366,7 +369,10 @@ abstract final class VideoHttp {
         'select_like': selectLike.toString(),
         // 'csrf': Accounts.main.csrf,
       },
-      options: Options(contentType: Headers.formUrlEncodedContentType),
+      options: Options(
+        contentType: Headers.formUrlEncodedContentType,
+        extra: {'account': account},
+      ),
     );
     if (res.data['code'] == 0) {
       return const Success(null);
@@ -379,12 +385,15 @@ abstract final class VideoHttp {
   static Future<LoadingState<PgcTriple>> pgcTriple({
     required Object epId,
     Object? seasonId,
+    Account? account,
   }) async {
+    account ??= Accounts.main;
     final res = await Request().post(
       Api.pgcTriple,
-      data: {'ep_id': epId, 'csrf': Accounts.main.csrf},
+      data: {'ep_id': epId, 'csrf': account.csrf},
       options: Options(
         contentType: Headers.formUrlEncodedContentType,
+        extra: {'account': account},
         headers: {
           'origin': 'https://www.bilibili.com',
           'referer':
@@ -403,7 +412,9 @@ abstract final class VideoHttp {
   // 一键三连
   static Future<LoadingState<UgcTriple>> ugcTriple({
     required String bvid,
+    Account? account,
   }) async {
+    account ??= Accounts.main;
     final res = await Request().post(
       Api.ugcTriple,
       data: {
@@ -412,12 +423,13 @@ abstract final class VideoHttp {
         'ramval': 0,
         'source': 'web_normal',
         'ga': 1,
-        'csrf': Accounts.main.csrf,
+        'csrf': account.csrf,
         'spmid': '333.788.0.0',
         'statistics': '{"appId":100,"platform":5}',
       },
       options: Options(
         contentType: Headers.formUrlEncodedContentType,
+        extra: {'account': account},
         headers: {
           'origin': 'https://www.bilibili.com',
           'referer': 'https://www.bilibili.com/video/$bvid',
@@ -436,11 +448,16 @@ abstract final class VideoHttp {
   static Future<LoadingState<String>> likeVideo({
     required String bvid,
     required bool type,
+    Account? account,
   }) async {
+    account ??= Accounts.main;
     final res = await Request().post(
       Api.likeVideo,
       data: {'aid': IdUtils.bv2av(bvid).toString(), 'like': type ? '0' : '1'},
-      options: Options(contentType: Headers.formUrlEncodedContentType),
+      options: Options(
+        contentType: Headers.formUrlEncodedContentType,
+        extra: {'account': account},
+      ),
     );
     if (res.data['code'] == 0) {
       return Success(res.data['data']['toast']);

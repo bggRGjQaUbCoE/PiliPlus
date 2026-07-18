@@ -38,6 +38,7 @@ import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/global_data.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
+import 'package:PiliPlus/utils/identity_key.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/share_utils.dart';
@@ -79,7 +80,7 @@ class AudioController extends GetxController
     itemType,
     oid.toInt(),
     subId.map((item) => item.toString()).join(','),
-    Accounts.main,
+    IdentityKey(Accounts.main),
   );
   Int64? extraId;
   late final PlaylistSource from;
@@ -123,7 +124,7 @@ class AudioController extends GetxController
   late final Rx<PlayRepeat> playMode = Pref.audioPlayMode.obs;
 
   @override
-  late final isLogin = Accounts.main.isLogin;
+  bool get isLogin => Accounts.main.isLogin;
 
   Duration? _start;
   VideoDetailController? _videoDetailController;
@@ -618,6 +619,7 @@ class AudioController extends GetxController
     final targetOid = oid;
     final targetSubId = List<Int64>.unmodifiable(subId);
     final targetItemType = itemType;
+    final targetAccount = Accounts.main;
     if (!isLogin) {
       SmartDialog.showToast('账号未登录');
       return;
@@ -630,9 +632,10 @@ class AudioController extends GetxController
       type: newVal
           ? ThumbUpReq_ThumbType.LIKE
           : ThumbUpReq_ThumbType.CANCEL_LIKE,
+      account: targetAccount,
     );
+    if (resourceKey != actionResourceKey) return;
     if (res case Success(:final response)) {
-      if (resourceKey != actionResourceKey) return;
       final changed = hasLike.value != newVal;
       hasLike.value = newVal;
       if (changed) {
@@ -665,9 +668,12 @@ class AudioController extends GetxController
       oid: targetOid,
       subId: targetSubId,
       itemType: targetItemType,
+      account: targetAccount,
     );
     if (res case Success(:final response)) {
-      if (response.coinOk && !hadCoin && Accounts.main == targetAccount) {
+      if (response.coinOk &&
+          !hadCoin &&
+          identical(Accounts.main, targetAccount)) {
         GlobalData().afterCoin(2);
       }
       if (resourceKey != actionResourceKey) return;
@@ -704,6 +710,7 @@ class AudioController extends GetxController
         SmartDialog.showToast('三连成功');
       }
     } else {
+      if (resourceKey != actionResourceKey) return;
       res.toast();
     }
   }
@@ -712,14 +719,27 @@ class AudioController extends GetxController
   int get copyright => audioItem.value?.arc.copyright ?? 1;
 
   @override
-  Future<void> onPayCoin(int coin, bool coinWithLike) async {
+  Future<void> onPayCoin(
+    ActionResourceSnapshot resource,
+    int coin,
+    bool coinWithLike,
+  ) async {
+    if (!isCurrentActionResource(resource)) return;
+    final targetOid = oid;
+    final targetSubId = List<Int64>.unmodifiable(subId);
+    final targetItemType = itemType;
     final res = await AudioGrpc.audioCoinAdd(
-      oid: oid,
-      subId: subId,
-      itemType: itemType,
+      oid: targetOid,
+      subId: targetSubId,
+      itemType: targetItemType,
       num: coin,
       thumbUp: coinWithLike,
+      account: resource.account,
     );
+    if (res.isSuccess && identical(Accounts.main, resource.account)) {
+      GlobalData().afterCoin(coin);
+    }
+    if (!isCurrentActionResource(resource)) return;
     if (res.isSuccess) {
       final updateLike = !hasLike.value && coinWithLike;
       if (updateLike) {
@@ -737,7 +757,6 @@ class AudioController extends GetxController
         }
         audioItem.refresh();
       } catch (_) {}
-      GlobalData().afterCoin(coin);
     } else {
       res.toast();
     }

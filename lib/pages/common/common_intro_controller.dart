@@ -14,6 +14,7 @@ import 'package:PiliPlus/pages/video/introduction/ugc/widgets/triple_mixin.dart'
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/async_operation_guard.dart';
 import 'package:PiliPlus/utils/global_data.dart';
+import 'package:PiliPlus/utils/identity_key.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
@@ -31,7 +32,7 @@ abstract class CommonIntroController extends GetxController
   late String bvid;
 
   @override
-  Object get actionResourceKey => (bvid, Accounts.main);
+  Object get actionResourceKey => (bvid, IdentityKey(Accounts.main));
 
   // 是否稍后再看
   final RxBool hasLater = false.obs;
@@ -48,7 +49,7 @@ abstract class CommonIntroController extends GetxController
       });
 
   @override
-  late final isLogin = Accounts.main.isLogin;
+  bool get isLogin => Accounts.main.isLogin;
 
   StatDetail? getStat();
 
@@ -124,20 +125,30 @@ abstract class CommonIntroController extends GetxController
   }
 
   @override
-  Future<void> onPayCoin(int coin, bool coinWithLike) async {
+  Future<void> onPayCoin(
+    ActionResourceSnapshot resource,
+    int coin,
+    bool coinWithLike,
+  ) async {
+    if (!isCurrentActionResource(resource)) return;
+    final targetBvid = bvid;
     final stat = getStat();
     if (stat == null) {
       return;
     }
     final res = await VideoHttp.coinVideo(
-      bvid: bvid,
+      bvid: targetBvid,
       multiply: coin,
       selectLike: coinWithLike ? 1 : 0,
+      account: resource.account,
     );
+    if (res.isSuccess && identical(Accounts.main, resource.account)) {
+      GlobalData().afterCoin(coin);
+    }
+    if (!isCurrentActionResource(resource)) return;
     if (res.isSuccess) {
       SmartDialog.showToast('投币成功');
       coinNum.value += coin;
-      GlobalData().afterCoin(coin);
       stat.coin += coin;
       if (coinWithLike && !hasLike.value) {
         stat.like++;
@@ -169,14 +180,24 @@ mixin FavMixin on TripleMixin {
 
   (Object, int) get getFavRidType;
 
-  Future<LoadingState<FavFolderData>> queryVideoInFolder() async {
+  Future<LoadingState<FavFolderData>> queryVideoInFolder([
+    ActionResourceSnapshot? resource,
+  ]) async {
+    resource ??= actionResourceSnapshot;
+    if (!isCurrentActionResource(resource)) {
+      return const Error('当前音视频已切换');
+    }
     favIds = null;
     final (rid, type) = getFavRidType;
     final res = await FavHttp.videoInFolder(
-      mid: Accounts.main.mid,
+      mid: resource.account.mid,
       rid: rid,
       type: type,
+      account: resource.account,
     );
+    if (!isCurrentActionResource(resource)) {
+      return const Error('当前音视频已切换');
+    }
     if (res case Success(:final response)) {
       favFolderData.value = response;
       favIds = response.list
@@ -226,32 +247,65 @@ mixin FavMixin on TripleMixin {
 
   void updateFavCount(int count);
 
-  Future<void> actionFavVideo({bool isQuick = false}) async {
+  Future<void> actionFavVideo({
+    bool isQuick = false,
+    ActionResourceSnapshot? resource,
+    VoidCallback? completeRoute,
+  }) {
+    resource ??= actionResourceSnapshot;
+    final targetResource = resource;
+    return runResourceAction(
+      targetResource.key,
+      ResourceAction.favorite,
+      () => _actionFavVideo(
+        targetResource,
+        isQuick: isQuick,
+        completeRoute: completeRoute,
+      ),
+    );
+  }
+
+  Future<void> _actionFavVideo(
+    ActionResourceSnapshot resource, {
+    required bool isQuick,
+    VoidCallback? completeRoute,
+  }) async {
+    if (!isCurrentActionResource(resource)) {
+      SmartDialog.showToast('当前音视频已切换');
+      return;
+    }
     final (rid, type) = getFavRidType;
     // 收藏至默认文件夹
     if (isQuick) {
       SmartDialog.showLoading(msg: '请求中');
-      queryVideoInFolder().then((res) async {
+      try {
+        final res = await queryVideoInFolder(resource);
         if (res.isSuccess) {
+          if (!isCurrentActionResource(resource)) return;
           final hasFav = this.hasFav.value;
           final result = hasFav
-              ? await FavHttp.unfavAll(rid: rid, type: type)
+              ? await FavHttp.unfavAll(
+                  rid: rid,
+                  type: type,
+                  account: resource.account,
+                )
               : await FavHttp.favVideo(
                   resources: '$rid:$type',
                   addIds: favFolderId.toString(),
+                  account: resource.account,
                 );
-          SmartDialog.dismiss();
+          if (!isCurrentActionResource(resource)) return;
           if (result.isSuccess) {
             updateFavCount(hasFav ? -1 : 1);
             this.hasFav.value = !hasFav;
             SmartDialog.showToast('${hasFav ? '取消' : ''}收藏成功');
           } else {
-            res.toast();
+            result.toast();
           }
-        } else {
-          SmartDialog.dismiss();
         }
-      });
+      } finally {
+        SmartDialog.dismiss(status: SmartStatus.loading);
+      }
       return;
     }
 
@@ -278,16 +332,18 @@ mixin FavMixin on TripleMixin {
       resources: '$rid:$type',
       addIds: addMediaIdsNew.join(','),
       delIds: delMediaIdsNew.join(','),
+      account: resource.account,
     );
-    SmartDialog.dismiss();
+    SmartDialog.dismiss(status: SmartStatus.loading);
+    if (!isCurrentActionResource(resource)) return;
     if (result.isSuccess) {
-      Get.back();
       final newVal =
           addMediaIdsNew.isNotEmpty || favIds?.length != delMediaIdsNew.length;
       if (hasFav.value != newVal) {
         updateFavCount(newVal ? 1 : -1);
         hasFav.value = newVal;
       }
+      completeRoute?.call();
       SmartDialog.showToast('${newVal ? '' : '取消'}收藏成功');
     } else {
       result.toast();

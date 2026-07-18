@@ -172,14 +172,14 @@ abstract final class GStorage {
     ]);
   }
 
-  static Future<List<void>> clear() {
+  static Future<List<void>> clear() async {
+    await Accounts.clear();
     return Future.wait([
       userInfo.clear(),
       historyWord.clear(),
       localCache.clear(),
       setting.clear(),
       video.clear(),
-      Accounts.clear(),
       watchProgress.clear(),
       ?reply?.clear(),
     ]);

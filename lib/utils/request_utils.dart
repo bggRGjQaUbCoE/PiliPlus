@@ -33,13 +33,12 @@ import 'package:PiliPlus/utils/extension/size_ext.dart';
 import 'package:PiliPlus/utils/extension/string_ext.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/feed_back.dart';
+import 'package:PiliPlus/utils/history_status_cache.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
-import 'package:PiliPlus/utils/storage.dart';
-import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/theme_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
-import 'package:flutter/foundation.dart' show kDebugMode;
+import 'package:flutter/foundation.dart' show kDebugMode, visibleForTesting;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show LengthLimitingTextInputFormatter;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -54,10 +53,16 @@ abstract final class RequestUtils {
   _dynamicLikeTargets = {};
   static int _historyStatusGeneration = 0;
 
+  @visibleForTesting
+  static Object dynamicLikeOperationKey(
+    Object account,
+    DynamicItemModel item,
+  ) => (account, item.idStr ?? item);
+
   static Future<void> syncHistoryStatus() async {
     final account = Accounts.history;
     final generation = ++_historyStatusGeneration;
-    await GStorage.localCache.delete(LocalCacheKey.historyPause);
+    await HistoryStatusCache.prepare(account);
     if (generation != _historyStatusGeneration ||
         !identical(account, Accounts.history)) {
       return;
@@ -72,9 +77,12 @@ abstract final class RequestUtils {
         )
         when generation == _historyStatusGeneration &&
             identical(account, Accounts.history)) {
-      GStorage.localCache.put(LocalCacheKey.historyPause, response);
+      await HistoryStatusCache.store(account, response);
     }
   }
+
+  static Future<void> prepareHistoryStatus() =>
+      HistoryStatusCache.prepare(Accounts.history);
 
   // 1：小视频（已弃用）
   // 2：相簿
@@ -400,7 +408,8 @@ abstract final class RequestUtils {
     bool uiStatus,
     VoidCallback onSuccess,
   ) {
-    final key = item.idStr ?? item;
+    final account = Accounts.main;
+    final key = dynamicLikeOperationKey(account, item);
     (_dynamicLikeTargets[key] ??= []).add((
       item: item,
       onSuccess: onSuccess,
@@ -412,6 +421,7 @@ abstract final class RequestUtils {
         final like = item.modules.moduleStat?.like;
         final status = like?.status ?? false;
         void updateTargets(bool desiredStatus) {
+          if (Accounts.main != account) return;
           final targets = _dynamicLikeTargets[key];
           if (targets == null) return;
           for (final target in targets) {
@@ -438,7 +448,9 @@ abstract final class RequestUtils {
         final res = await DynamicsHttp.thumbDynamic(
           dynamicId: item.idStr!,
           up: status ? 2 : 1, // 1 已点赞 2 不喜欢 0 未操作
+          account: account,
         );
+        if (Accounts.main != account) return;
         if (res.isSuccess) {
           SmartDialog.showToast(status ? '取消赞' : '点赞成功');
           updateTargets(!status);

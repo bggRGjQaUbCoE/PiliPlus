@@ -1,7 +1,6 @@
 import 'package:PiliPlus/http/user.dart';
 import 'package:PiliPlus/utils/accounts.dart';
-import 'package:PiliPlus/utils/storage.dart';
-import 'package:PiliPlus/utils/storage_key.dart';
+import 'package:PiliPlus/utils/history_status_cache.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -76,10 +75,7 @@ class HistoryBaseController extends GetxController {
               if (res.isSuccess) {
                 SmartDialog.showToast(pauseStatus ? '暂停观看历史' : '恢复观看历史');
                 this.pauseStatus.value = pauseStatus;
-                GStorage.localCache.put(
-                  LocalCacheKey.historyPause,
-                  pauseStatus,
-                );
+                await HistoryStatusCache.store(account, pauseStatus);
               } else {
                 res.toast();
               }

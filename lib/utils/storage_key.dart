@@ -240,6 +240,7 @@ abstract final class SettingBoxKey {
 
 abstract final class LocalCacheKey {
   static const String historyPause = 'historyPause',
+      historyPauseAccount = 'historyPauseAccount',
       blackMids = 'blackMids',
       danmakuFilterRules = 'danmakuFilterRules',
       mixinKey = 'mixinKey',

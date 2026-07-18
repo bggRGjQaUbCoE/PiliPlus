@@ -211,6 +211,7 @@ class AccountManager extends Interceptor {
     final Account account =
         response.requestOptions.extra['account'] ??
         _findAccount(response.requestOptions.path);
+    if (account.isDeleted) return;
     final setCookies = response.headers[HttpHeaders.setCookieHeader];
     if (setCookies == null || setCookies.isEmpty) {
       return;
@@ -238,6 +239,10 @@ class AccountManager extends Interceptor {
           ),
         ),
       );
+    }
+    if (account.isDeleted) {
+      await account.cookieJar.deleteAll();
+      return;
     }
     await account.onChange();
   }

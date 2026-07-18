@@ -36,6 +36,7 @@ import 'package:PiliPlus/plugin/pl_player/models/play_repeat.dart';
 import 'package:PiliPlus/utils/device_utils.dart';
 import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:PiliPlus/utils/global_data.dart';
+import 'package:PiliPlus/utils/history_status_cache.dart';
 import 'package:PiliPlus/utils/login_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
@@ -892,8 +893,7 @@ abstract final class Pref {
   static bool get directExitOnBack =>
       _setting.get(SettingBoxKey.directExitOnBack, defaultValue: false);
 
-  static bool get historyPause =>
-      _localCache.get(LocalCacheKey.historyPause, defaultValue: false);
+  static bool get historyPause => HistoryStatusCache.pause;
 
   static int? get quickFavId => _setting.get(SettingBoxKey.quickFavId);
 

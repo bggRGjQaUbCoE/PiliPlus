@@ -11,7 +11,6 @@ import 'package:PiliPlus/utils/accounts/web_cookie_origin.dart';
 import 'package:PiliPlus/utils/global_data.dart';
 import 'package:PiliPlus/utils/request_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
-import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:collection/collection.dart';
@@ -73,19 +72,27 @@ abstract final class LoginUtils {
       webViewEnvironment: webViewEnvironment,
     );
     return _mutateWebCookies(() async {
-      final existingCookies = await webManager.getAllCookies();
-      await Future.wait(
-        existingCookies
-            .where((cookie) => isBilibiliCookieDomain(cookie.domain))
-            .map(
-              (cookie) => webManager.deleteCookie(
-                url: web.WebUri(webCookieOrigin(cookie.domain)),
-                name: cookie.name,
-                path: cookie.path ?? '/',
-                domain: cookie.domain,
+      if (Platform.isIOS || Platform.isMacOS) {
+        final existingCookies = await webManager.getAllCookies();
+        await Future.wait(
+          existingCookies
+              .where((cookie) => isBilibiliCookieDomain(cookie.domain))
+              .map(
+                (cookie) => webManager.deleteCookie(
+                  url: web.WebUri(webCookieOrigin(cookie.domain)),
+                  name: cookie.name,
+                  path: cookie.path ?? '/',
+                  domain: cookie.domain,
+                ),
               ),
-            ),
-      );
+        );
+      } else {
+        // Android and Windows cannot enumerate the shared cookie store. A
+        // complete clear is the only way to guarantee that host-only,
+        // subdomain, and non-root-path credentials from the prior account do
+        // not survive the switch.
+        await webManager.deleteAllCookies();
+      }
       await Future.wait(
         cookies.map(
           (cookie) => webManager.setCookie(
@@ -127,7 +134,7 @@ abstract final class LoginUtils {
 
     await Future.wait([
       GStorage.userInfo.delete('userInfoCache'),
-      GStorage.localCache.delete(LocalCacheKey.historyPause),
+      RequestUtils.prepareHistoryStatus(),
     ]);
     if (!isCurrent()) return;
 
@@ -194,9 +201,12 @@ abstract final class LoginUtils {
     return Future.wait([
       _clearWebCookies(),
       GStorage.userInfo.delete('userInfoCache'),
-      GStorage.localCache.delete(LocalCacheKey.historyPause),
+      RequestUtils.syncHistoryStatus(),
     ]);
   }
+
+  static Future<void> onHistoryAccountChanged() =>
+      RequestUtils.syncHistoryStatus();
 
   static String generateBuvid() {
     final md5Str = Digest(

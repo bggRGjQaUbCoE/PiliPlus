@@ -1,12 +1,31 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/accounts/account.dart';
 import 'package:PiliPlus/utils/accounts/account_manager/account_mgr.dart';
+import 'package:PiliPlus/utils/path_utils.dart';
+import 'package:PiliPlus/utils/storage.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  late Directory testDir;
+
+  setUpAll(() async {
+    testDir = await Directory.systemTemp.createTemp(
+      'piliplus_account_manager_test_',
+    );
+    appSupportDirPath = testDir.path;
+    await GStorage.init();
+  });
+
+  tearDownAll(() async {
+    await GStorage.close();
+    await testDir.delete(recursive: true);
+  });
+
   test('diagnostic request URLs omit credentials and query values', () {
     const secrets = <String>[
       'user-name',
@@ -58,6 +77,67 @@ void main() {
 
     expect(requestOptions.extra['account'], same(accountA));
   });
+
+  test('a late response cannot persist a deleted account again', () async {
+    final account = _account('10003');
+    await account.onChange();
+    final adapter = _CaptureAdapter(
+      responseHeaders: {
+        HttpHeaders.setCookieHeader: [
+          'late-cookie=value; Domain=.bilibili.com; Path=/',
+        ],
+      },
+    );
+    final dio = Dio()
+      ..httpClientAdapter = adapter
+      ..interceptors.add(
+        AccountManager.test(
+          blockServer: 'blocked.invalid',
+          accountResolver: (_) => account,
+        ),
+      );
+
+    final request = dio.get<void>('https://api.bilibili.com/x/test');
+    await adapter.request;
+    await account.delete();
+    adapter.release();
+    await request;
+
+    expect(account.isDeleted, isTrue);
+    expect(Accounts.account.containsKey('10003'), isFalse);
+    expect(account.cookieJar.toList(), isEmpty);
+  });
+
+  test('a late response cannot overwrite a same-mid import', () async {
+    final existing = _account('10004');
+    final replacement = _account('10004');
+    await existing.onChange();
+    final adapter = _CaptureAdapter(
+      responseHeaders: {
+        HttpHeaders.setCookieHeader: [
+          'late-cookie=value; Domain=.bilibili.com; Path=/',
+        ],
+      },
+    );
+    final dio = Dio()
+      ..httpClientAdapter = adapter
+      ..interceptors.add(
+        AccountManager.test(
+          blockServer: 'blocked.invalid',
+          accountResolver: (_) => existing,
+        ),
+      );
+
+    final request = dio.get<void>('https://api.bilibili.com/x/test');
+    await adapter.request;
+    await Accounts.storeImportedAccounts([replacement]);
+    adapter.release();
+    await request;
+
+    expect(existing.isDeleted, isTrue);
+    expect(existing.cookieJar.toList(), isEmpty);
+    expect(Accounts.account.get('10004'), same(replacement));
+  });
 }
 
 LoginAccount _account(String mid) => LoginAccount(
@@ -67,6 +147,9 @@ LoginAccount _account(String mid) => LoginAccount(
 );
 
 class _CaptureAdapter implements HttpClientAdapter {
+  _CaptureAdapter({this.responseHeaders});
+
+  final Map<String, List<String>>? responseHeaders;
   final _request = Completer<RequestOptions>();
   final _release = Completer<void>();
 
@@ -82,7 +165,11 @@ class _CaptureAdapter implements HttpClientAdapter {
   ) async {
     _request.complete(options);
     await _release.future;
-    return ResponseBody.fromString('{}', 200);
+    return ResponseBody.fromString(
+      '{}',
+      200,
+      headers: responseHeaders,
+    );
   }
 
   @override

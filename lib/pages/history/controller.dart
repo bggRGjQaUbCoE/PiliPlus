@@ -9,8 +9,7 @@ import 'package:PiliPlus/pages/history/base_controller.dart';
 import 'package:PiliPlus/utils/accounts/account.dart';
 import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:PiliPlus/utils/extension/scroll_controller_ext.dart';
-import 'package:PiliPlus/utils/storage.dart';
-import 'package:PiliPlus/utils/storage_key.dart';
+import 'package:PiliPlus/utils/history_status_cache.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -81,7 +80,7 @@ class HistoryController
     final res = await UserHttp.historyStatus(account: account);
     if (res case Success(:final response)) {
       baseCtr.pauseStatus.value = response;
-      GStorage.localCache.put(LocalCacheKey.historyPause, response);
+      await HistoryStatusCache.store(account, response);
     } else {
       res.toast();
     }

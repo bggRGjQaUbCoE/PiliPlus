@@ -20,6 +20,7 @@ import 'package:PiliPlus/models/common/video/video_decode_type.dart';
 import 'package:PiliPlus/plugin/pl_player/models/bottom_progress_behavior.dart';
 import 'package:PiliPlus/plugin/pl_player/models/fullscreen_mode.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_repeat.dart';
+import 'package:PiliPlus/plugin/pl_player/models/video_fit_type.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:flex_seed_scheme/flex_seed_scheme.dart' show FlexSchemeVariant;
 import 'package:get/get.dart' show Transition;
@@ -124,6 +125,7 @@ abstract final class SettingsImportValidator {
     });
     _validateEnumIndices(video, {
       VideoBoxKey.playRepeat: PlayRepeat.values.length,
+      VideoBoxKey.cacheVideoFit: VideoFitType.values.length,
     });
 
     _validateIndexList(
@@ -148,6 +150,17 @@ abstract final class SettingsImportValidator {
       setting,
       SettingBoxKey.blockSettings,
       SkipType.values.length,
+      expectedLength: SegmentType.values.length,
+    );
+    _validateIndexList(
+      setting,
+      SettingBoxKey.danmakuBlockType,
+      8,
+      requireUnique: true,
+    );
+    _validateTypedList<String>(
+      setting,
+      SettingBoxKey.blockColor,
       expectedLength: SegmentType.values.length,
     );
 
@@ -235,6 +248,20 @@ abstract final class SettingsImportValidator {
       _invalid(key, mustBePositive ? 'a positive finite number' : 'a number');
     }
     values[key] = value.toDouble();
+  }
+
+  static void _validateTypedList<T>(
+    Map<dynamic, dynamic> values,
+    String key, {
+    int? expectedLength,
+  }) {
+    if (!values.containsKey(key)) return;
+    final value = values[key];
+    if (value is! List ||
+        (expectedLength != null && value.length != expectedLength) ||
+        value.any((item) => item is! T)) {
+      _invalid(key, _listExpectation(expectedLength, T.toString()));
+    }
   }
 
   static void _validateNumber(

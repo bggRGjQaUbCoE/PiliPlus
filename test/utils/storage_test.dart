@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:PiliPlus/models/common/sponsor_block/segment_type.dart';
 import 'package:PiliPlus/utils/path_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
@@ -158,6 +159,9 @@ void main() {
       await expectRejected(
         video: {VideoBoxKey.playRepeat: 999},
       );
+      await expectRejected(
+        video: {VideoBoxKey.cacheVideoFit: 999},
+      );
     });
 
     test('rejects malformed and out-of-range lists without mutation', () async {
@@ -184,6 +188,19 @@ void main() {
       await expectRejected(
         setting: {
           SettingBoxKey.windowPosition: [0.0],
+        },
+      );
+      await expectRejected(
+        setting: {
+          SettingBoxKey.danmakuBlockType: ['not-an-index'],
+        },
+      );
+      await expectRejected(
+        setting: {
+          SettingBoxKey.blockColor: List<Object>.filled(
+            SegmentType.values.length,
+            0xFFFFFF,
+          ),
         },
       );
     });

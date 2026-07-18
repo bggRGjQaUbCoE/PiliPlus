@@ -192,6 +192,16 @@ void main() {
       );
       await expectRejected(
         setting: {
+          SettingBoxKey.dynamicDetailRatio: [0, 0],
+        },
+      );
+      await expectRejected(
+        setting: {
+          SettingBoxKey.dynamicDetailRatio: [-1, 2],
+        },
+      );
+      await expectRejected(
+        setting: {
           SettingBoxKey.danmakuBlockType: ['not-an-index'],
         },
       );

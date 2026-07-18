@@ -94,6 +94,7 @@ abstract final class SettingsImportValidator {
       setting,
       SettingBoxKey.dynamicDetailRatio,
       expectedLength: 2,
+      mustBePositive: true,
     );
     _validateDoubleList(
       setting,

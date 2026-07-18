@@ -86,6 +86,17 @@ import 'package:window_manager/window_manager.dart';
 
 part 'widgets.dart';
 
+@visibleForTesting
+Future<bool> resumeAfterWebpDialogCancellation({
+  required bool isConfirmed,
+  required bool wasPlaying,
+  required FutureOr<void> Function() resume,
+}) async {
+  if (isConfirmed) return false;
+  if (wasPlaying) await resume();
+  return true;
+}
+
 class PLVideoPlayer extends StatefulWidget {
   const PLVideoPlayer({
     required this.maxWidth,
@@ -2158,7 +2169,13 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
           ),
         ) ??
         false;
-    if (!success) return;
+    if (await resumeAfterWebpDialogCancellation(
+      isConfirmed: success,
+      wasPlaying: isPlay,
+      resume: ctr.play,
+    )) {
+      return;
+    }
 
     final progress = 0.0.obs;
     final name =

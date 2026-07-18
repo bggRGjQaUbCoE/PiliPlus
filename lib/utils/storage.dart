@@ -10,6 +10,7 @@ import 'package:PiliPlus/utils/accounts/account_type_adapter.dart';
 import 'package:PiliPlus/utils/accounts/cookie_jar_adapter.dart';
 import 'package:PiliPlus/utils/path_utils.dart';
 import 'package:PiliPlus/utils/set_int_adapter.dart';
+import 'package:PiliPlus/utils/settings_import_validator.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:hive_ce/hive.dart';
@@ -92,6 +93,10 @@ abstract final class GStorage {
   ) async {
     final importedSetting = _settingsSection(map, setting.name);
     final importedVideo = _settingsSection(map, video.name);
+    SettingsImportValidator.validateAndNormalize(
+      importedSetting,
+      importedVideo,
+    );
     final previousSetting = setting.toMap();
     final previousVideo = video.toMap();
 

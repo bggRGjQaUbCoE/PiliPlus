@@ -14,11 +14,22 @@ import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart' show kDebugMode;
+import 'package:flutter/foundation.dart' show kDebugMode, visibleForTesting;
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 
 final _setCookieReg = RegExp('(?<=)(,)(?=[^;]+?=)');
+
+@visibleForTesting
+String requestUrlForDiagnostics(RequestOptions options) {
+  final uri = options.uri;
+  return Uri(
+    scheme: uri.scheme,
+    host: uri.host,
+    port: uri.hasPort ? uri.port : null,
+    path: uri.path,
+  ).toString();
+}
 
 class AccountManager extends Interceptor {
   AccountManager();
@@ -176,9 +187,9 @@ class AccountManager extends Interceptor {
       'biliimg.com',
       'site/getCoin',
     ];
-    String url = err.requestOptions.uri.toString();
+    final url = requestUrlForDiagnostics(err.requestOptions);
     if (kDebugMode) debugPrint('🌹🌹ApiInterceptor: $url');
-    if (skipShow.any((i) => url.contains(i)) ||
+    if (skipShow.any(url.contains) ||
         (url.contains('skipSegments') && err.requestOptions.method == 'GET')) {
       // skip
     } else {

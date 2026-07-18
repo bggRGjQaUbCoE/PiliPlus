@@ -317,20 +317,20 @@ class _WebviewPageState extends State<WebviewPage> {
             return null;
           },
           shouldOverrideUrlLoading: (controller, navigationAction) async {
-            if (_inApp) {
-              return NavigationActionPolicy.ALLOW;
-            }
             late String url = navigationAction.request.url.toString();
-            bool hasMatch = await PiliScheme.routePush(
-              navigationAction.request.url?.uriValue ?? Uri(),
-              selfHandle: true,
-              off: _off,
-            );
-            // if (kDebugMode) debugPrint('webview: [$url], [$hasMatch]');
-            if (hasMatch) {
-              progress.value = 1;
-              return NavigationActionPolicy.CANCEL;
-            } else if (_prefixRegex.hasMatch(url)) {
+            if (!_inApp) {
+              bool hasMatch = await PiliScheme.routePush(
+                navigationAction.request.url?.uriValue ?? Uri(),
+                selfHandle: true,
+                off: _off,
+              );
+              // if (kDebugMode) debugPrint('webview: [$url], [$hasMatch]');
+              if (hasMatch) {
+                progress.value = 1;
+                return NavigationActionPolicy.CANCEL;
+              }
+            }
+            if (_prefixRegex.hasMatch(url)) {
               if (context.mounted) {
                 SnackBar snackBar = SnackBar(
                   content: const Text('当前网页将要打开外部链接，是否打开'),

@@ -381,9 +381,10 @@ class _CustomHttpOverrides extends HttpOverrides {
     // ..maxConnectionsPerHost = 32
     /// The default value is 15 seconds.
     //   ..idleTimeout = const Duration(seconds: 15);
-    if (kDebugMode || Pref.badCertificateCallback) {
-      client.badCertificateCallback = (cert, host, port) => true;
-    }
+    configureHttpClientCertificateValidation(
+      client,
+      allowBadCertificates: Pref.badCertificateCallback,
+    );
     return client;
   }
 }

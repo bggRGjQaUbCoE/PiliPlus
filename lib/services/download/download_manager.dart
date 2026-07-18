@@ -7,7 +7,13 @@ import 'package:PiliPlus/utils/extension/file_ext.dart';
 import 'package:PiliPlus/utils/extension/string_ext.dart';
 import 'package:dio/dio.dart';
 
-class DownloadManager {
+abstract interface class DownloadTask {
+  DownloadStatus get status;
+
+  Future<void> cancel({required bool isDelete});
+}
+
+class DownloadManager implements DownloadTask {
   static final _contentRangeRegExp = RegExp(
     r'^bytes\s+(\d+)-\d+/(?:\d+|\*)$',
     caseSensitive: false,
@@ -24,6 +30,7 @@ class DownloadManager {
 
   DownloadStatus _status = DownloadStatus.downloading;
 
+  @override
   DownloadStatus get status => _status;
   final _cancelToken = CancelToken();
   late Future<void> task;
@@ -154,6 +161,7 @@ class DownloadManager {
     }
   }
 
+  @override
   Future<void> cancel({required bool isDelete}) {
     if (!isDelete && _status == DownloadStatus.downloading) {
       _status = DownloadStatus.pause;

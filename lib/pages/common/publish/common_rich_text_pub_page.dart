@@ -13,6 +13,7 @@ import 'package:PiliPlus/models_new/dynamic/dyn_mention/item.dart';
 import 'package:PiliPlus/models_new/emote/emote.dart' as e;
 import 'package:PiliPlus/models_new/live/live_emote/emoticon.dart';
 import 'package:PiliPlus/pages/common/publish/common_publish_page.dart';
+import 'package:PiliPlus/pages/common/publish/rich_text_picture_upload.dart';
 import 'package:PiliPlus/pages/dynamics_mention/view.dart';
 import 'package:PiliPlus/utils/cache_manager.dart';
 import 'package:PiliPlus/utils/extension/file_ext.dart';
@@ -25,7 +26,6 @@ import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:cached_network_image_ce/cached_network_image.dart'
     hide CacheManager;
-import 'package:dio/dio.dart' show CancelToken;
 import 'package:easy_debounce/easy_throttle.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
@@ -511,37 +511,23 @@ abstract class CommonRichTextPubPageState<T extends CommonRichTextPubPage>
     feedBack();
     List<Map<String, dynamic>>? pictures;
     if (imageList.isNotEmpty) {
-      SmartDialog.showLoading(msg: '正在上传图片...');
-      final cancelToken = CancelToken();
-      try {
-        pictures = await Future.wait<Map<String, dynamic>>(
-          imageList.map((img) async {
-            switch (img) {
-              case FilePicModel e:
-                final result = await MsgHttp.uploadBfs(
-                  path: e.path,
-                  category: 'daily',
-                  biz: 'new_dyn',
-                  cancelToken: cancelToken,
-                );
-                final data = result.data;
-                return {
-                  'img_width': data.imageWidth,
-                  'img_height': data.imageHeight,
-                  'img_size': data.imgSize,
-                  'img_src': data.imageUrl,
-                };
-              case OpusPicModel e:
-                return e.toJson();
-            }
-          }),
-          eagerError: true,
-        );
-        SmartDialog.dismiss();
-      } on HttpException catch (e) {
-        cancelToken.cancel();
-        SmartDialog.dismiss();
-        SmartDialog.showToast(e.message);
+      final result = await uploadRichTextPictures(
+        images: imageList,
+        upload: ({required path, required cancelToken}) => MsgHttp.uploadBfs(
+          path: path,
+          category: 'daily',
+          biz: 'new_dyn',
+          cancelToken: cancelToken,
+        ),
+        onStart: () => SmartDialog.showLoading(msg: '正在上传图片...'),
+        onFinish: SmartDialog.dismiss,
+        onError: SmartDialog.showToast,
+      );
+      if (result case RichTextPictureUploadSuccess(
+        pictures: final uploadedPictures,
+      )) {
+        pictures = uploadedPictures;
+      } else {
         return;
       }
     }

@@ -33,7 +33,26 @@ class DownloadService extends GetxService {
   static const _entryFile = 'entry.json';
   static const _indexFile = 'index.json';
 
+  final DownloadDanmakuCallback? _downloadDanmakuOverride;
+  final DownloadMediaResolver _downloadMediaResolver;
+  final DownloadManagerFactory _downloadManagerFactory;
+
+  DownloadService()
+    : _downloadDanmakuOverride = null,
+      _downloadMediaResolver = DownloadHttp.getVideoUrl,
+      _downloadManagerFactory = DownloadManager.new;
+
+  @visibleForTesting
+  DownloadService.test({
+    required DownloadDanmakuCallback downloadDanmaku,
+    required DownloadMediaResolver downloadMedia,
+    required DownloadManagerFactory createDownloadManager,
+  }) : _downloadDanmakuOverride = downloadDanmaku,
+       _downloadMediaResolver = downloadMedia,
+       _downloadManagerFactory = createDownloadManager;
+
   final _lock = Lock();
+  int _downloadOperation = 0;
 
   final flagNotifier = SetNotifier();
   final waitDownloadQueue = RxList<BiliDownloadEntryInfo>();
@@ -279,9 +298,16 @@ class DownloadService extends GetxService {
   }
 
   Future<void> startDownload(BiliDownloadEntryInfo entry) {
+    final operation = ++_downloadOperation;
     return _lock.synchronized(() async {
+      if (operation != _downloadOperation) {
+        return;
+      }
       await _downloadManager?.cancel(isDelete: false);
       await _audioDownloadManager?.cancel(isDelete: false);
+      if (operation != _downloadOperation) {
+        return;
+      }
       _downloadManager = null;
       _audioDownloadManager = null;
       if (curDownload.value case final curEntry?) {
@@ -293,13 +319,19 @@ class DownloadService extends GetxService {
       _curCid = entry.cid;
       curDownload.value = entry;
       waitDownloadQueue.refresh();
-      await _startDownload(entry);
+      await _startDownload(entry, operation);
     });
   }
 
   Future<bool> downloadDanmaku({
     required BiliDownloadEntryInfo entry,
     bool isUpdate = false,
+  }) => _downloadDanmaku(entry: entry, isUpdate: isUpdate);
+
+  Future<bool> _downloadDanmaku({
+    required BiliDownloadEntryInfo entry,
+    required bool isUpdate,
+    bool Function()? canUpdateStatus,
   }) async {
     final cid = entry.pageData?.cid ?? entry.source?.cid;
     if (cid == null) {
@@ -310,7 +342,7 @@ class DownloadService extends GetxService {
     );
     if (isUpdate || !danmakuFile.existsSync()) {
       try {
-        if (!isUpdate) {
+        if (!isUpdate && (canUpdateStatus?.call() ?? true)) {
           _updateCurStatus(DownloadStatus.getDanmaku);
         }
         final seg = (entry.totalTimeMilli / PlDanmakuController.segmentLength)
@@ -332,7 +364,7 @@ class DownloadService extends GetxService {
 
         return true;
       } catch (e) {
-        if (!isUpdate) {
+        if (!isUpdate && (canUpdateStatus?.call() ?? true)) {
           _updateCurStatus(DownloadStatus.failDanmaku);
         }
         if (kDebugMode) SmartDialog.showToast(e.toString());
@@ -364,20 +396,41 @@ class DownloadService extends GetxService {
     }
   }
 
-  Future<void> _startDownload(BiliDownloadEntryInfo entry) async {
+  bool _isCurrentOperation(
+    BiliDownloadEntryInfo entry,
+    int operation,
+  ) => operation == _downloadOperation && identical(curDownload.value, entry);
+
+  Future<void> _startDownload(
+    BiliDownloadEntryInfo entry,
+    int operation,
+  ) async {
     try {
-      if (!await downloadDanmaku(entry: entry)) {
+      final downloadDanmakuOverride = _downloadDanmakuOverride;
+      if (!await (downloadDanmakuOverride != null
+          ? downloadDanmakuOverride(entry)
+          : _downloadDanmaku(
+              entry: entry,
+              isUpdate: false,
+              canUpdateStatus: () => _isCurrentOperation(entry, operation),
+            ))) {
+        return;
+      }
+      if (!_isCurrentOperation(entry, operation)) {
         return;
       }
 
       _updateCurStatus(DownloadStatus.getPlayUrl);
 
-      final mediaFileInfo = await DownloadHttp.getVideoUrl(
+      final mediaFileInfo = await _downloadMediaResolver(
         entry: entry,
         ep: entry.ep,
         source: entry.source,
         pageData: entry.pageData,
       );
+      if (!_isCurrentOperation(entry, operation)) {
+        return;
+      }
 
       final videoDir = Directory(path.join(entry.entryDirPath, entry.typeTag));
       if (!videoDir.existsSync()) {
@@ -390,14 +443,14 @@ class DownloadService extends GetxService {
         _downloadCover(entry: entry),
       ]);
 
-      if (curDownload.value?.cid != entry.cid) {
+      if (!_isCurrentOperation(entry, operation)) {
         return;
       }
 
       switch (mediaFileInfo) {
         case Type1 mediaFileInfo:
           final first = mediaFileInfo.segmentList.first;
-          _downloadManager = DownloadManager(
+          _downloadManager = _downloadManagerFactory(
             url: first.url,
             path: path.join(videoDir.path, PathUtils.videoNameType1),
             onReceiveProgress: _onReceive,
@@ -405,7 +458,7 @@ class DownloadService extends GetxService {
           );
           break;
         case Type2 mediaFileInfo:
-          _downloadManager = DownloadManager(
+          _downloadManager = _downloadManagerFactory(
             url: mediaFileInfo.video.first.baseUrl,
             path: path.join(videoDir.path, PathUtils.videoNameType2),
             onReceiveProgress: _onReceive,
@@ -413,7 +466,7 @@ class DownloadService extends GetxService {
           );
           final audio = mediaFileInfo.audio;
           if (audio != null && audio.isNotEmpty) {
-            _audioDownloadManager = DownloadManager(
+            _audioDownloadManager = _downloadManagerFactory(
               url: audio.first.baseUrl,
               path: path.join(videoDir.path, PathUtils.audioNameType2),
               onReceiveProgress: null,
@@ -433,7 +486,9 @@ class DownloadService extends GetxService {
           break;
       }
     } catch (e) {
-      _updateCurStatus(DownloadStatus.failPlayUrl);
+      if (_isCurrentOperation(entry, operation)) {
+        _updateCurStatus(DownloadStatus.failPlayUrl);
+      }
       if (kDebugMode) {
         debugPrint('get download url error: $e');
       }
@@ -570,6 +625,7 @@ class DownloadService extends GetxService {
     required bool isDelete,
     bool downloadNext = true,
   }) async {
+    _downloadOperation++;
     await _downloadManager?.cancel(isDelete: isDelete);
     await _audioDownloadManager?.cancel(isDelete: isDelete);
     _downloadManager = null;
@@ -591,6 +647,25 @@ class DownloadService extends GetxService {
     }
   }
 }
+
+typedef DownloadDanmakuCallback =
+    Future<bool> Function(BiliDownloadEntryInfo entry);
+
+typedef DownloadMediaResolver =
+    Future<BiliDownloadMediaInfo> Function({
+      required BiliDownloadEntryInfo entry,
+      SourceInfo? source,
+      PageInfo? pageData,
+      EpInfo? ep,
+    });
+
+typedef DownloadManagerFactory =
+    DownloadManager Function({
+      required String url,
+      required String path,
+      required void Function(int, int)? onReceiveProgress,
+      required void Function([Object? error]) onDone,
+    });
 
 typedef SetNotifier = Set<VoidCallback>;
 

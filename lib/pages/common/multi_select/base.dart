@@ -109,23 +109,23 @@ mixin CommonMultiSelectMixin<T extends MultiSelectData>
 mixin DeleteItemMixin<R, T extends MultiSelectData>
     on CommonListController<R, T>, CommonMultiSelectMixin<T> {
   Future<void> afterDelete(Set<T> removeList) async {
-    final list = loadingState.value.data!;
-    if (removeList.length == list.length) {
-      list.clear();
-    } else if (removeList.length == 1) {
-      list.remove(removeList.first);
-    } else {
-      list.removeWhere(removeList.contains);
-    }
-    if (list.isNotEmpty || isEnd) {
-      loadingState.refresh();
-    } else {
-      onReload();
-    }
+    await afterDeleteWhere(removeList.contains);
+  }
+
+  Future<int> afterDeleteWhere(bool Function(T item) shouldRemove) async {
+    final List<T>? list = loadingState.value.dataOrNull;
+    final beforeLength = list?.length ?? 0;
+    list?.removeWhere(shouldRemove);
+    final removedCount = beforeLength - (list?.length ?? 0);
     if (enableMultiSelect.value) {
       rxCount.value = 0;
       enableMultiSelect.value = false;
     }
+    if (removedCount != 0) {
+      loadingState.refresh();
+      if (!isEnd) onRefresh().ignore();
+    }
+    return removedCount;
   }
 }
 

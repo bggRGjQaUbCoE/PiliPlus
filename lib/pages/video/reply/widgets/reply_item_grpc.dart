@@ -76,7 +76,7 @@ class ReplyItemGrpc extends StatelessWidget {
   final Function(ReplyInfo replyItem, int? rpid)? replyReply;
   final bool needDivider;
   final ValueChanged<ReplyInfo>? onReply;
-  final Function(ReplyInfo replyItem, int? subIndex)? onDelete;
+  final void Function(ReplyInfo item, ReplyInfo? parent)? onDelete;
   final Int64? upMid;
   final VoidCallback? showDialogue;
   final Function? getTag;
@@ -604,7 +604,7 @@ class ReplyItemGrpc extends StatelessWidget {
                     return morePanel(
                       context: context,
                       item: childReply,
-                      onDelete: () => onDelete?.call(replyItem, index),
+                      onDelete: () => onDelete?.call(childReply, replyItem),
                       isSubReply: true,
                     );
                   },

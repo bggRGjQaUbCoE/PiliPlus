@@ -166,8 +166,7 @@ mixin CommonDynPageMixin<T extends StatefulWidget>
                   replyReply: (replyItem, id) =>
                       replyReply(context, replyItem, id),
                   onReply: controller.onReply,
-                  onDelete: (item, subIndex) =>
-                      controller.onRemove(index, item, subIndex),
+                  onDelete: controller.onRemove,
                   upMid: controller.upMid,
                   onViewImage: hideFab,
                   onCheckReply: (item) =>

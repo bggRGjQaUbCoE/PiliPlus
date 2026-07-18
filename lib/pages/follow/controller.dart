@@ -2,6 +2,7 @@ import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/member.dart';
 import 'package:PiliPlus/models/member/tags.dart';
 import 'package:PiliPlus/utils/accounts.dart';
+import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -78,10 +79,15 @@ class FollowController extends GetxController with GetTickerProviderStateMixin {
   }
 
   Future<void> onUpdateTag(MemberTagItemModel item, String tagName) async {
-    final res = await MemberHttp.updateFollowTag(item.tagid!, tagName);
+    final tagId = item.tagid;
+    if (tagId == null) return;
+    final res = await MemberHttp.updateFollowTag(tagId, tagName);
     if (res.isSuccess) {
-      item.name = tagName;
-      tabs.refresh();
+      final currentIndex = tabs.indexWhere((item) => item.tagid == tagId);
+      if (currentIndex != -1) {
+        tabs[currentIndex].name = tagName;
+        tabs.refresh();
+      }
       SmartDialog.showToast('修改成功');
     } else {
       res.toast();
@@ -91,9 +97,11 @@ class FollowController extends GetxController with GetTickerProviderStateMixin {
   Future<void> onDelTag(int index, int tagid) async {
     final res = await MemberHttp.delFollowTag(tagid);
     if (res.isSuccess) {
-      tabs.removeAt(index);
-      onInitTab();
-      followState.refresh();
+      final removed = tabs.removeFirstWhere((item) => item.tagid == tagid);
+      if (removed) {
+        onInitTab();
+        followState.refresh();
+      }
       SmartDialog.showToast('删除成功');
     } else {
       res.toast();

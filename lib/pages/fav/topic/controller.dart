@@ -3,6 +3,7 @@ import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models_new/fav/fav_topic/data.dart';
 import 'package:PiliPlus/models_new/fav/fav_topic/topic_item.dart';
 import 'package:PiliPlus/pages/common/common_list_controller.dart';
+import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 
 class FavTopicController
@@ -41,9 +42,13 @@ class FavTopicController
   Future<void> onRemove(int index, int id) async {
     final res = await FavHttp.delFavTopic(id);
     if (res.isSuccess) {
-      loadingState
-        ..value.data!.removeAt(index)
-        ..refresh();
+      final removed = loadingState.value.dataOrNull?.removeFirstWhere(
+        (item) => item.id == id,
+      );
+      if (removed == true) {
+        loadingState.refresh();
+        if (!isEnd) onRefresh().ignore();
+      }
       SmartDialog.showToast('已取消收藏');
     } else {
       res.toast();

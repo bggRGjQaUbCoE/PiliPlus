@@ -6,6 +6,7 @@ import 'package:PiliPlus/models_new/history/list.dart';
 import 'package:PiliPlus/pages/common/multi_select/base.dart';
 import 'package:PiliPlus/pages/common/search/common_search_controller.dart';
 import 'package:PiliPlus/utils/accounts.dart';
+import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:flutter/widgets.dart' show Text;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -33,9 +34,13 @@ class HistorySearchController
       account: account,
     );
     if (res.isSuccess) {
-      loadingState
-        ..value.data!.removeAt(index)
-        ..refresh();
+      final removed = loadingState.value.dataOrNull?.removeFirstWhere(
+        (item) => item.kid == kid && item.history.business == business,
+      );
+      if (removed == true) {
+        loadingState.refresh();
+        if (!isEnd) onRefresh().ignore();
+      }
       SmartDialog.showToast('已删除');
     } else {
       res.toast();
@@ -51,6 +56,9 @@ class HistorySearchController
       onConfirm: () async {
         SmartDialog.showLoading(msg: '请求中');
         final removeList = allChecked.toSet();
+        final removeKeys = removeList
+            .map((item) => (item.history.business, item.kid))
+            .toSet();
         final response = await UserHttp.delHistory(
           removeList
               .map((item) => '${item.history.business!}_${item.kid!}')
@@ -58,7 +66,9 @@ class HistorySearchController
           account: account,
         );
         if (response.isSuccess) {
-          afterDelete(removeList);
+          await afterDeleteWhere(
+            (item) => removeKeys.contains((item.history.business, item.kid)),
+          );
           SmartDialog.showToast('已删除');
         } else {
           response.toast();

@@ -4,6 +4,7 @@ import 'package:PiliPlus/http/video.dart';
 import 'package:PiliPlus/models_new/follow/data.dart';
 import 'package:PiliPlus/pages/follow_type/controller.dart';
 import 'package:PiliPlus/utils/accounts.dart';
+import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 
@@ -43,9 +44,13 @@ class FansController extends FollowTypeController {
       reSrc: 11,
     );
     if (res.isSuccess) {
-      loadingState
-        ..value.data!.removeAt(index)
-        ..refresh();
+      final removed = loadingState.value.dataOrNull?.removeFirstWhere(
+        (item) => item.mid == mid,
+      );
+      if (removed == true) {
+        loadingState.refresh();
+        if (!isEnd) onRefresh().ignore();
+      }
       SmartDialog.showToast('移除成功');
     } else {
       res.toast();

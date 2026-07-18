@@ -105,6 +105,9 @@ class HistoryController
   }
 
   Future<void> _onDelete(Set<HistoryItemModel> removeList) async {
+    final removeKeys = removeList
+        .map((item) => (item.history.business, item.kid))
+        .toSet();
     SmartDialog.showLoading(msg: '请求中');
     final res = await UserHttp.delHistory(
       removeList
@@ -114,7 +117,9 @@ class HistoryController
     );
     SmartDialog.dismiss();
     if (res.isSuccess) {
-      afterDelete(removeList);
+      await afterDeleteWhere(
+        (item) => removeKeys.contains((item.history.business, item.kid)),
+      );
       SmartDialog.showToast('已删除');
     } else {
       res.toast();

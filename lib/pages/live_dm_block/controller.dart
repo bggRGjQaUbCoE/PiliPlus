@@ -2,6 +2,7 @@ import 'package:PiliPlus/http/live.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/live/live_dm_silent_type.dart';
 import 'package:PiliPlus/models_new/live/live_dm_block/shield_user_list.dart';
+import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -130,14 +131,14 @@ class LiveDmBlockController extends GetxController
         type: 0,
       );
       if (res.isSuccess) {
-        shieldUserList.removeAt(index);
+        shieldUserList.removeFirstWhere((current) => current.uid == item.uid);
       } else {
         res.toast();
       }
     } else {
       final res = await LiveHttp.delShieldKeyword(keyword: item as String);
       if (res.isSuccess) {
-        keywordList.removeAt(index);
+        keywordList.removeFirstWhere((current) => current == item);
       } else {
         res.toast();
       }

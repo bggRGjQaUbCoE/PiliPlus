@@ -1201,11 +1201,19 @@ class HeaderControlState extends State<HeaderControl>
                 Get.back();
                 final url = item.subtitleUrl;
                 if (url == null || url.isEmpty) return;
+                final targetBvid = videoDetailCtr.bvid;
+                final targetCid = videoDetailCtr.cid.value;
+                final targetVideoDetail = introController.videoDetail.value;
+                bool isCurrentSubtitle() =>
+                    videoDetailCtr.bvid == targetBvid &&
+                    videoDetailCtr.cid.value == targetCid &&
+                    i < videoDetailCtr.subtitles.length &&
+                    identical(videoDetailCtr.subtitles[i], item);
                 try {
                   final Uint8List bytes;
                   switch (format) {
                     case .vtt || .srt:
-                      var subtitle = format == .vtt
+                      var subtitle = format == .vtt && isCurrentSubtitle()
                           ? videoDetailCtr.vttSubtitles[i]?.id
                           : null;
                       if (subtitle == null) {
@@ -1215,7 +1223,7 @@ class HeaderControlState extends State<HeaderControl>
                         );
                         if (res == null) return;
                         subtitle = res;
-                        if (format == .vtt) {
+                        if (format == .vtt && isCurrentSubtitle()) {
                           videoDetailCtr.vttSubtitles[i] = (
                             isData: true,
                             id: res,
@@ -1240,9 +1248,8 @@ class HeaderControlState extends State<HeaderControl>
                         ),
                       );
                   }
-                  final videoDetail = introController.videoDetail.value;
                   final name =
-                      '${videoDetail.title}-${videoDetail.owner?.name}(${videoDetail.owner?.mid})-${videoDetailCtr.bvid}-${videoDetailCtr.cid.value}-${item.lanDoc}.${format.name}'
+                      '${targetVideoDetail.title}-${targetVideoDetail.owner?.name}(${targetVideoDetail.owner?.mid})-$targetBvid-$targetCid-${item.lanDoc}.${format.name}'
                           .replaceAll(
                             Platform.isWindows ? RegExp(r'[<>:/\\|?*"]') : '/',
                             '_',

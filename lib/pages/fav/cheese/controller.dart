@@ -4,6 +4,7 @@ import 'package:PiliPlus/models_new/space/space_cheese/data.dart';
 import 'package:PiliPlus/models_new/space/space_cheese/item.dart';
 import 'package:PiliPlus/pages/common/common_list_controller.dart';
 import 'package:PiliPlus/utils/accounts.dart';
+import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 
 class FavCheeseController
@@ -29,9 +30,13 @@ class FavCheeseController
   Future<void> onRemove(int index, int sid) async {
     final res = await FavHttp.delFavPugv(sid);
     if (res.isSuccess) {
-      loadingState
-        ..value.data!.removeAt(index)
-        ..refresh();
+      final removed = loadingState.value.dataOrNull?.removeFirstWhere(
+        (item) => item.seasonId == sid,
+      );
+      if (removed == true) {
+        loadingState.refresh();
+        if (!isEnd) onRefresh().ignore();
+      }
       SmartDialog.showToast('已取消收藏');
     } else {
       res.toast();

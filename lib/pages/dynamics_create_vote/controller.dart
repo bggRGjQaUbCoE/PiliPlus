@@ -109,17 +109,22 @@ class CreateVoteController extends GetxController {
     }
   }
 
-  Future<void> onUpload(int index, String path) async {
+  Future<void> onUpload(Option option, String path) async {
     final res = await MsgHttp.uploadBfs(
       path: path,
       category: 'daily',
       biz: 'vote',
     );
     if (res case Success(:final response)) {
-      options
-        ..[index].imgUrl = response.imageUrl
-        ..refresh();
-      updateCanCreate();
+      final currentIndex = options.indexWhere(
+        (current) => identical(current, option),
+      );
+      if (currentIndex != -1) {
+        options
+          ..[currentIndex].imgUrl = response.imageUrl
+          ..refresh();
+        updateCanCreate();
+      }
     } else {
       res.toast();
     }

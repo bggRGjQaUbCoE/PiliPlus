@@ -514,13 +514,16 @@ class VideoDetailController extends GetxController
         onDelete:
             sourceType == SourceType.watchLater ||
                 (sourceType == SourceType.fav && args['isOwner'] == true)
-            ? (item, index) async {
+            ? (item, _) async {
                 if (sourceType == SourceType.watchLater) {
                   final res = await UserHttp.toViewDel(
                     aids: item.aid.toString(),
                   );
                   if (res.isSuccess) {
-                    mediaList.removeAt(index);
+                    mediaList.removeFirstWhere(
+                      (current) =>
+                          current.aid == item.aid && current.type == item.type,
+                    );
                   }
                 } else {
                   final res = await FavHttp.favVideo(
@@ -528,7 +531,10 @@ class VideoDetailController extends GetxController
                     delIds: '${args['mediaId']}',
                   );
                   if (res.isSuccess) {
-                    mediaList.removeAt(index);
+                    mediaList.removeFirstWhere(
+                      (current) =>
+                          current.aid == item.aid && current.type == item.type,
+                    );
                     SmartDialog.showToast('取消收藏');
                   } else {
                     res.toast();
@@ -1138,18 +1144,26 @@ class VideoDetailController extends GetxController
   late final vttSubtitlesIndex = (-1).obs;
   late final showVP = true.obs;
   late final viewPointList = <ViewPointSegment>[].obs;
+  late final LatestRequestRunner<int> _subtitleRequestRunner =
+      LatestRequestRunner(_applySubtitle);
 
   // 设定字幕轨道
-  Future<void> setSubtitle(int index) async {
+  Future<void> setSubtitle(int index) => _subtitleRequestRunner.run(index);
+
+  Future<void> _applySubtitle(
+    int index,
+    bool Function() isCurrent,
+  ) async {
     if (index <= 0) {
       await plPlayerController.videoPlayerController?.setSubtitleTrack(.no());
-      vttSubtitlesIndex.value = index;
+      if (isCurrent() && !isClosed) vttSubtitlesIndex.value = index;
       return;
     }
 
-    Future<void> setSub(({bool isData, String id}) subtitle) async {
-      final sub = subtitles[index - 1];
+    final sub = subtitles.getOrNull(index - 1);
+    if (sub == null) return;
 
+    Future<void> setSub(({bool isData, String id}) subtitle) async {
       String subUri = subtitle.id;
       if (subtitle.isData) {
         subUri = 'memory://$subUri';
@@ -1157,17 +1171,21 @@ class VideoDetailController extends GetxController
       await plPlayerController.videoPlayerController?.setSubtitleTrack(
         SubtitleTrack(subUri, sub.lanDoc, sub.lan, uri: true),
       );
-      vttSubtitlesIndex.value = index;
+      if (isCurrent() && !isClosed) vttSubtitlesIndex.value = index;
     }
 
     ({bool isData, String id})? subtitle = vttSubtitles[index - 1];
     if (subtitle != null) {
+      if (!isCurrent() || isClosed) return;
       await setSub(subtitle);
     } else {
-      final result = await VideoHttp.vttSubtitles(
-        subtitles[index - 1].subtitleUrl!,
-      );
-      if (!isClosed && result != null) {
+      final subtitleUrl = sub.subtitleUrl;
+      if (subtitleUrl == null) return;
+      final result = await VideoHttp.vttSubtitles(subtitleUrl);
+      if (result != null &&
+          isCurrent() &&
+          !isClosed &&
+          identical(subtitles.getOrNull(index - 1), sub)) {
         final subtitle = (isData: true, id: result);
         vttSubtitles[index - 1] = subtitle;
         await setSub(subtitle);

@@ -4,7 +4,9 @@ import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/video_card/video_card_v.dart';
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/models/model_rec_video_item.dart';
 import 'package:PiliPlus/pages/rcmd/controller.dart';
+import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:PiliPlus/utils/grid.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:flutter/material.dart';
@@ -96,25 +98,48 @@ class _RcmdPageState extends State<RcmdPage>
                     final actualIndex = index > controller.lastRefreshAt!
                         ? index - 1
                         : index;
+                    final item =
+                        response[actualIndex] as BaseRcmdVideoItemModel;
                     return VideoCardV(
-                      videoItem: response[actualIndex],
+                      videoItem: item,
                       onRemove: () {
+                        final list = controller.loadingState.value.dataOrNull;
+                        final currentIndex = list?.indexWhere(
+                          (current) =>
+                              current is BaseRcmdVideoItemModel &&
+                              current.aid == item.aid &&
+                              current.bvid == item.bvid,
+                        );
+                        if (list == null ||
+                            currentIndex == null ||
+                            currentIndex == -1) {
+                          return;
+                        }
                         if (controller.lastRefreshAt != null &&
-                            actualIndex < controller.lastRefreshAt!) {
+                            currentIndex < controller.lastRefreshAt!) {
                           controller.lastRefreshAt =
                               controller.lastRefreshAt! - 1;
                         }
-                        controller.loadingState
-                          ..value.data!.removeAt(actualIndex)
-                          ..refresh();
+                        list.removeAt(currentIndex);
+                        controller.loadingState.refresh();
                       },
                     );
                   } else {
+                    final item = response[index] as BaseRcmdVideoItemModel;
                     return VideoCardV(
-                      videoItem: response[index],
-                      onRemove: () => controller.loadingState
-                        ..value.data!.removeAt(index)
-                        ..refresh(),
+                      videoItem: item,
+                      onRemove: () {
+                        final removed = controller.loadingState.value.dataOrNull
+                            ?.removeFirstWhere(
+                              (current) =>
+                                  current is BaseRcmdVideoItemModel &&
+                                  current.aid == item.aid &&
+                                  current.bvid == item.bvid,
+                            );
+                        if (removed == true) {
+                          controller.loadingState.refresh();
+                        }
+                      },
                     );
                   }
                 },

@@ -119,7 +119,7 @@ class _CreateVotePageState extends State<CreateVotePage> {
                       onPickImg: () => EasyThrottle.throttle(
                         'picImg',
                         const Duration(milliseconds: 500),
-                        () => _onPickImg(i),
+                        () => _onPickImg(e),
                       ),
                       initialValue: e.optDesc,
                       onChanged: (value) => _controller
@@ -422,7 +422,7 @@ class _CreateVotePageState extends State<CreateVotePage> {
     },
   );
 
-  void _onPickImg(int index) {
+  void _onPickImg(Option option) {
     EasyThrottle.throttle(
       'imagePicker',
       const Duration(milliseconds: 500),
@@ -435,7 +435,7 @@ class _CreateVotePageState extends State<CreateVotePage> {
           );
           if (pickedFile != null) {
             final path = pickedFile.path;
-            _controller.onUpload(index, path).whenComplete(() {
+            _controller.onUpload(option, path).whenComplete(() {
               if (PlatformUtils.isMobile) {
                 File(path).tryDel();
               }

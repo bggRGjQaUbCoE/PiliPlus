@@ -164,7 +164,7 @@ abstract class CommonRichTextPubPageState<T extends CommonRichTextPubPage>
             right: 5,
             child: iconButton(
               icon: const Icon(Icons.edit),
-              onPressed: () => onCropImage(index, image),
+              onPressed: () => onCropImage(image),
               size: 24,
               iconSize: 14,
               bgColor: color,
@@ -185,7 +185,7 @@ abstract class CommonRichTextPubPageState<T extends CommonRichTextPubPage>
     );
   }
 
-  Future<void> onCropImage(int index, PicModel image) async {
+  Future<void> onCropImage(PicModel image) async {
     String? path;
     switch (image) {
       case FilePicModel e:
@@ -212,10 +212,17 @@ abstract class CommonRichTextPubPageState<T extends CommonRichTextPubPage>
       ],
     );
     if (croppedFile != null) {
+      final currentIndex = imageList.indexWhere(
+        (current) => identical(current, image),
+      );
+      if (!mounted || currentIndex == -1) {
+        File(croppedFile.path).tryDel();
+        return;
+      }
       if (image is FilePicModel) {
         File(image.path).tryDel();
       }
-      imageList[index] = FilePicModel(path: croppedFile.path);
+      imageList[currentIndex] = FilePicModel(path: croppedFile.path);
     }
   }
 

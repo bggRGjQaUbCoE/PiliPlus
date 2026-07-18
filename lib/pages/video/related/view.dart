@@ -4,6 +4,7 @@ import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/model_hot_video_item.dart';
 import 'package:PiliPlus/pages/video/related/controller.dart';
 import 'package:PiliPlus/utils/extension/get_ext.dart';
+import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:PiliPlus/utils/grid.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -43,11 +44,23 @@ class _RelatedVideoPanelState extends State<RelatedVideoPanel> with GridMixin {
             ? SliverGrid.builder(
                 gridDelegate: gridDelegate,
                 itemBuilder: (context, index) {
+                  final item = response[index];
                   return VideoCardH(
-                    videoItem: response[index],
-                    onRemove: () => _relatedController.loadingState
-                      ..value.data!.removeAt(index)
-                      ..refresh(),
+                    videoItem: item,
+                    onRemove: () {
+                      final removed = _relatedController
+                          .loadingState
+                          .value
+                          .dataOrNull
+                          ?.removeFirstWhere(
+                            (current) =>
+                                current.aid == item.aid &&
+                                current.bvid == item.bvid,
+                          );
+                      if (removed == true) {
+                        _relatedController.loadingState.refresh();
+                      }
+                    },
                   );
                 },
                 itemCount: response.length,

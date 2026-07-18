@@ -3,6 +3,7 @@ import 'package:PiliPlus/http/msg.dart';
 import 'package:PiliPlus/models_new/msg/msg_reply/data.dart';
 import 'package:PiliPlus/models_new/msg/msg_reply/item.dart';
 import 'package:PiliPlus/pages/common/common_list_controller.dart';
+import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 
 class ReplyMeController
@@ -41,9 +42,10 @@ class ReplyMeController
     try {
       final res = await MsgHttp.delMsgfeed(1, id);
       if (res.isSuccess) {
-        loadingState
-          ..value.data!.removeAt(index)
-          ..refresh();
+        final removed = loadingState.value.dataOrNull?.removeFirstWhere(
+          (item) => item.id == id,
+        );
+        if (removed == true) loadingState.refresh();
         SmartDialog.showToast('删除成功');
       } else {
         res.toast();

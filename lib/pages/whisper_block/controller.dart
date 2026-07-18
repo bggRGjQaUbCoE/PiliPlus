@@ -2,6 +2,7 @@ import 'package:PiliPlus/grpc/bilibili/app/im/v1.pb.dart';
 import 'package:PiliPlus/grpc/im.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/pages/common/common_list_controller.dart';
+import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 
@@ -34,10 +35,12 @@ class WhisperBlockController
     final res = await ImGrpc.keywordBlockingAdd(keyword);
     if (res.isSuccess) {
       Get.back();
-      loadingState
-        ..value.data!.add(KeywordBlockingItem(keyword: keyword))
-        ..refresh();
-      count.value += 1;
+      final list = loadingState.value.dataOrNull;
+      if (list != null && !list.any((item) => item.keyword == keyword)) {
+        list.add(KeywordBlockingItem(keyword: keyword));
+        loadingState.refresh();
+        count.value += 1;
+      }
       SmartDialog.showToast('添加成功');
     } else {
       res.toast();
@@ -45,12 +48,16 @@ class WhisperBlockController
   }
 
   Future<void> onRemove(KeywordBlockingItem item) async {
-    final res = await ImGrpc.keywordBlockingDelete(item.keyword);
+    final keyword = item.keyword;
+    final res = await ImGrpc.keywordBlockingDelete(keyword);
     if (res.isSuccess) {
-      loadingState
-        ..value.data!.remove(item)
-        ..refresh();
-      count.value -= 1;
+      final removed = loadingState.value.dataOrNull?.removeFirstWhere(
+        (item) => item.keyword == keyword,
+      );
+      if (removed == true) {
+        loadingState.refresh();
+        if (count.value > 0) count.value -= 1;
+      }
       SmartDialog.showToast('删除成功');
     } else {
       res.toast();

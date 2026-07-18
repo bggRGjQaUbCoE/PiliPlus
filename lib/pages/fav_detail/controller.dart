@@ -11,6 +11,7 @@ import 'package:PiliPlus/pages/common/multi_select/base.dart';
 import 'package:PiliPlus/pages/common/multi_select/multi_select_controller.dart';
 import 'package:PiliPlus/pages/fav_sort/view.dart';
 import 'package:PiliPlus/utils/accounts.dart';
+import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:PiliPlus/utils/extension/scroll_controller_ext.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
@@ -37,10 +38,14 @@ mixin BaseFavController
       delIds: mediaId.toString(),
     );
     if (res.isSuccess) {
-      loadingState
-        ..value.data!.removeAt(index)
-        ..refresh();
-      updateCount?.call(1);
+      final removed = loadingState.value.dataOrNull?.removeFirstWhere(
+        (item) => item.id == id && item.type == type,
+      );
+      if (removed == true) {
+        loadingState.refresh();
+        updateCount?.call(1);
+        if (!isEnd) onRefresh().ignore();
+      }
       SmartDialog.showToast('取消收藏');
     } else {
       res.toast();
@@ -55,6 +60,9 @@ mixin BaseFavController
       content: const Text('确认删除所选收藏吗？'),
       onConfirm: () async {
         final removeList = allChecked.toSet();
+        final removeKeys = removeList
+            .map((item) => (item.id, item.type))
+            .toSet();
         final res = await FavHttp.favVideo(
           resources: removeList
               .map((item) => '${item.id}:${item.type}')
@@ -62,8 +70,10 @@ mixin BaseFavController
           delIds: mediaId.toString(),
         );
         if (res.isSuccess) {
-          updateCount?.call(removeList.length);
-          afterDelete(removeList);
+          final removedCount = await afterDeleteWhere(
+            (item) => removeKeys.contains((item.id, item.type)),
+          );
+          if (removedCount != 0) updateCount?.call(removedCount);
           SmartDialog.showToast('取消收藏');
         } else {
           res.toast();

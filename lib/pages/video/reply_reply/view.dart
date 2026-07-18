@@ -337,7 +337,7 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
       replyItem: replyItem,
       replyLevel: isDialogue ? 3 : 2,
       onReply: (replyItem) => _controller.onReply(replyItem, index: index),
-      onDelete: (item, subIndex) => _controller.onRemove(index, item, null),
+      onDelete: _controller.onRemove,
       upMid: _controller.upMid,
       showDialogue: () => Scaffold.of(context).showBottomSheet(
         backgroundColor: Colors.transparent,

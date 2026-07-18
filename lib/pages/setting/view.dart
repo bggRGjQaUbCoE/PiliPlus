@@ -5,6 +5,7 @@ import 'package:PiliPlus/models/common/setting_type.dart';
 import 'package:PiliPlus/pages/about/view.dart';
 import 'package:PiliPlus/pages/login/controller.dart';
 import 'package:PiliPlus/pages/setting/common_setting.dart';
+import 'package:PiliPlus/pages/setting/logout_coordinator.dart';
 import 'package:PiliPlus/pages/setting/widgets/multi_select_dialog.dart';
 import 'package:PiliPlus/pages/webdav/view.dart';
 import 'package:PiliPlus/utils/accounts.dart';
@@ -227,15 +228,20 @@ class _SettingPageState extends State<SettingPage> {
       ),
     );
     if (!context.mounted || result == null || result.isEmpty) return;
-    Future<void> logout() {
-      _noAccount.value = result.length == Accounts.account.length;
-      return Accounts.deleteAll(result);
+    Future<void> logoutLocally(Set<LoginAccount> accounts) async {
+      try {
+        await Accounts.deleteAll(accounts);
+      } finally {
+        if (mounted) {
+          _noAccount.value = Accounts.account.isEmpty;
+        }
+      }
     }
 
-    showDialog(
+    await showDialog<void>(
       context: context,
-      builder: (context) {
-        final theme = Theme.of(context);
+      builder: (dialogContext) {
+        final theme = Theme.of(dialogContext);
         return AlertDialog(
           title: const Text('提示'),
           content: Text(
@@ -243,7 +249,7 @@ class _SettingPageState extends State<SettingPage> {
           ),
           actions: [
             TextButton(
-              onPressed: Get.back,
+              onPressed: () => Navigator.of(dialogContext).pop(),
               child: Text(
                 '点错了',
                 style: TextStyle(
@@ -252,9 +258,13 @@ class _SettingPageState extends State<SettingPage> {
               ),
             ),
             TextButton(
-              onPressed: () {
-                Get.back();
-                logout();
+              onPressed: () async {
+                Navigator.of(dialogContext).pop();
+                try {
+                  await logoutLocally(result);
+                } catch (error) {
+                  SmartDialog.showToast('登出失败：$error');
+                }
               },
               child: Text(
                 '仅登出',
@@ -264,14 +274,41 @@ class _SettingPageState extends State<SettingPage> {
             TextButton(
               onPressed: () async {
                 SmartDialog.showLoading();
-                final res = await LoginHttp.logout(Accounts.main);
-                if (res['status']) {
+                late final AccountLogoutResult<LoginAccount> res;
+                try {
+                  res = await logoutSelectedAccounts(
+                    selectedAccounts: result,
+                    remoteLogout: LoginHttp.logout,
+                    deleteAccounts: logoutLocally,
+                  );
+                } catch (error) {
                   SmartDialog.dismiss();
-                  logout();
-                  Get.back();
-                } else {
-                  SmartDialog.dismiss();
-                  SmartDialog.showToast(res['msg'].toString());
+                  if (mounted) {
+                    _noAccount.value = Accounts.account.isEmpty;
+                  }
+                  if (dialogContext.mounted) {
+                    Navigator.of(dialogContext).pop();
+                  }
+                  SmartDialog.showToast('本地账号清理失败：$error');
+                  return;
+                }
+
+                SmartDialog.dismiss();
+                if (mounted) {
+                  _noAccount.value = Accounts.account.isEmpty;
+                }
+                if (dialogContext.mounted) {
+                  Navigator.of(dialogContext).pop();
+                }
+                if (res.failures.isNotEmpty) {
+                  final details = res.failures.entries
+                      .map((entry) => '${entry.key.mid}: ${entry.value}')
+                      .join('\n');
+                  SmartDialog.showToast(
+                    res.loggedOut.isEmpty
+                        ? '登出失败，失败账号已保留\n$details'
+                        : '部分账号登出失败，失败账号已保留\n$details',
+                  );
                 }
               },
               child: const Text('确认'),

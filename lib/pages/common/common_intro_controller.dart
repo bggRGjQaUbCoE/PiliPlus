@@ -12,6 +12,7 @@ import 'package:PiliPlus/models_new/video/video_tag/data.dart';
 import 'package:PiliPlus/pages/video/controller.dart';
 import 'package:PiliPlus/pages/video/introduction/ugc/widgets/triple_mixin.dart';
 import 'package:PiliPlus/utils/accounts.dart';
+import 'package:PiliPlus/utils/async_operation_guard.dart';
 import 'package:PiliPlus/utils/global_data.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
@@ -34,14 +35,14 @@ abstract class CommonIntroController extends GetxController
 
   final Rx<List<VideoTagItem>?> videoTags = Rx<List<VideoTagItem>?>(null);
 
-  bool isProcessing = false;
-  Future<void> handleAction(FutureOr Function() action) async {
-    if (!isProcessing) {
-      isProcessing = true;
-      await action();
-      isProcessing = false;
-    }
-  }
+  final _actionGuard = AsyncOperationGuard();
+
+  bool get isProcessing => _actionGuard.isProcessing;
+
+  Future<void> handleAction(FutureOr Function() action) =>
+      _actionGuard.run(() async {
+        await action();
+      });
 
   @override
   late final isLogin = Accounts.main.isLogin;

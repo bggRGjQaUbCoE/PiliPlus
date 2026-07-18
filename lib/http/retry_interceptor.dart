@@ -54,7 +54,8 @@ class RetryInterceptor extends Interceptor {
         case DioExceptionType.connectionTimeout:
         case DioExceptionType.sendTimeout:
         case DioExceptionType.unknown:
-          if ((err.requestOptions.extra['_rt'] ??= 0) < _count &&
+          if (_canRetry(err.requestOptions) &&
+              (err.requestOptions.extra['_rt'] ??= 0) < _count &&
               err.error
                   is! TransportConnectionException // 网络中断, 此时请求可能已经被服务器所接收
                   ) {
@@ -79,4 +80,9 @@ class RetryInterceptor extends Interceptor {
 
   RetryInterceptor copyWith({Dio? client, int? count, int? delay}) =>
       .new(client ?? _client, count ?? _count, delay ?? _delay);
+}
+
+bool _canRetry(RequestOptions options) {
+  final method = options.method.toUpperCase();
+  return options.data == null && (method == 'GET' || method == 'HEAD');
 }

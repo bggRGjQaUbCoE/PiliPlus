@@ -87,6 +87,7 @@ class PgcReviewController
           if (desired == 1) stat.disliked = 0;
           loadingState.refresh();
         }
+        reconcileAfterMutation().ignore();
       } else {
         res.toast();
       }
@@ -119,6 +120,7 @@ class PgcReviewController
           }
           loadingState.refresh();
         }
+        reconcileAfterMutation().ignore();
       } else {
         res.toast();
       }
@@ -139,8 +141,8 @@ class PgcReviewController
           count.value = current > 0 ? current - 1 : 0;
         }
         loadingState.refresh();
-        if (!isEnd) onRefresh().ignore();
       }
+      reconcileAfterMutation().ignore();
       SmartDialog.showToast('删除成功');
     } else {
       res.toast();

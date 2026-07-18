@@ -46,6 +46,7 @@ class AtMeController extends CommonListController<MsgAtData, MsgAtItem> {
           (item) => item.id == id,
         );
         if (removed == true) loadingState.refresh();
+        reconcileAfterMutation().ignore();
         SmartDialog.showToast('删除成功');
       } else {
         res.toast();

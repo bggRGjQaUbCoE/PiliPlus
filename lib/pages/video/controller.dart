@@ -45,6 +45,7 @@ import 'package:PiliPlus/pages/video/medialist/view.dart';
 import 'package:PiliPlus/pages/video/note/view.dart';
 import 'package:PiliPlus/pages/video/post_panel/view.dart';
 import 'package:PiliPlus/pages/video/send_danmaku/view.dart';
+import 'package:PiliPlus/pages/video/video_media_request_guard.dart';
 import 'package:PiliPlus/pages/video/widgets/header_control.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/models/data_source.dart';
@@ -86,6 +87,11 @@ typedef _VideoUrlRequest = ({
   VideoRequestIntent intent,
 });
 
+typedef _SubtitleRequest = ({
+  int index,
+  VideoMediaRequestToken media,
+});
+
 _VideoUrlRequest _mergeVideoUrlRequests(
   _VideoUrlRequest previous,
   _VideoUrlRequest next,
@@ -122,6 +128,20 @@ class VideoDetailController extends GetxController
   int? pgcType;
   late final String heroTag;
   late final RxString cover;
+
+  final VideoMediaRequestGuard _sideRequestGuard = VideoMediaRequestGuard();
+  int _steinEdgeRequestGeneration = 0;
+
+  VideoMediaIdentity get _currentMediaIdentity => (
+    aid: aid,
+    bvid: bvid,
+    cid: cid.value,
+    epId: epId,
+    seasonId: seasonId,
+  );
+
+  bool _isCurrentSideRequest(VideoMediaRequestToken request) =>
+      !isClosed && _sideRequestGuard.isCurrent(request, _currentMediaIdentity);
 
   // 视频类型 默认投稿视频
   late final VideoType videoType;
@@ -1144,19 +1164,26 @@ class VideoDetailController extends GetxController
   late final vttSubtitlesIndex = (-1).obs;
   late final showVP = true.obs;
   late final viewPointList = <ViewPointSegment>[].obs;
-  late final LatestRequestRunner<int> _subtitleRequestRunner =
+  late final LatestRequestRunner<_SubtitleRequest> _subtitleRequestRunner =
       LatestRequestRunner(_applySubtitle);
 
   // 设定字幕轨道
-  Future<void> setSubtitle(int index) => _subtitleRequestRunner.run(index);
+  Future<void> setSubtitle(int index) => _subtitleRequestRunner.run((
+    index: index,
+    media: _sideRequestGuard.capture(_currentMediaIdentity),
+  ));
 
   Future<void> _applySubtitle(
-    int index,
-    bool Function() isCurrent,
+    _SubtitleRequest request,
+    bool Function() isLatest,
   ) async {
+    final index = request.index;
+    bool isCurrent() => isLatest() && _isCurrentSideRequest(request.media);
+
+    if (!isCurrent()) return;
     if (index <= 0) {
       await plPlayerController.videoPlayerController?.setSubtitleTrack(.no());
-      if (isCurrent() && !isClosed) vttSubtitlesIndex.value = index;
+      if (isCurrent()) vttSubtitlesIndex.value = index;
       return;
     }
 
@@ -1171,7 +1198,7 @@ class VideoDetailController extends GetxController
       await plPlayerController.videoPlayerController?.setSubtitleTrack(
         SubtitleTrack(subUri, sub.lanDoc, sub.lan, uri: true),
       );
-      if (isCurrent() && !isClosed) vttSubtitlesIndex.value = index;
+      if (isCurrent()) vttSubtitlesIndex.value = index;
     }
 
     ({bool isData, String id})? subtitle = vttSubtitles[index - 1];
@@ -1184,7 +1211,6 @@ class VideoDetailController extends GetxController
       final result = await VideoHttp.vttSubtitles(subtitleUrl);
       if (result != null &&
           isCurrent() &&
-          !isClosed &&
           identical(subtitles.getOrNull(index - 1), sub)) {
         final subtitle = (isData: true, id: result);
         vttSubtitles[index - 1] = subtitle;
@@ -1199,16 +1225,23 @@ class VideoDetailController extends GetxController
   late final RxBool showSteinEdgeInfo = false.obs;
 
   Future<void> getSteinEdgeInfo([int? edgeId]) async {
+    final mediaRequest = _sideRequestGuard.capture(_currentMediaIdentity);
+    final edgeRequestGeneration = ++_steinEdgeRequestGeneration;
+    bool isCurrent() =>
+        edgeRequestGeneration == _steinEdgeRequestGeneration &&
+        _isCurrentSideRequest(mediaRequest);
+
     steinEdgeInfo = null;
     try {
       final res = await Request().get(
         '/x/stein/edgeinfo_v2',
         queryParameters: {
-          'bvid': bvid,
+          'bvid': mediaRequest.media.bvid,
           'graph_version': graphVersion,
           'edge_id': ?edgeId,
         },
       );
+      if (!isCurrent()) return;
       if (res.data['code'] == 0) {
         steinEdgeInfo = EdgeInfoData.fromJson(res.data['data']);
       } else {
@@ -1224,17 +1257,21 @@ class VideoDetailController extends GetxController
   late bool continuePlayingPart = Pref.continuePlayingPart;
 
   Future<void> _queryPlayInfo() async {
+    final request = _sideRequestGuard.capture(_currentMediaIdentity);
+    bool isCurrent() => _isCurrentSideRequest(request);
+
     vttSubtitles.clear();
     vttSubtitlesIndex.value = 0;
     if (plPlayerController.showViewPoints) {
       viewPointList.clear();
     }
     final res = await VideoHttp.playInfo(
-      bvid: bvid,
-      cid: cid.value,
-      seasonId: seasonId,
-      epId: epId,
+      bvid: request.media.bvid,
+      cid: request.media.cid,
+      seasonId: request.media.seasonId,
+      epId: request.media.epId,
     );
+    if (!isCurrent()) return;
     if (res case Success(:final response)) {
       // interactive video
       late final introCtr = Get.find<UgcIntroController>(tag: heroTag);
@@ -1252,7 +1289,7 @@ class VideoDetailController extends GetxController
       if (isUgc && continuePlayingPart) {
         continuePlayingPart = false;
         final lastCid = response.lastPlayCid;
-        if (lastCid != null && lastCid != 0 && lastCid != cid.value) {
+        if (lastCid != null && lastCid != 0 && lastCid != request.media.cid) {
           try {
             final pages = introCtr.videoDetail.value.pages;
             if (pages != null && pages.length > 1) {
@@ -1282,13 +1319,17 @@ class VideoDetailController extends GetxController
       }
 
       if (response.subtitle?.subtitles case final sub? when (sub.isNotEmpty)) {
-        _setSubtitle(sub);
+        await _setSubtitle(sub, isCurrent);
       } else if (!Accounts.main.isLogin) {
-        final res = await DmGrpc.dmView(aid, cid.value);
+        final res = await DmGrpc.dmView(
+          request.media.aid,
+          request.media.cid,
+        );
+        if (!isCurrent()) return;
         if (res case Success(:final response)) {
           if (response.hasSubtitle() &&
               response.subtitle.subtitles.isNotEmpty) {
-            _setSubtitle(
+            await _setSubtitle(
               response.subtitle.subtitles
                   .map(
                     (i) => Subtitle(
@@ -1303,6 +1344,7 @@ class VideoDetailController extends GetxController
                   )
                   .toList()
                 ..sort(),
+              isCurrent,
             );
           }
         } else {
@@ -1312,7 +1354,11 @@ class VideoDetailController extends GetxController
     }
   }
 
-  Future<void> _setSubtitle(List<Subtitle> sub) async {
+  Future<void> _setSubtitle(
+    List<Subtitle> sub,
+    bool Function() isCurrent,
+  ) async {
+    if (!isCurrent()) return;
     subtitles.value = sub;
     final idx = switch (Pref.subtitlePreferenceV2) {
       .off => 0,
@@ -1325,6 +1371,7 @@ class VideoDetailController extends GetxController
             ? 1
             : 0,
     };
+    if (!isCurrent()) return;
     await setSubtitle(idx);
   }
 
@@ -1365,6 +1412,8 @@ class VideoDetailController extends GetxController
 
   @override
   void onClose() {
+    _sideRequestGuard.invalidate();
+    _steinEdgeRequestGeneration += 1;
     cid.close();
     if (isFileSource) {
       cacheLocalProgress();
@@ -1382,6 +1431,8 @@ class VideoDetailController extends GetxController
   }
 
   void onReset({bool isStein = false}) {
+    _sideRequestGuard.invalidate();
+    _steinEdgeRequestGeneration += 1;
     if (isFileSource) {
       cacheLocalProgress();
     }
@@ -1433,15 +1484,19 @@ class VideoDetailController extends GetxController
   late final RxBool showDmTrendChart = true.obs;
 
   Future<void> _getDmTrend() async {
+    final request = _sideRequestGuard.capture(_currentMediaIdentity);
+    bool isCurrent() => _isCurrentSideRequest(request);
+
     dmTrend.value = LoadingState<List<double>>.loading();
     try {
       final res = await Request().get(
         'https://bvc.bilivideo.com/pbp/data',
         queryParameters: {
-          'bvid': bvid,
-          'cid': cid.value,
+          'bvid': request.media.bvid,
+          'cid': request.media.cid,
         },
       );
+      if (!isCurrent()) return;
       PbpData data = PbpData.fromJson(res.data);
       int stepSec = data.stepSec ?? 0;
       if (stepSec != 0 && data.events?.eDefault?.isNotEmpty == true) {
@@ -1450,6 +1505,7 @@ class VideoDetailController extends GetxController
       }
       dmTrend.value = const Error(null);
     } catch (e) {
+      if (!isCurrent()) return;
       dmTrend.value = const Error(null);
       if (kDebugMode) debugPrint('_getDmTrend: $e');
     }

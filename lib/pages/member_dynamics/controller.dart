@@ -6,6 +6,54 @@ import 'package:PiliPlus/models/dynamics/result.dart';
 import 'package:PiliPlus/pages/common/common_list_controller.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 
+bool removeMemberDynamicById(
+  List<DynamicItemModel>? list,
+  Object? dynamicId,
+) {
+  if (list == null) return false;
+  final index = list.indexWhere((item) => item.idStr == dynamicId);
+  if (index == -1) return false;
+  list.removeAt(index);
+  return true;
+}
+
+bool reconcileMemberDynamicTop(
+  List<DynamicItemModel>? list, {
+  required bool wasTop,
+  required Object dynamicId,
+}) {
+  if (list == null) return false;
+  final targetIndex = list.indexWhere((item) => item.idStr == dynamicId);
+  if (targetIndex == -1) return false;
+
+  void clearPinnedState(DynamicItemModel item) {
+    final modules = item.modules;
+    if (modules.moduleTag?.text == '置顶') {
+      modules.moduleTag = null;
+    }
+    if (modules.moduleAuthor?.isTop == true) {
+      modules.moduleAuthor!.isTop = false;
+    }
+  }
+
+  final target = list[targetIndex];
+  if (wasTop) {
+    clearPinnedState(target);
+    return true;
+  }
+
+  for (final item in list) {
+    clearPinnedState(item);
+  }
+  target.modules
+    ..moduleTag = ModuleTag(text: '置顶')
+    ..moduleAuthor?.isTop = true;
+  list
+    ..removeAt(targetIndex)
+    ..insert(0, target);
+  return true;
+}
+
 class MemberDynamicsController
     extends CommonListController<DynamicsDataModel, DynamicItemModel> {
   MemberDynamicsController(this.mid);
@@ -51,9 +99,13 @@ class MemberDynamicsController
   Future<void> onRemove(dynamic dynamicId) async {
     final res = await MsgHttp.removeDynamic(dynIdStr: dynamicId);
     if (res.isSuccess) {
-      loadingState
-        ..value.data!.removeWhere((item) => item.idStr == dynamicId)
-        ..refresh();
+      if (removeMemberDynamicById(
+        loadingState.value.dataOrNull,
+        dynamicId,
+      )) {
+        loadingState.refresh();
+      }
+      reconcileAfterMutation().ignore();
       SmartDialog.showToast('删除成功');
     } else {
       res.toast();
@@ -65,24 +117,15 @@ class MemberDynamicsController
         ? DynamicsHttp.rmTop(dynamicId: dynamicId)
         : DynamicsHttp.setTop(dynamicId: dynamicId));
     if (res.isSuccess) {
-      List<DynamicItemModel> list = loadingState.value.data!;
-      list[0].modules
-        ..moduleTag = null
-        ..moduleAuthor?.isTop = false;
-      if (isTop) {
+      if (reconcileMemberDynamicTop(
+        loadingState.value.dataOrNull,
+        wasTop: isTop,
+        dynamicId: dynamicId,
+      )) {
         loadingState.refresh();
-        SmartDialog.showToast('取消置顶成功');
-      } else {
-        final item = list.firstWhere((item) => item.idStr == dynamicId);
-        item.modules
-          ..moduleTag = ModuleTag(text: '置顶')
-          ..moduleAuthor?.isTop = true;
-        list
-          ..remove(item)
-          ..insert(0, item);
-        loadingState.refresh();
-        SmartDialog.showToast('置顶成功');
       }
+      reconcileAfterMutation().ignore();
+      SmartDialog.showToast(isTop ? '取消置顶成功' : '置顶成功');
     } else {
       res.toast();
     }

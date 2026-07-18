@@ -113,6 +113,13 @@ abstract class CommonController<R, T> extends GetxController
     return queryData();
   }
 
+  /// Invalidates an older in-flight query and queues (or starts) a fresh read
+  /// after a successful server mutation.
+  ///
+  /// Subclasses' [onRefresh] implementations still run so cursor/page state is
+  /// reset before the reconciliation request is captured.
+  Future<void> reconcileAfterMutation() => onRefresh();
+
   Future<void> onLoadMore() {
     return queryData(false);
   }

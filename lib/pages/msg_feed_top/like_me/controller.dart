@@ -78,6 +78,7 @@ class LikeMeController
         if (removedLatest || removedTotal) {
           loadingState.refresh();
         }
+        reconcileAfterMutation().ignore();
         SmartDialog.showToast('删除成功');
       } else {
         res.toast();
@@ -105,6 +106,7 @@ class LikeMeController
           }
         }
         if (updated) loadingState.refresh();
+        reconcileAfterMutation().ignore();
         SmartDialog.showToast('设置成功');
       } else {
         res.toast();

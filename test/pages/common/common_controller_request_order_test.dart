@@ -146,6 +146,40 @@ void main() {
   });
 
   test(
+    'post-mutation reconciliation rejects a pre-write refresh response',
+    () async {
+      final controller = _TestListController()
+        ..key = 'pre-write'
+        ..loadingState.value = const Success(['before-write']);
+      addTearDown(controller.onClose);
+
+      final staleRefresh = controller.onRefresh();
+      expect(controller.requests.single.key, 'pre-write');
+
+      controller
+        ..loadingState.value = const Success(['locally-reconciled'])
+        ..key = 'post-write';
+      final postMutationRefresh = controller.reconcileAfterMutation();
+
+      controller.requests.first.completer.complete(
+        const Success('stale-server-snapshot'),
+      );
+      await Future<void>.delayed(Duration.zero);
+
+      expect(controller.loadingState.value.data, ['locally-reconciled']);
+      expect(controller.requests, hasLength(2));
+      expect(controller.requests.last.key, 'post-write');
+
+      controller.requests.last.completer.complete(
+        const Success('post-write-server-state'),
+      );
+      await Future.wait([staleRefresh, postMutationRefresh]);
+
+      expect(controller.loadingState.value.data, ['post-write-server-state']);
+    },
+  );
+
+  test(
     'a response handler cannot mutate state after reentrant reload',
     () async {
       final controller = _TestListController()

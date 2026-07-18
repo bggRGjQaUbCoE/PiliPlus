@@ -23,6 +23,7 @@ abstract class CommonWhisperController<R>
             item.id.privateId.talkerUid.toInt() == talkerId,
       );
       if (removed == true) loadingState.refresh();
+      reconcileAfterMutation().ignore();
       SmartDialog.showToast('删除成功');
     } else {
       res.toast();
@@ -56,6 +57,7 @@ abstract class CommonWhisperController<R>
         }
         loadingState.refresh();
       }
+      reconcileAfterMutation().ignore();
       SmartDialog.showToast('${isTop ? '移除' : ''}置顶成功');
     } else {
       res.toast();
@@ -79,6 +81,7 @@ abstract class CommonWhisperController<R>
         list[currentIndex].isMuted = !isMuted;
         loadingState.refresh();
       }
+      reconcileAfterMutation().ignore();
       SmartDialog.showToast('设置成功');
     } else {
       res.toast();
@@ -98,6 +101,7 @@ abstract class CommonWhisperController<R>
           loadingState.refresh();
         }
       }
+      reconcileAfterMutation().ignore();
       SmartDialog.showToast('已标记为已读');
     } else {
       res.toast();
@@ -108,6 +112,7 @@ abstract class CommonWhisperController<R>
     final res = await ImGrpc.deleteSessionList(pageType: sessionPageType);
     if (res.isSuccess) {
       loadingState.value = const Success(null);
+      reconcileAfterMutation().ignore();
     } else {
       res.toast();
     }

@@ -567,7 +567,7 @@ class VideoDetailController extends GetxController
                 alpha: 0.8,
               ),
               textColor: theme.colorScheme.onSecondaryContainer,
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              padding: const .symmetric(horizontal: 8, vertical: 4),
               fontSize: 14,
               text: item is SegmentModel
                   ? '跳过: ${item.segmentType.shortTitle}'

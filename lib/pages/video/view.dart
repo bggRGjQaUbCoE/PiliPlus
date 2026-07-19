@@ -605,37 +605,23 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
   }
 
   Widget _buildOverlayToolBar(double scrollRatio) {
-    final Icon icon;
-    final double spacing;
+    final IconData icon;
     final String playStat;
     if (videoDetailController.playedTime == null) {
-      spacing = 2;
-      icon = Icon(
-        Icons.play_arrow_rounded,
-        color: themeData.colorScheme.primary,
-      );
+      icon = Icons.play_arrow_rounded;
       playStat = '立即';
     } else if (plPlayerController!.isCompleted) {
-      spacing = 4;
-      icon = Icon(
-        size: 18,
-        Icons.replay_rounded,
-        color: themeData.colorScheme.primary,
-      );
+      icon = CustomIcons.replay_rounded;
       playStat = '重新';
     } else {
-      spacing = 2;
-      icon = Icon(
-        Icons.play_arrow_rounded,
-        color: themeData.colorScheme.primary,
-      );
+      icon = Icons.play_arrow_rounded;
       playStat = '继续';
     }
     final playBtn = Row(
-      spacing: spacing,
+      spacing: 2,
       mainAxisSize: .min,
       children: [
-        icon,
+        Icon(icon, color: themeData.colorScheme.primary),
         Text(
           '$playStat播放',
           style: TextStyle(color: themeData.colorScheme.primary),

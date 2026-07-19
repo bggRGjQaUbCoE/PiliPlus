@@ -54,8 +54,7 @@ class _ViewPointsPageState extends State<ViewPointsPage>
               scale: 0.8,
               child: Switch(
                 value: videoDetailController.showVP.value,
-                onChanged: (value) =>
-                    videoDetailController.showVP.value = value,
+                onChanged: videoDetailController.showVP.call,
               ),
             ),
           ),

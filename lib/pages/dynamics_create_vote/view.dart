@@ -1,6 +1,7 @@
 import 'dart:io' show File;
 
 import 'package:PiliPlus/common/widgets/button/icon_button.dart';
+import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/time_picker.dart';
 import 'package:PiliPlus/models/dynamics/vote_model.dart';
@@ -8,6 +9,7 @@ import 'package:PiliPlus/pages/dynamics_create_vote/controller.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/extension/file_ext.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
+import 'package:PiliPlus/utils/route_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:easy_debounce/easy_throttle.dart';
 import 'package:flutter/material.dart' hide showTimePicker;
@@ -35,7 +37,7 @@ class _CreateVotePageState extends State<CreateVotePage> {
   void initState() {
     super.initState();
     _controller = Get.put(
-      CreateVoteController(widget.voteId),
+      CreateVoteController(widget.voteId, onQueryError: _onQueryError),
       tag: Utils.generateRandomString(8),
     );
   }
@@ -119,7 +121,7 @@ class _CreateVotePageState extends State<CreateVotePage> {
                       onPickImg: () => EasyThrottle.throttle(
                         'picImg',
                         const Duration(milliseconds: 500),
-                        () => _onPickImg(i),
+                        () => _onPickImg(e),
                       ),
                       initialValue: e.optDesc,
                       onChanged: (value) => _controller
@@ -270,13 +272,43 @@ class _CreateVotePageState extends State<CreateVotePage> {
           Obx(() {
             final canCreate = _controller.canCreate.value;
             return FilledButton.tonal(
-              onPressed: canCreate ? _controller.onCreate : null,
+              onPressed: canCreate && !_controller.isSubmitting.value
+                  ? _onCreate
+                  : null,
               child: const Text('发起投票'),
             );
           }),
         ],
       ),
     );
+  }
+
+  Future<void> _onCreate() async {
+    final route = ModalRoute.of<Object?>(context);
+    final navigator = Navigator.of(context);
+    final voteInfo = await _controller.onCreate();
+    if (voteInfo != null) {
+      completeRoute<Object?>(navigator, route, voteInfo);
+    }
+  }
+
+  Future<void> _onQueryError(String message) async {
+    if (!mounted) {
+      return;
+    }
+    final route = ModalRoute.of<Object?>(context);
+    if (route?.isCurrent != true) {
+      SmartDialog.showToast(message);
+      return;
+    }
+    final navigator = Navigator.of(context);
+    final shouldClose = await showConfirmDialog(
+      context: context,
+      title: Text(message),
+    );
+    if (shouldClose) {
+      completeRoute<Object?>(navigator, route);
+    }
   }
 
   Widget _buildInput(
@@ -422,7 +454,7 @@ class _CreateVotePageState extends State<CreateVotePage> {
     },
   );
 
-  void _onPickImg(int index) {
+  void _onPickImg(Option option) {
     EasyThrottle.throttle(
       'imagePicker',
       const Duration(milliseconds: 500),
@@ -435,7 +467,7 @@ class _CreateVotePageState extends State<CreateVotePage> {
           );
           if (pickedFile != null) {
             final path = pickedFile.path;
-            _controller.onUpload(index, path).whenComplete(() {
+            _controller.onUpload(option, path).whenComplete(() {
               if (PlatformUtils.isMobile) {
                 File(path).tryDel();
               }

@@ -8,6 +8,7 @@ import 'package:PiliPlus/models/common/reply/reply_sort_type.dart';
 import 'package:PiliPlus/pages/common/common_list_controller.dart';
 import 'package:PiliPlus/pages/common/publish/publish_route.dart';
 import 'package:PiliPlus/pages/video/reply_new/view.dart';
+import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:PiliPlus/utils/reply_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
@@ -201,14 +202,25 @@ abstract class ReplyController<R> extends CommonListController<R, ReplyInfo> {
         );
   }
 
-  void onRemove(int index, ReplyInfo item, int? subIndex) {
-    if (subIndex == null) {
-      loadingState.value.data!.removeAt(index);
+  void onRemove(ReplyInfo item, ReplyInfo? parent) {
+    final list = loadingState.value.dataOrNull;
+    bool removed = false;
+    if (parent == null) {
+      removed =
+          list?.removeFirstWhere((current) => current.id == item.id) == true;
     } else {
-      item
-        ..count -= 1
-        ..replies.removeAt(subIndex);
+      final parentIndex = list?.indexWhere(
+        (current) => current.id == parent.id,
+      );
+      if (list != null && parentIndex != null && parentIndex != -1) {
+        final currentParent = list[parentIndex];
+        removed = currentParent.replies.removeFirstWhere(
+          (current) => current.id == item.id,
+        );
+        if (removed) currentParent.count -= 1;
+      }
     }
+    if (!removed) return;
     count.value -= 1;
     loadingState.refresh();
   }
@@ -236,14 +248,18 @@ abstract class ReplyController<R> extends CommonListController<R, ReplyInfo> {
       isUpTop: isUpTop,
     );
     if (res.isSuccess) {
-      item.replyControl.isUpTop = !isUpTop;
-      if (!isUpTop && index != 0) {
-        final list = loadingState.value.data!;
-        list
-          ..first.replyControl.isUpTop = false
-          ..insert(0, list.removeAt(index));
+      final list = loadingState.value.dataOrNull;
+      final currentIndex = list?.indexWhere((current) => current.id == item.id);
+      if (list != null && currentIndex != null && currentIndex != -1) {
+        final current = list[currentIndex]..replyControl.isUpTop = !isUpTop;
+        if (!isUpTop && currentIndex != 0) {
+          list
+            ..first.replyControl.isUpTop = false
+            ..removeAt(currentIndex)
+            ..insert(0, current);
+        }
+        loadingState.refresh();
       }
-      loadingState.refresh();
       SmartDialog.showToast('${isUpTop ? '取消' : ''}置顶成功');
     } else {
       res.toast();

@@ -6,6 +6,7 @@ import 'package:PiliPlus/http/search.dart';
 import 'package:PiliPlus/models/search/suggest.dart';
 import 'package:PiliPlus/models_new/search/search_rcmd/data.dart';
 import 'package:PiliPlus/models_new/search/search_trending/data.dart';
+import 'package:PiliPlus/pages/search/latest_suggestion_loader.dart';
 import 'package:PiliPlus/utils/extension/get_ext.dart';
 import 'package:PiliPlus/utils/extension/string_ext.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
@@ -103,6 +104,8 @@ class SSearchController extends GetxController
   // suggestion
   bool get searchSuggestion => _baseCtr.searchSuggestion;
   late final RxList<SearchSuggestItem> searchSuggestList;
+  final _suggestionLoader =
+      LatestSuggestionLoader<LoadingState<SearchSuggestModel>>();
 
   // trending
   bool get enableTrending => _baseCtr.enableTrending;
@@ -143,6 +146,7 @@ class SSearchController extends GetxController
   void onChange(String value) {
     validateUid();
     if (searchSuggestion) {
+      _suggestionLoader.updateQuery(value);
       if (value.isEmpty) {
         searchSuggestList.clear();
       } else {
@@ -215,11 +219,12 @@ class SSearchController extends GetxController
 
   @override
   Future<void> onValueChanged(String value) async {
-    final res = await SearchHttp.searchSuggest(term: value);
+    final res = await _suggestionLoader.load(
+      value,
+      () => SearchHttp.searchSuggest(term: value),
+    );
     if (res case Success(:final response)) {
-      if (response.tag?.isNotEmpty == true) {
-        searchSuggestList.value = response.tag!;
-      }
+      searchSuggestList.value = response.tag ?? const [];
     }
   }
 
@@ -241,6 +246,7 @@ class SSearchController extends GetxController
 
   @override
   void onClose() {
+    _suggestionLoader.invalidate();
     subDispose();
     searchFocusNode.dispose();
     controller.dispose();

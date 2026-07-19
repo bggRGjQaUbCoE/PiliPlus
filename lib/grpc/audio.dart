@@ -4,6 +4,7 @@ import 'package:PiliPlus/grpc/bilibili/pagination.pb.dart';
 import 'package:PiliPlus/grpc/grpc_req.dart';
 import 'package:PiliPlus/grpc/url.dart';
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/utils/accounts/account.dart';
 import 'package:fixnum/fixnum.dart';
 
 abstract final class AudioGrpc {
@@ -76,6 +77,7 @@ abstract final class AudioGrpc {
     required List<Int64> subId,
     required int itemType,
     required ThumbUpReq_ThumbType type,
+    Account? account,
   }) {
     return GrpcReq.request(
       GrpcUrl.audioThumbUp,
@@ -88,6 +90,7 @@ abstract final class AudioGrpc {
         action: type,
       ),
       ThumbUpResp.fromBuffer,
+      account: account,
     );
   }
 
@@ -95,6 +98,7 @@ abstract final class AudioGrpc {
     required Int64 oid,
     required List<Int64> subId,
     required int itemType,
+    Account? account,
   }) {
     return GrpcReq.request(
       GrpcUrl.audioTripleLike,
@@ -106,6 +110,7 @@ abstract final class AudioGrpc {
         ),
       ),
       TripleLikeResp.fromBuffer,
+      account: account,
     );
   }
 
@@ -115,6 +120,7 @@ abstract final class AudioGrpc {
     required int itemType,
     required int num,
     bool thumbUp = false,
+    Account? account,
   }) {
     return GrpcReq.request(
       GrpcUrl.audioCoinAdd,
@@ -128,6 +134,7 @@ abstract final class AudioGrpc {
         thumbUp: thumbUp,
       ),
       CoinAddResp.fromBuffer,
+      account: account,
     );
   }
 }

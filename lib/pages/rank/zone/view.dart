@@ -5,6 +5,7 @@ import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/model_hot_video_item.dart';
 import 'package:PiliPlus/pages/rank/zone/controller.dart';
 import 'package:PiliPlus/pages/rank/zone/widget/pgc_rank_item.dart';
+import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:PiliPlus/utils/grid.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -65,9 +66,18 @@ class _ZonePageState extends State<ZonePage>
                   if (item is HotVideoItemModel) {
                     return VideoCardH(
                       videoItem: item,
-                      onRemove: () => controller.loadingState
-                        ..value.data!.removeAt(index)
-                        ..refresh(),
+                      onRemove: () {
+                        final removed = controller.loadingState.value.dataOrNull
+                            ?.removeFirstWhere(
+                              (current) =>
+                                  current is HotVideoItemModel &&
+                                  current.aid == item.aid &&
+                                  current.bvid == item.bvid,
+                            );
+                        if (removed == true) {
+                          controller.loadingState.refresh();
+                        }
+                      },
                     );
                   }
                   return PgcRankItem(item: item);

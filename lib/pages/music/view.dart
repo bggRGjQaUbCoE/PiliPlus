@@ -9,7 +9,6 @@ import 'package:PiliPlus/common/widgets/image_viewer/hero.dart';
 import 'package:PiliPlus/common/widgets/marquee.dart';
 import 'package:PiliPlus/common/widgets/sliver/sliver_to_box_adapter.dart';
 import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/http/music.dart';
 import 'package:PiliPlus/models/common/image_preview_type.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/models_new/music/bgm_detail.dart';
@@ -21,7 +20,6 @@ import 'package:PiliPlus/utils/android/android_helper.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/extension/get_ext.dart';
 import 'package:PiliPlus/utils/extension/iterable_ext.dart';
-import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/string_ext.dart';
 import 'package:PiliPlus/utils/grid.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
@@ -312,38 +310,21 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
                     ),
                   ),
                   Expanded(
-                    child: Builder(
-                      builder: (context) => textIconButton(
-                        icon: FontAwesomeIcons.thumbsUp,
-                        activatedIcon: FontAwesomeIcons.solidThumbsUp,
-                        text: '点赞',
-                        count: item.wishCount,
-                        status: item.wishListen ?? false,
-                        onPressed: () async {
-                          if (!Accounts.main.isLogin) {
-                            SmartDialog.showToast('请先登录');
-                            return;
-                          }
-                          final hasLike = item.wishListen ?? false;
-                          final res = await MusicHttp.wishUpdate(
-                            controller.musicId,
-                            hasLike,
-                          );
-                          if (res.isSuccess) {
-                            if (hasLike) {
-                              item.wishCount--;
-                            } else {
-                              item.wishCount++;
-                            }
-                            item.wishListen = !hasLike;
-                            if (context.mounted) {
-                              (context as Element).markNeedsBuild();
-                            }
-                          } else {
-                            res.toast();
-                          }
-                        },
-                      ),
+                    child: textIconButton(
+                      icon: FontAwesomeIcons.thumbsUp,
+                      activatedIcon: FontAwesomeIcons.solidThumbsUp,
+                      text: '点赞',
+                      count: item.wishCount,
+                      status: item.wishListen ?? false,
+                      onPressed: () async {
+                        if (!Accounts.main.isLogin) {
+                          SmartDialog.showToast('请先登录');
+                          return;
+                        }
+                        await controller.onWishUpdate(
+                          item.wishListen ?? false,
+                        );
+                      },
                     ),
                   ),
                 ],

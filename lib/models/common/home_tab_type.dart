@@ -44,3 +44,19 @@ enum HomeTabType implements EnumWithLabel {
     HomeTabType.cinema => const PgcPage(tabType: HomeTabType.cinema),
   };
 }
+
+List<HomeTabType> resolveHomeTabs(Object? storedValue) {
+  if (storedValue is! List || storedValue.isEmpty) {
+    return HomeTabType.values;
+  }
+
+  final tabs = <HomeTabType>[];
+  final seen = <HomeTabType>{};
+  for (final value in storedValue) {
+    if (value is int && value >= 0 && value < HomeTabType.values.length) {
+      final tab = HomeTabType.values[value];
+      if (seen.add(tab)) tabs.add(tab);
+    }
+  }
+  return tabs.isEmpty ? HomeTabType.values : tabs;
+}

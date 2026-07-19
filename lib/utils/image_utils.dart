@@ -6,8 +6,8 @@ import 'dart:typed_data' show Uint8List;
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/http/init.dart';
 import 'package:PiliPlus/utils/cache_manager.dart';
+import 'package:PiliPlus/utils/cancellable_batch.dart';
 import 'package:PiliPlus/utils/device_utils.dart';
-import 'package:PiliPlus/utils/extension/file_ext.dart';
 import 'package:PiliPlus/utils/extension/string_ext.dart';
 import 'package:PiliPlus/utils/global_data.dart';
 import 'package:PiliPlus/utils/path_utils.dart';
@@ -15,6 +15,7 @@ import 'package:PiliPlus/utils/permission_handler.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/share_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
+import 'package:PiliPlus/utils/temporary_file_cleanup.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:dio/dio.dart';
 import 'package:file_picker/file_picker.dart';
@@ -103,37 +104,45 @@ abstract final class ImageUtils {
       String videoName = "video_${Utils.getFileName(liveUrl)}";
       String videoPath = '$tmpDirPath/$videoName';
 
-      final res = await Request().downloadFile(liveUrl.http2https, videoPath);
-      if (res.statusCode != 200) throw '${res.statusCode}';
+      return withTemporaryFileCleanup(
+        path: videoPath,
+        action: () async {
+          final res = await Request().downloadFile(
+            liveUrl.http2https,
+            videoPath,
+          );
+          if (res.statusCode != 200) throw '${res.statusCode}';
 
-      if (Platform.isIOS) {
-        final imageFile = await CacheManager.manager.getSingleFile(
-          url.http2https,
-        );
-        if (!silentDownImg) SmartDialog.showLoading(msg: '正在保存');
-        bool success = await LivePhotoMaker.create(
-          coverImage: imageFile.path,
-          imagePath: null,
-          voicePath: videoPath,
-          width: width,
-          height: height,
-        ).whenComplete(File(videoPath).tryDel);
-        if (success) {
-          SmartDialog.showToast(' 已保存 ');
-        } else {
-          SmartDialog.showToast('保存失败');
-          return false;
-        }
-      } else {
-        if (!silentDownImg) SmartDialog.showLoading(msg: '正在保存');
-        await saveFileImg(
-          filePath: videoPath,
-          fileName: videoName,
-          type: FileType.video,
-          needToast: true,
-        );
-      }
-      return true;
+          if (Platform.isIOS) {
+            final imageFile = await CacheManager.manager.getSingleFile(
+              url.http2https,
+            );
+            if (!silentDownImg) SmartDialog.showLoading(msg: '正在保存');
+            bool success = await LivePhotoMaker.create(
+              coverImage: imageFile.path,
+              imagePath: null,
+              voicePath: videoPath,
+              width: width,
+              height: height,
+            );
+            if (success) {
+              SmartDialog.showToast(' 已保存 ');
+            } else {
+              SmartDialog.showToast('保存失败');
+              return false;
+            }
+          } else {
+            if (!silentDownImg) SmartDialog.showLoading(msg: '正在保存');
+            await saveFileImg(
+              filePath: videoPath,
+              fileName: videoName,
+              type: FileType.video,
+              needToast: true,
+            );
+          }
+          return true;
+        },
+      );
     } catch (err) {
       SmartDialog.showToast(err.toString());
       return false;
@@ -156,47 +165,57 @@ abstract final class ImageUtils {
       );
     }
     try {
-      final futures = imgList.map((url) async {
-        final name = Utils.getFileName(url);
-
-        final file = await CacheManager.manager.getSingleFile(
-          url.http2https,
-        );
-        return (filePath: file.path, name: name, statusCode: 200);
-      });
-      final result = await Future.wait(futures, eagerError: true);
       bool success = true;
-      if (PlatformUtils.isMobile) {
-        final saveList = <SaveFileData>[];
-        for (final i in result) {
-          if (i.statusCode == 200) {
-            saveList.add(
-              SaveFileData(
-                filePath: i.filePath,
-                fileName: i.name,
-                albumPath: _albumPath,
-              ),
+      bool isCancelled() => cancelToken?.isCancelled == true;
+      final completed = await runCancellableBatch(
+        tasks: imgList.map(
+          (url) => () async {
+            final name = Utils.getFileName(url);
+            final file = await CacheManager.manager.getSingleFile(
+              url.http2https,
             );
+            return (filePath: file.path, name: name, statusCode: 200);
+          },
+        ),
+        isCancelled: isCancelled,
+        onComplete: (result) async {
+          if (PlatformUtils.isMobile) {
+            final saveList = <SaveFileData>[];
+            for (final i in result) {
+              if (i.statusCode == 200) {
+                saveList.add(
+                  SaveFileData(
+                    filePath: i.filePath,
+                    fileName: i.name,
+                    albumPath: _albumPath,
+                  ),
+                );
+              } else {
+                success = false;
+              }
+            }
+            if (!isCancelled()) {
+              await SaverGallery.saveFiles(saveList, skipIfExists: false);
+            }
           } else {
-            success = false;
+            for (final res in result) {
+              if (isCancelled()) {
+                return;
+              }
+              if (res.statusCode == 200) {
+                await saveFileImg(filePath: res.filePath, fileName: res.name);
+              } else {
+                success = false;
+              }
+            }
           }
-        }
-        await SaverGallery.saveFiles(saveList, skipIfExists: false);
-      } else {
-        for (final res in result) {
-          if (res.statusCode == 200) {
-            await saveFileImg(filePath: res.filePath, fileName: res.name);
-          } else {
-            success = false;
-          }
-        }
-      }
-      if (cancelToken?.isCancelled == true) {
+        },
+      );
+      if (!completed) {
         SmartDialog.showToast('已取消下载');
         return false;
-      } else {
-        SmartDialog.showToast(success ? ' 已保存 ' : '保存失败');
       }
+      SmartDialog.showToast(success ? ' 已保存 ' : '保存失败');
       return success;
     } catch (e) {
       if (cancelToken?.isCancelled == true) {

@@ -1,3 +1,4 @@
+import 'dart:async' show unawaited;
 import 'dart:io' show File, Platform;
 import 'dart:ui' show PlatformDispatcher;
 
@@ -18,6 +19,14 @@ import 'package:audio_service/audio_service.dart';
 import 'package:collection/collection.dart';
 import 'package:path/path.dart' as path;
 
+typedef _PlayerCallbacks = ({
+  String mediaOwnerTag,
+  Object owner,
+  Future<void>? Function() onPlay,
+  Future<void>? Function() onPause,
+  Future<void>? Function(Duration position) onSeek,
+});
+
 Future<VideoPlayerServiceHandler> initAudioService() {
   return AudioService.init(
     builder: VideoPlayerServiceHandler.new,
@@ -35,16 +44,64 @@ Future<VideoPlayerServiceHandler> initAudioService() {
 }
 
 class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
-  static final List<MediaItem> _item = [];
-  bool enableBackgroundPlay = Pref.enableBackgroundPlay;
+  VideoPlayerServiceHandler({bool? enableBackgroundPlay})
+    : enableBackgroundPlay = enableBackgroundPlay ?? Pref.enableBackgroundPlay;
 
-  Future<void>? Function()? onPlay;
-  Future<void>? Function()? onPause;
-  Future<void>? Function(Duration position)? onSeek;
+  static final List<MediaItem> _item = [];
+  static const _mediaOwnerTagKey = 'piliPlusMediaOwnerTag';
+  bool enableBackgroundPlay;
+
+  final List<_PlayerCallbacks> _playerCallbacks = [];
+
+  void setPlayerCallbacks({
+    required Object owner,
+    required String mediaOwnerTag,
+    required Future<void>? Function() onPlay,
+    required Future<void>? Function() onPause,
+    required Future<void>? Function(Duration position) onSeek,
+  }) {
+    _playerCallbacks
+      ..removeWhere((callbacks) => identical(callbacks.owner, owner))
+      ..add((
+        mediaOwnerTag: mediaOwnerTag,
+        owner: owner,
+        onPlay: onPlay,
+        onPause: onPause,
+        onSeek: onSeek,
+      ));
+  }
+
+  _PlayerCallbacks? get _currentPlayerCallbacks {
+    final currentItem = _item.lastOrNull;
+    if (currentItem == null) return null;
+    final currentOwnerTag = _mediaOwnerTag(currentItem);
+    return _playerCallbacks.lastWhereOrNull(
+      (callbacks) => callbacks.mediaOwnerTag == currentOwnerTag,
+    );
+  }
+
+  bool _isCurrentMediaOwner(String? mediaOwnerTag) {
+    final currentItem = _item.lastOrNull;
+    if (currentItem == null) return false;
+    final currentOwnerTag = _mediaOwnerTag(currentItem);
+    if (mediaOwnerTag != null) return mediaOwnerTag == currentOwnerTag;
+    return !_playerCallbacks.any(
+      (callbacks) => callbacks.mediaOwnerTag == currentOwnerTag,
+    );
+  }
+
+  static String? _mediaOwnerTag(MediaItem item) =>
+      item.extras?[_mediaOwnerTagKey] as String?;
+
+  void clearPlayerCallbacks(Object owner) {
+    _playerCallbacks.removeWhere(
+      (callbacks) => identical(callbacks.owner, owner),
+    );
+  }
 
   @override
   Future<void> play() {
-    return onPlay?.call() ??
+    return _currentPlayerCallbacks?.onPlay() ??
         PlPlayerController.playIfExists() ??
         Future.syncValue(null);
     // player.play();
@@ -52,7 +109,8 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
 
   @override
   Future<void> pause() {
-    return onPause?.call() ?? PlPlayerController.pauseIfExists();
+    return _currentPlayerCallbacks?.onPause() ??
+        PlPlayerController.pauseIfExists();
     // player.pause();
   }
 
@@ -63,7 +121,7 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
         updatePosition: position,
       ),
     );
-    return (onSeek?.call(position) ??
+    return (_currentPlayerCallbacks?.onSeek(position) ??
         PlPlayerController.seekToIfExists(position, isSeek: false));
     // await player.seekTo(position);
   }
@@ -84,9 +142,7 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
     bool isBuffering,
     bool isLive,
   ) {
-    if (!enableBackgroundPlay ||
-        _item.isEmpty ||
-        !PlPlayerController.instanceExists()) {
+    if (!enableBackgroundPlay || _item.isEmpty) {
       return;
     }
 
@@ -148,8 +204,13 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
     }
   }
 
-  void onStatusChange(PlayerStatus status, bool isBuffering, isLive) {
-    if (!enableBackgroundPlay) return;
+  void onStatusChange(
+    PlayerStatus status,
+    bool isBuffering,
+    bool isLive, {
+    String? mediaOwnerTag,
+  }) {
+    if (!enableBackgroundPlay || !_isCurrentMediaOwner(mediaOwnerTag)) return;
 
     if (_item.isEmpty) return;
     setPlaybackState(status, isBuffering, isLive);
@@ -167,12 +228,12 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
     //   debugPrint('当前调用栈为：');
     //   debugPrint(StackTrace.current);
     // }
-    if (!PlPlayerController.instanceExists()) return;
     if (data == null) return;
 
     Uri getUri(String? cover) => Uri.parse(ImageUtils.safeThumbnailUrl(cover));
 
-    late final id = '$cid$herotag';
+    late final id = '$cid::$herotag';
+    final extras = <String, dynamic>{_mediaOwnerTagKey: herotag};
     final MediaItem mediaItem;
     switch (data) {
       case VideoDetailData(:final pages):
@@ -184,6 +245,7 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
             artist: data.owner?.name,
             duration: Duration(seconds: current?.duration ?? 0),
             artUri: getUri(data.pic),
+            extras: extras,
           );
         } else {
           mediaItem = MediaItem(
@@ -192,6 +254,7 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
             artist: data.owner?.name,
             duration: Duration(seconds: data.duration ?? 0),
             artUri: getUri(data.pic),
+            extras: extras,
           );
         }
       case EpisodeItem():
@@ -203,6 +266,7 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
               ? Duration(seconds: data.duration ?? 0)
               : Duration(milliseconds: data.duration ?? 0),
           artUri: getUri(data.cover),
+          extras: extras,
         );
       case RoomInfoH5Data():
         mediaItem = MediaItem(
@@ -211,6 +275,7 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
           artist: data.anchorInfo?.baseInfo?.uname,
           artUri: getUri(data.roomInfo?.cover),
           isLive: true,
+          extras: extras,
         );
       case Part():
         mediaItem = MediaItem(
@@ -219,6 +284,7 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
           artist: artist,
           duration: Duration(seconds: data.duration ?? 0),
           artUri: getUri(cover),
+          extras: extras,
         );
       case DetailItem(:final arc):
         mediaItem = MediaItem(
@@ -227,6 +293,7 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
           artist: data.owner.name,
           duration: Duration(seconds: arc.duration.toInt()),
           artUri: getUri(arc.cover),
+          extras: extras,
         );
       case BiliDownloadEntryInfo():
         final coverFile = File(
@@ -241,37 +308,44 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
           artist: data.ownerName,
           duration: Duration(milliseconds: data.totalTimeMilli),
           artUri: uri,
+          extras: extras,
         );
       default:
         return;
     }
     // if (kDebugMode) debugPrint("exist: ${PlPlayerController.instanceExists()}");
-    if (!PlPlayerController.instanceExists()) return;
-    _item.add(mediaItem);
+    _item
+      ..removeWhere((item) => _mediaOwnerTag(item) == herotag)
+      ..add(mediaItem);
     setMediaItem(mediaItem);
   }
 
   void onVideoDetailDispose(String herotag) {
-    if (!enableBackgroundPlay) return;
-
+    final currentItem = _item.lastOrNull;
+    final wasCurrent =
+        currentItem != null && _mediaOwnerTag(currentItem) == herotag;
+    final itemCount = _item.length;
     if (_item.isNotEmpty) {
-      _item.removeWhere((item) => item.id.endsWith(herotag));
+      _item.removeWhere((item) => _mediaOwnerTag(item) == herotag);
     }
-    if (_item.isNotEmpty) {
-      playbackState.add(
-        playbackState.value.copyWith(
-          processingState: AudioProcessingState.idle,
-          playing: false,
-        ),
-      );
-      setMediaItem(_item.last);
-      stop();
+    if (_item.length == itemCount) return;
+    if (_item.isEmpty) {
+      clear();
+      return;
     }
+    if (!wasCurrent) return;
+    playbackState.add(
+      playbackState.value.copyWith(
+        processingState: AudioProcessingState.idle,
+        playing: false,
+      ),
+    );
+    setMediaItem(_item.last);
+    unawaited(stop());
   }
 
   void clear() {
-    if (!enableBackgroundPlay) return;
-    mediaItem.add(null);
+    if (!mediaItem.isClosed) mediaItem.add(null);
     _item.clear();
     /**
      * if (playbackState.processingState == AudioProcessingState.idle &&
@@ -295,10 +369,10 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
     );
   }
 
-  void onPositionChange(Duration position) {
+  void onPositionChange(Duration position, {String? mediaOwnerTag}) {
     if (!enableBackgroundPlay ||
         _item.isEmpty ||
-        !PlPlayerController.instanceExists()) {
+        !_isCurrentMediaOwner(mediaOwnerTag)) {
       return;
     }
 

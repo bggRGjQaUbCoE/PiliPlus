@@ -31,6 +31,8 @@ sealed class Account {
 
   bool get isLogin => throw UnimplementedError();
 
+  bool get isDeleted => false;
+
   int get mid => throw UnimplementedError();
 
   String? get refresh => throw UnimplementedError();
@@ -80,14 +82,18 @@ class LoginAccount extends Account {
   bool _hasDelete = false;
 
   @override
+  bool get isDeleted => _hasDelete;
+
+  @override
   Future<void> delete() {
-    assert(_hasDelete = true);
+    if (_hasDelete) return Future<void>.value();
+    _hasDelete = true;
     return Future.wait([cookieJar.deleteAll(), _box.delete(_midStr)]);
   }
 
   @override
   Future<void> onChange() {
-    assert(!_hasDelete);
+    if (_hasDelete) return Future<void>.value();
     return _box.put(_midStr, this);
   }
 

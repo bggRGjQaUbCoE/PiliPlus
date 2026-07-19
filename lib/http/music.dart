@@ -3,7 +3,7 @@ import 'package:PiliPlus/http/init.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models_new/music/bgm_detail.dart';
 import 'package:PiliPlus/models_new/music/bgm_recommend_list.dart';
-import 'package:PiliPlus/utils/accounts.dart';
+import 'package:PiliPlus/utils/accounts/account.dart';
 import 'package:PiliPlus/utils/wbi_sign.dart';
 import 'package:dio/dio.dart';
 
@@ -26,15 +26,19 @@ abstract final class MusicHttp {
   static Future<LoadingState<void>> wishUpdate(
     String musicId,
     bool hasLike,
+    Account account,
   ) async {
     final res = await Request().post(
       Api.wishUpdate,
       data: {
         'music_id': musicId,
         'state': hasLike ? 2 : 1,
-        'csrf': Accounts.main.csrf,
+        'csrf': account.csrf,
       },
-      options: Options(contentType: Headers.formUrlEncodedContentType),
+      options: Options(
+        contentType: Headers.formUrlEncodedContentType,
+        extra: {'account': account},
+      ),
     );
     if (res.data['code'] == 0) {
       return const Success(null);

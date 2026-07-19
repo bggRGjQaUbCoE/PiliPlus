@@ -9,6 +9,7 @@ import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/msg.dart';
 import 'package:PiliPlus/pages/common/common_list_controller.dart';
 import 'package:PiliPlus/utils/accounts.dart';
+import 'package:PiliPlus/utils/async_operation_guard.dart';
 import 'package:PiliPlus/utils/extension/scroll_controller_ext.dart';
 import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:fixnum/fixnum.dart';
@@ -72,14 +73,15 @@ class WhisperDetailController extends CommonListController<RspSessionMsg, Msg> {
     }
   }
 
-  late bool _isSending = false;
+  final _sendGuard = AsyncOperationGuard();
+
   Future<void> sendMsg({
     String? message,
     Map? picMsg,
     required VoidCallback onClearText,
     int? msgType,
     int? index,
-  }) async {
+  }) {
     // debug
     // if (loadingState.value case Success(:final response)) {
     //   final list = List.of(response ?? <Msg>[])
@@ -105,38 +107,40 @@ class WhisperDetailController extends CommonListController<RspSessionMsg, Msg> {
     // SmartDialog.showToast('发送成功');
     // return;
     assert((message != null) ^ (picMsg != null));
-    if (_isSending) return;
-    _isSending = true;
-    feedBack();
-    SmartDialog.dismiss();
-    if (!account.isLogin) {
-      SmartDialog.showToast('请先登录');
-      return;
-    }
-    final res = await ImGrpc.sendMsg(
-      senderUid: account.mid,
-      receiverId: mid!,
-      content: msgType == 5
-          ? message!
-          : jsonEncode(picMsg ?? {"content": message!}),
-      msgType: MsgType.values[msgType ?? (picMsg != null ? 2 : 1)],
-    );
-    SmartDialog.dismiss();
-    if (res.isSuccess) {
-      if (msgType == 5) {
-        loadingState
-          ..value.data![index!].msgStatus = 1
-          ..refresh();
-        SmartDialog.showToast('撤回成功');
-      } else {
-        onRefresh();
-        onClearText();
-        SmartDialog.showToast('发送成功');
+    return _sendGuard.run(() async {
+      feedBack();
+      SmartDialog.dismiss();
+      if (!account.isLogin) {
+        SmartDialog.showToast('请先登录');
+        return;
       }
-    } else {
-      res.toast();
-    }
-    _isSending = false;
+      final res = await ImGrpc.sendMsg(
+        senderUid: account.mid,
+        receiverId: mid!,
+        content: msgType == 5
+            ? message!
+            : jsonEncode(picMsg ?? {"content": message!}),
+        msgType: MsgType.values[msgType ?? (picMsg != null ? 2 : 1)],
+      );
+      if (isClosed) {
+        return;
+      }
+      SmartDialog.dismiss();
+      if (res.isSuccess) {
+        if (msgType == 5) {
+          loadingState
+            ..value.data![index!].msgStatus = 1
+            ..refresh();
+          SmartDialog.showToast('撤回成功');
+        } else {
+          onRefresh();
+          onClearText();
+          SmartDialog.showToast('发送成功');
+        }
+      } else {
+        res.toast();
+      }
+    });
   }
 
   @override

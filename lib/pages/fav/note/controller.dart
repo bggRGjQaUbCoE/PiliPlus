@@ -36,6 +36,9 @@ class FavNoteController
   @override
   Future<void> onRemove() async {
     final removeList = allChecked.toSet();
+    final removeIds = removeList
+        .map((item) => isPublish ? item.cvid : item.noteId)
+        .toSet();
     final res = await FavHttp.delNote(
       isPublish: isPublish,
       noteIds: removeList
@@ -43,7 +46,9 @@ class FavNoteController
           .join(','),
     );
     if (res.isSuccess) {
-      afterDelete(removeList);
+      await afterDeleteWhere(
+        (item) => removeIds.contains(isPublish ? item.cvid : item.noteId),
+      );
       SmartDialog.showToast('删除成功');
     } else {
       res.toast();

@@ -1,12 +1,39 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/widgets/pair.dart';
 import 'package:PiliPlus/utils/device_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
+import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
+import 'package:uuid/v4.dart';
 import 'package:webdav_client/webdav_client.dart' as webdav;
+
+typedef WebDavWrite = Future<void> Function(String path, Uint8List data);
+typedef WebDavRename =
+    Future<void> Function(String oldPath, String newPath, bool overwrite);
+typedef WebDavRemove = Future<void> Function(String path);
+
+@visibleForTesting
+Future<void> replaceWebDavFile({
+  required String path,
+  required Uint8List data,
+  required WebDavWrite write,
+  required WebDavRename rename,
+  required WebDavRemove remove,
+}) async {
+  final tempPath = '$path.${const UuidV4().generate()}.tmp';
+  try {
+    await write(tempPath, data);
+    await rename(tempPath, path, true);
+  } finally {
+    try {
+      await remove(tempPath);
+    } catch (_) {}
+  }
+}
 
 class WebDav {
   late String _webdavDirectory;
@@ -66,10 +93,13 @@ class WebDav {
       String data = GStorage.exportAllSettings();
       _fileName ??= _getFileName();
       final path = '$_webdavDirectory/$_fileName';
-      try {
-        await _client!.remove(path);
-      } catch (_) {}
-      await _client!.write(path, utf8.encode(data));
+      await replaceWebDavFile(
+        path: path,
+        data: utf8.encode(data),
+        write: _client!.write,
+        rename: _client!.rename,
+        remove: _client!.remove,
+      );
       SmartDialog.showToast('备份成功');
     } catch (e) {
       SmartDialog.showToast('备份失败: $e');

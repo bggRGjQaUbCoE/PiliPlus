@@ -17,6 +17,7 @@ class ArticleViewData {
 
   ArticleViewData({
     this.id,
+    this.title,
     this.author,
     this.publishTime,
     this.originImageUrls,
@@ -30,6 +31,7 @@ class ArticleViewData {
   factory ArticleViewData.fromJson(Map<String, dynamic> json) =>
       ArticleViewData(
         id: json['id'] as int?,
+        title: json['title'] as String?,
         author: json['author'] == null
             ? null
             : Avatar.fromJson(json['author'] as Map<String, dynamic>),

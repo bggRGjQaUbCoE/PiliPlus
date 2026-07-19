@@ -4,6 +4,7 @@ import 'package:PiliPlus/http/video.dart';
 import 'package:PiliPlus/models_new/fav/fav_pgc/data.dart';
 import 'package:PiliPlus/models_new/fav/fav_pgc/list.dart';
 import 'package:PiliPlus/pages/common/multi_select/multi_select_controller.dart';
+import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -54,9 +55,13 @@ class FavPgcController
   Future<void> pgcDel(int index, seasonId) async {
     final result = await VideoHttp.pgcDel(seasonId: seasonId);
     if (result case Success(:final response)) {
-      loadingState
-        ..value.data!.removeAt(index)
-        ..refresh();
+      final removed = loadingState.value.dataOrNull?.removeFirstWhere(
+        (item) => item.seasonId == seasonId,
+      );
+      if (removed == true) {
+        loadingState.refresh();
+        if (!isEnd) onRefresh().ignore();
+      }
       SmartDialog.showToast(response);
     } else {
       result.toast();
@@ -70,6 +75,7 @@ class FavPgcController
 
   Future<void> onUpdateList(int followStatus) async {
     final removeList = allChecked.toSet();
+    final seasonIds = removeList.map((item) => item.seasonId).toSet();
     final res = await VideoHttp.pgcUpdate(
       seasonId: removeList.map((item) => item.seasonId).join(','),
       status: followStatus,
@@ -78,18 +84,24 @@ class FavPgcController
       try {
         final ctr = Get.find<FavPgcController>(tag: '$type$followStatus');
         if (ctr.loadingState.value case Success(:final response)) {
-          response?.insertAll(
-            0,
-            removeList.map((item) => item..checked = false),
-          );
+          if (response != null) {
+            final targetIds = response.map((item) => item.seasonId).toSet();
+            final missingItems = <FavPgcItemModel>[];
+            for (final item in removeList) {
+              item.checked = false;
+              if (targetIds.add(item.seasonId)) missingItems.add(item);
+            }
+            response.insertAll(0, missingItems);
+          }
           ctr
             ..loadingState.refresh()
             ..allSelected.value = false;
+          if (!ctr.isEnd) ctr.onRefresh().ignore();
         }
       } catch (e) {
         if (kDebugMode) debugPrint('fav pgc onUpdate: $e');
       }
-      afterDelete(removeList);
+      await afterDeleteWhere((item) => seasonIds.contains(item.seasonId));
       SmartDialog.showToast(response);
     } else {
       res.toast();
@@ -102,19 +114,32 @@ class FavPgcController
       status: followStatus,
     );
     if (res case Success(:final response)) {
-      List<FavPgcItemModel> list = loadingState.value.data!;
-      final item = list.removeAt(index);
-      loadingState.refresh();
-      try {
-        final ctr = Get.find<FavPgcController>(tag: '$type$followStatus');
-        if (ctr.loadingState.value case Success(:final response)) {
-          response?.insert(0, item);
-          ctr
-            ..loadingState.refresh()
-            ..allSelected.value = false;
+      final list = loadingState.value.dataOrNull;
+      final currentIndex = list?.indexWhere(
+        (item) => item.seasonId == seasonId,
+      );
+      if (list != null && currentIndex != null && currentIndex != -1) {
+        final item = list.removeAt(currentIndex);
+        loadingState.refresh();
+        if (!isEnd) onRefresh().ignore();
+        try {
+          final ctr = Get.find<FavPgcController>(tag: '$type$followStatus');
+          if (ctr.loadingState.value case Success(:final response)) {
+            item.checked = false;
+            if (response != null &&
+                !response.any(
+                  (current) => current.seasonId == item.seasonId,
+                )) {
+              response.insert(0, item);
+            }
+            ctr
+              ..loadingState.refresh()
+              ..allSelected.value = false;
+            if (!ctr.isEnd) ctr.onRefresh().ignore();
+          }
+        } catch (e) {
+          if (kDebugMode) debugPrint('fav pgc pgcUpdate: $e');
         }
-      } catch (e) {
-        if (kDebugMode) debugPrint('fav pgc pgcUpdate: $e');
       }
       SmartDialog.showToast(response);
     } else {

@@ -150,6 +150,7 @@ abstract final class PageUtils {
     required BuildContext context,
     required FavMixin ctr,
   }) {
+    final resource = ctr.actionResourceSnapshot;
     showModalBottomSheet(
       context: context,
       useSafeArea: true,
@@ -172,6 +173,7 @@ abstract final class PageUtils {
           builder: (BuildContext context, ScrollController scrollController) {
             return FavPanel(
               ctr: ctr,
+              resource: resource,
               scrollController: scrollController,
             );
           },

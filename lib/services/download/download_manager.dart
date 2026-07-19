@@ -7,7 +7,22 @@ import 'package:PiliPlus/utils/extension/file_ext.dart';
 import 'package:PiliPlus/utils/extension/string_ext.dart';
 import 'package:dio/dio.dart';
 
-class DownloadManager {
+abstract interface class DownloadTask {
+  DownloadStatus get status;
+
+  Future<void> cancel({required bool isDelete});
+}
+
+class DownloadManager implements DownloadTask {
+  static final _contentRangeRegExp = RegExp(
+    r'^bytes\s+(\d+)-\d+/(?:\d+|\*)$',
+    caseSensitive: false,
+  );
+  static final _unsatisfiedContentRangeRegExp = RegExp(
+    r'^bytes\s+\*/(\d+)$',
+    caseSensitive: false,
+  );
+
   final String url;
   final String path;
   final void Function(int, int)? onReceiveProgress;
@@ -15,6 +30,7 @@ class DownloadManager {
 
   DownloadStatus _status = DownloadStatus.downloading;
 
+  @override
   DownloadStatus get status => _status;
   final _cancelToken = CancelToken();
   late Future<void> task;
@@ -39,13 +55,13 @@ class DownloadManager {
       received = 0;
     }
 
-    final sink = file.openWrite(
-      mode: received == 0 ? FileMode.writeOnly : FileMode.writeOnlyAppend,
-    );
+    IOSink? sink;
 
     Future<void> onError(Object e, {bool delete = false}) async {
       try {
-        await sink.close();
+        if (sink case final sink?) {
+          await sink.close();
+        }
       } catch (_) {}
       if (_status == DownloadStatus.downloading) {
         _status = DownloadStatus.failDownload;
@@ -73,17 +89,62 @@ class DownloadManager {
       await onError(e, delete: true);
       return;
     }
-    final data = response.data!;
-    final contentLength = data.contentLength + received;
-
-    if (received == 0) {
-      onReceiveProgress?.call(0, contentLength);
-    }
-
-    int? last;
     try {
+      final data = response.data!;
+      final statusCode = response.statusCode;
+      if (statusCode == HttpStatus.requestedRangeNotSatisfiable) {
+        await data.stream.drain<void>();
+        final contentRange = response.headers.value(
+          HttpHeaders.contentRangeHeader,
+        );
+        final remoteLength = int.tryParse(
+          _unsatisfiedContentRangeRegExp
+                  .firstMatch(contentRange ?? '')
+                  ?.group(1) ??
+              '',
+        );
+        if (remoteLength != received) {
+          throw StateError(
+            'Unexpected Content-Range length $remoteLength, expected $received',
+          );
+        }
+        _status = DownloadStatus.completed;
+        onDone();
+        return;
+      }
+
+      if (statusCode == HttpStatus.partialContent) {
+        final contentRange = response.headers.value(
+          HttpHeaders.contentRangeHeader,
+        );
+        final rangeStart = int.tryParse(
+          _contentRangeRegExp.firstMatch(contentRange ?? '')?.group(1) ?? '',
+        );
+        if (rangeStart != received) {
+          await data.stream.drain<void>();
+          throw StateError(
+            'Unexpected Content-Range start $rangeStart, expected $received',
+          );
+        }
+      } else if (statusCode == HttpStatus.ok && received != 0) {
+        received = 0;
+      } else if (statusCode != HttpStatus.ok) {
+        await data.stream.drain<void>();
+        throw StateError('Unexpected download status $statusCode');
+      }
+
+      final contentLength = data.contentLength + received;
+      if (received == 0) {
+        onReceiveProgress?.call(0, contentLength);
+      }
+
+      final output = file.openWrite(
+        mode: received == 0 ? FileMode.writeOnly : FileMode.writeOnlyAppend,
+      );
+      sink = output;
+      int? last;
       await for (final chunk in data.stream) {
-        sink.add(chunk);
+        output.add(chunk);
         received += chunk.length;
         final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
         if (last != now) {
@@ -91,7 +152,7 @@ class DownloadManager {
           onReceiveProgress?.call(received, contentLength);
         }
       }
-      await sink.close();
+      await output.close();
       _status = DownloadStatus.completed;
       onDone();
     } catch (e) {
@@ -100,6 +161,7 @@ class DownloadManager {
     }
   }
 
+  @override
   Future<void> cancel({required bool isDelete}) {
     if (!isDelete && _status == DownloadStatus.downloading) {
       _status = DownloadStatus.pause;

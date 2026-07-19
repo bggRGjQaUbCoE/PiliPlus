@@ -63,6 +63,7 @@ import 'package:PiliPlus/utils/path_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
+import 'package:PiliPlus/utils/temporary_file_cleanup.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:canvas_danmaku/canvas_danmaku.dart';
 import 'package:collection/collection.dart';
@@ -84,6 +85,17 @@ import 'package:screen_brightness_platform_interface/screen_brightness_platform_
 import 'package:window_manager/window_manager.dart';
 
 part 'widgets.dart';
+
+@visibleForTesting
+Future<bool> resumeAfterWebpDialogCancellation({
+  required bool isConfirmed,
+  required bool wasPlaying,
+  required FutureOr<void> Function() resume,
+}) async {
+  if (isConfirmed) return false;
+  if (wasPlaying) await resume();
+  return true;
+}
 
 class PLVideoPlayer extends StatefulWidget {
   const PLVideoPlayer({
@@ -2157,7 +2169,13 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
           ),
         ) ??
         false;
-    if (!success) return;
+    if (await resumeAfterWebpDialogCancellation(
+      isConfirmed: success,
+      wasPlaying: isPlay,
+      resume: ctr.play,
+    )) {
+      return;
+    }
 
     final progress = 0.0.obs;
     final name =
@@ -2179,21 +2197,27 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     SmartDialog.showLoading(
       backType: SmartBackType.normal,
       builder: (_) => LoadingWidget(progress: progress, msg: '正在保存，可能需要较长时间'),
-      onDismiss: () async {
-        if (progress.value < 1.0) {
-          mpv.dispose();
-        }
-        if (await future) {
-          await ImageUtils.saveFileImg(
-            filePath: file,
-            fileName: name,
-            needToast: true,
-          );
-        } else {
-          SmartDialog.showToast('转码出现错误或已取消');
-        }
-        if (isPlay) ctr.play();
-      },
+      onDismiss: () => withTemporaryFileCleanup<void>(
+        path: file,
+        action: () async {
+          try {
+            if (progress.value < 1.0) {
+              mpv.dispose();
+            }
+            if (await future) {
+              await ImageUtils.saveFileImg(
+                filePath: file,
+                fileName: name,
+                needToast: true,
+              );
+            } else {
+              SmartDialog.showToast('转码出现错误或已取消');
+            }
+          } finally {
+            if (isPlay) ctr.play();
+          }
+        },
+      ),
     );
   }
 

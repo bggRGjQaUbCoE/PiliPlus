@@ -11,6 +11,7 @@ import 'package:PiliPlus/pages/common/multi_select/base.dart';
 import 'package:PiliPlus/pages/common/multi_select/multi_select_controller.dart';
 import 'package:PiliPlus/pages/later/base_controller.dart';
 import 'package:PiliPlus/utils/accounts.dart';
+import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:PiliPlus/utils/extension/scroll_controller_ext.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:flutter/material.dart';
@@ -32,13 +33,16 @@ mixin BaseLaterController
       content: const Text('确认删除所选稍后再看吗？'),
       onConfirm: () async {
         final removeList = allChecked.toSet();
+        final removeAids = removeList.map((item) => item.aid).toSet();
         SmartDialog.showLoading(msg: '请求中');
         final res = await UserHttp.toViewDel(
           aids: removeList.map((item) => item.aid).join(','),
         );
         if (res.isSuccess) {
-          updateCount?.call(removeList.length);
-          afterDelete(removeList);
+          final removedCount = await afterDeleteWhere(
+            (item) => removeAids.contains(item.aid),
+          );
+          if (removedCount != 0) updateCount?.call(removedCount);
         }
         SmartDialog.dismiss();
       },
@@ -69,10 +73,14 @@ mixin BaseLaterController
               Get.back();
               final res = await UserHttp.toViewDel(aids: aid.toString());
               if (res.isSuccess) {
-                loadingState
-                  ..value.data!.removeAt(index)
-                  ..refresh();
-                updateCount?.call(1);
+                final removed = loadingState.value.dataOrNull?.removeFirstWhere(
+                  (item) => item.aid == aid,
+                );
+                if (removed == true) {
+                  loadingState.refresh();
+                  updateCount?.call(1);
+                  if (!isEnd) onRefresh().ignore();
+                }
               }
             },
             child: const Text('确认移除'),

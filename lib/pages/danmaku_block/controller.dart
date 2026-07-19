@@ -4,6 +4,7 @@ import 'package:PiliPlus/http/danmaku_block.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/dm_block_type.dart';
 import 'package:PiliPlus/models/user/danmaku_block.dart';
+import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:archive/archive.dart' show getCrc32;
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -52,7 +53,7 @@ class DanmakuBlockController extends GetxController
     final res = await DanmakuFilterHttp.danmakuFilterDel(ids: id);
     SmartDialog.dismiss();
     if (res.isSuccess) {
-      rules[tabIndex].removeAt(itemIndex);
+      rules[tabIndex].removeFirstWhere((item) => item.id == id);
       SmartDialog.showToast('删除成功');
     } else {
       res.toast();

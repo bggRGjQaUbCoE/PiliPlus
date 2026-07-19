@@ -6,6 +6,7 @@ import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
     show ReplyInfo;
 import 'package:PiliPlus/pages/video/reply/widgets/reply_item_grpc.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
+import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/reply_utils.dart';
@@ -88,7 +89,7 @@ class _MyReplyState extends State<MyReply> with DynMixin {
                         needDivider: false,
                         replyItem: _replies[index],
                         replyReply: _replyReply,
-                        onDelete: (_, _) => _onDelete(index),
+                        onDelete: (item, _) => _onDelete(item),
                         onCheckReply: _onCheckReply,
                       ),
                     ),
@@ -123,9 +124,12 @@ class _MyReplyState extends State<MyReply> with DynMixin {
     }
   }
 
-  void _onDelete(int index) {
-    _replies.removeAt(index);
-    setState(() {});
+  void _onDelete(ReplyInfo item) {
+    if (!mounted) return;
+    final removed = _replies.removeFirstWhere(
+      (current) => current.id == item.id,
+    );
+    if (removed) setState(() {});
   }
 
   void _onCheckReply(ReplyInfo replyInfo) {

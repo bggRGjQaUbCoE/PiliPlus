@@ -5,6 +5,8 @@ import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/msg.dart';
 import 'package:PiliPlus/pages/common/common_list_controller.dart';
 import 'package:PiliPlus/utils/accounts.dart';
+import 'package:PiliPlus/utils/extension/iterable_ext.dart';
+import 'package:collection/collection.dart';
 import 'package:fixnum/fixnum.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 
@@ -15,9 +17,13 @@ abstract class CommonWhisperController<R>
   Future<void> onRemove(int index, int talkerId) async {
     final res = await MsgHttp.removeMsg(talkerId);
     if (res.isSuccess) {
-      loadingState
-        ..value.data!.removeAt(index)
-        ..refresh();
+      final removed = loadingState.value.dataOrNull?.removeFirstWhere(
+        (item) =>
+            item.id.hasPrivateId() &&
+            item.id.privateId.talkerUid.toInt() == talkerId,
+      );
+      if (removed == true) loadingState.refresh();
+      reconcileAfterMutation().ignore();
       SmartDialog.showToast('删除成功');
     } else {
       res.toast();
@@ -35,12 +41,23 @@ abstract class CommonWhisperController<R>
         : await ImGrpc.pinSession(sessionId: sessionId);
 
     if (res.isSuccess) {
-      List<Session> list = loadingState.value.data!;
-      item.isPinned = isTop ? false : true;
-      if (!isTop) {
-        list.insert(0, list.removeAt(index));
+      final list = loadingState.value.dataOrNull;
+      final currentIndex = list?.indexWhere(
+        (current) => const ListEquality<int>().equals(
+          current.id.writeToBuffer(),
+          sessionId.writeToBuffer(),
+        ),
+      );
+      if (list != null && currentIndex != null && currentIndex != -1) {
+        final current = list[currentIndex]..isPinned = !isTop;
+        if (!isTop && currentIndex != 0) {
+          list
+            ..removeAt(currentIndex)
+            ..insert(0, current);
+        }
+        loadingState.refresh();
       }
-      loadingState.refresh();
+      reconcileAfterMutation().ignore();
       SmartDialog.showToast('${isTop ? '移除' : ''}置顶成功');
     } else {
       res.toast();
@@ -54,8 +71,17 @@ abstract class CommonWhisperController<R>
       dndUid: talkerUid,
     );
     if (res.isSuccess) {
-      item.isMuted = !isMuted;
-      loadingState.refresh();
+      final list = loadingState.value.dataOrNull;
+      final currentIndex = list?.indexWhere(
+        (current) =>
+            current.id.hasPrivateId() &&
+            current.id.privateId.talkerUid == talkerUid,
+      );
+      if (list != null && currentIndex != null && currentIndex != -1) {
+        list[currentIndex].isMuted = !isMuted;
+        loadingState.refresh();
+      }
+      reconcileAfterMutation().ignore();
       SmartDialog.showToast('设置成功');
     } else {
       res.toast();
@@ -75,6 +101,7 @@ abstract class CommonWhisperController<R>
           loadingState.refresh();
         }
       }
+      reconcileAfterMutation().ignore();
       SmartDialog.showToast('已标记为已读');
     } else {
       res.toast();
@@ -85,6 +112,7 @@ abstract class CommonWhisperController<R>
     final res = await ImGrpc.deleteSessionList(pageType: sessionPageType);
     if (res.isSuccess) {
       loadingState.value = const Success(null);
+      reconcileAfterMutation().ignore();
     } else {
       res.toast();
     }

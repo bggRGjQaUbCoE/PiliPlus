@@ -9,6 +9,7 @@ import 'package:PiliPlus/models/model_hot_video_item.dart';
 import 'package:PiliPlus/pages/home/controller.dart';
 import 'package:PiliPlus/pages/hot/controller.dart';
 import 'package:PiliPlus/pages/rank/view.dart';
+import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:PiliPlus/utils/grid.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:flutter/material.dart';
@@ -133,11 +134,20 @@ class _HotPageState extends State<HotPage>
                   if (index == response.length - 1) {
                     controller.onLoadMore();
                   }
+                  final item = response[index];
                   return VideoCardH(
-                    videoItem: response[index],
-                    onRemove: () => controller.loadingState
-                      ..value.data!.removeAt(index)
-                      ..refresh(),
+                    videoItem: item,
+                    onRemove: () {
+                      final removed = controller.loadingState.value.dataOrNull
+                          ?.removeFirstWhere(
+                            (current) =>
+                                current.aid == item.aid &&
+                                current.bvid == item.bvid,
+                          );
+                      if (removed == true) {
+                        controller.loadingState.refresh();
+                      }
+                    },
                   );
                 },
                 itemCount: response.length,

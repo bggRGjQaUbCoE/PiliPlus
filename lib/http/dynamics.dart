@@ -27,6 +27,7 @@ import 'package:PiliPlus/models_new/dynamic/dyn_topic_top/top_details.dart';
 import 'package:PiliPlus/models_new/dynamic/dyn_topic_top/topic_item.dart';
 import 'package:PiliPlus/models_new/followee_votes/vote.dart';
 import 'package:PiliPlus/utils/accounts.dart';
+import 'package:PiliPlus/utils/accounts/account.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:PiliPlus/utils/wbi_sign.dart';
 import 'package:dio/dio.dart';
@@ -151,11 +152,13 @@ abstract final class DynamicsHttp {
   static Future<LoadingState<void>> thumbDynamic({
     required String? dynamicId,
     required int? up,
+    Account? account,
   }) async {
+    account ??= Accounts.main;
     final res = await Request().post(
       Api.thumbDynamic,
       queryParameters: {
-        'csrf': Accounts.main.csrf,
+        'csrf': account.csrf,
       },
       data: {
         'dyn_id_str': dynamicId,
@@ -163,6 +166,7 @@ abstract final class DynamicsHttp {
         'spmid': '333.1365.0.0',
       },
       options: Options(
+        extra: {'account': account},
         headers: {
           'referer': HttpString.dynamicShareBaseUrl,
         },

@@ -5,6 +5,7 @@ import 'package:PiliPlus/models/search/result.dart';
 import 'package:PiliPlus/pages/search/widgets/search_text.dart';
 import 'package:PiliPlus/pages/search_panel/video/controller.dart';
 import 'package:PiliPlus/pages/search_panel/view.dart';
+import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:PiliPlus/utils/grid.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -109,11 +110,19 @@ class _SearchVideoPanelState
         if (index == list.length - 1) {
           controller.onLoadMore();
         }
+        final item = list[index];
         return VideoCardH(
-          videoItem: list[index],
-          onRemove: () => controller.loadingState
-            ..value.data!.removeAt(index)
-            ..refresh(),
+          videoItem: item,
+          onRemove: () {
+            final removed = controller.loadingState.value.dataOrNull
+                ?.removeFirstWhere(
+                  (current) =>
+                      current.id == item.id &&
+                      current.bvid == item.bvid &&
+                      current.roomId == item.roomId,
+                );
+            if (removed == true) controller.loadingState.refresh();
+          },
         );
       },
       itemCount: list.length,

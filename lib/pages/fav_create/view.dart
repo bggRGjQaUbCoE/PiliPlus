@@ -6,6 +6,7 @@ import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
 import 'package:PiliPlus/http/fav.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/msg.dart';
+import 'package:PiliPlus/models_new/fav/fav_folder/list.dart';
 import 'package:PiliPlus/utils/bili_utils.dart';
 import 'package:PiliPlus/utils/extension/file_ext.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
@@ -18,8 +19,21 @@ import 'package:get/get.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 
+typedef FavFolderInfoLoader =
+    Future<LoadingState<FavFolderInfo>> Function(Object mediaId);
+
+Future<LoadingState<FavFolderInfo>> _loadFavFolderInfo(Object mediaId) =>
+    FavHttp.favFolderInfo(mediaId: mediaId);
+
 class CreateFavPage extends StatefulWidget {
-  const CreateFavPage({super.key});
+  const CreateFavPage({
+    super.key,
+    this.initialMediaId,
+    this.folderInfoLoader = _loadFavFolderInfo,
+  });
+
+  final Object? initialMediaId;
+  final FavFolderInfoLoader folderInfoLoader;
 
   @override
   State<CreateFavPage> createState() => _CreateFavPageState();
@@ -40,26 +54,26 @@ class _CreateFavPageState extends State<CreateFavPage> {
     super.initState();
     _titleController = TextEditingController();
     _introController = TextEditingController();
-    _mediaId = Get.parameters['mediaId'];
+    _mediaId = widget.initialMediaId ?? Get.parameters['mediaId'];
     if (_mediaId != null) {
       _getFolderInfo();
     }
   }
 
-  void _getFolderInfo() {
+  Future<void> _getFolderInfo() async {
     _errMsg = null;
-    FavHttp.favFolderInfo(mediaId: _mediaId).then((res) {
-      if (res case Success(:final response)) {
-        _titleController.text = response.title;
-        _introController.text = response.intro ?? '';
-        _isPublic = BiliUtils.isPublicFav(response.attr);
-        _cover = response.cover;
-        _attr = response.attr;
-      } else {
-        _errMsg = res.toString();
-      }
-      setState(() {});
-    });
+    final res = await widget.folderInfoLoader(_mediaId);
+    if (!mounted) return;
+    if (res case Success(:final response)) {
+      _titleController.text = response.title;
+      _introController.text = response.intro ?? '';
+      _isPublic = BiliUtils.isPublicFav(response.attr);
+      _cover = response.cover;
+      _attr = response.attr;
+    } else {
+      _errMsg = res.toString();
+    }
+    setState(() {});
   }
 
   @override

@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:PiliPlus/common/dial_prefix.dart';
 import 'package:PiliPlus/common/widgets/button/icon_button.dart';
@@ -12,6 +11,7 @@ import 'package:PiliPlus/models/login/model.dart';
 import 'package:PiliPlus/pages/login/geetest/geetest_webview_dialog.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/accounts/account.dart';
+import 'package:PiliPlus/utils/accounts/cookie_header_parser.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/theme_utils.dart';
 import 'package:dio/dio.dart';
@@ -137,32 +137,19 @@ class LoginPageController extends GetxController
     });
   }
 
-  static String validateCookie(String cookie) {
-    return cookie
-        .split(';')
-        .where((e) {
-          try {
-            Cookie.fromSetCookieValue(e.trim());
-          } catch (_) {
-            return false;
-          }
-          return true;
-        })
-        .join(';');
-  }
-
   // cookie登录
   Future<void> loginByCookie() async {
     if (cookieTextController.text.isEmpty) {
       SmartDialog.showToast('cookie不能为空');
       return;
     }
+    final parsedCookieHeader = parseCookieHeader(cookieTextController.text);
     try {
       final result = await Request().get(
         "/x/member/web/account",
         options: Options(
           headers: {
-            "cookie": validateCookie(cookieTextController.text),
+            "cookie": parsedCookieHeader.header,
           },
           extra: {'account': AnonymousAccount()},
         ),
@@ -170,14 +157,7 @@ class LoginPageController extends GetxController
       if (result.data['code'] == 0) {
         try {
           await LoginAccount(
-            BiliCookieJar.fromJson(
-              Map.fromEntries(
-                cookieTextController.text.split(';').map((item) {
-                  final list = item.split('=');
-                  return MapEntry(list.first, list.skip(1).join());
-                }),
-              ),
-            ),
+            BiliCookieJar.fromJson(parsedCookieHeader.cookies),
             null,
             null,
           ).onChange();

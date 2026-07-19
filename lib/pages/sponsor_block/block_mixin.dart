@@ -61,10 +61,14 @@ mixin BlockMixin on GetxController {
   Future<void> querySponsorBlock({
     required String bvid,
     required int cid,
+    bool Function()? isCurrent,
   }) async {
     resetBlock();
 
     final result = await SponsorBlock.getSkipSegments(bvid: bvid, cid: cid);
+    if (isCurrent?.call() == false) {
+      return;
+    }
     switch (result) {
       case Success<List<SegmentItemModel>>(:final response):
         handleSBData(response);

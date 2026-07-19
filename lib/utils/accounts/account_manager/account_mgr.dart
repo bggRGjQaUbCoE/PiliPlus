@@ -14,16 +14,36 @@ import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart' show kDebugMode;
+import 'package:flutter/foundation.dart' show kDebugMode, visibleForTesting;
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 
 final _setCookieReg = RegExp('(?<=)(,)(?=[^;]+?=)');
 
-class AccountManager extends Interceptor {
-  AccountManager();
+@visibleForTesting
+String requestUrlForDiagnostics(RequestOptions options) {
+  final uri = options.uri;
+  return Uri(
+    scheme: uri.scheme,
+    host: uri.host,
+    port: uri.hasPort ? uri.port : null,
+    path: uri.path,
+  ).toString();
+}
 
-  String blockServer = Pref.blockServer;
+class AccountManager extends Interceptor {
+  AccountManager() : this._(Pref.blockServer, null);
+
+  @visibleForTesting
+  AccountManager.test({
+    required String blockServer,
+    required Account Function(String path) accountResolver,
+  }) : this._(blockServer, accountResolver);
+
+  AccountManager._(this.blockServer, this._accountResolver);
+
+  String blockServer;
+  final Account Function(String path)? _accountResolver;
 
   static String getCookies(List<Cookie> cookies) {
     // Sort cookies by path (longer path first).
@@ -46,6 +66,7 @@ class AccountManager extends Interceptor {
     final path = options.path;
 
     late final Account account = options.extra['account'] ?? _findAccount(path);
+    options.extra['account'] = account;
 
     if (account is NoAccount || _skipCookie(path)) return handler.next(options);
 
@@ -176,9 +197,9 @@ class AccountManager extends Interceptor {
       'biliimg.com',
       'site/getCoin',
     ];
-    String url = err.requestOptions.uri.toString();
+    final url = requestUrlForDiagnostics(err.requestOptions);
     if (kDebugMode) debugPrint('🌹🌹ApiInterceptor: $url');
-    if (skipShow.any((i) => url.contains(i)) ||
+    if (skipShow.any(url.contains) ||
         (url.contains('skipSegments') && err.requestOptions.method == 'GET')) {
       // skip
     } else {
@@ -190,6 +211,7 @@ class AccountManager extends Interceptor {
     final Account account =
         response.requestOptions.extra['account'] ??
         _findAccount(response.requestOptions.path);
+    if (account.isDeleted) return;
     final setCookies = response.headers[HttpHeaders.setCookieHeader];
     if (setCookies == null || setCookies.isEmpty) {
       return;
@@ -218,6 +240,10 @@ class AccountManager extends Interceptor {
         ),
       );
     }
+    if (account.isDeleted) {
+      await account.cookieJar.deleteAll();
+      return;
+    }
     await account.onChange();
   }
 
@@ -227,14 +253,16 @@ class AccountManager extends Interceptor {
         path.contains('biliimg.com');
   }
 
-  Account _findAccount(String path) => ApiType.loginApi.contains(path)
-      ? AnonymousAccount()
-      : Accounts.get(
-          AccountType.values.firstWhere(
-            (i) => ApiType.apiTypeSet[i]?.contains(path) == true,
-            orElse: () => AccountType.main,
-          ),
-        );
+  Account _findAccount(String path) =>
+      _accountResolver?.call(path) ??
+      (ApiType.loginApi.contains(path)
+          ? AnonymousAccount()
+          : Accounts.get(
+              AccountType.values.firstWhere(
+                (i) => ApiType.apiTypeSet[i]?.contains(path) == true,
+                orElse: () => AccountType.main,
+              ),
+            ));
 
   static Future<String> dioError(DioException error) async {
     switch (error.type) {

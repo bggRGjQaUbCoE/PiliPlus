@@ -335,13 +335,7 @@ class _WhisperDetailPageState
               return IconButton(
                 onPressed: () async {
                   if (enablePublish) {
-                    _whisperDetailController.sendMsg(
-                      message: editController.rawText,
-                      onClearText: () {
-                        editController.clear();
-                        this.enablePublish.value = false;
-                      },
-                    );
+                    await _sendTextMessage();
                   } else {
                     try {
                       final pickedFile = await imagePicker.pickImage(
@@ -409,10 +403,16 @@ class _WhisperDetailPageState
   @override
   Widget? get customPanel => EmotePanel(onChoose: onChooseEmote);
 
+  Future<void> _sendTextMessage() => _whisperDetailController.sendMsg(
+    message: editController.rawText,
+    onClearText: () {
+      editController.clear();
+      enablePublish.value = false;
+    },
+  );
+
   @override
-  Future<void> onCustomPublish({List? pictures}) {
-    throw UnimplementedError();
-  }
+  Future<void> onCustomPublish({List? pictures}) => _sendTextMessage();
 
   @override
   Future<void>? onMention([bool fromClick = false]) => null;

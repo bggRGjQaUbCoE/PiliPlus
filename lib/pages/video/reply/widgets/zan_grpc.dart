@@ -1,6 +1,7 @@
 import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
     show ReplyInfo;
 import 'package:PiliPlus/http/reply.dart';
+import 'package:PiliPlus/utils/async_operation_guard.dart';
 import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:fixnum/fixnum.dart' as $fixnum;
@@ -8,7 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
-class ZanButtonGrpc extends StatelessWidget {
+class ZanButtonGrpc extends StatefulWidget {
   const ZanButtonGrpc({
     super.key,
     required this.replyItem,
@@ -16,24 +17,27 @@ class ZanButtonGrpc extends StatelessWidget {
 
   final ReplyInfo replyItem;
 
-  Future<void> onHateReply(
-    BuildContext context,
-    bool isProcessing,
-    VoidCallback onDone, {
+  @override
+  State<ZanButtonGrpc> createState() => _ZanButtonGrpcState();
+}
+
+class _ZanButtonGrpcState extends State<ZanButtonGrpc> {
+  final _mutationGuard = AsyncOperationGuard();
+
+  ReplyInfo get replyItem => widget.replyItem;
+
+  Future<void> _onHateReply({
     required bool isLike,
     required bool isDislike,
   }) async {
-    if (isProcessing) {
-      return;
-    }
-    isProcessing = true;
+    final target = replyItem;
     feedBack();
-    final int oid = replyItem.oid.toInt();
-    final int rpid = replyItem.id.toInt();
+    final int oid = target.oid.toInt();
+    final int rpid = target.id.toInt();
     // 1 已点赞 2 不喜欢 0 未操作
     final int action = isDislike ? 0 : 2;
     final res = await ReplyHttp.hateReply(
-      type: replyItem.type.toInt(),
+      type: target.type.toInt(),
       action: action == 2 ? 1 : 0,
       oid: oid,
       rpid: rpid,
@@ -42,39 +46,32 @@ class ZanButtonGrpc extends StatelessWidget {
     if (res.isSuccess) {
       SmartDialog.showToast(isDislike ? '取消踩' : '点踩成功');
       if (action == 2) {
-        if (isLike) replyItem.like -= $fixnum.Int64.ONE;
-        replyItem.replyControl.action = $fixnum.Int64.TWO;
+        if (isLike) target.like -= $fixnum.Int64.ONE;
+        target.replyControl.action = $fixnum.Int64.TWO;
       } else {
-        replyItem.replyControl.action = $fixnum.Int64.ZERO;
+        target.replyControl.action = $fixnum.Int64.ZERO;
       }
-      if (context.mounted) {
-        (context as Element?)?.markNeedsBuild();
+      if (mounted) {
+        setState(() {});
       }
     } else {
       res.toast();
     }
-    onDone();
   }
 
   // 评论点赞
-  Future<void> onLikeReply(
-    BuildContext context,
-    bool isProcessing,
-    VoidCallback onDone, {
+  Future<void> _onLikeReply({
     required bool isLike,
     required bool isDislike,
   }) async {
-    if (isProcessing) {
-      return;
-    }
-    isProcessing = true;
+    final target = replyItem;
     feedBack();
-    final int oid = replyItem.oid.toInt();
-    final int rpid = replyItem.id.toInt();
+    final int oid = target.oid.toInt();
+    final int rpid = target.id.toInt();
     // 1 已点赞 2 不喜欢 0 未操作
     final int action = isLike ? 0 : 1;
     final res = await ReplyHttp.likeReply(
-      type: replyItem.type.toInt(),
+      type: target.type.toInt(),
       oid: oid,
       rpid: rpid,
       action: action,
@@ -82,27 +79,25 @@ class ZanButtonGrpc extends StatelessWidget {
     if (res.isSuccess) {
       SmartDialog.showToast(isLike ? '取消赞' : '点赞成功');
       if (action == 1) {
-        replyItem
+        target
           ..like += $fixnum.Int64.ONE
           ..replyControl.action = $fixnum.Int64.ONE;
       } else {
-        replyItem
+        target
           ..like -= $fixnum.Int64.ONE
           ..replyControl.action = $fixnum.Int64.ZERO;
       }
-      if (context.mounted) {
-        (context as Element?)?.markNeedsBuild();
+      if (mounted) {
+        setState(() {});
       }
     } else {
       res.toast();
     }
-    onDone();
   }
 
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
-    late bool isProcessing = false;
     final action = replyItem.replyControl.action;
     final isLike = action == $fixnum.Int64.ONE;
     final isDislike = action == $fixnum.Int64.TWO;
@@ -125,12 +120,11 @@ class ZanButtonGrpc extends StatelessWidget {
               padding: WidgetStatePropertyAll(.zero),
               minimumSize: WidgetStatePropertyAll(.square(40)),
             ),
-            onPressed: () => onHateReply(
-              context,
-              isProcessing,
-              () => isProcessing = false,
-              isLike: isLike,
-              isDislike: isDislike,
+            onPressed: () => _mutationGuard.run(
+              () => _onHateReply(
+                isLike: isLike,
+                isDislike: isDislike,
+              ),
             ),
             child: Icon(
               isDislike
@@ -146,12 +140,11 @@ class ZanButtonGrpc extends StatelessWidget {
           height: 32,
           child: TextButton(
             style: style,
-            onPressed: () => onLikeReply(
-              context,
-              isProcessing,
-              () => isProcessing = false,
-              isLike: isLike,
-              isDislike: isDislike,
+            onPressed: () => _mutationGuard.run(
+              () => _onLikeReply(
+                isLike: isLike,
+                isDislike: isDislike,
+              ),
             ),
             child: Row(
               spacing: 4,

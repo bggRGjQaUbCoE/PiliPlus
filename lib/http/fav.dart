@@ -14,6 +14,7 @@ import 'package:PiliPlus/models_new/space/space_cheese/data.dart';
 import 'package:PiliPlus/models_new/space/space_fav/data.dart';
 import 'package:PiliPlus/models_new/sub/sub_detail/data.dart';
 import 'package:PiliPlus/utils/accounts.dart';
+import 'package:PiliPlus/utils/accounts/account.dart';
 import 'package:PiliPlus/utils/app_sign.dart';
 import 'package:dio/dio.dart';
 
@@ -634,16 +635,21 @@ abstract final class FavHttp {
     required String resources,
     String? addIds,
     String? delIds,
+    Account? account,
   }) async {
+    account ??= Accounts.main;
     final res = await Request().post(
       Api.favVideo,
       data: {
         'resources': resources,
         'add_media_ids': addIds ?? '',
         'del_media_ids': delIds ?? '',
-        'csrf': Accounts.main.csrf,
+        'csrf': account.csrf,
       },
-      options: Options(contentType: Headers.formUrlEncodedContentType),
+      options: Options(
+        contentType: Headers.formUrlEncodedContentType,
+        extra: {'account': account},
+      ),
     );
     if (res.data['code'] == 0) {
       return const Success(null);
@@ -656,15 +662,20 @@ abstract final class FavHttp {
   static Future<LoadingState<void>> unfavAll({
     required Object rid,
     required Object type,
+    Account? account,
   }) async {
+    account ??= Accounts.main;
     final res = await Request().post(
       Api.unfavAll,
       data: {
         'rid': rid,
         'type': type,
-        'csrf': Accounts.main.csrf,
+        'csrf': account.csrf,
       },
-      options: Options(contentType: Headers.formUrlEncodedContentType),
+      options: Options(
+        contentType: Headers.formUrlEncodedContentType,
+        extra: {'account': account},
+      ),
     );
     if (res.data['code'] == 0) {
       return const Success(null);
@@ -723,7 +734,9 @@ abstract final class FavHttp {
     dynamic mid,
     dynamic rid,
     dynamic type,
+    Account? account,
   }) async {
+    account ??= Accounts.main;
     final res = await Request().get(
       Api.favFolder,
       queryParameters: {
@@ -731,6 +744,7 @@ abstract final class FavHttp {
         'rid': rid,
         'type': ?type,
       },
+      options: Options(extra: {'account': account}),
     );
     if (res.data['code'] == 0) {
       return Success(FavFolderData.fromJson(res.data['data']));

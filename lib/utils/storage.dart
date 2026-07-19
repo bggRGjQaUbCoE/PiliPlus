@@ -10,6 +10,7 @@ import 'package:PiliPlus/utils/accounts/account_type_adapter.dart';
 import 'package:PiliPlus/utils/accounts/cookie_jar_adapter.dart';
 import 'package:PiliPlus/utils/path_utils.dart';
 import 'package:PiliPlus/utils/set_int_adapter.dart';
+import 'package:PiliPlus/utils/settings_import_validator.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:hive_ce/hive.dart';
@@ -89,10 +90,47 @@ abstract final class GStorage {
 
   static Future<List<void>> importAllJsonSettings(
     Map<String, dynamic> map,
+  ) async {
+    final importedSetting = _settingsSection(map, setting.name);
+    final importedVideo = _settingsSection(map, video.name);
+    SettingsImportValidator.validateAndNormalize(
+      importedSetting,
+      importedVideo,
+    );
+    final previousSetting = setting.toMap();
+    final previousVideo = video.toMap();
+
+    try {
+      return await _replaceSettings(importedSetting, importedVideo);
+    } catch (error, stackTrace) {
+      try {
+        await _replaceSettings(previousSetting, previousVideo);
+      } catch (rollbackError, rollbackStackTrace) {
+        Error.throwWithStackTrace(rollbackError, rollbackStackTrace);
+      }
+      Error.throwWithStackTrace(error, stackTrace);
+    }
+  }
+
+  static Map<dynamic, dynamic> _settingsSection(
+    Map<String, dynamic> map,
+    String name,
   ) {
+    final section = map[name];
+    if (section is! Map) {
+      throw FormatException('Missing or invalid settings section: $name');
+    }
+    return Map<dynamic, dynamic>.from(section);
+  }
+
+  static Future<List<void>> _replaceSettings(
+    Map<dynamic, dynamic> settingValues,
+    Map<dynamic, dynamic> videoValues,
+  ) async {
+    await Future.wait([setting.clear(), video.clear()]);
     return Future.wait([
-      setting.clear().then((_) => setting.putAll(map[setting.name])),
-      video.clear().then((_) => video.putAll(map[video.name])),
+      setting.putAll(settingValues),
+      video.putAll(videoValues),
     ]);
   }
 
@@ -134,14 +172,14 @@ abstract final class GStorage {
     ]);
   }
 
-  static Future<List<void>> clear() {
+  static Future<List<void>> clear() async {
+    await Accounts.clear();
     return Future.wait([
       userInfo.clear(),
       historyWord.clear(),
       localCache.clear(),
       setting.clear(),
       video.clear(),
-      Accounts.clear(),
       watchProgress.clear(),
       ?reply?.clear(),
     ]);

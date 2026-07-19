@@ -30,6 +30,7 @@ import 'package:PiliPlus/plugin/pl_player/models/play_repeat.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
 import 'package:PiliPlus/plugin/pl_player/models/video_fit_type.dart';
 import 'package:PiliPlus/plugin/pl_player/utils/fullscreen.dart';
+import 'package:PiliPlus/services/audio_session_coordinator.dart';
 import 'package:PiliPlus/services/service_locator.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/android/android_helper.dart';
@@ -570,6 +571,7 @@ class PlPlayerController with BlockConfigMixin {
 
   bool _processing = false;
   bool get processing => _processing;
+  int _dataSourceVersion = 0;
 
   // offline
   bool get isFileSource => dataSource is FileSource;
@@ -606,6 +608,7 @@ class PlPlayerController with BlockConfigMixin {
     Volume? volume,
     bool autoFullScreenFlag = false,
   }) async {
+    _dataSourceVersion++;
     try {
       _processing = true;
       this.isLive = isLive;
@@ -861,10 +864,18 @@ class PlPlayerController with BlockConfigMixin {
       return null;
     }
     if (_videoPlayerController case final ctr? when (ctr.current.isNotEmpty)) {
-      return ctr.open(
-        ctr.current.last.copyWith(start: ctr.state.position),
-        play: true,
-      );
+      final dataSourceVersion = _dataSourceVersion;
+      final media = ctr.current.last.copyWith(start: ctr.state.position);
+      return () async {
+        await ctr.open(media, play: false);
+        if (_playerCount == 0 ||
+            _instance != this ||
+            !identical(_videoPlayerController, ctr) ||
+            dataSourceVersion != _dataSourceVersion) {
+          return;
+        }
+        await play();
+      }();
     }
     return null;
   }
@@ -1131,15 +1142,30 @@ class PlPlayerController with BlockConfigMixin {
     if (_playerCount == 0) return;
     // 播放时自动隐藏控制条
     controls = !hideControls;
-    // repeat为true，将从头播放
-    if (repeat) {
-      // await seekTo(Duration.zero);
-      await seekTo(Duration.zero, isSeek: false);
-    }
 
-    await _videoPlayerController?.play();
-
-    audioSessionHandler?.setActive(true);
+    final sessionHandler = audioSessionHandler;
+    Player? focusedPlayer;
+    final started = await startPlaybackWithAudioFocus(
+      activate: () async =>
+          sessionHandler == null ||
+          await sessionHandler.setActive(true, owner: this),
+      canStart: () {
+        focusedPlayer = _videoPlayerController;
+        return _playerCount != 0 && _instance == this && focusedPlayer != null;
+      },
+      start: () async {
+        // repeat为true，将从头播放
+        if (repeat) {
+          // await seekTo(Duration.zero);
+          await seekTo(Duration.zero, isSeek: false);
+        }
+        await focusedPlayer!.play();
+      },
+      deactivate: () async {
+        await sessionHandler?.setActive(false, owner: this);
+      },
+    );
+    if (!started) return;
 
     playerStatus.value = PlayerStatus.playing;
     // screenManager.setOverlays(false);
@@ -1147,12 +1173,14 @@ class PlPlayerController with BlockConfigMixin {
 
   /// 暂停播放
   Future<void> pause({bool notify = true, bool isInterrupt = false}) async {
-    await _videoPlayerController?.pause();
-    playerStatus.value = PlayerStatus.paused;
-
-    // 主动暂停时让出音频焦点
-    if (!isInterrupt) {
-      audioSessionHandler?.setActive(false);
+    try {
+      await _videoPlayerController?.pause();
+      playerStatus.value = PlayerStatus.paused;
+    } finally {
+      // 主动暂停时让出音频焦点
+      if (!isInterrupt) {
+        await audioSessionHandler?.setActive(false, owner: this);
+      }
     }
   }
 
@@ -1286,9 +1314,11 @@ class PlPlayerController with BlockConfigMixin {
   Future<void> onDoubleTapCenter() async {
     if (!isLive && isCompleted) {
       await videoPlayerController!.seek(Duration.zero);
-      videoPlayerController!.play();
+      await play();
+    } else if (videoPlayerController!.state.playing) {
+      await pause();
     } else {
-      videoPlayerController!.playOrPause();
+      await play();
     }
   }
 
@@ -1550,6 +1580,7 @@ class PlPlayerController with BlockConfigMixin {
     }
 
     _playerCount = 0;
+    audioSessionHandler?.setActive(false, owner: this).ignore();
     if (removeSafeArea) {
       showSystemBar();
     }

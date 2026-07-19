@@ -20,7 +20,67 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
 import 'package:dio_http2_adapter/dio_http2_adapter.dart';
-import 'package:flutter/foundation.dart' show kDebugMode, listEquals;
+import 'package:flutter/foundation.dart'
+    show kDebugMode, listEquals, visibleForTesting;
+
+void configureHttpClientCertificateValidation(
+  HttpClient client, {
+  required bool allowBadCertificates,
+}) {
+  if (allowBadCertificates) {
+    client.badCertificateCallback = (cert, host, port) => true;
+  }
+}
+
+@visibleForTesting
+LogInterceptor createHttpLogInterceptor({
+  void Function(Object)? logPrint,
+}) {
+  final interceptor = LogInterceptor(
+    request: false,
+    requestUrl: false,
+    requestHeader: false,
+    requestBody: false,
+    responseUrl: false,
+    responseHeader: false,
+    responseBody: false,
+    error: false,
+  );
+  if (logPrint != null) {
+    interceptor.logPrint = logPrint;
+  }
+  return interceptor;
+}
+
+@visibleForTesting
+void configureHttp11Client(
+  HttpClient client, {
+  required Uri? proxy,
+  required bool allowBadCertificates,
+}) {
+  client
+    ..idleTimeout = const Duration(seconds: 15)
+    ..autoUncompress = false;
+  if (proxy != null) {
+    client.findProxy = (_) => 'PROXY ${proxy.host}:${proxy.port}';
+  }
+  configureHttpClientCertificateValidation(
+    client,
+    allowBadCertificates: allowBadCertificates,
+  );
+}
+
+@visibleForTesting
+void configureHttp2Client(
+  ClientSetting config, {
+  required Uri? proxy,
+  required bool allowBadCertificates,
+}) {
+  config.proxy = proxy;
+  if (allowBadCertificates) {
+    config.onBadCertificate = (_) => true;
+  }
+}
 
 class Request {
   static const _gzipDecoder = GZipDecoder();
@@ -145,31 +205,36 @@ class Request {
       enableSystemProxy = false;
     }
 
+    final proxy = enableSystemProxy
+        ? Uri(
+            scheme: 'http',
+            host: systemProxyHost,
+            port: systemProxyPort,
+          )
+        : null;
+    final allowBadCertificates = Pref.badCertificateCallback;
+
     final http11Adapter = IOHttpClientAdapter(
-      createHttpClient: enableSystemProxy
-          ? () => HttpClient()
-              ..idleTimeout = const Duration(seconds: 15)
-              ..autoUncompress = false
-              ..findProxy = ((_) => 'PROXY $systemProxyHost:$systemProxyPort')
-              ..badCertificateCallback = (cert, host, port) => true
-          : () => HttpClient()
-              ..idleTimeout = const Duration(seconds: 15)
-              ..autoUncompress = false, // Http2Adapter没有自动解压, 统一行为
+      createHttpClient: () {
+        final client = HttpClient();
+        configureHttp11Client(
+          client,
+          proxy: proxy,
+          allowBadCertificates: allowBadCertificates,
+        );
+        return client;
+      },
     );
 
     final connectionManager = _enableHttp2
         ? ConnectionManager(
             idleTimeout: const Duration(seconds: 15),
-            onClientCreate: enableSystemProxy
-                ? (_, config) => config
-                    ..proxy = Uri(
-                      scheme: 'http',
-                      host: systemProxyHost,
-                      port: systemProxyPort,
-                    )
-                    ..onBadCertificate = (_) => true
-                : Pref.badCertificateCallback
-                ? (_, config) => config.onBadCertificate = (_) => true
+            onClientCreate: proxy != null || allowBadCertificates
+                ? (_, config) => configureHttp2Client(
+                    config,
+                    proxy: proxy,
+                    allowBadCertificates: allowBadCertificates,
+                  )
                 : null,
           )
         : null;
@@ -233,13 +298,7 @@ class Request {
 
     // 日志拦截器 输出请求、响应内容
     if (kDebugMode) {
-      dio.interceptors.add(
-        LogInterceptor(
-          request: false,
-          requestHeader: false,
-          responseHeader: false,
-        ),
-      );
+      dio.interceptors.add(createHttpLogInterceptor());
     }
 
     dio

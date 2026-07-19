@@ -98,9 +98,11 @@ class _LikeMePageState extends State<LikeMePage> {
                       if (total.isEmpty && index == latest.length - 1) {
                         _likeMeController.onLoadMore();
                       }
-                      return _buildItem(theme, latest[index], (id) {
-                        _likeMeController.onRemove(id, index, true);
-                      });
+                      return _buildItem(
+                        theme,
+                        latest[index],
+                        _likeMeController.onRemove,
+                      );
                     },
                     itemCount: latest.length,
                     separatorBuilder: (context, index) => divider,
@@ -113,9 +115,11 @@ class _LikeMePageState extends State<LikeMePage> {
                       if (index == total.length - 1) {
                         _likeMeController.onLoadMore();
                       }
-                      return _buildItem(theme, total[index], (id) {
-                        _likeMeController.onRemove(id, index, false);
-                      });
+                      return _buildItem(
+                        theme,
+                        total[index],
+                        _likeMeController.onRemove,
+                      );
                     },
                     itemCount: total.length,
                     separatorBuilder: (context, index) => divider,

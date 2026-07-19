@@ -316,7 +316,6 @@ class _PgcReviewChildPageState extends State<PgcReviewChildPage>
                               minimumSize: WidgetStatePropertyAll(.square(40)),
                             ),
                             onPressed: () => _controller.onDislike(
-                              item,
                               isDislike,
                               item.reviewId,
                             ),
@@ -336,7 +335,6 @@ class _PgcReviewChildPageState extends State<PgcReviewChildPage>
                           onPressed: isLongReview
                               ? null
                               : () => _controller.onLike(
-                                  item,
                                   isLike,
                                   item.reviewId,
                                 ),

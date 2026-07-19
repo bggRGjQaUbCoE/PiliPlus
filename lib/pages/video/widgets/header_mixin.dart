@@ -329,7 +329,7 @@ mixin HeaderMixin<T extends StatefulWidget> on State<T> {
                         min: 0,
                         max: 1,
                         value: plPlayerController.danmakuOpacity.value,
-                        divisions: 10,
+                        divisions: 100,
                         label: '${plPlayerController.danmakuOpacity * 100}%',
                         onChanged: updateOpacity,
                       ),
@@ -412,7 +412,7 @@ mixin HeaderMixin<T extends StatefulWidget> on State<T> {
                         min: 0.5,
                         max: 2.5,
                         value: DanmakuOptions.danmakuFontScale,
-                        divisions: 20,
+                        divisions: 200,
                         label:
                             '${(DanmakuOptions.danmakuFontScale * 100).toStringAsFixed(1)}%',
                         onChanged: updateFontSize,
@@ -441,7 +441,7 @@ mixin HeaderMixin<T extends StatefulWidget> on State<T> {
                         min: 0.5,
                         max: 2.5,
                         value: DanmakuOptions.danmakuFontScaleFS,
-                        divisions: 20,
+                        divisions: 200,
                         label:
                             '${(DanmakuOptions.danmakuFontScaleFS * 100).toStringAsFixed(1)}%',
                         onChanged: updateFontSizeFS,

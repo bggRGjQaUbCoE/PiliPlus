@@ -491,29 +491,17 @@ class _MouseInteractiveViewerState extends State<MouseInteractiveViewer>
 
   void _receivedPointerSignal(PointerSignalEvent event) {
     final Offset local = event.localPosition;
-    final Offset global = event.position;
     final double scaleChange;
     if (event is PointerScrollEvent) {
-      if (event.kind == PointerDeviceKind.trackpad) {
-        final Offset localDelta = PointerEvent.transformDeltaViaPositions(
-          untransformedEndPosition: global + event.scrollDelta,
-          untransformedDelta: event.scrollDelta,
-          transform: event.transform,
-        );
-
-        final Offset focalPointScene = _transformer.toScene(local);
-        final Offset newFocalPointScene = _transformer.toScene(
-          local - localDelta,
-        );
-
-        _transformer.value = _matrixTranslate(
-          _transformer.value,
-          newFocalPointScene - focalPointScene,
-        );
-
+      if (event.kind != PointerDeviceKind.trackpad &&
+          !_gestureIsSupported(_GestureType.scale)) {
         return;
       }
-      _handlePointerScrollEvent(event);
+      // 注册仲裁，阻止外层滚动视图同时响应滚轮
+      GestureBinding.instance.pointerSignalResolver.register(
+        event,
+        _onPointerScroll,
+      );
       return;
     } else if (event is PointerScaleEvent) {
       scaleChange = event.scale;
@@ -535,6 +523,32 @@ class _MouseInteractiveViewerState extends State<MouseInteractiveViewer>
       _transformer.value,
       focalPointSceneScaled - focalPointScene,
     );
+  }
+
+  void _onPointerScroll(PointerSignalEvent event) {
+    final scrollEvent = event as PointerScrollEvent;
+    if (scrollEvent.kind == PointerDeviceKind.trackpad) {
+      final Offset local = scrollEvent.localPosition;
+      final Offset global = scrollEvent.position;
+      final Offset localDelta = PointerEvent.transformDeltaViaPositions(
+        untransformedEndPosition: global + scrollEvent.scrollDelta,
+        untransformedDelta: scrollEvent.scrollDelta,
+        transform: scrollEvent.transform,
+      );
+
+      final Offset focalPointScene = _transformer.toScene(local);
+      final Offset newFocalPointScene = _transformer.toScene(
+        local - localDelta,
+      );
+
+      _transformer.value = _matrixTranslate(
+        _transformer.value,
+        newFocalPointScene - focalPointScene,
+      );
+
+      return;
+    }
+    _handlePointerScrollEvent(scrollEvent);
   }
 
   void _handlePointerScrollEvent(PointerScrollEvent event) {

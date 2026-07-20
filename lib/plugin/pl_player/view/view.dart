@@ -258,7 +258,8 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       _onControlChanged,
     );
 
-    _transformationController = TransformationController();
+    _transformationController = TransformationController()
+      ..addListener(_onTransformChanged);
 
     _animationController = AnimationController(
       vsync: this,
@@ -379,7 +380,9 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     _brightnessListener?.cancel();
     _controlsListener?.cancel();
     _animationController.dispose();
-    _transformationController.dispose();
+    _transformationController
+      ..removeListener(_onTransformChanged)
+      ..dispose();
     _removeDmAction();
     if (PlatformUtils.isMobile) {
       FlutterVolumeController.removeListener();
@@ -956,8 +959,17 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     _initialFocalPoint = details.localFocalPoint;
   }
 
-  void _onScaleUpdate(double scale) {
-    showRestoreScaleBtn.value = scale != 1.0;
+  // 显隐由 _onTransformChanged 统一驱动
+  void _onScaleUpdate(double scale) {}
+
+  // 浮点残差，不与 identity 精确比较
+  void _onTransformChanged() {
+    final matrix = _transformationController.value;
+    final translation = matrix.getTranslation();
+    showRestoreScaleBtn.value =
+        translation.x.abs() > 0.5 ||
+        translation.y.abs() > 0.5 ||
+        (matrix.getMaxScaleOnAxis() - 1).abs() > 1e-3;
   }
 
   void _onHorizontalDragStart() {
@@ -1664,7 +1676,6 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                         ),
                       ),
                       onPressed: () async {
-                        showRestoreScaleBtn.value = false;
                         final animController = AnimationController(
                           vsync: this,
                           duration: const Duration(milliseconds: 255),
@@ -1684,6 +1695,10 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                         animController
                           ..removeListener(listener)
                           ..dispose();
+                        // Tween 终值可能有残差，显式归位
+                        if (mounted) {
+                          _transformationController.value = Matrix4.identity();
+                        }
                       },
                       child: const Text('还原屏幕'),
                     ),

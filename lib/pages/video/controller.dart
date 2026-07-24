@@ -753,6 +753,7 @@ class VideoDetailController extends GetxController
       volume: volume,
       autoFullScreenFlag: autoFullScreenFlag,
     );
+    playedTime = seek;
 
     if (isClosed) return;
 

@@ -16,6 +16,8 @@ import 'package:PiliPlus/grpc/bilibili/app/listener/v1.pb.dart'
 import 'package:PiliPlus/http/browser_ua.dart';
 import 'package:PiliPlus/http/constants.dart';
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/http/video.dart';
+import 'package:PiliPlus/models/common/video/video_type.dart';
 import 'package:PiliPlus/pages/common/common_intro_controller.dart'
     show FavMixin;
 import 'package:PiliPlus/pages/dynamics_repost/view.dart';
@@ -26,6 +28,7 @@ import 'package:PiliPlus/pages/sponsor_block/block_mixin.dart';
 import 'package:PiliPlus/pages/video/controller.dart';
 import 'package:PiliPlus/pages/video/introduction/ugc/widgets/triple_mixin.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
+import 'package:PiliPlus/plugin/pl_player/models/heart_beat_type.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_repeat.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
 import 'package:PiliPlus/services/service_locator.dart';
@@ -87,6 +90,8 @@ class AudioController extends GetxController
   late double speed = 1.0;
 
   late final Rx<PlayRepeat> playMode = Pref.audioPlayMode.obs;
+
+  int _heartDuration = 0;
 
   @override
   late final isLogin = Accounts.main.isLogin;
@@ -182,6 +187,48 @@ class AudioController extends GetxController
 
   bool isPlaying() {
     return player?.state.playing ?? false;
+  }
+
+  // 记录播放记录
+  Future<void>? makeHeartBeat(
+    int progress, {
+    HeartBeatType type = .playing,
+  }) {
+    if (!Accounts.heartbeat.isLogin || Pref.historyPause || progress == 0) {
+      return null;
+    }
+    if (type != .completed && !(player?.state.playing ?? false)) {
+      return null;
+    }
+    if (itemType != 1 || subId.isEmpty) {
+      return null;
+    }
+
+    Future<void> send() {
+      return VideoHttp.heartBeat(
+        aid: oid.toInt(),
+        bvid: IdUtils.av2bv(oid.toInt()),
+        cid: subId.first.toInt(),
+        progress: progress,
+        videoType: VideoType.ugc,
+      );
+    }
+
+    switch (type) {
+      case .playing:
+        if (progress - _heartDuration >= 5) {
+          _heartDuration = progress;
+          return send();
+        }
+      case .status:
+        if (progress - _heartDuration >= 2) {
+          _heartDuration = progress;
+          return send();
+        }
+      case .completed:
+        return send();
+    }
+    return null;
   }
 
   Future<void>? onPlay() {
@@ -355,6 +402,7 @@ class AudioController extends GetxController
           this.position.value = seconds;
           _videoDetailController?.playedTime = position;
           videoPlayerServiceHandler?.onPositionChange(position);
+          makeHeartBeat(seconds);
         }
       }),
       stream.duration.listen((duration) {
@@ -370,39 +418,52 @@ class AudioController extends GetxController
           playerStatus = PlayerStatus.paused;
         }
         videoPlayerServiceHandler?.onStatusChange(playerStatus, false, false);
+        if (playing) {
+          final pos = this.position.value;
+          if (pos > 0) {
+            makeHeartBeat(pos, type: .status);
+          }
+        }
       }),
       stream.completed.listen((completed) {
-        _videoDetailController?.playedTime = player!.state.duration;
+        final player = this.player!;
+        if (!completed ||
+            !player.state.completed ||
+            player.state.duration == Duration.zero ||
+            player.state.duration - player.state.position >
+                const Duration(seconds: 1)) {
+          return;
+        }
+        _videoDetailController?.playedTime = player.state.duration;
         videoPlayerServiceHandler?.onStatusChange(
           PlayerStatus.completed,
           false,
           false,
         );
-        if (completed) {
-          if (shutdownTimerService.isWaiting) {
-            shutdownTimerService.handleWaiting();
-          } else {
-            switch (playMode.value) {
-              case PlayRepeat.pause:
-                break;
-              case PlayRepeat.listOrder:
-                playNext(nextPart: true);
-                break;
-              case PlayRepeat.singleCycle:
-                onPlay();
-                break;
-              case PlayRepeat.listCycle:
-                if (!playNext(nextPart: true)) {
-                  if (index != null && index != 0 && playlist != null) {
-                    playIndex(0);
-                  } else {
-                    onPlay();
-                  }
+        makeHeartBeat(-1, type: .completed);
+        if (shutdownTimerService.isWaiting) {
+          shutdownTimerService.handleWaiting();
+        } else {
+          switch (playMode.value) {
+            case PlayRepeat.pause:
+              break;
+            case PlayRepeat.listOrder:
+              playNext(nextPart: true);
+              break;
+            case PlayRepeat.singleCycle:
+              onPlay();
+              break;
+            case PlayRepeat.listCycle:
+              if (!playNext(nextPart: true)) {
+                if (index != null && index != 0 && playlist != null) {
+                  playIndex(0);
+                } else {
+                  onPlay();
                 }
-                break;
-              case PlayRepeat.autoPlayRelated:
-                break;
-            }
+              }
+              break;
+            case PlayRepeat.autoPlayRelated:
+              break;
           }
         }
       }),
@@ -654,6 +715,7 @@ class AudioController extends GetxController
             final nextPart = parts[nextIndex];
             oid = nextPart.oid;
             this.subId = [nextPart.subId];
+            _heartDuration = 0;
             _queryPlayUrl().then((res) {
               if (res) {
                 _videoDetailController = null;
@@ -679,6 +741,7 @@ class AudioController extends GetxController
 
   void playIndex(int index, {List<Int64>? subId}) {
     if (index == this.index && subId == null) return;
+    _heartDuration = 0;
     this.index = index;
     final audioItem = playlist![index];
     final item = audioItem.item;
